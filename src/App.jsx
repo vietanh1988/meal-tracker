@@ -260,7 +260,7 @@ function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro}){
   const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||"claude");
   const [aiModel,setAiModel]=useState("claude-sonnet-4-20250514");
   const [geminiModel,setGeminiModel]=useState("gemini-3.5-flash");
-  const [gptModel,setGptModel]=useState("gpt-5.5-instant");
+  const [gptModel,setGptModel]=useState("gpt-4o-mini");
   const [aiConnected,setAiConnected]=useState(true);
   const [claudeKey,setClaudeKey]=useState(()=>localStorage.getItem("claudeKey")||"");
   const [geminiKey,setGeminiKey]=useState(()=>localStorage.getItem("geminiKey")||"");
