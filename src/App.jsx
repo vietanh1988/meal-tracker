@@ -935,7 +935,7 @@ export default function App(){
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:C.redBg,color:C.red,border:`1.5px solid ${C.red}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>
-    <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:`2.5px solid ${C.border}`}}>
+    <div style={{paddingTop:56,display:"flex",gap:0,marginBottom:20,borderBottom:`2.5px solid ${C.border}`}}>
       {[{id:"dashboard",l:"📊 Dashboard"},{id:"admin",l:"⚙️ Admin"}].map(t=>
         <button key={t.id} onClick={()=>setTab(t.id)} style={{
           padding:"10px 18px",fontSize:14,fontWeight:tab===t.id?900:600,border:"none",background:"transparent",cursor:"pointer",
