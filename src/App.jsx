@@ -265,7 +265,7 @@ function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro}){
   const [geminiKey,setGeminiKey]=useState(()=>localStorage.getItem("geminiKey")||"");
   const [gptKey,setGptKey]=useState(()=>localStorage.getItem("gptKey")||"");
 
-  React.useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);},[aiProvider,claudeKey,geminiKey,gptKey]);
+  useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);},[aiProvider,claudeKey,geminiKey,gptKey]);
   const addFood=()=>setFoodItems([...foodItems,{name:"",qty:1,gram:100}]);
   const removeFood=(idx)=>setFoodItems(foodItems.filter((_,i)=>i!==idx));
   const updateFood=(idx,field,val)=>{const u=[...foodItems];u[idx]={...u[idx],[field]:val};setFoodItems(u);};
