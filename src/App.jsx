@@ -428,7 +428,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <div style={{...lbl,marginBottom:8}}>Chọn model OpenAI</div>
         <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
           {[
-            {id:"gpt-5.4-mini",name:"GPT-5.4 Mini",desc:"Nhanh, rẻ nhất",badge:"Tiết kiệm",bc:C.greenBg,btc:"#14532D"},
+            {id:"gpt-4o-mini",name:"GPT-4o Mini",desc:"Nhanh, rẻ nhất",badge:"Tiết kiệm",bc:C.greenBg,btc:"#14532D"},
             {id:"gpt-5.5-instant",name:"GPT-5.5 Instant",desc:"Mặc định ChatGPT, ít hallucinate",badge:"Khuyên dùng",bc:C.goldBg,btc:"#92400E"},
             {id:"gpt-5.5",name:"GPT-5.5",desc:"Mạnh nhất, agentic + coding",badge:"Cao cấp",bc:C.redBg,btc:"#7F1D1D"},
           ].map(m=><div key={m.id} onClick={()=>setGptModel(m.id)} style={{
