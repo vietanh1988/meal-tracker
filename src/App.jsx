@@ -924,13 +924,13 @@ export default function App(){
   return <div style={{fontFamily:"'Inter',-apple-system,sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"env(safe-area-inset-top, 20px) 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:8}}>
       <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
-        <div style={{width:mob?32:42,height:mob?32:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>🏋️</div>
+        <div style={{width:mob?28:42,height:mob?28:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>🏋️</div>
         <div>
-          <div style={{fontSize:mob?14:20,fontWeight:900,letterSpacing:"-0.02em",color:"#111"}}>MEAL TRACKER</div>
-          <div style={{fontSize:mob?10:12,fontWeight:700,color:C.red}}>Phát triển bởi Việt Anh Seoer</div>
+          <div style={{fontSize:mob?13:20,fontWeight:900,letterSpacing:"-0.02em",color:"#111"}}>MEAL TRACKER</div>
+          <div style={{fontSize:mob?8:12,fontWeight:700,color:C.red}}>Phát triển bởi Việt Anh Seoer</div>
         </div>
       </div>
-      <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+      <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
         <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1}}>👤 {user.user_metadata?.username||user.email}</div>
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:C.redBg,color:C.red,border:`1.5px solid ${C.red}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
