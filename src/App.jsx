@@ -133,7 +133,7 @@ function Dashboard({weightLog,profile,macro}){
         <div>
           <div style={{fontSize:mob?11:13,fontWeight:900,color:"#EAB308",letterSpacing:"0.12em",textTransform:"uppercase"}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
           <div style={{fontSize:mob?32:44,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",lineHeight:1.1,marginTop:8}}>
-            {heroCal} <span style={{fontSize:mob?15:20,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>/ {target}</span>
+            {heroCal} <span style={{fontSize:mob?14:20,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>/ {target}</span>
           </div>
           <div style={{height:mob?8:10,width:mob?"100%":180,background:"rgba(255,255,255,0.18)",borderRadius:5,marginTop:mob?10:14,overflow:"hidden"}}>
             <div style={{height:"100%",width:`${calPct}%`,background:"linear-gradient(90deg,#DC2626,#EAB308)",borderRadius:5,transition:"width 0.4s"}}/>
@@ -924,14 +924,14 @@ export default function App(){
   return <div style={{fontFamily:"'Inter',-apple-system,sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"env(safe-area-inset-top, 20px) 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <div style={{width:mob?36:42,height:mob?36:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?18:22}}>🏋️</div>
+        <div style={{width:mob?32:42,height:mob?32:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>🏋️</div>
         <div>
-          <div style={{fontSize:mob?15:20,fontWeight:900,letterSpacing:"-0.02em",color:"#111"}}>MEAL TRACKER</div>
+          <div style={{fontSize:mob?14:20,fontWeight:900,letterSpacing:"-0.02em",color:"#111"}}>MEAL TRACKER</div>
           <div style={{fontSize:mob?10:12,fontWeight:700,color:C.red}}>Phát triển bởi Việt Anh Seoer</div>
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
-        <div style={{fontSize:13,fontWeight:700,color:C.t1}}>👤 {user.user_metadata?.username||user.email}</div>
+        <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1}}>👤 {user.user_metadata?.username||user.email}</div>
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:C.redBg,color:C.red,border:`1.5px solid ${C.red}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>
