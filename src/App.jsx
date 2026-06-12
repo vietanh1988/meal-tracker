@@ -256,15 +256,16 @@ function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro}){
   const [aiResult,setAiResult]=useState(null);
   const [aiLoading,setAiLoading]=useState(false);
   const [aiError,setAiError]=useState(null);
-  const [aiProvider,setAiProvider]=useState("claude");
+  const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||"claude");
   const [aiModel,setAiModel]=useState("claude-sonnet-4-20250514");
   const [geminiModel,setGeminiModel]=useState("gemini-3.5-flash");
   const [gptModel,setGptModel]=useState("gpt-5.5-instant");
   const [aiConnected,setAiConnected]=useState(true);
-  const [claudeKey,setClaudeKey]=useState("");
-  const [geminiKey,setGeminiKey]=useState("");
-  const [gptKey,setGptKey]=useState("");
+  const [claudeKey,setClaudeKey]=useState(()=>localStorage.getItem("claudeKey")||"");
+  const [geminiKey,setGeminiKey]=useState(()=>localStorage.getItem("geminiKey")||"");
+  const [gptKey,setGptKey]=useState(()=>localStorage.getItem("gptKey")||"");
 
+  React.useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);},[aiProvider,claudeKey,geminiKey,gptKey]);
   const addFood=()=>setFoodItems([...foodItems,{name:"",qty:1,gram:100}]);
   const removeFood=(idx)=>setFoodItems(foodItems.filter((_,i)=>i!==idx));
   const updateFood=(idx,field,val)=>{const u=[...foodItems];u[idx]={...u[idx],[field]:val};setFoodItems(u);};
