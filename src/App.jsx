@@ -309,7 +309,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         if(!gptKey)throw new Error("Chưa nhập OpenAI API Key");
         const res=await fetch("https://api.openai.com/v1/chat/completions",{
           method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${gptKey}`},
-          body:JSON.stringify({model:gptModel,messages:[{role:"user",content:`${prompt}\nThức ăn: ${foodDesc}`}],max_tokens:1000})
+          body:JSON.stringify({model:gptModel,messages:[{role:"user",content:`${prompt}\nThức ăn: ${foodDesc}`}],max_completion_tokens:1000})
         });
         const data=await res.json();
         if(data.error)throw new Error(data.error.message);
