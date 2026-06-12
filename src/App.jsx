@@ -74,7 +74,7 @@ function MealCard({meal}){
   const total=t.p+t.c+t.f+t.fiber||1;
   return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
         <span style={{fontSize:20}}>{meal.icon}</span>
         <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
         <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{meal.items.length} món</span>
@@ -922,8 +922,8 @@ export default function App(){
   if(loading||profileLoading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
   return <div style={{fontFamily:"'Inter',-apple-system,sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"env(safe-area-inset-top, 20px) 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:8}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
         <div style={{width:mob?32:42,height:mob?32:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>🏋️</div>
         <div>
           <div style={{fontSize:mob?14:20,fontWeight:900,letterSpacing:"-0.02em",color:"#111"}}>MEAL TRACKER</div>
