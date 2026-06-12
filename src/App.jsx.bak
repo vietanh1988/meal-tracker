@@ -52,7 +52,6 @@ const mealsData={
   ],
 };
 const initWeightLog=[{week:1,date:"22/05/2026",kg:63.0,delta:null},{week:2,date:"29/05/2026",kg:63.3,delta:0.3},{week:3,date:"05/06/2026",kg:63.5,delta:0.2},{week:4,date:"12/06/2026",kg:64.0,delta:0.5}];
-const getMeals=(type)=>{const saved=localStorage.getItem(`meals_${type}`);return saved?JSON.parse(saved):mealsData[type];};
 const wColors=["#DC2626","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
 function fmtDate(d){const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear();return `${dd}/${mm}/${yy}`;}
 
@@ -120,7 +119,7 @@ function MealCard({meal}){
 function Dashboard({weightLog,profile,macro}){
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
-  const meals=getMeals(dayType);
+  const meals=mealsData[dayType];
   const totals=meals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+i.p,c:a.c+i.c,f:a.f+i.f,fiber:a.fiber+i.fiber,cal:a.cal+i.cal}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
   // Macro từ công thức: P/F/Xơ cố định, Carb thay đổi theo ngày
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
@@ -278,12 +277,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
   const callAI=useCallback(async()=>{
     if(foodItems.length===0||foodItems.every(f=>!f.name.trim()))return;
     setAiLoading(true);setAiError(null);setAiResult(null);
-    const fc=JSON.parse(localStorage.getItem("foodCache")||"{}");
-    const validItems=foodItems.filter(f=>f.name.trim());
-    const cached=[];const uncached=[];
-    validItems.forEach(f=>{const k=f.name.toLowerCase().trim();if(fc[k]){const r=f.gram/(fc[k].gram||100);cached.push({name:f.name,gram:f.gram,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r)});}else{uncached.push(f);}});
-    if(uncached.length===0){setAiResult({items:cached,tip:"📦 Tất cả từ cache — không gọi API!"});setAiLoading(false);return;}
-    const foodDesc=uncached.map(f=>`${f.qty>1?f.qty+" ":""}${f.name} ${f.gram}g`).join(", ");
+    const foodDesc=foodItems.filter(f=>f.name.trim()).map(f=>`${f.qty>1?f.qty+" ":""}${f.name} ${f.gram}g`).join(", ");
     try{
       let text="";
       if(aiProvider==="claude"){
@@ -316,10 +310,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         text=data.choices?.[0]?.message?.content||"";
       }
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
-      const newItems=[...cached,...(parsed.items||[])];
-      parsed.items.forEach(it=>{const k=(it.name||"").toLowerCase().trim();if(k)fc[k]={p:it.protein,c:it.carb,f:it.fat,fiber:it.fiber,cal:it.cal,gram:it.gram};});
-      localStorage.setItem("foodCache",JSON.stringify(fc));
-      setAiResult({items:newItems,tip:parsed.tip||(cached.length>0?`📦 ${cached.length} món từ cache`:"")});
+      setAiResult(parsed);
     }catch(err){setAiError(err.message||"Lỗi kết nối AI");console.error(err);}
     finally{setAiLoading(false);}
   },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel]);
@@ -543,23 +534,6 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         {aiResult.tip&&<div style={{marginTop:10,padding:"10px 14px",background:C.goldBg,borderRadius:8,border:"1.5px solid #CA8A04"}}>
           <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>💡 {aiResult.tip}</span>
         </div>}
-        <button onClick={()=>{
-          const key=`meals_${dayType}`;
-          const saved=JSON.parse(localStorage.getItem(key)||"null")||mealsData[dayType];
-          const mealIdx=saved.findIndex(m=>m.id===selectedMeal);
-          if(mealIdx>=0){
-            saved[mealIdx].items=aiResult.items.map(it=>({food:it.name,gram:it.gram||0,p:it.protein||0,c:it.carb||0,f:it.fat||0,fiber:it.fiber||0,cal:it.cal||0}));
-            localStorage.setItem(key,JSON.stringify(saved));
-            const fc=JSON.parse(localStorage.getItem("foodCache")||"{}");
-            aiResult.items.forEach(it=>{const k=(it.name||"").toLowerCase().trim();if(k)fc[k]={p:it.protein,c:it.carb,f:it.fat,fiber:it.fiber,cal:it.cal,gram:it.gram};});
-            localStorage.setItem("foodCache",JSON.stringify(fc));
-            const el=document.getElementById("meal-saved");
-            if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-          }
-        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
-        <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ Đã lưu! Dashboard sẽ cập nhật khi reload.</span>
-        </div>
       </div>}
     </div>}
 
