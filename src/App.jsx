@@ -948,7 +948,7 @@ export default function App(){
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,saveMealToCloud,saveFoodCache}=useUserData(user?.id);
-  const p=profile||{cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"};const macro=calcMacro(p({cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"});
+  const macro=calcMacro(profile||{cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"});
   const mob=useIsMobile();
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
