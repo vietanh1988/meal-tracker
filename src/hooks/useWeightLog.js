@@ -1,71 +1,73 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
-
-const INIT = [{week:1,date:"22/05/2026",kg:63.0,delta:null},{week:2,date:"29/05/2026",kg:63.3,delta:0.3},{week:3,date:"05/06/2026",kg:63.5,delta:0.2},{week:4,date:"12/06/2026",kg:64.0,delta:0.5}];
 
 export function useWeightLog(userId) {
   const [weightLog, setWeightLogState] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userId) return;
-    (async () => {
-      try {
-        const { data } = await supabase.from("weight_logs").select("*").eq("user_id", userId).order("week", { ascending: true });
-        if (data && data.length > 0) {
-          const logs = data.map(d => ({
-            id: d.id,
-            week: d.week,
-            date: new Date(d.logged_date).toLocaleDateString("vi-VN"),
-            kg: Number(d.kg),
-            delta: d.delta ? Number(d.delta) : null,
-          }));
-          setWeightLogState(logs);
-          localStorage.setItem("weightLog", JSON.stringify(logs));
-        } else {
-          const saved = localStorage.getItem("weightLog");
-          const local = saved ? JSON.parse(saved) : INIT;
-          setWeightLogState(local);
-          // Migrate local data to Supabase
-          for (const entry of local) {
-            try {
-              await supabase.from("weight_logs").insert({
-                user_id: userId, week: entry.week, kg: entry.kg, delta: entry.delta,
-                logged_date: entry.date ? entry.date.split("/").reverse().join("-") : new Date().toISOString().slice(0,10),
-              });
-            } catch {}
-          }
-        }
-      } catch {
-        const saved = localStorage.getItem("weightLog");
-        setWeightLogState(saved ? JSON.parse(saved) : INIT);
-      }
-      setLoading(false);
-    })();
+  // Load from Supabase only
+  const loadFromCloud = useCallback(async () => {
+    if (!userId) { setLoading(false); return; }
+    try {
+      const { data, error } = await supabase.from("weight_logs").select("*").eq("user_id", userId).order("week", { ascending: true });
+      if (error) { console.error("Weight load error:", error); setLoading(false); return; }
+      const logs = (data || []).map(d => ({
+        id: d.id,
+        week: d.week,
+        date: new Date(d.logged_date).toLocaleDateString("vi-VN"),
+        kg: Number(d.kg),
+        delta: d.delta != null ? Number(d.delta) : null,
+      }));
+      setWeightLogState(logs);
+      console.log(`✅ Loaded ${logs.length} weight entries from cloud`);
+    } catch (e) { console.error("Weight load error:", e); }
+    setLoading(false);
   }, [userId]);
 
-  const setWeightLog = (logs) => {
-    setWeightLogState(logs);
-    localStorage.setItem("weightLog", JSON.stringify(logs));
-  };
+  useEffect(() => { loadFromCloud(); }, [loadFromCloud]);
 
-  const addWeight = async (kg) => {
-    const prev = weightLog.length > 0 ? weightLog[weightLog.length-1].kg : kg;
-    const delta = Math.round((kg-prev)*10)/10;
-    const entry = {week:weightLog.length+1, date:new Date().toLocaleDateString("vi-VN"), kg, delta:delta===0?null:delta};
-    const updated = [...weightLog, entry];
-    setWeightLogState(updated);
-    localStorage.setItem("weightLog", JSON.stringify(updated));
-    if (userId) {
-      try {
-        await supabase.from("weight_logs").insert({
-          user_id: userId, week: entry.week, kg: entry.kg, delta: entry.delta,
-          logged_date: new Date().toISOString().slice(0,10),
-        });
-      } catch (e) { console.error("Weight sync error:", e); }
-    }
+  const setWeightLog = (logs) => { setWeightLogState(logs); };
+
+  // Add new weight entry — Supabase only
+  const addWeight = useCallback(async (kg) => {
+    if (!userId) return;
+    const prev = weightLog.length > 0 ? weightLog[weightLog.length - 1].kg : kg;
+    const delta = Math.round((kg - prev) * 10) / 10;
+    const entry = { week: weightLog.length + 1, kg, delta: delta === 0 ? null : delta };
+    try {
+      const { data, error } = await supabase.from("weight_logs").insert({
+        user_id: userId, week: entry.week, kg: entry.kg, delta: entry.delta,
+        logged_date: new Date().toISOString().slice(0, 10),
+      }).select().single();
+      if (error) { console.error("Weight insert error:", error); return; }
+      // Reload from cloud to stay in sync
+      await loadFromCloud();
+      console.log("✅ Weight saved to cloud:", kg, "kg");
+    } catch (e) { console.error("Weight save error:", e); }
     return entry;
-  };
+  }, [userId, weightLog, loadFromCloud]);
 
-  return { weightLog, addWeight, setWeightLog, loading };
+  // Delete weight entry — Supabase only
+  const deleteWeight = useCallback(async (id) => {
+    if (!userId || !id) return;
+    try {
+      const { error } = await supabase.from("weight_logs").delete().eq("id", id);
+      if (error) { console.error("Weight delete error:", error); return; }
+      await loadFromCloud();
+      console.log("✅ Weight entry deleted from cloud");
+    } catch (e) { console.error("Weight delete error:", e); }
+  }, [userId, loadFromCloud]);
+
+  // Reset all weight entries — Supabase only
+  const resetWeights = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const { error } = await supabase.from("weight_logs").delete().eq("user_id", userId);
+      if (error) { console.error("Weight reset error:", error); return; }
+      setWeightLogState([]);
+      console.log("✅ All weight entries reset");
+    } catch (e) { console.error("Weight reset error:", e); }
+  }, [userId]);
+
+  return { weightLog, addWeight, deleteWeight, resetWeights, setWeightLog, loading };
 }

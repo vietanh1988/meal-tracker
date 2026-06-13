@@ -213,7 +213,7 @@ function Dashboard({weightLog,profile,macro}){if(!profile||!macro)return null;
   </div>;
 }
 
-function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile}){
+function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight}){
   const [editing,setEditing]=useState(false);
   const [editVal,setEditVal]=useState(w.kg);
   return <div style={{display:"grid",gridTemplateColumns:"0.7fr 1.1fr 0.7fr 0.5fr 0.8fr",gap:4,padding:"8px 0",fontSize:13,borderBottom:i<weightLog.length-1?`1px solid ${C.border}`:"none",alignItems:"center"}}>
@@ -233,23 +233,21 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile}){
               return {...x,kg:editVal,delta:Math.round((editVal-prevKg)*10)/10||null};
             });
             setWeightLog(updated);
-            localStorage.setItem('weightLog',JSON.stringify(updated));
             setProfile({...profile,kg:updated[updated.length-1].kg});
             setEditing(false);
           }} style={{fontSize:11,fontWeight:700,padding:"3px 8px",background:C.greenBg,color:C.green,border:`1px solid ${C.green}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>✓</button>
         :<button onClick={()=>setEditing(true)} style={{fontSize:11,fontWeight:700,padding:"3px 8px",background:C.goldBg,color:C.gold,border:`1px solid ${C.gold}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>✏️</button>
       }
       <button onClick={()=>{
-        const updated=weightLog.filter((_,j)=>j!==i).map((x,j)=>({...x,week:j+1}));
-        setWeightLog(updated);
-        localStorage.setItem('weightLog',JSON.stringify(updated));
-        if(updated.length>0)setProfile({...profile,kg:updated[updated.length-1].kg});
+        if(w.id){deleteWeight(w.id);}
+        else{const updated=weightLog.filter((_,j)=>j!==i).map((x,j)=>({...x,week:j+1}));setWeightLog(updated);}
+        if(weightLog.length>1)setProfile({...profile,kg:weightLog[weightLog.length-2].kg});
       }} style={{fontSize:11,fontWeight:700,padding:"3px 8px",background:C.redBg,color:C.red,border:`1px solid ${C.red}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>✕</button>
     </div>
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,profile,setProfile,macro,saveMealToCloud,saveFoodCache,}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState("meals");
   const [dayType,setDayType]=useState("train");
@@ -818,8 +816,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             <div style={lbl}>Lịch sử theo dõi cân nặng</div>
             <button onClick={()=>{
               if(window.confirm("Xóa toàn bộ lịch sử cân nặng?")){
-                setWeightLog([]);
-                localStorage.setItem('weightLog',JSON.stringify([]));
+                resetWeights();
               }
             }} style={{fontSize:11,fontWeight:700,padding:"4px 10px",background:C.redBg,color:C.red,border:`1px solid ${C.red}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>
               🗑️ Reset hết
@@ -829,7 +826,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             <span>Tuần</span><span>Ngày</span><span style={{textAlign:"right"}}>Kg</span><span style={{textAlign:"right"}}>Δ</span><span style={{textAlign:"right"}}>Thao tác</span>
           </div>
           {weightLog.map((w,i)=>(
-            <WeightRow key={i} w={w} i={i} weightLog={weightLog} setWeightLog={setWeightLog} setProfile={setProfile} profile={profile}/>
+            <WeightRow key={w.id||i} w={w} i={i} weightLog={weightLog} setWeightLog={setWeightLog} setProfile={setProfile} profile={profile} deleteWeight={deleteWeight}/>
           ))}
         </div>
         {weightLog.length>=2&&(()=>{
@@ -964,7 +961,7 @@ export default function App(){
   const {user,loading,signOut}=useAuth();
   const [tab,setTab]=useState("dashboard");
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
-  const {weightLog,addWeight,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
+  const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,saveMealToCloud,saveFoodCache}=useUserData(user?.id);
   const macro=calcMacro(profile||{cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"});
   const mob=useIsMobile();
@@ -993,6 +990,6 @@ export default function App(){
         }}>{t.l}</button>
       )}
     </div>
-    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} />}
+    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} />}
   </div>;
 }
