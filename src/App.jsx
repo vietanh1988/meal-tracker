@@ -249,7 +249,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile}){
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro,saveMealToCloud,saveFoodCache,aiProvider:aiProviderProp}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro,saveMealToCloud,saveFoodCache,}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState("meals");
   const [dayType,setDayType]=useState("train");
@@ -975,6 +975,6 @@ export default function App(){
         }}>{t.l}</button>
       )}
     </div>
-    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} aiProvider={aiProvider}/>}
+    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} />}
   </div>;
 }
