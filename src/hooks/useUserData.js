@@ -1,44 +1,58 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 
-// Stores: ai_settings, food_cache, meals_train, meals_rest
-// All in one "user_data" approach using profiles table's JSONB or a simple key-value approach
-
 export function useUserData(userId) {
   const [loaded, setLoaded] = useState(false);
 
-  // Load all user data from Supabase into localStorage on login
+  // Load meal_logs + food_cache from Supabase into localStorage on login
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) { setLoaded(true); return; }
     (async () => {
       try {
-        const { data } = await supabase.from("meal_logs").select("*").eq("user_id", userId).eq("log_date", new Date().toISOString().slice(0,10));
+        // Load today's meals
+        const today = new Date().toISOString().slice(0, 10);
+        const { data, error } = await supabase.from("meal_logs").select("*").eq("user_id", userId).eq("log_date", today);
+        if (error) console.error("Load meals error:", error);
         if (data && data.length > 0) {
-          // Rebuild meals from meal_logs
           const trainMeals = {};
           const restMeals = {};
           data.forEach(d => {
             const target = d.day_type === "train" ? trainMeals : restMeals;
             target[d.meal_id] = d.items;
           });
-          if (Object.keys(trainMeals).length > 0) {
-            const existing = JSON.parse(localStorage.getItem("meals_train") || "null");
-            if (existing) {
-              existing.forEach(m => { if (trainMeals[m.id]) m.items = trainMeals[m.id]; });
-              localStorage.setItem("meals_train", JSON.stringify(existing));
+          // Default meal structure (must match mealsData in App.jsx)
+          const defaultStructure = {
+            train: [
+              {id:"sang",icon:"🌅",name:"Sáng",items:[]},
+              {id:"trua",icon:"☀️",name:"Trưa",items:[]},
+              {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
+              {id:"phu2",icon:"💪",name:"Phụ 2 (pre-workout)",items:[]},
+              {id:"toi",icon:"🌙",name:"Tối",items:[]},
+            ],
+            rest: [
+              {id:"sang",icon:"🌅",name:"Sáng",items:[]},
+              {id:"trua",icon:"☀️",name:"Trưa",items:[]},
+              {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
+              {id:"toi",icon:"🌙",name:"Tối",items:[]},
+            ],
+          };
+          ["train", "rest"].forEach(dt => {
+            const bucket = dt === "train" ? trainMeals : restMeals;
+            if (Object.keys(bucket).length > 0) {
+              const key = `meals_${dt}`;
+              let existing = JSON.parse(localStorage.getItem(key) || "null");
+              // If localStorage empty, create from default structure
+              if (!existing) existing = JSON.parse(JSON.stringify(defaultStructure[dt]));
+              existing.forEach(m => { if (bucket[m.id]) m.items = bucket[m.id]; });
+              localStorage.setItem(key, JSON.stringify(existing));
+              console.log(`✅ Synced ${Object.keys(bucket).length} meals for ${dt} from cloud`);
             }
-          }
-          if (Object.keys(restMeals).length > 0) {
-            const existing = JSON.parse(localStorage.getItem("meals_rest") || "null");
-            if (existing) {
-              existing.forEach(m => { if (restMeals[m.id]) m.items = restMeals[m.id]; });
-              localStorage.setItem("meals_rest", JSON.stringify(existing));
-            }
-          }
+          });
         }
 
-        // Load food cache from Supabase
-        const { data: cacheData } = await supabase.from("food_cache").select("*");
+        // Load food cache
+        const { data: cacheData, error: cacheErr } = await supabase.from("food_cache").select("*");
+        if (cacheErr) console.error("Load cache error:", cacheErr);
         if (cacheData && cacheData.length > 0) {
           const fc = JSON.parse(localStorage.getItem("foodCache") || "{}");
           cacheData.forEach(d => {
@@ -47,16 +61,12 @@ export function useUserData(userId) {
           });
           localStorage.setItem("foodCache", JSON.stringify(fc));
         }
-
-        // Load AI settings
-        // We'll use a simple approach: store in profiles table via a settings column
-        // For now, sync from Supabase meal_logs metadata
       } catch (e) { console.error("UserData load error:", e); }
       setLoaded(true);
     })();
   }, [userId]);
 
-  // Save meal to Supabase
+  // Save meal to Supabase - use maybeSingle() to avoid .single() crash
   const saveMealToCloud = useCallback(async (mealId, dayType, items) => {
     if (!userId) return;
     try {
@@ -64,20 +74,27 @@ export function useUserData(userId) {
       const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
       const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
       const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
-      
-      // Upsert by user + meal + date + day_type
       const today = new Date().toISOString().slice(0, 10);
-      const { data: existing } = await supabase.from("meal_logs")
-        .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType).eq("log_date", today).maybeSingle();
+
+      // Use maybeSingle() - returns null instead of throwing when no row found
+      const { data: existing, error: findErr } = await supabase.from("meal_logs")
+        .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType).eq("log_date", today)
+        .maybeSingle();
       
+      if (findErr) { console.error("Find meal error:", findErr); return; }
+
+      const payload = { items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
+
       if (existing) {
-        await supabase.from("meal_logs").update({ items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF })
-          .eq("id", existing.id);
+        const { error } = await supabase.from("meal_logs").update(payload).eq("id", existing.id);
+        if (error) console.error("Update meal error:", error);
+        else console.log("✅ Meal updated on cloud:", mealId, dayType);
       } else {
-        await supabase.from("meal_logs").insert({
-          user_id: userId, meal_id: mealId, day_type: dayType, log_date: today,
-          items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF,
+        const { error } = await supabase.from("meal_logs").insert({
+          user_id: userId, meal_id: mealId, day_type: dayType, log_date: today, ...payload,
         });
+        if (error) console.error("Insert meal error:", error);
+        else console.log("✅ Meal saved to cloud:", mealId, dayType);
       }
     } catch (e) { console.error("Meal save error:", e); }
   }, [userId]);
@@ -89,26 +106,17 @@ export function useUserData(userId) {
       try {
         const name = (f.name || f.food || "").toLowerCase().trim();
         if (!name) continue;
-        await supabase.from("food_cache").upsert({
+        const { error } = await supabase.from("food_cache").upsert({
           food_name: name, gram: f.gram || 100,
           protein: f.protein || f.p || 0, carb: f.carb || f.c || 0,
           fat: f.fat || f.f || 0, fiber: f.fiber || 0, cal: f.cal || 0,
-          ai_provider: provider,
+          ai_provider: provider || "unknown",
         }, { onConflict: "food_name,gram" });
-      } catch {}
+        if (error) console.error("Food cache upsert error:", name, error);
+      } catch (e) { console.error("Food cache error:", e); }
     }
+    console.log("✅ Food cache synced to cloud:", foods.length, "items");
   }, [userId]);
 
-  // Save AI settings to localStorage + Supabase (using a simple approach)
-  const saveAiSettings = useCallback(async (settings) => {
-    localStorage.setItem("aiProvider", settings.aiProvider || "claude");
-    localStorage.setItem("claudeKey", settings.claudeKey || "");
-    localStorage.setItem("geminiKey", settings.geminiKey || "");
-    localStorage.setItem("gptKey", settings.gptKey || "");
-    localStorage.setItem("geminiModel", settings.geminiModel || "gemini-2.5-flash");
-    localStorage.setItem("gptModel", settings.gptModel || "gpt-4o-mini");
-    // Optionally sync encrypted keys to Supabase - skip for security
-  }, []);
-
-  return { loaded, saveMealToCloud, saveFoodCache, saveAiSettings };
+  return { loaded, saveMealToCloud, saveFoodCache };
 }
