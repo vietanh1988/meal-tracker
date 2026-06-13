@@ -8,11 +8,20 @@ export function useProfile(userId) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) { setLoading(false); return; }
+    let done = false;
+    const timeout = setTimeout(() => {
+      if (!done) {
+        const saved = localStorage.getItem("profile");
+        if (saved) setProfileState({...DEFAULT, ...JSON.parse(saved)});
+        setLoading(false);
+        done = true;
+      }
+    }, 3000);
     (async () => {
       try {
-        const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
-        if (data) {
+        const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+        if (!done && data && !error) {
           const p = {
             cm: data.cm || DEFAULT.cm,
             kg: Number(data.kg) || DEFAULT.kg,
@@ -26,16 +35,15 @@ export function useProfile(userId) {
           };
           setProfileState(p);
           localStorage.setItem("profile", JSON.stringify(p));
-        } else {
-          const saved = localStorage.getItem("profile");
-          if (saved) setProfileState({...DEFAULT, ...JSON.parse(saved)});
         }
       } catch {
         const saved = localStorage.getItem("profile");
         if (saved) setProfileState({...DEFAULT, ...JSON.parse(saved)});
       }
-      setLoading(false);
+      if (!done) { setLoading(false); done = true; }
+      clearTimeout(timeout);
     })();
+    return () => clearTimeout(timeout);
   }, [userId]);
 
   const saveProfile = async (p) => {
@@ -45,16 +53,9 @@ export function useProfile(userId) {
     if (userId) {
       try {
         await supabase.from("profiles").upsert({
-          id: userId,
-          cm: merged.cm,
-          kg: merged.kg,
-          age: merged.age,
-          goal_kg: merged.goalKg,
-          gym: merged.gym,
-          goal_type: merged.goalType,
-          months: merged.months,
-          activity: merged.activity,
-          gym_days: merged.gymDays,
+          id: userId, cm: merged.cm, kg: merged.kg, age: merged.age,
+          goal_kg: merged.goalKg, gym: merged.gym, goal_type: merged.goalType,
+          months: merged.months, activity: merged.activity, gym_days: merged.gymDays,
         });
       } catch (e) { console.error("Profile sync error:", e); }
     }
