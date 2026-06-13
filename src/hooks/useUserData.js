@@ -68,7 +68,7 @@ export function useUserData(userId) {
       // Upsert by user + meal + date + day_type
       const today = new Date().toISOString().slice(0, 10);
       const { data: existing } = await supabase.from("meal_logs")
-        .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType).eq("log_date", today).single();
+        .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType).eq("log_date", today).maybeSingle();
       
       if (existing) {
         await supabase.from("meal_logs").update({ items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF })
