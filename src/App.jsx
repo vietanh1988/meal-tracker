@@ -951,7 +951,7 @@ export default function App(){
   const p=profile||{cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"};const macro=calcMacro(p({cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"});
   const mob=useIsMobile();
 
-  if(loading||profileLoading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
+  if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
   return <div style={{fontFamily:"'Inter',-apple-system,sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"env(safe-area-inset-top, 20px) 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:C.bg,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:8,paddingTop:8,paddingBottom:8,paddingLeft:10,paddingRight:10,maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
