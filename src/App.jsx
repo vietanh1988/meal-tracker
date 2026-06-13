@@ -118,7 +118,7 @@ function MealCard({meal}){
   </div>;
 }
 
-function Dashboard({weightLog,profile,macro}){
+function Dashboard({weightLog,profile,macro}){if(!profile||!macro)return null;
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
   const meals=getMeals(dayType);
@@ -249,7 +249,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile}){
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro}){
+function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState("meals");
   const [dayType,setDayType]=useState("train");
