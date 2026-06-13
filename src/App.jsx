@@ -254,7 +254,12 @@ function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro,saveMealToC
   const [section,setSection]=useState("meals");
   const [dayType,setDayType]=useState("train");
   const [selectedMeal,setSelectedMeal]=useState("sang");
-  const [foodItems,setFoodItems]=useState([{name:"Trứng gà luộc",qty:3,gram:150},{name:"Chuối",qty:1,gram:120}]);
+  const [foodItems,setFoodItems]=useState(()=>{
+    const meals=getMeals("train");
+    const meal=meals.find(m=>m.id==="sang");
+    if(meal&&meal.items&&meal.items.length>0) return meal.items.map(it=>({name:it.food||it.name||"",qty:1,gram:it.gram||100}));
+    return [{name:"",qty:1,gram:100}];
+  });
   const [aiResult,setAiResult]=useState(null);
   const [aiLoading,setAiLoading]=useState(false);
   const [aiError,setAiError]=useState(null);
@@ -268,6 +273,19 @@ function AdminPanel({weightLog,setWeightLog,profile,setProfile,macro,saveMealToC
   const [gptKey,setGptKey]=useState(()=>localStorage.getItem("gptKey")||"");
 
   useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);},[aiProvider,claudeKey,geminiKey,gptKey]);
+
+  // Load saved items when switching meal or dayType
+  useEffect(()=>{
+    const meals=getMeals(dayType);
+    const meal=meals.find(m=>m.id===selectedMeal);
+    if(meal&&meal.items&&meal.items.length>0){
+      setFoodItems(meal.items.map(it=>({name:it.food||it.name||"",qty:1,gram:it.gram||100})));
+    }else{
+      setFoodItems([{name:"",qty:1,gram:100}]);
+    }
+    setAiResult(null);
+  },[selectedMeal,dayType]);
+
   const addFood=()=>setFoodItems([...foodItems,{name:"",qty:1,gram:100}]);
   const removeFood=(idx)=>setFoodItems(foodItems.filter((_,i)=>i!==idx));
   const updateFood=(idx,field,val)=>{const u=[...foodItems];u[idx]={...u[idx],[field]:val};setFoodItems(u);};
