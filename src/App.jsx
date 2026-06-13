@@ -895,7 +895,7 @@ function LoginScreen({onLogin}){
   </div>;
 }
 
-function calcMacro(p){
+function calcMacro(p){if(!p)p={cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"};
   const bmr=10*p.kg+6.25*p.cm-5*p.age+5;
   const jobBase=p.activity==="sedentary"?1.2:p.activity==="moderate"?1.5:1.75;
   const gymBonus=p.gym<=2?0.1:p.gym<=4?0.2:0.3;
