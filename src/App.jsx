@@ -127,7 +127,7 @@ function Dashboard({weightLog,profile,macro}){if(!profile||!macro)return null;
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
-  const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,curKg=weightLog[weightLog.length-1].kg,wPct=((curKg-profile.kg)/(goalKg-profile.kg))*100;
+  const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=((curKg-profile.kg)/(goalKg-profile.kg))*100;
   return <div>
     {/* Hero */}
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
