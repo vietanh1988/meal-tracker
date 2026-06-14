@@ -1,17 +1,31 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 
+const defaultStructure = {
+  train: [
+    {id:"sang",icon:"🌅",name:"Sáng",items:[]},
+    {id:"trua",icon:"☀️",name:"Trưa",items:[]},
+    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
+    {id:"phu2",icon:"💪",name:"Phụ 2 (pre-workout)",items:[]},
+    {id:"toi",icon:"🌙",name:"Tối",items:[]},
+  ],
+  rest: [
+    {id:"sang",icon:"🌅",name:"Sáng",items:[]},
+    {id:"trua",icon:"☀️",name:"Trưa",items:[]},
+    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
+    {id:"toi",icon:"🌙",name:"Tối",items:[]},
+  ],
+};
+
 export function useUserData(userId) {
   const [loaded, setLoaded] = useState(false);
 
-  // Load meal_logs + food_cache from Supabase into localStorage on login
   useEffect(() => {
     if (!userId) { setLoaded(true); return; }
     (async () => {
       try {
-        // Load today's meals
-        const today = new Date().toISOString().slice(0, 10);
-        const { data, error } = await supabase.from("meal_logs").select("*").eq("user_id", userId).eq("log_date", today);
+        // Load ALL meals for this user (fixed menu, not daily log)
+        const { data, error } = await supabase.from("meal_logs").select("*").eq("user_id", userId);
         if (error) console.error("Load meals error:", error);
         if (data && data.length > 0) {
           const trainMeals = {};
@@ -20,29 +34,11 @@ export function useUserData(userId) {
             const target = d.day_type === "train" ? trainMeals : restMeals;
             target[d.meal_id] = d.items;
           });
-          // Default meal structure (must match mealsData in App.jsx)
-          const defaultStructure = {
-            train: [
-              {id:"sang",icon:"🌅",name:"Sáng",items:[]},
-              {id:"trua",icon:"☀️",name:"Trưa",items:[]},
-              {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
-              {id:"phu2",icon:"💪",name:"Phụ 2 (pre-workout)",items:[]},
-              {id:"toi",icon:"🌙",name:"Tối",items:[]},
-            ],
-            rest: [
-              {id:"sang",icon:"🌅",name:"Sáng",items:[]},
-              {id:"trua",icon:"☀️",name:"Trưa",items:[]},
-              {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
-              {id:"toi",icon:"🌙",name:"Tối",items:[]},
-            ],
-          };
           ["train", "rest"].forEach(dt => {
             const bucket = dt === "train" ? trainMeals : restMeals;
             if (Object.keys(bucket).length > 0) {
               const key = `meals_${dt}`;
-              let existing = JSON.parse(localStorage.getItem(key) || "null");
-              // If localStorage empty, create from default structure
-              if (!existing) existing = JSON.parse(JSON.stringify(defaultStructure[dt]));
+              let existing = JSON.parse(JSON.stringify(defaultStructure[dt]));
               existing.forEach(m => { if (bucket[m.id]) m.items = bucket[m.id]; });
               localStorage.setItem(key, JSON.stringify(existing));
               console.log(`✅ Synced ${Object.keys(bucket).length} meals for ${dt} from cloud`);
@@ -54,10 +50,10 @@ export function useUserData(userId) {
         const { data: cacheData, error: cacheErr } = await supabase.from("food_cache").select("*");
         if (cacheErr) console.error("Load cache error:", cacheErr);
         if (cacheData && cacheData.length > 0) {
-          const fc = JSON.parse(localStorage.getItem("foodCache") || "{}");
+          const fc = {};
           cacheData.forEach(d => {
             const k = d.food_name.toLowerCase().trim();
-            if (!fc[k]) fc[k] = { p: Number(d.protein), c: Number(d.carb), f: Number(d.fat), fiber: Number(d.fiber), cal: Number(d.cal), gram: d.gram };
+            fc[k] = { p: Number(d.protein), c: Number(d.carb), f: Number(d.fat), fiber: Number(d.fiber), cal: Number(d.cal), gram: d.gram };
           });
           localStorage.setItem("foodCache", JSON.stringify(fc));
         }
@@ -66,7 +62,7 @@ export function useUserData(userId) {
     })();
   }, [userId]);
 
-  // Save meal to Supabase - use maybeSingle() to avoid .single() crash
+  // Save meal — fixed menu, upsert by user_id + meal_id + day_type (no date)
   const saveMealToCloud = useCallback(async (mealId, dayType, items) => {
     if (!userId) return;
     try {
@@ -74,32 +70,30 @@ export function useUserData(userId) {
       const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
       const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
       const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
-      const today = new Date().toISOString().slice(0, 10);
 
-      // Use maybeSingle() - returns null instead of throwing when no row found
-      const { data: existing, error: findErr } = await supabase.from("meal_logs")
-        .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType).eq("log_date", today)
+      // Find existing record (no date filter — fixed menu)
+      const { data: existing } = await supabase.from("meal_logs")
+        .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType)
         .maybeSingle();
-      
-      if (findErr) { console.error("Find meal error:", findErr); return; }
 
       const payload = { items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
 
       if (existing) {
         const { error } = await supabase.from("meal_logs").update(payload).eq("id", existing.id);
         if (error) console.error("Update meal error:", error);
-        else console.log("✅ Meal updated on cloud:", mealId, dayType);
+        else console.log("✅ Meal updated:", mealId, dayType);
       } else {
         const { error } = await supabase.from("meal_logs").insert({
-          user_id: userId, meal_id: mealId, day_type: dayType, log_date: today, ...payload,
+          user_id: userId, meal_id: mealId, day_type: dayType,
+          log_date: new Date().toISOString().slice(0, 10), ...payload,
         });
         if (error) console.error("Insert meal error:", error);
-        else console.log("✅ Meal saved to cloud:", mealId, dayType);
+        else console.log("✅ Meal saved:", mealId, dayType);
       }
     } catch (e) { console.error("Meal save error:", e); }
   }, [userId]);
 
-  // Save food to global cache on Supabase
+  // Save food to global cache
   const saveFoodCache = useCallback(async (foods, provider) => {
     if (!userId) return;
     for (const f of foods) {
@@ -115,7 +109,7 @@ export function useUserData(userId) {
         if (error) console.error("Food cache upsert error:", name, error);
       } catch (e) { console.error("Food cache error:", e); }
     }
-    console.log("✅ Food cache synced to cloud:", foods.length, "items");
+    console.log("✅ Food cache synced:", foods.length, "items");
   }, [userId]);
 
   return { loaded, saveMealToCloud, saveFoodCache };
