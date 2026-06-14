@@ -11,7 +11,17 @@ export function useAuth() {
       setLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const newUser = session?.user ?? null;
+      const oldUid = user?.id;
+      const newUid = newUser?.id;
+      // Clear localStorage when user changes to prevent data leaking between accounts
+      if (oldUid !== newUid) {
+        localStorage.removeItem("meals_train");
+        localStorage.removeItem("meals_rest");
+        localStorage.removeItem("weightLog");
+        localStorage.removeItem("foodCache");
+      }
+      setUser(newUser);
     });
     return () => subscription.unsubscribe();
   }, []);

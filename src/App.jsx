@@ -510,33 +510,30 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         {!mob&&<div style={{display:"grid",gridTemplateColumns:"auto 2fr 70px 80px 32px",gap:8,marginBottom:8}}>
           <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
         </div>}
-        {foodItems.map((item,i)=><div key={i} style={{marginBottom:10}}>
-          <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:mob?6:0}}>
-            <span style={{fontSize:13,fontWeight:800,color:C.t3,minWidth:22,textAlign:"center"}}>{i+1}.</span>
-            {mob?<input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,flex:1}}/>
-            :null}
+        {foodItems.map((item,i)=>mob?<div key={i} style={{marginBottom:10}}>
+          <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6}}>
+            <span style={{fontSize:13,fontWeight:800,color:C.t3,minWidth:22}}>{i+1}.</span>
+            <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,flex:1}}/>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"auto 2fr 70px 80px 32px",gap:8,alignItems:"center",...(mob?{paddingLeft:30}:{})}}>
-            {!mob&&<span style={{fontSize:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>}
-            {!mob&&<input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={inp}/>}
-            {mob?<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 32px",gap:6}}>
-              <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-                <button onClick={()=>updateFood(i,"qty",Math.max(0,item.qty-1))} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>−</button>
-                <input type="text" inputMode="numeric" value={item.qty||""} onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,"").replace(/^0+(?=\d)/,"");updateFood(i,"qty",v===""?0:Number(v));}} style={{flex:1,border:"none",textAlign:"center",fontSize:16,fontWeight:600,background:C.surface,color:C.t1,outline:"none",minWidth:0}}/>
-                <button onClick={()=>updateFood(i,"qty",item.qty+1)} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>+</button>
-              </div>
-              <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-                <button onClick={()=>updateFood(i,"gram",Math.max(0,item.gram-10))} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>−</button>
-                <input type="text" inputMode="numeric" value={item.gram||""} onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,"").replace(/^0+(?=\d)/,"");updateFood(i,"gram",v===""?0:Number(v));}} style={{flex:1,border:"none",textAlign:"center",fontSize:16,fontWeight:600,background:C.surface,color:C.t1,outline:"none",minWidth:0}}/>
-                <button onClick={()=>updateFood(i,"gram",item.gram+10)} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>+</button>
-              </div>
-              <button onClick={()=>removeFood(i)} style={{padding:0,width:32,height:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer",alignSelf:"center"}}>×</button>
-            </div>:<>
-              <input type="number" value={item.qty} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center"}} placeholder="SL"/>
-              <input type="number" value={item.gram} onChange={e=>updateFood(i,"gram",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center"}} placeholder="Gram"/>
-              <button onClick={()=>removeFood(i)} style={{padding:0,width:32,height:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
-            </>}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 32px",gap:6,paddingLeft:30}}>
+            <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden",height:40}}>
+              <button onClick={()=>updateFood(i,"qty",Math.max(0,item.qty-1))} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>−</button>
+              <input type="text" inputMode="numeric" value={item.qty||""} onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,"").replace(/^0+(?=\d)/,"");updateFood(i,"qty",v===""?0:Number(v));}} style={{flex:1,border:"none",textAlign:"center",fontSize:16,fontWeight:600,background:C.surface,color:C.t1,outline:"none",minWidth:0}}/>
+              <button onClick={()=>updateFood(i,"qty",item.qty+1)} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>+</button>
+            </div>
+            <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden",height:40}}>
+              <button onClick={()=>updateFood(i,"gram",Math.max(0,item.gram-10))} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>−</button>
+              <input type="text" inputMode="numeric" value={item.gram||""} onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,"").replace(/^0+(?=\d)/,"");updateFood(i,"gram",v===""?0:Number(v));}} style={{flex:1,border:"none",textAlign:"center",fontSize:16,fontWeight:600,background:C.surface,color:C.t1,outline:"none",minWidth:0}}/>
+              <button onClick={()=>updateFood(i,"gram",item.gram+10)} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>+</button>
+            </div>
+            <button onClick={()=>removeFood(i)} style={{padding:0,width:32,height:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer",alignSelf:"center"}}>×</button>
           </div>
+        </div>:<div key={i} style={{display:"grid",gridTemplateColumns:"auto 2fr 70px 80px 32px",gap:8,alignItems:"center",marginBottom:8}}>
+          <span style={{fontSize:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
+          <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={inp}/>
+          <input type="number" value={item.qty} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center"}} placeholder="SL"/>
+          <input type="number" value={item.gram} onChange={e=>updateFood(i,"gram",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center"}} placeholder="Gram"/>
+          <button onClick={()=>removeFood(i)} style={{padding:0,width:32,height:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
         </div>)}
         <button onClick={addFood} style={{padding:"10px",fontSize:13,fontWeight:700,background:C.surface,color:C.t2,border:`2px dashed ${C.border}`,borderRadius:10,width:"100%",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm món</button>
       </div>
