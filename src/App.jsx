@@ -39,20 +39,19 @@ function Pill({active,color=C.red,children,onClick}){
 
 const mealsData={
   train:[
-    {id:"sang",icon:"🌅",name:"Sáng",items:[{food:"Trứng gà luộc ×3",gram:150,p:18.6,c:1.1,f:15,fiber:0,cal:234},{food:"Chuối",gram:120,p:1.3,c:27,f:0.4,fiber:2.6,cal:105},{food:"Khoai lang luộc",gram:100,p:1.6,c:20,f:0.1,fiber:3,cal:86}]},
-    {id:"trua",icon:"☀️",name:"Trưa",items:[{food:"Cơm trắng (2 bát)",gram:340,p:5.4,c:88,f:1,fiber:0.6,cal:442},{food:"Cá kho",gram:250,p:42,c:2.5,f:10,fiber:0,cal:268},{food:"Rau luộc",gram:100,p:2,c:5,f:0.3,fiber:3,cal:35}]},
-    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[{food:"Lạc rang",gram:60,p:15.5,c:10,f:29.5,fiber:2.5,cal:340}]},
-    {id:"phu2",icon:"💪",name:"Phụ 2 (pre-workout)",items:[{food:"Chuối to ×2",gram:250,p:2.6,c:54,f:0.8,fiber:5.2,cal:220}]},
-    {id:"toi",icon:"🌙",name:"Tối",items:[{food:"Cơm (1.5 bát)",gram:255,p:4.1,c:66,f:0.8,fiber:0.5,cal:332},{food:"Thịt kho",gram:200,p:36,c:3,f:8,fiber:0,cal:228},{food:"Rau xanh",gram:100,p:2.5,c:6,f:0.3,fiber:3,cal:40}]},
+    {id:"sang",icon:"🌅",name:"Sáng",items:[]},
+    {id:"trua",icon:"☀️",name:"Trưa",items:[]},
+    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
+    {id:"phu2",icon:"💪",name:"Phụ 2 (pre-workout)",items:[]},
+    {id:"toi",icon:"🌙",name:"Tối",items:[]},
   ],
   rest:[
-    {id:"sang",icon:"🌅",name:"Sáng",items:[{food:"Trứng gà luộc ×3",gram:150,p:18.6,c:1.1,f:15,fiber:0,cal:234},{food:"Chuối",gram:120,p:1.3,c:27,f:0.4,fiber:2.6,cal:105},{food:"Khoai lang luộc",gram:100,p:1.6,c:20,f:0.1,fiber:3,cal:86}]},
-    {id:"trua",icon:"☀️",name:"Trưa",items:[{food:"Cơm (1.5 bát)",gram:255,p:4.1,c:66,f:0.8,fiber:0.5,cal:332},{food:"Cá kho",gram:250,p:42,c:2.5,f:10,fiber:0,cal:268},{food:"Rau luộc",gram:100,p:2,c:5,f:0.3,fiber:3,cal:35}]},
-    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[{food:"Lạc rang",gram:60,p:15.5,c:10,f:29.5,fiber:2.5,cal:340}]},
-    {id:"toi",icon:"🌙",name:"Tối",items:[{food:"Cơm (1 bát)",gram:170,p:2.7,c:44,f:0.5,fiber:0.3,cal:221},{food:"Thịt kho",gram:200,p:36,c:3,f:8,fiber:0,cal:228},{food:"Rau xanh",gram:100,p:2.5,c:6,f:0.3,fiber:3,cal:40}]},
+    {id:"sang",icon:"🌅",name:"Sáng",items:[]},
+    {id:"trua",icon:"☀️",name:"Trưa",items:[]},
+    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
+    {id:"toi",icon:"🌙",name:"Tối",items:[]},
   ],
 };
-const initWeightLog=[{week:1,date:"22/05/2026",kg:63.0,delta:null},{week:2,date:"29/05/2026",kg:63.3,delta:0.3},{week:3,date:"05/06/2026",kg:63.5,delta:0.2},{week:4,date:"12/06/2026",kg:64.0,delta:0.5}];
 const getMeals=(type)=>{const saved=localStorage.getItem(`meals_${type}`);return saved?JSON.parse(saved):mealsData[type];};
 const wColors=["#DC2626","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
 function fmtDate(d){const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear();return `${dd}/${mm}/${yy}`;}
@@ -932,7 +931,7 @@ function LoginScreen({onLogin}){
   </div>;
 }
 
-function calcMacro(p){if(!p)p={cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"};
+function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"};
   const bmr=10*p.kg+6.25*p.cm-5*p.age+5;
   const jobBase=p.activity==="sedentary"?1.2:p.activity==="moderate"?1.5:1.75;
   const gymBonus=p.gym<=2?0.1:p.gym<=4?0.2:0.3;
@@ -977,7 +976,7 @@ function calcMacro(p){if(!p)p={cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bul
   return{tdee,calTarget:calActual,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal,fatPct:Math.round(fat*9/calActual*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
 }
 
-const defaultProfile={cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"};
+const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"};
 
 export default function App(){
   const {user,loading,signOut}=useAuth();
@@ -985,7 +984,7 @@ export default function App(){
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,saveMealToCloud,saveFoodCache}=useUserData(user?.id);
-  const macro=calcMacro(profile||{cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary"});
+  const macro=calcMacro(profile||{cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"});
   const mob=useIsMobile();
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
