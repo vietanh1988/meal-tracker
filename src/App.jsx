@@ -508,15 +508,20 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         {mealNames.map(m=><Pill key={m.id} active={selectedMeal===m.id} color={C.gold} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}}>{m.l}</Pill>)}
       </div>
       <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14}}>
-        {!mob&&<div style={{display:"flex",gap:6,marginBottom:8,alignItems:"center"}}>
-          <span style={{...lbl,minWidth:20}}>#</span><span style={{...lbl,flex:"2 1 0"}}>Tên thức ăn</span><span style={{...lbl,width:70,textAlign:"center"}}>SL</span><span style={{...lbl,width:80,textAlign:"center"}}>Gram</span><span style={{width:32}}/>
+        {!mob&&<div style={{display:"grid",gridTemplateColumns:"auto 2fr 70px 80px 32px",gap:8,marginBottom:8}}>
+          <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
         </div>}
-        {foodItems.map((item,i)=><div key={i} style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8,alignItems:"center"}}>
-          <span style={{fontSize:13,fontWeight:800,color:C.t3,minWidth:20,textAlign:"center"}}>{i+1}.</span>
-          <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,flex:mob?"1 1 calc(100% - 56px)":"2 1 0"}}/>
-          <input type="number" value={item.qty} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center",width:mob?60:70,flex:"none"}} placeholder="SL"/>
-          <input type="number" value={item.gram} onChange={e=>updateFood(i,"gram",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center",width:mob?70:80,flex:"none"}} placeholder="g"/>
-          <button onClick={()=>removeFood(i)} style={{padding:0,width:32,height:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
+        {foodItems.map((item,i)=><div key={i} style={{marginBottom:10}}>
+          {mob&&<div style={{fontSize:12,fontWeight:800,color:C.t3,marginBottom:4}}>{i+1}.</div>}
+          <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"auto 2fr 70px 80px 32px",gap:8,alignItems:"center"}}>
+            {!mob&&<span style={{fontSize:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>}
+            <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={inp}/>
+            <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr 32px":"70px 80px 32px",gap:8}}>
+              <input type="number" value={item.qty} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center"}} placeholder="SL"/>
+              <input type="number" value={item.gram} onChange={e=>updateFood(i,"gram",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center"}} placeholder="Gram"/>
+              <button onClick={()=>removeFood(i)} style={{padding:0,width:32,height:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
+            </div>
+          </div>
         </div>)}
         <button onClick={addFood} style={{padding:"10px",fontSize:13,fontWeight:700,background:C.surface,color:C.t2,border:`2px dashed ${C.border}`,borderRadius:10,width:"100%",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm món</button>
       </div>
