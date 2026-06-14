@@ -25,7 +25,7 @@ const C = {
 };
 const card={background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"16px 18px",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"};
 const lbl={fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase"};
-const inp={width:"100%",boxSizing:"border-box",padding:"10px 12px",fontSize:14,fontWeight:600,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,color:C.t1,outline:"none",fontFamily:"inherit"};
+const inp={width:"100%",boxSizing:"border-box",padding:"10px 12px",fontSize:16,fontWeight:600,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,color:C.t1,outline:"none",fontFamily:"inherit"};
 const redBtn={padding:"12px",fontSize:14,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#DC2626,#B91C1C)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%"};
 
 function Pill({active,color=C.red,children,onClick}){
@@ -220,7 +220,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
     <span style={{fontWeight:800,color:wColors[i%wColors.length]}}>T{w.week}</span>
     <span style={{fontWeight:600,color:C.t2,fontSize:11}}>{w.date}</span>
     {editing
-      ?<input type="number" step="0.1" value={editVal} onChange={e=>setEditVal(Number(e.target.value))} style={{padding:"4px 6px",fontSize:12,textAlign:"right",border:`1.5px solid ${C.border}`,borderRadius:6,background:C.surface,color:C.t1,outline:"none",width:"100%",boxSizing:"border-box"}}/>
+      ?<input type="text" inputMode="decimal" value={editVal} onChange={e=>{const v=e.target.value.replace(/[^0-9.]/g,"");setEditVal(v===""?0:Number(v));}} style={{padding:"4px 6px",fontSize:16,textAlign:"right",border:`1.5px solid ${C.border}`,borderRadius:6,background:C.surface,color:C.t1,outline:"none",width:"100%",boxSizing:"border-box"}}/>
       :<span style={{color:C.t1,fontWeight:900,textAlign:"right"}}>{w.kg}</span>
     }
     <span style={{color:w.delta?w.delta>0?C.green:C.red:C.t3,fontWeight:700,fontSize:12,textAlign:"right"}}>{w.delta?`${w.delta>0?"+":""}${w.delta}`:"-"}</span>
@@ -513,8 +513,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         </div>}
         {foodItems.map((item,i)=><div key={i} style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
           <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,flex:mob?"1 1 100%":"2 1 0"}}/>
-          <input type="number" value={item.qty} onChange={e=>updateFood(i,"qty",Number(e.target.value))} style={{...inp,textAlign:"center",flex:"1 1 0",minWidth:60}} placeholder="SL"/>
-          <input type="number" value={item.gram} onChange={e=>updateFood(i,"gram",Number(e.target.value))} style={{...inp,textAlign:"center",flex:"1 1 0",minWidth:60}} placeholder="Gram"/>
+          <input type="text" inputMode="numeric" value={item.qty} onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,"");updateFood(i,"qty",v===""?0:Number(v));}} style={{...inp,textAlign:"center",flex:"1 1 0",minWidth:60}} placeholder="SL"/>
+          <input type="text" inputMode="numeric" value={item.gram} onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,"");updateFood(i,"gram",v===""?0:Number(v));}} style={{...inp,textAlign:"center",flex:"1 1 0",minWidth:60}} placeholder="Gram"/>
           <button onClick={()=>removeFood(i)} style={{padding:0,width:36,height:40,background:C.redBg,color:C.red,borderRadius:10,fontSize:18,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
         </div>)}
         <button onClick={addFood} style={{padding:"10px",fontSize:13,fontWeight:700,background:C.surface,color:C.t2,border:`2px dashed ${C.border}`,borderRadius:10,width:"100%",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm món</button>
@@ -590,19 +590,19 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:12}}>
         <div>
           <div style={{...lbl,marginBottom:6}}>Chiều cao (cm)</div>
-          <input type="number" value={profile.cm} onChange={e=>setProfile({...profile,cm:Number(e.target.value)})} style={inp}/>
+          <input type="text" inputMode="numeric" value={profile.cm} onChange={e=>setProfile({...profile,cm:Number(e.target.value)})} style={inp}/>
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Cân nặng hiện tại (kg)</div>
-          <input type="number" value={profile.kg} onChange={e=>setProfile({...profile,kg:Number(e.target.value)})} style={inp}/>
+          <input type="text" inputMode="decimal" value={profile.kg} onChange={e=>setProfile({...profile,kg:Number(e.target.value)})} style={inp}/>
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Tuổi</div>
-          <input type="number" value={profile.age} onChange={e=>setProfile({...profile,age:Number(e.target.value)})} style={inp}/>
+          <input type="text" inputMode="numeric" value={profile.age} onChange={e=>setProfile({...profile,age:Number(e.target.value)})} style={inp}/>
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Số buổi gym/tuần</div>
-          <input type="number" value={profile.gym} onChange={e=>setProfile({...profile,gym:Number(e.target.value)})} style={inp}/>
+          <input type="text" inputMode="numeric" value={profile.gym} onChange={e=>setProfile({...profile,gym:Number(e.target.value)})} style={inp}/>
         </div>
       </div>
 
@@ -651,11 +651,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:12,marginTop:16}}>
         <div>
           <div style={{...lbl,marginBottom:6}}>Cân nặng mục tiêu (kg)</div>
-          <input type="number" value={profile.goalKg} onChange={e=>setProfile({...profile,goalKg:Number(e.target.value)})} style={inp}/>
+          <input type="text" inputMode="decimal" value={profile.goalKg} onChange={e=>setProfile({...profile,goalKg:Number(e.target.value)})} style={inp}/>
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Thời gian (tháng)</div>
-          <input type="number" value={profile.months} onChange={e=>setProfile({...profile,months:Math.max(1,Number(e.target.value))})} style={inp}/>
+          <input type="text" inputMode="numeric" value={profile.months} onChange={e=>setProfile({...profile,months:Math.max(1,Number(e.target.value))})} style={inp}/>
         </div>
       </div>}
 
@@ -797,7 +797,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Cân nặng (kg)</div>
-          <input id="weightInput" type="number" step="0.1" placeholder="VD: 64.3" style={inp}/>
+          <input id="weightInput" type="text" inputMode="decimal" placeholder="VD: 64.3" style={inp}/>
         </div>
         <button onClick={async()=>{
           const val=parseFloat(document.getElementById("weightInput").value);
