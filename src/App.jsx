@@ -155,7 +155,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
   const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=((curKg-profile.kg)/(goalKg-profile.kg))*100;
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
-  const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"●":actualCal<heroCal*0.95?"▲":"●";
+  const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
   return <div>
     {/* Hero */}
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
@@ -192,8 +192,8 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
-      <Pill active={dayType==="train"} color={C.red} onClick={()=>setDayType("train")}>▲ Ngày tập</Pill>
-      <Pill active={dayType==="rest"} color={C.green} onClick={()=>setDayType("rest")}>▽ Ngày nghỉ</Pill>
+      <Pill active={dayType==="train"} color={C.red} onClick={()=>setDayType("train")}>💪 Ngày tập</Pill>
+      <Pill active={dayType==="rest"} color={C.green} onClick={()=>setDayType("rest")}>😴 Ngày nghỉ</Pill>
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
@@ -210,7 +210,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
           ?"✓ Thực đơn phù hợp với mục tiêu!"
           :actualCal<heroCal*0.95
           ?`⚠ Thiếu ${heroCal-actualCal} kcal (${100-Math.round(actualCal/heroCal*100)}%). Bổ sung thêm thức ăn.`
-          :`● Thừa ${actualCal-heroCal} kcal (+${Math.round(actualCal/heroCal*100)-100}%). Giảm bớt khẩu phần.`
+          :`🔴 Thừa ${actualCal-heroCal} kcal (+${Math.round(actualCal/heroCal*100)-100}%). Giảm bớt khẩu phần.`
         }
         {actualP<heroP*0.9&&` | Protein thiếu ${heroP-actualP}g.`}
       </div>
@@ -229,8 +229,8 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
     {/* Weight */}
     <div style={{...card,marginTop:6,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#EAB308) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{fontSize:17,fontWeight:900,color:C.blue}}>Theo dõi cân nặng</div>
-        <div style={{fontSize:13,fontWeight:700,color:C.t2}}>● <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
+        <div style={{fontSize:17,fontWeight:900,color:C.blue}}>📈 Theo dõi cân nặng</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:12,overflowX:"auto",flexWrap:mob?"wrap":"nowrap"}}>
         {weightLog.slice(-4).map((w,i)=>{const ci=weightLog.indexOf(w);return(
@@ -489,21 +489,21 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
   },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey]);
 
   const mealNames=dayType==="train"
-    ?[{id:"sang",l:"Sáng"},{id:"trua",l:"Trưa"},{id:"phu1",l:"Phụ 1"},{id:"phu2",l:"Phụ 2"},{id:"toi",l:"Tối"}]
-    :[{id:"sang",l:"Sáng"},{id:"trua",l:"Trưa"},{id:"phu1",l:"Phụ 1"},{id:"toi",l:"Tối"}];
+    ?[{id:"sang",l:"🌅 Sáng"},{id:"trua",l:"☀️ Trưa"},{id:"phu1",l:"☕ Phụ 1"},{id:"phu2",l:"💪 Phụ 2"},{id:"toi",l:"🌙 Tối"}]
+    :[{id:"sang",l:"🌅 Sáng"},{id:"trua",l:"☀️ Trưa"},{id:"phu1",l:"☕ Phụ 1"},{id:"toi",l:"🌙 Tối"}];
 
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
 
   return <div>
     <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[{id:"meals",l:"Bữa ăn"},{id:"ai",l:"Kết nối AI"},{id:"profile",l:"Hồ sơ"},{id:"schedule",l:"Lịch tập"},{id:"weight",l:"Cân nặng"}].map(s=>
+      {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
       )}
     </div>
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>Kết nối AI</div>
+      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>🤖 Kết nối AI</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Chọn AI provider và model để tính macro</div>
 
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,padding:"12px 16px",background:aiConnected?C.greenBg:C.redBg,borderRadius:10,border:`1.5px solid ${aiConnected?C.green:C.red}`}}>
@@ -647,7 +647,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             const d=await r.json();setAiConnected(!d.error);
           }
         }catch{setAiConnected(false);}
-      }} style={redBtn}>Test kết nối {providerName}</button>
+      }} style={redBtn}>🔌 Test kết nối {providerName}</button>
 
       <div style={{marginTop:16,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
         <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Kết quả AI được cache — cùng 1 món không cần gọi lần 2. Trong Claude.ai có thể để trống API key. Deploy ra ngoài thì bắt buộc nhập key.</span>
@@ -661,8 +661,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         Nhập thức ăn → nhấn "Tính macro" → <span style={{fontWeight:800,color:aiProvider==="claude"?"#DC2626":aiProvider==="gemini"?"#1D4ED8":"#15803D"}}>{providerName}</span> trả kết quả
       </div>
       <div style={{display:"flex",gap:6,marginBottom:12}}>
-        <Pill active={dayType==="train"} color={C.red} onClick={()=>{setDayType("train");setAiResult(null);}}>▲ Ngày tập</Pill>
-        <Pill active={dayType==="rest"} color={C.green} onClick={()=>{setDayType("rest");setAiResult(null);}}>▽ Ngày nghỉ</Pill>
+        <Pill active={dayType==="train"} color={C.red} onClick={()=>{setDayType("train");setAiResult(null);}}>💪 Ngày tập</Pill>
+        <Pill active={dayType==="rest"} color={C.green} onClick={()=>{setDayType("rest");setAiResult(null);}}>😴 Ngày nghỉ</Pill>
       </div>
       <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
         {mealNames.map(m=><Pill key={m.id} active={selectedMeal===m.id} color={C.gold} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}}>{m.l}</Pill>)}
@@ -751,7 +751,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             // DOM approach — immune to React re-render (same as profile-saved)
             const el=document.getElementById("meal-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
+        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
         <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu thành công!</span>
         </div>
@@ -786,9 +786,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <div style={{...lbl,marginBottom:8}}>Mức vận động công việc</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {[
-            {id:"sedentary",icon:"○",name:"Ít vận động",desc:"Ngồi văn phòng, ít đi lại",mul:"1.2"},
-            {id:"moderate",icon:"△",name:"Vận động vừa",desc:"Đi lại nhiều, công việc nhẹ",mul:"1.5"},
-            {id:"active",icon:"□",name:"Vận động nặng",desc:"Lao động chân tay, bốc vác",mul:"1.75"},
+            {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng, ít đi lại",mul:"1.2"},
+            {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều, công việc nhẹ",mul:"1.5"},
+            {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay, bốc vác",mul:"1.75"},
           ].map(a=><div key={a.id} onClick={()=>setProfile({...profile,activity:a.id})} style={{
             flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
             background:profile.activity===a.id?C.blueBg:C.surface,
@@ -807,9 +807,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <div style={{...lbl,marginBottom:8}}>Mục tiêu</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {[
-            {id:"bulk",icon:"▲",name:"Tăng cơ",desc:"P 2g · C 4g · F 0.8g/kg",c:C.red},
+            {id:"bulk",icon:"💪",name:"Tăng cơ",desc:"P 2g · C 4g · F 0.8g/kg",c:C.red},
             {id:"cut",icon:"▼",name:"Giảm mỡ",desc:"P 2.3g · C 2.5g · F 0.8g/kg",c:"#B45309"},
-            {id:"maintain",icon:"=",name:"Duy trì",desc:"P 1.8g · C 3.5g · F 0.8g/kg",c:C.green},
+            {id:"maintain",icon:"⚖️",name:"Duy trì",desc:"P 1.8g · C 3.5g · F 0.8g/kg",c:C.green},
           ].map(g=><div key={g.id} onClick={()=>setProfile({...profile,goalType:g.id})} style={{
             flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
             background:profile.goalType===g.id?`${g.c}11`:C.surface,
@@ -837,7 +837,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       {/* Timeline plan */}
       {profile.goalType!=="maintain"&&Math.abs(macro.diff)>0&&<div style={{marginTop:16,background:profile.goalType==="bulk"?C.redBg:C.goldBg,borderRadius:12,padding:"14px 16px",border:`2px solid ${profile.goalType==="bulk"?C.red:"#B45309"}`}}>
         <div style={{fontSize:14,fontWeight:900,color:profile.goalType==="bulk"?C.red:"#B45309",marginBottom:10}}>
-          Kế hoạch {profile.goalType==="bulk"?"tăng cân":"giảm cân"}
+          📋 Kế hoạch {profile.goalType==="bulk"?"tăng cân":"giảm cân"}
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
           <div style={{background:C.card,borderRadius:10,padding:"10px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
@@ -883,7 +883,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <button onClick={()=>{
           const el=document.getElementById("profile-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-        }} style={{...redBtn,marginBottom:12}}>Lưu hồ sơ & Tính macro</button>
+        }} style={{...redBtn,marginBottom:12}}> 💾 Lưu hồ sơ & Tính macro</button>
         <div id="profile-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:12}}>
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu hồ sơ! Dashboard đã cập nhật macro mới.</span>
         </div>
@@ -950,7 +950,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <button onClick={()=>{
           const el=document.getElementById("schedule-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-        }} style={{...redBtn,marginTop:20}}>Lưu lịch tập</button>
+        }} style={{...redBtn,marginTop:20}}>💾 Lưu lịch tập</button>
         <div id="schedule-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu! Tập {days.length} buổi/tuần — {days.map(d=>["T2","T3","T4","T5","T6","T7","CN"][d]).join(", ")}</span>
         </div>
@@ -1040,7 +1040,7 @@ function LoginScreen({onLogin}){
       if(mode==="register"){
         if(!email.trim()||!email.includes("@")){setErr("Vui lòng nhập email hợp lệ");return;}
         await signUp(email,pass,user.trim());
-        setSuccess(`✓ Đăng ký thành công! Tài khoản "${user.trim()}" đã được kích hoạt.`);
+        setSuccess(`✅ Đăng ký thành công! Tài khoản "${user.trim()}" đã được kích hoạt.`);
         setTimeout(()=>onLogin(user.trim()),1500);
       }else{
         await signIn(email||user,pass);
@@ -1052,7 +1052,7 @@ function LoginScreen({onLogin}){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
     <div style={{width:"100%",maxWidth:400}}>
       <div style={{textAlign:"center",marginBottom:32}}>
-        <div style={{width:64,height:64,background:"#111",borderRadius:16,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:32}}>M</div>
+        <div style={{width:64,height:64,background:"#111",borderRadius:16,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:32}}>🏋️</div>
         <div style={{fontSize:24,fontWeight:900,color:"#111",marginTop:12,letterSpacing:"-0.02em"}}>MEAL TRACKER</div>
         <div style={{fontSize:13,fontWeight:700,color:C.red,marginTop:2}}>Phát triển bởi Việt Anh Seoer</div>
       </div>
@@ -1146,14 +1146,14 @@ export default function App(){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"0 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:C.bg,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 4px)",paddingBottom:8,paddingLeft:"max(10px, env(safe-area-inset-left, 10px))",paddingRight:"max(10px, env(safe-area-inset-right, 10px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
-        <div style={{width:mob?28:42,height:mob?28:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>M</div>
+        <div style={{width:mob?28:42,height:mob?28:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>🏋️</div>
         <div>
           <div style={{fontSize:mob?13:20,fontWeight:900,letterSpacing:"-0.02em",color:"#111"}}>MEAL TRACKER</div>
           <div style={{fontSize:mob?8:12,fontWeight:700,color:C.red}}>Phát triển bởi Việt Anh Seoer</div>
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
-        <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div>
+        <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1}}>👤 {user.user_metadata?.username||user.email}</div>
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:C.redBg,color:C.red,border:`1.5px solid ${C.red}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>
