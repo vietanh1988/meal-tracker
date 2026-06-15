@@ -157,6 +157,12 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
   const canvasRef=useRef(null);
   const chartRef=useRef(null);
 
+  // Compute chart height based on data range
+  const data0=weightLog.map(w=>w.kg);
+  const allVals0=[...data0,goalKg,startKg];
+  const yRange0=Math.ceil(Math.max(...allVals0))+1-(Math.floor(Math.min(...allVals0))-1);
+  const chartH=mob?(yRange0>6?220:190):(yRange0>6?280:240);
+
   useEffect(()=>{
     if(!canvasRef.current||weightLog.length<2||!window.ChartJS)return;
     if(chartRef.current)chartRef.current.destroy();
@@ -184,6 +190,10 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
     const allVals=[...data,goalKg,startKg];
     const yMin=Math.floor(Math.min(...allVals))-1;
     const yMax=Math.ceil(Math.max(...allVals))+1;
+    const yRange=yMax-yMin;
+    const stepSize=yRange>6?2:1;
+    // Dynamic chart height based on range
+    const chartH=mob?(yRange>6?220:190):(yRange>6?280:240);
 
     // Dynamic bar sizing
     const n=data.length;
@@ -245,7 +255,7 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
         }},
         scales:{
           y:{min:yMin,max:yMax,grid:{color:"rgba(0,0,0,0.06)",drawBorder:false},border:{display:false},
-            ticks:{color:"rgba(0,0,0,0.35)",font:{size:mob?9:11},callback:v=>v+" kg",stepSize:1,padding:4}},
+            ticks:{color:"rgba(0,0,0,0.35)",font:{size:mob?9:11},callback:v=>v+" kg",stepSize,padding:4}},
           x:{grid:{display:false},border:{display:false},ticks:{color:"rgba(0,0,0,0.35)",font:{size:mob?9:11},padding:4}}
         }
       },
@@ -256,7 +266,7 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
   },[weightLog,goalKg,goalType,startKg,mob]);
 
   return <div>
-    <div style={{position:"relative",width:"100%",height:mob?190:240}}>
+    <div style={{position:"relative",width:"100%",height:chartH}}>
       <canvas ref={canvasRef}/>
     </div>
     <div style={{display:"flex",flexWrap:"wrap",gap:mob?8:14,justifyContent:"center",marginTop:6,fontSize:mob?9:11,color:"#888"}}>
@@ -486,10 +496,10 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
 
       {/* Bar chart */}
       {weightLog.length>=2&&<WeightBarChart weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} mob={mob}/>}
-
-      {/* Smart suggestions */}
-      <WeightSuggestion weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} curKg={curKg}/>
     </div>
+
+    {/* Smart suggestions — outside chart card */}
+    <WeightSuggestion weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} curKg={curKg}/>
   </div>;
 }
 
