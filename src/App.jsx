@@ -539,11 +539,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6}}>
             <span style={{fontSize:13,fontWeight:800,color:C.t3,minWidth:22}}>{i+1}.</span>
             <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,flex:1}}/>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"auto 1fr 1fr 32px",gap:6,paddingLeft:30}}>
-            <select value={item.unit||"g"} onChange={e=>updateFood(i,"unit",e.target.value)} style={{...inp,padding:"8px 2px",fontSize:13,textAlign:"center",borderRadius:10}}>
-              <option value="g">g</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="ml">ml</option><option value="lát">lát</option><option value="bát">bát</option><option value="muỗng">muỗng</option>
+            <select value={item.unit||"g"} onChange={e=>updateFood(i,"unit",e.target.value)} style={{...inp,padding:"8px 4px",fontSize:13,textAlign:"center",borderRadius:10,width:52,flex:"none"}}>
+              <option value="g">g</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="ml">ml</option><option value="lát">lát</option><option value="bát">bát</option>
             </select>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 32px",gap:6,paddingLeft:30}}>
             <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden",height:40}}>
               <button onClick={()=>updateFood(i,"qty",Math.max(0,item.qty-1))} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>−</button>
               <input type="text" inputMode="numeric" value={item.qty||""} onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,"").replace(/^0+(?=\d)/,"");updateFood(i,"qty",v===""?0:Number(v));}} style={{flex:1,border:"none",textAlign:"center",fontSize:16,fontWeight:600,background:C.surface,color:C.t1,outline:"none",minWidth:0}}/>
