@@ -540,18 +540,24 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       <div style={{...lbl,marginBottom:8}}>Chọn AI Provider</div>
       <div style={{display:"flex",flexDirection:mob?"column":"row",gap:8,marginBottom:20}}>
         {[
-          {id:"claude",name:"Claude",icon:"●",desc:"Anthropic"},
-          {id:"gemini",name:"Gemini",icon:"●",desc:"Google"},
-          {id:"gpt",name:"GPT",icon:"●",desc:"OpenAI"},
-        ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");}} style={{
+          {id:"claude",name:"Claude",desc:"Anthropic"},
+          {id:"gemini",name:"Gemini",desc:"Google"},
+          {id:"gpt",name:"GPT",desc:"OpenAI"},
+        ].map(p=>{
+          const logos={
+            claude:<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#D97706"/><text x="14" y="15" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="16" fontWeight="900" fontFamily="serif">C</text></svg>,
+            gemini:<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#4285F4"/><path d="M14 4 C20 10, 20 18, 14 24 C8 18, 8 10, 14 4Z" fill="#fff" opacity="0.9"/></svg>,
+            gpt:<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#10A37F"/><text x="14" y="15" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="11" fontWeight="900">GPT</text></svg>,
+          };
+          return <div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");}} style={{
           flex:1,padding:"14px 12px",borderRadius:12,cursor:"pointer",textAlign:"center",
           background:aiProvider===p.id?C.redBg:C.surface,
           border:aiProvider===p.id?`2.5px solid ${C.red}`:`1.5px solid ${C.border}`,
         }}>
-          <div style={{fontSize:24}}>{p.icon}</div>
+          <div style={{display:"flex",justifyContent:"center"}}>{logos[p.id]}</div>
           <div style={{fontSize:14,fontWeight:900,color:C.t1,marginTop:4}}>{p.name}</div>
           <div style={{fontSize:11,fontWeight:600,color:C.t3}}>{p.desc}</div>
-        </div>)}
+        </div>;})}
       </div>
 
       {/* Model select for Claude */}
