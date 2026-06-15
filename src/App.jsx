@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
@@ -298,8 +298,14 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
 
   useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);localStorage.setItem("usdaKey",usdaKey);},[aiProvider,claudeKey,geminiKey,gptKey,usdaKey]);
 
-  // Load saved items when switching meal or dayType
+  // Track previous meal/dayType to only reset when user actually switches
+  const prevMealRef=useRef({selectedMeal,dayType});
   useEffect(()=>{
+    const prev=prevMealRef.current;
+    const userSwitched=prev.selectedMeal!==selectedMeal||prev.dayType!==dayType;
+    prevMealRef.current={selectedMeal,dayType};
+    // Only reload food items and reset AI when user switches meal/dayType
+    if(!userSwitched) return;
     const meals=getMeals(dayType);
     const meal=meals.find(m=>m.id===selectedMeal);
     if(meal&&meal.items&&meal.items.length>0){
