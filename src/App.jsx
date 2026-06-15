@@ -52,7 +52,7 @@ const mealsData={
     {id:"toi",icon:"🌙",name:"Tối",items:[]},
   ],
 };
-const getMeals=(type)=>{const saved=localStorage.getItem(`meals_${type}`);return saved?JSON.parse(saved):mealsData[type];};
+const getMealsDefault=(type)=>mealsData[type];
 const wColors=["#DC2626","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
 function fmtDate(d){const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear();return `${dd}/${mm}/${yy}`;}
 
@@ -119,7 +119,7 @@ function MealCard({meal}){
   </div>;
 }
 
-function Dashboard({weightLog,profile,macro}){if(!profile||!macro)return null;
+function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)return null;
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
   const meals=getMeals(dayType);
@@ -271,7 +271,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,getMeals,foodCache}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState("meals");
   const [dayType,setDayType]=useState("train");
@@ -319,7 +319,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
   const callAI=useCallback(async()=>{
     if(foodItems.length===0||foodItems.every(f=>!f.name.trim()))return;
     setAiLoading(true);setAiError(null);setAiResult(null);
-    const fc=JSON.parse(localStorage.getItem("foodCache")||"{}");
+    const fc=foodCache||{};
     const validItems=foodItems.filter(f=>f.name.trim());
     const cached=[];const uncached=[];
     validItems.forEach(f=>{const k=f.name.toLowerCase().trim();if(fc[k]){const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";const r=isWeight?(f.gram/(fc[k].gram||100)):f.qty;cached.push({name:f.name,gram:isWeight?f.gram:0,unit,qty_display:isWeight?null:`${f.qty} ${unit}`,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r)});}else{uncached.push(f);}});
@@ -363,11 +363,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       const newItems=[...cached,...(parsed.items||[])];
       parsed.items.forEach(it=>{const k=(it.name||"").toLowerCase().trim();if(k)fc[k]={p:it.protein,c:it.carb,f:it.fat,fiber:it.fiber,cal:it.cal,gram:it.gram};});
-      localStorage.setItem("foodCache",JSON.stringify(fc));
       setAiResult({items:newItems,tip:parsed.tip||(cached.length>0?`📦 ${cached.length} món từ cache`:"")});
     }catch(err){setAiError(err.message||"Lỗi kết nối AI");console.error(err);}
     finally{setAiLoading(false);}
-  },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel]);
+  },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache]);
 
   const mealNames=dayType==="train"
     ?[{id:"sang",l:"🌅 Sáng"},{id:"trua",l:"☀️ Trưa"},{id:"phu1",l:"☕ Phụ 1"},{id:"phu2",l:"💪 Phụ 2"},{id:"toi",l:"🌙 Tối"}]
@@ -596,21 +595,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>💡 {aiResult.tip}</span>
         </div>}
         <button onClick={()=>{
-          const key=`meals_${dayType}`;
-          const saved=JSON.parse(localStorage.getItem(key)||"null")||mealsData[dayType];
-          const mealIdx=saved.findIndex(m=>m.id===selectedMeal);
-          if(mealIdx>=0){
             const items=aiResult.items.map(it=>({food:it.name,gram:it.gram||0,unit:it.unit||"g",qty_display:it.qty_display||null,p:it.protein||0,c:it.carb||0,f:it.fat||0,fiber:it.fiber||0,cal:it.cal||0}));
-            saved[mealIdx].items=items;
-            localStorage.setItem(key,JSON.stringify(saved));
-            const fc=JSON.parse(localStorage.getItem("foodCache")||"{}");
-            aiResult.items.forEach(it=>{const k=(it.name||"").toLowerCase().trim();if(k)fc[k]={p:it.protein,c:it.carb,f:it.fat,fiber:it.fiber,cal:it.cal,gram:it.gram};});
-            localStorage.setItem("foodCache",JSON.stringify(fc));
             saveMealToCloud(selectedMeal,dayType,items);
             saveFoodCache(aiResult.items,aiProvider);
             const el=document.getElementById("meal-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-          }
         }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
         <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ Đã lưu! Dashboard sẽ cập nhật khi reload.</span>
@@ -997,7 +986,7 @@ export default function App(){
   const [tab,setTab]=useState("dashboard");
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
-  const {loaded:userDataLoaded,saveMealToCloud,saveFoodCache}=useUserData(user?.id);
+  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,foodCache,saveMealToCloud,saveFoodCache}=useUserData(user?.id);
   const macro=calcMacro(profile||{cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"});
   const mob=useIsMobile();
 
@@ -1025,6 +1014,6 @@ export default function App(){
         }}>{t.l}</button>
       )}
     </div>
-    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} />}
+    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} getMeals={getMeals} foodCache={foodCache}/>}
   </div>;
 }

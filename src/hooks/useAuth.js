@@ -6,29 +6,11 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let currentUid = null;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      currentUid = session?.user?.id ?? null;
       setUser(session?.user ?? null);
       setLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      const newUid = session?.user?.id ?? null;
-      // Clear localStorage only when switching between different logged-in users
-      if (currentUid && newUid && currentUid !== newUid) {
-        localStorage.removeItem("meals_train");
-        localStorage.removeItem("meals_rest");
-        localStorage.removeItem("foodCache");
-        console.log("🔄 Switched user, cleared local cache");
-      }
-      // Clear on explicit sign out
-      if (event === "SIGNED_OUT") {
-        localStorage.removeItem("meals_train");
-        localStorage.removeItem("meals_rest");
-        localStorage.removeItem("foodCache");
-        console.log("🔄 Signed out, cleared local cache");
-      }
-      currentUid = newUid;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
