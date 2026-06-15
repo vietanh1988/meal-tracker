@@ -210,7 +210,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
           ?"✓ Thực đơn phù hợp với mục tiêu!"
           :actualCal<heroCal*0.95
           ?`⚠ Thiếu ${heroCal-actualCal} kcal (${100-Math.round(actualCal/heroCal*100)}%). Bổ sung thêm thức ăn.`
-          :`✗ Thừa ${actualCal-heroCal} kcal (+${Math.round(actualCal/heroCal*100)-100}%). Giảm bớt khẩu phần.`
+          :`● Thừa ${actualCal-heroCal} kcal (+${Math.round(actualCal/heroCal*100)-100}%). Giảm bớt khẩu phần.`
         }
         {actualP<heroP*0.9&&` | Protein thiếu ${heroP-actualP}g.`}
       </div>
@@ -218,7 +218,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
 
     {heroCal<target&&<div style={{...card,background:C.goldBg,border:"2px solid #CA8A04"}}>
       <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-        <span style={{fontSize:22}}>→</span>
+        <span style={{fontSize:16,fontWeight:900,color:"#EAB308"}}>⚡</span>
         <div>
           <div style={{fontSize:13,fontWeight:900,color:"#92400E",marginBottom:2}}>Gợi ý AI</div>
           <div style={{fontSize:14,fontWeight:600,color:"#78350F",lineHeight:1.5}}>Thiếu {target-heroCal} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).</div>
@@ -250,7 +250,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
       </div>
       <div style={{...card,background:C.goldBg,border:"1.5px solid #CA8A04",marginTop:10,marginBottom:0,padding:"10px 14px"}}>
         <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-          <span style={{fontSize:18}}>→</span>
+          <span style={{fontSize:16,fontWeight:900,color:"#EAB308"}}>⚡</span>
           <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.5}}>{weightLog.length>=2?(()=>{
             const last=weightLog[weightLog.length-1],prev=weightLog[weightLog.length-2];
             const d=Math.round((last.kg-prev.kg)*10)/10;
@@ -650,7 +650,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       }} style={redBtn}>Test kết nối {providerName}</button>
 
       <div style={{marginTop:16,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-        <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>Tip: Kết quả AI được cache — cùng 1 món không cần gọi lần 2. Trong Claude.ai có thể để trống API key. Deploy ra ngoài thì bắt buộc nhập key.</span>
+        <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Kết quả AI được cache — cùng 1 món không cần gọi lần 2. Trong Claude.ai có thể để trống API key. Deploy ra ngoài thì bắt buộc nhập key.</span>
       </div>
     </div>}
 
@@ -693,7 +693,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         </span>:`Tính macro (${providerName})`}
       </button>
       {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
-        <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>✗ {aiError}</span>
+        <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>❌ {aiError}</span>
       </div>}
       {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
@@ -725,7 +725,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           </div>;
         })()}
         {aiResult.tip&&<div style={{marginTop:10,padding:"10px 14px",background:C.goldBg,borderRadius:8,border:"1.5px solid #CA8A04"}}>
-          <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>Tip: {aiResult.tip}</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>💡 {aiResult.tip}</span>
         </div>}
         <button onClick={()=>{
             // Bug 1 fix: merge FORM data (name, qty, unit, gram) with AI MACRO output (p, c, f, fiber, cal)
@@ -888,7 +888,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu hồ sơ! Dashboard đã cập nhật macro mới.</span>
         </div>
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.red,marginBottom:12}}>→ Macro tự động tính</div>
+        <div style={{fontSize:15,fontWeight:900,color:C.red,marginBottom:12}}>⚡ Macro tự động tính</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8}}>
           {[
             {l:"TDEE",v:`${macro.tdee} cal`,desc:"Calo duy trì",c:C.t1},
@@ -917,7 +917,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
 
         <div style={{marginTop:12,background:C.goldBg,borderRadius:10,padding:"10px 14px",border:"1.5px solid #CA8A04"}}>
           <span style={{fontSize:12,fontWeight:700,color:"#78350F",lineHeight:1.6}}>
-            Tip: BMR = {macro.bmr} → ×{macro.actMul} = TDEE {macro.tdee} cal.
+            💡 BMR = {macro.bmr} → ×{macro.actMul} = TDEE {macro.tdee} cal.
             {macro.goal==="bulk"?"Tăng cơ":"Giảm mỡ"}: P = {profile.kg}×{macro.pRatio.replace("g/kg","")} = {macro.protein}g, C = {profile.kg}×{macro.cRatio.replace("g/kg","")} = {macro.carb}g, F = {profile.kg}×{macro.fRatio.replace("g/kg","")} = {macro.fat}g.
             Ngày nghỉ: C giảm → {macro.carbRest}g. Tổng: {macro.calTarget} cal (tập) / {macro.calRest} cal (nghỉ).
           </span>
@@ -982,7 +982,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           document.getElementById("weightInput").value="";
           const el=document.getElementById("weight-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...redBtn,marginTop:16}}>→ Lưu cân nặng</button>
+        }} style={{...redBtn,marginTop:16}}>⚡ Lưu cân nặng</button>
         <div id="weight-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu & cập nhật macro theo cân nặng mới!</span>
         </div>
@@ -1009,7 +1009,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           const avgPerWeek=Math.round((totalDelta/(weightLog.length-1))*100)/100;
           return <div style={{marginTop:12,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
             <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-              <span style={{fontSize:18}}>→</span>
+              <span style={{fontSize:16,fontWeight:900,color:"#EAB308"}}>⚡</span>
               <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.5}}>
                 Tổng: {totalDelta>0?"+":""}{totalDelta} kg trong {weightLog.length-1} tuần. Trung bình {avgPerWeek>0?"+":""}{avgPerWeek} kg/tuần.
                 {avgPerWeek>0&&avgPerWeek<=0.5?" Tốc độ lý tưởng tăng cơ!":avgPerWeek>0.5?" Hơi nhanh, cẩn thận tích mỡ.":avgPerWeek<0?" Đang giảm — kiểm tra lại chế độ ăn.":" Giữ ổn định."}
@@ -1075,7 +1075,7 @@ function LoginScreen({onLogin}){
           <div style={{...lbl,marginBottom:6}}>Mật khẩu</div>
           <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
         </div>
-        {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>✗ {err}</div>}
+        {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {err}</div>}
         {success&&<div style={{marginBottom:12,padding:"10px 14px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,fontSize:13,fontWeight:700,color:"#14532D"}}>{success}</div>}
         <button onClick={handleSubmit} disabled={!!success} style={{...redBtn,opacity:success?0.6:1}}>{mode==="login"?"Đăng nhập":"Đăng ký & Kích hoạt"}</button>
         {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.red,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
