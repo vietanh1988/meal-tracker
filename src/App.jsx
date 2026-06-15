@@ -322,7 +322,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
     const fc=foodCache||{};
     const validItems=foodItems.filter(f=>f.name.trim());
     const cached=[];const uncached=[];
-    validItems.forEach(f=>{const k=f.name.toLowerCase().trim();if(fc[k]){const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";const r=isWeight?(f.gram/(fc[k].gram||100)):f.qty;cached.push({name:f.name,gram:isWeight?f.gram:0,unit,qty_display:isWeight?null:`${f.qty} ${unit}`,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r)});}else{uncached.push(f);}});
+    validItems.forEach(f=>{
+      const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
+      // Cache key includes qty+unit for non-gram items to avoid double-scaling
+      const k=isWeight?f.name.toLowerCase().trim():`${f.name.toLowerCase().trim()}_${f.qty}_${unit}`;
+      if(fc[k]){
+        const r=isWeight?(f.gram/(fc[k].gram||100)):1; // non-gram: already exact match, ratio=1
+        cached.push({name:f.name,gram:isWeight?f.gram:0,unit,qty:f.qty,qty_display:isWeight?null:`${f.qty} ${unit}`,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r)});
+      }else{uncached.push(f);}
+    });
     if(uncached.length===0){setAiResult({items:cached,tip:"📦 Tất cả từ cache — không gọi API!"});setAiLoading(false);return;}
     const foodDesc=uncached.map(f=>{
       const unit=f.unit||"g";
@@ -362,7 +370,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       }
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       const newItems=[...cached,...(parsed.items||[])];
-      parsed.items.forEach(it=>{const k=(it.name||"").toLowerCase().trim();if(k)fc[k]={p:it.protein,c:it.carb,f:it.fat,fiber:it.fiber,cal:it.cal,gram:it.gram};});
+      parsed.items.forEach(it=>{
+        const k=(it.name||"").toLowerCase().trim();
+        // Find matching input to get unit info
+        const inputItem=uncached.find(f=>f.name.toLowerCase().trim()===k);
+        const unit=inputItem?.unit||it.unit||"g";const isWeight=unit==="g"||unit==="ml";
+        const cacheKey=isWeight?k:`${k}_${inputItem?.qty||1}_${unit}`;
+        if(cacheKey)fc[cacheKey]={p:it.protein,c:it.carb,f:it.fat,fiber:it.fiber,cal:it.cal,gram:it.gram};
+      });
       setAiResult({items:newItems,tip:parsed.tip||(cached.length>0?`📦 ${cached.length} món từ cache`:"")});
     }catch(err){setAiError(err.message||"Lỗi kết nối AI");console.error(err);}
     finally{setAiLoading(false);}
@@ -595,7 +610,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>💡 {aiResult.tip}</span>
         </div>}
         <button onClick={()=>{
-            const items=aiResult.items.map(it=>({food:it.name,gram:it.gram||0,unit:it.unit||"g",qty_display:it.qty_display||null,p:it.protein||0,c:it.carb||0,f:it.fat||0,fiber:it.fiber||0,cal:it.cal||0}));
+            const items=aiResult.items.map(it=>({food:it.name,gram:it.gram||0,unit:it.unit||"g",qty:it.qty||1,qty_display:it.qty_display||null,p:it.protein||0,c:it.carb||0,f:it.fat||0,fiber:it.fiber||0,cal:it.cal||0}));
             saveMealToCloud(selectedMeal,dayType,items);
             saveFoodCache(aiResult.items,aiProvider);
             const el=document.getElementById("meal-saved");
