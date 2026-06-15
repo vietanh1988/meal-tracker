@@ -114,37 +114,36 @@ export function useUserData(userId) {
     } catch (e) { console.error("Meal save error:", e); }
   }, [userId, updateMealsState]);
 
-  // Update food cache in state
-  const updateFoodCacheState = useCallback((items) => {
+  // Update food cache in state with pre-normalized entries
+  const updateFoodCacheState = useCallback((normalizedEntries) => {
     setFoodCache(prev => {
       const fc = { ...prev };
-      items.forEach(it => {
-        const k = (it.name || "").toLowerCase().trim();
-        if (k) fc[k] = { p: it.protein, c: it.carb, f: it.fat, fiber: it.fiber, cal: it.cal, gram: it.gram };
+      Object.entries(normalizedEntries).forEach(([k, v]) => {
+        if (k) fc[k] = v;
       });
       return fc;
     });
   }, []);
 
   // Save food cache to Supabase
-  const saveFoodCache = useCallback(async (foods, provider) => {
+  // normalizedEntries: {key: {p, c, f, fiber, cal, gram}} — already normalized per-100g or per-1-unit
+  const saveFoodCache = useCallback(async (normalizedEntries, provider) => {
     if (!userId) return;
     // Update local state immediately
-    updateFoodCacheState(foods);
-    for (const f of foods) {
+    updateFoodCacheState(normalizedEntries);
+    for (const [name, v] of Object.entries(normalizedEntries)) {
       try {
-        const name = (f.name || f.food || "").toLowerCase().trim();
         if (!name) continue;
         const { error } = await supabase.from("food_cache").upsert({
-          food_name: name, gram: f.gram || 100,
-          protein: f.protein || f.p || 0, carb: f.carb || f.c || 0,
-          fat: f.fat || f.f || 0, fiber: f.fiber || 0, cal: f.cal || 0,
+          food_name: name, gram: v.gram || 100,
+          protein: v.p || 0, carb: v.c || 0,
+          fat: v.f || 0, fiber: v.fiber || 0, cal: v.cal || 0,
           ai_provider: provider || "unknown",
         }, { onConflict: "food_name,gram" });
         if (error) console.error("Food cache upsert error:", name, error);
       } catch (e) { console.error("Food cache error:", e); }
     }
-    console.log("✅ Food cache synced:", foods.length, "items");
+    console.log("✅ Food cache synced:", Object.keys(normalizedEntries).length, "items");
   }, [userId, updateFoodCacheState]);
 
   return { loaded, meals, getMeals, foodCache, saveMealToCloud, saveFoodCache };

@@ -1,28 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 
 const DEFAULT = {cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary",gymDays:[0,2,4,5]};
 
 export function useProfile(userId) {
-  const [profile, setProfileState] = useState(DEFAULT);
+  const [profile, setProfileState] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) { setLoading(false); return; }
-    let done = false;
-    const timeout = setTimeout(() => {
-      if (!done) {
-        const saved = localStorage.getItem("profile");
-        if (saved) setProfileState({...DEFAULT, ...JSON.parse(saved)});
-        setLoading(false);
-        done = true;
-      }
-    }, 3000);
+    if (!userId) { setProfileState(DEFAULT); setLoading(false); return; }
+    let cancelled = false;
     (async () => {
       try {
         const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
-        if (!done && data && !error) {
-          const p = {
+        if (cancelled) return;
+        if (data && !error) {
+          setProfileState({
             cm: data.cm || DEFAULT.cm,
             kg: Number(data.kg) || DEFAULT.kg,
             age: data.age || DEFAULT.age,
@@ -32,24 +25,28 @@ export function useProfile(userId) {
             months: data.months || DEFAULT.months,
             activity: data.activity || DEFAULT.activity,
             gymDays: data.gym_days || DEFAULT.gymDays,
-          };
-          setProfileState(p);
-          localStorage.setItem("profile", JSON.stringify(p));
+          });
+        } else {
+          // No profile in DB yet — use defaults and create one
+          setProfileState(DEFAULT);
+          await supabase.from("profiles").upsert({
+            id: userId, cm: DEFAULT.cm, kg: DEFAULT.kg, age: DEFAULT.age,
+            goal_kg: DEFAULT.goalKg, gym: DEFAULT.gym, goal_type: DEFAULT.goalType,
+            months: DEFAULT.months, activity: DEFAULT.activity, gym_days: DEFAULT.gymDays,
+          });
         }
-      } catch {
-        const saved = localStorage.getItem("profile");
-        if (saved) setProfileState({...DEFAULT, ...JSON.parse(saved)});
+      } catch (e) {
+        console.error("Profile load error:", e);
+        if (!cancelled) setProfileState(DEFAULT);
       }
-      if (!done) { setLoading(false); done = true; }
-      clearTimeout(timeout);
+      if (!cancelled) setLoading(false);
     })();
-    return () => clearTimeout(timeout);
+    return () => { cancelled = true; };
   }, [userId]);
 
-  const saveProfile = async (p) => {
-    const merged = {...DEFAULT, ...p};
+  const setProfile = useCallback(async (p) => {
+    const merged = { ...DEFAULT, ...p };
     setProfileState(merged);
-    localStorage.setItem("profile", JSON.stringify(merged));
     if (userId) {
       try {
         await supabase.from("profiles").upsert({
@@ -59,7 +56,7 @@ export function useProfile(userId) {
         });
       } catch (e) { console.error("Profile sync error:", e); }
     }
-  };
+  }, [userId]);
 
-  return { profile, setProfile: saveProfile, loading };
+  return { profile, setProfile, loading };
 }
