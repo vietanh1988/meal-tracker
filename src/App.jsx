@@ -38,19 +38,43 @@ function Pill({active,color=C.red,children,onClick}){
   }}>{children}</button>;
 }
 
+// SVG icons for cross-platform consistency (no emoji dependency)
+const Icon=({d,color="#666",size=20})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={d}/></svg>;
+const Icons={
+  sunrise:"M17 18a5 5 0 0 0-10 0 M12 2v7 M4.22 10.22l1.42 1.42 M1 18h2 M21 18h2 M18.36 11.64l1.42-1.42 M23 22H1 M8 6l4-4 4 4",
+  sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42",
+  coffee:"M18 8h1a4 4 0 0 1 0 8h-1 M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z M6 1v3 M10 1v3 M14 1v3",
+  zap:"M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  moon:"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
+  dumbbell:"M6.5 6.5h11 M6.5 17.5h11 M6.5 6.5v11 M17.5 6.5v11 M2 9v6 M22 9v6 M2 9h4.5 M17.5 9H22 M2 15h4.5 M17.5 15H22",
+  scale:"M12 3v17 M1 10l11 4 11-4 M1 10l11-4 11 4",
+  chart:"M18 20V10 M12 20V4 M6 20v-6",
+  user:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z",
+  calendar:"M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z M16 2v4 M8 2v4 M3 10h18",
+  weight:"M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M2 21h20 M5 21l3-9 M19 21l-3-9",
+  settings:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  link:"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
+  save:"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8",
+};
+const MealIcon=({id,size=20})=>{
+  const map={sang:"sunrise",trua:"sun",phu1:"coffee",phu2:"zap",toi:"moon"};
+  const color={sang:"#EAB308",trua:"#F59E0B",phu1:"#78716C",phu2:"#DC2626",toi:"#6366F1"};
+  return <Icon d={Icons[map[id]||"sun"]} color={color[id]||"#666"} size={size}/>;
+};
+
 const mealsData={
   train:[
-    {id:"sang",icon:"🌅",name:"Sáng",items:[]},
-    {id:"trua",icon:"☀️",name:"Trưa",items:[]},
-    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
-    {id:"phu2",icon:"💪",name:"Phụ 2 (pre-workout)",items:[]},
-    {id:"toi",icon:"🌙",name:"Tối",items:[]},
+    {id:"sang",name:"Sáng",items:[]},
+    {id:"trua",name:"Trưa",items:[]},
+    {id:"phu1",name:"Phụ 1 (VP)",items:[]},
+    {id:"phu2",name:"Phụ 2 (pre-workout)",items:[]},
+    {id:"toi",name:"Tối",items:[]},
   ],
   rest:[
-    {id:"sang",icon:"🌅",name:"Sáng",items:[]},
-    {id:"trua",icon:"☀️",name:"Trưa",items:[]},
-    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
-    {id:"toi",icon:"🌙",name:"Tối",items:[]},
+    {id:"sang",name:"Sáng",items:[]},
+    {id:"trua",name:"Trưa",items:[]},
+    {id:"phu1",name:"Phụ 1 (VP)",items:[]},
+    {id:"toi",name:"Tối",items:[]},
   ],
 };
 const getMealsDefault=(type)=>mealsData[type];
@@ -79,7 +103,7 @@ function MealCard({meal}){
   return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
-        <span style={{fontSize:20}}>{meal.icon}</span>
+        <MealIcon id={meal.id} size={20}/>
         <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
         <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{meal.items.length} món</span>
       </div>
@@ -131,7 +155,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
   const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=((curKg-profile.kg)/(goalKg-profile.kg))*100;
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
-  const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
+  const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✓":actualCal<heroCal*0.95?"!":"✗";
   return <div>
     {/* Hero */}
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
@@ -168,8 +192,8 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
-      <Pill active={dayType==="train"} color={C.red} onClick={()=>setDayType("train")}>💪 Ngày tập</Pill>
-      <Pill active={dayType==="rest"} color={C.green} onClick={()=>setDayType("rest")}>😴 Ngày nghỉ</Pill>
+      <Pill active={dayType==="train"} color={C.red} onClick={()=>setDayType("train")}>▲ Ngày tập</Pill>
+      <Pill active={dayType==="rest"} color={C.green} onClick={()=>setDayType("rest")}>▽ Ngày nghỉ</Pill>
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
@@ -183,10 +207,10 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
         color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:actualCal<heroCal*0.95?"#92400E":C.red,
       }}>
         {actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1
-          ?"✅ Thực đơn phù hợp với mục tiêu!"
+          ?"✓ Thực đơn phù hợp với mục tiêu!"
           :actualCal<heroCal*0.95
-          ?`⚠️ Thiếu ${heroCal-actualCal} kcal (${100-Math.round(actualCal/heroCal*100)}%). Bổ sung thêm thức ăn.`
-          :`🔴 Thừa ${actualCal-heroCal} kcal (+${Math.round(actualCal/heroCal*100)-100}%). Giảm bớt khẩu phần.`
+          ?`⚠ Thiếu ${heroCal-actualCal} kcal (${100-Math.round(actualCal/heroCal*100)}%). Bổ sung thêm thức ăn.`
+          :`✗ Thừa ${actualCal-heroCal} kcal (+${Math.round(actualCal/heroCal*100)-100}%). Giảm bớt khẩu phần.`
         }
         {actualP<heroP*0.9&&` | Protein thiếu ${heroP-actualP}g.`}
       </div>
@@ -194,7 +218,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
 
     {heroCal<target&&<div style={{...card,background:C.goldBg,border:"2px solid #CA8A04"}}>
       <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-        <span style={{fontSize:22}}>⚡</span>
+        <span style={{fontSize:22}}>→</span>
         <div>
           <div style={{fontSize:13,fontWeight:900,color:"#92400E",marginBottom:2}}>Gợi ý AI</div>
           <div style={{fontSize:14,fontWeight:600,color:"#78350F",lineHeight:1.5}}>Thiếu {target-heroCal} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).</div>
@@ -205,8 +229,8 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
     {/* Weight */}
     <div style={{...card,marginTop:6,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#EAB308) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{fontSize:17,fontWeight:900,color:C.blue}}>📈 Theo dõi cân nặng</div>
-        <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
+        <div style={{fontSize:17,fontWeight:900,color:C.blue}}>Theo dõi cân nặng</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.t2}}>● <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:12,overflowX:"auto",flexWrap:mob?"wrap":"nowrap"}}>
         {weightLog.slice(-4).map((w,i)=>{const ci=weightLog.indexOf(w);return(
@@ -226,7 +250,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
       </div>
       <div style={{...card,background:C.goldBg,border:"1.5px solid #CA8A04",marginTop:10,marginBottom:0,padding:"10px 14px"}}>
         <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-          <span style={{fontSize:18}}>⚡</span>
+          <span style={{fontSize:18}}>→</span>
           <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.5}}>{weightLog.length>=2?(()=>{
             const last=weightLog[weightLog.length-1],prev=weightLog[weightLog.length-2];
             const d=Math.round((last.kg-prev.kg)*10)/10;
@@ -261,7 +285,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
             setProfile({...profile,kg:updated[updated.length-1].kg});
             setEditing(false);
           }} style={{fontSize:11,fontWeight:700,padding:"3px 8px",background:C.greenBg,color:C.green,border:`1px solid ${C.green}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>✓</button>
-        :<button onClick={()=>setEditing(true)} style={{fontSize:11,fontWeight:700,padding:"3px 8px",background:C.goldBg,color:C.gold,border:`1px solid ${C.gold}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>✏️</button>
+        :<button onClick={()=>setEditing(true)} style={{fontSize:11,fontWeight:700,padding:"3px 8px",background:C.goldBg,color:C.gold,border:`1px solid ${C.gold}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>✎</button>
       }
       <button onClick={()=>{
         if(w.id){deleteWeight(w.id);}
@@ -298,15 +322,13 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
 
   useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);localStorage.setItem("usdaKey",usdaKey);},[aiProvider,claudeKey,geminiKey,gptKey,usdaKey]);
 
-  // Track previous meal/dayType to only reset when user actually switches
-  const prevMealRef=useRef({selectedMeal,dayType});
+  // Stable ref to getMeals to avoid unnecessary effect reruns
+  const getMealsRef=useRef(getMeals);
+  getMealsRef.current=getMeals;
+
+  // Only reload food items when user switches meal or dayType
   useEffect(()=>{
-    const prev=prevMealRef.current;
-    const userSwitched=prev.selectedMeal!==selectedMeal||prev.dayType!==dayType;
-    prevMealRef.current={selectedMeal,dayType};
-    // Only reload food items and reset AI when user switches meal/dayType
-    if(!userSwitched) return;
-    const meals=getMeals(dayType);
+    const meals=getMealsRef.current(dayType);
     const meal=meals.find(m=>m.id===selectedMeal);
     if(meal&&meal.items&&meal.items.length>0){
       setFoodItems(meal.items.map(it=>({name:it.food||it.name||"",qty:it.qty||1,gram:it.gram||100,unit:it.unit||"g"})));
@@ -314,7 +336,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
       setFoodItems([{name:"",qty:1,gram:100}]);
     }
     setAiResult(null);
-  },[selectedMeal,dayType,getMeals]);
+  },[selectedMeal,dayType]);
 
   const addFood=()=>setFoodItems([...foodItems,{name:"",qty:1,gram:100,unit:"g"}]);
   const removeFood=(idx)=>setFoodItems(foodItems.filter((_,i)=>i!==idx));
@@ -467,21 +489,21 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
   },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey]);
 
   const mealNames=dayType==="train"
-    ?[{id:"sang",l:"🌅 Sáng"},{id:"trua",l:"☀️ Trưa"},{id:"phu1",l:"☕ Phụ 1"},{id:"phu2",l:"💪 Phụ 2"},{id:"toi",l:"🌙 Tối"}]
-    :[{id:"sang",l:"🌅 Sáng"},{id:"trua",l:"☀️ Trưa"},{id:"phu1",l:"☕ Phụ 1"},{id:"toi",l:"🌙 Tối"}];
+    ?[{id:"sang",l:"Sáng"},{id:"trua",l:"Trưa"},{id:"phu1",l:"Phụ 1"},{id:"phu2",l:"Phụ 2"},{id:"toi",l:"Tối"}]
+    :[{id:"sang",l:"Sáng"},{id:"trua",l:"Trưa"},{id:"phu1",l:"Phụ 1"},{id:"toi",l:"Tối"}];
 
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
 
   return <div>
     <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+      {[{id:"meals",l:"Bữa ăn"},{id:"ai",l:"Kết nối AI"},{id:"profile",l:"Hồ sơ"},{id:"schedule",l:"Lịch tập"},{id:"weight",l:"Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
       )}
     </div>
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>🤖 Kết nối AI</div>
+      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>Kết nối AI</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Chọn AI provider và model để tính macro</div>
 
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,padding:"12px 16px",background:aiConnected?C.greenBg:C.redBg,borderRadius:10,border:`1.5px solid ${aiConnected?C.green:C.red}`}}>
@@ -493,9 +515,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       <div style={{...lbl,marginBottom:8}}>Chọn AI Provider</div>
       <div style={{display:"flex",flexDirection:mob?"column":"row",gap:8,marginBottom:20}}>
         {[
-          {id:"claude",name:"Claude",icon:"🟠",desc:"Anthropic"},
-          {id:"gemini",name:"Gemini",icon:"🔵",desc:"Google"},
-          {id:"gpt",name:"GPT",icon:"🟢",desc:"OpenAI"},
+          {id:"claude",name:"Claude",icon:"●",desc:"Anthropic"},
+          {id:"gemini",name:"Gemini",icon:"●",desc:"Google"},
+          {id:"gpt",name:"GPT",icon:"●",desc:"OpenAI"},
         ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");}} style={{
           flex:1,padding:"14px 12px",borderRadius:12,cursor:"pointer",textAlign:"center",
           background:aiProvider===p.id?C.redBg:C.surface,
@@ -625,10 +647,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             const d=await r.json();setAiConnected(!d.error);
           }
         }catch{setAiConnected(false);}
-      }} style={redBtn}>🔌 Test kết nối {providerName}</button>
+      }} style={redBtn}>Test kết nối {providerName}</button>
 
       <div style={{marginTop:16,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-        <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Kết quả AI được cache — cùng 1 món không cần gọi lần 2. Trong Claude.ai có thể để trống API key. Deploy ra ngoài thì bắt buộc nhập key.</span>
+        <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>Tip: Kết quả AI được cache — cùng 1 món không cần gọi lần 2. Trong Claude.ai có thể để trống API key. Deploy ra ngoài thì bắt buộc nhập key.</span>
       </div>
     </div>}
 
@@ -639,8 +661,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         Nhập thức ăn → nhấn "Tính macro" → <span style={{fontWeight:800,color:aiProvider==="claude"?"#DC2626":aiProvider==="gemini"?"#1D4ED8":"#15803D"}}>{providerName}</span> trả kết quả
       </div>
       <div style={{display:"flex",gap:6,marginBottom:12}}>
-        <Pill active={dayType==="train"} color={C.red} onClick={()=>{setDayType("train");setAiResult(null);}}>💪 Ngày tập</Pill>
-        <Pill active={dayType==="rest"} color={C.green} onClick={()=>{setDayType("rest");setAiResult(null);}}>😴 Ngày nghỉ</Pill>
+        <Pill active={dayType==="train"} color={C.red} onClick={()=>{setDayType("train");setAiResult(null);}}>▲ Ngày tập</Pill>
+        <Pill active={dayType==="rest"} color={C.green} onClick={()=>{setDayType("rest");setAiResult(null);}}>▽ Ngày nghỉ</Pill>
       </div>
       <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
         {mealNames.map(m=><Pill key={m.id} active={selectedMeal===m.id} color={C.gold} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}}>{m.l}</Pill>)}
@@ -668,15 +690,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         {aiLoading?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           <span style={{width:16,height:16,border:"2.5px solid #fcc",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.6s linear infinite"}}/>
           <span>Đang tính...</span>
-        </span>:`✨ Tính macro (${providerName})`}
+        </span>:`Tính macro (${providerName})`}
       </button>
       {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
-        <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>❌ {aiError}</span>
+        <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>✗ {aiError}</span>
       </div>}
       {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
-          <span style={{fontSize:18}}>✨</span>
-          <span style={{fontSize:14,fontWeight:900,color:C.red}}>✨ Kết quả {aiResult.items?.some(i=>i.source==="USDA")?"USDA + ":""}{ providerName}</span>
+          <span style={{fontSize:14,fontWeight:900}}>✓</span>
+          <span style={{fontSize:14,fontWeight:900,color:C.red}}>Kết quả {aiResult.items?.some(i=>i.source==="USDA")?"USDA + ":""}{ providerName}</span>
         </div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:800,borderBottom:`1.5px solid ${C.border}`,paddingBottom:6,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.05em"}}>
           <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>g</span>
@@ -703,7 +725,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           </div>;
         })()}
         {aiResult.tip&&<div style={{marginTop:10,padding:"10px 14px",background:C.goldBg,borderRadius:8,border:"1.5px solid #CA8A04"}}>
-          <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>💡 {aiResult.tip}</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>Tip: {aiResult.tip}</span>
         </div>}
         <button onClick={()=>{
             // Bug 1 fix: merge FORM data (name, qty, unit, gram) with AI MACRO output (p, c, f, fiber, cal)
@@ -729,9 +751,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             // DOM approach — immune to React re-render (same as profile-saved)
             const el=document.getElementById("meal-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
+        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
         <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ Đã lưu thành công!</span>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu thành công!</span>
         </div>
       </div>}
     </div>}
@@ -764,9 +786,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <div style={{...lbl,marginBottom:8}}>Mức vận động công việc</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {[
-            {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng, ít đi lại",mul:"1.2"},
-            {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều, công việc nhẹ",mul:"1.5"},
-            {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay, bốc vác",mul:"1.75"},
+            {id:"sedentary",icon:"○",name:"Ít vận động",desc:"Ngồi văn phòng, ít đi lại",mul:"1.2"},
+            {id:"moderate",icon:"△",name:"Vận động vừa",desc:"Đi lại nhiều, công việc nhẹ",mul:"1.5"},
+            {id:"active",icon:"□",name:"Vận động nặng",desc:"Lao động chân tay, bốc vác",mul:"1.75"},
           ].map(a=><div key={a.id} onClick={()=>setProfile({...profile,activity:a.id})} style={{
             flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
             background:profile.activity===a.id?C.blueBg:C.surface,
@@ -785,9 +807,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <div style={{...lbl,marginBottom:8}}>Mục tiêu</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {[
-            {id:"bulk",icon:"💪",name:"Tăng cơ",desc:"P 2g · C 4g · F 0.8g/kg",c:C.red},
-            {id:"cut",icon:"🔥",name:"Giảm mỡ",desc:"P 2.3g · C 2.5g · F 0.8g/kg",c:"#B45309"},
-            {id:"maintain",icon:"⚖️",name:"Duy trì",desc:"P 1.8g · C 3.5g · F 0.8g/kg",c:C.green},
+            {id:"bulk",icon:"▲",name:"Tăng cơ",desc:"P 2g · C 4g · F 0.8g/kg",c:C.red},
+            {id:"cut",icon:"▼",name:"Giảm mỡ",desc:"P 2.3g · C 2.5g · F 0.8g/kg",c:"#B45309"},
+            {id:"maintain",icon:"=",name:"Duy trì",desc:"P 1.8g · C 3.5g · F 0.8g/kg",c:C.green},
           ].map(g=><div key={g.id} onClick={()=>setProfile({...profile,goalType:g.id})} style={{
             flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
             background:profile.goalType===g.id?`${g.c}11`:C.surface,
@@ -815,7 +837,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       {/* Timeline plan */}
       {profile.goalType!=="maintain"&&Math.abs(macro.diff)>0&&<div style={{marginTop:16,background:profile.goalType==="bulk"?C.redBg:C.goldBg,borderRadius:12,padding:"14px 16px",border:`2px solid ${profile.goalType==="bulk"?C.red:"#B45309"}`}}>
         <div style={{fontSize:14,fontWeight:900,color:profile.goalType==="bulk"?C.red:"#B45309",marginBottom:10}}>
-          📋 Kế hoạch {profile.goalType==="bulk"?"tăng cân":"giảm cân"}
+          Kế hoạch {profile.goalType==="bulk"?"tăng cân":"giảm cân"}
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
           <div style={{background:C.card,borderRadius:10,padding:"10px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
@@ -849,8 +871,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <div style={{marginTop:10,padding:"8px 12px",background:macro.safe?C.greenBg:C.redBg,borderRadius:8,border:`1.5px solid ${macro.safe?C.green:C.red}`}}>
           <span style={{fontSize:12,fontWeight:700,color:macro.safe?"#14532D":"#7F1D1D"}}>
             {macro.safe
-              ?`✅ An toàn! ${macro.perWeek} kg/tuần ${profile.goalType==="bulk"?"≤ 0.5 — chủ yếu tăng cơ, ít tích mỡ":"≤ 0.75 — giữ cơ, giảm mỡ hiệu quả"}`
-              :`⚠️ Quá nhanh! ${macro.perWeek} kg/tuần ${profile.goalType==="bulk"?"> 0.5 — dễ tích mỡ bụng. Nên kéo dài thời gian":"> 0.75 — dễ mất cơ. Nên kéo dài thời gian"}`
+              ?`✓ An toàn! ${macro.perWeek} kg/tuần ${profile.goalType==="bulk"?"≤ 0.5 — chủ yếu tăng cơ, ít tích mỡ":"≤ 0.75 — giữ cơ, giảm mỡ hiệu quả"}`
+              :`⚠ Quá nhanh! ${macro.perWeek} kg/tuần ${profile.goalType==="bulk"?"> 0.5 — dễ tích mỡ bụng. Nên kéo dài thời gian":"> 0.75 — dễ mất cơ. Nên kéo dài thời gian"}`
             }
           </span>
         </div>
@@ -861,12 +883,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <button onClick={()=>{
           const el=document.getElementById("profile-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-        }} style={{...redBtn,marginBottom:12}}>💾 Lưu hồ sơ & Tính macro</button>
+        }} style={{...redBtn,marginBottom:12}}>Lưu hồ sơ & Tính macro</button>
         <div id="profile-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:12}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ Đã lưu hồ sơ! Dashboard đã cập nhật macro mới.</span>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu hồ sơ! Dashboard đã cập nhật macro mới.</span>
         </div>
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.red,marginBottom:12}}>⚡ Macro tự động tính</div>
+        <div style={{fontSize:15,fontWeight:900,color:C.red,marginBottom:12}}>→ Macro tự động tính</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8}}>
           {[
             {l:"TDEE",v:`${macro.tdee} cal`,desc:"Calo duy trì",c:C.t1},
@@ -895,7 +917,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
 
         <div style={{marginTop:12,background:C.goldBg,borderRadius:10,padding:"10px 14px",border:"1.5px solid #CA8A04"}}>
           <span style={{fontSize:12,fontWeight:700,color:"#78350F",lineHeight:1.6}}>
-            💡 BMR = {macro.bmr} → ×{macro.actMul} = TDEE {macro.tdee} cal.
+            Tip: BMR = {macro.bmr} → ×{macro.actMul} = TDEE {macro.tdee} cal.
             {macro.goal==="bulk"?"Tăng cơ":"Giảm mỡ"}: P = {profile.kg}×{macro.pRatio.replace("g/kg","")} = {macro.protein}g, C = {profile.kg}×{macro.cRatio.replace("g/kg","")} = {macro.carb}g, F = {profile.kg}×{macro.fRatio.replace("g/kg","")} = {macro.fat}g.
             Ngày nghỉ: C giảm → {macro.carbRest}g. Tổng: {macro.calTarget} cal (tập) / {macro.calRest} cal (nghỉ).
           </span>
@@ -928,9 +950,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <button onClick={()=>{
           const el=document.getElementById("schedule-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-        }} style={{...redBtn,marginTop:20}}>💾 Lưu lịch tập</button>
+        }} style={{...redBtn,marginTop:20}}>Lưu lịch tập</button>
         <div id="schedule-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ Đã lưu! Tập {days.length} buổi/tuần — {days.map(d=>["T2","T3","T4","T5","T6","T7","CN"][d]).join(", ")}</span>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu! Tập {days.length} buổi/tuần — {days.map(d=>["T2","T3","T4","T5","T6","T7","CN"][d]).join(", ")}</span>
         </div>
       </div>;
     })()}
@@ -944,7 +966,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
             <span style={{fontSize:13,fontWeight:800,color:C.t1}}>Tuần {nextWeek}</span>
-            <span style={{fontSize:13,fontWeight:700,color:C.t2}}>📅 {today}</span>
+            <span style={{fontSize:13,fontWeight:700,color:C.t2}}>{today}</span>
           </div>
           <div style={{fontSize:11,fontWeight:600,color:C.t3}}>Ngày tự động lấy từ hệ thống</div>
         </div>
@@ -960,9 +982,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           document.getElementById("weightInput").value="";
           const el=document.getElementById("weight-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...redBtn,marginTop:16}}>⚡ Lưu cân nặng</button>
+        }} style={{...redBtn,marginTop:16}}>→ Lưu cân nặng</button>
         <div id="weight-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ Đã lưu & cập nhật macro theo cân nặng mới!</span>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu & cập nhật macro theo cân nặng mới!</span>
         </div>
         <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14,marginTop:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
@@ -972,7 +994,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
                 resetWeights();
               }
             }} style={{fontSize:11,fontWeight:700,padding:"4px 10px",background:C.redBg,color:C.red,border:`1px solid ${C.red}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>
-              🗑️ Reset hết
+              Reset hết
             </button>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"0.7fr 1.1fr 0.7fr 0.5fr 0.8fr",gap:4,fontSize:11,fontWeight:700,color:C.t3,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`,textTransform:"uppercase",letterSpacing:"0.05em"}}>
@@ -987,7 +1009,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           const avgPerWeek=Math.round((totalDelta/(weightLog.length-1))*100)/100;
           return <div style={{marginTop:12,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
             <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-              <span style={{fontSize:18}}>⚡</span>
+              <span style={{fontSize:18}}>→</span>
               <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.5}}>
                 Tổng: {totalDelta>0?"+":""}{totalDelta} kg trong {weightLog.length-1} tuần. Trung bình {avgPerWeek>0?"+":""}{avgPerWeek} kg/tuần.
                 {avgPerWeek>0&&avgPerWeek<=0.5?" Tốc độ lý tưởng tăng cơ!":avgPerWeek>0.5?" Hơi nhanh, cẩn thận tích mỡ.":avgPerWeek<0?" Đang giảm — kiểm tra lại chế độ ăn.":" Giữ ổn định."}
@@ -1018,7 +1040,7 @@ function LoginScreen({onLogin}){
       if(mode==="register"){
         if(!email.trim()||!email.includes("@")){setErr("Vui lòng nhập email hợp lệ");return;}
         await signUp(email,pass,user.trim());
-        setSuccess(`✅ Đăng ký thành công! Tài khoản "${user.trim()}" đã được kích hoạt.`);
+        setSuccess(`✓ Đăng ký thành công! Tài khoản "${user.trim()}" đã được kích hoạt.`);
         setTimeout(()=>onLogin(user.trim()),1500);
       }else{
         await signIn(email||user,pass);
@@ -1030,7 +1052,7 @@ function LoginScreen({onLogin}){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
     <div style={{width:"100%",maxWidth:400}}>
       <div style={{textAlign:"center",marginBottom:32}}>
-        <div style={{width:64,height:64,background:"#111",borderRadius:16,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:32}}>🏋️</div>
+        <div style={{width:64,height:64,background:"#111",borderRadius:16,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:32}}>M</div>
         <div style={{fontSize:24,fontWeight:900,color:"#111",marginTop:12,letterSpacing:"-0.02em"}}>MEAL TRACKER</div>
         <div style={{fontSize:13,fontWeight:700,color:C.red,marginTop:2}}>Phát triển bởi Việt Anh Seoer</div>
       </div>
@@ -1053,9 +1075,9 @@ function LoginScreen({onLogin}){
           <div style={{...lbl,marginBottom:6}}>Mật khẩu</div>
           <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
         </div>
-        {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {err}</div>}
+        {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>✗ {err}</div>}
         {success&&<div style={{marginBottom:12,padding:"10px 14px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,fontSize:13,fontWeight:700,color:"#14532D"}}>{success}</div>}
-        <button onClick={handleSubmit} disabled={!!success} style={{...redBtn,opacity:success?0.6:1}}>{mode==="login"?"🔓 Đăng nhập":"📝 Đăng ký & Kích hoạt"}</button>
+        <button onClick={handleSubmit} disabled={!!success} style={{...redBtn,opacity:success?0.6:1}}>{mode==="login"?"Đăng nhập":"Đăng ký & Kích hoạt"}</button>
         {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.red,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
         {mode==="register"&&<div style={{textAlign:"center",marginTop:12,fontSize:11,fontWeight:600,color:C.t3}}>Tài khoản sẽ được kích hoạt tự động ngay sau khi đăng ký</div>}
       </div>
@@ -1124,14 +1146,14 @@ export default function App(){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"0 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:C.bg,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 4px)",paddingBottom:8,paddingLeft:"max(10px, env(safe-area-inset-left, 10px))",paddingRight:"max(10px, env(safe-area-inset-right, 10px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
-        <div style={{width:mob?28:42,height:mob?28:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>🏋️</div>
+        <div style={{width:mob?28:42,height:mob?28:42,background:"#111",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>M</div>
         <div>
           <div style={{fontSize:mob?13:20,fontWeight:900,letterSpacing:"-0.02em",color:"#111"}}>MEAL TRACKER</div>
           <div style={{fontSize:mob?8:12,fontWeight:700,color:C.red}}>Phát triển bởi Việt Anh Seoer</div>
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
-        <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1}}>👤 {user.user_metadata?.username||user.email}</div>
+        <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div>
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:C.redBg,color:C.red,border:`1.5px solid ${C.red}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>

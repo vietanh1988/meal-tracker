@@ -3,17 +3,17 @@ import { supabase } from "../lib/supabase";
 
 const defaultStructure = {
   train: [
-    {id:"sang",icon:"🌅",name:"Sáng",items:[]},
-    {id:"trua",icon:"☀️",name:"Trưa",items:[]},
-    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
-    {id:"phu2",icon:"💪",name:"Phụ 2 (pre-workout)",items:[]},
-    {id:"toi",icon:"🌙",name:"Tối",items:[]},
+    {id:"sang",name:"Sáng",items:[]},
+    {id:"trua",name:"Trưa",items:[]},
+    {id:"phu1",name:"Phụ 1 (VP)",items:[]},
+    {id:"phu2",name:"Phụ 2 (pre-workout)",items:[]},
+    {id:"toi",name:"Tối",items:[]},
   ],
   rest: [
-    {id:"sang",icon:"🌅",name:"Sáng",items:[]},
-    {id:"trua",icon:"☀️",name:"Trưa",items:[]},
-    {id:"phu1",icon:"☕",name:"Phụ 1 (VP)",items:[]},
-    {id:"toi",icon:"🌙",name:"Tối",items:[]},
+    {id:"sang",name:"Sáng",items:[]},
+    {id:"trua",name:"Trưa",items:[]},
+    {id:"phu1",name:"Phụ 1 (VP)",items:[]},
+    {id:"toi",name:"Tối",items:[]},
   ],
 };
 
