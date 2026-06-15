@@ -155,7 +155,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
   const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=((curKg-profile.kg)/(goalKg-profile.kg))*100;
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
-  const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✓":actualCal<heroCal*0.95?"!":"✗";
+  const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"●":actualCal<heroCal*0.95?"▲":"●";
   return <div>
     {/* Hero */}
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
@@ -165,7 +165,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
           <div style={{fontSize:mob?32:44,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",lineHeight:1.1,marginTop:8}}>
             {actualCal>0?actualCal:heroCal} <span style={{fontSize:mob?14:20,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>/ {heroCal}</span>
           </div>
-          {actualCal>0&&<div style={{fontSize:12,fontWeight:700,marginTop:4,color:calDiff>=0?"#4ADE80":"#EAB308"}}>
+          {actualCal>0&&<div style={{fontSize:12,fontWeight:700,marginTop:4,color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"#4ADE80":actualCal<heroCal*0.95?"#EAB308":"#EF4444"}}>
             {calStatus} {calDiff>0?`+${calDiff}`:`${calDiff}`} kcal ({Math.round(actualCal/heroCal*100)}%)
           </div>}
           <div style={{height:mob?8:10,width:mob?"100%":180,background:"rgba(255,255,255,0.18)",borderRadius:5,marginTop:mob?8:10,overflow:"hidden"}}>
