@@ -152,6 +152,231 @@ function MealCard({meal}){
   </div>;
 }
 
+// Weight Bar Chart with goal-based color logic
+function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
+  const canvasRef=useRef(null);
+  const chartRef=useRef(null);
+
+  useEffect(()=>{
+    if(!canvasRef.current||weightLog.length<2)return;
+    if(chartRef.current)chartRef.current.destroy();
+
+    const data=weightLog.map(w=>w.kg);
+    const labels=weightLog.map(w=>"T"+w.week);
+    const goalData=weightLog.map(()=>goalKg);
+
+    // Color logic based on goalType
+    function getBarType(diff){
+      if(Math.abs(diff)<0.01)return"neutral";
+      if(goalType==="bulk")return diff>0?"good":"bad";
+      if(goalType==="cut")return diff<0?"good":"bad";
+      // maintain
+      return Math.abs(diff)<=0.2?"good":"bad";
+    }
+    const types=data.map((v,i)=>i===0?"neutral":getBarType(v-data[i-1]));
+    const gradMap={good:["#9BE7A1","#34A853"],bad:["#FF6B6B","#E53935"],neutral:["#FFE66D","#F4B400"]};
+    const lblColors={good:"#34A853",bad:"#E53935",neutral:"#F4B400"};
+
+    // Dynamic Y axis
+    const allVals=[...data,goalKg,startKg];
+    const yMin=Math.floor(Math.min(...allVals))-1;
+    const yMax=Math.ceil(Math.max(...allVals))+1;
+
+    const ctx=canvasRef.current.getContext("2d");
+
+    const applyGrad={id:"ag",beforeDatasetsDraw(chart){
+      const bot=chart.scales.y.getPixelForValue(yMin);
+      chart.getDatasetMeta(0).data.forEach((bar,i)=>{
+        const g=ctx.createLinearGradient(0,bar.y,0,bot);
+        const cs=gradMap[types[i]];g.addColorStop(0,cs[0]);g.addColorStop(1,cs[1]);
+        bar.options.backgroundColor=g;
+      });
+      chart.getDatasetMeta(1).data.forEach(bar=>{
+        const g=ctx.createLinearGradient(0,bar.y,0,bot);
+        g.addColorStop(0,"#A7D3FF");g.addColorStop(1,"#4285F4");
+        bar.options.backgroundColor=g;
+      });
+    }};
+
+    const drawLbl={id:"dl",afterDatasetsDraw(chart){
+      const c=chart.ctx;
+      chart.getDatasetMeta(1).data.forEach(bar=>{
+        c.save();c.font="500 10px sans-serif";c.fillStyle="#4285F4";
+        c.textAlign="center";c.fillText(goalKg,bar.x,bar.y-5);c.restore();
+      });
+      chart.getDatasetMeta(0).data.forEach((bar,i)=>{
+        const v=data[i];const txt=v%1===0?v.toFixed(0):v.toFixed(1);
+        c.save();c.textAlign="center";
+        c.font="500 11px sans-serif";c.fillStyle="#333";
+        c.fillText(txt,bar.x,bar.y-(i>0?18:6));
+        if(i>0){
+          const diff=v-data[i-1];
+          const dtxt=Math.abs(diff)<0.01?"=":(diff>0?"+":"")+diff.toFixed(1);
+          c.font="500 9px sans-serif";c.fillStyle=lblColors[types[i]];
+          c.fillText(dtxt,bar.x,bar.y-6);
+        }
+        c.restore();
+      });
+    }};
+
+    chartRef.current=new window.ChartJS(canvasRef.current,{
+      type:"bar",
+      data:{labels,datasets:[
+        {data,backgroundColor:"#34A853",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:0.82,categoryPercentage:0.55,order:2},
+        {data:goalData,backgroundColor:"#4285F4",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:0.82,categoryPercentage:0.55,order:1},
+      ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        layout:{padding:{top:26,right:8}},
+        plugins:{legend:{display:false},tooltip:{
+          backgroundColor:"#fff",titleColor:"#111",bodyColor:"#555",
+          borderColor:"#e0e0e0",borderWidth:1,cornerRadius:8,padding:10,displayColors:true,
+          callbacks:{label(ctx2){
+            if(ctx2.datasetIndex===0){
+              const v=ctx2.parsed.y,i=ctx2.dataIndex;
+              let l="Thực tế: "+v.toFixed(1)+" kg";
+              if(i>0){const d=v-data[i-1];l+=" ("+(d>=0?"+":"")+d.toFixed(1)+")";}
+              return l;
+            }
+            return "Mục tiêu: "+goalKg+" kg";
+          }}
+        }},
+        scales:{
+          y:{min:yMin,max:yMax,grid:{color:"rgba(0,0,0,0.06)",drawBorder:false},border:{display:false},
+            ticks:{color:"rgba(0,0,0,0.35)",font:{size:10},callback:v=>v+" kg",stepSize:1,padding:6}},
+          x:{grid:{display:false},border:{display:false},ticks:{color:"rgba(0,0,0,0.35)",font:{size:10},padding:4}}
+        }
+      },
+      plugins:[applyGrad,drawLbl]
+    });
+
+    return()=>{if(chartRef.current)chartRef.current.destroy();};
+  },[weightLog,goalKg,goalType,startKg]);
+
+  return <div style={{position:"relative",width:"100%",height:220}}>
+    <canvas ref={canvasRef}/>
+    <div style={{display:"flex",flexWrap:"wrap",gap:14,justifyContent:"center",marginTop:8,fontSize:10,color:"#888"}}>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#9BE7A1,#34A853)"}}/>Đúng hướng</span>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#FF6B6B,#E53935)"}}/>Ngược hướng</span>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#FFE66D,#F4B400)"}}/>Giữ nguyên</span>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#A7D3FF,#4285F4)"}}/>Mục tiêu</span>
+    </div>
+  </div>;
+}
+
+// Smart weight suggestion based on trend analysis
+function WeightSuggestion({weightLog,goalKg,goalType,startKg,curKg}){
+  if(weightLog.length<2)return <div style={{marginTop:10,padding:"10px 14px",background:"#FFF8E1",borderRadius:10,border:"1.5px solid #CA8A04"}}>
+    <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>⚡ Chưa đủ dữ liệu. Cân thêm ít nhất 1 tuần nữa để xem phân tích.</span>
+  </div>;
+
+  const data=weightLog.map(w=>w.kg);
+  const totalWeeks=weightLog.length;
+
+  // Recent rate: average of last 4 weeks (or all if <4)
+  const recentN=Math.min(4,data.length-1);
+  const recentData=data.slice(-recentN-1);
+  const recentRate=recentN>0?(recentData[recentData.length-1]-recentData[0])/recentN:0;
+  const rateRound=Math.round(recentRate*100)/100;
+
+  // Is stalling? rate < 0.05 kg/week for bulk, > -0.05 for cut
+  const isStalling=goalType==="bulk"?rateRound<=0.05:goalType==="cut"?rateRound>=-0.05:Math.abs(rateRound)>0.15;
+  // Is going wrong direction?
+  const isWrongDir=goalType==="bulk"?rateRound<-0.05:goalType==="cut"?rateRound>0.05:false;
+  const overMonth=totalWeeks>=4;
+  const remaining=Math.abs(goalKg-curKg);
+  const weeksLeft=Math.abs(recentRate)>0.01?Math.ceil(remaining/Math.abs(recentRate)):"?";
+
+  // Goal type label
+  const goalLabel=goalType==="bulk"?"tăng cân":goalType==="cut"?"giảm cân":"giữ cân";
+
+  // Case 1: Under 1 month — AI suggestion only
+  if(!overMonth){
+    return <div style={{marginTop:10,padding:"14px",background:"#F0F9FF",borderRadius:10,border:"1.5px solid #93C5FD"}}>
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
+        <span style={{fontSize:16}}>📊</span>
+        <span style={{fontSize:14,fontWeight:800,color:"#1E40AF"}}>Phân tích sớm</span>
+      </div>
+      <div style={{fontSize:13,color:"#1E3A5F",lineHeight:1.6,marginBottom:10}}>
+        Tốc độ gần đây: <b>{rateRound>=0?"+":""}{rateRound} kg/tuần</b>.
+        Còn <b>{remaining.toFixed(1)} kg</b> để đạt mục tiêu {goalLabel}.
+        {typeof weeksLeft==="number"&&<> Dự kiến: <b style={{color:"#34A853"}}>{weeksLeft} tuần</b> nữa.</>}
+      </div>
+      <button onClick={()=>{
+        const msg=`Phân tích cân nặng: mục tiêu ${goalLabel} ${goalKg}kg, hiện tại ${curKg}kg, tốc độ ${rateRound}kg/tuần qua ${totalWeeks} tuần. Gợi ý điều chỉnh chế độ ăn và tập.`;
+        if(window.sendPrompt)window.sendPrompt(msg);
+      }} style={{fontSize:13,fontWeight:700,padding:"8px 14px",borderRadius:8,border:"1.5px solid #3B82F6",background:"#EFF6FF",color:"#1D4ED8",cursor:"pointer"}}>
+        ✨ AI gợi ý đạt mục tiêu
+      </button>
+    </div>;
+  }
+
+  // Case 2: Over 1 month + on track
+  if(overMonth&&!isStalling&&!isWrongDir){
+    return <div style={{marginTop:10,padding:"14px",background:"#E8F5E9",borderRadius:10,border:"1.5px solid #34A853"}}>
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
+        <span style={{fontSize:16}}>✅</span>
+        <span style={{fontSize:14,fontWeight:800,color:"#1B5E20"}}>Đang đi đúng hướng!</span>
+      </div>
+      <div style={{fontSize:13,color:"#2E7D32",lineHeight:1.6,marginBottom:10}}>
+        Tốc độ: <b>{rateRound>=0?"+":""}{rateRound} kg/tuần</b>.
+        {typeof weeksLeft==="number"&&<> Dự kiến đạt {goalKg} kg sau <b>{weeksLeft} tuần</b> nữa.</>}
+        {" "}Tiếp tục duy trì nhé!
+      </div>
+      <button onClick={()=>{
+        if(window.sendPrompt)window.sendPrompt(`Đang ${goalLabel} tốt, tốc độ ${rateRound}kg/tuần. Gợi ý tối ưu thêm.`);
+      }} style={{fontSize:13,fontWeight:700,padding:"8px 14px",borderRadius:8,border:"1.5px solid #34A853",background:"#F0FFF4",color:"#166534",cursor:"pointer"}}>
+        ✨ AI gợi ý tối ưu
+      </button>
+    </div>;
+  }
+
+  // Case 3: Over 1 month + stalling or wrong direction
+  return <div style={{marginTop:10}}>
+    <div style={{padding:"14px",background:"#FFF8E1",borderRadius:10,border:"1.5px solid #F4B400",marginBottom:10}}>
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
+        <span style={{fontSize:16}}>⚠️</span>
+        <span style={{fontSize:14,fontWeight:800,color:"#7C6600"}}>
+          {isWrongDir?"Đang đi ngược hướng!":"Cân nặng đang chững lại"}
+        </span>
+      </div>
+      <div style={{fontSize:13,color:"#7C6600",lineHeight:1.6,marginBottom:10}}>
+        Sau {totalWeeks} tuần, tốc độ gần đây: <b>{rateRound>=0?"+":""}{rateRound} kg/tuần</b>.
+        {isWrongDir
+          ?` Cân nặng đang đi ngược mục tiêu ${goalLabel}. Cần điều chỉnh ngay.`
+          :` Cân nặng không tiến triển. Có thể cần thay đổi chế độ tập hoặc dinh dưỡng.`}
+      </div>
+      <button onClick={()=>{
+        if(window.sendPrompt)window.sendPrompt(`Cân nặng ${isWrongDir?"đi ngược":"chững"} sau ${totalWeeks} tuần. Mục tiêu ${goalLabel} ${goalKg}kg, hiện ${curKg}kg, rate ${rateRound}kg/tuần. Phân tích và gợi ý.`);
+      }} style={{fontSize:13,fontWeight:700,padding:"8px 14px",borderRadius:8,border:"1.5px solid #F4B400",background:"#FFFBEB",color:"#92400E",cursor:"pointer"}}>
+        ✨ AI gợi ý điều chỉnh
+      </button>
+    </div>
+
+    <div style={{padding:"16px",background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
+        <span style={{fontSize:18}}>🏆</span>
+        <span style={{fontSize:15,fontWeight:800,color:"#3730A3"}}>Đã đến lúc thuê PT?</span>
+      </div>
+      <div style={{fontSize:13,color:"#4338CA",lineHeight:1.6,marginBottom:10}}>
+        Sau 1 tháng tự tập, kết quả chưa như mong đợi. Personal Trainer sẽ giúp:
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:12,fontSize:13,color:"#4338CA"}}>
+        {["Thiết kế giáo án phù hợp thể trạng","Điều chỉnh form tập, tránh chấn thương","Tư vấn dinh dưỡng chuyên sâu","Đột phá plateau nhanh hơn"].map((t,i)=>
+          <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
+            <span style={{color:"#34A853",fontWeight:900}}>✓</span>{t}
+          </div>
+        )}
+      </div>
+      <button onClick={()=>{
+        if(window.sendPrompt)window.sendPrompt("Tôi muốn tìm PT. Gợi ý cách chọn PT phù hợp với mục tiêu "+goalLabel+".");
+      }} style={{fontSize:13,fontWeight:700,padding:"10px 16px",borderRadius:8,border:"none",background:"#6366F1",color:"#fff",cursor:"pointer"}}>
+        🔍 Tìm PT phù hợp
+      </button>
+    </div>
+  </div>;
+}
+
 function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)return null;
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
@@ -234,38 +459,32 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
       </div>
     </div>}
 
-    {/* Weight */}
+    {/* Weight Chart */}
     <div style={{...card,marginTop:6,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#EAB308) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{fontSize:17,fontWeight:900,color:C.blue}}>📈 Theo dõi cân nặng</div>
         <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
       </div>
-      <div style={{display:"flex",gap:8,marginBottom:12,overflowX:"auto",flexWrap:mob?"wrap":"nowrap"}}>
-        {weightLog.slice(-4).map((w,i)=>{const ci=weightLog.indexOf(w);return(
-          <div key={ci} style={{flex:mob?"1 1 calc(50% - 4px)":"1",minWidth:mob?0:70,borderRadius:12,padding:"12px 8px",textAlign:"center",background:C.card,border:`2px solid ${wColors[ci%wColors.length]}`,boxShadow:`0 2px 8px ${wColors[ci%wColors.length]}22`}}>
-            <div style={{fontSize:11,fontWeight:900,color:wColors[ci%wColors.length],textTransform:"uppercase"}}>Tuần {w.week}</div>
-            <div style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:2}}>{w.date}</div>
-            <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:4}}>{w.kg}</div>
-            {w.delta?<div style={{fontSize:12,fontWeight:800,color:w.delta>0?C.green:C.red,marginTop:2}}>{w.delta>0?"+":""}{w.delta} kg</div>:<div style={{fontSize:12,fontWeight:600,color:C.t3,marginTop:2}}>Bắt đầu</div>}
-          </div>
-        );})}
+
+      {/* Stat cards */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14}}>
+        {[
+          {l:"Xuất phát",v:startKg,c:C.t1},
+          {l:"Hiện tại",v:curKg,c:"#4285F4"},
+          {l:"Mục tiêu",v:goalKg,c:"#34A853"},
+          {l:"Tiến độ",v:Math.max(0,Math.min(100,Math.round(wPct)))+"%",c:"#F4B400"},
+        ].map((s,i)=><div key={i} style={{background:C.card,borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1px solid ${C.border}`}}>
+          <div style={{fontSize:9,fontWeight:700,textTransform:"uppercase",letterSpacing:1,color:C.t3,marginBottom:2}}>{s.l}</div>
+          <div style={{fontSize:22,fontWeight:900,color:s.c}}>{s.v}</div>
+          <div style={{fontSize:10,color:C.t3}}>{i<3?"kg":("còn "+Math.abs(goalKg-curKg).toFixed(1)+" kg")}</div>
+        </div>)}
       </div>
-      <div style={{height:8,background:"#E0E0E0",borderRadius:4,overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${Math.max(0,Math.min(Math.round(wPct),100))}%`,background:"linear-gradient(90deg,#DC2626,#EAB308)",borderRadius:4,transition:"width 0.4s"}}/>
-      </div>
-      <div style={{display:"flex",justifyContent:"space-between",fontSize:11,fontWeight:800,color:C.t3,marginTop:4}}>
-        <span>{startKg} kg</span><span>{goalKg} kg</span>
-      </div>
-      <div style={{...card,background:C.goldBg,border:"1.5px solid #CA8A04",marginTop:10,marginBottom:0,padding:"10px 14px"}}>
-        <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-          <span style={{fontSize:16,fontWeight:900,color:"#EAB308"}}>⚡</span>
-          <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.5}}>{weightLog.length>=2?(()=>{
-            const last=weightLog[weightLog.length-1],prev=weightLog[weightLog.length-2];
-            const d=Math.round((last.kg-prev.kg)*10)/10;
-            return d>0&&d<=0.5?`+${d}kg tuần này — tốc độ lý tưởng tăng cơ. Giữ nguyên chế độ!`:d>0.5?`+${d}kg tuần này — hơi nhanh, cẩn thận tích mỡ bụng.`:d<0?`${d}kg tuần này — đang giảm, kiểm tra lại calo.`:"Giữ nguyên cân nặng tuần này.";
-          })():"Chưa đủ dữ liệu để phân tích."}</span>
-        </div>
-      </div>
+
+      {/* Bar chart */}
+      {weightLog.length>=2&&<WeightBarChart weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} mob={mob}/>}
+
+      {/* Smart suggestions */}
+      <WeightSuggestion weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} curKg={curKg}/>
     </div>
   </div>;
 }
@@ -1219,4 +1438,3 @@ export default function App(){
     {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
   </div>;
 }
-// force rebuild 1781531305
