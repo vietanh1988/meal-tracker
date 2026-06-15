@@ -158,7 +158,7 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
   const chartRef=useRef(null);
 
   useEffect(()=>{
-    if(!canvasRef.current||weightLog.length<2)return;
+    if(!canvasRef.current||weightLog.length<2||!window.ChartJS)return;
     if(chartRef.current)chartRef.current.destroy();
 
     const data=weightLog.map(w=>w.kg);
@@ -170,11 +170,14 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
       if(Math.abs(diff)<0.01)return"neutral";
       if(goalType==="bulk")return diff>0?"good":"bad";
       if(goalType==="cut")return diff<0?"good":"bad";
-      // maintain
       return Math.abs(diff)<=0.2?"good":"bad";
     }
+
     const types=data.map((v,i)=>i===0?"neutral":getBarType(v-data[i-1]));
-    const gradMap={good:["#9BE7A1","#34A853"],bad:["#FF6B6B","#E53935"],neutral:["#FFE66D","#F4B400"]};
+
+    // Flat colors (no gradient — reliable cross-browser)
+    const colorMap={good:"#34A853",bad:"#E53935",neutral:"#F4B400"};
+    const actualColors=types.map(t=>colorMap[t]);
     const lblColors={good:"#34A853",bad:"#E53935",neutral:"#F4B400"};
 
     // Dynamic Y axis
@@ -182,58 +185,51 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
     const yMin=Math.floor(Math.min(...allVals))-1;
     const yMax=Math.ceil(Math.max(...allVals))+1;
 
-    const ctx=canvasRef.current.getContext("2d");
-
-    const applyGrad={id:"ag",beforeDatasetsDraw(chart){
-      const bot=chart.scales.y.getPixelForValue(yMin);
-      chart.getDatasetMeta(0).data.forEach((bar,i)=>{
-        const g=ctx.createLinearGradient(0,bar.y,0,bot);
-        const cs=gradMap[types[i]];g.addColorStop(0,cs[0]);g.addColorStop(1,cs[1]);
-        bar.options.backgroundColor=g;
-      });
-      chart.getDatasetMeta(1).data.forEach(bar=>{
-        const g=ctx.createLinearGradient(0,bar.y,0,bot);
-        g.addColorStop(0,"#A7D3FF");g.addColorStop(1,"#4285F4");
-        bar.options.backgroundColor=g;
-      });
-    }};
+    // Dynamic bar sizing
+    const n=data.length;
+    const catPct=n<=3?0.35:n<=5?0.45:0.55;
+    const maxBT=n<=4?36:n<=6?32:undefined;
 
     const drawLbl={id:"dl",afterDatasetsDraw(chart){
       const c=chart.ctx;
+      // Goal labels
       chart.getDatasetMeta(1).data.forEach(bar=>{
-        c.save();c.font="500 10px sans-serif";c.fillStyle="#4285F4";
-        c.textAlign="center";c.fillText(goalKg,bar.x,bar.y-5);c.restore();
+        c.save();c.font="500 "+(mob?"9":"10")+"px sans-serif";c.fillStyle="#4285F4";
+        c.textAlign="center";c.fillText(goalKg,bar.x,bar.y-4);c.restore();
       });
+      // Actual labels
       chart.getDatasetMeta(0).data.forEach((bar,i)=>{
         const v=data[i];const txt=v%1===0?v.toFixed(0):v.toFixed(1);
         c.save();c.textAlign="center";
-        c.font="500 11px sans-serif";c.fillStyle="#333";
-        c.fillText(txt,bar.x,bar.y-(i>0?18:6));
         if(i>0){
           const diff=v-data[i-1];
           const dtxt=Math.abs(diff)<0.01?"=":(diff>0?"+":"")+diff.toFixed(1);
-          c.font="500 9px sans-serif";c.fillStyle=lblColors[types[i]];
-          c.fillText(dtxt,bar.x,bar.y-6);
+          // Weight value
+          c.font="500 "+(mob?"10":"12")+"px sans-serif";
+          c.fillStyle="#333";
+          c.fillText(txt,bar.x,bar.y-22);
+          // Diff label
+          c.font="500 "+(mob?"8":"10")+"px sans-serif";
+          c.fillStyle=lblColors[types[i]];
+          c.fillText(dtxt,bar.x,bar.y-10);
+        }else{
+          c.font="500 "+(mob?"10":"12")+"px sans-serif";
+          c.fillStyle="#333";
+          c.fillText(txt,bar.x,bar.y-8);
         }
         c.restore();
       });
     }};
 
-    // Dynamic bar sizing: fewer weeks = thinner bars
-    const n=data.length;
-    const catPct=n<=3?0.35:n<=5?0.45:0.55;
-    const barPct=0.82;
-    const maxBarThickness=n<=4?36:n<=6?32:undefined;
-
     chartRef.current=new window.ChartJS(canvasRef.current,{
       type:"bar",
       data:{labels,datasets:[
-        {data,backgroundColor:"#34A853",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:barPct,categoryPercentage:catPct,order:2,maxBarThickness},
-        {data:goalData,backgroundColor:"#4285F4",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:barPct,categoryPercentage:catPct,order:1,maxBarThickness},
+        {data,backgroundColor:actualColors,borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:0.82,categoryPercentage:catPct,order:2,maxBarThickness:maxBT},
+        {data:goalData,backgroundColor:"#4285F4",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:0.82,categoryPercentage:catPct,order:1,maxBarThickness:maxBT},
       ]},
       options:{
         responsive:true,maintainAspectRatio:false,
-        layout:{padding:{top:26,right:8}},
+        layout:{padding:{top:mob?28:32,right:8}},
         plugins:{legend:{display:false},tooltip:{
           backgroundColor:"#fff",titleColor:"#111",bodyColor:"#555",
           borderColor:"#e0e0e0",borderWidth:1,cornerRadius:8,padding:10,displayColors:true,
@@ -249,23 +245,25 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
         }},
         scales:{
           y:{min:yMin,max:yMax,grid:{color:"rgba(0,0,0,0.06)",drawBorder:false},border:{display:false},
-            ticks:{color:"rgba(0,0,0,0.35)",font:{size:10},callback:v=>v+" kg",stepSize:1,padding:6}},
-          x:{grid:{display:false},border:{display:false},ticks:{color:"rgba(0,0,0,0.35)",font:{size:10},padding:4}}
+            ticks:{color:"rgba(0,0,0,0.35)",font:{size:mob?9:11},callback:v=>v+" kg",stepSize:1,padding:4}},
+          x:{grid:{display:false},border:{display:false},ticks:{color:"rgba(0,0,0,0.35)",font:{size:mob?9:11},padding:4}}
         }
       },
-      plugins:[applyGrad,drawLbl]
+      plugins:[drawLbl]
     });
 
     return()=>{if(chartRef.current)chartRef.current.destroy();};
-  },[weightLog,goalKg,goalType,startKg]);
+  },[weightLog,goalKg,goalType,startKg,mob]);
 
-  return <div style={{position:"relative",width:"100%",height:mob?180:220}}>
-    <canvas ref={canvasRef}/>
-    <div style={{display:"flex",flexWrap:"wrap",gap:mob?8:14,justifyContent:"center",marginTop:8,fontSize:mob?9:10,color:"#888"}}>
-      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#9BE7A1,#34A853)"}}/>Đúng hướng</span>
-      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#FF6B6B,#E53935)"}}/>Ngược hướng</span>
-      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#FFE66D,#F4B400)"}}/>Giữ nguyên</span>
-      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#A7D3FF,#4285F4)"}}/>Mục tiêu</span>
+  return <div>
+    <div style={{position:"relative",width:"100%",height:mob?190:240}}>
+      <canvas ref={canvasRef}/>
+    </div>
+    <div style={{display:"flex",flexWrap:"wrap",gap:mob?8:14,justifyContent:"center",marginTop:6,fontSize:mob?9:11,color:"#888"}}>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#34A853"}}/>Đúng hướng</span>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#E53935"}}/>Ngược hướng</span>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#F4B400"}}/>Giữ nguyên</span>
+      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#4285F4"}}/>Mục tiêu</span>
     </div>
   </div>;
 }
