@@ -81,16 +81,24 @@ const getMealsDefault=(type)=>mealsData[type];
 const wColors=["#DC2626","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
 function fmtDate(d){const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear();return `${dd}/${mm}/${yy}`;}
 
-function MacroRing({l,v,max,color,track,tc,sub}){
+function MacroRing({l,v,max,color,color2,track,tc,sub,unit}){
   const pct=Math.min((v/max)*100,100),r=28,sw=6,circ=2*Math.PI*r;
   const overMax=v>max;
+  const gradId=`ring-${l.replace(/\s/g,"")}`;
+  const c2=color2||color;
   return <div style={{textAlign:"center"}}>
     <svg width={72} height={72} viewBox="0 0 72 72" style={{display:"block",margin:"0 auto"}}>
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={overMax?"#EF4444":color}/>
+          <stop offset="100%" stopColor={overMax?"#F87171":c2}/>
+        </linearGradient>
+      </defs>
       <circle cx={36} cy={36} r={r} fill="none" stroke={track||"#E0E0E0"} strokeWidth={sw}/>
-      <circle cx={36} cy={36} r={r} fill="none" stroke={overMax?"#EF4444":color} strokeWidth={sw} strokeDasharray={`${(Math.min(pct,100)/100)*circ} ${circ}`} strokeLinecap="round" transform="rotate(-90 36 36)" style={{transition:"stroke-dasharray 0.5s"}}/>
-      <text x={36} y={sub?30:34} textAnchor="middle" fill={tc||C.t1} fontSize={sub?14:16} fontWeight={900}>{Math.round(v)}</text>
-      {sub?<text x={36} y={44} textAnchor="middle" fill={tc?"rgba(255,255,255,0.85)":"#666"} fontSize={10} fontWeight={700}>{sub}</text>
-        :<text x={36} y={47} textAnchor="middle" fill={tc?"rgba(255,255,255,0.65)":C.t3} fontSize={10} fontWeight={700}>g</text>}
+      <circle cx={36} cy={36} r={r} fill="none" stroke={`url(#${gradId})`} strokeWidth={sw} strokeDasharray={`${(Math.min(pct,100)/100)*circ} ${circ}`} strokeLinecap="round" transform="rotate(-90 36 36)" style={{transition:"stroke-dasharray 0.5s"}}/>
+      <text x={36} y={sub?32:36} textAnchor="middle" dominantBaseline="central" fill={tc||C.t1} fontSize={sub?14:16} fontWeight={900}>{Math.round(v)}</text>
+      {sub&&<text x={36} y={48} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.8)":"#666"} fontSize={10} fontWeight={700}>{sub}</text>}
+      {!sub&&<text x={36} y={48} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.6)":C.t3} fontSize={10} fontWeight={700}>{unit||"g"}</text>}
     </svg>
     <div style={{fontSize:12,fontWeight:700,color:tc?"rgba(255,255,255,0.85)":C.t2,marginTop:4}}>{l}</div>
   </div>;
@@ -153,7 +161,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
-  const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=((curKg-profile.kg)/(goalKg-profile.kg))*100;
+  const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,startKg=weightLog.length>0?weightLog[0].kg:profile.kg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=goalKg!==startKg?((curKg-startKg)/(goalKg-startKg))*100:0;
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
   const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
   return <div>
@@ -173,10 +181,10 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
           </div>
         </div>
         <div style={{display:"flex",gap:mob?8:14,justifyContent:mob?"space-around":"flex-end"}}>
-          <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#EF4444" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualP>0?`/${heroP}`:null}/>
-          <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#EAB308" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualC>0?`/${heroC}`:null}/>
-          <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#A8A8A8" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualF>0?`/${heroF}`:null}/>
-          <MacroRing l="Xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#4ADE80" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualFiber>0?`/${heroFiber}`:null}/>
+          <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#EF4444" color2="#F97316" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualP>0?`/${heroP}g`:null} unit="g"/>
+          <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#EAB308" color2="#F59E0B" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualC>0?`/${heroC}g`:null} unit="g"/>
+          <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#8B5CF6" color2="#A78BFA" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualF>0?`/${heroF}g`:null} unit="g"/>
+          <MacroRing l="Xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#22C55E" color2="#4ADE80" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualFiber>0?`/${heroFiber}g`:null} unit="g"/>
         </div>
       </div>
     </div>
@@ -243,10 +251,10 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
         );})}
       </div>
       <div style={{height:8,background:"#E0E0E0",borderRadius:4,overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${Math.round(wPct)}%`,background:"linear-gradient(90deg,#DC2626,#EAB308)",borderRadius:4,transition:"width 0.4s"}}/>
+        <div style={{height:"100%",width:`${Math.max(0,Math.min(Math.round(wPct),100))}%`,background:"linear-gradient(90deg,#DC2626,#EAB308)",borderRadius:4,transition:"width 0.4s"}}/>
       </div>
       <div style={{display:"flex",justifyContent:"space-between",fontSize:11,fontWeight:800,color:C.t3,marginTop:4}}>
-        <span>63 kg</span><span>{goalKg} kg</span>
+        <span>{startKg} kg</span><span>{goalKg} kg</span>
       </div>
       <div style={{...card,background:C.goldBg,border:"1.5px solid #CA8A04",marginTop:10,marginBottom:0,padding:"10px 14px"}}>
         <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
