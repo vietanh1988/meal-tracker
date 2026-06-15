@@ -4,8 +4,9 @@
 import { supabase } from "../lib/supabase";
 
 const PROMPT = `Bạn là chuyên gia dinh dưỡng. Phân tích dinh dưỡng cho thức ăn dưới đây.
+Lưu ý đơn vị: trứng tính theo "quả", sữa tính theo "ml" hoặc "hộp", bánh mì tính theo "ổ/lát", chuối tính theo "quả", thức ăn khác tính theo "g".
 Trả lời CHÍNH XÁC bằng JSON, không markdown:
-{"items":[{"name":"tên","gram":số,"protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý cho người gym tăng cơ"}`;
+{"items":[{"name":"tên","gram":tổng_gram,"unit":"đơn vị gốc (quả/ml/hộp/lát/g)","qty_display":"số lượng theo đơn vị gốc","protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý cho người gym tăng cơ"}`;
 
 export async function calcMacroAI({ foods, provider = "claude", model }) {
   const foodDesc = foods

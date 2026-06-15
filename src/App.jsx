@@ -94,13 +94,13 @@ function MealCard({meal}){
     </div>
     {open&&<div style={{marginTop:12,borderTop:`1.5px solid ${C.border}`,paddingTop:10}}>
       <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.7fr 0.7fr 0.7fr 0.8fr",gap:4,fontSize:11,fontWeight:700,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`,textTransform:"uppercase",letterSpacing:"0.05em"}}>
-        <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>Gram</span>
+        <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>Lượng</span>
         <span style={{color:C.protein,textAlign:"right"}}>P</span><span style={{color:C.carb,textAlign:"right"}}>C</span>
         <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.t2,textAlign:"right"}}>Cal</span>
       </div>
       {meal.items.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.7fr 0.7fr 0.7fr 0.8fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<meal.items.length-1?`1px solid ${C.border}`:"none"}}>
         <span style={{color:C.t1,fontWeight:700}}>{item.food}</span>
-        <span style={{color:C.t3,textAlign:"right"}}>{item.gram}g</span>
+        <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display||item.unit?`${item.qty_display||""} ${item.unit||""}`.trim():item.gram+"g"}</span>
         <span style={{color:C.protein,textAlign:"right"}}>{item.p}</span>
         <span style={{color:C.carb,textAlign:"right"}}>{item.c}</span>
         <span style={{color:C.t1,textAlign:"right"}}>{item.f}</span>
@@ -165,6 +165,48 @@ function Dashboard({weightLog,profile,macro}){if(!profile||!macro)return null;
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
+
+    {/* Macro comparison: actual vs target */}
+    {totals.cal>0&&<div style={{...card,padding:mob?"14px":"18px",marginTop:6}}>
+      <div style={{fontSize:13,fontWeight:900,color:C.t2,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>📊 So sánh thực tế vs mục tiêu</div>
+      {[
+        {l:"Calo",actual:Math.round(totals.cal),target:heroCal,u:"kcal",c:C.red},
+        {l:"Protein",actual:Math.round(totals.p),target:heroP,u:"g",c:"#EF4444"},
+        {l:"Carb",actual:Math.round(totals.c),target:heroC,u:"g",c:"#EAB308"},
+        {l:"Fat",actual:Math.round(totals.f),target:heroF,u:"g",c:"#A8A8A8"},
+        {l:"Xơ",actual:Math.round(totals.fiber),target:heroFiber,u:"g",c:"#4ADE80"},
+      ].map((r,i)=>{
+        const diff=r.actual-r.target;
+        const pct=r.target>0?Math.round((r.actual/r.target)*100):0;
+        const barPct=Math.min(pct,120);
+        const status=pct>=95&&pct<=110?"✅":pct<95?"⚠️ Thiếu":"🔴 Thừa";
+        const diffStr=diff>0?`+${diff}${r.u}`:`${diff}${r.u}`;
+        return <div key={i} style={{marginBottom:i<4?10:0}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+            <span style={{fontSize:13,fontWeight:800,color:C.t1}}>{r.l}</span>
+            <span style={{fontSize:12,fontWeight:700,color:pct>=95&&pct<=110?C.green:pct<95?C.gold:C.red}}>
+              {r.actual}/{r.target}{r.u} ({pct}%) {diff!==0&&<span style={{fontSize:11}}>({diffStr})</span>}
+            </span>
+          </div>
+          <div style={{height:8,background:C.border,borderRadius:4,overflow:"hidden",position:"relative"}}>
+            <div style={{height:"100%",width:`${Math.min(barPct,100)}%`,background:barPct>110?"#DC2626":barPct>=95?C.green:r.c,borderRadius:4,transition:"width 0.3s"}}/>
+            {/* Target line at 100% */}
+            <div style={{position:"absolute",top:0,bottom:0,left:`${Math.min(100/1.2*100/100,100)}%`,width:2,background:C.t1,opacity:0.3}}/>
+          </div>
+        </div>;
+      })}
+      <div style={{marginTop:12,padding:"10px 14px",borderRadius:10,fontSize:13,fontWeight:700,lineHeight:1.6,
+        background:totals.cal>=heroCal*0.95&&totals.cal<=heroCal*1.1?C.greenBg:totals.cal<heroCal*0.95?C.goldBg:C.redBg,
+        color:totals.cal>=heroCal*0.95&&totals.cal<=heroCal*1.1?C.green:totals.cal<heroCal*0.95?"#92400E":C.red,
+      }}>
+        {totals.cal>=heroCal*0.95&&totals.cal<=heroCal*1.1
+          ?"✅ Thực đơn phù hợp với mục tiêu! Chênh lệch trong khoảng cho phép (±10%)."
+          :totals.cal<heroCal*0.95
+          ?`⚠️ Thực đơn thiếu ${heroCal-Math.round(totals.cal)} kcal (${100-Math.round(totals.cal/heroCal*100)}%). Cần bổ sung thêm thức ăn.`
+          :`🔴 Thực đơn thừa ${Math.round(totals.cal)-heroCal} kcal (+${Math.round(totals.cal/heroCal*100)-100}%). Nên giảm bớt khẩu phần.`
+        }
+      </div>
+    </div>}
 
     {heroCal<target&&<div style={{...card,background:C.goldBg,border:"2px solid #CA8A04"}}>
       <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
