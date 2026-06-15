@@ -685,6 +685,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       </div>
 
       {isAdmin&&<button onClick={async()=>{
+        console.log("🔑 Saving keys:", {aiProvider, claudeKey: claudeKey?.length, geminiKey: geminiKey?.length, gptKey: gptKey?.length, usdaKey: usdaKey?.length, aiModel});
         await saveSetting("ai_provider",aiProvider);
         await saveSetting("claude_key",claudeKey);
         await saveSetting("gemini_key",geminiKey);

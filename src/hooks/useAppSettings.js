@@ -17,23 +17,35 @@ export function useAppSettings(userId) {
           const s = {};
           data.forEach(d => { s[d.key] = d.value; });
           setSettings(s);
-          console.log("✅ Loaded app settings:", Object.keys(s).length, "keys");
+          console.log("✅ Loaded app settings:", Object.keys(s).length, "keys", s);
         }
       } catch (e) { console.error("AppSettings error:", e); }
       setLoading(false);
     })();
   }, []);
 
-  // Only admin can save
   const saveSetting = useCallback(async (key, value) => {
-    if (!isAdmin) return;
+    if (!isAdmin) { console.warn("Not admin, skip save"); return; }
+    console.log("💾 Saving setting:", key, "=", value ? value.substring(0, 10) + "..." : "(empty)");
     setSettings(prev => ({ ...prev, [key]: value }));
     try {
-      const { error } = await supabase.from("app_settings").upsert(
-        { key, value, updated_at: new Date().toISOString() },
-        { onConflict: "key" }
-      );
-      if (error) console.error("Save setting error:", key, error);
+      // Try update first
+      const { data: existing } = await supabase.from("app_settings")
+        .select("key").eq("key", key).maybeSingle();
+      
+      let error;
+      if (existing) {
+        const res = await supabase.from("app_settings")
+          .update({ value, updated_at: new Date().toISOString() })
+          .eq("key", key);
+        error = res.error;
+      } else {
+        const res = await supabase.from("app_settings")
+          .insert({ key, value, updated_at: new Date().toISOString() });
+        error = res.error;
+      }
+      
+      if (error) console.error("❌ Save setting error:", key, error);
       else console.log("✅ Setting saved:", key);
     } catch (e) { console.error("Save setting error:", e); }
   }, [isAdmin]);
