@@ -301,12 +301,12 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     const meals=getMeals(dayType);
     const meal=meals.find(m=>m.id===selectedMeal);
     if(meal&&meal.items&&meal.items.length>0){
-      setFoodItems(meal.items.map(it=>({name:it.food||it.name||"",qty:1,gram:it.gram||100})));
+      setFoodItems(meal.items.map(it=>({name:it.food||it.name||"",qty:it.qty||1,gram:it.gram||100,unit:it.unit||"g"})));
     }else{
       setFoodItems([{name:"",qty:1,gram:100}]);
     }
     setAiResult(null);
-  },[selectedMeal,dayType]);
+  },[selectedMeal,dayType,getMeals]);
 
   const addFood=()=>setFoodItems([...foodItems,{name:"",qty:1,gram:100,unit:"g"}]);
   const removeFood=(idx)=>setFoodItems(foodItems.filter((_,i)=>i!==idx));
