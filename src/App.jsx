@@ -253,9 +253,9 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
     return()=>{if(chartRef.current)chartRef.current.destroy();};
   },[weightLog,goalKg,goalType,startKg]);
 
-  return <div style={{position:"relative",width:"100%",height:220}}>
+  return <div style={{position:"relative",width:"100%",height:mob?180:220}}>
     <canvas ref={canvasRef}/>
-    <div style={{display:"flex",flexWrap:"wrap",gap:14,justifyContent:"center",marginTop:8,fontSize:10,color:"#888"}}>
+    <div style={{display:"flex",flexWrap:"wrap",gap:mob?8:14,justifyContent:"center",marginTop:8,fontSize:mob?9:10,color:"#888"}}>
       <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#9BE7A1,#34A853)"}}/>Đúng hướng</span>
       <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#FF6B6B,#E53935)"}}/>Ngược hướng</span>
       <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"linear-gradient(180deg,#FFE66D,#F4B400)"}}/>Giữ nguyên</span>
@@ -467,7 +467,7 @@ function Dashboard({weightLog,profile,macro,getMeals}){if(!profile||!macro)retur
       </div>
 
       {/* Stat cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:14}}>
         {[
           {l:"Xuất phát",v:startKg,c:C.t1},
           {l:"Hiện tại",v:curKg,c:"#4285F4"},
