@@ -202,30 +202,32 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
 
     const drawLbl={id:"dl",afterDatasetsDraw(chart){
       const c=chart.ctx;
+      const hideGoalLbl=mob&&n>4;
+      const hideDiffLbl=mob&&n>5;
       // Goal labels
-      chart.getDatasetMeta(1).data.forEach(bar=>{
-        c.save();c.font="500 "+(mob?"9":"10")+"px sans-serif";c.fillStyle="#4285F4";
-        c.textAlign="center";c.fillText(goalKg,bar.x,bar.y-4);c.restore();
-      });
+      if(!hideGoalLbl){
+        chart.getDatasetMeta(1).data.forEach(bar=>{
+          c.save();c.font="500 "+(mob?"8":"10")+"px sans-serif";c.fillStyle="#4285F4";
+          c.textAlign="center";c.fillText(goalKg,bar.x,bar.y-4);c.restore();
+        });
+      }
       // Actual labels
       chart.getDatasetMeta(0).data.forEach((bar,i)=>{
         const v=data[i];const txt=v%1===0?v.toFixed(0):v.toFixed(1);
         c.save();c.textAlign="center";
-        if(i>0){
+        if(i>0&&!hideDiffLbl){
           const diff=v-data[i-1];
           const dtxt=Math.abs(diff)<0.01?"=":(diff>0?"+":"")+diff.toFixed(1);
-          // Weight value
-          c.font="500 "+(mob?"10":"12")+"px sans-serif";
+          c.font="500 "+(mob?"9":"12")+"px sans-serif";
           c.fillStyle="#333";
-          c.fillText(txt,bar.x,bar.y-22);
-          // Diff label
-          c.font="500 "+(mob?"8":"10")+"px sans-serif";
+          c.fillText(txt,bar.x,bar.y-20);
+          c.font="500 "+(mob?"7":"10")+"px sans-serif";
           c.fillStyle=lblColors[types[i]];
-          c.fillText(dtxt,bar.x,bar.y-10);
+          c.fillText(dtxt,bar.x,bar.y-9);
         }else{
-          c.font="500 "+(mob?"10":"12")+"px sans-serif";
+          c.font="500 "+(mob?"9":"12")+"px sans-serif";
           c.fillStyle="#333";
-          c.fillText(txt,bar.x,bar.y-8);
+          c.fillText(txt,bar.x,bar.y-6);
         }
         c.restore();
       });
@@ -1428,7 +1430,7 @@ export default function App(){
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"0 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
-    <div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:C.bg,display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 4px)",paddingBottom:8,paddingLeft:"max(10px, env(safe-area-inset-left, 10px))",paddingRight:"max(10px, env(safe-area-inset-right, 10px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
+    <div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:C.bg,borderBottom:`1px solid ${C.border}`,boxShadow:"0 1px 8px rgba(0,0,0,0.06)",display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 4px)",paddingBottom:8,paddingLeft:"max(10px, env(safe-area-inset-left, 10px))",paddingRight:"max(10px, env(safe-area-inset-right, 10px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
         <div style={{width:mob?28:42,height:mob?28:42,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:22,flexShrink:0}}>🏋️</div>
         <div>
