@@ -322,9 +322,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
     const fc=JSON.parse(localStorage.getItem("foodCache")||"{}");
     const validItems=foodItems.filter(f=>f.name.trim());
     const cached=[];const uncached=[];
-    validItems.forEach(f=>{const k=f.name.toLowerCase().trim();if(fc[k]){const r=f.gram/(fc[k].gram||100);cached.push({name:f.name,gram:f.gram,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r)});}else{uncached.push(f);}});
+    validItems.forEach(f=>{const k=f.name.toLowerCase().trim();if(fc[k]){const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";const r=isWeight?(f.gram/(fc[k].gram||100)):f.qty;cached.push({name:f.name,gram:isWeight?f.gram:0,unit,qty_display:isWeight?null:`${f.qty} ${unit}`,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r)});}else{uncached.push(f);}});
     if(uncached.length===0){setAiResult({items:cached,tip:"📦 Tất cả từ cache — không gọi API!"});setAiLoading(false);return;}
-    const foodDesc=uncached.map(f=>`${f.qty>1?f.qty+" ":""}${f.name} ${f.gram}g`).join(", ");
+    const foodDesc=uncached.map(f=>{
+      const unit=f.unit||"g";
+      if(unit==="g"||unit==="ml") return `${f.qty>1?f.qty+" ":""}${f.name} ${f.gram}${unit}`;
+      return `${f.qty} ${unit} ${f.name}`;
+    }).join(", ");
     try{
       let text="";
       if(aiProvider==="claude"){
@@ -596,7 +600,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           const saved=JSON.parse(localStorage.getItem(key)||"null")||mealsData[dayType];
           const mealIdx=saved.findIndex(m=>m.id===selectedMeal);
           if(mealIdx>=0){
-            const items=aiResult.items.map(it=>({food:it.name,gram:it.gram||0,p:it.protein||0,c:it.carb||0,f:it.fat||0,fiber:it.fiber||0,cal:it.cal||0}));
+            const items=aiResult.items.map(it=>({food:it.name,gram:it.gram||0,unit:it.unit||"g",qty_display:it.qty_display||null,p:it.protein||0,c:it.carb||0,f:it.fat||0,fiber:it.fiber||0,cal:it.cal||0}));
             saved[mealIdx].items=items;
             localStorage.setItem(key,JSON.stringify(saved));
             const fc=JSON.parse(localStorage.getItem("foodCache")||"{}");
