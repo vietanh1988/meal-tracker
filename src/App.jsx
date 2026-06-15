@@ -536,7 +536,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>ĐV</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
         </div>
         {foodItems.map((item,i)=>{
-          const onUnitChange=(e)=>{const u=e.target.value;updateFood(i,"unit",u);if(u!=="g"&&u!=="ml")updateFood(i,"gram",0);};
+          const onUnitChange=(e)=>{const u=e.target.value;const updated=[...foodItems];updated[i]={...updated[i],unit:u};if(u!=="g"&&u!=="ml")updated[i].gram=0;setFoodItems(updated);};
           const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
           return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"auto 1fr 50px 50px 70px 28px":"auto 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:8}}>
           <span style={{fontSize:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
