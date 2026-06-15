@@ -284,6 +284,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     return [{name:"",qty:1,gram:100}];
   });
   const [aiResult,setAiResult]=useState(null);
+  const [saveMsg,setSaveMsg]=useState("");
   const [aiLoading,setAiLoading]=useState(false);
   const [aiError,setAiError]=useState(null);
   const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||"claude");
@@ -617,7 +618,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
           <span style={{fontSize:18}}>✨</span>
-          <span style={{fontSize:14,fontWeight:900,color:C.red}}>Kết quả {providerName}</span>
+          <span style={{fontSize:14,fontWeight:900,color:C.red}}>✨ Kết quả {aiResult.items?.some(i=>i.source==="USDA")?"USDA + ":""}{ providerName}</span>
         </div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:800,borderBottom:`1.5px solid ${C.border}`,paddingBottom:6,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.05em"}}>
           <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>g</span>
@@ -650,12 +651,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             const items=aiResult.items.map(it=>({food:it.name,gram:it.gram||0,unit:it.unit||"g",qty:it.qty||1,qty_display:it.qty_display||null,p:it.protein||0,c:it.carb||0,f:it.fat||0,fiber:it.fiber||0,cal:it.cal||0}));
             saveMealToCloud(selectedMeal,dayType,items);
             saveFoodCache(aiResult.items,aiProvider);
-            const el=document.getElementById("meal-saved");
-            if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
+            setSaveMsg("✅ Đã lưu thành công!");
+            setTimeout(()=>setSaveMsg(""),3000);
         }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
-        <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ Đã lưu! Dashboard sẽ cập nhật khi reload.</span>
-        </div>
+        {saveMsg&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>{saveMsg}</span>
+        </div>}
       </div>}
     </div>}
 
