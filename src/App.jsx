@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
@@ -284,8 +284,6 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     return [{name:"",qty:1,gram:100}];
   });
   const [aiResult,setAiResult]=useState(null);
-  const [saveMsg,setSaveMsg]=useState("");
-  const saveMsgTimer=useRef(null);
   const [aiLoading,setAiLoading]=useState(false);
   const [aiError,setAiError]=useState(null);
   const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||"claude");
@@ -722,16 +720,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             saveMealToCloud(selectedMeal,dayType,items);
             // Pass normalized cache entries (per-100g or per-1-unit)
             if(aiResult._cacheEntries) saveFoodCache(aiResult._cacheEntries,aiProvider);
-            // Use setTimeout(0) so setState runs after saveMealToCloud's re-render
-            if(saveMsgTimer.current)clearTimeout(saveMsgTimer.current);
-            setTimeout(()=>{
-              setSaveMsg("✅ Đã lưu thành công!");
-              saveMsgTimer.current=setTimeout(()=>setSaveMsg(""),3000);
-            },0);
+            // DOM approach — immune to React re-render (same as profile-saved)
+            const el=document.getElementById("meal-saved");
+            if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
         }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
-        {saveMsg&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>{saveMsg}</span>
-        </div>}
+        <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ Đã lưu thành công!</span>
+        </div>
       </div>}
     </div>}
 
