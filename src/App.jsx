@@ -56,14 +56,16 @@ const getMeals=(type)=>{const saved=localStorage.getItem(`meals_${type}`);return
 const wColors=["#DC2626","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
 function fmtDate(d){const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear();return `${dd}/${mm}/${yy}`;}
 
-function MacroRing({l,v,max,color,track,tc}){
+function MacroRing({l,v,max,color,track,tc,sub}){
   const pct=Math.min((v/max)*100,100),r=28,sw=6,circ=2*Math.PI*r;
+  const overMax=v>max;
   return <div style={{textAlign:"center"}}>
     <svg width={72} height={72} viewBox="0 0 72 72" style={{display:"block",margin:"0 auto"}}>
       <circle cx={36} cy={36} r={r} fill="none" stroke={track||"#E0E0E0"} strokeWidth={sw}/>
-      <circle cx={36} cy={36} r={r} fill="none" stroke={color} strokeWidth={sw} strokeDasharray={`${(pct/100)*circ} ${circ}`} strokeLinecap="round" transform="rotate(-90 36 36)" style={{transition:"stroke-dasharray 0.5s"}}/>
-      <text x={36} y={34} textAnchor="middle" fill={tc||C.t1} fontSize={16} fontWeight={900}>{Math.round(v)}</text>
-      <text x={36} y={47} textAnchor="middle" fill={tc?"rgba(255,255,255,0.65)":C.t3} fontSize={10} fontWeight={700}>g</text>
+      <circle cx={36} cy={36} r={r} fill="none" stroke={overMax?"#EF4444":color} strokeWidth={sw} strokeDasharray={`${(Math.min(pct,100)/100)*circ} ${circ}`} strokeLinecap="round" transform="rotate(-90 36 36)" style={{transition:"stroke-dasharray 0.5s"}}/>
+      <text x={36} y={sub?30:34} textAnchor="middle" fill={tc||C.t1} fontSize={sub?14:16} fontWeight={900}>{Math.round(v)}</text>
+      {sub?<text x={36} y={44} textAnchor="middle" fill={tc?"rgba(255,255,255,0.5)":"#999"} fontSize={9} fontWeight={600}>{sub}</text>
+        :<text x={36} y={47} textAnchor="middle" fill={tc?"rgba(255,255,255,0.65)":C.t3} fontSize={10} fontWeight={700}>g</text>}
     </svg>
     <div style={{fontSize:12,fontWeight:700,color:tc?"rgba(255,255,255,0.85)":C.t2,marginTop:4}}>{l}</div>
   </div>;
@@ -127,6 +129,8 @@ function Dashboard({weightLog,profile,macro}){if(!profile||!macro)return null;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
   const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=((curKg-profile.kg)/(goalKg-profile.kg))*100;
+  const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
+  const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
   return <div>
     {/* Hero */}
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
@@ -134,17 +138,20 @@ function Dashboard({weightLog,profile,macro}){if(!profile||!macro)return null;
         <div>
           <div style={{fontSize:mob?11:13,fontWeight:900,color:"#EAB308",letterSpacing:"0.12em",textTransform:"uppercase"}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
           <div style={{fontSize:mob?32:44,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",lineHeight:1.1,marginTop:8}}>
-            {heroCal} <span style={{fontSize:mob?14:20,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>/ {target}</span>
+            {actualCal>0?actualCal:heroCal} <span style={{fontSize:mob?14:20,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>/ {heroCal}</span>
           </div>
-          <div style={{height:mob?8:10,width:mob?"100%":180,background:"rgba(255,255,255,0.18)",borderRadius:5,marginTop:mob?10:14,overflow:"hidden"}}>
-            <div style={{height:"100%",width:`${calPct}%`,background:"linear-gradient(90deg,#DC2626,#EAB308)",borderRadius:5,transition:"width 0.4s"}}/>
+          {actualCal>0&&<div style={{fontSize:12,fontWeight:700,marginTop:4,color:calDiff>=0?"#4ADE80":"#EAB308"}}>
+            {calStatus} {calDiff>0?`+${calDiff}`:`${calDiff}`} kcal ({Math.round(actualCal/heroCal*100)}%)
+          </div>}
+          <div style={{height:mob?8:10,width:mob?"100%":180,background:"rgba(255,255,255,0.18)",borderRadius:5,marginTop:mob?8:10,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:calPct,120)}%`,background:actualCal>heroCal*1.1?"#EF4444":"linear-gradient(90deg,#DC2626,#EAB308)",borderRadius:5,transition:"width 0.4s"}}/>
           </div>
         </div>
         <div style={{display:"flex",gap:mob?8:14,justifyContent:mob?"space-around":"flex-end"}}>
-          <MacroRing l="Protein" v={heroP} max={140} color="#EF4444" track="rgba(255,255,255,0.18)" tc="#FFF"/>
-          <MacroRing l="Carb" v={heroC} max={280} color="#EAB308" track="rgba(255,255,255,0.18)" tc="#FFF"/>
-          <MacroRing l="Fat" v={heroF} max={70} color="#A8A8A8" track="rgba(255,255,255,0.18)" tc="#FFF"/>
-          <MacroRing l="Xơ" v={heroFiber} max={25} color="#4ADE80" track="rgba(255,255,255,0.18)" tc="#FFF"/>
+          <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#EF4444" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualP>0?`/${heroP}`:null}/>
+          <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#EAB308" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualC>0?`/${heroC}`:null}/>
+          <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#A8A8A8" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualF>0?`/${heroF}`:null}/>
+          <MacroRing l="Xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#4ADE80" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualFiber>0?`/${heroFiber}`:null}/>
         </div>
       </div>
     </div>
@@ -166,45 +173,21 @@ function Dashboard({weightLog,profile,macro}){if(!profile||!macro)return null;
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
 
-    {/* Macro comparison: actual vs target */}
-    {totals.cal>0&&<div style={{...card,padding:mob?"14px":"18px",marginTop:6}}>
-      <div style={{fontSize:13,fontWeight:900,color:C.t2,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>📊 So sánh thực tế vs mục tiêu</div>
-      {[
-        {l:"Calo",actual:Math.round(totals.cal),target:heroCal,u:"kcal",c:C.red},
-        {l:"Protein",actual:Math.round(totals.p),target:heroP,u:"g",c:"#EF4444"},
-        {l:"Carb",actual:Math.round(totals.c),target:heroC,u:"g",c:"#EAB308"},
-        {l:"Fat",actual:Math.round(totals.f),target:heroF,u:"g",c:"#A8A8A8"},
-        {l:"Xơ",actual:Math.round(totals.fiber),target:heroFiber,u:"g",c:"#4ADE80"},
-      ].map((r,i)=>{
-        const diff=r.actual-r.target;
-        const pct=r.target>0?Math.round((r.actual/r.target)*100):0;
-        const barPct=Math.min(pct,120);
-        const status=pct>=95&&pct<=110?"✅":pct<95?"⚠️ Thiếu":"🔴 Thừa";
-        const diffStr=diff>0?`+${diff}${r.u}`:`${diff}${r.u}`;
-        return <div key={i} style={{marginBottom:i<4?10:0}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-            <span style={{fontSize:13,fontWeight:800,color:C.t1}}>{r.l}</span>
-            <span style={{fontSize:12,fontWeight:700,color:pct>=95&&pct<=110?C.green:pct<95?C.gold:C.red}}>
-              {r.actual}/{r.target}{r.u} ({pct}%) {diff!==0&&<span style={{fontSize:11}}>({diffStr})</span>}
-            </span>
-          </div>
-          <div style={{height:8,background:C.border,borderRadius:4,overflow:"hidden",position:"relative"}}>
-            <div style={{height:"100%",width:`${Math.min(barPct,100)}%`,background:barPct>110?"#DC2626":barPct>=95?C.green:r.c,borderRadius:4,transition:"width 0.3s"}}/>
-            {/* Target line at 100% */}
-            <div style={{position:"absolute",top:0,bottom:0,left:`${Math.min(100/1.2*100/100,100)}%`,width:2,background:C.t1,opacity:0.3}}/>
-          </div>
-        </div>;
-      })}
-      <div style={{marginTop:12,padding:"10px 14px",borderRadius:10,fontSize:13,fontWeight:700,lineHeight:1.6,
-        background:totals.cal>=heroCal*0.95&&totals.cal<=heroCal*1.1?C.greenBg:totals.cal<heroCal*0.95?C.goldBg:C.redBg,
-        color:totals.cal>=heroCal*0.95&&totals.cal<=heroCal*1.1?C.green:totals.cal<heroCal*0.95?"#92400E":C.red,
+    {/* Compact evaluation */}
+    {actualCal>0&&<div style={{...card,padding:"12px 16px",marginTop:6,
+      background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.greenBg:actualCal<heroCal*0.95?C.goldBg:C.redBg,
+      border:`2px solid ${actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:actualCal<heroCal*0.95?C.gold:C.red}`,
+    }}>
+      <div style={{fontSize:13,fontWeight:800,lineHeight:1.6,
+        color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:actualCal<heroCal*0.95?"#92400E":C.red,
       }}>
-        {totals.cal>=heroCal*0.95&&totals.cal<=heroCal*1.1
-          ?"✅ Thực đơn phù hợp với mục tiêu! Chênh lệch trong khoảng cho phép (±10%)."
-          :totals.cal<heroCal*0.95
-          ?`⚠️ Thực đơn thiếu ${heroCal-Math.round(totals.cal)} kcal (${100-Math.round(totals.cal/heroCal*100)}%). Cần bổ sung thêm thức ăn.`
-          :`🔴 Thực đơn thừa ${Math.round(totals.cal)-heroCal} kcal (+${Math.round(totals.cal/heroCal*100)-100}%). Nên giảm bớt khẩu phần.`
+        {actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1
+          ?"✅ Thực đơn phù hợp với mục tiêu!"
+          :actualCal<heroCal*0.95
+          ?`⚠️ Thiếu ${heroCal-actualCal} kcal (${100-Math.round(actualCal/heroCal*100)}%). Bổ sung thêm thức ăn.`
+          :`🔴 Thừa ${actualCal-heroCal} kcal (+${Math.round(actualCal/heroCal*100)-100}%). Giảm bớt khẩu phần.`
         }
+        {actualP<heroP*0.9&&` | Protein thiếu ${heroP-actualP}g.`}
       </div>
     </div>}
 
@@ -325,7 +308,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     setAiResult(null);
   },[selectedMeal,dayType]);
 
-  const addFood=()=>setFoodItems([...foodItems,{name:"",qty:1,gram:100}]);
+  const addFood=()=>setFoodItems([...foodItems,{name:"",qty:1,gram:100,unit:"g"}]);
   const removeFood=(idx)=>setFoodItems(foodItems.filter((_,i)=>i!==idx));
   const updateFood=(idx,field,val)=>{const u=[...foodItems];u[idx]={...u[idx],[field]:val};setFoodItems(u);};
 
@@ -549,15 +532,18 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         {mealNames.map(m=><Pill key={m.id} active={selectedMeal===m.id} color={C.gold} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}}>{m.l}</Pill>)}
       </div>
       <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14}}>
-        {!mob&&<div style={{display:"grid",gridTemplateColumns:"auto 2fr 70px 80px 32px",gap:8,marginBottom:8}}>
-          <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
+        {!mob&&<div style={{display:"grid",gridTemplateColumns:"auto 2fr 60px 70px 80px 32px",gap:8,marginBottom:8}}>
+          <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>ĐV</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
         </div>}
         {foodItems.map((item,i)=>mob?<div key={i} style={{marginBottom:10}}>
           <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6}}>
             <span style={{fontSize:13,fontWeight:800,color:C.t3,minWidth:22}}>{i+1}.</span>
             <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,flex:1}}/>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 32px",gap:6,paddingLeft:30}}>
+          <div style={{display:"grid",gridTemplateColumns:"auto 1fr 1fr 32px",gap:6,paddingLeft:30}}>
+            <select value={item.unit||"g"} onChange={e=>updateFood(i,"unit",e.target.value)} style={{...inp,padding:"8px 2px",fontSize:13,textAlign:"center",borderRadius:10}}>
+              <option value="g">g</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="ml">ml</option><option value="lát">lát</option><option value="bát">bát</option><option value="muỗng">muỗng</option>
+            </select>
             <div style={{display:"flex",border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden",height:40}}>
               <button onClick={()=>updateFood(i,"qty",Math.max(0,item.qty-1))} style={{width:30,border:"none",background:C.surface,color:C.t1,fontSize:16,fontWeight:700,cursor:"pointer"}}>−</button>
               <input type="text" inputMode="numeric" value={item.qty||""} onChange={e=>{const v=e.target.value.replace(/[^0-9]/g,"").replace(/^0+(?=\d)/,"");updateFood(i,"qty",v===""?0:Number(v));}} style={{flex:1,border:"none",textAlign:"center",fontSize:16,fontWeight:600,background:C.surface,color:C.t1,outline:"none",minWidth:0}}/>
@@ -570,9 +556,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             </div>
             <button onClick={()=>removeFood(i)} style={{padding:0,width:32,height:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer",alignSelf:"center"}}>×</button>
           </div>
-        </div>:<div key={i} style={{display:"grid",gridTemplateColumns:"auto 2fr 70px 80px 32px",gap:8,alignItems:"center",marginBottom:8}}>
+        </div>:<div key={i} style={{display:"grid",gridTemplateColumns:"auto 2fr 60px 70px 80px 32px",gap:8,alignItems:"center",marginBottom:8}}>
           <span style={{fontSize:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
           <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={inp}/>
+          <select value={item.unit||"g"} onChange={e=>updateFood(i,"unit",e.target.value)} style={{...inp,textAlign:"center",padding:"10px 4px",fontSize:13}}>
+            <option value="g">g</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="ml">ml</option><option value="lát">lát</option><option value="bát">bát</option><option value="muỗng">muỗng</option>
+          </select>
           <input type="number" value={item.qty} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center"}} placeholder="SL"/>
           <input type="number" value={item.gram} onChange={e=>updateFood(i,"gram",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center"}} placeholder="Gram"/>
           <button onClick={()=>removeFood(i)} style={{padding:0,width:32,height:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
