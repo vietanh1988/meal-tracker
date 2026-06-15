@@ -64,7 +64,7 @@ function MacroRing({l,v,max,color,track,tc,sub}){
       <circle cx={36} cy={36} r={r} fill="none" stroke={track||"#E0E0E0"} strokeWidth={sw}/>
       <circle cx={36} cy={36} r={r} fill="none" stroke={overMax?"#EF4444":color} strokeWidth={sw} strokeDasharray={`${(Math.min(pct,100)/100)*circ} ${circ}`} strokeLinecap="round" transform="rotate(-90 36 36)" style={{transition:"stroke-dasharray 0.5s"}}/>
       <text x={36} y={sub?30:34} textAnchor="middle" fill={tc||C.t1} fontSize={sub?14:16} fontWeight={900}>{Math.round(v)}</text>
-      {sub?<text x={36} y={44} textAnchor="middle" fill={tc?"rgba(255,255,255,0.5)":"#999"} fontSize={9} fontWeight={600}>{sub}</text>
+      {sub?<text x={36} y={44} textAnchor="middle" fill={tc?"rgba(255,255,255,0.85)":"#666"} fontSize={10} fontWeight={700}>{sub}</text>
         :<text x={36} y={47} textAnchor="middle" fill={tc?"rgba(255,255,255,0.65)":C.t3} fontSize={10} fontWeight={700}>g</text>}
     </svg>
     <div style={{fontSize:12,fontWeight:700,color:tc?"rgba(255,255,255,0.85)":C.t2,marginTop:4}}>{l}</div>
