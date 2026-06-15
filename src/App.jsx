@@ -219,11 +219,17 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
       });
     }};
 
+    // Dynamic bar sizing: fewer weeks = thinner bars
+    const n=data.length;
+    const catPct=n<=3?0.35:n<=5?0.45:0.55;
+    const barPct=0.82;
+    const maxBarThickness=n<=4?36:n<=6?32:undefined;
+
     chartRef.current=new window.ChartJS(canvasRef.current,{
       type:"bar",
       data:{labels,datasets:[
-        {data,backgroundColor:"#34A853",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:0.82,categoryPercentage:0.55,order:2},
-        {data:goalData,backgroundColor:"#4285F4",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:0.82,categoryPercentage:0.55,order:1},
+        {data,backgroundColor:"#34A853",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:barPct,categoryPercentage:catPct,order:2,maxBarThickness},
+        {data:goalData,backgroundColor:"#4285F4",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:barPct,categoryPercentage:catPct,order:1,maxBarThickness},
       ]},
       options:{
         responsive:true,maintainAspectRatio:false,
