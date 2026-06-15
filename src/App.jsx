@@ -102,7 +102,7 @@ function MealCard({meal}){
       </div>
       {meal.items.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.7fr 0.7fr 0.7fr 0.8fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<meal.items.length-1?`1px solid ${C.border}`:"none"}}>
         <span style={{color:C.t1,fontWeight:700}}>{item.food}</span>
-        <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display||item.unit?`${item.qty_display||""} ${item.unit||""}`.trim():item.gram+"g"}</span>
+        <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display?item.qty_display:item.gram?(item.gram+(item.unit==="ml"?"ml":"g")):""}</span>
         <span style={{color:C.protein,textAlign:"right"}}>{item.p}</span>
         <span style={{color:C.carb,textAlign:"right"}}>{item.c}</span>
         <span style={{color:C.t1,textAlign:"right"}}>{item.f}</span>
