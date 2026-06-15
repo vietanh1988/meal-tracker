@@ -284,9 +284,8 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     return [{name:"",qty:1,gram:100}];
   });
   const [aiResult,setAiResult]=useState(null);
-  const saveMsgRef=useRef("");
+  const [saveMsg,setSaveMsg]=useState("");
   const saveMsgTimer=useRef(null);
-  const [saveMsgKey,setSaveMsgKey]=useState(0);
   const [aiLoading,setAiLoading]=useState(false);
   const [aiError,setAiError]=useState(null);
   const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||"claude");
@@ -723,13 +722,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             saveMealToCloud(selectedMeal,dayType,items);
             // Pass normalized cache entries (per-100g or per-1-unit)
             if(aiResult._cacheEntries) saveFoodCache(aiResult._cacheEntries,aiProvider);
-            saveMsgRef.current="✅ Đã lưu thành công!";
-            setSaveMsgKey(k=>k+1);
+            // Use setTimeout(0) so setState runs after saveMealToCloud's re-render
             if(saveMsgTimer.current)clearTimeout(saveMsgTimer.current);
-            saveMsgTimer.current=setTimeout(()=>{saveMsgRef.current="";setSaveMsgKey(k=>k+1);},3000);
+            setTimeout(()=>{
+              setSaveMsg("✅ Đã lưu thành công!");
+              saveMsgTimer.current=setTimeout(()=>setSaveMsg(""),3000);
+            },0);
         }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
-        {saveMsgRef.current&&<div key={saveMsgKey} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>{saveMsgRef.current}</span>
+        {saveMsg&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>{saveMsg}</span>
         </div>}
       </div>}
     </div>}
