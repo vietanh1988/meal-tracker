@@ -4,6 +4,7 @@ import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
 import { useUserData } from "./hooks/useUserData";
 import { calcMacroAIDirect } from "./lib/aiService";
+import { searchUSDA, calcFromUSDA } from "./lib/usdaService";
 
 function useIsMobile(breakpoint=600){
   const [m,setM]=useState(typeof window!=="undefined"?window.innerWidth<=breakpoint:false);
@@ -293,8 +294,9 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [claudeKey,setClaudeKey]=useState(()=>localStorage.getItem("claudeKey")||"");
   const [geminiKey,setGeminiKey]=useState(()=>localStorage.getItem("geminiKey")||"");
   const [gptKey,setGptKey]=useState(()=>localStorage.getItem("gptKey")||"");
+  const [usdaKey,setUsdaKey]=useState(()=>localStorage.getItem("usdaKey")||"");
 
-  useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);},[aiProvider,claudeKey,geminiKey,gptKey]);
+  useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);localStorage.setItem("usdaKey",usdaKey);},[aiProvider,claudeKey,geminiKey,gptKey,usdaKey]);
 
   // Load saved items when switching meal or dayType
   useEffect(()=>{
@@ -332,7 +334,29 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       }else{uncached.push(f);}
     });
     if(uncached.length===0){setAiResult({items:cached,tip:"📦 Tất cả từ cache — không gọi API!"});setAiLoading(false);return;}
-    const foodDesc=uncached.map(f=>{
+
+    // Try USDA first for uncached items
+    const usdaResolved=[];const stillUncached=[];
+    if(usdaKey){
+      for(const f of uncached){
+        try{
+          const result=await searchUSDA(f.name,usdaKey);
+          if(result){
+            const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
+            const macro=calcFromUSDA(result,f.gram,f.qty,unit);
+            usdaResolved.push({name:f.name,gram:isWeight?f.gram:0,unit,qty:f.qty,qty_display:isWeight?null:`${f.qty} ${unit}`,...macro,source:"USDA"});
+          }else{stillUncached.push(f);}
+        }catch(e){console.error("USDA error:",e);stillUncached.push(f);}
+      }
+    }else{stillUncached.push(...uncached);}
+
+    const allResolved=[...cached,...usdaResolved];
+    if(stillUncached.length===0){
+      setAiResult({items:allResolved,tip:usdaResolved.length>0?`🏛️ ${usdaResolved.length} món từ USDA${cached.length>0?`, ${cached.length} từ cache`:""}`:""});
+      setAiLoading(false);return;
+    }
+
+    const foodDesc=stillUncached.map(f=>{
       const unit=f.unit||"g";
       if(unit==="g"||unit==="ml") return `${f.qty>1?f.qty+" ":""}${f.name} ${f.gram}${unit}`;
       return `${f.qty} ${unit} ${f.name}`;
@@ -369,7 +393,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         text=data.choices?.[0]?.message?.content||"";
       }
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
-      const newItems=[...cached,...(parsed.items||[])];
+      const newItems=[...allResolved,...(parsed.items||[])];
       parsed.items.forEach(it=>{
         const k=(it.name||"").toLowerCase().trim();
         // Find matching input to get unit info
@@ -381,7 +405,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       setAiResult({items:newItems,tip:parsed.tip||(cached.length>0?`📦 ${cached.length} món từ cache`:"")});
     }catch(err){setAiError(err.message||"Lỗi kết nối AI");console.error(err);}
     finally{setAiLoading(false);}
-  },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache]);
+  },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey]);
 
   const mealNames=dayType==="train"
     ?[{id:"sang",l:"🌅 Sáng"},{id:"trua",l:"☀️ Trưa"},{id:"phu1",l:"☕ Phụ 1"},{id:"phu2",l:"💪 Phụ 2"},{id:"toi",l:"🌙 Tối"}]
@@ -510,6 +534,19 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Lấy key tại <span style={{color:C.blue,fontWeight:700}}>platform.openai.com</span></div>
         </div>
       </>}
+
+      {/* USDA */}
+      <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:16,marginTop:20,marginBottom:20}}>
+        <div style={{fontSize:14,fontWeight:900,color:"#92400E",marginBottom:8}}>🏛️ USDA FoodData Central (Ưu tiên)</div>
+        <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8}}>Dữ liệu macro chuẩn từ Bộ Nông nghiệp Mỹ. Tra USDA trước, không có thì fallback AI.</div>
+        <div style={{...lbl,marginBottom:6}}>USDA API Key</div>
+        <input type="password" value={usdaKey} onChange={e=>setUsdaKey(e.target.value)} placeholder="Nhập USDA key..." style={inp}/>
+        <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Đăng ký miễn phí tại <span style={{color:C.blue,fontWeight:700}}>fdc.nal.usda.gov/api-key-signup</span></div>
+        {usdaKey&&<div style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"8px 12px",background:C.greenBg,borderRadius:8,border:`1px solid ${C.green}`}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/>
+          <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>USDA đã kết nối — ưu tiên tra cứu trước AI</span>
+        </div>}
+      </div>
 
       <button onClick={async()=>{
         setAiConnected(false);
