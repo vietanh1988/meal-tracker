@@ -3,6 +3,7 @@ import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
 import { useUserData } from "./hooks/useUserData";
+import { useAppSettings } from "./hooks/useAppSettings";
 import { calcMacroAIDirect } from "./lib/aiService";
 import { searchUSDA, calcFromUSDA } from "./lib/usdaService";
 
@@ -303,7 +304,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,getMeals,foodCache}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState("meals");
   const [dayType,setDayType]=useState("train");
@@ -317,17 +318,34 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [aiResult,setAiResult]=useState(null);
   const [aiLoading,setAiLoading]=useState(false);
   const [aiError,setAiError]=useState(null);
-  const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||"claude");
-  const [aiModel,setAiModel]=useState("claude-sonnet-4-20250514");
+  // Use shared keys from Supabase, fallback to localStorage for admin override
+  const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||appSettings.ai_provider||"claude");
+  const [aiModel,setAiModel]=useState(()=>appSettings.ai_model||"claude-sonnet-4-20250514");
   const [geminiModel,setGeminiModel]=useState("gemini-3.5-flash");
   const [gptModel,setGptModel]=useState("gpt-4o-mini");
   const [aiConnected,setAiConnected]=useState(true);
-  const [claudeKey,setClaudeKey]=useState(()=>localStorage.getItem("claudeKey")||"");
-  const [geminiKey,setGeminiKey]=useState(()=>localStorage.getItem("geminiKey")||"");
-  const [gptKey,setGptKey]=useState(()=>localStorage.getItem("gptKey")||"");
-  const [usdaKey,setUsdaKey]=useState(()=>localStorage.getItem("usdaKey")||"");
+  // Shared keys: appSettings > localStorage
+  const [claudeKey,setClaudeKey]=useState(()=>appSettings.claude_key||localStorage.getItem("claudeKey")||"");
+  const [geminiKey,setGeminiKey]=useState(()=>appSettings.gemini_key||localStorage.getItem("geminiKey")||"");
+  const [gptKey,setGptKey]=useState(()=>appSettings.gpt_key||localStorage.getItem("gptKey")||"");
+  const [usdaKey,setUsdaKey]=useState(()=>appSettings.usda_key||localStorage.getItem("usdaKey")||"");
 
-  useEffect(()=>{localStorage.setItem("aiProvider",aiProvider);localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);localStorage.setItem("usdaKey",usdaKey);},[aiProvider,claudeKey,geminiKey,gptKey,usdaKey]);
+  // Sync appSettings when they load (async)
+  useEffect(()=>{
+    if(appSettings.ai_provider&&!localStorage.getItem("aiProvider"))setAiProvider(appSettings.ai_provider);
+    if(appSettings.claude_key&&!claudeKey)setClaudeKey(appSettings.claude_key);
+    if(appSettings.gemini_key&&!geminiKey)setGeminiKey(appSettings.gemini_key);
+    if(appSettings.gpt_key&&!gptKey)setGptKey(appSettings.gpt_key);
+    if(appSettings.usda_key&&!usdaKey)setUsdaKey(appSettings.usda_key);
+  },[appSettings]);
+
+  // Admin: save to both localStorage and Supabase
+  useEffect(()=>{
+    localStorage.setItem("aiProvider",aiProvider);
+    if(isAdmin){
+      localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);localStorage.setItem("usdaKey",usdaKey);
+    }
+  },[aiProvider,claudeKey,geminiKey,gptKey,usdaKey,isAdmin]);
 
   // Stable ref to getMeals to avoid unnecessary effect reruns
   const getMealsRef=useRef(getMeals);
@@ -558,11 +576,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             </div>
           </div>)}
         </div>
-        <div style={{marginBottom:16}}>
+        {isAdmin&&<div style={{marginBottom:16}}>
           <div style={{...lbl,marginBottom:6}}>Claude API Key</div>
           <input type="password" value={claudeKey} onChange={e=>setClaudeKey(e.target.value)} placeholder="sk-ant-api03-..." style={inp}/>
           <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Lấy key tại <span style={{color:C.blue,fontWeight:700}}>console.anthropic.com</span> — Để trống nếu chạy trong Claude.ai</div>
-        </div>
+        </div>}
       </>}
 
       {/* Gemini */}
@@ -587,11 +605,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             </div>
           </div>)}
         </div>
-        <div style={{marginBottom:16}}>
+        {isAdmin&&<div style={{marginBottom:16}}>
           <div style={{...lbl,marginBottom:6}}>Gemini API Key</div>
           <input type="password" value={geminiKey} onChange={e=>setGeminiKey(e.target.value)} placeholder="AIzaSy..." style={inp}/>
           <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Lấy key tại <span style={{color:C.blue,fontWeight:700}}>aistudio.google.com</span></div>
-        </div>
+        </div>}
       </>}
 
       {/* GPT */}
@@ -616,20 +634,20 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             </div>
           </div>)}
         </div>
-        <div style={{marginBottom:16}}>
+        {isAdmin&&<div style={{marginBottom:16}}>
           <div style={{...lbl,marginBottom:6}}>OpenAI API Key</div>
           <input type="password" value={gptKey} onChange={e=>setGptKey(e.target.value)} placeholder="sk-..." style={inp}/>
           <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Lấy key tại <span style={{color:C.blue,fontWeight:700}}>platform.openai.com</span></div>
-        </div>
+        </div>}
       </>}
 
       {/* USDA */}
       <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:16,marginTop:20,marginBottom:20}}>
         <div style={{fontSize:14,fontWeight:900,color:"#92400E",marginBottom:8}}>🏛️ USDA FoodData Central (Ưu tiên)</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8}}>Dữ liệu macro chuẩn từ Bộ Nông nghiệp Mỹ. Tra USDA trước, không có thì fallback AI.</div>
-        <div style={{...lbl,marginBottom:6}}>USDA API Key</div>
+        {isAdmin&&<><div style={{...lbl,marginBottom:6}}>USDA API Key</div>
         <input type="password" value={usdaKey} onChange={e=>setUsdaKey(e.target.value)} placeholder="Nhập USDA key..." style={inp}/>
-        <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Đăng ký miễn phí tại <span style={{color:C.blue,fontWeight:700}}>fdc.nal.usda.gov/api-key-signup</span></div>
+        <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Đăng ký miễn phí tại <span style={{color:C.blue,fontWeight:700}}>fdc.nal.usda.gov/api-key-signup</span></div></>}
         {usdaKey&&<div style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"8px 12px",background:C.greenBg,borderRadius:8,border:`1px solid ${C.green}`}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/>
           <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>USDA đã kết nối — ưu tiên tra cứu trước AI</span>
@@ -657,8 +675,26 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       }} style={redBtn}>🔌 Test kết nối {providerName}</button>
 
       <div style={{marginTop:16,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-        <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Kết quả AI được cache — cùng 1 món không cần gọi lần 2. Trong Claude.ai có thể để trống API key. Deploy ra ngoài thì bắt buộc nhập key.</span>
+        <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Kết quả AI được cache — cùng 1 món không cần gọi lần 2. {!isAdmin&&"API keys được admin cấu hình sẵn."}</span>
       </div>
+
+      {isAdmin&&<button onClick={async()=>{
+        await saveSetting("ai_provider",aiProvider);
+        await saveSetting("claude_key",claudeKey);
+        await saveSetting("gemini_key",geminiKey);
+        await saveSetting("gpt_key",gptKey);
+        await saveSetting("usda_key",usdaKey);
+        await saveSetting("ai_model",aiModel);
+        const el=document.getElementById("cloud-keys-saved");
+        if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+      }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#1D4ED8,#3B82F6)"}}>☁️ Lưu API Keys lên Cloud (cho tất cả users)</button>}
+      {isAdmin&&<div id="cloud-keys-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+        <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ API Keys đã lưu lên cloud! Tất cả users sẽ dùng keys này.</span>
+      </div>}
+
+      {!isAdmin&&(claudeKey||geminiKey||gptKey)&&<div style={{marginTop:12,padding:"12px 16px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`}}>
+        <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ API đã được admin cấu hình sẵn — bạn có thể dùng ngay!</span>
+      </div>}
     </div>}
 
     {/* MEALS */}
@@ -1145,6 +1181,7 @@ export default function App(){
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,foodCache,saveMealToCloud,saveFoodCache}=useUserData(user?.id);
+  const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||{cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"});
   const mob=useIsMobile();
 
@@ -1172,6 +1209,6 @@ export default function App(){
         }}>{t.l}</button>
       )}
     </div>
-    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} getMeals={getMeals} foodCache={foodCache}/>}
+    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
   </div>;
 }
