@@ -83,15 +83,14 @@ function fmtDate(d){const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.get
 
 function MacroRing({l,v,max,color,color2,track,tc,sub,unit}){
   const pct=Math.min((v/max)*100,100),r=28,sw=6,circ=2*Math.PI*r;
-  const overMax=v>max;
   const gradId=`ring-${l.replace(/\s/g,"")}`;
   const c2=color2||color;
   return <div style={{textAlign:"center"}}>
     <svg width={72} height={72} viewBox="0 0 72 72" style={{display:"block",margin:"0 auto"}}>
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={overMax?"#EF4444":color}/>
-          <stop offset="100%" stopColor={overMax?"#F87171":c2}/>
+          <stop offset="0%" stopColor={color}/>
+          <stop offset="100%" stopColor={c2}/>
         </linearGradient>
       </defs>
       <circle cx={36} cy={36} r={r} fill="none" stroke={track||"#E0E0E0"} strokeWidth={sw}/>
