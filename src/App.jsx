@@ -965,8 +965,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <select value={item.unit||"g"} onChange={onUnitChange} style={{...inp,textAlign:"center",padding:mob?"8px 2px":"10px 4px",fontSize:mob?12:13}}>
             <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option>
           </select>
-          <input type="number" value={item.qty} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)))} style={{...inp,textAlign:"center",fontSize:mob?14:16}} placeholder="SL"/>
-          <input type="number" value={item.gram} onChange={e=>{if(isWeight)updateFood(i,"gram",Math.max(0,Number(e.target.value)));}} readOnly={!isWeight} style={{...inp,textAlign:"center",fontSize:mob?14:16,opacity:isWeight?1:0.35}} placeholder={isWeight?"Gram":"—"}/>
+          <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)||0))} style={{...inp,textAlign:"center",fontSize:mob?14:16}} placeholder="SL"/>
+          <input type="number" inputMode="numeric" value={isWeight?(item.gram||""):""} onChange={e=>{if(isWeight)updateFood(i,"gram",Math.max(0,Number(e.target.value)||0));}} readOnly={!isWeight} style={{...inp,textAlign:"center",fontSize:mob?14:16,opacity:isWeight?1:0.35}} placeholder={isWeight?"Gram":"—"}/>
           <button onClick={()=>removeFood(i)} style={{padding:0,width:mob?28:32,height:mob?28:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
         </div>;})}
         <button onClick={addFood} style={{padding:"10px",fontSize:13,fontWeight:700,background:C.surface,color:C.t2,border:`2px dashed ${C.border}`,borderRadius:10,width:"100%",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm món</button>
