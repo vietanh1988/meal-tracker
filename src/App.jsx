@@ -930,7 +930,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             gemini:<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#4285F4"/><path d="M14 4 C20 10, 20 18, 14 24 C8 18, 8 10, 14 4Z" fill="#fff" opacity="0.9"/></svg>,
             gpt:<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#10A37F"/><text x="14" y="15" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="11" fontWeight="900">GPT</text></svg>,
           };
-          return <div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");}} style={{
+          return <div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
           flex:1,padding:"14px 12px",borderRadius:12,cursor:"pointer",textAlign:"center",
           background:aiProvider===p.id?C.redBg:C.surface,
           border:aiProvider===p.id?`2.5px solid ${C.red}`:`1.5px solid ${C.border}`,
@@ -949,7 +949,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             {id:"claude-sonnet-4-20250514",name:"Claude Sonnet 4",desc:"Nhanh, chính xác",badge:"Khuyên dùng",bc:C.goldBg,btc:"#92400E"},
             {id:"claude-haiku-4-5-20251001",name:"Claude Haiku 4.5",desc:"Siêu nhanh, tiết kiệm",badge:"Tiết kiệm",bc:C.greenBg,btc:"#14532D"},
             {id:"claude-opus-4-6",name:"Claude Opus 4.6",desc:"Mạnh nhất",badge:"Cao cấp",bc:C.redBg,btc:"#7F1D1D"},
-          ].map(m=><div key={m.id} onClick={()=>setAiModel(m.id)} style={{
+          ].map(m=><div key={m.id} onClick={()=>{setAiModel(m.id);if(isAdmin)saveSetting("ai_model",m.id);}} style={{
             padding:"14px 16px",borderRadius:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
             background:aiModel===m.id?C.redBg:C.surface,border:aiModel===m.id?`2px solid ${C.red}`:`1.5px solid ${C.border}`,
           }}>
@@ -978,7 +978,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             {id:"gemini-2.5-flash",name:"Gemini 2.5 Flash",desc:"Nhanh, rẻ, thinking model",badge:"Tiết kiệm",bc:C.greenBg,btc:"#14532D"},
             {id:"gemini-3.5-flash",name:"Gemini 3.5 Flash",desc:"Mới nhất, agentic + coding",badge:"Khuyên dùng",bc:C.goldBg,btc:"#92400E"},
             {id:"gemini-3.1-pro",name:"Gemini 3.1 Pro",desc:"Reasoning mạnh nhất",badge:"Cao cấp",bc:C.redBg,btc:"#7F1D1D"},
-          ].map(m=><div key={m.id} onClick={()=>setGeminiModel(m.id)} style={{
+          ].map(m=><div key={m.id} onClick={()=>{setGeminiModel(m.id);if(isAdmin)saveSetting("gemini_model",m.id);}} style={{
             padding:"14px 16px",borderRadius:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
             background:geminiModel===m.id?C.blueBg:C.surface,border:geminiModel===m.id?`2px solid ${C.blue}`:`1.5px solid ${C.border}`,
           }}>
@@ -1007,7 +1007,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             {id:"gpt-4o-mini",name:"GPT-4o Mini",desc:"Nhanh, rẻ nhất",badge:"Tiết kiệm",bc:C.greenBg,btc:"#14532D"},
             {id:"chat-latest",name:"GPT-5.5 Instant",desc:"Mặc định ChatGPT, ít hallucinate",badge:"Khuyên dùng",bc:C.goldBg,btc:"#92400E"},
             {id:"gpt-5.5",name:"GPT-5.5 Thinking",desc:"Mạnh nhất, agentic + coding",badge:"Cao cấp",bc:C.redBg,btc:"#7F1D1D"},
-          ].map(m=><div key={m.id} onClick={()=>setGptModel(m.id)} style={{
+          ].map(m=><div key={m.id} onClick={()=>{setGptModel(m.id);if(isAdmin)saveSetting("gpt_model",m.id);}} style={{
             padding:"14px 16px",borderRadius:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
             background:gptModel===m.id?C.greenBg:C.surface,border:gptModel===m.id?`2px solid ${C.green}`:`1.5px solid ${C.border}`,
           }}>
