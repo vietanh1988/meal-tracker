@@ -710,13 +710,13 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [gptKey,setGptKey]=useState(()=>appSettings.gpt_key||localStorage.getItem("gptKey")||"");
   const [usdaKey,setUsdaKey]=useState(()=>appSettings.usda_key||localStorage.getItem("usdaKey")||"");
 
-  // Sync appSettings when they load (async)
+  // Sync appSettings when they load (async) — cloud always wins
   useEffect(()=>{
-    if(appSettings.ai_provider&&!localStorage.getItem("aiProvider"))setAiProvider(appSettings.ai_provider);
-    if(appSettings.claude_key&&!claudeKey)setClaudeKey(appSettings.claude_key);
-    if(appSettings.gemini_key&&!geminiKey)setGeminiKey(appSettings.gemini_key);
-    if(appSettings.gpt_key&&!gptKey)setGptKey(appSettings.gpt_key);
-    if(appSettings.usda_key&&!usdaKey)setUsdaKey(appSettings.usda_key);
+    if(appSettings.ai_provider)setAiProvider(appSettings.ai_provider);
+    if(appSettings.claude_key)setClaudeKey(appSettings.claude_key);
+    if(appSettings.gemini_key)setGeminiKey(appSettings.gemini_key);
+    if(appSettings.gpt_key)setGptKey(appSettings.gpt_key);
+    if(appSettings.usda_key)setUsdaKey(appSettings.usda_key);
     if(appSettings.gpt_model)setGptModel(appSettings.gpt_model);
     if(appSettings.gemini_model)setGeminiModel(appSettings.gemini_model);
     if(appSettings.ai_model)setAiModel(appSettings.ai_model);
@@ -1064,7 +1064,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       </div>
 
       {isAdmin&&<button onClick={async()=>{
-        console.log("🔑 Saving keys:", {aiProvider, claudeKey: claudeKey?.length, geminiKey: geminiKey?.length, gptKey: gptKey?.length, usdaKey: usdaKey?.length, aiModel});
+        console.log("🔑 Saving keys:", {aiProvider, gptModel, geminiModel, aiModel, claudeKey: claudeKey?.length, geminiKey: geminiKey?.length, gptKey: gptKey?.length, usdaKey: usdaKey?.length});
         await saveSetting("ai_provider",aiProvider);
         await saveSetting("claude_key",claudeKey);
         await saveSetting("gemini_key",geminiKey);
