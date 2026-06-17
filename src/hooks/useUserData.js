@@ -146,5 +146,24 @@ export function useUserData(userId) {
     console.log("✅ Food cache synced:", Object.keys(normalizedEntries).length, "items");
   }, [userId, updateFoodCacheState]);
 
-  return { loaded, meals, getMeals, foodCache, saveMealToCloud, saveFoodCache };
+  // Delete specific food cache entries (by name keys)
+  const deleteFoodCache = useCallback(async (nameKeys) => {
+    if (!userId || !nameKeys || nameKeys.length === 0) return;
+    // Remove from local state
+    setFoodCache(prev => {
+      const fc = { ...prev };
+      nameKeys.forEach(k => { delete fc[k]; });
+      return fc;
+    });
+    // Remove from Supabase
+    for (const name of nameKeys) {
+      try {
+        const { error } = await supabase.from("food_cache").delete().eq("food_name", name);
+        if (error) console.error("Food cache delete error:", name, error);
+      } catch (e) { console.error("Food cache delete error:", e); }
+    }
+    console.log("🗑️ Deleted cache entries:", nameKeys);
+  }, [userId]);
+
+  return { loaded, meals, getMeals, foodCache, saveMealToCloud, saveFoodCache, deleteFoodCache };
 }

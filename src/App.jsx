@@ -684,7 +684,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState("meals");
   const [dayType,setDayType]=useState("train");
@@ -701,8 +701,8 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   // Use shared keys from Supabase, fallback to localStorage for admin override
   const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||appSettings.ai_provider||"claude");
   const [aiModel,setAiModel]=useState(()=>appSettings.ai_model||"claude-sonnet-4-20250514");
-  const [geminiModel,setGeminiModel]=useState("gemini-3.5-flash");
-  const [gptModel,setGptModel]=useState("gpt-4o-mini");
+  const [geminiModel,setGeminiModel]=useState(()=>appSettings.gemini_model||"gemini-2.5-flash");
+  const [gptModel,setGptModel]=useState(()=>appSettings.gpt_model||"gpt-4o-mini");
   const [aiConnected,setAiConnected]=useState(true);
   // Shared keys: appSettings > localStorage
   const [claudeKey,setClaudeKey]=useState(()=>appSettings.claude_key||localStorage.getItem("claudeKey")||"");
@@ -717,6 +717,9 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     if(appSettings.gemini_key&&!geminiKey)setGeminiKey(appSettings.gemini_key);
     if(appSettings.gpt_key&&!gptKey)setGptKey(appSettings.gpt_key);
     if(appSettings.usda_key&&!usdaKey)setUsdaKey(appSettings.usda_key);
+    if(appSettings.gpt_model)setGptModel(appSettings.gpt_model);
+    if(appSettings.gemini_model)setGeminiModel(appSettings.gemini_model);
+    if(appSettings.ai_model)setAiModel(appSettings.ai_model);
   },[appSettings]);
 
   // Admin: save to both localStorage and Supabase
@@ -840,7 +843,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         if(!gptKey)throw new Error("Chưa nhập OpenAI API Key");
         const res=await fetch("https://api.openai.com/v1/chat/completions",{
           method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${gptKey}`},
-          body:JSON.stringify({model:gptModel,messages:[{role:"user",content:`${prompt}\nThức ăn: ${foodDesc}`}],max_completion_tokens:1000})
+          body:JSON.stringify({model:gptModel,messages:[{role:"system",content:prompt},{role:"user",content:`Thức ăn cần phân tích:\n${foodDesc}`}],max_tokens:1000})
         });
         const data=await res.json();
         if(data.error)throw new Error(data.error.message);
@@ -1068,6 +1071,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         await saveSetting("gpt_key",gptKey);
         await saveSetting("usda_key",usdaKey);
         await saveSetting("ai_model",aiModel);
+        await saveSetting("gpt_model",gptModel);
+        await saveSetting("gemini_model",geminiModel);
         const el=document.getElementById("cloud-keys-saved");
         if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
       }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#1D4ED8,#3B82F6)"}}>☁️ Lưu API Keys lên Cloud (cho tất cả users)</button>}
@@ -1125,6 +1130,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
           <span style={{fontSize:14,fontWeight:900}}>✓</span>
           <span style={{fontSize:14,fontWeight:900,color:C.red}}>Kết quả {aiResult.items?.some(i=>i.source==="USDA")?"USDA + ":""}{ providerName}</span>
+          <button onClick={async()=>{
+            // Xóa cache các món hiện tại rồi recalc
+            const keysToDelete=foodItems.map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);
+            if(keysToDelete.length>0) await deleteFoodCache(keysToDelete);
+            setAiResult(null);
+            setTimeout(()=>callAI(),150);
+          }} style={{marginLeft:"auto",padding:"4px 10px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>🔄 Tính lại</button>
         </div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:800,borderBottom:`1.5px solid ${C.border}`,paddingBottom:6,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.05em"}}>
           <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>g</span>
@@ -1563,7 +1575,7 @@ export default function App(){
   const [tab,setTab]=useState("dashboard");
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
-  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,foodCache,saveMealToCloud,saveFoodCache}=useUserData(user?.id);
+  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||{cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"});
   const mob=useIsMobile();
@@ -1592,6 +1604,6 @@ export default function App(){
         }}>{t.l}</button>
       )}
     </div>
-    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
+    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
   </div>;
 }
