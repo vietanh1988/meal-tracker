@@ -107,7 +107,7 @@ function MacroRing({l,v,max,color,color2,track,tc,sub,unit}){
 function MealCard({meal}){
   const mob=useIsMobile();
   const [open,setOpen]=useState(false);
-  const t=meal.items.reduce((a,i)=>({p:a.p+i.p,c:a.c+i.c,f:a.f+i.f,fiber:a.fiber+i.fiber,cal:a.cal+i.cal}),{p:0,c:0,f:0,fiber:0,cal:0});
+  const t=meal.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
   const total=t.p+t.c+t.f+t.fiber||1;
   return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -545,7 +545,7 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
   const meals=getMeals(dayType);
-  const totals=meals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+i.p,c:a.c+i.c,f:a.f+i.f,fiber:a.fiber+i.fiber,cal:a.cal+i.cal}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
+  const totals=meals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
   // Macro từ công thức: P/F/Xơ cố định, Carb thay đổi theo ngày
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
