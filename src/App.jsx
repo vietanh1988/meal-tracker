@@ -843,7 +843,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         if(!gptKey)throw new Error("Chưa nhập OpenAI API Key");
         const res=await fetch("https://api.openai.com/v1/chat/completions",{
           method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${gptKey}`},
-          body:JSON.stringify({model:gptModel,messages:[{role:"system",content:prompt},{role:"user",content:`Thức ăn cần phân tích:\n${foodDesc}`}],max_tokens:1000})
+          body:JSON.stringify({model:gptModel,messages:[{role:"system",content:prompt},{role:"user",content:`Thức ăn cần phân tích:\n${foodDesc}`}],...(gptModel==="gpt-4o-mini"?{max_tokens:1000}:{max_completion_tokens:1000})})
         });
         const data=await res.json();
         if(data.error)throw new Error(data.error.message);
@@ -1053,7 +1053,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             const d=await r.json();setAiConnected(!d.error);
           }else{
             if(!gptKey){setAiConnected(false);return;}
-            const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${gptKey}`},body:JSON.stringify({model:gptModel,messages:[{role:"user",content:"OK"}],max_tokens:10})});
+            const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${gptKey}`},body:JSON.stringify({model:gptModel,messages:[{role:"user",content:"OK"}],...(gptModel==="gpt-4o-mini"?{max_tokens:10}:{max_completion_tokens:10})})});
             const d=await r.json();setAiConnected(!d.error);
           }
         }catch{setAiConnected(false);}
