@@ -136,11 +136,11 @@ function MealCard({meal}){
       {meal.items.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<meal.items.length-1?`1px solid ${C.border}`:"none"}}>
         <span style={{color:C.t1,fontWeight:700}}>{item.food}</span>
         <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display?item.qty_display:item.gram?(item.gram+(item.unit==="ml"?"ml":"g")):""}</span>
-        <span style={{color:C.protein,textAlign:"right"}}>{item.p}</span>
-        <span style={{color:C.carb,textAlign:"right"}}>{item.c}</span>
-        <span style={{color:C.t1,textAlign:"right"}}>{item.f}</span>
-        <span style={{color:C.fiber,textAlign:"right"}}>{item.fiber||0}</span>
-        <span style={{color:C.t1,textAlign:"right",fontWeight:800}}>{item.cal}</span>
+        <span style={{color:C.protein,textAlign:"right",fontSize:mob?11:13}}>{item.p}</span>
+        <span style={{color:C.carb,textAlign:"right",fontSize:mob?11:13}}>{item.c}</span>
+        <span style={{color:C.t1,textAlign:"right",fontSize:mob?11:13}}>{item.f}</span>
+        <span style={{color:C.fiber,textAlign:"right",fontSize:mob?11:13}}>{item.fiber||0}</span>
+        <span style={{color:C.t1,textAlign:"right",fontWeight:800,fontSize:mob?11:13}}>{item.cal}</span>
       </div>)}
       <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:900,paddingTop:8,marginTop:4,borderTop:`2px solid ${C.red}`}}>
         <span style={{color:C.red}}>Tổng</span><span/>
