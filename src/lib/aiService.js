@@ -20,7 +20,10 @@ QUY TẮC:
 3. ĐỘ CHÍNH XÁC:
    - Tham khảo dữ liệu dinh dưỡng chuẩn (USDA, Viện Dinh dưỡng VN, hoặc nguồn uy tín)
    - KHÔNG đoán bừa, phải dựa trên data thực tế
-   - Protein, Carb, Fat phải nhất quán với Calories (cal ≈ P×4 + C×4 + F×9)
+   - TỰ KIỂM TRA: cal PHẢI ≈ protein×4 + carb×4 + fat×9 (sai lệch tối đa 5%)
+   - Nếu không khớp → tính lại cho đúng
+   - VÍ DỤ CHUẨN: 1 quả trứng gà luộc (~50g) ≈ P:6g, C:0.6g, F:5g, Cal:72kcal
+   - VÍ DỤ CHUẨN: 1 quả trứng gà rán (~60g với dầu) ≈ P:6g, C:0.6g, F:10g, Cal:115kcal
 
 Trả JSON CHÍNH XÁC, KHÔNG markdown:
 {"items":[{"name":"tên","gram":tổng_gram,"unit":"đơn vị gốc","qty":số_lượng,"qty_display":"VD: 3 quả","protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý ngắn"}`;
@@ -54,19 +57,20 @@ export async function calcMacroAIDirect({ foods, provider, model, keys }) {
   let text = "";
 
   if (provider === "claude") {
-    const headers = { "Content-Type": "application/json", "anthropic-version": "2023-06-01" };
-    if (keys.claude) headers["x-api-key"] = keys.claude;
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST", headers,
+    // Gọi qua Supabase Edge Function proxy (tránh CORS)
+    const res = await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        foodDesc: `${PROMPT}\n\nThức ăn cần phân tích:\n${foodDesc}`,
+        provider: "claude",
         model: model || "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: `${PROMPT}\n\nThức ăn cần phân tích:\n${foodDesc}` }]
-      })
+        apiKey: keys.claude,
+      }),
     });
     const d = await res.json();
-    if (d.error) throw new Error(d.error.message);
-    text = (d.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+    if (d.error) throw new Error(d.error);
+    text = d.text || "";
 
   } else if (provider === "gemini") {
     const res = await fetch(
