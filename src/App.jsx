@@ -1099,14 +1099,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         {mealNames.map(m=><Pill key={m.id} active={selectedMeal===m.id} color={C.gold} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}}>{m.l}</Pill>)}
       </div>
       <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14}}>
-        <div style={{display:"grid",gridTemplateColumns:mob?"auto 1fr 60px 48px 64px 28px":"auto 2fr 60px 70px 80px 32px",gap:mob?4:8,marginBottom:8,alignItems:"center"}}>
+        <div style={{display:"grid",gridTemplateColumns:mob?"28px 1fr 60px 48px 64px 28px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,marginBottom:8,alignItems:"center"}}>
           <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>ĐV</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
         </div>
         {foodItems.map((item,i)=>{
           const onUnitChange=(e)=>{const u=e.target.value;const updated=[...foodItems];updated[i]={...updated[i],unit:u};if(u!=="g"&&u!=="ml")updated[i].gram=0;setFoodItems(updated);};
           const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
-          return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"auto 1fr 60px 48px 64px 28px":"auto 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
+          return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"28px 1fr 60px 48px 64px 28px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:8}}>
+          <span style={{fontSize:13,fontWeight:800,color:C.t3,textAlign:"center",minWidth:mob?28:32}}>{i+1}.</span>
           <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,fontSize:16}}/>
           <select value={item.unit||"g"} onChange={onUnitChange} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:16,height:44,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
             <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option>
