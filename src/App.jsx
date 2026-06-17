@@ -414,13 +414,12 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
       let text="";
 
       if(provider==="claude"){
-        const headers={"Content-Type":"application/json","anthropic-version":"2023-06-01"};
-        if(keys.claude)headers["x-api-key"]=keys.claude;
-        const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,
-          body:JSON.stringify({model:appSettings.ai_model||"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content:prompt}]})});
+        const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({foodDesc:prompt,provider:"claude",model:appSettings.ai_model||"claude-sonnet-4-20250514",apiKey:keys.claude})});
         const d=await res.json();
-        if(d.error)throw new Error(d.error.message);
-        text=(d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+        if(d.error)throw new Error(d.error);
+        text=d.text||"";
       }else if(provider==="gemini"){
         const model=appSettings.gemini_model||"gemini-2.0-flash";
         const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keys.gemini}`,
@@ -521,11 +520,10 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
               body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"user",content:msg}],max_tokens:500})});
             const d=await res.json();text=d.choices?.[0]?.message?.content||"";
           }else if(provider==="claude"){
-            const headers2={"Content-Type":"application/json","anthropic-version":"2023-06-01"};
-            if(keys.claude)headers2["x-api-key"]=keys.claude;
-            const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:headers2,
-              body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content:msg}]})});
-            const d=await res.json();text=(d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+            const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",
+              headers:{"Content-Type":"application/json"},
+              body:JSON.stringify({foodDesc:msg,provider:"claude",model:"claude-sonnet-4-20250514",apiKey:keys.claude})});
+            const d=await res.json();text=d.text||"";
           }else{
             const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys.gemini}`,
               {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:msg}]}]})});
@@ -822,15 +820,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
     try{
       let text="";
       if(aiProvider==="claude"){
-        const headers={"Content-Type":"application/json","anthropic-version":"2023-06-01"};
-        if(claudeKey)headers["x-api-key"]=claudeKey;
-        const res=await fetch("https://api.anthropic.com/v1/messages",{
-          method:"POST",headers,
-          body:JSON.stringify({model:aiModel,max_tokens:1000,messages:[{role:"user",content:`${prompt}\nThức ăn: ${foodDesc}`}]})
+        const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:"claude",model:aiModel,apiKey:claudeKey})
         });
         const data=await res.json();
-        if(data.error)throw new Error(data.error.message);
-        text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+        if(data.error)throw new Error(data.error);
+        text=data.text||"";
       } else if(aiProvider==="gemini"){
         if(!geminiKey)throw new Error("Chưa nhập Gemini API Key");
         const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`,{
@@ -1046,9 +1042,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         setAiConnected(false);
         try{
           if(aiProvider==="claude"){
-            const headers={"Content-Type":"application/json","anthropic-version":"2023-06-01"};
-            if(claudeKey)headers["x-api-key"]=claudeKey;
-            const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model:aiModel,max_tokens:50,messages:[{role:"user",content:"OK"}]})});
+            const r=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({foodDesc:"OK",provider:"claude",model:aiModel,apiKey:claudeKey})});
             const d=await r.json();setAiConnected(!d.error);
           }else if(aiProvider==="gemini"){
             if(!geminiKey){setAiConnected(false);return;}
