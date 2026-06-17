@@ -1103,21 +1103,21 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         {mealNames.map(m=><Pill key={m.id} active={selectedMeal===m.id} color={C.gold} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}}>{m.l}</Pill>)}
       </div>
       <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14}}>
-        <div style={{display:"grid",gridTemplateColumns:mob?"28px 1fr 60px 48px 64px 28px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,marginBottom:8,alignItems:"center"}}>
+        <div style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,marginBottom:8,alignItems:"center"}}>
           <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>ĐV</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
         </div>
         {foodItems.map((item,i)=>{
           const onUnitChange=(e)=>{const u=e.target.value;const updated=[...foodItems];updated[i]={...updated[i],unit:u};if(u!=="g"&&u!=="ml")updated[i].gram=0;setFoodItems(updated);};
           const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
-          return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"28px 1fr 60px 48px 64px 28px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:8}}>
-          <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center",minWidth:mob?28:32}}>{i+1}.</span>
-          <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?14:16}}/>
+          return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:8}}>
+          <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center",minWidth:mob?24:32}}>{i+1}.</span>
+          <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?14:16,height:mob?38:44,padding:mob?"8px 10px":"10px 12px"}}/>
           <select value={item.unit||"g"} onChange={onUnitChange} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?13:16,height:mob?38:44,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
             <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option>
           </select>
-          <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)||0))} style={{...inp,textAlign:"center",fontSize:mob?13:16}} placeholder="SL"/>
-          <input type="number" inputMode="numeric" value={isWeight?(item.gram||""):""} onChange={e=>{if(isWeight)updateFood(i,"gram",Math.max(0,Number(e.target.value)||0));}} readOnly={!isWeight} style={{...inp,textAlign:"center",fontSize:mob?13:16,opacity:isWeight?1:0.35}} placeholder={isWeight?"Gram":"—"}/>
-          <button onClick={()=>removeFood(i)} style={{padding:0,width:mob?28:32,height:mob?28:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
+          <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)||0))} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px"}} placeholder="SL"/>
+          <input type="number" inputMode="numeric" value={isWeight?(item.gram||""):""} onChange={e=>{if(isWeight)updateFood(i,"gram",Math.max(0,Number(e.target.value)||0));}} readOnly={!isWeight} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px",opacity:isWeight?1:0.35}} placeholder={isWeight?"Gram":"—"}/>
+          <button onClick={()=>removeFood(i)} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
         </div>;})}
         <button onClick={addFood} style={{padding:"10px",fontSize:13,fontWeight:700,background:C.surface,color:C.t2,border:`2px dashed ${C.border}`,borderRadius:10,width:"100%",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm món</button>
       </div>
