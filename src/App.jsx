@@ -769,10 +769,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         if(isWeight){
           // Scale from per-100g
           const r=f.gram/(fc[k].gram||100);
-          cached.push({name:f.name,gram:f.gram,unit,qty,qty_display:null,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r)});
+          cached.push({name:f.name,gram:f.gram,unit,qty,qty_display:null,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r),source:"cache"});
         }else{
           // Scale from per-1-unit by qty
-          cached.push({name:f.name,gram:Math.round((fc[k].gram||0)*qty),unit,qty,qty_display:`${qty} ${unit}`,protein:Math.round(fc[k].p*qty*10)/10,carb:Math.round(fc[k].c*qty*10)/10,fat:Math.round(fc[k].f*qty*10)/10,fiber:Math.round((fc[k].fiber||0)*qty*10)/10,cal:Math.round(fc[k].cal*qty)});
+          cached.push({name:f.name,gram:Math.round((fc[k].gram||0)*qty),unit,qty,qty_display:`${qty} ${unit}`,protein:Math.round(fc[k].p*qty*10)/10,carb:Math.round(fc[k].c*qty*10)/10,fat:Math.round(fc[k].f*qty*10)/10,fiber:Math.round((fc[k].fiber||0)*qty*10)/10,cal:Math.round(fc[k].cal*qty),source:"cache"});
         }
       }else{uncached.push(f);}
     });
@@ -850,7 +850,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         text=data.choices?.[0]?.message?.content||"";
       }
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
-      const newItems=[...allResolved,...(parsed.items||[])];
+      const aiItemsWithSource=(parsed.items||[]).map(it=>({...it,source:aiProvider==="gpt"?"GPT":aiProvider==="claude"?"Claude":"Gemini"}));
+      const newItems=[...allResolved,...aiItemsWithSource];
       const newCacheEntries={};
       parsed.items.forEach(it=>{
         const k=(it.name||"").toLowerCase().trim();
@@ -1145,7 +1146,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{color:C.t2,textAlign:"right"}}>Cal</span>
         </div>
         {(aiResult.items||[]).map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:700,padding:"7px 0",borderBottom:i<aiResult.items.length-1?`1px solid ${C.border}`:"none"}}>
-          <span style={{color:C.t1,fontWeight:800}}>{item.name}</span>
+          <span style={{color:C.t1,fontWeight:800}}>{item.name} {item.source&&<span style={{fontSize:9,fontWeight:700,padding:"1px 5px",borderRadius:4,marginLeft:4,verticalAlign:"middle",background:item.source==="USDA"?"#DBEAFE":item.source==="cache"?"#F3F4F6":"#FEF3C7",color:item.source==="USDA"?"#1E40AF":item.source==="cache"?"#6B7280":"#92400E"}}>{item.source==="cache"?"📦":item.source==="USDA"?"🏛️":"🤖"} {item.source}</span>}</span>
           <span style={{textAlign:"right",color:C.t3}}>{item.gram}</span>
           <span style={{textAlign:"right",color:C.protein}}>{item.protein}</span>
           <span style={{textAlign:"right",color:C.carb}}>{item.carb}</span>
