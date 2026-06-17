@@ -5,7 +5,7 @@ import { useWeightLog } from "./hooks/useWeightLog";
 import { useUserData } from "./hooks/useUserData";
 import { useAppSettings } from "./hooks/useAppSettings";
 import { calcMacroAIDirect } from "./lib/aiService";
-import { searchUSDA, calcFromUSDA } from "./lib/usdaService";
+import { searchUSDA, calcFromUSDA, translateFood, estimateGram } from "./lib/usdaService";
 
 function useIsMobile(breakpoint=600){
   const [m,setM]=useState(typeof window!=="undefined"?window.innerWidth<=breakpoint:false);
@@ -781,16 +781,21 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
     });
     if(uncached.length===0){setAiResult({items:cached,tip:"📦 Tất cả từ cache — không gọi API!"});setAiLoading(false);return;}
 
-    // Try USDA first for uncached items
+    // Try USDA first for uncached items (with VN→EN translation)
     const usdaResolved=[];const stillUncached=[];
     if(usdaKey){
       for(const f of uncached){
         try{
-          const result=await searchUSDA(f.name,usdaKey);
+          // Translate Vietnamese → English for USDA
+          const translated=translateFood(f.name);
+          const searchQuery=translated?translated.query:f.name;
+          console.log("🔍 USDA search:",f.name,"→",searchQuery);
+          const result=await searchUSDA(searchQuery,usdaKey);
           if(result){
             const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
-            const macro=calcFromUSDA(result,f.gram,f.qty,unit);
-            usdaResolved.push({name:f.name,gram:isWeight?f.gram:0,unit,qty:f.qty,qty_display:isWeight?null:`${f.qty} ${unit}`,...macro,source:"USDA"});
+            const gram=f.gram||(isWeight?100:estimateGram(f.name,unit,f.qty));
+            const macro=calcFromUSDA(result,gram);
+            usdaResolved.push({name:f.name,gram,unit,qty:f.qty,qty_display:isWeight?null:`${f.qty} ${unit}`,...macro,source:"USDA"});
           }else{stillUncached.push(f);}
         }catch(e){console.error("USDA error:",e);stillUncached.push(f);}
       }
@@ -1107,7 +1112,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>ĐV</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
         </div>
         {foodItems.map((item,i)=>{
-          const onUnitChange=(e)=>{const u=e.target.value;const updated=[...foodItems];updated[i]={...updated[i],unit:u};if(u!=="g"&&u!=="ml")updated[i].gram=0;setFoodItems(updated);};
+          const onUnitChange=(e)=>{const u=e.target.value;const updated=[...foodItems];updated[i]={...updated[i],unit:u};if(u!=="g"&&u!=="ml"){const est=estimateGram(item.name,u,item.qty||1);updated[i].gram=est;}setFoodItems(updated);};
           const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
           return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:8}}>
           <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center",minWidth:mob?24:32}}>{i+1}.</span>
@@ -1115,8 +1120,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <select value={item.unit||"g"} onChange={onUnitChange} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?13:16,height:mob?38:44,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
             <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option>
           </select>
-          <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>updateFood(i,"qty",Math.max(0,Number(e.target.value)||0))} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px"}} placeholder="SL"/>
-          <input type="number" inputMode="numeric" value={isWeight?(item.gram||""):""} onChange={e=>{if(isWeight)updateFood(i,"gram",Math.max(0,Number(e.target.value)||0));}} readOnly={!isWeight} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px",opacity:isWeight?1:0.35}} placeholder={isWeight?"Gram":"—"}/>
+          <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>{const q=Math.max(0,Number(e.target.value)||0);const updated=[...foodItems];updated[i]={...updated[i],qty:q};if(!isWeight&&q>0){const est=estimateGram(item.name,item.unit,q);updated[i].gram=est;}setFoodItems(updated);}} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px"}} placeholder="SL"/>
+          <input type="number" inputMode="numeric" value={item.gram||""} onChange={e=>updateFood(i,"gram",Math.max(0,Number(e.target.value)||0))} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px",opacity:isWeight?1:0.7}} placeholder={isWeight?"Gram":"~Gram"}/>
           <button onClick={()=>removeFood(i)} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
         </div>;})}
         <button onClick={addFood} style={{padding:"10px",fontSize:13,fontWeight:700,background:C.surface,color:C.t2,border:`2px dashed ${C.border}`,borderRadius:10,width:"100%",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm món</button>
