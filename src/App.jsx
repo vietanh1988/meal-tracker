@@ -1167,21 +1167,19 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>💡 {aiResult.tip}</span>
         </div>}
         <button onClick={()=>{
-            // Bug 1 fix: merge FORM data (name, qty, unit, gram) with AI MACRO output (p, c, f, fiber, cal)
+            // Save AI result items directly — no re-matching needed
             const aiItems=aiResult.items||[];
-            const items=foodItems.filter(f=>f.name.trim()).map((formItem,i)=>{
-              // Match by index first, then by name
-              const aiMatch=aiItems[i]||aiItems.find(ai=>(ai.name||"").toLowerCase().trim()===(formItem.name||"").toLowerCase().trim())||{};
-              const unit=formItem.unit||"g";
+            const items=aiItems.map(ai=>{
+              const unit=ai.unit||"g";
               const isWeight=unit==="g"||unit==="ml";
               return {
-                food:formItem.name,
-                gram:isWeight?formItem.gram:(aiMatch.gram||0),
+                food:ai.name||"",
+                gram:ai.gram||0,
                 unit,
-                qty:formItem.qty||1,
-                qty_display:isWeight?null:`${formItem.qty} ${unit}`,
-                p:aiMatch.protein||0, c:aiMatch.carb||0, f:aiMatch.fat||0,
-                fiber:aiMatch.fiber||0, cal:aiMatch.cal||0,
+                qty:ai.qty||1,
+                qty_display:ai.qty_display||(isWeight?null:`${ai.qty||1} ${unit}`),
+                p:ai.protein||0, c:ai.carb||0, f:ai.fat||0,
+                fiber:ai.fiber||0, cal:ai.cal||0,
               };
             });
             saveMealToCloud(selectedMeal,dayType,items);
