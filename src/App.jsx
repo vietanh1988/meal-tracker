@@ -757,10 +757,10 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
 Trả lời CHÍNH XÁC bằng JSON, không markdown:
 {"items":[{"name":"tên","gram":số,"protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý cho người gym tăng cơ"}`;
 
-  const callAI=useCallback(async()=>{
+  const callAI=useCallback(async(forceRefresh=false)=>{
     if(foodItems.length===0||foodItems.every(f=>!f.name.trim()))return;
     setAiLoading(true);setAiError(null);setAiResult(null);
-    const fc=foodCache||{};
+    const fc=forceRefresh?{}:(foodCache||{});
     const validItems=foodItems.filter(f=>f.name.trim());
     const cached=[];const uncached=[];
     validItems.forEach(f=>{
@@ -1144,7 +1144,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             const keysToDelete=foodItems.map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);
             if(keysToDelete.length>0) await deleteFoodCache(keysToDelete);
             setAiResult(null);
-            setTimeout(()=>callAI(),150);
+            callAI(true);
           }} style={{marginLeft:"auto",padding:"4px 10px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>🔄 Tính lại</button>
         </div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:800,borderBottom:`1.5px solid ${C.border}`,paddingBottom:6,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.05em"}}>
