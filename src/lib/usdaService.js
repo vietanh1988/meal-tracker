@@ -46,12 +46,12 @@ const FOOD_MAP = {
   "bánh mì đen":"whole wheat bread","bánh mì":"bread",
   "bột mì":"wheat flour",
   // --- HOA QUẢ ---
-  "chuối":"banana","táo":"apple","cam":"orange","bưởi":"grapefruit",
-  "xoài":"mango","dưa hấu":"watermelon","nho":"grape","ổi":"guava",
+  "chuối":"banana raw","táo":"apple raw","cam":"orange raw","bưởi":"grapefruit raw",
+  "xoài":"mango raw","dưa hấu":"watermelon raw","nho":"grape raw","ổi":"guava raw",
   "thanh long":"dragon fruit","bơ quả":"avocado","quả bơ":"avocado",
-  "kiwi":"kiwi","dâu tây":"strawberry","đu đủ":"papaya","lê":"pear",
-  "mận":"plum","vải":"lychee","chôm chôm":"rambutan","sầu riêng":"durian",
-  "mít":"jackfruit","dừa":"coconut","chanh":"lemon",
+  "kiwi":"kiwi raw","dâu tây":"strawberry raw","đu đủ":"papaya raw","lê":"pear raw",
+  "mận":"plum raw","vải":"lychee","chôm chôm":"rambutan","sầu riêng":"durian",
+  "mít":"jackfruit","dừa":"coconut raw","chanh":"lemon raw",
   // --- SỮA ---
   "sữa chua hy lạp":"greek yogurt","sữa chua":"yogurt",
   "sữa tách béo":"skim milk","sữa tươi":"whole milk","sữa đặc":"condensed milk",
