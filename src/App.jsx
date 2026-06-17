@@ -1130,7 +1130,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         {aiLoading?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           <span style={{width:16,height:16,border:"2.5px solid #fcc",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.6s linear infinite"}}/>
           <span>Đang tính...</span>
-        </span>:`Tính macro (${providerName})`}
+        </span>:"Tính macro"}
       </button>
       {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
         <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>❌ {aiError}</span>
@@ -1138,7 +1138,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
           <span style={{fontSize:14,fontWeight:900}}>✓</span>
-          <span style={{fontSize:14,fontWeight:900,color:C.red}}>Kết quả {aiResult.items?.some(i=>i.source==="USDA")?"USDA + ":""}{ providerName}</span>
+          <span style={{fontSize:14,fontWeight:900,color:C.red}}>Kết quả {(()=>{const sources=[...new Set((aiResult.items||[]).map(i=>i.source).filter(Boolean))];return sources.join(" + ");})()}</span>
           <button onClick={async()=>{
             // Xóa cache các món hiện tại rồi recalc
             const keysToDelete=foodItems.map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);
