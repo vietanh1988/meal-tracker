@@ -1146,7 +1146,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{color:C.t2,textAlign:"right"}}>Cal</span>
         </div>
         {(aiResult.items||[]).map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:700,padding:"7px 0",borderBottom:i<aiResult.items.length-1?`1px solid ${C.border}`:"none"}}>
-          <span style={{color:C.t1,fontWeight:800}}>{item.name}</span>
+          <span style={{color:C.t1,fontWeight:800}}>{item.name} {item.source&&<span style={{fontSize:11,marginLeft:3}}>{item.source==="cache"?"📦":item.source==="USDA"?"🏛️":"🤖"}</span>}</span>
           <span style={{textAlign:"right",color:C.t3}}>{item.gram}</span>
           <span style={{textAlign:"right",color:C.protein}}>{item.protein}</span>
           <span style={{textAlign:"right",color:C.carb}}>{item.carb}</span>
