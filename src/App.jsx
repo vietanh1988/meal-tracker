@@ -657,7 +657,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
     <span style={{fontWeight:800,color:wColors[i%wColors.length]}}>T{w.week}</span>
     <span style={{fontWeight:600,color:C.t2,fontSize:11}}>{w.date}</span>
     {editing
-      ?<input type="text" inputMode="decimal" value={editVal} onChange={e=>{const v=e.target.value.replace(/[^0-9.]/g,"");setEditVal(v===""?0:Number(v));}} style={{padding:"4px 6px",fontSize:16,textAlign:"right",border:`1.5px solid ${C.border}`,borderRadius:6,background:C.surface,color:C.t1,outline:"none",width:"100%",boxSizing:"border-box"}}/>
+      ?<input type="text" inputMode="decimal" value={editVal} onChange={e=>{const v=e.target.value.replace(",",".").replace(/[^0-9.]/g,"");setEditVal(v===""?0:Number(v));}} style={{padding:"4px 6px",fontSize:16,textAlign:"right",border:`1.5px solid ${C.border}`,borderRadius:6,background:C.surface,color:C.t1,outline:"none",width:"100%",boxSizing:"border-box"}}/>
       :<span style={{color:C.t1,fontWeight:900,textAlign:"right"}}>{w.kg}</span>
     }
     <span style={{color:w.delta?w.delta>0?C.green:C.red:C.t3,fontWeight:700,fontSize:12,textAlign:"right"}}>{w.delta?`${w.delta>0?"+":""}${w.delta}`:"-"}</span>
@@ -1146,7 +1146,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <span style={{color:C.t2,textAlign:"right"}}>Cal</span>
         </div>
         {(aiResult.items||[]).map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:700,padding:"7px 0",borderBottom:i<aiResult.items.length-1?`1px solid ${C.border}`:"none"}}>
-          <span style={{color:C.t1,fontWeight:800}}>{item.name} {item.source&&<span style={{fontSize:9,fontWeight:700,padding:"1px 5px",borderRadius:4,marginLeft:4,verticalAlign:"middle",background:item.source==="USDA"?"#DBEAFE":item.source==="cache"?"#F3F4F6":"#FEF3C7",color:item.source==="USDA"?"#1E40AF":item.source==="cache"?"#6B7280":"#92400E"}}>{item.source==="cache"?"📦":item.source==="USDA"?"🏛️":"🤖"} {item.source}</span>}</span>
+          <span style={{color:C.t1,fontWeight:800}}>{item.name}</span>
           <span style={{textAlign:"right",color:C.t3}}>{item.gram}</span>
           <span style={{textAlign:"right",color:C.protein}}>{item.protein}</span>
           <span style={{textAlign:"right",color:C.carb}}>{item.carb}</span>
@@ -1208,7 +1208,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Cân nặng hiện tại (kg)</div>
-          <input type="text" inputMode="decimal" value={profile.kg} onChange={e=>setProfile({...profile,kg:Number(e.target.value)})} style={inp}/>
+          <input type="text" inputMode="decimal" value={profile.kg} onChange={e=>setProfile({...profile,kg:Number(e.target.value.replace(",","."))})} style={inp}/>
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Tuổi</div>
@@ -1265,7 +1265,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:12,marginTop:16}}>
         <div>
           <div style={{...lbl,marginBottom:6}}>Cân nặng mục tiêu (kg)</div>
-          <input type="text" inputMode="decimal" value={profile.goalKg} onChange={e=>setProfile({...profile,goalKg:Number(e.target.value)})} style={inp}/>
+          <input type="text" inputMode="decimal" value={profile.goalKg} onChange={e=>setProfile({...profile,goalKg:Number(e.target.value.replace(",","."))})} style={inp}/>
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Thời gian (tháng)</div>
@@ -1414,7 +1414,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           <input id="weightInput" type="text" inputMode="decimal" placeholder="VD: 64.3" style={inp}/>
         </div>
         <button onClick={async()=>{
-          const val=parseFloat(document.getElementById("weightInput").value);
+          const val=parseFloat(document.getElementById("weightInput").value.replace(",","."));
           if(!val||val<30||val>200)return;
           await addWeight(val);
           setProfile({...profile,kg:val});
