@@ -128,24 +128,26 @@ function MealCard({meal}){
       <div style={{width:`${(t.fiber/total)*100}%`,background:C.fiber,borderRadius:3}}/>
     </div>
     {open&&<div style={{marginTop:12,borderTop:`1.5px solid ${C.border}`,paddingTop:10}}>
-      <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.7fr 0.7fr 0.7fr 0.8fr",gap:4,fontSize:11,fontWeight:700,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`,textTransform:"uppercase",letterSpacing:"0.05em"}}>
+      <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:700,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`,textTransform:"uppercase",letterSpacing:"0.05em"}}>
         <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>Lượng</span>
         <span style={{color:C.protein,textAlign:"right"}}>P</span><span style={{color:C.carb,textAlign:"right"}}>C</span>
-        <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.t2,textAlign:"right"}}>Cal</span>
+        <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.fiber,textAlign:"right"}}>Xơ</span><span style={{color:C.t2,textAlign:"right"}}>Cal</span>
       </div>
-      {meal.items.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.7fr 0.7fr 0.7fr 0.8fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<meal.items.length-1?`1px solid ${C.border}`:"none"}}>
+      {meal.items.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<meal.items.length-1?`1px solid ${C.border}`:"none"}}>
         <span style={{color:C.t1,fontWeight:700}}>{item.food}</span>
         <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display?item.qty_display:item.gram?(item.gram+(item.unit==="ml"?"ml":"g")):""}</span>
         <span style={{color:C.protein,textAlign:"right"}}>{item.p}</span>
         <span style={{color:C.carb,textAlign:"right"}}>{item.c}</span>
         <span style={{color:C.t1,textAlign:"right"}}>{item.f}</span>
+        <span style={{color:C.fiber,textAlign:"right"}}>{item.fiber||0}</span>
         <span style={{color:C.t1,textAlign:"right",fontWeight:800}}>{item.cal}</span>
       </div>)}
-      <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.7fr 0.7fr 0.7fr 0.8fr",gap:4,fontSize:13,fontWeight:900,paddingTop:8,marginTop:4,borderTop:`2px solid ${C.red}`}}>
+      <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:900,paddingTop:8,marginTop:4,borderTop:`2px solid ${C.red}`}}>
         <span style={{color:C.red}}>Tổng</span><span/>
         <span style={{color:C.protein,textAlign:"right"}}>{Math.round(t.p*10)/10}</span>
         <span style={{color:C.carb,textAlign:"right"}}>{Math.round(t.c*10)/10}</span>
         <span style={{color:C.t1,textAlign:"right"}}>{Math.round(t.f*10)/10}</span>
+        <span style={{color:C.fiber,textAlign:"right"}}>{Math.round(t.fiber*10)/10}</span>
         <span style={{color:C.t1,textAlign:"right"}}>{Math.round(t.cal)}</span>
       </div>
     </div>}
