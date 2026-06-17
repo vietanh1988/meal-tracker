@@ -105,6 +105,7 @@ function MacroRing({l,v,max,color,color2,track,tc,sub,unit}){
 }
 
 function MealCard({meal}){
+  const mob=useIsMobile();
   const [open,setOpen]=useState(false);
   const t=meal.items.reduce((a,i)=>({p:a.p+i.p,c:a.c+i.c,f:a.f+i.f,fiber:a.fiber+i.fiber,cal:a.cal+i.cal}),{p:0,c:0,f:0,fiber:0,cal:0});
   const total=t.p+t.c+t.f+t.fiber||1;
