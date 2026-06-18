@@ -598,8 +598,8 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
       <div style={{display:"flex",background:C.surface,borderRadius:20,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
-        <div onClick={()=>setDayType("train")} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
-        <div onClick={()=>setDayType("rest")} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
+        <div onClick={()=>setDayType("train")} style={{padding:mob?"8px 14px":"7px 14px",fontSize:mob?13:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
+        <div onClick={()=>setDayType("rest")} style={{padding:mob?"8px 14px":"7px 14px",fontSize:mob?13:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
       </div>
     </div>
 
