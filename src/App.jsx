@@ -766,7 +766,7 @@ function Dashboard({weightLog,profile,macro,getMeals,getMealHistory,appSettings}
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
       <div style={{display:"flex",flexDirection:mob?"column":"row",justifyContent:"space-between",alignItems:mob?"stretch":"flex-start",gap:mob?14:0}}>
         <div>
-          <div style={{fontSize:mob?11:13,fontWeight:900,letterSpacing:"0.12em",textTransform:"uppercase",background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+          <div style={{fontSize:mob?11:13,fontWeight:900,letterSpacing:"0.12em",background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{dayType==="train"?"TỔNG CALO NGÀY TẬP":"TỔNG CALO NGÀY NGHỈ"}</div>
           <div style={{fontSize:mob?32:44,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",lineHeight:1.1,marginTop:8}}>
             {actualCal>0?actualCal:heroCal} <span style={{fontSize:mob?14:20,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>/ {heroCal}</span>
           </div>
@@ -1558,15 +1558,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
           <div style={{background:C.card,borderRadius:10,padding:"10px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
-            <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>Tổng {profile.goalType==="bulk"?"tăng":"giảm"}</div>
+            <div style={{fontSize:10,fontWeight:700,color:C.t3,}}>{"TỔNG "+(profile.goalType==="bulk"?"TĂNG":"GIẢM")}</div>
             <div style={{fontSize:20,fontWeight:900,color:C.t1}}>{Math.abs(macro.diff)} kg</div>
           </div>
           <div style={{background:C.card,borderRadius:10,padding:"10px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
-            <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>Mỗi tháng</div>
+            <div style={{fontSize:10,fontWeight:700,color:C.t3,}}>MỖI THÁNG</div>
             <div style={{fontSize:20,fontWeight:900,color:C.gold}}>{macro.perMonth} kg</div>
           </div>
           <div style={{background:C.card,borderRadius:10,padding:"10px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
-            <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>Mỗi tuần</div>
+            <div style={{fontSize:10,fontWeight:700,color:C.t3,}}>MỖI TUẦN</div>
             <div style={{fontSize:20,fontWeight:900,color:macro.safe?C.green:C.red}}>{macro.perWeek} kg</div>
           </div>
         </div>
