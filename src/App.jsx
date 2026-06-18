@@ -683,16 +683,39 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
-      <div style={{display:"flex",alignItems:"flex-end",gap:mob?4:6,height:100}}>
-        {data.weeks.map((w,i)=>{const colors=["#DC2626","#F59E0B","#3B82F6","#16A34A","#8B5CF6"];const c=colors[i%colors.length];return <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-          <div style={{fontSize:11,color:C.t3}}>{w.cal>0?w.cal.toLocaleString():""}</div>
-          <div style={{width:"100%",background:w.days>0?`linear-gradient(180deg,${c},${c}AA)`:"#F3F4F6",borderRadius:4,height:Math.max(4,w.cal/maxWeekCal*80),opacity:w.days>0?0.9:0.15,boxShadow:w.days>0?"0 2px 6px rgba(0,0,0,0.1)":"none"}}/>
-          <div style={{fontSize:11,color:C.t2,fontWeight:600}}>{w.label}</div>
-        </div>})}
-      </div>
-      <div style={{marginTop:6,borderTop:"1px dashed #DC2626",position:"relative",height:14}}>
-        <span style={{position:"absolute",right:0,top:1,fontSize:11,color:"#DC2626",fontWeight:600}}>Mục tiêu: {data.target.toLocaleString()} cal</span>
-      </div>
+      {(()=>{
+        const colors=["#DC2626","#F59E0B","#3B82F6","#16A34A","#8B5CF6"];
+        const allVals=data.weeks.map(w=>w.cal).filter(v=>v>0);
+        const maxVal=Math.max(...allVals,data.target)*1.1;
+        const minVal=0;
+        const chartH=120;
+        const goalPct=((data.target-minVal)/(maxVal-minVal))*100;
+        // Y axis labels
+        const ySteps=[0,Math.round(maxVal*0.33),Math.round(maxVal*0.66),Math.round(maxVal)];
+        return <div style={{position:"relative"}}>
+          {/* Goal line */}
+          <div style={{position:"absolute",left:30,right:0,bottom:`${goalPct/100*chartH+24}px`,borderTop:"1.5px dashed #DC2626",zIndex:1}}>
+            <span style={{position:"absolute",right:0,top:-14,fontSize:10,color:"#DC2626",fontWeight:700,background:"#fff",padding:"0 4px"}}>🎯 {data.target.toLocaleString()}</span>
+          </div>
+          <div style={{display:"flex",gap:0}}>
+            {/* Y labels */}
+            <div style={{width:30,display:"flex",flexDirection:"column-reverse",justifyContent:"space-between",height:chartH,paddingBottom:0}}>
+              {ySteps.map((v,i)=><div key={i} style={{fontSize:9,color:C.t3,textAlign:"right",lineHeight:"1"}}>{v>0?(v/1000).toFixed(1)+"k":""}</div>)}
+            </div>
+            {/* Bars */}
+            <div style={{flex:1,display:"flex",alignItems:"flex-end",gap:mob?3:6,height:chartH,borderLeft:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,paddingLeft:4}}>
+              {data.weeks.map((w,i)=>{const c=colors[i%colors.length];const pct=maxVal>0?w.cal/maxVal:0;return <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%"}}>
+                <div style={{fontSize:10,color:C.t2,fontWeight:700,marginBottom:2}}>{w.cal>0?w.cal.toLocaleString():""}</div>
+                <div style={{width:"70%",background:w.days>0?`linear-gradient(180deg,${c},${c}99)`:"#F3F4F6",borderRadius:"4px 4px 0 0",height:`${Math.max(2,pct*100)}%`,opacity:w.days>0?0.9:0.15,boxShadow:w.days>0?`0 -2px 8px ${c}33`:"none",transition:"height 0.3s"}}/>
+              </div>})}
+            </div>
+          </div>
+          {/* X labels */}
+          <div style={{display:"flex",marginLeft:34,gap:mob?3:6}}>
+            {data.weeks.map((w,i)=><div key={i} style={{flex:1,textAlign:"center",fontSize:11,fontWeight:700,color:C.t2,paddingTop:4}}>{w.label}</div>)}
+          </div>
+        </div>;
+      })()}
     </div>
 
     {/* Macro donut */}
