@@ -693,10 +693,6 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
         // Y axis labels
         const ySteps=[0,Math.round(maxVal*0.33),Math.round(maxVal*0.66),Math.round(maxVal)];
         return <div style={{position:"relative"}}>
-          {/* Goal line */}
-          <div style={{position:"absolute",left:30,right:0,bottom:`${goalPct/100*chartH+24}px`,borderTop:"1.5px dashed #DC2626",zIndex:1}}>
-            <span style={{position:"absolute",right:0,top:-14,fontSize:10,color:"#DC2626",fontWeight:700,background:"#fff",padding:"0 4px"}}>🎯 {data.target.toLocaleString()}</span>
-          </div>
           <div style={{display:"flex",gap:0}}>
             {/* Y labels */}
             <div style={{width:30,display:"flex",flexDirection:"column-reverse",justifyContent:"space-between",height:chartH,paddingBottom:0}}>
@@ -714,6 +710,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
           <div style={{display:"flex",marginLeft:34,gap:mob?3:6}}>
             {data.weeks.map((w,i)=><div key={i} style={{flex:1,textAlign:"center",fontSize:11,fontWeight:700,color:C.t2,paddingTop:4}}>{w.label}</div>)}
           </div>
+          <div style={{textAlign:"right",fontSize:11,color:C.t3,marginTop:6}}>🎯 Mục tiêu: <span style={{fontWeight:700,color:"#DC2626"}}>{data.target.toLocaleString()} cal/ngày</span></div>
         </div>;
       })()}
     </div>
