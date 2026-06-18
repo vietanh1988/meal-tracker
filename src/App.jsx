@@ -1112,14 +1112,29 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:16}}>
         Nhập thức ăn → nhấn "Tính macro" → <span style={{fontWeight:800,color:aiProvider==="claude"?"#DC2626":aiProvider==="gemini"?"#1D4ED8":"#15803D"}}>{providerName}</span> trả kết quả
       </div>
-      <div style={{display:"flex",gap:6,marginBottom:12}}>
-        <Pill active={dayType==="train"} color={C.red} onClick={()=>{setDayType("train");setSelectedMeal(mealConfig.train?.[0]||"sang");setAiResult(null);}}>💪 Ngày tập</Pill>
-        <Pill active={dayType==="rest"} color={C.green} onClick={()=>{setDayType("rest");setSelectedMeal(mealConfig.rest?.[0]||"sang");setAiResult(null);}}>😴 Ngày nghỉ</Pill>
-      </div>
-      <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
-        {mealNames.map(m=><Pill key={m.id} active={selectedMeal===m.id} color={C.gold} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}}>{m.l}</Pill>)}
-        <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{width:mob?28:32,height:mob?28:32,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:showMealSettings?C.redBg:C.surface,border:`1.5px solid ${showMealSettings?C.red:C.border}`,cursor:"pointer",fontSize:mob?13:14}}>⚙️</div>
-      </div>
+      {/* Day type + meals - PC: 1 row, Mobile: 2 rows */}
+      {mob?<>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+          <div style={{display:"flex",background:C.surface,borderRadius:18,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
+            <div onClick={()=>{setDayType("train");setSelectedMeal(mealConfig.train?.[0]||"sang");setAiResult(null);}} style={{padding:"6px 10px",fontSize:11,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
+            <div onClick={()=>{setDayType("rest");setSelectedMeal(mealConfig.rest?.[0]||"sang");setAiResult(null);}} style={{padding:"6px 10px",fontSize:11,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
+          </div>
+          <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:showMealSettings?"#FEF3C7":"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",display:"flex",alignItems:"center",gap:3}}>⚙️ Quản lý</div>
+        </div>
+        <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14,alignItems:"center"}}>
+          {mealNames.map(m=><div key={m.id} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:selectedMeal===m.id?700:600,background:selectedMeal===m.id?"#FEE2E2":"#F9FAFB",color:selectedMeal===m.id?"#991B1B":"#6B7280",border:`1.5px solid ${selectedMeal===m.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{m.l}</div>)}
+        </div>
+      </>:<>
+        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:14}}>
+          <div style={{display:"flex",background:C.surface,borderRadius:20,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
+            <div onClick={()=>{setDayType("train");setSelectedMeal(mealConfig.train?.[0]||"sang");setAiResult(null);}} style={{padding:"7px 14px",fontSize:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
+            <div onClick={()=>{setDayType("rest");setSelectedMeal(mealConfig.rest?.[0]||"sang");setAiResult(null);}} style={{padding:"7px 14px",fontSize:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
+          </div>
+          <span style={{color:"#E5E7EB"}}>|</span>
+          {mealNames.map(m=><div key={m.id} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}} style={{padding:"6px 12px",borderRadius:18,fontSize:12,fontWeight:selectedMeal===m.id?700:600,background:selectedMeal===m.id?"#FEE2E2":"#F9FAFB",color:selectedMeal===m.id?"#991B1B":"#6B7280",border:`1.5px solid ${selectedMeal===m.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{m.l}</div>)}
+          <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:"#FEF3C7",border:"1.5px solid #FCD34D",cursor:"pointer",fontSize:14}}>⚙️</div>
+        </div>
+      </>}
       {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
         <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:10}}>⚙️ Tuỳ chỉnh bữa ăn — {dayType==="train"?"Ngày tập":"Ngày nghỉ"}</div>
         {ALL_MEALS.map(m=>{
