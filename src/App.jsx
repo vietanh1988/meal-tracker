@@ -597,19 +597,21 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
-      <Pill active={dayType==="train"} color={C.red} onClick={()=>setDayType("train")}>💪 Ngày tập</Pill>
-      <Pill active={dayType==="rest"} color={C.green} onClick={()=>setDayType("rest")}>😴 Ngày nghỉ</Pill>
+      <div style={{display:"flex",background:C.surface,borderRadius:20,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
+        <div onClick={()=>setDayType("train")} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
+        <div onClick={()=>setDayType("rest")} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
+      </div>
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
 
     {/* Compact evaluation */}
     {actualCal>0&&<div style={{...card,padding:"12px 16px",marginTop:6,
-      background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.greenBg:actualCal<heroCal*0.95?C.goldBg:C.redBg,
-      border:`2px solid ${actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:actualCal<heroCal*0.95?C.gold:C.red}`,
+      background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.greenBg:C.redBg,
+      border:`2px solid ${actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:C.red}`,
     }}>
       <div style={{fontSize:13,fontWeight:800,lineHeight:1.6,
-        color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:actualCal<heroCal*0.95?"#92400E":C.red,
+        color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:C.red,
       }}>
         {actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1
           ?"✓ Thực đơn phù hợp với mục tiêu!"
