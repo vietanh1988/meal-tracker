@@ -566,7 +566,7 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
       <div style={{display:"flex",flexDirection:mob?"column":"row",justifyContent:"space-between",alignItems:mob?"stretch":"flex-start",gap:mob?14:0}}>
         <div>
-          <div style={{fontSize:mob?11:13,fontWeight:900,color:"#EAB308",letterSpacing:"0.12em",textTransform:"uppercase"}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+          <div style={{fontSize:mob?11:13,fontWeight:900,letterSpacing:"0.12em",textTransform:"uppercase",background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
           <div style={{fontSize:mob?32:44,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",lineHeight:1.1,marginTop:8}}>
             {actualCal>0?actualCal:heroCal} <span style={{fontSize:mob?14:20,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>/ {heroCal}</span>
           </div>
@@ -598,8 +598,8 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
 
     {/* Section label: Danh sách thực đơn */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-      <span style={{fontSize:16}}>🍽️</span>
-      <span style={{fontSize:13,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <span style={{fontSize:mob?18:24}}>🍽️</span>
+      <span style={{fontSize:mob?14:16,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
 
