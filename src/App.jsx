@@ -545,7 +545,200 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
   </div>;
 }
 
-function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||!macro)return null;
+function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
+  const [period,setPeriod]=useState("month"); // "week" or "month"
+  const [offset,setOffset]=useState(0); // 0=current, -1=prev, etc
+  const [data,setData]=useState(null);
+  const [loading,setLoading]=useState(true);
+
+  // Calculate date range
+  const getDateRange=useCallback(()=>{
+    const now=new Date();
+    if(period==="week"){
+      const d=new Date(now);d.setDate(d.getDate()+offset*7);
+      const day=d.getDay();const mon=new Date(d);mon.setDate(d.getDate()-(day===0?6:day-1));
+      const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+      return{start:mon.toISOString().slice(0,10),end:sun.toISOString().slice(0,10),label:`${mon.getDate()}/${mon.getMonth()+1} - ${sun.getDate()}/${sun.getMonth()+1}`};
+    }else{
+      const d=new Date(now.getFullYear(),now.getMonth()+offset,1);
+      const last=new Date(d.getFullYear(),d.getMonth()+1,0);
+      const months=["Tháng 1","Tháng 2","Tháng 3","Tháng 4","Tháng 5","Tháng 6","Tháng 7","Tháng 8","Tháng 9","Tháng 10","Tháng 11","Tháng 12"];
+      return{start:d.toISOString().slice(0,10),end:last.toISOString().slice(0,10),label:`${months[d.getMonth()]}, ${d.getFullYear()}`};
+    }
+  },[period,offset]);
+
+  // Load data
+  useEffect(()=>{
+    (async()=>{
+      setLoading(true);
+      const range=getDateRange();
+      const logs=await getMealHistory(range.start,range.end);
+      // Group by date
+      const byDate={};
+      logs.forEach(l=>{
+        if(!byDate[l.log_date])byDate[l.log_date]={cal:0,p:0,c:0,f:0,fiber:0,items:[],meals:[]};
+        byDate[l.log_date].cal+=(l.total_cal||0);
+        byDate[l.log_date].p+=(l.total_protein||0);
+        byDate[l.log_date].c+=(l.total_carb||0);
+        byDate[l.log_date].f+=(l.total_fat||0);
+        byDate[l.log_date].meals.push(l.meal_id);
+        (l.items||[]).forEach(it=>byDate[l.log_date].items.push(it));
+      });
+      const dates=Object.keys(byDate).sort();
+      const daysLogged=dates.length;
+      const totalDays=Math.ceil((new Date(range.end)-new Date(range.start))/(86400000))+1;
+      const avgCal=daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d].cal,0)/daysLogged):0;
+      const avgP=daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d].p,0)/daysLogged*10)/10:0;
+      const avgC=daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d].c,0)/daysLogged*10)/10:0;
+      const avgF=daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d].f,0)/daysLogged*10)/10:0;
+      // Adherence: days within ±10% of target
+      const target=macro.calTarget||2000;
+      const adhereDays=dates.filter(d=>byDate[d].cal>=target*0.9&&byDate[d].cal<=target*1.1).length;
+      // Streak
+      const today=new Date().toISOString().slice(0,10);
+      let streak=0;const checkDate=new Date();
+      for(let i=0;i<60;i++){const ds=checkDate.toISOString().slice(0,10);if(byDate[ds])streak++;else if(i>0)break;checkDate.setDate(checkDate.getDate()-1);}
+      // Top foods
+      const foodCount={};const foodProtein={};
+      dates.forEach(d=>byDate[d].items.forEach(it=>{
+        const name=(it.food||it.name||"").toLowerCase().trim();if(!name)return;
+        foodCount[name]=(foodCount[name]||0)+1;
+        foodProtein[name]=(foodProtein[name]||0)+(it.p||it.protein||0);
+      }));
+      const topFoods=Object.entries(foodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      const topProtein=Object.entries(foodProtein).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      // Weekly aggregation for charts
+      const weeks=[];let weekStart=new Date(range.start);
+      while(weekStart<=new Date(range.end)){
+        const we=new Date(weekStart);we.setDate(we.getDate()+6);
+        const wDates=dates.filter(d=>d>=weekStart.toISOString().slice(0,10)&&d<=we.toISOString().slice(0,10));
+        const wCal=wDates.length>0?Math.round(wDates.reduce((s,d)=>s+byDate[d].cal,0)/wDates.length):0;
+        weeks.push({label:`T${weeks.length+1}`,cal:wCal,days:wDates.length});
+        weekStart.setDate(weekStart.getDate()+7);
+      }
+      // Weight data
+      const startKg=weightLog.length>0?weightLog[0].kg:profile.kg;
+      const curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg;
+      const goalKg=profile.goalKg||startKg;
+      const wPct=goalKg!==startKg?Math.round(((curKg-startKg)/(goalKg-startKg))*100):0;
+
+      setData({range,byDate,dates,daysLogged,totalDays,avgCal,avgP,avgC,avgF,adhereDays,streak,topFoods,topProtein,weeks,target,startKg,curKg,goalKg,wPct});
+      setLoading(false);
+    })();
+  },[getMealHistory,getDateRange,weightLog,profile,macro]);
+
+  const range=getDateRange();
+
+  if(loading)return <div style={{textAlign:"center",padding:40,color:C.t3}}>Đang tải báo cáo...</div>;
+  if(!data||data.daysLogged===0)return <div style={{textAlign:"center",padding:40}}>
+    <div style={{fontSize:40,marginBottom:8}}>📭</div>
+    <div style={{fontSize:15,fontWeight:700,color:C.t2}}>Chưa có dữ liệu</div>
+    <div style={{fontSize:13,color:C.t3,marginTop:4}}>Hãy nhập bữa ăn trong Admin để xem báo cáo.</div>
+  </div>;
+
+  const maxWeekCal=Math.max(...data.weeks.map(w=>w.cal),data.target);
+
+  return <div>
+    {/* Period toggle + nav */}
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+      <div style={{display:"flex",background:"#F3F4F6",borderRadius:8,overflow:"hidden",padding:2}}>
+        <div onClick={()=>{setPeriod("week");setOffset(0);}} style={{padding:"6px 12px",fontSize:12,fontWeight:700,color:period==="week"?"#DC2626":"#9CA3AF",background:period==="week"?"#fff":"transparent",borderRadius:6,cursor:"pointer"}}>Tuần</div>
+        <div onClick={()=>{setPeriod("month");setOffset(0);}} style={{padding:"6px 12px",fontSize:12,fontWeight:700,color:period==="month"?"#DC2626":"#9CA3AF",background:period==="month"?"#fff":"transparent",borderRadius:6,cursor:"pointer"}}>Tháng</div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:6}}>
+        <div onClick={()=>setOffset(o=>o-1)} style={{width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:8,background:"#fff",border:"1px solid #E5E7EB",cursor:"pointer",fontSize:12}}>◀</div>
+        <span style={{fontSize:14,fontWeight:700,color:C.t1,minWidth:mob?100:140,textAlign:"center"}}>{range.label}</span>
+        <div onClick={()=>setOffset(o=>Math.min(o+1,0))} style={{width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:8,background:"#fff",border:"1px solid #E5E7EB",cursor:"pointer",fontSize:12,opacity:offset>=0?0.3:1}}>▶</div>
+      </div>
+    </div>
+
+    {/* Streak */}
+    {data.streak>0&&<div style={{background:"#FEF3C7",borderRadius:10,padding:"10px 14px",marginBottom:14,display:"flex",alignItems:"center",gap:8,border:"1px solid #FDE68A"}}>
+      <span style={{fontSize:22}}>🔥</span>
+      <div><div style={{fontSize:15,fontWeight:700,color:"#92400E"}}>{data.streak} ngày liên tiếp</div></div>
+    </div>}
+
+    {/* 4 Metrics */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+      <div style={{...card,padding:12,marginBottom:0}}><div style={{...lbl}}>TB Calo/ngày</div><div style={{fontSize:22,fontWeight:700}}>{data.avgCal.toLocaleString()}</div><div style={{fontSize:11,marginTop:2,color:data.avgCal<data.target*0.9?"#DC2626":"#16A34A"}}>{data.avgCal<data.target*0.9?`Thiếu ${data.target-data.avgCal} cal`:"✓ Đạt mục tiêu"}</div></div>
+      <div style={{...card,padding:12,marginBottom:0}}><div style={{...lbl}}>TB Protein</div><div style={{fontSize:22,fontWeight:700}}>{data.avgP}g</div><div style={{fontSize:11,marginTop:2,color:data.avgP>=macro.protein*0.9?"#16A34A":"#DC2626"}}>{data.avgP>=macro.protein*0.9?`✓ ${Math.round(data.avgP/macro.protein*100)}%`:`Thiếu ${Math.round(macro.protein-data.avgP)}g`}</div></div>
+      <div style={{...card,padding:12,marginBottom:0}}><div style={{...lbl}}>Cân nặng</div><div style={{fontSize:22,fontWeight:700}}>{data.curKg} <span style={{fontSize:13,color:C.t3}}>kg</span></div><div style={{fontSize:11,marginTop:2,color:data.curKg>data.startKg?"#16A34A":"#DC2626"}}>{data.curKg>data.startKg?"+":"" }{Math.round((data.curKg-data.startKg)*10)/10} kg từ đầu</div></div>
+      <div style={{...card,padding:12,marginBottom:0}}><div style={{...lbl}}>Adherence</div><div style={{fontSize:22,fontWeight:700}}>{data.daysLogged>0?Math.round(data.adhereDays/data.daysLogged*100):0}%</div><div style={{fontSize:11,marginTop:2,color:C.t3}}>{data.adhereDays}/{data.daysLogged} ngày đạt (±10%)</div></div>
+    </div>
+
+    {/* Goal ETA */}
+    <div style={{...card,marginBottom:14}}>
+      <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>🎯 Mục tiêu cân nặng</div>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <div style={{flex:1,height:8,background:"#F3F4F6",borderRadius:4,overflow:"hidden"}}><div style={{width:`${Math.max(0,Math.min(data.wPct,100))}%`,height:"100%",background:"linear-gradient(90deg,#DC2626,#F59E0B)",borderRadius:4}}/></div>
+        <span style={{fontSize:13,fontWeight:700,color:"#DC2626"}}>{Math.round(data.wPct)}%</span>
+      </div>
+      <div style={{fontSize:11,color:C.t3,marginTop:4}}>{data.startKg} → {data.goalKg} kg · Hiện tại: {data.curKg} kg</div>
+    </div>
+
+    {/* Calo chart */}
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
+      <span style={{fontSize:mob?16:18}}>📊</span>
+      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Calo theo tuần</span>
+      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+    </div>
+    <div style={{...card}}>
+      <div style={{display:"flex",alignItems:"flex-end",gap:mob?4:6,height:100}}>
+        {data.weeks.map((w,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+          <div style={{fontSize:11,color:C.t3}}>{w.cal>0?w.cal.toLocaleString():""}</div>
+          <div style={{width:"100%",background:w.cal>=data.target*0.9?"#16A34A":"#DC2626",borderRadius:4,height:Math.max(4,w.cal/maxWeekCal*80),opacity:w.days>0?0.8:0.2}}/>
+          <div style={{fontSize:11,color:C.t2,fontWeight:600}}>{w.label}</div>
+        </div>)}
+      </div>
+      <div style={{marginTop:6,borderTop:"1px dashed #DC2626",position:"relative",height:14}}>
+        <span style={{position:"absolute",right:0,top:1,fontSize:11,color:"#DC2626",fontWeight:600}}>Mục tiêu: {data.target.toLocaleString()} cal</span>
+      </div>
+    </div>
+
+    {/* Macro donut */}
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
+      <span style={{fontSize:mob?16:18}}>🍵</span>
+      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Macro TB/ngày</span>
+      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+    </div>
+    <div style={{...card}}>
+      <div style={{display:"flex",gap:16,alignItems:"center"}}>
+        <div style={{width:90,height:90,borderRadius:"50%",background:`conic-gradient(#DC2626 0% ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}%, #F59E0B ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}% ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}%, #3B82F6 ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}% 100%)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{width:56,height:56,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700}}>{data.avgCal}</div>
+        </div>
+        <div style={{flex:1,fontSize:13}}>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"4px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#DC2626"}}/> Protein</span><span style={{fontWeight:600}}>{data.avgP}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"4px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#F59E0B"}}/> Carb</span><span style={{fontWeight:600}}>{data.avgC}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"4px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#3B82F6"}}/> Fat</span><span style={{fontWeight:600}}>{data.avgF}g</span></div>
+        </div>
+      </div>
+    </div>
+
+    {/* Top foods */}
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
+      <span style={{fontSize:mob?16:18}}>🏆</span>
+      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Top thực phẩm</span>
+      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+    </div>
+    <div style={{...card}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:16}}>
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:"#DC2626",marginBottom:6,textTransform:"uppercase"}}>Top nguồn Protein</div>
+          {data.topProtein.map(([name,p],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{Math.round(p)}g P</span></div>)}
+          {data.topProtein.length===0&&<div style={{fontSize:12,color:C.t3}}>Chưa có dữ liệu</div>}
+        </div>
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:"#F59E0B",marginBottom:6,textTransform:"uppercase"}}>Ăn nhiều nhất</div>
+          {data.topFoods.map(([name,count],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{count} lần</span></div>)}
+          {data.topFoods.length===0&&<div style={{fontSize:12,color:C.t3}}>Chưa có dữ liệu</div>}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+function Dashboard({weightLog,profile,macro,getMeals,getMealHistory,appSettings}){if(!profile||!macro)return null;
+  const [subTab,setSubTab]=useState("overview");
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
   // Parse meal config
@@ -562,6 +755,13 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
   const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
   return <div>
+    {/* Sub tabs */}
+    <div style={{display:"flex",background:"#F3F4F6",borderRadius:10,overflow:"hidden",padding:3,marginBottom:16,width:"fit-content"}}>
+      <div onClick={()=>setSubTab("overview")} style={{padding:"8px 16px",fontSize:13,fontWeight:700,color:subTab==="overview"?"#DC2626":"#6B7280",background:subTab==="overview"?"#fff":"transparent",borderRadius:8,cursor:"pointer",boxShadow:subTab==="overview"?"0 1px 3px rgba(0,0,0,0.1)":"none"}}>📊 Tổng quan</div>
+      <div onClick={()=>setSubTab("report")} style={{padding:"8px 16px",fontSize:13,fontWeight:700,color:subTab==="report"?"#DC2626":"#6B7280",background:subTab==="report"?"#fff":"transparent",borderRadius:8,cursor:"pointer",boxShadow:subTab==="report"?"0 1px 3px rgba(0,0,0,0.1)":"none"}}>📈 Báo cáo</div>
+    </div>
+
+    {subTab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<>
     {/* Hero */}
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
       <div style={{display:"flex",flexDirection:mob?"column":"row",justifyContent:"space-between",alignItems:mob?"stretch":"flex-start",gap:mob?14:0}}>
@@ -667,6 +867,7 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
 
     {/* Smart suggestions — outside chart card */}
     <WeightSuggestion weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} curKg={curKg} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>
+    </>}
   </div>;
 }
 
@@ -1653,7 +1854,7 @@ export default function App(){
   const [tab,setTab]=useState("dashboard");
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
-  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache}=useUserData(user?.id);
+  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||{cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"});
   const mob=useIsMobile();
@@ -1682,6 +1883,6 @@ export default function App(){
         }}>{t.l}</button>
       )}
     </div>
-    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
+    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} getMealHistory={getMealHistory} appSettings={appSettings}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
   </div>;
 }

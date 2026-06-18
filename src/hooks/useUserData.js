@@ -170,5 +170,20 @@ export function useUserData(userId) {
     console.log("🗑️ Deleted cache entries:", nameKeys);
   }, [userId]);
 
-  return { loaded, meals, getMeals, foodCache, saveMealToCloud, saveFoodCache, deleteFoodCache };
+  // Get meal history for date range (for reports)
+  const getMealHistory = useCallback(async (startDate, endDate) => {
+    if (!userId) return [];
+    try {
+      const { data, error } = await supabase.from("meal_logs")
+        .select("*")
+        .eq("user_id", userId)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true });
+      if (error) { console.error("Meal history error:", error); return []; }
+      return data || [];
+    } catch (e) { console.error("Meal history error:", e); return []; }
+  }, [userId]);
+
+  return { loaded, meals, getMeals, getMealHistory, foodCache, saveMealToCloud, saveFoodCache, deleteFoodCache };
 }
