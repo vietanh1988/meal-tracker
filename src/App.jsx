@@ -1112,7 +1112,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
     {section==="meals"&&<div style={card}>
       <div style={{fontSize:17,fontWeight:900,color:C.blue}}>Nhập bữa ăn</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:16}}>
-        Nhập thức ăn → nhấn "Tính macro" → <span style={{fontWeight:800,color:aiProvider==="claude"?"#DC2626":aiProvider==="gemini"?"#1D4ED8":"#15803D"}}>{providerName}</span> trả kết quả
+        Nhập thức ăn → nhấn "Tính macro" → trả kết quả → Lưu bữa ăn
       </div>
       {/* Day type + meals - PC: 1 row, Mobile: 2 rows */}
       {mob?<>
