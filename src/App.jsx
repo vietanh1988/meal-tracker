@@ -598,9 +598,9 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
 
     {/* Section label: Danh sách thực đơn */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-      <span style={{fontSize:13}}>🍽️</span>
-      <span style={{fontSize:11,fontWeight:700,color:"#6B7280",textTransform:"uppercase",letterSpacing:"0.08em"}}>Danh sách thực đơn</span>
-      <div style={{flex:1,height:1,background:"#E5E7EB"}}/>
+      <span style={{fontSize:16}}>🍽️</span>
+      <span style={{fontSize:13,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
