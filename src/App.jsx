@@ -684,11 +684,11 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
     </div>
     <div style={{...card}}>
       <div style={{display:"flex",alignItems:"flex-end",gap:mob?4:6,height:100}}>
-        {data.weeks.map((w,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+        {data.weeks.map((w,i)=>{const colors=["#DC2626","#F59E0B","#3B82F6","#16A34A","#8B5CF6"];const c=colors[i%colors.length];return <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
           <div style={{fontSize:11,color:C.t3}}>{w.cal>0?w.cal.toLocaleString():""}</div>
-          <div style={{width:"100%",background:w.cal>=data.target*0.9?"linear-gradient(180deg,#16A34A,#22C55E)":"linear-gradient(180deg,#DC2626,#F87171)",borderRadius:4,height:Math.max(4,w.cal/maxWeekCal*80),opacity:w.days>0?0.9:0.15,boxShadow:w.days>0?"0 2px 6px rgba(0,0,0,0.1)":"none"}}/>
+          <div style={{width:"100%",background:w.days>0?`linear-gradient(180deg,${c},${c}AA)`:"#F3F4F6",borderRadius:4,height:Math.max(4,w.cal/maxWeekCal*80),opacity:w.days>0?0.9:0.15,boxShadow:w.days>0?"0 2px 6px rgba(0,0,0,0.1)":"none"}}/>
           <div style={{fontSize:11,color:C.t2,fontWeight:600}}>{w.label}</div>
-        </div>)}
+        </div>})}
       </div>
       <div style={{marginTop:6,borderTop:"1px dashed #DC2626",position:"relative",height:14}}>
         <span style={{position:"absolute",right:0,top:1,fontSize:11,color:"#DC2626",fontWeight:600}}>Mục tiêu: {data.target.toLocaleString()} cal</span>
