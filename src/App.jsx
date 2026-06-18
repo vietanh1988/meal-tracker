@@ -597,9 +597,9 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
-      <div style={{display:"flex",background:C.surface,borderRadius:20,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
-        <div onClick={()=>setDayType("train")} style={{padding:mob?"8px 14px":"7px 14px",fontSize:mob?13:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
-        <div onClick={()=>setDayType("rest")} style={{padding:mob?"8px 14px":"7px 14px",fontSize:mob?13:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
+      <div style={{display:"flex",background:"#fff",borderRadius:22,overflow:"hidden",border:"2px solid #DC2626",boxShadow:"0 2px 8px rgba(220,38,38,0.15)"}}>
+        <div onClick={()=>setDayType("train")} style={{padding:mob?"10px 18px":"10px 18px",fontSize:mob?14:14,fontWeight:dayType==="train"?800:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
+        <div onClick={()=>setDayType("rest")} style={{padding:mob?"10px 18px":"10px 18px",fontSize:mob?14:14,fontWeight:dayType==="rest"?800:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
       </div>
     </div>
 
@@ -1134,7 +1134,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           </div>
           <span style={{color:"#E5E7EB"}}>|</span>
           {mealNames.map(m=><div key={m.id} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}} style={{padding:"6px 12px",borderRadius:18,fontSize:12,fontWeight:selectedMeal===m.id?700:600,background:selectedMeal===m.id?"#FEE2E2":"#F9FAFB",color:selectedMeal===m.id?"#991B1B":"#6B7280",border:`1.5px solid ${selectedMeal===m.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{m.l}</div>)}
-          <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:"#FEF3C7",border:"1.5px solid #FCD34D",cursor:"pointer",fontSize:14}}>⚙️</div>
+          <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:700,background:showMealSettings?"#FDE68A":"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap"}}>⚙️ Tuỳ chỉnh</div>
         </div>
       </>}
       {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
