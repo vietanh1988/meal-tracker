@@ -694,12 +694,8 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
         const ySteps=[0,Math.round(maxVal*0.33),Math.round(maxVal*0.66),Math.round(maxVal)];
         return <div style={{position:"relative"}}>
           <div style={{display:"flex",gap:0}}>
-            {/* Y labels */}
-            <div style={{width:30,display:"flex",flexDirection:"column-reverse",justifyContent:"space-between",height:chartH,paddingBottom:0}}>
-              {ySteps.map((v,i)=><div key={i} style={{fontSize:9,color:C.t3,textAlign:"right",lineHeight:"1"}}>{v>0?(v/1000).toFixed(1)+"k":""}</div>)}
-            </div>
             {/* Bars */}
-            <div style={{flex:1,display:"flex",alignItems:"flex-end",gap:mob?3:6,height:chartH,borderLeft:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,paddingLeft:4}}>
+            <div style={{flex:1,display:"flex",alignItems:"flex-end",gap:mob?3:6,height:chartH,borderBottom:`1px solid ${C.border}`,paddingLeft:4}}>
               {data.weeks.map((w,i)=>{const c=colors[i%colors.length];const pct=maxVal>0?w.cal/maxVal:0;return <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end",height:"100%"}}>
                 <div style={{fontSize:10,color:C.t2,fontWeight:700,marginBottom:2}}>{w.cal>0?w.cal.toLocaleString():""}</div>
                 <div style={{width:"70%",background:w.days>0?`linear-gradient(180deg,${c},${c}99)`:"#F3F4F6",borderRadius:"4px 4px 0 0",height:`${Math.max(2,pct*100)}%`,opacity:w.days>0?0.9:0.15,boxShadow:w.days>0?`0 -2px 8px ${c}33`:"none",transition:"height 0.3s"}}/>
@@ -707,10 +703,10 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
             </div>
           </div>
           {/* X labels */}
-          <div style={{display:"flex",marginLeft:34,gap:mob?3:6}}>
+          <div style={{display:"flex",gap:mob?3:6}}>
             {data.weeks.map((w,i)=><div key={i} style={{flex:1,textAlign:"center",fontSize:11,fontWeight:700,color:C.t2,paddingTop:4}}>{w.label}</div>)}
           </div>
-          <div style={{textAlign:"right",fontSize:11,color:C.t3,marginTop:6}}>🎯 Mục tiêu: <span style={{fontWeight:700,color:"#DC2626"}}>{data.target.toLocaleString()} cal/ngày</span></div>
+          <div style={{textAlign:"center",fontSize:13,color:C.t3,marginTop:8}}>🎯 Mục tiêu: <span style={{fontWeight:800,color:"#DC2626",fontSize:14}}>{data.target.toLocaleString()} cal/ngày</span></div>
         </div>;
       })()}
     </div>
