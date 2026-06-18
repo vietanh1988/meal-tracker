@@ -679,7 +679,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
     {/* Calo chart */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>📊</span>
-      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Calo theo tuần</span>
+      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>CALO THEO TUẦN</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
@@ -698,7 +698,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
     {/* Macro donut */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🍵</span>
-      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Macro TB/ngày</span>
+      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>MACRO TB/NGÀY</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
@@ -717,18 +717,18 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
     {/* Top foods */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🏆</span>
-      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Top thực phẩm</span>
+      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>TOP THỰC PHẨM</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:16}}>
         <div>
-          <div style={{fontSize:11,fontWeight:700,color:"#DC2626",marginBottom:6,textTransform:"uppercase"}}>Top nguồn Protein</div>
+          <div style={{fontSize:11,fontWeight:700,color:"#DC2626",marginBottom:6}}>TOP NGUỒN PROTEIN</div>
           {data.topProtein.map(([name,p],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{Math.round(p)}g P</span></div>)}
           {data.topProtein.length===0&&<div style={{fontSize:12,color:C.t3}}>Chưa có dữ liệu</div>}
         </div>
         <div>
-          <div style={{fontSize:11,fontWeight:700,color:"#F59E0B",marginBottom:6,textTransform:"uppercase"}}>Ăn nhiều nhất</div>
+          <div style={{fontSize:11,fontWeight:700,color:"#F59E0B",marginBottom:6}}>ĂN NHIỀU NHẤT</div>
           {data.topFoods.map(([name,count],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{count} lần</span></div>)}
           {data.topFoods.length===0&&<div style={{fontSize:12,color:C.t3}}>Chưa có dữ liệu</div>}
         </div>
@@ -799,7 +799,7 @@ function Dashboard({weightLog,profile,macro,getMeals,getMealHistory,appSettings}
     {/* Section label: Danh sách thực đơn */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>🍽️</span>
-      <span style={{fontSize:mob?14:16,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textTransform:"uppercase",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <span style={{fontSize:mob?14:16,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>DANH SÁCH THỰC ĐƠN</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
 
