@@ -738,8 +738,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
   </div>;
 }
 
-function Dashboard({weightLog,profile,macro,getMeals,getMealHistory,appSettings}){if(!profile||!macro)return null;
-  const [subTab,setSubTab]=useState("overview");
+function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||!macro)return null;
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
   // Parse meal config
@@ -756,13 +755,6 @@ function Dashboard({weightLog,profile,macro,getMeals,getMealHistory,appSettings}
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
   const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
   return <div>
-    {/* Sub tabs */}
-    <div style={{display:"flex",background:"#F3F4F6",borderRadius:10,overflow:"hidden",padding:3,marginBottom:16,width:"fit-content"}}>
-      <div onClick={()=>setSubTab("overview")} style={{padding:"8px 16px",fontSize:13,fontWeight:700,color:subTab==="overview"?"#DC2626":"#6B7280",background:subTab==="overview"?"#fff":"transparent",borderRadius:8,cursor:"pointer",boxShadow:subTab==="overview"?"0 1px 3px rgba(0,0,0,0.1)":"none"}}>📊 Tổng quan</div>
-      <div onClick={()=>setSubTab("report")} style={{padding:"8px 16px",fontSize:13,fontWeight:700,color:subTab==="report"?"#DC2626":"#6B7280",background:subTab==="report"?"#fff":"transparent",borderRadius:8,cursor:"pointer",boxShadow:subTab==="report"?"0 1px 3px rgba(0,0,0,0.1)":"none"}}>📈 Báo cáo</div>
-    </div>
-
-    {subTab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<>
     {/* Hero */}
     <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
       <div style={{display:"flex",flexDirection:mob?"column":"row",justifyContent:"space-between",alignItems:mob?"stretch":"flex-start",gap:mob?14:0}}>
@@ -868,7 +860,6 @@ function Dashboard({weightLog,profile,macro,getMeals,getMealHistory,appSettings}
 
     {/* Smart suggestions — outside chart card */}
     <WeightSuggestion weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} curKg={curKg} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>
-    </>}
   </div>;
 }
 
@@ -1877,13 +1868,13 @@ export default function App(){
       </div>
     </div>
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 72px)",display:"flex",gap:0,marginBottom:20,borderBottom:`2.5px solid ${C.border}`}}>
-      {[{id:"dashboard",l:"📊 Dashboard"},{id:"admin",l:"⚙️ Admin"}].map(t=>
+      {[{id:"dashboard",l:"📊 Dashboard"},{id:"report",l:"📈 Báo cáo"},{id:"admin",l:"⚙️ Admin"}].map(t=>
         <button key={t.id} onClick={()=>setTab(t.id)} style={{
           padding:"10px 18px",fontSize:14,fontWeight:tab===t.id?900:600,border:"none",background:"transparent",cursor:"pointer",
           color:tab===t.id?"#111":C.t3,borderBottom:tab===t.id?"3px solid #DC2626":"3px solid transparent",fontFamily:"inherit",
         }}>{t.l}</button>
       )}
     </div>
-    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} getMealHistory={getMealHistory} appSettings={appSettings}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
+    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
   </div>;
 }
