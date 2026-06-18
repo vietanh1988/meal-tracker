@@ -587,13 +587,20 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
     </div>
 
     {/* Stats */}
-    <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:12}}>
+    <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:24}}>
       {[{l:"Chiều cao",v:profile.cm,u:"cm",c:C.blue},{l:"Cân nặng",v:curKg,u:"kg",c:C.red},{l:"BMI",v:macro.bmi,u:"",c:C.gold},{l:"Gym",v:profile.gym,u:"/tuần",c:C.green}].map((s,i)=>(
         <div key={i} style={{...card,padding:"10px 14px",marginBottom:0,borderLeft:`4px solid ${s.c}`}}>
           <div style={{...lbl,color:s.c}}>{s.l}</div>
           <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:2}}>{s.v}<span style={{fontSize:11,fontWeight:700,color:C.t3}}>{s.u}</span></div>
         </div>
       ))}
+    </div>
+
+    {/* Section label: Danh sách thực đơn */}
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+      <span style={{fontSize:13}}>🍽️</span>
+      <span style={{fontSize:11,fontWeight:700,color:"#6B7280",textTransform:"uppercase",letterSpacing:"0.08em"}}>Danh sách thực đơn</span>
+      <div style={{flex:1,height:1,background:"#E5E7EB"}}/>
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
@@ -634,7 +641,7 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
     </div>}
 
     {/* Weight Chart */}
-    <div style={{...card,marginTop:6,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#EAB308) 1"}}>
+    <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#EAB308) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{fontSize:17,fontWeight:900,color:C.blue}}>📈 Theo dõi cân nặng</div>
         <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
