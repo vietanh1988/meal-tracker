@@ -686,7 +686,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
       <div style={{display:"flex",alignItems:"flex-end",gap:mob?4:6,height:100}}>
         {data.weeks.map((w,i)=><div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
           <div style={{fontSize:11,color:C.t3}}>{w.cal>0?w.cal.toLocaleString():""}</div>
-          <div style={{width:"100%",background:w.cal>=data.target*0.9?"#16A34A":"#DC2626",borderRadius:4,height:Math.max(4,w.cal/maxWeekCal*80),opacity:w.days>0?0.8:0.2}}/>
+          <div style={{width:"100%",background:w.cal>=data.target*0.9?"linear-gradient(180deg,#16A34A,#22C55E)":"linear-gradient(180deg,#DC2626,#F87171)",borderRadius:4,height:Math.max(4,w.cal/maxWeekCal*80),opacity:w.days>0?0.9:0.15,boxShadow:w.days>0?"0 2px 6px rgba(0,0,0,0.1)":"none"}}/>
           <div style={{fontSize:11,color:C.t2,fontWeight:600}}>{w.label}</div>
         </div>)}
       </div>
@@ -702,14 +702,14 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
-      <div style={{display:"flex",gap:16,alignItems:"center"}}>
-        <div style={{width:90,height:90,borderRadius:"50%",background:`conic-gradient(#DC2626 0% ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}%, #F59E0B ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}% ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}%, #3B82F6 ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}% 100%)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-          <div style={{width:56,height:56,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700}}>{data.avgCal}</div>
+      <div style={{display:"flex",gap:mob?12:16,alignItems:"center"}}>
+        <div style={{width:mob?80:90,height:mob?80:90,borderRadius:"50%",background:`conic-gradient(#DC2626 0% ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}%, #F59E0B ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}% ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}%, #3B82F6 ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}% 100%)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{width:mob?50:56,height:mob?50:56,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?13:14,fontWeight:700}}>{data.avgCal}</div>
         </div>
         <div style={{flex:1,fontSize:13}}>
-          <div style={{display:"flex",justifyContent:"space-between",padding:"4px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#DC2626"}}/> Protein</span><span style={{fontWeight:600}}>{data.avgP}g</span></div>
-          <div style={{display:"flex",justifyContent:"space-between",padding:"4px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#F59E0B"}}/> Carb</span><span style={{fontWeight:600}}>{data.avgC}g</span></div>
-          <div style={{display:"flex",justifyContent:"space-between",padding:"4px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#3B82F6"}}/> Fat</span><span style={{fontWeight:600}}>{data.avgF}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid #F3F4F6"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#DC2626"}}/> Protein</span><span style={{fontWeight:700}}>{data.avgP}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid #F3F4F6"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#F59E0B"}}/> Carb</span><span style={{fontWeight:700}}>{data.avgC}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#3B82F6"}}/> Fat</span><span style={{fontWeight:700}}>{data.avgF}g</span></div>
         </div>
       </div>
     </div>
