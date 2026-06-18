@@ -3,17 +3,22 @@ import { supabase } from "../lib/supabase";
 
 const defaultStructure = {
   train: [
-    {id:"sang",name:"Sáng",items:[]},
-    {id:"trua",name:"Trưa",items:[]},
-    {id:"phu1",name:"Phụ 1 (VP)",items:[]},
-    {id:"phu2",name:"Phụ 2 (pre-workout)",items:[]},
-    {id:"toi",name:"Tối",items:[]},
+    {id:"sang",name:"Bữa sáng",items:[]},
+    {id:"phu_sang",name:"Bữa phụ sáng",items:[]},
+    {id:"trua",name:"Bữa trưa",items:[]},
+    {id:"phu_chieu",name:"Bữa phụ chiều",items:[]},
+    {id:"pre",name:"Pre-workout",items:[]},
+    {id:"post",name:"Post-workout",items:[]},
+    {id:"toi",name:"Bữa tối",items:[]},
   ],
   rest: [
-    {id:"sang",name:"Sáng",items:[]},
-    {id:"trua",name:"Trưa",items:[]},
-    {id:"phu1",name:"Phụ 1 (VP)",items:[]},
-    {id:"toi",name:"Tối",items:[]},
+    {id:"sang",name:"Bữa sáng",items:[]},
+    {id:"phu_sang",name:"Bữa phụ sáng",items:[]},
+    {id:"trua",name:"Bữa trưa",items:[]},
+    {id:"phu_chieu",name:"Bữa phụ chiều",items:[]},
+    {id:"pre",name:"Pre-workout",items:[]},
+    {id:"post",name:"Post-workout",items:[]},
+    {id:"toi",name:"Bữa tối",items:[]},
   ],
 };
 

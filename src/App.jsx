@@ -58,25 +58,29 @@ const Icons={
   save:"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8",
 };
 const MealIcon=({id,size=20})=>{
-  const map={sang:"sunrise",trua:"sun",phu1:"coffee",phu2:"zap",toi:"moon"};
-  const color={sang:"#EAB308",trua:"#F59E0B",phu1:"#78716C",phu2:"#DC2626",toi:"#6366F1"};
+  const map={sang:"sunrise",phu_sang:"coffee",trua:"sun",phu_chieu:"coffee",pre:"zap",post:"zap",toi:"moon"};
+  const color={sang:"#EAB308",phu_sang:"#78716C",trua:"#F59E0B",phu_chieu:"#78716C",pre:"#DC2626",post:"#16A34A",toi:"#6366F1"};
   return <Icon d={Icons[map[id]||"sun"]} color={color[id]||"#666"} size={size}/>;
 };
 
+// All 7 meals with icons and display names
+const ALL_MEALS=[
+  {id:"sang",icon:"🍳",name:"Bữa sáng",short:"Sáng"},
+  {id:"phu_sang",icon:"🍌",name:"Bữa phụ sáng",short:"Phụ sáng"},
+  {id:"trua",icon:"☀️",name:"Bữa trưa",short:"Trưa"},
+  {id:"phu_chieu",icon:"🥤",name:"Bữa phụ chiều",short:"Phụ chiều"},
+  {id:"pre",icon:"💪",name:"Pre-workout",short:"Pre"},
+  {id:"post",icon:"🥛",name:"Post-workout",short:"Post"},
+  {id:"toi",icon:"🌙",name:"Bữa tối",short:"Tối"},
+];
+// Default visible meals per day type
+const DEFAULT_MEAL_CONFIG={
+  train:["sang","trua","pre","post","toi"],
+  rest:["sang","trua","toi"],
+};
 const mealsData={
-  train:[
-    {id:"sang",name:"Sáng",items:[]},
-    {id:"trua",name:"Trưa",items:[]},
-    {id:"phu1",name:"Phụ 1 (VP)",items:[]},
-    {id:"phu2",name:"Phụ 2 (pre-workout)",items:[]},
-    {id:"toi",name:"Tối",items:[]},
-  ],
-  rest:[
-    {id:"sang",name:"Sáng",items:[]},
-    {id:"trua",name:"Trưa",items:[]},
-    {id:"phu1",name:"Phụ 1 (VP)",items:[]},
-    {id:"toi",name:"Tối",items:[]},
-  ],
+  train:ALL_MEALS.map(m=>({id:m.id,name:m.name,items:[]})),
+  rest:ALL_MEALS.map(m=>({id:m.id,name:m.name,items:[]})),
 };
 const getMealsDefault=(type)=>mealsData[type];
 const wColors=["#DC2626","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
@@ -544,7 +548,11 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
 function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||!macro)return null;
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
-  const meals=getMeals(dayType);
+  // Parse meal config
+  const mealConfig=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
+  const visibleIds=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];
+  const allMeals=getMeals(dayType);
+  const meals=allMeals.filter(m=>visibleIds.includes(m.id));
   const totals=meals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
   // Macro từ công thức: P/F/Xơ cố định, Carb thay đổi theo ngày
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
@@ -692,6 +700,11 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [section,setSection]=useState("meals");
   const [dayType,setDayType]=useState("train");
   const [selectedMeal,setSelectedMeal]=useState("sang");
+  const [mealConfig,setMealConfig]=useState(()=>{
+    try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
+    catch(e){return {...DEFAULT_MEAL_CONFIG};}
+  });
+  const [showMealSettings,setShowMealSettings]=useState(false);
   const [foodItems,setFoodItems]=useState(()=>{
     const meals=getMeals("train");
     const meal=meals.find(m=>m.id==="sang");
@@ -723,6 +736,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     if(appSettings.gpt_model)setGptModel(appSettings.gpt_model);
     if(appSettings.gemini_model)setGeminiModel(appSettings.gemini_model);
     if(appSettings.ai_model)setAiModel(appSettings.ai_model);
+    if(appSettings.meal_config){try{setMealConfig(JSON.parse(appSettings.meal_config));}catch(e){}}
   },[appSettings]);
 
   // Admin: save to both localStorage and Supabase
@@ -903,9 +917,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
     finally{setAiLoading(false);}
   },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey]);
 
-  const mealNames=dayType==="train"
-    ?[{id:"sang",l:"🌅 Sáng"},{id:"trua",l:"☀️ Trưa"},{id:"phu1",l:"☕ Phụ 1"},{id:"phu2",l:"💪 Phụ 2"},{id:"toi",l:"🌙 Tối"}]
-    :[{id:"sang",l:"🌅 Sáng"},{id:"trua",l:"☀️ Trưa"},{id:"phu1",l:"☕ Phụ 1"},{id:"toi",l:"🌙 Tối"}];
+  const mealNames=ALL_MEALS.filter(m=>mealConfig[dayType]?.includes(m.id)).map(m=>({id:m.id,l:`${m.icon} ${mob?m.short:m.name}`}));
 
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
 
@@ -1101,12 +1113,47 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         Nhập thức ăn → nhấn "Tính macro" → <span style={{fontWeight:800,color:aiProvider==="claude"?"#DC2626":aiProvider==="gemini"?"#1D4ED8":"#15803D"}}>{providerName}</span> trả kết quả
       </div>
       <div style={{display:"flex",gap:6,marginBottom:12}}>
-        <Pill active={dayType==="train"} color={C.red} onClick={()=>{setDayType("train");setAiResult(null);}}>💪 Ngày tập</Pill>
-        <Pill active={dayType==="rest"} color={C.green} onClick={()=>{setDayType("rest");setAiResult(null);}}>😴 Ngày nghỉ</Pill>
+        <Pill active={dayType==="train"} color={C.red} onClick={()=>{setDayType("train");setSelectedMeal(mealConfig.train?.[0]||"sang");setAiResult(null);}}>💪 Ngày tập</Pill>
+        <Pill active={dayType==="rest"} color={C.green} onClick={()=>{setDayType("rest");setSelectedMeal(mealConfig.rest?.[0]||"sang");setAiResult(null);}}>😴 Ngày nghỉ</Pill>
       </div>
-      <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+      <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
         {mealNames.map(m=><Pill key={m.id} active={selectedMeal===m.id} color={C.gold} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}}>{m.l}</Pill>)}
+        <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{width:mob?28:32,height:mob?28:32,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:showMealSettings?C.redBg:C.surface,border:`1.5px solid ${showMealSettings?C.red:C.border}`,cursor:"pointer",fontSize:mob?13:14}}>⚙️</div>
       </div>
+      {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
+        <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:10}}>⚙️ Tuỳ chỉnh bữa ăn — {dayType==="train"?"Ngày tập":"Ngày nghỉ"}</div>
+        {ALL_MEALS.map(m=>{
+          const isOn=mealConfig[dayType]?.includes(m.id);
+          const isTrainOnly=(m.id==="pre"||m.id==="post")&&dayType==="rest";
+          return <div key={m.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",borderBottom:`0.5px solid ${C.border}`,opacity:isTrainOnly?0.35:isOn?1:0.45}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:15}}>{m.icon}</span>
+              <span style={{fontSize:13,fontWeight:600,color:C.t1}}>{m.name}</span>
+              {isTrainOnly&&<span style={{fontSize:10,padding:"2px 6px",background:"#FEF3C7",color:"#92400E",borderRadius:4}}>Chỉ ngày tập</span>}
+            </div>
+            <div onClick={()=>{
+              if(isTrainOnly)return;
+              const cfg={...mealConfig};
+              const arr=[...(cfg[dayType]||[])];
+              if(isOn)cfg[dayType]=arr.filter(id=>id!==m.id);
+              else{
+                // Insert in correct order
+                const allIds=ALL_MEALS.map(x=>x.id);
+                arr.push(m.id);
+                arr.sort((a,b)=>allIds.indexOf(a)-allIds.indexOf(b));
+                cfg[dayType]=arr;
+              }
+              setMealConfig(cfg);
+              if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));
+              // If selected meal was turned off, switch to first visible
+              if(isOn&&selectedMeal===m.id){const first=cfg[dayType]?.[0]||"sang";setSelectedMeal(first);}
+            }} style={{width:36,height:20,background:isOn?"#3B6D11":"#D1D5DB",borderRadius:10,position:"relative",cursor:isTrainOnly?"not-allowed":"pointer",transition:"background 0.2s"}}>
+              <div style={{width:16,height:16,background:"#fff",borderRadius:"50%",position:"absolute",top:2,left:isOn?18:2,transition:"left 0.2s",boxShadow:"0 1px 2px rgba(0,0,0,0.15)"}}/>
+            </div>
+          </div>;
+        })}
+        <div style={{marginTop:8,fontSize:10,color:C.t3,lineHeight:"1.4"}}>Bữa tắt sẽ không hiện trên Dashboard và không tính vào tổng.</div>
+      </div>}
       <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14}}>
         <div style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,marginBottom:8,alignItems:"center"}}>
           <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>ĐV</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
