@@ -679,7 +679,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
     {/* Calo chart */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>📊</span>
-      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Calo theo tuần</span>
+      <span style={{fontSize:mob?15:17,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Calo theo tuần</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
@@ -698,7 +698,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
     {/* Macro donut */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🍵</span>
-      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Macro TB/ngày</span>
+      <span style={{fontSize:mob?15:17,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Macro TB/ngày</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
@@ -717,19 +717,20 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
     {/* Top foods */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🏆</span>
-      <span style={{fontSize:mob?13:14,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Top thực phẩm</span>
+      <span style={{fontSize:mob?15:17,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Top thực phẩm</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:16}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:mob?8:16}}>
         <div>
-          <div style={{fontSize:11,fontWeight:700,color:"#DC2626",marginBottom:6}}>Top nguồn Protein</div>
-          {data.topProtein.map(([name,p],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{Math.round(p)}g P</span></div>)}
+          <div style={{fontSize:13,fontWeight:700,color:"#DC2626",marginBottom:8}}>🥩 Top nguồn Protein</div>
+          {data.topProtein.map(([name,p],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{Math.round(p)}g P</span></div>)}
           {data.topProtein.length===0&&<div style={{fontSize:12,color:C.t3}}>Chưa có dữ liệu</div>}
         </div>
+        <div style={{width:1,background:"#E5E7EB"}}/>
         <div>
-          <div style={{fontSize:11,fontWeight:700,color:"#F59E0B",marginBottom:6}}>Ăn nhiều nhất</div>
-          {data.topFoods.map(([name,count],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{count} lần</span></div>)}
+          <div style={{fontSize:13,fontWeight:700,color:"#F59E0B",marginBottom:8}}>⭐ Ăn nhiều nhất</div>
+          {data.topFoods.map(([name,count],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{count} lần</span></div>)}
           {data.topFoods.length===0&&<div style={{fontSize:12,color:C.t3}}>Chưa có dữ liệu</div>}
         </div>
       </div>
