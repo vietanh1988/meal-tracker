@@ -800,7 +800,7 @@ function Dashboard({weightLog,profile,macro,getMeals,getMealHistory,appSettings}
     {/* Section label: Danh sách thực đơn */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>🍽️</span>
-      <span style={{fontSize:mob?14:16,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <span style={{fontSize:mob?16:18,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
 
