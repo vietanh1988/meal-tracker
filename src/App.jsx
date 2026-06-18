@@ -597,7 +597,7 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
-      <div style={{display:"flex",background:"#fff",borderRadius:22,overflow:"hidden",border:"2px solid #DC2626",boxShadow:"0 2px 8px rgba(220,38,38,0.15)"}}>
+      <div style={{display:"flex",background:"#fff",borderRadius:10,overflow:"hidden",border:"1.5px solid #F87171",boxShadow:"0 1px 4px rgba(220,38,38,0.1)"}}>
         <div onClick={()=>setDayType("train")} style={{padding:mob?"10px 18px":"10px 18px",fontSize:mob?14:14,fontWeight:dayType==="train"?800:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
         <div onClick={()=>setDayType("rest")} style={{padding:mob?"10px 18px":"10px 18px",fontSize:mob?14:14,fontWeight:dayType==="rest"?800:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
       </div>
