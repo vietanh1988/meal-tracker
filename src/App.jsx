@@ -2008,15 +2008,15 @@ export default function App(){
       {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings"/>}
 
       {/* Bottom nav — iOS style */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.15)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
         {[
-          {id:"dashboard",icon:"ti-layout-dashboard",label:"Tổng quan"},
-          {id:"profile",icon:"ti-user",label:"Hồ sơ"},
-          {id:"meals",icon:"ti-soup",label:"Bữa ăn"},
-          {id:"report",icon:"ti-chart-bar",label:"Báo cáo"},
-          {id:"settings",icon:"ti-settings",label:"Cài đặt"},
+          {id:"dashboard",icon:"📊",label:"Tổng quan"},
+          {id:"profile",icon:"👤",label:"Hồ sơ"},
+          {id:"meals",icon:"🍽️",label:"Bữa ăn"},
+          {id:"report",icon:"📈",label:"Báo cáo"},
+          {id:"settings",icon:"⚙️",label:"Cài đặt"},
         ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"4px 0"}}>
-          <i className={`ti ${t.icon}`} style={{fontSize:24,color:a?"#DC2626":"#8E8E93"}}/>
+          <span style={{fontSize:22}}>{t.icon}</span>
           <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#DC2626":"#8E8E93"}}>{t.label}</span>
         </div>;})}
       </div>
