@@ -1998,7 +1998,7 @@ export default function App(){
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(220,38,38,0.15)",color:"#F87171",border:"1px solid #F87171",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>
-    <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?70:0}}>
+    <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>
     {mob?<>
       {/* MOBILE: separate views per tab */}
       {tab==="dashboard"&&<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>}
