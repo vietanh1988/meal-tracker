@@ -2008,17 +2008,18 @@ export default function App(){
       {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings"/>}
 
       {/* Bottom nav */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"#fff",borderTop:"1px solid #E5E7EB",display:"flex",paddingTop:6,paddingBottom:"max(16px, env(safe-area-inset-bottom, 16px))"}}>
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"#111",borderTop:"1px solid #333",display:"flex",paddingTop:8,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
         {[
           {id:"dashboard",icon:"📊",label:"Tổng quan"},
           {id:"profile",icon:"👤",label:"Hồ sơ"},
           {id:"meals",icon:"🍽️",label:"Bữa ăn"},
           {id:"report",icon:"📈",label:"Báo cáo"},
           {id:"settings",icon:"⚙️",label:"Cài đặt"},
-        ].map(t=><div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer"}}>
-          <span style={{fontSize:20,opacity:tab===t.id?1:0.35}}>{t.icon}</span>
-          <span style={{fontSize:10,fontWeight:tab===t.id?700:500,color:tab===t.id?"#DC2626":"#9CA3AF"}}>{t.label}</span>
-          {tab===t.id&&<div style={{width:4,height:4,borderRadius:"50%",background:"#DC2626"}}/>}
+        ].map(t=><div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer",padding:"2px 0"}}>
+          <div style={{width:40,height:40,borderRadius:12,background:tab===t.id?"linear-gradient(135deg,#DC2626,#F59E0B)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"background 0.2s"}}>
+            <span style={{fontSize:22,filter:tab===t.id?"brightness(1.1)":"none"}}>{t.icon}</span>
+          </div>
+          <span style={{fontSize:10,fontWeight:tab===t.id?700:500,color:tab===t.id?"#F9FAFB":"#9CA3AF"}}>{t.label}</span>
         </div>)}
       </div>
     </>:<>
