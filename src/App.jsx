@@ -1485,75 +1485,74 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
 
     {/* PROFILE */}
     {section==="profile"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>Hồ sơ cá nhân</div>
+      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>👤 Hồ sơ cá nhân</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Nhập thông số → macro tự tính theo công thức Mifflin-St Jeor</div>
 
-      {/* Gender */}
-      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-        <span style={{fontSize:mob?14:16}}>⚧️</span>
-        <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Giới tính</span>
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,marginBottom:16}}>
-        {[{id:"male",icon:"👨",name:"Nam"},{id:"female",icon:"👩",name:"Nữ"}].map(g=><div key={g.id} onClick={()=>setProfile({...profile,gender:g.id})} style={{
-          padding:mob?"10px 12px":"14px 16px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",gap:10,
-          background:(profile.gender||"male")===g.id?"#FEE2E2":C.surface,
-          border:`1.5px solid ${(profile.gender||"male")===g.id?"#F87171":C.border}`,
-        }}>
-          <div style={{fontSize:mob?18:22,width:mob?30:36,height:mob?30:36,display:"flex",alignItems:"center",justifyContent:"center",background:(profile.gender||"male")===g.id?"#FFF5F5":"#fff",borderRadius:10,border:`1px solid ${(profile.gender||"male")===g.id?"#FECACA":C.border}`}}>{g.icon}</div>
-          <div style={{fontSize:mob?13:14,fontWeight:700,color:C.t1}}>{g.name}</div>
-          <div style={{marginLeft:"auto",width:mob?20:22,height:mob?20:22,borderRadius:"50%",border:`2px solid ${(profile.gender||"male")===g.id?"#DC2626":"#D1D5DB"}`,background:(profile.gender||"male")===g.id?"#DC2626":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?10:11,color:"#fff"}}>{(profile.gender||"male")===g.id?"✓":""}</div>
-        </div>)}
-      </div>
+      {/* Section 1: Thông tin cơ bản */}
+      <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,paddingBottom:10,borderBottom:`1.5px solid #F3F4F6`}}>
+          <span style={{fontSize:16}}>📋</span>
+          <span style={{fontSize:mob?14:15,fontWeight:800,color:C.t1}}>Thông tin cơ bản</span>
+        </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-        <div>
-          <div style={{...lbl,marginBottom:6}}>📏 Chiều cao (cm)</div>
-          <input type="text" inputMode="numeric" value={profile.cm} onChange={e=>setProfile({...profile,cm:Number(e.target.value)})} style={inp}/>
-        </div>
-        <div>
-          <div style={{...lbl,marginBottom:6}}>⚖️ Cân nặng hiện tại (kg)</div>
-          <input type="text" inputMode="decimal" value={profile.kg} onChange={e=>setProfile({...profile,kg:Number(e.target.value.replace(",","."))})} style={inp}/>
-        </div>
-        <div>
-          <div style={{...lbl,marginBottom:6}}>🎂 Tuổi</div>
-          <input type="text" inputMode="numeric" value={profile.age} onChange={e=>setProfile({...profile,age:Number(e.target.value)})} style={inp}/>
-        </div>
-        <div>
-          <div style={{...lbl,marginBottom:6}}>📅 Số buổi tập/tuần</div>
-          <input type="text" inputMode="numeric" value={profile.gym} onChange={e=>setProfile({...profile,gym:Number(e.target.value)})} style={inp}/>
-        </div>
-      </div>
-
-      {/* Activity level */}
-      <div style={{marginTop:16}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-          <span style={{fontSize:mob?14:16}}>💼</span>
-          <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Mức vận động công việc</span>
-        </div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {[
-            {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng, ít đi lại"},
-            {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều, công việc nhẹ"},
-            {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay, bốc vác"},
-          ].map(a=><div key={a.id} onClick={()=>setProfile({...profile,activity:a.id})} style={{
-            flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
-            background:profile.activity===a.id?C.blueBg:C.surface,
-            border:profile.activity===a.id?`2.5px solid ${C.blue}`:`1.5px solid ${C.border}`,
+        {/* Gender */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,marginBottom:14}}>
+          {[{id:"male",icon:"👨",name:"Nam"},{id:"female",icon:"👩",name:"Nữ"}].map(g=><div key={g.id} onClick={()=>setProfile({...profile,gender:g.id})} style={{
+            padding:mob?"10px 12px":"12px 14px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",gap:8,
+            background:(profile.gender||"male")===g.id?"#EFF6FF":C.surface,
+            border:`1.5px solid ${(profile.gender||"male")===g.id?"#60A5FA":C.border}`,
           }}>
-            <div style={{fontSize:22}}>{a.icon}</div>
-            <div style={{fontSize:13,fontWeight:900,color:C.t1,marginTop:4}}>{a.name}</div>
-            <div style={{fontSize:11,fontWeight:600,color:C.t3}}>{a.desc}</div>
+            <span style={{fontSize:mob?20:24}}>{g.icon}</span>
+            <span style={{fontSize:mob?13:14,fontWeight:700,color:C.t1}}>{g.name}</span>
+            <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(profile.gender||"male")===g.id?"#3B82F6":"#D1D5DB"}`,background:(profile.gender||"male")===g.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(profile.gender||"male")===g.id?"✓":""}</div>
+          </div>)}
+        </div>
+
+        {/* 4 inputs */}
+        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?8:10}}>
+          {[
+            {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
+            {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
+            {key:"age",label:"Tuổi",icon:"🎂",unit:"tuổi",mode:"numeric"},
+            {key:"gym",label:"Số buổi tập",icon:"🏋️",unit:"buổi",mode:"numeric"},
+          ].map(f=><div key={f.key}>
+            <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+            <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+              <input type="text" inputMode={f.mode} value={f.key==="kg"?profile.kg:profile[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...profile,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
+              <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
+            </div>
           </div>)}
         </div>
       </div>
 
-      {/* Exercise type */}
-      <div style={{marginTop:16}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-          <span style={{fontSize:mob?14:16}}>🏅</span>
-          <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Hình thức tập luyện</span>
+      {/* Section 2: Vận động */}
+      <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,paddingBottom:10,borderBottom:`1.5px solid #F3F4F6`}}>
+          <span style={{fontSize:16}}>🏃</span>
+          <span style={{fontSize:mob?14:15,fontWeight:800,color:C.t1}}>Vận động</span>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?6:10}}>
+
+        {/* Activity level */}
+        <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:8}}>💼 Mức vận động công việc</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:18}}>
+          {[
+            {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng"},
+            {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều"},
+            {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay"},
+          ].map(a=><div key={a.id} onClick={()=>setProfile({...profile,activity:a.id})} style={{
+            padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
+            background:profile.activity===a.id?"#EFF6FF":C.surface,
+            border:profile.activity===a.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+          }}>
+            <div style={{fontSize:mob?20:24}}>{a.icon}</div>
+            <div style={{fontSize:mob?11:13,fontWeight:800,color:C.t1,marginTop:4}}>{a.name}</div>
+            <div style={{fontSize:mob?9:10,color:C.t3}}>{a.desc}</div>
+          </div>)}
+        </div>
+
+        {/* Exercise type */}
+        <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:8}}>🏅 Hình thức tập luyện</div>
+        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?6:8,marginBottom:((profile.exerciseType||"gym")==="gym_cardio"||(profile.exerciseType||"gym")==="cardio")?18:0}}>
           {[
             {id:"gym",icon:"🏋️",name:"Gym",desc:"Tập tạ thuần"},
             {id:"gym_cardio",icon:"🏋️🏃",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
@@ -1565,79 +1564,79 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             if(e.id==="gym")updated.cardioIntensity=undefined;
             setProfile(updated);
           }} style={{
-            padding:mob?"10px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
+            padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
             background:(profile.exerciseType||"gym")===e.id?"#FEE2E2":C.surface,
-            border:(profile.exerciseType||"gym")===e.id?`2.5px solid #F87171`:`1.5px solid ${C.border}`,
+            border:(profile.exerciseType||"gym")===e.id?`2px solid #F87171`:`1.5px solid ${C.border}`,
           }}>
-            <div style={{fontSize:mob?20:22}}>{e.icon}</div>
-            <div style={{fontSize:mob?12:13,fontWeight:900,color:C.t1,marginTop:4}}>{e.name}</div>
-            <div style={{fontSize:mob?10:11,fontWeight:600,color:C.t3}}>{e.desc}</div>
+            <div style={{fontSize:mob?20:24}}>{e.icon}</div>
+            <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
+            <div style={{fontSize:mob?9:10,color:C.t3}}>{e.desc}</div>
           </div>)}
         </div>
+
+        {/* Cardio intensity */}
+        {((profile.exerciseType||"gym")==="gym_cardio"||(profile.exerciseType||"gym")==="cardio")&&<>
+          <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:8}}>⚡ Cường độ Cardio</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8}}>
+            {[
+              {id:"light",icon:"🚶",name:"Nhẹ",desc:"Đi bộ 30-40p"},
+              {id:"moderate",icon:"🏃",name:"Vừa",desc:"Chạy nhẹ 30-45p"},
+              {id:"intense",icon:"⚡",name:"Nặng",desc:"HIIT, bơi 45-60p"},
+            ].map(ci=><div key={ci.id} onClick={()=>setProfile({...profile,cardioIntensity:ci.id})} style={{
+              padding:mob?"8px 6px":"12px",borderRadius:10,cursor:"pointer",textAlign:"center",
+              background:(profile.cardioIntensity||"moderate")===ci.id?"#EFF6FF":C.surface,
+              border:(profile.cardioIntensity||"moderate")===ci.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+            }}>
+              <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
+              <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
+              <div style={{fontSize:mob?9:10,color:C.t3}}>{ci.desc}</div>
+            </div>)}
+          </div>
+        </>}
       </div>
 
-      {/* Cardio intensity - only show when exercise includes cardio */}
-      {((profile.exerciseType||"gym")==="gym_cardio"||(profile.exerciseType||"gym")==="cardio")&&<div style={{marginTop:16}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-          <span style={{fontSize:mob?14:16}}>⚡</span>
-          <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Cường độ Cardio</span>
+      {/* Section 3: Mục tiêu */}
+      <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,paddingBottom:10,borderBottom:`1.5px solid #F3F4F6`}}>
+          <span style={{fontSize:16}}>🎯</span>
+          <span style={{fontSize:mob?14:15,fontWeight:800,color:C.t1}}>Mục tiêu</span>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:10}}>
-          {[
-            {id:"light",icon:"🚶",name:"Nhẹ",desc:"Đi bộ 30-40p"},
-            {id:"moderate",icon:"🏃",name:"Vừa",desc:"Chạy nhẹ 30-45p"},
-            {id:"intense",icon:"⚡",name:"Nặng",desc:"HIIT, bơi 45-60p"},
-          ].map(ci=><div key={ci.id} onClick={()=>setProfile({...profile,cardioIntensity:ci.id})} style={{
-            padding:mob?"8px 6px":"12px",borderRadius:mob?8:10,cursor:"pointer",textAlign:"center",
-            background:(profile.cardioIntensity||"moderate")===ci.id?"#DBEAFE":C.surface,
-            border:(profile.cardioIntensity||"moderate")===ci.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
-          }}>
-            <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
-            <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
-            <div style={{fontSize:mob?10:11,color:C.t3}}>{ci.desc}</div>
-          </div>)}
-        </div>
-      </div>}
 
-      {/* Goal type */}
-      <div style={{marginTop:16}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-          <span style={{fontSize:mob?14:16}}>🎯</span>
-          <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Mục tiêu</span>
-        </div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:16}}>
           {[
-            {id:"bulk",icon:"💪",name:"Tăng cơ",c:C.red},
-            {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#B45309"},
-            {id:"maintain",icon:"⚖️",name:"Duy trì",c:C.green},
+            {id:"bulk",icon:"💪",name:"Tăng cơ",c:"#16A34A",bg:"#DCFCE7",bc:"#4ADE80"},
+            {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#DC2626",bg:"#FEE2E2",bc:"#F87171"},
+            {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#3B82F6",bg:"#EFF6FF",bc:"#60A5FA"},
           ].map(g=>{
             const disabled=(profile.exerciseType||"gym")==="none"&&g.id==="bulk";
             return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...profile,goalType:g.id});}} style={{
-              flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:disabled?"not-allowed":"pointer",textAlign:"center",
-              background:profile.goalType===g.id?`${g.c}11`:C.surface,
-              border:profile.goalType===g.id?`2.5px solid ${g.c}`:`1.5px solid ${C.border}`,
+              padding:mob?"10px 6px":"14px 10px",borderRadius:12,cursor:disabled?"not-allowed":"pointer",textAlign:"center",
+              background:profile.goalType===g.id?g.bg:C.surface,
+              border:profile.goalType===g.id?`2px solid ${g.bc}`:`1.5px solid ${C.border}`,
               opacity:disabled?0.3:1,position:"relative",
             }}>
-              <div style={{fontSize:22}}>{g.icon}</div>
-              <div style={{fontSize:13,fontWeight:900,color:C.t1,marginTop:4}}>{g.name}</div>
+              <div style={{fontSize:mob?20:22}}>{g.icon}</div>
+              <div style={{fontSize:mob?12:13,fontWeight:800,color:C.t1,marginTop:4}}>{g.name}</div>
               {disabled&&<div style={{position:"absolute",top:-6,right:-6,background:"#DC2626",color:"#fff",fontSize:10,width:16,height:16,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</div>}
             </div>;
           })}
         </div>
-        {(profile.exerciseType||"gym")==="none"&&profile.goalType==="bulk"&&<div style={{marginTop:8,padding:"10px 14px",borderRadius:8,background:"#FEE2E2",border:"1px solid #FCA5A5",fontSize:12,color:"#991B1B",display:"flex",alignItems:"center",gap:6}}>⚠️ Không thể tăng cơ khi không tập luyện.</div>}
-      </div>
+        {(profile.exerciseType||"gym")==="none"&&profile.goalType==="bulk"&&<div style={{marginBottom:12,padding:"10px 14px",borderRadius:8,background:"#FEE2E2",border:"1px solid #FCA5A5",fontSize:12,color:"#991B1B",display:"flex",alignItems:"center",gap:6}}>⚠️ Không thể tăng cơ khi không tập luyện.</div>}
 
-      {/* Goal weight + duration */}
-      {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:12,marginTop:16}}>
-        <div>
-          <div style={{...lbl,marginBottom:6}}>Cân nặng mục tiêu (kg)</div>
-          <input type="text" inputMode="decimal" value={profile.goalKg} onChange={e=>setProfile({...profile,goalKg:Number(e.target.value.replace(",","."))})} style={inp}/>
-        </div>
-        <div>
-          <div style={{...lbl,marginBottom:6}}>Thời gian (tháng)</div>
-          <input type="text" inputMode="numeric" value={profile.months} onChange={e=>setProfile({...profile,months:Math.max(1,Number(e.target.value))})} style={inp}/>
-        </div>
-      </div>}
+        {/* Goal weight + duration */}
+        {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10}}>
+          {[
+            {key:"goalKg",label:"Cân nặng mục tiêu",icon:"⚖️",unit:"kg",mode:"decimal"},
+            {key:"months",label:"Thời gian",icon:"📅",unit:"tháng",mode:"numeric"},
+          ].map(f=><div key={f.key}>
+            <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+            <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+              <input type="text" inputMode={f.mode} value={profile[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...profile,[f.key]:f.key==="months"?Math.max(1,Number(v)):Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
+              <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
+            </div>
+          </div>)}
+        </div>}
+      </div>
 
       {/* Timeline plan */}
       {profile.goalType!=="maintain"&&Math.abs(macro.diff)>0&&<div style={{marginTop:16,background:profile.goalType==="bulk"?C.redBg:C.goldBg,borderRadius:12,padding:"14px 16px",border:`2px solid ${profile.goalType==="bulk"?C.red:"#B45309"}`}}>
