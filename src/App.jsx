@@ -1487,33 +1487,54 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
     {section==="profile"&&<div style={card}>
       <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>Hồ sơ cá nhân</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Nhập thông số → macro tự tính theo công thức Mifflin-St Jeor</div>
+
+      {/* Gender */}
+      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+        <span style={{fontSize:mob?14:16}}>⚧️</span>
+        <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Giới tính</span>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,marginBottom:16}}>
+        {[{id:"male",icon:"👨",name:"Nam"},{id:"female",icon:"👩",name:"Nữ"}].map(g=><div key={g.id} onClick={()=>setProfile({...profile,gender:g.id})} style={{
+          padding:mob?"10px 12px":"14px 16px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",gap:10,
+          background:(profile.gender||"male")===g.id?"#FEE2E2":C.surface,
+          border:`1.5px solid ${(profile.gender||"male")===g.id?"#F87171":C.border}`,
+        }}>
+          <div style={{fontSize:mob?18:22,width:mob?30:36,height:mob?30:36,display:"flex",alignItems:"center",justifyContent:"center",background:(profile.gender||"male")===g.id?"#FFF5F5":"#fff",borderRadius:10,border:`1px solid ${(profile.gender||"male")===g.id?"#FECACA":C.border}`}}>{g.icon}</div>
+          <div style={{fontSize:mob?13:14,fontWeight:700,color:C.t1}}>{g.name}</div>
+          <div style={{marginLeft:"auto",width:mob?20:22,height:mob?20:22,borderRadius:"50%",border:`2px solid ${(profile.gender||"male")===g.id?"#DC2626":"#D1D5DB"}`,background:(profile.gender||"male")===g.id?"#DC2626":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?10:11,color:"#fff"}}>{(profile.gender||"male")===g.id?"✓":""}</div>
+        </div>)}
+      </div>
+
       <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:12}}>
         <div>
-          <div style={{...lbl,marginBottom:6}}>Chiều cao (cm)</div>
+          <div style={{...lbl,marginBottom:6}}>📏 Chiều cao (cm)</div>
           <input type="text" inputMode="numeric" value={profile.cm} onChange={e=>setProfile({...profile,cm:Number(e.target.value)})} style={inp}/>
         </div>
         <div>
-          <div style={{...lbl,marginBottom:6}}>Cân nặng hiện tại (kg)</div>
+          <div style={{...lbl,marginBottom:6}}>⚖️ Cân nặng hiện tại (kg)</div>
           <input type="text" inputMode="decimal" value={profile.kg} onChange={e=>setProfile({...profile,kg:Number(e.target.value.replace(",","."))})} style={inp}/>
         </div>
         <div>
-          <div style={{...lbl,marginBottom:6}}>Tuổi</div>
+          <div style={{...lbl,marginBottom:6}}>🎂 Tuổi</div>
           <input type="text" inputMode="numeric" value={profile.age} onChange={e=>setProfile({...profile,age:Number(e.target.value)})} style={inp}/>
         </div>
         <div>
-          <div style={{...lbl,marginBottom:6}}>Số buổi gym/tuần</div>
+          <div style={{...lbl,marginBottom:6}}>📅 Số buổi tập/tuần</div>
           <input type="text" inputMode="numeric" value={profile.gym} onChange={e=>setProfile({...profile,gym:Number(e.target.value)})} style={inp}/>
         </div>
       </div>
 
       {/* Activity level */}
       <div style={{marginTop:16}}>
-        <div style={{...lbl,marginBottom:8}}>Mức vận động công việc</div>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+          <span style={{fontSize:mob?14:16}}>💼</span>
+          <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Mức vận động công việc</span>
+        </div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {[
-            {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng, ít đi lại",mul:"1.2"},
-            {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều, công việc nhẹ",mul:"1.5"},
-            {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay, bốc vác",mul:"1.75"},
+            {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng, ít đi lại"},
+            {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều, công việc nhẹ"},
+            {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay, bốc vác"},
           ].map(a=><div key={a.id} onClick={()=>setProfile({...profile,activity:a.id})} style={{
             flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
             background:profile.activity===a.id?C.blueBg:C.surface,
@@ -1522,29 +1543,88 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
             <div style={{fontSize:22}}>{a.icon}</div>
             <div style={{fontSize:13,fontWeight:900,color:C.t1,marginTop:4}}>{a.name}</div>
             <div style={{fontSize:11,fontWeight:600,color:C.t3}}>{a.desc}</div>
-            <div style={{fontSize:10,fontWeight:700,color:C.blue,marginTop:4}}>Hệ số: {a.mul}</div>
           </div>)}
         </div>
       </div>
 
-      {/* Goal type */}
+      {/* Exercise type */}
       <div style={{marginTop:16}}>
-        <div style={{...lbl,marginBottom:8}}>Mục tiêu</div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+          <span style={{fontSize:mob?14:16}}>🏅</span>
+          <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Hình thức tập luyện</span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?6:10}}>
           {[
-            {id:"bulk",icon:"💪",name:"Tăng cơ",desc:"P 2g · C 4g · F 0.8g/kg",c:C.red},
-            {id:"cut",icon:"▼",name:"Giảm mỡ",desc:"P 2.3g · C 2.5g · F 0.8g/kg",c:"#B45309"},
-            {id:"maintain",icon:"⚖️",name:"Duy trì",desc:"P 1.8g · C 3.5g · F 0.8g/kg",c:C.green},
-          ].map(g=><div key={g.id} onClick={()=>setProfile({...profile,goalType:g.id})} style={{
-            flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
-            background:profile.goalType===g.id?`${g.c}11`:C.surface,
-            border:profile.goalType===g.id?`2.5px solid ${g.c}`:`1.5px solid ${C.border}`,
+            {id:"gym",icon:"🏋️",name:"Gym",desc:"Tập tạ thuần"},
+            {id:"gym_cardio",icon:"🏋️🏃",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
+            {id:"cardio",icon:"🏃",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
+            {id:"none",icon:"😴",name:"Không tập",desc:"Không vận động"},
+          ].map(e=><div key={e.id} onClick={()=>{
+            const updated={...profile,exerciseType:e.id};
+            if(e.id==="none"&&profile.goalType==="bulk")updated.goalType="maintain";
+            if(e.id==="gym")updated.cardioIntensity=undefined;
+            setProfile(updated);
+          }} style={{
+            padding:mob?"10px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
+            background:(profile.exerciseType||"gym")===e.id?"#FEE2E2":C.surface,
+            border:(profile.exerciseType||"gym")===e.id?`2.5px solid #F87171`:`1.5px solid ${C.border}`,
           }}>
-            <div style={{fontSize:22}}>{g.icon}</div>
-            <div style={{fontSize:13,fontWeight:900,color:C.t1,marginTop:4}}>{g.name}</div>
-            <div style={{fontSize:11,fontWeight:600,color:C.t3}}>{g.desc}</div>
+            <div style={{fontSize:mob?20:22}}>{e.icon}</div>
+            <div style={{fontSize:mob?12:13,fontWeight:900,color:C.t1,marginTop:4}}>{e.name}</div>
+            <div style={{fontSize:mob?10:11,fontWeight:600,color:C.t3}}>{e.desc}</div>
           </div>)}
         </div>
+      </div>
+
+      {/* Cardio intensity - only show when exercise includes cardio */}
+      {((profile.exerciseType||"gym")==="gym_cardio"||(profile.exerciseType||"gym")==="cardio")&&<div style={{marginTop:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+          <span style={{fontSize:mob?14:16}}>⚡</span>
+          <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Cường độ Cardio</span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:10}}>
+          {[
+            {id:"light",icon:"🚶",name:"Nhẹ",desc:"Đi bộ 30-40p"},
+            {id:"moderate",icon:"🏃",name:"Vừa",desc:"Chạy nhẹ 30-45p"},
+            {id:"intense",icon:"⚡",name:"Nặng",desc:"HIIT, bơi 45-60p"},
+          ].map(ci=><div key={ci.id} onClick={()=>setProfile({...profile,cardioIntensity:ci.id})} style={{
+            padding:mob?"8px 6px":"12px",borderRadius:mob?8:10,cursor:"pointer",textAlign:"center",
+            background:(profile.cardioIntensity||"moderate")===ci.id?"#DBEAFE":C.surface,
+            border:(profile.cardioIntensity||"moderate")===ci.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+          }}>
+            <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
+            <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
+            <div style={{fontSize:mob?10:11,color:C.t3}}>{ci.desc}</div>
+          </div>)}
+        </div>
+      </div>}
+
+      {/* Goal type */}
+      <div style={{marginTop:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+          <span style={{fontSize:mob?14:16}}>🎯</span>
+          <span style={{fontSize:mob?13:14,fontWeight:700,color:"#374151"}}>Mục tiêu</span>
+        </div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {[
+            {id:"bulk",icon:"💪",name:"Tăng cơ",c:C.red},
+            {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#B45309"},
+            {id:"maintain",icon:"⚖️",name:"Duy trì",c:C.green},
+          ].map(g=>{
+            const disabled=(profile.exerciseType||"gym")==="none"&&g.id==="bulk";
+            return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...profile,goalType:g.id});}} style={{
+              flex:1,minWidth:mob?90:0,padding:"12px 10px",borderRadius:12,cursor:disabled?"not-allowed":"pointer",textAlign:"center",
+              background:profile.goalType===g.id?`${g.c}11`:C.surface,
+              border:profile.goalType===g.id?`2.5px solid ${g.c}`:`1.5px solid ${C.border}`,
+              opacity:disabled?0.3:1,position:"relative",
+            }}>
+              <div style={{fontSize:22}}>{g.icon}</div>
+              <div style={{fontSize:13,fontWeight:900,color:C.t1,marginTop:4}}>{g.name}</div>
+              {disabled&&<div style={{position:"absolute",top:-6,right:-6,background:"#DC2626",color:"#fff",fontSize:10,width:16,height:16,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</div>}
+            </div>;
+          })}
+        </div>
+        {(profile.exerciseType||"gym")==="none"&&profile.goalType==="bulk"&&<div style={{marginTop:8,padding:"10px 14px",borderRadius:8,background:"#FEE2E2",border:"1px solid #FCA5A5",fontSize:12,color:"#991B1B",display:"flex",alignItems:"center",gap:6}}>⚠️ Không thể tăng cơ khi không tập luyện.</div>}
       </div>
 
       {/* Goal weight + duration */}
@@ -1810,52 +1890,75 @@ function LoginScreen({onLogin}){
   </div>;
 }
 
-function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"};
-  const bmr=10*p.kg+6.25*p.cm-5*p.age+5;
+function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
+  const gender=p.gender||"male";
+  const exerciseType=p.exerciseType||"gym";
+  const cardioIntensity=p.cardioIntensity||"moderate";
+  // BMR: Mifflin-St Jeor
+  const bmr=10*p.kg+6.25*p.cm-5*p.age+(gender==="male"?5:-161);
+  // Activity multiplier
   const jobBase=p.activity==="sedentary"?1.2:p.activity==="moderate"?1.5:1.75;
-  const gymBonus=p.gym<=2?0.1:p.gym<=4?0.2:0.3;
-  const actMul=Math.round((jobBase+gymBonus)*100)/100;
+  // Gym bonus
+  const hasGym=exerciseType==="gym"||exerciseType==="gym_cardio";
+  const gymBonus=hasGym?(p.gym<=2?0.1:p.gym<=4?0.2:0.3):0;
+  // Cardio bonus
+  const hasCardio=exerciseType==="cardio"||exerciseType==="gym_cardio";
+  const cardioTable={light:{2:0.03,4:0.05,6:0.08},moderate:{2:0.05,4:0.10,6:0.15},intense:{2:0.08,4:0.15,6:0.25}};
+  const ciKey=cardioIntensity||"moderate";
+  const gymCount=p.gym||3;
+  const cardioBonus=hasCardio?(gymCount<=2?cardioTable[ciKey][2]:gymCount<=4?cardioTable[ciKey][4]:cardioTable[ciKey][6]):0;
+  const actMul=Math.round((jobBase+gymBonus+cardioBonus)*100)/100;
   const tdee=Math.round(bmr*actMul);
   const diff=p.goalKg-p.kg;
   const goal=p.goalType||"bulk";
-  // Macro theo g/kg chuẩn cho người châu Á tập gym
-  // Bulk: P=2g/kg, C=4g/kg, F=0.9g/kg, +200cal
-  // Cut: P=2.3g/kg (tăng giữ cơ), C=2.5g/kg (giảm mạnh), F=0.8g/kg (tối thiểu), -300cal
-  // Maintain: P=1.8g/kg, C=3.5g/kg, F=0.9g/kg
-  let protein,carb,carbRest,fat;
-  if(goal==="bulk"){
-    protein=Math.round(p.kg*2);
-    carb=Math.round(p.kg*4);
-    carbRest=Math.round(p.kg*3);
-    fat=Math.max(Math.round(p.kg*0.8),Math.round((tdee+200-protein*4-carb*4)/9));
-  }else if(goal==="cut"){
-    protein=Math.round(p.kg*2.3);
-    carb=Math.round(p.kg*2.5);
-    carbRest=Math.round(p.kg*2);
-    fat=Math.max(Math.round(p.kg*0.8),Math.round((tdee-300-protein*4-carb*4)/9));
-  }else{
-    protein=Math.round(p.kg*1.8);
-    carb=Math.round(p.kg*3.5);
-    carbRest=Math.round(p.kg*3);
-    fat=Math.max(Math.round(p.kg*0.8),Math.round((tdee-protein*4-carb*4)/9));
-  }
-  if(fat<Math.round(p.kg*0.8))fat=Math.round(p.kg*0.8); // tối thiểu 0.8g/kg
-  const fiber=25;
-  const calActual=protein*4+carb*4+fat*9;
-  const calRest=protein*4+carbRest*4+fat*9;
-  const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
+  // Block: none + bulk
+  const effectiveGoal=(exerciseType==="none"&&goal==="bulk")?"maintain":goal;
+  // Macro lookup: gender × exerciseType × goal
+  const macroTable={
+    male:{
+      gym:{bulk:{p:2,c:4,f:0.8},cut:{p:2.3,c:2.5,f:0.8},maintain:{p:1.8,c:3.5,f:0.8}},
+      gym_cardio:{bulk:{p:1.8,c:3.8,f:0.8},cut:{p:2.0,c:2.3,f:0.8},maintain:{p:1.6,c:3.2,f:0.8}},
+      cardio:{bulk:{p:1.6,c:3.5,f:0.8},cut:{p:1.8,c:2.0,f:0.8},maintain:{p:1.5,c:3.0,f:0.8}},
+      none:{bulk:{p:1.2,c:2.5,f:0.7},cut:{p:1.5,c:2.0,f:0.7},maintain:{p:1.2,c:2.5,f:0.7}},
+    },
+    female:{
+      gym:{bulk:{p:1.8,c:3.5,f:1.0},cut:{p:2.0,c:2.2,f:0.9},maintain:{p:1.6,c:3.0,f:1.0}},
+      gym_cardio:{bulk:{p:1.6,c:3.2,f:1.0},cut:{p:1.8,c:2.0,f:0.9},maintain:{p:1.5,c:2.8,f:1.0}},
+      cardio:{bulk:{p:1.5,c:3.0,f:0.9},cut:{p:1.6,c:2.0,f:0.9},maintain:{p:1.4,c:2.8,f:0.9}},
+      none:{bulk:{p:1.0,c:2.5,f:0.8},cut:{p:1.3,c:2.0,f:0.8},maintain:{p:1.0,c:2.5,f:0.8}},
+    },
+  };
+  const ratios=macroTable[gender]?.[exerciseType]?.[effectiveGoal]||macroTable.male.gym.maintain;
+  let protein=Math.round(p.kg*ratios.p);
+  let carb=Math.round(p.kg*ratios.c);
+  let fat=Math.round(p.kg*ratios.f);
+  if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
+  // Surplus/deficit based on timeline
   const months=p.months||4;
   const totalDiff=Math.abs(diff);
   const perMonth=months>0?Math.round(totalDiff/months*10)/10:0;
   const perWeek=months>0?Math.round(totalDiff/(months*4.33)*10)/10:0;
-  const safe=goal==="bulk"?perWeek<=0.5:goal==="cut"?perWeek<=0.75:true;
-  const pRatio=goal==="bulk"?"2g/kg":goal==="cut"?"2.3g/kg":"1.8g/kg";
-  const cRatio=goal==="bulk"?"4g/kg":goal==="cut"?"2.5g/kg":"3.5g/kg";
-  const fRatio="0.8g/kg";
-  return{tdee,calTarget:calActual,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal,fatPct:Math.round(fat*9/calActual*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
+  let calAdjust=0;
+  if(effectiveGoal==="bulk"){calAdjust=perWeek<=0.25?200:perWeek<=0.5?350:500;}
+  else if(effectiveGoal==="cut"){calAdjust=perWeek<=0.25?-200:perWeek<=0.5?-400:-600;}
+  const calTarget=tdee+calAdjust;
+  const calActual=protein*4+carb*4+fat*9;
+  // Adjust carb to match calTarget
+  const carbAdj=Math.round((calTarget-protein*4-fat*9)/4);
+  if(carbAdj>0)carb=carbAdj;
+  const carbRest=Math.round(carb*0.75);
+  const calRest=protein*4+carbRest*4+fat*9;
+  const fiber=25;
+  const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
+  const safe=effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true;
+  const pRatio=ratios.p+"g/kg";
+  const cRatio=ratios.c+"g/kg";
+  const fRatio=ratios.f+"g/kg";
+  const calFinal=protein*4+carb*4+fat*9;
+  return{tdee,calTarget:calFinal,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
 }
 
-const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"};
+const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
 
 export default function App(){
   const {user,loading,signOut}=useAuth();
@@ -1864,7 +1967,7 @@ export default function App(){
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
-  const macro=calcMacro(profile||{cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary"});
+  const macro=calcMacro(profile||defaultProfile);
   const mob=useIsMobile();
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
