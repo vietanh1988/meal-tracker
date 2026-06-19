@@ -1505,7 +1505,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         </div>)}
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:12}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
         <div>
           <div style={{...lbl,marginBottom:6}}>📏 Chiều cao (cm)</div>
           <input type="text" inputMode="numeric" value={profile.cm} onChange={e=>setProfile({...profile,cm:Number(e.target.value)})} style={inp}/>
