@@ -913,9 +913,10 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection}){if(!profile||!macro)return null;
   const mob=useIsMobile();
-  const [section,setSection]=useState("meals");
+  const [section,setSection]=useState(forcedSection==="settings"?"schedule":(forcedSection||"meals"));
+  useEffect(()=>{if(forcedSection&&forcedSection!=="settings")setSection(forcedSection);if(forcedSection==="settings")setSection("schedule");},[forcedSection]);
   const [dayType,setDayType]=useState("train");
   const [selectedMeal,setSelectedMeal]=useState("sang");
   const [mealConfig,setMealConfig]=useState(()=>{
@@ -1140,11 +1141,16 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
 
   return <div>
-    <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+    {!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
       {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
       )}
-    </div>
+    </div>}
+    {forcedSection==="settings"&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+      {[...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"}]:[]),{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+        <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
+      )}
+    </div>}
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
@@ -1992,14 +1998,41 @@ export default function App(){
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(220,38,38,0.15)",color:"#F87171",border:"1px solid #F87171",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>
-    <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 72px)",display:"flex",gap:0,marginBottom:20,borderBottom:`2.5px solid ${C.border}`}}>
-      {[{id:"dashboard",l:"📊 Dashboard"},{id:"report",l:"📈 Báo cáo"},{id:"admin",l:"⚙️ Admin"}].map(t=>
-        <button key={t.id} onClick={()=>setTab(t.id)} style={{
-          padding:"10px 18px",fontSize:14,fontWeight:tab===t.id?900:600,border:"none",background:"transparent",cursor:"pointer",
-          color:tab===t.id?"#111":C.t3,borderBottom:tab===t.id?"3px solid #DC2626":"3px solid transparent",fontFamily:"inherit",
-        }}>{t.l}</button>
-      )}
+    <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?70:0}}>
+    {mob?<>
+      {/* MOBILE: separate views per tab */}
+      {tab==="dashboard"&&<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>}
+      {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile"/>}
+      {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals"/>}
+      {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>}
+      {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings"/>}
+
+      {/* Bottom nav */}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"#fff",borderTop:"1px solid #E5E7EB",display:"flex",paddingTop:6,paddingBottom:"max(16px, env(safe-area-inset-bottom, 16px))"}}>
+        {[
+          {id:"dashboard",icon:"📊",label:"Tổng quan"},
+          {id:"profile",icon:"👤",label:"Hồ sơ"},
+          {id:"meals",icon:"🍽️",label:"Bữa ăn"},
+          {id:"report",icon:"📈",label:"Báo cáo"},
+          {id:"settings",icon:"⚙️",label:"Cài đặt"},
+        ].map(t=><div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer"}}>
+          <span style={{fontSize:20,opacity:tab===t.id?1:0.35}}>{t.icon}</span>
+          <span style={{fontSize:10,fontWeight:tab===t.id?700:500,color:tab===t.id?"#DC2626":"#9CA3AF"}}>{t.label}</span>
+          {tab===t.id&&<div style={{width:4,height:4,borderRadius:"50%",background:"#DC2626"}}/>}
+        </div>)}
+      </div>
+    </>:<>
+      {/* PC: header tabs + existing layout */}
+      <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:`2.5px solid ${C.border}`}}>
+        {[{id:"dashboard",l:"📊 Dashboard"},{id:"report",l:"📈 Báo cáo"},{id:"admin",l:"⚙️ Admin"}].map(t=>
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{
+            padding:"10px 18px",fontSize:14,fontWeight:tab===t.id?900:600,border:"none",background:"transparent",cursor:"pointer",
+            color:tab===t.id?"#111":C.t3,borderBottom:tab===t.id?"3px solid #DC2626":"3px solid transparent",fontFamily:"inherit",
+          }}>{t.l}</button>
+        )}
+      </div>
+      {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
+    </>}
     </div>
-    {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
   </div>;
 }
