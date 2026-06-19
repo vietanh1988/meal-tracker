@@ -2007,20 +2007,18 @@ export default function App(){
       {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>}
       {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings"/>}
 
-      {/* Bottom nav */}
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"#111",borderTop:"1px solid #333",display:"flex",paddingTop:8,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
+      {/* Bottom nav — iOS style */}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.15)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
         {[
-          {id:"dashboard",icon:"📊",label:"Tổng quan"},
-          {id:"profile",icon:"👤",label:"Hồ sơ"},
-          {id:"meals",icon:"🍽️",label:"Bữa ăn"},
-          {id:"report",icon:"📈",label:"Báo cáo"},
-          {id:"settings",icon:"⚙️",label:"Cài đặt"},
-        ].map(t=><div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer",padding:"2px 0"}}>
-          <div style={{width:40,height:40,borderRadius:12,background:tab===t.id?"linear-gradient(135deg,#DC2626,#F59E0B)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"background 0.2s"}}>
-            <span style={{fontSize:22,filter:tab===t.id?"brightness(1.1)":"none"}}>{t.icon}</span>
-          </div>
-          <span style={{fontSize:10,fontWeight:tab===t.id?700:500,color:tab===t.id?"#F9FAFB":"#9CA3AF"}}>{t.label}</span>
-        </div>)}
+          {id:"dashboard",d:Icons.chart,label:"Tổng quan"},
+          {id:"profile",d:Icons.user,label:"Hồ sơ"},
+          {id:"meals",d:Icons.sunrise,label:"Bữa ăn"},
+          {id:"report",d:Icons.scale,label:"Báo cáo"},
+          {id:"settings",d:Icons.settings,label:"Cài đặt"},
+        ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"4px 0"}}>
+          <Icon d={t.d} color={a?"#DC2626":"#8E8E93"} size={24}/>
+          <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#DC2626":"#8E8E93"}}>{t.label}</span>
+        </div>;})}
       </div>
     </>:<>
       {/* PC: header tabs + existing layout */}
