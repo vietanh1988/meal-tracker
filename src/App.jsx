@@ -758,7 +758,16 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
   const [showWeightInput,setShowWeightInput]=useState(false);
+  const weightInputRef=useRef(null);
+  const [weightSaved,setWeightSaved]=useState(false);
   const [showNoti,setShowNoti]=useState(false);
+  const notiRef=useRef(null);
+  useEffect(()=>{
+    if(!showNoti)return;
+    const handleClick=(e)=>{if(notiRef.current&&!notiRef.current.contains(e.target))setShowNoti(false);};
+    document.addEventListener("mousedown",handleClick);
+    return()=>document.removeEventListener("mousedown",handleClick);
+  },[showNoti]);
   // Notifications
   const notiList=[
     {id:"v2.5",text:"🎉 Phiên bản 2.5 — Onboarding wizard, Dashboard mới, Tab restructure",date:"20/06/2026",isNew:true},
@@ -794,7 +803,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
           {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(calRemain>0?<>Còn <span style={{color:C.red,fontWeight:800}}>{calRemain} kcal</span> để đạt mục tiêu</>:<span style={{color:C.green,fontWeight:800}}>Đã đạt mục tiêu! 🎉</span>):<>Mục tiêu <span style={{color:C.red,fontWeight:800}}>{heroCal} kcal</span></>}
         </div>
       </div>
-      <div style={{position:"relative"}}>
+      <div style={{position:"relative"}} ref={notiRef}>
         <div onClick={()=>setShowNoti(!showNoti)} style={{width:40,height:40,borderRadius:"50%",background:C.card,border:`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>🔔</div>
         {hasNew&&<div style={{position:"absolute",top:0,right:0,width:10,height:10,borderRadius:"50%",background:"#DC2626",border:"2px solid #fff"}}/>}
         {showNoti&&<div style={{position:"absolute",top:48,right:0,width:mob?280:320,background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:50,overflow:"hidden"}}>
@@ -929,23 +938,22 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{flex:1}}>
             <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
-            <input id="dashWeightInput" type="text" inputMode="decimal" placeholder={`VD: ${(curKg+0.3).toFixed(1)}`} style={{...inp,height:40,fontSize:15}}/>
+            <input ref={weightInputRef} type="text" inputMode="decimal" placeholder={`VD: ${(curKg+0.3).toFixed(1)}`} style={{...inp,height:40,fontSize:15}}/>
           </div>
           <button onClick={async()=>{
-            const val=parseFloat((document.getElementById("dashWeightInput").value||"").replace(",","."));
+            const val=parseFloat((weightInputRef.current?.value||"").replace(",","."));
             if(!val||val<30||val>200)return;
             await addWeight(val);
             setProfile({...profile,kg:val});
-            document.getElementById("dashWeightInput").value="";
+            if(weightInputRef.current)weightInputRef.current.value="";
             setShowWeightInput(false);
-            const el=document.getElementById("dash-weight-saved");
-            if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+            setWeightSaved(true);setTimeout(()=>setWeightSaved(false),3000);
           }} style={{padding:"10px 16px",fontSize:13,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>💾 Lưu</button>
         </div>
       </div>}
-      <div id="dash-weight-saved" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:10}}>
+      {weightSaved&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:10}}>
         <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Đã lưu cân nặng!</span>
-      </div>
+      </div>}
 
       {/* Stat cards */}
       <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:14}}>
@@ -1083,8 +1091,9 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const updateFood=(idx,field,val)=>{const u=[...foodItems];u[idx]={...u[idx],[field]:val};setFoodItems(u);};
 
   const prompt=`Bạn là chuyên gia dinh dưỡng. Phân tích dinh dưỡng cho thức ăn dưới đây.
-Trả lời CHÍNH XÁC bằng JSON, không markdown:
-{"items":[{"name":"tên","gram":số,"protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý cho người gym tăng cơ"}`;
+Lưu ý: đồ uống (sữa, nước ép, sinh tố) tính theo ml chứ không phải g. 1ml nước/sữa ≈ 1g.
+Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
+{"items":[{"name":"tên","gram":số,"protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý cho người gym"}`;
 
   const callAI=useCallback(async(forceRefresh=false)=>{
     if(foodItems.length===0||foodItems.every(f=>!f.name.trim()))return;
@@ -1791,8 +1800,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
 
       {/* Auto-calc results */}
       <div style={{marginTop:20}}>
-        <div style={{padding:"8px 12px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>✓ Hồ sơ tự động lưu khi bạn thay đổi</span>
+        <div style={{fontSize:11,fontWeight:600,color:C.green,marginBottom:12,display:"flex",alignItems:"center",gap:4}}>
+          <span>✓ Tự động lưu</span>
         </div>
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:900,color:C.red,marginBottom:12}}>⚡ Macro tự động tính</div>
@@ -1800,7 +1809,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
           {[
             {l:"TDEE",v:`${macro.tdee} cal`,desc:"Calo duy trì",c:C.t1},
             {l:"BMI",v:macro.bmi,desc:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",c:C.gold},
-            {l:"Calo mục tiêu",v:`${macro.calTarget} cal`,desc:profile.goalType==="bulk"?"Tăng cơ +200":profile.goalType==="cut"?"Giảm mỡ -300":"Duy trì",c:C.red},
+            {l:"Calo mục tiêu",v:`${macro.calTarget} cal`,desc:profile.goalType==="bulk"?"Tăng cơ +250":profile.goalType==="cut"?"Giảm mỡ -350":"Duy trì",c:C.red},
             {l:"Calo ngày nghỉ",v:`${macro.calRest} cal`,desc:"Giảm carb, giữ P/F",c:C.blue},
           ].map((r,i)=><div key={i} style={{background:C.surface,borderRadius:10,padding:"10px 14px",border:`1.5px solid ${C.border}`}}>
             <div style={{fontSize:11,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.05em"}}>{r.l}</div>
@@ -2338,13 +2347,13 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bul
   const carbRest=Math.round(carb*0.75);
   const calFinal=protein*4+carb*4+fat*9;
   const calRest=protein*4+carbRest*4+fat*9;
-  const fiber=25;
+  const fiber=Math.round(calFinal/1000*14);
   const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
   const safe=effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true;
   const pRatio=pRatioVal+"g/kg";
   const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
   const fRatio=fRatioVal+"g/kg";
-  return{tdee,calTarget:calFinal,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
+  return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
 }
 
 const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
@@ -2360,10 +2369,21 @@ export default function App(){
   const mob=useIsMobile();
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
-  if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
+  if(!user) return <LoginScreen onLogin={()=>{}}/>;
 
-  // Onboarding: chỉ hiện cho user mới chưa có data (cm vẫn là default)
-  if(!profile.onboardingDone && profile.cm===defaultProfile.cm && profile.kg===defaultProfile.kg) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
+  // Onboarding migration: user cũ chưa có flag → check nếu đã có weight log hoặc profile khác default → auto set done
+  useEffect(()=>{
+    if(profile && !profile.onboardingDone){
+      const hasWeightData=weightLog && weightLog.length>0;
+      const hasCustomProfile=profile.cm!==defaultProfile.cm || profile.kg!==defaultProfile.kg || profile.age!==defaultProfile.age;
+      if(hasWeightData||hasCustomProfile){
+        setProfile({...profile,onboardingDone:true});
+      }
+    }
+  },[profile?.onboardingDone,weightLog?.length]);
+
+  // Onboarding: chỉ hiện khi flag chưa set (user mới hoàn toàn)
+  if(!profile.onboardingDone) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
 
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"0 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     {!mob&&<div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:"#111",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:10,paddingLeft:"max(12px, env(safe-area-inset-left, 12px))",paddingRight:"max(12px, env(safe-area-inset-right, 12px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
