@@ -1914,7 +1914,7 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bul
   const cardioBonus=hasCardio?(gymCount<=2?cardioTable[ciKey][2]:gymCount<=4?cardioTable[ciKey][4]:cardioTable[ciKey][6]):0;
   const actMul=Math.round((jobBase+gymBonus+cardioBonus)*100)/100;
   const tdee=Math.round(bmr*actMul);
-  const diff=p.goalKg-p.kg;
+  const diff=Math.round((p.goalKg-p.kg)*10)/10;
   const goal=p.goalType||"bulk";
   // Block: none + bulk
   const effectiveGoal=(exerciseType==="none"&&goal==="bulk")?"maintain":goal;
@@ -1948,9 +1948,10 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bul
   else if(effectiveGoal==="cut"){calAdjust=perWeek<=0.25?-200:perWeek<=0.5?-400:-600;}
   const calTarget=tdee+calAdjust;
   const calActual=protein*4+carb*4+fat*9;
-  // Adjust carb to match calTarget
+  // Adjust carb to match calTarget, but cap at ratio * 1.2
   const carbAdj=Math.round((calTarget-protein*4-fat*9)/4);
-  if(carbAdj>0)carb=carbAdj;
+  const carbMax=Math.round(p.kg*ratios.c*1.2);
+  if(carbAdj>0)carb=Math.min(carbAdj,carbMax);
   const carbRest=Math.round(carb*0.75);
   const calRest=protein*4+carbRest*4+fat*9;
   const fiber=25;
