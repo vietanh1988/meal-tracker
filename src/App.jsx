@@ -754,54 +754,112 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
   </div>;
 }
 
-function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSettings,setTab}){if(!profile||!macro)return null;
+function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSettings,setTab,user}){if(!profile||!macro)return null;
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
   const [showWeightInput,setShowWeightInput]=useState(false);
+  const [showNoti,setShowNoti]=useState(false);
+  // Notifications
+  const notiList=[
+    {id:"v2.5",text:"🎉 Phiên bản 2.5 — Onboarding wizard, Dashboard mới, Tab restructure",date:"20/06/2026",isNew:true},
+  ];
+  const hasNew=notiList.some(n=>n.isNew);
   // Parse meal config
   const mealConfig=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
   const visibleIds=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];
   const allMeals=getMeals(dayType);
   const meals=allMeals.filter(m=>visibleIds.includes(m.id));
   const totals=meals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
-  // Macro từ công thức: P/F/Xơ cố định, Carb thay đổi theo ngày
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
   const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,startKg=weightLog.length>0?weightLog[0].kg:profile.kg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=goalKg!==startKg?((curKg-startKg)/(goalKg-startKg))*100:0;
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
   const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
+  const calRemain=heroCal-actualCal;
+  // Exercise type helpers
+  const exType=profile.exerciseType||"gym";
+  const exLabel=exType==="gym"?"Gym":exType==="gym_cardio"?"Gym+Cardio":exType==="cardio"?"Cardio":exType==="none"?"Nghỉ ngơi":"Tập luyện";
+  const exIcon=exType==="gym"?"🏋️":exType==="gym_cardio"?"🏋️":exType==="cardio"?"🏃":exType==="none"?"😴":"🏃";
+  // Greeting
+  const hour=new Date().getHours();
+  const greeting=hour<12?"Chào buổi sáng":hour<18?"Chào buổi chiều":"Chào buổi tối";
+  const displayName=user?.user_metadata?.username||user?.email?.split("@")[0]||"bạn";
+
   return <div>
-    {/* Hero */}
-    <div style={{...card,padding:mob?"16px":"24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",boxShadow:"0 4px 24px rgba(220,38,38,0.15)"}}>
-      <div style={{display:"flex",flexDirection:mob?"column":"row",justifyContent:"space-between",alignItems:mob?"stretch":"flex-start",gap:mob?14:0}}>
-        <div>
-          <div style={{fontSize:mob?15:15,fontWeight:900,letterSpacing:"0.12em",color:"#F9FAFB"}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
-          <div style={{fontSize:mob?32:44,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",lineHeight:1.1,marginTop:8}}>
-            {actualCal>0?actualCal:heroCal} <span style={{fontSize:mob?14:20,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>/ {heroCal}</span>
-          </div>
-          {actualCal>0&&<div style={{fontSize:12,fontWeight:700,marginTop:4,color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"#4ADE80":actualCal<heroCal*0.95?"#EAB308":"#EF4444"}}>
-            {calStatus} {calDiff>0?`+${calDiff}`:`${calDiff}`} kcal ({Math.round(actualCal/heroCal*100)}%)
-          </div>}
-          <div style={{height:mob?8:10,width:mob?"100%":180,background:"rgba(255,255,255,0.18)",borderRadius:5,marginTop:mob?8:10,overflow:"hidden"}}>
-            <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:calPct,120)}%`,background:actualCal>heroCal*1.1?"#EF4444":"linear-gradient(90deg,#DC2626,#EAB308)",borderRadius:5,transition:"width 0.4s"}}/>
-          </div>
+    {/* Greeting Header */}
+    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+      <div style={{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,boxShadow:"0 2px 8px rgba(220,38,38,0.2)"}}>🏋️</div>
+      <div style={{flex:1}}>
+        <div style={{fontSize:mob?16:18,fontWeight:900,color:C.t1}}>{greeting}, {displayName}! 👋</div>
+        <div style={{fontSize:12,fontWeight:600,color:C.t3}}>
+          {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(calRemain>0?<>Còn <span style={{color:C.red,fontWeight:800}}>{calRemain} kcal</span> để đạt mục tiêu</>:<span style={{color:C.green,fontWeight:800}}>Đã đạt mục tiêu! 🎉</span>):<>Mục tiêu <span style={{color:C.red,fontWeight:800}}>{heroCal} kcal</span></>}
         </div>
-        <div style={{display:"flex",gap:mob?8:14,justifyContent:mob?"space-around":"flex-end"}}>
-          <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#EF4444" color2="#F97316" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualP>0?`/${heroP}g`:null} unit="g"/>
-          <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#EAB308" color2="#F59E0B" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualC>0?`/${heroC}g`:null} unit="g"/>
-          <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#8B5CF6" color2="#A78BFA" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualF>0?`/${heroF}g`:null} unit="g"/>
-          <MacroRing l="Xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#22C55E" color2="#4ADE80" track="rgba(255,255,255,0.18)" tc="#FFF" sub={actualFiber>0?`/${heroFiber}g`:null} unit="g"/>
-        </div>
+      </div>
+      <div style={{position:"relative"}}>
+        <div onClick={()=>setShowNoti(!showNoti)} style={{width:40,height:40,borderRadius:"50%",background:C.card,border:`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>🔔</div>
+        {hasNew&&<div style={{position:"absolute",top:0,right:0,width:10,height:10,borderRadius:"50%",background:"#DC2626",border:"2px solid #fff"}}/>}
+        {showNoti&&<div style={{position:"absolute",top:48,right:0,width:mob?280:320,background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:50,overflow:"hidden"}}>
+          <div style={{padding:"10px 14px",borderBottom:`1.5px solid ${C.border}`,fontSize:13,fontWeight:900,color:C.t1}}>🔔 Thông báo</div>
+          {notiList.map(n=><div key={n.id} onClick={()=>{
+            caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
+              if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
+              window.location.reload(true);
+            });
+          }} style={{padding:"10px 14px",cursor:"pointer",borderBottom:`0.5px solid ${C.border}`,background:n.isNew?"rgba(220,38,38,0.04)":"transparent"}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              {n.isNew&&<div style={{width:6,height:6,borderRadius:"50%",background:"#DC2626",flexShrink:0}}/>}
+              <div style={{fontSize:12,fontWeight:n.isNew?700:600,color:C.t1,lineHeight:1.4}}>{n.text}</div>
+            </div>
+            <div style={{fontSize:10,color:C.t3,marginTop:3}}>{n.date} • Nhấn để cập nhật</div>
+          </div>)}
+          {notiList.length===0&&<div style={{padding:"16px",textAlign:"center",fontSize:12,color:C.t3}}>Không có thông báo mới</div>}
+        </div>}
       </div>
     </div>
 
-    {/* Stats */}
-    <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:24}}>
-      {[{l:"Chiều cao",v:profile.cm,u:"cm",c:C.blue},{l:"Cân nặng",v:curKg,u:"kg",c:C.red},{l:"BMI",v:macro.bmi,u:"",c:C.gold},{l:(profile.exerciseType||"gym")==="gym"?"Gym":(profile.exerciseType||"gym")==="gym_cardio"?"Gym+Cardio":(profile.exerciseType||"gym")==="cardio"?"Cardio":"Tập luyện",v:(profile.exerciseType||"gym")==="none"?"—":profile.gym,u:(profile.exerciseType||"gym")==="none"?"":"buổi/tuần",c:C.green}].map((s,i)=>(
-        <div key={i} style={{...card,padding:"10px 14px",marginBottom:0,borderLeft:`4px solid ${s.c}`}}>
-          <div style={{...lbl,color:s.c}}>{s.l}</div>
-          <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:2}}>{s.v}<span style={{fontSize:11,fontWeight:700,color:C.t3}}>{s.u?` ${s.u}`:""}</span></div>
+    {/* Hero — White card */}
+    <div style={{...card,padding:mob?"16px":"24px",border:`1.5px solid ${C.border}`}}>
+      <div style={{fontSize:mob?13:14,fontWeight:700,color:C.t2,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+      <div style={{display:"flex",alignItems:"baseline",gap:8}}>
+        <div style={{fontSize:mob?36:44,fontWeight:900,color:C.red,letterSpacing:"-0.03em",lineHeight:1.1}}>
+          {actualCal>0?actualCal.toLocaleString():heroCal.toLocaleString()}
+        </div>
+        <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
+      </div>
+      {actualCal>0&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:6}}>
+        <span style={{fontSize:14}}>{calStatus}</span>
+        <span style={{fontSize:13,fontWeight:700,color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:actualCal<heroCal*0.95?"#B45309":C.red}}>
+          {calDiff>0?`+${calDiff}`:`${calDiff}`} kcal ({Math.round(actualCal/heroCal*100)}%)
+        </span>
+      </div>}
+      {/* Progress bar */}
+      <div style={{height:8,width:"100%",background:"#F3F4F6",borderRadius:4,marginTop:10,overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:0,120)}%`,background:actualCal>heroCal*1.1?"#EF4444":"linear-gradient(90deg,#DC2626,#F59E0B)",borderRadius:4,transition:"width 0.4s"}}/>
+      </div>
+      {/* Macro rings */}
+      <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
+        <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#EF4444" color2="#F97316" sub={actualP>0?`/${heroP}g`:null} unit="g"/>
+        <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#EAB308" color2="#F59E0B" sub={actualC>0?`/${heroC}g`:null} unit="g"/>
+        <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#8B5CF6" color2="#A78BFA" sub={actualF>0?`/${heroF}g`:null} unit="g"/>
+        <MacroRing l="Xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#22C55E" color2="#4ADE80" sub={actualFiber>0?`/${heroFiber}g`:null} unit="g"/>
+      </div>
+    </div>
+
+    {/* Stats — Pastel cards with icons */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:24}}>
+      {[
+        {l:"Chiều cao",v:profile.cm,u:"cm",icon:"📏",bg:"#EFF6FF",bc:"#BFDBFE",tc:"#1E40AF"},
+        {l:"Cân nặng",v:curKg,u:"kg",icon:"⚖️",bg:"#FEE2E2",bc:"#FECACA",tc:"#991B1B"},
+        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",icon:"📊",bg:"#FEF3C7",bc:"#FDE68A",tc:"#92400E"},
+        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",icon:exIcon,bg:"#DCFCE7",bc:"#BBF7D0",tc:"#166534"},
+      ].map((s,i)=>(
+        <div key={i} style={{background:s.bg,border:`1.5px solid ${s.bc}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:40,height:40,borderRadius:10,background:"rgba(255,255,255,0.7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{s.icon}</div>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,color:s.tc,opacity:0.7}}>{s.l}</div>
+            <div style={{fontSize:20,fontWeight:900,color:s.tc}}>{s.v} <span style={{fontSize:11,fontWeight:600,color:s.tc,opacity:0.6}}>{s.u}</span></div>
+          </div>
         </div>
       ))}
     </div>
@@ -2333,7 +2391,7 @@ export default function App(){
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>
     {mob?<>
       {/* MOBILE: separate views per tab */}
-      {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab}/>}
+      {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>}
       {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile"/>}
       {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals"/>}
       {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>}
@@ -2362,7 +2420,7 @@ export default function App(){
           }}>{t.l}</button>
         )}
       </div>
-      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
+      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
     </>}
     </div>
   </div>;
