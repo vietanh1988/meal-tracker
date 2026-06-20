@@ -2371,16 +2371,19 @@ export default function App(){
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
 
-  // Onboarding migration: user cũ chưa có flag → check nếu đã có weight log hoặc profile khác default → auto set done
+  // Onboarding migration: user cũ chưa có flag → auto set done (chạy 1 lần duy nhất)
+  const migrationDone=useRef(false);
   useEffect(()=>{
+    if(migrationDone.current)return;
     if(profile && !profile.onboardingDone){
       const hasWeightData=weightLog && weightLog.length>0;
       const hasCustomProfile=profile.cm!==defaultProfile.cm || profile.kg!==defaultProfile.kg || profile.age!==defaultProfile.age;
       if(hasWeightData||hasCustomProfile){
+        migrationDone.current=true;
         setProfile({...profile,onboardingDone:true});
       }
     }
-  },[profile?.onboardingDone,weightLog?.length]);
+  },[]);
 
   // Onboarding: chỉ hiện khi flag chưa set (user mới hoàn toàn)
   if(!profile.onboardingDone) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
