@@ -1274,9 +1274,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
       )}
     </div>}
-    {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
+    {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
       {[...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"},{id:"admin",l:"🔧 Quản trị"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"account",l:"👤 Tài khoản"}].map(s=>
-        <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit"}}>{s.l}</button>
+        <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0}}>{s.l}</button>
       )}
     </div>}
     {forcedSection==="profile"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
