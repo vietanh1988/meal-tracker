@@ -920,7 +920,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         <div style={{fontSize:17,fontWeight:900,color:C.blue}}>📈 Theo dõi cân nặng</div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
-          <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{width:28,height:28,borderRadius:"50%",background:showWeightInput?"#DC2626":"linear-gradient(135deg,#DC2626,#B91C1C)",color:"#fff",border:"none",fontSize:16,fontWeight:900,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{showWeightInput?"✕":"+"}</button>
+          <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{padding:"5px 12px",borderRadius:8,background:showWeightInput?C.redBg:"linear-gradient(135deg,#DC2626,#B91C1C)",color:showWeightInput?C.red:"#fff",border:showWeightInput?`1.5px solid ${C.red}`:"none",fontSize:12,fontWeight:800,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>{showWeightInput?"✕ Đóng":"+ Nhập cân"}</button>
         </div>
       </div>
 
@@ -1242,14 +1242,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
       )}
     </div>}
-    {forcedSection==="settings"&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+    {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
       {[...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"account",l:"👤 Tài khoản"}].map(s=>
-        <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
+        <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit"}}>{s.l}</button>
       )}
     </div>}
-    {forcedSection==="profile"&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+    {forcedSection==="profile"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
       {[{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"}].map(s=>
-        <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
+        <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit"}}>{s.l}</button>
       )}
     </div>}
 
