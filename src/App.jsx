@@ -6,6 +6,7 @@ import { useUserData } from "./hooks/useUserData";
 import { useAppSettings } from "./hooks/useAppSettings";
 import { calcMacroAIDirect } from "./lib/aiService";
 import { searchUSDA, calcFromUSDA, translateFood, estimateGram } from "./lib/usdaService";
+import { lookupLocalFood } from "./lib/localFoodDB";
 
 function useIsMobile(breakpoint=600){
   const [m,setM]=useState(typeof window!=="undefined"?window.innerWidth<=breakpoint:false);
@@ -1100,34 +1101,58 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     setAiLoading(true);setAiError(null);setAiResult(null);
     const fc=forceRefresh?{}:(foodCache||{});
     const validItems=foodItems.filter(f=>f.name.trim());
-    const cached=[];const uncached=[];
+
+    // === STEP 1: LocalDB (192 món verified, ưu tiên cao nhất) ===
+    const localResolved=[];const nonLocal=[];
     validItems.forEach(f=>{
       const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
-      // Bug 3 fix: cache always stores per-unit (1 quả) or per-100g. Key = food name only.
+      const gram=isWeight?(f.gram||100):estimateGram(f.name,unit,f.qty||1);
+      const localResult=lookupLocalFood(f.name,gram||(isWeight?f.gram:100));
+      if(localResult){
+        localResolved.push({...localResult,name:f.name,unit,qty:f.qty||1,qty_display:isWeight?null:`${f.qty||1} ${unit}`,source:"localDB"});
+      }else{nonLocal.push(f);}
+    });
+
+    // All from localDB → done
+    if(nonLocal.length===0){
+      setAiResult({items:localResolved,tip:`📦 ${localResolved.length} món từ kho dữ liệu nội bộ`});
+      setAiLoading(false);return;
+    }
+
+    // === STEP 2: Cache (chỉ cho món ngoài localDB) ===
+    const cached=[];const uncached=[];
+    nonLocal.forEach(f=>{
+      const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
       const k=f.name.toLowerCase().trim();
       if(fc[k]){
         const qty=f.qty||1;
         if(isWeight){
-          // Scale from per-100g
           const r=f.gram/(fc[k].gram||100);
           cached.push({name:f.name,gram:f.gram,unit,qty,qty_display:null,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r),source:"cache"});
         }else{
-          // Scale from per-1-unit by qty
           cached.push({name:f.name,gram:Math.round((fc[k].gram||0)*qty),unit,qty,qty_display:`${qty} ${unit}`,protein:Math.round(fc[k].p*qty*10)/10,carb:Math.round(fc[k].c*qty*10)/10,fat:Math.round(fc[k].f*qty*10)/10,fiber:Math.round((fc[k].fiber||0)*qty*10)/10,cal:Math.round(fc[k].cal*qty),source:"cache"});
         }
       }else{uncached.push(f);}
     });
-    if(uncached.length===0){setAiResult({items:cached,tip:"📦 Tất cả từ cache — không gọi API!"});setAiLoading(false);return;}
 
-    // Try USDA first for uncached items (with VN→EN translation)
+    // LocalDB + cache cover all → done
+    if(uncached.length===0){
+      const allItems=[...localResolved,...cached];
+      const sources=[...new Set(allItems.map(i=>i.source))];
+      setAiResult({items:allItems,tip:sources.map(s=>s==="localDB"?"📦 Kho nội bộ":"💾 Cache").join(" + ")+" — không gọi API!"});
+      setAiLoading(false);return;
+    }
+
+    // === STEP 3: USDA (chỉ search tên nguyên liệu raw, không search cách chế biến) ===
     const usdaResolved=[];const stillUncached=[];
     if(usdaKey){
       for(const f of uncached){
         try{
-          // Translate Vietnamese → English for USDA
           const translated=translateFood(f.name);
-          const searchQuery=translated?translated.query:f.name;
-          console.log("🔍 USDA search:",f.name,"→",searchQuery);
+          if(!translated){stillUncached.push(f);continue;}
+          // Chỉ search foodEN (raw), KHÔNG gửi cookEN cho USDA
+          const searchQuery=translated.foodEN;
+          console.log("🔍 USDA search:",f.name,"→",searchQuery,"(raw only)");
           const result=await searchUSDA(searchQuery,usdaKey);
           if(result){
             const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
@@ -1139,10 +1164,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       }
     }else{stillUncached.push(...uncached);}
 
-    const allResolved=[...cached,...usdaResolved];
+    const allResolved=[...localResolved,...cached,...usdaResolved];
+
+    // LocalDB + cache + USDA cover all → done, cache USDA items
     if(stillUncached.length===0){
-      // Build normalized cache entries for USDA items
-      const usdaCacheEntries={};
+      const newCacheEntries={};
       usdaResolved.forEach(it=>{
         const k=(it.name||"").toLowerCase().trim();
         const inputItem=uncached.find(f=>f.name.toLowerCase().trim()===k);
@@ -1151,16 +1177,18 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         if(k){
           if(isWeight){
             const gram=inputItem?.gram||100;const r=100/gram;
-            usdaCacheEntries[k]={p:Math.round((it.protein||0)*r*10)/10,c:Math.round((it.carb||0)*r*10)/10,f:Math.round((it.fat||0)*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round((it.cal||0)*r),gram:100};
+            newCacheEntries[k]={p:Math.round((it.protein||0)*r*10)/10,c:Math.round((it.carb||0)*r*10)/10,f:Math.round((it.fat||0)*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round((it.cal||0)*r),gram:100};
           }else{
-            usdaCacheEntries[k]={p:Math.round((it.protein||0)/qty*10)/10,c:Math.round((it.carb||0)/qty*10)/10,f:Math.round((it.fat||0)/qty*10)/10,fiber:Math.round((it.fiber||0)/qty*10)/10,cal:Math.round((it.cal||0)/qty),gram:Math.round((it.gram||0)/qty)};
+            newCacheEntries[k]={p:Math.round((it.protein||0)/qty*10)/10,c:Math.round((it.carb||0)/qty*10)/10,f:Math.round((it.fat||0)/qty*10)/10,fiber:Math.round((it.fiber||0)/qty*10)/10,cal:Math.round((it.cal||0)/qty),gram:Math.round((it.gram||0)/qty)};
           }
         }
       });
-      setAiResult({items:allResolved,tip:usdaResolved.length>0?`🏛️ ${usdaResolved.length} món từ USDA${cached.length>0?`, ${cached.length} từ cache`:""}`:"",...(Object.keys(usdaCacheEntries).length>0?{_cacheEntries:usdaCacheEntries}:{})});
+      const sources=[...new Set(allResolved.map(i=>i.source))];
+      setAiResult({items:allResolved,tip:sources.map(s=>s==="localDB"?"📦 Kho nội bộ":s==="USDA"?"🔍 USDA":s==="cache"?"💾 Cache":"").filter(Boolean).join(" + "),...(Object.keys(newCacheEntries).length>0?{_cacheEntries:newCacheEntries}:{})});
       setAiLoading(false);return;
     }
 
+    // === STEP 4: AI fallback (món lạ) ===
     const foodDesc=stillUncached.map(f=>{
       const unit=f.unit||"g";
       if(unit==="g"||unit==="ml") return `${f.qty>1?f.qty+" ":""}${f.name} ${f.gram}${unit}`;
@@ -1196,47 +1224,26 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         text=data.choices?.[0]?.message?.content||"";
       }
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
-      const aiItemsWithSource=(parsed.items||[]).map(it=>({...it,source:aiProvider==="gpt"?"GPT":aiProvider==="claude"?"Claude":"Gemini"}));
+      const aiSourceLabel=aiProvider==="gpt"?"GPT":aiProvider==="claude"?"Claude":"Gemini";
+      const aiItemsWithSource=(parsed.items||[]).map(it=>({...it,source:aiSourceLabel}));
       const newItems=[...allResolved,...aiItemsWithSource];
+      // Cache AI results (only non-localDB items)
       const newCacheEntries={};
-      parsed.items.forEach(it=>{
+      [...usdaResolved,...(parsed.items||[])].forEach(it=>{
         const k=(it.name||"").toLowerCase().trim();
-        // Find matching input to get unit info
         const inputItem=uncached.find(f=>f.name.toLowerCase().trim()===k);
         const unit=inputItem?.unit||it.unit||"g";const isWeight=unit==="g"||unit==="ml";
         const qty=inputItem?.qty||1;
-        if(k){
-          if(isWeight){
-            // Store as-is (AI returns for the requested gram amount, normalize to per-100g)
-            const gram=it.gram||inputItem?.gram||100;
-            const r=100/gram;
-            const entry={p:Math.round(it.protein*r*10)/10,c:Math.round(it.carb*r*10)/10,f:Math.round(it.fat*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round(it.cal*r),gram:100};
-            fc[k]=entry; newCacheEntries[k]=entry;
-          }else{
-            // Store per-1-unit (divide by qty)
-            const entry={p:Math.round(it.protein/qty*10)/10,c:Math.round(it.carb/qty*10)/10,f:Math.round(it.fat/qty*10)/10,fiber:Math.round((it.fiber||0)/qty*10)/10,cal:Math.round(it.cal/qty),gram:Math.round((it.gram||0)/qty)};
-            fc[k]=entry; newCacheEntries[k]=entry;
-          }
-        }
-      });
-      // Also cache USDA-resolved items
-      usdaResolved.forEach(it=>{
-        const k=(it.name||"").toLowerCase().trim();
-        const inputItem=uncached.find(f=>f.name.toLowerCase().trim()===k);
-        const unit=inputItem?.unit||"g";const isWeight=unit==="g"||unit==="ml";
-        const qty=inputItem?.qty||1;
         if(k&&!fc[k]){
           if(isWeight){
-            const gram=inputItem?.gram||100;const r=100/gram;
-            const entry={p:Math.round((it.protein||0)*r*10)/10,c:Math.round((it.carb||0)*r*10)/10,f:Math.round((it.fat||0)*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round((it.cal||0)*r),gram:100};
-            fc[k]=entry; newCacheEntries[k]=entry;
+            const gram=it.gram||inputItem?.gram||100;const r=100/gram;
+            newCacheEntries[k]={p:Math.round((it.protein||0)*r*10)/10,c:Math.round((it.carb||0)*r*10)/10,f:Math.round((it.fat||0)*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round((it.cal||0)*r),gram:100};
           }else{
-            const entry={p:Math.round((it.protein||0)/qty*10)/10,c:Math.round((it.carb||0)/qty*10)/10,f:Math.round((it.fat||0)/qty*10)/10,fiber:Math.round((it.fiber||0)/qty*10)/10,cal:Math.round((it.cal||0)/qty),gram:Math.round((it.gram||0)/qty)};
-            fc[k]=entry; newCacheEntries[k]=entry;
+            newCacheEntries[k]={p:Math.round((it.protein||0)/qty*10)/10,c:Math.round((it.carb||0)/qty*10)/10,f:Math.round((it.fat||0)/qty*10)/10,fiber:Math.round((it.fiber||0)/qty*10)/10,cal:Math.round((it.cal||0)/qty),gram:Math.round((it.gram||0)/qty)};
           }
         }
       });
-      setAiResult({items:newItems,tip:parsed.tip||(cached.length>0?`📦 ${cached.length} món từ cache`:""),_cacheEntries:newCacheEntries});
+      setAiResult({items:newItems,tip:parsed.tip||"",_cacheEntries:newCacheEntries});
     }catch(err){setAiError(err.message||"Lỗi kết nối AI");console.error(err);}
     finally{setAiLoading(false);}
   },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey]);
@@ -1550,7 +1557,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <span style={{color:C.t2,textAlign:"right"}}>Cal</span>
         </div>
         {(aiResult.items||[]).map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:700,padding:"7px 0",borderBottom:i<aiResult.items.length-1?`1px solid ${C.border}`:"none"}}>
-          <span style={{color:C.t1,fontWeight:800}}>{item.name} {item.source&&<span style={{fontSize:11,marginLeft:3}}>{item.source==="cache"?"📦":item.source==="USDA"?"🏛️":"🤖"}</span>}</span>
+          <span style={{color:C.t1,fontWeight:800}}>{item.name} {item.source&&<span style={{fontSize:10,marginLeft:3,padding:"1px 5px",borderRadius:4,fontWeight:700,
+            background:item.source==="localDB"?"#DCFCE7":item.source==="USDA"?"#EFF6FF":item.source==="cache"?"#F3F4F6":"#FEF3C7",
+            color:item.source==="localDB"?"#166534":item.source==="USDA"?"#1E40AF":item.source==="cache"?"#666":"#92400E",
+          }}>{item.source==="localDB"?"📦 DB":item.source==="USDA"?"🔍 USDA":item.source==="cache"?"💾 Cache":`🤖 ${item.source}`}</span>}</span>
           <span style={{textAlign:"right",color:C.t3}}>{item.gram}</span>
           <span style={{textAlign:"right",color:C.protein}}>{item.protein}</span>
           <span style={{textAlign:"right",color:C.carb}}>{item.carb}</span>
