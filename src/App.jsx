@@ -782,16 +782,14 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
   const exLabel=exType==="gym"?"Gym":exType==="gym_cardio"?"Gym+Cardio":exType==="cardio"?"Cardio":exType==="none"?"Nghỉ ngơi":"Tập luyện";
   const exIcon=exType==="gym"?"🏋️":exType==="gym_cardio"?"🏋️":exType==="cardio"?"🏃":exType==="none"?"😴":"🏃";
   // Greeting
-  const hour=new Date().getHours();
-  const greeting=hour<12?"Chào buổi sáng":hour<18?"Chào buổi chiều":"Chào buổi tối";
   const displayName=user?.user_metadata?.username||user?.email?.split("@")[0]||"bạn";
 
   return <div>
-    {/* Greeting Header */}
-    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+    {/* Greeting Header — mobile only */}
+    {mob&&<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
       <div style={{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,boxShadow:"0 2px 8px rgba(220,38,38,0.2)"}}>🏋️</div>
       <div style={{flex:1}}>
-        <div style={{fontSize:mob?16:18,fontWeight:900,color:C.t1}}>{greeting}, {displayName}! 👋</div>
+        <div style={{fontSize:mob?16:18,fontWeight:900,color:C.t1}}>Chào {displayName}! 👋</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3}}>
           {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(calRemain>0?<>Còn <span style={{color:C.red,fontWeight:800}}>{calRemain} kcal</span> để đạt mục tiêu</>:<span style={{color:C.green,fontWeight:800}}>Đã đạt mục tiêu! 🎉</span>):<>Mục tiêu <span style={{color:C.red,fontWeight:800}}>{heroCal} kcal</span></>}
         </div>
@@ -816,7 +814,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
           {notiList.length===0&&<div style={{padding:"16px",textAlign:"center",fontSize:12,color:C.t3}}>Không có thông báo mới</div>}
         </div>}
       </div>
-    </div>
+    </div>}
 
     {/* Hero — White card */}
     <div style={{...card,padding:mob?"16px":"24px",border:`1.5px solid ${C.border}`}}>
@@ -2368,7 +2366,7 @@ export default function App(){
   if(!profile.onboardingDone && profile.cm===defaultProfile.cm && profile.kg===defaultProfile.kg) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
 
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"0 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
-    <div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:"#111",display:(mob&&tab==="dashboard")?"none":"flex",justifyContent:"space-between",alignItems:"center",gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:mob?12:10,paddingLeft:"max(12px, env(safe-area-inset-left, 12px))",paddingRight:"max(12px, env(safe-area-inset-right, 12px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
+    {!mob&&<div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:"#111",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:10,paddingLeft:"max(12px, env(safe-area-inset-left, 12px))",paddingRight:"max(12px, env(safe-area-inset-right, 12px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
         <div onClick={()=>{
           if(confirm("Xóa cache và cập nhật phiên bản mới?")){
@@ -2377,18 +2375,18 @@ export default function App(){
               window.location.reload(true);
             });
           }
-        }} style={{width:mob?32:42,height:mob?32:42,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?18:22,flexShrink:0,cursor:"pointer"}}>🏋️</div>
+        }} style={{width:42,height:42,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,cursor:"pointer"}}>🏋️</div>
         <div>
-          <div style={{fontSize:mob?14:20,fontWeight:900,letterSpacing:"-0.02em",color:"#fff"}}>MEAL TRACKER</div>
-          <div style={{fontSize:mob?9:12,fontWeight:700,color:"#F87171"}}>Phát triển bởi Việt Anh Seoer</div>
+          <div style={{fontSize:20,fontWeight:900,letterSpacing:"-0.02em",color:"#fff"}}>MEAL TRACKER</div>
+          <div style={{fontSize:12,fontWeight:700,color:"#F87171"}}>Phát triển bởi Việt Anh Seoer</div>
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
-        <div style={{fontSize:mob?11:13,fontWeight:700,color:"#ccc"}}>👤 {user.user_metadata?.username||user.email}</div>
+        <div style={{fontSize:13,fontWeight:700,color:"#ccc"}}>👤 {user.user_metadata?.username||user.email}</div>
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(220,38,38,0.15)",color:"#F87171",border:"1px solid #F87171",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
-    </div>
-    <div style={{paddingTop:(mob&&tab==="dashboard")?"calc(env(safe-area-inset-top, 8px) + 8px)":"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>
+    </div>}
+    <div style={{paddingTop:mob?"calc(env(safe-area-inset-top, 8px) + 8px)":"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>
     {mob?<>
       {/* MOBILE: separate views per tab */}
       {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>}
