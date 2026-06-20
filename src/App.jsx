@@ -2400,6 +2400,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
     devName:about.devName||"Việt Anh Seoer",
     devRole:about.devRole||"Founder & Developer",
     devBio:about.devBio||"Đam mê fitness và công nghệ. Xây dựng Meal Tracker để giúp cộng đồng gym Việt Nam theo dõi dinh dưỡng dễ dàng hơn.",
+    devAvatar:about.devAvatar||"",
     contact:about.contact||"",
     facebook:about.facebook||"",
     features:about.features||"192 món VN verified|3 AI tích hợp|USDA database|Công thức ISSN",
@@ -2413,14 +2414,14 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   const features=(form.features||"").split("|").filter(Boolean);
 
   return <div>
-    {/* Hero */}
-    <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626"}}>
-      <div style={{width:64,height:64,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:16,boxShadow:"0 4px 14px rgba(220,38,38,0.3)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28}}>🏋️</div>
-      <div style={{fontSize:22,fontWeight:900,color:"#fff",marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
-      <div style={{fontSize:12,fontWeight:700,color:"#F87171",marginTop:4}}>v{form.version}</div>
-      <div style={{fontSize:14,fontWeight:600,color:"rgba(255,255,255,0.7)",marginTop:6}}>{form.tagline}</div>
-      {features.length>0&&<div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginTop:12}}>
-        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 10px",borderRadius:20,background:"rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.8)",fontWeight:600}}>{f}</span>)}
+    {/* Hero — White card giống Dashboard */}
+    <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",border:`1.5px solid ${C.border}`}}>
+      <div style={{width:72,height:72,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:18,boxShadow:"0 4px 14px rgba(220,38,38,0.2)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:32}}>🏋️</div>
+      <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
+      <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4}}>v{form.version}</div>
+      <div style={{fontSize:14,fontWeight:600,color:C.t2,marginTop:6}}>{form.tagline}</div>
+      {features.length>0&&<div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginTop:14}}>
+        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 12px",borderRadius:20,background:i%4===0?"#FEE2E2":i%4===1?"#DCFCE7":i%4===2?"#EFF6FF":"#FEF3C7",color:i%4===0?"#991B1B":i%4===1?"#166534":i%4===2?"#1E40AF":"#92400E",fontWeight:700}}>{f}</span>)}
       </div>}
     </div>
 
@@ -2434,16 +2435,19 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
     <div style={{...card,marginTop:12}}>
       <div style={{fontSize:15,fontWeight:900,color:C.blue,marginBottom:12}}>👨‍💻 Đội ngũ phát triển</div>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
-        <div style={{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🏋️</div>
+        {form.devAvatar?
+          <img src={form.devAvatar} alt={form.devName} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.red}`,flexShrink:0}}/>:
+          <div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,border:"2px solid #fff",boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}}>{form.devName?form.devName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"VA"}</div>
+        }
         <div style={{flex:1}}>
-          <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{form.devName}</div>
-          <div style={{fontSize:12,fontWeight:600,color:C.red}}>{form.devRole}</div>
+          <div style={{fontSize:16,fontWeight:900,color:C.t1}}>{form.devName}</div>
+          <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>{form.devRole}</div>
         </div>
       </div>
-      <div style={{fontSize:12,fontWeight:600,color:C.t3,marginTop:8,lineHeight:1.6}}>{form.devBio}</div>
-      {(form.contact||form.facebook)&&<div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
-        {form.contact&&<a href={form.contact.includes("@")?`mailto:${form.contact}`:form.contact} target="_blank" rel="noopener" style={{fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:8,background:C.blueBg,color:C.blue,textDecoration:"none"}}>📧 Liên hệ</a>}
-        {form.facebook&&<a href={form.facebook} target="_blank" rel="noopener" style={{fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none"}}>📘 Facebook</a>}
+      <div style={{fontSize:13,fontWeight:600,color:C.t3,marginTop:10,lineHeight:1.6,padding:"10px 0",borderTop:`1px solid ${C.border}`}}>{form.devBio}</div>
+      {(form.contact||form.facebook)&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {form.contact&&<a href={form.contact.includes("@")?`mailto:${form.contact}`:form.contact} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:C.blueBg,color:C.blue,textDecoration:"none",border:`1px solid ${C.blue}`}}>📧 Liên hệ</a>}
+        {form.facebook&&<a href={form.facebook} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none",border:"1px solid #1877F2"}}>📘 Facebook</a>}
       </div>}
     </div>
 
@@ -2485,6 +2489,14 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
             <div style={{...lbl,marginBottom:4}}>Vai trò</div>
             <input value={form.devRole} onChange={e=>setForm({...form,devRole:e.target.value})} style={inp}/>
           </div>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Avatar URL (link ảnh)</div>
+          <input value={form.devAvatar} onChange={e=>setForm({...form,devAvatar:e.target.value})} placeholder="https://example.com/avatar.jpg" style={inp}/>
+          {form.devAvatar&&<div style={{marginTop:6,display:"flex",alignItems:"center",gap:8}}>
+            <img src={form.devAvatar} alt="Preview" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",border:`1.5px solid ${C.border}`}}/>
+            <span style={{fontSize:11,color:C.t3}}>Preview</span>
+          </div>}
         </div>
         <div style={{marginBottom:8}}>
           <div style={{...lbl,marginBottom:4}}>Bio</div>
