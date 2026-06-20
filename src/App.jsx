@@ -1270,12 +1270,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
   return <div>
     {!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+      {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"},{id:"about",l:"ℹ️ Giới thiệu"}].map(s=>
         <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
       )}
     </div>}
     {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
-      {[...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"},{id:"admin",l:"🔧 Quản trị"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"account",l:"👤 Tài khoản"}].map(s=>
+      {[...(isAdmin?[{id:"ai",l:"🤖 AI"},{id:"admin",l:"🔧 Quản trị"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"about",l:"ℹ️ Giới thiệu"},{id:"account",l:"👤 Tài khoản"}].map(s=>
         <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0}}>{s.l}</button>
       )}
     </div>}
@@ -2021,6 +2021,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         })()}
       </div>;
     })()}
+    {/* ABOUT */}
+    {section==="about"&&<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>}
+
     {/* ACCOUNT */}
     {section==="account"&&<div style={card}>
       <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>👤 Tài khoản</div>
@@ -2386,6 +2389,123 @@ function OnboardingWizard({profile,setProfile,onComplete}){
   </div>;
 }
 
+function AboutPage({appSettings,isAdmin,saveSetting,mob}){
+  const about=(()=>{try{return appSettings.about_page?JSON.parse(appSettings.about_page):{}}catch(e){return{};}})();
+  const [editing,setEditing]=useState(false);
+  const [form,setForm]=useState({
+    appName:about.appName||"Meal Tracker",
+    tagline:about.tagline||"Theo dõi dinh dưỡng thông minh cho người tập gym",
+    version:about.version||"2.6",
+    description:about.description||"Ứng dụng theo dõi bữa ăn và macro dinh dưỡng. Tính calo tự động từ kho 192 thực phẩm Việt Nam, hỗ trợ USDA API và AI (Claude, Gemini, GPT). Tính macro theo công thức Mifflin-St Jeor chuẩn ISSN.",
+    devName:about.devName||"Việt Anh Seoer",
+    devRole:about.devRole||"Founder & Developer",
+    devBio:about.devBio||"Đam mê fitness và công nghệ. Xây dựng Meal Tracker để giúp cộng đồng gym Việt Nam theo dõi dinh dưỡng dễ dàng hơn.",
+    contact:about.contact||"",
+    facebook:about.facebook||"",
+    features:about.features||"192 món VN verified|3 AI tích hợp|USDA database|Công thức ISSN",
+  });
+
+  const saveAbout=async()=>{
+    await saveSetting("about_page",JSON.stringify(form));
+    setEditing(false);
+  };
+
+  const features=(form.features||"").split("|").filter(Boolean);
+
+  return <div>
+    {/* Hero */}
+    <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626"}}>
+      <div style={{width:64,height:64,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:16,boxShadow:"0 4px 14px rgba(220,38,38,0.3)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28}}>🏋️</div>
+      <div style={{fontSize:22,fontWeight:900,color:"#fff",marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
+      <div style={{fontSize:12,fontWeight:700,color:"#F87171",marginTop:4}}>v{form.version}</div>
+      <div style={{fontSize:14,fontWeight:600,color:"rgba(255,255,255,0.7)",marginTop:6}}>{form.tagline}</div>
+      {features.length>0&&<div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginTop:12}}>
+        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 10px",borderRadius:20,background:"rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.8)",fontWeight:600}}>{f}</span>)}
+      </div>}
+    </div>
+
+    {/* Mô tả */}
+    <div style={{...card,marginTop:12}}>
+      <div style={{fontSize:15,fontWeight:900,color:C.blue,marginBottom:8}}>📖 Về ứng dụng</div>
+      <div style={{fontSize:13,fontWeight:600,color:C.t2,lineHeight:1.7}}>{form.description}</div>
+    </div>
+
+    {/* Developer */}
+    <div style={{...card,marginTop:12}}>
+      <div style={{fontSize:15,fontWeight:900,color:C.blue,marginBottom:12}}>👨‍💻 Đội ngũ phát triển</div>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🏋️</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{form.devName}</div>
+          <div style={{fontSize:12,fontWeight:600,color:C.red}}>{form.devRole}</div>
+        </div>
+      </div>
+      <div style={{fontSize:12,fontWeight:600,color:C.t3,marginTop:8,lineHeight:1.6}}>{form.devBio}</div>
+      {(form.contact||form.facebook)&&<div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
+        {form.contact&&<a href={form.contact.includes("@")?`mailto:${form.contact}`:form.contact} target="_blank" rel="noopener" style={{fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:8,background:C.blueBg,color:C.blue,textDecoration:"none"}}>📧 Liên hệ</a>}
+        {form.facebook&&<a href={form.facebook} target="_blank" rel="noopener" style={{fontSize:11,fontWeight:700,padding:"5px 12px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none"}}>📘 Facebook</a>}
+      </div>}
+    </div>
+
+    {/* Admin: Edit */}
+    {isAdmin&&<div style={{...card,marginTop:12,border:`2px solid ${C.red}`}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <div style={{fontSize:15,fontWeight:900,color:C.red}}>✏️ Chỉnh sửa trang giới thiệu</div>
+        <button onClick={()=>setEditing(!editing)} style={{padding:"5px 12px",fontSize:12,fontWeight:700,borderRadius:8,border:`1.5px solid ${C.red}`,background:editing?C.red:"transparent",color:editing?"#fff":C.red,cursor:"pointer",fontFamily:"inherit"}}>{editing?"✕ Đóng":"✏️ Sửa"}</button>
+      </div>
+      {editing&&<div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Tên ứng dụng</div>
+            <input value={form.appName} onChange={e=>setForm({...form,appName:e.target.value})} style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Version</div>
+            <input value={form.version} onChange={e=>setForm({...form,version:e.target.value})} style={inp}/>
+          </div>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Tagline</div>
+          <input value={form.tagline} onChange={e=>setForm({...form,tagline:e.target.value})} style={inp}/>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Mô tả</div>
+          <textarea value={form.description} onChange={e=>setForm({...form,description:e.target.value})} rows={3} style={{...inp,resize:"vertical"}}/>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Tính năng (ngăn cách bằng |)</div>
+          <input value={form.features} onChange={e=>setForm({...form,features:e.target.value})} placeholder="192 món VN|3 AI|USDA" style={inp}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Tên developer</div>
+            <input value={form.devName} onChange={e=>setForm({...form,devName:e.target.value})} style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Vai trò</div>
+            <input value={form.devRole} onChange={e=>setForm({...form,devRole:e.target.value})} style={inp}/>
+          </div>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Bio</div>
+          <textarea value={form.devBio} onChange={e=>setForm({...form,devBio:e.target.value})} rows={2} style={{...inp,resize:"vertical"}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Email / Liên hệ</div>
+            <input value={form.contact} onChange={e=>setForm({...form,contact:e.target.value})} placeholder="email@example.com" style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Facebook URL</div>
+            <input value={form.facebook} onChange={e=>setForm({...form,facebook:e.target.value})} placeholder="https://fb.com/..." style={inp}/>
+          </div>
+        </div>
+        <button onClick={saveAbout} style={{...redBtn,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu thay đổi</button>
+      </div>}
+    </div>}
+  </div>;
+}
+
 function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
   const gender=p.gender||"male";
   const exerciseType=p.exerciseType||"gym";
@@ -2513,14 +2633,14 @@ export default function App(){
     </>:<>
       {/* PC: header tabs + existing layout */}
       <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:`2.5px solid ${C.border}`}}>
-        {[{id:"dashboard",l:"📊 Dashboard"},{id:"report",l:"📈 Báo cáo"},{id:"admin",l:"⚙️ Admin"}].map(t=>
+        {[{id:"dashboard",l:"📊 Dashboard"},{id:"report",l:"📈 Báo cáo"},{id:"admin",l:"⚙️ Admin"},{id:"about",l:"ℹ️ Giới thiệu"}].map(t=>
           <button key={t.id} onClick={()=>setTab(t.id)} style={{
             padding:"10px 18px",fontSize:14,fontWeight:tab===t.id?900:600,border:"none",background:"transparent",cursor:"pointer",
             color:tab===t.id?"#111":C.t3,borderBottom:tab===t.id?"3px solid #DC2626":"3px solid transparent",fontFamily:"inherit",
           }}>{t.l}</button>
         )}
       </div>
-      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
+      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:tab==="about"?<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
     </>}
     </div>
   </div>;
