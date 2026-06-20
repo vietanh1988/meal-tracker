@@ -64,6 +64,9 @@ const MealIcon=({id,size=20})=>{
   return <Icon d={Icons[map[id]||"sun"]} color={color[id]||"#666"} size={size}/>;
 };
 
+// App Logo — uses pinned icon image instead of emoji
+const AppLogo=({size=48,radius})=><img src="/icon-192.png" alt="Meal Tracker" style={{width:size,height:size,borderRadius:radius||size*0.22,objectFit:"cover",flexShrink:0}}/>;
+
 // All 7 meals with icons and display names
 const ALL_MEALS=[
   {id:"sang",icon:"🍳",name:"Bữa sáng",short:"Sáng"},
@@ -813,7 +816,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
   return <div>
     {/* Greeting Header — mobile only */}
     {mob&&<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-      <div style={{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,boxShadow:"0 2px 8px rgba(220,38,38,0.2)"}}>🏋️</div>
+      <AppLogo size={48} radius="50%"/>
       <div style={{flex:1}}>
         <div style={{fontSize:mob?16:18,fontWeight:900,color:C.t1}}>Chào {displayName}! 👋</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3}}>
@@ -2029,7 +2032,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>👤 Tài khoản</div>
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-          <div style={{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🏋️</div>
+          <AppLogo size={48} radius="50%"/>
           <div style={{flex:1}}>
             <div style={{fontSize:16,fontWeight:900,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
             <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Thành viên Meal Tracker</div>
@@ -2105,7 +2108,7 @@ function LoginScreen({onLogin}){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
     <div style={{width:"100%",maxWidth:400}}>
       <div style={{textAlign:"center",marginBottom:32}}>
-        <div style={{width:64,height:64,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:16,boxShadow:"0 4px 14px rgba(220,38,38,0.3)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:32}}>🏋️</div>
+        <AppLogo size={64} radius={16}/>
         <div style={{fontSize:24,fontWeight:900,color:"#111",marginTop:12,letterSpacing:"-0.02em"}}>MEAL TRACKER</div>
         <div style={{fontSize:13,fontWeight:700,color:C.red,marginTop:2}}>Phát triển bởi Việt Anh Seoer</div>
       </div>
@@ -2157,7 +2160,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:mob?16:20}}>
     <div style={{width:"100%",maxWidth:480}}>
       <div style={{textAlign:"center",marginBottom:24}}>
-        <div style={{width:56,height:56,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:14,boxShadow:"0 4px 14px rgba(220,38,38,0.3)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28}}>🏋️</div>
+        <AppLogo size={56} radius={14}/>
         <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>MEAL TRACKER</div>
         <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
       </div>
@@ -2403,6 +2406,8 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
     devAvatar:about.devAvatar||"",
     contact:about.contact||"",
     facebook:about.facebook||"",
+    hotline:about.hotline||"",
+    zalo:about.zalo||"",
     features:about.features||"192 món VN verified|3 AI tích hợp|USDA database|Công thức ISSN",
   });
 
@@ -2416,7 +2421,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   return <div>
     {/* Hero — White card giống Dashboard */}
     <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",border:`1.5px solid ${C.border}`}}>
-      <div style={{width:72,height:72,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:18,boxShadow:"0 4px 14px rgba(220,38,38,0.2)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:32}}>🏋️</div>
+      <AppLogo size={72} radius={18}/>
       <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
       <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4}}>v{form.version}</div>
       <div style={{fontSize:14,fontWeight:600,color:C.t2,marginTop:6}}>{form.tagline}</div>
@@ -2445,9 +2450,19 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
         </div>
       </div>
       <div style={{fontSize:13,fontWeight:600,color:C.t3,marginTop:10,lineHeight:1.6,padding:"10px 0",borderTop:`1px solid ${C.border}`}}>{form.devBio}</div>
-      {(form.contact||form.facebook)&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {form.contact&&<a href={form.contact.includes("@")?`mailto:${form.contact}`:form.contact} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:C.blueBg,color:C.blue,textDecoration:"none",border:`1px solid ${C.blue}`}}>📧 Liên hệ</a>}
-        {form.facebook&&<a href={form.facebook} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none",border:"1px solid #1877F2"}}>📘 Facebook</a>}
+      {(form.contact||form.facebook||form.hotline||form.zalo)&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {form.contact&&<a href={`mailto:${form.contact}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#FEE2E2",color:"#991B1B",textDecoration:"none",border:"1px solid #FECACA",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#991B1B" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email</a>}
+        {form.facebook&&<a href={form.facebook} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Facebook</a>}
+        {form.hotline&&<a href={`tel:${form.hotline}`} style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#DCFCE7",color:"#166534",textDecoration:"none",border:"1px solid #BBF7D0",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          {form.hotline}</a>}
+        {form.zalo&&<a href={`https://zalo.me/${form.zalo.replace(/\s/g,"")}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EBF5FF",color:"#0068FF",textDecoration:"none",border:"1px solid #B3D9FF",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="16" height="16" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#0068FF"/><text x="24" y="26" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="18" fontWeight="900" fontFamily="Arial,sans-serif">Z</text></svg>
+          Zalo</a>}
       </div>}
     </div>
 
@@ -2504,12 +2519,20 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
           <div>
-            <div style={{...lbl,marginBottom:4}}>Email / Liên hệ</div>
+            <div style={{...lbl,marginBottom:4}}>Email</div>
             <input value={form.contact} onChange={e=>setForm({...form,contact:e.target.value})} placeholder="email@example.com" style={inp}/>
           </div>
           <div>
             <div style={{...lbl,marginBottom:4}}>Facebook URL</div>
             <input value={form.facebook} onChange={e=>setForm({...form,facebook:e.target.value})} placeholder="https://fb.com/..." style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Hotline</div>
+            <input value={form.hotline} onChange={e=>setForm({...form,hotline:e.target.value})} placeholder="0909 123 456" style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Zalo (SĐT)</div>
+            <input value={form.zalo} onChange={e=>setForm({...form,zalo:e.target.value})} placeholder="0909123456" style={inp}/>
           </div>
         </div>
         <button onClick={saveAbout} style={{...redBtn,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu thay đổi</button>
@@ -2609,7 +2632,7 @@ export default function App(){
               window.location.reload(true);
             });
           }
-        }} style={{width:42,height:42,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,cursor:"pointer"}}>🏋️</div>
+        }} style={{width:42,height:42,borderRadius:10,overflow:"hidden",flexShrink:0,cursor:"pointer"}}><AppLogo size={42} radius={10}/></div>
         <div>
           <div style={{fontSize:20,fontWeight:900,letterSpacing:"-0.02em",color:"#fff"}}>MEAL TRACKER</div>
           <div style={{fontSize:12,fontWeight:700,color:"#F87171"}}>Phát triển bởi Việt Anh Seoer</div>
