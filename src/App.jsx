@@ -2371,22 +2371,9 @@ export default function App(){
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
 
-  // Onboarding migration: user cũ chưa có flag → auto set done (chạy 1 lần duy nhất)
-  const migrationDone=useRef(false);
-  useEffect(()=>{
-    if(migrationDone.current)return;
-    if(profile && !profile.onboardingDone){
-      const hasWeightData=weightLog && weightLog.length>0;
-      const hasCustomProfile=profile.cm!==defaultProfile.cm || profile.kg!==defaultProfile.kg || profile.age!==defaultProfile.age;
-      if(hasWeightData||hasCustomProfile){
-        migrationDone.current=true;
-        setProfile({...profile,onboardingDone:true});
-      }
-    }
-  },[]);
-
-  // Onboarding: chỉ hiện khi flag chưa set (user mới hoàn toàn)
-  if(!profile.onboardingDone) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
+  // Onboarding: chỉ hiện cho user mới chưa có data thật
+  const needsOnboarding=!profile.onboardingDone && !(weightLog && weightLog.length>0) && profile.cm===defaultProfile.cm && profile.kg===defaultProfile.kg && profile.age===defaultProfile.age;
+  if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
 
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"0 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     {!mob&&<div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:"#111",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:10,paddingLeft:"max(12px, env(safe-area-inset-left, 12px))",paddingRight:"max(12px, env(safe-area-inset-right, 12px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
