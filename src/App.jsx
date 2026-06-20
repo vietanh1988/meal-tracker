@@ -754,9 +754,10 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
   </div>;
 }
 
-function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||!macro)return null;
+function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSettings,setTab}){if(!profile||!macro)return null;
   const [dayType,setDayType]=useState("train");
   const mob=useIsMobile();
+  const [showWeightInput,setShowWeightInput]=useState(false);
   // Parse meal config
   const mealConfig=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
   const visibleIds=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];
@@ -821,6 +822,14 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
 
+    {/* Empty state CTA — no meals logged */}
+    {meals.every(m=>!m.items||m.items.length===0)&&<div style={{...card,border:"2px dashed #CDCDCD",background:"transparent",textAlign:"center",padding:"20px 16px"}}>
+      <div style={{fontSize:28,marginBottom:6}}>🍽️</div>
+      <div style={{fontSize:14,fontWeight:800,color:C.t2,marginBottom:4}}>Chưa có bữa ăn nào</div>
+      <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Nhập thức ăn để theo dõi macro hàng ngày</div>
+      <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
+    </div>}
+
     {/* Compact evaluation */}
     {actualCal>0&&<div style={{...card,padding:"12px 16px",marginTop:6,
       background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.greenBg:C.redBg,
@@ -853,7 +862,33 @@ function Dashboard({weightLog,profile,macro,getMeals,appSettings}){if(!profile||
     <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#EAB308) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{fontSize:17,fontWeight:900,color:C.blue}}>📈 Theo dõi cân nặng</div>
-        <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
+          <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{width:28,height:28,borderRadius:"50%",background:showWeightInput?"#DC2626":"linear-gradient(135deg,#DC2626,#B91C1C)",color:"#fff",border:"none",fontSize:16,fontWeight:900,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{showWeightInput?"✕":"+"}</button>
+        </div>
+      </div>
+
+      {/* Quick weight input */}
+      {showWeightInput&&<div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:14,border:`1.5px solid ${C.border}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
+            <input id="dashWeightInput" type="text" inputMode="decimal" placeholder={`VD: ${(curKg+0.3).toFixed(1)}`} style={{...inp,height:40,fontSize:15}}/>
+          </div>
+          <button onClick={async()=>{
+            const val=parseFloat((document.getElementById("dashWeightInput").value||"").replace(",","."));
+            if(!val||val<30||val>200)return;
+            await addWeight(val);
+            setProfile({...profile,kg:val});
+            document.getElementById("dashWeightInput").value="";
+            setShowWeightInput(false);
+            const el=document.getElementById("dash-weight-saved");
+            if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+          }} style={{padding:"10px 16px",fontSize:13,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>💾 Lưu</button>
+        </div>
+      </div>}
+      <div id="dash-weight-saved" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:10}}>
+        <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Đã lưu cân nặng!</span>
       </div>
 
       {/* Stat cards */}
@@ -913,10 +948,15 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user}){if(!profile||!macro)return null;
   const mob=useIsMobile();
-  const [section,setSection]=useState(forcedSection==="settings"?"schedule":(forcedSection||"meals"));
-  useEffect(()=>{if(forcedSection&&forcedSection!=="settings")setSection(forcedSection);if(forcedSection==="settings")setSection("schedule");},[forcedSection]);
+  const [section,setSection]=useState(forcedSection==="settings"?(isAdmin?"ai":"weight"):(forcedSection==="profile"?"profile":(forcedSection||"meals")));
+  useEffect(()=>{
+    if(forcedSection==="profile")setSection("profile");
+    else if(forcedSection==="meals")setSection("meals");
+    else if(forcedSection==="settings")setSection(isAdmin?"ai":"weight");
+    else if(forcedSection)setSection(forcedSection);
+  },[forcedSection,isAdmin]);
   const [dayType,setDayType]=useState("train");
   const [selectedMeal,setSelectedMeal]=useState("sang");
   const [mealConfig,setMealConfig]=useState(()=>{
@@ -1147,7 +1187,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
       )}
     </div>}
     {forcedSection==="settings"&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"}]:[]),{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+      {[...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"account",l:"👤 Tài khoản"}].map(s=>
+        <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
+      )}
+    </div>}
+    {forcedSection==="profile"&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+      {[{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"}].map(s=>
         <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
       )}
     </div>}
@@ -1690,12 +1735,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
 
       {/* Auto-calc results */}
       <div style={{marginTop:20}}>
-        <button onClick={()=>{
-          const el=document.getElementById("profile-saved");
-          if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-        }} style={{...redBtn,marginBottom:12}}> 💾 Lưu hồ sơ & Tính macro</button>
-        <div id="profile-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:12}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu hồ sơ! Dashboard đã cập nhật macro mới.</span>
+        <div style={{padding:"8px 12px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>✓ Hồ sơ tự động lưu khi bạn thay đổi</span>
         </div>
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:900,color:C.red,marginBottom:12}}>⚡ Macro tự động tính</div>
@@ -1829,6 +1870,21 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
         })()}
       </div>;
     })()}
+    {/* ACCOUNT */}
+    {section==="account"&&<div style={card}>
+      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>👤 Tài khoản</div>
+      <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontSize:13,fontWeight:800,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>{user?.email||""}</div>
+          </div>
+          <div style={{width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>👤</div>
+        </div>
+      </div>
+      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"linear-gradient(135deg,#DC2626,#B91C1C)"}}>🚪 Đăng xuất</button>
+    </div>}
+
     <style>{`@keyframes spin{to{transform:rotate(360deg);}}`}</style>
   </div>;
 }
@@ -1844,17 +1900,21 @@ function LoginScreen({onLogin}){
 
   const handleSubmit=async()=>{
     setErr("");setSuccess("");
-    if(!user.trim()||!pass.trim()){setErr("Vui lòng nhập đầy đủ");return;}
+    if(mode==="login"){
+      if(!email.trim()||!pass.trim()){setErr("Vui lòng nhập đầy đủ");return;}
+    }else{
+      if(!user.trim()||!email.trim()||!pass.trim()){setErr("Vui lòng nhập đầy đủ");return;}
+      if(!email.includes("@")){setErr("Vui lòng nhập email hợp lệ");return;}
+    }
     if(pass.length<6){setErr("Mật khẩu tối thiểu 6 ký tự");return;}
     try{
       if(mode==="register"){
-        if(!email.trim()||!email.includes("@")){setErr("Vui lòng nhập email hợp lệ");return;}
         await signUp(email,pass,user.trim());
         setSuccess(`✅ Đăng ký thành công! Tài khoản "${user.trim()}" đã được kích hoạt.`);
         setTimeout(()=>onLogin(user.trim()),1500);
       }else{
-        await signIn(email||user,pass);
-        onLogin(user.trim());
+        await signIn(email,pass);
+        onLogin(email);
       }
     }catch(e){setErr(e.message||"Lỗi xác thực");}
   };
@@ -1873,14 +1933,14 @@ function LoginScreen({onLogin}){
             color:mode===m?C.t1:C.t3,borderBottom:mode===m?"3px solid #DC2626":"3px solid transparent",fontFamily:"inherit",
           }}>{m==="login"?"Đăng nhập":"Đăng ký"}</button>)}
         </div>
-        <div style={{marginBottom:12}}>
-          <div style={{...lbl,marginBottom:6}}>Tên đăng nhập</div>
-          <input value={user} onChange={e=>setUser(e.target.value)} placeholder="VD: gymboy63" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
-        </div>
         {mode==="register"&&<div style={{marginBottom:12}}>
+          <div style={{...lbl,marginBottom:6}}>Tên hiển thị</div>
+          <input value={user} onChange={e=>setUser(e.target.value)} placeholder="VD: gymboy63" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+        </div>}
+        <div style={{marginBottom:12}}>
           <div style={{...lbl,marginBottom:6}}>Email</div>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@example.com" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
-        </div>}
+        </div>
         <div style={{marginBottom:16}}>
           <div style={{...lbl,marginBottom:6}}>Mật khẩu</div>
           <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
@@ -1890,6 +1950,257 @@ function LoginScreen({onLogin}){
         <button onClick={handleSubmit} disabled={!!success} style={{...redBtn,opacity:success?0.6:1}}>{mode==="login"?"Đăng nhập":"Đăng ký & Kích hoạt"}</button>
         {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.red,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
         {mode==="register"&&<div style={{textAlign:"center",marginTop:12,fontSize:11,fontWeight:600,color:C.t3}}>Tài khoản sẽ được kích hoạt tự động ngay sau khi đăng ký</div>}
+      </div>
+    </div>
+  </div>;
+}
+
+function OnboardingWizard({profile,setProfile,onComplete}){
+  const mob=useIsMobile();
+  const [step,setStep]=useState(1);
+  const p=profile||defaultProfile;
+  const macro=calcMacro(p);
+  const totalSteps=4;
+
+  const stepDots=<div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:20}}>
+    {[1,2,3,4].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#15803D":s===step?"#DC2626":"#CDCDCD",transition:"all 0.3s"}}/>)}
+  </div>;
+
+  const nextBtn=(label,disabled,color)=><button onClick={()=>setStep(step+1)} disabled={disabled} style={{...redBtn,marginTop:16,opacity:disabled?0.5:1,background:color||"linear-gradient(135deg,#DC2626,#B91C1C)"}}>{label} →</button>;
+  const backBtn=<button onClick={()=>setStep(step-1)} style={{...redBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>;
+
+  const fieldBox=(children)=><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>{children}</div>;
+
+  return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:mob?16:20}}>
+    <div style={{width:"100%",maxWidth:480}}>
+      <div style={{textAlign:"center",marginBottom:24}}>
+        <div style={{width:56,height:56,background:"linear-gradient(135deg,#DC2626,#F59E0B)",borderRadius:14,boxShadow:"0 4px 14px rgba(220,38,38,0.3)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28}}>🏋️</div>
+        <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>MEAL TRACKER</div>
+        <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
+      </div>
+
+      <div style={{...card,padding:mob?"20px 16px":"24px 28px"}}>
+        {stepDots}
+
+        {/* STEP 1: Thông tin cơ bản */}
+        {step===1&&<div>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:20}}>📋</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Thông tin cơ bản</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 1/{totalSteps}</div>
+          </div>
+
+          {/* Gender */}
+          <div style={{...lbl,marginBottom:8}}>Giới tính</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+            {[{id:"male",icon:"👨",name:"Nam"},{id:"female",icon:"👩",name:"Nữ"}].map(g=><div key={g.id} onClick={()=>setProfile({...p,gender:g.id})} style={{
+              padding:"12px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",gap:8,
+              background:(p.gender||"male")===g.id?"#EFF6FF":C.surface,
+              border:`1.5px solid ${(p.gender||"male")===g.id?"#60A5FA":C.border}`,
+            }}>
+              <span style={{fontSize:22}}>{g.icon}</span>
+              <span style={{fontSize:14,fontWeight:700,color:C.t1}}>{g.name}</span>
+              <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(p.gender||"male")===g.id?"#3B82F6":"#D1D5DB"}`,background:(p.gender||"male")===g.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(p.gender||"male")===g.id?"✓":""}</div>
+            </div>)}
+          </div>
+
+          {/* 4 inputs */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {[
+              {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
+              {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
+              {key:"age",label:"Tuổi",icon:"🎂",unit:"tuổi",mode:"numeric"},
+              {key:"gym",label:"Số buổi tập/tuần",icon:"🏋️",unit:"buổi",mode:"numeric"},
+            ].map(f=><div key={f.key}>
+              <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+              <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+                <input type="text" inputMode={f.mode} value={f.key==="kg"?p.kg:p[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...p,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
+                <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
+              </div>
+            </div>)}
+          </div>
+
+          {nextBtn("Tiếp theo",!p.cm||!p.kg||!p.age)}
+        </div>}
+
+        {/* STEP 2: Vận động */}
+        {step===2&&<div>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:20}}>🏃</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Vận động</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 2/{totalSteps}</div>
+          </div>
+
+          {/* Activity level */}
+          <div style={{...lbl,marginBottom:8}}>💼 Mức vận động công việc</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:18}}>
+            {[
+              {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng"},
+              {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều"},
+              {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay"},
+            ].map(a=><div key={a.id} onClick={()=>setProfile({...p,activity:a.id})} style={{
+              padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
+              background:p.activity===a.id?"#EFF6FF":C.surface,
+              border:p.activity===a.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+            }}>
+              <div style={{fontSize:mob?20:24}}>{a.icon}</div>
+              <div style={{fontSize:mob?11:13,fontWeight:800,color:C.t1,marginTop:4}}>{a.name}</div>
+              <div style={{fontSize:mob?9:10,color:C.t3}}>{a.desc}</div>
+            </div>)}
+          </div>
+
+          {/* Exercise type */}
+          <div style={{...lbl,marginBottom:8}}>🏅 Hình thức tập luyện</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?6:8,marginBottom:((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")?18:0}}>
+            {[
+              {id:"gym",icon:"🏋️",name:"Gym",desc:"Tập tạ thuần"},
+              {id:"gym_cardio",icon:"🏋️🏃",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
+              {id:"cardio",icon:"🏃",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
+              {id:"none",icon:"😴",name:"Không tập",desc:"Không vận động"},
+            ].map(e=><div key={e.id} onClick={()=>{
+              const updated={...p,exerciseType:e.id};
+              if(e.id==="none"&&p.goalType==="bulk")updated.goalType="maintain";
+              if(e.id==="gym")updated.cardioIntensity=undefined;
+              setProfile(updated);
+            }} style={{
+              padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
+              background:(p.exerciseType||"gym")===e.id?"#FEE2E2":C.surface,
+              border:(p.exerciseType||"gym")===e.id?`2px solid #F87171`:`1.5px solid ${C.border}`,
+            }}>
+              <div style={{fontSize:mob?20:24}}>{e.icon}</div>
+              <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
+              <div style={{fontSize:mob?9:10,color:C.t3}}>{e.desc}</div>
+            </div>)}
+          </div>
+
+          {/* Cardio intensity */}
+          {((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")&&<>
+            <div style={{...lbl,marginBottom:8}}>⚡ Cường độ Cardio</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8}}>
+              {[
+                {id:"light",icon:"🚶",name:"Nhẹ",desc:"Đi bộ 30-40p"},
+                {id:"moderate",icon:"🏃",name:"Vừa",desc:"Chạy nhẹ 30-45p"},
+                {id:"intense",icon:"⚡",name:"Nặng",desc:"HIIT, bơi 45-60p"},
+              ].map(ci=><div key={ci.id} onClick={()=>setProfile({...p,cardioIntensity:ci.id})} style={{
+                padding:mob?"8px 6px":"12px",borderRadius:10,cursor:"pointer",textAlign:"center",
+                background:(p.cardioIntensity||"moderate")===ci.id?"#EFF6FF":C.surface,
+                border:(p.cardioIntensity||"moderate")===ci.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+              }}>
+                <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
+                <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
+                <div style={{fontSize:mob?9:10,color:C.t3}}>{ci.desc}</div>
+              </div>)}
+            </div>
+          </>}
+
+          {nextBtn("Tiếp theo")}
+          {backBtn}
+        </div>}
+
+        {/* STEP 3: Mục tiêu */}
+        {step===3&&<div>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:20}}>🎯</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Mục tiêu</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 3/{totalSteps}</div>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:16}}>
+            {[
+              {id:"bulk",icon:"💪",name:"Tăng cơ",c:"#16A34A",bg:"#DCFCE7",bc:"#4ADE80"},
+              {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#DC2626",bg:"#FEE2E2",bc:"#F87171"},
+              {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#3B82F6",bg:"#EFF6FF",bc:"#60A5FA"},
+            ].map(g=>{
+              const disabled=(p.exerciseType||"gym")==="none"&&g.id==="bulk";
+              return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...p,goalType:g.id});}} style={{
+                padding:mob?"10px 6px":"14px 10px",borderRadius:12,cursor:disabled?"not-allowed":"pointer",textAlign:"center",
+                background:p.goalType===g.id?g.bg:C.surface,
+                border:p.goalType===g.id?`2px solid ${g.bc}`:`1.5px solid ${C.border}`,
+                opacity:disabled?0.3:1,
+              }}>
+                <div style={{fontSize:mob?20:22}}>{g.icon}</div>
+                <div style={{fontSize:mob?12:13,fontWeight:800,color:C.t1,marginTop:4}}>{g.name}</div>
+              </div>;
+            })}
+          </div>
+
+          {/* Goal weight + duration */}
+          {p.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {[
+              {key:"goalKg",label:"Cân nặng mục tiêu",icon:"⚖️",unit:"kg",mode:"decimal"},
+              {key:"months",label:"Thời gian",icon:"📅",unit:"tháng",mode:"numeric"},
+            ].map(f=><div key={f.key}>
+              <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+              <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+                <input type="text" inputMode={f.mode} value={p[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...p,[f.key]:f.key==="months"?Math.max(1,Number(v)):Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
+                <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
+              </div>
+            </div>)}
+          </div>}
+
+          {/* Safety check */}
+          {p.goalType!=="maintain"&&macro.perWeek>0&&<div style={{marginTop:12,padding:"8px 12px",background:macro.safe?C.greenBg:C.redBg,borderRadius:8,border:`1.5px solid ${macro.safe?C.green:C.red}`}}>
+            <span style={{fontSize:12,fontWeight:700,color:macro.safe?"#14532D":"#7F1D1D"}}>
+              {macro.safe
+                ?`✓ Tốc độ ${macro.perWeek} kg/tuần — an toàn!`
+                :`⚠ Tốc độ ${macro.perWeek} kg/tuần — quá nhanh! Nên kéo dài thời gian.`
+              }
+            </span>
+          </div>}
+
+          {nextBtn("Tiếp theo")}
+          {backBtn}
+        </div>}
+
+        {/* STEP 4: Hoàn tất — Preview macro */}
+        {step===4&&<div>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:20}}>✨</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Hoàn tất!</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Macro đã tính xong</div>
+          </div>
+
+          {/* Macro hero preview */}
+          <div style={{background:"linear-gradient(135deg,#111 0%,#2A0E0E 100%)",border:"2.5px solid #DC2626",borderRadius:14,padding:16,marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>CALO MỤC TIÊU NGÀY TẬP</div>
+            <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span></div>
+            <div style={{display:"flex",gap:14,marginTop:12}}>
+              <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#EF4444" color2="#F97316" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#EAB308" color2="#F59E0B" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Fat" v={macro.fat} max={macro.fat} color="#8B5CF6" color2="#A78BFA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Xơ" v={macro.fiber} max={macro.fiber} color="#22C55E" color2="#4ADE80" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+            </div>
+          </div>
+
+          {/* Breakdown */}
+          <div style={{background:C.surface,borderRadius:10,padding:"10px 14px",marginBottom:12,border:`1.5px solid ${C.border}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+              <span style={{color:C.t3}}>BMR</span><span style={{fontWeight:800,color:C.t1}}>{macro.bmr} cal</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+              <span style={{color:C.t3}}>TDEE (×{macro.actMul})</span><span style={{fontWeight:800,color:C.t1}}>{macro.tdee} cal</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+              <span style={{color:C.t3}}>Calo ngày nghỉ</span><span style={{fontWeight:800,color:C.blue}}>{macro.calRest} cal</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0"}}>
+              <span style={{color:C.t3}}>{macro.goal==="bulk"?"Surplus":macro.goal==="cut"?"Deficit":"Điều chỉnh"}</span>
+              <span style={{fontWeight:800,color:macro.goal==="bulk"?C.green:macro.goal==="cut"?C.red:C.t1}}>
+                {macro.goal==="bulk"?"+250":macro.goal==="cut"?"-350":"0"} cal
+              </span>
+            </div>
+          </div>
+
+          <div style={{padding:"8px 12px",background:C.goldBg,borderRadius:8,border:"1.5px solid #CA8A04",marginBottom:4}}>
+            <span style={{fontSize:12,fontWeight:700,color:"#78350F"}}>💡 Bạn có thể thay đổi bất cứ lúc nào trong tab Hồ sơ</span>
+          </div>
+
+          <button onClick={()=>{
+            setProfile({...p,onboardingDone:true});
+            onComplete();
+          }} style={{...redBtn,marginTop:16,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu & Vào Dashboard</button>
+          {backBtn}
+        </div>}
       </div>
     </div>
   </div>;
@@ -1971,6 +2282,10 @@ export default function App(){
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
+
+  // Onboarding: user mới chưa nhập hồ sơ
+  if(!profile.onboardingDone) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
+
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"0 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:"#111",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:mob?12:10,paddingLeft:"max(12px, env(safe-area-inset-left, 12px))",paddingRight:"max(12px, env(safe-area-inset-right, 12px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
@@ -1995,11 +2310,11 @@ export default function App(){
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>
     {mob?<>
       {/* MOBILE: separate views per tab */}
-      {tab==="dashboard"&&<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>}
+      {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab}/>}
       {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile"/>}
       {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals"/>}
       {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>}
-      {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings"/>}
+      {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user}/>}
 
       {/* Bottom nav — iOS style */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
@@ -2024,7 +2339,7 @@ export default function App(){
           }}>{t.l}</button>
         )}
       </div>
-      {tab==="dashboard"?<Dashboard weightLog={weightLog} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
+      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
     </>}
     </div>
   </div>;
