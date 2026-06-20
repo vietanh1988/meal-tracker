@@ -2313,7 +2313,7 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bul
   // F: khác nhau nam nữ (nữ cần fat cao hơn cho hormone)
   // C: phần calo còn lại sau P và F
   const pTable={bulk:2.0,cut:2.2,maintain:1.8};
-  const fTable={male:{bulk:0.9,cut:0.8,maintain:0.9},female:{bulk:1.0,cut:0.9,maintain:1.0}};
+  const fTable={male:{bulk:1.1,cut:0.9,maintain:1.0},female:{bulk:1.2,cut:1.0,maintain:1.1}};
   // Surplus/deficit cố định theo mục tiêu (ISSN lean bulk)
   const calAdjustTable={bulk:250,cut:-350,maintain:0};
   const pRatioVal=pTable[effectiveGoal]||1.8;
