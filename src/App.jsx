@@ -2369,7 +2369,7 @@ export default function App(){
   const mob=useIsMobile();
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
-  if(!user) return <LoginScreen onLogin={()=>{}}/>;
+  if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
 
   // Onboarding migration: user cũ chưa có flag → check nếu đã có weight log hoặc profile khác default → auto set done
   useEffect(()=>{
