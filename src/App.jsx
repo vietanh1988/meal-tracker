@@ -798,10 +798,10 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
 
     {/* Stats */}
     <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:24}}>
-      {[{l:"Chiều cao",v:profile.cm,u:"cm",c:C.blue},{l:"Cân nặng",v:curKg,u:"kg",c:C.red},{l:"BMI",v:macro.bmi,u:"",c:C.gold},{l:"Gym",v:profile.gym,u:"/tuần",c:C.green}].map((s,i)=>(
+      {[{l:"Chiều cao",v:profile.cm,u:"cm",c:C.blue},{l:"Cân nặng",v:curKg,u:"kg",c:C.red},{l:"BMI",v:macro.bmi,u:"",c:C.gold},{l:(profile.exerciseType||"gym")==="gym"?"Gym":(profile.exerciseType||"gym")==="gym_cardio"?"Gym+Cardio":(profile.exerciseType||"gym")==="cardio"?"Cardio":"Tập luyện",v:(profile.exerciseType||"gym")==="none"?"—":profile.gym,u:(profile.exerciseType||"gym")==="none"?"":"buổi/tuần",c:C.green}].map((s,i)=>(
         <div key={i} style={{...card,padding:"10px 14px",marginBottom:0,borderLeft:`4px solid ${s.c}`}}>
           <div style={{...lbl,color:s.c}}>{s.l}</div>
-          <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:2}}>{s.v}<span style={{fontSize:11,fontWeight:700,color:C.t3}}>{s.u}</span></div>
+          <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:2}}>{s.v}<span style={{fontSize:11,fontWeight:700,color:C.t3}}>{s.u?` ${s.u}`:""}</span></div>
         </div>
       ))}
     </div>
@@ -1873,13 +1873,36 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown:
     {/* ACCOUNT */}
     {section==="account"&&<div style={card}>
       <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>👤 Tài khoản</div>
-      <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div>
-            <div style={{fontSize:13,fontWeight:800,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
-            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>{user?.email||""}</div>
+      <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+          <div style={{width:48,height:48,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>🏋️</div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:16,fontWeight:900,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Thành viên Meal Tracker</div>
           </div>
-          <div style={{width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>👤</div>
+        </div>
+        <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:12,display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:8,background:C.blueBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>👤</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.05em",textTransform:"uppercase"}}>Tên hiển thị</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{user?.user_metadata?.username||"Chưa đặt"}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:8,background:C.goldBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📧</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.05em",textTransform:"uppercase"}}>Email</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{user?.email||"Chưa có"}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:8,background:C.greenBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>🛡️</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.05em",textTransform:"uppercase"}}>Vai trò</div>
+              <div style={{fontSize:14,fontWeight:700,color:isAdmin?C.red:C.t1}}>{isAdmin?"Admin":"Thành viên"}</div>
+            </div>
+          </div>
         </div>
       </div>
       <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"linear-gradient(135deg,#DC2626,#B91C1C)"}}>🚪 Đăng xuất</button>
