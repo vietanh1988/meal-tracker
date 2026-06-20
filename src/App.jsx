@@ -1899,7 +1899,7 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bul
   const gender=p.gender||"male";
   const exerciseType=p.exerciseType||"gym";
   const cardioIntensity=p.cardioIntensity||"moderate";
-  // BMR: Mifflin-St Jeor
+  // BMR: Mifflin-St Jeor (khác theo giới tính)
   const bmr=10*p.kg+6.25*p.cm-5*p.age+(gender==="male"?5:-161);
   // Activity multiplier
   const jobBase=p.activity==="sedentary"?1.2:p.activity==="moderate"?1.5:1.75;
@@ -1918,49 +1918,42 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bul
   const goal=p.goalType||"bulk";
   // Block: none + bulk
   const effectiveGoal=(exerciseType==="none"&&goal==="bulk")?"maintain":goal;
-  // Macro lookup: gender × exerciseType × goal
-  const macroTable={
-    male:{
-      gym:{bulk:{p:2,c:4,f:0.8},cut:{p:2.3,c:2.5,f:0.8},maintain:{p:1.8,c:3.5,f:0.8}},
-      gym_cardio:{bulk:{p:1.8,c:3.8,f:0.8},cut:{p:2.0,c:2.3,f:0.8},maintain:{p:1.6,c:3.2,f:0.8}},
-      cardio:{bulk:{p:1.6,c:3.5,f:0.8},cut:{p:1.8,c:2.0,f:0.8},maintain:{p:1.5,c:3.0,f:0.8}},
-      none:{bulk:{p:1.2,c:2.5,f:0.7},cut:{p:1.5,c:2.0,f:0.7},maintain:{p:1.2,c:2.5,f:0.7}},
-    },
-    female:{
-      gym:{bulk:{p:1.8,c:3.5,f:1.0},cut:{p:2.0,c:2.2,f:0.9},maintain:{p:1.6,c:3.0,f:1.0}},
-      gym_cardio:{bulk:{p:1.6,c:3.2,f:1.0},cut:{p:1.8,c:2.0,f:0.9},maintain:{p:1.5,c:2.8,f:1.0}},
-      cardio:{bulk:{p:1.5,c:3.0,f:0.9},cut:{p:1.6,c:2.0,f:0.9},maintain:{p:1.4,c:2.8,f:0.9}},
-      none:{bulk:{p:1.0,c:2.5,f:0.8},cut:{p:1.3,c:2.0,f:0.8},maintain:{p:1.0,c:2.5,f:0.8}},
-    },
-  };
-  const ratios=macroTable[gender]?.[exerciseType]?.[effectiveGoal]||macroTable.male.gym.maintain;
-  let protein=Math.round(p.kg*ratios.p);
-  let carb=Math.round(p.kg*ratios.c);
-  let fat=Math.round(p.kg*ratios.f);
+  // === TRƯỜNG PHÁI 1.5 ===
+  // P: giống nhau nam nữ (phụ thuộc mục tiêu, không phụ thuộc giới tính)
+  // F: khác nhau nam nữ (nữ cần fat cao hơn cho hormone)
+  // C: phần calo còn lại sau P và F
+  const pTable={bulk:2.0,cut:2.2,maintain:1.8};
+  const fTable={male:{bulk:0.9,cut:0.8,maintain:0.9},female:{bulk:1.0,cut:0.9,maintain:1.0}};
+  // Surplus/deficit cố định theo mục tiêu (ISSN lean bulk)
+  const calAdjustTable={bulk:250,cut:-350,maintain:0};
+  const pRatioVal=pTable[effectiveGoal]||1.8;
+  const fRatioVal=fTable[gender]?.[effectiveGoal]||0.9;
+  let protein=Math.round(p.kg*pRatioVal);
+  let fat=Math.round(p.kg*fRatioVal);
+  // Fat floor: không dưới 0.7g/kg
   if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
-  // Surplus/deficit based on timeline
+  // Surplus/deficit
   const months=p.months||4;
   const totalDiff=Math.abs(diff);
   const perMonth=months>0?Math.round(totalDiff/months*10)/10:0;
   const perWeek=months>0?Math.round(totalDiff/(months*4.33)*10)/10:0;
-  let calAdjust=0;
-  if(effectiveGoal==="bulk"){calAdjust=perWeek<=0.25?200:perWeek<=0.5?350:500;}
-  else if(effectiveGoal==="cut"){calAdjust=perWeek<=0.25?-200:perWeek<=0.5?-400:-600;}
+  const calAdjust=calAdjustTable[effectiveGoal]||0;
   const calTarget=tdee+calAdjust;
-  const calActual=protein*4+carb*4+fat*9;
-  // Adjust carb to match calTarget, but cap at ratio * 1.2
-  const carbAdj=Math.round((calTarget-protein*4-fat*9)/4);
-  const carbMax=Math.round(p.kg*ratios.c*1.2);
-  if(carbAdj>0)carb=Math.min(carbAdj,carbMax);
+  // C = phần calo còn lại
+  let carb=Math.round((calTarget-protein*4-fat*9)/4);
+  if(carb<0)carb=0;
+  // Carb floor: tối thiểu 2g/kg (cần cho tập luyện)
+  const carbFloor=Math.round(p.kg*2);
+  if(carb<carbFloor)carb=carbFloor;
   const carbRest=Math.round(carb*0.75);
+  const calFinal=protein*4+carb*4+fat*9;
   const calRest=protein*4+carbRest*4+fat*9;
   const fiber=25;
   const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
   const safe=effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true;
-  const pRatio=ratios.p+"g/kg";
-  const cRatio=ratios.c+"g/kg";
-  const fRatio=ratios.f+"g/kg";
-  const calFinal=protein*4+carb*4+fat*9;
+  const pRatio=pRatioVal+"g/kg";
+  const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
+  const fRatio=fRatioVal+"g/kg";
   return{tdee,calTarget:calFinal,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
 }
 
