@@ -67,6 +67,12 @@ const MealIcon=({id,size=20})=>{
 // App Logo — uses pinned icon image instead of emoji
 const AppLogo=({size=48,radius})=><img src="/icon-192.png" alt="Meal Tracker" style={{width:size,height:size,borderRadius:radius||size*0.22,objectFit:"cover",flexShrink:0}}/>;
 
+// User Avatar — emoji based on gender
+const UserAvatar=({gender,size=40})=>{
+  const isMale=(gender||"male")==="male";
+  return <div style={{width:size,height:size,borderRadius:"50%",background:isMale?"#DBEAFE":"#FCE7F3",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(size*0.55),flexShrink:0,lineHeight:1}}>{isMale?"🧔":"👩"}</div>;
+};
+
 // All 7 meals with icons and display names
 const ALL_MEALS=[
   {id:"sang",icon:"🍳",name:"Bữa sáng",short:"Sáng"},
@@ -863,7 +869,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
   return <div>
     {/* Greeting Header — mobile only */}
     {mob&&<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-      <AppLogo size={48} radius="50%"/>
+      <UserAvatar gender={profile.gender} size={48}/>
       <div style={{flex:1}}>
         <div style={{fontSize:mob?16:18,fontWeight:900,color:C.t1}}>Chào {displayName}! 👋</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3}}>
@@ -2415,7 +2421,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>👤 Tài khoản</div>
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-          <AppLogo size={48} radius="50%"/>
+          <UserAvatar gender={profile.gender} size={48}/>
           <div style={{flex:1}}>
             <div style={{fontSize:16,fontWeight:900,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
             <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Thành viên Meal Tracker</div>
@@ -3056,7 +3062,8 @@ export default function App(){
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
-        <div style={{fontSize:13,fontWeight:700,color:"#ccc"}}>👤 {user.user_metadata?.username||user.email}</div>
+        <UserAvatar gender={profile?.gender} size={28}/>
+        <div style={{fontSize:13,fontWeight:700,color:"#ccc"}}>{user.user_metadata?.username||user.email}</div>
         <NotiBell appSettings={appSettings} dark/>
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(220,38,38,0.15)",color:"#F87171",border:"1px solid #F87171",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
