@@ -1531,6 +1531,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {mealMode==="tu_nhap"&&<>
       {/* Day type + meals - PC: 1 row, Mobile: 2 rows */}
       {mob?<>
+        <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:14}}/>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
           <div style={{display:"flex",background:C.surface,borderRadius:18,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
             <div onClick={()=>{setDayType("train");setSelectedMeal(mealConfig.train?.[0]||"sang");setAiResult(null);}} style={{padding:"6px 10px",fontSize:11,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
@@ -1538,10 +1539,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
           <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:showMealSettings?"#FEF3C7":"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",display:"flex",alignItems:"center",gap:3}}>⚙️ Quản lý</div>
         </div>
+        <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:12}}/>
         <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14,alignItems:"center"}}>
           {mealNames.map(m=><div key={m.id} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:selectedMeal===m.id?700:600,background:selectedMeal===m.id?"#FEE2E2":"#F9FAFB",color:selectedMeal===m.id?"#991B1B":"#6B7280",border:`1.5px solid ${selectedMeal===m.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{m.l}</div>)}
         </div>
       </>:<>
+        <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:14}}/>
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:14}}>
           <div style={{display:"flex",background:C.surface,borderRadius:20,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
             <div onClick={()=>{setDayType("train");setSelectedMeal(mealConfig.train?.[0]||"sang");setAiResult(null);}} style={{padding:"7px 14px",fontSize:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
