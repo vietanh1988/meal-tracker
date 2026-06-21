@@ -764,17 +764,9 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
   const [showWeightInput,setShowWeightInput]=useState(false);
   const weightInputRef=useRef(null);
   const [weightSaved,setWeightSaved]=useState(false);
-  const [showNoti,setShowNoti]=useState(false);
-  const notiRef=useRef(null);
-  useEffect(()=>{
-    if(!showNoti)return;
-    const handleClick=(e)=>{if(notiRef.current&&!notiRef.current.contains(e.target))setShowNoti(false);};
-    document.addEventListener("mousedown",handleClick);
-    return()=>document.removeEventListener("mousedown",handleClick);
-  },[showNoti]);
-  // Notifications from Supabase
-  const notiList=(()=>{try{return appSettings.notifications?JSON.parse(appSettings.notifications):[];}catch(e){return[];}})();
-  const hasNew=notiList.some(n=>n.isNew);
+  // Dashboard date nav
+  const [dashDate,setDashDate]=useState(new Date());
+  const isToday=dashDate.toDateString()===new Date().toDateString();
 
   // Auto version check — force clear cache when admin updates app_version
   const APP_VERSION="2.6";
@@ -823,26 +815,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
           {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(calRemain>0?<>Còn <span style={{color:C.red,fontWeight:800}}>{calRemain} kcal</span> để đạt mục tiêu</>:<span style={{color:C.green,fontWeight:800}}>Đã đạt mục tiêu! 🎉</span>):<>Mục tiêu <span style={{color:C.red,fontWeight:800}}>{heroCal} kcal</span></>}
         </div>
       </div>
-      <div style={{position:"relative"}} ref={notiRef}>
-        <div onClick={()=>setShowNoti(!showNoti)} style={{width:40,height:40,borderRadius:"50%",background:C.card,border:`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>🔔</div>
-        {hasNew&&<div style={{position:"absolute",top:0,right:0,width:10,height:10,borderRadius:"50%",background:"#DC2626",border:"2px solid #fff"}}/>}
-        {showNoti&&<div style={{position:"absolute",top:48,right:0,width:mob?280:320,background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:50,overflow:"hidden"}}>
-          <div style={{padding:"10px 14px",borderBottom:`1.5px solid ${C.border}`,fontSize:13,fontWeight:900,color:C.t1}}>🔔 Thông báo</div>
-          {notiList.map(n=><div key={n.id} onClick={()=>{
-            caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
-              if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
-              window.location.reload(true);
-            });
-          }} style={{padding:"10px 14px",cursor:"pointer",borderBottom:`0.5px solid ${C.border}`,background:n.isNew?"rgba(220,38,38,0.04)":"transparent"}}>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              {n.isNew&&<div style={{width:6,height:6,borderRadius:"50%",background:"#DC2626",flexShrink:0}}/>}
-              <div style={{fontSize:12,fontWeight:n.isNew?700:600,color:C.t1,lineHeight:1.4}}>{n.text}</div>
-            </div>
-            <div style={{fontSize:10,color:C.t3,marginTop:3}}>{n.date} • Nhấn để cập nhật</div>
-          </div>)}
-          {notiList.length===0&&<div style={{padding:"16px",textAlign:"center",fontSize:12,color:C.t3}}>Không có thông báo mới</div>}
-        </div>}
-      </div>
+      <NotiBell appSettings={appSettings}/>
     </div>}
 
     {/* Hero — White card */}
@@ -891,11 +864,18 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       ))}
     </div>
 
-    {/* Section label: Danh sách thực đơn */}
+    {/* Section label: Danh sách thực đơn + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>🍽️</span>
       <span style={{fontSize:mob?16:18,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+      <div style={{display:"flex",alignItems:"center",gap:4}}>
+        <div onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{width:mob?26:28,height:mob?26:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:8,background:C.card,border:`1.5px solid ${C.border}`,cursor:"pointer",fontSize:11,fontWeight:700,color:C.t3}}>◀</div>
+        <div onClick={()=>setDashDate(new Date())} style={{padding:mob?"4px 10px":"5px 14px",borderRadius:8,background:isToday?C.redBg:C.card,border:`1.5px solid ${isToday?C.red:C.border}`,cursor:"pointer",minWidth:mob?56:70,textAlign:"center"}}>
+          <span style={{fontSize:mob?13:14,fontWeight:800,color:isToday?C.red:C.t1}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
+        </div>
+        <div onClick={()=>{if(!isToday){const d=new Date(dashDate);d.setDate(d.getDate()+1);setDashDate(d);}}} style={{width:mob?26:28,height:mob?26:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:8,background:C.card,border:`1.5px solid ${C.border}`,cursor:"pointer",fontSize:11,fontWeight:700,color:C.t3,opacity:isToday?0.3:1}}>▶</div>
+      </div>
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
@@ -1043,6 +1023,8 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   },[forcedSection,isAdmin]);
   const [dayType,setDayType]=useState("train");
   const [selectedMeal,setSelectedMeal]=useState("sang");
+  const [mealMode,setMealMode]=useState("tu_nhap"); // tu_nhap | lich_tuan | kho_mau
+  const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
   const [mealConfig,setMealConfig]=useState(()=>{
     try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
     catch(e){return {...DEFAULT_MEAL_CONFIG};}
@@ -1528,10 +1510,27 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* MEALS */}
     {section==="meals"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue}}>Nhập bữa ăn</div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:16}}>
-        Nhập thức ăn → nhấn "Tính macro" → trả kết quả → Lưu bữa ăn
+      <div style={{fontSize:17,fontWeight:900,color:C.blue}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
+      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:12}}>
+        {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":"14 template có sẵn — 7 ngày tập + 7 ngày nghỉ"}
       </div>
+      {/* 3 Mode buttons */}
+      <div style={{display:"flex",gap:0,marginBottom:16,background:C.surface,borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
+        {[
+          {id:"tu_nhap",icon:"✏️",label:"Tự nhập"},
+          {id:"lich_tuan",icon:"📅",label:"Lịch tuần"},
+          {id:"kho_mau",icon:"📚",label:"Kho mẫu"},
+        ].map(m=><div key={m.id} onClick={()=>setMealMode(m.id)} style={{
+          flex:1,padding:mob?"8px 6px":"9px 12px",fontSize:mob?12:13,fontWeight:mealMode===m.id?800:600,
+          cursor:"pointer",textAlign:"center",transition:"all 0.15s",
+          background:mealMode===m.id?"#FEE2E2":"transparent",
+          color:mealMode===m.id?"#991B1B":"#9CA3AF",
+          borderRight:m.id!=="kho_mau"?`1px solid ${C.border}`:"none",
+        }}>{m.icon} {m.label}</div>)}
+      </div>
+
+      {/* === MODE: Tự nhập (giữ nguyên flow cũ) === */}
+      {mealMode==="tu_nhap"&&<>
       {/* Day type + meals - PC: 1 row, Mobile: 2 rows */}
       {mob?<>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
@@ -1686,6 +1685,95 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu thành công!</span>
         </div>
       </div>}
+      </>}
+
+      {/* === MODE: Lịch tuần === */}
+      {mealMode==="lich_tuan"&&(()=>{
+        const daysOfWeek=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
+        const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
+        const gymDays=profile.gymDays||[0,2,4,5];
+        return <div>
+          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+            <div style={{display:"grid",gridTemplateColumns:mob?"repeat(7,1fr)":"repeat(7,1fr)",gap:mob?4:6,minWidth:mob?480:"auto"}}>
+              {dayLabels.map((d,i)=>{
+                const isGym=gymDays.includes(i);
+                const dt=isGym?"train":"rest";
+                const dayMeals=getMeals(dt);
+                const hasMeals=dayMeals.some(m=>m.items&&m.items.length>0);
+                const totalCal=dayMeals.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
+                return <div key={i} style={{background:C.card,border:`1.5px solid ${hasMeals?C.green:C.border}`,borderRadius:10,padding:mob?"8px 4px":"10px 8px",textAlign:"center",cursor:"pointer",minHeight:mob?90:110,display:"flex",flexDirection:"column",justifyContent:"space-between"}} onClick={()=>{setMealMode("tu_nhap");setDayType(dt);}}>
+                  <div>
+                    <div style={{fontSize:mob?12:13,fontWeight:800,color:C.t1}}>{d}</div>
+                    <div style={{fontSize:mob?9:10,fontWeight:600,color:isGym?"#991B1B":"#1E40AF",marginTop:2}}>{isGym?"💪 Tập":"😴 Nghỉ"}</div>
+                  </div>
+                  {hasMeals?<div style={{marginTop:6}}>
+                    <div style={{fontSize:mob?14:16,fontWeight:900,color:C.red}}>{totalCal}</div>
+                    <div style={{fontSize:9,fontWeight:600,color:C.t3}}>kcal</div>
+                  </div>:<div style={{marginTop:6}}>
+                    <div style={{fontSize:mob?18:22,opacity:0.3}}>+</div>
+                    <div style={{fontSize:9,fontWeight:600,color:C.t3}}>Thêm</div>
+                  </div>}
+                </div>;
+              })}
+            </div>
+          </div>
+          <div style={{marginTop:14,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
+            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn vào ngày bất kỳ để nhập/sửa bữa ăn. Lịch tập theo cài đặt trong tab Hồ sơ → Lịch tập.</span>
+          </div>
+          <div style={{marginTop:12,padding:"12px 16px",background:C.blueBg,borderRadius:10,border:"1.5px solid #3B82F6"}}>
+            <span style={{fontSize:13,fontWeight:700,color:"#1E40AF",lineHeight:1.6}}>🚀 Tính năng "Lưu mẫu tuần" & "Áp dụng mẫu" sẽ kết nối Supabase trong bản cập nhật tiếp theo.</span>
+          </div>
+        </div>;
+      })()}
+
+      {/* === MODE: Kho mẫu === */}
+      {mealMode==="kho_mau"&&(()=>{
+        const templates=[
+          {id:1,type:"train",name:"Ngày tập A — Ngực/Vai",cal:2450,p:165,c:280,f:75,meals:"Yến mạch + Whey | Cơm gà + Rau | Khoai lang + Ức gà"},
+          {id:2,type:"train",name:"Ngày tập B — Lưng/Tay",cal:2500,p:170,c:290,f:72,meals:"Bánh mì trứng + Sữa | Cơm bò xào | Cá hồi + Rau"},
+          {id:3,type:"train",name:"Ngày tập C — Chân/Bụng",cal:2550,p:168,c:300,f:74,meals:"Phở bò | Cơm tôm + Đậu | Bún chả cá"},
+          {id:4,type:"train",name:"Ngày tập D — Push",cal:2480,p:172,c:275,f:73,meals:"Cháo yến mạch | Cơm sườn + Trứng | Gà nướng + Salad"},
+          {id:5,type:"train",name:"Ngày tập E — Pull",cal:2520,p:175,c:285,f:71,meals:"Sandwich ức gà | Cơm cá kho | Mì ý thịt bò"},
+          {id:6,type:"train",name:"Ngày tập F — Full Body",cal:2600,p:180,c:295,f:76,meals:"Granola + Sữa chua | Bún bò | Cơm thịt kho trứng"},
+          {id:7,type:"train",name:"Ngày tập G — Cường độ cao",cal:2700,p:185,c:310,f:78,meals:"Bánh cuốn + Trứng | Cơm gà xối mỡ | Lẩu hải sản"},
+          {id:8,type:"rest",name:"Nghỉ ngơi A — Nhẹ nhàng",cal:1950,p:145,c:210,f:68,meals:"Sữa chua Granola | Cơm cá + Rau | Soup gà"},
+          {id:9,type:"rest",name:"Nghỉ ngơi B — Recovery",cal:2000,p:150,c:220,f:65,meals:"Trứng + Toast | Phở gà | Salad cá ngừ"},
+          {id:10,type:"rest",name:"Nghỉ ngơi C — Active rest",cal:2050,p:148,c:225,f:70,meals:"Cháo thịt bằm | Cơm trứng chiên | Canh chua cá"},
+          {id:11,type:"rest",name:"Nghỉ ngơi D — Low carb",cal:1900,p:155,c:180,f:75,meals:"Trứng + Bơ | Salad ức gà | Cá hấp + Rau"},
+          {id:12,type:"rest",name:"Nghỉ ngơi E — Cân bằng",cal:2020,p:152,c:215,f:72,meals:"Smoothie chuối | Bún riêu | Cơm thịt luộc"},
+          {id:13,type:"rest",name:"Nghỉ ngơi F — Detox",cal:1850,p:140,c:200,f:65,meals:"Sinh tố rau | Miến gà | Rau trộn + Đậu hũ"},
+          {id:14,type:"rest",name:"Nghỉ ngơi G — Cheat meal",cal:2300,p:135,c:280,f:80,meals:"Bánh mì thịt | Bún chả | Pizza + Salad"},
+        ];
+        const filtered=tplFilter==="all"?templates:templates.filter(t=>t.type===tplFilter);
+        return <div>
+          <div style={{display:"flex",gap:6,marginBottom:14}}>
+            {[{id:"all",l:"Tất cả"},{id:"train",l:"💪 Ngày tập"},{id:"rest",l:"😴 Ngày nghỉ"}].map(f=>
+              <div key={f.id} onClick={()=>setTplFilter(f.id)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:tplFilter===f.id?700:600,background:tplFilter===f.id?"#FEE2E2":"#F9FAFB",color:tplFilter===f.id?"#991B1B":"#6B7280",border:`1.5px solid ${tplFilter===f.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{f.l}</div>
+            )}
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {filtered.map(t=><div key={t.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,padding:mob?"12px":"14px 16px",cursor:"pointer"}} onClick={()=>{setDayType(t.type);setMealMode("tu_nhap");}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:12,fontWeight:700,padding:"2px 8px",borderRadius:12,background:t.type==="train"?"#FEE2E2":"#DBEAFE",color:t.type==="train"?"#991B1B":"#1E40AF"}}>{t.type==="train"?"💪 Tập":"😴 Nghỉ"}</span>
+                  <span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>{t.name}</span>
+                </div>
+                <span style={{fontSize:16,fontWeight:900,color:C.red}}>{t.cal}</span>
+              </div>
+              <div style={{display:"flex",gap:mob?8:12,fontSize:12,fontWeight:600,color:C.t3,marginBottom:6}}>
+                <span style={{color:C.protein}}>P: {t.p}g</span>
+                <span style={{color:C.carb}}>C: {t.c}g</span>
+                <span style={{color:C.t1}}>F: {t.f}g</span>
+                <span style={{color:C.t3}}>{t.cal} kcal</span>
+              </div>
+              <div style={{fontSize:11,fontWeight:600,color:C.t3,lineHeight:1.5}}>🍽️ {t.meals}</div>
+            </div>)}
+          </div>
+          <div style={{marginTop:14,padding:"12px 16px",background:C.blueBg,borderRadius:10,border:"1.5px solid #3B82F6"}}>
+            <span style={{fontSize:13,fontWeight:700,color:"#1E40AF",lineHeight:1.6}}>🚀 Tính năng "Áp dụng template" & "Tạo template tuỳ chỉnh" sẽ kết nối Supabase trong bản cập nhật tiếp theo.</span>
+          </div>
+        </div>;
+      })()}
     </div>}
 
     {/* PROFILE */}
@@ -2541,6 +2629,40 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   </div>;
 }
 
+// === Notification Bell — shared by PC header + Mobile greeting ===
+function NotiBell({appSettings,dark}){
+  const [show,setShow]=useState(false);
+  const ref=useRef(null);
+  useEffect(()=>{
+    if(!show)return;
+    const h=(e)=>{if(ref.current&&!ref.current.contains(e.target))setShow(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[show]);
+  const list=(()=>{try{return appSettings.notifications?JSON.parse(appSettings.notifications):[];}catch(e){return[];}})();
+  const hasNew=list.some(n=>n.isNew);
+  return <div style={{position:"relative"}} ref={ref}>
+    <div onClick={()=>setShow(!show)} style={{width:dark?36:40,height:dark?36:40,borderRadius:"50%",background:dark?"rgba(255,255,255,0.1)":C.card,border:dark?"1px solid rgba(255,255,255,0.2)":`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:dark?16:18,cursor:"pointer",boxShadow:dark?"none":"0 1px 4px rgba(0,0,0,0.06)"}}>🔔</div>
+    {hasNew&&<div style={{position:"absolute",top:0,right:0,width:10,height:10,borderRadius:"50%",background:"#DC2626",border:dark?"2px solid #111":"2px solid #fff"}}/>}
+    {show&&<div style={{position:"absolute",top:dark?44:48,right:0,width:320,background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",zIndex:50,overflow:"hidden"}}>
+      <div style={{padding:"10px 14px",borderBottom:`1.5px solid ${C.border}`,fontSize:13,fontWeight:900,color:C.t1}}>🔔 Thông báo</div>
+      {list.map(n=><div key={n.id} onClick={()=>{
+        caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
+          if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
+          window.location.reload(true);
+        });
+      }} style={{padding:"10px 14px",cursor:"pointer",borderBottom:`0.5px solid ${C.border}`,background:n.isNew?"rgba(220,38,38,0.04)":"transparent"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {n.isNew&&<div style={{width:6,height:6,borderRadius:"50%",background:"#DC2626",flexShrink:0}}/>}
+          <div style={{fontSize:12,fontWeight:n.isNew?700:600,color:C.t1,lineHeight:1.4}}>{n.text}</div>
+        </div>
+        <div style={{fontSize:10,color:C.t3,marginTop:3}}>{n.date} • Nhấn để cập nhật</div>
+      </div>)}
+      {list.length===0&&<div style={{padding:"16px",textAlign:"center",fontSize:12,color:C.t3}}>Không có thông báo mới</div>}
+    </div>}
+  </div>;
+}
+
 function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
   const gender=p.gender||"male";
   const exerciseType=p.exerciseType||"gym";
@@ -2640,6 +2762,7 @@ export default function App(){
       </div>
       <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
         <div style={{fontSize:13,fontWeight:700,color:"#ccc"}}>👤 {user.user_metadata?.username||user.email}</div>
+        <NotiBell appSettings={appSettings} dark/>
         <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(220,38,38,0.15)",color:"#F87171",border:"1px solid #F87171",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>}
