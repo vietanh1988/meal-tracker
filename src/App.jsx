@@ -1980,9 +1980,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                   }
                 }}>
                   <div style={{display:"flex",alignItems:"center"}}>
-                    <div style={{width:36,marginRight:10}}>
-                      <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{d}</div>
-                      <div style={{fontSize:11,fontWeight:600,color:isGym?"#991B1B":"#1E40AF"}}>{isGym?"Tập":"Nghỉ"}</div>
+                    <div style={{width:42,padding:"6px 0",textAlign:"center",background:"#1E3A5F",borderRadius:8,marginRight:12,flexShrink:0}}>
+                      <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>{d}</div>
+                      <div style={{fontSize:10,fontWeight:600,color:isGym?"#FCA5A5":"#93C5FD"}}>{isGym?"Tập":"Nghỉ"}</div>
                     </div>
                     <div style={{width:1,height:28,background:C.border,marginRight:12}}/>
                     <div style={{flex:1}}>
