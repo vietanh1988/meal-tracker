@@ -549,7 +549,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
   </div>;
 }
 
-function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
+function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSettings,mob}){
   const [period,setPeriod]=useState("month"); // "week" or "month"
   const [offset,setOffset]=useState(0); // 0=current, -1=prev, etc
   const [data,setData]=useState(null);
@@ -571,23 +571,44 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
     }
   },[period,offset]);
 
-  // Load data
+  // Load data — try daily_logs first, fallback to meal_logs
   useEffect(()=>{
     (async()=>{
       setLoading(true);
       const range=getDateRange();
-      const logs=await getMealHistory(range.start,range.end);
-      // Group by date
       const byDate={};
-      logs.forEach(l=>{
-        if(!byDate[l.log_date])byDate[l.log_date]={cal:0,p:0,c:0,f:0,fiber:0,items:[],meals:[]};
-        byDate[l.log_date].cal+=(l.total_cal||0);
-        byDate[l.log_date].p+=(l.total_protein||0);
-        byDate[l.log_date].c+=(l.total_carb||0);
-        byDate[l.log_date].f+=(l.total_fat||0);
-        byDate[l.log_date].meals.push(l.meal_id);
-        (l.items||[]).forEach(it=>byDate[l.log_date].items.push(it));
-      });
+
+      // === Source 1: daily_logs (new, preferred) ===
+      if(getDailyLogs){
+        const dailyLogs=await getDailyLogs(range.start,range.end);
+        if(dailyLogs&&dailyLogs.length>0){
+          dailyLogs.forEach(d=>{
+            byDate[d.log_date]={
+              cal:d.total_cal||0,
+              p:Number(d.total_protein)||0,
+              c:Number(d.total_carb)||0,
+              f:Number(d.total_fat)||0,
+              fiber:Number(d.total_fiber)||0,
+              items:(d.meals||[]).flatMap(m=>(m.items||[])),
+              meals:(d.meals||[]).map(m=>m.meal_id),
+            };
+          });
+        }
+      }
+
+      // === Source 2: meal_logs fallback (old data) ===
+      if(Object.keys(byDate).length===0&&getMealHistory){
+        const logs=await getMealHistory(range.start,range.end);
+        logs.forEach(l=>{
+          if(!byDate[l.log_date])byDate[l.log_date]={cal:0,p:0,c:0,f:0,fiber:0,items:[],meals:[]};
+          byDate[l.log_date].cal+=(l.total_cal||0);
+          byDate[l.log_date].p+=(l.total_protein||0);
+          byDate[l.log_date].c+=(l.total_carb||0);
+          byDate[l.log_date].f+=(l.total_fat||0);
+          byDate[l.log_date].meals.push(l.meal_id);
+          (l.items||[]).forEach(it=>byDate[l.log_date].items.push(it));
+        });
+      }
       const dates=Object.keys(byDate).sort();
       const daysLogged=dates.length;
       const totalDays=Math.ceil((new Date(range.end)-new Date(range.start))/(86400000))+1;
@@ -629,7 +650,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,appSettings,mob}){
       setData({range,byDate,dates,daysLogged,totalDays,avgCal,avgP,avgC,avgF,adhereDays,streak,topFoods,topProtein,weeks,target,startKg,curKg,goalKg,wPct});
       setLoading(false);
     })();
-  },[getMealHistory,getDateRange,weightLog,profile,macro]);
+  },[getMealHistory,getDailyLogs,getDateRange,weightLog,profile,macro]);
 
   const range=getDateRange();
 
@@ -2781,7 +2802,7 @@ export default function App(){
       {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>}
       {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile"/>}
       {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate}/>}
-      {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>}
+      {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
       {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user}/>}
 
       {/* Bottom nav — iOS style */}
@@ -2807,7 +2828,7 @@ export default function App(){
           }}>{t.l}</button>
         )}
       </div>
-      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:tab==="about"?<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate}/>}
+      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>:tab==="about"?<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate}/>}
     </>}
     </div>
   </div>;

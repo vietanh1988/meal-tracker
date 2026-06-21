@@ -125,8 +125,37 @@ export function useUserData(userId) {
         if (error) console.error("Insert meal error:", error);
         else console.log("✅ Meal saved:", mealId, dayType);
       }
+
+      // === Auto-save to daily_logs ===
+      const today = new Date().toISOString().slice(0, 10);
+      // Build full day snapshot: current meals + this update applied
+      const currentMeals = meals[dayType] || defaultStructure[dayType];
+      const updatedMeals = currentMeals.map(m => m.id === mealId ? { ...m, items } : m);
+      const mealsWithItems = updatedMeals
+        .filter(m => m.items && m.items.length > 0)
+        .map(m => ({ meal_id: m.id, meal_name: m.name, items: m.items }));
+
+      if (mealsWithItems.length > 0) {
+        const dayCal = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.cal || 0), 0), 0);
+        const dayP = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
+        const dayC = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
+        const dayF = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
+        const dayFiber = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
+
+        const { error: dlErr } = await supabase.from("daily_logs").upsert({
+          user_id: userId, log_date: today, day_type: dayType,
+          meals: mealsWithItems, total_cal: Math.round(dayCal),
+          total_protein: Math.round(dayP * 10) / 10,
+          total_carb: Math.round(dayC * 10) / 10,
+          total_fat: Math.round(dayF * 10) / 10,
+          total_fiber: Math.round(dayFiber * 10) / 10,
+          is_complete: false,
+        }, { onConflict: "user_id,log_date" });
+        if (dlErr) console.error("Daily log auto-save error:", dlErr);
+        else console.log("✅ Daily log auto-saved:", today, mealsWithItems.length, "bữa");
+      }
     } catch (e) { console.error("Meal save error:", e); }
-  }, [userId, updateMealsState]);
+  }, [userId, updateMealsState, meals]);
 
   // Update food cache in state with pre-normalized entries
   const updateFoodCacheState = useCallback((normalizedEntries) => {
