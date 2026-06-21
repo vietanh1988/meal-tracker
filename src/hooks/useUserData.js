@@ -380,16 +380,54 @@ export function useUserData(userId) {
     const dayType = template.day_type || "train";
     const tplMeals = template.meals || [];
 
-    // Save each meal to meal_logs + update local state
+    // Step 1: Save each meal to meal_logs + update local state (skip daily_logs inside)
     for (const m of tplMeals) {
       const mealId = m.meal_id;
       const items = m.items || [];
       if (mealId && items.length > 0) {
-        await saveMealToCloud(mealId, dayType, items);
+        // Update local state
+        updateMealsState(mealId, dayType, items);
+        // Save to meal_logs only
+        try {
+          const totalCal = items.reduce((s, i) => s + (i.cal || 0), 0);
+          const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
+          const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
+          const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
+          const { data: existing } = await supabase.from("meal_logs")
+            .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType)
+            .maybeSingle();
+          const payload = { items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
+          if (existing) {
+            await supabase.from("meal_logs").update(payload).eq("id", existing.id);
+          } else {
+            await supabase.from("meal_logs").insert({ user_id: userId, meal_id: mealId, day_type: dayType, log_date: today, ...payload });
+          }
+        } catch (e) { console.error("Apply meal_logs error:", e); }
       }
     }
-    console.log("✅ Template applied:", template.name || "unnamed", "→", tplMeals.length, "bữa saved for", today);
-  }, [userId, saveMealToCloud]);
+
+    // Step 2: Save daily_logs ONCE with FULL template data
+    try {
+      const mealsForLog = tplMeals.filter(m => m.items && m.items.length > 0);
+      const dayCal = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.cal || 0), 0), 0);
+      const dayP = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
+      const dayC = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
+      const dayF = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
+      const dayFiber = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
+
+      const { error } = await supabase.from("daily_logs").upsert({
+        user_id: userId, log_date: today, day_type: dayType,
+        meals: mealsForLog, total_cal: Math.round(dayCal),
+        total_protein: Math.round(dayP * 10) / 10,
+        total_carb: Math.round(dayC * 10) / 10,
+        total_fat: Math.round(dayF * 10) / 10,
+        total_fiber: Math.round(dayFiber * 10) / 10,
+        is_complete: mealsForLog.length >= 3,
+      }, { onConflict: "user_id,log_date" });
+      if (error) console.error("Apply daily_logs error:", error);
+      else console.log("✅ Template applied:", template.name || "unnamed", "→", mealsForLog.length, "bữa →", Math.round(dayCal), "cal");
+    } catch (e) { console.error("Apply daily_logs error:", e); }
+  }, [userId, updateMealsState]);
 
   return {
     loaded, meals, getMeals, getMealHistory, foodCache,
