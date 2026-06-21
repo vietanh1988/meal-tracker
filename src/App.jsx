@@ -928,8 +928,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Section label: Danh sách thực đơn + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>🍽️</span>
-      <span style={{fontSize:mob?16:18,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
-      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+      <span style={{fontSize:mob?16:18,fontWeight:800,color:C.blue,letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <div style={{flex:1,height:1.5,background:C.border}}/>
       <div style={{display:"flex",alignItems:"center",gap:2}}>
         <span onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700}}>‹</span>
         <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:800,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
