@@ -1613,8 +1613,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
         const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#DC2626","post":"#16A34A","toi":"#7C3AED"};
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
-        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?16:20,marginBottom:12}}>
-          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:12,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?12:16,marginBottom:10}}>
+          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
             <span/>
             <span style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
@@ -1799,8 +1799,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
         const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#DC2626","post":"#16A34A","toi":"#7C3AED"};
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
-        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?16:20,marginBottom:12}}>
-          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:12,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?12:16,marginBottom:10}}>
+          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
             <span/>
             <span style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
