@@ -1289,12 +1289,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
   return <div>
     {!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+      {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
       )}
     </div>}
     {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
-      {[...(isAdmin?[{id:"ai",l:"🤖 AI"},{id:"admin",l:"🔧 Quản trị"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"about",l:"ℹ️ Giới thiệu"},{id:"account",l:"👤 Tài khoản"}].map(s=>
+      {[...(isAdmin?[{id:"ai",l:"🤖 AI"},{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"about",l:"ℹ️ Giới thiệu"},{id:"account",l:"👤 Tài khoản"}].map(s=>
         <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0}}>{s.l}</button>
       )}
     </div>}
@@ -1540,57 +1540,57 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Version updated! Users sẽ tự reload.</span>
         </div>
       </div>
+    </div>}
 
-      {/* Template mẫu management */}
-      <div style={{borderTop:`2px solid ${C.border}`,paddingTop:16,marginTop:20}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.t1,marginBottom:4}}>📚 Quản lý Template mẫu</div>
-        <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:14}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
+    {/* TEMPLATES (admin only — separate pill) */}
+    {section==="templates"&&isAdmin&&<div style={card}>
+      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>📚 Quản lý Template mẫu</div>
+      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
 
-        <div style={{fontSize:13,fontWeight:800,color:C.t2,marginBottom:8}}>Tạo mới từ bữa ăn hiện tại:</div>
-        <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:10,lineHeight:1.5}}>Vào tab Bữa ăn → nhập đủ bữa cho 1 ngày → quay lại đây → nhấn nút bên dưới để lưu thành template mẫu.</div>
+      <div style={{fontSize:13,fontWeight:800,color:C.t2,marginBottom:8}}>Tạo mới từ bữa ăn hiện tại:</div>
+      <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:10,lineHeight:1.5}}>Vào tab Bữa ăn → nhập đủ bữa cho 1 ngày → quay lại đây → nhấn nút bên dưới để lưu thành template mẫu.</div>
 
-        <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-          <input id="tpl-name" type="text" placeholder="VD: Ngày tập A — Ngực/Vai" style={{...inp,flex:1,minWidth:200}}/>
-          <select id="tpl-type" style={{...inp,width:mob?100:120}}>
-            <option value="train">💪 Ngày tập</option>
-            <option value="rest">😴 Ngày nghỉ</option>
-          </select>
-        </div>
-        <button onClick={async()=>{
-          const name=document.getElementById("tpl-name")?.value?.trim();
-          const tplType=document.getElementById("tpl-type")?.value||"train";
-          if(!name){alert("Nhập tên template");return;}
-          const currentMeals=getMeals(tplType);
-          const mealsWithItems=currentMeals.filter(m=>m.items&&m.items.length>0).map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
-          if(mealsWithItems.length===0){alert("Chưa có bữa ăn nào. Vào tab Bữa ăn nhập trước.");return;}
-          const totalCal=mealsWithItems.reduce((s,m)=>s+(m.items||[]).reduce((a,i)=>a+(i.cal||0),0),0);
-          if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsWithItems,Math.round(totalCal));
-          document.getElementById("tpl-name").value="";
-          const el=document.getElementById("tpl-created");
-          if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...redBtn,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>📚 Lưu thành Template mẫu ({(getMeals(dayType).filter(m=>m.items&&m.items.length>0)).length} bữa)</button>
-        <div id="tpl-created" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu.</span>
-        </div>
-
-        {/* Existing templates */}
-        {(defaultTemplates||[]).length>0&&<div style={{marginTop:16}}>
-          <div style={{fontSize:13,fontWeight:800,color:C.t2,marginBottom:8}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
-          {(defaultTemplates||[]).map(t=>{
-            const mealCount=(t.meals||[]).length;
-            return <div key={t.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:C.surface,borderRadius:8,marginBottom:4,border:`1px solid ${C.border}`}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{t.name||"Template"} <span style={{fontSize:11,fontWeight:600,padding:"2px 6px",borderRadius:8,background:t.day_type==="train"?"#FEE2E2":"#DBEAFE",color:t.day_type==="train"?"#991B1B":"#1E40AF"}}>{t.day_type==="train"?"Tập":"Nghỉ"}</span></div>
-                <div style={{fontSize:11,color:C.t3,marginTop:2}}>{mealCount} bữa • {t.total_cal||0} kcal</div>
-              </div>
-              <button onClick={async()=>{
-                if(!confirm("Xóa template \""+t.name+"\"?"))return;
-                if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
-              }} style={{fontSize:11,color:C.red,background:"none",border:"none",cursor:"pointer",fontWeight:700,padding:"4px 8px"}}>✕ Xóa</button>
-            </div>;
-          })}
-        </div>}
+      <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+        <input id="tpl-name" type="text" placeholder="VD: Ngày tập A — Ngực/Vai" style={{...inp,flex:1,minWidth:200}}/>
+        <select id="tpl-type" style={{...inp,width:mob?100:120}}>
+          <option value="train">💪 Ngày tập</option>
+          <option value="rest">😴 Ngày nghỉ</option>
+        </select>
       </div>
+      <button onClick={async()=>{
+        const name=document.getElementById("tpl-name")?.value?.trim();
+        const tplType=document.getElementById("tpl-type")?.value||"train";
+        if(!name){alert("Nhập tên template");return;}
+        const currentMeals=getMeals(tplType);
+        const mealsWithItems=currentMeals.filter(m=>m.items&&m.items.length>0).map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
+        if(mealsWithItems.length===0){alert("Chưa có bữa ăn nào. Vào tab Bữa ăn nhập trước.");return;}
+        const totalCal=mealsWithItems.reduce((s,m)=>s+(m.items||[]).reduce((a,i)=>a+(i.cal||0),0),0);
+        if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsWithItems,Math.round(totalCal));
+        document.getElementById("tpl-name").value="";
+        const el=document.getElementById("tpl-created");
+        if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+      }} style={{...redBtn,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>📚 Lưu thành Template mẫu ({(getMeals(dayType).filter(m=>m.items&&m.items.length>0)).length} bữa)</button>
+      <div id="tpl-created" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+        <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu.</span>
+      </div>
+
+      {/* Existing templates */}
+      {(defaultTemplates||[]).length>0&&<div style={{marginTop:20,borderTop:`2px solid ${C.border}`,paddingTop:16}}>
+        <div style={{fontSize:15,fontWeight:900,color:C.t1,marginBottom:8}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
+        {(defaultTemplates||[]).map(t=>{
+          const mealCount=(t.meals||[]).length;
+          return <div key={t.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:C.surface,borderRadius:8,marginBottom:4,border:`1px solid ${C.border}`}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{t.name||"Template"} <span style={{fontSize:11,fontWeight:600,padding:"2px 6px",borderRadius:8,background:t.day_type==="train"?"#FEE2E2":"#DBEAFE",color:t.day_type==="train"?"#991B1B":"#1E40AF"}}>{t.day_type==="train"?"Tập":"Nghỉ"}</span></div>
+              <div style={{fontSize:11,color:C.t3,marginTop:2}}>{mealCount} bữa • {t.total_cal||0} kcal</div>
+            </div>
+            <button onClick={async()=>{
+              if(!confirm("Xóa template \""+t.name+"\"?"))return;
+              if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
+            }} style={{fontSize:11,color:C.red,background:"none",border:"none",cursor:"pointer",fontWeight:700,padding:"4px 8px"}}>✕ Xóa</button>
+          </div>;
+        })}
+      </div>}
     </div>}
 
     {/* MEALS */}
