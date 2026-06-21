@@ -1071,7 +1071,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState(forcedSection==="settings"?(isAdmin?"ai":"weight"):(forcedSection==="profile"?"profile":(forcedSection||"meals")));
   useEffect(()=>{
@@ -1097,9 +1097,9 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
     catch(e){return {...DEFAULT_MEAL_CONFIG};}
   });
-  // Load existing meals into allFoodItems on mount/dayType change
+  // Load existing meals into allFoodItems on mount/dayType change (only for tu_nhap)
   useEffect(()=>{
-    if(!getMeals)return;
+    if(!getMeals||section==="templates")return;
     const currentMeals=getMeals(dayType);
     const init={};
     const visibleIds=mealConfig[dayType]||[];
@@ -1112,7 +1112,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
       }
     });
     setAllFoodItems(init);
-  },[dayType,getMeals,mealConfig]);
+  },[dayType,getMeals,mealConfig,section]);
   const [showMealSettings,setShowMealSettings]=useState(false);
   const [foodItems,setFoodItems]=useState(()=>{
     const meals=getMeals("train");
@@ -1338,7 +1338,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
   return <div>
     {!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
       {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
-        <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>setSection(s.id)}>{s.l}</Pill>
+        <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
       )}
     </div>}
     {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
@@ -1597,8 +1597,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* Template name + type */}
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-        <input id="tpl-name" type="text" placeholder="VD: Ngày tập A — Ngực/Vai" style={{...inp,flex:1,minWidth:200}}/>
-        <select id="tpl-type" style={{...inp,width:mob?110:130}} onChange={e=>{setDayType(e.target.value);}}>
+        <input id="tpl-name" type="text" placeholder="VD: Ngày tập A — Ngực/Vai" style={{...inp,flex:1,minWidth:mob?120:200,fontSize:13,height:38}}/>
+        <select id="tpl-type" style={{...inp,width:mob?120:140,fontSize:13,height:38}} onChange={e=>{setDayType(e.target.value);}}>
           <option value="train">💪 Ngày tập</option>
           <option value="rest">😴 Ngày nghỉ</option>
         </select>
@@ -1748,7 +1748,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           {id:"tu_nhap",icon:"✏️",label:"Tự nhập"},
           {id:"lich_tuan",icon:"📅",label:"Lịch tuần"},
           {id:"kho_mau",icon:"📚",label:"Kho mẫu"},
-        ].map(m=><div key={m.id} onClick={()=>setMealMode(m.id)} style={{
+        ].map(m=><div key={m.id} onClick={()=>{setMealMode(m.id);if(m.id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{
           flex:1,padding:mob?"8px 6px":"9px 12px",fontSize:mob?12:13,fontWeight:mealMode===m.id?800:600,
           cursor:"pointer",textAlign:"center",transition:"all 0.15s",
           background:mealMode===m.id?"#FEE2E2":"transparent",
@@ -2019,9 +2019,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* === MODE: Kho mẫu === */}
       {mealMode==="kho_mau"&&(()=>{
         const filtered=tplFilter==="all"?(defaultTemplates||[]):(defaultTemplates||[]).filter(t=>t.day_type===tplFilter);
+        const allCount=(defaultTemplates||[]).length;
+        const trainCount=(defaultTemplates||[]).filter(t=>t.day_type==="train").length;
+        const restCount=(defaultTemplates||[]).filter(t=>t.day_type==="rest").length;
         return <div>
           <div style={{display:"flex",gap:6,marginBottom:14}}>
-            {[{id:"all",l:"Tất cả"},{id:"train",l:"💪 Ngày tập"},{id:"rest",l:"😴 Ngày nghỉ"}].map(f=>
+            {[{id:"all",l:`Tất cả (${allCount})`},{id:"train",l:`💪 Ngày tập (${trainCount})`},{id:"rest",l:`😴 Ngày nghỉ (${restCount})`}].map(f=>
               <div key={f.id} onClick={()=>setTplFilter(f.id)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:tplFilter===f.id?700:600,background:tplFilter===f.id?"#FEE2E2":"#F9FAFB",color:tplFilter===f.id?"#991B1B":"#6B7280",border:`1.5px solid ${tplFilter===f.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{f.l}</div>
             )}
           </div>
@@ -3040,7 +3043,7 @@ export default function App(){
   const [tab,setTab]=useState("dashboard");
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
-  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
+  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||defaultProfile);
   const mob=useIsMobile();
@@ -3078,11 +3081,11 @@ export default function App(){
     <div style={{paddingTop:mob?"calc(env(safe-area-inset-top, 8px) + 8px)":"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>
     {mob?<>
       {/* MOBILE: separate views per tab */}
-      {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate}/>}
-      {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate}/>}
-      {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate}/>}
+      {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+      {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+      {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
       {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
-      {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate}/>}
+      {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
 
       {/* Bottom nav — iOS style */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
@@ -3107,7 +3110,7 @@ export default function App(){
           }}>{t.l}</button>
         )}
       </div>
-      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>:tab==="about"?<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate}/>}
+      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>:tab==="about"?<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
     </>}
     </div>
   </div>;

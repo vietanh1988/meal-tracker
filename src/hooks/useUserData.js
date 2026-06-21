@@ -432,13 +432,23 @@ export function useUserData(userId) {
     } catch (e) { console.error("Apply daily_logs error:", e); }
   }, [userId, updateMealsState]);
 
+  // Refresh default templates (call when user opens Kho mẫu)
+  const refreshDefaultTemplates = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from("weekly_templates")
+        .select("*").eq("is_default", true).order("created_at");
+      if (error) { console.error("Refresh default templates error:", error); return; }
+      if (data) setDefaultTemplates(data);
+    } catch (e) { console.error("Refresh error:", e); }
+  }, []);
+
   return {
     loaded, meals, getMeals, getMealHistory, foodCache,
     saveMealToCloud, saveFoodCache, deleteFoodCache,
     // Weekly templates (user's own)
     weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, getWeeklyTemplate,
     // Default templates (admin-created)
-    defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate,
+    defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, refreshDefaultTemplates,
     // Apply template
     applyTemplate,
     // Daily logs
