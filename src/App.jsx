@@ -1087,8 +1087,13 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [showSaveTpl,setShowSaveTpl]=useState(false); // popup save to weekly template
   // Unified food items per meal (for all-in-one input)
   const [allFoodItems,setAllFoodItems]=useState({});
+  const [mealConfig,setMealConfig]=useState(()=>{
+    try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
+    catch(e){return {...DEFAULT_MEAL_CONFIG};}
+  });
   // Load existing meals into allFoodItems on mount/dayType change
   useEffect(()=>{
+    if(!getMeals)return;
     const currentMeals=getMeals(dayType);
     const init={};
     const visibleIds=mealConfig[dayType]||[];
@@ -1102,10 +1107,6 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     });
     setAllFoodItems(init);
   },[dayType,getMeals,mealConfig]);
-  const [mealConfig,setMealConfig]=useState(()=>{
-    try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
-    catch(e){return {...DEFAULT_MEAL_CONFIG};}
-  });
   const [showMealSettings,setShowMealSettings]=useState(false);
   const [foodItems,setFoodItems]=useState(()=>{
     const meals=getMeals("train");
