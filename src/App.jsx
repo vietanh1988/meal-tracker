@@ -1598,7 +1598,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* Template name + type */}
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
         <input id="tpl-name" type="text" placeholder="VD: Ngày tập A — Ngực/Vai" style={{...inp,flex:1,minWidth:mob?120:200,fontSize:13,height:38}}/>
-        <select id="tpl-type" style={{...inp,width:mob?120:140,fontSize:13,height:38}} onChange={e=>{setDayType(e.target.value);}}>
+        <select id="tpl-type" style={{...inp,width:mob?120:140,fontSize:13,height:38,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 10px center",paddingRight:"28px"}} onChange={e=>{setDayType(e.target.value);}}>
           <option value="train">💪 Ngày tập</option>
           <option value="rest">😴 Ngày nghỉ</option>
         </select>
