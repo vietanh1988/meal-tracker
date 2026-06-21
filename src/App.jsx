@@ -632,14 +632,28 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
       }));
       const topFoods=Object.entries(foodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
       const topProtein=Object.entries(foodProtein).sort((a,b)=>b[1]-a[1]).slice(0,5);
-      // Weekly aggregation for charts
-      const weeks=[];let weekStart=new Date(range.start);
-      while(weekStart<=new Date(range.end)){
-        const we=new Date(weekStart);we.setDate(we.getDate()+6);
-        const wDates=dates.filter(d=>d>=weekStart.toISOString().slice(0,10)&&d<=we.toISOString().slice(0,10));
-        const wCal=wDates.length>0?Math.round(wDates.reduce((s,d)=>s+byDate[d].cal,0)/wDates.length):0;
-        weeks.push({label:`T${weeks.length+1}`,cal:wCal,days:wDates.length});
-        weekStart.setDate(weekStart.getDate()+7);
+      // Chart aggregation: WEEK → 7 daily bars, MONTH → weekly bars
+      const weeks=[];
+      if(period==="week"){
+        // 7 bars = 7 ngày trong tuần
+        const dayNames=["CN","T2","T3","T4","T5","T6","T7"];
+        const startD=new Date(range.start);
+        for(let i=0;i<7;i++){
+          const d=new Date(startD);d.setDate(startD.getDate()+i);
+          const ds=d.toISOString().slice(0,10);
+          const dayIdx=d.getDay(); // 0=CN,1=T2...
+          weeks.push({label:dayNames[dayIdx],cal:byDate[ds]?byDate[ds].cal:0,days:byDate[ds]?1:0,date:ds});
+        }
+      }else{
+        // Gộp theo tuần khi xem tháng
+        let weekStart=new Date(range.start);
+        while(weekStart<=new Date(range.end)){
+          const we=new Date(weekStart);we.setDate(we.getDate()+6);
+          const wDates=dates.filter(d=>d>=weekStart.toISOString().slice(0,10)&&d<=we.toISOString().slice(0,10));
+          const wCal=wDates.length>0?Math.round(wDates.reduce((s,d)=>s+byDate[d].cal,0)/wDates.length):0;
+          weeks.push({label:`T${weeks.length+1}`,cal:wCal,days:wDates.length});
+          weekStart.setDate(weekStart.getDate()+7);
+        }
       }
       // Weight data
       const startKg=weightLog.length>0?weightLog[0].kg:profile.kg;
@@ -704,7 +718,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     {/* Calo chart */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>📊</span>
-      <span style={{fontSize:mob?15:17,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Calo theo tuần</span>
+      <span style={{fontSize:mob?15:17,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>{period==="week"?"Calo theo ngày":"Calo theo tuần"}</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
     </div>
     <div style={{...card}}>
