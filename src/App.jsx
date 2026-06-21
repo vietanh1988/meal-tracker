@@ -1097,9 +1097,17 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
     catch(e){return {...DEFAULT_MEAL_CONFIG};}
   });
-  // Load existing meals into allFoodItems on mount/dayType change (only for tu_nhap)
+  // Load existing meals into allFoodItems on mount/dayType change (only for tu_nhap, not admin templates)
   useEffect(()=>{
-    if(!getMeals||section==="templates")return;
+    if(!getMeals)return;
+    // Admin templates section → always start empty
+    if(section==="templates"){
+      const init={};
+      (mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});
+      setAllFoodItems(init);
+      return;
+    }
+    // tu_nhap → load existing meals
     const currentMeals=getMeals(dayType);
     const init={};
     const visibleIds=mealConfig[dayType]||[];
