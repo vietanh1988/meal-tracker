@@ -1865,95 +1865,78 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
         const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
         const gymDays=profile.gymDays||[0,2,4,5];
-        const mealNameMap={"sang":"Bữa sáng","phu_sang":"Phụ sáng","trua":"Bữa trưa","phu_chieu":"Phụ chiều","pre":"Pre-workout","post":"Post-workout","toi":"Bữa tối"};
+        const mealNameMap={"sang":"Sáng","phu_sang":"Phụ sáng","trua":"Trưa","phu_chieu":"Phụ chiều","pre":"Pre","post":"Post","toi":"Tối"};
+        const savedCount=dayKeys.filter(dk=>{const t=getWeeklyTemplate?getWeeklyTemplate(dk):null;return t&&t.meals&&t.meals.length>0;}).length;
         return <div>
-          <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:mob?4:6,minWidth:mob?480:"auto"}}>
-              {dayLabels.map((d,i)=>{
-                const isGym=gymDays.includes(i);
-                const dt=isGym?"train":"rest";
-                const tpl=getWeeklyTemplate?getWeeklyTemplate(dayKeys[i]):null;
-                const hasTpl=tpl&&tpl.meals&&tpl.meals.length>0;
-                const totalCal=tpl?tpl.total_cal||0:0;
-                const isSelected=expandedTpl===dayKeys[i];
-                return <div key={i} style={{background:isSelected?"#FEE2E2":C.card,border:`1.5px solid ${isSelected?C.red:hasTpl?C.green:C.border}`,borderRadius:10,padding:mob?"8px 4px":"10px 8px",textAlign:"center",cursor:"pointer",minHeight:mob?90:110,display:"flex",flexDirection:"column",justifyContent:"space-between"}} onClick={()=>{
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {dayLabels.map((d,i)=>{
+              const isGym=gymDays.includes(i);
+              const dt=isGym?"train":"rest";
+              const tpl=getWeeklyTemplate?getWeeklyTemplate(dayKeys[i]):null;
+              const hasTpl=tpl&&tpl.meals&&tpl.meals.length>0;
+              const totalCal=tpl?tpl.total_cal||0:0;
+              const mealCount=(tpl?.meals||[]).length;
+              const mealList=(tpl?.meals||[]).map(m=>mealNameMap[m.meal_id]||m.meal_name||m.meal_id).join(", ");
+              const isSelected=expandedTpl===dayKeys[i];
+              return <div key={i}>
+                <div style={{...card,cursor:"pointer",border:isSelected?`2px solid ${C.red}`:`1.5px solid ${C.border}`}} onClick={()=>{
                   if(hasTpl){
                     setExpandedTpl(isSelected?null:dayKeys[i]);
                   }else{
-                    // Click empty day → gán bữa hiện tại
                     const currentMeals=getMeals(dt);
                     const filled=currentMeals.filter(m=>m.items&&m.items.length>0);
-                    if(filled.length===0){
-                      setMealMode("tu_nhap");setDayType(dt);
-                      return;
-                    }
+                    if(filled.length===0){setMealMode("tu_nhap");setDayType(dt);return;}
                     const dayLabel2={"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[dayKeys[i]];
                     if(confirm(`Gán ${filled.length} bữa ${dt==="train"?"ngày tập":"ngày nghỉ"} hiện tại vào ${dayLabel2}?`)){
                       const mealsData=filled.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
-                      const totalCal=filled.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
-                      if(saveWeeklyTemplate) saveWeeklyTemplate(dayKeys[i],dt,mealsData,Math.round(totalCal));
-                    }else{
-                      setMealMode("tu_nhap");setDayType(dt);
-                    }
+                      const tc=filled.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
+                      if(saveWeeklyTemplate) saveWeeklyTemplate(dayKeys[i],dt,mealsData,Math.round(tc));
+                    }else{setMealMode("tu_nhap");setDayType(dt);}
                   }
                 }}>
-                  <div>
-                    <div style={{fontSize:mob?12:13,fontWeight:800,color:C.t1}}>{d}</div>
-                    <div style={{fontSize:mob?9:10,fontWeight:600,color:isGym?"#991B1B":"#1E40AF",marginTop:2}}>{isGym?"💪 Tập":"😴 Nghỉ"}</div>
-                  </div>
-                  {hasTpl?<div style={{marginTop:6}}>
-                    <div style={{fontSize:mob?14:16,fontWeight:900,color:C.red}}>{totalCal}</div>
-                    <div style={{fontSize:9,fontWeight:600,color:C.t3}}>kcal</div>
-                    <div style={{fontSize:8,fontWeight:600,color:C.green,marginTop:2}}>✓ Đã cài</div>
-                  </div>:<div style={{marginTop:6}}>
-                    <div style={{fontSize:mob?18:22,opacity:0.3}}>+</div>
-                    <div style={{fontSize:9,fontWeight:600,color:C.t3}}>Thêm</div>
-                  </div>}
-                </div>;
-              })}
-            </div>
-          </div>
-
-          {/* Detail view for selected day */}
-          {expandedTpl&&(()=>{
-            const tpl=getWeeklyTemplate?getWeeklyTemplate(expandedTpl):null;
-            if(!tpl||!tpl.meals)return null;
-            const dayLabel={"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[expandedTpl]||expandedTpl;
-            const tplMeals=tpl.meals||[];
-            return <div style={{marginTop:10,background:C.card,border:`2px solid ${C.red}`,borderRadius:12,overflow:"hidden"}}>
-              <div style={{padding:"12px 14px",background:C.redBg,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div>
-                  <span style={{fontSize:14,fontWeight:800,color:"#991B1B"}}>{dayLabel}</span>
-                  <span style={{fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:10,background:tpl.day_type==="train"?"#FEE2E2":"#DBEAFE",color:tpl.day_type==="train"?"#991B1B":"#1E40AF",marginLeft:8}}>{tpl.day_type==="train"?"💪 Tập":"😴 Nghỉ"}</span>
-                </div>
-                <span style={{fontSize:16,fontWeight:900,color:C.red}}>{tpl.total_cal||0} kcal</span>
-              </div>
-              <div style={{padding:"12px 14px"}}>
-                {tplMeals.map((m,mi)=>{
-                  const mItems=m.items||[];
-                  const mCal=mItems.reduce((s,it)=>s+(it.cal||0),0);
-                  return <div key={mi} style={{marginBottom:mi<tplMeals.length-1?12:0}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                      <span style={{fontSize:13,fontWeight:800,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
-                      <span style={{fontSize:13,fontWeight:800,color:C.red}}>{Math.round(mCal)} cal</span>
+                  <div style={{display:"flex",alignItems:"center"}}>
+                    <div style={{width:36,marginRight:10}}>
+                      <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{d}</div>
+                      <div style={{fontSize:11,fontWeight:600,color:isGym?"#991B1B":"#1E40AF"}}>{isGym?"Tập":"Nghỉ"}</div>
                     </div>
-                    {mItems.map((it,ii)=><div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
-                      <span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
-                      <span style={{color:C.t3}}>P:{it.p||0} C:{it.c||0} F:{it.f||0}</span>
-                    </div>)}
-                    {mi<tplMeals.length-1&&<div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginTop:8}}/>}
-                  </div>;
-                })}
-                <div style={{display:"flex",gap:8,marginTop:14}}>
-                  <button onClick={()=>{setDayType(tpl.day_type);setMealMode("tu_nhap");setExpandedTpl(null);}} style={{flex:1,padding:"10px",fontSize:12,fontWeight:800,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Sửa</button>
-                  <button onClick={()=>setExpandedTpl(null)} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Đóng</button>
+                    <div style={{width:1,height:28,background:C.border,marginRight:12}}/>
+                    <div style={{flex:1}}>
+                      {hasTpl?<>
+                        <div style={{fontSize:14}}><span style={{fontWeight:800,color:C.t1}}>{totalCal} kcal</span> <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{mealCount} bữa</span></div>
+                        <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:2}}>{mealList}</div>
+                      </>:<div style={{fontSize:13,fontWeight:600,color:C.t3}}>Chưa có dữ liệu</div>}
+                    </div>
+                    {hasTpl?<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#DCFCE7",color:"#166534",border:"1px solid #86EFAC"}}>✓ Đã lưu</div>
+                    :<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:C.surface,color:C.t3,border:`1px solid ${C.border}`}}>+ Gán</div>}
+                  </div>
                 </div>
-              </div>
-            </div>;
-          })()}
-
-          <div style={{marginTop:14,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn ngày xanh để xem chi tiết. Nhấn ô "+" để gán bữa ăn hiện tại vào ngày đó (nếu chưa có bữa nào thì chuyển sang Tự nhập).</span>
+                {/* Expanded detail */}
+                {isSelected&&hasTpl&&<div style={{...card,marginTop:-4,borderTop:`1.5px solid ${C.border}`,borderTopLeftRadius:0,borderTopRightRadius:0,border:`2px solid ${C.red}`,borderTop:`1.5px solid ${C.border}`}}>
+                  {(tpl.meals||[]).map((m,mi)=>{
+                    const mItems=m.items||[];
+                    const mCal=mItems.reduce((s,it)=>s+(it.cal||0),0);
+                    return <div key={mi} style={{marginBottom:mi<(tpl.meals||[]).length-1?12:0}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                        <span style={{fontSize:13,fontWeight:800,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
+                        <span style={{fontSize:13,fontWeight:800,color:C.red}}>{Math.round(mCal)} cal</span>
+                      </div>
+                      {mItems.map((it,ii)=><div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
+                        <span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
+                        <span style={{color:C.t3}}>P:{it.p||0} C:{it.c||0} F:{it.f||0}</span>
+                      </div>)}
+                      {mi<(tpl.meals||[]).length-1&&<div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginTop:8}}/>}
+                    </div>;
+                  })}
+                  <div style={{display:"flex",gap:8,marginTop:14}}>
+                    <button onClick={(e)=>{e.stopPropagation();setDayType(tpl.day_type);setMealMode("tu_nhap");setExpandedTpl(null);}} style={{flex:1,padding:"10px",fontSize:12,fontWeight:800,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Sửa</button>
+                    <button onClick={(e)=>{e.stopPropagation();setExpandedTpl(null);}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Đóng</button>
+                  </div>
+                </div>}
+              </div>;
+            })}
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:10,fontSize:12,fontWeight:600,color:C.t3}}>
+            <span>{savedCount}/7 ngày</span>
           </div>
         </div>;
       })()}
