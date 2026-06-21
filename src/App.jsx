@@ -1740,7 +1740,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="meals"&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
       <div style={{fontSize:17,fontWeight:900,color:C.blue}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:12}}>
-        {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":"14 template có sẵn — 7 ngày tập + 7 ngày nghỉ"}
+        {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`}
       </div>
       {/* 3 Mode buttons */}
       <div style={{display:"flex",gap:0,marginBottom:16,background:C.surface,borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
@@ -2078,8 +2078,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>:<div style={{textAlign:"center",padding:"30px 16px"}}>
             <div style={{fontSize:32,marginBottom:8}}>📚</div>
             <div style={{fontSize:14,fontWeight:800,color:C.t2,marginBottom:4}}>Chưa có mẫu nào</div>
-            <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:14,lineHeight:1.5}}>{isAdmin?"Vào tab Quản trị để tạo template mẫu cho users.":"Admin chưa tạo template mẫu. Dùng tab Tự nhập để nhập bữa ăn."}</div>
-            <button onClick={()=>setMealMode("tu_nhap")} style={{padding:"10px 20px",fontSize:13,fontWeight:800,border:"none",borderRadius:10,background:"linear-gradient(135deg,#DC2626,#B91C1C)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>✏️ Tự nhập bữa ăn</button>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3,lineHeight:1.5}}>{isAdmin?"Vào Admin → Mẫu để tạo template cho users.":"Admin chưa tạo template mẫu. Vui lòng chờ hoặc dùng tab Tự nhập."}</div>
           </div>}
         </div>;
       })()}
