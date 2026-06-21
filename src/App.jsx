@@ -1087,6 +1087,21 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [showSaveTpl,setShowSaveTpl]=useState(false); // popup save to weekly template
   // Unified food items per meal (for all-in-one input)
   const [allFoodItems,setAllFoodItems]=useState({});
+  // Load existing meals into allFoodItems on mount/dayType change
+  useEffect(()=>{
+    const currentMeals=getMeals(dayType);
+    const init={};
+    const visibleIds=mealConfig[dayType]||[];
+    visibleIds.forEach(mid=>{
+      const meal=currentMeals.find(m=>m.id===mid);
+      if(meal&&meal.items&&meal.items.length>0){
+        init[mid]=meal.items.map(it=>({name:it.food||it.name||"",gram:it.gram||"",unit:it.unit||"g",qty:it.qty||1}));
+      }else{
+        init[mid]=[{name:"",gram:"",unit:"g",qty:1}];
+      }
+    });
+    setAllFoodItems(init);
+  },[dayType,getMeals,mealConfig]);
   const [mealConfig,setMealConfig]=useState(()=>{
     try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
     catch(e){return {...DEFAULT_MEAL_CONFIG};}
@@ -1689,12 +1704,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
             return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:6}}>
               <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
-              <input value={item.name} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?14:16,height:mob?38:44,padding:mob?"8px 10px":"10px 12px"}}/>
-              <select value={item.unit||"g"} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?13:16,height:mob?38:44,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
+              <input value={item.name} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?13:14,height:mob?38:40,padding:mob?"8px 10px":"10px 12px"}}/>
+              <select value={item.unit||"g"} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?12:14,height:mob?38:40,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
                 <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option>
               </select>
-              <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>{const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px"}} placeholder="SL"/>
-              <input type="number" inputMode="numeric" value={item.gram||""} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px",opacity:isWeight?1:0.7}} placeholder={isWeight?"Gram":"~Gram"}/>
+              <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>{const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px"}} placeholder="SL"/>
+              <input type="number" inputMode="numeric" value={item.gram||""} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px",opacity:isWeight?1:0.7}} placeholder={isWeight?"Gram":"~Gram"}/>
               <button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);}} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
             </div>;
           })}
