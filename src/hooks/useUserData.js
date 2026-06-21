@@ -27,6 +27,7 @@ export function useUserData(userId) {
   const [meals, setMeals] = useState({ train: defaultStructure.train, rest: defaultStructure.rest });
   const [foodCache, setFoodCache] = useState({});
   const [weeklyTemplates, setWeeklyTemplates] = useState([]);
+  const [defaultTemplates, setDefaultTemplates] = useState([]);
 
   // Load from Supabase on login
   useEffect(() => {
@@ -67,12 +68,23 @@ export function useUserData(userId) {
           console.log(`✅ Loaded ${cacheData.length} food cache entries from cloud`);
         }
 
-        // Load weekly templates
-        const { data: tplData, error: tplErr } = await supabase.from("weekly_templates").select("*").eq("user_id", userId).order("created_at");
+        // Load user's weekly templates (NOT default)
+        const { data: tplData, error: tplErr } = await supabase.from("weekly_templates")
+          .select("*").eq("user_id", userId).or("is_default.is.null,is_default.eq.false")
+          .order("created_at");
         if (tplErr) console.error("Load weekly templates error:", tplErr);
         if (tplData) {
           setWeeklyTemplates(tplData);
-          console.log(`✅ Loaded ${tplData.length} weekly templates`);
+          console.log(`✅ Loaded ${tplData.length} user weekly templates`);
+        }
+
+        // Load default templates (admin-created, visible to all)
+        const { data: defData, error: defErr } = await supabase.from("weekly_templates")
+          .select("*").eq("is_default", true).order("created_at");
+        if (defErr) console.error("Load default templates error:", defErr);
+        if (defData) {
+          setDefaultTemplates(defData);
+          console.log(`✅ Loaded ${defData.length} default templates from admin`);
         }
       } catch (e) { console.error("UserData load error:", e); }
       setLoaded(true);
@@ -326,11 +338,68 @@ export function useUserData(userId) {
     } catch (e) { console.error("Daily log fetch error:", e); return null; }
   }, [userId]);
 
+  // ===== DEFAULT TEMPLATES (admin-created) =====
+
+  // Save default template (admin only)
+  const saveDefaultTemplate = useCallback(async (name, dayType, mealsData, totalCal) => {
+    if (!userId) return;
+    try {
+      const { error } = await supabase.from("weekly_templates").insert({
+        user_id: userId,
+        name: name || "Template mới",
+        day_name: "thu_2", // placeholder, admin templates don't map to specific days
+        day_type: dayType,
+        meals: mealsData,
+        total_cal: totalCal || 0,
+        is_default: true,
+      });
+      if (error) { console.error("Save default template error:", error); return; }
+      console.log("✅ Default template saved:", name);
+      // Reload default templates
+      const { data: refreshed } = await supabase.from("weekly_templates")
+        .select("*").eq("is_default", true).order("created_at");
+      if (refreshed) setDefaultTemplates(refreshed);
+    } catch (e) { console.error("Default template error:", e); }
+  }, [userId]);
+
+  // Delete default template (admin only)
+  const deleteDefaultTemplate = useCallback(async (templateId) => {
+    if (!userId) return;
+    try {
+      const { error } = await supabase.from("weekly_templates").delete().eq("id", templateId);
+      if (error) { console.error("Delete default template error:", error); return; }
+      setDefaultTemplates(prev => prev.filter(t => t.id !== templateId));
+      console.log("🗑️ Default template deleted:", templateId);
+    } catch (e) { console.error("Delete default template error:", e); }
+  }, [userId]);
+
+  // Apply template → save all meals to meal_logs + daily_logs for today
+  const applyTemplate = useCallback(async (template) => {
+    if (!userId || !template || !template.meals) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const dayType = template.day_type || "train";
+    const tplMeals = template.meals || [];
+
+    // Save each meal to meal_logs + update local state
+    for (const m of tplMeals) {
+      const mealId = m.meal_id;
+      const items = m.items || [];
+      if (mealId && items.length > 0) {
+        await saveMealToCloud(mealId, dayType, items);
+      }
+    }
+    console.log("✅ Template applied:", template.name || "unnamed", "→", tplMeals.length, "bữa saved for", today);
+  }, [userId, saveMealToCloud]);
+
   return {
     loaded, meals, getMeals, getMealHistory, foodCache,
     saveMealToCloud, saveFoodCache, deleteFoodCache,
-    // Weekly templates
+    // Weekly templates (user's own)
     weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, getWeeklyTemplate,
+    // Default templates (admin-created)
+    defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate,
+    // Apply template
+    applyTemplate,
     // Daily logs
     saveDailyLog, getDailyLogs, getDailyLog,
   };
