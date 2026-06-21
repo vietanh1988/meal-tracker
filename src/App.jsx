@@ -869,12 +869,10 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <span style={{fontSize:mob?18:24}}>🍽️</span>
       <span style={{fontSize:mob?16:18,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
       <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
-      <div style={{display:"flex",alignItems:"center",gap:4}}>
-        <div onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{width:mob?26:28,height:mob?26:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:8,background:C.card,border:`1.5px solid ${C.border}`,cursor:"pointer",fontSize:11,fontWeight:700,color:C.t3}}>◀</div>
-        <div onClick={()=>setDashDate(new Date())} style={{padding:mob?"4px 10px":"5px 14px",borderRadius:8,background:isToday?C.redBg:C.card,border:`1.5px solid ${isToday?C.red:C.border}`,cursor:"pointer",minWidth:mob?56:70,textAlign:"center"}}>
-          <span style={{fontSize:mob?13:14,fontWeight:800,color:isToday?C.red:C.t1}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
-        </div>
-        <div onClick={()=>{if(!isToday){const d=new Date(dashDate);d.setDate(d.getDate()+1);setDashDate(d);}}} style={{width:mob?26:28,height:mob?26:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:8,background:C.card,border:`1.5px solid ${C.border}`,cursor:"pointer",fontSize:11,fontWeight:700,color:C.t3,opacity:isToday?0.3:1}}>▶</div>
+      <div style={{display:"flex",alignItems:"center",gap:2}}>
+        <span onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700}}>‹</span>
+        <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:800,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
+        <span onClick={()=>{if(!isToday){const d=new Date(dashDate);d.setDate(d.getDate()+1);setDashDate(d);}}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700,opacity:isToday?0.25:1}}>›</span>
       </div>
     </div>
 
