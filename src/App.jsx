@@ -1814,39 +1814,42 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
         {/* Popup: Lưu làm mẫu tuần */}
         {showSaveTpl&&(()=>{
-          const today=new Date();
-          const dayIdx=today.getDay();// 0=CN,1=T2...
           const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
           const dayLabels=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
-          const todayKey=dayKeys[dayIdx];
-          const todayLabel=dayLabels[dayIdx];
-          // Auto-detect train/rest from gymDays
+          const todayIdx=new Date().getDay();
           const gd=profile.gymDays||[0,2,4,5];
-          const mappedIdx=dayIdx===0?6:dayIdx-1;
-          const todayDayType=gd.includes(mappedIdx)?"train":"rest";
-          const visibleIds=mealConfig[todayDayType]||[];
-          const allMeals=getMeals(todayDayType);
-          const mealsWithItems=allMeals.filter(m=>visibleIds.includes(m.id)&&m.items&&m.items.length>0);
+          const visibleIds2=mealConfig[dayType]||[];
+          const allMeals2=getMeals(dayType);
+          const mealsWithItems=allMeals2.filter(m=>visibleIds2.includes(m.id)&&m.items&&m.items.length>0);
           const totalCal=mealsWithItems.reduce((s,m)=>s+m.items.reduce((a,i)=>a+(i.cal||0),0),0);
           return <div style={{marginTop:12,padding:"16px",background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
             <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
               <span style={{fontSize:18}}>📅</span>
               <span style={{fontSize:15,fontWeight:800,color:"#3730A3"}}>Đã đủ {mealsWithItems.length} bữa!</span>
             </div>
-            <div style={{fontSize:13,color:"#4338CA",lineHeight:1.6,marginBottom:12}}>
-              Lưu làm mẫu cho <span style={{fontWeight:800}}>{todayLabel}</span> ({todayDayType==="train"?"Ngày tập":"Ngày nghỉ"})? Tuần sau mở app sẽ tự hiện đúng plan này.
+            <div style={{fontSize:13,color:"#4338CA",lineHeight:1.6,marginBottom:10}}>
+              Lưu làm mẫu tuần? Chọn ngày bên dưới:
             </div>
+            <select id="save-tpl-day" defaultValue={dayKeys[todayIdx]} style={{...inp,marginBottom:12}}>
+              {dayLabels.map((l,i)=>{
+                const mappedIdx=i===0?6:i-1;
+                const isGym=gd.includes(mappedIdx);
+                const dt=isGym?"train":"rest";
+                return <option key={i} value={dayKeys[i]}>{l} — {isGym?"💪 Ngày tập":"😴 Ngày nghỉ"}</option>;
+              })}
+            </select>
             <div style={{fontSize:12,fontWeight:700,color:"#4338CA",marginBottom:12}}>
-              {mealsWithItems.length} bữa • {Math.round(totalCal)} kcal
+              {mealsWithItems.length} bữa • {Math.round(totalCal)} kcal • {dayType==="train"?"Ngày tập":"Ngày nghỉ"}
             </div>
             <div style={{display:"flex",gap:8}}>
               <button onClick={async()=>{
+                const selectedDay=document.getElementById("save-tpl-day")?.value||dayKeys[todayIdx];
                 const mealsData=mealsWithItems.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
-                if(saveWeeklyTemplate) await saveWeeklyTemplate(todayKey,todayDayType,mealsData,Math.round(totalCal));
+                if(saveWeeklyTemplate) await saveWeeklyTemplate(selectedDay,dayType,mealsData,Math.round(totalCal));
                 setShowSaveTpl(false);
                 const el=document.getElementById("tpl-week-saved");
                 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-              }} style={{flex:1,padding:"10px",fontSize:13,fontWeight:800,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu cho {todayLabel}</button>
+              }} style={{flex:1,padding:"10px",fontSize:13,fontWeight:800,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu vào Lịch tuần</button>
               <button onClick={()=>setShowSaveTpl(false)} style={{padding:"10px 16px",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Không</button>
             </div>
           </div>;
@@ -1877,7 +1880,21 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                   if(hasTpl){
                     setExpandedTpl(isSelected?null:dayKeys[i]);
                   }else{
-                    setMealMode("tu_nhap");setDayType(dt);
+                    // Click empty day → gán bữa hiện tại
+                    const currentMeals=getMeals(dt);
+                    const filled=currentMeals.filter(m=>m.items&&m.items.length>0);
+                    if(filled.length===0){
+                      setMealMode("tu_nhap");setDayType(dt);
+                      return;
+                    }
+                    const dayLabel2={"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[dayKeys[i]];
+                    if(confirm(`Gán ${filled.length} bữa ${dt==="train"?"ngày tập":"ngày nghỉ"} hiện tại vào ${dayLabel2}?`)){
+                      const mealsData=filled.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
+                      const totalCal=filled.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
+                      if(saveWeeklyTemplate) saveWeeklyTemplate(dayKeys[i],dt,mealsData,Math.round(totalCal));
+                    }else{
+                      setMealMode("tu_nhap");setDayType(dt);
+                    }
                   }
                 }}>
                   <div>
@@ -1936,7 +1953,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           })()}
 
           <div style={{marginTop:14,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn ngày xanh để xem chi tiết. Nhấn ô "+" để nhập bữa ăn mới.</span>
+            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn ngày xanh để xem chi tiết. Nhấn ô "+" để gán bữa ăn hiện tại vào ngày đó (nếu chưa có bữa nào thì chuyển sang Tự nhập).</span>
           </div>
         </div>;
       })()}
