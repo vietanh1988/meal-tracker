@@ -17,6 +17,10 @@ function useIsMobile(breakpoint=600){
   },[breakpoint]);
   return m;
 }
+function MealIcon({id,size=16}){
+  const icons={"sang":"🌅","phu_sang":"🥤","trua":"☀️","phu_chieu":"🍌","pre":"⚡","post":"💪","toi":"🌙"};
+  return <span style={{fontSize:size}}>{icons[id]||"🍽️"}</span>;
+}
 
 const C = {
   protein:"#DC2626", carb:"#B45309", fat:"#111", fiber:"#15803D",
@@ -1085,6 +1089,8 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
   const [expandedTpl,setExpandedTpl]=useState(null); // expanded template ID for detail view
   const [showSaveTpl,setShowSaveTpl]=useState(false); // popup save to weekly template
+  // Unified food items per meal (for all-in-one input)
+  const [allFoodItems,setAllFoodItems]=useState({});
   const [mealConfig,setMealConfig]=useState(()=>{
     try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
     catch(e){return {...DEFAULT_MEAL_CONFIG};}
@@ -1640,34 +1646,16 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         }}>{m.icon} {m.label}</div>)}
       </div>
 
-      {/* === MODE: Tự nhập (giữ nguyên flow cũ) === */}
+      {/* === MODE: Tự nhập — all meals in one flow === */}
       {mealMode==="tu_nhap"&&<>
-      {/* Day type + meals - PC: 1 row, Mobile: 2 rows */}
-      {mob?<>
-        <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:14}}/>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-          <div style={{display:"flex",background:C.surface,borderRadius:18,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
-            <div onClick={()=>{setDayType("train");setSelectedMeal(mealConfig.train?.[0]||"sang");setAiResult(null);}} style={{padding:"6px 10px",fontSize:11,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
-            <div onClick={()=>{setDayType("rest");setSelectedMeal(mealConfig.rest?.[0]||"sang");setAiResult(null);}} style={{padding:"6px 10px",fontSize:11,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
-          </div>
-          <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:showMealSettings?"#FEF3C7":"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",display:"flex",alignItems:"center",gap:3}}>⚙️ Quản lý</div>
+      <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:14}}/>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <div style={{display:"flex",background:C.surface,borderRadius:18,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
+          <div onClick={()=>{setDayType("train");setAiResult(null);}} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
+          <div onClick={()=>{setDayType("rest");setAiResult(null);}} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
         </div>
-        <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:12}}/>
-        <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14,alignItems:"center"}}>
-          {mealNames.map(m=><div key={m.id} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:selectedMeal===m.id?700:600,background:selectedMeal===m.id?"#FEE2E2":"#F9FAFB",color:selectedMeal===m.id?"#991B1B":"#6B7280",border:`1.5px solid ${selectedMeal===m.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{m.l}</div>)}
-        </div>
-      </>:<>
-        <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:14}}/>
-        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:14}}>
-          <div style={{display:"flex",background:C.surface,borderRadius:20,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
-            <div onClick={()=>{setDayType("train");setSelectedMeal(mealConfig.train?.[0]||"sang");setAiResult(null);}} style={{padding:"7px 14px",fontSize:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
-            <div onClick={()=>{setDayType("rest");setSelectedMeal(mealConfig.rest?.[0]||"sang");setAiResult(null);}} style={{padding:"7px 14px",fontSize:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
-          </div>
-          <span style={{color:"#E5E7EB"}}>|</span>
-          {mealNames.map(m=><div key={m.id} onClick={()=>{setSelectedMeal(m.id);setAiResult(null);}} style={{padding:"6px 12px",borderRadius:18,fontSize:12,fontWeight:selectedMeal===m.id?700:600,background:selectedMeal===m.id?"#FEE2E2":"#F9FAFB",color:selectedMeal===m.id?"#991B1B":"#6B7280",border:`1.5px solid ${selectedMeal===m.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{m.l}</div>)}
-          <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:700,background:showMealSettings?"#FDE68A":"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",display:"flex",alignItems:"center",gap:4,whiteSpace:"nowrap"}}>⚙️ Tuỳ chỉnh</div>
-        </div>
-      </>}
+        <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ {mob?"":"Quản lý"}</div>
+      </div>
       {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
         <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:10}}>⚙️ Tuỳ chỉnh bữa ăn — {dayType==="train"?"Ngày tập":"Ngày nghỉ"}</div>
         {ALL_MEALS.map(m=>{
@@ -1681,51 +1669,55 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             </div>
             <div onClick={()=>{
               if(isTrainOnly)return;
-              const cfg={...mealConfig};
-              const arr=[...(cfg[dayType]||[])];
+              const cfg={...mealConfig};const arr=[...(cfg[dayType]||[])];
               if(isOn)cfg[dayType]=arr.filter(id=>id!==m.id);
-              else{
-                // Insert in correct order
-                const allIds=ALL_MEALS.map(x=>x.id);
-                arr.push(m.id);
-                arr.sort((a,b)=>allIds.indexOf(a)-allIds.indexOf(b));
-                cfg[dayType]=arr;
-              }
-              setMealConfig(cfg);
-              if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));
-              // If selected meal was turned off, switch to first visible
-              if(isOn&&selectedMeal===m.id){const first=cfg[dayType]?.[0]||"sang";setSelectedMeal(first);}
+              else{const allIds=ALL_MEALS.map(x=>x.id);arr.push(m.id);arr.sort((a,b)=>allIds.indexOf(a)-allIds.indexOf(b));cfg[dayType]=arr;}
+              setMealConfig(cfg);if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));
             }} style={{width:36,height:20,background:isOn?"#3B6D11":"#D1D5DB",borderRadius:10,position:"relative",cursor:isTrainOnly?"not-allowed":"pointer",transition:"background 0.2s"}}>
               <div style={{width:16,height:16,background:"#fff",borderRadius:"50%",position:"absolute",top:2,left:isOn?18:2,transition:"left 0.2s",boxShadow:"0 1px 2px rgba(0,0,0,0.15)"}}/>
             </div>
           </div>;
         })}
-        <div style={{marginTop:8,fontSize:10,color:C.t3,lineHeight:"1.4"}}>Bữa tắt sẽ không hiện trên Dashboard và không tính vào tổng.</div>
+        <div style={{marginTop:8,fontSize:10,color:C.t3}}>Bữa tắt sẽ không hiện trên Dashboard.</div>
       </div>}
-      <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14}}>
-        <div style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,marginBottom:8,alignItems:"center"}}>
-          <span style={{...lbl,textAlign:"center"}}>#</span><span style={lbl}>Tên thức ăn</span><span style={{...lbl,textAlign:"center"}}>ĐV</span><span style={{...lbl,textAlign:"center"}}>SL</span><span style={{...lbl,textAlign:"center"}}>Gram</span><span/>
-        </div>
-        {foodItems.map((item,i)=>{
-          const onUnitChange=(e)=>{const u=e.target.value;const updated=[...foodItems];updated[i]={...updated[i],unit:u};if(u!=="g"&&u!=="ml"){const est=estimateGram(item.name,u,item.qty||1);updated[i].gram=est;}setFoodItems(updated);};
-          const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
-          return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:8}}>
-          <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center",minWidth:mob?24:32}}>{i+1}.</span>
-          <input value={item.name} onChange={e=>updateFood(i,"name",e.target.value)} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?14:16,height:mob?38:44,padding:mob?"8px 10px":"10px 12px"}}/>
-          <select value={item.unit||"g"} onChange={onUnitChange} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?13:16,height:mob?38:44,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
-            <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option>
-          </select>
-          <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>{const q=Math.max(0,Number(e.target.value)||0);const updated=[...foodItems];updated[i]={...updated[i],qty:q};if(!isWeight&&q>0){const est=estimateGram(item.name,item.unit,q);updated[i].gram=est;}setFoodItems(updated);}} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px"}} placeholder="SL"/>
-          <input type="number" inputMode="numeric" value={item.gram||""} onChange={e=>updateFood(i,"gram",Math.max(0,Number(e.target.value)||0))} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px",opacity:isWeight?1:0.7}} placeholder={isWeight?"Gram":"~Gram"}/>
-          <button onClick={()=>removeFood(i)} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
-        </div>;})}
-        <button onClick={addFood} style={{padding:"10px",fontSize:13,fontWeight:700,background:C.surface,color:C.t2,border:`2px dashed ${C.border}`,borderRadius:10,width:"100%",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm món</button>
-      </div>
-      <button onClick={callAI} disabled={aiLoading} style={{...redBtn,marginTop:16,opacity:aiLoading?0.7:1}}>
+      {/* All meals — each as labeled card */}
+      {mealNames.map(meal=>{
+        const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,padding:mob?12:14,marginBottom:8}}>
+          <div style={{fontSize:14,fontWeight:800,color:C.t1,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:6}}>
+            <MealIcon id={meal.id} size={16}/> {meal.l}
+          </div>
+          {foods.map((item,i)=>{
+            const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
+            return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:6}}>
+              <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
+              <input value={item.name} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?14:16,height:mob?38:44,padding:mob?"8px 10px":"10px 12px"}}/>
+              <select value={item.unit||"g"} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?13:16,height:mob?38:44,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
+                <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option>
+              </select>
+              <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>{const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px"}} placeholder="SL"/>
+              <input type="number" inputMode="numeric" value={item.gram||""} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",fontSize:mob?13:16,height:mob?38:44,padding:mob?"8px 6px":"10px 12px",opacity:isWeight?1:0.7}} placeholder={isWeight?"Gram":"~Gram"}/>
+              <button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);}} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
+            </div>;
+          })}
+          <button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);}} style={{padding:"6px",fontSize:12,fontWeight:700,background:C.surface,color:C.t3,border:`1.5px dashed ${C.border}`,borderRadius:8,width:"100%",cursor:"pointer",fontFamily:"inherit",marginTop:4}}>+ Thêm món</button>
+        </div>;
+      })}
+      <button onClick={()=>{
+        // Combine all foods from all meals into one list for AI
+        const combined=[];
+        mealNames.forEach(meal=>{
+          const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
+          foods.forEach(f=>combined.push({...f,_mealId:meal.id}));
+        });
+        if(combined.length===0){setAiError("Chưa nhập thức ăn nào");return;}
+        setFoodItems(combined);
+        setTimeout(()=>callAI(),100);
+      }} disabled={aiLoading} style={{...redBtn,marginTop:8,opacity:aiLoading?0.7:1}}>
         {aiLoading?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           <span style={{width:16,height:16,border:"2.5px solid #fcc",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.6s linear infinite"}}/>
           <span>Đang tính...</span>
-        </span>:"Tính macro"}
+        </span>:"Tính macro tất cả"}
       </button>
       {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
         <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>❌ {aiError}</span>
@@ -1733,129 +1725,94 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
           <span style={{fontSize:14,fontWeight:900}}>✓</span>
-          <span style={{fontSize:14,fontWeight:900,color:C.red}}>Kết quả {(()=>{const sources=[...new Set((aiResult.items||[]).map(i=>i.source).filter(Boolean))];return sources.join(" + ");})()}</span>
+          <span style={{fontSize:14,fontWeight:900,color:C.red}}>Kết quả</span>
           <button onClick={async()=>{
-            // Xóa cache các món hiện tại rồi recalc
-            const keysToDelete=foodItems.map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);
-            if(keysToDelete.length>0) await deleteFoodCache(keysToDelete);
+            const allNames=Object.values(allFoodItems).flat().map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);
+            if(allNames.length>0) await deleteFoodCache(allNames);
             setAiResult(null);
-            callAI(true);
+            const combined=[];mealNames.forEach(meal=>{const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());foods.forEach(f=>combined.push({...f,_mealId:meal.id}));});
+            setFoodItems(combined);setTimeout(()=>callAI(true),100);
           }} style={{marginLeft:"auto",padding:"4px 10px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>🔄 Tính lại</button>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:800,borderBottom:`1.5px solid ${C.border}`,paddingBottom:6,marginBottom:4,textTransform:"uppercase",letterSpacing:"0.05em"}}>
-          <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>g</span>
-          <span style={{color:C.protein,textAlign:"right"}}>P</span><span style={{color:C.carb,textAlign:"right"}}>C</span>
-          <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.fiber,textAlign:"right"}}>Xơ</span>
-          <span style={{color:C.t2,textAlign:"right"}}>Cal</span>
-        </div>
-        {(aiResult.items||[]).map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:700,padding:"7px 0",borderBottom:i<aiResult.items.length-1?`1px solid ${C.border}`:"none"}}>
-          <span style={{color:C.t1,fontWeight:800}}>{item.name} {item.source&&<span style={{fontSize:10,marginLeft:3,padding:"1px 5px",borderRadius:4,fontWeight:700,
-            background:item.source==="localDB"?"#DCFCE7":item.source==="USDA"?"#EFF6FF":item.source==="cache"?"#F3F4F6":"#FEF3C7",
-            color:item.source==="localDB"?"#166534":item.source==="USDA"?"#1E40AF":item.source==="cache"?"#666":"#92400E",
-          }}>{item.source==="localDB"?"📦 DB":item.source==="USDA"?"🔍 USDA":item.source==="cache"?"💾 Cache":`🤖 ${item.source}`}</span>}</span>
-          <span style={{textAlign:"right",color:C.t3}}>{item.gram}</span>
-          <span style={{textAlign:"right",color:C.protein}}>{item.protein}</span>
-          <span style={{textAlign:"right",color:C.carb}}>{item.carb}</span>
-          <span style={{textAlign:"right",color:C.t1}}>{item.fat}</span>
-          <span style={{textAlign:"right",color:C.fiber}}>{item.fiber}</span>
-          <span style={{textAlign:"right",color:C.t1,fontWeight:900}}>{item.cal}</span>
-        </div>)}
+        {/* Group results by meal */}
+        {(()=>{
+          const items=aiResult.items||[];
+          let idx=0;
+          return mealNames.map(meal=>{
+            const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
+            if(mealFoods.length===0)return null;
+            const mealItems=items.slice(idx,idx+mealFoods.length);
+            idx+=mealFoods.length;
+            const mCal=mealItems.reduce((s,it)=>s+(it.cal||0),0);
+            return <div key={meal.id} style={{marginBottom:12}}>
+              <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
+                <span>{meal.l}</span><span style={{color:C.red}}>{Math.round(mCal)} cal</span>
+              </div>
+              {mealItems.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:12,fontWeight:600,padding:"4px 0",borderBottom:i<mealItems.length-1?`1px solid ${C.border}`:"none"}}>
+                <span style={{color:C.t1,fontWeight:700}}>{item.name} {item.source&&<span style={{fontSize:9,padding:"1px 4px",borderRadius:3,fontWeight:700,background:item.source==="localDB"?"#DCFCE7":item.source==="USDA"?"#EFF6FF":item.source==="cache"?"#F3F4F6":"#FEF3C7",color:item.source==="localDB"?"#166534":item.source==="USDA"?"#1E40AF":item.source==="cache"?"#666":"#92400E"}}>{item.source==="localDB"?"DB":item.source==="USDA"?"USDA":item.source==="cache"?"Cache":item.source}</span>}</span>
+                <span style={{textAlign:"right",color:C.t3}}>{item.gram}</span>
+                <span style={{textAlign:"right",color:C.protein}}>{item.protein}</span>
+                <span style={{textAlign:"right",color:C.carb}}>{item.carb}</span>
+                <span style={{textAlign:"right",color:C.t1}}>{item.fat}</span>
+                <span style={{textAlign:"right",color:C.fiber}}>{item.fiber}</span>
+                <span style={{textAlign:"right",color:C.t1,fontWeight:800}}>{item.cal}</span>
+              </div>)}
+              <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginTop:8}}/>
+            </div>;
+          }).filter(Boolean);
+        })()}
         {aiResult.items&&aiResult.items.length>1&&(()=>{
-          const s=aiResult.items.reduce((a,i)=>({g:a.g+(i.gram||0),p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),fi:a.fi+(i.fiber||0),cal:a.cal+(i.cal||0)}),{g:0,p:0,c:0,f:0,fi:0,cal:0});
-          return <div style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:900,borderTop:`2px solid ${C.red}`,paddingTop:8,marginTop:6}}>
-            <span style={{color:C.red}}>TỔNG</span><span style={{textAlign:"right",color:C.t3}}>{Math.round(s.g)}</span>
-            <span style={{textAlign:"right",color:C.protein}}>{Math.round(s.p*10)/10}</span><span style={{textAlign:"right",color:C.carb}}>{Math.round(s.c*10)/10}</span>
-            <span style={{textAlign:"right",color:C.t1}}>{Math.round(s.f*10)/10}</span><span style={{textAlign:"right",color:C.fiber}}>{Math.round(s.fi*10)/10}</span>
-            <span style={{textAlign:"right",color:C.t1}}>{Math.round(s.cal)}</span>
+          const s=aiResult.items.reduce((a,i)=>({p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),fi:a.fi+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});
+          return <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:900,borderTop:`2px solid ${C.red}`,paddingTop:8,marginTop:4}}>
+            <span style={{color:C.red}}>TỔNG CẢ NGÀY</span>
+            <span>P:{Math.round(s.p)} C:{Math.round(s.c)} F:{Math.round(s.f)} = <span style={{color:C.red}}>{Math.round(s.cal)} cal</span></span>
           </div>;
         })()}
-        {aiResult.tip&&<div style={{marginTop:10,padding:"10px 14px",background:C.goldBg,borderRadius:8,border:"1.5px solid #CA8A04"}}>
-          <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>💡 {aiResult.tip}</span>
-        </div>}
         <button onClick={()=>{
-            // Save AI result items directly
-            const aiItems=aiResult.items||[];
-            const items=aiItems.map(ai=>{
-              const unit=ai.unit||"g";
-              const isWeight=unit==="g"||unit==="ml";
-              return {
-                food:ai.name||"",
-                gram:ai.gram||0,
-                unit,
-                qty:ai.qty||1,
-                qty_display:ai.qty_display||(isWeight?null:`${ai.qty||1} ${unit}`),
-                p:ai.protein||0, c:ai.carb||0, f:ai.fat||0,
-                fiber:ai.fiber||0, cal:ai.cal||0,
-              };
+            const items=aiResult.items||[];
+            let idx=0;
+            mealNames.forEach(meal=>{
+              const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
+              if(mealFoods.length===0)return;
+              const mealItems=items.slice(idx,idx+mealFoods.length);
+              idx+=mealFoods.length;
+              const saveItems=mealItems.map(ai=>{const unit=ai.unit||"g";const isW=unit==="g"||unit==="ml";return{food:ai.name||"",gram:ai.gram||0,unit,qty:ai.qty||1,qty_display:ai.qty_display||(isW?null:`${ai.qty||1} ${unit}`),p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0};});
+              if(saveItems.length>0)saveMealToCloud(meal.id,dayType,saveItems);
             });
-            saveMealToCloud(selectedMeal,dayType,items);
-            if(aiResult._cacheEntries) saveFoodCache(aiResult._cacheEntries,aiProvider);
+            if(aiResult._cacheEntries)saveFoodCache(aiResult._cacheEntries,aiProvider);
             const el=document.getElementById("meal-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-            // Check: đã đủ bữa chưa? Nếu đủ → hỏi lưu mẫu tuần
-            setTimeout(()=>{
-              const visibleIds=mealConfig[dayType]||[];
-              const allMeals=getMeals(dayType);
-              // Count meals with items (including the one just saved)
-              let filledCount=0;
-              visibleIds.forEach(mid=>{
-                const meal=allMeals.find(m=>m.id===mid);
-                if(mid===selectedMeal){filledCount++;}// vừa save xong
-                else if(meal&&meal.items&&meal.items.length>0){filledCount++;}
-              });
-              if(filledCount>=visibleIds.length&&visibleIds.length>=2){
-                setShowSaveTpl(true);
-              }
-            },500);
-        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
+            setTimeout(()=>{setShowSaveTpl(true);},500);
+        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu tất cả bữa</button>
         <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu thành công!</span>
         </div>
-
-        {/* Popup: Lưu làm mẫu tuần */}
         {showSaveTpl&&(()=>{
-          const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
-          const dayLabels=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
-          const todayIdx=new Date().getDay();
+          const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
+          const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
+          const todayIdx2=new Date().getDay();
           const gd=profile.gymDays||[0,2,4,5];
-          const visibleIds2=mealConfig[dayType]||[];
-          const allMeals2=getMeals(dayType);
-          const mealsWithItems=allMeals2.filter(m=>visibleIds2.includes(m.id)&&m.items&&m.items.length>0);
-          const totalCal=mealsWithItems.reduce((s,m)=>s+m.items.reduce((a,i)=>a+(i.cal||0),0),0);
+          const totalCal2=(aiResult.items||[]).reduce((s,it)=>s+(it.cal||0),0);
           return <div style={{marginTop:12,padding:"16px",background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
-            <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
-              <span style={{fontSize:18}}>📅</span>
-              <span style={{fontSize:15,fontWeight:800,color:"#3730A3"}}>Đã đủ {mealsWithItems.length} bữa!</span>
-            </div>
-            <div style={{fontSize:13,color:"#4338CA",lineHeight:1.6,marginBottom:10}}>
-              Lưu làm mẫu tuần? Chọn ngày bên dưới:
-            </div>
-            <select id="save-tpl-day" defaultValue={dayKeys[todayIdx]} style={{...inp,marginBottom:12}}>
-              {dayLabels.map((l,i)=>{
-                const mappedIdx=i===0?6:i-1;
-                const isGym=gd.includes(mappedIdx);
-                const dt=isGym?"train":"rest";
-                return <option key={i} value={dayKeys[i]}>{l} — {isGym?"💪 Ngày tập":"😴 Ngày nghỉ"}</option>;
-              })}
+            <div style={{fontSize:15,fontWeight:800,color:"#3730A3",marginBottom:8}}>📅 Lưu vào lịch tuần?</div>
+            <select id="save-tpl-day" defaultValue={dayKeys2[todayIdx2]} style={{...inp,marginBottom:12}}>
+              {dayLabels2.map((l,i2)=>{const mi2=i2===0?6:i2-1;const ig=gd.includes(mi2);return <option key={i2} value={dayKeys2[i2]}>{l} — {ig?"Ngày tập":"Ngày nghỉ"}</option>;})}
             </select>
-            <div style={{fontSize:12,fontWeight:700,color:"#4338CA",marginBottom:12}}>
-              {mealsWithItems.length} bữa • {Math.round(totalCal)} kcal • {dayType==="train"?"Ngày tập":"Ngày nghỉ"}
-            </div>
             <div style={{display:"flex",gap:8}}>
               <button onClick={async()=>{
-                const selectedDay=document.getElementById("save-tpl-day")?.value||dayKeys[todayIdx];
-                const mealsData=mealsWithItems.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
-                if(saveWeeklyTemplate) await saveWeeklyTemplate(selectedDay,dayType,mealsData,Math.round(totalCal));
+                const sd=document.getElementById("save-tpl-day")?.value||dayKeys2[todayIdx2];
+                const amd=mealNames.map(meal=>{const it=(getMeals(dayType).find(m=>m.id===meal.id)||{}).items||[];return it.length>0?{meal_id:meal.id,meal_name:meal.l,items:it}:null;}).filter(Boolean);
+                const tc=amd.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
+                if(saveWeeklyTemplate)await saveWeeklyTemplate(sd,dayType,amd,Math.round(tc));
                 setShowSaveTpl(false);
-                const el=document.getElementById("tpl-week-saved");
-                if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-              }} style={{flex:1,padding:"10px",fontSize:13,fontWeight:800,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu vào Lịch tuần</button>
+                const el2=document.getElementById("tpl-week-saved");if(el2){el2.style.display="flex";setTimeout(()=>{el2.style.display="none";},3000);}
+              }} style={{flex:1,padding:"10px",fontSize:13,fontWeight:800,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu</button>
               <button onClick={()=>setShowSaveTpl(false)} style={{padding:"10px 16px",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Không</button>
             </div>
           </div>;
         })()}
         <div id="tpl-week-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu mẫu tuần! Dashboard sẽ tự hiện plan này.</span>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu mẫu tuần!</span>
         </div>
       </div>}
       </>}

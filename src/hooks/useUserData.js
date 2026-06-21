@@ -252,14 +252,17 @@ export function useUserData(userId) {
         if (error) { console.error("Update template error:", error); return; }
         console.log("✅ Template updated:", dayName);
       } else {
+        const dayLabel = {"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[dayName] || dayName;
         const { error } = await supabase.from("weekly_templates").insert({
-          user_id: userId, day_name: dayName, ...payload,
+          user_id: userId, day_name: dayName, name: dayLabel, is_default: false, ...payload,
         });
         if (error) { console.error("Insert template error:", error); return; }
         console.log("✅ Template saved:", dayName);
       }
-      // Reload templates
-      const { data: refreshed } = await supabase.from("weekly_templates").select("*").eq("user_id", userId).order("created_at");
+      // Reload templates (user's own only, not default)
+      const { data: refreshed } = await supabase.from("weekly_templates")
+        .select("*").eq("user_id", userId).or("is_default.is.null,is_default.eq.false")
+        .order("created_at");
       if (refreshed) setWeeklyTemplates(refreshed);
     } catch (e) { console.error("Template save error:", e); }
   }, [userId]);
