@@ -1591,7 +1591,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     </div>}
 
     {/* TEMPLATES (admin only — separate pill) */}
-    {section==="templates"&&isAdmin&&<div style={card}>
+    {section==="templates"&&isAdmin&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
       <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>📚 Quản lý Template mẫu</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
 
