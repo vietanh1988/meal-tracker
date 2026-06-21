@@ -907,19 +907,19 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       </div>
     </div>
 
-    {/* Stats — Pastel cards with icons */}
+    {/* Stats — Clean white cards */}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:24}}>
       {[
-        {l:"Chiều cao",v:profile.cm,u:"cm",icon:"📏",bg:"#EFF6FF",bc:"#BFDBFE",tc:"#1E40AF"},
-        {l:"Cân nặng",v:curKg,u:"kg",icon:"⚖️",bg:"#FEE2E2",bc:"#FECACA",tc:"#991B1B"},
-        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",icon:"📊",bg:"#FEF3C7",bc:"#FDE68A",tc:"#92400E"},
-        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",icon:exIcon,bg:"#DCFCE7",bc:"#BBF7D0",tc:"#166534"},
+        {l:"Chiều cao",v:profile.cm,u:"cm",icon:"📏"},
+        {l:"Cân nặng",v:curKg,u:"kg",icon:"⚖️"},
+        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",icon:"📊"},
+        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",icon:exIcon},
       ].map((s,i)=>(
-        <div key={i} style={{background:s.bg,border:`1.5px solid ${s.bc}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:40,height:40,borderRadius:10,background:"rgba(255,255,255,0.7)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{s.icon}</div>
+        <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:40,height:40,borderRadius:10,background:C.surface,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{s.icon}</div>
           <div>
-            <div style={{fontSize:11,fontWeight:700,color:s.tc,opacity:0.7}}>{s.l}</div>
-            <div style={{fontSize:20,fontWeight:900,color:s.tc}}>{s.v} <span style={{fontSize:11,fontWeight:600,color:s.tc,opacity:0.6}}>{s.u}</span></div>
+            <div style={{fontSize:11,fontWeight:700,color:C.t3}}>{s.l}</div>
+            <div style={{fontSize:20,fontWeight:900,color:C.t1}}>{s.v} <span style={{fontSize:11,fontWeight:600,color:C.t3}}>{s.u}</span></div>
           </div>
         </div>
       ))}
