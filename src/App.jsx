@@ -1589,36 +1589,126 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {/* TEMPLATES (admin only — separate pill) */}
     {section==="templates"&&isAdmin&&<div style={card}>
       <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>📚 Quản lý Template mẫu</div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
+      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
 
-      <div style={{fontSize:13,fontWeight:800,color:C.t2,marginBottom:8}}>Tạo mới từ bữa ăn hiện tại:</div>
-      <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:10,lineHeight:1.5}}>Vào tab Bữa ăn → nhập đủ bữa cho 1 ngày → quay lại đây → nhấn nút bên dưới để lưu thành template mẫu.</div>
-
+      {/* Template name + type */}
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
         <input id="tpl-name" type="text" placeholder="VD: Ngày tập A — Ngực/Vai" style={{...inp,flex:1,minWidth:200}}/>
-        <select id="tpl-type" style={{...inp,width:mob?100:120}}>
+        <select id="tpl-type" style={{...inp,width:mob?110:130}} onChange={e=>{setDayType(e.target.value);}}>
           <option value="train">💪 Ngày tập</option>
           <option value="rest">😴 Ngày nghỉ</option>
         </select>
       </div>
-      <button onClick={async()=>{
-        const name=document.getElementById("tpl-name")?.value?.trim();
-        const tplType=document.getElementById("tpl-type")?.value||"train";
-        if(!name){alert("Nhập tên template");return;}
-        const currentMeals=getMeals(tplType);
-        const mealsWithItems=currentMeals.filter(m=>m.items&&m.items.length>0).map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
-        if(mealsWithItems.length===0){alert("Chưa có bữa ăn nào. Vào tab Bữa ăn nhập trước.");return;}
-        const totalCal=mealsWithItems.reduce((s,m)=>s+(m.items||[]).reduce((a,i)=>a+(i.cal||0),0),0);
-        if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsWithItems,Math.round(totalCal));
-        document.getElementById("tpl-name").value="";
-        const el=document.getElementById("tpl-created");
-        if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-      }} style={{...redBtn,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>📚 Lưu thành Template mẫu ({(getMeals(dayType).filter(m=>m.items&&m.items.length>0)).length} bữa)</button>
-      <div id="tpl-created" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-        <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu.</span>
-      </div>
 
-      {/* Existing templates */}
+      <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:14}}/>
+
+      {/* Inline meal input — same as Tự nhập */}
+      {mealNames.map(meal=>{
+        const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
+        const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#DC2626","post":"#16A34A","toi":"#7C3AED"};
+        const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?12:14,marginBottom:8}}>
+          <div style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
+            {meal.l}
+          </div>
+          {foods.map((item,i)=>{
+            const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
+            return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"24px 1fr 50px 36px 56px 24px":"32px 2fr 60px 70px 80px 32px",gap:mob?4:8,alignItems:"center",marginBottom:6}}>
+              <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
+              <input value={item.name} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?13:14,height:mob?38:40,padding:mob?"8px 10px":"8px 12px"}}/>
+              <select value={item.unit||"g"} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?12:14,height:mob?38:40}}>
+                <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option>
+              </select>
+              <input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>{const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40}} placeholder="SL"/>
+              <input type="number" inputMode="numeric" value={item.gram||""} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,opacity:isWeight?1:0.7}} placeholder={isWeight?"Gram":"~Gram"}/>
+              <button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);}} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
+            </div>;
+          })}
+          <button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);}} style={{padding:"6px",fontSize:12,fontWeight:700,background:C.surface,color:C.t3,border:`1.5px dashed ${C.border}`,borderRadius:8,width:"100%",cursor:"pointer",fontFamily:"inherit",marginTop:4}}>+ Thêm món</button>
+        </div>;
+      })}
+
+      {/* Tính macro + Lưu template */}
+      <button onClick={()=>{
+        const combined=[];
+        mealNames.forEach(meal=>{
+          const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
+          foods.forEach(f=>combined.push({...f,_mealId:meal.id}));
+        });
+        if(combined.length===0){setAiError("Chưa nhập thức ăn nào");return;}
+        setFoodItems(combined);
+        setTimeout(()=>callAI(),100);
+      }} disabled={aiLoading} style={{...redBtn,marginTop:8,opacity:aiLoading?0.7:1}}>
+        {aiLoading?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          <span style={{width:16,height:16,border:"2.5px solid #fcc",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.6s linear infinite"}}/>
+          <span>Đang tính...</span>
+        </span>:"Tính macro tất cả"}
+      </button>
+      {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
+        <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>❌ {aiError}</span>
+      </div>}
+
+      {/* Kết quả + Lưu template mẫu */}
+      {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
+        <div style={{fontSize:14,fontWeight:900,color:C.red,marginBottom:12}}>✓ Kết quả macro</div>
+        {(()=>{
+          const items=aiResult.items||[];
+          let idx=0;
+          return mealNames.map(meal=>{
+            const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
+            if(mealFoods.length===0)return null;
+            const mealItems=items.slice(idx,idx+mealFoods.length);
+            idx+=mealFoods.length;
+            const mCal=mealItems.reduce((s,it)=>s+(it.cal||0),0);
+            return <div key={meal.id} style={{marginBottom:10}}>
+              <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",justifyContent:"space-between"}}>
+                <span>{meal.l}</span><span style={{color:C.red}}>{Math.round(mCal)} cal</span>
+              </div>
+              {mealItems.map((item,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
+                <span>{item.name} {item.gram}g</span>
+                <span style={{color:C.t3}}>P:{item.protein} C:{item.carb} F:{item.fat} = {item.cal}cal</span>
+              </div>)}
+            </div>;
+          }).filter(Boolean);
+        })()}
+        {aiResult.items&&aiResult.items.length>1&&(()=>{
+          const s=aiResult.items.reduce((a,i)=>({p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,cal:0});
+          return <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:900,borderTop:`2px solid ${C.red}`,paddingTop:8,marginTop:4}}>
+            <span style={{color:C.red}}>TỔNG</span>
+            <span>P:{Math.round(s.p)} C:{Math.round(s.c)} F:{Math.round(s.f)} = <span style={{color:C.red}}>{Math.round(s.cal)} cal</span></span>
+          </div>;
+        })()}
+        <button onClick={async()=>{
+          const name=document.getElementById("tpl-name")?.value?.trim();
+          const tplType=document.getElementById("tpl-type")?.value||"train";
+          if(!name){alert("Nhập tên template ở ô trên!");return;}
+          const items=aiResult.items||[];
+          let idx=0;
+          const mealsData=[];
+          mealNames.forEach(meal=>{
+            const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
+            if(mealFoods.length===0)return;
+            const mealItems=items.slice(idx,idx+mealFoods.length);
+            idx+=mealFoods.length;
+            const saveItems=mealItems.map(ai=>({food:ai.name||"",gram:ai.gram||0,unit:ai.unit||"g",qty:ai.qty||1,p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0}));
+            if(saveItems.length>0)mealsData.push({meal_id:meal.id,meal_name:meal.l,items:saveItems});
+          });
+          if(mealsData.length===0){alert("Không có dữ liệu bữa ăn");return;}
+          const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
+          if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsData,Math.round(totalCal));
+          document.getElementById("tpl-name").value="";
+          setAiResult(null);
+          // Reset all food items
+          const init={};mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
+          const el=document.getElementById("tpl-created");
+          if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>📚 Lưu thành Template mẫu</button>
+        <div id="tpl-created" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu.</span>
+        </div>
+      </div>}
+
+      {/* Existing templates list */}
       {(defaultTemplates||[]).length>0&&<div style={{marginTop:20,borderTop:`2px solid ${C.border}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:900,color:C.t1,marginBottom:8}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
         {(defaultTemplates||[]).map(t=>{
