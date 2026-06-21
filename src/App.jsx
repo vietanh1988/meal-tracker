@@ -1614,17 +1614,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#DC2626","post":"#16A34A","toi":"#7C3AED"};
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?16:20,marginBottom:12}}>
-          <div style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
-            {meal.l}
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,marginBottom:6,alignItems:"center"}}>
+          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:12,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
             <span/>
-            <span style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.05em"}}>Tên thức ăn</span>
+            <span style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
             <span/>
           </div>
+
           {foods.map((item,i)=>{
             const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
             return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
@@ -1802,17 +1800,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#DC2626","post":"#16A34A","toi":"#7C3AED"};
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?16:20,marginBottom:12}}>
-          <div style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
-            {meal.l}
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,marginBottom:6,alignItems:"center"}}>
+          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:12,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
             <span/>
-            <span style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.05em"}}>Tên thức ăn</span>
+            <span style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
             <span/>
           </div>
+
           {foods.map((item,i)=>{
             const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
             return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
