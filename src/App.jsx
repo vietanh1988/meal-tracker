@@ -1074,7 +1074,12 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     else if(forcedSection==="settings")setSection(isAdmin?"ai":"weight");
     else if(forcedSection)setSection(forcedSection);
   },[forcedSection,isAdmin]);
-  const [dayType,setDayType]=useState("train");
+  const [dayType,setDayType]=useState(()=>{
+    const gd=profile.gymDays||[0,2,4,5];
+    const todayIdx=new Date().getDay();// 0=CN,1=T2...
+    const mappedIdx=todayIdx===0?6:todayIdx-1;// gymDays: 0=T2...6=CN
+    return gd.includes(mappedIdx)?"train":"rest";
+  });
   const [selectedMeal,setSelectedMeal]=useState("sang");
   const [mealMode,setMealMode]=useState("tu_nhap"); // tu_nhap | lich_tuan | kho_mau
   const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
@@ -1815,8 +1820,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           const dayLabels=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
           const todayKey=dayKeys[dayIdx];
           const todayLabel=dayLabels[dayIdx];
-          const visibleIds=mealConfig[dayType]||[];
-          const allMeals=getMeals(dayType);
+          // Auto-detect train/rest from gymDays
+          const gd=profile.gymDays||[0,2,4,5];
+          const mappedIdx=dayIdx===0?6:dayIdx-1;
+          const todayDayType=gd.includes(mappedIdx)?"train":"rest";
+          const visibleIds=mealConfig[todayDayType]||[];
+          const allMeals=getMeals(todayDayType);
           const mealsWithItems=allMeals.filter(m=>visibleIds.includes(m.id)&&m.items&&m.items.length>0);
           const totalCal=mealsWithItems.reduce((s,m)=>s+m.items.reduce((a,i)=>a+(i.cal||0),0),0);
           return <div style={{marginTop:12,padding:"16px",background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
@@ -1825,7 +1834,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               <span style={{fontSize:15,fontWeight:800,color:"#3730A3"}}>Đã đủ {mealsWithItems.length} bữa!</span>
             </div>
             <div style={{fontSize:13,color:"#4338CA",lineHeight:1.6,marginBottom:12}}>
-              Lưu làm mẫu cho <span style={{fontWeight:800}}>{todayLabel}</span> ({dayType==="train"?"Ngày tập":"Ngày nghỉ"})? Tuần sau mở app sẽ tự hiện đúng plan này.
+              Lưu làm mẫu cho <span style={{fontWeight:800}}>{todayLabel}</span> ({todayDayType==="train"?"Ngày tập":"Ngày nghỉ"})? Tuần sau mở app sẽ tự hiện đúng plan này.
             </div>
             <div style={{fontSize:12,fontWeight:700,color:"#4338CA",marginBottom:12}}>
               {mealsWithItems.length} bữa • {Math.round(totalCal)} kcal
@@ -1833,7 +1842,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             <div style={{display:"flex",gap:8}}>
               <button onClick={async()=>{
                 const mealsData=mealsWithItems.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
-                if(saveWeeklyTemplate) await saveWeeklyTemplate(todayKey,dayType,mealsData,Math.round(totalCal));
+                if(saveWeeklyTemplate) await saveWeeklyTemplate(todayKey,todayDayType,mealsData,Math.round(totalCal));
                 setShowSaveTpl(false);
                 const el=document.getElementById("tpl-week-saved");
                 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
@@ -1853,6 +1862,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
         const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
         const gymDays=profile.gymDays||[0,2,4,5];
+        const mealNameMap={"sang":"Bữa sáng","phu_sang":"Phụ sáng","trua":"Bữa trưa","phu_chieu":"Phụ chiều","pre":"Pre-workout","post":"Post-workout","toi":"Bữa tối"};
         return <div>
           <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
             <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:mob?4:6,minWidth:mob?480:"auto"}}>
@@ -1862,17 +1872,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                 const tpl=getWeeklyTemplate?getWeeklyTemplate(dayKeys[i]):null;
                 const hasTpl=tpl&&tpl.meals&&tpl.meals.length>0;
                 const totalCal=tpl?tpl.total_cal||0:0;
-                return <div key={i} style={{background:C.card,border:`1.5px solid ${hasTpl?C.green:C.border}`,borderRadius:10,padding:mob?"8px 4px":"10px 8px",textAlign:"center",cursor:"pointer",minHeight:mob?90:110,display:"flex",flexDirection:"column",justifyContent:"space-between"}} onClick={()=>{
+                const isSelected=expandedTpl===dayKeys[i];
+                return <div key={i} style={{background:isSelected?"#FEE2E2":C.card,border:`1.5px solid ${isSelected?C.red:hasTpl?C.green:C.border}`,borderRadius:10,padding:mob?"8px 4px":"10px 8px",textAlign:"center",cursor:"pointer",minHeight:mob?90:110,display:"flex",flexDirection:"column",justifyContent:"space-between"}} onClick={()=>{
                   if(hasTpl){
-                    // Load template meals into food items
-                    const tplMeals=tpl.meals||[];
-                    if(tplMeals.length>0){
-                      setDayType(dt);
-                      const firstMeal=tplMeals[0];
-                      if(firstMeal&&firstMeal.meal_id)setSelectedMeal(firstMeal.meal_id);
-                    }
+                    setExpandedTpl(isSelected?null:dayKeys[i]);
+                  }else{
+                    setMealMode("tu_nhap");setDayType(dt);
                   }
-                  setMealMode("tu_nhap");setDayType(dt);
                 }}>
                   <div>
                     <div style={{fontSize:mob?12:13,fontWeight:800,color:C.t1}}>{d}</div>
@@ -1890,24 +1896,47 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               })}
             </div>
           </div>
-          {/* Template details */}
-          {(weeklyTemplates||[]).length>0&&<div style={{marginTop:14}}>
-            <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:8}}>📋 Templates đã lưu</div>
-            {(weeklyTemplates||[]).map(tpl=>{
-              const dayLabel={"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[tpl.day_name]||tpl.day_name;
-              return <div key={tpl.id} style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+
+          {/* Detail view for selected day */}
+          {expandedTpl&&(()=>{
+            const tpl=getWeeklyTemplate?getWeeklyTemplate(expandedTpl):null;
+            if(!tpl||!tpl.meals)return null;
+            const dayLabel={"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[expandedTpl]||expandedTpl;
+            const tplMeals=tpl.meals||[];
+            return <div style={{marginTop:10,background:C.card,border:`2px solid ${C.red}`,borderRadius:12,overflow:"hidden"}}>
+              <div style={{padding:"12px 14px",background:C.redBg,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <div>
-                  <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{dayLabel} <span style={{fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:10,background:tpl.day_type==="train"?"#FEE2E2":"#DBEAFE",color:tpl.day_type==="train"?"#991B1B":"#1E40AF"}}>{tpl.day_type==="train"?"Tập":"Nghỉ"}</span></div>
-                  <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:2}}>{tpl.total_cal||0} kcal • {(tpl.meals||[]).length} bữa</div>
+                  <span style={{fontSize:14,fontWeight:800,color:"#991B1B"}}>{dayLabel}</span>
+                  <span style={{fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:10,background:tpl.day_type==="train"?"#FEE2E2":"#DBEAFE",color:tpl.day_type==="train"?"#991B1B":"#1E40AF",marginLeft:8}}>{tpl.day_type==="train"?"💪 Tập":"😴 Nghỉ"}</span>
                 </div>
-                <div style={{display:"flex",gap:6}}>
-                  <div onClick={()=>{setDayType(tpl.day_type);setMealMode("tu_nhap");}} style={{padding:"5px 10px",fontSize:11,fontWeight:700,borderRadius:8,background:C.greenBg,color:C.green,border:`1px solid ${C.green}`,cursor:"pointer"}}>Dùng</div>
+                <span style={{fontSize:16,fontWeight:900,color:C.red}}>{tpl.total_cal||0} kcal</span>
+              </div>
+              <div style={{padding:"12px 14px"}}>
+                {tplMeals.map((m,mi)=>{
+                  const mItems=m.items||[];
+                  const mCal=mItems.reduce((s,it)=>s+(it.cal||0),0);
+                  return <div key={mi} style={{marginBottom:mi<tplMeals.length-1?12:0}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                      <span style={{fontSize:13,fontWeight:800,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
+                      <span style={{fontSize:13,fontWeight:800,color:C.red}}>{Math.round(mCal)} cal</span>
+                    </div>
+                    {mItems.map((it,ii)=><div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
+                      <span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
+                      <span style={{color:C.t3}}>P:{it.p||0} C:{it.c||0} F:{it.f||0}</span>
+                    </div>)}
+                    {mi<tplMeals.length-1&&<div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginTop:8}}/>}
+                  </div>;
+                })}
+                <div style={{display:"flex",gap:8,marginTop:14}}>
+                  <button onClick={()=>{setDayType(tpl.day_type);setMealMode("tu_nhap");setExpandedTpl(null);}} style={{flex:1,padding:"10px",fontSize:12,fontWeight:800,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Sửa</button>
+                  <button onClick={()=>setExpandedTpl(null)} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Đóng</button>
                 </div>
-              </div>;
-            })}
-          </div>}
+              </div>
+            </div>;
+          })()}
+
           <div style={{marginTop:14,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn vào ngày để nhập bữa ăn. Khi lưu đủ bữa, app sẽ hỏi "Lưu làm mẫu?" để dùng lại tuần sau.</span>
+            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn ngày xanh để xem chi tiết. Nhấn ô "+" để nhập bữa ăn mới.</span>
           </div>
         </div>;
       })()}
