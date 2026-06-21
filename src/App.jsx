@@ -1979,22 +1979,20 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     }else{setMealMode("tu_nhap");setDayType(dt);}
                   }
                 }}>
-                  <div style={{display:"flex",alignItems:"stretch"}}>
-                    <div style={{width:48,background:"#1E3A5F",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <div style={{width:48,background:"#1E3A5F",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,borderRadius:"12px 0 0 12px"}}>
                       <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>{d}</div>
                       <div style={{fontSize:10,fontWeight:600,color:isGym?"#FCA5A5":"#93C5FD"}}>{isGym?"Tập":"Nghỉ"}</div>
                     </div>
-                    <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center"}}>
-                    <div style={{flex:1}}>
-                      {hasTpl?<>
-                        <div style={{fontSize:14}}><span style={{fontWeight:800,color:C.t1}}>{totalCal} kcal</span> <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{mealCount} bữa</span></div>
-                        <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:2}}>{mealList}</div>
-                      </>:<div style={{fontSize:13,fontWeight:600,color:C.t3}}>Chưa có dữ liệu</div>}
+                    <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",gap:8}}>
+                      <div style={{flex:1}}>
+                        {hasTpl?<>
+                          <div style={{fontSize:14}}><span style={{fontWeight:800,color:C.t1}}>{totalCal} kcal</span> <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{mealCount} bữa</span></div>
+                          <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:2}}>{mealList}</div>
+                        </>:<div style={{fontSize:13,fontWeight:600,color:C.t3}}>Chưa có dữ liệu</div>}
+                      </div>
+                      {hasTpl?<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#DCFCE7",color:"#166534",border:"1px solid #86EFAC",whiteSpace:"nowrap"}}>✓ Đã lưu</div>
+                      :<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:C.surface,color:C.t3,border:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>+ Gán</div>}
                     </div>
-                    {hasTpl?<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#DCFCE7",color:"#166534",border:"1px solid #86EFAC"}}>✓ Đã lưu</div>
-                    :<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:C.surface,color:C.t3,border:`1px solid ${C.border}`}}>+ Gán</div>}
-                    </div>
-                  </div>
                 </div>
                 {/* Expanded detail */}
                 {isSelected&&hasTpl&&<div style={{...card,marginTop:-4,borderTop:`1.5px solid ${C.border}`,borderTopLeftRadius:0,borderTopRightRadius:0,border:`2px solid ${C.red}`,borderTop:`1.5px solid ${C.border}`}}>
