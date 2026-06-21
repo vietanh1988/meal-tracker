@@ -1172,9 +1172,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     setAiResult(null);
   },[selectedMeal,dayType]);
 
-  const addFood=()=>setFoodItems([...foodItems,{name:"",qty:1,gram:100,unit:"g"}]);
-  const removeFood=(idx)=>setFoodItems(foodItems.filter((_,i)=>i!==idx));
-  const updateFood=(idx,field,val)=>{const u=[...foodItems];u[idx]={...u[idx],[field]:val};setFoodItems(u);};
+  // Food items for AI calculation (set by tu_nhap before calling callAI)
 
   const prompt=`Bạn là chuyên gia dinh dưỡng. Phân tích dinh dưỡng cho thức ăn dưới đây.
 Lưu ý: đồ uống (sữa, nước ép, sinh tố) tính theo ml chứ không phải g. 1ml nước/sữa ≈ 1g.
@@ -1613,8 +1611,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
         const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#DC2626","post":"#16A34A","toi":"#7C3AED"};
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
-        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?12:16,marginBottom:10}}>
-          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
+          <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 30px 50px 20px":"28px 2fr 60px 60px 80px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
             <span/>
             <span style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
@@ -1625,7 +1623,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
           {foods.map((item,i)=>{
             const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
-            return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
+            return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 30px 50px 20px":"28px 2fr 60px 60px 80px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
               <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
               <input value={item.name} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?13:14,height:mob?38:40,padding:mob?"8px 10px":"8px 12px"}}/>
               <select value={item.unit||"g"} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?12:14,height:mob?38:40}}>
@@ -1740,7 +1738,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     </div>}
 
     {/* MEALS */}
-    {section==="meals"&&<div style={card}>
+    {section==="meals"&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
       <div style={{fontSize:17,fontWeight:900,color:C.blue}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:12}}>
         {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":"14 template có sẵn — 7 ngày tập + 7 ngày nghỉ"}
@@ -1799,8 +1797,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
         const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#DC2626","post":"#16A34A","toi":"#7C3AED"};
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
-        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?12:16,marginBottom:10}}>
-          <div style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
+          <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 30px 50px 20px":"28px 2fr 60px 60px 80px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
             <span/>
             <span style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
@@ -1811,7 +1809,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
           {foods.map((item,i)=>{
             const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
-            return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"20px 1fr 46px 32px 52px 22px":"32px 2fr 60px 70px 80px 32px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
+            return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 30px 50px 20px":"28px 2fr 60px 60px 80px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
               <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
               <input value={item.name} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?13:14,height:mob?38:40,padding:mob?"8px 10px":"10px 12px"}}/>
               <select value={item.unit||"g"} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?12:14,height:mob?38:40,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
