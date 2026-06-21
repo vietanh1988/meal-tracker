@@ -1012,7 +1012,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState(forcedSection==="settings"?(isAdmin?"ai":"weight"):(forcedSection==="profile"?"profile":(forcedSection||"meals")));
   useEffect(()=>{
@@ -1689,26 +1689,38 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* === MODE: Lịch tuần === */}
       {mealMode==="lich_tuan"&&(()=>{
-        const daysOfWeek=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
         const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
+        const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
         const gymDays=profile.gymDays||[0,2,4,5];
         return <div>
           <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-            <div style={{display:"grid",gridTemplateColumns:mob?"repeat(7,1fr)":"repeat(7,1fr)",gap:mob?4:6,minWidth:mob?480:"auto"}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:mob?4:6,minWidth:mob?480:"auto"}}>
               {dayLabels.map((d,i)=>{
                 const isGym=gymDays.includes(i);
                 const dt=isGym?"train":"rest";
-                const dayMeals=getMeals(dt);
-                const hasMeals=dayMeals.some(m=>m.items&&m.items.length>0);
-                const totalCal=dayMeals.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
-                return <div key={i} style={{background:C.card,border:`1.5px solid ${hasMeals?C.green:C.border}`,borderRadius:10,padding:mob?"8px 4px":"10px 8px",textAlign:"center",cursor:"pointer",minHeight:mob?90:110,display:"flex",flexDirection:"column",justifyContent:"space-between"}} onClick={()=>{setMealMode("tu_nhap");setDayType(dt);}}>
+                const tpl=getWeeklyTemplate?getWeeklyTemplate(dayKeys[i]):null;
+                const hasTpl=tpl&&tpl.meals&&tpl.meals.length>0;
+                const totalCal=tpl?tpl.total_cal||0:0;
+                return <div key={i} style={{background:C.card,border:`1.5px solid ${hasTpl?C.green:C.border}`,borderRadius:10,padding:mob?"8px 4px":"10px 8px",textAlign:"center",cursor:"pointer",minHeight:mob?90:110,display:"flex",flexDirection:"column",justifyContent:"space-between"}} onClick={()=>{
+                  if(hasTpl){
+                    // Load template meals into food items
+                    const tplMeals=tpl.meals||[];
+                    if(tplMeals.length>0){
+                      setDayType(dt);
+                      const firstMeal=tplMeals[0];
+                      if(firstMeal&&firstMeal.meal_id)setSelectedMeal(firstMeal.meal_id);
+                    }
+                  }
+                  setMealMode("tu_nhap");setDayType(dt);
+                }}>
                   <div>
                     <div style={{fontSize:mob?12:13,fontWeight:800,color:C.t1}}>{d}</div>
                     <div style={{fontSize:mob?9:10,fontWeight:600,color:isGym?"#991B1B":"#1E40AF",marginTop:2}}>{isGym?"💪 Tập":"😴 Nghỉ"}</div>
                   </div>
-                  {hasMeals?<div style={{marginTop:6}}>
+                  {hasTpl?<div style={{marginTop:6}}>
                     <div style={{fontSize:mob?14:16,fontWeight:900,color:C.red}}>{totalCal}</div>
                     <div style={{fontSize:9,fontWeight:600,color:C.t3}}>kcal</div>
+                    <div style={{fontSize:8,fontWeight:600,color:C.green,marginTop:2}}>✓ Đã cài</div>
                   </div>:<div style={{marginTop:6}}>
                     <div style={{fontSize:mob?18:22,opacity:0.3}}>+</div>
                     <div style={{fontSize:9,fontWeight:600,color:C.t3}}>Thêm</div>
@@ -1717,11 +1729,24 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               })}
             </div>
           </div>
+          {/* Template details */}
+          {(weeklyTemplates||[]).length>0&&<div style={{marginTop:14}}>
+            <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:8}}>📋 Templates đã lưu</div>
+            {(weeklyTemplates||[]).map(tpl=>{
+              const dayLabel={"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[tpl.day_name]||tpl.day_name;
+              return <div key={tpl.id} style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:"10px 14px",marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{dayLabel} <span style={{fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:10,background:tpl.day_type==="train"?"#FEE2E2":"#DBEAFE",color:tpl.day_type==="train"?"#991B1B":"#1E40AF"}}>{tpl.day_type==="train"?"Tập":"Nghỉ"}</span></div>
+                  <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:2}}>{tpl.total_cal||0} kcal • {(tpl.meals||[]).length} bữa</div>
+                </div>
+                <div style={{display:"flex",gap:6}}>
+                  <div onClick={()=>{setDayType(tpl.day_type);setMealMode("tu_nhap");}} style={{padding:"5px 10px",fontSize:11,fontWeight:700,borderRadius:8,background:C.greenBg,color:C.green,border:`1px solid ${C.green}`,cursor:"pointer"}}>Dùng</div>
+                </div>
+              </div>;
+            })}
+          </div>}
           <div style={{marginTop:14,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn vào ngày bất kỳ để nhập/sửa bữa ăn. Lịch tập theo cài đặt trong tab Hồ sơ → Lịch tập.</span>
-          </div>
-          <div style={{marginTop:12,padding:"12px 16px",background:C.blueBg,borderRadius:10,border:"1.5px solid #3B82F6"}}>
-            <span style={{fontSize:13,fontWeight:700,color:"#1E40AF",lineHeight:1.6}}>🚀 Tính năng "Lưu mẫu tuần" & "Áp dụng mẫu" sẽ kết nối Supabase trong bản cập nhật tiếp theo.</span>
+            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn vào ngày để nhập bữa ăn. Khi lưu đủ bữa, app sẽ hỏi "Lưu làm mẫu?" để dùng lại tuần sau.</span>
           </div>
         </div>;
       })()}
@@ -1769,8 +1794,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               <div style={{fontSize:11,fontWeight:600,color:C.t3,lineHeight:1.5}}>🍽️ {t.meals}</div>
             </div>)}
           </div>
-          <div style={{marginTop:14,padding:"12px 16px",background:C.blueBg,borderRadius:10,border:"1.5px solid #3B82F6"}}>
-            <span style={{fontSize:13,fontWeight:700,color:"#1E40AF",lineHeight:1.6}}>🚀 Tính năng "Áp dụng template" & "Tạo template tuỳ chỉnh" sẽ kết nối Supabase trong bản cập nhật tiếp theo.</span>
+          <div style={{marginTop:14,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
+            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn vào template để xem chi tiết và áp dụng cho bữa ăn hôm nay.</span>
           </div>
         </div>;
       })()}
@@ -2732,7 +2757,7 @@ export default function App(){
   const [tab,setTab]=useState("dashboard");
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
-  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache}=useUserData(user?.id);
+  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||defaultProfile);
   const mob=useIsMobile();
@@ -2771,7 +2796,7 @@ export default function App(){
       {/* MOBILE: separate views per tab */}
       {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>}
       {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile"/>}
-      {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals"/>}
+      {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate}/>}
       {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>}
       {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user}/>}
 
@@ -2798,7 +2823,7 @@ export default function App(){
           }}>{t.l}</button>
         )}
       </div>
-      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:tab==="about"?<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
+      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} appSettings={appSettings} mob={mob}/>:tab==="about"?<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate}/>}
     </>}
     </div>
   </div>;

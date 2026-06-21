@@ -26,6 +26,7 @@ export function useUserData(userId) {
   const [loaded, setLoaded] = useState(false);
   const [meals, setMeals] = useState({ train: defaultStructure.train, rest: defaultStructure.rest });
   const [foodCache, setFoodCache] = useState({});
+  const [weeklyTemplates, setWeeklyTemplates] = useState([]);
 
   // Load from Supabase on login
   useEffect(() => {
@@ -64,6 +65,14 @@ export function useUserData(userId) {
           });
           setFoodCache(fc);
           console.log(`✅ Loaded ${cacheData.length} food cache entries from cloud`);
+        }
+
+        // Load weekly templates
+        const { data: tplData, error: tplErr } = await supabase.from("weekly_templates").select("*").eq("user_id", userId).order("created_at");
+        if (tplErr) console.error("Load weekly templates error:", tplErr);
+        if (tplData) {
+          setWeeklyTemplates(tplData);
+          console.log(`✅ Loaded ${tplData.length} weekly templates`);
         }
       } catch (e) { console.error("UserData load error:", e); }
       setLoaded(true);
@@ -131,10 +140,8 @@ export function useUserData(userId) {
   }, []);
 
   // Save food cache to Supabase
-  // normalizedEntries: {key: {p, c, f, fiber, cal, gram}} — already normalized per-100g or per-1-unit
   const saveFoodCache = useCallback(async (normalizedEntries, provider) => {
     if (!userId) return;
-    // Update local state immediately
     updateFoodCacheState(normalizedEntries);
     for (const [name, v] of Object.entries(normalizedEntries)) {
       try {
@@ -151,16 +158,14 @@ export function useUserData(userId) {
     console.log("✅ Food cache synced:", Object.keys(normalizedEntries).length, "items");
   }, [userId, updateFoodCacheState]);
 
-  // Delete specific food cache entries (by name keys)
+  // Delete specific food cache entries
   const deleteFoodCache = useCallback(async (nameKeys) => {
     if (!userId || !nameKeys || nameKeys.length === 0) return;
-    // Remove from local state
     setFoodCache(prev => {
       const fc = { ...prev };
       nameKeys.forEach(k => { delete fc[k]; });
       return fc;
     });
-    // Remove from Supabase
     for (const name of nameKeys) {
       try {
         const { error } = await supabase.from("food_cache").delete().eq("food_name", name);
@@ -170,7 +175,7 @@ export function useUserData(userId) {
     console.log("🗑️ Deleted cache entries:", nameKeys);
   }, [userId]);
 
-  // Get meal history for date range (for reports)
+  // Get meal history for date range (for reports — from meal_logs)
   const getMealHistory = useCallback(async (startDate, endDate) => {
     if (!userId) return [];
     try {
@@ -185,5 +190,119 @@ export function useUserData(userId) {
     } catch (e) { console.error("Meal history error:", e); return []; }
   }, [userId]);
 
-  return { loaded, meals, getMeals, getMealHistory, foodCache, saveMealToCloud, saveFoodCache, deleteFoodCache };
+  // ===== WEEKLY TEMPLATES =====
+
+  // Save or update a weekly template
+  const saveWeeklyTemplate = useCallback(async (dayName, dayType, mealsData, totalCal) => {
+    if (!userId) return;
+    try {
+      const { data: existing } = await supabase.from("weekly_templates")
+        .select("id").eq("user_id", userId).eq("day_name", dayName)
+        .maybeSingle();
+
+      const payload = {
+        day_type: dayType,
+        meals: mealsData,
+        total_cal: totalCal || 0,
+      };
+
+      if (existing) {
+        const { error } = await supabase.from("weekly_templates").update(payload).eq("id", existing.id);
+        if (error) { console.error("Update template error:", error); return; }
+        console.log("✅ Template updated:", dayName);
+      } else {
+        const { error } = await supabase.from("weekly_templates").insert({
+          user_id: userId, day_name: dayName, ...payload,
+        });
+        if (error) { console.error("Insert template error:", error); return; }
+        console.log("✅ Template saved:", dayName);
+      }
+      // Reload templates
+      const { data: refreshed } = await supabase.from("weekly_templates").select("*").eq("user_id", userId).order("created_at");
+      if (refreshed) setWeeklyTemplates(refreshed);
+    } catch (e) { console.error("Template save error:", e); }
+  }, [userId]);
+
+  // Delete a weekly template
+  const deleteWeeklyTemplate = useCallback(async (dayName) => {
+    if (!userId) return;
+    try {
+      const { error } = await supabase.from("weekly_templates").delete().eq("user_id", userId).eq("day_name", dayName);
+      if (error) { console.error("Delete template error:", error); return; }
+      setWeeklyTemplates(prev => prev.filter(t => t.day_name !== dayName));
+      console.log("🗑️ Template deleted:", dayName);
+    } catch (e) { console.error("Template delete error:", e); }
+  }, [userId]);
+
+  // Get template for a specific day
+  const getWeeklyTemplate = useCallback((dayName) => {
+    return weeklyTemplates.find(t => t.day_name === dayName) || null;
+  }, [weeklyTemplates]);
+
+  // ===== DAILY LOGS =====
+
+  // Save daily log (upsert by user_id + date)
+  const saveDailyLog = useCallback(async (date, dayType, mealsData, totalCal, isComplete) => {
+    if (!userId) return;
+    try {
+      const totalP = (mealsData || []).reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
+      const totalC = (mealsData || []).reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
+      const totalF = (mealsData || []).reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
+      const totalFiber = (mealsData || []).reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
+
+      const { error } = await supabase.from("daily_logs").upsert({
+        user_id: userId,
+        log_date: date,
+        day_type: dayType,
+        meals: mealsData,
+        total_cal: totalCal || 0,
+        total_protein: Math.round(totalP * 10) / 10,
+        total_carb: Math.round(totalC * 10) / 10,
+        total_fat: Math.round(totalF * 10) / 10,
+        total_fiber: Math.round(totalFiber * 10) / 10,
+        is_complete: isComplete || false,
+      }, { onConflict: "user_id,log_date" });
+
+      if (error) console.error("Daily log save error:", error);
+      else console.log("✅ Daily log saved:", date, isComplete ? "(complete)" : "(partial)");
+    } catch (e) { console.error("Daily log error:", e); }
+  }, [userId]);
+
+  // Get daily logs for date range (for reports)
+  const getDailyLogs = useCallback(async (startDate, endDate) => {
+    if (!userId) return [];
+    try {
+      const { data, error } = await supabase.from("daily_logs")
+        .select("*")
+        .eq("user_id", userId)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true });
+      if (error) { console.error("Daily logs error:", error); return []; }
+      return data || [];
+    } catch (e) { console.error("Daily logs error:", e); return []; }
+  }, [userId]);
+
+  // Get single daily log
+  const getDailyLog = useCallback(async (date) => {
+    if (!userId) return null;
+    try {
+      const { data, error } = await supabase.from("daily_logs")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("log_date", date)
+        .maybeSingle();
+      if (error) { console.error("Daily log fetch error:", error); return null; }
+      return data || null;
+    } catch (e) { console.error("Daily log fetch error:", e); return null; }
+  }, [userId]);
+
+  return {
+    loaded, meals, getMeals, getMealHistory, foodCache,
+    saveMealToCloud, saveFoodCache, deleteFoodCache,
+    // Weekly templates
+    weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, getWeeklyTemplate,
+    // Daily logs
+    saveDailyLog, getDailyLogs, getDailyLog,
+  };
 }
