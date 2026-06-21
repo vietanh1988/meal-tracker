@@ -1311,7 +1311,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     finally{setAiLoading(false);}
   },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey]);
 
-  const mealNames=ALL_MEALS.filter(m=>mealConfig[dayType]?.includes(m.id)).map(m=>({id:m.id,l:`${m.icon} ${mob?m.short:m.name}`}));
+  const mealNames=ALL_MEALS.filter(m=>mealConfig[dayType]?.includes(m.id)).map(m=>({id:m.id,l:`${m.icon} ${m.name}`}));
 
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
 
@@ -1650,7 +1650,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <div onClick={()=>{setDayType("train");setAiResult(null);}} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
           <div onClick={()=>{setDayType("rest");setAiResult(null);}} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
         </div>
-        <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ {mob?"":"Quản lý"}</div>
+        <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ Quản lý</div>
       </div>
       {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
         <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:10}}>⚙️ Tuỳ chỉnh bữa ăn — {dayType==="train"?"Ngày tập":"Ngày nghỉ"}</div>
@@ -1679,8 +1679,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* All meals — each as labeled card */}
       {mealNames.map(meal=>{
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
-        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,padding:mob?12:14,marginBottom:8}}>
-          <div style={{fontSize:14,fontWeight:800,color:C.t1,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
+        const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#DC2626","post":"#16A34A","toi":"#7C3AED"};
+        const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?12:14,marginBottom:8}}>
+          <div style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
             {meal.l}
           </div>
           {foods.map((item,i)=>{
