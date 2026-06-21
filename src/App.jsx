@@ -1680,8 +1680,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {mealNames.map(meal=>{
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,padding:mob?12:14,marginBottom:8}}>
-          <div style={{fontSize:14,fontWeight:800,color:C.t1,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:6}}>
-            <MealIcon id={meal.id} size={16}/> {meal.l}
+          <div style={{fontSize:14,fontWeight:800,color:C.t1,marginBottom:10,paddingBottom:8,borderBottom:`1px solid ${C.border}`}}>
+            {meal.l}
           </div>
           {foods.map((item,i)=>{
             const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
