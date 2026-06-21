@@ -1059,6 +1059,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [mealMode,setMealMode]=useState("tu_nhap"); // tu_nhap | lich_tuan | kho_mau
   const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
   const [expandedTpl,setExpandedTpl]=useState(null); // expanded template ID for detail view
+  const [showSaveTpl,setShowSaveTpl]=useState(false); // popup save to weekly template
   const [mealConfig,setMealConfig]=useState(()=>{
     try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
     catch(e){return {...DEFAULT_MEAL_CONFIG};}
@@ -1747,7 +1748,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <span style={{fontSize:13,fontWeight:700,color:"#78350F"}}>💡 {aiResult.tip}</span>
         </div>}
         <button onClick={()=>{
-            // Save AI result items directly — no re-matching needed
+            // Save AI result items directly
             const aiItems=aiResult.items||[];
             const items=aiItems.map(ai=>{
               const unit=ai.unit||"g";
@@ -1763,14 +1764,66 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               };
             });
             saveMealToCloud(selectedMeal,dayType,items);
-            // Pass normalized cache entries (per-100g or per-1-unit)
             if(aiResult._cacheEntries) saveFoodCache(aiResult._cacheEntries,aiProvider);
-            // DOM approach — immune to React re-render (same as profile-saved)
             const el=document.getElementById("meal-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+            // Check: đã đủ bữa chưa? Nếu đủ → hỏi lưu mẫu tuần
+            setTimeout(()=>{
+              const visibleIds=mealConfig[dayType]||[];
+              const allMeals=getMeals(dayType);
+              // Count meals with items (including the one just saved)
+              let filledCount=0;
+              visibleIds.forEach(mid=>{
+                const meal=allMeals.find(m=>m.id===mid);
+                if(mid===selectedMeal){filledCount++;}// vừa save xong
+                else if(meal&&meal.items&&meal.items.length>0){filledCount++;}
+              });
+              if(filledCount>=visibleIds.length&&visibleIds.length>=2){
+                setShowSaveTpl(true);
+              }
+            },500);
         }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu vào bữa {mealNames.find(m=>m.id===selectedMeal)?.l||selectedMeal}</button>
         <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu thành công!</span>
+        </div>
+
+        {/* Popup: Lưu làm mẫu tuần */}
+        {showSaveTpl&&(()=>{
+          const today=new Date();
+          const dayIdx=today.getDay();// 0=CN,1=T2...
+          const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
+          const dayLabels=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
+          const todayKey=dayKeys[dayIdx];
+          const todayLabel=dayLabels[dayIdx];
+          const visibleIds=mealConfig[dayType]||[];
+          const allMeals=getMeals(dayType);
+          const mealsWithItems=allMeals.filter(m=>visibleIds.includes(m.id)&&m.items&&m.items.length>0);
+          const totalCal=mealsWithItems.reduce((s,m)=>s+m.items.reduce((a,i)=>a+(i.cal||0),0),0);
+          return <div style={{marginTop:12,padding:"16px",background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
+            <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
+              <span style={{fontSize:18}}>📅</span>
+              <span style={{fontSize:15,fontWeight:800,color:"#3730A3"}}>Đã đủ {mealsWithItems.length} bữa!</span>
+            </div>
+            <div style={{fontSize:13,color:"#4338CA",lineHeight:1.6,marginBottom:12}}>
+              Lưu làm mẫu cho <span style={{fontWeight:800}}>{todayLabel}</span> ({dayType==="train"?"Ngày tập":"Ngày nghỉ"})? Tuần sau mở app sẽ tự hiện đúng plan này.
+            </div>
+            <div style={{fontSize:12,fontWeight:700,color:"#4338CA",marginBottom:12}}>
+              {mealsWithItems.length} bữa • {Math.round(totalCal)} kcal
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={async()=>{
+                const mealsData=mealsWithItems.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
+                if(saveWeeklyTemplate) await saveWeeklyTemplate(todayKey,dayType,mealsData,Math.round(totalCal));
+                setShowSaveTpl(false);
+                const el=document.getElementById("tpl-week-saved");
+                if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+              }} style={{flex:1,padding:"10px",fontSize:13,fontWeight:800,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu cho {todayLabel}</button>
+              <button onClick={()=>setShowSaveTpl(false)} style={{padding:"10px 16px",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Không</button>
+            </div>
+          </div>;
+        })()}
+        <div id="tpl-week-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu mẫu tuần! Dashboard sẽ tự hiện plan này.</span>
         </div>
       </div>}
       </>}
