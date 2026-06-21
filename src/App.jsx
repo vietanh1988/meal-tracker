@@ -17,10 +17,6 @@ function useIsMobile(breakpoint=600){
   },[breakpoint]);
   return m;
 }
-function MealIcon({id,size=16}){
-  const icons={"sang":"🌅","phu_sang":"🥤","trua":"☀️","phu_chieu":"🍌","pre":"⚡","post":"💪","toi":"🌙"};
-  return <span style={{fontSize:size}}>{icons[id]||"🍽️"}</span>;
-}
 
 const C = {
   protein:"#DC2626", carb:"#B45309", fat:"#111", fiber:"#15803D",
