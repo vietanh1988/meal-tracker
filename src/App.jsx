@@ -1754,50 +1754,33 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* === MODE: Kho mẫu === */}
       {mealMode==="kho_mau"&&(()=>{
-        const templates=[
-          {id:1,type:"train",name:"Ngày tập A — Ngực/Vai",cal:2450,p:165,c:280,f:75,meals:"Yến mạch + Whey | Cơm gà + Rau | Khoai lang + Ức gà"},
-          {id:2,type:"train",name:"Ngày tập B — Lưng/Tay",cal:2500,p:170,c:290,f:72,meals:"Bánh mì trứng + Sữa | Cơm bò xào | Cá hồi + Rau"},
-          {id:3,type:"train",name:"Ngày tập C — Chân/Bụng",cal:2550,p:168,c:300,f:74,meals:"Phở bò | Cơm tôm + Đậu | Bún chả cá"},
-          {id:4,type:"train",name:"Ngày tập D — Push",cal:2480,p:172,c:275,f:73,meals:"Cháo yến mạch | Cơm sườn + Trứng | Gà nướng + Salad"},
-          {id:5,type:"train",name:"Ngày tập E — Pull",cal:2520,p:175,c:285,f:71,meals:"Sandwich ức gà | Cơm cá kho | Mì ý thịt bò"},
-          {id:6,type:"train",name:"Ngày tập F — Full Body",cal:2600,p:180,c:295,f:76,meals:"Granola + Sữa chua | Bún bò | Cơm thịt kho trứng"},
-          {id:7,type:"train",name:"Ngày tập G — Cường độ cao",cal:2700,p:185,c:310,f:78,meals:"Bánh cuốn + Trứng | Cơm gà xối mỡ | Lẩu hải sản"},
-          {id:8,type:"rest",name:"Nghỉ ngơi A — Nhẹ nhàng",cal:1950,p:145,c:210,f:68,meals:"Sữa chua Granola | Cơm cá + Rau | Soup gà"},
-          {id:9,type:"rest",name:"Nghỉ ngơi B — Recovery",cal:2000,p:150,c:220,f:65,meals:"Trứng + Toast | Phở gà | Salad cá ngừ"},
-          {id:10,type:"rest",name:"Nghỉ ngơi C — Active rest",cal:2050,p:148,c:225,f:70,meals:"Cháo thịt bằm | Cơm trứng chiên | Canh chua cá"},
-          {id:11,type:"rest",name:"Nghỉ ngơi D — Low carb",cal:1900,p:155,c:180,f:75,meals:"Trứng + Bơ | Salad ức gà | Cá hấp + Rau"},
-          {id:12,type:"rest",name:"Nghỉ ngơi E — Cân bằng",cal:2020,p:152,c:215,f:72,meals:"Smoothie chuối | Bún riêu | Cơm thịt luộc"},
-          {id:13,type:"rest",name:"Nghỉ ngơi F — Detox",cal:1850,p:140,c:200,f:65,meals:"Sinh tố rau | Miến gà | Rau trộn + Đậu hũ"},
-          {id:14,type:"rest",name:"Nghỉ ngơi G — Cheat meal",cal:2300,p:135,c:280,f:80,meals:"Bánh mì thịt | Bún chả | Pizza + Salad"},
-        ];
-        const filtered=tplFilter==="all"?templates:templates.filter(t=>t.type===tplFilter);
+        const filtered=tplFilter==="all"?(weeklyTemplates||[]):(weeklyTemplates||[]).filter(t=>t.day_type===tplFilter);
         return <div>
           <div style={{display:"flex",gap:6,marginBottom:14}}>
             {[{id:"all",l:"Tất cả"},{id:"train",l:"💪 Ngày tập"},{id:"rest",l:"😴 Ngày nghỉ"}].map(f=>
               <div key={f.id} onClick={()=>setTplFilter(f.id)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:tplFilter===f.id?700:600,background:tplFilter===f.id?"#FEE2E2":"#F9FAFB",color:tplFilter===f.id?"#991B1B":"#6B7280",border:`1.5px solid ${tplFilter===f.id?"#F87171":"#E5E7EB"}`,cursor:"pointer"}}>{f.l}</div>
             )}
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {filtered.map(t=><div key={t.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,padding:mob?"12px":"14px 16px",cursor:"pointer"}} onClick={()=>{setDayType(t.type);setMealMode("tu_nhap");}}>
+          {filtered.length>0?<div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {filtered.map(t=>{
+              const dayLabel={"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[t.day_name]||t.day_name;
+              const mealCount=(t.meals||[]).length;
+              return <div key={t.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,padding:mob?"12px":"14px 16px",cursor:"pointer"}} onClick={()=>{setDayType(t.day_type);setMealMode("tu_nhap");}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:12,fontWeight:700,padding:"2px 8px",borderRadius:12,background:t.type==="train"?"#FEE2E2":"#DBEAFE",color:t.type==="train"?"#991B1B":"#1E40AF"}}>{t.type==="train"?"💪 Tập":"😴 Nghỉ"}</span>
-                  <span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>{t.name}</span>
+                  <span style={{fontSize:12,fontWeight:700,padding:"2px 8px",borderRadius:12,background:t.day_type==="train"?"#FEE2E2":"#DBEAFE",color:t.day_type==="train"?"#991B1B":"#1E40AF"}}>{t.day_type==="train"?"💪 Tập":"😴 Nghỉ"}</span>
+                  <span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>{dayLabel}</span>
                 </div>
-                <span style={{fontSize:16,fontWeight:900,color:C.red}}>{t.cal}</span>
+                <span style={{fontSize:16,fontWeight:900,color:C.red}}>{t.total_cal||0}</span>
               </div>
-              <div style={{display:"flex",gap:mob?8:12,fontSize:12,fontWeight:600,color:C.t3,marginBottom:6}}>
-                <span style={{color:C.protein}}>P: {t.p}g</span>
-                <span style={{color:C.carb}}>C: {t.c}g</span>
-                <span style={{color:C.t1}}>F: {t.f}g</span>
-                <span style={{color:C.t3}}>{t.cal} kcal</span>
-              </div>
-              <div style={{fontSize:11,fontWeight:600,color:C.t3,lineHeight:1.5}}>🍽️ {t.meals}</div>
-            </div>)}
-          </div>
-          <div style={{marginTop:14,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-            <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Nhấn vào template để xem chi tiết và áp dụng cho bữa ăn hôm nay.</span>
-          </div>
+              <div style={{fontSize:12,fontWeight:600,color:C.t3}}>{mealCount} bữa • {t.total_cal||0} kcal</div>
+            </div>;})}
+          </div>:<div style={{textAlign:"center",padding:"30px 16px"}}>
+            <div style={{fontSize:32,marginBottom:8}}>📚</div>
+            <div style={{fontSize:14,fontWeight:800,color:C.t2,marginBottom:4}}>Chưa có mẫu nào</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:14,lineHeight:1.5}}>Vào tab "Tự nhập" → nhập đủ bữa → app sẽ hỏi lưu làm mẫu. Hoặc vào "Lịch tuần" để tạo mẫu theo thứ.</div>
+            <button onClick={()=>setMealMode("tu_nhap")} style={{padding:"10px 20px",fontSize:13,fontWeight:800,border:"none",borderRadius:10,background:"linear-gradient(135deg,#DC2626,#B91C1C)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>✏️ Bắt đầu nhập bữa ăn</button>
+          </div>}
         </div>;
       })()}
     </div>}
