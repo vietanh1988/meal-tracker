@@ -1091,6 +1091,8 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
   const [expandedTpl,setExpandedTpl]=useState(null); // expanded template ID for detail view
   const [showSaveTpl,setShowSaveTpl]=useState(false); // popup save to weekly template
+  const [showAssignDays,setShowAssignDays]=useState(null); // kho mau: which template showing day picker
+  const [assignSelectedDays,setAssignSelectedDays]=useState([]); // selected days for assign
   // Unified food items per meal (for all-in-one input)
   const [allFoodItems,setAllFoodItems]=useState({});
   const [mealConfig,setMealConfig]=useState(()=>{
@@ -2070,6 +2072,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     </div>)}
                   </div>;
                 })}
+                <div style={{display:"flex",gap:8,marginTop:12}}>
                 <button onClick={async(e)=>{
                   e.stopPropagation();
                   if(applyTemplate){
@@ -2080,11 +2083,54 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     const el=document.getElementById("tpl-applied");
                     if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
                   }
-                }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>📥 Áp dụng cho hôm nay</button>
+                }} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)"}}>📥 Hôm nay</button>
+                <button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Gán lịch tuần</button>
+                </div>
+                {showAssignDays===t.id&&(()=>{
+                  const dayKeys2=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
+                  const dayLabels2=["T2","T3","T4","T5","T6","T7","CN"];
+                  const gd=profile.gymDays||[0,2,4,5];
+                  return <div style={{marginTop:10,padding:12,background:"#EEF2FF",borderRadius:10,border:"1.5px solid #818CF8"}} onClick={e=>e.stopPropagation()}>
+                    <div style={{fontSize:13,fontWeight:800,color:"#3730A3",marginBottom:8}}>Gán vào ngày nào?</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+                      {dayLabels2.map((dl,di)=>{
+                        const isGym=gd.includes(di);
+                        const dt=isGym?"train":"rest";
+                        const sameType=dt===t.day_type;
+                        const isSelected=(assignSelectedDays||[]).includes(dayKeys2[di]);
+                        return <div key={di} onClick={()=>{
+                          if(!sameType)return;
+                          const cur=[...(assignSelectedDays||[])];
+                          if(isSelected) setAssignSelectedDays(cur.filter(d=>d!==dayKeys2[di]));
+                          else setAssignSelectedDays([...cur,dayKeys2[di]]);
+                        }} style={{padding:"6px 12px",borderRadius:10,fontSize:12,fontWeight:isSelected?700:600,
+                          background:isSelected?"#6366F1":sameType?"#EEF2FF":"#F3F4F6",
+                          color:isSelected?"#fff":sameType?"#3730A3":"#9CA3AF",
+                          border:`1.5px solid ${isSelected?"#4F46E5":sameType?"#818CF8":"#E5E7EB"}`,
+                          cursor:sameType?"pointer":"not-allowed",opacity:sameType?1:0.5,
+                        }}>{dl} ({isGym?"Tập":"Nghỉ"})</div>;
+                      })}
+                    </div>
+                    <div style={{fontSize:11,color:"#4338CA",marginBottom:8}}>Chọn ngày cùng loại ({t.day_type==="train"?"Tập":"Nghỉ"}). {(assignSelectedDays||[]).length} ngày đã chọn.</div>
+                    <button onClick={async()=>{
+                      const days=assignSelectedDays||[];
+                      if(days.length===0){alert("Chọn ít nhất 1 ngày");return;}
+                      const mealsData=t.meals||[];
+                      const totalCal=t.total_cal||0;
+                      for(const dayKey of days){
+                        if(saveWeeklyTemplate) await saveWeeklyTemplate(dayKey,t.day_type,mealsData,totalCal);
+                      }
+                      setShowAssignDays(null);
+                      setAssignSelectedDays([]);
+                      const el=document.getElementById("tpl-applied");
+                      if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+                    }} disabled={(assignSelectedDays||[]).length===0} style={{...redBtn,marginTop:0,background:(assignSelectedDays||[]).length>0?"linear-gradient(135deg,#6366F1,#4F46E5)":"#D1D5DB",opacity:(assignSelectedDays||[]).length>0?1:0.6}}>📅 Gán cho {(assignSelectedDays||[]).length} ngày</button>
+                  </div>;
+                })()}
               </div>}
             </div>;})}
             <div id="tpl-applied" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:4}}>
-              <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã áp dụng template! Xem ở Dashboard.</span>
+              <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã áp dụng thành công!</span>
             </div>
           </div>:<div style={{textAlign:"center",padding:"30px 16px"}}>
             <div style={{fontSize:32,marginBottom:8}}>📚</div>
