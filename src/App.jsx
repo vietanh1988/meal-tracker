@@ -1613,8 +1613,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
           <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 30px 50px 20px":"28px 2fr 60px 60px 80px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
-            <span/>
-            <span style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
+            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
@@ -1799,8 +1798,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
           <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 30px 50px 20px":"28px 2fr 60px 60px 80px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
-            <span/>
-            <span style={{fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
+            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
