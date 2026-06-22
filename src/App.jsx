@@ -1373,7 +1373,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>🤖 Kết nối AI</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🤖</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Kết nối AI</span></div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Chọn AI provider và model để tính macro</div>
 
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,padding:"12px 16px",background:aiConnected?C.greenBg:C.redBg,borderRadius:10,border:`1.5px solid ${aiConnected?C.green:C.red}`}}>
@@ -1551,7 +1551,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>🔧 Quản trị</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🔧</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Quản trị</span></div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Quản lý thông báo và cập nhật cho tất cả users</div>
 
       <div style={{marginBottom:20}}>
@@ -1611,7 +1611,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* TEMPLATES (admin only — separate pill) */}
     {section==="templates"&&isAdmin&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>📚 Quản lý Template mẫu</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Quản lý Template mẫu</span></div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
 
       {/* Template name + type */}
@@ -2151,7 +2151,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* PROFILE */}
     {section==="profile"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>👤 Hồ sơ cá nhân</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Hồ sơ cá nhân</span></div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Nhập thông số → macro tự tính theo công thức Mifflin-St Jeor</div>
 
       {/* Section 1: Thông tin cơ bản */}
@@ -2492,7 +2492,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* ACCOUNT */}
     {section==="account"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>👤 Tài khoản</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Tài khoản</span></div>
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
           <UserAvatar gender={profile.gender} size={48}/>
