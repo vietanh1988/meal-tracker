@@ -19,7 +19,7 @@ function useIsMobile(breakpoint=600){
 }
 
 const C = {
-  protein:"#DC2626", carb:"#B45309", fat:"#111", fiber:"#15803D",
+  protein:"#DC2626", carb:"#F59E0B", fat:"#78716C", fiber:"#15803D",
   red:"#DC2626", gold:"#CA8A04", green:"#15803D", blue:"#1D4ED8",
   bg:"#FAFAF9", card:"#FFF", surface:"#F3F3F2",
   border:"#CDCDCD",
@@ -910,8 +910,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       {/* Macro rings */}
       <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
         <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#EF4444" color2="#F97316" sub={actualP>0?`/${heroP}g`:null} unit="g"/>
-        <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#EAB308" color2="#F59E0B" sub={actualC>0?`/${heroC}g`:null} unit="g"/>
-        <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#8B5CF6" color2="#A78BFA" sub={actualF>0?`/${heroF}g`:null} unit="g"/>
+        <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#F59E0B" color2="#FB923C" sub={actualC>0?`/${heroC}g`:null} unit="g"/>
+        <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#78716C" color2="#A8A29E" sub={actualF>0?`/${heroF}g`:null} unit="g"/>
         <MacroRing l="Xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#22C55E" color2="#4ADE80" sub={actualFiber>0?`/${heroFiber}g`:null} unit="g"/>
       </div>
     </div>
@@ -937,8 +937,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Section label: Danh sách thực đơn + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>🍽️</span>
-      <span style={{fontSize:mob?16:18,fontWeight:800,color:C.blue,letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
-      <div style={{flex:1,height:1.5,background:C.border}}/>
+      <span style={{fontSize:mob?16:18,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
       <div style={{display:"flex",alignItems:"center",gap:2}}>
         <span onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700}}>‹</span>
         <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:800,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
@@ -983,7 +983,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
 
     {heroCal<target&&<div style={{...card,background:C.goldBg,border:"2px solid #CA8A04"}}>
       <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-        <span style={{fontSize:16,fontWeight:900,color:"#EAB308"}}>⚡</span>
+        <span style={{fontSize:16,fontWeight:900,color:"#F59E0B"}}>⚡</span>
         <div>
           <div style={{fontSize:13,fontWeight:900,color:"#92400E",marginBottom:2}}>Gợi ý AI</div>
           <div style={{fontSize:14,fontWeight:600,color:"#78350F",lineHeight:1.5}}>Thiếu {target-heroCal} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).</div>
@@ -992,9 +992,9 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     </div>}
 
     {/* Weight Chart */}
-    <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#EAB308) 1"}}>
+    <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#F59E0B) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{fontSize:17,fontWeight:900,color:C.blue}}>📈 Theo dõi cân nặng</div>
+        <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>📈 Theo dõi cân nặng</div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
           <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{padding:"5px 12px",borderRadius:8,background:showWeightInput?C.redBg:"linear-gradient(135deg,#DC2626,#B91C1C)",color:showWeightInput?C.red:"#fff",border:showWeightInput?`1.5px solid ${C.red}`:"none",fontSize:12,fontWeight:800,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>{showWeightInput?"✕ Đóng":"+ Nhập cân"}</button>
@@ -1373,7 +1373,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>🤖 Kết nối AI</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>🤖 Kết nối AI</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Chọn AI provider và model để tính macro</div>
 
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,padding:"12px 16px",background:aiConnected?C.greenBg:C.redBg,borderRadius:10,border:`1.5px solid ${aiConnected?C.green:C.red}`}}>
@@ -1551,7 +1551,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>🔧 Quản trị</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>🔧 Quản trị</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Quản lý thông báo và cập nhật cho tất cả users</div>
 
       <div style={{marginBottom:20}}>
@@ -1611,7 +1611,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* TEMPLATES (admin only — separate pill) */}
     {section==="templates"&&isAdmin&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>📚 Quản lý Template mẫu</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>📚 Quản lý Template mẫu</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
 
       {/* Template name + type */}
@@ -1757,7 +1757,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* MEALS */}
     {section==="meals"&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:12}}>
         {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`}
       </div>
@@ -2151,7 +2151,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* PROFILE */}
     {section==="profile"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:4}}>👤 Hồ sơ cá nhân</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:4}}>👤 Hồ sơ cá nhân</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Nhập thông số → macro tự tính theo công thức Mifflin-St Jeor</div>
 
       {/* Section 1: Thông tin cơ bản */}
@@ -2401,7 +2401,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         if(saveSetting) saveSetting("gymDays",JSON.stringify(nd));
       };
       return <div style={card}>
-        <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>Lịch tập gym</div>
+        <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>Lịch tập gym</div>
         <div><div style={{...lbl,marginBottom:6}}>Số buổi/tuần</div>
           <div style={{fontSize:24,fontWeight:900,color:C.t1}}>{days.length} <span style={{fontSize:13,fontWeight:600,color:C.t3}}>buổi</span></div>
         </div>
@@ -2430,7 +2430,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       const nextWeek=weightLog.length+1;
       const today=fmtDate(new Date());
       return <div style={card}>
-        <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>Nhập cân nặng</div>
+        <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>Nhập cân nặng</div>
         <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
             <span style={{fontSize:13,fontWeight:800,color:C.t1}}>Tuần {nextWeek}</span>
@@ -2477,7 +2477,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           const avgPerWeek=Math.round((totalDelta/(weightLog.length-1))*100)/100;
           return <div style={{marginTop:12,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
             <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-              <span style={{fontSize:16,fontWeight:900,color:"#EAB308"}}>⚡</span>
+              <span style={{fontSize:16,fontWeight:900,color:"#F59E0B"}}>⚡</span>
               <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.5}}>
                 Tổng: {totalDelta>0?"+":""}{totalDelta} kg trong {weightLog.length-1} tuần. Trung bình {avgPerWeek>0?"+":""}{avgPerWeek} kg/tuần.
                 {avgPerWeek>0&&avgPerWeek<=0.5?" Tốc độ lý tưởng tăng cơ!":avgPerWeek>0.5?" Hơi nhanh, cẩn thận tích mỡ.":avgPerWeek<0?" Đang giảm — kiểm tra lại chế độ ăn.":" Giữ ổn định."}
@@ -2492,7 +2492,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* ACCOUNT */}
     {section==="account"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>👤 Tài khoản</div>
+      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>👤 Tài khoản</div>
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
           <UserAvatar gender={profile.gender} size={48}/>
@@ -2815,8 +2815,8 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span></div>
             <div style={{display:"flex",gap:14,marginTop:12}}>
               <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#EF4444" color2="#F97316" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-              <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#EAB308" color2="#F59E0B" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-              <MacroRing l="Fat" v={macro.fat} max={macro.fat} color="#8B5CF6" color2="#A78BFA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#F59E0B" color2="#FB923C" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Fat" v={macro.fat} max={macro.fat} color="#78716C" color2="#A8A29E" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
               <MacroRing l="Xơ" v={macro.fiber} max={macro.fiber} color="#22C55E" color2="#4ADE80" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
             </div>
           </div>
