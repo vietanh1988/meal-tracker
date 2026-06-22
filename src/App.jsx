@@ -812,6 +812,15 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
   const todayDayIdx=new Date().getDay();// 0=CN,1=T2...
   const todayIsGym=gymDays.includes(todayDayIdx===0?6:todayDayIdx-1);// gymDays: 0=T2,1=T3...6=CN
   const [dayType,setDayType]=useState(todayIsGym?"train":"rest");
+  // Sync dayType when appSettings.gymDays loads (may load after initial render)
+  useEffect(()=>{
+    const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):null;}catch(e){return null;}})();
+    if(!gd)return;// not loaded yet, keep default
+    const idx=new Date().getDay();
+    const mapped=idx===0?6:idx-1;
+    const isGym=gd.includes(mapped);
+    setDayType(isGym?"train":"rest");
+  },[appSettings.gymDays]);
   // Auto-apply weekly template once per day
   const appliedRef=useRef(null);
   useEffect(()=>{
