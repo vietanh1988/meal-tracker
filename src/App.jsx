@@ -994,7 +994,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Weight Chart */}
     <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#F59E0B) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>📈 Theo dõi cân nặng</div>
+        <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Theo dõi cân nặng</span></div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
           <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{padding:"5px 12px",borderRadius:8,background:showWeightInput?C.redBg:"linear-gradient(135deg,#DC2626,#B91C1C)",color:showWeightInput?C.red:"#fff",border:showWeightInput?`1.5px solid ${C.red}`:"none",fontSize:12,fontWeight:800,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>{showWeightInput?"✕ Đóng":"+ Nhập cân"}</button>
