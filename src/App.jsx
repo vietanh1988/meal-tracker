@@ -2406,6 +2406,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
         </div>
         <button onClick={()=>{
+          if(saveSetting) saveSetting("gymDays",JSON.stringify(days));
           const el=document.getElementById("schedule-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
         }} style={{...redBtn,marginTop:20}}>💾 Lưu lịch tập</button>
