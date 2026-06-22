@@ -808,7 +808,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
   const [dashDate,setDashDate]=useState(new Date());
   const isToday=dashDate.toDateString()===new Date().toDateString();
   // Auto-detect dayType from gymDays + today
-  const gymDays=profile.gymDays||[0,2,4,5];
+  const gymDays=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
   const todayDayIdx=new Date().getDay();// 0=CN,1=T2...
   const todayIsGym=gymDays.includes(todayDayIdx===0?6:todayDayIdx-1);// gymDays: 0=T2,1=T3...6=CN
   const [dayType,setDayType]=useState(todayIsGym?"train":"rest");
@@ -1081,7 +1081,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     else if(forcedSection)setSection(forcedSection);
   },[forcedSection,isAdmin]);
   const [dayType,setDayType]=useState(()=>{
-    const gd=profile.gymDays||[0,2,4,5];
+    const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
     const todayIdx=new Date().getDay();// 0=CN,1=T2...
     const mappedIdx=todayIdx===0?6:todayIdx-1;// gymDays: 0=T2...6=CN
     return gd.includes(mappedIdx)?"train":"rest";
@@ -1919,7 +1919,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
           const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
           const todayIdx2=new Date().getDay();
-          const gd=profile.gymDays||[0,2,4,5];
+          const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
           const totalCal2=(aiResult.items||[]).reduce((s,it)=>s+(it.cal||0),0);
           return <div style={{marginTop:12,padding:"16px",background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
             <div style={{fontSize:15,fontWeight:800,color:"#3730A3",marginBottom:8}}>📅 Lưu vào lịch tuần?</div>
@@ -1949,7 +1949,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {mealMode==="lich_tuan"&&(()=>{
         const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
         const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
-        const gymDays=profile.gymDays||[0,2,4,5];
+        const gymDays=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
         const mealNameMap={"sang":"Sáng","phu_sang":"Phụ sáng","trua":"Trưa","phu_chieu":"Phụ chiều","pre":"Pre","post":"Post","toi":"Tối"};
         const savedCount=dayKeys.filter(dk=>{const t=getWeeklyTemplate?getWeeklyTemplate(dk):null;return t&&t.meals&&t.meals.length>0;}).length;
         return <div>
@@ -2088,7 +2088,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                 {showAssignDays===t.id&&(()=>{
                   const dayKeys2=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
                   const dayLabels2=["T2","T3","T4","T5","T6","T7","CN"];
-                  const gd=profile.gymDays||[0,2,4,5];
+                  const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
                   return <div style={{marginTop:10,padding:12,background:"#EEF2FF",borderRadius:10,border:"1.5px solid #818CF8"}} onClick={e=>e.stopPropagation()}>
                     <div style={{fontSize:13,fontWeight:800,color:"#3730A3",marginBottom:8}}>Gán vào ngày nào?</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
@@ -2385,10 +2385,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* SCHEDULE */}
     {section==="schedule"&&(()=>{
-      const days=profile.gymDays||[0,2,4,5];
+      const days=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
       const toggleDay=(idx)=>{
         const nd=days.includes(idx)?days.filter(d=>d!==idx):[...days,idx].sort();
         setProfile({...profile,gymDays:nd,gym:nd.length});
+        if(saveSetting) saveSetting("gymDays",JSON.stringify(nd));
       };
       return <div style={card}>
         <div style={{fontSize:17,fontWeight:900,color:C.blue,marginBottom:16}}>Lịch tập gym</div>
