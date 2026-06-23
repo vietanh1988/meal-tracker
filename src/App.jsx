@@ -297,7 +297,7 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
     <div style={{position:"relative",width:"100%",height:chartH}}>
       <canvas ref={canvasRef}/>
     </div>
-    <div style={{display:"flex",flexWrap:"wrap",gap:mob?8:14,justifyContent:"center",marginTop:6,fontSize:mob?10:12,fontWeight:600,color:"#555"}}>
+    <div style={{display:"flex",flexWrap:"wrap",gap:mob?8:14,justifyContent:"center",marginTop:6,fontSize:mob?11:13,fontWeight:700,color:C.t1}}>
       <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#34A853"}}/>Đúng hướng</span>
       <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#E53935"}}/>Ngược hướng</span>
       <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#F4B400"}}/>Giữ nguyên</span>
@@ -1046,9 +1046,9 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
           {l:"Mục tiêu",v:goalKg,c:"#34A853"},
           {l:"Tiến độ",v:Math.max(0,Math.min(100,Math.round(wPct)))+"%",c:"#F4B400"},
         ].map((s,i)=><div key={i} style={{background:C.card,borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1px solid ${C.border}`}}>
-          <div style={{fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:C.t2,marginBottom:2}}>{s.l}</div>
+          <div style={{fontSize:mob?11:12,fontWeight:800,textTransform:"uppercase",letterSpacing:1,color:C.t1,marginBottom:2}}>{s.l}</div>
           <div style={{fontSize:22,fontWeight:900,color:s.c}}>{s.v}</div>
-          <div style={{fontSize:11,fontWeight:600,color:C.t2}}>{i<3?"kg":("còn "+Math.abs(goalKg-curKg).toFixed(1)+" kg")}</div>
+          <div style={{fontSize:mob?12:13,fontWeight:700,color:C.t1}}>{i<3?"kg":("còn "+Math.abs(goalKg-curKg).toFixed(1)+" kg")}</div>
         </div>)}
       </div>
 
