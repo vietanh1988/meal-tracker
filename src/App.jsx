@@ -76,9 +76,9 @@ const SlidingTabs=({tabs,active,onChange,style:extraStyle})=>{
   const idx=tabs.findIndex(t=>t.id===active);
   const count=tabs.length;
   const m=window.innerWidth<700;
-  return <div style={{position:"relative",display:"flex",background:C.surface,borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`,...(extraStyle||{})}}>
-    <div style={{position:"absolute",top:0,left:`${(idx/count)*100}%`,width:`${100/count}%`,height:"100%",background:"#FEE2E2",borderRadius:8,transition:"left 0.3s cubic-bezier(0.4,0,0.2,1)",zIndex:0,boxShadow:"0 0 0 1px #FECACA"}}/>
-    {tabs.map(t=><div key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:m?"8px 6px":"9px 12px",fontSize:m?12:13,fontWeight:active===t.id?800:600,cursor:"pointer",textAlign:"center",color:active===t.id?"#991B1B":"#9CA3AF",transition:"color 0.2s",position:"relative",zIndex:1,whiteSpace:"nowrap"}}>{t.icon?t.icon+" ":""}{t.label}</div>)}
+  return <div style={{position:"relative",display:"flex",background:"rgba(0,0,0,0.04)",borderRadius:12,padding:3,...(extraStyle||{})}}>
+    <div style={{position:"absolute",top:3,left:3,width:`calc(${100/count}% - ${count>2?2:3}px)`,height:"calc(100% - 6px)",background:"rgba(255,255,255,0.9)",borderRadius:10,boxShadow:"0 1px 3px rgba(0,0,0,0.08)",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)",zIndex:0,transform:`translateX(${idx*100}%)`}}/>
+    {tabs.map(t=><div key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:m?"8px 6px":"9px 12px",fontSize:m?12:13,fontWeight:active===t.id?600:500,cursor:"pointer",textAlign:"center",color:active===t.id?"#991B1B":"#9CA3AF",transition:"color 0.2s",position:"relative",zIndex:1,whiteSpace:"nowrap"}}>{t.icon?t.icon+" ":""}{t.label}</div>)}
   </div>;
 };
 
@@ -969,7 +969,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
-      <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={setDayType} style={{border:"1.5px solid #F87171",boxShadow:"0 1px 4px rgba(220,38,38,0.1)"}}/>
+      <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={setDayType}/>
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
@@ -1787,7 +1787,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {mealMode==="tu_nhap"&&<>
       <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:14}}/>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-        <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}} style={{borderRadius:18}}/>
+        <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
         <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ Quản lý</div>
       </div>
       {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
