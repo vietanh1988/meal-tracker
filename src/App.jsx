@@ -72,6 +72,14 @@ const UserAvatar=({gender,size=40})=>{
   const isMale=(gender||"male")==="male";
   return <div style={{width:size,height:size,borderRadius:"50%",background:isMale?"#DBEAFE":"#FCE7F3",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(size*0.55),flexShrink:0,lineHeight:1}}>{isMale?"🧔":"👩"}</div>;
 };
+const SlidingTabs=({tabs,active,onChange,style:extraStyle})=>{
+  const idx=tabs.findIndex(t=>t.id===active);
+  const count=tabs.length;
+  return <div style={{position:"relative",display:"flex",background:C.surface,borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`,...(extraStyle||{})}}>
+    <div style={{position:"absolute",top:0,left:`${(idx/count)*100}%`,width:`${100/count}%`,height:"100%",background:"#FEE2E2",borderRadius:8,transition:"left 0.3s cubic-bezier(0.4,0,0.2,1)",zIndex:0,boxShadow:"0 0 0 1px #FECACA"}}/>
+    {tabs.map(t=><div key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:"9px 12px",fontSize:13,fontWeight:active===t.id?800:600,cursor:"pointer",textAlign:"center",color:active===t.id?"#991B1B":"#9CA3AF",transition:"color 0.2s",position:"relative",zIndex:1}}>{t.icon?t.icon+" ":""}{t.label}</div>)}
+  </div>;
+};
 
 // All 7 meals with icons and display names
 const ALL_MEALS=[
@@ -960,10 +968,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     </div>
 
     <div style={{display:"flex",gap:6,marginBottom:12}}>
-      <div style={{display:"flex",background:"#fff",borderRadius:10,overflow:"hidden",border:"1.5px solid #F87171",boxShadow:"0 1px 4px rgba(220,38,38,0.1)"}}>
-        <div onClick={()=>setDayType("train")} style={{padding:mob?"10px 18px":"10px 18px",fontSize:mob?14:14,fontWeight:dayType==="train"?800:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
-        <div onClick={()=>setDayType("rest")} style={{padding:mob?"10px 18px":"10px 18px",fontSize:mob?14:14,fontWeight:dayType==="rest"?800:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
-      </div>
+      <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={setDayType} style={{border:"1.5px solid #F87171",boxShadow:"0 1px 4px rgba(220,38,38,0.1)"}}/>
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
@@ -1775,28 +1780,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`}
       </div>
       {/* 3 Mode buttons */}
-      <div style={{display:"flex",gap:0,marginBottom:16,background:C.surface,borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
-        {[
-          {id:"tu_nhap",icon:"✏️",label:"Tự nhập"},
-          {id:"lich_tuan",icon:"📅",label:"Lịch tuần"},
-          {id:"kho_mau",icon:"📚",label:"Kho mẫu"},
-        ].map(m=><div key={m.id} onClick={()=>{setMealMode(m.id);if(m.id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{
-          flex:1,padding:mob?"8px 6px":"9px 12px",fontSize:mob?12:13,fontWeight:mealMode===m.id?800:600,
-          cursor:"pointer",textAlign:"center",transition:"all 0.15s",
-          background:mealMode===m.id?"#FEE2E2":"transparent",
-          color:mealMode===m.id?"#991B1B":"#9CA3AF",
-          borderRight:m.id!=="kho_mau"?`1px solid ${C.border}`:"none",
-        }}>{m.icon} {m.label}</div>)}
-      </div>
+      <SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{marginBottom:16}}/>
 
       {/* === MODE: Tự nhập — all meals in one flow === */}
       {mealMode==="tu_nhap"&&<>
       <div style={{height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)",marginBottom:14}}/>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-        <div style={{display:"flex",background:C.surface,borderRadius:18,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
-          <div onClick={()=>{setDayType("train");setAiResult(null);}} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="train"?"#FEE2E2":"transparent",color:dayType==="train"?"#991B1B":"#9CA3AF",cursor:"pointer"}}>💪 Ngày tập</div>
-          <div onClick={()=>{setDayType("rest");setAiResult(null);}} style={{padding:mob?"6px 10px":"7px 14px",fontSize:mob?11:13,fontWeight:700,background:dayType==="rest"?"#DBEAFE":"transparent",color:dayType==="rest"?"#1E40AF":"#9CA3AF",cursor:"pointer"}}>😴 Ngày nghỉ</div>
-        </div>
+        <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}} style={{borderRadius:18}}/>
         <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ Quản lý</div>
       </div>
       {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
