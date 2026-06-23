@@ -501,7 +501,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
     <div style={{padding:"14px",background:ui.bg,borderRadius:10,border:`1.5px solid ${ui.border}`,marginBottom:showPT?10:0}}>
       <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
         <span style={{fontSize:16}}>{ui.icon}</span>
-        <span style={{fontSize:14,fontWeight:800,color:ui.color}}>{ui.title}</span>
+        <span style={{fontSize:14,fontWeight:700,color:ui.color}}>{ui.title}</span>
       </div>
       <div style={{fontSize:13,color:ui.color,lineHeight:1.6,marginBottom:10}}>{ui.desc}</div>
 
@@ -746,7 +746,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     {/* Calo chart */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>📊</span>
-      <span style={{fontSize:mob?17:17,fontWeight:900,color:C.t1,letterSpacing:"0.06em"}}>{period==="week"?"Calo theo ngày":"Calo theo tuần"}</span>
+      <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{period==="week"?"Calo theo ngày":"Calo theo tuần"}</span>
       <div style={{flex:1,height:1.5,background:C.border}}/>
     </div>
     <div style={{...card}}>
@@ -781,7 +781,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     {/* Macro donut */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🍵</span>
-      <span style={{fontSize:mob?17:17,fontWeight:900,color:C.t1,letterSpacing:"0.06em"}}>Macro TB/ngày</span>
+      <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Macro TB/ngày</span>
       <div style={{flex:1,height:1.5,background:C.border}}/>
     </div>
     <div style={{...card}}>
@@ -800,7 +800,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     {/* Top foods */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🏆</span>
-      <span style={{fontSize:mob?17:17,fontWeight:900,color:C.t1,letterSpacing:"0.06em"}}>Top thực phẩm</span>
+      <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Top thực phẩm</span>
       <div style={{flex:1,height:1.5,background:C.border}}/>
     </div>
     <div style={{...card}}>
@@ -902,7 +902,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {mob&&<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
       <UserAvatar gender={profile.gender} size={48}/>
       <div style={{flex:1}}>
-        <div style={{fontSize:mob?16:18,fontWeight:900,color:C.t1}}>Chào {displayName}! 👋</div>
+        <div style={{fontSize:mob?16:18,fontWeight:800,color:C.t1}}>Chào {displayName}! 👋</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3}}>
           {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(calRemain>0?<>Còn <span style={{color:C.red,fontWeight:800}}>{calRemain} kcal</span> để đạt mục tiêu</>:<span style={{color:C.green,fontWeight:800}}>Đã đạt mục tiêu! 🎉</span>):<>Mục tiêu <span style={{color:C.red,fontWeight:800}}>{heroCal} kcal</span></>}
         </div>
@@ -912,7 +912,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
 
     {/* Hero — White card */}
     <div style={{...card,padding:mob?"16px":"24px",border:`1.5px solid ${C.border}`}}>
-      <div style={{fontSize:mob?13:14,fontWeight:700,color:C.t2,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+      <div style={{fontSize:mob?15:16,fontWeight:600,color:C.t2,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
       <div style={{display:"flex",alignItems:"baseline",gap:8}}>
         <div style={{fontSize:mob?36:44,fontWeight:900,color:C.red,letterSpacing:"-0.03em",lineHeight:1.1}}>
           {actualCal>0?actualCal.toLocaleString():heroCal.toLocaleString()}
@@ -949,8 +949,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:40,height:40,borderRadius:10,background:C.surface,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{s.icon}</div>
           <div>
-            <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t3}}>{s.l}</div>
-            <div style={{fontSize:mob?18:18,fontWeight:900,color:C.t1}}>{s.v} <span style={{fontSize:mob?11:11,fontWeight:700,color:C.t3}}>{s.u}</span></div>
+            <div style={{fontSize:mob?13:12,fontWeight:600,color:C.t3}}>{s.l}</div>
+            <div style={{fontSize:mob?18:18,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:mob?11:11,fontWeight:600,color:C.t3}}>{s.u}</span></div>
           </div>
         </div>
       ))}
@@ -959,11 +959,11 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Section label: Danh sách thực đơn + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>🍽️</span>
-      <span style={{fontSize:mob?18:18,fontWeight:900,color:C.t1,letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
       <div style={{flex:1,height:1.5,background:C.border}}/>
       <div style={{display:"flex",alignItems:"center",gap:2}}>
         <span onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700}}>‹</span>
-        <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:800,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
+        <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:700,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
         <span onClick={()=>{if(!isToday){const d=new Date(dashDate);d.setDate(d.getDate()+1);setDashDate(d);}}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700,opacity:isToday?0.25:1}}>›</span>
       </div>
     </div>
@@ -977,7 +977,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Empty state CTA — no meals logged */}
     {meals.every(m=>!m.items||m.items.length===0)&&<div style={{...card,border:"2px dashed #CDCDCD",background:"transparent",textAlign:"center",padding:"20px 16px"}}>
       <div style={{fontSize:28,marginBottom:6}}>🍽️</div>
-      <div style={{fontSize:14,fontWeight:800,color:C.t2,marginBottom:4}}>Chưa có bữa ăn nào</div>
+      <div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có bữa ăn nào</div>
       <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Nhập thức ăn để theo dõi macro hàng ngày</div>
       <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
     </div>}
@@ -987,7 +987,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.greenBg:C.redBg,
       border:`2px solid ${actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:C.red}`,
     }}>
-      <div style={{fontSize:13,fontWeight:800,lineHeight:1.6,
+      <div style={{fontSize:13,fontWeight:700,lineHeight:1.6,
         color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:C.red,
       }}>
         {actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1
@@ -1013,7 +1013,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Weight Chart */}
     <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#F59E0B) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:900,color:C.t1}}>Theo dõi cân nặng</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
           <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{padding:"5px 12px",borderRadius:8,background:showWeightInput?C.redBg:"linear-gradient(135deg,#DC2626,#B91C1C)",color:showWeightInput?C.red:"#fff",border:showWeightInput?`1.5px solid ${C.red}`:"none",fontSize:12,fontWeight:800,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>{showWeightInput?"✕ Đóng":"+ Nhập cân"}</button>
@@ -1392,12 +1392,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
-      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🤖</span><span style={{fontWeight:900,color:C.t1}}>Kết nối AI</span></div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Chọn AI provider và model để tính macro</div>
+      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🤖</span><span style={{fontWeight:800,color:C.t1}}>Kết nối AI</span></div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:20}}>Chọn AI provider và model để tính macro</div>
 
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,padding:"12px 16px",background:aiConnected?C.greenBg:C.redBg,borderRadius:10,border:`1.5px solid ${aiConnected?C.green:C.red}`}}>
         <div style={{width:12,height:12,borderRadius:"50%",background:aiConnected?C.green:C.red}}/>
-        <span style={{fontSize:14,fontWeight:800,color:aiConnected?"#14532D":"#7F1D1D"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"} — {providerName}</span>
+        <span style={{fontSize:14,fontWeight:700,color:aiConnected?"#14532D":"#7F1D1D"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"} — {providerName}</span>
       </div>
 
       {/* Provider */}
@@ -1437,7 +1437,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             background:aiModel===m.id?C.redBg:C.surface,border:aiModel===m.id?`2px solid ${C.red}`:`1.5px solid ${C.border}`,
           }}>
             <div>
-              <div style={{fontSize:14,fontWeight:800,color:C.t1}}>{m.name}</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{m.name}</div>
               <div style={{fontSize:12,fontWeight:600,color:C.t2,marginTop:2}}>{m.desc}</div>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1466,7 +1466,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             background:geminiModel===m.id?C.blueBg:C.surface,border:geminiModel===m.id?`2px solid ${C.blue}`:`1.5px solid ${C.border}`,
           }}>
             <div>
-              <div style={{fontSize:14,fontWeight:800,color:C.t1}}>{m.name}</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{m.name}</div>
               <div style={{fontSize:12,fontWeight:600,color:C.t2,marginTop:2}}>{m.desc}</div>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1495,7 +1495,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             background:gptModel===m.id?C.greenBg:C.surface,border:gptModel===m.id?`2px solid ${C.green}`:`1.5px solid ${C.border}`,
           }}>
             <div>
-              <div style={{fontSize:14,fontWeight:800,color:C.t1}}>{m.name}</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{m.name}</div>
               <div style={{fontSize:12,fontWeight:600,color:C.t2,marginTop:2}}>{m.desc}</div>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1560,7 +1560,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
       }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#1D4ED8,#3B82F6)"}}>☁️ Lưu API Keys lên Cloud (cho tất cả users)</button>}
       {isAdmin&&<div id="cloud-keys-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-        <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✅ API Keys đã lưu lên cloud! Tất cả users sẽ dùng keys này.</span>
+        <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ API Keys đã lưu lên cloud! Tất cả users sẽ dùng keys này.</span>
       </div>}
 
       {!isAdmin&&(claudeKey||geminiKey||gptKey)&&<div style={{marginTop:12,padding:"12px 16px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`}}>
@@ -1570,11 +1570,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<div style={card}>
-      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🔧</span><span style={{fontWeight:900,color:C.t1}}>Quản trị</span></div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Quản lý thông báo và cập nhật cho tất cả users</div>
+      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🔧</span><span style={{fontWeight:800,color:C.t1}}>Quản trị</span></div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:20}}>Quản lý thông báo và cập nhật cho tất cả users</div>
 
       <div style={{marginBottom:20}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.t1,marginBottom:12}}>📢 Quản lý thông báo</div>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>📢 Quản lý thông báo</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Thêm thông báo hiện trong chuông 🔔 cho tất cả users</div>
         <div style={{display:"flex",gap:8,marginBottom:12}}>
           <input id="noti-text" type="text" placeholder="VD: 🎉 Phiên bản 2.6 — Kho 192 thực phẩm" style={{...inp,flex:1}}/>
@@ -1588,7 +1588,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             document.getElementById("noti-text").value="";
             const el=document.getElementById("noti-added");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-          }} style={{padding:"8px 16px",fontSize:13,fontWeight:800,border:"none",borderRadius:8,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm</button>
+          }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm</button>
         </div>
         <div id="noti-added" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:10}}>
           <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Đã thêm thông báo!</span>
@@ -1609,7 +1609,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       </div>
 
       <div style={{borderTop:`2px solid ${C.border}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.t1,marginBottom:12}}>🔄 Force Update All Users</div>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>🔄 Force Update All Users</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8}}>Đổi version → tất cả users sẽ tự xóa cache + reload khi mở app</div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
           <div style={{fontSize:13,fontWeight:700,color:C.t2}}>Version hiện tại: <span style={{color:C.red,fontWeight:900}}>{appSettings.app_version||"chưa set"}</span></div>
@@ -1620,7 +1620,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             await saveSetting("app_version",ver);
             const el=document.getElementById("version-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-          }} style={{padding:"8px 16px",fontSize:13,fontWeight:800,border:"none",borderRadius:8,background:"linear-gradient(135deg,#DC2626,#B91C1C)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>🚀 Deploy</button>
+          }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#DC2626,#B91C1C)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>🚀 Deploy</button>
         </div>
         <div id="version-saved" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Version updated! Users sẽ tự reload.</span>
@@ -1630,8 +1630,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* TEMPLATES (admin only — separate pill) */}
     {section==="templates"&&isAdmin&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:900,color:C.t1}}>Quản lý Template mẫu</span></div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
+      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:800,color:C.t1}}>Quản lý Template mẫu</span></div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
 
       {/* Template name + type */}
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
@@ -1651,7 +1651,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
           <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
-            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
+            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
@@ -1692,7 +1692,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </span>:"Tính macro tất cả"}
       </button>
       {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
-        <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>❌ {aiError}</span>
+        <span style={{fontSize:13,fontWeight:700,color:"#7F1D1D"}}>❌ {aiError}</span>
       </div>}
 
       {/* Kết quả + Lưu template mẫu */}
@@ -1708,7 +1708,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             idx+=mealFoods.length;
             const mCal=mealItems.reduce((s,it)=>s+(it.cal||0),0);
             return <div key={meal.id} style={{marginBottom:10}}>
-              <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",justifyContent:"space-between"}}>
+              <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:4,display:"flex",justifyContent:"space-between"}}>
                 <span>{meal.l}</span><span style={{color:C.red}}>{Math.round(mCal)} cal</span>
               </div>
               {mealItems.map((item,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
@@ -1751,13 +1751,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
         }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>📚 Lưu thành Template mẫu</button>
         <div id="tpl-created" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu.</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu.</span>
         </div>
       </div>}
 
       {/* Existing templates list */}
       {(defaultTemplates||[]).length>0&&<div style={{marginTop:20,borderTop:`2px solid ${C.border}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.t1,marginBottom:8}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:8}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
         {(defaultTemplates||[]).map(t=>{
           const mealCount=(t.meals||[]).length;
           return <div key={t.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:C.surface,borderRadius:8,marginBottom:4,border:`1px solid ${C.border}`}}>
@@ -1776,8 +1776,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* MEALS */}
     {section==="meals"&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:12}}>
+      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2,marginBottom:12}}>
         {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`}
       </div>
       {/* 3 Mode buttons */}
@@ -1821,7 +1821,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#B91C1C","post":"#15803D","toi":"#6D28D9"};
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
           <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
-            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:800,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
+            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
@@ -1861,7 +1861,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </span>:"Tính macro tất cả"}
       </button>
       {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
-        <span style={{fontSize:13,fontWeight:800,color:"#7F1D1D"}}>❌ {aiError}</span>
+        <span style={{fontSize:13,fontWeight:700,color:"#7F1D1D"}}>❌ {aiError}</span>
       </div>}
       {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
@@ -1886,7 +1886,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             idx+=mealFoods.length;
             const mCal=mealItems.reduce((s,it)=>s+(it.cal||0),0);
             return <div key={meal.id} style={{marginBottom:12}}>
-              <div style={{fontSize:13,fontWeight:800,color:C.t1,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
+              <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
                 <span>{meal.l}</span><span style={{color:C.red}}>{Math.round(mCal)} cal</span>
               </div>
               {mealItems.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:12,fontWeight:600,padding:"4px 0",borderBottom:i<mealItems.length-1?`1px solid ${C.border}`:"none"}}>
@@ -1926,7 +1926,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             setTimeout(()=>{setShowSaveTpl(true);},500);
         }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu tất cả bữa</button>
         <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu thành công!</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu thành công!</span>
         </div>
         {showSaveTpl&&(()=>{
           const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
@@ -1947,13 +1947,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                 if(saveWeeklyTemplate)await saveWeeklyTemplate(sd,dayType,amd,Math.round(tc));
                 setShowSaveTpl(false);
                 const el2=document.getElementById("tpl-week-saved");if(el2){el2.style.display="flex";setTimeout(()=>{el2.style.display="none";},3000);}
-              }} style={{flex:1,padding:"10px",fontSize:13,fontWeight:800,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu</button>
+              }} style={{flex:1,padding:"10px",fontSize:13,fontWeight:700,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu</button>
               <button onClick={()=>setShowSaveTpl(false)} style={{padding:"10px 16px",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Không</button>
             </div>
           </div>;
         })()}
         <div id="tpl-week-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu mẫu tuần!</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu mẫu tuần!</span>
         </div>
       </div>}
       </>}
@@ -2014,8 +2014,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     const mCal=mItems.reduce((s,it)=>s+(it.cal||0),0);
                     return <div key={mi} style={{marginBottom:mi<(tpl.meals||[]).length-1?12:0}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                        <span style={{fontSize:13,fontWeight:800,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
-                        <span style={{fontSize:13,fontWeight:800,color:C.red}}>{Math.round(mCal)} cal</span>
+                        <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
+                        <span style={{fontSize:13,fontWeight:700,color:C.red}}>{Math.round(mCal)} cal</span>
                       </div>
                       {mItems.map((it,ii)=><div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
                         <span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
@@ -2075,8 +2075,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                   const mCal=mItems.reduce((s,it)=>s+(it.cal||0),0);
                   return <div key={mi} style={{marginBottom:mi<tplMeals.length-1?12:0}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                      <span style={{fontSize:13,fontWeight:800,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
-                      <span style={{fontSize:13,fontWeight:800,color:C.red}}>{Math.round(mCal)} cal</span>
+                      <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
+                      <span style={{fontSize:13,fontWeight:700,color:C.red}}>{Math.round(mCal)} cal</span>
                     </div>
                     {mItems.map((it,ii)=><div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
                       <span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
@@ -2103,7 +2103,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                   const dayLabels2=["T2","T3","T4","T5","T6","T7","CN"];
                   const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
                   return <div style={{marginTop:10,padding:12,background:"#EEF2FF",borderRadius:10,border:"1.5px solid #818CF8"}} onClick={e=>e.stopPropagation()}>
-                    <div style={{fontSize:13,fontWeight:800,color:"#3730A3",marginBottom:8}}>Gán vào ngày nào?</div>
+                    <div style={{fontSize:13,fontWeight:700,color:"#3730A3",marginBottom:8}}>Gán vào ngày nào?</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
                       {dayLabels2.map((dl,di)=>{
                         const isGym=gd.includes(di);
@@ -2142,11 +2142,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               </div>}
             </div>;})}
             <div id="tpl-applied" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:4}}>
-              <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã áp dụng thành công!</span>
+              <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã áp dụng thành công!</span>
             </div>
           </div>:<div style={{textAlign:"center",padding:"30px 16px"}}>
             <div style={{fontSize:32,marginBottom:8}}>📚</div>
-            <div style={{fontSize:14,fontWeight:800,color:C.t2,marginBottom:4}}>Chưa có mẫu nào</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có mẫu nào</div>
             <div style={{fontSize:12,fontWeight:600,color:C.t3,lineHeight:1.5}}>{isAdmin?"Vào Admin → Mẫu để tạo template cho users.":"Admin chưa tạo template mẫu. Vui lòng chờ hoặc dùng tab Tự nhập."}</div>
           </div>}
         </div>;
@@ -2155,8 +2155,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* PROFILE */}
     {section==="profile"&&<div style={card}>
-      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:900,color:C.t1}}>Hồ sơ cá nhân</span></div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Nhập thông số → macro tự tính theo công thức Mifflin-St Jeor</div>
+      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Hồ sơ cá nhân</span></div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Nhập thông số → macro tự tính theo công thức Mifflin-St Jeor</div>
 
       {/* Section 1: Thông tin cơ bản */}
       <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
@@ -2316,7 +2316,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
           <div style={{background:C.card,borderRadius:10,padding:"10px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
             <div style={{fontSize:10,fontWeight:700,color:C.t3,}}>{"TỔNG "+(profile.goalType==="bulk"?"TĂNG":"GIẢM")}</div>
-            <div style={{fontSize:20,fontWeight:900,color:C.t1}}>{Math.abs(macro.diff)} kg</div>
+            <div style={{fontSize:20,fontWeight:800,color:C.t1}}>{Math.abs(macro.diff)} kg</div>
           </div>
           <div style={{background:C.card,borderRadius:10,padding:"10px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
             <div style={{fontSize:10,fontWeight:700,color:C.t3,}}>MỖI THÁNG</div>
@@ -2337,7 +2337,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             const capped=profile.goalType==="bulk"?Math.min(kgAtMonth,profile.goalKg):Math.max(kgAtMonth,profile.goalKg);
             return <div key={i} style={{background:C.card,borderRadius:8,padding:"6px 10px",textAlign:"center",border:`1.5px solid ${C.border}`,minWidth:mob?60:70}}>
               <div style={{fontSize:10,fontWeight:700,color:C.t3}}>T{i+1}</div>
-              <div style={{fontSize:14,fontWeight:900,color:C.t1}}>{capped}</div>
+              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{capped}</div>
               <div style={{fontSize:10,fontWeight:600,color:C.green}}>kg</div>
             </div>;
           })}
@@ -2405,9 +2405,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         if(saveSetting) saveSetting("gymDays",JSON.stringify(nd));
       };
       return <div style={card}>
-        <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:16}}>Lịch tập gym</div>
+        <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16}}>Lịch tập gym</div>
         <div><div style={{...lbl,marginBottom:6}}>Số buổi/tuần</div>
-          <div style={{fontSize:24,fontWeight:900,color:C.t1}}>{days.length} <span style={{fontSize:13,fontWeight:600,color:C.t3}}>buổi</span></div>
+          <div style={{fontSize:24,fontWeight:800,color:C.t1}}>{days.length} <span style={{fontSize:13,fontWeight:600,color:C.t3}}>buổi</span></div>
         </div>
         <div style={{marginTop:16}}>
           <div style={{...lbl,marginBottom:8}}>Bấm chọn / bỏ chọn ngày tập</div>
@@ -2424,7 +2424,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
         }} style={{...redBtn,marginTop:20}}>💾 Lưu lịch tập</button>
         <div id="schedule-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu! Tập {days.length} buổi/tuần — {days.map(d=>["T2","T3","T4","T5","T6","T7","CN"][d]).join(", ")}</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu! Tập {days.length} buổi/tuần — {days.map(d=>["T2","T3","T4","T5","T6","T7","CN"][d]).join(", ")}</span>
         </div>
       </div>;
     })()}
@@ -2434,10 +2434,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       const nextWeek=weightLog.length+1;
       const today=fmtDate(new Date());
       return <div style={card}>
-        <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:16}}>Nhập cân nặng</div>
+        <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16}}>Nhập cân nặng</div>
         <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-            <span style={{fontSize:13,fontWeight:800,color:C.t1}}>Tuần {nextWeek}</span>
+            <span style={{fontSize:13,fontWeight:700,color:C.t1}}>Tuần {nextWeek}</span>
             <span style={{fontSize:13,fontWeight:700,color:C.t2}}>{today}</span>
           </div>
           <div style={{fontSize:11,fontWeight:600,color:C.t3}}>Ngày tự động lấy từ hệ thống</div>
@@ -2456,7 +2456,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
         }} style={{...redBtn,marginTop:16}}>⚡ Lưu cân nặng</button>
         <div id="weight-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
-          <span style={{fontSize:13,fontWeight:800,color:"#14532D"}}>✓ Đã lưu & cập nhật macro theo cân nặng mới!</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu & cập nhật macro theo cân nặng mới!</span>
         </div>
         <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14,marginTop:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
@@ -2496,12 +2496,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* ACCOUNT */}
     {section==="account"&&<div style={card}>
-      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:900,color:C.t1}}>Tài khoản</span></div>
+      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Tài khoản</span></div>
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
           <UserAvatar gender={profile.gender} size={48}/>
           <div style={{flex:1}}>
-            <div style={{fontSize:16,fontWeight:900,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
+            <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
             <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Thành viên Meal Tracker</div>
           </div>
         </div>
@@ -2900,7 +2900,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
     {/* Mô tả */}
     <div style={{...card,marginTop:12}}>
       <div style={{fontSize:15,fontWeight:900,color:C.blue,marginBottom:8}}>📖 Về ứng dụng</div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t2,lineHeight:1.7}}>{form.description}</div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,lineHeight:1.7}}>{form.description}</div>
     </div>
 
     {/* Developer */}
@@ -2912,7 +2912,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
           <div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#DC2626,#F59E0B)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,border:"2px solid #fff",boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}}>{form.devName?form.devName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"VA"}</div>
         }
         <div style={{flex:1}}>
-          <div style={{fontSize:16,fontWeight:900,color:C.t1}}>{form.devName}</div>
+          <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{form.devName}</div>
           <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>{form.devRole}</div>
         </div>
       </div>
@@ -3024,7 +3024,7 @@ function NotiBell({appSettings,dark}){
     <div onClick={()=>setShow(!show)} style={{width:dark?36:40,height:dark?36:40,borderRadius:"50%",background:dark?"rgba(255,255,255,0.1)":C.card,border:dark?"1px solid rgba(255,255,255,0.2)":`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:dark?16:18,cursor:"pointer",boxShadow:dark?"none":"0 1px 4px rgba(0,0,0,0.06)"}}>🔔</div>
     {hasNew&&<div style={{position:"absolute",top:0,right:0,width:10,height:10,borderRadius:"50%",background:"#DC2626",border:dark?"2px solid #111":"2px solid #fff"}}/>}
     {show&&<div style={{position:"absolute",top:dark?44:48,right:0,width:320,background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",zIndex:50,overflow:"hidden"}}>
-      <div style={{padding:"10px 14px",borderBottom:`1.5px solid ${C.border}`,fontSize:13,fontWeight:900,color:C.t1}}>🔔 Thông báo</div>
+      <div style={{padding:"10px 14px",borderBottom:`1.5px solid ${C.border}`,fontSize:13,fontWeight:700,color:C.t1}}>🔔 Thông báo</div>
       {list.map(n=><div key={n.id} onClick={()=>{
         caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
           if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
