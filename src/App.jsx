@@ -137,7 +137,7 @@ function MealCard({meal}){
       <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
         <MealIcon id={meal.id} size={20}/>
         <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
-        <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{meal.items.length} món</span>
+        <span style={{fontSize:12,fontWeight:600,color:C.t2}}>{meal.items.length} món</span>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:18,fontWeight:900,color:C.red}}>{Math.round(t.cal)}</span>
@@ -903,7 +903,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <UserAvatar gender={profile.gender} size={48}/>
       <div style={{flex:1}}>
         <div style={{fontSize:mob?16:18,fontWeight:800,color:C.t1}}>Chào {displayName}! 👋</div>
-        <div style={{fontSize:12,fontWeight:600,color:C.t3}}>
+        <div style={{fontSize:mob?13:13,fontWeight:600,color:C.t2}}>
           {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(calRemain>0?<>Còn <span style={{color:C.red,fontWeight:800}}>{calRemain} kcal</span> để đạt mục tiêu</>:<span style={{color:C.green,fontWeight:800}}>Đã đạt mục tiêu! 🎉</span>):<>Mục tiêu <span style={{color:C.red,fontWeight:800}}>{heroCal} kcal</span></>}
         </div>
       </div>
