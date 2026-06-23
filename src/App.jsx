@@ -912,7 +912,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
 
     {/* Hero — White card */}
     <div style={{...card,padding:mob?"16px":"24px",border:`1.5px solid ${C.border}`}}>
-      <div style={{fontSize:mob?15:16,fontWeight:600,color:C.t2,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+      <div style={{fontSize:mob?17:18,fontWeight:600,color:C.t1,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
       <div style={{display:"flex",alignItems:"baseline",gap:8}}>
         <div style={{fontSize:mob?36:44,fontWeight:900,color:C.red,letterSpacing:"-0.03em",lineHeight:1.1}}>
           {actualCal>0?actualCal.toLocaleString():heroCal.toLocaleString()}
@@ -956,20 +956,16 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       ))}
     </div>
 
-    {/* Section label: Danh sách thực đơn + Date Nav */}
+    {/* Section label: Dynamic meal label + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-      <span style={{fontSize:mob?18:24}}>🍽️</span>
-      <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <span style={{fontSize:mob?18:24}}>{dayType==="train"?"💪":"😴"}</span>
+      <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{dayType==="train"?"Thực đơn ngày tập":"Thực đơn ngày nghỉ"}</span>
       <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)"}}/>
       <div style={{display:"flex",alignItems:"center",gap:2}}>
         <span onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700}}>‹</span>
         <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:700,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
         <span onClick={()=>{if(!isToday){const d=new Date(dashDate);d.setDate(d.getDate()+1);setDashDate(d);}}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700,opacity:isToday?0.25:1}}>›</span>
       </div>
-    </div>
-
-    <div style={{display:"flex",gap:6,marginBottom:12}}>
-      <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={setDayType}/>
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
