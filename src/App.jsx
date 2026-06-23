@@ -942,14 +942,14 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       {[
         {l:"Chiều cao",v:profile.cm,u:"cm",icon:"📏"},
         {l:"Cân nặng",v:curKg,u:"kg",icon:"⚖️"},
-        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",icon:"📊"},
+        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",icon:"📊"},
         {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",icon:exIcon},
       ].map((s,i)=>(
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:40,height:40,borderRadius:10,background:C.surface,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{s.icon}</div>
           <div>
             <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t3}}>{s.l}</div>
-            <div style={{fontSize:mob?22:22,fontWeight:900,color:C.t1}}>{s.v} <span style={{fontSize:mob?13:12,fontWeight:600,color:C.t3}}>{s.u}</span></div>
+            <div style={{fontSize:mob?18:18,fontWeight:900,color:C.t1}}>{s.v} <span style={{fontSize:mob?11:11,fontWeight:700,color:C.t3}}>{s.u}</span></div>
           </div>
         </div>
       ))}
