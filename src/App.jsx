@@ -77,7 +77,7 @@ const SlidingTabs=({tabs,active,onChange,style:extraStyle})=>{
   const count=tabs.length;
   return <div style={{position:"relative",display:"flex",background:C.surface,borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`,...(extraStyle||{})}}>
     <div style={{position:"absolute",top:0,left:`${(idx/count)*100}%`,width:`${100/count}%`,height:"100%",background:"#FEE2E2",borderRadius:8,transition:"left 0.3s cubic-bezier(0.4,0,0.2,1)",zIndex:0,boxShadow:"0 0 0 1px #FECACA"}}/>
-    {tabs.map(t=><div key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:"9px 12px",fontSize:13,fontWeight:active===t.id?800:600,cursor:"pointer",textAlign:"center",color:active===t.id?"#991B1B":"#9CA3AF",transition:"color 0.2s",position:"relative",zIndex:1}}>{t.icon?t.icon+" ":""}{t.label}</div>)}
+    {tabs.map(t=><div key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:mob?"8px 6px":"9px 12px",fontSize:mob?12:13,fontWeight:active===t.id?800:600,cursor:"pointer",textAlign:"center",color:active===t.id?"#991B1B":"#9CA3AF",transition:"color 0.2s",position:"relative",zIndex:1,whiteSpace:"nowrap"}}>{t.icon?t.icon+" ":""}{t.label}</div>)}
   </div>;
 };
 
