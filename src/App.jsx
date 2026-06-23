@@ -737,8 +737,8 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     {/* Calo chart */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>📊</span>
-      <span style={{fontSize:mob?15:17,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>{period==="week"?"Calo theo ngày":"Calo theo tuần"}</span>
-      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+      <span style={{fontSize:mob?17:17,fontWeight:900,color:C.t1,letterSpacing:"0.06em"}}>{period==="week"?"Calo theo ngày":"Calo theo tuần"}</span>
+      <div style={{flex:1,height:1.5,background:C.border}}/>
     </div>
     <div style={{...card}}>
       {(()=>{
@@ -772,8 +772,8 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     {/* Macro donut */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🍵</span>
-      <span style={{fontSize:mob?15:17,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Macro TB/ngày</span>
-      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+      <span style={{fontSize:mob?17:17,fontWeight:900,color:C.t1,letterSpacing:"0.06em"}}>Macro TB/ngày</span>
+      <div style={{flex:1,height:1.5,background:C.border}}/>
     </div>
     <div style={{...card}}>
       <div style={{display:"flex",gap:mob?12:16,alignItems:"center"}}>
@@ -791,8 +791,8 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     {/* Top foods */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🏆</span>
-      <span style={{fontSize:mob?15:17,fontWeight:800,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Top thực phẩm</span>
-      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+      <span style={{fontSize:mob?17:17,fontWeight:900,color:C.t1,letterSpacing:"0.06em"}}>Top thực phẩm</span>
+      <div style={{flex:1,height:1.5,background:C.border}}/>
     </div>
     <div style={{...card}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:mob?8:16}}>
@@ -940,8 +940,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:40,height:40,borderRadius:10,background:C.surface,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{s.icon}</div>
           <div>
-            <div style={{fontSize:11,fontWeight:700,color:C.t3}}>{s.l}</div>
-            <div style={{fontSize:20,fontWeight:900,color:C.t1}}>{s.v} <span style={{fontSize:11,fontWeight:600,color:C.t3}}>{s.u}</span></div>
+            <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t3}}>{s.l}</div>
+            <div style={{fontSize:mob?22:22,fontWeight:900,color:C.t1}}>{s.v} <span style={{fontSize:mob?13:12,fontWeight:600,color:C.t3}}>{s.u}</span></div>
           </div>
         </div>
       ))}
@@ -950,8 +950,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Section label: Danh sách thực đơn + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>🍽️</span>
-      <span style={{fontSize:mob?16:18,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
-      <div style={{flex:1,height:1.5,background:"linear-gradient(90deg,#FECACA,#FDE68A,transparent)"}}/>
+      <span style={{fontSize:mob?18:18,fontWeight:900,color:C.t1,letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
+      <div style={{flex:1,height:1.5,background:C.border}}/>
       <div style={{display:"flex",alignItems:"center",gap:2}}>
         <span onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700}}>‹</span>
         <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:800,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
@@ -1007,7 +1007,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Weight Chart */}
     <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#DC2626,#F59E0B) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Theo dõi cân nặng</span></div>
+        <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:900,color:C.t1}}>Theo dõi cân nặng</span></div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
           <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{padding:"5px 12px",borderRadius:8,background:showWeightInput?C.redBg:"linear-gradient(135deg,#DC2626,#B91C1C)",color:showWeightInput?C.red:"#fff",border:showWeightInput?`1.5px solid ${C.red}`:"none",fontSize:12,fontWeight:800,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>{showWeightInput?"✕ Đóng":"+ Nhập cân"}</button>
@@ -1386,7 +1386,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🤖</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Kết nối AI</span></div>
+      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🤖</span><span style={{fontWeight:900,color:C.t1}}>Kết nối AI</span></div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Chọn AI provider và model để tính macro</div>
 
       <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,padding:"12px 16px",background:aiConnected?C.greenBg:C.redBg,borderRadius:10,border:`1.5px solid ${aiConnected?C.green:C.red}`}}>
@@ -1564,7 +1564,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🔧</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Quản trị</span></div>
+      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🔧</span><span style={{fontWeight:900,color:C.t1}}>Quản trị</span></div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:20}}>Quản lý thông báo và cập nhật cho tất cả users</div>
 
       <div style={{marginBottom:20}}>
@@ -1624,7 +1624,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* TEMPLATES (admin only — separate pill) */}
     {section==="templates"&&isAdmin&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Quản lý Template mẫu</span></div>
+      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:900,color:C.t1}}>Quản lý Template mẫu</span></div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
 
       {/* Template name + type */}
@@ -1770,7 +1770,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* MEALS */}
     {section==="meals"&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
+      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginTop:2,marginBottom:12}}>
         {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`}
       </div>
@@ -2164,7 +2164,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* PROFILE */}
     {section==="profile"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Hồ sơ cá nhân</span></div>
+      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:900,color:C.t1}}>Hồ sơ cá nhân</span></div>
       <div style={{fontSize:13,fontWeight:600,color:C.t2,marginBottom:16}}>Nhập thông số → macro tự tính theo công thức Mifflin-St Jeor</div>
 
       {/* Section 1: Thông tin cơ bản */}
@@ -2414,7 +2414,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         if(saveSetting) saveSetting("gymDays",JSON.stringify(nd));
       };
       return <div style={card}>
-        <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>Lịch tập gym</div>
+        <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:16}}>Lịch tập gym</div>
         <div><div style={{...lbl,marginBottom:6}}>Số buổi/tuần</div>
           <div style={{fontSize:24,fontWeight:900,color:C.t1}}>{days.length} <span style={{fontSize:13,fontWeight:600,color:C.t3}}>buổi</span></div>
         </div>
@@ -2443,7 +2443,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       const nextWeek=weightLog.length+1;
       const today=fmtDate(new Date());
       return <div style={card}>
-        <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:16}}>Nhập cân nặng</div>
+        <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:16}}>Nhập cân nặng</div>
         <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
             <span style={{fontSize:13,fontWeight:800,color:C.t1}}>Tuần {nextWeek}</span>
@@ -2505,7 +2505,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* ACCOUNT */}
     {section==="account"&&<div style={card}>
-      <div style={{fontSize:17,fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:900,background:"linear-gradient(90deg,#DC2626,#F59E0B)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Tài khoản</span></div>
+      <div style={{fontSize:mob?19:17,fontWeight:900,color:C.t1,marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:900,color:C.t1}}>Tài khoản</span></div>
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
           <UserAvatar gender={profile.gender} size={48}/>
