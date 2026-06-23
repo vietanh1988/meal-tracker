@@ -747,7 +747,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>📊</span>
       <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{period==="week"?"Calo theo ngày":"Calo theo tuần"}</span>
-      <div style={{flex:1,height:1.5,background:C.border}}/>
+      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)"}}/>
     </div>
     <div style={{...card}}>
       {(()=>{
@@ -782,7 +782,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🍵</span>
       <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Macro TB/ngày</span>
-      <div style={{flex:1,height:1.5,background:C.border}}/>
+      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)"}}/>
     </div>
     <div style={{...card}}>
       <div style={{display:"flex",gap:mob?12:16,alignItems:"center"}}>
@@ -801,7 +801,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🏆</span>
       <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Top thực phẩm</span>
-      <div style={{flex:1,height:1.5,background:C.border}}/>
+      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)"}}/>
     </div>
     <div style={{...card}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:mob?8:16}}>
@@ -960,7 +960,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>🍽️</span>
       <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Danh sách thực đơn</span>
-      <div style={{flex:1,height:1.5,background:C.border}}/>
+      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)"}}/>
       <div style={{display:"flex",alignItems:"center",gap:2}}>
         <span onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700}}>‹</span>
         <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:700,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
@@ -1016,7 +1016,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
-          <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{padding:"5px 12px",borderRadius:8,background:showWeightInput?C.redBg:"linear-gradient(135deg,#DC2626,#B91C1C)",color:showWeightInput?C.red:"#fff",border:showWeightInput?`1.5px solid ${C.red}`:"none",fontSize:12,fontWeight:800,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>{showWeightInput?"✕ Đóng":"+ Nhập cân"}</button>
+          <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{width:28,height:28,borderRadius:8,background:"transparent",color:C.red,border:`1.5px solid ${C.red}`,fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>{showWeightInput?"✕":"+"}</button>
         </div>
       </div>
 
