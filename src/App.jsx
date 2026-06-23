@@ -675,10 +675,23 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
   const range=getDateRange();
 
   if(loading)return <div style={{textAlign:"center",padding:40,color:C.t3}}>Đang tải báo cáo...</div>;
-  if(!data||data.daysLogged===0)return <div style={{textAlign:"center",padding:40}}>
-    <div style={{fontSize:40,marginBottom:8}}>📭</div>
-    <div style={{fontSize:15,fontWeight:700,color:C.t2}}>Chưa có dữ liệu</div>
-    <div style={{fontSize:13,color:C.t3,marginTop:4}}>Hãy nhập bữa ăn trong Admin để xem báo cáo.</div>
+  if(!data||data.daysLogged===0)return <div>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+      <div style={{display:"flex",background:"#F3F4F6",borderRadius:8,overflow:"hidden",padding:2}}>
+        <div onClick={()=>{setPeriod("week");setOffset(0);}} style={{padding:"6px 12px",fontSize:12,fontWeight:700,color:period==="week"?"#DC2626":"#9CA3AF",background:period==="week"?"#fff":"transparent",borderRadius:6,cursor:"pointer"}}>Tuần</div>
+        <div onClick={()=>{setPeriod("month");setOffset(0);}} style={{padding:"6px 12px",fontSize:12,fontWeight:700,color:period==="month"?"#DC2626":"#9CA3AF",background:period==="month"?"#fff":"transparent",borderRadius:6,cursor:"pointer"}}>Tháng</div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:6}}>
+        <div onClick={()=>setOffset(o=>o-1)} style={{width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:8,background:"#fff",border:"1px solid #E5E7EB",cursor:"pointer",fontSize:12}}>◀</div>
+        <span style={{fontSize:14,fontWeight:700,color:C.t1,minWidth:mob?100:140,textAlign:"center"}}>{range.label}</span>
+        <div onClick={()=>setOffset(o=>Math.min(o+1,0))} style={{width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:8,background:"#fff",border:"1px solid #E5E7EB",cursor:"pointer",fontSize:12,opacity:offset>=0?0.3:1}}>▶</div>
+      </div>
+    </div>
+    <div style={{textAlign:"center",padding:40}}>
+      <div style={{fontSize:40,marginBottom:8}}>📭</div>
+      <div style={{fontSize:15,fontWeight:700,color:C.t2}}>Chưa có dữ liệu cho {range.label}</div>
+      <div style={{fontSize:13,color:C.t3,marginTop:4}}>Dùng nút ◀ ▶ để xem kỳ khác.</div>
+    </div>
   </div>;
 
   const maxWeekCal=Math.max(...data.weeks.map(w=>w.cal),data.target);
