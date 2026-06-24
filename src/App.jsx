@@ -1384,138 +1384,93 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
-      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🤖</span><span style={{fontWeight:800,color:C.t1}}>Kết nối AI</span></div>
-      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:20}}>Chọn AI provider và model để tính macro</div>
-
-      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20,padding:"12px 16px",background:aiConnected?C.greenBg:C.redBg,borderRadius:10,border:`1.5px solid ${aiConnected?C.green:C.red}`}}>
-        <div style={{width:12,height:12,borderRadius:"50%",background:aiConnected?C.green:C.red}}/>
-        <span style={{fontSize:14,fontWeight:700,color:aiConnected?"#14532D":"#7F1D1D"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"} — {providerName}</span>
+      {/* Status bar */}
+      <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:16}}>
+        <div style={{width:8,height:8,borderRadius:"50%",background:aiConnected?C.green:C.red}}/>
+        <span style={{fontSize:13,fontWeight:600,color:C.t1}}>{providerName} · {aiProvider==="claude"?aiModel.replace("claude-","").split("-2025")[0]:aiProvider==="gemini"?(geminiModel||"").replace("gemini-",""):(gptModel||"")}</span>
+        <span style={{marginLeft:"auto",fontSize:11,fontWeight:600,color:aiConnected?"#16A34A":"#DC2626"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"}</span>
       </div>
 
       {/* Provider */}
-      <div style={{...lbl,marginBottom:8}}>Chọn AI Provider</div>
-      <div style={{display:"flex",flexDirection:mob?"column":"row",gap:8,marginBottom:20}}>
+      <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Provider</div>
+      <div style={{display:"flex",gap:8,marginBottom:18}}>
         {[
-          {id:"claude",name:"Claude",desc:"Anthropic"},
-          {id:"gemini",name:"Gemini",desc:"Google"},
-          {id:"gpt",name:"GPT",desc:"OpenAI"},
-        ].map(p=>{
-          const logos={
-            claude:<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#D97706"/><text x="14" y="15" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="16" fontWeight="900" fontFamily="serif">C</text></svg>,
-            gemini:<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#4285F4"/><path d="M14 4 C20 10, 20 18, 14 24 C8 18, 8 10, 14 4Z" fill="#fff" opacity="0.9"/></svg>,
-            gpt:<svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#10A37F"/><text x="14" y="15" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="11" fontWeight="900">GPT</text></svg>,
-          };
-          return <div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
-          flex:1,padding:"14px 12px",borderRadius:12,cursor:"pointer",textAlign:"center",
-          background:aiProvider===p.id?C.redBg:C.surface,
-          border:aiProvider===p.id?`2.5px solid ${C.red}`:`1.5px solid ${C.border}`,
+          {id:"claude",name:"Claude",desc:"Anthropic",bg:"#D97706",logo:"C",fs:15},
+          {id:"gemini",name:"Gemini",desc:"Google",bg:"#4285F4",logo:"G",fs:16},
+          {id:"gpt",name:"GPT",desc:"OpenAI",bg:"#10A37F",logo:"GPT",fs:10},
+        ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
+          flex:1,padding:"14px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",
+          background:"#fff",border:aiProvider===p.id?`1.5px solid ${C.red}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
         }}>
-          <div style={{display:"flex",justifyContent:"center"}}>{logos[p.id]}</div>
-          <div style={{fontSize:14,fontWeight:900,color:C.t1,marginTop:4}}>{p.name}</div>
-          <div style={{fontSize:11,fontWeight:600,color:C.t3}}>{p.desc}</div>
-        </div>;})}
+          <div style={{width:36,height:36,borderRadius:10,background:p.bg,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 6px",fontSize:p.fs,fontWeight:700,color:"#fff",fontFamily:"serif"}}>{p.logo}</div>
+          <div style={{fontSize:12,fontWeight:700,color:C.t1}}>{p.name}</div>
+          <div style={{fontSize:10,fontWeight:500,color:C.t3}}>{p.desc}</div>
+          {aiProvider===p.id&&<div style={{width:14,height:14,borderRadius:"50%",background:C.red,color:"#fff",fontSize:8,margin:"4px auto 0",lineHeight:"14px",textAlign:"center"}}>✓</div>}
+        </div>)}
       </div>
 
-      {/* Model select for Claude */}
-      {aiProvider==="claude"&&<>
-        <div style={{...lbl,marginBottom:8}}>Chọn model Claude</div>
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-          {[
-            {id:"claude-sonnet-4-20250514",name:"Claude Sonnet 4",desc:"Nhanh, chính xác",badge:"Khuyên dùng",bc:C.goldBg,btc:"#92400E"},
-            {id:"claude-haiku-4-5-20251001",name:"Claude Haiku 4.5",desc:"Siêu nhanh, tiết kiệm",badge:"Tiết kiệm",bc:C.greenBg,btc:"#14532D"},
-            {id:"claude-opus-4-6",name:"Claude Opus 4.6",desc:"Mạnh nhất",badge:"Cao cấp",bc:C.redBg,btc:"#7F1D1D"},
-          ].map(m=><div key={m.id} onClick={()=>{setAiModel(m.id);if(isAdmin)saveSetting("ai_model",m.id);}} style={{
-            padding:"14px 16px",borderRadius:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-            background:aiModel===m.id?C.redBg:C.surface,border:aiModel===m.id?`2px solid ${C.red}`:`1.5px solid ${C.border}`,
+      {/* Model */}
+      <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Model</div>
+      <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:18}}>
+        {(aiProvider==="claude"?[
+          {id:"claude-sonnet-4-20250514",name:"Sonnet 4",desc:"Nhanh, chính xác",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
+          {id:"claude-haiku-4-5-20251001",name:"Haiku 4.5",desc:"Siêu nhanh, tiết kiệm",badge:"Tiết kiệm",bc:"#DCFCE7",btc:"#14532D"},
+          {id:"claude-opus-4-6",name:"Opus 4.6",desc:"Mạnh nhất",badge:"Cao cấp",bc:"#F3F4F6",btc:"#666"},
+        ]:aiProvider==="gemini"?[
+          {id:"gemini-2.5-flash",name:"Gemini 2.5 Flash",desc:"Nhanh, rẻ, thinking model",badge:"Tiết kiệm",bc:"#DCFCE7",btc:"#14532D"},
+          {id:"gemini-3.5-flash",name:"Gemini 3.5 Flash",desc:"Mới nhất, agentic + coding",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
+          {id:"gemini-3.1-pro",name:"Gemini 3.1 Pro",desc:"Reasoning mạnh nhất",badge:"Cao cấp",bc:"#F3F4F6",btc:"#666"},
+        ]:[
+          {id:"gpt-4o-mini",name:"GPT-4o Mini",desc:"Nhanh, rẻ nhất",badge:"Tiết kiệm",bc:"#DCFCE7",btc:"#14532D"},
+          {id:"chat-latest",name:"GPT-5.5 Instant",desc:"Mặc định ChatGPT",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
+          {id:"gpt-5.5",name:"GPT-5.5 Thinking",desc:"Mạnh nhất",badge:"Cao cấp",bc:"#F3F4F6",btc:"#666"},
+        ]).map(m=>{
+          const curModel=aiProvider==="claude"?aiModel:aiProvider==="gemini"?geminiModel:gptModel;
+          const setModel=aiProvider==="claude"?setAiModel:aiProvider==="gemini"?setGeminiModel:setGptModel;
+          const modelKey=aiProvider==="claude"?"ai_model":aiProvider==="gemini"?"gemini_model":"gpt_model";
+          const isActive=curModel===m.id;
+          return <div key={m.id} onClick={()=>{setModel(m.id);if(isAdmin)saveSetting(modelKey,m.id);}} style={{
+            display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",borderRadius:10,cursor:"pointer",
+            background:"#fff",border:isActive?`1.5px solid ${C.red}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
           }}>
             <div>
-              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{m.name}</div>
-              <div style={{fontSize:12,fontWeight:600,color:C.t2,marginTop:2}}>{m.desc}</div>
+              <div style={{fontSize:13,fontWeight:600,color:C.t1}}>{m.name}</div>
+              <div style={{fontSize:10,fontWeight:500,color:C.t3,marginTop:2}}>{m.desc}</div>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:20,background:m.bc,color:m.btc}}>{m.badge}</span>
-              {aiModel===m.id&&<div style={{width:22,height:22,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:900}}>✓</div>}
+              <span style={{fontSize:9,fontWeight:700,padding:"3px 8px",borderRadius:10,background:m.bc,color:m.btc}}>{m.badge}</span>
+              <div style={{width:18,height:18,borderRadius:"50%",border:isActive?`none`:`1.5px solid #ddd`,background:isActive?C.red:"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"#fff"}}>{isActive?"✓":""}</div>
             </div>
-          </div>)}
-        </div>
-        {isAdmin&&<div style={{marginBottom:16}}>
-          <div style={{...lbl,marginBottom:6}}>Claude API Key</div>
-          <input type="password" value={claudeKey} onChange={e=>setClaudeKey(e.target.value)} placeholder="sk-ant-api03-..." style={inp}/>
-          <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Lấy key tại <span style={{color:C.blue,fontWeight:700}}>console.anthropic.com</span> — Để trống nếu chạy trong Claude.ai</div>
-        </div>}
-      </>}
-
-      {/* Gemini */}
-      {aiProvider==="gemini"&&<>
-        <div style={{...lbl,marginBottom:8}}>Chọn model Gemini</div>
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-          {[
-            {id:"gemini-2.5-flash",name:"Gemini 2.5 Flash",desc:"Nhanh, rẻ, thinking model",badge:"Tiết kiệm",bc:C.greenBg,btc:"#14532D"},
-            {id:"gemini-3.5-flash",name:"Gemini 3.5 Flash",desc:"Mới nhất, agentic + coding",badge:"Khuyên dùng",bc:C.goldBg,btc:"#92400E"},
-            {id:"gemini-3.1-pro",name:"Gemini 3.1 Pro",desc:"Reasoning mạnh nhất",badge:"Cao cấp",bc:C.redBg,btc:"#7F1D1D"},
-          ].map(m=><div key={m.id} onClick={()=>{setGeminiModel(m.id);if(isAdmin)saveSetting("gemini_model",m.id);}} style={{
-            padding:"14px 16px",borderRadius:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-            background:geminiModel===m.id?C.blueBg:C.surface,border:geminiModel===m.id?`2px solid ${C.blue}`:`1.5px solid ${C.border}`,
-          }}>
-            <div>
-              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{m.name}</div>
-              <div style={{fontSize:12,fontWeight:600,color:C.t2,marginTop:2}}>{m.desc}</div>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:20,background:m.bc,color:m.btc}}>{m.badge}</span>
-              {geminiModel===m.id&&<div style={{width:22,height:22,borderRadius:"50%",background:C.blue,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:900}}>✓</div>}
-            </div>
-          </div>)}
-        </div>
-        {isAdmin&&<div style={{marginBottom:16}}>
-          <div style={{...lbl,marginBottom:6}}>Gemini API Key</div>
-          <input type="password" value={geminiKey} onChange={e=>setGeminiKey(e.target.value)} placeholder="AIzaSy..." style={inp}/>
-          <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Lấy key tại <span style={{color:C.blue,fontWeight:700}}>aistudio.google.com</span></div>
-        </div>}
-      </>}
-
-      {/* GPT */}
-      {aiProvider==="gpt"&&<>
-        <div style={{...lbl,marginBottom:8}}>Chọn model OpenAI</div>
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-          {[
-            {id:"gpt-4o-mini",name:"GPT-4o Mini",desc:"Nhanh, rẻ nhất",badge:"Tiết kiệm",bc:C.greenBg,btc:"#14532D"},
-            {id:"chat-latest",name:"GPT-5.5 Instant",desc:"Mặc định ChatGPT, ít hallucinate",badge:"Khuyên dùng",bc:C.goldBg,btc:"#92400E"},
-            {id:"gpt-5.5",name:"GPT-5.5 Thinking",desc:"Mạnh nhất, agentic + coding",badge:"Cao cấp",bc:C.redBg,btc:"#7F1D1D"},
-          ].map(m=><div key={m.id} onClick={()=>{setGptModel(m.id);if(isAdmin)saveSetting("gpt_model",m.id);}} style={{
-            padding:"14px 16px",borderRadius:12,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",
-            background:gptModel===m.id?C.greenBg:C.surface,border:gptModel===m.id?`2px solid ${C.green}`:`1.5px solid ${C.border}`,
-          }}>
-            <div>
-              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{m.name}</div>
-              <div style={{fontSize:12,fontWeight:600,color:C.t2,marginTop:2}}>{m.desc}</div>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:20,background:m.bc,color:m.btc}}>{m.badge}</span>
-              {gptModel===m.id&&<div style={{width:22,height:22,borderRadius:"50%",background:C.green,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:900}}>✓</div>}
-            </div>
-          </div>)}
-        </div>
-        {isAdmin&&<div style={{marginBottom:16}}>
-          <div style={{...lbl,marginBottom:6}}>OpenAI API Key</div>
-          <input type="password" value={gptKey} onChange={e=>setGptKey(e.target.value)} placeholder="sk-..." style={inp}/>
-          <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Lấy key tại <span style={{color:C.blue,fontWeight:700}}>platform.openai.com</span></div>
-        </div>}
-      </>}
-
-      {/* USDA */}
-      <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:16,marginTop:20,marginBottom:20}}>
-        <div style={{fontSize:14,fontWeight:900,color:"#92400E",marginBottom:8}}>🏛️ USDA FoodData Central (Ưu tiên)</div>
-        <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8}}>Dữ liệu macro chuẩn từ Bộ Nông nghiệp Mỹ. Tra USDA trước, không có thì fallback AI.</div>
-        {isAdmin&&<><div style={{...lbl,marginBottom:6}}>USDA API Key</div>
-        <input type="password" value={usdaKey} onChange={e=>setUsdaKey(e.target.value)} placeholder="Nhập USDA key..." style={inp}/>
-        <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:4}}>Đăng ký miễn phí tại <span style={{color:C.blue,fontWeight:700}}>fdc.nal.usda.gov/api-key-signup</span></div></>}
-        {usdaKey&&<div style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"8px 12px",background:C.greenBg,borderRadius:8,border:`1px solid ${C.green}`}}>
-          <div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/>
-          <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>USDA đã kết nối — ưu tiên tra cứu trước AI</span>
-        </div>}
+          </div>;
+        })}
       </div>
 
+      {/* API Keys */}
+      {isAdmin&&<>
+        <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>API Keys</div>
+        {aiProvider==="claude"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
+          <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Claude</span>
+          <input type="password" value={claudeKey} onChange={e=>setClaudeKey(e.target.value)} placeholder="sk-ant-api03-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:claudeKey?"#16A34A":"#ddd",flexShrink:0}}/>
+        </div>}
+        {aiProvider==="gemini"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
+          <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Gemini</span>
+          <input type="password" value={geminiKey} onChange={e=>setGeminiKey(e.target.value)} placeholder="AIzaSy..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:geminiKey?"#16A34A":"#ddd",flexShrink:0}}/>
+        </div>}
+        {aiProvider==="gpt"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
+          <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>OpenAI</span>
+          <input type="password" value={gptKey} onChange={e=>setGptKey(e.target.value)} placeholder="sk-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:gptKey?"#16A34A":"#ddd",flexShrink:0}}/>
+        </div>}
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
+          <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>USDA</span>
+          <input type="password" value={usdaKey} onChange={e=>setUsdaKey(e.target.value)} placeholder="USDA key..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:usdaKey?"#16A34A":"#ddd",flexShrink:0}}/>
+        </div>
+      </>}
+
+      {/* Test button */}
       <button onClick={async()=>{
         setAiConnected(false);
         try{
@@ -1532,14 +1487,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             const d=await r.json();setAiConnected(!d.error);
           }
         }catch{setAiConnected(false);}
-      }} style={redBtn}>🔌 Test kết nối {providerName}</button>
-
-      <div style={{marginTop:16,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-        <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.6}}>💡 Kết quả AI được cache — cùng 1 món không cần gọi lần 2. {!isAdmin&&"API keys được admin cấu hình sẵn."}</span>
-      </div>
+      }} style={{...redBtn,marginTop:10}}>Test kết nối</button>
 
       {isAdmin&&<button onClick={async()=>{
-        console.log("🔑 Saving keys:", {aiProvider, gptModel, geminiModel, aiModel, claudeKey: claudeKey?.length, geminiKey: geminiKey?.length, gptKey: gptKey?.length, usdaKey: usdaKey?.length});
         await saveSetting("ai_provider",aiProvider);
         await saveSetting("claude_key",claudeKey);
         await saveSetting("gemini_key",geminiKey);
@@ -1550,13 +1500,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         await saveSetting("gemini_model",geminiModel);
         const el=document.getElementById("cloud-keys-saved");
         if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-      }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#1D4ED8,#3B82F6)"}}>☁️ Lưu API Keys lên Cloud (cho tất cả users)</button>}
+      }} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#1D4ED8,#3B82F6)"}}>☁️ Lưu lên Cloud</button>}
       {isAdmin&&<div id="cloud-keys-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-        <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ API Keys đã lưu lên cloud! Tất cả users sẽ dùng keys này.</span>
+        <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ Đã lưu!</span>
       </div>}
 
-      {!isAdmin&&(claudeKey||geminiKey||gptKey)&&<div style={{marginTop:12,padding:"12px 16px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`}}>
-        <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ API đã được admin cấu hình sẵn — bạn có thể dùng ngay!</span>
+      {!isAdmin&&(claudeKey||geminiKey||gptKey)&&<div style={{marginTop:12,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1px solid ${C.green}`}}>
+        <span style={{fontSize:12,fontWeight:600,color:"#14532D"}}>✅ API đã được admin cấu hình sẵn</span>
       </div>}
     </div>}
 
