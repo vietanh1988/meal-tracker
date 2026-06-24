@@ -932,7 +932,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       </div>}
       {/* Progress bar */}
       <div style={{height:8,width:"100%",background:"#F3F4F6",borderRadius:4,marginTop:10,overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:0,120)}%`,background:actualCal>heroCal*1.1?"#F59E0B":"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
+        <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:0,120)}%`,background:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
       </div>
       {/* Macro rings */}
       <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
