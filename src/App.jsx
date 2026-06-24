@@ -135,7 +135,7 @@ function MealCard({meal}){
   const [open,setOpen]=useState(false);
   const t=meal.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
   const total=t.p+t.c+t.f+t.fiber||1;
-  const iconBg={sang:"rgba(0,122,255,0.08)",phu_sang:"rgba(0,122,255,0.06)",trua:"rgba(90,200,250,0.1)",phu_chieu:"rgba(142,142,147,0.08)",pre:"rgba(0,122,255,0.08)",post:"rgba(52,199,89,0.08)",toi:"rgba(124,58,237,0.08)"};
+  const iconBg={sang:"rgba(0,122,255,0.12)",phu_sang:"rgba(0,122,255,0.10)",trua:"rgba(90,200,250,0.15)",phu_chieu:"rgba(142,142,147,0.12)",pre:"rgba(0,122,255,0.12)",post:"rgba(52,199,89,0.12)",toi:"rgba(124,58,237,0.12)"};
   return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <div style={{display:"flex",alignItems:"center",gap:10,flex:"1 1 auto",minWidth:0}}>
@@ -944,16 +944,18 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       </div>
     </div>
 
-    {/* Stats — Clean white cards */}
+    {/* Stats — Clean white cards with SVG icons */}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:24}}>
       {[
-        {l:"Chiều cao",v:profile.cm,u:"cm",icon:"📏"},
-        {l:"Cân nặng",v:curKg,u:"kg",icon:"⚖️"},
-        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",icon:"📊"},
-        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",icon:exIcon},
+        {l:"Chiều cao",v:profile.cm,u:"cm",d:"M3 21h4 M3 3v18 M7 3v18 M3 12h4 M3 7h2 M3 17h2",color:"#007AFF"},
+        {l:"Cân nặng",v:curKg,u:"kg",d:"M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M2 21h20 M5 21l3-9 M19 21l-3-9",color:"#007AFF"},
+        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",d:"M18 20V10 M12 20V4 M6 20v-6",color:"#007AFF"},
+        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",d:"M6.5 6.5h11 M6.5 17.5h11 M6.5 6.5v11 M17.5 6.5v11 M2 9v6 M22 9v6 M2 9h4.5 M17.5 9H22 M2 15h4.5 M17.5 15H22",color:"#007AFF"},
       ].map((s,i)=>(
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:40,height:40,borderRadius:10,background:C.surface,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{s.icon}</div>
+          <div style={{width:40,height:40,borderRadius:10,background:"rgba(0,122,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={s.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={s.d}/></svg>
+          </div>
           <div>
             <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t2}}>{s.l}</div>
             <div style={{fontSize:mob?18:18,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:mob?11:11,fontWeight:700,color:C.t2}}>{s.u}</span></div>
@@ -982,11 +984,11 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
 
     {/* Compact evaluation */}
     {actualCal>0&&<div style={{...card,padding:"12px 16px",marginTop:6,
-      background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.greenBg:C.redBg,
-      border:`2px solid ${actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:C.red}`,
+      background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"rgba(52,199,89,0.06)":"rgba(245,158,11,0.06)",
+      border:`1.5px solid ${actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"#34C759":"#F59E0B"}`,
     }}>
       <div style={{fontSize:13,fontWeight:700,lineHeight:1.6,
-        color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:C.red,
+        color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"#059669":"#B45309",
       }}>
         {actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1
           ?"✓ Thực đơn phù hợp với mục tiêu!"
@@ -998,12 +1000,12 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       </div>
     </div>}
 
-    {heroCal<target&&<div style={{...card,background:C.goldBg,border:"2px solid #CA8A04"}}>
+    {heroCal<target&&<div style={{...card,background:"rgba(0,122,255,0.04)",border:`1.5px solid ${C.primary}`}}>
       <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-        <span style={{fontSize:16,fontWeight:900,color:"#F59E0B"}}>⚡</span>
+        <span style={{fontSize:16,fontWeight:900,color:C.primary}}>✨</span>
         <div>
-          <div style={{fontSize:13,fontWeight:900,color:"#92400E",marginBottom:2}}>Gợi ý AI</div>
-          <div style={{fontSize:14,fontWeight:600,color:"#78350F",lineHeight:1.5}}>Thiếu {target-heroCal} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).</div>
+          <div style={{fontSize:13,fontWeight:900,color:C.primary,marginBottom:2}}>Gợi ý AI</div>
+          <div style={{fontSize:14,fontWeight:600,color:C.t1,lineHeight:1.5}}>Thiếu {target-heroCal} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).</div>
         </div>
       </div>
     </div>}
