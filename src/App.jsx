@@ -3112,8 +3112,10 @@ export default function App(){
           {id:"meals",label:"Bữa ăn",icon:"nav_meal"},
           {id:"report",label:"Báo cáo",icon:"nav_progress"},
           {id:"settings",label:"Cài đặt",icon:"nav_settings"},
-        ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"4px 0"}}>
-          <img src={`/icons/${t.icon}.png`} alt="" style={{width:26,height:26,objectFit:"contain",opacity:a?1:0.45}}/>
+        ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"4px 0"}}>
+          <div style={{width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <img src={`/icons/${t.icon}.png`} alt="" style={{width:28,height:28,objectFit:"contain",opacity:a?1:0.4,filter:a?"none":"grayscale(0.3)"}}/>
+          </div>
           <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
         </div>;})}
       </div>
