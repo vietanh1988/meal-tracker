@@ -3112,9 +3112,10 @@ export default function App(){
           {id:"meals",label:"Bữa ăn",icon:"nav_meal"},
           {id:"report",label:"Báo cáo",icon:"nav_progress"},
           {id:"settings",label:"Cài đặt",icon:"nav_settings"},
-        ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"4px 0"}}>
-          <img src={`/icons/${t.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain",opacity:a?1:0.5}}/>
-          <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
+        ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>
+          <img src={`/icons/${t.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain",opacity:a?1:0.65}}/>
+          <span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
+          {a&&<div style={{width:5,height:5,borderRadius:"50%",background:"#007AFF",marginTop:-1}}/>}
         </div>;})}
       </div>
     </>:<>
