@@ -2474,7 +2474,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
         </div>
       </div>
-      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"#64748B"}}>🚪 Đăng xuất</button>
+      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"transparent",color:"#EF4444",border:"2px solid #EF4444"}}>🚪 Đăng xuất</button>
       <button onClick={()=>{
         caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
           if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
