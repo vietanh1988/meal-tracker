@@ -947,14 +947,18 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Stats — Clean white cards with SVG icons */}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:24}}>
       {[
-        {l:"Chiều cao",v:profile.cm,u:"cm",d:"M3 21h4 M3 3v18 M7 3v18 M3 12h4 M3 7h2 M3 17h2",color:"#007AFF"},
-        {l:"Cân nặng",v:curKg,u:"kg",d:"M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M2 21h20 M5 21l3-9 M19 21l-3-9",color:"#007AFF"},
-        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",d:"M18 20V10 M12 20V4 M6 20v-6",color:"#007AFF"},
-        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",d:"M6.5 6.5h11 M6.5 17.5h11 M6.5 6.5v11 M17.5 6.5v11 M2 9v6 M22 9v6 M2 9h4.5 M17.5 9H22 M2 15h4.5 M17.5 15H22",color:"#007AFF"},
+        {l:"Chiều cao",v:profile.cm,u:"cm",color:"#4A7ADB",
+         svg:<svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4A7ADB" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="2" x2="8" y2="22"/><line x1="8" y1="6" x2="12" y2="6"/><line x1="8" y1="12" x2="11" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/></svg>},
+        {l:"Cân nặng",v:curKg,u:"kg",color:"#4A7ADB",
+         svg:<svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4A7ADB" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="2.5"/><line x1="12" y1="7.5" x2="12" y2="10"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M6 21l3-11h6l3 11H6z"/></svg>},
+        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",color:"#4A7ADB",
+         svg:<svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4A7ADB" strokeWidth={2.5} strokeLinecap="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg>},
+        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",color:"#4A7ADB",
+         svg:<svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4A7ADB" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/><line x1="6" y1="12" x2="18" y2="12"/></svg>},
       ].map((s,i)=>(
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:40,height:40,borderRadius:10,background:"rgba(0,122,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={s.color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={s.d}/></svg>
+          <div style={{width:40,height:40,borderRadius:10,background:"rgba(74,122,219,0.10)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            {s.svg}
           </div>
           <div>
             <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t2}}>{s.l}</div>
