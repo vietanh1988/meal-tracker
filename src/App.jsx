@@ -3107,13 +3107,15 @@ export default function App(){
       {/* Bottom nav — gradient PNG icons */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
         {[
-          {id:"dashboard",label:"Tổng quan",icon:"nav_dashboard"},
-          {id:"profile",label:"Hồ sơ",icon:"nav_profile"},
-          {id:"meals",label:"Bữa ăn",icon:"nav_meal"},
-          {id:"report",label:"Báo cáo",icon:"nav_progress"},
-          {id:"settings",label:"Cài đặt",icon:"nav_settings"},
+          {id:"dashboard",label:"Tổng quan",icon:"nav_dashboard",sz:34},
+          {id:"profile",label:"Hồ sơ",icon:"nav_profile",sz:34},
+          {id:"meals",label:"Bữa ăn",icon:"nav_meal",sz:40},
+          {id:"report",label:"Báo cáo",icon:"nav_progress",sz:38},
+          {id:"settings",label:"Cài đặt",icon:"nav_settings",sz:36},
         ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"4px 0"}}>
-          <img src={`/icons/${t.icon}.png`} alt="" style={{width:40,height:40,objectFit:"contain",opacity:a?1:0.55}}/>
+          <div style={{width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <img src={`/icons/${t.icon}.png`} alt="" style={{width:t.sz,height:t.sz,objectFit:"contain",opacity:a?1:0.55}}/>
+          </div>
           <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
         </div>;})}
       </div>
