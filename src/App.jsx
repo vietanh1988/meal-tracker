@@ -63,7 +63,7 @@ const Icons={
 };
 const MealIcon=({id,size=32})=>{
   const map={sang:"meal_morning",phu_sang:"meal_snack",trua:"meal_lunch",phu_chieu:"meal_snack",pre:"meal_preworkout",post:"meal_preworkout",toi:"meal_dinner"};
-  return <img src={`/icons/${map[id]||"meal_lunch"}.png`} alt="" style={{width:size,height:"auto",maxHeight:size}}/>;
+  return <img src={`/icons/${map[id]||"meal_lunch"}.png`} alt="" style={{width:size,height:size,objectFit:"contain"}}/>;
 };
 
 // App Logo — uses pinned icon image instead of emoji
@@ -932,7 +932,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       </div>}
       {/* Progress bar */}
       <div style={{height:8,width:"100%",background:"#F3F4F6",borderRadius:4,marginTop:10,overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:0,120)}%`,background:actualCal>heroCal*1.1?"#EF4444":"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
+        <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:0,120)}%`,background:actualCal>heroCal*1.1?"#F59E0B":"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
       </div>
       {/* Macro rings */}
       <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
@@ -953,7 +953,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       ].map((s,i)=>(
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:44,height:44,borderRadius:11,background:"rgba(0,122,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:"auto",maxHeight:34}}/>
+            <img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/>
           </div>
           <div>
             <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t2}}>{s.l}</div>
@@ -2524,7 +2524,7 @@ function LoginScreen({onLogin}){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
     <div style={{width:"100%",maxWidth:400}}>
       <div style={{textAlign:"center",marginBottom:32}}>
-        <div style={{width:80,height:80,borderRadius:18,background:"#fff",boxShadow:"0 2px 12px rgba(0,122,255,0.12)",display:"inline-flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}><AppLogo size={80} radius={0}/></div>
+        <div style={{display:"inline-flex",width:80,height:80,borderRadius:17,background:"#fff",alignItems:"center",justifyContent:"center",overflow:"hidden"}}><AppLogo size={80} radius={0}/></div>
         <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:12,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
         <div style={{fontSize:13,fontWeight:700,color:C.secondary,marginTop:2}}>AI Nutrition Coach</div>
       </div>
@@ -2576,7 +2576,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:mob?16:20}}>
     <div style={{width:"100%",maxWidth:480}}>
       <div style={{textAlign:"center",marginBottom:24}}>
-        <div style={{width:72,height:72,borderRadius:16,background:"#fff",boxShadow:"0 2px 12px rgba(0,122,255,0.12)",display:"inline-flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}><AppLogo size={72} radius={0}/></div>
+        <div style={{display:"inline-flex",width:72,height:72,borderRadius:15,background:"#fff",alignItems:"center",justifyContent:"center",overflow:"hidden"}}><AppLogo size={72} radius={0}/></div>
         <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
         <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
       </div>
@@ -2837,7 +2837,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   return <div>
     {/* Hero — White card giống Dashboard */}
     <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",border:`1.5px solid ${C.border}`}}>
-      <div style={{width:96,height:96,borderRadius:22,background:"#fff",boxShadow:"0 2px 12px rgba(0,122,255,0.12)",display:"inline-flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+      <div style={{display:"inline-flex",width:96,height:96,borderRadius:20,background:"#fff",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
         <AppLogo size={96} radius={0}/>
       </div>
       <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
@@ -3094,7 +3094,7 @@ export default function App(){
         <UserAvatar gender={profile?.gender} size={32}/>
         <div style={{fontSize:13,fontWeight:700,color:"#ccc"}}>{user.user_metadata?.username||user.email}</div>
         <NotiBell appSettings={appSettings} dark/>
-        <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.7)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
+        <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(255,255,255,0.15)",color:"#fff",border:"1px solid rgba(255,255,255,0.35)",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>}
     <div style={{paddingTop:mob?"calc(env(safe-area-inset-top, 8px) + 8px)":"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>
@@ -3115,7 +3115,7 @@ export default function App(){
           {id:"report",label:"Báo cáo",icon:"nav_progress"},
           {id:"settings",label:"Cài đặt",icon:"nav_settings"},
         ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"4px 0"}}>
-          <img src={`/icons/${t.icon}.png`} alt="" style={{width:32,height:"auto",maxHeight:32,opacity:a?1:0.4,filter:a?"none":"grayscale(0.3)"}}/>
+          <img src={`/icons/${t.icon}.png`} alt="" style={{width:40,height:40,objectFit:"contain",opacity:a?1:0.55}}/>
           <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
         </div>;})}
       </div>
