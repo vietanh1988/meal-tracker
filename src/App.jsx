@@ -65,7 +65,7 @@ const MealIcon=({id,size=20})=>{
 };
 
 // App Logo — uses pinned icon image instead of emoji
-const AppLogo=({size=48,radius})=><img src="/icon-192.png" alt="Meal Tracker" style={{width:size,height:size,borderRadius:radius||size*0.22,objectFit:"cover",flexShrink:0}}/>;
+const AppLogo=({size=48,radius})=><img src="/icon-192.png" alt="Fipilot AI" style={{width:size,height:size,borderRadius:radius||size*0.22,objectFit:"cover",flexShrink:0}}/>;
 
 // User Avatar — emoji based on gender
 const UserAvatar=({gender,size=40})=>{
@@ -2444,7 +2444,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <UserAvatar gender={profile.gender} size={48}/>
           <div style={{flex:1}}>
             <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
-            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Thành viên Meal Tracker</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Thành viên Fipilot AI</div>
           </div>
         </div>
         <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:12,display:"flex",flexDirection:"column",gap:10}}>
@@ -2518,8 +2518,8 @@ function LoginScreen({onLogin}){
     <div style={{width:"100%",maxWidth:400}}>
       <div style={{textAlign:"center",marginBottom:32}}>
         <AppLogo size={64} radius={16}/>
-        <div style={{fontSize:24,fontWeight:900,color:"#111",marginTop:12,letterSpacing:"-0.02em"}}>MEAL TRACKER</div>
-        <div style={{fontSize:13,fontWeight:700,color:C.red,marginTop:2}}>Phát triển bởi Việt Anh Seoer</div>
+        <div style={{fontSize:24,fontWeight:900,color:"#111",marginTop:12,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
+        <div style={{fontSize:13,fontWeight:700,color:"#16A34A",marginTop:2}}>AI Nutrition Coach</div>
       </div>
       <div style={{...card,padding:"24px 28px"}}>
         <div style={{display:"flex",marginBottom:20,borderBottom:`2px solid ${C.border}`}}>
@@ -2570,7 +2570,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
     <div style={{width:"100%",maxWidth:480}}>
       <div style={{textAlign:"center",marginBottom:24}}>
         <AppLogo size={56} radius={14}/>
-        <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>MEAL TRACKER</div>
+        <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
         <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
       </div>
 
@@ -2805,13 +2805,13 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   const about=(()=>{try{return appSettings.about_page?JSON.parse(appSettings.about_page):{}}catch(e){return{};}})();
   const [editing,setEditing]=useState(false);
   const [form,setForm]=useState({
-    appName:about.appName||"Meal Tracker",
+    appName:about.appName||"Fipilot AI",
     tagline:about.tagline||"Theo dõi dinh dưỡng thông minh cho người tập gym",
     version:about.version||"2.6",
     description:about.description||"Ứng dụng theo dõi bữa ăn và macro dinh dưỡng. Tính calo tự động từ kho 192 thực phẩm Việt Nam, hỗ trợ USDA API và AI (Claude, Gemini, GPT). Tính macro theo công thức Mifflin-St Jeor chuẩn ISSN.",
     devName:about.devName||"Việt Anh Seoer",
     devRole:about.devRole||"Founder & Developer",
-    devBio:about.devBio||"Đam mê fitness và công nghệ. Xây dựng Meal Tracker để giúp cộng đồng gym Việt Nam theo dõi dinh dưỡng dễ dàng hơn.",
+    devBio:about.devBio||"Đam mê fitness và công nghệ. Xây dựng Fipilot AI để giúp cộng đồng gym Việt Nam theo dõi dinh dưỡng dễ dàng hơn.",
     devAvatar:about.devAvatar||"",
     contact:about.contact||"",
     facebook:about.facebook||"",
@@ -3077,8 +3077,8 @@ export default function App(){
           }
         }} style={{width:42,height:42,borderRadius:10,overflow:"hidden",flexShrink:0,cursor:"pointer"}}><AppLogo size={42} radius={10}/></div>
         <div>
-          <div style={{fontSize:20,fontWeight:900,letterSpacing:"-0.02em",color:"#fff"}}>MEAL TRACKER</div>
-          <div style={{fontSize:12,fontWeight:700,color:"#F87171"}}>Phát triển bởi Việt Anh Seoer</div>
+          <div style={{fontSize:20,fontWeight:900,letterSpacing:"-0.02em",color:"#fff"}}>FIPILOT AI</div>
+          <div style={{fontSize:12,fontWeight:700,color:"#4ADE80"}}>AI Nutrition Coach</div>
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
