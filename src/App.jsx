@@ -1503,7 +1503,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         await saveSetting("gemini_model",geminiModel);
         const el=document.getElementById("cloud-keys-saved");
         if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-      }} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#007AFF,#4DA3FF)"}}>☁️ Lưu lên Cloud</button>}
+      }} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#0F172A,#1E293B)"}}>☁️ Lưu lên Cloud</button>}
       {isAdmin&&<div id="cloud-keys-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
         <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ Đã lưu!</span>
       </div>}
