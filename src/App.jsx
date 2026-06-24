@@ -19,13 +19,13 @@ function useIsMobile(breakpoint=600){
 }
 
 const C = {
-  protein:"#EF4444", carb:"#F59E0B", fat:"#78716C", fiber:"#22C55E",
+  protein:"#007AFF", carb:"#5AC8FA", fat:"#8E8E93", fiber:"#34C759",
   red:"#EF4444", gold:"#FACC15", green:"#00C896", blue:"#007AFF",
   primary:"#007AFF", secondary:"#36A3FF", deepBlue:"#0057FF", accent:"#7C3AED",
   mint:"#00C896", violet:"#7C3AED",
   bg:"#F8FAFC", card:"#FFF", surface:"#F1F5F9",
   border:"#E2E8F0",
-  t1:"#0F172A", t2:"#64748B", t3:"#94A3B8",
+  t1:"#0F172A", t2:"#64748B", t3:"#8494A7",
   redBg:"rgba(239,68,68,0.07)", goldBg:"rgba(250,204,21,0.1)", greenBg:"rgba(0,200,150,0.08)", blueBg:"rgba(0,122,255,0.06)",
   primaryBg:"rgba(0,122,255,0.08)", accentBg:"rgba(124,58,237,0.06)",
 };
@@ -120,7 +120,7 @@ function MacroRing({l,v,max,color,color2,track,tc,sub,unit}){
           <stop offset="100%" stopColor={c2}/>
         </linearGradient>
       </defs>
-      <circle cx={36} cy={36} r={r} fill="none" stroke={track||"#E0E0E0"} strokeWidth={sw}/>
+      <circle cx={36} cy={36} r={r} fill="none" stroke={track||"#E2E8F0"} strokeWidth={sw}/>
       <circle cx={36} cy={36} r={r} fill="none" stroke={`url(#${gradId})`} strokeWidth={sw} strokeDasharray={`${(Math.min(pct,100)/100)*circ} ${circ}`} strokeLinecap="round" transform="rotate(-90 36 36)" style={{transition:"stroke-dasharray 0.5s"}}/>
       <text x={36} y={sub?32:36} textAnchor="middle" dominantBaseline="central" fill={tc||C.t1} fontSize={sub?14:16} fontWeight={900}>{Math.round(v)}</text>
       {sub&&<text x={36} y={48} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.8)":"#666"} fontSize={10} fontWeight={700}>{sub}</text>}
@@ -789,13 +789,13 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     </div>
     <div style={{...card}}>
       <div style={{display:"flex",gap:mob?12:16,alignItems:"center"}}>
-        <div style={{width:mob?80:90,height:mob?80:90,borderRadius:"50%",background:`conic-gradient(#EF4444 0% ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}%, #F59E0B ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}% ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}%, #78716C ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}% 100%)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{width:mob?80:90,height:mob?80:90,borderRadius:"50%",background:`conic-gradient(#007AFF 0% ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}%, #5AC8FA ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}% ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}%, #8E8E93 ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}% 100%)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{width:mob?50:56,height:mob?50:56,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?13:14,fontWeight:700}}>{data.avgCal}</div>
         </div>
         <div style={{flex:1,fontSize:13}}>
-          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid #F3F4F6"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#EF4444"}}/> Protein</span><span style={{fontWeight:700}}>{data.avgP}g</span></div>
-          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid #F3F4F6"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#F59E0B"}}/> Carb</span><span style={{fontWeight:700}}>{data.avgC}g</span></div>
-          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#78716C"}}/> Fat</span><span style={{fontWeight:700}}>{data.avgF}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid #F3F4F6"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#007AFF"}}/> Protein</span><span style={{fontWeight:700}}>{data.avgP}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid #F3F4F6"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#5AC8FA"}}/> Carb</span><span style={{fontWeight:700}}>{data.avgC}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#8E8E93"}}/> Fat</span><span style={{fontWeight:700}}>{data.avgF}g</span></div>
         </div>
       </div>
     </div>
@@ -809,13 +809,13 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     <div style={{...card}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:mob?8:16}}>
         <div>
-          <div style={{fontSize:13,fontWeight:700,color:"#EF4444",marginBottom:8}}>🥩 Top nguồn Protein</div>
+          <div style={{fontSize:13,fontWeight:700,color:"#007AFF",marginBottom:8}}>🥩 Top nguồn Protein</div>
           {data.topProtein.map(([name,p],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{Math.round(p)}g P</span></div>)}
           {data.topProtein.length===0&&<div style={{fontSize:12,color:C.t3}}>Chưa có dữ liệu</div>}
         </div>
         <div style={{width:1,background:"#E5E7EB"}}/>
         <div>
-          <div style={{fontSize:13,fontWeight:700,color:"#F59E0B",marginBottom:8}}>⭐ Ăn nhiều nhất</div>
+          <div style={{fontSize:13,fontWeight:700,color:"#5AC8FA",marginBottom:8}}>⭐ Ăn nhiều nhất</div>
           {data.topFoods.map(([name,count],i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:13,borderBottom:"0.5px solid #F3F4F6"}}><span>{i+1}. {name}</span><span style={{color:C.t3}}>{count} lần</span></div>)}
           {data.topFoods.length===0&&<div style={{fontSize:12,color:C.t3}}>Chưa có dữ liệu</div>}
         </div>
@@ -934,10 +934,10 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       </div>
       {/* Macro rings */}
       <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
-        <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#EF4444" color2="#F97316" sub={actualP>0?`/${heroP}g`:null} unit="g"/>
-        <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#F59E0B" color2="#FB923C" sub={actualC>0?`/${heroC}g`:null} unit="g"/>
-        <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#78716C" color2="#A8A29E" sub={actualF>0?`/${heroF}g`:null} unit="g"/>
-        <MacroRing l="Xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#22C55E" color2="#66DDAA" sub={actualFiber>0?`/${heroFiber}g`:null} unit="g"/>
+        <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#007AFF" color2="#007AFF" sub={actualP>0?`/${heroP}g`:null} unit="g"/>
+        <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#5AC8FA" color2="#5AC8FA" sub={actualC>0?`/${heroC}g`:null} unit="g"/>
+        <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#8E8E93" color2="#8E8E93" sub={actualF>0?`/${heroF}g`:null} unit="g"/>
+        <MacroRing l="Xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#34C759" color2="#34C759" sub={actualFiber>0?`/${heroFiber}g`:null} unit="g"/>
       </div>
     </div>
 
@@ -1391,7 +1391,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:16}}>
         <div style={{width:8,height:8,borderRadius:"50%",background:aiConnected?C.green:C.red}}/>
         <span style={{fontSize:13,fontWeight:600,color:C.t1}}>{providerName} · {aiProvider==="claude"?aiModel.replace("claude-","").split("-2025")[0]:aiProvider==="gemini"?(geminiModel||"").replace("gemini-",""):(gptModel||"")}</span>
-        <span style={{marginLeft:"auto",fontSize:11,fontWeight:600,color:aiConnected?"#22C55E":"#EF4444"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"}</span>
+        <span style={{marginLeft:"auto",fontSize:11,fontWeight:600,color:aiConnected?"#34C759":"#EF4444"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"}</span>
       </div>
 
       {/* Provider */}
@@ -1454,22 +1454,22 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         {aiProvider==="claude"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Claude</span>
           <input type="password" value={claudeKey} onChange={e=>setClaudeKey(e.target.value)} placeholder="sk-ant-api03-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
-          <div style={{width:6,height:6,borderRadius:"50%",background:claudeKey?"#16A34A":"#ddd",flexShrink:0}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:claudeKey?"#34C759":"#ddd",flexShrink:0}}/>
         </div>}
         {aiProvider==="gemini"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Gemini</span>
           <input type="password" value={geminiKey} onChange={e=>setGeminiKey(e.target.value)} placeholder="AIzaSy..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
-          <div style={{width:6,height:6,borderRadius:"50%",background:geminiKey?"#16A34A":"#ddd",flexShrink:0}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:geminiKey?"#34C759":"#ddd",flexShrink:0}}/>
         </div>}
         {aiProvider==="gpt"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>OpenAI</span>
           <input type="password" value={gptKey} onChange={e=>setGptKey(e.target.value)} placeholder="sk-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
-          <div style={{width:6,height:6,borderRadius:"50%",background:gptKey?"#16A34A":"#ddd",flexShrink:0}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:gptKey?"#34C759":"#ddd",flexShrink:0}}/>
         </div>}
         <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>USDA</span>
           <input type="password" value={usdaKey} onChange={e=>setUsdaKey(e.target.value)} placeholder="USDA key..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
-          <div style={{width:6,height:6,borderRadius:"50%",background:usdaKey?"#16A34A":"#ddd",flexShrink:0}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:usdaKey?"#34C759":"#ddd",flexShrink:0}}/>
         </div>
       </>}
 
@@ -2763,10 +2763,10 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>CALO MỤC TIÊU NGÀY TẬP</div>
             <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span></div>
             <div style={{display:"flex",gap:14,marginTop:12}}>
-              <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#EF4444" color2="#F97316" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-              <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#F59E0B" color2="#FB923C" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-              <MacroRing l="Fat" v={macro.fat} max={macro.fat} color="#78716C" color2="#A8A29E" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-              <MacroRing l="Xơ" v={macro.fiber} max={macro.fiber} color="#22C55E" color2="#66DDAA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#007AFF" color2="#007AFF" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#5AC8FA" color2="#5AC8FA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Fat" v={macro.fat} max={macro.fat} color="#8E8E93" color2="#8E8E93" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Xơ" v={macro.fiber} max={macro.fiber} color="#34C759" color2="#34C759" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
             </div>
           </div>
 
