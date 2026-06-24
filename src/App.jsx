@@ -2158,7 +2158,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,paddingBottom:10,borderBottom:`1.5px solid #F3F4F6`}}>
           <span style={{fontSize:16}}>📋</span>
-          <span style={{fontSize:mob?14:15,fontWeight:800,color:C.t1}}>Thông tin cơ bản</span>
+          <span style={{fontSize:mob?16:17,fontWeight:800,color:C.t1}}>Thông tin cơ bản</span>
         </div>
 
         {/* Gender */}
@@ -2195,11 +2195,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,paddingBottom:10,borderBottom:`1.5px solid #F3F4F6`}}>
           <span style={{fontSize:16}}>🏃</span>
-          <span style={{fontSize:mob?14:15,fontWeight:800,color:C.t1}}>Vận động</span>
+          <span style={{fontSize:mob?16:17,fontWeight:800,color:C.t1}}>Vận động</span>
         </div>
 
         {/* Activity level */}
-        <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:8}}>💼 Mức vận động công việc</div>
+        <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>💼 Mức vận động công việc</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:18}}>
           {[
             {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng"},
@@ -2217,7 +2217,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
 
         {/* Exercise type */}
-        <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:8}}>🏅 Hình thức tập luyện</div>
+        <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>🏅 Hình thức tập luyện</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?6:8,marginBottom:((profile.exerciseType||"gym")==="gym_cardio"||(profile.exerciseType||"gym")==="cardio")?18:0}}>
           {[
             {id:"gym",icon:"🏋️",name:"Gym",desc:"Tập tạ thuần"},
