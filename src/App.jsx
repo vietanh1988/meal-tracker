@@ -1395,7 +1395,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       </div>
 
       {/* Provider */}
-      <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Provider</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Provider</div>
       <div style={{display:"flex",gap:8,marginBottom:18}}>
         {[
           {id:"claude",name:"Claude",desc:"Anthropic",bg:"#D97706",logo:"C",fs:15},
@@ -1403,17 +1403,17 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           {id:"gpt",name:"GPT",desc:"OpenAI",bg:"#10A37F",logo:"GPT",fs:10},
         ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
           flex:1,padding:"14px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",
-          background:"#fff",border:aiProvider===p.id?`1.5px solid ${C.red}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
+          background:"#fff",border:aiProvider===p.id?`1.5px solid ${C.primary}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
         }}>
           <div style={{width:36,height:36,borderRadius:10,background:p.bg,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 6px",fontSize:p.fs,fontWeight:700,color:"#fff",fontFamily:"serif"}}>{p.logo}</div>
           <div style={{fontSize:12,fontWeight:700,color:C.t1}}>{p.name}</div>
-          <div style={{fontSize:10,fontWeight:500,color:C.t3}}>{p.desc}</div>
-          {aiProvider===p.id&&<div style={{width:14,height:14,borderRadius:"50%",background:"transparent",color:"#FF6B6B",border:"1.5px solid #FF6B6B",fontSize:8,margin:"4px auto 0",lineHeight:"14px",textAlign:"center"}}>✓</div>}
+          <div style={{fontSize:11,fontWeight:600,color:C.t2}}>{p.desc}</div>
+          {aiProvider===p.id&&<div style={{width:14,height:14,borderRadius:"50%",background:"transparent",color:C.primary,border:`1.5px solid ${C.primary}`,fontSize:8,margin:"4px auto 0",lineHeight:"14px",textAlign:"center"}}>✓</div>}
         </div>)}
       </div>
 
       {/* Model */}
-      <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Model</div>
+      <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Model</div>
       <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:18}}>
         {(aiProvider==="claude"?[
           {id:"claude-sonnet-4-20250514",name:"Sonnet 4",desc:"Nhanh, chính xác",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
@@ -1434,15 +1434,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           const isActive=curModel===m.id;
           return <div key={m.id} onClick={()=>{setModel(m.id);if(isAdmin)saveSetting(modelKey,m.id);}} style={{
             display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",borderRadius:10,cursor:"pointer",
-            background:"#fff",border:isActive?`1.5px solid ${C.red}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
+            background:"#fff",border:isActive?`1.5px solid ${C.primary}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
           }}>
             <div>
               <div style={{fontSize:13,fontWeight:600,color:C.t1}}>{m.name}</div>
-              <div style={{fontSize:10,fontWeight:500,color:C.t3,marginTop:2}}>{m.desc}</div>
+              <div style={{fontSize:11,fontWeight:600,color:C.t2,marginTop:2}}>{m.desc}</div>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:9,fontWeight:700,padding:"3px 8px",borderRadius:10,background:m.bc,color:m.btc}}>{m.badge}</span>
-              <div style={{width:18,height:18,borderRadius:"50%",border:isActive?`none`:`1.5px solid #ddd`,background:isActive?C.red:"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"#fff"}}>{isActive?"✓":""}</div>
+              <span style={{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:10,background:m.bc,color:m.btc}}>{m.badge}</span>
+              <div style={{width:18,height:18,borderRadius:"50%",border:isActive?`none`:`1.5px solid #ddd`,background:isActive?C.primary:"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"#fff"}}>{isActive?"✓":""}</div>
             </div>
           </div>;
         })}
@@ -1450,7 +1450,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* API Keys */}
       {isAdmin&&<>
-        <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>API Keys</div>
+        <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>API Keys</div>
         {aiProvider==="claude"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Claude</span>
           <input type="password" value={claudeKey} onChange={e=>setClaudeKey(e.target.value)} placeholder="sk-ant-api03-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
