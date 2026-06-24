@@ -961,11 +961,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <span style={{fontSize:mob?18:24}}>{dayType==="train"?"💪":"😴"}</span>
       <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{dayType==="train"?"Thực đơn ngày tập":"Thực đơn ngày nghỉ"}</span>
       <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)"}}/>
-      <div style={{display:"flex",alignItems:"center",gap:2}}>
-        <span onClick={()=>{const d=new Date(dashDate);d.setDate(d.getDate()-1);setDashDate(d);}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700}}>‹</span>
-        <span onClick={()=>setDashDate(new Date())} style={{fontSize:13,fontWeight:700,color:isToday?C.red:C.t1,cursor:"pointer",padding:"2px 4px"}}>{String(dashDate.getDate()).padStart(2,"0")}/{String(dashDate.getMonth()+1).padStart(2,"0")}</span>
-        <span onClick={()=>{if(!isToday){const d=new Date(dashDate);d.setDate(d.getDate()+1);setDashDate(d);}}} style={{padding:"4px 6px",cursor:"pointer",fontSize:12,color:C.t3,fontWeight:700,opacity:isToday?0.25:1}}>›</span>
-      </div>
+      <span style={{fontSize:13,fontWeight:700,color:C.red}}>{String(new Date().getDate()).padStart(2,"0")}/{String(new Date().getMonth()+1).padStart(2,"0")}/{new Date().getFullYear()}</span>
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
