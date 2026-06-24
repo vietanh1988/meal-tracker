@@ -61,7 +61,7 @@ const Icons={
   link:"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
   save:"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8",
 };
-const MealIcon=({id,size=28})=>{
+const MealIcon=({id,size=32})=>{
   const map={sang:"meal_morning",phu_sang:"meal_snack",trua:"meal_lunch",phu_chieu:"meal_snack",pre:"meal_preworkout",post:"meal_preworkout",toi:"meal_dinner"};
   return <img src={`/icons/${map[id]||"meal_lunch"}.png`} alt="" style={{width:size,height:size,objectFit:"contain"}}/>;
 };
@@ -138,7 +138,7 @@ function MealCard({meal}){
   return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <div style={{display:"flex",alignItems:"center",gap:10,flex:"1 1 auto",minWidth:0}}>
-        <div style={{width:40,height:40,borderRadius:10,background:iconBg[meal.id]||C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+        <div style={{width:44,height:44,borderRadius:11,background:iconBg[meal.id]||C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
           <MealIcon id={meal.id} size={22}/>
         </div>
         <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
@@ -952,8 +952,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",icon:"stat_gym"},
       ].map((s,i)=>(
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:40,height:40,borderRadius:10,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <img src={`/icons/${s.icon}.png`} alt="" style={{width:30,height:30,objectFit:"contain"}}/>
+          <div style={{width:44,height:44,borderRadius:11,background:"rgba(0,122,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/>
           </div>
           <div>
             <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t2}}>{s.l}</div>
@@ -2187,7 +2187,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             background:(profile.exerciseType||"gym")===e.id?"#FEE2E2":C.surface,
             border:(profile.exerciseType||"gym")===e.id?`2px solid #F87171`:`1.5px solid ${C.border}`,
           }}>
-            <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?28:32,height:mob?28:32,objectFit:"contain"}}/>
+            <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?34:38,height:mob?34:38,objectFit:"contain"}}/>
             <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
             <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
           </div>)}
@@ -2669,7 +2669,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
               background:(p.exerciseType||"gym")===e.id?"#FEE2E2":C.surface,
               border:(p.exerciseType||"gym")===e.id?`2px solid #F87171`:`1.5px solid ${C.border}`,
             }}>
-              <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?28:32,height:mob?28:32,objectFit:"contain"}}/>
+              <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?34:38,height:mob?34:38,objectFit:"contain"}}/>
               <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
               <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
             </div>)}
@@ -3113,8 +3113,8 @@ export default function App(){
           {id:"report",label:"Báo cáo",icon:"nav_progress"},
           {id:"settings",label:"Cài đặt",icon:"nav_settings"},
         ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",padding:"4px 0"}}>
-          <div style={{width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <img src={`/icons/${t.icon}.png`} alt="" style={{width:28,height:28,objectFit:"contain",opacity:a?1:0.4,filter:a?"none":"grayscale(0.3)"}}/>
+          <div style={{width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <img src={`/icons/${t.icon}.png`} alt="" style={{width:32,height:32,objectFit:"contain",opacity:a?1:0.4,filter:a?"none":"grayscale(0.3)"}}/>
           </div>
           <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
         </div>;})}
