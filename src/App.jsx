@@ -169,7 +169,7 @@ function MealCard({meal}){
         <span style={{color:C.t1,textAlign:"right",fontWeight:800,fontSize:mob?11:13}}>{item.cal}</span>
       </div>)}
       <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:900,paddingTop:8,marginTop:4,borderTop:`2px solid ${C.red}`}}>
-        <span style={{color:C.red}}>Tổng</span><span/>
+        <span style={{color:C.secondary}}>Tổng</span><span/>
         <span style={{color:C.protein,textAlign:"right"}}>{Math.round(t.p*10)/10}</span>
         <span style={{color:C.carb,textAlign:"right"}}>{Math.round(t.c*10)/10}</span>
         <span style={{color:C.t1,textAlign:"right"}}>{Math.round(t.f*10)/10}</span>
@@ -906,7 +906,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <div style={{flex:1}}>
         <div style={{fontSize:mob?16:18,fontWeight:800,color:C.t1}}>Chào {displayName}! 👋</div>
         <div style={{fontSize:mob?13:13,fontWeight:600,color:C.t2}}>
-          {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(calRemain>0?<>Còn <span style={{color:C.red,fontWeight:800}}>{calRemain} kcal</span> để đạt mục tiêu</>:<span style={{color:C.green,fontWeight:800}}>Đã đạt mục tiêu! 🎉</span>):<>Mục tiêu <span style={{color:C.red,fontWeight:800}}>{heroCal} kcal</span></>}
+          {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(calRemain>0?<>Còn <span style={{color:C.primary,fontWeight:800}}>{calRemain} kcal</span> để đạt mục tiêu</>:<span style={{color:C.green,fontWeight:800}}>Đã đạt mục tiêu! 🎉</span>):<>Mục tiêu <span style={{color:C.secondary,fontWeight:800}}>{heroCal} kcal</span></>}
         </div>
       </div>
       <NotiBell appSettings={appSettings}/>
@@ -916,7 +916,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     <div style={{...card,padding:mob?"16px":"24px",border:`1.5px solid ${C.border}`}}>
       <div style={{fontSize:mob?17:18,fontWeight:600,color:C.t1,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
       <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-        <div style={{fontSize:mob?36:44,fontWeight:900,color:C.red,letterSpacing:"-0.03em",lineHeight:1.1}}>
+        <div style={{fontSize:mob?36:44,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>
           {actualCal>0?actualCal.toLocaleString():heroCal.toLocaleString()}
         </div>
         <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
@@ -963,7 +963,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <span style={{fontSize:mob?18:24}}>{dayType==="train"?"💪":"😴"}</span>
       <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{dayType==="train"?"Thực đơn ngày tập":"Thực đơn ngày nghỉ"}</span>
       <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E5E7EB,transparent)"}}/>
-      <span style={{fontSize:13,fontWeight:700,color:C.red}}>{String(new Date().getDate()).padStart(2,"0")}/{String(new Date().getMonth()+1).padStart(2,"0")}/{new Date().getFullYear()}</span>
+      <span style={{fontSize:13,fontWeight:700,color:C.secondary}}>{String(new Date().getDate()).padStart(2,"0")}/{String(new Date().getMonth()+1).padStart(2,"0")}/{new Date().getFullYear()}</span>
     </div>
 
     {meals.map(m=><MealCard key={m.id} meal={m}/>)}
@@ -1009,8 +1009,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.red,fontWeight:900}}>{goalKg} kg</span></div>
-          <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{width:24,height:24,borderRadius:6,background:"transparent",color:C.red,border:`1px solid ${C.red}`,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>{showWeightInput?"✕":"+"}</button>
+          <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
+          <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{width:24,height:24,borderRadius:6,background:"transparent",color:C.secondary,border:`1px solid ${C.secondary}`,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>{showWeightInput?"✕":"+"}</button>
         </div>
       </div>
 
@@ -1088,7 +1088,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
         if(w.id){deleteWeight(w.id);}
         else{const updated=weightLog.filter((_,j)=>j!==i).map((x,j)=>({...x,week:j+1}));setWeightLog(updated);}
         if(weightLog.length>1)setProfile({...profile,kg:weightLog[weightLog.length-2].kg});
-      }} style={{fontSize:11,fontWeight:700,padding:"3px 8px",background:C.redBg,color:C.red,border:`1px solid ${C.red}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>✕</button>
+      }} style={{fontSize:11,fontWeight:700,padding:"3px 8px",background:C.redBg,color:C.secondary,border:`1px solid ${C.secondary}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>✕</button>
     </div>
   </div>;
 }
@@ -1397,7 +1397,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Provider</div>
       <div style={{display:"flex",gap:8,marginBottom:18}}>
         {[
-          {id:"claude",name:"Claude",desc:"Anthropic",bg:"#D97706",logo:"C",fs:15},
+          {id:"claude",name:"Claude",desc:"Anthropic",bg:"#14B8C4",logo:"C",fs:15},
           {id:"gemini",name:"Gemini",desc:"Google",bg:"#4285F4",logo:"G",fs:16},
           {id:"gpt",name:"GPT",desc:"OpenAI",bg:"#10A37F",logo:"GPT",fs:10},
         ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
@@ -1407,7 +1407,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <div style={{width:36,height:36,borderRadius:10,background:p.bg,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 6px",fontSize:p.fs,fontWeight:700,color:"#fff",fontFamily:"serif"}}>{p.logo}</div>
           <div style={{fontSize:12,fontWeight:700,color:C.t1}}>{p.name}</div>
           <div style={{fontSize:10,fontWeight:500,color:C.t3}}>{p.desc}</div>
-          {aiProvider===p.id&&<div style={{width:14,height:14,borderRadius:"50%",background:C.red,color:"#fff",fontSize:8,margin:"4px auto 0",lineHeight:"14px",textAlign:"center"}}>✓</div>}
+          {aiProvider===p.id&&<div style={{width:14,height:14,borderRadius:"50%",background:"transparent",color:"#F87171",border:"1.5px solid #F87171",fontSize:8,margin:"4px auto 0",lineHeight:"14px",textAlign:"center"}}>✓</div>}
         </div>)}
       </div>
 
@@ -1556,7 +1556,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>🔄 Force Update All Users</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8}}>Đổi version → tất cả users sẽ tự xóa cache + reload khi mở app</div>
         <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-          <div style={{fontSize:13,fontWeight:700,color:C.t2}}>Version hiện tại: <span style={{color:C.red,fontWeight:900}}>{appSettings.app_version||"chưa set"}</span></div>
+          <div style={{fontSize:13,fontWeight:700,color:C.t2}}>Version hiện tại: <span style={{color:C.secondary,fontWeight:900}}>{appSettings.app_version||"chưa set"}</span></div>
           <input id="new-version" type="text" placeholder="VD: 2.7" defaultValue={appSettings.app_version||""} style={{...inp,width:80}}/>
           <button onClick={async()=>{
             const ver=document.getElementById("new-version")?.value?.trim();
@@ -1591,7 +1591,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* Inline meal input — same as Tự nhập */}
       {mealNames.map(meal=>{
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
-        const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#EF4444","post":"#22C55E","toi":"#7C3AED"};
+        const mealColors={"sang":"#14B8C4","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#EF4444","post":"#22C55E","toi":"#7C3AED"};
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#059669","post":"#15803D","toi":"#6D28D9"};
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
           <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
@@ -1641,7 +1641,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* Kết quả + Lưu template mẫu */}
       {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
-        <div style={{fontSize:14,fontWeight:900,color:C.red,marginBottom:12}}>✓ Kết quả macro</div>
+        <div style={{fontSize:14,fontWeight:900,color:C.secondary,marginBottom:12}}>✓ Kết quả macro</div>
         {(()=>{
           const items=aiResult.items||[];
           let idx=0;
@@ -1653,7 +1653,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             const mCal=mealItems.reduce((s,it)=>s+(it.cal||0),0);
             return <div key={meal.id} style={{marginBottom:10}}>
               <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:4,display:"flex",justifyContent:"space-between"}}>
-                <span>{meal.l}</span><span style={{color:C.red}}>{Math.round(mCal)} cal</span>
+                <span>{meal.l}</span><span style={{color:C.t1}}>{Math.round(mCal)} cal</span>
               </div>
               {mealItems.map((item,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
                 <span>{item.name} {item.gram}g</span>
@@ -1665,8 +1665,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         {aiResult.items&&aiResult.items.length>1&&(()=>{
           const s=aiResult.items.reduce((a,i)=>({p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,cal:0});
           return <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:900,borderTop:`2px solid ${C.red}`,paddingTop:8,marginTop:4}}>
-            <span style={{color:C.red}}>TỔNG</span>
-            <span>P:{Math.round(s.p)} C:{Math.round(s.c)} F:{Math.round(s.f)} = <span style={{color:C.red}}>{Math.round(s.cal)} cal</span></span>
+            <span style={{color:C.secondary}}>TỔNG</span>
+            <span>P:{Math.round(s.p)} C:{Math.round(s.c)} F:{Math.round(s.f)} = <span style={{color:C.t1}}>{Math.round(s.cal)} cal</span></span>
           </div>;
         })()}
         <button onClick={async()=>{
@@ -1761,7 +1761,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* All meals — each as labeled card */}
       {mealNames.map(meal=>{
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
-        const mealColors={"sang":"#D97706","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#EF4444","post":"#22C55E","toi":"#7C3AED"};
+        const mealColors={"sang":"#14B8C4","phu_sang":"#B45309","trua":"#CA8A04","phu_chieu":"#CA8A04","pre":"#EF4444","post":"#22C55E","toi":"#7C3AED"};
         const mealTextColors={"sang":"#B45309","phu_sang":"#92400E","trua":"#A16207","phu_chieu":"#92400E","pre":"#059669","post":"#15803D","toi":"#6D28D9"};
         return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
           <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
@@ -1810,7 +1810,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {aiResult&&<div style={{marginTop:16,background:C.redBg,borderRadius:12,padding:16,border:`2px solid ${C.red}`}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
           <span style={{fontSize:14,fontWeight:900}}>✓</span>
-          <span style={{fontSize:14,fontWeight:900,color:C.red}}>Kết quả</span>
+          <span style={{fontSize:14,fontWeight:900,color:C.secondary}}>Kết quả</span>
           <button onClick={async()=>{
             const allNames=Object.values(allFoodItems).flat().map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);
             if(allNames.length>0) await deleteFoodCache(allNames);
@@ -1831,10 +1831,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             const mCal=mealItems.reduce((s,it)=>s+(it.cal||0),0);
             return <div key={meal.id} style={{marginBottom:12}}>
               <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
-                <span>{meal.l}</span><span style={{color:C.red}}>{Math.round(mCal)} cal</span>
+                <span>{meal.l}</span><span style={{color:C.t1}}>{Math.round(mCal)} cal</span>
               </div>
               {mealItems.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:12,fontWeight:600,padding:"4px 0",borderBottom:i<mealItems.length-1?`1px solid ${C.border}`:"none"}}>
-                <span style={{color:C.t1,fontWeight:700}}>{item.name} {item.source&&<span style={{fontSize:9,padding:"1px 4px",borderRadius:3,fontWeight:700,background:item.source==="localDB"?"#DCFCE7":item.source==="USDA"?"#EFF6FF":item.source==="cache"?"#F3F4F6":"#FEF3C7",color:item.source==="localDB"?"#166534":item.source==="USDA"?"#1E40AF":item.source==="cache"?"#666":"#92400E"}}>{item.source==="localDB"?"DB":item.source==="USDA"?"USDA":item.source==="cache"?"Cache":item.source}</span>}</span>
+                <span style={{color:C.t1,fontWeight:700}}>{item.name} {item.source&&<span style={{fontSize:9,padding:"1px 4px",borderRadius:3,fontWeight:700,background:item.source==="localDB"?"#DCFCE7":item.source==="USDA"?"#EFF6FF":item.source==="cache"?"#F3F4F6":"#FEF3C7",color:item.source==="localDB"?"#0F766E":item.source==="USDA"?"#1E40AF":item.source==="cache"?"#666":"#92400E"}}>{item.source==="localDB"?"DB":item.source==="USDA"?"USDA":item.source==="cache"?"Cache":item.source}</span>}</span>
                 <span style={{textAlign:"right",color:C.t3}}>{item.gram}</span>
                 <span style={{textAlign:"right",color:C.protein}}>{item.protein}</span>
                 <span style={{textAlign:"right",color:C.carb}}>{item.carb}</span>
@@ -1849,8 +1849,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         {aiResult.items&&aiResult.items.length>1&&(()=>{
           const s=aiResult.items.reduce((a,i)=>({p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),fi:a.fi+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});
           return <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:900,borderTop:`2px solid ${C.red}`,paddingTop:8,marginTop:4}}>
-            <span style={{color:C.red}}>TỔNG CẢ NGÀY</span>
-            <span>P:{Math.round(s.p)} C:{Math.round(s.c)} F:{Math.round(s.f)} = <span style={{color:C.red}}>{Math.round(s.cal)} cal</span></span>
+            <span style={{color:C.secondary}}>TỔNG CẢ NGÀY</span>
+            <span>P:{Math.round(s.p)} C:{Math.round(s.c)} F:{Math.round(s.f)} = <span style={{color:C.t1}}>{Math.round(s.cal)} cal</span></span>
           </div>;
         })()}
         <button onClick={()=>{
@@ -1947,7 +1947,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                           <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:2}}>{mealList}</div>
                         </>:<div style={{fontSize:13,fontWeight:600,color:C.t3}}>Chưa có dữ liệu</div>}
                       </div>
-                      {hasTpl?<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#DCFCE7",color:"#166534",border:"1px solid #86EFAC",whiteSpace:"nowrap"}}>✓ Đã lưu</div>
+                      {hasTpl?<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#DCFCE7",color:"#0F766E",border:"1px solid #86EFAC",whiteSpace:"nowrap"}}>✓ Đã lưu</div>
                       :<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:C.surface,color:C.t3,border:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>+ Gán</div>}
                     </div>
                 </div>
@@ -1959,7 +1959,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     return <div key={mi} style={{marginBottom:mi<(tpl.meals||[]).length-1?12:0}}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                         <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
-                        <span style={{fontSize:13,fontWeight:700,color:C.red}}>{Math.round(mCal)} cal</span>
+                        <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{Math.round(mCal)} cal</span>
                       </div>
                       {mItems.map((it,ii)=><div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
                         <span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
@@ -2007,7 +2007,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     <span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>{t.name||"Template"}</span>
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:16,fontWeight:900,color:C.red}}>{t.total_cal||0}</span>
+                    <span style={{fontSize:16,fontWeight:900,color:C.t1}}>{t.total_cal||0}</span>
                     <span style={{fontSize:12,color:C.t3}}>{isExpanded?"▲":"▼"}</span>
                   </div>
                 </div>
@@ -2020,7 +2020,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                   return <div key={mi} style={{marginBottom:mi<tplMeals.length-1?12:0}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                       <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{mealNameMap[m.meal_id]||m.meal_name||m.meal_id}</span>
-                      <span style={{fontSize:13,fontWeight:700,color:C.red}}>{Math.round(mCal)} cal</span>
+                      <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{Math.round(mCal)} cal</span>
                     </div>
                     {mItems.map((it,ii)=><div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
                       <span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
@@ -2302,7 +2302,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <span>✓ Tự động lưu</span>
         </div>
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.red,marginBottom:12}}>⚡ Macro tự động tính</div>
+        <div style={{fontSize:15,fontWeight:900,color:C.secondary,marginBottom:12}}>⚡ Macro tự động tính</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8}}>
           {[
             {l:"TDEE",v:`${macro.tdee} cal`,desc:"Calo duy trì",c:C.t1},
@@ -2409,7 +2409,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               if(window.confirm("Xóa toàn bộ lịch sử cân nặng?")){
                 resetWeights();
               }
-            }} style={{fontSize:11,fontWeight:700,padding:"4px 10px",background:C.redBg,color:C.red,border:`1px solid ${C.red}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>
+            }} style={{fontSize:11,fontWeight:700,padding:"4px 10px",background:C.redBg,color:C.secondary,border:`1px solid ${C.secondary}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>
               Reset hết
             </button>
           </div>
@@ -2473,7 +2473,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
         </div>
       </div>
-      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"linear-gradient(135deg,#4ADE80,#14B8C4)"}}>🚪 Đăng xuất</button>
+      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"#64748B"}}>🚪 Đăng xuất</button>
       <button onClick={()=>{
         caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
           if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
@@ -2545,7 +2545,7 @@ function LoginScreen({onLogin}){
         {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {err}</div>}
         {success&&<div style={{marginBottom:12,padding:"10px 14px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,fontSize:13,fontWeight:700,color:"#14532D"}}>{success}</div>}
         <button onClick={handleSubmit} disabled={!!success} style={{...redBtn,opacity:success?0.6:1}}>{mode==="login"?"Đăng nhập":"Đăng ký & Kích hoạt"}</button>
-        {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.red,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
+        {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
         {mode==="register"&&<div style={{textAlign:"center",marginTop:12,fontSize:11,fontWeight:600,color:C.t3}}>Tài khoản sẽ được kích hoạt tự động ngay sau khi đăng ký</div>}
       </div>
     </div>
@@ -2573,7 +2573,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
       <div style={{textAlign:"center",marginBottom:24}}>
         <AppLogo size={56} radius={14}/>
         <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
-        <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
+        <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
       </div>
 
       <div style={{...card,padding:mob?"20px 16px":"24px 28px"}}>
@@ -2834,10 +2834,10 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
     <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",border:`1.5px solid ${C.border}`}}>
       <AppLogo size={72} radius={18}/>
       <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
-      <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4}}>v{form.version}</div>
+      <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:4}}>v{form.version}</div>
       <div style={{fontSize:14,fontWeight:600,color:C.t2,marginTop:6}}>{form.tagline}</div>
       {features.length>0&&<div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginTop:14}}>
-        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 12px",borderRadius:20,background:i%4===0?"#FEE2E2":i%4===1?"#DCFCE7":i%4===2?"#EFF6FF":"#FEF3C7",color:i%4===0?"#065F46":i%4===1?"#166534":i%4===2?"#1E40AF":"#92400E",fontWeight:700}}>{f}</span>)}
+        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 12px",borderRadius:20,background:i%4===0?"#FEE2E2":i%4===1?"#DCFCE7":i%4===2?"#EFF6FF":"#FEF3C7",color:i%4===0?"#065F46":i%4===1?"#0F766E":i%4===2?"#1E40AF":"#92400E",fontWeight:700}}>{f}</span>)}
       </div>}
     </div>
 
@@ -2857,7 +2857,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
         }
         <div style={{flex:1}}>
           <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{form.devName}</div>
-          <div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:2}}>{form.devRole}</div>
+          <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>{form.devRole}</div>
         </div>
       </div>
       <div style={{fontSize:13,fontWeight:600,color:C.t3,marginTop:10,lineHeight:1.6,padding:"10px 0",borderTop:`1px solid ${C.border}`}}>{form.devBio}</div>
@@ -2868,8 +2868,8 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
         {form.facebook&&<a href={form.facebook} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
           Facebook</a>}
-        {form.hotline&&<a href={`tel:${form.hotline}`} style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#DCFCE7",color:"#166534",textDecoration:"none",border:"1px solid #BBF7D0",display:"flex",alignItems:"center",gap:4}}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        {form.hotline&&<a href={`tel:${form.hotline}`} style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#DCFCE7",color:"#0F766E",textDecoration:"none",border:"1px solid #BBF7D0",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           {form.hotline}</a>}
         {form.zalo&&<a href={`https://zalo.me/${form.zalo.replace(/\s/g,"")}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EBF5FF",color:"#0068FF",textDecoration:"none",border:"1px solid #B3D9FF",display:"flex",alignItems:"center",gap:4}}>
           <svg width="16" height="16" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#0068FF"/><text x="24" y="26" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="18" fontWeight="900" fontFamily="Arial,sans-serif">Z</text></svg>
@@ -2880,7 +2880,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
     {/* Admin: Edit */}
     {isAdmin&&<div style={{...card,marginTop:12,border:`2px solid ${C.red}`}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.red}}>✏️ Chỉnh sửa trang giới thiệu</div>
+        <div style={{fontSize:15,fontWeight:900,color:C.secondary}}>✏️ Chỉnh sửa trang giới thiệu</div>
         <button onClick={()=>setEditing(!editing)} style={{padding:"5px 12px",fontSize:12,fontWeight:700,borderRadius:8,border:`1.5px solid ${C.red}`,background:editing?C.red:"transparent",color:editing?"#fff":C.red,cursor:"pointer",fontFamily:"inherit"}}>{editing?"✕ Đóng":"✏️ Sửa"}</button>
       </div>
       {editing&&<div>
