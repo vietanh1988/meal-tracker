@@ -21,10 +21,10 @@ function useIsMobile(breakpoint=600){
 const C = {
   protein:"#EF4444", carb:"#F59E0B", fat:"#78716C", fiber:"#22C55E",
   red:"#EF4444", gold:"#FACC15", green:"#00C896", blue:"#007AFF",
-  primary:"#007AFF", secondary:"#4DA3FF", accent:"#7C3AED",
+  primary:"#007AFF", secondary:"#36A3FF", deepBlue:"#0057FF", accent:"#7C3AED",
   mint:"#00C896", violet:"#7C3AED",
   bg:"#F8FAFC", card:"#FFF", surface:"#F1F5F9",
-  border:"#D1D5DB",
+  border:"#E2E8F0",
   t1:"#0F172A", t2:"#64748B", t3:"#94A3B8",
   redBg:"rgba(239,68,68,0.07)", goldBg:"rgba(250,204,21,0.1)", greenBg:"rgba(0,200,150,0.08)", blueBg:"rgba(0,122,255,0.06)",
   primaryBg:"rgba(0,122,255,0.08)", accentBg:"rgba(124,58,237,0.06)",
@@ -32,7 +32,7 @@ const C = {
 const card={background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"16px 18px",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"};
 const lbl={fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase"};
 const inp={width:"100%",boxSizing:"border-box",padding:"8px 12px",fontSize:14,fontWeight:600,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,color:C.t1,outline:"none",fontFamily:"inherit",height:40};
-const redBtn={padding:"12px",fontSize:14,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#007AFF,#4DA3FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%"};
+const redBtn={padding:"12px",fontSize:14,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%"};
 
 function Pill({active,color=C.red,children,onClick}){
   return <button onClick={onClick} style={{
@@ -740,7 +740,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     <div style={{...card,marginBottom:14}}>
       <div style={{fontSize:13,fontWeight:700,marginBottom:6}}>🎯 Mục tiêu cân nặng</div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <div style={{flex:1,height:8,background:"#F3F4F6",borderRadius:4,overflow:"hidden"}}><div style={{width:`${Math.max(0,Math.min(data.wPct,100))}%`,height:"100%",background:"linear-gradient(90deg,#007AFF,#4DA3FF)",borderRadius:4}}/></div>
+        <div style={{flex:1,height:8,background:"#F3F4F6",borderRadius:4,overflow:"hidden"}}><div style={{width:`${Math.max(0,Math.min(data.wPct,100))}%`,height:"100%",background:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4}}/></div>
         <span style={{fontSize:13,fontWeight:700,color:"#007AFF"}}>{Math.round(data.wPct)}%</span>
       </div>
       <div style={{fontSize:11,color:C.t3,marginTop:4}}>{data.startKg} → {data.goalKg} kg · Hiện tại: {data.curKg} kg</div>
@@ -750,7 +750,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>📊</span>
       <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{period==="week"?"Calo theo ngày":"Calo theo tuần"}</span>
-      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#D1D5DB,transparent)"}}/>
+      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)"}}/>
     </div>
     <div style={{...card}}>
       {(()=>{
@@ -785,7 +785,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🍵</span>
       <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Macro TB/ngày</span>
-      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#D1D5DB,transparent)"}}/>
+      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)"}}/>
     </div>
     <div style={{...card}}>
       <div style={{display:"flex",gap:mob?12:16,alignItems:"center"}}>
@@ -804,7 +804,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,marginTop:20}}>
       <span style={{fontSize:mob?16:18}}>🏆</span>
       <span style={{fontSize:mob?17:17,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>Top thực phẩm</span>
-      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#D1D5DB,transparent)"}}/>
+      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)"}}/>
     </div>
     <div style={{...card}}>
       <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:mob?8:16}}>
@@ -930,7 +930,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       </div>}
       {/* Progress bar */}
       <div style={{height:8,width:"100%",background:"#F3F4F6",borderRadius:4,marginTop:10,overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:0,120)}%`,background:actualCal>heroCal*1.1?"#EF4444":"linear-gradient(90deg,#007AFF,#4DA3FF)",borderRadius:4,transition:"width 0.4s"}}/>
+        <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:0,120)}%`,background:actualCal>heroCal*1.1?"#EF4444":"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
       </div>
       {/* Macro rings */}
       <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
@@ -963,7 +963,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
       <span style={{fontSize:mob?18:24}}>{dayType==="train"?"💪":"😴"}</span>
       <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{dayType==="train"?"Thực đơn ngày tập":"Thực đơn ngày nghỉ"}</span>
-      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#D1D5DB,transparent)"}}/>
+      <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)"}}/>
       <span style={{fontSize:13,fontWeight:700,color:C.secondary}}>{String(new Date().getDate()).padStart(2,"0")}/{String(new Date().getMonth()+1).padStart(2,"0")}/{new Date().getFullYear()}</span>
     </div>
 
@@ -1006,7 +1006,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     </div>}
 
     {/* Weight Chart */}
-    <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#007AFF,#4DA3FF) 1"}}>
+    <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1565,7 +1565,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             await saveSetting("app_version",ver);
             const el=document.getElementById("version-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-          }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#007AFF,#4DA3FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>🚀 Deploy</button>
+          }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>🚀 Deploy</button>
         </div>
         <div id="version-saved" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Version updated! Users sẽ tự reload.</span>
@@ -1587,7 +1587,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </select>
       </div>
 
-      <div style={{height:1,background:"linear-gradient(90deg,transparent,#D1D5DB,transparent)",marginBottom:14}}/>
+      <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
 
       {/* Inline meal input — same as Tự nhập */}
       {mealNames.map(meal=>{
@@ -1730,7 +1730,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* === MODE: Tự nhập — all meals in one flow === */}
       {mealMode==="tu_nhap"&&<>
-      <div style={{height:1,background:"linear-gradient(90deg,transparent,#D1D5DB,transparent)",marginBottom:14}}/>
+      <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
         <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
         <div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ Quản lý</div>
@@ -1752,7 +1752,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               if(isOn)cfg[dayType]=arr.filter(id=>id!==m.id);
               else{const allIds=ALL_MEALS.map(x=>x.id);arr.push(m.id);arr.sort((a,b)=>allIds.indexOf(a)-allIds.indexOf(b));cfg[dayType]=arr;}
               setMealConfig(cfg);if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));
-            }} style={{width:36,height:20,background:isOn?"#3B6D11":"#D1D5DB",borderRadius:10,position:"relative",cursor:isTrainOnly?"not-allowed":"pointer",transition:"background 0.2s"}}>
+            }} style={{width:36,height:20,background:isOn?"#3B6D11":"#E2E8F0",borderRadius:10,position:"relative",cursor:isTrainOnly?"not-allowed":"pointer",transition:"background 0.2s"}}>
               <div style={{width:16,height:16,background:"#fff",borderRadius:"50%",position:"absolute",top:2,left:isOn?18:2,transition:"left 0.2s",boxShadow:"0 1px 2px rgba(0,0,0,0.15)"}}/>
             </div>
           </div>;
@@ -1843,7 +1843,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                 <span style={{textAlign:"right",color:C.fiber}}>{item.fiber}</span>
                 <span style={{textAlign:"right",color:C.t1,fontWeight:800}}>{item.cal}</span>
               </div>)}
-              <div style={{height:1,background:"linear-gradient(90deg,transparent,#D1D5DB,transparent)",marginTop:8}}/>
+              <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginTop:8}}/>
             </div>;
           }).filter(Boolean);
         })()}
@@ -1966,7 +1966,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                         <span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
                         <span style={{color:C.t3}}>P:{it.p||0} C:{it.c||0} F:{it.f||0}</span>
                       </div>)}
-                      {mi<(tpl.meals||[]).length-1&&<div style={{height:1,background:"linear-gradient(90deg,transparent,#D1D5DB,transparent)",marginTop:8}}/>}
+                      {mi<(tpl.meals||[]).length-1&&<div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginTop:8}}/>}
                     </div>;
                   })}
                   <div style={{display:"flex",gap:8,marginTop:14}}>
@@ -2081,7 +2081,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                       setAssignSelectedDays([]);
                       const el=document.getElementById("tpl-applied");
                       if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-                    }} disabled={(assignSelectedDays||[]).length===0} style={{...redBtn,marginTop:0,background:(assignSelectedDays||[]).length>0?"linear-gradient(135deg,#6366F1,#4F46E5)":"#D1D5DB",opacity:(assignSelectedDays||[]).length>0?1:0.6}}>📅 Gán cho {(assignSelectedDays||[]).length} ngày</button>
+                    }} disabled={(assignSelectedDays||[]).length===0} style={{...redBtn,marginTop:0,background:(assignSelectedDays||[]).length>0?"linear-gradient(135deg,#6366F1,#4F46E5)":"#E2E8F0",opacity:(assignSelectedDays||[]).length>0?1:0.6}}>📅 Gán cho {(assignSelectedDays||[]).length} ngày</button>
                   </div>;
                 })()}
               </div>}
@@ -2119,7 +2119,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           }}>
             <span style={{fontSize:mob?20:24}}>{g.icon}</span>
             <span style={{fontSize:mob?13:14,fontWeight:700,color:C.t1}}>{g.name}</span>
-            <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(profile.gender||"male")===g.id?"#007AFF":"#D1D5DB"}`,background:(profile.gender||"male")===g.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(profile.gender||"male")===g.id?"✓":""}</div>
+            <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(profile.gender||"male")===g.id?"#007AFF":"#E2E8F0"}`,background:(profile.gender||"male")===g.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(profile.gender||"male")===g.id?"✓":""}</div>
           </div>)}
         </div>
 
@@ -2474,7 +2474,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
         </div>
       </div>
-      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"transparent",color:"#EF4444",border:"2px solid #EF4444"}}>🚪 Đăng xuất</button>
+      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"linear-gradient(135deg,#EF4444,#DC2626)",color:"#fff",border:"none"}}>🚪 Đăng xuất</button>
       <button onClick={()=>{
         caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
           if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
@@ -2561,10 +2561,10 @@ function OnboardingWizard({profile,setProfile,onComplete}){
   const totalSteps=4;
 
   const stepDots=<div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:20}}>
-    {[1,2,3,4].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#4DA3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
+    {[1,2,3,4].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#36A3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
   </div>;
 
-  const nextBtn=(label,disabled,color)=><button onClick={()=>setStep(step+1)} disabled={disabled} style={{...redBtn,marginTop:16,opacity:disabled?0.5:1,background:color||"linear-gradient(135deg,#007AFF,#4DA3FF)"}}>{label} →</button>;
+  const nextBtn=(label,disabled,color)=><button onClick={()=>setStep(step+1)} disabled={disabled} style={{...redBtn,marginTop:16,opacity:disabled?0.5:1,background:color||"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>{label} →</button>;
   const backBtn=<button onClick={()=>setStep(step-1)} style={{...redBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>;
 
   const fieldBox=(children)=><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>{children}</div>;
@@ -2598,7 +2598,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             }}>
               <span style={{fontSize:22}}>{g.icon}</span>
               <span style={{fontSize:14,fontWeight:700,color:C.t1}}>{g.name}</span>
-              <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(p.gender||"male")===g.id?"#007AFF":"#D1D5DB"}`,background:(p.gender||"male")===g.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(p.gender||"male")===g.id?"✓":""}</div>
+              <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(p.gender||"male")===g.id?"#007AFF":"#E2E8F0"}`,background:(p.gender||"male")===g.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(p.gender||"male")===g.id?"✓":""}</div>
             </div>)}
           </div>
 
@@ -2854,7 +2854,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         {form.devAvatar?
           <img src={form.devAvatar} alt={form.devName} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.primary}`,flexShrink:0}}/>:
-          <div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#007AFF,#4DA3FF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,border:"2px solid #fff",boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}}>{form.devName?form.devName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"VA"}</div>
+          <div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,border:"2px solid #fff",boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}}>{form.devName?form.devName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"VA"}</div>
         }
         <div style={{flex:1}}>
           <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{form.devName}</div>
@@ -3081,7 +3081,7 @@ export default function App(){
         }} style={{width:42,height:42,borderRadius:10,overflow:"hidden",flexShrink:0,cursor:"pointer"}}><AppLogo size={42} radius={10}/></div>
         <div>
           <div style={{fontSize:20,fontWeight:900,letterSpacing:"-0.02em",color:"#fff"}}>FIPILOT AI</div>
-          <div style={{fontSize:12,fontWeight:700,color:"#4DA3FF",letterSpacing:"0.05em"}}>AI Nutrition Coach</div>
+          <div style={{fontSize:12,fontWeight:700,color:"#36A3FF",letterSpacing:"0.05em"}}>AI Nutrition Coach</div>
         </div>
       </div>
       <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
