@@ -34,12 +34,12 @@ const lbl={fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTran
 const inp={width:"100%",boxSizing:"border-box",padding:"8px 12px",fontSize:14,fontWeight:600,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,color:C.t1,outline:"none",fontFamily:"inherit",height:40};
 const redBtn={padding:"12px",fontSize:14,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%"};
 
-function Pill({active,color=C.red,children,onClick}){
+function Pill({active,color=C.primary,children,onClick}){
   return <button onClick={onClick} style={{
     padding:"7px 16px",fontSize:13,fontWeight:active?800:600,border:"none",borderRadius:20,
     cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",
-    background:active?(color===C.red?C.redBg:color===C.green?C.greenBg:color===C.gold?C.goldBg:color===C.blue?C.blueBg:C.surface):C.surface,
-    color:active?color:C.t3,outline:active?`2px solid ${color}`:`1.5px solid ${C.border}`,
+    background:active?C.primaryBg:C.surface,
+    color:active?C.primary:C.t2,outline:active?`2px solid ${C.primary}`:`1.5px solid ${C.border}`,
   }}>{children}</button>;
 }
 
@@ -1380,7 +1380,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
   return <div>
     {!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
       {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
-        <Pill key={s.id} active={section===s.id} color={C.red} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
+        <Pill key={s.id} active={section===s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
       )}
     </div>}
     {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
@@ -2170,7 +2170,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           }}>
             <div style={{fontSize:mob?20:24}}>{a.icon}</div>
             <div style={{fontSize:mob?11:13,fontWeight:800,color:C.t1,marginTop:4}}>{a.name}</div>
-            <div style={{fontSize:mob?9:10,color:C.t3}}>{a.desc}</div>
+            <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{a.desc}</div>
           </div>)}
         </div>
 
@@ -2194,7 +2194,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           }}>
             <div style={{fontSize:mob?20:24}}>{e.icon}</div>
             <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
-            <div style={{fontSize:mob?9:10,color:C.t3}}>{e.desc}</div>
+            <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
           </div>)}
         </div>
 
@@ -2213,7 +2213,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             }}>
               <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
               <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
-              <div style={{fontSize:mob?9:10,color:C.t3}}>{ci.desc}</div>
+              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{ci.desc}</div>
             </div>)}
           </div>
         </>}
@@ -2652,7 +2652,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             }}>
               <div style={{fontSize:mob?20:24}}>{a.icon}</div>
               <div style={{fontSize:mob?11:13,fontWeight:800,color:C.t1,marginTop:4}}>{a.name}</div>
-              <div style={{fontSize:mob?9:10,color:C.t3}}>{a.desc}</div>
+              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{a.desc}</div>
             </div>)}
           </div>
 
@@ -2676,7 +2676,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             }}>
               <div style={{fontSize:mob?20:24}}>{e.icon}</div>
               <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
-              <div style={{fontSize:mob?9:10,color:C.t3}}>{e.desc}</div>
+              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
             </div>)}
           </div>
 
@@ -2695,7 +2695,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
               }}>
                 <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
                 <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
-                <div style={{fontSize:mob?9:10,color:C.t3}}>{ci.desc}</div>
+                <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{ci.desc}</div>
               </div>)}
             </div>
           </>}
@@ -3123,12 +3123,12 @@ export default function App(){
         </div>;})}
       </div>
     </>:<>
-      {/* PC: header tabs + existing layout */}
-      <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:`2.5px solid ${C.border}`}}>
-        {[{id:"dashboard",l:"📊 Dashboard"},{id:"report",l:"📈 Báo cáo"},{id:"admin",l:"⚙️ Admin"},{id:"about",l:"ℹ️ Giới thiệu"}].map(t=>
+      {/* PC: header tabs */}
+      <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:`2px solid ${C.border}`}}>
+        {[{id:"dashboard",l:"Dashboard"},{id:"report",l:"Báo cáo"},{id:"admin",l:"Admin"},{id:"about",l:"Giới thiệu"}].map(t=>
           <button key={t.id} onClick={()=>setTab(t.id)} style={{
-            padding:"10px 18px",fontSize:14,fontWeight:tab===t.id?900:600,border:"none",background:"transparent",cursor:"pointer",
-            color:tab===t.id?"#111":C.t3,borderBottom:tab===t.id?"3px solid #007AFF":"3px solid transparent",fontFamily:"inherit",
+            padding:"10px 20px",fontSize:14,fontWeight:tab===t.id?800:600,border:"none",background:"transparent",cursor:"pointer",
+            color:tab===t.id?C.primary:C.t2,borderBottom:tab===t.id?`3px solid ${C.primary}`:"3px solid transparent",fontFamily:"inherit",transition:"all 0.2s",
           }}>{t.l}</button>
         )}
       </div>
