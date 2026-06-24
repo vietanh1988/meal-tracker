@@ -61,10 +61,9 @@ const Icons={
   link:"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
   save:"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8",
 };
-const MealIcon=({id,size=20})=>{
-  const map={sang:"sunrise",phu_sang:"coffee",trua:"sun",phu_chieu:"coffee",pre:"zap",post:"zap",toi:"moon"};
-  const color={sang:"#EAB308",phu_sang:"#78716C",trua:"#F59E0B",phu_chieu:"#78716C",pre:"#EF4444",post:"#16A34A",toi:"#6366F1"};
-  return <Icon d={Icons[map[id]||"sun"]} color={color[id]||"#666"} size={size}/>;
+const MealIcon=({id,size=22})=>{
+  const map={sang:"meal_morning",phu_sang:"meal_snack",trua:"meal_lunch",phu_chieu:"meal_snack",pre:"meal_preworkout",post:"meal_preworkout",toi:"meal_dinner"};
+  return <img src={`/icons/${map[id]||"meal_lunch"}.png`} alt="" style={{width:size,height:size,objectFit:"contain"}}/>;
 };
 
 // App Logo — uses pinned icon image instead of emoji
@@ -947,18 +946,14 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     {/* Stats — Clean white cards with SVG icons */}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:24}}>
       {[
-        {l:"Chiều cao",v:profile.cm,u:"cm",color:"#4A7ADB",
-         svg:<svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4A7ADB" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="2" x2="8" y2="22"/><line x1="8" y1="6" x2="12" y2="6"/><line x1="8" y1="12" x2="11" y2="12"/><line x1="8" y1="18" x2="12" y2="18"/></svg>},
-        {l:"Cân nặng",v:curKg,u:"kg",color:"#4A7ADB",
-         svg:<svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4A7ADB" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="2.5"/><line x1="12" y1="7.5" x2="12" y2="10"/><line x1="8" y1="10" x2="16" y2="10"/><path d="M6 21l3-11h6l3 11H6z"/></svg>},
-        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",color:"#4A7ADB",
-         svg:<svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4A7ADB" strokeWidth={2.5} strokeLinecap="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg>},
-        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",color:"#4A7ADB",
-         svg:<svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#4A7ADB" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/><line x1="6" y1="12" x2="18" y2="12"/></svg>},
+        {l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},
+        {l:"Cân nặng",v:curKg,u:"kg",icon:"stat_weight"},
+        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",icon:"stat_bmi"},
+        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",icon:"stat_gym"},
       ].map((s,i)=>(
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:40,height:40,borderRadius:10,background:"rgba(74,122,219,0.10)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            {s.svg}
+          <div style={{width:40,height:40,borderRadius:10,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <img src={`/icons/${s.icon}.png`} alt="" style={{width:24,height:24,objectFit:"contain"}}/>
           </div>
           <div>
             <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t2}}>{s.l}</div>
@@ -2178,10 +2173,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>🏅 Hình thức tập luyện</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?6:8,marginBottom:((profile.exerciseType||"gym")==="gym_cardio"||(profile.exerciseType||"gym")==="cardio")?18:0}}>
           {[
-            {id:"gym",icon:"🏋️",name:"Gym",desc:"Tập tạ thuần"},
-            {id:"gym_cardio",icon:"🏋️🏃",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
-            {id:"cardio",icon:"🏃",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
-            {id:"none",icon:"😴",name:"Không tập",desc:"Không vận động"},
+            {id:"gym",icon:"ex_gym",name:"Gym",desc:"Tập tạ thuần"},
+            {id:"gym_cardio",icon:"ex_gym_cardio",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
+            {id:"cardio",icon:"ex_cardio",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
+            {id:"none",icon:"ex_none",name:"Không tập",desc:"Không vận động"},
           ].map(e=><div key={e.id} onClick={()=>{
             const updated={...profile,exerciseType:e.id};
             if(e.id==="none"&&profile.goalType==="bulk")updated.goalType="maintain";
@@ -2192,7 +2187,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             background:(profile.exerciseType||"gym")===e.id?"#FEE2E2":C.surface,
             border:(profile.exerciseType||"gym")===e.id?`2px solid #F87171`:`1.5px solid ${C.border}`,
           }}>
-            <div style={{fontSize:mob?20:24}}>{e.icon}</div>
+            <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?28:32,height:mob?28:32,objectFit:"contain"}}/>
             <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
             <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
           </div>)}
@@ -2660,10 +2655,10 @@ function OnboardingWizard({profile,setProfile,onComplete}){
           <div style={{...lbl,marginBottom:8}}>🏅 Hình thức tập luyện</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?6:8,marginBottom:((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")?18:0}}>
             {[
-              {id:"gym",icon:"🏋️",name:"Gym",desc:"Tập tạ thuần"},
-              {id:"gym_cardio",icon:"🏋️🏃",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
-              {id:"cardio",icon:"🏃",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
-              {id:"none",icon:"😴",name:"Không tập",desc:"Không vận động"},
+              {id:"gym",icon:"ex_gym",name:"Gym",desc:"Tập tạ thuần"},
+              {id:"gym_cardio",icon:"ex_gym_cardio",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
+              {id:"cardio",icon:"ex_cardio",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
+              {id:"none",icon:"ex_none",name:"Không tập",desc:"Không vận động"},
             ].map(e=><div key={e.id} onClick={()=>{
               const updated={...p,exerciseType:e.id};
               if(e.id==="none"&&p.goalType==="bulk")updated.goalType="maintain";
@@ -2674,7 +2669,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
               background:(p.exerciseType||"gym")===e.id?"#FEE2E2":C.surface,
               border:(p.exerciseType||"gym")===e.id?`2px solid #F87171`:`1.5px solid ${C.border}`,
             }}>
-              <div style={{fontSize:mob?20:24}}>{e.icon}</div>
+              <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?28:32,height:mob?28:32,objectFit:"contain"}}/>
               <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
               <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
             </div>)}
@@ -3109,17 +3104,17 @@ export default function App(){
       {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
       {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
 
-      {/* Bottom nav — iOS style with SVG icons */}
+      {/* Bottom nav — gradient PNG icons */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
         {[
-          {id:"dashboard",label:"Tổng quan",d:"M18 20V10 M12 20V4 M6 20v-6"},
-          {id:"profile",label:"Hồ sơ",d:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"},
-          {id:"meals",label:"Bữa ăn",d:"M3 2l1.578 17.824a2 2 0 0 0 1.986 1.776h.872a2 2 0 0 0 1.986-1.776L11 2 M3 2h8 M7 2v4 M15 2v20 M19 2l-2 6 2 6"},
-          {id:"report",label:"Báo cáo",d:"M2 17l5-5 4 4 5.5-5.5 5.5 5.5"},
-          {id:"settings",label:"Cài đặt",d:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"},
-        ].map(t=>{const a=tab===t.id;const c=a?"#007AFF":"#8E8E93";return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"4px 0"}}>
-          <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={a?2.2:1.8} strokeLinecap="round" strokeLinejoin="round"><path d={t.d}/></svg>
-          <span style={{fontSize:10,fontWeight:a?600:400,color:c}}>{t.label}</span>
+          {id:"dashboard",label:"Tổng quan",icon:"nav_dashboard"},
+          {id:"profile",label:"Hồ sơ",icon:"nav_profile"},
+          {id:"meals",label:"Bữa ăn",icon:"nav_meal"},
+          {id:"report",label:"Báo cáo",icon:"nav_progress"},
+          {id:"settings",label:"Cài đặt",icon:"nav_settings"},
+        ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"4px 0"}}>
+          <img src={`/icons/${t.icon}.png`} alt="" style={{width:24,height:24,objectFit:"contain",opacity:a?1:0.45}}/>
+          <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
         </div>;})}
       </div>
     </>:<>
