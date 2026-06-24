@@ -789,13 +789,13 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
     </div>
     <div style={{...card}}>
       <div style={{display:"flex",gap:mob?12:16,alignItems:"center"}}>
-        <div style={{width:mob?80:90,height:mob?80:90,borderRadius:"50%",background:`conic-gradient(#EF4444 0% ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}%, #F59E0B ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}% ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}%, #3B82F6 ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}% 100%)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{width:mob?80:90,height:mob?80:90,borderRadius:"50%",background:`conic-gradient(#EF4444 0% ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}%, #F59E0B ${data.avgP/((data.avgP+data.avgC+data.avgF)||1)*100}% ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}%, #78716C ${(data.avgP+data.avgC)/((data.avgP+data.avgC+data.avgF)||1)*100}% 100%)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{width:mob?50:56,height:mob?50:56,borderRadius:"50%",background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?13:14,fontWeight:700}}>{data.avgCal}</div>
         </div>
         <div style={{flex:1,fontSize:13}}>
           <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid #F3F4F6"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#EF4444"}}/> Protein</span><span style={{fontWeight:700}}>{data.avgP}g</span></div>
           <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid #F3F4F6"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#F59E0B"}}/> Carb</span><span style={{fontWeight:700}}>{data.avgC}g</span></div>
-          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#3B82F6"}}/> Fat</span><span style={{fontWeight:700}}>{data.avgF}g</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0"}}><span style={{display:"flex",alignItems:"center",gap:5}}><span style={{width:10,height:10,borderRadius:3,background:"#78716C"}}/> Fat</span><span style={{fontWeight:700}}>{data.avgF}g</span></div>
         </div>
       </div>
     </div>
@@ -868,15 +868,15 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
   useEffect(()=>{
     const serverVersion=appSettings.app_version;
     if(serverVersion){
-      const localVersion=localStorage.getItem("meal_tracker_version");
+      const localVersion=localStorage.getItem("fipilot_version");
       if(localVersion&&localVersion!==serverVersion){
-        localStorage.setItem("meal_tracker_version",serverVersion);
+        localStorage.setItem("fipilot_version",serverVersion);
         caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
           if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
           window.location.reload(true);
         });
       }else if(!localVersion){
-        localStorage.setItem("meal_tracker_version",serverVersion);
+        localStorage.setItem("fipilot_version",serverVersion);
       }
     }
   },[appSettings.app_version]);
@@ -1937,7 +1937,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     }else{setMealMode("tu_nhap");setDayType(dt);}
                   }
                 }}>
-                    <div style={{width:48,background:"#1E3A5F",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,borderRadius:"12px 0 0 12px"}}>
+                    <div style={{width:48,background:"#007AFF",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,borderRadius:"12px 0 0 12px"}}>
                       <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>{d}</div>
                       <div style={{fontSize:10,fontWeight:600,color:isGym?"#FCA5A5":"#93C5FD"}}>{isGym?"Tập":"Nghỉ"}</div>
                     </div>
@@ -2119,7 +2119,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           }}>
             <span style={{fontSize:mob?20:24}}>{g.icon}</span>
             <span style={{fontSize:mob?13:14,fontWeight:700,color:C.t1}}>{g.name}</span>
-            <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(profile.gender||"male")===g.id?"#3B82F6":"#D1D5DB"}`,background:(profile.gender||"male")===g.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(profile.gender||"male")===g.id?"✓":""}</div>
+            <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(profile.gender||"male")===g.id?"#007AFF":"#D1D5DB"}`,background:(profile.gender||"male")===g.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(profile.gender||"male")===g.id?"✓":""}</div>
           </div>)}
         </div>
 
@@ -2221,7 +2221,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           {[
             {id:"bulk",icon:"💪",name:"Tăng cơ",c:"#16A34A",bg:"#DCFCE7",bc:"#00C896"},
             {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#EF4444",bg:"#FEE2E2",bc:"#F87171"},
-            {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#3B82F6",bg:"#EFF6FF",bc:"#60A5FA"},
+            {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#007AFF",bg:"#EFF6FF",bc:"#60A5FA"},
           ].map(g=>{
             const disabled=(profile.exerciseType||"gym")==="none"&&g.id==="bulk";
             return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...profile,goalType:g.id});}} style={{
@@ -2598,7 +2598,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             }}>
               <span style={{fontSize:22}}>{g.icon}</span>
               <span style={{fontSize:14,fontWeight:700,color:C.t1}}>{g.name}</span>
-              <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(p.gender||"male")===g.id?"#3B82F6":"#D1D5DB"}`,background:(p.gender||"male")===g.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(p.gender||"male")===g.id?"✓":""}</div>
+              <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(p.gender||"male")===g.id?"#007AFF":"#D1D5DB"}`,background:(p.gender||"male")===g.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(p.gender||"male")===g.id?"✓":""}</div>
             </div>)}
           </div>
 
@@ -2707,7 +2707,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             {[
               {id:"bulk",icon:"💪",name:"Tăng cơ",c:"#16A34A",bg:"#DCFCE7",bc:"#00C896"},
               {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#EF4444",bg:"#FEE2E2",bc:"#F87171"},
-              {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#3B82F6",bg:"#EFF6FF",bc:"#60A5FA"},
+              {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#007AFF",bg:"#EFF6FF",bc:"#60A5FA"},
             ].map(g=>{
               const disabled=(p.exerciseType||"gym")==="none"&&g.id==="bulk";
               return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...p,goalType:g.id});}} style={{
