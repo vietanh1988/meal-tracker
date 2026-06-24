@@ -135,10 +135,13 @@ function MealCard({meal}){
   const [open,setOpen]=useState(false);
   const t=meal.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
   const total=t.p+t.c+t.f+t.fiber||1;
+  const iconBg={sang:"rgba(0,122,255,0.08)",phu_sang:"rgba(0,122,255,0.06)",trua:"rgba(90,200,250,0.1)",phu_chieu:"rgba(142,142,147,0.08)",pre:"rgba(0,122,255,0.08)",post:"rgba(52,199,89,0.08)",toi:"rgba(124,58,237,0.08)"};
   return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
-        <MealIcon id={meal.id} size={20}/>
+      <div style={{display:"flex",alignItems:"center",gap:10,flex:"1 1 auto",minWidth:0}}>
+        <div style={{width:40,height:40,borderRadius:10,background:iconBg[meal.id]||C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <MealIcon id={meal.id} size={22}/>
+        </div>
         <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
         <span style={{fontSize:12,fontWeight:600,color:C.t2}}>{meal.items.length} món</span>
       </div>
@@ -3100,17 +3103,17 @@ export default function App(){
       {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
       {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
 
-      {/* Bottom nav — iOS style */}
+      {/* Bottom nav — iOS style with SVG icons */}
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
         {[
-          {id:"dashboard",icon:"📊",label:"Tổng quan"},
-          {id:"profile",icon:"👤",label:"Hồ sơ"},
-          {id:"meals",icon:"🍽️",label:"Bữa ăn"},
-          {id:"report",icon:"📈",label:"Báo cáo"},
-          {id:"settings",icon:"⚙️",label:"Cài đặt"},
-        ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"4px 0"}}>
-          <span style={{fontSize:22}}>{t.icon}</span>
-          <span style={{fontSize:10,fontWeight:a?600:400,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
+          {id:"dashboard",label:"Tổng quan",d:"M18 20V10 M12 20V4 M6 20v-6"},
+          {id:"profile",label:"Hồ sơ",d:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"},
+          {id:"meals",label:"Bữa ăn",d:"M3 2l1.578 17.824a2 2 0 0 0 1.986 1.776h.872a2 2 0 0 0 1.986-1.776L11 2 M3 2h8 M7 2v4 M15 2v20 M19 2l-2 6 2 6"},
+          {id:"report",label:"Báo cáo",d:"M2 17l5-5 4 4 5.5-5.5 5.5 5.5"},
+          {id:"settings",label:"Cài đặt",d:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"},
+        ].map(t=>{const a=tab===t.id;const c=a?"#007AFF":"#8E8E93";return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"4px 0"}}>
+          <svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={a?2.2:1.8} strokeLinecap="round" strokeLinejoin="round"><path d={t.d}/></svg>
+          <span style={{fontSize:10,fontWeight:a?600:400,color:c}}>{t.label}</span>
         </div>;})}
       </div>
     </>:<>
