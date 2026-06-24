@@ -2520,9 +2520,9 @@ function LoginScreen({onLogin}){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
     <div style={{width:"100%",maxWidth:400}}>
       <div style={{textAlign:"center",marginBottom:32}}>
-        <AppLogo size={64} radius={16}/>
-        <div style={{fontSize:24,fontWeight:900,color:"#111",marginTop:12,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
-        <div style={{fontSize:13,fontWeight:700,color:"#16A34A",marginTop:2}}>AI Nutrition Coach</div>
+        <AppLogo size={80} radius={18}/>
+        <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:12,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.secondary,marginTop:2}}>AI Nutrition Coach</div>
       </div>
       <div style={{...card,padding:"24px 28px"}}>
         <div style={{display:"flex",marginBottom:20,borderBottom:`2px solid ${C.border}`}}>
@@ -2572,7 +2572,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:mob?16:20}}>
     <div style={{width:"100%",maxWidth:480}}>
       <div style={{textAlign:"center",marginBottom:24}}>
-        <AppLogo size={56} radius={14}/>
+        <AppLogo size={72} radius={16}/>
         <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
         <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
       </div>
@@ -2833,12 +2833,12 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   return <div>
     {/* Hero — White card giống Dashboard */}
     <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",border:`1.5px solid ${C.border}`}}>
-      <AppLogo size={72} radius={18}/>
+      <AppLogo size={96} radius={22}/>
       <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
       <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:4}}>v{form.version}</div>
       <div style={{fontSize:14,fontWeight:600,color:C.t2,marginTop:6}}>{form.tagline}</div>
       {features.length>0&&<div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginTop:14}}>
-        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 12px",borderRadius:20,background:i%4===0?"#FEE2E2":i%4===1?"#DCFCE7":i%4===2?"#EFF6FF":"#FEF3C7",color:i%4===0?"#003D99":i%4===1?"#007AFF":i%4===2?"#1E40AF":"#92400E",fontWeight:700}}>{f}</span>)}
+        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 12px",borderRadius:20,background:i%4===0?C.primaryBg:i%4===1?"#DCFCE7":i%4===2?"#EFF6FF":"#FEF3C7",color:i%4===0?"#007AFF":i%4===1?"#00C896":i%4===2?"#1E40AF":"#92400E",fontWeight:700}}>{f}</span>)}
       </div>}
     </div>
 
@@ -2853,7 +2853,7 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
       <div style={{fontSize:15,fontWeight:900,color:C.blue,marginBottom:12}}>👨‍💻 Đội ngũ phát triển</div>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
         {form.devAvatar?
-          <img src={form.devAvatar} alt={form.devName} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.red}`,flexShrink:0}}/>:
+          <img src={form.devAvatar} alt={form.devName} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.primary}`,flexShrink:0}}/>:
           <div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#007AFF,#4DA3FF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,border:"2px solid #fff",boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}}>{form.devName?form.devName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"VA"}</div>
         }
         <div style={{flex:1}}>
@@ -2863,8 +2863,8 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
       </div>
       <div style={{fontSize:13,fontWeight:600,color:C.t3,marginTop:10,lineHeight:1.6,padding:"10px 0",borderTop:`1px solid ${C.border}`}}>{form.devBio}</div>
       {(form.contact||form.facebook||form.hotline||form.zalo)&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {form.contact&&<a href={`mailto:${form.contact}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#FEE2E2",color:"#003D99",textDecoration:"none",border:"1px solid #FECACA",display:"flex",alignItems:"center",gap:4}}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#003D99" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        {form.contact&&<a href={`mailto:${form.contact}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#007AFF",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Email</a>}
         {form.facebook&&<a href={form.facebook} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -3088,7 +3088,7 @@ export default function App(){
         <UserAvatar gender={profile?.gender} size={32}/>
         <div style={{fontSize:13,fontWeight:700,color:"#ccc"}}>{user.user_metadata?.username||user.email}</div>
         <NotiBell appSettings={appSettings} dark/>
-        <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(220,38,38,0.15)",color:"#F87171",border:"1px solid #F87171",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
+        <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.7)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
       </div>
     </div>}
     <div style={{paddingTop:mob?"calc(env(safe-area-inset-top, 8px) + 8px)":"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>

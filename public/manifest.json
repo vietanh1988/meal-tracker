@@ -1,11 +1,11 @@
 {
   "name": "Fipilot AI - AI Nutrition Coach",
   "short_name": "Fipilot AI",
-  "description": "AI Nutrition Coach - Theo dõi dinh dưỡng thông minh với AI",
+  "description": "Theo dõi dinh dưỡng thông minh với AI",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#0F172A",
+  "background_color": "#F8FAFC",
+  "theme_color": "#007AFF",
   "orientation": "portrait",
   "icons": [
     {
