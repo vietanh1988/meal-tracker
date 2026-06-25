@@ -1402,10 +1402,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
       {/* Status bar */}
-      <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:16}}>
-        <div style={{width:8,height:8,borderRadius:"50%",background:aiConnected?C.green:C.red}}/>
-        <span style={{fontSize:13,fontWeight:600,color:C.t1}}>{providerName} · {aiProvider==="claude"?aiModel.replace("claude-","").split("-2025")[0]:aiProvider==="gemini"?(geminiModel||"").replace("gemini-",""):(gptModel||"")}</span>
-        <span style={{marginLeft:"auto",fontSize:11,fontWeight:600,color:aiConnected?"#34C759":"#EF4444"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"}</span>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px 18px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:12,marginBottom:16}}>
+        <div style={{width:10,height:10,borderRadius:"50%",background:aiConnected?"#34C759":"#EF4444"}}/>
+        <span style={{fontSize:15,fontWeight:700,color:C.t1}}>{providerName} · {aiProvider==="claude"?aiModel.replace("claude-","").split("-2025")[0]:aiProvider==="gemini"?(geminiModel||"").replace("gemini-",""):(gptModel||"")}</span>
+        <span style={{marginLeft:"auto",fontSize:13,fontWeight:700,color:aiConnected?"#34C759":"#EF4444"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"}</span>
       </div>
 
       {/* Provider */}
@@ -1422,7 +1422,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <div style={{width:36,height:36,borderRadius:10,background:p.bg,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 6px",fontSize:p.fs,fontWeight:700,color:"#fff",fontFamily:"serif"}}>{p.logo}</div>
           <div style={{fontSize:12,fontWeight:700,color:C.t1}}>{p.name}</div>
           <div style={{fontSize:11,fontWeight:600,color:C.t2}}>{p.desc}</div>
-          {aiProvider===p.id&&<div style={{width:14,height:14,borderRadius:"50%",background:"transparent",color:C.primary,border:`1.5px solid ${C.primary}`,fontSize:8,margin:"4px auto 0",lineHeight:"14px",textAlign:"center"}}>✓</div>}
+          {aiProvider===p.id&&<div style={{width:18,height:18,borderRadius:"50%",background:C.primary,color:"#fff",fontSize:11,fontWeight:700,margin:"6px auto 0",lineHeight:"18px",textAlign:"center"}}>✓</div>}
         </div>)}
       </div>
 
