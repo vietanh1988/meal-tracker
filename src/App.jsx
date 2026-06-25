@@ -2315,10 +2315,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* Auto-calc results */}
       <div style={{marginTop:20}}>
-        <div style={{fontSize:11,fontWeight:600,color:C.green,marginBottom:12,display:"flex",alignItems:"center",gap:4}}>
-          <span>✓ Tự động lưu</span>
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",background:"rgba(52,199,89,0.08)",border:"1px solid rgba(52,199,89,0.25)",borderRadius:10,marginBottom:12}}>
+          <div style={{width:22,height:22,borderRadius:"50%",background:"#34C759",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontSize:13,fontWeight:700}}>✓</span></div>
+          <span style={{fontSize:13,fontWeight:700,color:"#166534"}}>Tự động lưu — Dữ liệu hồ sơ được cập nhật tự động</span>
         </div>
-        <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
+        <div style={{borderTop:`2px solid ${C.primary}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:12}}>⚡ Macro tự động tính</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8}}>
           {[
