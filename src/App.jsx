@@ -3069,7 +3069,12 @@ const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months
 export default function App(){
   const {user,loading,signOut}=useAuth();
   const [tab,setTab]=useState("dashboard");
-  const [pcDayType,setPcDayType]=useState("train");
+  const [pcDayType,setPcDayType]=useState(()=>{
+    const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+    const todayIdx=new Date().getDay();
+    const mappedIdx=todayIdx===0?6:todayIdx-1;
+    return gd.includes(mappedIdx)?"train":"rest";
+  });
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
