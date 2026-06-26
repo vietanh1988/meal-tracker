@@ -3069,23 +3069,21 @@ const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months
 export default function App(){
   const {user,loading,signOut}=useAuth();
   const [tab,setTab]=useState("dashboard");
-  const [pcDayType,setPcDayType]=useState("train");
+  const [pcDayManual,setPcDayManual]=useState(null);
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||defaultProfile);
   const mob=useIsMobile();
-  // Auto-detect PC day type from gym schedule
-  const pcDTinit=useRef(false);
-  useEffect(()=>{
-    if(pcDTinit.current||!appSettings||!profile)return;
-    pcDTinit.current=true;
+  // Auto-detect PC day type from gym schedule (computed, not state)
+  const pcDayAuto=(()=>{
     const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
     const todayIdx=new Date().getDay();
     const mappedIdx=todayIdx===0?6:todayIdx-1;
-    setPcDayType(gd.includes(mappedIdx)?"train":"rest");
-  },[appSettings,profile]);
+    return gd.includes(mappedIdx)?"train":"rest";
+  })();
+  const pcDayType=pcDayManual||pcDayAuto;
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
@@ -3151,7 +3149,7 @@ export default function App(){
       <header style={{height:68,display:"flex",alignItems:"center",padding:"0 28px",background:"#fff",borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:5}}>
         <div style={{flex:1}}><div style={{fontSize:20,fontWeight:800,color:C.t1}}>Xin chào, {pcDN} 👋</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{pcDS}</div></div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayType("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayType("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>
+          <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayManual("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayManual("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>
           <NotiBell appSettings={appSettings}/>
           <button style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ AI Coach</button>
         </div>
