@@ -2505,608 +2505,52 @@ function LoginScreen({onLogin}){
     }catch(e){setErr(e.message||"Lỗi xác thực");}
   };
 
-  return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-    <div style={{width:"100%",maxWidth:400}}>
-      <div style={{textAlign:"center",marginBottom:32}}>
-        <img src="/logo.png" alt="Fipilot AI" style={{width:80,height:80,borderRadius:17,objectFit:"cover"}}/>
-        <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:12,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
-        <div style={{fontSize:13,fontWeight:700,color:C.secondary,marginTop:2}}>AI Nutrition Coach</div>
-      </div>
-      <div style={{...card,padding:"24px 28px"}}>
-        <div style={{display:"flex",marginBottom:20,borderBottom:`2px solid ${C.border}`}}>
-          {["login","register"].map(m=><button key={m} onClick={()=>{setMode(m);setErr("");setSuccess("");}} style={{
-            flex:1,padding:"10px",fontSize:14,fontWeight:mode===m?900:600,border:"none",background:"transparent",cursor:"pointer",
-            color:mode===m?C.t1:C.t3,borderBottom:mode===m?"3px solid #007AFF":"3px solid transparent",fontFamily:"inherit",
-          }}>{m==="login"?"Đăng nhập":"Đăng ký"}</button>)}
-        </div>
-        {mode==="register"&&<div style={{marginBottom:12}}>
-          <div style={{...lbl,marginBottom:6}}>Tên hiển thị</div>
-          <input value={user} onChange={e=>setUser(e.target.value)} placeholder="VD: gymboy63" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
-        </div>}
-        <div style={{marginBottom:12}}>
-          <div style={{...lbl,marginBottom:6}}>Email</div>
-          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@example.com" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
-        </div>
-        <div style={{marginBottom:16}}>
-          <div style={{...lbl,marginBottom:6}}>Mật khẩu</div>
-          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
-        </div>
-        {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {err}</div>}
-        {success&&<div style={{marginBottom:12,padding:"10px 14px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,fontSize:13,fontWeight:700,color:"#14532D"}}>{success}</div>}
-        <button onClick={handleSubmit} disabled={!!success} style={{...primaryBtn,opacity:success?0.6:1}}>{mode==="login"?"Đăng nhập":"Đăng ký & Kích hoạt"}</button>
-        {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
-        {mode==="register"&&<div style={{textAlign:"center",marginTop:12,fontSize:11,fontWeight:600,color:C.t3}}>Tài khoản sẽ được kích hoạt tự động ngay sau khi đăng ký</div>}
-      </div>
-    </div>
-  </div>;
-}
+  // === PC Dashboard data ===
+  const pcMealConfig=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
+  const pcVisibleIds=pcMealConfig[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];
+  const pcAllMeals=getMeals(pcDayType);
+  const pcMeals=pcAllMeals.filter(m=>pcVisibleIds.includes(m.id));
+  const pcTotals=pcMeals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
+  const pcHeroP=macro.protein,pcHeroF=macro.fat,pcHeroFiber=macro.fiber;
+  const pcHeroC=pcDayType==="train"?macro.carb:macro.carbRest;
+  const pcHeroCal=pcDayType==="train"?macro.calTarget:macro.calRest;
+  const pcGoalKg=profile.goalKg,pcStartKg=weightLog.length>0?weightLog[0].kg:profile.kg,pcCurKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg;
+  const pcWPct=pcGoalKg!==pcStartKg?((pcCurKg-pcStartKg)/(pcGoalKg-pcStartKg))*100:0;
+  const pcActCal=Math.round(pcTotals.cal),pcActP=Math.round(pcTotals.p),pcActC=Math.round(pcTotals.c),pcActF=Math.round(pcTotals.f),pcActFiber=Math.round(pcTotals.fiber);
+  const pcCalDiff=pcActCal-pcHeroCal,pcCalRemain=pcHeroCal-pcActCal;
+  const pcDisplayName=user?.user_metadata?.username||user?.email?.split("@")[0]||"bạn";
+  const pcExType=profile.exerciseType||"gym";
+  const pcExLabel=pcExType==="gym"?"Gym":pcExType==="gym_cardio"?"Gym+Cardio":pcExType==="cardio"?"Cardio":"Nghỉ ngơi";
+  // Meal score
+  const pcCalScore=pcActCal===0?0:pcActCal>=pcHeroCal*0.95&&pcActCal<=pcHeroCal*1.1?100:pcActCal>=pcHeroCal*0.85&&pcActCal<=pcHeroCal*1.15?85:70;
+  const pcPScore=pcActP===0?0:pcActP>=pcHeroP*0.9?100:pcActP>=pcHeroP*0.8?85:70;
+  const pcCScore=pcActC===0?0:pcActC>=pcHeroC*0.85&&pcActC<=pcHeroC*1.15?100:85;
+  const pcFScore=pcActF===0?0:pcActF>=pcHeroF*0.85&&pcActF<=pcHeroF*1.15?100:85;
+  const pcMealScore=pcActCal===0?0:Math.round((pcCalScore+pcPScore+pcCScore+pcFScore)/4);
+  const pcMealScoreLabel=pcMealScore>=90?"Rất phù hợp với mục tiêu":pcMealScore>=75?"Khá tốt, cần bổ sung thêm":"Cần điều chỉnh thêm";
+  // Nav icons (reuse from bottom nav)
+  const pcNavIcon=(id,active)=>{const c=active?"#007AFF":"#94A3B8";const s=18;const v="0 0 96 96";const icons={
+    dashboard:<svg viewBox={v} width={s} height={s}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>,
+    profile:<svg viewBox={v} width={s} height={s}><circle cx="48" cy="30" r="24" fill={c}/><path d="M4 96 C4 60 92 60 92 96 Z" fill={c}/></svg>,
+    meals:<svg viewBox={v} width={s} height={s}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>,
+    report:<svg viewBox={v} width={s} height={s}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>,
+    settings:<svg viewBox={v} width={s} height={s}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>,
+  };return icons[id]||null;};
+  // Sidebar nav items
+  const pcSidebarMenu=[{id:"dashboard",l:"Tổng quan",icon:"dashboard"},{id:"profile",l:"Hồ sơ",icon:"profile"},{id:"meals",l:"Bữa ăn",icon:"meals"},{id:"report",l:"Báo cáo",icon:"report"}];
+  const pcSidebarSettings=[{id:"settings",l:"Kết nối AI",emoji:"🤖"},{id:"settings",l:"Lịch tập",emoji:"📅"},{id:"settings",l:"Cân nặng",emoji:"⚖️"},{id:"settings",l:"Giới thiệu",emoji:"ℹ️"},{id:"settings",l:"Tài khoản",emoji:"👤"}];
+  const pcSidebarAdmin=isAdmin?[{id:"settings",l:"Quản trị",emoji:"🔧"},{id:"settings",l:"Kho mẫu",emoji:"📚"}]:[];
+  const pcDate=new Date();
+  const pcDays=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
+  const pcDateStr=`${pcDays[pcDate.getDay()]}, ${String(pcDate.getDate()).padStart(2,"0")}/${String(pcDate.getMonth()+1).padStart(2,"0")}/${pcDate.getFullYear()}`;
 
-function OnboardingWizard({profile,setProfile,onComplete}){
-  const mob=useIsMobile();
-  const [step,setStep]=useState(1);
-  const p=profile||defaultProfile;
-  const macro=calcMacro(p);
-  const totalSteps=4;
-
-  const stepDots=<div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:20}}>
-    {[1,2,3,4].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#36A3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
-  </div>;
-
-  const nextBtn=(label,disabled,color)=><button onClick={()=>setStep(step+1)} disabled={disabled} style={{...primaryBtn,marginTop:16,opacity:disabled?0.5:1,background:color||"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>{label} →</button>;
-  const backBtn=<button onClick={()=>setStep(step-1)} style={{...primaryBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>;
-
-  const fieldBox=(children)=><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>{children}</div>;
-
-  return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:mob?16:20}}>
-    <div style={{width:"100%",maxWidth:480}}>
-      <div style={{textAlign:"center",marginBottom:24}}>
-        <img src="/logo.png" alt="Fipilot AI" style={{width:72,height:72,borderRadius:15,objectFit:"cover"}}/>
-        <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
-        <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
-      </div>
-
-      <div style={{...card,padding:mob?"20px 16px":"24px 28px"}}>
-        {stepDots}
-
-        {/* STEP 1: Thông tin cơ bản */}
-        {step===1&&<div>
-          <div style={{textAlign:"center",marginBottom:16}}>
-            <div style={{fontSize:20}}>📋</div>
-            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Thông tin cơ bản</div>
-            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 1/{totalSteps}</div>
-          </div>
-
-          {/* Gender */}
-          <div style={{...lbl,marginBottom:8}}>Giới tính</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
-            {[{id:"male",icon:"👨",name:"Nam"},{id:"female",icon:"👩",name:"Nữ"}].map(g=><div key={g.id} onClick={()=>setProfile({...p,gender:g.id})} style={{
-              padding:"12px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",gap:8,
-              background:(p.gender||"male")===g.id?"#EFF6FF":C.surface,
-              border:`1.5px solid ${(p.gender||"male")===g.id?"#60A5FA":C.border}`,
-            }}>
-              <span style={{fontSize:22}}>{g.icon}</span>
-              <span style={{fontSize:14,fontWeight:700,color:C.t1}}>{g.name}</span>
-              <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(p.gender||"male")===g.id?"#007AFF":"#E2E8F0"}`,background:(p.gender||"male")===g.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(p.gender||"male")===g.id?"✓":""}</div>
-            </div>)}
-          </div>
-
-          {/* 4 inputs */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {[
-              {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
-              {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
-              {key:"age",label:"Tuổi",icon:"🎂",unit:"tuổi",mode:"numeric"},
-              {key:"gym",label:"Số buổi tập/tuần",icon:"🏋️",unit:"buổi",mode:"numeric"},
-            ].map(f=><div key={f.key}>
-              <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
-              <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-                <input type="text" inputMode={f.mode} value={f.key==="kg"?p.kg:p[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...p,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
-                <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
-              </div>
-            </div>)}
-          </div>
-
-          {nextBtn("Tiếp theo",!p.cm||!p.kg||!p.age)}
-        </div>}
-
-        {/* STEP 2: Vận động */}
-        {step===2&&<div>
-          <div style={{textAlign:"center",marginBottom:16}}>
-            <div style={{fontSize:20}}>🏃</div>
-            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Vận động</div>
-            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 2/{totalSteps}</div>
-          </div>
-
-          {/* Activity level */}
-          <div style={{...lbl,marginBottom:8}}>💼 Mức vận động công việc</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:18}}>
-            {[
-              {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng"},
-              {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều"},
-              {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay"},
-            ].map(a=><div key={a.id} onClick={()=>setProfile({...p,activity:a.id})} style={{
-              padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
-              background:p.activity===a.id?"#EFF6FF":C.surface,
-              border:p.activity===a.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
-            }}>
-              <div style={{fontSize:mob?20:24}}>{a.icon}</div>
-              <div style={{fontSize:mob?11:13,fontWeight:800,color:C.t1,marginTop:4}}>{a.name}</div>
-              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{a.desc}</div>
-            </div>)}
-          </div>
-
-          {/* Exercise type */}
-          <div style={{...lbl,marginBottom:8}}>🏅 Hình thức tập luyện</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?6:8,marginBottom:((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")?18:0}}>
-            {[
-              {id:"gym",icon:"ex_gym",name:"Gym",desc:"Tập tạ thuần"},
-              {id:"gym_cardio",icon:"ex_gym_cardio",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
-              {id:"cardio",icon:"ex_cardio",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
-              {id:"none",icon:"ex_none",name:"Không tập",desc:"Không vận động"},
-            ].map(e=><div key={e.id} onClick={()=>{
-              const updated={...p,exerciseType:e.id};
-              if(e.id==="none"&&p.goalType==="bulk")updated.goalType="maintain";
-              if(e.id==="gym")updated.cardioIntensity=undefined;
-              setProfile(updated);
-            }} style={{
-              padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
-              background:(p.exerciseType||"gym")===e.id?C.primaryBg:C.surface,
-              border:(p.exerciseType||"gym")===e.id?`2px solid #F87171`:`1.5px solid ${C.border}`,
-            }}>
-              <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?34:38,height:"auto",maxHeight:mob?34:38}}/>
-              <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
-              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
-            </div>)}
-          </div>
-
-          {/* Cardio intensity */}
-          {((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")&&<>
-            <div style={{...lbl,marginBottom:8}}>⚡ Cường độ Cardio</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8}}>
-              {[
-                {id:"light",icon:"🚶",name:"Nhẹ",desc:"Đi bộ 30-40p"},
-                {id:"moderate",icon:"🏃",name:"Vừa",desc:"Chạy nhẹ 30-45p"},
-                {id:"intense",icon:"⚡",name:"Nặng",desc:"HIIT, bơi 45-60p"},
-              ].map(ci=><div key={ci.id} onClick={()=>setProfile({...p,cardioIntensity:ci.id})} style={{
-                padding:mob?"8px 6px":"12px",borderRadius:10,cursor:"pointer",textAlign:"center",
-                background:(p.cardioIntensity||"moderate")===ci.id?"#EFF6FF":C.surface,
-                border:(p.cardioIntensity||"moderate")===ci.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
-              }}>
-                <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
-                <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
-                <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{ci.desc}</div>
-              </div>)}
-            </div>
-          </>}
-
-          {nextBtn("Tiếp theo")}
-          {backBtn}
-        </div>}
-
-        {/* STEP 3: Mục tiêu */}
-        {step===3&&<div>
-          <div style={{textAlign:"center",marginBottom:16}}>
-            <div style={{fontSize:20}}>🎯</div>
-            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Mục tiêu</div>
-            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 3/{totalSteps}</div>
-          </div>
-
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:16}}>
-            {[
-              {id:"bulk",icon:"💪",name:"Tăng cơ",c:"#34C759",bg:"#DCFCE7",bc:"#00C896"},
-              {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#EF4444",bg:"#FEE2E2",bc:"#F87171"},
-              {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#007AFF",bg:"#EFF6FF",bc:"#60A5FA"},
-            ].map(g=>{
-              const disabled=(p.exerciseType||"gym")==="none"&&g.id==="bulk";
-              return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...p,goalType:g.id});}} style={{
-                padding:mob?"10px 6px":"14px 10px",borderRadius:12,cursor:disabled?"not-allowed":"pointer",textAlign:"center",
-                background:p.goalType===g.id?g.bg:C.surface,
-                border:p.goalType===g.id?`2px solid ${g.bc}`:`1.5px solid ${C.border}`,
-                opacity:disabled?0.3:1,
-              }}>
-                <div style={{fontSize:mob?20:22}}>{g.icon}</div>
-                <div style={{fontSize:mob?12:13,fontWeight:800,color:C.t1,marginTop:4}}>{g.name}</div>
-              </div>;
-            })}
-          </div>
-
-          {/* Goal weight + duration */}
-          {p.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {[
-              {key:"goalKg",label:"Cân nặng mục tiêu",icon:"⚖️",unit:"kg",mode:"decimal"},
-              {key:"months",label:"Thời gian",icon:"📅",unit:"tháng",mode:"numeric"},
-            ].map(f=><div key={f.key}>
-              <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
-              <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-                <input type="text" inputMode={f.mode} value={p[f.key]||""} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;if(v===""){setProfile({...p,[f.key]:""});return;}setProfile({...p,[f.key]:Number(v)});}} onBlur={e=>{if(f.key==="months"&&(!p[f.key]||p[f.key]<1))setProfile({...p,months:1});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
-                <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
-              </div>
-            </div>)}
-          </div>}
-
-          {/* Safety check */}
-          {p.goalType!=="maintain"&&macro.perWeek>0&&<div style={{marginTop:12,padding:"8px 12px",background:macro.safe?C.greenBg:C.redBg,borderRadius:8,border:`1.5px solid ${macro.safe?C.green:C.red}`}}>
-            <span style={{fontSize:12,fontWeight:700,color:macro.safe?"#14532D":"#7F1D1D"}}>
-              {macro.safe
-                ?`✓ Tốc độ ${macro.perWeek} kg/tuần — an toàn!`
-                :`⚠ Tốc độ ${macro.perWeek} kg/tuần — quá nhanh! Nên kéo dài thời gian.`
-              }
-            </span>
-          </div>}
-
-          {nextBtn("Tiếp theo")}
-          {backBtn}
-        </div>}
-
-        {/* STEP 4: Hoàn tất — Preview macro */}
-        {step===4&&<div>
-          <div style={{textAlign:"center",marginBottom:16}}>
-            <div style={{fontSize:20}}>✨</div>
-            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Hoàn tất!</div>
-            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Macro đã tính xong</div>
-          </div>
-
-          {/* Macro hero preview */}
-          <div style={{background:"linear-gradient(135deg,#0A1628 0%,#162544 100%)",border:"2.5px solid #007AFF",borderRadius:14,padding:16,marginBottom:12}}>
-            <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>CALO MỤC TIÊU NGÀY TẬP</div>
-            <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span></div>
-            <div style={{display:"flex",gap:14,marginTop:12}}>
-              <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#007AFF" color2="#007AFF" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-              <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#5AC8FA" color2="#5AC8FA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-              <MacroRing l="Fat" v={macro.fat} max={macro.fat} color="#8E8E93" color2="#8E8E93" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-              <MacroRing l="Xơ" v={macro.fiber} max={macro.fiber} color="#34C759" color2="#34C759" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-            </div>
-          </div>
-
-          {/* Breakdown */}
-          <div style={{background:C.surface,borderRadius:10,padding:"10px 14px",marginBottom:12,border:`1.5px solid ${C.border}`}}>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
-              <span style={{color:C.t3}}>BMR</span><span style={{fontWeight:800,color:C.t1}}>{macro.bmr} cal</span>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
-              <span style={{color:C.t3}}>TDEE (×{macro.actMul})</span><span style={{fontWeight:800,color:C.t1}}>{macro.tdee} cal</span>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
-              <span style={{color:C.t3}}>Calo ngày nghỉ</span><span style={{fontWeight:800,color:C.primary}}>{macro.calRest} cal</span>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0"}}>
-              <span style={{color:C.t3}}>{macro.goal==="bulk"?"Surplus":macro.goal==="cut"?"Deficit":"Điều chỉnh"}</span>
-              <span style={{fontWeight:800,color:macro.goal==="bulk"?C.green:macro.goal==="cut"?C.red:C.t1}}>
-                {macro.goal==="bulk"?"+250":macro.goal==="cut"?"-350":"0"} cal
-              </span>
-            </div>
-          </div>
-
-          <div style={{padding:"8px 12px",background:C.goldBg,borderRadius:8,border:"1.5px solid #CA8A04",marginBottom:4}}>
-            <span style={{fontSize:12,fontWeight:700,color:"#78350F"}}>💡 Bạn có thể thay đổi bất cứ lúc nào trong tab Hồ sơ</span>
-          </div>
-
-          <button onClick={()=>{
-            setProfile({...p,onboardingDone:true});
-            onComplete();
-          }} style={{...primaryBtn,marginTop:16,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu & Vào Dashboard</button>
-          {backBtn}
-        </div>}
-      </div>
-    </div>
-  </div>;
-}
-
-function AboutPage({appSettings,isAdmin,saveSetting,mob}){
-  const about=(()=>{try{return appSettings.about_page?JSON.parse(appSettings.about_page):{}}catch(e){return{};}})();
-  const [editing,setEditing]=useState(false);
-  // Migrate old single-dev to team array
-  const migrateTeam=()=>{
-    if(about.team&&about.team.length>0) return about.team;
-    if(about.devName) return [{name:about.devName,role:about.devRole||"",bio:about.devBio||"",avatar:about.devAvatar||"",email:about.contact||"",facebook:about.facebook||"",hotline:about.hotline||"",zalo:about.zalo||""}];
-    return [{name:"Việt Anh Seoer",role:"Founder & Developer",bio:"Đam mê fitness và công nghệ. Xây dựng Fipilot AI để giúp cộng đồng gym Việt Nam theo dõi dinh dưỡng dễ dàng hơn.",avatar:"",email:"",facebook:"",hotline:"",zalo:""}];
-  };
-  const [form,setForm]=useState({
-    appName:about.appName||"Fipilot AI",
-    tagline:about.tagline||"Theo dõi dinh dưỡng thông minh cho người tập gym",
-    version:about.version||"2.6",
-    description:about.description||"Ứng dụng theo dõi bữa ăn và macro dinh dưỡng. Tính calo tự động từ kho 192 thực phẩm Việt Nam, hỗ trợ USDA API và AI (Claude, Gemini, GPT). Tính macro theo công thức Mifflin-St Jeor chuẩn ISSN.",
-    features:about.features||"192 món VN verified|3 AI tích hợp|USDA database|Công thức ISSN",
-    team:migrateTeam(),
-  });
-
-  const saveAbout=async()=>{
-    await saveSetting("about_page",JSON.stringify(form));
-    setEditing(false);
-  };
-
-  const updateMember=(idx,field,value)=>{
-    const t=[...form.team];t[idx]={...t[idx],[field]:value};setForm({...form,team:t});
-  };
-  const addMember=()=>setForm({...form,team:[...form.team,{name:"",role:"",bio:"",avatar:"",email:"",facebook:"",hotline:"",zalo:""}]});
-  const removeMember=(idx)=>{if(form.team.length<=1)return;const t=[...form.team];t.splice(idx,1);setForm({...form,team:t});};
-
-  const features=(form.features||"").split("|").filter(Boolean);
-
-  return <div>
-    {/* Hero */}
-    <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",border:`1.5px solid ${C.border}`}}>
-      <img src="/logo.png" alt="Fipilot AI" style={{width:96,height:96,borderRadius:20,objectFit:"cover"}}/>
-      <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
-      <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:4}}>v{form.version}</div>
-      <div style={{fontSize:14,fontWeight:600,color:C.t2,marginTop:6}}>{form.tagline}</div>
-      {features.length>0&&<div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginTop:14}}>
-        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 12px",borderRadius:20,background:i%4===0?C.primaryBg:i%4===1?"#DCFCE7":i%4===2?"#EFF6FF":"#FEF3C7",color:i%4===0?"#007AFF":i%4===1?"#00C896":i%4===2?"#007AFF":"#92400E",fontWeight:700}}>{f}</span>)}
-      </div>}
-    </div>
-
-    {/* Mô tả */}
-    <div style={{...card,marginTop:12}}>
-      <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:8}}>📖 Về ứng dụng</div>
-      <div style={{fontSize:13,fontWeight:500,color:C.t2,lineHeight:1.7}}>{form.description}</div>
-    </div>
-
-    {/* Đội ngũ phát triển */}
-    <div style={{...card,marginTop:12}}>
-      <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:12}}>👨‍💻 Đội ngũ phát triển</div>
-      {form.team.map((m,idx)=><div key={idx} style={{marginBottom:idx<form.team.length-1?16:0,paddingBottom:idx<form.team.length-1?16:0,borderBottom:idx<form.team.length-1?`1px solid ${C.border}`:"none"}}>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          {m.avatar?
-            <img src={m.avatar} alt={m.name} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.primary}`,flexShrink:0}}/>:
-            <div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,border:"2px solid #fff",boxShadow:"0 2px 8px rgba(0,0,0,0.1)",color:"#fff",fontWeight:800}}>{m.name?m.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"?"}</div>
-          }
-          <div style={{flex:1}}>
-            <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{m.name||"Chưa có tên"}</div>
-            <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>{m.role||"Thành viên"}</div>
-          </div>
-        </div>
-        {m.bio&&<div style={{fontSize:13,fontWeight:600,color:C.t3,marginTop:10,lineHeight:1.6,padding:"10px 0",borderTop:`1px solid ${C.border}`}}>{m.bio}</div>}
-        {(m.email||m.facebook||m.hotline||m.zalo)&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {m.email&&<a href={`mailto:${m.email}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#007AFF",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Email</a>}
-          {m.facebook&&<a href={m.facebook} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            Facebook</a>}
-          {m.hotline&&<a href={`tel:${m.hotline}`} style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#DCFCE7",color:"#007AFF",textDecoration:"none",border:"1px solid #BBF7D0",display:"flex",alignItems:"center",gap:4}}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            {m.hotline}</a>}
-          {m.zalo&&<a href={`https://zalo.me/${m.zalo.replace(/\s/g,"")}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EBF5FF",color:"#0068FF",textDecoration:"none",border:"1px solid #B3D9FF",display:"flex",alignItems:"center",gap:4}}>
-            <svg width="16" height="16" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#0068FF"/><text x="24" y="26" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="18" fontWeight="900" fontFamily="Arial,sans-serif">Z</text></svg>
-            Zalo</a>}
-        </div>}
-      </div>)}
-    </div>
-
-    {/* Admin: Edit */}
-    {isAdmin&&<div style={{...card,marginTop:12,border:`2px solid ${C.primary}`}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.secondary}}>✏️ Chỉnh sửa trang giới thiệu</div>
-        <button onClick={()=>setEditing(!editing)} style={{padding:"5px 12px",fontSize:12,fontWeight:700,borderRadius:8,border:`1.5px solid ${C.primary}`,background:editing?C.primary:"transparent",color:editing?"#fff":C.primary,cursor:"pointer",fontFamily:"inherit"}}>{editing?"✕ Đóng":"✏️ Sửa"}</button>
-      </div>
-      {editing&&<div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-          <div>
-            <div style={{...lbl,marginBottom:4}}>Tên ứng dụng</div>
-            <input value={form.appName} onChange={e=>setForm({...form,appName:e.target.value})} style={inp}/>
-          </div>
-          <div>
-            <div style={{...lbl,marginBottom:4}}>Version</div>
-            <input value={form.version} onChange={e=>setForm({...form,version:e.target.value})} style={inp}/>
-          </div>
-        </div>
-        <div style={{marginBottom:8}}>
-          <div style={{...lbl,marginBottom:4}}>Tagline</div>
-          <input value={form.tagline} onChange={e=>setForm({...form,tagline:e.target.value})} style={inp}/>
-        </div>
-        <div style={{marginBottom:8}}>
-          <div style={{...lbl,marginBottom:4}}>Mô tả</div>
-          <textarea value={form.description} onChange={e=>setForm({...form,description:e.target.value})} rows={3} style={{...inp,resize:"vertical"}}/>
-        </div>
-        <div style={{marginBottom:12}}>
-          <div style={{...lbl,marginBottom:4}}>Tính năng (ngăn cách bằng |)</div>
-          <input value={form.features} onChange={e=>setForm({...form,features:e.target.value})} placeholder="192 món VN|3 AI|USDA" style={inp}/>
-        </div>
-
-        {/* Team members editor */}
-        <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-            <div style={{...lbl,margin:0}}>Đội ngũ ({form.team.length} người)</div>
-            <button onClick={addMember} style={{padding:"5px 12px",fontSize:12,fontWeight:700,borderRadius:8,border:`1.5px solid ${C.primary}`,background:C.primaryBg,color:C.primary,cursor:"pointer",fontFamily:"inherit"}}>+ Thêm người</button>
-          </div>
-          {form.team.map((m,idx)=><div key={idx} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:12,marginBottom:10}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <div style={{fontSize:13,fontWeight:800,color:C.t1}}>Thành viên {idx+1}</div>
-              {form.team.length>1&&<button onClick={()=>removeMember(idx)} style={{padding:"3px 10px",fontSize:11,fontWeight:700,borderRadius:6,border:"none",background:C.redBg,color:C.red,cursor:"pointer",fontFamily:"inherit"}}>Xoá</button>}
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
-              <div>
-                <div style={{...lbl,marginBottom:4,fontSize:10}}>Họ tên</div>
-                <input value={m.name} onChange={e=>updateMember(idx,"name",e.target.value)} placeholder="Nguyễn Văn A" style={{...inp,height:36,fontSize:13}}/>
-              </div>
-              <div>
-                <div style={{...lbl,marginBottom:4,fontSize:10}}>Vai trò</div>
-                <input value={m.role} onChange={e=>updateMember(idx,"role",e.target.value)} placeholder="Developer" style={{...inp,height:36,fontSize:13}}/>
-              </div>
-            </div>
-            <div style={{marginBottom:8}}>
-              <div style={{...lbl,marginBottom:4,fontSize:10}}>Avatar URL</div>
-              <input value={m.avatar} onChange={e=>updateMember(idx,"avatar",e.target.value)} placeholder="https://..." style={{...inp,height:36,fontSize:13}}/>
-            </div>
-            <div style={{marginBottom:8}}>
-              <div style={{...lbl,marginBottom:4,fontSize:10}}>Bio</div>
-              <textarea value={m.bio} onChange={e=>updateMember(idx,"bio",e.target.value)} rows={2} style={{...inp,resize:"vertical",fontSize:13}}/>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              <div>
-                <div style={{...lbl,marginBottom:4,fontSize:10}}>Email</div>
-                <input value={m.email} onChange={e=>updateMember(idx,"email",e.target.value)} placeholder="email@..." style={{...inp,height:36,fontSize:13}}/>
-              </div>
-              <div>
-                <div style={{...lbl,marginBottom:4,fontSize:10}}>Facebook</div>
-                <input value={m.facebook} onChange={e=>updateMember(idx,"facebook",e.target.value)} placeholder="https://fb.com/..." style={{...inp,height:36,fontSize:13}}/>
-              </div>
-              <div>
-                <div style={{...lbl,marginBottom:4,fontSize:10}}>Hotline</div>
-                <input value={m.hotline} onChange={e=>updateMember(idx,"hotline",e.target.value)} placeholder="0909..." style={{...inp,height:36,fontSize:13}}/>
-              </div>
-              <div>
-                <div style={{...lbl,marginBottom:4,fontSize:10}}>Zalo</div>
-                <input value={m.zalo} onChange={e=>updateMember(idx,"zalo",e.target.value)} placeholder="0909..." style={{...inp,height:36,fontSize:13}}/>
-              </div>
-            </div>
-          </div>)}
-        </div>
-
-        <button onClick={saveAbout} style={{...primaryBtn,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu thay đổi</button>
-      </div>}
-    </div>}
-  </div>;
-}
-
-// === Notification Bell — shared by PC header + Mobile greeting ===
-function NotiBell({appSettings,dark}){
-  const [show,setShow]=useState(false);
-  const ref=useRef(null);
-  useEffect(()=>{
-    if(!show)return;
-    const h=(e)=>{if(ref.current&&!ref.current.contains(e.target))setShow(false);};
-    document.addEventListener("mousedown",h);
-    return()=>document.removeEventListener("mousedown",h);
-  },[show]);
-  const list=(()=>{try{return appSettings.notifications?JSON.parse(appSettings.notifications):[];}catch(e){return[];}})();
-  const hasNew=list.some(n=>n.isNew);
-  return <div style={{position:"relative"}} ref={ref}>
-    <div onClick={()=>setShow(!show)} style={{width:dark?36:40,height:dark?36:40,borderRadius:"50%",background:dark?"rgba(255,255,255,0.1)":C.card,border:dark?"1px solid rgba(255,255,255,0.2)":`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:dark?16:18,cursor:"pointer",boxShadow:dark?"none":"0 1px 4px rgba(0,0,0,0.06)"}}>🔔</div>
-    {hasNew&&<div style={{position:"absolute",top:0,right:0,width:10,height:10,borderRadius:"50%",background:"#EF4444",border:dark?"2px solid #111":"2px solid #fff"}}/>}
-    {show&&<div style={{position:"absolute",top:dark?44:48,right:0,width:320,background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",zIndex:50,overflow:"hidden"}}>
-      <div style={{padding:"10px 14px",borderBottom:`1.5px solid ${C.border}`,fontSize:13,fontWeight:700,color:C.t1}}>🔔 Thông báo</div>
-      {list.map(n=><div key={n.id} onClick={()=>{
-        caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
-          if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
-          window.location.reload(true);
-        });
-      }} style={{padding:"10px 14px",cursor:"pointer",borderBottom:`0.5px solid ${C.border}`,background:n.isNew?"rgba(220,38,38,0.04)":"transparent"}}>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          {n.isNew&&<div style={{width:6,height:6,borderRadius:"50%",background:"#EF4444",flexShrink:0}}/>}
-          <div style={{fontSize:12,fontWeight:n.isNew?700:600,color:C.t1,lineHeight:1.4}}>{n.text}</div>
-        </div>
-        <div style={{fontSize:10,color:C.t3,marginTop:3}}>{n.date} • Nhấn để cập nhật</div>
-      </div>)}
-      {list.length===0&&<div style={{padding:"16px",textAlign:"center",fontSize:12,color:C.t3}}>Không có thông báo mới</div>}
-    </div>}
-  </div>;
-}
-
-function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
-  const gender=p.gender||"male";
-  const exerciseType=p.exerciseType||"gym";
-  const cardioIntensity=p.cardioIntensity||"moderate";
-  // BMR: Mifflin-St Jeor (khác theo giới tính)
-  const bmr=10*p.kg+6.25*p.cm-5*p.age+(gender==="male"?5:-161);
-  // Activity multiplier
-  const jobBase=p.activity==="sedentary"?1.2:p.activity==="moderate"?1.5:1.75;
-  // Gym bonus
-  const hasGym=exerciseType==="gym"||exerciseType==="gym_cardio";
-  const gymBonus=hasGym?(p.gym<=2?0.1:p.gym<=4?0.2:0.3):0;
-  // Cardio bonus
-  const hasCardio=exerciseType==="cardio"||exerciseType==="gym_cardio";
-  const cardioTable={light:{2:0.03,4:0.05,6:0.08},moderate:{2:0.05,4:0.10,6:0.15},intense:{2:0.08,4:0.15,6:0.25}};
-  const ciKey=cardioIntensity||"moderate";
-  const gymCount=p.gym||3;
-  const cardioBonus=hasCardio?(gymCount<=2?cardioTable[ciKey][2]:gymCount<=4?cardioTable[ciKey][4]:cardioTable[ciKey][6]):0;
-  const actMul=Math.round((jobBase+gymBonus+cardioBonus)*100)/100;
-  const tdee=Math.round(bmr*actMul);
-  const diff=Math.round((p.goalKg-p.kg)*10)/10;
-  const goal=p.goalType||"bulk";
-  // Block: none + bulk
-  const effectiveGoal=(exerciseType==="none"&&goal==="bulk")?"maintain":goal;
-  // === TRƯỜNG PHÁI 1.5 ===
-  // P: giống nhau nam nữ (phụ thuộc mục tiêu, không phụ thuộc giới tính)
-  // F: khác nhau nam nữ (nữ cần fat cao hơn cho hormone)
-  // C: phần calo còn lại sau P và F
-  const pTable={bulk:2.0,cut:2.2,maintain:1.8};
-  const fTable={male:{bulk:1.1,cut:0.9,maintain:1.0},female:{bulk:1.2,cut:1.0,maintain:1.1}};
-  // Surplus/deficit cố định theo mục tiêu (ISSN lean bulk)
-  const calAdjustTable={bulk:250,cut:-350,maintain:0};
-  const pRatioVal=pTable[effectiveGoal]||1.8;
-  const fRatioVal=fTable[gender]?.[effectiveGoal]||0.9;
-  let protein=Math.round(p.kg*pRatioVal);
-  let fat=Math.round(p.kg*fRatioVal);
-  // Fat floor: không dưới 0.7g/kg
-  if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
-  // Surplus/deficit
-  const months=p.months||4;
-  const totalDiff=Math.abs(diff);
-  const perMonth=months>0?Math.round(totalDiff/months*10)/10:0;
-  const perWeek=months>0?Math.round(totalDiff/(months*4.33)*10)/10:0;
-  const calAdjust=calAdjustTable[effectiveGoal]||0;
-  const calTarget=tdee+calAdjust;
-  // C = phần calo còn lại
-  let carb=Math.round((calTarget-protein*4-fat*9)/4);
-  if(carb<0)carb=0;
-  // Carb floor: tối thiểu 2g/kg (cần cho tập luyện)
-  const carbFloor=Math.round(p.kg*2);
-  if(carb<carbFloor)carb=carbFloor;
-  const carbRest=Math.round(carb*0.75);
-  const calFinal=protein*4+carb*4+fat*9;
-  const calRest=protein*4+carbRest*4+fat*9;
-  const fiber=Math.round(calFinal/1000*14);
-  const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
-  const safe=effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true;
-  const pRatio=pRatioVal+"g/kg";
-  const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
-  const fRatio=fRatioVal+"g/kg";
-  return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
-}
-
-const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
-
-export default function App(){
-  const {user,loading,signOut}=useAuth();
-  const [tab,setTab]=useState("dashboard");
-  const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
-  const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
-  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
-  const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
-  const macro=calcMacro(profile||defaultProfile);
-  const mob=useIsMobile();
-
-  if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
-  if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
-
-  // Onboarding: chỉ hiện cho user mới chưa có data thật
-  const needsOnboarding=!profile.onboardingDone && !(weightLog && weightLog.length>0) && profile.cm===defaultProfile.cm && profile.kg===defaultProfile.kg && profile.age===defaultProfile.age;
-  if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
-
-  return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:mob?"0 10px 10px 10px":"16px 20px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
-    {!mob&&<div style={{position:"fixed",top:0,left:0,right:0,zIndex:99,background:"linear-gradient(135deg,#0A1628,#162544)",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:10,paddingLeft:"max(12px, env(safe-area-inset-left, 12px))",paddingRight:"max(12px, env(safe-area-inset-right, 12px))",maxWidth:700,margin:"0 auto",boxSizing:"border-box"}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,flex:"1 1 auto",minWidth:0}}>
-        <div onClick={()=>{
-          if(confirm("Xóa cache và cập nhật phiên bản mới?")){
-            caches.keys().then(names=>Promise.all(names.map(n=>caches.delete(n)))).then(()=>{
-              if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
-              window.location.reload(true);
-            });
-          }
-        }} style={{width:42,height:42,borderRadius:10,overflow:"hidden",flexShrink:0,cursor:"pointer"}}><AppLogo size={42} radius={10}/></div>
-        <div>
-          <div style={{fontSize:20,fontWeight:900,letterSpacing:"-0.02em",color:"#fff"}}>FIPILOT AI</div>
-          <div style={{fontSize:12,fontWeight:700,color:"#36A3FF",letterSpacing:"0.05em"}}>AI Nutrition Coach</div>
-        </div>
-      </div>
-      <div style={{display:"flex",flexDirection:"row",alignItems:"center",gap:8}}>
-        <UserAvatar gender={profile?.gender} size={32}/>
-        <div style={{fontSize:13,fontWeight:700,color:"#ccc"}}>{user.user_metadata?.username||user.email}</div>
-        <NotiBell appSettings={appSettings} dark/>
-        <button onClick={signOut} style={{padding:"5px 14px",fontSize:11,fontWeight:700,background:"rgba(255,255,255,0.15)",color:"#fff",border:"1px solid rgba(255,255,255,0.35)",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>Đăng xuất</button>
-      </div>
-    </div>}
-    <div style={{paddingTop:mob?"calc(env(safe-area-inset-top, 8px) + 8px)":"calc(env(safe-area-inset-top, 8px) + 72px)",paddingBottom:mob?100:0}}>
-    {mob?<>
-      {/* MOBILE: separate views per tab */}
+  if(mob) return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:"0 10px 10px 10px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
+    <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:100}}>
       {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
       {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
       {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
       {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
       {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
-
-      {/* Bottom nav — SVG gradient icons */}
       <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
       <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
         {[
@@ -3120,18 +2564,155 @@ export default function App(){
           <span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
         </div>;})}
       </div>
-    </>:<>
-      {/* PC: header tabs */}
-      <div style={{display:"flex",gap:0,marginBottom:20,borderBottom:`2px solid ${C.border}`}}>
-        {[{id:"dashboard",l:"Dashboard"},{id:"report",l:"Báo cáo"},{id:"admin",l:"Admin"},{id:"about",l:"Giới thiệu"}].map(t=>
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{
-            padding:"10px 20px",fontSize:14,fontWeight:tab===t.id?800:600,border:"none",background:"transparent",cursor:"pointer",
-            color:tab===t.id?C.primary:C.t2,borderBottom:tab===t.id?`3px solid ${C.primary}`:"3px solid transparent",fontFamily:"inherit",transition:"all 0.2s",
-          }}>{t.l}</button>
-        )}
+    </div>
+  </div>;
+
+  // ========== PC LAYOUT ==========
+  const adminProps={weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates};
+  return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",display:"flex",minHeight:"100vh",background:C.bg,color:C.t1}}>
+    {/* === SIDEBAR === */}
+    <nav style={{width:220,background:"#fff",borderRight:`1px solid ${C.border}`,position:"fixed",top:0,left:0,bottom:0,zIndex:10,display:"flex",flexDirection:"column",padding:"20px 0",overflowY:"auto"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 20px",marginBottom:24}}>
+        <AppLogo size={40} radius={12}/><div><div style={{fontWeight:800,fontSize:15,color:C.t1}}>FitPilotAI</div><div style={{fontSize:10,color:C.primary,fontWeight:600,letterSpacing:"0.3px",marginTop:1}}>AI Nutrition Coach</div></div>
       </div>
-      {tab==="dashboard"?<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>:tab==="report"?<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>:tab==="about"?<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>:<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
-    </>}
+      <div style={{fontSize:10,fontWeight:700,color:"#94A3B8",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px",textTransform:"uppercase"}}>Menu</div>
+      {pcSidebarMenu.map(s=><div key={s.id+s.l} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:tab===s.id?700:500,color:tab===s.id?C.primary:C.t2,background:tab===s.id?"rgba(0,122,255,0.06)":"transparent",borderLeft:tab===s.id?`3px solid ${C.primary}`:"3px solid transparent",transition:"all 0.15s"}}>{pcNavIcon(s.icon,tab===s.id)} {s.l}</div>)}
+      <div style={{fontSize:10,fontWeight:700,color:"#94A3B8",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px",textTransform:"uppercase"}}>Cài đặt</div>
+      {pcSidebarSettings.map((s,i)=><div key={i} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:500,color:C.t2,borderLeft:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.emoji}</span> {s.l}</div>)}
+      {pcSidebarAdmin.length>0&&<>
+        <div style={{fontSize:10,fontWeight:700,color:"#EF4444",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px",textTransform:"uppercase"}}>Quản trị</div>
+        {pcSidebarAdmin.map((s,i)=><div key={i} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:500,color:C.t2,borderLeft:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.emoji}</span> {s.l}</div>)}
+      </>}
+      <div style={{marginTop:"auto",padding:"0 20px",borderTop:`1px solid ${C.border}`,paddingTop:14}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}><UserAvatar gender={profile?.gender} size={36}/><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div><div style={{fontSize:10,color:C.t2}}>{pcExLabel} · {profile.gym} buổi/tuần</div></div></div>
+        <div onClick={signOut} style={{fontSize:12,color:"#EF4444",fontWeight:600,marginTop:10,cursor:"pointer"}}>↩ Đăng xuất</div>
+      </div>
+    </nav>
+    {/* === MAIN === */}
+    <div style={{marginLeft:220,flex:1,display:"flex",flexDirection:"column"}}>
+      {/* TOPBAR */}
+      <header style={{height:68,display:"flex",alignItems:"center",padding:"0 28px",background:"#fff",borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:5}}>
+        <div style={{flex:1}}><div style={{fontSize:20,fontWeight:800,color:C.t1}}>Xin chào, {pcDisplayName} 👋</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{pcDateStr}</div></div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
+            <div onClick={()=>setPcDayType("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div>
+            <div onClick={()=>setPcDayType("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div>
+          </div>
+          <NotiBell appSettings={appSettings}/>
+          <button style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ AI Coach</button>
+        </div>
+      </header>
+      {/* CONTENT */}
+      <main style={{padding:24,flex:1}}>
+        {tab==="dashboard"&&<div>
+          {/* HERO — Light */}
+          <div style={{...card,padding:"28px 32px",borderRadius:20,display:"flex",alignItems:"center",marginBottom:24,border:`1.5px solid ${C.border}`}}>
+            <div style={{flex:"0 0 45%"}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#94A3B8",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+              <div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcActCal>0?pcActCal.toLocaleString():pcHeroCal.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#94A3B8",letterSpacing:0}}>/ {pcHeroCal.toLocaleString()} kcal</span></div>
+              {pcActCal>0&&<div style={{marginTop:10,fontSize:13,fontWeight:700,color:pcActCal>=pcHeroCal*0.95&&pcActCal<=pcHeroCal*1.1?"#34C759":"#F59E0B"}}>{pcActCal>=pcHeroCal*0.95&&pcActCal<=pcHeroCal*1.1?`✅ Đã đạt mục tiêu! ${pcCalDiff} kcal`:`⚠️ Còn thiếu ${pcCalRemain} kcal`}</div>}
+              <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}>
+                <div style={{flex:1,height:6,background:C.border,borderRadius:3}}><div style={{height:6,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:3,width:`${Math.min(pcActCal>0?(pcActCal/pcHeroCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div>
+                <span style={{fontSize:13,fontWeight:700,color:C.primary}}>{pcActCal>0?Math.round(pcActCal/pcHeroCal*100):0}%</span>
+              </div>
+            </div>
+            <div style={{flex:"0 0 55%",display:"flex",justifyContent:"center",gap:24}}>
+              <MacroRing l="Protein" v={pcActP>0?pcActP:pcHeroP} max={pcHeroP} color="#007AFF" color2="#007AFF" sub={pcActP>0?`/${pcHeroP}g`:null} unit="g"/>
+              <MacroRing l="Carb" v={pcActC>0?pcActC:pcHeroC} max={pcHeroC} color="#5AC8FA" color2="#5AC8FA" sub={pcActC>0?`/${pcHeroC}g`:null} unit="g"/>
+              <MacroRing l="Fat" v={pcActF>0?pcActF:pcHeroF} max={pcHeroF} color="#8E8E93" color2="#8E8E93" sub={pcActF>0?`/${pcHeroF}g`:null} unit="g"/>
+              <MacroRing l="Xơ" v={pcActFiber>0?pcActFiber:pcHeroFiber} max={pcHeroFiber} color="#34C759" color2="#34C759" sub={pcActFiber>0?`/${pcHeroFiber}g`:null} unit="g"/>
+            </div>
+          </div>
+          {/* STAT CARDS */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
+            {[
+              {l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},
+              {l:"Cân nặng",v:pcCurKg,u:"kg",icon:"stat_weight",delta:pcCurKg!==pcStartKg?`${pcCurKg>pcStartKg?"+":""}${Math.round((pcCurKg-pcStartKg)*10)/10} kg`:null},
+              {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"Bình thường":"Thừa cân",icon:"stat_bmi"},
+              {l:pcExLabel,v:pcExType==="none"?"—":profile.gym,u:pcExType==="none"?"":"/tuần",icon:pcExType==="gym"?"stat_gym":"stat_gym"},
+            ].map((s,i)=><div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:16,display:"flex",alignItems:"center",gap:12,height:100}}>
+              <div style={{width:44,height:44,borderRadius:12,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/>
+              </div>
+              <div><div style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>{s.l}</div><div style={{fontSize:22,fontWeight:800,color:C.t1,letterSpacing:"-0.5px"}}>{s.v} <span style={{fontSize:12,fontWeight:600,color:"#94A3B8"}}>{s.u}</span></div>{s.delta&&<div style={{fontSize:10,fontWeight:700,color:C.primary,marginTop:1}}>{s.delta}</div>}</div>
+            </div>)}
+          </div>
+          {/* 2 COLUMNS: Meals (65%) | Charts (35%) */}
+          <div style={{display:"grid",gridTemplateColumns:"65fr 35fr",gap:20}}>
+            {/* LEFT: MEAL LIST */}
+            <div style={{...card,padding:20}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                <span style={{fontSize:15,fontWeight:800,color:C.t1}}>Danh sách thực đơn</span>
+                <span onClick={()=>setTab("meals")} style={{fontSize:12,color:C.primary,fontWeight:700,cursor:"pointer"}}>Xem tất cả →</span>
+              </div>
+              {pcMeals.map(m=><MealCard key={m.id} meal={m}/>)}
+              {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>🍽️ Chưa có bữa ăn nào — <span onClick={()=>setTab("meals")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Nhập bữa ăn</span></div>}
+              {/* AI Score */}
+              {pcActCal>0&&<div style={{background:"rgba(0,122,255,0.03)",border:`1.5px solid rgba(0,122,255,0.12)`,borderRadius:12,padding:"14px 16px",marginTop:12,display:"flex",alignItems:"center",gap:14}}>
+                <div><div style={{fontSize:32,fontWeight:900,color:C.primary,lineHeight:1}}>{pcMealScore}<span style={{fontSize:15,color:"#94A3B8",fontWeight:600}}>/100</span></div><div style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>AI đánh giá</div></div>
+                <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{pcMealScoreLabel}</div><div style={{fontSize:11,color:C.t2,marginTop:2}}>
+                  {pcMealScore>=90?"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả.":pcMealScore>=75?`Cần bổ sung thêm ${pcCalRemain>0?pcCalRemain+" kcal":"protein"} để đạt mục tiêu.`:"Thực đơn cần điều chỉnh để phù hợp mục tiêu."}
+                </div></div>
+                <span style={{color:"#94A3B8",fontSize:20}}>›</span>
+              </div>}
+            </div>
+            {/* RIGHT: Weight + Report */}
+            <div>
+              {/* Weight Tracking */}
+              <div style={{...card,padding:18,marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                  <span style={{fontSize:15,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span>
+                  <span style={{fontSize:11,color:C.t2}}>🎯 {pcGoalKg} kg</span>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:10}}>
+                  {[{l:"Xuất phát",v:pcStartKg,c:C.t1},{l:"Hiện tại",v:pcCurKg,c:C.primary},{l:"Mục tiêu",v:pcGoalKg,c:C.t1},{l:"Tiến độ",v:Math.round(pcWPct)+"%",c:C.primary}].map((w,i)=>
+                    <div key={i} style={{textAlign:"center",padding:"8px 4px",background:C.surface,borderRadius:8}}>
+                      <div style={{fontSize:9,color:"#94A3B8",fontWeight:600}}>{w.l}</div>
+                      <div style={{fontSize:18,fontWeight:800,color:w.c}}>{w.v}</div>
+                      {typeof w.v==="number"&&<div style={{fontSize:9,color:"#94A3B8"}}>kg</div>}
+                    </div>
+                  )}
+                </div>
+                <div style={{fontSize:11,fontWeight:600,color:C.t1,display:"flex",justifyContent:"space-between",marginBottom:5}}>
+                  <span>Đã {pcCurKg>=pcStartKg?"tăng":"giảm"} {Math.abs(Math.round((pcCurKg-pcStartKg)*10)/10)} kg</span>
+                  <span style={{color:C.primary}}>{Math.round(Math.max(0,Math.min(pcWPct,100)))}%</span>
+                </div>
+                <div style={{height:5,background:C.surface,borderRadius:3}}>
+                  <div style={{height:5,borderRadius:3,background:"linear-gradient(90deg,#36A3FF,#007AFF)",width:`${Math.max(0,Math.min(pcWPct,100))}%`}}/>
+                </div>
+                {weightLog.length>=2&&<div style={{marginTop:12}}><WeightBarChart weightLog={weightLog} goalKg={pcGoalKg} goalType={profile.goalType} startKg={pcStartKg} mob={false}/></div>}
+              </div>
+              {/* Weekly Report Mini */}
+              <div style={{...card,padding:18}}>
+                <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>Báo cáo tuần này</div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+                  {[{v:"—",l:"ngày ghi"},{v:"—",l:"cal TB/ngày"},{v:"—",l:"tỷ lệ đạt"}].map((r,i)=>
+                    <div key={i} style={{textAlign:"center",padding:"10px 4px",background:C.surface,borderRadius:8}}>
+                      <div style={{fontSize:18,fontWeight:800,color:C.primary}}>{r.v}</div>
+                      <div style={{fontSize:9,color:"#94A3B8",fontWeight:600,marginTop:2}}>{r.l}</div>
+                    </div>
+                  )}
+                </div>
+                <div style={{fontSize:12,fontWeight:700,color:C.t1,marginBottom:4}}>Lượng calo <span style={{float:"right",fontSize:10,color:"#94A3B8",fontWeight:500}}>7 ngày</span></div>
+                <div style={{height:130,background:C.surface,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:11,fontWeight:600,border:`1.5px dashed ${C.border}`}}>📊 Dữ liệu từ daily_logs</div>
+              </div>
+            </div>
+          </div>
+          {/* AI COACH BANNER */}
+          {pcActCal>0&&pcCalRemain>0&&<div style={{...card,padding:"16px 24px",marginTop:20,display:"flex",alignItems:"center",gap:14}}>
+            <div style={{width:42,height:42,borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18,color:"#fff"}}>✨</div>
+            <div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>AI Coach gợi ý cho bạn</div><div style={{fontSize:11,color:C.t2,marginTop:2}}>Hôm nay bạn đang thiếu <b style={{color:C.primary}}>{pcCalRemain} kcal</b> để đạt mục tiêu.</div></div>
+            <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:10}}>
+              <button onClick={()=>setTab("meals")} style={{padding:"8px 18px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>Nhập bữa ăn</button>
+            </div>
+          </div>}
+        </div>}
+        {tab==="profile"&&<AdminPanel {...adminProps} forcedSection="profile"/>}
+        {tab==="meals"&&<AdminPanel {...adminProps} forcedSection="meals"/>}
+        {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={false}/>}
+        {tab==="settings"&&<AdminPanel {...adminProps} forcedSection="settings" signOut={signOut} user={user}/>}
+        {tab==="about"&&<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={false}/>}
+      </main>
     </div>
   </div>;
 }
