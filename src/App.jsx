@@ -3076,14 +3076,16 @@ export default function App(){
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||defaultProfile);
   const mob=useIsMobile();
-  // Auto-detect PC day type from gym schedule (once)
+  // Auto-detect PC day type from gym schedule
+  const pcDTinit=useRef(false);
   useEffect(()=>{
-    if(!appSettings||!profile)return;
+    if(pcDTinit.current||!appSettings||!profile)return;
+    pcDTinit.current=true;
     const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
     const todayIdx=new Date().getDay();
     const mappedIdx=todayIdx===0?6:todayIdx-1;
     setPcDayType(gd.includes(mappedIdx)?"train":"rest");
-  },[]);
+  },[appSettings,profile]);
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
