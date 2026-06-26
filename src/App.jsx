@@ -3170,7 +3170,11 @@ export default function App(){
             <div style={{...card,padding:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:15,fontWeight:800,color:C.t1}}>Danh sách thực đơn</span><span onClick={()=>setTab("meals")} style={{fontSize:12,color:C.primary,fontWeight:700,cursor:"pointer"}}>Xem tất cả →</span></div>
               {pcMeals.map(m=><MealCard key={m.id} meal={m}/>)}
               {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>🍽️ Chưa có bữa ăn — <span onClick={()=>setTab("meals")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Nhập bữa ăn</span></div>}
-              {pcAC>0&&<div style={{background:"rgba(0,122,255,0.03)",border:"1.5px solid rgba(0,122,255,0.12)",borderRadius:12,padding:"14px 16px",marginTop:12,display:"flex",alignItems:"center",gap:14}}><div><div style={{fontSize:32,fontWeight:900,color:C.primary,lineHeight:1}}>{pcMS}<span style={{fontSize:15,color:"#64748B"}}>/100</span></div><div style={{fontSize:11,color:"#64748B",fontWeight:600}}>AI đánh giá</div></div><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{pcMSL}</div><div style={{fontSize:11,color:C.t2,marginTop:2}}>{pcMS>=90?"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập.":pcMS>=75?`Bổ sung thêm ${pcCR>0?pcCR+" kcal":"protein"}.`:"Điều chỉnh để phù hợp mục tiêu."}</div></div><span style={{color:"#64748B",fontSize:20}}>›</span></div>}
+              {pcAC>0&&<div style={{background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)",borderRadius:12,padding:"16px 18px",marginTop:12,display:"flex",alignItems:"center",gap:16}}>
+                <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:14}}>🎯</span><span style={{fontSize:12,color:"#059669",fontWeight:600}}>AI đánh giá thực đơn</span></div><div style={{fontSize:34,fontWeight:900,color:"#059669",lineHeight:1}}>{pcMS}<span style={{fontSize:15,color:"#64748B",fontWeight:600}}> /100</span></div></div>
+                <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:16}}><div style={{fontSize:14,fontWeight:700,color:C.t1}}>{pcMSL}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{pcMS>=90?"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả.":pcMS>=75?`Bổ sung thêm ${pcCR>0?pcCR+" kcal":"protein"} để đạt mục tiêu.`:"Điều chỉnh thực đơn để phù hợp mục tiêu."}</div></div>
+                <span style={{color:"#94A3B8",fontSize:22,cursor:"pointer"}}>›</span>
+              </div>}
             </div>
             <div>
               <div style={{...card,padding:20,marginBottom:14}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:16,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span><span style={{fontSize:13,color:C.t2,fontWeight:600}}>🎯 {pcGK} kg</span></div>
@@ -3183,14 +3187,14 @@ export default function App(){
             </div>
           </div>
           {pcAC>0&&pcCR>0&&<div style={{...card,padding:"18px 24px",marginTop:20,display:"flex",alignItems:"center",gap:16}}>
-            <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:20,color:"#fff"}}>✨</div>
-            <div style={{minWidth:0}}><div style={{fontSize:14,fontWeight:700,color:C.t1}}>AI Coach gợi ý cho bạn</div><div style={{fontSize:12,color:C.t2,marginTop:3}}>Hôm nay bạn đang thiếu <b style={{color:C.primary}}>{pcCR} kcal</b> để đạt mục tiêu.</div></div>
-            <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-              <span style={{fontSize:11,color:C.t2}}>Gợi ý<br/>bổ sung:</span>
-              <div style={{padding:"8px 12px",background:C.surface,borderRadius:10,textAlign:"center"}}><div style={{fontSize:12,fontWeight:700,color:C.t1}}>🍌 1 quả chuối</div><div style={{fontSize:10,color:C.t2}}>~27g Carb · 105 kcal</div></div>
-              <span style={{color:C.border,fontSize:14}}>+</span>
-              <div style={{padding:"8px 12px",background:C.surface,borderRadius:10,textAlign:"center"}}><div style={{fontSize:12,fontWeight:700,color:C.t1}}>🍠 150g khoai lang</div><div style={{fontSize:10,color:C.t2}}>~28g Carb · 129 kcal</div></div>
-              <div><button onClick={()=>setTab("meals")} style={{padding:"10px 20px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",whiteSpace:"nowrap"}}>Áp dụng gợi ý</button><div onClick={()=>setTab("meals")} style={{fontSize:11,color:C.t2,textAlign:"center",marginTop:4,cursor:"pointer"}}>Xem thêm gợi ý khác</div></div>
+            <div style={{width:48,height:48,borderRadius:14,background:"linear-gradient(135deg,#1E3A5F,#2D5A8E)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:24}}>🤖</div>
+            <div style={{minWidth:0}}><div style={{fontSize:14,fontWeight:700,color:C.t1}}>AI Coach gợi ý cho bạn</div><div style={{fontSize:12,color:C.t2,marginTop:3}}>Hôm nay bạn đang thiếu <b style={{color:"#D97706"}}>{Math.round(Math.max(0,pcHC-pcACb))}g Carb</b> để đạt mục tiêu.</div></div>
+            <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+              <div style={{fontSize:12,color:C.t2,fontWeight:600,lineHeight:1.3}}>Gợi ý<br/>bổ sung:</div>
+              <div style={{display:"flex",alignItems:"center",gap:4,padding:"10px 14px",background:C.surface,borderRadius:12}}><span style={{fontSize:22,marginRight:4}}>🍌</span><div><div style={{fontSize:12,fontWeight:700,color:C.t1}}>1 quả chuối</div><div style={{fontSize:10,color:C.t2}}>~ 27g Carb · 105 kcal</div></div></div>
+              <span style={{color:"#CBD5E1",fontSize:16,fontWeight:300}}>+</span>
+              <div style={{display:"flex",alignItems:"center",gap:4,padding:"10px 14px",background:C.surface,borderRadius:12}}><span style={{fontSize:22,marginRight:4}}>🍠</span><div><div style={{fontSize:12,fontWeight:700,color:C.t1}}>150g khoai lang</div><div style={{fontSize:10,color:C.t2}}>~ 28g Carb · 129 kcal</div></div></div>
+              <div style={{display:"flex",flexDirection:"column",gap:6}}><button onClick={()=>setTab("meals")} style={{padding:"10px 22px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",whiteSpace:"nowrap"}}>Áp dụng gợi ý</button><button onClick={()=>setTab("meals")} style={{padding:"6px 16px",borderRadius:8,background:"#fff",border:`1px solid ${C.border}`,fontSize:11,color:C.t2,cursor:"pointer",whiteSpace:"nowrap"}}>Xem thêm gợi ý khác</button></div>
             </div>
           </div>}
         </div>}
