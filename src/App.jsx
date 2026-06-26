@@ -1108,15 +1108,16 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,initialSection,hidePills}){if(!profile||!macro)return null;
   const mob=useIsMobile();
-  const [section,setSection]=useState(forcedSection==="settings"?(isAdmin?"ai":"weight"):(forcedSection==="profile"?"profile":(forcedSection||"meals")));
+  const [section,setSection]=useState(initialSection||(forcedSection==="settings"?"account":(forcedSection==="profile"?"profile":(forcedSection||"meals"))));
   useEffect(()=>{
+    if(initialSection){setSection(initialSection);return;}
     if(forcedSection==="profile")setSection("profile");
     else if(forcedSection==="meals")setSection("meals");
-    else if(forcedSection==="settings")setSection(isAdmin?"ai":"weight");
+    else if(forcedSection==="settings")setSection("account");
     else if(forcedSection)setSection(forcedSection);
-  },[forcedSection,isAdmin]);
+  },[forcedSection,isAdmin,initialSection]);
   const [dayType,setDayType]=useState(()=>{
     const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
     const todayIdx=new Date().getDay();// 0=CN,1=T2...
@@ -1383,17 +1384,17 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
 
   return <div>
-    {!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+    {!hidePills&&!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
       {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
       )}
     </div>}
-    {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
+    {!hidePills&&forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
       {[...(isAdmin?[{id:"ai",l:"🤖 AI"},{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"about",l:"ℹ️ Giới thiệu"},{id:"account",l:"👤 Tài khoản"}].map(s=>
         <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0}}>{s.l}</button>
       )}
     </div>}
-    {forcedSection==="profile"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
+    {!hidePills&&forcedSection==="profile"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
       {[{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"}].map(s=>
         <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit"}}>{s.l}</button>
       )}
@@ -3125,8 +3126,8 @@ export default function App(){
       <div style={{fontSize:10,fontWeight:700,color:"#94A3B8",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>MENU</div>
       {[{id:"dashboard",l:"Tổng quan",ic:"dashboard"},{id:"profile",l:"Hồ sơ",ic:"profile"},{id:"meals",l:"Bữa ăn",ic:"meals"},{id:"report",l:"Báo cáo",ic:"report"}].map(s=><div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:tab===s.id?700:500,color:tab===s.id?C.primary:C.t2,background:tab===s.id?"rgba(0,122,255,0.06)":"transparent",borderLeft:tab===s.id?`3px solid ${C.primary}`:"3px solid transparent"}}>{pcNavI(s.ic,tab===s.id)} {s.l}</div>)}
       <div style={{fontSize:10,fontWeight:700,color:"#94A3B8",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>CÀI ĐẶT</div>
-      {[{l:"Kết nối AI",e:"🤖"},{l:"Lịch tập",e:"📅"},{l:"Cân nặng",e:"⚖️"},{l:"Giới thiệu",e:"ℹ️"},{l:"Tài khoản",e:"👤"}].map((s,i)=><div key={i} onClick={()=>setTab("settings")} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:500,color:C.t2,borderLeft:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.e}</span> {s.l}</div>)}
-      {isAdmin&&<><div style={{fontSize:10,fontWeight:700,color:"#EF4444",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>QUẢN TRỊ</div>{[{l:"Quản trị",e:"🔧"},{l:"Kho mẫu",e:"📚"}].map((s,i)=><div key={i} onClick={()=>setTab("settings")} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:500,color:C.t2,borderLeft:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.e}</span> {s.l}</div>)}</>}
+      {[{id:"ai",l:"Kết nối AI",e:"🤖"},{id:"schedule",l:"Lịch tập",e:"📅"},{id:"weight",l:"Cân nặng",e:"⚖️"},{id:"about",l:"Giới thiệu",e:"ℹ️"},{id:"account",l:"Tài khoản",e:"👤"}].map(s=><div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:tab===s.id?700:500,color:tab===s.id?C.primary:C.t2,background:tab===s.id?"rgba(0,122,255,0.06)":"transparent",borderLeft:tab===s.id?`3px solid ${C.primary}`:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.e}</span> {s.l}</div>)}
+      {isAdmin&&<><div style={{fontSize:10,fontWeight:700,color:"#EF4444",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>QUẢN TRỊ</div>{[{id:"admin_s",l:"Quản trị",e:"🔧"},{id:"templates_s",l:"Kho mẫu",e:"📚"}].map(s=><div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:tab===s.id?700:500,color:tab===s.id?C.primary:C.t2,background:tab===s.id?"rgba(0,122,255,0.06)":"transparent",borderLeft:tab===s.id?`3px solid ${C.primary}`:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.e}</span> {s.l}</div>)}</>}
       <div style={{marginTop:"auto",padding:"0 20px",borderTop:`1px solid ${C.border}`,paddingTop:14}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}><UserAvatar gender={profile?.gender} size={36}/><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div><div style={{fontSize:10,color:C.t2}}>{pcEL} · {profile.gym} buổi/tuần</div></div></div>
         <div onClick={signOut} style={{fontSize:12,color:"#EF4444",fontWeight:600,marginTop:10,cursor:"pointer"}}>↩ Đăng xuất</div>
@@ -3170,11 +3171,17 @@ export default function App(){
           </div>
           {pcAC>0&&pcCR>0&&<div style={{...card,padding:"16px 24px",marginTop:20,display:"flex",alignItems:"center",gap:14}}><div style={{width:42,height:42,borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18,color:"#fff"}}>✨</div><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>AI Coach gợi ý cho bạn</div><div style={{fontSize:11,color:C.t2,marginTop:2}}>Hôm nay bạn đang thiếu <b style={{color:C.primary}}>{pcCR} kcal</b> để đạt mục tiêu.</div></div><div style={{marginLeft:"auto"}}><button onClick={()=>setTab("meals")} style={{padding:"8px 18px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>Nhập bữa ăn</button></div></div>}
         </div>}
-        {tab==="profile"&&<AdminPanel {...adminP} forcedSection="profile"/>}
-        {tab==="meals"&&<AdminPanel {...adminP} forcedSection="meals"/>}
+        {tab==="profile"&&<AdminPanel {...adminP} forcedSection="profile" hidePills/>}
+        {tab==="meals"&&<AdminPanel {...adminP} forcedSection="meals" hidePills/>}
         {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={false}/>}
         {tab==="settings"&&<AdminPanel {...adminP} forcedSection="settings" signOut={signOut} user={user}/>}
         {tab==="about"&&<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={false}/>}
+        {tab==="ai"&&<AdminPanel key="ai" {...adminP} forcedSection="settings" initialSection="ai" hidePills/>}
+        {tab==="schedule"&&<AdminPanel key="sch" {...adminP} forcedSection="profile" initialSection="schedule" hidePills/>}
+        {tab==="weight"&&<AdminPanel key="wt" {...adminP} forcedSection="settings" initialSection="weight" hidePills/>}
+        {tab==="account"&&<AdminPanel key="acc" {...adminP} forcedSection="settings" initialSection="account" signOut={signOut} user={user} hidePills/>}
+        {tab==="admin_s"&&<AdminPanel key="adm" {...adminP} forcedSection="settings" initialSection="admin" hidePills/>}
+        {tab==="templates_s"&&<AdminPanel key="tpl" {...adminP} forcedSection="settings" initialSection="templates" hidePills/>}
       </main>
     </div>
   </div>;
