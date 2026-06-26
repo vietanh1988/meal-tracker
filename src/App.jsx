@@ -3078,6 +3078,7 @@ export default function App(){
   const mob=useIsMobile();
   // Auto-detect PC day type from gym schedule (computed, not state)
   const pcDayAuto=(()=>{
+    if(!appSettings||!profile)return"train";
     const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
     const todayIdx=new Date().getDay();
     const mappedIdx=todayIdx===0?6:todayIdx-1;
