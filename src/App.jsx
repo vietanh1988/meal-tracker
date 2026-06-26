@@ -20,18 +20,21 @@ function useIsMobile(breakpoint=600){
 
 const C = {
   protein:"#007AFF", carb:"#5AC8FA", fat:"#8E8E93", fiber:"#34C759",
-  red:"#EF4444", gold:"#FACC15", green:"#00C896",
-  primary:"#007AFF", secondary:"#36A3FF", bg:"#F8FAFC", card:"#FFF", surface:"#F1F5F9",
+  red:"#EF4444", gold:"#FACC15", green:"#00C896", blue:"#007AFF",
+  primary:"#007AFF", secondary:"#36A3FF", deepBlue:"#0057FF", accent:"#7C3AED",
+  mint:"#00C896", violet:"#7C3AED",
+  bg:"#F8FAFC", card:"#FFF", surface:"#F1F5F9",
   border:"#E2E8F0",
   t1:"#0F172A", t2:"#64748B", t3:"#7A8A9B",
   redBg:"rgba(239,68,68,0.07)", goldBg:"rgba(250,204,21,0.1)", greenBg:"rgba(0,200,150,0.08)", blueBg:"rgba(0,122,255,0.06)",
-  primaryBg:"rgba(0,122,255,0.08)", };
+  primaryBg:"rgba(0,122,255,0.08)", accentBg:"rgba(124,58,237,0.06)",
+};
 const card={background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"16px 18px",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"};
 const lbl={fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase"};
 const inp={width:"100%",boxSizing:"border-box",padding:"8px 12px",fontSize:14,fontWeight:600,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,color:C.t1,outline:"none",fontFamily:"inherit",height:40};
-const primaryBtn={padding:"12px",fontSize:14,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%"};
+const redBtn={padding:"12px",fontSize:14,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%"};
 
-function Pill({active,children,onClick}){
+function Pill({active,color=C.primary,children,onClick}){
   return <button onClick={onClick} style={{
     padding:"7px 16px",fontSize:13,fontWeight:active?800:600,border:"none",borderRadius:20,
     cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",
@@ -41,6 +44,23 @@ function Pill({active,children,onClick}){
 }
 
 // SVG icons for cross-platform consistency (no emoji dependency)
+const Icon=({d,color="#666",size=20})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={d}/></svg>;
+const Icons={
+  sunrise:"M17 18a5 5 0 0 0-10 0 M12 2v7 M4.22 10.22l1.42 1.42 M1 18h2 M21 18h2 M18.36 11.64l1.42-1.42 M23 22H1 M8 6l4-4 4 4",
+  sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42",
+  coffee:"M18 8h1a4 4 0 0 1 0 8h-1 M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z M6 1v3 M10 1v3 M14 1v3",
+  zap:"M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+  moon:"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
+  dumbbell:"M6.5 6.5h11 M6.5 17.5h11 M6.5 6.5v11 M17.5 6.5v11 M2 9v6 M22 9v6 M2 9h4.5 M17.5 9H22 M2 15h4.5 M17.5 15H22",
+  scale:"M12 3v17 M1 10l11 4 11-4 M1 10l11-4 11 4",
+  chart:"M18 20V10 M12 20V4 M6 20v-6",
+  user:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z",
+  calendar:"M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z M16 2v4 M8 2v4 M3 10h18",
+  weight:"M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M2 21h20 M5 21l3-9 M19 21l-3-9",
+  settings:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  link:"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
+  save:"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8",
+};
 const MealIcon=({id,size=28})=>{
   const s=size;
   const icons={
@@ -70,7 +90,7 @@ const SlidingTabs=({tabs,active,onChange,style:extraStyle})=>{
   const m=window.innerWidth<700;
   return <div style={{position:"relative",display:"flex",background:"rgba(0,0,0,0.04)",borderRadius:12,padding:3,...(extraStyle||{})}}>
     <div style={{position:"absolute",top:3,left:3,width:`calc(${100/count}% - ${count>2?2:3}px)`,height:"calc(100% - 6px)",background:"rgba(255,255,255,0.9)",borderRadius:10,boxShadow:"0 1px 3px rgba(0,0,0,0.08)",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)",zIndex:0,transform:`translateX(${idx*100}%)`}}/>
-    {tabs.map(t=><div key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:m?"8px 6px":"9px 12px",fontSize:m?12:13,fontWeight:active===t.id?700:600,cursor:"pointer",textAlign:"center",color:active===t.id?"#007AFF":"#6B7280",transition:"color 0.2s",position:"relative",zIndex:1,whiteSpace:"nowrap"}}>{t.icon?t.icon+" ":""}{t.label}</div>)}
+    {tabs.map(t=><div key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:m?"8px 6px":"9px 12px",fontSize:m?12:13,fontWeight:active===t.id?700:600,cursor:"pointer",textAlign:"center",color:active===t.id?"#003D99":"#6B7280",transition:"color 0.2s",position:"relative",zIndex:1,whiteSpace:"nowrap"}}>{t.icon?t.icon+" ":""}{t.label}</div>)}
   </div>;
 };
 
@@ -89,6 +109,11 @@ const DEFAULT_MEAL_CONFIG={
   train:["sang","trua","pre","post","toi"],
   rest:["sang","trua","toi"],
 };
+const mealsData={
+  train:ALL_MEALS.map(m=>({id:m.id,name:m.name,items:[]})),
+  rest:ALL_MEALS.map(m=>({id:m.id,name:m.name,items:[]})),
+};
+const getMealsDefault=(type)=>mealsData[type];
 const wColors=["#EF4444","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
 function fmtDate(d){const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear();return `${dd}/${mm}/${yy}`;}
 
@@ -501,7 +526,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
 
       {aiResponse&&<div style={{marginTop:10,padding:"12px",background:"#fff",borderRadius:8,border:"1px solid #E0E0E0",fontSize:13,lineHeight:1.7,color:"#333",whiteSpace:"pre-wrap"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-          <span style={{fontWeight:800,color:C.primary}}>🤖 Gợi ý từ AI</span>
+          <span style={{fontWeight:800,color:"#1E40AF"}}>🤖 Gợi ý từ AI</span>
           <button onClick={()=>setAiResponse(null)} style={{fontSize:11,color:"#999",background:"none",border:"none",cursor:"pointer"}}>✕ Đóng</button>
         </div>
         {aiResponse}
@@ -717,10 +742,10 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
 
     {/* 4 Metrics */}
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
-      <div style={{...card,padding:12,marginBottom:0}}><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>TB Calo/ngày</div><div style={{fontSize:22,fontWeight:700}}>{data.avgCal.toLocaleString()}</div><div style={{fontSize:12,fontWeight:700,marginTop:2,color:data.avgCal<data.target*0.9?"#EF4444":C.primary}}>{data.avgCal<data.target*0.9?`Thiếu ${data.target-data.avgCal} cal`:"✓ Đạt mục tiêu"}</div></div>
-      <div style={{...card,padding:12,marginBottom:0}}><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>TB Protein</div><div style={{fontSize:22,fontWeight:700}}>{data.avgP}g</div><div style={{fontSize:12,fontWeight:700,marginTop:2,color:data.avgP>=macro.protein*0.9?C.primary:"#EF4444"}}>{data.avgP>=macro.protein*0.9?`✓ ${Math.round(data.avgP/macro.protein*100)}%`:`Thiếu ${Math.round(macro.protein-data.avgP)}g`}</div></div>
-      <div style={{...card,padding:12,marginBottom:0}}><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>Cân nặng</div><div style={{fontSize:22,fontWeight:700}}>{data.curKg} <span style={{fontSize:13,color:C.t3}}>kg</span></div><div style={{fontSize:12,fontWeight:700,marginTop:2,color:data.curKg>data.startKg?C.primary:"#EF4444"}}>{data.curKg>data.startKg?"+":"" }{Math.round((data.curKg-data.startKg)*10)/10} kg từ đầu</div></div>
-      <div style={{...card,padding:12,marginBottom:0}}><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>Tỷ lệ đạt</div><div style={{fontSize:22,fontWeight:700}}>{data.daysLogged>0?Math.round(data.adhereDays/data.daysLogged*100):0}%</div><div style={{fontSize:12,fontWeight:700,marginTop:2,color:C.primary}}>{data.adhereDays}/{data.daysLogged} ngày đạt (±10%)</div></div>
+      <div style={{...card,padding:12,marginBottom:0}}><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>TB Calo/ngày</div><div style={{fontSize:22,fontWeight:700}}>{data.avgCal.toLocaleString()}</div><div style={{fontSize:11,marginTop:2,color:data.avgCal<data.target*0.9?"#EF4444":"#16A34A"}}>{data.avgCal<data.target*0.9?`Thiếu ${data.target-data.avgCal} cal`:"✓ Đạt mục tiêu"}</div></div>
+      <div style={{...card,padding:12,marginBottom:0}}><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>TB Protein</div><div style={{fontSize:22,fontWeight:700}}>{data.avgP}g</div><div style={{fontSize:11,marginTop:2,color:data.avgP>=macro.protein*0.9?"#22C55E":"#EF4444"}}>{data.avgP>=macro.protein*0.9?`✓ ${Math.round(data.avgP/macro.protein*100)}%`:`Thiếu ${Math.round(macro.protein-data.avgP)}g`}</div></div>
+      <div style={{...card,padding:12,marginBottom:0}}><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>Cân nặng</div><div style={{fontSize:22,fontWeight:700}}>{data.curKg} <span style={{fontSize:13,color:C.t3}}>kg</span></div><div style={{fontSize:11,marginTop:2,color:data.curKg>data.startKg?"#22C55E":"#EF4444"}}>{data.curKg>data.startKg?"+":"" }{Math.round((data.curKg-data.startKg)*10)/10} kg từ đầu</div></div>
+      <div style={{...card,padding:12,marginBottom:0}}><div style={{fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.04em"}}>Tỷ lệ đạt</div><div style={{fontSize:22,fontWeight:700}}>{data.daysLogged>0?Math.round(data.adhereDays/data.daysLogged*100):0}%</div><div style={{fontSize:11,marginTop:2,color:C.t3}}>{data.adhereDays}/{data.daysLogged} ngày đạt (±10%)</div></div>
     </div>
 
     {/* Goal ETA */}
@@ -846,6 +871,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       appliedRef.current=today;
       applyTemplate(tpl);
       setDayType(tpl.day_type||"train");
+      console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
     }
   },[getWeeklyTemplate,applyTemplate]);
 
@@ -962,7 +988,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <div style={{fontSize:28,marginBottom:6}}>🍽️</div>
       <div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có bữa ăn nào</div>
       <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Nhập thức ăn để theo dõi macro hàng ngày</div>
-      <button onClick={()=>setTab&&setTab("meals")} style={{...primaryBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
+      <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
     </div>}
 
     {/* Compact evaluation */}
@@ -1084,11 +1110,11 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
 
 function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates}){if(!profile||!macro)return null;
   const mob=useIsMobile();
-  const [section,setSection]=useState(forcedSection==="settings"?"account":(forcedSection==="profile"?"profile":(forcedSection||"meals")));
+  const [section,setSection]=useState(forcedSection==="settings"?(isAdmin?"ai":"weight"):(forcedSection==="profile"?"profile":(forcedSection||"meals")));
   useEffect(()=>{
     if(forcedSection==="profile")setSection("profile");
     else if(forcedSection==="meals")setSection("meals");
-    else if(forcedSection==="settings")setSection("account");
+    else if(forcedSection==="settings")setSection(isAdmin?"ai":"weight");
     else if(forcedSection)setSection(forcedSection);
   },[forcedSection,isAdmin]);
   const [dayType,setDayType]=useState(()=>{
@@ -1256,6 +1282,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           if(!translated){stillUncached.push(f);continue;}
           // Chỉ search foodEN (raw), KHÔNG gửi cookEN cho USDA
           const searchQuery=translated.foodEN;
+          console.log("🔍 USDA search:",f.name,"→",searchQuery,"(raw only)");
           const result=await searchUSDA(searchQuery,usdaKey);
           if(result){
             const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
@@ -1362,44 +1389,40 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       )}
     </div>}
     {forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
-      {[{id:"account",l:"👤 Tài khoản"},{id:"about",l:"ℹ️ Giới thiệu"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},...(isAdmin?[{id:"templates",l:"📚 Mẫu"},{id:"ai",l:"🤖 AI"}]:[])].map(s=>
-        <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.primary:C.t2,borderBottom:section===s.id?`3px solid ${C.primary}`:"3px solid transparent",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0}}>{s.l}</button>
+      {[...(isAdmin?[{id:"ai",l:"🤖 AI"},{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"weight",l:"⚖️ Cân nặng"},{id:"about",l:"ℹ️ Giới thiệu"},{id:"account",l:"👤 Tài khoản"}].map(s=>
+        <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0}}>{s.l}</button>
       )}
     </div>}
     {forcedSection==="profile"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
       {[{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"}].map(s=>
-        <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.primary:C.t2,borderBottom:section===s.id?`3px solid ${C.primary}`:"3px solid transparent",fontFamily:"inherit"}}>{s.l}</button>
+        <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.red:C.t3,borderBottom:section===s.id?`3px solid ${C.red}`:"3px solid transparent",fontFamily:"inherit"}}>{s.l}</button>
       )}
     </div>}
 
     {/* AI CONNECTION */}
     {section==="ai"&&<div style={card}>
       {/* Status bar */}
-      <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px 18px",background:"#fff",border:`1px solid ${C.border}`,borderRadius:12,marginBottom:16}}>
-        <div style={{width:10,height:10,borderRadius:"50%",background:aiConnected?"#34C759":"#EF4444"}}/>
-        <span style={{fontSize:15,fontWeight:700,color:C.t1}}>{providerName} · {aiProvider==="claude"?aiModel.replace("claude-","").split("-2025")[0]:aiProvider==="gemini"?(geminiModel||"").replace("gemini-",""):(gptModel||"")}</span>
-        <span style={{marginLeft:"auto",fontSize:13,fontWeight:700,color:aiConnected?"#34C759":"#EF4444"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"}</span>
+      <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:16}}>
+        <div style={{width:8,height:8,borderRadius:"50%",background:aiConnected?C.green:C.red}}/>
+        <span style={{fontSize:13,fontWeight:600,color:C.t1}}>{providerName} · {aiProvider==="claude"?aiModel.replace("claude-","").split("-2025")[0]:aiProvider==="gemini"?(geminiModel||"").replace("gemini-",""):(gptModel||"")}</span>
+        <span style={{marginLeft:"auto",fontSize:11,fontWeight:600,color:aiConnected?"#34C759":"#EF4444"}}>{aiConnected?"Đã kết nối":"Chưa kết nối"}</span>
       </div>
 
       {/* Provider */}
       <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Provider</div>
       <div style={{display:"flex",gap:8,marginBottom:18}}>
         {[
-          {id:"claude",name:"Claude",desc:"Anthropic"},
-          {id:"gemini",name:"Gemini",desc:"Google"},
-          {id:"gpt",name:"GPT",desc:"OpenAI"},
+          {id:"claude",name:"Claude",desc:"Anthropic",bg:"#D97706",logo:"C",fs:15},
+          {id:"gemini",name:"Gemini",desc:"Google",bg:"#4285F4",logo:"G",fs:16},
+          {id:"gpt",name:"GPT",desc:"OpenAI",bg:"#10A37F",logo:"GPT",fs:10},
         ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
           flex:1,padding:"14px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",
           background:"#fff",border:aiProvider===p.id?`1.5px solid ${C.primary}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
         }}>
-          <div style={{width:40,height:40,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 6px",background:p.id==="claude"?"#FDF0E5":p.id==="gemini"?"#EEF2FE":"#F3F3F3"}}>
-            {p.id==="claude"&&<svg width="26" height="26" viewBox="0 0 128 128" fill="none"><path d="M32.4286 81.1404L52.8708 69.6696L53.2129 68.6699L52.8708 68.1174H51.8711L48.4509 67.9069L36.7696 67.5912L26.6406 67.1702L16.8273 66.6441L14.3543 66.1179L12.0391 63.066L12.2758 61.5401L14.3543 60.1457L17.3272 60.4088L23.9045 60.8561L33.7704 61.5401L40.9265 61.961L51.5291 63.066H53.2129L53.4496 62.382L52.8708 61.961L52.4236 61.5401L42.2156 54.6208L31.1658 47.3069L25.3778 43.0974L22.247 40.9664L20.6685 38.9669L19.9844 34.5995L22.8258 31.4688L26.6406 31.7318L27.6141 31.9949L31.4815 34.9679L39.7426 41.361L50.5293 49.3064L52.1079 50.6218L52.7393 50.1746L52.8182 49.8588L52.1079 48.6749L46.2409 38.0723L39.9794 27.2856L37.1906 22.8131L36.4539 20.1295C36.1908 19.0245 36.0067 18.1037 36.0067 16.9724L39.2427 12.5788L41.0317 12L45.3464 12.5788L47.1618 14.1573L49.8453 20.2874L54.1863 29.9428L60.9214 43.0711L62.8946 46.9648L63.947 50.5692L64.3416 51.6742H65.0257V51.0428L65.5781 43.6499L66.6042 34.5732L67.604 22.892L67.946 19.6033L69.5771 15.657L72.8132 13.5259L75.3388 14.7361L77.4173 17.7091L77.1279 19.6296L75.8913 27.6539L73.4709 40.2297L71.8923 48.6486H72.8132L73.8655 47.5963L78.1276 41.9398L85.2837 32.9947L88.4408 29.443L92.1241 25.5229L94.4919 23.6549H98.9644L102.253 28.5484L100.78 33.5998L96.1757 39.4404L92.3608 44.3865L86.8885 51.7531L83.4684 57.6463L83.7841 58.1199L84.5996 58.041L96.9649 55.4101L103.647 54.1999L111.619 52.8318L115.223 54.5156L115.618 56.2257L114.197 59.7248L105.673 61.8295L95.6758 63.829L80.7848 67.3544L80.6007 67.486L80.8111 67.7491L87.52 68.3805L90.3877 68.5383H97.4122L110.488 69.5118L113.908 71.7743L115.96 74.5368L115.618 76.6415L110.356 79.3251L103.253 77.6413L86.6781 73.6949L80.9953 72.2742H80.206V72.7478L84.9417 77.3782L93.6237 85.2183L104.489 95.321L105.042 97.8204L103.647 99.7936L102.174 99.5831L92.6239 92.4007L88.9407 89.1647L80.6007 82.1401H80.0482V82.8768L81.9687 85.6919L92.1241 100.951L92.6502 105.634L91.9136 107.16L89.2827 108.081L86.3887 107.555L80.4428 99.2148L74.3128 89.8224L69.3667 81.4035L68.7616 81.7455L65.8412 113.185L64.4732 114.79L61.3161 116L58.6852 114L57.2908 110.764L58.6852 104.371L60.3689 96.0314L61.737 89.4015L62.9735 81.1667L63.7102 78.4306L63.6576 78.2464L63.0525 78.3253L56.8435 86.8495L47.3985 99.6094L39.9267 107.607L38.1377 108.318L35.0332 106.713L35.3226 103.845L37.059 101.293L47.3985 88.1386L53.6338 79.9828L57.6591 75.2735L57.6328 74.5894H57.396L29.9293 92.427L25.0358 93.0584L22.931 91.0853L23.1941 87.8492L24.1939 86.7969L32.4549 81.1141L32.4286 81.1404Z" fill="#D97757"/></svg>}
-            {p.id==="gemini"&&<svg width="24" height="24" viewBox="0 0 128 128" fill="none"><defs><linearGradient id="gemG" x1="100.9" y1="30" x2="22.2" y2="96.8" gradientUnits="userSpaceOnUse"><stop stopColor="#217BFE"/><stop offset="0.27" stopColor="#078EFB"/><stop offset="0.52" stopColor="#548FFD"/><stop offset="0.78" stopColor="#A190FF"/><stop offset="1" stopColor="#BD99FE"/></linearGradient></defs><path d="M63.892 8C62.08 38.04 38.04 62.08 8 63.892V64.108C38.04 65.92 62.08 89.96 63.892 120H64.108C65.92 89.96 89.96 65.92 120 64.108V63.892C89.96 62.08 65.92 38.04 64.108 8H63.892Z" fill="url(#gemG)"/></svg>}
-            {p.id==="gpt"&&<svg width="24" height="24" viewBox="0 0 128 128" fill="none"><path d="M109.128 54.5666C110.018 51.9282 110.472 49.1658 110.472 46.3851C110.472 41.784 109.23 37.2659 106.874 33.2954C102.139 25.1636 93.3561 20.1432 83.8507 20.1432C81.9781 20.1432 80.1107 20.3383 78.2795 20.7253C75.8166 17.9874 72.7935 15.7957 69.4094 14.2947C66.0254 12.7938 62.3573 12.0177 58.647 12.0176H58.4804L58.4179 12.0179C46.9051 12.0179 36.6952 19.3479 33.1561 30.1539C29.4926 30.8943 26.0317 32.3983 23.005 34.5652C19.9783 36.7322 17.4557 39.5121 15.606 42.7189C13.2569 46.7133 12.019 51.2492 12.0176 55.8674C12.0185 62.3578 14.4602 68.617 18.87 73.4329C17.9799 76.0712 17.5259 78.8337 17.5255 81.6143C17.5259 86.2155 18.768 90.7335 21.1242 94.7041C23.9262 99.5176 28.2051 103.329 33.344 105.588C38.4828 107.847 44.2161 108.437 49.717 107.274C52.1802 110.012 55.2036 112.203 58.5879 113.704C61.9722 115.205 65.6405 115.982 69.3509 115.982H69.5176L69.5853 115.982C81.1043 115.982 91.3108 108.651 94.85 97.8354C98.5135 97.0947 101.974 95.5906 105.001 93.4236C108.028 91.2566 110.551 88.4768 112.4 85.2701C114.747 81.2791 115.983 76.747 115.982 72.1331C115.981 65.6428 113.539 59.3838 109.129 54.568L109.128 54.5666ZM69.5242 109.185H69.497C64.8877 109.184 60.4248 107.588 56.8843 104.676C57.0945 104.564 57.3023 104.448 57.5074 104.328L78.487 92.3706C79.0106 92.0766 79.4459 91.651 79.7488 91.1372C80.0517 90.6234 80.2113 90.0396 80.2115 89.4452V60.2418L89.0791 65.2939C89.1256 65.3168 89.1657 65.3506 89.1958 65.3925C89.2259 65.4343 89.2451 65.4829 89.2516 65.5338V89.7018C89.2394 100.447 80.4149 109.163 69.5242 109.185ZM27.0997 91.3068C25.3668 88.3503 24.4538 84.9956 24.4526 81.5802C24.4526 80.4663 24.5512 79.3495 24.7432 78.2519C24.8992 78.3441 25.1714 78.5081 25.3667 78.6188L46.3463 90.5758C46.8693 90.8771 47.4641 91.0358 48.0698 91.0357C48.6755 91.0355 49.2702 90.8766 49.7931 90.5751L75.407 75.9823V86.0867L75.4073 86.1041C75.4073 86.1528 75.3959 86.2008 75.3738 86.2443C75.3518 86.2878 75.3198 86.3257 75.2804 86.355L54.072 98.4371C51.0711 100.141 47.6696 101.039 44.2072 101.04C40.7412 101.039 37.3361 100.14 34.3335 98.4311C31.3309 96.7227 28.8363 94.2654 27.0997 91.3057V91.3068ZM21.5804 46.1162C23.8846 42.1672 27.5229 39.1435 31.8586 37.5743C31.8586 37.7525 31.8483 38.0683 31.8483 38.2875V62.2018L31.848 62.2214C31.8481 62.8152 32.0074 63.3984 32.3099 63.9118C32.6123 64.4251 33.047 64.8504 33.5699 65.1443L59.1837 79.7349L50.3166 84.787C50.2728 84.8154 50.2226 84.8328 50.1705 84.8374C50.1183 84.8421 50.0657 84.834 50.0175 84.8138L28.8069 72.7215C25.8085 71.0076 23.3192 68.5462 21.5886 65.5841C19.8581 62.6219 18.9469 59.2629 18.9465 55.8438C18.9479 52.4301 19.8564 49.0764 21.5815 46.1173L21.5804 46.1162ZM94.4362 62.8446L68.8223 48.2522L77.6899 43.202C77.7336 43.1735 77.7838 43.1561 77.836 43.1514C77.8882 43.1468 77.9407 43.1549 77.9889 43.1751L99.1992 55.2573C102.2 56.9685 104.692 59.4285 106.425 62.3904C108.157 65.3523 109.07 68.7118 109.071 72.1317C109.071 80.2943 103.908 87.5981 96.1467 90.4172V65.7879C96.1478 65.7788 96.1478 65.7693 96.1478 65.7603C96.1476 65.1687 95.9893 64.5876 95.6888 64.0757C95.3882 63.5637 94.9562 63.1391 94.4362 62.8446ZM103.262 49.7378C103.056 49.6131 102.848 49.4909 102.639 49.3712L81.6594 37.4139C81.1363 37.1131 80.5418 36.9546 79.9364 36.9543C79.331 36.9546 78.7364 37.1131 78.2133 37.4139L52.5991 52.0066V41.9022L52.5988 41.8848C52.5988 41.7861 52.6462 41.6931 52.726 41.634L73.9344 29.5619C76.9343 27.8555 80.3361 26.957 83.7989 26.957C94.7036 26.957 103.547 35.6825 103.547 46.4421C103.546 47.5463 103.451 48.6484 103.262 49.7367V49.7378ZM47.778 67.7471L38.9086 62.6951C38.8621 62.6722 38.822 62.6383 38.7919 62.5964C38.7618 62.5546 38.7426 62.5061 38.7361 62.4552V38.2868C38.7409 27.533 47.5841 18.8147 58.4841 18.8147C63.1005 18.8157 67.571 20.4114 71.1196 23.3249C70.9599 23.4109 70.6815 23.5626 70.4964 23.6733L49.5168 35.6303C48.9934 35.9241 48.5581 36.3495 48.2553 36.8631C47.9524 37.3768 47.7928 37.9604 47.7927 38.5546V38.5739L47.778 67.7471ZM52.5951 57.4997L64.003 50.9983L75.411 57.4953V70.4936L64.003 76.991L52.5951 70.4936V57.4997Z" fill="#202123"/></svg>}
-          </div>
+          <div style={{width:36,height:36,borderRadius:10,background:p.bg,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 6px",fontSize:p.fs,fontWeight:700,color:"#fff",fontFamily:"serif"}}>{p.logo}</div>
           <div style={{fontSize:12,fontWeight:700,color:C.t1}}>{p.name}</div>
           <div style={{fontSize:11,fontWeight:600,color:C.t2}}>{p.desc}</div>
-          {aiProvider===p.id&&<div style={{width:18,height:18,borderRadius:"50%",background:C.primary,color:"#fff",fontSize:11,fontWeight:700,margin:"6px auto 0",lineHeight:"18px",textAlign:"center"}}>✓</div>}
+          {aiProvider===p.id&&<div style={{width:14,height:14,borderRadius:"50%",background:"transparent",color:C.primary,border:`1.5px solid ${C.primary}`,fontSize:8,margin:"4px auto 0",lineHeight:"14px",textAlign:"center"}}>✓</div>}
         </div>)}
       </div>
 
@@ -1481,7 +1504,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             const d=await r.json();setAiConnected(!d.error);
           }
         }catch{setAiConnected(false);}
-      }} style={{...primaryBtn,marginTop:10}}>Test kết nối</button>
+      }} style={{...redBtn,marginTop:10}}>Test kết nối</button>
 
       {isAdmin&&<button onClick={async()=>{
         await saveSetting("ai_provider",aiProvider);
@@ -1494,7 +1517,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         await saveSetting("gemini_model",geminiModel);
         const el=document.getElementById("cloud-keys-saved");
         if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-      }} style={{...primaryBtn,marginTop:8,background:"linear-gradient(135deg,#0F172A,#1E293B)"}}>☁️ Lưu lên Cloud</button>}
+      }} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#0F172A,#1E293B)"}}>☁️ Lưu lên Cloud</button>}
       {isAdmin&&<div id="cloud-keys-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
         <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ Đã lưu!</span>
       </div>}
@@ -1583,9 +1606,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* Inline meal input — same as Tự nhập */}
       {mealNames.map(meal=>{
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
-        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${C.primary}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
+        const mealColors={"sang":"#007AFF","phu_sang":"#007AFF","trua":"#007AFF","phu_chieu":"#007AFF","pre":"#007AFF","post":"#007AFF","toi":"#007AFF"};
+        const mealTextColors={"sang":"#007AFF","phu_sang":"#007AFF","trua":"#007AFF","phu_chieu":"#007AFF","pre":"#007AFF","post":"#007AFF","toi":"#007AFF"};
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
           <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
-            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:C.t1}}>{meal.l}</span>
+            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
@@ -1619,7 +1644,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         if(combined.length===0){setAiError("Chưa nhập thức ăn nào");return;}
         setFoodItems(combined);
         setTimeout(()=>callAI(),100);
-      }} disabled={aiLoading} style={{...primaryBtn,marginTop:8,opacity:aiLoading?0.7:1}}>
+      }} disabled={aiLoading} style={{...redBtn,marginTop:8,opacity:aiLoading?0.7:1}}>
         {aiLoading?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           <span style={{width:16,height:16,border:"2.5px solid #fcc",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.6s linear infinite"}}/>
           <span>Đang tính...</span>
@@ -1683,7 +1708,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           const init={};mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
           const el=document.getElementById("tpl-created");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...primaryBtn,marginTop:12,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>📚 Lưu thành Template mẫu</button>
+        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>📚 Lưu thành Template mẫu</button>
         <div id="tpl-created" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu.</span>
         </div>
@@ -1696,7 +1721,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           const mealCount=(t.meals||[]).length;
           return <div key={t.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:C.surface,borderRadius:8,marginBottom:4,border:`1px solid ${C.border}`}}>
             <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{t.name||"Template"} <span style={{fontSize:11,fontWeight:600,padding:"2px 6px",borderRadius:8,background:t.day_type==="train"?C.primaryBg:"#DBEAFE",color:t.day_type==="train"?C.primary:C.t2}}>{t.day_type==="train"?"Tập":"Nghỉ"}</span></div>
+              <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{t.name||"Template"} <span style={{fontSize:11,fontWeight:600,padding:"2px 6px",borderRadius:8,background:t.day_type==="train"?C.primaryBg:"#DBEAFE",color:t.day_type==="train"?"#003D99":"#1E40AF"}}>{t.day_type==="train"?"Tập":"Nghỉ"}</span></div>
               <div style={{fontSize:11,color:C.t3,marginTop:2}}>{mealCount} bữa • {t.total_cal||0} kcal</div>
             </div>
             <button onClick={async()=>{
@@ -1741,7 +1766,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               if(isOn)cfg[dayType]=arr.filter(id=>id!==m.id);
               else{const allIds=ALL_MEALS.map(x=>x.id);arr.push(m.id);arr.sort((a,b)=>allIds.indexOf(a)-allIds.indexOf(b));cfg[dayType]=arr;}
               setMealConfig(cfg);if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));
-            }} style={{width:36,height:20,background:isOn?"#34C759":"#E2E8F0",borderRadius:10,position:"relative",cursor:isTrainOnly?"not-allowed":"pointer",transition:"background 0.2s"}}>
+            }} style={{width:36,height:20,background:isOn?"#3B6D11":"#E2E8F0",borderRadius:10,position:"relative",cursor:isTrainOnly?"not-allowed":"pointer",transition:"background 0.2s"}}>
               <div style={{width:16,height:16,background:"#fff",borderRadius:"50%",position:"absolute",top:2,left:isOn?18:2,transition:"left 0.2s",boxShadow:"0 1px 2px rgba(0,0,0,0.15)"}}/>
             </div>
           </div>;
@@ -1751,9 +1776,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* All meals — each as labeled card */}
       {mealNames.map(meal=>{
         const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
-        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${C.primary}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
+        const mealColors={"sang":"#007AFF","phu_sang":"#007AFF","trua":"#007AFF","phu_chieu":"#007AFF","pre":"#007AFF","post":"#007AFF","toi":"#007AFF"};
+        const mealTextColors={"sang":"#007AFF","phu_sang":"#007AFF","trua":"#007AFF","phu_chieu":"#007AFF","pre":"#007AFF","post":"#007AFF","toi":"#007AFF"};
+        return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
           <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
-            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:C.t1}}>{meal.l}</span>
+            <span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
             <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
@@ -1786,7 +1813,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         if(combined.length===0){setAiError("Chưa nhập thức ăn nào");return;}
         setFoodItems(combined);
         setTimeout(()=>callAI(),100);
-      }} disabled={aiLoading} style={{...primaryBtn,marginTop:8,opacity:aiLoading?0.7:1}}>
+      }} disabled={aiLoading} style={{...redBtn,marginTop:8,opacity:aiLoading?0.7:1}}>
         {aiLoading?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           <span style={{width:16,height:16,border:"2.5px solid #fcc",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.6s linear infinite"}}/>
           <span>Đang tính...</span>
@@ -1822,7 +1849,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                 <span>{meal.l}</span><span style={{color:C.t1}}>{Math.round(mCal)} cal</span>
               </div>
               {mealItems.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:mob?"1.4fr 0.5fr 0.5fr 0.5fr 0.5fr 0.5fr 0.6fr":"2fr 0.6fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:12,fontWeight:600,padding:"4px 0",borderBottom:i<mealItems.length-1?`1px solid ${C.border}`:"none"}}>
-                <span style={{color:C.t1,fontWeight:700}}>{item.name} {item.source&&<span style={{fontSize:9,padding:"1px 4px",borderRadius:3,fontWeight:700,background:item.source==="localDB"?"#DCFCE7":item.source==="USDA"?"#EFF6FF":item.source==="cache"?"#F3F4F6":"#FEF3C7",color:item.source==="localDB"?"#007AFF":item.source==="USDA"?"#007AFF":item.source==="cache"?"#666":"#92400E"}}>{item.source==="localDB"?"DB":item.source==="USDA"?"USDA":item.source==="cache"?"Cache":item.source}</span>}</span>
+                <span style={{color:C.t1,fontWeight:700}}>{item.name} {item.source&&<span style={{fontSize:9,padding:"1px 4px",borderRadius:3,fontWeight:700,background:item.source==="localDB"?"#DCFCE7":item.source==="USDA"?"#EFF6FF":item.source==="cache"?"#F3F4F6":"#FEF3C7",color:item.source==="localDB"?"#007AFF":item.source==="USDA"?"#1E40AF":item.source==="cache"?"#666":"#92400E"}}>{item.source==="localDB"?"DB":item.source==="USDA"?"USDA":item.source==="cache"?"Cache":item.source}</span>}</span>
                 <span style={{textAlign:"right",color:C.t3}}>{item.gram}</span>
                 <span style={{textAlign:"right",color:C.protein}}>{item.protein}</span>
                 <span style={{textAlign:"right",color:C.carb}}>{item.carb}</span>
@@ -1856,7 +1883,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             const el=document.getElementById("meal-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
             setTimeout(()=>{setShowSaveTpl(true);},500);
-        }} style={{...primaryBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu tất cả bữa</button>
+        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu tất cả bữa</button>
         <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu thành công!</span>
         </div>
@@ -1991,7 +2018,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               <div style={{padding:mob?"12px":"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedTpl(isExpanded?null:t.id)}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:12,fontWeight:700,padding:"2px 8px",borderRadius:12,background:t.day_type==="train"?C.primaryBg:"#DBEAFE",color:t.day_type==="train"?C.primary:C.t2}}>{t.day_type==="train"?"💪 Tập":"😴 Nghỉ"}</span>
+                    <span style={{fontSize:12,fontWeight:700,padding:"2px 8px",borderRadius:12,background:t.day_type==="train"?C.primaryBg:"#DBEAFE",color:t.day_type==="train"?"#003D99":"#1E40AF"}}>{t.day_type==="train"?"💪 Tập":"😴 Nghỉ"}</span>
                     <span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>{t.name||"Template"}</span>
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -2027,8 +2054,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     const el=document.getElementById("tpl-applied");
                     if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
                   }
-                }} style={{...primaryBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)"}}>📥 Hôm nay</button>
-                <button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...primaryBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Gán lịch tuần</button>
+                }} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)"}}>📥 Hôm nay</button>
+                <button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Gán lịch tuần</button>
                 </div>
                 {showAssignDays===t.id&&(()=>{
                   const dayKeys2=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
@@ -2068,7 +2095,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                       setAssignSelectedDays([]);
                       const el=document.getElementById("tpl-applied");
                       if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-                    }} disabled={(assignSelectedDays||[]).length===0} style={{...primaryBtn,marginTop:0,background:(assignSelectedDays||[]).length>0?"linear-gradient(135deg,#6366F1,#4F46E5)":"#E2E8F0",opacity:(assignSelectedDays||[]).length>0?1:0.6}}>📅 Gán cho {(assignSelectedDays||[]).length} ngày</button>
+                    }} disabled={(assignSelectedDays||[]).length===0} style={{...redBtn,marginTop:0,background:(assignSelectedDays||[]).length>0?"linear-gradient(135deg,#6366F1,#4F46E5)":"#E2E8F0",opacity:(assignSelectedDays||[]).length>0?1:0.6}}>📅 Gán cho {(assignSelectedDays||[]).length} ngày</button>
                   </div>;
                 })()}
               </div>}
@@ -2206,7 +2233,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:16}}>
           {[
-            {id:"bulk",icon:"💪",name:"Tăng cơ",c:"#34C759",bg:"#DCFCE7",bc:"#00C896"},
+            {id:"bulk",icon:"💪",name:"Tăng cơ",c:"#16A34A",bg:"#DCFCE7",bc:"#00C896"},
             {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#EF4444",bg:"#FEE2E2",bc:"#F87171"},
             {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#007AFF",bg:"#EFF6FF",bc:"#60A5FA"},
           ].map(g=>{
@@ -2223,7 +2250,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             </div>;
           })}
         </div>
-        {(profile.exerciseType||"gym")==="none"&&profile.goalType==="bulk"&&<div style={{marginBottom:12,padding:"10px 14px",borderRadius:8,background:"#FEE2E2",border:"1px solid #FCA5A5",fontSize:12,color:"#991B1B",display:"flex",alignItems:"center",gap:6}}>⚠️ Không thể tăng cơ khi không tập luyện.</div>}
+        {(profile.exerciseType||"gym")==="none"&&profile.goalType==="bulk"&&<div style={{marginBottom:12,padding:"10px 14px",borderRadius:8,background:"#FEE2E2",border:"1px solid #FCA5A5",fontSize:12,color:"#003D99",display:"flex",alignItems:"center",gap:6}}>⚠️ Không thể tăng cơ khi không tập luyện.</div>}
 
         {/* Goal weight + duration */}
         {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10}}>
@@ -2286,18 +2313,17 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* Auto-calc results */}
       <div style={{marginTop:20}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 16px",background:"rgba(52,199,89,0.08)",border:"1px solid rgba(52,199,89,0.25)",borderRadius:10,marginBottom:12}}>
-          <div style={{width:22,height:22,borderRadius:"50%",background:"#34C759",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{color:"#fff",fontSize:13,fontWeight:700}}>✓</span></div>
-          <span style={{fontSize:13,fontWeight:700,color:"#166534"}}>Tự động lưu — Dữ liệu hồ sơ được cập nhật tự động</span>
+        <div style={{fontSize:11,fontWeight:600,color:C.green,marginBottom:12,display:"flex",alignItems:"center",gap:4}}>
+          <span>✓ Tự động lưu</span>
         </div>
-        <div style={{borderTop:`2px solid ${C.primary}`,paddingTop:16}}>
+        <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:12}}>⚡ Macro tự động tính</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8}}>
           {[
             {l:"TDEE",v:`${macro.tdee} cal`,desc:"Calo duy trì",c:C.t1},
             {l:"BMI",v:macro.bmi,desc:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",c:C.gold},
             {l:"Calo mục tiêu",v:`${macro.calTarget} cal`,desc:profile.goalType==="bulk"?"Tăng cơ +250":profile.goalType==="cut"?"Giảm mỡ -350":"Duy trì",c:C.red},
-            {l:"Calo ngày nghỉ",v:`${macro.calRest} cal`,desc:"Giảm carb, giữ P/F",c:C.primary},
+            {l:"Calo ngày nghỉ",v:`${macro.calRest} cal`,desc:"Giảm carb, giữ P/F",c:C.blue},
           ].map((r,i)=><div key={i} style={{background:C.surface,borderRadius:10,padding:"10px 14px",border:`1.5px solid ${C.border}`}}>
             <div style={{fontSize:11,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.05em"}}>{r.l}</div>
             <div style={{fontSize:20,fontWeight:900,color:r.c,marginTop:2}}>{r.v}</div>
@@ -2355,7 +2381,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           if(saveSetting) saveSetting("gymDays",JSON.stringify(days));
           const el=document.getElementById("schedule-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-        }} style={{...primaryBtn,marginTop:20}}>💾 Lưu lịch tập</button>
+        }} style={{...redBtn,marginTop:20}}>💾 Lưu lịch tập</button>
         <div id="schedule-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
           <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu! Tập {days.length} buổi/tuần — {days.map(d=>["T2","T3","T4","T5","T6","T7","CN"][d]).join(", ")}</span>
         </div>
@@ -2387,7 +2413,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           document.getElementById("weightInput").value="";
           const el=document.getElementById("weight-saved");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...primaryBtn,marginTop:16}}>⚡ Lưu cân nặng</button>
+        }} style={{...redBtn,marginTop:16}}>⚡ Lưu cân nặng</button>
         <div id="weight-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
           <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu & cập nhật macro theo cân nặng mới!</span>
         </div>
@@ -2462,13 +2488,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
         </div>
       </div>
-      <button onClick={()=>{if(signOut)signOut();}} style={{...primaryBtn,background:"linear-gradient(135deg,#EF4444,#DC2626)",color:"#fff",border:"none"}}>🚪 Đăng xuất</button>
+      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"linear-gradient(135deg,#EF4444,#DC2626)",color:"#fff",border:"none"}}>🚪 Đăng xuất</button>
       <button onClick={()=>{
         caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
           if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
           window.location.reload(true);
         });
-      }} style={{...primaryBtn,marginTop:8,background:"linear-gradient(135deg,#6B7280,#4B5563)"}}>🗑️ Xóa cache & cập nhật</button>
+      }} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#6B7280,#4B5563)"}}>🗑️ Xóa cache & cập nhật</button>
     </div>}
 
     <style>{`@keyframes spin{to{transform:rotate(360deg);}} input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;} input[type=number]{-moz-appearance:textfield;}`}</style>
@@ -2505,214 +2531,652 @@ function LoginScreen({onLogin}){
     }catch(e){setErr(e.message||"Lỗi xác thực");}
   };
 
-  // === PC Dashboard data ===
-  const pcMealConfig=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
-  const pcVisibleIds=pcMealConfig[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];
-  const pcAllMeals=getMeals(pcDayType);
-  const pcMeals=pcAllMeals.filter(m=>pcVisibleIds.includes(m.id));
-  const pcTotals=pcMeals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
-  const pcHeroP=macro.protein,pcHeroF=macro.fat,pcHeroFiber=macro.fiber;
-  const pcHeroC=pcDayType==="train"?macro.carb:macro.carbRest;
-  const pcHeroCal=pcDayType==="train"?macro.calTarget:macro.calRest;
-  const pcGoalKg=profile.goalKg,pcStartKg=weightLog.length>0?weightLog[0].kg:profile.kg,pcCurKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg;
-  const pcWPct=pcGoalKg!==pcStartKg?((pcCurKg-pcStartKg)/(pcGoalKg-pcStartKg))*100:0;
-  const pcActCal=Math.round(pcTotals.cal),pcActP=Math.round(pcTotals.p),pcActC=Math.round(pcTotals.c),pcActF=Math.round(pcTotals.f),pcActFiber=Math.round(pcTotals.fiber);
-  const pcCalDiff=pcActCal-pcHeroCal,pcCalRemain=pcHeroCal-pcActCal;
-  const pcDisplayName=user?.user_metadata?.username||user?.email?.split("@")[0]||"bạn";
-  const pcExType=profile.exerciseType||"gym";
-  const pcExLabel=pcExType==="gym"?"Gym":pcExType==="gym_cardio"?"Gym+Cardio":pcExType==="cardio"?"Cardio":"Nghỉ ngơi";
-  // Meal score
-  const pcCalScore=pcActCal===0?0:pcActCal>=pcHeroCal*0.95&&pcActCal<=pcHeroCal*1.1?100:pcActCal>=pcHeroCal*0.85&&pcActCal<=pcHeroCal*1.15?85:70;
-  const pcPScore=pcActP===0?0:pcActP>=pcHeroP*0.9?100:pcActP>=pcHeroP*0.8?85:70;
-  const pcCScore=pcActC===0?0:pcActC>=pcHeroC*0.85&&pcActC<=pcHeroC*1.15?100:85;
-  const pcFScore=pcActF===0?0:pcActF>=pcHeroF*0.85&&pcActF<=pcHeroF*1.15?100:85;
-  const pcMealScore=pcActCal===0?0:Math.round((pcCalScore+pcPScore+pcCScore+pcFScore)/4);
-  const pcMealScoreLabel=pcMealScore>=90?"Rất phù hợp với mục tiêu":pcMealScore>=75?"Khá tốt, cần bổ sung thêm":"Cần điều chỉnh thêm";
-  // Nav icons (reuse from bottom nav)
-  const pcNavIcon=(id,active)=>{const c=active?"#007AFF":"#94A3B8";const s=18;const v="0 0 96 96";const icons={
-    dashboard:<svg viewBox={v} width={s} height={s}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>,
-    profile:<svg viewBox={v} width={s} height={s}><circle cx="48" cy="30" r="24" fill={c}/><path d="M4 96 C4 60 92 60 92 96 Z" fill={c}/></svg>,
-    meals:<svg viewBox={v} width={s} height={s}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>,
-    report:<svg viewBox={v} width={s} height={s}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>,
-    settings:<svg viewBox={v} width={s} height={s}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>,
-  };return icons[id]||null;};
-  // Sidebar nav items
-  const pcSidebarMenu=[{id:"dashboard",l:"Tổng quan",icon:"dashboard"},{id:"profile",l:"Hồ sơ",icon:"profile"},{id:"meals",l:"Bữa ăn",icon:"meals"},{id:"report",l:"Báo cáo",icon:"report"}];
-  const pcSidebarSettings=[{id:"settings",l:"Kết nối AI",emoji:"🤖"},{id:"settings",l:"Lịch tập",emoji:"📅"},{id:"settings",l:"Cân nặng",emoji:"⚖️"},{id:"settings",l:"Giới thiệu",emoji:"ℹ️"},{id:"settings",l:"Tài khoản",emoji:"👤"}];
-  const pcSidebarAdmin=isAdmin?[{id:"settings",l:"Quản trị",emoji:"🔧"},{id:"settings",l:"Kho mẫu",emoji:"📚"}]:[];
-  const pcDate=new Date();
-  const pcDays=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
-  const pcDateStr=`${pcDays[pcDate.getDay()]}, ${String(pcDate.getDate()).padStart(2,"0")}/${String(pcDate.getMonth()+1).padStart(2,"0")}/${pcDate.getFullYear()}`;
+  return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+    <div style={{width:"100%",maxWidth:400}}>
+      <div style={{textAlign:"center",marginBottom:32}}>
+        <img src="/logo.png" alt="Fipilot AI" style={{width:80,height:80,borderRadius:17,objectFit:"cover"}}/>
+        <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:12,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
+        <div style={{fontSize:13,fontWeight:700,color:C.secondary,marginTop:2}}>AI Nutrition Coach</div>
+      </div>
+      <div style={{...card,padding:"24px 28px"}}>
+        <div style={{display:"flex",marginBottom:20,borderBottom:`2px solid ${C.border}`}}>
+          {["login","register"].map(m=><button key={m} onClick={()=>{setMode(m);setErr("");setSuccess("");}} style={{
+            flex:1,padding:"10px",fontSize:14,fontWeight:mode===m?900:600,border:"none",background:"transparent",cursor:"pointer",
+            color:mode===m?C.t1:C.t3,borderBottom:mode===m?"3px solid #007AFF":"3px solid transparent",fontFamily:"inherit",
+          }}>{m==="login"?"Đăng nhập":"Đăng ký"}</button>)}
+        </div>
+        {mode==="register"&&<div style={{marginBottom:12}}>
+          <div style={{...lbl,marginBottom:6}}>Tên hiển thị</div>
+          <input value={user} onChange={e=>setUser(e.target.value)} placeholder="VD: gymboy63" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+        </div>}
+        <div style={{marginBottom:12}}>
+          <div style={{...lbl,marginBottom:6}}>Email</div>
+          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@example.com" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+        </div>
+        <div style={{marginBottom:16}}>
+          <div style={{...lbl,marginBottom:6}}>Mật khẩu</div>
+          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+        </div>
+        {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {err}</div>}
+        {success&&<div style={{marginBottom:12,padding:"10px 14px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,fontSize:13,fontWeight:700,color:"#14532D"}}>{success}</div>}
+        <button onClick={handleSubmit} disabled={!!success} style={{...redBtn,opacity:success?0.6:1}}>{mode==="login"?"Đăng nhập":"Đăng ký & Kích hoạt"}</button>
+        {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
+        {mode==="register"&&<div style={{textAlign:"center",marginTop:12,fontSize:11,fontWeight:600,color:C.t3}}>Tài khoản sẽ được kích hoạt tự động ngay sau khi đăng ký</div>}
+      </div>
+    </div>
+  </div>;
+}
 
+function OnboardingWizard({profile,setProfile,onComplete}){
+  const mob=useIsMobile();
+  const [step,setStep]=useState(1);
+  const p=profile||defaultProfile;
+  const macro=calcMacro(p);
+  const totalSteps=4;
+
+  const stepDots=<div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:20}}>
+    {[1,2,3,4].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#36A3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
+  </div>;
+
+  const nextBtn=(label,disabled,color)=><button onClick={()=>setStep(step+1)} disabled={disabled} style={{...redBtn,marginTop:16,opacity:disabled?0.5:1,background:color||"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>{label} →</button>;
+  const backBtn=<button onClick={()=>setStep(step-1)} style={{...redBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>;
+
+  const fieldBox=(children)=><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>{children}</div>;
+
+  return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:mob?16:20}}>
+    <div style={{width:"100%",maxWidth:480}}>
+      <div style={{textAlign:"center",marginBottom:24}}>
+        <img src="/logo.png" alt="Fipilot AI" style={{width:72,height:72,borderRadius:15,objectFit:"cover"}}/>
+        <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
+        <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
+      </div>
+
+      <div style={{...card,padding:mob?"20px 16px":"24px 28px"}}>
+        {stepDots}
+
+        {/* STEP 1: Thông tin cơ bản */}
+        {step===1&&<div>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:20}}>📋</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Thông tin cơ bản</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 1/{totalSteps}</div>
+          </div>
+
+          {/* Gender */}
+          <div style={{...lbl,marginBottom:8}}>Giới tính</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+            {[{id:"male",icon:"👨",name:"Nam"},{id:"female",icon:"👩",name:"Nữ"}].map(g=><div key={g.id} onClick={()=>setProfile({...p,gender:g.id})} style={{
+              padding:"12px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",gap:8,
+              background:(p.gender||"male")===g.id?"#EFF6FF":C.surface,
+              border:`1.5px solid ${(p.gender||"male")===g.id?"#60A5FA":C.border}`,
+            }}>
+              <span style={{fontSize:22}}>{g.icon}</span>
+              <span style={{fontSize:14,fontWeight:700,color:C.t1}}>{g.name}</span>
+              <div style={{marginLeft:"auto",width:20,height:20,borderRadius:"50%",border:`2px solid ${(p.gender||"male")===g.id?"#007AFF":"#E2E8F0"}`,background:(p.gender||"male")===g.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff"}}>{(p.gender||"male")===g.id?"✓":""}</div>
+            </div>)}
+          </div>
+
+          {/* 4 inputs */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {[
+              {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
+              {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
+              {key:"age",label:"Tuổi",icon:"🎂",unit:"tuổi",mode:"numeric"},
+              {key:"gym",label:"Số buổi tập/tuần",icon:"🏋️",unit:"buổi",mode:"numeric"},
+            ].map(f=><div key={f.key}>
+              <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+              <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+                <input type="text" inputMode={f.mode} value={f.key==="kg"?p.kg:p[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...p,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
+                <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
+              </div>
+            </div>)}
+          </div>
+
+          {nextBtn("Tiếp theo",!p.cm||!p.kg||!p.age)}
+        </div>}
+
+        {/* STEP 2: Vận động */}
+        {step===2&&<div>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:20}}>🏃</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Vận động</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 2/{totalSteps}</div>
+          </div>
+
+          {/* Activity level */}
+          <div style={{...lbl,marginBottom:8}}>💼 Mức vận động công việc</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:18}}>
+            {[
+              {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng"},
+              {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều"},
+              {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay"},
+            ].map(a=><div key={a.id} onClick={()=>setProfile({...p,activity:a.id})} style={{
+              padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
+              background:p.activity===a.id?"#EFF6FF":C.surface,
+              border:p.activity===a.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+            }}>
+              <div style={{fontSize:mob?20:24}}>{a.icon}</div>
+              <div style={{fontSize:mob?11:13,fontWeight:800,color:C.t1,marginTop:4}}>{a.name}</div>
+              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{a.desc}</div>
+            </div>)}
+          </div>
+
+          {/* Exercise type */}
+          <div style={{...lbl,marginBottom:8}}>🏅 Hình thức tập luyện</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?6:8,marginBottom:((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")?18:0}}>
+            {[
+              {id:"gym",icon:"ex_gym",name:"Gym",desc:"Tập tạ thuần"},
+              {id:"gym_cardio",icon:"ex_gym_cardio",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
+              {id:"cardio",icon:"ex_cardio",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
+              {id:"none",icon:"ex_none",name:"Không tập",desc:"Không vận động"},
+            ].map(e=><div key={e.id} onClick={()=>{
+              const updated={...p,exerciseType:e.id};
+              if(e.id==="none"&&p.goalType==="bulk")updated.goalType="maintain";
+              if(e.id==="gym")updated.cardioIntensity=undefined;
+              setProfile(updated);
+            }} style={{
+              padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
+              background:(p.exerciseType||"gym")===e.id?C.primaryBg:C.surface,
+              border:(p.exerciseType||"gym")===e.id?`2px solid #F87171`:`1.5px solid ${C.border}`,
+            }}>
+              <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?34:38,height:"auto",maxHeight:mob?34:38}}/>
+              <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
+              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
+            </div>)}
+          </div>
+
+          {/* Cardio intensity */}
+          {((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")&&<>
+            <div style={{...lbl,marginBottom:8}}>⚡ Cường độ Cardio</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8}}>
+              {[
+                {id:"light",icon:"🚶",name:"Nhẹ",desc:"Đi bộ 30-40p"},
+                {id:"moderate",icon:"🏃",name:"Vừa",desc:"Chạy nhẹ 30-45p"},
+                {id:"intense",icon:"⚡",name:"Nặng",desc:"HIIT, bơi 45-60p"},
+              ].map(ci=><div key={ci.id} onClick={()=>setProfile({...p,cardioIntensity:ci.id})} style={{
+                padding:mob?"8px 6px":"12px",borderRadius:10,cursor:"pointer",textAlign:"center",
+                background:(p.cardioIntensity||"moderate")===ci.id?"#EFF6FF":C.surface,
+                border:(p.cardioIntensity||"moderate")===ci.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+              }}>
+                <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
+                <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
+                <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{ci.desc}</div>
+              </div>)}
+            </div>
+          </>}
+
+          {nextBtn("Tiếp theo")}
+          {backBtn}
+        </div>}
+
+        {/* STEP 3: Mục tiêu */}
+        {step===3&&<div>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:20}}>🎯</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Mục tiêu</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 3/{totalSteps}</div>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:16}}>
+            {[
+              {id:"bulk",icon:"💪",name:"Tăng cơ",c:"#16A34A",bg:"#DCFCE7",bc:"#00C896"},
+              {id:"cut",icon:"🔥",name:"Giảm mỡ",c:"#EF4444",bg:"#FEE2E2",bc:"#F87171"},
+              {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#007AFF",bg:"#EFF6FF",bc:"#60A5FA"},
+            ].map(g=>{
+              const disabled=(p.exerciseType||"gym")==="none"&&g.id==="bulk";
+              return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...p,goalType:g.id});}} style={{
+                padding:mob?"10px 6px":"14px 10px",borderRadius:12,cursor:disabled?"not-allowed":"pointer",textAlign:"center",
+                background:p.goalType===g.id?g.bg:C.surface,
+                border:p.goalType===g.id?`2px solid ${g.bc}`:`1.5px solid ${C.border}`,
+                opacity:disabled?0.3:1,
+              }}>
+                <div style={{fontSize:mob?20:22}}>{g.icon}</div>
+                <div style={{fontSize:mob?12:13,fontWeight:800,color:C.t1,marginTop:4}}>{g.name}</div>
+              </div>;
+            })}
+          </div>
+
+          {/* Goal weight + duration */}
+          {p.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {[
+              {key:"goalKg",label:"Cân nặng mục tiêu",icon:"⚖️",unit:"kg",mode:"decimal"},
+              {key:"months",label:"Thời gian",icon:"📅",unit:"tháng",mode:"numeric"},
+            ].map(f=><div key={f.key}>
+              <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+              <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
+                <input type="text" inputMode={f.mode} value={p[f.key]||""} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;if(v===""){setProfile({...p,[f.key]:""});return;}setProfile({...p,[f.key]:Number(v)});}} onBlur={e=>{if(f.key==="months"&&(!p[f.key]||p[f.key]<1))setProfile({...p,months:1});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
+                <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
+              </div>
+            </div>)}
+          </div>}
+
+          {/* Safety check */}
+          {p.goalType!=="maintain"&&macro.perWeek>0&&<div style={{marginTop:12,padding:"8px 12px",background:macro.safe?C.greenBg:C.redBg,borderRadius:8,border:`1.5px solid ${macro.safe?C.green:C.red}`}}>
+            <span style={{fontSize:12,fontWeight:700,color:macro.safe?"#14532D":"#7F1D1D"}}>
+              {macro.safe
+                ?`✓ Tốc độ ${macro.perWeek} kg/tuần — an toàn!`
+                :`⚠ Tốc độ ${macro.perWeek} kg/tuần — quá nhanh! Nên kéo dài thời gian.`
+              }
+            </span>
+          </div>}
+
+          {nextBtn("Tiếp theo")}
+          {backBtn}
+        </div>}
+
+        {/* STEP 4: Hoàn tất — Preview macro */}
+        {step===4&&<div>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:20}}>✨</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Hoàn tất!</div>
+            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Macro đã tính xong</div>
+          </div>
+
+          {/* Macro hero preview */}
+          <div style={{background:"linear-gradient(135deg,#0A1628 0%,#162544 100%)",border:"2.5px solid #007AFF",borderRadius:14,padding:16,marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>CALO MỤC TIÊU NGÀY TẬP</div>
+            <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span></div>
+            <div style={{display:"flex",gap:14,marginTop:12}}>
+              <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#007AFF" color2="#007AFF" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#5AC8FA" color2="#5AC8FA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Fat" v={macro.fat} max={macro.fat} color="#8E8E93" color2="#8E8E93" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+              <MacroRing l="Xơ" v={macro.fiber} max={macro.fiber} color="#34C759" color2="#34C759" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+            </div>
+          </div>
+
+          {/* Breakdown */}
+          <div style={{background:C.surface,borderRadius:10,padding:"10px 14px",marginBottom:12,border:`1.5px solid ${C.border}`}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+              <span style={{color:C.t3}}>BMR</span><span style={{fontWeight:800,color:C.t1}}>{macro.bmr} cal</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+              <span style={{color:C.t3}}>TDEE (×{macro.actMul})</span><span style={{fontWeight:800,color:C.t1}}>{macro.tdee} cal</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+              <span style={{color:C.t3}}>Calo ngày nghỉ</span><span style={{fontWeight:800,color:C.blue}}>{macro.calRest} cal</span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0"}}>
+              <span style={{color:C.t3}}>{macro.goal==="bulk"?"Surplus":macro.goal==="cut"?"Deficit":"Điều chỉnh"}</span>
+              <span style={{fontWeight:800,color:macro.goal==="bulk"?C.green:macro.goal==="cut"?C.red:C.t1}}>
+                {macro.goal==="bulk"?"+250":macro.goal==="cut"?"-350":"0"} cal
+              </span>
+            </div>
+          </div>
+
+          <div style={{padding:"8px 12px",background:C.goldBg,borderRadius:8,border:"1.5px solid #CA8A04",marginBottom:4}}>
+            <span style={{fontSize:12,fontWeight:700,color:"#78350F"}}>💡 Bạn có thể thay đổi bất cứ lúc nào trong tab Hồ sơ</span>
+          </div>
+
+          <button onClick={()=>{
+            setProfile({...p,onboardingDone:true});
+            onComplete();
+          }} style={{...redBtn,marginTop:16,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu & Vào Dashboard</button>
+          {backBtn}
+        </div>}
+      </div>
+    </div>
+  </div>;
+}
+
+function AboutPage({appSettings,isAdmin,saveSetting,mob}){
+  const about=(()=>{try{return appSettings.about_page?JSON.parse(appSettings.about_page):{}}catch(e){return{};}})();
+  const [editing,setEditing]=useState(false);
+  const [form,setForm]=useState({
+    appName:about.appName||"Fipilot AI",
+    tagline:about.tagline||"Theo dõi dinh dưỡng thông minh cho người tập gym",
+    version:about.version||"2.6",
+    description:about.description||"Ứng dụng theo dõi bữa ăn và macro dinh dưỡng. Tính calo tự động từ kho 192 thực phẩm Việt Nam, hỗ trợ USDA API và AI (Claude, Gemini, GPT). Tính macro theo công thức Mifflin-St Jeor chuẩn ISSN.",
+    devName:about.devName||"Việt Anh Seoer",
+    devRole:about.devRole||"Founder & Developer",
+    devBio:about.devBio||"Đam mê fitness và công nghệ. Xây dựng Fipilot AI để giúp cộng đồng gym Việt Nam theo dõi dinh dưỡng dễ dàng hơn.",
+    devAvatar:about.devAvatar||"",
+    contact:about.contact||"",
+    facebook:about.facebook||"",
+    hotline:about.hotline||"",
+    zalo:about.zalo||"",
+    features:about.features||"192 món VN verified|3 AI tích hợp|USDA database|Công thức ISSN",
+  });
+
+  const saveAbout=async()=>{
+    await saveSetting("about_page",JSON.stringify(form));
+    setEditing(false);
+  };
+
+  const features=(form.features||"").split("|").filter(Boolean);
+
+  return <div>
+    {/* Hero — White card giống Dashboard */}
+    <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",border:`1.5px solid ${C.border}`}}>
+      <img src="/logo.png" alt="Fipilot AI" style={{width:96,height:96,borderRadius:20,objectFit:"cover"}}/>
+      <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
+      <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:4}}>v{form.version}</div>
+      <div style={{fontSize:14,fontWeight:600,color:C.t2,marginTop:6}}>{form.tagline}</div>
+      {features.length>0&&<div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginTop:14}}>
+        {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 12px",borderRadius:20,background:i%4===0?C.primaryBg:i%4===1?"#DCFCE7":i%4===2?"#EFF6FF":"#FEF3C7",color:i%4===0?"#007AFF":i%4===1?"#00C896":i%4===2?"#1E40AF":"#92400E",fontWeight:700}}>{f}</span>)}
+      </div>}
+    </div>
+
+    {/* Mô tả */}
+    <div style={{...card,marginTop:12}}>
+      <div style={{fontSize:15,fontWeight:900,color:C.blue,marginBottom:8}}>📖 Về ứng dụng</div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,lineHeight:1.7}}>{form.description}</div>
+    </div>
+
+    {/* Developer */}
+    <div style={{...card,marginTop:12}}>
+      <div style={{fontSize:15,fontWeight:900,color:C.blue,marginBottom:12}}>👨‍💻 Đội ngũ phát triển</div>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        {form.devAvatar?
+          <img src={form.devAvatar} alt={form.devName} style={{width:56,height:56,borderRadius:"50%",objectFit:"cover",border:`2px solid ${C.primary}`,flexShrink:0}}/>:
+          <div style={{width:56,height:56,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,border:"2px solid #fff",boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}}>{form.devName?form.devName.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase():"VA"}</div>
+        }
+        <div style={{flex:1}}>
+          <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{form.devName}</div>
+          <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>{form.devRole}</div>
+        </div>
+      </div>
+      <div style={{fontSize:13,fontWeight:600,color:C.t3,marginTop:10,lineHeight:1.6,padding:"10px 0",borderTop:`1px solid ${C.border}`}}>{form.devBio}</div>
+      {(form.contact||form.facebook||form.hotline||form.zalo)&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {form.contact&&<a href={`mailto:${form.contact}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#007AFF",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Email</a>}
+        {form.facebook&&<a href={form.facebook} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#1877F2",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Facebook</a>}
+        {form.hotline&&<a href={`tel:${form.hotline}`} style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#DCFCE7",color:"#007AFF",textDecoration:"none",border:"1px solid #BBF7D0",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="2" strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          {form.hotline}</a>}
+        {form.zalo&&<a href={`https://zalo.me/${form.zalo.replace(/\s/g,"")}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EBF5FF",color:"#0068FF",textDecoration:"none",border:"1px solid #B3D9FF",display:"flex",alignItems:"center",gap:4}}>
+          <svg width="16" height="16" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#0068FF"/><text x="24" y="26" textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize="18" fontWeight="900" fontFamily="Arial,sans-serif">Z</text></svg>
+          Zalo</a>}
+      </div>}
+    </div>
+
+    {/* Admin: Edit */}
+    {isAdmin&&<div style={{...card,marginTop:12,border:`2px solid ${C.red}`}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <div style={{fontSize:15,fontWeight:900,color:C.secondary}}>✏️ Chỉnh sửa trang giới thiệu</div>
+        <button onClick={()=>setEditing(!editing)} style={{padding:"5px 12px",fontSize:12,fontWeight:700,borderRadius:8,border:`1.5px solid ${C.red}`,background:editing?C.red:"transparent",color:editing?"#fff":C.red,cursor:"pointer",fontFamily:"inherit"}}>{editing?"✕ Đóng":"✏️ Sửa"}</button>
+      </div>
+      {editing&&<div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Tên ứng dụng</div>
+            <input value={form.appName} onChange={e=>setForm({...form,appName:e.target.value})} style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Version</div>
+            <input value={form.version} onChange={e=>setForm({...form,version:e.target.value})} style={inp}/>
+          </div>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Tagline</div>
+          <input value={form.tagline} onChange={e=>setForm({...form,tagline:e.target.value})} style={inp}/>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Mô tả</div>
+          <textarea value={form.description} onChange={e=>setForm({...form,description:e.target.value})} rows={3} style={{...inp,resize:"vertical"}}/>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Tính năng (ngăn cách bằng |)</div>
+          <input value={form.features} onChange={e=>setForm({...form,features:e.target.value})} placeholder="192 món VN|3 AI|USDA" style={inp}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Tên developer</div>
+            <input value={form.devName} onChange={e=>setForm({...form,devName:e.target.value})} style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Vai trò</div>
+            <input value={form.devRole} onChange={e=>setForm({...form,devRole:e.target.value})} style={inp}/>
+          </div>
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Avatar URL (link ảnh)</div>
+          <input value={form.devAvatar} onChange={e=>setForm({...form,devAvatar:e.target.value})} placeholder="https://example.com/avatar.jpg" style={inp}/>
+          {form.devAvatar&&<div style={{marginTop:6,display:"flex",alignItems:"center",gap:8}}>
+            <img src={form.devAvatar} alt="Preview" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",border:`1.5px solid ${C.border}`}}/>
+            <span style={{fontSize:11,color:C.t3}}>Preview</span>
+          </div>}
+        </div>
+        <div style={{marginBottom:8}}>
+          <div style={{...lbl,marginBottom:4}}>Bio</div>
+          <textarea value={form.devBio} onChange={e=>setForm({...form,devBio:e.target.value})} rows={2} style={{...inp,resize:"vertical"}}/>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Email</div>
+            <input value={form.contact} onChange={e=>setForm({...form,contact:e.target.value})} placeholder="email@example.com" style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Facebook URL</div>
+            <input value={form.facebook} onChange={e=>setForm({...form,facebook:e.target.value})} placeholder="https://fb.com/..." style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Hotline</div>
+            <input value={form.hotline} onChange={e=>setForm({...form,hotline:e.target.value})} placeholder="0909 123 456" style={inp}/>
+          </div>
+          <div>
+            <div style={{...lbl,marginBottom:4}}>Zalo (SĐT)</div>
+            <input value={form.zalo} onChange={e=>setForm({...form,zalo:e.target.value})} placeholder="0909123456" style={inp}/>
+          </div>
+        </div>
+        <button onClick={saveAbout} style={{...redBtn,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu thay đổi</button>
+      </div>}
+    </div>}
+  </div>;
+}
+
+// === Notification Bell — shared by PC header + Mobile greeting ===
+function NotiBell({appSettings,dark}){
+  const [show,setShow]=useState(false);
+  const ref=useRef(null);
+  useEffect(()=>{
+    if(!show)return;
+    const h=(e)=>{if(ref.current&&!ref.current.contains(e.target))setShow(false);};
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[show]);
+  const list=(()=>{try{return appSettings.notifications?JSON.parse(appSettings.notifications):[];}catch(e){return[];}})();
+  const hasNew=list.some(n=>n.isNew);
+  return <div style={{position:"relative"}} ref={ref}>
+    <div onClick={()=>setShow(!show)} style={{width:dark?36:40,height:dark?36:40,borderRadius:"50%",background:dark?"rgba(255,255,255,0.1)":C.card,border:dark?"1px solid rgba(255,255,255,0.2)":`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:dark?16:18,cursor:"pointer",boxShadow:dark?"none":"0 1px 4px rgba(0,0,0,0.06)"}}>🔔</div>
+    {hasNew&&<div style={{position:"absolute",top:0,right:0,width:10,height:10,borderRadius:"50%",background:"#EF4444",border:dark?"2px solid #111":"2px solid #fff"}}/>}
+    {show&&<div style={{position:"absolute",top:dark?44:48,right:0,width:320,background:C.card,border:`1.5px solid ${C.border}`,borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.15)",zIndex:50,overflow:"hidden"}}>
+      <div style={{padding:"10px 14px",borderBottom:`1.5px solid ${C.border}`,fontSize:13,fontWeight:700,color:C.t1}}>🔔 Thông báo</div>
+      {list.map(n=><div key={n.id} onClick={()=>{
+        caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
+          if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
+          window.location.reload(true);
+        });
+      }} style={{padding:"10px 14px",cursor:"pointer",borderBottom:`0.5px solid ${C.border}`,background:n.isNew?"rgba(220,38,38,0.04)":"transparent"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {n.isNew&&<div style={{width:6,height:6,borderRadius:"50%",background:"#EF4444",flexShrink:0}}/>}
+          <div style={{fontSize:12,fontWeight:n.isNew?700:600,color:C.t1,lineHeight:1.4}}>{n.text}</div>
+        </div>
+        <div style={{fontSize:10,color:C.t3,marginTop:3}}>{n.date} • Nhấn để cập nhật</div>
+      </div>)}
+      {list.length===0&&<div style={{padding:"16px",textAlign:"center",fontSize:12,color:C.t3}}>Không có thông báo mới</div>}
+    </div>}
+  </div>;
+}
+
+function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
+  const gender=p.gender||"male";
+  const exerciseType=p.exerciseType||"gym";
+  const cardioIntensity=p.cardioIntensity||"moderate";
+  // BMR: Mifflin-St Jeor (khác theo giới tính)
+  const bmr=10*p.kg+6.25*p.cm-5*p.age+(gender==="male"?5:-161);
+  // Activity multiplier
+  const jobBase=p.activity==="sedentary"?1.2:p.activity==="moderate"?1.5:1.75;
+  // Gym bonus
+  const hasGym=exerciseType==="gym"||exerciseType==="gym_cardio";
+  const gymBonus=hasGym?(p.gym<=2?0.1:p.gym<=4?0.2:0.3):0;
+  // Cardio bonus
+  const hasCardio=exerciseType==="cardio"||exerciseType==="gym_cardio";
+  const cardioTable={light:{2:0.03,4:0.05,6:0.08},moderate:{2:0.05,4:0.10,6:0.15},intense:{2:0.08,4:0.15,6:0.25}};
+  const ciKey=cardioIntensity||"moderate";
+  const gymCount=p.gym||3;
+  const cardioBonus=hasCardio?(gymCount<=2?cardioTable[ciKey][2]:gymCount<=4?cardioTable[ciKey][4]:cardioTable[ciKey][6]):0;
+  const actMul=Math.round((jobBase+gymBonus+cardioBonus)*100)/100;
+  const tdee=Math.round(bmr*actMul);
+  const diff=Math.round((p.goalKg-p.kg)*10)/10;
+  const goal=p.goalType||"bulk";
+  // Block: none + bulk
+  const effectiveGoal=(exerciseType==="none"&&goal==="bulk")?"maintain":goal;
+  // === TRƯỜNG PHÁI 1.5 ===
+  // P: giống nhau nam nữ (phụ thuộc mục tiêu, không phụ thuộc giới tính)
+  // F: khác nhau nam nữ (nữ cần fat cao hơn cho hormone)
+  // C: phần calo còn lại sau P và F
+  const pTable={bulk:2.0,cut:2.2,maintain:1.8};
+  const fTable={male:{bulk:1.1,cut:0.9,maintain:1.0},female:{bulk:1.2,cut:1.0,maintain:1.1}};
+  // Surplus/deficit cố định theo mục tiêu (ISSN lean bulk)
+  const calAdjustTable={bulk:250,cut:-350,maintain:0};
+  const pRatioVal=pTable[effectiveGoal]||1.8;
+  const fRatioVal=fTable[gender]?.[effectiveGoal]||0.9;
+  let protein=Math.round(p.kg*pRatioVal);
+  let fat=Math.round(p.kg*fRatioVal);
+  // Fat floor: không dưới 0.7g/kg
+  if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
+  // Surplus/deficit
+  const months=p.months||4;
+  const totalDiff=Math.abs(diff);
+  const perMonth=months>0?Math.round(totalDiff/months*10)/10:0;
+  const perWeek=months>0?Math.round(totalDiff/(months*4.33)*10)/10:0;
+  const calAdjust=calAdjustTable[effectiveGoal]||0;
+  const calTarget=tdee+calAdjust;
+  // C = phần calo còn lại
+  let carb=Math.round((calTarget-protein*4-fat*9)/4);
+  if(carb<0)carb=0;
+  // Carb floor: tối thiểu 2g/kg (cần cho tập luyện)
+  const carbFloor=Math.round(p.kg*2);
+  if(carb<carbFloor)carb=carbFloor;
+  const carbRest=Math.round(carb*0.75);
+  const calFinal=protein*4+carb*4+fat*9;
+  const calRest=protein*4+carbRest*4+fat*9;
+  const fiber=Math.round(calFinal/1000*14);
+  const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
+  const safe=effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true;
+  const pRatio=pRatioVal+"g/kg";
+  const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
+  const fRatio=fRatioVal+"g/kg";
+  return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
+}
+
+const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
+
+export default function App(){
+  const {user,loading,signOut}=useAuth();
+  const [tab,setTab]=useState("dashboard");
+  const [pcDayType,setPcDayType]=useState("train");
+  const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
+  const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
+  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
+  const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
+  const macro=calcMacro(profile||defaultProfile);
+  const mob=useIsMobile();
+
+  if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
+  if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
+
+  // Onboarding: chỉ hiện cho user mới chưa có data thật
+  const needsOnboarding=!profile.onboardingDone && !(weightLog && weightLog.length>0) && profile.cm===defaultProfile.cm && profile.kg===defaultProfile.kg && profile.age===defaultProfile.age;
+  if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
+
+  // === PC DATA COMPUTATION ===
+  const pcMC=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
+  const pcVis=pcMC[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];
+  const pcMeals=getMeals(pcDayType).filter(m=>pcVis.includes(m.id));
+  const pcTot=pcMeals.reduce((a,m)=>{const t=m.items.reduce((s,i)=>({p:s.p+(i.p||0),c:s.c+(i.c||0),f:s.f+(i.f||0),fiber:s.fiber+(i.fiber||0),cal:s.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:a.p+t.p,c:a.c+t.c,f:a.f+t.f,fiber:a.fiber+t.fiber,cal:a.cal+t.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
+  const pcHP=macro.protein,pcHF=macro.fat,pcHFib=macro.fiber,pcHC=pcDayType==="train"?macro.carb:macro.carbRest,pcHCal=pcDayType==="train"?macro.calTarget:macro.calRest;
+  const pcGK=profile.goalKg,pcSK=weightLog.length>0?weightLog[0].kg:profile.kg,pcCK=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg;
+  const pcWP=pcGK!==pcSK?((pcCK-pcSK)/(pcGK-pcSK))*100:0;
+  const pcAC=Math.round(pcTot.cal),pcAP=Math.round(pcTot.p),pcACb=Math.round(pcTot.c),pcAF=Math.round(pcTot.f),pcAFib=Math.round(pcTot.fiber);
+  const pcCR=pcHCal-pcAC,pcDN=user?.user_metadata?.username||user?.email?.split("@")[0]||"bạn";
+  const pcET=profile.exerciseType||"gym",pcEL=pcET==="gym"?"Gym":pcET==="gym_cardio"?"Gym+Cardio":pcET==="cardio"?"Cardio":"Nghỉ ngơi";
+  const pcCS=pcAC===0?0:pcAC>=pcHCal*0.95&&pcAC<=pcHCal*1.1?100:pcAC>=pcHCal*0.85?85:70;
+  const pcPS=pcAP===0?0:pcAP>=pcHP*0.9?100:pcAP>=pcHP*0.8?85:70;
+  const pcMS=pcAC===0?0:Math.round((pcCS+pcPS+85+85)/4);
+  const pcMSL=pcMS>=90?"Rất phù hợp với mục tiêu":pcMS>=75?"Khá tốt, cần bổ sung thêm":"Cần điều chỉnh thêm";
+  const pcNavI=(id,a)=>{const c=a?"#007AFF":"#94A3B8";return{dashboard:<svg viewBox="0 0 96 96" width={18} height={18}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>,profile:<svg viewBox="0 0 96 96" width={18} height={18}><circle cx="48" cy="30" r="24" fill={c}/><path d="M4 96 C4 60 92 60 92 96 Z" fill={c}/></svg>,meals:<svg viewBox="0 0 96 96" width={18} height={18}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>,report:<svg viewBox="0 0 96 96" width={18} height={18}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>,settings:<svg viewBox="0 0 96 96" width={18} height={18}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>}[id]||null;};
+  const pcDt=new Date(),pcDS=`${["CN","T2","T3","T4","T5","T6","T7"][pcDt.getDay()]}, ${String(pcDt.getDate()).padStart(2,"0")}/${String(pcDt.getMonth()+1).padStart(2,"0")}/${pcDt.getFullYear()}`;
+  const adminP={weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates};
+
+  // ========== MOBILE ==========
   if(mob) return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:"0 10px 10px 10px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:100}}>
-      {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
-      {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
-      {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
-      {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
-      {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
-      <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
-      <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
-        {[
-          {id:"dashboard",label:"Tổng quan",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>},
-          {id:"profile",label:"Hồ sơ",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><circle cx="48" cy="30" r="24" fill={c}/><path d="M4 96 C4 60 92 60 92 96 Z" fill={c}/></svg>},
-          {id:"meals",label:"Bữa ăn",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>},
-          {id:"report",label:"Báo cáo",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>},
-          {id:"settings",label:"Cài đặt",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>},
-        ].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>
-          {t.svg(a?"url(#navG)":"#A0A0A0")}
-          <span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span>
-        </div>;})}
-      </div>
+    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+    {tab==="profile"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="profile" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+    {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+    {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
+    {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+    <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
+      {[{id:"dashboard",label:"Tổng quan",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>},{id:"profile",label:"Hồ sơ",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><circle cx="48" cy="30" r="24" fill={c}/><path d="M4 96 C4 60 92 60 92 96 Z" fill={c}/></svg>},{id:"meals",label:"Bữa ăn",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>},{id:"report",label:"Báo cáo",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>},{id:"settings",label:"Cài đặt",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>}].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>{t.svg(a?"url(#navG)":"#A0A0A0")}<span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span></div>;})}
+    </div>
     </div>
   </div>;
 
   // ========== PC LAYOUT ==========
-  const adminProps={weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates};
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",display:"flex",minHeight:"100vh",background:C.bg,color:C.t1}}>
-    {/* === SIDEBAR === */}
+    {/* SIDEBAR */}
     <nav style={{width:220,background:"#fff",borderRight:`1px solid ${C.border}`,position:"fixed",top:0,left:0,bottom:0,zIndex:10,display:"flex",flexDirection:"column",padding:"20px 0",overflowY:"auto"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 20px",marginBottom:24}}>
-        <AppLogo size={40} radius={12}/><div><div style={{fontWeight:800,fontSize:15,color:C.t1}}>FitPilotAI</div><div style={{fontSize:10,color:C.primary,fontWeight:600,letterSpacing:"0.3px",marginTop:1}}>AI Nutrition Coach</div></div>
-      </div>
-      <div style={{fontSize:10,fontWeight:700,color:"#94A3B8",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px",textTransform:"uppercase"}}>Menu</div>
-      {pcSidebarMenu.map(s=><div key={s.id+s.l} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:tab===s.id?700:500,color:tab===s.id?C.primary:C.t2,background:tab===s.id?"rgba(0,122,255,0.06)":"transparent",borderLeft:tab===s.id?`3px solid ${C.primary}`:"3px solid transparent",transition:"all 0.15s"}}>{pcNavIcon(s.icon,tab===s.id)} {s.l}</div>)}
-      <div style={{fontSize:10,fontWeight:700,color:"#94A3B8",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px",textTransform:"uppercase"}}>Cài đặt</div>
-      {pcSidebarSettings.map((s,i)=><div key={i} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:500,color:C.t2,borderLeft:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.emoji}</span> {s.l}</div>)}
-      {pcSidebarAdmin.length>0&&<>
-        <div style={{fontSize:10,fontWeight:700,color:"#EF4444",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px",textTransform:"uppercase"}}>Quản trị</div>
-        {pcSidebarAdmin.map((s,i)=><div key={i} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:500,color:C.t2,borderLeft:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.emoji}</span> {s.l}</div>)}
-      </>}
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 20px",marginBottom:24}}><AppLogo size={40} radius={12}/><div><div style={{fontWeight:800,fontSize:15,color:C.t1}}>FitPilotAI</div><div style={{fontSize:10,color:C.primary,fontWeight:600,letterSpacing:"0.3px",marginTop:1}}>AI Nutrition Coach</div></div></div>
+      <div style={{fontSize:10,fontWeight:700,color:"#94A3B8",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>MENU</div>
+      {[{id:"dashboard",l:"Tổng quan",ic:"dashboard"},{id:"profile",l:"Hồ sơ",ic:"profile"},{id:"meals",l:"Bữa ăn",ic:"meals"},{id:"report",l:"Báo cáo",ic:"report"}].map(s=><div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:tab===s.id?700:500,color:tab===s.id?C.primary:C.t2,background:tab===s.id?"rgba(0,122,255,0.06)":"transparent",borderLeft:tab===s.id?`3px solid ${C.primary}`:"3px solid transparent"}}>{pcNavI(s.ic,tab===s.id)} {s.l}</div>)}
+      <div style={{fontSize:10,fontWeight:700,color:"#94A3B8",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>CÀI ĐẶT</div>
+      {[{l:"Kết nối AI",e:"🤖"},{l:"Lịch tập",e:"📅"},{l:"Cân nặng",e:"⚖️"},{l:"Giới thiệu",e:"ℹ️"},{l:"Tài khoản",e:"👤"}].map((s,i)=><div key={i} onClick={()=>setTab("settings")} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:500,color:C.t2,borderLeft:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.e}</span> {s.l}</div>)}
+      {isAdmin&&<><div style={{fontSize:10,fontWeight:700,color:"#EF4444",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>QUẢN TRỊ</div>{[{l:"Quản trị",e:"🔧"},{l:"Kho mẫu",e:"📚"}].map((s,i)=><div key={i} onClick={()=>setTab("settings")} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 20px",cursor:"pointer",fontSize:13,fontWeight:500,color:C.t2,borderLeft:"3px solid transparent"}}><span style={{width:18,textAlign:"center",fontSize:14}}>{s.e}</span> {s.l}</div>)}</>}
       <div style={{marginTop:"auto",padding:"0 20px",borderTop:`1px solid ${C.border}`,paddingTop:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}><UserAvatar gender={profile?.gender} size={36}/><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div><div style={{fontSize:10,color:C.t2}}>{pcExLabel} · {profile.gym} buổi/tuần</div></div></div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}><UserAvatar gender={profile?.gender} size={36}/><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div><div style={{fontSize:10,color:C.t2}}>{pcEL} · {profile.gym} buổi/tuần</div></div></div>
         <div onClick={signOut} style={{fontSize:12,color:"#EF4444",fontWeight:600,marginTop:10,cursor:"pointer"}}>↩ Đăng xuất</div>
       </div>
     </nav>
-    {/* === MAIN === */}
+    {/* MAIN AREA */}
     <div style={{marginLeft:220,flex:1,display:"flex",flexDirection:"column"}}>
-      {/* TOPBAR */}
       <header style={{height:68,display:"flex",alignItems:"center",padding:"0 28px",background:"#fff",borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:5}}>
-        <div style={{flex:1}}><div style={{fontSize:20,fontWeight:800,color:C.t1}}>Xin chào, {pcDisplayName} 👋</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{pcDateStr}</div></div>
+        <div style={{flex:1}}><div style={{fontSize:20,fontWeight:800,color:C.t1}}>Xin chào, {pcDN} 👋</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{pcDS}</div></div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}>
-            <div onClick={()=>setPcDayType("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div>
-            <div onClick={()=>setPcDayType("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div>
-          </div>
+          <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayType("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayType("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>
           <NotiBell appSettings={appSettings}/>
           <button style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ AI Coach</button>
         </div>
       </header>
-      {/* CONTENT */}
       <main style={{padding:24,flex:1}}>
         {tab==="dashboard"&&<div>
-          {/* HERO — Light */}
+          {/* HERO */}
           <div style={{...card,padding:"28px 32px",borderRadius:20,display:"flex",alignItems:"center",marginBottom:24,border:`1.5px solid ${C.border}`}}>
-            <div style={{flex:"0 0 45%"}}>
-              <div style={{fontSize:11,fontWeight:700,color:"#94A3B8",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
-              <div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcActCal>0?pcActCal.toLocaleString():pcHeroCal.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#94A3B8",letterSpacing:0}}>/ {pcHeroCal.toLocaleString()} kcal</span></div>
-              {pcActCal>0&&<div style={{marginTop:10,fontSize:13,fontWeight:700,color:pcActCal>=pcHeroCal*0.95&&pcActCal<=pcHeroCal*1.1?"#34C759":"#F59E0B"}}>{pcActCal>=pcHeroCal*0.95&&pcActCal<=pcHeroCal*1.1?`✅ Đã đạt mục tiêu! ${pcCalDiff} kcal`:`⚠️ Còn thiếu ${pcCalRemain} kcal`}</div>}
-              <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}>
-                <div style={{flex:1,height:6,background:C.border,borderRadius:3}}><div style={{height:6,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:3,width:`${Math.min(pcActCal>0?(pcActCal/pcHeroCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div>
-                <span style={{fontSize:13,fontWeight:700,color:C.primary}}>{pcActCal>0?Math.round(pcActCal/pcHeroCal*100):0}%</span>
-              </div>
-            </div>
-            <div style={{flex:"0 0 55%",display:"flex",justifyContent:"center",gap:24}}>
-              <MacroRing l="Protein" v={pcActP>0?pcActP:pcHeroP} max={pcHeroP} color="#007AFF" color2="#007AFF" sub={pcActP>0?`/${pcHeroP}g`:null} unit="g"/>
-              <MacroRing l="Carb" v={pcActC>0?pcActC:pcHeroC} max={pcHeroC} color="#5AC8FA" color2="#5AC8FA" sub={pcActC>0?`/${pcHeroC}g`:null} unit="g"/>
-              <MacroRing l="Fat" v={pcActF>0?pcActF:pcHeroF} max={pcHeroF} color="#8E8E93" color2="#8E8E93" sub={pcActF>0?`/${pcHeroF}g`:null} unit="g"/>
-              <MacroRing l="Xơ" v={pcActFiber>0?pcActFiber:pcHeroFiber} max={pcHeroFiber} color="#34C759" color2="#34C759" sub={pcActFiber>0?`/${pcHeroFiber}g`:null} unit="g"/>
-            </div>
+            <div style={{flex:"0 0 45%"}}><div style={{fontSize:11,fontWeight:700,color:"#94A3B8",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div><div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcAC>0?pcAC.toLocaleString():pcHCal.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#94A3B8"}}> / {pcHCal.toLocaleString()} kcal</span></div>{pcAC>0&&<div style={{marginTop:10,fontSize:13,fontWeight:700,color:pcAC>=pcHCal*0.95&&pcAC<=pcHCal*1.1?"#34C759":"#F59E0B"}}>{pcAC>=pcHCal*0.95&&pcAC<=pcHCal*1.1?`✅ Đã đạt mục tiêu! ${pcAC-pcHCal} kcal`:`⚠️ Còn thiếu ${pcCR} kcal`}</div>}<div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:6,background:C.border,borderRadius:3}}><div style={{height:6,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:3,width:`${Math.min(pcAC>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div><span style={{fontSize:13,fontWeight:700,color:C.primary}}>{pcAC>0?Math.round(pcAC/pcHCal*100):0}%</span></div></div>
+            <div style={{flex:"0 0 55%",display:"flex",justifyContent:"center",gap:24}}><MacroRing l="Protein" v={pcAP>0?pcAP:pcHP} max={pcHP} color="#007AFF" color2="#007AFF" sub={pcAP>0?`/${pcHP}g`:null} unit="g"/><MacroRing l="Carb" v={pcACb>0?pcACb:pcHC} max={pcHC} color="#5AC8FA" color2="#5AC8FA" sub={pcACb>0?`/${pcHC}g`:null} unit="g"/><MacroRing l="Fat" v={pcAF>0?pcAF:pcHF} max={pcHF} color="#8E8E93" color2="#8E8E93" sub={pcAF>0?`/${pcHF}g`:null} unit="g"/><MacroRing l="Xơ" v={pcAFib>0?pcAFib:pcHFib} max={pcHFib} color="#34C759" color2="#34C759" sub={pcAFib>0?`/${pcHFib}g`:null} unit="g"/></div>
           </div>
-          {/* STAT CARDS */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
-            {[
-              {l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},
-              {l:"Cân nặng",v:pcCurKg,u:"kg",icon:"stat_weight",delta:pcCurKg!==pcStartKg?`${pcCurKg>pcStartKg?"+":""}${Math.round((pcCurKg-pcStartKg)*10)/10} kg`:null},
-              {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"Bình thường":"Thừa cân",icon:"stat_bmi"},
-              {l:pcExLabel,v:pcExType==="none"?"—":profile.gym,u:pcExType==="none"?"":"/tuần",icon:pcExType==="gym"?"stat_gym":"stat_gym"},
-            ].map((s,i)=><div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:16,display:"flex",alignItems:"center",gap:12,height:100}}>
-              <div style={{width:44,height:44,borderRadius:12,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                <img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/>
-              </div>
-              <div><div style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>{s.l}</div><div style={{fontSize:22,fontWeight:800,color:C.t1,letterSpacing:"-0.5px"}}>{s.v} <span style={{fontSize:12,fontWeight:600,color:"#94A3B8"}}>{s.u}</span></div>{s.delta&&<div style={{fontSize:10,fontWeight:700,color:C.primary,marginTop:1}}>{s.delta}</div>}</div>
-            </div>)}
-          </div>
-          {/* 2 COLUMNS: Meals (65%) | Charts (35%) */}
+          {/* STATS */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>{[{l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},{l:"Cân nặng",v:pcCK,u:"kg",icon:"stat_weight",d:pcCK!==pcSK?`${pcCK>pcSK?"+":""}${Math.round((pcCK-pcSK)*10)/10} kg`:null},{l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"Bình thường":"Thừa cân",icon:"stat_bmi"},{l:pcEL,v:pcET==="none"?"—":profile.gym,u:pcET==="none"?"":"/tuần",icon:"stat_gym"}].map((s,i)=><div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:16,display:"flex",alignItems:"center",gap:12,height:100}}><div style={{width:44,height:44,borderRadius:12,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/></div><div><div style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>{s.l}</div><div style={{fontSize:22,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:12,color:"#94A3B8"}}>{s.u}</span></div>{s.d&&<div style={{fontSize:10,fontWeight:700,color:C.primary,marginTop:1}}>{s.d}</div>}</div></div>)}</div>
+          {/* 2 COLUMNS */}
           <div style={{display:"grid",gridTemplateColumns:"65fr 35fr",gap:20}}>
-            {/* LEFT: MEAL LIST */}
-            <div style={{...card,padding:20}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                <span style={{fontSize:15,fontWeight:800,color:C.t1}}>Danh sách thực đơn</span>
-                <span onClick={()=>setTab("meals")} style={{fontSize:12,color:C.primary,fontWeight:700,cursor:"pointer"}}>Xem tất cả →</span>
-              </div>
+            <div style={{...card,padding:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:15,fontWeight:800,color:C.t1}}>Danh sách thực đơn</span><span onClick={()=>setTab("meals")} style={{fontSize:12,color:C.primary,fontWeight:700,cursor:"pointer"}}>Xem tất cả →</span></div>
               {pcMeals.map(m=><MealCard key={m.id} meal={m}/>)}
-              {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>🍽️ Chưa có bữa ăn nào — <span onClick={()=>setTab("meals")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Nhập bữa ăn</span></div>}
-              {/* AI Score */}
-              {pcActCal>0&&<div style={{background:"rgba(0,122,255,0.03)",border:`1.5px solid rgba(0,122,255,0.12)`,borderRadius:12,padding:"14px 16px",marginTop:12,display:"flex",alignItems:"center",gap:14}}>
-                <div><div style={{fontSize:32,fontWeight:900,color:C.primary,lineHeight:1}}>{pcMealScore}<span style={{fontSize:15,color:"#94A3B8",fontWeight:600}}>/100</span></div><div style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>AI đánh giá</div></div>
-                <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{pcMealScoreLabel}</div><div style={{fontSize:11,color:C.t2,marginTop:2}}>
-                  {pcMealScore>=90?"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả.":pcMealScore>=75?`Cần bổ sung thêm ${pcCalRemain>0?pcCalRemain+" kcal":"protein"} để đạt mục tiêu.`:"Thực đơn cần điều chỉnh để phù hợp mục tiêu."}
-                </div></div>
-                <span style={{color:"#94A3B8",fontSize:20}}>›</span>
-              </div>}
+              {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>🍽️ Chưa có bữa ăn — <span onClick={()=>setTab("meals")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Nhập bữa ăn</span></div>}
+              {pcAC>0&&<div style={{background:"rgba(0,122,255,0.03)",border:"1.5px solid rgba(0,122,255,0.12)",borderRadius:12,padding:"14px 16px",marginTop:12,display:"flex",alignItems:"center",gap:14}}><div><div style={{fontSize:32,fontWeight:900,color:C.primary,lineHeight:1}}>{pcMS}<span style={{fontSize:15,color:"#94A3B8"}}>/100</span></div><div style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>AI đánh giá</div></div><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{pcMSL}</div><div style={{fontSize:11,color:C.t2,marginTop:2}}>{pcMS>=90?"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập.":pcMS>=75?`Bổ sung thêm ${pcCR>0?pcCR+" kcal":"protein"}.`:"Điều chỉnh để phù hợp mục tiêu."}</div></div><span style={{color:"#94A3B8",fontSize:20}}>›</span></div>}
             </div>
-            {/* RIGHT: Weight + Report */}
             <div>
-              {/* Weight Tracking */}
-              <div style={{...card,padding:18,marginBottom:14}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                  <span style={{fontSize:15,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span>
-                  <span style={{fontSize:11,color:C.t2}}>🎯 {pcGoalKg} kg</span>
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:10}}>
-                  {[{l:"Xuất phát",v:pcStartKg,c:C.t1},{l:"Hiện tại",v:pcCurKg,c:C.primary},{l:"Mục tiêu",v:pcGoalKg,c:C.t1},{l:"Tiến độ",v:Math.round(pcWPct)+"%",c:C.primary}].map((w,i)=>
-                    <div key={i} style={{textAlign:"center",padding:"8px 4px",background:C.surface,borderRadius:8}}>
-                      <div style={{fontSize:9,color:"#94A3B8",fontWeight:600}}>{w.l}</div>
-                      <div style={{fontSize:18,fontWeight:800,color:w.c}}>{w.v}</div>
-                      {typeof w.v==="number"&&<div style={{fontSize:9,color:"#94A3B8"}}>kg</div>}
-                    </div>
-                  )}
-                </div>
-                <div style={{fontSize:11,fontWeight:600,color:C.t1,display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                  <span>Đã {pcCurKg>=pcStartKg?"tăng":"giảm"} {Math.abs(Math.round((pcCurKg-pcStartKg)*10)/10)} kg</span>
-                  <span style={{color:C.primary}}>{Math.round(Math.max(0,Math.min(pcWPct,100)))}%</span>
-                </div>
-                <div style={{height:5,background:C.surface,borderRadius:3}}>
-                  <div style={{height:5,borderRadius:3,background:"linear-gradient(90deg,#36A3FF,#007AFF)",width:`${Math.max(0,Math.min(pcWPct,100))}%`}}/>
-                </div>
-                {weightLog.length>=2&&<div style={{marginTop:12}}><WeightBarChart weightLog={weightLog} goalKg={pcGoalKg} goalType={profile.goalType} startKg={pcStartKg} mob={false}/></div>}
+              <div style={{...card,padding:18,marginBottom:14}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:15,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span><span style={{fontSize:11,color:C.t2}}>🎯 {pcGK} kg</span></div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:10}}>{[{l:"Xuất phát",v:pcSK,c:C.t1},{l:"Hiện tại",v:pcCK,c:C.primary},{l:"Mục tiêu",v:pcGK,c:C.t1},{l:"Tiến độ",v:Math.round(Math.max(0,Math.min(pcWP,100)))+"%",c:C.primary}].map((w,i)=><div key={i} style={{textAlign:"center",padding:"8px 4px",background:C.surface,borderRadius:8}}><div style={{fontSize:9,color:"#94A3B8",fontWeight:600}}>{w.l}</div><div style={{fontSize:18,fontWeight:800,color:w.c}}>{w.v}</div>{typeof w.v==="number"&&<div style={{fontSize:9,color:"#94A3B8"}}>kg</div>}</div>)}</div>
+                <div style={{fontSize:11,fontWeight:600,display:"flex",justifyContent:"space-between",marginBottom:5}}><span>Đã {pcCK>=pcSK?"tăng":"giảm"} {Math.abs(Math.round((pcCK-pcSK)*10)/10)} kg</span><span style={{color:C.primary}}>{Math.round(Math.max(0,Math.min(pcWP,100)))}%</span></div>
+                <div style={{height:5,background:C.surface,borderRadius:3}}><div style={{height:5,borderRadius:3,background:"linear-gradient(90deg,#36A3FF,#007AFF)",width:`${Math.max(0,Math.min(pcWP,100))}%`}}/></div>
+                {weightLog.length>=2&&<div style={{marginTop:12}}><WeightBarChart weightLog={weightLog} goalKg={pcGK} goalType={profile.goalType} startKg={pcSK} mob={false}/></div>}
               </div>
-              {/* Weekly Report Mini */}
-              <div style={{...card,padding:18}}>
-                <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>Báo cáo tuần này</div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-                  {[{v:"—",l:"ngày ghi"},{v:"—",l:"cal TB/ngày"},{v:"—",l:"tỷ lệ đạt"}].map((r,i)=>
-                    <div key={i} style={{textAlign:"center",padding:"10px 4px",background:C.surface,borderRadius:8}}>
-                      <div style={{fontSize:18,fontWeight:800,color:C.primary}}>{r.v}</div>
-                      <div style={{fontSize:9,color:"#94A3B8",fontWeight:600,marginTop:2}}>{r.l}</div>
-                    </div>
-                  )}
-                </div>
-                <div style={{fontSize:12,fontWeight:700,color:C.t1,marginBottom:4}}>Lượng calo <span style={{float:"right",fontSize:10,color:"#94A3B8",fontWeight:500}}>7 ngày</span></div>
-                <div style={{height:130,background:C.surface,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:11,fontWeight:600,border:`1.5px dashed ${C.border}`}}>📊 Dữ liệu từ daily_logs</div>
-              </div>
+              <div style={{...card,padding:18}}><div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>Báo cáo tuần này</div><div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>{[{v:"—",l:"ngày ghi"},{v:"—",l:"cal TB/ngày"},{v:"—",l:"tỷ lệ đạt"}].map((r,i)=><div key={i} style={{textAlign:"center",padding:"10px 4px",background:C.surface,borderRadius:8}}><div style={{fontSize:18,fontWeight:800,color:C.primary}}>{r.v}</div><div style={{fontSize:9,color:"#94A3B8",fontWeight:600,marginTop:2}}>{r.l}</div></div>)}</div><div style={{height:130,background:C.surface,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",color:"#94A3B8",fontSize:11,border:`1.5px dashed ${C.border}`}}>📊 Dữ liệu từ daily_logs</div></div>
             </div>
           </div>
-          {/* AI COACH BANNER */}
-          {pcActCal>0&&pcCalRemain>0&&<div style={{...card,padding:"16px 24px",marginTop:20,display:"flex",alignItems:"center",gap:14}}>
-            <div style={{width:42,height:42,borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18,color:"#fff"}}>✨</div>
-            <div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>AI Coach gợi ý cho bạn</div><div style={{fontSize:11,color:C.t2,marginTop:2}}>Hôm nay bạn đang thiếu <b style={{color:C.primary}}>{pcCalRemain} kcal</b> để đạt mục tiêu.</div></div>
-            <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:10}}>
-              <button onClick={()=>setTab("meals")} style={{padding:"8px 18px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>Nhập bữa ăn</button>
-            </div>
-          </div>}
+          {pcAC>0&&pcCR>0&&<div style={{...card,padding:"16px 24px",marginTop:20,display:"flex",alignItems:"center",gap:14}}><div style={{width:42,height:42,borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18,color:"#fff"}}>✨</div><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>AI Coach gợi ý cho bạn</div><div style={{fontSize:11,color:C.t2,marginTop:2}}>Hôm nay bạn đang thiếu <b style={{color:C.primary}}>{pcCR} kcal</b> để đạt mục tiêu.</div></div><div style={{marginLeft:"auto"}}><button onClick={()=>setTab("meals")} style={{padding:"8px 18px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>Nhập bữa ăn</button></div></div>}
         </div>}
-        {tab==="profile"&&<AdminPanel {...adminProps} forcedSection="profile"/>}
-        {tab==="meals"&&<AdminPanel {...adminProps} forcedSection="meals"/>}
+        {tab==="profile"&&<AdminPanel {...adminP} forcedSection="profile"/>}
+        {tab==="meals"&&<AdminPanel {...adminP} forcedSection="meals"/>}
         {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={false}/>}
-        {tab==="settings"&&<AdminPanel {...adminProps} forcedSection="settings" signOut={signOut} user={user}/>}
+        {tab==="settings"&&<AdminPanel {...adminP} forcedSection="settings" signOut={signOut} user={user}/>}
         {tab==="about"&&<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={false}/>}
       </main>
     </div>
   </div>;
+
 }
