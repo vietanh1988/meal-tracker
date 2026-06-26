@@ -117,25 +117,25 @@ const getMealsDefault=(type)=>mealsData[type];
 const wColors=["#EF4444","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
 function fmtDate(d){const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yy=d.getFullYear();return `${dd}/${mm}/${yy}`;}
 
-function MacroRing({l,v,max,color,color2,track,tc,sub,unit}){
-  const pct=Math.min((v/max)*100,100),r=28,sw=6,circ=2*Math.PI*r;
+function MacroRing({l,v,max,color,color2,track,tc,sub,unit,size}){
+  const sz=size||72;const pct=Math.min((v/max)*100,100),r=sz*0.39,sw=sz*0.083,circ=2*Math.PI*r;const cx=sz/2;
   const gradId=`ring-${l.replace(/\s/g,"")}`;
   const c2=color2||color;
   return <div style={{textAlign:"center"}}>
-    <svg width={72} height={72} viewBox="0 0 72 72" style={{display:"block",margin:"0 auto"}}>
+    <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{display:"block",margin:"0 auto"}}>
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor={color}/>
           <stop offset="100%" stopColor={c2}/>
         </linearGradient>
       </defs>
-      <circle cx={36} cy={36} r={r} fill="none" stroke={track||"#E2E8F0"} strokeWidth={sw}/>
-      <circle cx={36} cy={36} r={r} fill="none" stroke={`url(#${gradId})`} strokeWidth={sw} strokeDasharray={`${(Math.min(pct,100)/100)*circ} ${circ}`} strokeLinecap="round" transform="rotate(-90 36 36)" style={{transition:"stroke-dasharray 0.5s"}}/>
-      <text x={36} y={sub?32:36} textAnchor="middle" dominantBaseline="central" fill={tc||C.t1} fontSize={sub?14:16} fontWeight={900}>{Math.round(v)}</text>
-      {sub&&<text x={36} y={48} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.8)":"#666"} fontSize={10} fontWeight={700}>{sub}</text>}
-      {!sub&&<text x={36} y={48} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.6)":C.t3} fontSize={10} fontWeight={700}>{unit||"g"}</text>}
+      <circle cx={cx} cy={cx} r={r} fill="none" stroke={track||"#E2E8F0"} strokeWidth={sw}/>
+      <circle cx={cx} cy={cx} r={r} fill="none" stroke={`url(#${gradId})`} strokeWidth={sw} strokeDasharray={`${(Math.min(pct,100)/100)*circ} ${circ}`} strokeLinecap="round" transform={`rotate(-90 ${cx} ${cx})`} style={{transition:"stroke-dasharray 0.5s"}}/>
+      <text x={cx} y={sub?cx*0.88:cx} textAnchor="middle" dominantBaseline="central" fill={tc||C.t1} fontSize={sz*0.22} fontWeight={900}>{Math.round(v)}</text>
+      {sub&&<text x={cx} y={cx*1.32} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.8)":"#666"} fontSize={sz*0.14} fontWeight={700}>{sub}</text>}
+      {!sub&&<text x={cx} y={cx*1.32} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.6)":C.t3} fontSize={sz*0.14} fontWeight={700}>{unit||"g"}</text>}
     </svg>
-    <div style={{fontSize:12,fontWeight:700,color:tc?"rgba(255,255,255,0.85)":C.t2,marginTop:4}}>{l}</div>
+    <div style={{fontSize:sz>80?14:12,fontWeight:700,color:tc?"rgba(255,255,255,0.85)":C.t2,marginTop:4}}>{l}</div>
   </div>;
 }
 
@@ -3147,7 +3147,7 @@ export default function App(){
           {/* HERO */}
           <div style={{...card,padding:"28px 32px",borderRadius:20,display:"flex",alignItems:"center",marginBottom:24,border:`1.5px solid ${C.border}`}}>
             <div style={{flex:"0 0 45%"}}><div style={{fontSize:11,fontWeight:700,color:"#94A3B8",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div><div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcAC>0?pcAC.toLocaleString():pcHCal.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#94A3B8"}}> / {pcHCal.toLocaleString()} kcal</span></div>{pcAC>0&&<div style={{marginTop:10,fontSize:13,fontWeight:700,color:pcAC>=pcHCal*0.95&&pcAC<=pcHCal*1.1?"#34C759":"#F59E0B"}}>{pcAC>=pcHCal*0.95&&pcAC<=pcHCal*1.1?`✅ Đã đạt mục tiêu! ${pcAC-pcHCal} kcal`:`⚠️ Còn thiếu ${pcCR} kcal`}</div>}<div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:6,background:C.border,borderRadius:3}}><div style={{height:6,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:3,width:`${Math.min(pcAC>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div><span style={{fontSize:13,fontWeight:700,color:C.primary}}>{pcAC>0?Math.round(pcAC/pcHCal*100):0}%</span></div></div>
-            <div style={{flex:"0 0 55%",display:"flex",justifyContent:"center",gap:24}}><MacroRing l="Protein" v={pcAP>0?pcAP:pcHP} max={pcHP} color="#007AFF" color2="#007AFF" sub={pcAP>0?`/${pcHP}g`:null} unit="g"/><MacroRing l="Carb" v={pcACb>0?pcACb:pcHC} max={pcHC} color="#5AC8FA" color2="#5AC8FA" sub={pcACb>0?`/${pcHC}g`:null} unit="g"/><MacroRing l="Fat" v={pcAF>0?pcAF:pcHF} max={pcHF} color="#8E8E93" color2="#8E8E93" sub={pcAF>0?`/${pcHF}g`:null} unit="g"/><MacroRing l="Xơ" v={pcAFib>0?pcAFib:pcHFib} max={pcHFib} color="#34C759" color2="#34C759" sub={pcAFib>0?`/${pcHFib}g`:null} unit="g"/></div>
+            <div style={{flex:"0 0 55%",display:"flex",justifyContent:"center",gap:32}}><MacroRing size={96} l="Protein" v={pcAP>0?pcAP:pcHP} max={pcHP} color="#007AFF" color2="#007AFF" sub={pcAP>0?`/${pcHP}g`:null} unit="g"/><MacroRing size={96} l="Carb" v={pcACb>0?pcACb:pcHC} max={pcHC} color="#5AC8FA" color2="#5AC8FA" sub={pcACb>0?`/${pcHC}g`:null} unit="g"/><MacroRing size={96} l="Fat" v={pcAF>0?pcAF:pcHF} max={pcHF} color="#8E8E93" color2="#8E8E93" sub={pcAF>0?`/${pcHF}g`:null} unit="g"/><MacroRing size={96} l="Xơ" v={pcAFib>0?pcAFib:pcHFib} max={pcHFib} color="#34C759" color2="#34C759" sub={pcAFib>0?`/${pcHFib}g`:null} unit="g"/></div>
           </div>
           {/* STATS */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>{[{l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},{l:"Cân nặng",v:pcCK,u:"kg",icon:"stat_weight",d:pcCK!==pcSK?`${pcCK>pcSK?"+":""}${Math.round((pcCK-pcSK)*10)/10} kg`:null},{l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"Bình thường":"Thừa cân",icon:"stat_bmi"},{l:pcEL,v:pcET==="none"?"—":profile.gym,u:pcET==="none"?"":"/tuần",icon:"stat_gym"}].map((s,i)=><div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:16,display:"flex",alignItems:"center",gap:12,height:100}}><div style={{width:44,height:44,borderRadius:12,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/></div><div><div style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>{s.l}</div><div style={{fontSize:22,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:12,color:"#94A3B8"}}>{s.u}</span></div>{s.d&&<div style={{fontSize:10,fontWeight:700,color:C.primary,marginTop:1}}>{s.d}</div>}</div></div>)}</div>
