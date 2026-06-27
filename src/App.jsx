@@ -2348,7 +2348,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* Auto-calc results */}
       <div style={{marginTop:20}}>
         <div style={{fontSize:13,fontWeight:700,color:"#B91C1C",marginBottom:12,display:"flex",alignItems:"center",gap:4}}>
-          <span>⚠ Tự động lưu</span>
+          <span>✓ Tự động lưu</span>
         </div>
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:12}}>⚡ Macro tự động tính</div>
