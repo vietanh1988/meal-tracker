@@ -100,17 +100,25 @@ export function useUserData(userId) {
 
   // Auto re-fetch when tab/app becomes visible (cross-device sync)
   useEffect(() => {
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible" && userId) {
-        // Only re-fetch if last fetch was >10 seconds ago (avoid rapid re-fetches)
-        if (Date.now() - lastFetchRef.current > 10000) {
-          console.log("🔄 Tab focused — re-syncing data...");
-          fetchAllData(true);
-        }
+    const doResync = () => {
+      if (!userId) return;
+      if (Date.now() - lastFetchRef.current > 10000) {
+        console.log("🔄 Re-syncing data...");
+        fetchAllData(true);
       }
     };
+    const handleVisibility = () => { if (document.visibilityState === "visible") doResync(); };
+    const handleFocus = () => doResync();
+    const handlePageShow = (e) => { if (e.persisted) doResync(); };
+
     document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
   }, [fetchAllData, userId]);
 
   // Get meals for a day type
