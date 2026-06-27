@@ -1138,8 +1138,10 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     catch(e){return {...DEFAULT_MEAL_CONFIG};}
   });
   // Load existing meals into allFoodItems on mount/dayType change (only for tu_nhap, not admin templates)
+  const getMealsStable=useRef(getMeals);
+  getMealsStable.current=getMeals;
   useEffect(()=>{
-    if(!getMeals)return;
+    if(!getMealsStable.current)return;
     // Admin templates section → always start empty
     if(section==="templates"){
       const init={};
@@ -1148,7 +1150,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
       return;
     }
     // tu_nhap → load existing meals
-    const currentMeals=getMeals(dayType);
+    const currentMeals=getMealsStable.current(dayType);
     const init={};
     const visibleIds=mealConfig[dayType]||[];
     visibleIds.forEach(mid=>{
@@ -1160,7 +1162,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
       }
     });
     setAllFoodItems(init);
-  },[dayType,getMeals,mealConfig,section]);
+  },[dayType,mealConfig,section]);
   const [showMealSettings,setShowMealSettings]=useState(false);
   const [foodItems,setFoodItems]=useState(()=>{
     const meals=getMeals("train");
