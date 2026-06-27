@@ -1141,6 +1141,11 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   const [userHasEdited,setUserHasEdited]=useState(false);
   useEffect(()=>{setUserHasEdited(false);},[dayType,section]);
   useEffect(()=>{
+    const reset=()=>{if(document.visibilityState==="visible")setUserHasEdited(false);};
+    document.addEventListener("visibilitychange",reset);
+    return()=>{document.removeEventListener("visibilitychange",reset);};
+  },[]);
+  useEffect(()=>{
     if(!getMeals)return;
     if(userHasEdited)return;
     // Admin templates section → always start empty

@@ -102,22 +102,16 @@ export function useUserData(userId) {
   useEffect(() => {
     const doResync = () => {
       if (!userId) return;
-      if (Date.now() - lastFetchRef.current > 10000) {
+      if (Date.now() - lastFetchRef.current > 30000) {
         console.log("🔄 Re-syncing data...");
         fetchAllData(true);
       }
     };
     const handleVisibility = () => { if (document.visibilityState === "visible") doResync(); };
-    const handleFocus = () => doResync();
-    const handlePageShow = (e) => { if (e.persisted) doResync(); };
 
     document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("focus", handleFocus);
-    window.addEventListener("pageshow", handlePageShow);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("focus", handleFocus);
-      window.removeEventListener("pageshow", handlePageShow);
     };
   }, [fetchAllData, userId]);
 
