@@ -1946,7 +1946,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
       </div>}
       </div>
-      {!mob&&<div style={{position:"sticky",top:92,maxHeight:"calc(100vh - 110px)",overflowY:"auto"}}>
+      {!mob&&<div style={{position:"sticky",top:92,alignSelf:"start"}}>
         <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}>
           <div style={{fontSize:14,fontWeight:800,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <span style={{display:"flex",alignItems:"center",gap:8}}>📊 Tổng hôm nay</span>
