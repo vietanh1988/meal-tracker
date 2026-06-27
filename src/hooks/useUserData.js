@@ -177,6 +177,8 @@ export function useUserData(userId) {
         else console.log("✅ Daily log auto-saved:", today, mealsWithItems.length, "bữa");
       }
     } catch (e) { console.error("Meal save error:", e); }
+    // Block re-sync for 30s after save to prevent overwrite
+    lastFetchRef.current = Date.now();
   }, [userId, updateMealsState, meals]);
 
   // Update food cache in state with pre-normalized entries
