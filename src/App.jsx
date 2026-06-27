@@ -2428,7 +2428,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       const today=fmtDate(new Date());
       return <div style={card}>
         {mob&&<div style={{fontSize:19,fontWeight:800,color:C.t1,marginBottom:16}}>Nhập cân nặng</div>}
-        <div style={!mob&&weightLog.length>=2?{display:"grid",gridTemplateColumns:"40% 58%",gap:20,marginBottom:16,alignItems:"start"}:{marginBottom:16}}>
+        <div style={!mob&&weightLog.length>=2?{display:"grid",gridTemplateColumns:"40% 58%",gap:20,marginBottom:16}:{marginBottom:16}}>
         <div style={!mob?{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20}:{}}>
         {!mob&&<div style={{fontSize:17,fontWeight:800,color:C.t1,marginBottom:20,display:"flex",alignItems:"center",gap:8}}>⚖️ Nhập cân nặng</div>}
         <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:20,border:`1.5px solid ${C.border}`}}>
