@@ -2003,6 +2003,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>;
         })()}
         {aiResult&&aiResult.items&&<>
+          <button onClick={async()=>{
+            const allNames=Object.values(allFoodItems).flat().map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);
+            if(allNames.length>0&&deleteFoodCache) await deleteFoodCache(allNames);
+            setAiResult(null);
+            const combined2=[];mealNames.forEach(meal=>{const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());foods.forEach(f=>combined2.push({...f,_mealId:meal.id}));});
+            setFoodItems(combined2);callAI(true,combined2);
+          }} style={{padding:"8px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:10,cursor:"pointer",fontFamily:"inherit",width:"100%",marginBottom:8}}>🔄 Tính lại</button>
           <button onClick={()=>{
             const items=aiResult.items||[];let idx=0;
             mealNames.forEach(meal=>{const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());if(mealFoods.length===0)return;const mealItems=items.slice(idx,idx+mealFoods.length);idx+=mealFoods.length;const saveItems=mealItems.map(ai=>{const unit=ai.unit||"g";const isW=unit==="g"||unit==="ml";return{food:ai.name||"",gram:ai.gram||0,unit,qty:ai.qty||1,qty_display:ai.qty_display||(isW?null:`${ai.qty||1} ${unit}`),p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0};});
