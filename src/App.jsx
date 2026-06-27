@@ -1148,6 +1148,7 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   useEffect(()=>{
     if(!getMeals)return;
     if(userHasEdited)return;
+    if(aiResult)return;
     // Admin templates section → always start empty
     if(section==="templates"){
       const init={};
