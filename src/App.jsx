@@ -3180,7 +3180,7 @@ export default function App(){
     if(profile && !profile.onboardingDone && weightLog && weightLog.length>0){
       setProfile(p=>({...p,onboardingDone:true}));
     }
-  },[profile?.onboardingDone,weightLog?.length]);
+  },[]);
   const needsOnboarding=!profile.onboardingDone;
   if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
 
