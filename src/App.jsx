@@ -1948,9 +1948,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <div style={{fontSize:14,fontWeight:800,marginBottom:16,display:"flex",alignItems:"center",gap:8}}>📊 Tổng hôm nay</div>
           {aiResult&&aiResult.items?(()=>{
             const s=aiResult.items.reduce((a,i)=>({p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),fi:a.fi+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});
-            const heroCal=dayType==="train"?macro.cal:macro.calRest;
+            const heroCal=dayType==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0);
             const pct=heroCal>0?Math.min(Math.round(s.cal/heroCal*100),120):0;
-            const heroP=macro.protein||0;const heroC=macro.carb||0;const heroF=macro.fat||0;const heroFi=macro.fiber||0;
+            const heroP=macro.protein||0;const heroC=dayType==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0);const heroF=macro.fat||0;const heroFi=macro.fiber||0;
             return <>
               <div style={{textAlign:"center",marginBottom:18,paddingBottom:16,borderBottom:`1px solid ${C.surface}`}}>
                 <div style={{fontSize:36,fontWeight:800,color:C.primary}}>{Math.round(s.cal).toLocaleString()}</div>
@@ -1977,8 +1977,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
         {aiResult&&aiResult.items&&(()=>{
           const s=aiResult.items.reduce((a,i)=>({p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),fi:a.fi+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});
-          const heroCal=dayType==="train"?macro.cal:macro.calRest;
-          const heroP=macro.protein||0;const heroC=macro.carb||0;const heroF=macro.fat||0;const heroFi=macro.fiber||0;
+          const heroCal=dayType==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0);
+          const heroP=macro.protein||0;const heroC=dayType==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0);const heroF=macro.fat||0;const heroFi=macro.fiber||0;
           const scores=[];
           if(heroCal>0){const r=s.cal/heroCal;scores.push(r>=0.95&&r<=1.1?100:r>1.1?Math.max(0,100-Math.round((r-1.1)*200)):Math.max(0,Math.round(r/0.95*100)));}
           if(heroP>0)scores.push(Math.min(100,Math.round(s.p/heroP*100)));
