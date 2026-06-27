@@ -3127,7 +3127,6 @@ export default function App(){
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,refetchData,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
-  useEffect(()=>{if(userDataLoaded)refetchData();},[tab]);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||defaultProfile);
   const mob=useIsMobile();
