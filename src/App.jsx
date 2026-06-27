@@ -836,7 +836,7 @@ function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSett
   </div>;
 }
 
-function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSettings,setTab,user,getWeeklyTemplate,applyTemplate}){if(!profile||!macro)return null;
+function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,userDataLoaded}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [showWeightInput,setShowWeightInput]=useState(false);
   const weightInputRef=useRef(null);
@@ -858,12 +858,19 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     const isGym=gd.includes(mapped);
     setDayType(isGym?"train":"rest");
   },[appSettings.gymDays]);
-  // Auto-apply weekly template once per day (persist across remounts)
+  // Auto-apply weekly template only if NO meals saved for today
   useEffect(()=>{
-    if(!getWeeklyTemplate||!applyTemplate)return;
+    if(!getWeeklyTemplate||!applyTemplate||!getMeals||!userDataLoaded)return;
     const today=new Date().toISOString().slice(0,10);
     const appliedKey="fitpilot_tpl_applied";
     try{if(localStorage.getItem(appliedKey)===today)return;}catch(e){}
+    // Check if user already has meals today → don't overwrite
+    const currentMeals=getMeals(todayIsGym?"train":"rest");
+    const hasMeals=currentMeals.some(m=>m.items&&m.items.length>0);
+    if(hasMeals){
+      try{localStorage.setItem(appliedKey,today);}catch(e){}
+      return;// already has meals, skip template
+    }
     const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
     const todayKey=dayKeys[new Date().getDay()];
     const tpl=getWeeklyTemplate(todayKey);
@@ -873,7 +880,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       setDayType(tpl.day_type||"train");
       console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
     }
-  },[getWeeklyTemplate,applyTemplate]);
+  },[getWeeklyTemplate,applyTemplate,getMeals,userDataLoaded]);
 
   // Auto version check — force clear cache when admin updates app_version
   const APP_VERSION="2.6";
@@ -3169,7 +3176,7 @@ export default function App(){
   // ========== MOBILE ==========
   if(mob) return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:"0 10px 10px 10px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:100}}>
-    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded}/>}
     {tab==="weight"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" initialSection="weight" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
     {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
     {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
