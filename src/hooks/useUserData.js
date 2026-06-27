@@ -28,7 +28,7 @@ export function useUserData(userId) {
   const [foodCache, setFoodCache] = useState({});
   const [weeklyTemplates, setWeeklyTemplates] = useState([]);
   const [defaultTemplates, setDefaultTemplates] = useState([]);
-  const lastFetchRef = useRef(0);
+  const lastFetchRef = useRef(Date.now());
 
   // === Extracted fetch function — reusable ===
   const fetchAllData = useCallback(async (silent = false) => {
