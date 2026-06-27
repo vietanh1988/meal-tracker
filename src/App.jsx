@@ -1766,7 +1766,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       </>}
 
       {/* === MODE: Tự nhập — all meals in one flow === */}
-      {mealMode==="tu_nhap"&&<div style={!mob?{display:"grid",gridTemplateColumns:"63% 35%",gap:20,alignItems:"start"}:{}}><div>
+      {mealMode==="tu_nhap"&&<div style={!mob?{display:"grid",gridTemplateColumns:"63% 35%",gap:20}:{}}><div>
       <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
         <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
@@ -1946,7 +1946,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
       </div>}
       </div>
-      {!mob&&<div style={{position:"sticky",top:92,alignSelf:"start"}}>
+      {!mob&&<div><div style={{position:"sticky",top:92}}>
         <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}>
           <div style={{fontSize:14,fontWeight:800,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <span style={{display:"flex",alignItems:"center",gap:8}}>📊 Tổng hôm nay</span>
@@ -2049,7 +2049,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
         </>}
 
-      </div>}
+      </div></div>}
       </div>}
 
       {/* === MODE: Lịch tuần === */}
@@ -3290,7 +3290,7 @@ export default function App(){
       </div>
     </nav>
     {/* MAIN AREA */}
-    <div style={{marginLeft:220,flex:1,display:"flex",flexDirection:"column"}}>
+    <div style={{marginLeft:220,flex:1,display:"flex",flexDirection:"column",overflow:"visible"}}>
       <header style={{height:68,display:"flex",alignItems:"center",padding:"0 28px",background:"#fff",borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:5}}>
         <div style={{flex:1}}><div style={{fontSize:20,fontWeight:800,color:C.t1}}>Xin chào, {pcDN} 👋</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{pcDS}</div></div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -3299,7 +3299,7 @@ export default function App(){
           <button style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ AI Coach</button>
         </div>
       </header>
-      <main style={{padding:24,flex:1}}>
+      <main style={{padding:24,flex:1,overflow:"visible"}}>
         {tab==="dashboard"&&<div>
           {/* HERO */}
           <div style={{...card,padding:"28px 32px",borderRadius:20,display:"flex",alignItems:"center",marginBottom:24,border:`1.5px solid ${C.border}`}}>
