@@ -1744,15 +1744,26 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* MEALS */}
     {section==="meals"&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
-      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2,marginBottom:12}}>
-        {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`}
-      </div>
-      {/* 3 Mode buttons */}
-      <SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{marginBottom:16}}/>
+      {!mob?<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <div>
+          <div style={{fontSize:17,fontWeight:800,color:C.t1}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
+          <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2}}>
+            {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`}
+          </div>
+        </div>
+        <div style={{display:"flex",gap:4,background:C.surface,borderRadius:10,padding:3}}>
+          {[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{padding:"7px 16px",borderRadius:8,fontSize:13,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{t.icon} {t.label}</div>)}
+        </div>
+      </div>:<>
+        <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
+        <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2,marginBottom:12}}>
+          {mealMode==="tu_nhap"?"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn":mealMode==="lich_tuan"?"Xem & chỉnh thực đơn theo từng ngày trong tuần":`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`}
+        </div>
+        <SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{marginBottom:16}}/>
+      </>}
 
       {/* === MODE: Tự nhập — all meals in one flow === */}
-      {mealMode==="tu_nhap"&&<>
+      {mealMode==="tu_nhap"&&<div style={!mob?{display:"grid",gridTemplateColumns:"63% 35%",gap:20,alignItems:"start"}:{}}><div>
       <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
         <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
@@ -1810,6 +1821,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             </div>;
           })}
           <button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);}} style={{padding:"6px",fontSize:12,fontWeight:700,background:C.surface,color:C.t3,border:`1.5px dashed ${C.border}`,borderRadius:8,width:"100%",cursor:"pointer",fontFamily:"inherit",marginTop:4}}>+ Thêm món</button>
+          {!mob&&aiResult&&(()=>{const items=aiResult.items||[];let idx2=0;for(const m2 of mealNames){const cnt=(allFoodItems[m2.id]||[]).filter(f=>f.name&&f.name.trim()).length;if(m2.id===meal.id){const sl=items.slice(idx2,idx2+cnt);const ms=sl.reduce((a,x)=>({p:a.p+(x.protein||0),c:a.c+(x.carb||0),f:a.f+(x.fat||0),fi:a.fi+(x.fiber||0),cal:a.cal+(x.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});if(sl.length>0)return <div style={{display:"flex",gap:14,marginTop:10,paddingTop:8,borderTop:`1px solid ${C.surface}`,flexWrap:"wrap"}}>
+            <div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.protein}}/> Protein: <b style={{color:C.t1}}>{Math.round(ms.p)}g</b></div>
+            <div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.carb}}/> Carb: <b style={{color:C.t1}}>{Math.round(ms.c)}g</b></div>
+            <div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.fat}}/> Fat: <b style={{color:C.t1}}>{Math.round(ms.f)}g</b></div>
+            <div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.fiber}}/> Chất xơ: <b style={{color:C.t1}}>{Math.round(ms.fi)}g</b></div>
+            <div style={{fontSize:12,fontWeight:700,color:C.t1,marginLeft:"auto"}}>{Math.round(ms.cal)} kcal</div>
+          </div>;return null;}idx2+=cnt;}return null;})()}
         </div>;
       })}
       <button onClick={()=>{
@@ -1831,7 +1849,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
         <span style={{fontSize:13,fontWeight:700,color:"#7F1D1D"}}>❌ {aiError}</span>
       </div>}
-      {aiResult&&<div style={{marginTop:16,background:C.primaryBg,borderRadius:12,padding:16,border:`2px solid ${C.primary}`}}>
+      {mob&&aiResult&&<div style={{marginTop:16,background:C.primaryBg,borderRadius:12,padding:16,border:`2px solid ${C.primary}`}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
           <span style={{fontSize:14,fontWeight:900}}>✓</span>
           <span style={{fontSize:14,fontWeight:900,color:C.primary}}>Kết quả</span>
@@ -1924,7 +1942,79 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu mẫu tuần!</span>
         </div>
       </div>}
-      </>}
+      </div>
+      {!mob&&<div style={{position:"sticky",top:20}}>
+        <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}>
+          <div style={{fontSize:14,fontWeight:800,marginBottom:16,display:"flex",alignItems:"center",gap:8}}>📊 Tổng hôm nay</div>
+          {aiResult&&aiResult.items?(()=>{
+            const s=aiResult.items.reduce((a,i)=>({p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),fi:a.fi+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});
+            const heroCal=dayType==="train"?macro.cal:macro.calRest;
+            const pct=heroCal>0?Math.min(Math.round(s.cal/heroCal*100),120):0;
+            const heroP=macro.protein||0;const heroC=macro.carb||0;const heroF=macro.fat||0;const heroFi=macro.fiber||0;
+            return <>
+              <div style={{textAlign:"center",marginBottom:18,paddingBottom:16,borderBottom:`1px solid ${C.surface}`}}>
+                <div style={{fontSize:36,fontWeight:800,color:C.primary}}>{Math.round(s.cal).toLocaleString()}</div>
+                <div style={{fontSize:14,color:C.t2}}>/ <b style={{color:C.t1}}>{heroCal}</b> kcal mục tiêu</div>
+                <div style={{height:8,background:C.surface,borderRadius:4,overflow:"hidden",marginTop:10}}>
+                  <div style={{height:"100%",borderRadius:4,width:`${Math.min(pct,100)}%`,background:`linear-gradient(90deg,#36A3FF,${pct>=95?"#34C759":"#007AFF"})`}}/>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+                  <span style={{fontSize:11,fontWeight:700,color:pct>=95&&pct<=110?"#34C759":pct>110?C.red:C.primary}}>{pct>=95&&pct<=110?"✓ Đạt mục tiêu":pct>110?"⚠ Vượt mục tiêu":`Còn thiếu ${heroCal-Math.round(s.cal)} kcal`}</span>
+                  <span style={{fontSize:11,color:C.t2}}>{pct}%</span>
+                </div>
+              </div>
+              {[{l:"Protein",v:Math.round(s.p),t:heroP,c:C.protein},{l:"Carb",v:Math.round(s.c),t:heroC,c:C.carb},{l:"Fat",v:Math.round(s.f),t:heroF,c:C.fat},{l:"Chất xơ",v:Math.round(s.fi),t:heroFi,c:C.fiber}].map(r=><div key={r.l} style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                <div style={{fontSize:13,fontWeight:600,width:70,display:"flex",alignItems:"center",gap:6}}><span style={{width:10,height:10,borderRadius:"50%",background:r.c,flexShrink:0}}/>{r.l}</div>
+                <div style={{flex:1,height:6,background:C.surface,borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",borderRadius:3,width:`${Math.min(r.t>0?r.v/r.t*100:0,100)}%`,background:r.c}}/></div>
+                <div style={{fontSize:12,fontWeight:700,width:80,textAlign:"right"}}>{r.v}g <span style={{fontWeight:400,color:C.t2}}>/ {r.t}g</span></div>
+              </div>)}
+            </>;
+          })():<div style={{textAlign:"center",padding:"40px 20px",color:C.t3}}>
+            <div style={{fontSize:36,marginBottom:8}}>📊</div>
+            <div style={{fontSize:14,fontWeight:600,color:C.t2}}>Chưa có dữ liệu</div>
+            <div style={{fontSize:12,color:C.t3,marginTop:4}}>Nhấn "Tính macro tất cả" để xem kết quả</div>
+          </div>}
+        </div>
+        {aiResult&&aiResult.items&&(()=>{
+          const s=aiResult.items.reduce((a,i)=>({p:a.p+(i.protein||0),c:a.c+(i.carb||0),f:a.f+(i.fat||0),fi:a.fi+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});
+          const heroCal=dayType==="train"?macro.cal:macro.calRest;
+          const heroP=macro.protein||0;const heroC=macro.carb||0;const heroF=macro.fat||0;const heroFi=macro.fiber||0;
+          const scores=[];
+          if(heroCal>0){const r=s.cal/heroCal;scores.push(r>=0.95&&r<=1.1?100:r>1.1?Math.max(0,100-Math.round((r-1.1)*200)):Math.max(0,Math.round(r/0.95*100)));}
+          if(heroP>0)scores.push(Math.min(100,Math.round(s.p/heroP*100)));
+          if(heroC>0){const r=s.c/heroC;scores.push(r>=0.9&&r<=1.1?100:Math.max(0,100-Math.round(Math.abs(1-r)*100)));}
+          if(heroF>0){const r=s.f/heroF;scores.push(r>=0.85&&r<=1.15?100:Math.max(0,100-Math.round(Math.abs(1-r)*100)));}
+          const avg=scores.length>0?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+          return <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+              <div style={{fontSize:14,fontWeight:800,display:"flex",alignItems:"center",gap:8}}>🎯 AI đánh giá</div>
+              <div style={{fontSize:22,fontWeight:800,color:avg>=90?"#059669":avg>=70?C.primary:"#D97706"}}>{avg}<span style={{fontSize:13,fontWeight:500,color:C.t2}}>/100</span></div>
+            </div>
+            {[{l:"Calo",v:s.cal,t:heroCal,u:"kcal"},{l:"Protein",v:s.p,t:heroP,u:"g"},{l:"Carb",v:s.c,t:heroC,u:"g"},{l:"Fat",v:s.f,t:heroF,u:"g"},{l:"Chất xơ",v:s.fi,t:heroFi,u:"g"}].map(r=>{const pct2=r.t>0?Math.round(r.v/r.t*100):0;const ok=pct2>=90&&pct2<=115;return <div key={r.l} style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12,padding:"6px 10px",background:C.surface,borderRadius:8,marginBottom:4}}>
+              <span style={{color:C.t2}}>{r.l}</span>
+              <span style={{fontWeight:700,color:ok?"#059669":"#D97706"}}>{ok?"✓":"⚠"} {pct2}%</span>
+            </div>;})}
+          </div>;
+        })()}
+        {aiResult&&aiResult.items&&<>
+          <button onClick={()=>{
+            const items=aiResult.items||[];let idx=0;
+            mealNames.forEach(meal=>{const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());if(mealFoods.length===0)return;const mealItems=items.slice(idx,idx+mealFoods.length);idx+=mealFoods.length;const saveItems=mealItems.map(ai=>{const unit=ai.unit||"g";const isW=unit==="g"||unit==="ml";return{food:ai.name||"",gram:ai.gram||0,unit,qty:ai.qty||1,qty_display:ai.qty_display||(isW?null:`${ai.qty||1} ${unit}`),p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0};});
+            if(saveItems.length>0)saveMealToCloud(meal.id,dayType,saveItems);});
+            if(aiResult._cacheEntries)saveFoodCache(aiResult._cacheEntries,aiProvider);
+            const el=document.getElementById("meal-saved-pc");if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+            setTimeout(()=>{setShowSaveTpl(true);},500);
+          }} style={{...redBtn,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)",width:"100%"}}>💾 Lưu tất cả bữa</button>
+          <div id="meal-saved-pc" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+            <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu thành công!</span>
+          </div>
+        </>}
+        {!aiResult&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px",background:"rgba(52,199,89,0.08)",border:`1.5px solid rgba(52,199,89,0.2)`,borderRadius:10,marginTop:8}}>
+          <span style={{width:8,height:8,borderRadius:"50%",background:"#34C759"}}/>
+          <span style={{fontSize:12,fontWeight:600,color:"#059669"}}>✓ Tự động lưu</span>
+        </div>}
+      </div>}
+      </div>}
 
       {/* === MODE: Lịch tuần === */}
       {mealMode==="lich_tuan"&&(()=>{
