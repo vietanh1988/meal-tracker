@@ -1747,7 +1747,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* MEALS */}
     {section==="meals"&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
-      {!mob?<div style={{display:"grid",gridTemplateColumns:"63% 35%",gap:20,marginBottom:14,alignItems:"center"}}>
+      {!mob?<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
         <div>
           <div style={{fontSize:17,fontWeight:800,color:C.t1}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
           <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2}}>
@@ -1766,7 +1766,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       </>}
 
       {/* === MODE: Tự nhập — all meals in one flow === */}
-      {mealMode==="tu_nhap"&&<div style={!mob?{display:"grid",gridTemplateColumns:"63% 35%",gap:20}:{}}><div>
+      {mealMode==="tu_nhap"&&<div style={!mob?{marginRight:"calc((100vw - 330px) * 0.35 + 30px)"}:{}}><div>
       <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
         <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
@@ -1946,7 +1946,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
       </div>}
       </div>
-      {!mob&&<div><div style={{position:"sticky",top:92}}>
+      {!mob&&<div style={{position:"fixed",top:92,right:44,width:"calc((100vw - 330px) * 0.35)",zIndex:4}}>
         <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}>
           <div style={{fontSize:14,fontWeight:800,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <span style={{display:"flex",alignItems:"center",gap:8}}>📊 Tổng hôm nay</span>
@@ -2049,7 +2049,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
         </>}
 
-      </div></div>}
+      </div>}
       </div>}
 
       {/* === MODE: Lịch tuần === */}
