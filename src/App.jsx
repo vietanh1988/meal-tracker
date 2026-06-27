@@ -1108,7 +1108,7 @@ function WeightRow({w,i,weightLog,setWeightLog,setProfile,profile,deleteWeight})
   </div>;
 }
 
-function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,initialSection,hidePills,pcDayType}){if(!profile||!macro)return null;
+function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,initialSection,hidePills}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [section,setSection]=useState(initialSection||(forcedSection==="settings"?"account":(forcedSection==="profile"?"profile":(forcedSection||"meals"))));
   useEffect(()=>{
@@ -1124,7 +1124,6 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     const mappedIdx=todayIdx===0?6:todayIdx-1;// gymDays: 0=T2...6=CN
     return gd.includes(mappedIdx)?"train":"rest";
   });
-  useEffect(()=>{if(pcDayType&&pcDayType!==dayType)setDayType(pcDayType);},[pcDayType]);
   const [selectedMeal,setSelectedMeal]=useState("sang");
   const [mealMode,setMealMode]=useState("tu_nhap"); // tu_nhap | lich_tuan | kho_mau
   const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
@@ -3329,7 +3328,7 @@ export default function App(){
           </div>}
         </div>}
         {tab==="profile"&&<AdminPanel {...adminP} forcedSection="profile" hidePills/>}
-        {tab==="meals"&&<AdminPanel {...adminP} forcedSection="meals" hidePills pcDayType={pcDayType}/>}
+        {tab==="meals"&&<AdminPanel {...adminP} forcedSection="meals" hidePills/>}
         {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={false}/>}
         {tab==="settings"&&<AdminPanel {...adminP} forcedSection="settings" signOut={signOut} user={user}/>}
         {tab==="about"&&<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={false}/>}
