@@ -2428,6 +2428,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       const today=fmtDate(new Date());
       return <div style={card}>
         <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16}}>Nhập cân nặng</div>
+        <div style={!mob?{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:0}:{}}>
+        <div>
         <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
             <span style={{fontSize:13,fontWeight:700,color:C.t1}}>Tuần {nextWeek}</span>
@@ -2450,6 +2452,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         }} style={{...redBtn,marginTop:16}}>⚡ Lưu cân nặng</button>
         <div id="weight-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
           <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu & cập nhật macro theo cân nặng mới!</span>
+        </div>
+        </div>
+        {!mob&&weightLog.length>=2&&<div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:16}}>
+          <div style={{fontSize:14,fontWeight:800,marginBottom:12,display:"flex",alignItems:"center",gap:8}}>📈 Biểu đồ cân nặng</div>
+          <WeightBarChart weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} mob={false}/>
+        </div>}
         </div>
         <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14,marginTop:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
