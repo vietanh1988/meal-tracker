@@ -858,17 +858,17 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     const isGym=gd.includes(mapped);
     setDayType(isGym?"train":"rest");
   },[appSettings.gymDays]);
-  // Auto-apply weekly template once per day
-  const appliedRef=useRef(null);
+  // Auto-apply weekly template once per day (persist across remounts)
   useEffect(()=>{
     if(!getWeeklyTemplate||!applyTemplate)return;
     const today=new Date().toISOString().slice(0,10);
-    if(appliedRef.current===today)return;// already applied today
+    const appliedKey="fitpilot_tpl_applied";
+    try{if(localStorage.getItem(appliedKey)===today)return;}catch(e){}
     const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
     const todayKey=dayKeys[new Date().getDay()];
     const tpl=getWeeklyTemplate(todayKey);
     if(tpl&&tpl.meals&&tpl.meals.length>0){
-      appliedRef.current=today;
+      try{localStorage.setItem(appliedKey,today);}catch(e){}
       applyTemplate(tpl);
       setDayType(tpl.day_type||"train");
       console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
