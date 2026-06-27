@@ -1229,11 +1229,12 @@ Lưu ý: đồ uống (sữa, nước ép, sinh tố) tính theo ml chứ không
 Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 {"items":[{"name":"tên","gram":số,"protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý cho người gym"}`;
 
-  const callAI=useCallback(async(forceRefresh=false)=>{
-    if(foodItems.length===0||foodItems.every(f=>!f.name.trim()))return;
+  const callAI=useCallback(async(forceRefresh=false,overrideFoods=null)=>{
+    const itemsToCalc=overrideFoods||foodItems;
+    if(itemsToCalc.length===0||itemsToCalc.every(f=>!f.name.trim()))return;
     setAiLoading(true);setAiError(null);setAiResult(null);
     const fc=forceRefresh?{}:(foodCache||{});
-    const validItems=foodItems.filter(f=>f.name.trim());
+    const validItems=itemsToCalc.filter(f=>f.name.trim());
 
     // === STEP 1: LocalDB (192 món verified, ưu tiên cao nhất) ===
     const localResolved=[];const nonLocal=[];
@@ -1654,7 +1655,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         });
         if(combined.length===0){setAiError("Chưa nhập thức ăn nào");return;}
         setFoodItems(combined);
-        setTimeout(()=>callAI(),100);
+        callAI(false,combined);
       }} disabled={aiLoading} style={{...redBtn,marginTop:8,opacity:aiLoading?0.7:1}}>
         {aiLoading?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           <span style={{width:16,height:16,border:"2.5px solid #fcc",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.6s linear infinite"}}/>
@@ -1841,7 +1842,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         });
         if(combined.length===0){setAiError("Chưa nhập thức ăn nào");return;}
         setFoodItems(combined);
-        setTimeout(()=>callAI(),100);
+        callAI(false,combined);
       }} disabled={aiLoading} style={{...redBtn,marginTop:8,opacity:aiLoading?0.7:1}}>
         {aiLoading?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           <span style={{width:16,height:16,border:"2.5px solid #fcc",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.6s linear infinite"}}/>
@@ -1860,7 +1861,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             if(allNames.length>0) await deleteFoodCache(allNames);
             setAiResult(null);
             const combined=[];mealNames.forEach(meal=>{const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());foods.forEach(f=>combined.push({...f,_mealId:meal.id}));});
-            setFoodItems(combined);setTimeout(()=>callAI(true),100);
+            setFoodItems(combined);callAI(true,combined);
           }} style={{marginLeft:"auto",padding:"4px 10px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>🔄 Tính lại</button>
         </div>
         {/* Group results by meal */}
