@@ -2456,7 +2456,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
         {!mob&&weightLog.length>=2&&<div>
           <div style={{fontSize:14,fontWeight:800,marginBottom:12,display:"flex",alignItems:"center",gap:8}}>📈 Biểu đồ cân nặng</div>
-          <WeightBarChart weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} mob={false}/>
+          <WeightBarChart weightLog={weightLog} goalKg={profile.goalKg||(weightLog.length>0?weightLog[0].kg:profile.kg)} goalType={profile.goalType} startKg={weightLog.length>0?weightLog[0].kg:profile.kg} mob={false}/>
         </div>}
         </div>
         <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14,marginTop:16}}>
