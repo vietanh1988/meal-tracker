@@ -2003,10 +2003,36 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             if(saveItems.length>0)saveMealToCloud(meal.id,dayType,saveItems);});
             if(aiResult._cacheEntries)saveFoodCache(aiResult._cacheEntries,aiProvider);
             const el=document.getElementById("meal-saved-pc");if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-            setTimeout(()=>{setShowSaveTpl(true);},500);
-          }} style={{...redBtn,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)",width:"100%"}}>💾 Lưu tất cả bữa</button>
+          }} style={{...redBtn,marginTop:0,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",width:"100%"}}>💾 Lưu bữa ăn hôm nay</button>
+          <button onClick={()=>setShowSaveTpl(!showSaveTpl)} style={{...redBtn,marginTop:8,background:C.card,color:C.t2,border:`1.5px solid ${C.border}`,width:"100%"}}>📅 Gán vào lịch tuần</button>
           <div id="meal-saved-pc" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
             <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu thành công!</span>
+          </div>
+          {showSaveTpl&&(()=>{
+            const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
+            const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
+            const todayIdx2=new Date().getDay();
+            const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+            return <div style={{marginTop:10,padding:14,background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
+              <div style={{fontSize:14,fontWeight:800,color:"#3730A3",marginBottom:8}}>📅 Chọn ngày trong tuần</div>
+              <select id="save-tpl-day-pc" defaultValue={dayKeys2[todayIdx2]} style={{...inp,marginBottom:10,fontSize:13}}>
+                {dayLabels2.map((l,i2)=>{const mi2=i2===0?6:i2-1;const ig=gd.includes(mi2);return <option key={i2} value={dayKeys2[i2]}>{l} — {ig?"Ngày tập":"Ngày nghỉ"}</option>;})}
+              </select>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={async()=>{
+                  const sd=document.getElementById("save-tpl-day-pc")?.value||dayKeys2[todayIdx2];
+                  const amd=mealNames.map(meal=>{const it=(getMeals(dayType).find(m=>m.id===meal.id)||{}).items||[];return it.length>0?{meal_id:meal.id,meal_name:meal.l,items:it}:null;}).filter(Boolean);
+                  const tc=amd.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
+                  if(saveWeeklyTemplate)await saveWeeklyTemplate(sd,dayType,amd,Math.round(tc));
+                  setShowSaveTpl(false);
+                  const el2=document.getElementById("tpl-week-saved-pc");if(el2){el2.style.display="flex";setTimeout(()=>{el2.style.display="none";},3000);}
+                }} style={{flex:1,padding:10,fontSize:13,fontWeight:700,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu</button>
+                <button onClick={()=>setShowSaveTpl(false)} style={{padding:"10px 16px",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Huỷ</button>
+              </div>
+            </div>;
+          })()}
+          <div id="tpl-week-saved-pc" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+            <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu vào lịch tuần!</span>
           </div>
         </>}
         {!aiResult&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px",background:"rgba(52,199,89,0.08)",border:`1.5px solid rgba(52,199,89,0.2)`,borderRadius:10,marginTop:8}}>
