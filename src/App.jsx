@@ -2035,10 +2035,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu vào lịch tuần!</span>
           </div>
         </>}
-        {!aiResult&&<div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:"10px",background:"rgba(52,199,89,0.08)",border:`1.5px solid rgba(52,199,89,0.2)`,borderRadius:10,marginTop:8}}>
-          <span style={{width:8,height:8,borderRadius:"50%",background:"#34C759"}}/>
-          <span style={{fontSize:12,fontWeight:600,color:"#059669"}}>✓ Tự động lưu</span>
-        </div>}
+
       </div>}
       </div>}
 
