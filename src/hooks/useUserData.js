@@ -98,22 +98,8 @@ export function useUserData(userId) {
     fetchAllData(false);
   }, [fetchAllData]);
 
-  // Auto re-fetch when tab/app becomes visible (cross-device sync)
-  useEffect(() => {
-    const doResync = () => {
-      if (!userId) return;
-      if (Date.now() - lastFetchRef.current > 30000) {
-        console.log("🔄 Re-syncing data...");
-        fetchAllData(true);
-      }
-    };
-    const handleVisibility = () => { if (document.visibilityState === "visible") doResync(); };
-
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [fetchAllData, userId]);
+  // Auto re-fetch disabled — use F5 for cross-device sync
+  // useEffect visibilitychange removed to prevent race conditions
 
   // Get meals for a day type
   const getMeals = useCallback((type) => {
