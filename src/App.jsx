@@ -2462,7 +2462,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
         <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14,marginTop:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-            <div style={lbl}>Lịch sử theo dõi cân nặng</div>
+            <div style={{...lbl,fontSize:14,fontWeight:800}}>📋 Lịch sử theo dõi cân nặng</div>
             <button onClick={()=>{
               if(window.confirm("Xóa toàn bộ lịch sử cân nặng?")){
                 resetWeights();
