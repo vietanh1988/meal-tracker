@@ -143,24 +143,11 @@ export function useUserData(userId) {
       const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
       const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
 
-      const { data: existing } = await supabase.from("meal_logs")
-        .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType)
-        .maybeSingle();
+      const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: new Date().toISOString().slice(0, 10), items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
 
-      const payload = { items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
-
-      if (existing) {
-        const { error } = await supabase.from("meal_logs").update(payload).eq("id", existing.id);
-        if (error) console.error("Update meal error:", error);
-        else console.log("✅ Meal updated:", mealId, dayType);
-      } else {
-        const { error } = await supabase.from("meal_logs").insert({
-          user_id: userId, meal_id: mealId, day_type: dayType,
-          log_date: new Date().toISOString().slice(0, 10), ...payload,
-        });
-        if (error) console.error("Insert meal error:", error);
-        else console.log("✅ Meal saved:", mealId, dayType);
-      }
+      const { error } = await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
+      if (error) console.error("Meal save error:", error);
+      else console.log("✅ Meal saved:", mealId, dayType);
 
       // === Auto-save to daily_logs ===
       const today = new Date().toISOString().slice(0, 10);
@@ -415,15 +402,8 @@ export function useUserData(userId) {
           const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
           const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
           const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
-          const { data: existing } = await supabase.from("meal_logs")
-            .select("id").eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType)
-            .maybeSingle();
-          const payload = { items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
-          if (existing) {
-            await supabase.from("meal_logs").update(payload).eq("id", existing.id);
-          } else {
-            await supabase.from("meal_logs").insert({ user_id: userId, meal_id: mealId, day_type: dayType, log_date: today, ...payload });
-          }
+          const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: today, items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
+          await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
         } catch (e) { console.error("Apply meal_logs error:", e); }
       }
     }
