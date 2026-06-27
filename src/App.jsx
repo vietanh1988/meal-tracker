@@ -1755,7 +1755,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
         </div>
         <div style={{display:"flex",gap:4,background:C.surface,borderRadius:10,padding:3}}>
-          {[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{padding:"7px 16px",borderRadius:8,fontSize:13,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{t.icon} {t.label}</div>)}
+          {[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{padding:"10px 24px",borderRadius:10,fontSize:14,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{t.icon} {t.label}</div>)}
         </div>
       </div>:<>
         <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{mealMode==="tu_nhap"?"Nhập bữa ăn":mealMode==="lich_tuan"?"Lịch tuần":"Kho mẫu"}</div>
@@ -1794,7 +1794,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             </div>
           </div>;
         })}
-        <div style={{marginTop:8,fontSize:10,color:C.t3}}>Bữa tắt sẽ không hiện trên Dashboard.</div>
+        <div style={{marginTop:8,fontSize:13,fontWeight:700,color:"#B91C1C"}}>⚠ Bữa tắt sẽ không hiện trên Dashboard.</div>
       </div>}
       {/* All meals — each as labeled card */}
       {mealNames.map(meal=>{
@@ -3202,7 +3202,8 @@ const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months
 
 export default function App(){
   const {user,loading,signOut}=useAuth();
-  const [tab,setTab]=useState("dashboard");
+  const [tab,setTab]=useState(()=>{try{return localStorage.getItem("fitpilot_tab")||"dashboard";}catch(e){return "dashboard";}});
+  useEffect(()=>{try{localStorage.setItem("fitpilot_tab",tab);}catch(e){}},[tab]);
   const [pcDayManual,setPcDayManual]=useState(null);
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
