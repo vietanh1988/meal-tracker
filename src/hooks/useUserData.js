@@ -101,6 +101,11 @@ export function useUserData(userId) {
   // Auto re-fetch disabled — use F5 for cross-device sync
   // useEffect visibilitychange removed to prevent race conditions
 
+  // Manual refetch for tab changes
+  const refetchData = useCallback(() => {
+    if (userId) fetchAllData(true);
+  }, [fetchAllData, userId]);
+
   // Get meals for a day type
   const getMeals = useCallback((type) => {
     return meals[type] || defaultStructure[type];
@@ -429,7 +434,7 @@ export function useUserData(userId) {
   }, []);
 
   return {
-    loaded, meals, getMeals, getMealHistory, foodCache,
+    loaded, meals, getMeals, getMealHistory, foodCache, refetchData,
     saveMealToCloud, saveFoodCache, deleteFoodCache,
     weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, getWeeklyTemplate,
     defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, refreshDefaultTemplates,
