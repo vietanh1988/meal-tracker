@@ -3175,7 +3175,13 @@ export default function App(){
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
 
   // Onboarding: chỉ hiện cho user mới chưa có data thật
-  const needsOnboarding=!profile.onboardingDone && !(profile.cm>0 && profile.kg>0 && profile.age>0);
+  // Auto-migrate: existing users without onboardingDone flag
+  useEffect(()=>{
+    if(profile && !profile.onboardingDone && weightLog && weightLog.length>0){
+      setProfile(p=>({...p,onboardingDone:true}));
+    }
+  },[profile?.onboardingDone,weightLog?.length]);
+  const needsOnboarding=!profile.onboardingDone;
   if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
 
   // === PC DATA COMPUTATION ===
