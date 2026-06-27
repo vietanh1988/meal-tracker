@@ -3175,7 +3175,7 @@ export default function App(){
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
 
   // Onboarding: chỉ hiện cho user mới chưa có data thật
-  const needsOnboarding=!profile.onboardingDone;
+  const needsOnboarding=!profile.onboardingDone && !(profile.cm>0 && profile.kg>0 && profile.age>0);
   if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
 
   // === PC DATA COMPUTATION ===
