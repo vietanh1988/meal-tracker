@@ -3200,7 +3200,7 @@ export default function App(){
           <button style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ AI Coach</button>
         </div>
       </header>
-      <main style={{padding:24,flex:1}}>
+      <main style={{padding:"24px 100px",flex:1}}>
         {tab==="dashboard"&&<div>
           {/* HERO */}
           <div style={{...card,padding:"28px 32px",borderRadius:20,display:"flex",alignItems:"center",marginBottom:24,border:`1.5px solid ${C.border}`}}>
