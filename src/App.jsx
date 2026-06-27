@@ -1119,11 +1119,13 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
     else if(forcedSection)setSection(forcedSection);
   },[forcedSection,isAdmin,initialSection]);
   const [dayType,setDayType]=useState(()=>{
+    try{const saved=localStorage.getItem("fitpilot_dayType");if(saved==="train"||saved==="rest")return saved;}catch(e){}
     const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
     const todayIdx=new Date().getDay();// 0=CN,1=T2...
     const mappedIdx=todayIdx===0?6:todayIdx-1;// gymDays: 0=T2...6=CN
     return gd.includes(mappedIdx)?"train":"rest";
   });
+  useEffect(()=>{try{localStorage.setItem("fitpilot_dayType",dayType);}catch(e){}},[dayType]);
   const [selectedMeal,setSelectedMeal]=useState("sang");
   const [mealMode,setMealMode]=useState("tu_nhap"); // tu_nhap | lich_tuan | kho_mau
   const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
