@@ -3168,10 +3168,13 @@ export default function App(){
   const macro=calcMacro(profile||defaultProfile);
   const [macroBanner,setMacroBanner]=useState(null);
   const prevCalRef=useRef(null);
+  const profileChangedRef=useRef(false);
+  useEffect(()=>{profileChangedRef.current=true;},[profile?.kg,profile?.activity,profile?.goalType,profile?.gym,profile?.exerciseType,profile?.birthYear]);
   useEffect(()=>{
     if(!macro||!macro.calTarget)return;
-    if(prevCalRef.current!==null&&Math.abs(macro.calTarget-prevCalRef.current)>10){
+    if(prevCalRef.current!==null&&profileChangedRef.current&&Math.abs(macro.calTarget-prevCalRef.current)>10){
       setMacroBanner({prev:prevCalRef.current,now:macro.calTarget,diff:macro.calTarget-prevCalRef.current});
+      profileChangedRef.current=false;
       setTimeout(()=>setMacroBanner(null),5000);
     }
     prevCalRef.current=macro.calTarget;
@@ -3274,7 +3277,7 @@ export default function App(){
           </div>}
           {/* HERO */}
           <div style={{...card,padding:"28px 32px",borderRadius:20,display:"flex",alignItems:"center",marginBottom:24,border:`1.5px solid ${C.border}`}}>
-            <div style={{flex:"0 0 40%"}}><div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div><div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcAC>0?pcAC.toLocaleString():pcHCal.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>{pcAC>0&&<div style={{marginTop:10,fontSize:14,fontWeight:700,color:(()=>{const pp=pcHCal>0?Math.round(pcAC/pcHCal*100):0;return pp<95?"#B45309":pp<=105?"#16A34A":"#DC2626";})()}}>{(()=>{const pp=pcHCal>0?Math.round(pcAC/pcHCal*100):0;return pp<95?`⚠️ Còn thiếu ${pcCR} kcal`:pp<=105?"✅ Ổn rồi, giữ nhé!":`🔴 Dư ${Math.abs(pcCR)} kcal`;})()}</div>}<div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:10,background:C.border,borderRadius:5}}><div style={{height:10,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcAC>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div></div>
+            <div style={{flex:"0 0 40%"}}><div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div><div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcAC>0?pcAC.toLocaleString():pcHCal.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>{pcAC>0&&<div style={{marginTop:10,fontSize:14,fontWeight:700,color:(()=>{const pp=pcHCal>0?Math.round(pcAC/pcHCal*100):0;return pp<95?"#B45309":pp<=105?"#16A34A":"#DC2626";})()}}>{(()=>{const pp=pcHCal>0?Math.round(pcAC/pcHCal*100):0;return pp<95?`⚠️ Còn thiếu ${pcCR} kcal`:pp<=105?"✅ Ổn rồi, giữ nhé!":`🔴 Dư ${Math.abs(pcCR)} kcal`;})()}</div>}<div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:10,background:C.border,borderRadius:5}}><div style={{height:10,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcAC>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div></div></div>
             <div style={{flex:"0 0 60%",display:"flex",justifyContent:"center",gap:24}}><MacroRing size={110} l="Protein" v={pcAP>0?pcAP:pcHP} max={pcHP} color="#007AFF" color2="#007AFF" sub={pcAP>0?`/${pcHP}g`:null} unit="g"/><MacroRing size={110} l="Carb" v={pcACb>0?pcACb:pcHC} max={pcHC} color="#5AC8FA" color2="#5AC8FA" sub={pcACb>0?`/${pcHC}g`:null} unit="g"/><MacroRing size={110} l="Fat" v={pcAF>0?pcAF:pcHF} max={pcHF} color="#8E8E93" color2="#8E8E93" sub={pcAF>0?`/${pcHF}g`:null} unit="g"/><MacroRing size={110} l="Xơ" v={pcAFib>0?pcAFib:pcHFib} max={pcHFib} color="#34C759" color2="#34C759" sub={pcAFib>0?`/${pcHFib}g`:null} unit="g"/></div>
           </div>
           {/* STATS */}
