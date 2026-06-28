@@ -2296,7 +2296,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     border:on?`1.5px solid #FECACA`:`1.5px solid ${C.border}`,
                   }}>{d}</div>;})}
                 </div>
-                <div style={{fontSize:12,color:C.t3,display:"flex",alignItems:"center",gap:4}}>ℹ️ Dùng để app biết hôm nay bạn tập hay nghỉ</div>
+                <div style={{fontSize:13,fontWeight:600,color:C.t2,display:"flex",alignItems:"center",gap:6}}>ℹ️ Dùng để app biết hôm nay bạn tập hay nghỉ</div>
               </div>;
             })()}
           </div>
