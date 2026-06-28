@@ -2219,7 +2219,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           ].map(f=><div key={f.key}>
             <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4,display:"flex",alignItems:"center",gap:6}}>{f.icon} {f.label}{f.key==="kg"&&weightLog&&weightLog.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#DCFCE7",padding:"1px 6px",borderRadius:8}}>{mob?"🔄 Auto Update":"🔄 Update cân nặng mới nhất"}</span>}</div>
             <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
-              <input type="text" inputMode={f.mode} value={f.key==="kg"?profile.kg:profile[f.key]} disabled={f.key==="kg"&&weightLog&&weightLog.length>0} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...profile,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1,opacity:f.key==="kg"&&weightLog&&weightLog.length>0?0.6:1}}/>
+              <input type="text" inputMode={f.mode} value={f.key==="kg"?profile.kg:profile[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...profile,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
               <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
             </div>
           </div>)}
