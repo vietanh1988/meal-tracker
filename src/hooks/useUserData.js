@@ -98,12 +98,18 @@ export function useUserData(userId) {
     fetchAllData(false);
   }, [fetchAllData]);
 
-  // Auto re-fetch disabled — use F5 for cross-device sync
-  // useEffect visibilitychange removed to prevent race conditions
-
-  // Manual refetch for tab changes
-  const refetchData = useCallback(() => {
-    if (userId) fetchAllData(true);
+  // Re-sync on visibility change (30s debounce, visibilitychange only)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && userId) {
+        if (Date.now() - lastFetchRef.current > 30000) {
+          console.log("🔄 Re-syncing meals data...");
+          fetchAllData(true);
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [fetchAllData, userId]);
 
   // Get meals for a day type
@@ -434,7 +440,7 @@ export function useUserData(userId) {
   }, []);
 
   return {
-    loaded, meals, getMeals, getMealHistory, foodCache, refetchData,
+    loaded, meals, getMeals, getMealHistory, foodCache,
     saveMealToCloud, saveFoodCache, deleteFoodCache,
     weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, getWeeklyTemplate,
     defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, refreshDefaultTemplates,
