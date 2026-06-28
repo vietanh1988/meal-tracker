@@ -945,11 +945,8 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         </div>
         <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
       </div>
-      {actualCal>0&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:6}}>
-        <span style={{fontSize:14}}>{calStatus}</span>
-        <span style={{fontSize:13,fontWeight:700,color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?C.green:actualCal<heroCal*0.95?"#B45309":C.red}}>
-          {calDiff>0?`+${calDiff}`:`${calDiff}`} kcal ({Math.round(actualCal/heroCal*100)}%)
-        </span>
+      {actualCal>0&&<div style={{marginTop:6}}>
+        <span style={{fontSize:13,fontWeight:700,color:(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?"#B45309":pp<=105?"#16A34A":"#DC2626";})()}}>{(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?`⚠️ Còn thiếu ${calRemain} kcal`:pp<=105?"✅ Ổn rồi, giữ nhé!":`🔴 Dư ${Math.abs(calRemain)} kcal`;})()}</span>
       </div>}
       {/* Progress bar */}
       <div style={{height:8,width:"100%",background:"#F3F4F6",borderRadius:4,marginTop:10,overflow:"hidden"}}>
@@ -2517,7 +2514,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             <span>Tuần</span><span>Ngày</span><span style={{textAlign:"right"}}>Kg</span><span style={{textAlign:"right"}}>Δ</span><span style={{textAlign:"right"}}>Thao tác</span>
           </div>
           {weightLog.map((w,i)=>(
-            <WeightRow key={w.id||i} w={w} i={i} weightLog={weightLog} setWeightLog={setWeightLog} setProfile={setProfile} profile={profile} deleteWeight={deleteWeight}/>
+            <WeightRow key={w.id||i} w={w} i={i} weightLog={weightLog} setWeightLog={setWeightLog} setProfile={wrappedSetProfile} profile={profile} deleteWeight={deleteWeight}/>
           ))}
         </div>
         {weightLog.length>=2&&(()=>{
@@ -3168,18 +3165,18 @@ export default function App(){
   const macro=calcMacro(profile||defaultProfile);
   const [macroBanner,setMacroBanner]=useState(null);
   const prevCalRef=useRef(null);
-  const profileChangedRef=useRef(false);
-  const mountedRef=useRef(false);
-  useEffect(()=>{if(!mountedRef.current){mountedRef.current=true;return;}profileChangedRef.current=true;},[profile?.kg,profile?.activity,profile?.goalType,profile?.gym,profile?.exerciseType,profile?.birthYear]);
+  const [profileUserEdited,setProfileUserEdited]=useState(false);
+  const origSetProfile=setProfile;
+  const wrappedSetProfile=useCallback((p)=>{setProfileUserEdited(true);origSetProfile(p);},[origSetProfile]);
   useEffect(()=>{
     if(!macro||!macro.calTarget)return;
-    if(prevCalRef.current!==null&&profileChangedRef.current&&Math.abs(macro.calTarget-prevCalRef.current)>10){
+    if(prevCalRef.current!==null&&profileUserEdited&&Math.abs(macro.calTarget-prevCalRef.current)>10){
       setMacroBanner({prev:prevCalRef.current,now:macro.calTarget,diff:macro.calTarget-prevCalRef.current});
-      profileChangedRef.current=false;
+      setProfileUserEdited(false);
       setTimeout(()=>setMacroBanner(null),5000);
     }
     prevCalRef.current=macro.calTarget;
-  },[macro?.calTarget]);
+  },[macro?.calTarget,profileUserEdited]);
   const mob=useIsMobile();
   // Auto-detect PC day type from gym schedule (computed, not state)
   const pcDayAuto=(()=>{
@@ -3196,7 +3193,7 @@ export default function App(){
 
   // Onboarding: chỉ hiện cho user mới chưa có data thật
   const needsOnboarding=!profile.onboardingDone && (!weightLog || weightLog.length===0);
-  if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={setProfile} onComplete={()=>setTab("dashboard")}/>;
+  if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>setTab("dashboard")}/>;
 
   // === PC DATA COMPUTATION ===
   const pcMC=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
@@ -3220,11 +3217,11 @@ export default function App(){
   // ========== MOBILE ==========
   if(mob) return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:"0 10px 10px 10px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:100}}>
-    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={setProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner}/>}
-    {tab==="weight"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" initialSection="weight" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
-    {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={wrappedSetProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner}/>}
+    {tab==="weight"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" initialSection="weight" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+    {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
     {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
-    {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={setProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
+    {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
     <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
       {[{id:"dashboard",label:"Tổng quan",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>},{id:"meals",label:"Bữa ăn",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>},{id:"weight",label:"Cân nặng",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="78" width="80" height="10" rx="5" fill={c}/><rect x="44" y="28" width="8" height="52" rx="4" fill={c}/><rect x="12" y="24" width="72" height="8" rx="4" fill={c}/><rect x="22" y="24" width="4" height="18" rx="2" fill={c}/><rect x="70" y="24" width="4" height="18" rx="2" fill={c}/><rect x="10" y="40" width="28" height="8" rx="4" fill={c}/><rect x="58" y="40" width="28" height="8" rx="4" fill={c}/><circle cx="48" cy="16" r="8" fill={c}/></svg>},{id:"report",label:"Báo cáo",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>},{id:"settings",label:"Cài đặt",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>}].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>{t.svg(a?"url(#navG)":"#A0A0A0")}<span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span></div>;})}
