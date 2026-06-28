@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 
-const DEFAULT = {cm:172,kg:63,birthYear:1987,goalKg:68,goalType:"bulk",months:4,exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",gymDays:[0,2,4,5]};
+const DEFAULT = {cm:172,kg:63,birthYear:1987,goalKg:68,goalType:"bulk",months:4,exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard",gymDays:[0,2,4,5]};
 
 export function useProfile(userId) {
   const [profile, setProfileState] = useState(null);
@@ -30,6 +30,7 @@ export function useProfile(userId) {
         if(data.onboarding_done) p.onboardingDone = data.onboarding_done;
         if(data.frequency) p.frequency = data.frequency;
         if(data.diet_strategy) p.dietStrategy = data.diet_strategy;
+        if(data.calorie_mode) p.calorieMode = data.calorie_mode;
         setProfileState(p);
         if (!silent) console.log("✅ Profile loaded from cloud");
       } else {
@@ -40,6 +41,7 @@ export function useProfile(userId) {
           goal_kg: DEFAULT.goalKg, goal_type: DEFAULT.goalType,
           months: DEFAULT.months, exercise_type: DEFAULT.exerciseType,
           frequency: DEFAULT.frequency, diet_strategy: DEFAULT.dietStrategy,
+          calorie_mode: DEFAULT.calorieMode,
           gym_days: DEFAULT.gymDays,
         });
       }
@@ -82,7 +84,8 @@ export function useProfile(userId) {
         if(merged.onboardingDone !== undefined) payload.onboarding_done = merged.onboardingDone;
         if(merged.frequency) payload.frequency = merged.frequency;
         if(merged.dietStrategy) payload.diet_strategy = merged.dietStrategy;
-        // Legacy fields — giữ để migration không mất data cũ
+        if(merged.calorieMode) payload.calorie_mode = merged.calorieMode;
+        // Legacy fields
         if(merged.gym) payload.gym = merged.gym;
         if(merged.activity) payload.activity = merged.activity;
         await supabase.from("profiles").upsert(payload);

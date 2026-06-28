@@ -2419,6 +2419,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:12}}>⚡ Macro (dinh dưỡng) tự động tính</div>
+        <div style={{display:"flex",alignItems:"center",gap:4,padding:"6px 8px",background:C.surface,borderRadius:10,border:`1.5px solid ${C.border}`,marginBottom:12,width:"fit-content"}}>
+          {[{id:"standard",label:"Quốc tế"},{id:"asian",label:"Châu Á (-10%)"}].map(m=><div key={m.id} onClick={()=>setProfile({...profile,calorieMode:m.id})} style={{
+            padding:"6px 14px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,
+            background:(profile.calorieMode||"standard")===m.id?C.primary:"transparent",
+            color:(profile.calorieMode||"standard")===m.id?"#fff":C.t2,
+            transition:"all 0.15s",
+          }}>{m.label}</div>)}
+        </div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8}}>
           {[
             {l:"TDEE",v:`${macro.tdee} cal`,desc:"Calo duy trì",c:C.t1},
@@ -2464,15 +2472,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
         </div>
 
-        <div style={{marginTop:10,padding:"10px 14px",borderRadius:10,background:"#EFF6FF",border:"1px solid #BFDBFE",display:"flex",alignItems:"flex-start",gap:8}}>
+        {(profile.calorieMode||"standard")==="asian"&&<div style={{marginTop:10,padding:"10px 14px",borderRadius:10,background:"#EFF6FF",border:"1px solid #BFDBFE",display:"flex",alignItems:"flex-start",gap:8}}>
           <span style={{fontSize:14,flexShrink:0}}>🇻🇳</span>
-          <span style={{fontSize:12,fontWeight:600,color:"#1E40AF",lineHeight:1.6}}>Công thức chuẩn quốc tế — có thể cao hơn 5-10% cho người châu Á. Nếu không tăng/giảm cân sau 2-3 tuần, hãy điều chỉnh ±100-200 cal.</span>
-        </div>
+          <span style={{fontSize:12,fontWeight:600,color:"#1E40AF",lineHeight:1.6}}>Đang dùng công thức Châu Á (BMR ×0.9). Phù hợp hơn cho người Việt Nam và Đông Nam Á.</span>
+        </div>}
 
         <div style={{marginTop:12,background:C.goldBg,borderRadius:10,padding:"10px 14px",border:"1.5px solid #CA8A04"}}>
           <span style={{fontSize:12,fontWeight:700,color:"#78350F",lineHeight:1.6}}>
-            💡 BMR = {macro.bmr} → ×{macro.actMul} = TDEE {macro.tdee} cal.
-            {macro.goal==="bulk"?"Tăng cơ":"Giảm mỡ"}: P = {profile.kg}×{macro.pRatio.replace("g/kg","")} = {macro.protein}g, C = {profile.kg}×{macro.cRatio.replace("g/kg","")} = {macro.carb}g, F = {profile.kg}×{macro.fRatio.replace("g/kg","")} = {macro.fat}g.
+            💡 BMR = {macro.bmr}{(profile.calorieMode||"standard")==="asian"?" (×0.9 Châu Á)":""} → ×{macro.actMul} = TDEE {macro.tdee} cal.
+            {macro.goal==="bulk"?"Tăng cơ":macro.goal==="cut"?"Giảm mỡ":"Duy trì"}: P = {profile.kg}×{macro.pRatio.replace("g/kg","")} = {macro.protein}g, C = {profile.kg}×{macro.cRatio.replace("g/kg","")} = {macro.carb}g, F = {profile.kg}×{macro.fRatio.replace("g/kg","")} = {macro.fat}g.
             Ngày nghỉ: C giảm → {macro.carbRest}g. Tổng: {macro.calTarget} cal (tập) / {macro.calRest} cal (nghỉ).
           </span>
         </div>
@@ -3120,12 +3128,15 @@ function NotiBell({appSettings,dark}){
   </div>;
 }
 
-function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced"};
+function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};
   const gender=p.gender||"male";
   const exerciseType=p.exerciseType||"gym";
   const age=p.birthYear?new Date().getFullYear()-p.birthYear:(p.age||25);
   // BMR: Mifflin-St Jeor (khác theo giới tính)
-  const bmr=10*p.kg+6.25*p.cm-5*age+(gender==="male"?5:-161);
+  const bmrRaw=10*p.kg+6.25*p.cm-5*age+(gender==="male"?5:-161);
+  // Châu Á: -10% (nghiên cứu cho thấy Mifflin-St Jeor cao hơn ~10% cho người châu Á)
+  const asianFactor=(p.calorieMode||"standard")==="asian"?0.9:1;
+  const bmr=Math.round(bmrRaw*asianFactor);
   // Activity multiplier — chuẩn quốc tế, 1 giá trị duy nhất
   const freqMap={occasional:1.375,regular:1.55,frequent:1.725,daily:1.9};
   // Migration: map activity cũ sang frequency mới
@@ -3184,7 +3195,7 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"b
   return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
 }
 
-const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced"};
+const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};
 
 export default function App(){
   const {user,loading,signOut}=useAuth();
