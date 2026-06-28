@@ -2196,7 +2196,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
 
         {/* Gender */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,marginBottom:14,maxWidth:mob?"100%":360}}>
           {[{id:"male",icon:"👨",name:"Nam"},{id:"female",icon:"👩",name:"Nữ"}].map(g=><div key={g.id} onClick={()=>setProfile({...profile,gender:g.id})} style={{
             padding:mob?"10px 12px":"12px 14px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",gap:8,
             background:(profile.gender||"male")===g.id?"#EFF6FF":C.surface,
@@ -2209,7 +2209,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
 
         {/* 3 inputs */}
-        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr",gap:mob?8:10}}>
+        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr",gap:mob?8:10,maxWidth:mob?"100%":540}}>
           {[
             {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
             {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
