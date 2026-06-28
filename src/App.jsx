@@ -2390,11 +2390,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <span>✓ Tự động lưu</span>
         </div>
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:12}}>⚡ Macro tự động tính</div>
+        <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:12}}>⚡ Macro (dinh dưỡng) tự động tính</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8}}>
           {[
             {l:"TDEE",v:`${macro.tdee} cal`,desc:"Calo duy trì",c:C.t1},
-            {l:"BMI",v:macro.bmi,desc:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",c:C.gold},
+            {l:"BMI (chỉ số cơ thể)",v:macro.bmi,desc:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",c:C.gold},
             {l:"Calo mục tiêu",v:`${macro.calTarget} cal`,desc:profile.goalType==="bulk"?"Tăng cơ +250":profile.goalType==="cut"?"Giảm mỡ -350":"Duy trì",c:C.red},
             {l:"Calo ngày nghỉ",v:`${macro.calRest} cal`,desc:"Giảm carb, giữ P/F",c:C.blue},
           ].map((r,i)=><div key={i} style={{background:C.surface,borderRadius:10,padding:"10px 14px",border:`1.5px solid ${C.border}`}}>
@@ -2404,12 +2404,27 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>)}
         </div>
 
-        <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginTop:12}}>
+        <div style={{fontSize:14,fontWeight:800,color:C.t2,marginTop:14,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>💪 Macro ngày tập</div>
+        <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
           {[
             {l:"Protein",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
-            {l:"Carb (tập)",v:`${macro.carb}g`,sub:`${macro.carb*4} cal · ${macro.cRatio}`,c:C.gold},
-            {l:"Fat",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
-            {l:"Xơ",v:`${macro.fiber}g`,sub:"Khuyến nghị",c:C.green},
+            {l:"Carb (tinh bột)",v:`${macro.carb}g`,sub:`${macro.carb*4} cal · ${macro.cRatio}`,c:C.gold},
+            {l:"Fat (chất béo)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
+            {l:"Chất xơ",v:`${macro.fiber}g`,sub:"Khuyến nghị",c:C.green},
+          ].map((r,i)=><div key={i} style={{background:C.surface,borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>{r.l}</div>
+            <div style={{fontSize:18,fontWeight:900,color:r.c,marginTop:2}}>{r.v}</div>
+            <div style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:2}}>{r.sub}</div>
+          </div>)}
+        </div>
+
+        <div style={{fontSize:14,fontWeight:800,color:C.t2,marginTop:14,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>😴 Macro ngày nghỉ</div>
+        <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
+          {[
+            {l:"Protein",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
+            {l:"Carb (tinh bột)",v:`${macro.carbRest}g`,sub:`${macro.carbRest*4} cal · ×0.75`,c:C.gold},
+            {l:"Fat (chất béo)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
+            {l:"Chất xơ",v:`${Math.round(macro.calRest/1000*14)}g`,sub:"Khuyến nghị",c:C.green},
           ].map((r,i)=><div key={i} style={{background:C.surface,borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
             <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>{r.l}</div>
             <div style={{fontSize:18,fontWeight:900,color:r.c,marginTop:2}}>{r.v}</div>
@@ -3085,25 +3100,18 @@ function NotiBell({appSettings,dark}){
   </div>;
 }
 
-function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
+function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced"};
   const gender=p.gender||"male";
   const exerciseType=p.exerciseType||"gym";
-  const cardioIntensity=p.cardioIntensity||"moderate";
   const age=p.birthYear?new Date().getFullYear()-p.birthYear:(p.age||25);
   // BMR: Mifflin-St Jeor (khác theo giới tính)
   const bmr=10*p.kg+6.25*p.cm-5*age+(gender==="male"?5:-161);
-  // Activity multiplier
-  const jobBase=p.activity==="sedentary"?1.2:p.activity==="moderate"?1.5:1.75;
-  // Gym bonus
-  const hasGym=exerciseType==="gym"||exerciseType==="gym_cardio";
-  const gymBonus=hasGym?(p.gym<=2?0.1:p.gym<=4?0.2:0.3):0;
-  // Cardio bonus
-  const hasCardio=exerciseType==="cardio"||exerciseType==="gym_cardio";
-  const cardioTable={light:{2:0.03,4:0.05,6:0.08},moderate:{2:0.05,4:0.10,6:0.15},intense:{2:0.08,4:0.15,6:0.25}};
-  const ciKey=cardioIntensity||"moderate";
-  const gymCount=p.gym||3;
-  const cardioBonus=hasCardio?(gymCount<=2?cardioTable[ciKey][2]:gymCount<=4?cardioTable[ciKey][4]:cardioTable[ciKey][6]):0;
-  const actMul=Math.round((jobBase+gymBonus+cardioBonus)*100)/100;
+  // Activity multiplier — chuẩn quốc tế, 1 giá trị duy nhất
+  const freqMap={occasional:1.375,regular:1.55,frequent:1.725,daily:1.9};
+  // Migration: map activity cũ sang frequency mới
+  const freqFromActivity=p.activity==="sedentary"?"occasional":p.activity==="moderate"?"regular":p.activity==="heavy"?"frequent":null;
+  const freq=p.frequency||freqFromActivity||"regular";
+  const actMul=exerciseType==="none"?1.2:(freqMap[freq]||1.55);
   const tdee=Math.round(bmr*actMul);
   const diff=Math.round((p.goalKg-p.kg)*10)/10;
   const goal=p.goalType||"bulk";
@@ -3130,13 +3138,21 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,gym:3,goalT
   const perWeek=months>0?Math.round(totalDiff/(months*4.33)*10)/10:0;
   const calAdjust=calAdjustTable[effectiveGoal]||0;
   const calTarget=tdee+calAdjust;
-  // C = phần calo còn lại
-  let carb=Math.round((calTarget-protein*4-fat*9)/4);
-  if(carb<0)carb=0;
+  // C = phần calo còn lại (chế độ Cân bằng)
+  const dietStrategy=(effectiveGoal==="cut")?(p.dietStrategy||"balanced"):"balanced";
+  let carbBalanced=Math.round((calTarget-protein*4-fat*9)/4);
+  if(carbBalanced<0)carbBalanced=0;
   // Carb floor: tối thiểu 2g/kg (cần cho tập luyện)
   const carbFloor=Math.round(p.kg*2);
-  if(carb<carbFloor)carb=carbFloor;
-  const carbRest=Math.round(carb*0.75);
+  if(carbBalanced<carbFloor)carbBalanced=carbFloor;
+  let carb=carbBalanced;
+  // Diet strategy: low-carb / keto cap carb, fat = phần còn lại
+  if(dietStrategy==="low_carb"){carb=Math.min(100,carbBalanced);fat=Math.round((calTarget-protein*4-carb*4)/9);}
+  else if(dietStrategy==="keto"){carb=Math.min(50,carbBalanced);fat=Math.round((calTarget-protein*4-carb*4)/9);}
+  // Fat floor sau diet adjustment
+  if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
+  // Ngày nghỉ: carb giảm 25%, fat giữ nguyên (option A)
+  const carbRest=dietStrategy==="keto"?carb:Math.round(carb*0.75);
   const calFinal=protein*4+carb*4+fat*9;
   const calRest=protein*4+carbRest*4+fat*9;
   const fiber=Math.round(calFinal/1000*14);
@@ -3145,10 +3161,10 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,gym:3,goalT
   const pRatio=pRatioVal+"g/kg";
   const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
   const fRatio=fRatioVal+"g/kg";
-  return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
+  return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
 }
 
-const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
+const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced"};
 
 export default function App(){
   const {user,loading,signOut}=useAuth();
