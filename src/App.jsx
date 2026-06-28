@@ -933,11 +933,11 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
     </div>}
 
     {/* Hero — White card */}
-    {macroBanner&&<div style={{background:"#DCFCE7",border:"1.5px solid #86EFAC",borderRadius:12,padding:"10px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:8,animation:"fadeIn 0.3s"}}>
-      <span style={{fontSize:16}}>🔄</span>
-      <span style={{fontSize:mob?12:13,fontWeight:700,color:"#14532D"}}>Macro đã cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff} cal)</span>
-    </div>}
     <div style={{...card,padding:mob?"16px":"24px",border:`1.5px solid ${C.border}`}}>
+      {macroBanner&&<div style={{background:"#DCFCE7",border:"1.5px solid #86EFAC",borderRadius:10,padding:"8px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
+        <span style={{fontSize:14}}>🔄</span>
+        <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>Macro cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff})</span>
+      </div>}
       <div style={{fontSize:mob?17:18,fontWeight:600,color:C.t1,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
       <div style={{display:"flex",alignItems:"baseline",gap:8}}>
         <div style={{fontSize:mob?36:44,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>
