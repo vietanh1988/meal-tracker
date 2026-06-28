@@ -2359,9 +2359,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10}}>
           {[
             {key:"goalKg",label:"Cân nặng mục tiêu",icon:"⚖️",unit:"kg",mode:"decimal"},
-            {key:"months",label:"Thời gian",icon:"📅",unit:"tháng",mode:"numeric"},
+            {key:"months",label:"Thời gian mong muốn",icon:"📅",unit:"tháng",mode:"numeric"},
           ].map(f=><div key={f.key}>
-            <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+            <div style={{fontSize:13,fontWeight:700,color:C.t2,marginBottom:4}}>{f.icon} {f.label}</div>
             <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
               <input type="text" inputMode={f.mode} value={profile[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...profile,[f.key]:f.key==="months"?Math.max(1,Number(v)):Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
               <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
@@ -2852,9 +2852,9 @@ function OnboardingWizard({profile,setProfile,onComplete}){
           {p.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             {[
               {key:"goalKg",label:"Cân nặng mục tiêu",icon:"⚖️",unit:"kg",mode:"decimal"},
-              {key:"months",label:"Thời gian",icon:"📅",unit:"tháng",mode:"numeric"},
+              {key:"months",label:"Thời gian mong muốn",icon:"📅",unit:"tháng",mode:"numeric"},
             ].map(f=><div key={f.key}>
-              <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+              <div style={{fontSize:13,fontWeight:700,color:C.t2,marginBottom:4}}>{f.icon} {f.label}</div>
               <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
                 <input type="text" inputMode={f.mode} value={p[f.key]||""} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;if(v===""){setProfile({...p,[f.key]:""});return;}setProfile({...p,[f.key]:Number(v)});}} onBlur={e=>{if(f.key==="months"&&(!p[f.key]||p[f.key]<1))setProfile({...p,months:1});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
                 <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
