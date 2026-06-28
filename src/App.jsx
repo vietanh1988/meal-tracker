@@ -2257,8 +2257,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
         {/* Câu 2: Tần suất (ẩn khi Không tập) */}
         {(profile.exerciseType||"gym")!=="none"&&<>
-          <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>Bạn tập thường xuyên đến mức nào?</div>
-          <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:6,marginBottom:16}}>
+          <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:10,marginTop:6}}>Bạn tập thường xuyên đến mức nào?</div>
+          <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8,marginBottom:22}}>
             {[
               {id:"occasional",name:"Thỉnh thoảng"},
               {id:"regular",name:"Đều đặn"},
@@ -2277,14 +2277,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>
 
           {/* Lịch tập hàng tuần */}
-          <div style={{borderTop:`1.5px solid #F3F4F6`,paddingTop:14}}>
-            <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>📅 Lịch tập hàng tuần</div>
+          <div style={{borderTop:`1.5px solid #F3F4F6`,paddingTop:20,marginTop:4}}>
+            <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>📅 Lịch tập hàng tuần</div>
             {(()=>{
               const days=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
               const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
               const dayMap=[0,1,2,3,4,5,6];
               return <div>
-                <div style={{display:"flex",gap:mob?5:8,flexWrap:"wrap",marginBottom:8}}>
+                <div style={{display:"flex",gap:mob?5:8,flexWrap:"wrap",marginBottom:12}}>
                   {dayLabels.map((d,i)=>{const idx=dayMap[i];const on=days.includes(idx);return <div key={i} onClick={()=>{
                     const nd=on?days.filter(x=>x!==idx):[...days,idx].sort();
                     setProfile({...profile,gymDays:nd});
