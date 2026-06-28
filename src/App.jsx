@@ -2186,7 +2186,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {/* PROFILE */}
     {section==="profile"&&<div style={card}>
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Hồ sơ cá nhân</span></div>
-      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Nhập thông số → dinh dưỡng tự tính</div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Nhập thông số → Macro (dinh dưỡng) tự tính theo công thức Mifflin-St Jeor</div>
 
       {/* Section 1: Thông tin cơ bản */}
       <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
