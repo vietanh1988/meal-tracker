@@ -967,7 +967,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         {l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},
         {l:"Cân nặng",v:curKg,u:"kg",icon:"stat_weight"},
         {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",icon:"stat_bmi"},
-        {l:exLabel,v:exType==="none"?"—":profile.gym,u:exType==="none"?"":"/tuần",icon:exType==="gym"?"stat_gym":exType==="gym_cardio"?"ex_gym_cardio":exType==="cardio"?"ex_cardio":"ex_none"},
+        {l:exLabel,v:exType==="none"?"—":({occasional:"Thỉnh thoảng",regular:"Đều đặn",frequent:"Rất chăm",daily:"Mỗi ngày"})[profile.frequency||"regular"]||"Đều đặn",u:"",icon:exType==="gym"?"stat_gym":exType==="gym_cardio"?"ex_gym_cardio":exType==="cardio"?"ex_cardio":"ex_none"},
       ].map((s,i)=>(
         <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:44,height:44,borderRadius:11,background:"rgba(0,122,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
@@ -1408,7 +1408,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
   return <div>
     {!hidePills&&!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"schedule",l:"📅 Lịch tập"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+      {[{id:"meals",l:"🍽️ Bữa ăn"},{id:"ai",l:"🤖 Kết nối AI"},...(isAdmin?[{id:"admin",l:"🔧 Quản trị"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
       )}
     </div>}
@@ -2215,8 +2215,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           {[
             {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
             {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
-            {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:"",mode:"numeric"},
-            {key:"gym",label:"Số buổi tập",icon:"🏋️",unit:"buổi",mode:"numeric"},
+            {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:profile.birthYear?`${new Date().getFullYear()-profile.birthYear} tuổi`:"",mode:"numeric"},
           ].map(f=><div key={f.key}>
             <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4,display:"flex",alignItems:"center",gap:6}}>{f.icon} {f.label}{f.key==="kg"&&weightLog&&weightLog.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#DCFCE7",padding:"1px 6px",borderRadius:8}}>{mob?"🔄 Auto Update":"🔄 Update cân nặng mới nhất"}</span>}</div>
             <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
@@ -2231,39 +2230,20 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,paddingBottom:10,borderBottom:`1.5px solid #F3F4F6`}}>
           <span style={{fontSize:16}}>🏃</span>
-          <span style={{fontSize:mob?16:17,fontWeight:800,color:C.t1}}>Vận động</span>
+          <span style={{fontSize:mob?16:17,fontWeight:800,color:C.t1}}>Hoạt động của bạn</span>
         </div>
 
-        {/* Activity level */}
-        <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>💼 Mức vận động công việc</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:18}}>
+        {/* Câu 1: Bạn thường tập gì? */}
+        <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>Bạn thường tập gì?</div>
+        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?6:8,marginBottom:16}}>
           {[
-            {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng"},
-            {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều"},
-            {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay"},
-          ].map(a=><div key={a.id} onClick={()=>setProfile({...profile,activity:a.id})} style={{
-            padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
-            background:profile.activity===a.id?"#EFF6FF":C.surface,
-            border:profile.activity===a.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
-          }}>
-            <div style={{fontSize:mob?20:24}}>{a.icon}</div>
-            <div style={{fontSize:mob?11:13,fontWeight:800,color:C.t1,marginTop:4}}>{a.name}</div>
-            <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{a.desc}</div>
-          </div>)}
-        </div>
-
-        {/* Exercise type */}
-        <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>🏅 Hình thức tập luyện</div>
-        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?6:8,marginBottom:((profile.exerciseType||"gym")==="gym_cardio"||(profile.exerciseType||"gym")==="cardio")?18:0}}>
-          {[
-            {id:"gym",icon:"ex_gym",name:"Gym",desc:"Tập tạ thuần"},
-            {id:"gym_cardio",icon:"ex_gym_cardio",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
-            {id:"cardio",icon:"ex_cardio",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
-            {id:"none",icon:"ex_none",name:"Không tập",desc:"Không vận động"},
+            {id:"gym",icon:"ex_gym",name:"Gym"},
+            {id:"gym_cardio",icon:"ex_gym_cardio",name:"Gym + Cardio"},
+            {id:"cardio",icon:"ex_cardio",name:"Cardio"},
+            {id:"none",icon:"ex_none",name:"Không tập"},
           ].map(e=><div key={e.id} onClick={()=>{
             const updated={...profile,exerciseType:e.id};
-            if(e.id==="none"&&profile.goalType==="bulk")updated.goalType="maintain";
-            if(e.id==="gym")updated.cardioIntensity=undefined;
+            if(e.id==="none"){updated.goalType=profile.goalType==="bulk"?"maintain":profile.goalType;updated.frequency=undefined;}
             setProfile(updated);
           }} style={{
             padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
@@ -2272,29 +2252,58 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           }}>
             <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?34:38,height:"auto",maxHeight:mob?34:38}}/>
             <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
-            <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
           </div>)}
         </div>
 
-        {/* Cardio intensity */}
-        {((profile.exerciseType||"gym")==="gym_cardio"||(profile.exerciseType||"gym")==="cardio")&&<>
-          <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:8}}>⚡ Cường độ Cardio</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8}}>
+        {/* Câu 2: Tần suất (ẩn khi Không tập) */}
+        {(profile.exerciseType||"gym")!=="none"&&<>
+          <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>Bạn tập thường xuyên đến mức nào?</div>
+          <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:16}}>
             {[
-              {id:"light",icon:"🚶",name:"Nhẹ",desc:"Đi bộ 30-40p"},
-              {id:"moderate",icon:"🏃",name:"Vừa",desc:"Chạy nhẹ 30-45p"},
-              {id:"intense",icon:"⚡",name:"Nặng",desc:"HIIT, bơi 45-60p"},
-            ].map(ci=><div key={ci.id} onClick={()=>setProfile({...profile,cardioIntensity:ci.id})} style={{
-              padding:mob?"8px 6px":"12px",borderRadius:10,cursor:"pointer",textAlign:"center",
-              background:(profile.cardioIntensity||"moderate")===ci.id?"#EFF6FF":C.surface,
-              border:(profile.cardioIntensity||"moderate")===ci.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+              {id:"occasional",name:"Thỉnh thoảng"},
+              {id:"regular",name:"Đều đặn"},
+              {id:"frequent",name:"Rất thường xuyên"},
+              {id:"daily",name:"Gần như mỗi ngày"},
+            ].map(f=><div key={f.id} onClick={()=>setProfile({...profile,frequency:f.id})} style={{
+              display:"flex",alignItems:"center",gap:12,padding:mob?"11px 14px":"13px 16px",borderRadius:10,cursor:"pointer",
+              background:(profile.frequency||"regular")===f.id?"#EFF6FF":C.surface,
+              border:(profile.frequency||"regular")===f.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
             }}>
-              <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
-              <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
-              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{ci.desc}</div>
+              <div style={{width:18,height:18,borderRadius:"50%",border:(profile.frequency||"regular")===f.id?`2.5px solid #3B82F6`:`2.5px solid ${C.border}`,background:(profile.frequency||"regular")===f.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {(profile.frequency||"regular")===f.id&&<div style={{width:8,height:8,borderRadius:"50%",background:"#fff"}}/>}
+              </div>
+              <span style={{fontSize:mob?13:14,fontWeight:600,color:(profile.frequency||"regular")===f.id?"#2563EB":C.t1}}>{f.name}</span>
             </div>)}
           </div>
+
+          {/* Lịch tập hàng tuần */}
+          <div style={{borderTop:`1.5px solid #F3F4F6`,paddingTop:14}}>
+            <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>📅 Lịch tập hàng tuần</div>
+            {(()=>{
+              const days=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+              const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
+              const dayMap=[0,1,2,3,4,5,6];
+              return <div>
+                <div style={{display:"flex",gap:mob?5:8,flexWrap:"wrap",marginBottom:8}}>
+                  {dayLabels.map((d,i)=>{const idx=dayMap[i];const on=days.includes(idx);return <div key={i} onClick={()=>{
+                    const nd=on?days.filter(x=>x!==idx):[...days,idx].sort();
+                    setProfile({...profile,gymDays:nd});
+                    saveSetting("gymDays",JSON.stringify(nd));
+                  }} style={{
+                    width:mob?42:48,height:mob?42:48,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:mob?13:14,fontWeight:on?600:400,cursor:"pointer",
+                    color:on?"#DC2626":"#94A3B8",background:on?"#FEF2F2":"#F8FAFC",
+                    border:on?`1.5px solid #FECACA`:`1.5px solid ${C.border}`,
+                  }}>{d}</div>;})}
+                </div>
+                <div style={{fontSize:12,color:C.t3,display:"flex",alignItems:"center",gap:4}}>ℹ️ Dùng để app biết hôm nay bạn tập hay nghỉ</div>
+              </div>;
+            })()}
+          </div>
         </>}
+
+        {/* Note Không tập */}
+        {(profile.exerciseType||"gym")==="none"&&<div style={{padding:"10px 14px",borderRadius:10,background:"#FEF3C7",border:"1px solid #FDE68A",fontSize:12,color:"#92400E",display:"flex",alignItems:"center",gap:6}}>⚠️ App sẽ tự tính macro cho người không tập lực</div>}
       </div>
 
       {/* Section 3: Mục tiêu */}
@@ -2324,6 +2333,27 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           })}
         </div>
         {(profile.exerciseType||"gym")==="none"&&profile.goalType==="bulk"&&<div style={{marginBottom:12,padding:"10px 14px",borderRadius:8,background:"#FEE2E2",border:"1px solid #FCA5A5",fontSize:12,color:"#003D99",display:"flex",alignItems:"center",gap:6}}>⚠️ Không thể tăng cơ khi không tập luyện.</div>}
+
+        {/* Chế độ ăn (chỉ khi Giảm mỡ) */}
+        {profile.goalType==="cut"&&<div style={{marginBottom:14,paddingTop:12,borderTop:`1.5px solid #F3F4F6`}}>
+          <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>🍽️ Chế độ ăn giảm mỡ</div>
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            {[
+              {id:"balanced",name:"Cân bằng"},
+              {id:"low_carb",name:"Low-carb (≤ 100g carb)"},
+              {id:"keto",name:"Keto (≤ 50g carb)"},
+            ].map(d=><div key={d.id} onClick={()=>setProfile({...profile,dietStrategy:d.id})} style={{
+              display:"flex",alignItems:"center",gap:12,padding:mob?"11px 14px":"13px 16px",borderRadius:10,cursor:"pointer",
+              background:(profile.dietStrategy||"balanced")===d.id?"#EFF6FF":C.surface,
+              border:(profile.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+            }}>
+              <div style={{width:18,height:18,borderRadius:"50%",border:(profile.dietStrategy||"balanced")===d.id?`2.5px solid #3B82F6`:`2.5px solid ${C.border}`,background:(profile.dietStrategy||"balanced")===d.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {(profile.dietStrategy||"balanced")===d.id&&<div style={{width:8,height:8,borderRadius:"50%",background:"#fff"}}/>}
+              </div>
+              <span style={{fontSize:mob?13:14,fontWeight:600,color:(profile.dietStrategy||"balanced")===d.id?"#2563EB":C.t1}}>{d.name}</span>
+            </div>)}
+          </div>
+        </div>}
 
         {/* Goal weight + duration */}
         {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10}}>
@@ -2720,8 +2750,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             {[
               {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
               {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
-              {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:"",mode:"numeric"},
-              {key:"gym",label:"Số buổi tập/tuần",icon:"🏋️",unit:"buổi",mode:"numeric"},
+              {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:p.birthYear?`${new Date().getFullYear()-p.birthYear} tuổi`:"",mode:"numeric"},
             ].map(f=><div key={f.key}>
               <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
               <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
@@ -2734,44 +2763,25 @@ function OnboardingWizard({profile,setProfile,onComplete}){
           {nextBtn("Tiếp theo",!p.cm||!p.kg||!p.birthYear)}
         </div>}
 
-        {/* STEP 2: Vận động */}
+        {/* STEP 2: Hoạt động */}
         {step===2&&<div>
           <div style={{textAlign:"center",marginBottom:16}}>
             <div style={{fontSize:20}}>🏃</div>
-            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Vận động</div>
+            <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Hoạt động của bạn</div>
             <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 2/{totalSteps}</div>
           </div>
 
-          {/* Activity level */}
-          <div style={{...lbl,marginBottom:8}}>💼 Mức vận động công việc</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:18}}>
+          {/* Câu 1: Bạn tập gì? */}
+          <div style={{...lbl,marginBottom:8}}>Bạn thường tập gì?</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?6:8,marginBottom:16}}>
             {[
-              {id:"sedentary",icon:"🖥️",name:"Ít vận động",desc:"Ngồi văn phòng"},
-              {id:"moderate",icon:"🚶",name:"Vận động vừa",desc:"Đi lại nhiều"},
-              {id:"active",icon:"🏗️",name:"Vận động nặng",desc:"Lao động chân tay"},
-            ].map(a=><div key={a.id} onClick={()=>setProfile({...p,activity:a.id})} style={{
-              padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
-              background:p.activity===a.id?"#EFF6FF":C.surface,
-              border:p.activity===a.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
-            }}>
-              <div style={{fontSize:mob?20:24}}>{a.icon}</div>
-              <div style={{fontSize:mob?11:13,fontWeight:800,color:C.t1,marginTop:4}}>{a.name}</div>
-              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{a.desc}</div>
-            </div>)}
-          </div>
-
-          {/* Exercise type */}
-          <div style={{...lbl,marginBottom:8}}>🏅 Hình thức tập luyện</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?6:8,marginBottom:((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")?18:0}}>
-            {[
-              {id:"gym",icon:"ex_gym",name:"Gym",desc:"Tập tạ thuần"},
-              {id:"gym_cardio",icon:"ex_gym_cardio",name:"Gym + Cardio",desc:"Tạ kết hợp cardio"},
-              {id:"cardio",icon:"ex_cardio",name:"Cardio",desc:"Chạy, bơi, xe đạp"},
-              {id:"none",icon:"ex_none",name:"Không tập",desc:"Không vận động"},
+              {id:"gym",icon:"ex_gym",name:"Gym"},
+              {id:"gym_cardio",icon:"ex_gym_cardio",name:"Gym + Cardio"},
+              {id:"cardio",icon:"ex_cardio",name:"Cardio"},
+              {id:"none",icon:"ex_none",name:"Không tập"},
             ].map(e=><div key={e.id} onClick={()=>{
               const updated={...p,exerciseType:e.id};
-              if(e.id==="none"&&p.goalType==="bulk")updated.goalType="maintain";
-              if(e.id==="gym")updated.cardioIntensity=undefined;
+              if(e.id==="none"){updated.goalType=p.goalType==="bulk"?"maintain":p.goalType;updated.frequency=undefined;}
               setProfile(updated);
             }} style={{
               padding:mob?"10px 6px":"12px 10px",borderRadius:12,cursor:"pointer",textAlign:"center",
@@ -2780,29 +2790,32 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             }}>
               <img src={`/icons/${e.icon}.png`} alt="" style={{width:mob?34:38,height:"auto",maxHeight:mob?34:38}}/>
               <div style={{fontSize:mob?11:12,fontWeight:800,color:C.t1,marginTop:4}}>{e.name}</div>
-              <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{e.desc}</div>
             </div>)}
           </div>
 
-          {/* Cardio intensity */}
-          {((p.exerciseType||"gym")==="gym_cardio"||(p.exerciseType||"gym")==="cardio")&&<>
-            <div style={{...lbl,marginBottom:8}}>⚡ Cường độ Cardio</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8}}>
+          {/* Câu 2: Tần suất */}
+          {(p.exerciseType||"gym")!=="none"&&<>
+            <div style={{...lbl,marginBottom:8}}>Bạn tập thường xuyên đến mức nào?</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
               {[
-                {id:"light",icon:"🚶",name:"Nhẹ",desc:"Đi bộ 30-40p"},
-                {id:"moderate",icon:"🏃",name:"Vừa",desc:"Chạy nhẹ 30-45p"},
-                {id:"intense",icon:"⚡",name:"Nặng",desc:"HIIT, bơi 45-60p"},
-              ].map(ci=><div key={ci.id} onClick={()=>setProfile({...p,cardioIntensity:ci.id})} style={{
-                padding:mob?"8px 6px":"12px",borderRadius:10,cursor:"pointer",textAlign:"center",
-                background:(p.cardioIntensity||"moderate")===ci.id?"#EFF6FF":C.surface,
-                border:(p.cardioIntensity||"moderate")===ci.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+                {id:"occasional",name:"Thỉnh thoảng"},
+                {id:"regular",name:"Đều đặn"},
+                {id:"frequent",name:"Rất thường xuyên"},
+                {id:"daily",name:"Gần như mỗi ngày"},
+              ].map(f=><div key={f.id} onClick={()=>setProfile({...p,frequency:f.id})} style={{
+                display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderRadius:10,cursor:"pointer",
+                background:(p.frequency||"regular")===f.id?"#EFF6FF":C.surface,
+                border:(p.frequency||"regular")===f.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
               }}>
-                <div style={{fontSize:mob?16:20}}>{ci.icon}</div>
-                <div style={{fontSize:mob?11:13,fontWeight:700,color:C.t1,marginTop:2}}>{ci.name}</div>
-                <div style={{fontSize:mob?11:12,fontWeight:600,color:C.t2}}>{ci.desc}</div>
+                <div style={{width:18,height:18,borderRadius:"50%",border:(p.frequency||"regular")===f.id?`2.5px solid #3B82F6`:`2.5px solid ${C.border}`,background:(p.frequency||"regular")===f.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {(p.frequency||"regular")===f.id&&<div style={{width:8,height:8,borderRadius:"50%",background:"#fff"}}/>}
+                </div>
+                <span style={{fontSize:13,fontWeight:600,color:(p.frequency||"regular")===f.id?"#2563EB":C.t1}}>{f.name}</span>
               </div>)}
             </div>
           </>}
+
+          {(p.exerciseType||"gym")==="none"&&<div style={{padding:"10px 14px",borderRadius:10,background:"#FEF3C7",border:"1px solid #FDE68A",fontSize:12,color:"#92400E",display:"flex",alignItems:"center",gap:6}}>⚠️ App sẽ tự tính macro cho người không tập lực</div>}
 
           {nextBtn("Tiếp theo")}
           {backBtn}
@@ -3265,7 +3278,7 @@ export default function App(){
       ].map(s=>{const a=tab===s.id;return <div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 20px",cursor:"pointer",fontSize:14,fontWeight:a?700:500,color:a?C.primary:C.t2,background:a?"rgba(0,122,255,0.06)":"transparent",borderLeft:a?`3px solid ${C.primary}`:"3px solid transparent"}}>{s.svg(a)} {s.l}</div>;})}
 </>}
       <div style={{marginTop:"auto",padding:"0 20px",borderTop:`1px solid ${C.border}`,paddingTop:14}}>
-        <div style={{display:"flex",alignItems:"center",gap:10}}><UserAvatar gender={profile?.gender} size={36}/><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div><div style={{fontSize:10,color:C.t2}}>{pcEL} · {profile.gym} buổi/tuần</div></div></div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}><UserAvatar gender={profile?.gender} size={36}/><div><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div><div style={{fontSize:10,color:C.t2}}>{pcEL} · {({occasional:"Thỉnh thoảng",regular:"Đều đặn",frequent:"Rất thường xuyên",daily:"Mỗi ngày"})[profile.frequency||"regular"]||"Đều đặn"}</div></div></div>
         <div onClick={signOut} style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:"#EF4444",fontWeight:600,marginTop:12,cursor:"pointer",padding:"8px 4px",borderTop:`1px solid ${C.border}`}}>
           <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="#EF4444" strokeWidth={2}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Đăng xuất
@@ -3294,7 +3307,7 @@ export default function App(){
             <div style={{flex:"0 0 60%",display:"flex",justifyContent:"center",gap:24}}><MacroRing size={110} l="Protein" v={pcAP>0?pcAP:pcHP} max={pcHP} color="#007AFF" color2="#007AFF" sub={pcAP>0?`/${pcHP}g`:null} unit="g"/><MacroRing size={110} l="Carb" v={pcACb>0?pcACb:pcHC} max={pcHC} color="#5AC8FA" color2="#5AC8FA" sub={pcACb>0?`/${pcHC}g`:null} unit="g"/><MacroRing size={110} l="Fat" v={pcAF>0?pcAF:pcHF} max={pcHF} color="#8E8E93" color2="#8E8E93" sub={pcAF>0?`/${pcHF}g`:null} unit="g"/><MacroRing size={110} l="Xơ" v={pcAFib>0?pcAFib:pcHFib} max={pcHFib} color="#34C759" color2="#34C759" sub={pcAFib>0?`/${pcHFib}g`:null} unit="g"/></div>
           </div>
           {/* STATS */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>{[{l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},{l:"Cân nặng",v:pcCK,u:"kg",icon:"stat_weight",d:pcCK!==pcSK?`${pcCK>pcSK?"+":""}${Math.round((pcCK-pcSK)*10)/10} kg`:null},{l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"Bình thường":"Thừa cân",icon:"stat_bmi"},{l:pcEL,v:pcET==="none"?"—":profile.gym,u:pcET==="none"?"":"/tuần",icon:pcET==="gym"?"stat_gym":pcET==="gym_cardio"?"ex_gym_cardio":pcET==="cardio"?"ex_cardio":"ex_none"}].map((s,i)=><div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:16,display:"flex",alignItems:"center",gap:12,height:100}}><div style={{width:44,height:44,borderRadius:12,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/></div><div><div style={{fontSize:13,color:C.t2,fontWeight:600}}>{s.l}</div><div style={{fontSize:22,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:13,color:C.t2}}>{s.u}</span></div>{s.d&&<div style={{fontSize:12,fontWeight:700,color:C.primary,marginTop:1}}>{s.d}</div>}</div></div>)}</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>{[{l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},{l:"Cân nặng",v:pcCK,u:"kg",icon:"stat_weight",d:pcCK!==pcSK?`${pcCK>pcSK?"+":""}${Math.round((pcCK-pcSK)*10)/10} kg`:null},{l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"Bình thường":"Thừa cân",icon:"stat_bmi"},{l:pcEL,v:pcET==="none"?"—":({occasional:"Thỉnh thoảng",regular:"Đều đặn",frequent:"Rất chăm",daily:"Mỗi ngày"})[profile.frequency||"regular"]||"Đều đặn",u:"",icon:pcET==="gym"?"stat_gym":pcET==="gym_cardio"?"ex_gym_cardio":pcET==="cardio"?"ex_cardio":"ex_none"}].map((s,i)=><div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:16,display:"flex",alignItems:"center",gap:12,height:100}}><div style={{width:44,height:44,borderRadius:12,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/></div><div><div style={{fontSize:13,color:C.t2,fontWeight:600}}>{s.l}</div><div style={{fontSize:22,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:13,color:C.t2}}>{s.u}</span></div>{s.d&&<div style={{fontSize:12,fontWeight:700,color:C.primary,marginTop:1}}>{s.d}</div>}</div></div>)}</div>
           {/* 2 COLUMNS */}
           <div style={{display:"grid",gridTemplateColumns:"55fr 45fr",gap:24}}>
             <div style={{...card,padding:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:15,fontWeight:800,color:C.t1}}>Danh sách thực đơn</span><span onClick={()=>setTab("meals")} style={{fontSize:12,color:C.primary,fontWeight:700,cursor:"pointer"}}>Xem tất cả →</span></div>
