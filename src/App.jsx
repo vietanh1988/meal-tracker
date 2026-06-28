@@ -1134,7 +1134,8 @@ function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,
   });
   useEffect(()=>{try{localStorage.setItem("fitpilot_dayType",dayType);}catch(e){}},[dayType]);
   const [selectedMeal,setSelectedMeal]=useState("sang");
-  const [mealMode,setMealMode]=useState("tu_nhap"); // tu_nhap | lich_tuan | kho_mau
+  const [mealMode,setMealMode]=useState(()=>{try{const s=localStorage.getItem("fitpilot_mealMode");if(s==="tu_nhap"||s==="lich_tuan"||s==="kho_mau")return s;}catch(e){}return "tu_nhap";}); // tu_nhap | lich_tuan | kho_mau
+  useEffect(()=>{try{localStorage.setItem("fitpilot_mealMode",mealMode);}catch(e){}},[mealMode]);
   const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
   const [expandedTpl,setExpandedTpl]=useState(null); // expanded template ID for detail view
   const [showSaveTpl,setShowSaveTpl]=useState(false); // popup save to weekly template
