@@ -926,7 +926,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <div style={{flex:1}}>
         <div style={{fontSize:mob?16:18,fontWeight:800,color:C.t1}}>Chào {displayName}! 👋</div>
         <div style={{fontSize:mob?13:13,fontWeight:600,color:C.t2}}>
-          {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {actualCal>0?(()=>{const pctH=heroCal>0?Math.round(actualCal/heroCal*100):0;return pctH<95?<span style={{color:"#B45309",fontWeight:800}}>⚠️ Còn thiếu {calRemain} kcal</span>:pctH<=105?<span style={{color:C.green,fontWeight:800}}>✅ Ổn rồi, giữ nhé!</span>:<span style={{color:"#DC2626",fontWeight:800}}>🔴 Dư {Math.abs(calRemain)} kcal</span>;})():<>Mục tiêu <span style={{color:C.secondary,fontWeight:800}}>{heroCal} kcal</span></>}
+          {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {new Date().toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
         </div>
       </div>
       <NotiBell appSettings={appSettings}/>
