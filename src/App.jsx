@@ -2208,8 +2208,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           </div>)}
         </div>
 
-        {/* 4 inputs */}
-        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?8:10}}>
+        {/* 3 inputs */}
+        <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr",gap:mob?8:10}}>
           {[
             {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
             {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
