@@ -2335,11 +2335,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         {/* Chế độ ăn (chỉ khi Giảm mỡ) */}
         {profile.goalType==="cut"&&<div style={{marginBottom:14,paddingTop:12,borderTop:`1.5px solid #F3F4F6`,maxWidth:mob?"100%":540}}>
           <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>🍽️ Chế độ ăn giảm mỡ</div>
-          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr 1fr",gap:6}}>
             {[
               {id:"balanced",name:"Cân bằng"},
-              {id:"low_carb",name:"Low-carb (≤ 100g carb)"},
-              {id:"keto",name:"Keto (≤ 50g carb)"},
+              {id:"low_carb",name:"Low-carb (≤ 100g)"},
+              {id:"keto",name:"Keto (≤ 50g)"},
             ].map(d=><div key={d.id} onClick={()=>setProfile({...profile,dietStrategy:d.id})} style={{
               display:"flex",alignItems:"center",gap:12,padding:mob?"11px 14px":"13px 16px",borderRadius:10,cursor:"pointer",
               background:(profile.dietStrategy||"balanced")===d.id?"#EFF6FF":C.surface,
