@@ -2188,7 +2188,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {/* PROFILE */}
     {section==="profile"&&<div style={card}>
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Hồ sơ cá nhân</span></div>
-      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Nhập thông số → macro tự tính theo công thức Mifflin-St Jeor</div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Nhập thông số → dinh dưỡng tự tính</div>
 
       {/* Section 1: Thông tin cơ bản */}
       <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>
@@ -2217,7 +2217,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
             {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:profile.birthYear?`${new Date().getFullYear()-profile.birthYear} tuổi`:"",mode:"numeric"},
           ].map(f=><div key={f.key}>
-            <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4,display:"flex",alignItems:"center",gap:6}}>{f.icon} {f.label}{f.key==="kg"&&weightLog&&weightLog.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#DCFCE7",padding:"1px 6px",borderRadius:8}}>{mob?"🔄 Auto Update":"🔄 Update cân nặng mới nhất"}</span>}</div>
+            <div style={{fontSize:13,fontWeight:700,color:C.t2,marginBottom:4,display:"flex",alignItems:"center",gap:6}}>{f.icon} {f.label}{f.key==="kg"&&weightLog&&weightLog.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#DCFCE7",padding:"1px 6px",borderRadius:8}}>{mob?"🔄 Auto Update":"🔄 Update cân nặng mới nhất"}</span>}</div>
             <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
               <input type="text" inputMode={f.mode} value={f.key==="kg"?profile.kg:profile[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...profile,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
               <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
@@ -2752,7 +2752,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
               {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
               {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:p.birthYear?`${new Date().getFullYear()-p.birthYear} tuổi`:"",mode:"numeric"},
             ].map(f=><div key={f.key}>
-              <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
+              <div style={{fontSize:13,fontWeight:700,color:C.t2,marginBottom:4}}>{f.icon} {f.label}</div>
               <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
                 <input type="text" inputMode={f.mode} value={f.key==="kg"?p.kg:p[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...p,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
                 <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
