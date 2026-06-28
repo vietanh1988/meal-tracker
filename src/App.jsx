@@ -2464,6 +2464,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         </div>
         </div>
 
+        <div style={{marginTop:10,padding:"10px 14px",borderRadius:10,background:"#EFF6FF",border:"1px solid #BFDBFE",display:"flex",alignItems:"flex-start",gap:8}}>
+          <span style={{fontSize:14,flexShrink:0}}>🇻🇳</span>
+          <span style={{fontSize:12,fontWeight:600,color:"#1E40AF",lineHeight:1.6}}>Công thức chuẩn quốc tế — có thể cao hơn 5-10% cho người châu Á. Nếu không tăng/giảm cân sau 2-3 tuần, hãy điều chỉnh ±100-200 cal.</span>
+        </div>
+
         <div style={{marginTop:12,background:C.goldBg,borderRadius:10,padding:"10px 14px",border:"1.5px solid #CA8A04"}}>
           <span style={{fontSize:12,fontWeight:700,color:"#78350F",lineHeight:1.6}}>
             💡 BMR = {macro.bmr} → ×{macro.actMul} = TDEE {macro.tdee} cal.
