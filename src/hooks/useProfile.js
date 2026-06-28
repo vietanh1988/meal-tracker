@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 
-const DEFAULT = {cm:172,kg:63,age:25,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary",gymDays:[0,2,4,5]};
+const DEFAULT = {cm:172,kg:63,birthYear:1987,goalKg:68,gym:4,goalType:"bulk",months:4,activity:"sedentary",gymDays:[0,2,4,5]};
 
 export function useProfile(userId) {
   const [profile, setProfileState] = useState(null);
@@ -16,7 +16,7 @@ export function useProfile(userId) {
         const p = {
           cm: data.cm || DEFAULT.cm,
           kg: Number(data.kg) || DEFAULT.kg,
-          age: data.age || DEFAULT.age,
+          birthYear: data.birth_year || (data.age ? new Date().getFullYear() - data.age : DEFAULT.birthYear),
           goalKg: Number(data.goal_kg) || DEFAULT.goalKg,
           gym: data.gym || DEFAULT.gym,
           goalType: data.goal_type || DEFAULT.goalType,
@@ -24,7 +24,6 @@ export function useProfile(userId) {
           activity: data.activity || DEFAULT.activity,
           gymDays: data.gym_days || DEFAULT.gymDays,
         };
-        // Load extra fields if they exist in DB
         if(data.gender) p.gender = data.gender;
         if(data.exercise_type) p.exerciseType = data.exercise_type;
         if(data.cardio_intensity) p.cardioIntensity = data.cardio_intensity;
@@ -34,7 +33,8 @@ export function useProfile(userId) {
       } else {
         setProfileState(DEFAULT);
         await supabase.from("profiles").upsert({
-          id: userId, cm: DEFAULT.cm, kg: DEFAULT.kg, age: DEFAULT.age,
+          id: userId, cm: DEFAULT.cm, kg: DEFAULT.kg,
+          birth_year: DEFAULT.birthYear,
           goal_kg: DEFAULT.goalKg, gym: DEFAULT.gym, goal_type: DEFAULT.goalType,
           months: DEFAULT.months, activity: DEFAULT.activity, gym_days: DEFAULT.gymDays,
         });
@@ -49,7 +49,6 @@ export function useProfile(userId) {
 
   useEffect(() => { fetchProfile(false); }, [fetchProfile]);
 
-  // Re-sync on visibility change (30s debounce)
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === "visible" && userId) {
@@ -69,11 +68,11 @@ export function useProfile(userId) {
     if (userId) {
       try {
         const payload = {
-          id: userId, cm: merged.cm, kg: merged.kg, age: merged.age,
+          id: userId, cm: merged.cm, kg: merged.kg,
+          birth_year: merged.birthYear,
           goal_kg: merged.goalKg, gym: merged.gym, goal_type: merged.goalType,
           months: merged.months, activity: merged.activity, gym_days: merged.gymDays,
         };
-        // Save extra fields if present
         if(merged.gender) payload.gender = merged.gender;
         if(merged.exerciseType) payload.exercise_type = merged.exerciseType;
         if(merged.cardioIntensity) payload.cardio_intensity = merged.cardioIntensity;

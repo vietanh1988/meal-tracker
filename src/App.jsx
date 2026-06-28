@@ -385,7 +385,7 @@ function WeightSuggestion({weightLog,goalKg,goalType,startKg,curKg,profile,macro
     const base=`Bạn là huấn luyện viên cá nhân kiêm chuyên gia dinh dưỡng Việt Nam.
 
 HỒ SƠ:
-- Chiều cao: ${profile.cm}cm, Cân nặng: ${curKg}kg, Tuổi: ${profile.age}
+- Chiều cao: ${profile.cm}cm, Cân nặng: ${curKg}kg, Tuổi: ${profile.birthYear?new Date().getFullYear()-profile.birthYear:(profile.age||25)}
 - Mục tiêu: ${goalLabel} từ ${startKg}kg lên ${goalKg}kg trong ${profile.months} tháng
 - Tập gym: ${profile.gym} buổi/tuần
 
@@ -2214,7 +2214,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           {[
             {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
             {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
-            {key:"age",label:"Tuổi",icon:"🎂",unit:"tuổi",mode:"numeric"},
+            {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:"",mode:"numeric"},
             {key:"gym",label:"Số buổi tập",icon:"🏋️",unit:"buổi",mode:"numeric"},
           ].map(f=><div key={f.key}>
             <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
@@ -2704,7 +2704,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             {[
               {key:"cm",label:"Chiều cao",icon:"📏",unit:"cm",mode:"numeric"},
               {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
-              {key:"age",label:"Tuổi",icon:"🎂",unit:"tuổi",mode:"numeric"},
+              {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:"",mode:"numeric"},
               {key:"gym",label:"Số buổi tập/tuần",icon:"🏋️",unit:"buổi",mode:"numeric"},
             ].map(f=><div key={f.key}>
               <div style={{fontSize:11,fontWeight:600,color:C.t3,marginBottom:4}}>{f.icon} {f.label}</div>
@@ -2715,7 +2715,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             </div>)}
           </div>
 
-          {nextBtn("Tiếp theo",!p.cm||!p.kg||!p.age)}
+          {nextBtn("Tiếp theo",!p.cm||!p.kg||!p.birthYear)}
         </div>}
 
         {/* STEP 2: Vận động */}
@@ -3084,12 +3084,13 @@ function NotiBell({appSettings,dark}){
   </div>;
 }
 
-function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
+function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
   const gender=p.gender||"male";
   const exerciseType=p.exerciseType||"gym";
   const cardioIntensity=p.cardioIntensity||"moderate";
+  const age=p.birthYear?new Date().getFullYear()-p.birthYear:(p.age||25);
   // BMR: Mifflin-St Jeor (khác theo giới tính)
-  const bmr=10*p.kg+6.25*p.cm-5*p.age+(gender==="male"?5:-161);
+  const bmr=10*p.kg+6.25*p.cm-5*age+(gender==="male"?5:-161);
   // Activity multiplier
   const jobBase=p.activity==="sedentary"?1.2:p.activity==="moderate"?1.5:1.75;
   // Gym bonus
@@ -3146,7 +3147,7 @@ function calcMacro(p){if(!p)p={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bul
   return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio};
 }
 
-const defaultProfile={cm:170,kg:65,age:25,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
+const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,gym:3,goalType:"bulk",months:6,activity:"sedentary",gender:"male",exerciseType:"gym",cardioIntensity:"moderate"};
 
 export default function App(){
   const {user,loading,signOut}=useAuth();
