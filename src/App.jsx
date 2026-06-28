@@ -2258,10 +2258,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:10,marginTop:6}}>Bạn tập thường xuyên đến mức nào?</div>
           <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8,marginBottom:22}}>
             {[
-              {id:"occasional",name:"Thỉnh thoảng"},
-              {id:"regular",name:"Đều đặn"},
-              {id:"frequent",name:"Rất thường xuyên"},
-              {id:"daily",name:"Gần như mỗi ngày"},
+              {id:"occasional",name:"Thỉnh thoảng",desc:"1-2 buổi/tuần"},
+              {id:"regular",name:"Đều đặn",desc:"3-4 buổi/tuần"},
+              {id:"frequent",name:"Rất thường xuyên",desc:"5-6 buổi/tuần"},
+              {id:"daily",name:"Gần như mỗi ngày",desc:"6-7 buổi/tuần"},
             ].map(f=><div key={f.id} onClick={()=>setProfile({...profile,frequency:f.id})} style={{
               display:"flex",alignItems:"center",gap:12,padding:mob?"11px 14px":"13px 16px",borderRadius:10,cursor:"pointer",
               background:(profile.frequency||"regular")===f.id?"#EFF6FF":C.surface,
@@ -2270,7 +2270,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
               <div style={{width:18,height:18,borderRadius:"50%",border:(profile.frequency||"regular")===f.id?`2.5px solid #3B82F6`:`2.5px solid ${C.border}`,background:(profile.frequency||"regular")===f.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
                 {(profile.frequency||"regular")===f.id&&<div style={{width:8,height:8,borderRadius:"50%",background:"#fff"}}/>}
               </div>
-              <span style={{fontSize:mob?13:14,fontWeight:600,color:(profile.frequency||"regular")===f.id?"#2563EB":C.t1}}>{f.name}</span>
+              <div><span style={{fontSize:mob?13:14,fontWeight:600,color:(profile.frequency||"regular")===f.id?"#2563EB":C.t1}}>{f.name}</span><span style={{fontSize:mob?11:12,fontWeight:500,color:C.t3,marginLeft:6}}>{f.desc}</span></div>
             </div>)}
           </div>
 
@@ -2796,10 +2796,10 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             <div style={{...lbl,marginBottom:8}}>Bạn tập thường xuyên đến mức nào?</div>
             <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
               {[
-                {id:"occasional",name:"Thỉnh thoảng"},
-                {id:"regular",name:"Đều đặn"},
-                {id:"frequent",name:"Rất thường xuyên"},
-                {id:"daily",name:"Gần như mỗi ngày"},
+                {id:"occasional",name:"Thỉnh thoảng",desc:"1-2 buổi/tuần"},
+                {id:"regular",name:"Đều đặn",desc:"3-4 buổi/tuần"},
+                {id:"frequent",name:"Rất thường xuyên",desc:"5-6 buổi/tuần"},
+                {id:"daily",name:"Gần như mỗi ngày",desc:"6-7 buổi/tuần"},
               ].map(f=><div key={f.id} onClick={()=>setProfile({...p,frequency:f.id})} style={{
                 display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderRadius:10,cursor:"pointer",
                 background:(p.frequency||"regular")===f.id?"#EFF6FF":C.surface,
@@ -2808,7 +2808,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
                 <div style={{width:18,height:18,borderRadius:"50%",border:(p.frequency||"regular")===f.id?`2.5px solid #3B82F6`:`2.5px solid ${C.border}`,background:(p.frequency||"regular")===f.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
                   {(p.frequency||"regular")===f.id&&<div style={{width:8,height:8,borderRadius:"50%",background:"#fff"}}/>}
                 </div>
-                <span style={{fontSize:13,fontWeight:600,color:(p.frequency||"regular")===f.id?"#2563EB":C.t1}}>{f.name}</span>
+                <div><span style={{fontSize:13,fontWeight:600,color:(p.frequency||"regular")===f.id?"#2563EB":C.t1}}>{f.name}</span><span style={{fontSize:11,fontWeight:500,color:C.t3,marginLeft:6}}>{f.desc}</span></div>
               </div>)}
             </div>
           </>}
