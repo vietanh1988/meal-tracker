@@ -618,18 +618,22 @@ function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings
     const goalLabel={bulk:"Tăng cơ (+250 cal)",cut:"Giảm mỡ (-350 cal)",maintain:"Duy trì"}[p.goalType||"bulk"]||"Tăng cơ";
     const dietLabel={balanced:"Cân bằng",low_carb:"Low-carb (≤100g carb)",keto:"Keto (≤50g carb)"}[p.dietStrategy||"balanced"]||"Cân bằng";
     const calMode=(p.calorieMode||"standard")==="asian"?"Việt Nam (-10%)":"Quốc tế";
+    const isRest=t.dayType==="rest";
+    const todayTarget=isRest?(m.calRest||m.calTarget):m.calTarget;
+    const todayCarb=isRest?(m.carbRest||m.carb):m.carb;
+    const eaten=t.cal||0;
+    const deficit=todayTarget-eaten;
     return `THÔNG TIN USER:
 - Giới tính: ${p.gender==="male"?"Nam":"Nữ"}, ${age} tuổi, ${p.kg}kg, ${p.cm}cm
 - BMI: ${m.bmi} | Tập: ${exLabel}, ${freqLabel}
 - Mục tiêu: ${goalLabel} | Chế độ: ${dietLabel} | Calo: ${calMode}
 
-MACRO MỤC TIÊU:
-- Calo: ${m.calTarget} cal | P: ${m.protein}g | C: ${m.carb}g | F: ${m.fat}g
+MACRO MỤC TIÊU (${isRest?"ngày nghỉ":"ngày tập"}):
+- Calo: ${todayTarget} cal | P: ${m.protein}g | C: ${todayCarb}g | F: ${m.fat}g
 
-HÔM NAY:
-- Đã ăn: ${t.cal||0} cal (P:${t.p||0}g C:${t.c||0}g F:${t.f||0}g)
-- ${(t.cal||0)<m.calTarget?`Còn thiếu ${m.calTarget-(t.cal||0)} cal`:`Đủ calo`}
-- Ngày: ${t.dayType==="train"?"Tập":"Nghỉ"}
+HÔM NAY (${isRest?"nghỉ":"tập"}):
+- Đã ăn: ${eaten} cal (P:${t.p||0}g C:${t.c||0}g F:${t.f||0}g)
+- ${deficit>0?`Còn thiếu ${deficit} cal`:`Đủ calo`}
 
 CÂN NẶNG:
 - ${startW}kg → ${curW}kg → mục tiêu ${p.goalKg}kg
