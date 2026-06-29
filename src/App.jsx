@@ -674,7 +674,8 @@ ${buildContext()}`;
         body:JSON.stringify({foodDesc:fullPrompt,provider:"claude",model:aiModel,apiKey})
       });
       const data=await res.json();
-      const reply=data?.result||data?.content?.[0]?.text||data?.choices?.[0]?.message?.content||"Xin lỗi, mình không thể trả lời lúc này.";
+      if(data.error)throw new Error(data.error);
+      const reply=(data.text||"").trim()||"Xin lỗi, mình không thể trả lời lúc này.";
       setMessages(prev=>[...prev,{role:"assistant",content:reply.replace(/^AI Coach:\s*/,"")}]);
       saveDailyCount(dailyCount+1);
     }catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
