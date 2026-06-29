@@ -771,7 +771,7 @@ ${buildContext()}`;
       </div>
 
       {/* Disclaimer */}
-      <div style={{padding:"6px 18px 10px",fontSize:10,color:C2.t3,textAlign:"center",flexShrink:0}}>⚠️ AI Coach tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân. {isAdmin?"(Admin ∞)":(`(${MAX_DAILY-dailyCount}/${MAX_DAILY} lượt)`)}</div>
+      <div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ AI Coach tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân. {isAdmin?"(Admin ∞)":(`(${MAX_DAILY-dailyCount}/${MAX_DAILY} lượt)`)}</div>
     </div>
   </div>;
 }
