@@ -2876,6 +2876,27 @@ function OnboardingWizard({profile,setProfile,onComplete}){
             })}
           </div>
 
+          {/* Chế độ ăn (chỉ khi Giảm mỡ) */}
+          {p.goalType==="cut"&&<div style={{marginBottom:14,paddingTop:12,borderTop:`1.5px solid #F3F4F6`}}>
+            <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>🍽️ Chế độ ăn giảm mỡ</div>
+            <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr 1fr",gap:6}}>
+              {[
+                {id:"balanced",name:"Cân bằng"},
+                {id:"low_carb",name:"Low-carb (≤ 100g)"},
+                {id:"keto",name:"Keto (≤ 50g)"},
+              ].map(d=><div key={d.id} onClick={()=>setProfile({...p,dietStrategy:d.id})} style={{
+                display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderRadius:10,cursor:"pointer",
+                background:(p.dietStrategy||"balanced")===d.id?"#EFF6FF":C.surface,
+                border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+              }}>
+                <div style={{width:18,height:18,borderRadius:"50%",border:(p.dietStrategy||"balanced")===d.id?`2.5px solid #3B82F6`:`2.5px solid ${C.border}`,background:(p.dietStrategy||"balanced")===d.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {(p.dietStrategy||"balanced")===d.id&&<div style={{width:8,height:8,borderRadius:"50%",background:"#fff"}}/>}
+                </div>
+                <span style={{fontSize:13,fontWeight:600,color:(p.dietStrategy||"balanced")===d.id?"#2563EB":C.t1}}>{d.name}</span>
+              </div>)}
+            </div>
+          </div>}
+
           {/* Goal weight + duration */}
           {p.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             {[
