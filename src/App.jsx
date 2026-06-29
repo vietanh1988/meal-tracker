@@ -3368,7 +3368,6 @@ export default function App(){
               {pcAC>0&&<div style={{background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)",borderRadius:12,padding:"16px 18px",marginTop:12,display:"flex",alignItems:"center",gap:16}}>
                 <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:14}}>🎯</span><span style={{fontSize:12,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:34,fontWeight:900,color:"#059669",lineHeight:1}}>{pcMS}<span style={{fontSize:15,color:"#64748B",fontWeight:600}}> /100</span></div></div>
                 <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:16}}><div style={{fontSize:14,fontWeight:700,color:C.t1}}>{pcMSL}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{pcMS>=90?"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả.":pcMS>=75?`Bổ sung thêm ${pcCR>0?pcCR+" kcal":"protein"} để đạt mục tiêu.`:"Điều chỉnh thực đơn để phù hợp mục tiêu."}</div></div>
-                </div>
               </div>}
             </div>
             <div>
