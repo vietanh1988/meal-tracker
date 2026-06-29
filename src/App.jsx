@@ -1014,23 +1014,20 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
     </div>}
 
-    {/* Compact evaluation with AI suggestion merged */}
-    {actualCal>0&&<div style={{...card,padding:"12px 16px",marginTop:6,
-      background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"rgba(52,199,89,0.06)":"rgba(245,158,11,0.06)",
-      border:`1.5px solid ${actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"#34C759":"#F59E0B"}`,
-    }}>
-      <div style={{fontSize:13,fontWeight:700,lineHeight:1.6,
-        color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"#059669":"#B45309",
-      }}>
-        {actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1
-          ?"✓ Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả."
-          :actualCal<heroCal*0.95
-          ?`⚠ Thiếu ${heroCal-actualCal} kcal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`
-          :`🔴 Dư ${actualCal-heroCal} kcal. Giảm bớt cơm hoặc tinh bột để cân bằng.`
-        }
-        {actualP<heroP*0.9&&` | Protein thiếu ${heroP-actualP}g.`}
-      </div>
-    </div>}
+    {/* Evaluation card — same style as PC */}
+    {actualCal>0&&(()=>{
+      const cs=actualCal===0?0:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?100:actualCal>=heroCal*0.85?85:70;
+      const ps=actualP===0?0:actualP>=heroP*0.9?100:actualP>=heroP*0.8?85:70;
+      const ms=actualCal===0?0:Math.round((cs+ps+85+85)/4);
+      const msl=ms>=90?"Rất phù hợp với mục tiêu":ms>=75?"Khá tốt, cần bổ sung thêm":"Cần điều chỉnh thêm";
+      const cr=heroCal-actualCal;
+      return <div style={{...card,padding:"14px 16px",marginTop:6,background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:14}}>
+          <div><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:3}}><span style={{fontSize:12}}>🎯</span><span style={{fontSize:11,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:28,fontWeight:900,color:"#059669",lineHeight:1}}>{ms}<span style={{fontSize:13,color:"#64748B",fontWeight:600}}> /100</span></div></div>
+          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{cr>0?`Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`:cr<0?`Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả."}</div></div>
+        </div>
+      </div>;
+    })()}
 
     {/* Weight Chart */}
     <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF) 1"}}>
