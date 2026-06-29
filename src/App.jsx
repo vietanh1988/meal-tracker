@@ -943,7 +943,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         <div style={{fontSize:mob?36:44,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>
           {actualCal>0?actualCal.toLocaleString():heroCal.toLocaleString()}
         </div>
-        <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:10,fontWeight:700,color:"#007AFF",marginLeft:6}}>🌏 Việt Nam</span>}</div>
+        <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:10,fontWeight:700,color:"#007AFF",marginLeft:6}}>🇻🇳 Việt Nam</span>}</div>
       </div>
       {actualCal>0&&<div style={{marginTop:6}}>
         <span style={{fontSize:13,fontWeight:700,color:(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?"#B45309":pp<=105?"#16A34A":"#DC2626";})()}}>{(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?`⚠️ Còn thiếu ${calRemain} kcal`:pp<=105?"✅ Ổn rồi, giữ nhé!":`🔴 Dư ${Math.abs(calRemain)} kcal`;})()}</span>
@@ -2915,7 +2915,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
           {/* Macro hero preview */}
           <div style={{background:"linear-gradient(135deg,#0A1628 0%,#162544 100%)",border:"2.5px solid #007AFF",borderRadius:14,padding:16,marginBottom:12}}>
             <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>CALO MỤC TIÊU NGÀY TẬP</div>
-            <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span>{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:11,fontWeight:700,color:"#5AC8FA",marginLeft:8,padding:"2px 8px",background:"rgba(90,200,250,0.15)",borderRadius:6}}>🌏 Việt Nam Mode</span>}</div>
+            <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span>{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:11,fontWeight:700,color:"#5AC8FA",marginLeft:8,padding:"2px 8px",background:"rgba(90,200,250,0.15)",borderRadius:6}}>🇻🇳 Việt Nam Mode</span>}</div>
             <div style={{display:"flex",gap:14,marginTop:12}}>
               <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#007AFF" color2="#007AFF" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
               <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#5AC8FA" color2="#5AC8FA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
