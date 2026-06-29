@@ -692,8 +692,11 @@ ${buildContext()}`;
   useEffect(()=>{
     if(messages.length===0){
       const t=todayData||{};const m=macro||{};
+      const isRest=t.dayType==="rest";
+      const target=isRest?(m.calRest||m.calTarget):m.calTarget;
+      const deficit=target-(t.cal||0);
       const welcome=(t.cal||0)>0
-        ?(t.cal<m.calTarget?`Chào anh! Hôm nay còn thiếu ${m.calTarget-(t.cal||0)} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào anh! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
+        ?(deficit>0?`Chào anh! Hôm nay (${isRest?"nghỉ":"tập"}) còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào anh! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
         :"Chào anh! Mình là AI Coach. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪";
       setMessages([{role:"assistant",content:welcome}]);
     }
@@ -731,7 +734,7 @@ ${buildContext()}`;
         <span style={{fontSize:11,color:C2.primary,fontWeight:600}}>🧠</span>
         {[`${profile?.kg||65}kg`,{gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Nghỉ"}[profile?.exerciseType||"gym"],
           {balanced:"Cân bằng",low_carb:"Low-carb",keto:"Keto"}[profile?.dietStrategy||"balanced"],
-          `${(todayData?.cal||0)<(macro?.calTarget||2000)?"-"+(macro?.calTarget-(todayData?.cal||0)):"✓"} cal`
+          `${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;return (todayData?.cal||0)<tgt?"-"+(tgt-(todayData?.cal||0)):"✓";})()} cal`
         ].map((tag,i)=><span key={i} style={{fontSize:10,padding:"2px 6px",background:C2.surface,borderRadius:4,color:C2.t2,fontWeight:600}}>{tag}</span>)}
       </div>
 
