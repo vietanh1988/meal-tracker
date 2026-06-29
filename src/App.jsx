@@ -197,20 +197,29 @@ function MealCard({meal}){
 function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
   const canvasRef=useRef(null);
   const chartRef=useRef(null);
+  const [chartPage,setChartPage]=useState(0);
+  const PAGE_SIZE=7;
+
+  // Paginate: show 7 entries at a time, most recent last
+  const totalPages=Math.max(1,Math.ceil(weightLog.length/PAGE_SIZE));
+  const currentPage=Math.min(chartPage,totalPages-1);
+  const startIdx=Math.max(0,weightLog.length-PAGE_SIZE*(currentPage+1));
+  const endIdx=weightLog.length-PAGE_SIZE*currentPage;
+  const visibleLog=weightLog.slice(startIdx,endIdx);
 
   // Compute chart height based on data range
-  const data0=weightLog.map(w=>w.kg);
+  const data0=visibleLog.map(w=>w.kg);
   const allVals0=[...data0,goalKg,startKg];
-  const yRange0=Math.ceil(Math.max(...allVals0))+1-(Math.floor(Math.min(...allVals0))-1);
+  const yRange0=data0.length>0?Math.ceil(Math.max(...allVals0))+1-(Math.floor(Math.min(...allVals0))-1):4;
   const chartH=mob?(yRange0>6?220:190):(yRange0>6?280:240);
 
   useEffect(()=>{
-    if(!canvasRef.current||weightLog.length<2||!window.ChartJS)return;
+    if(!canvasRef.current||visibleLog.length<2||!window.ChartJS)return;
     if(chartRef.current)chartRef.current.destroy();
 
-    const data=weightLog.map(w=>w.kg);
-    const labels=weightLog.map(w=>"T"+w.week);
-    const goalData=weightLog.map(()=>goalKg);
+    const data=visibleLog.map(w=>w.kg);
+    const labels=visibleLog.map(w=>"T"+w.week);
+    const goalData=visibleLog.map(()=>goalKg);
 
     // Color logic based on goalType
     function getBarType(diff){
@@ -306,12 +315,17 @@ function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
     });
 
     return()=>{if(chartRef.current)chartRef.current.destroy();};
-  },[weightLog,goalKg,goalType,startKg,mob]);
+  },[weightLog,goalKg,goalType,startKg,mob,chartPage]);
 
   return <div>
     <div style={{position:"relative",width:"100%",height:chartH}}>
       <canvas ref={canvasRef}/>
     </div>
+    {weightLog.length>PAGE_SIZE&&<div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:8}}>
+      <button onClick={()=>setChartPage(Math.min(currentPage+1,totalPages-1))} disabled={currentPage>=totalPages-1} style={{padding:"4px 10px",borderRadius:6,border:`1px solid ${currentPage>=totalPages-1?"#E2E8F0":"#007AFF"}`,background:currentPage>=totalPages-1?"#F8FAFC":"#EFF6FF",color:currentPage>=totalPages-1?"#CBD5E1":"#007AFF",fontSize:12,fontWeight:600,cursor:currentPage>=totalPages-1?"default":"pointer"}}>◀ Trước</button>
+      <span style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>T{visibleLog[0]?.week||1}–T{visibleLog[visibleLog.length-1]?.week||1}</span>
+      <button onClick={()=>setChartPage(Math.max(currentPage-1,0))} disabled={currentPage<=0} style={{padding:"4px 10px",borderRadius:6,border:`1px solid ${currentPage<=0?"#E2E8F0":"#007AFF"}`,background:currentPage<=0?"#F8FAFC":"#EFF6FF",color:currentPage<=0?"#CBD5E1":"#007AFF",fontSize:12,fontWeight:600,cursor:currentPage<=0?"default":"pointer"}}>Sau ▶</button>
+    </div>}
     <div style={{display:"flex",flexWrap:"wrap",gap:mob?8:14,justifyContent:"center",marginTop:6,fontSize:mob?11:13,fontWeight:700,color:C.t1}}>
       <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#34A853"}}/>Đúng hướng</span>
       <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#E53935"}}/>Ngược hướng</span>
