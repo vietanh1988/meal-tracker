@@ -594,7 +594,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
 }
 
 // AI Coach Panel
-function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings}){
+function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin}){
   const [messages,setMessages]=useState([]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
@@ -667,7 +667,7 @@ ${buildContext()}`;
   const sendMessage=async(text)=>{
     if(!text.trim()||loading)return;
     if(!apiKey){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"⚠️ Chưa kết nối AI. Vào Cài đặt → Kết nối AI → nhập Claude API key."}]);return;}
-    if(dailyCount>=MAX_DAILY){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"Bạn đã hết 20 lượt hỏi hôm nay. Quay lại ngày mai nhé! 😊"}]);return;}
+    if(!isAdmin&&dailyCount>=MAX_DAILY){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"Bạn đã hết 20 lượt hỏi hôm nay. Quay lại ngày mai nhé! 😊"}]);return;}
     const newMsgs=[...messages,{role:"user",content:text}];
     setMessages(newMsgs);setInput("");setLoading(true);
     try{
@@ -768,7 +768,7 @@ ${buildContext()}`;
       </div>
 
       {/* Disclaimer */}
-      <div style={{padding:"6px 18px 10px",fontSize:10,color:C2.t3,textAlign:"center",flexShrink:0}}>⚠️ AI Coach tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân. ({MAX_DAILY-dailyCount}/{MAX_DAILY} lượt)</div>
+      <div style={{padding:"6px 18px 10px",fontSize:10,color:C2.t3,textAlign:"center",flexShrink:0}}>⚠️ AI Coach tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân. {isAdmin?"(Admin ∞)":(`(${MAX_DAILY-dailyCount}/${MAX_DAILY} lượt)`)}</div>
     </div>
   </div>;
 }
@@ -3595,7 +3595,7 @@ export default function App(){
         {tab==="templates_s"&&<AdminPanel key="tpl" {...adminP} forcedSection="settings" initialSection="templates" hidePills/>}
       </main>
     </div>
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings}/>}
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin}/>}
   </div>;
 
 }
