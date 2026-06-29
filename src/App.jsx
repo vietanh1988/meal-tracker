@@ -733,7 +733,7 @@ ${buildContext()}`;
       <div style={{padding:"8px 18px",background:"rgba(0,122,255,0.04)",display:"flex",flexWrap:"wrap",gap:4,alignItems:"center",borderBottom:`1px solid ${C2.border}`}}>
         <span style={{fontSize:11,color:C2.primary,fontWeight:600}}>🧠</span>
         {[`${profile?.kg||65}kg`,{gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Nghỉ"}[profile?.exerciseType||"gym"],
-          {balanced:"Cân bằng",low_carb:"Low-carb",keto:"Keto"}[profile?.dietStrategy||"balanced"],
+          ...(profile?.goalType==="cut"&&(profile?.dietStrategy||"balanced")!=="balanced"?[{balanced:"Cân bằng",low_carb:"Low-carb",keto:"Keto"}[profile?.dietStrategy]]:[]),
           `${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;return (todayData?.cal||0)<tgt?"-"+(tgt-(todayData?.cal||0)):"✓";})()} cal`
         ].map((tag,i)=><span key={i} style={{fontSize:10,padding:"2px 6px",background:C2.surface,borderRadius:4,color:C2.t2,fontWeight:600}}>{tag}</span>)}
       </div>
@@ -2513,7 +2513,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#007AFF",bg:"#EFF6FF",bc:"#60A5FA"},
           ].map(g=>{
             const disabled=(profile.exerciseType||"gym")==="none"&&g.id==="bulk";
-            return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...profile,goalType:g.id});}} style={{
+            return <div key={g.id} onClick={()=>{if(!disabled){const up={...profile,goalType:g.id};if(g.id!=="cut")up.dietStrategy="balanced";setProfile(up);}}} style={{
               padding:mob?"10px 6px":"14px 10px",borderRadius:12,cursor:disabled?"not-allowed":"pointer",textAlign:"center",
               background:profile.goalType===g.id?g.bg:C.surface,
               border:profile.goalType===g.id?`2px solid ${g.bc}`:`1.5px solid ${C.border}`,
@@ -3046,7 +3046,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
               {id:"maintain",icon:"⚖️",name:"Duy trì",c:"#007AFF",bg:"#EFF6FF",bc:"#60A5FA"},
             ].map(g=>{
               const disabled=(p.exerciseType||"gym")==="none"&&g.id==="bulk";
-              return <div key={g.id} onClick={()=>{if(!disabled)setProfile({...p,goalType:g.id});}} style={{
+              return <div key={g.id} onClick={()=>{if(!disabled){const up={...p,goalType:g.id};if(g.id!=="cut")up.dietStrategy="balanced";setProfile(up);}}} style={{
                 padding:mob?"10px 6px":"14px 10px",borderRadius:12,cursor:disabled?"not-allowed":"pointer",textAlign:"center",
                 background:p.goalType===g.id?g.bg:C.surface,
                 border:p.goalType===g.id?`2px solid ${g.bc}`:`1.5px solid ${C.border}`,
