@@ -943,7 +943,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         <div style={{fontSize:mob?36:44,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>
           {actualCal>0?actualCal.toLocaleString():heroCal.toLocaleString()}
         </div>
-        <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
+        <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:10,fontWeight:700,color:"#007AFF",marginLeft:6}}>🌏 Việt Nam</span>}</div>
       </div>
       {actualCal>0&&<div style={{marginTop:6}}>
         <span style={{fontSize:13,fontWeight:700,color:(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?"#B45309":pp<=105?"#16A34A":"#DC2626";})()}}>{(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?`⚠️ Còn thiếu ${calRemain} kcal`:pp<=105?"✅ Ổn rồi, giữ nhé!":`🔴 Dư ${Math.abs(calRemain)} kcal`;})()}</span>
@@ -2433,7 +2433,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         <div style={{borderTop:`2px solid ${C.red}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:900,color:C.primary,marginBottom:12}}>⚡ Macro (dinh dưỡng) tự động tính</div>
         <div style={{display:"flex",alignItems:"center",gap:4,padding:"6px 8px",background:C.surface,borderRadius:10,border:`1.5px solid ${C.border}`,marginBottom:12,width:"fit-content"}}>
-          {[{id:"standard",label:"Quốc tế"},{id:"asian",label:"Châu Á (-10%)"}].map(m=><div key={m.id} onClick={()=>setProfile({...profile,calorieMode:m.id})} style={{
+          {[{id:"standard",label:"Quốc tế"},{id:"asian",label:"Việt Nam (-10%)"}].map(m=><div key={m.id} onClick={()=>setProfile({...profile,calorieMode:m.id})} style={{
             padding:"6px 14px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700,
             background:(profile.calorieMode||"standard")===m.id?C.primary:"transparent",
             color:(profile.calorieMode||"standard")===m.id?"#fff":C.t2,
@@ -2487,12 +2487,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
         {(profile.calorieMode||"standard")==="asian"&&<div style={{marginTop:10,padding:"10px 14px",borderRadius:10,background:"#EFF6FF",border:"1px solid #BFDBFE",display:"flex",alignItems:"flex-start",gap:8}}>
           <span style={{fontSize:14,flexShrink:0}}>🇻🇳</span>
-          <span style={{fontSize:12,fontWeight:600,color:"#1E40AF",lineHeight:1.6}}>Đang dùng công thức Châu Á (BMR ×0.9). Phù hợp hơn cho người Việt Nam và Đông Nam Á.</span>
+          <span style={{fontSize:12,fontWeight:600,color:"#1E40AF",lineHeight:1.6}}>Đang dùng công thức Việt Nam (BMR ×0.9). Phù hợp hơn cho người Việt Nam và Đông Nam Á.</span>
         </div>}
 
         <div style={{marginTop:12,background:C.goldBg,borderRadius:10,padding:"10px 14px",border:"1.5px solid #CA8A04"}}>
           <span style={{fontSize:12,fontWeight:700,color:"#78350F",lineHeight:1.6}}>
-            💡 BMR = {macro.bmr}{(profile.calorieMode||"standard")==="asian"?" (×0.9 Châu Á)":""} → ×{macro.actMul} = TDEE {macro.tdee} cal.
+            💡 BMR = {macro.bmr}{(profile.calorieMode||"standard")==="asian"?" (×0.9 Việt Nam)":""} → ×{macro.actMul} = TDEE {macro.tdee} cal.
             {macro.goal==="bulk"?"Tăng cơ":macro.goal==="cut"?"Giảm mỡ":"Duy trì"}: P = {profile.kg}×{macro.pRatio.replace("g/kg","")} = {macro.protein}g, C = {profile.kg}×{macro.cRatio.replace("g/kg","")} = {macro.carb}g, F = {profile.kg}×{macro.fRatio.replace("g/kg","")} = {macro.fat}g.
             Ngày nghỉ: C giảm → {macro.carbRest}g. Tổng: {macro.calTarget} cal (tập) / {macro.calRest} cal (nghỉ).
           </span>
@@ -2915,7 +2915,7 @@ function OnboardingWizard({profile,setProfile,onComplete}){
           {/* Macro hero preview */}
           <div style={{background:"linear-gradient(135deg,#0A1628 0%,#162544 100%)",border:"2.5px solid #007AFF",borderRadius:14,padding:16,marginBottom:12}}>
             <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>CALO MỤC TIÊU NGÀY TẬP</div>
-            <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span></div>
+            <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span>{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:11,fontWeight:700,color:"#5AC8FA",marginLeft:8,padding:"2px 8px",background:"rgba(90,200,250,0.15)",borderRadius:6}}>🌏 Việt Nam Mode</span>}</div>
             <div style={{display:"flex",gap:14,marginTop:12}}>
               <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#007AFF" color2="#007AFF" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
               <MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#5AC8FA" color2="#5AC8FA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
