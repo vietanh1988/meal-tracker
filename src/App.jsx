@@ -2191,14 +2191,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* Section 1: Thông tin cơ bản */}
       <div style={{background:"#fff",border:`1px solid ${mob&&profileAcc==="info"?C.primary:C.border}`,borderRadius:14,padding:0,marginBottom:16,overflow:"hidden"}}>
-        <div onClick={()=>mob&&setProfileAcc(profileAcc==="info"?null:"info")} style={{display:"flex",alignItems:"center",gap:8,padding:mob?"14px 14px":"16px 20px",cursor:mob?"pointer":"default",userSelect:"none"}}>
+        <div onClick={()=>mob&&setProfileAcc(profileAcc==="info"?null:"info")} style={{display:"flex",alignItems:"center",gap:8,padding:mob?"14px 14px":"16px 20px",cursor:mob?"pointer":"default",userSelect:"none",paddingBottom:12,borderBottom:"1.5px solid #F3F4F6"}}>
           <span style={{fontSize:16}}>📋</span>
           <span style={{fontSize:mob?16:17,fontWeight:800,color:C.t1,flex:1}}>Thông tin cơ bản</span>
           {mob&&<span style={{fontSize:12,color:C.t3,marginRight:4}}>{profile.cm}cm · {profile.kg}kg</span>}
           {mob&&<span style={{fontSize:14,color:C.t3,transition:"transform 0.2s",transform:profileAcc==="info"?"rotate(180deg)":"rotate(0deg)"}}>▼</span>}
         </div>
         <div style={{maxHeight:mob?(profileAcc==="info"?1000:0):"none",overflow:"hidden",transition:mob?"max-height 0.3s ease":"none"}}>
-        <div style={{padding:mob?"0 14px 14px":"0 20px 20px",borderTop:`1.5px solid #F3F4F6`}}>
+        <div style={{padding:mob?"12px 14px 14px":"12px 20px 20px"}}>
 
         {/* Gender */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,marginBottom:14,maxWidth:mob?"100%":"50%"}}>
@@ -2231,14 +2231,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* Section 2: Hoạt động */}
       <div style={{background:"#fff",border:`1px solid ${mob&&profileAcc==="activity"?C.primary:C.border}`,borderRadius:14,padding:0,marginBottom:16,overflow:"hidden"}}>
-        <div onClick={()=>mob&&setProfileAcc(profileAcc==="activity"?null:"activity")} style={{display:"flex",alignItems:"center",gap:8,padding:mob?"14px 14px":"16px 20px",cursor:mob?"pointer":"default",userSelect:"none"}}>
+        <div onClick={()=>mob&&setProfileAcc(profileAcc==="activity"?null:"activity")} style={{display:"flex",alignItems:"center",gap:8,padding:mob?"14px 14px":"16px 20px",cursor:mob?"pointer":"default",userSelect:"none",paddingBottom:12,borderBottom:"1.5px solid #F3F4F6"}}>
           <span style={{fontSize:16}}>🏃</span>
           <span style={{fontSize:mob?16:17,fontWeight:800,color:C.t1,flex:1}}>Hoạt động của bạn</span>
           {mob&&<span style={{fontSize:12,color:C.t3,marginRight:4}}>{({gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Không tập"})[profile.exerciseType||"gym"]} · {({occasional:"Thỉnh thoảng",regular:"Đều đặn",frequent:"Rất chăm",daily:"Mỗi ngày"})[profile.frequency||"regular"]||""}</span>}
           {mob&&<span style={{fontSize:14,color:C.t3,transition:"transform 0.2s",transform:profileAcc==="activity"?"rotate(180deg)":"rotate(0deg)"}}>▼</span>}
         </div>
         <div style={{maxHeight:mob?(profileAcc==="activity"?2000:0):"none",overflow:"hidden",transition:mob?"max-height 0.3s ease":"none"}}>
-        <div style={{padding:mob?"0 14px 14px":"0 20px 20px",borderTop:`1.5px solid #F3F4F6`}}>
+        <div style={{padding:mob?"12px 14px 14px":"12px 20px 20px"}}>
 
         {/* Câu 1: Bạn thường tập gì? */}
         <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>Bạn thường tập gì?</div>
@@ -2315,14 +2315,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
       {/* Section 3: Mục tiêu */}
       <div style={{background:"#fff",border:`1px solid ${mob&&profileAcc==="goal"?C.primary:C.border}`,borderRadius:14,padding:0,marginBottom:16,overflow:"hidden"}}>
-        <div onClick={()=>mob&&setProfileAcc(profileAcc==="goal"?null:"goal")} style={{display:"flex",alignItems:"center",gap:8,padding:mob?"14px 14px":"16px 20px",cursor:mob?"pointer":"default",userSelect:"none"}}>
+        <div onClick={()=>mob&&setProfileAcc(profileAcc==="goal"?null:"goal")} style={{display:"flex",alignItems:"center",gap:8,padding:mob?"14px 14px":"16px 20px",cursor:mob?"pointer":"default",userSelect:"none",paddingBottom:12,borderBottom:"1.5px solid #F3F4F6"}}>
           <span style={{fontSize:16}}>🎯</span>
           <span style={{fontSize:mob?16:17,fontWeight:800,color:C.t1,flex:1}}>Mục tiêu</span>
           {mob&&<span style={{fontSize:12,color:C.t3,marginRight:4}}>{({bulk:"Tăng cơ",cut:"Giảm mỡ",maintain:"Duy trì"})[profile.goalType||"bulk"]} → {profile.goalKg}kg</span>}
           {mob&&<span style={{fontSize:14,color:C.t3,transition:"transform 0.2s",transform:profileAcc==="goal"?"rotate(180deg)":"rotate(0deg)"}}>▼</span>}
         </div>
         <div style={{maxHeight:mob?(profileAcc==="goal"?1500:0):"none",overflow:"hidden",transition:mob?"max-height 0.3s ease":"none"}}>
-        <div style={{padding:mob?"0 14px 14px":"0 20px 20px",borderTop:`1.5px solid #F3F4F6`}}>
+        <div style={{padding:mob?"12px 14px 14px":"12px 20px 20px"}}>
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:mob?6:8,marginBottom:16,maxWidth:mob?"100%":540}}>
           {[
