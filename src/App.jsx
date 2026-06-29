@@ -594,13 +594,15 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
 }
 
 // AI Coach Panel
-function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose}){
+function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings}){
   const [messages,setMessages]=useState([]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   const [dailyCount,setDailyCount]=useState(()=>{try{const d=JSON.parse(localStorage.getItem("aicoach_usage")||"{}");return d.date===new Date().toDateString()?d.count:0;}catch(e){return 0;}});
   const chatRef=useRef(null);
   const MAX_DAILY=20;
+  const apiKey=appSettings?.claude_key||localStorage.getItem("claudeKey")||"";
+  const aiModel=appSettings?.ai_model||"claude-sonnet-4-20250514";
 
   const saveDailyCount=(c)=>{setDailyCount(c);localStorage.setItem("aicoach_usage",JSON.stringify({date:new Date().toDateString(),count:c}));};
 
@@ -660,15 +662,20 @@ ${buildContext()}`;
 
   const sendMessage=async(text)=>{
     if(!text.trim()||loading)return;
+    if(!apiKey){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"⚠️ Chưa kết nối AI. Vào Cài đặt → Kết nối AI → nhập Claude API key."}]);return;}
     if(dailyCount>=MAX_DAILY){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"Bạn đã hết 20 lượt hỏi hôm nay. Quay lại ngày mai nhé! 😊"}]);return;}
     const newMsgs=[...messages,{role:"user",content:text}];
     setMessages(newMsgs);setInput("");setLoading(true);
     try{
-      const apiMsgs=newMsgs.slice(-20).map(m=>({role:m.role,content:m.content}));
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:500,system:systemPrompt,messages:apiMsgs})});
+      const chatHistory=newMsgs.slice(-10).map(m=>`${m.role==="user"?"User":"AI Coach"}: ${m.content}`).join("\n");
+      const fullPrompt=`${systemPrompt}\n\n--- LỊCH SỬ CHAT ---\n${chatHistory}\n\n--- TRẢ LỜI ---\nAI Coach:`;
+      const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({foodDesc:fullPrompt,provider:"claude",model:aiModel,apiKey})
+      });
       const data=await res.json();
-      const reply=data.content?data.content.map(b=>b.text||"").filter(Boolean).join("\n"):"Xin lỗi, mình không thể trả lời lúc này.";
-      setMessages(prev=>[...prev,{role:"assistant",content:reply}]);
+      const reply=data?.result||data?.content?.[0]?.text||data?.choices?.[0]?.message?.content||"Xin lỗi, mình không thể trả lời lúc này.";
+      setMessages(prev=>[...prev,{role:"assistant",content:reply.replace(/^AI Coach:\s*/,"")}]);
       saveDailyCount(dailyCount+1);
     }catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
     setLoading(false);
@@ -3580,7 +3587,7 @@ export default function App(){
         {tab==="templates_s"&&<AdminPanel key="tpl" {...adminP} forcedSection="settings" initialSection="templates" hidePills/>}
       </main>
     </div>
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)}/>}
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings}/>}
   </div>;
 
 }
