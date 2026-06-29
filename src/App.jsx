@@ -734,8 +734,8 @@ ${buildContext()}`;
         <span style={{fontSize:11,color:C2.primary,fontWeight:600}}>🧠</span>
         {[`${profile?.kg||65}kg`,{gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Nghỉ"}[profile?.exerciseType||"gym"],
           ...(profile?.goalType==="cut"&&(profile?.dietStrategy||"balanced")!=="balanced"?[{balanced:"Cân bằng",low_carb:"Low-carb",keto:"Keto"}[profile?.dietStrategy]]:[]),
-          `${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;return (todayData?.cal||0)<tgt?"-"+(tgt-(todayData?.cal||0)):"✓";})()} cal`
-        ].map((tag,i)=><span key={i} style={{fontSize:10,padding:"2px 6px",background:C2.surface,borderRadius:4,color:C2.t2,fontWeight:600}}>{tag}</span>)}
+          `${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;const eaten=todayData?.cal||0;const deficit=tgt-eaten;return eaten===0?"chưa ăn":deficit>0?`-${deficit}`:deficit<0?`+${Math.abs(deficit)}`:"✓";})()} cal`
+        ].map((tag,i)=>{const isCalTag=tag.endsWith("cal");const calColor=isCalTag?(tag.includes("chưa")?"#F59E0B":tag.startsWith("-")?"#EF4444":tag.startsWith("+")?"#EF4444":"#22C55E"):"";return <span key={i} style={{fontSize:10,padding:"2px 6px",background:isCalTag&&calColor?`${calColor}15`:C2.surface,borderRadius:4,color:isCalTag&&calColor?calColor:C2.t2,fontWeight:600}}>{tag}</span>})}
       </div>
 
       {/* Chat body */}
