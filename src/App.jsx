@@ -1014,7 +1014,7 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
       <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
     </div>}
 
-    {/* Compact evaluation */}
+    {/* Compact evaluation with AI suggestion merged */}
     {actualCal>0&&<div style={{...card,padding:"12px 16px",marginTop:6,
       background:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"rgba(52,199,89,0.06)":"rgba(245,158,11,0.06)",
       border:`1.5px solid ${actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"#34C759":"#F59E0B"}`,
@@ -1023,22 +1023,12 @@ function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSet
         color:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"#059669":"#B45309",
       }}>
         {actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1
-          ?"✓ Thực đơn phù hợp với mục tiêu!"
+          ?"✓ Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả."
           :actualCal<heroCal*0.95
-          ?`⚠ Thiếu ${heroCal-actualCal} kcal (${100-Math.round(actualCal/heroCal*100)}%). Bổ sung thêm thức ăn.`
-          :`🔴 Thừa ${actualCal-heroCal} kcal (+${Math.round(actualCal/heroCal*100)-100}%). Giảm bớt khẩu phần.`
+          ?`⚠ Thiếu ${heroCal-actualCal} kcal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`
+          :`🔴 Dư ${actualCal-heroCal} kcal. Giảm bớt cơm hoặc tinh bột để cân bằng.`
         }
         {actualP<heroP*0.9&&` | Protein thiếu ${heroP-actualP}g.`}
-      </div>
-    </div>}
-
-    {heroCal<target&&<div style={{...card,background:"rgba(0,122,255,0.04)",border:`1.5px solid ${C.primary}`}}>
-      <div style={{display:"flex",gap:10,alignItems:"flex-start"}}>
-        <span style={{fontSize:16,fontWeight:900,color:C.primary}}>✨</span>
-        <div>
-          <div style={{fontSize:13,fontWeight:900,color:C.primary,marginBottom:2}}>Gợi ý AI</div>
-          <div style={{fontSize:14,fontWeight:600,color:C.t1,lineHeight:1.5}}>Thiếu {target-heroCal} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).</div>
-        </div>
       </div>
     </div>}
 
