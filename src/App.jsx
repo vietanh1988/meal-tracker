@@ -593,6 +593,171 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
   </div>;
 }
 
+// AI Coach Panel
+function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose}){
+  const [messages,setMessages]=useState([]);
+  const [input,setInput]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [dailyCount,setDailyCount]=useState(()=>{try{const d=JSON.parse(localStorage.getItem("aicoach_usage")||"{}");return d.date===new Date().toDateString()?d.count:0;}catch(e){return 0;}});
+  const chatRef=useRef(null);
+  const MAX_DAILY=20;
+
+  const saveDailyCount=(c)=>{setDailyCount(c);localStorage.setItem("aicoach_usage",JSON.stringify({date:new Date().toDateString(),count:c}));};
+
+  // Context engine
+  const buildContext=()=>{
+    const p=profile||{};const m=macro||{};const t=todayData||{};
+    const wl=weightLog||[];const curW=wl.length>0?wl[wl.length-1].kg:p.kg;
+    const startW=wl.length>0?wl[0].kg:p.kg;
+    const trend=wl.length>=2?((wl[wl.length-1].kg-wl[0].kg)/wl.length).toFixed(1):"chưa đủ data";
+    const age=p.birthYear?new Date().getFullYear()-p.birthYear:"?";
+    const freqLabel={occasional:"Thỉnh thoảng (1-2 buổi/tuần)",regular:"Đều đặn (3-4 buổi/tuần)",frequent:"Rất thường xuyên (5-6 buổi/tuần)",daily:"Gần như mỗi ngày"}[p.frequency||"regular"]||"Đều đặn";
+    const exLabel={gym:"Gym",gym_cardio:"Gym + Cardio",cardio:"Cardio",none:"Không tập"}[p.exerciseType||"gym"]||"Gym";
+    const goalLabel={bulk:"Tăng cơ (+250 cal)",cut:"Giảm mỡ (-350 cal)",maintain:"Duy trì"}[p.goalType||"bulk"]||"Tăng cơ";
+    const dietLabel={balanced:"Cân bằng",low_carb:"Low-carb (≤100g carb)",keto:"Keto (≤50g carb)"}[p.dietStrategy||"balanced"]||"Cân bằng";
+    const calMode=(p.calorieMode||"standard")==="asian"?"Việt Nam (-10%)":"Quốc tế";
+    return `THÔNG TIN USER:
+- Giới tính: ${p.gender==="male"?"Nam":"Nữ"}, ${age} tuổi, ${p.kg}kg, ${p.cm}cm
+- BMI: ${m.bmi} | Tập: ${exLabel}, ${freqLabel}
+- Mục tiêu: ${goalLabel} | Chế độ: ${dietLabel} | Calo: ${calMode}
+
+MACRO MỤC TIÊU:
+- Calo: ${m.calTarget} cal | P: ${m.protein}g | C: ${m.carb}g | F: ${m.fat}g
+
+HÔM NAY:
+- Đã ăn: ${t.cal||0} cal (P:${t.p||0}g C:${t.c||0}g F:${t.f||0}g)
+- ${(t.cal||0)<m.calTarget?`Còn thiếu ${m.calTarget-(t.cal||0)} cal`:`Đủ calo`}
+- Ngày: ${t.dayType==="train"?"Tập":"Nghỉ"}
+
+CÂN NẶNG:
+- ${startW}kg → ${curW}kg → mục tiêu ${p.goalKg}kg
+- Trend: ${trend} kg/tuần (${wl.length} tuần)`;
+  };
+
+  const systemPrompt=`Bạn là AI Coach của FitPilot — ứng dụng theo dõi dinh dưỡng cho người tập gym tại Việt Nam.
+
+PHONG CÁCH:
+- Xưng "mình", gọi user "anh/chị"
+- Ngắn gọn 3-4 câu, thân thiện, dễ hiểu
+- Gợi ý thực phẩm Việt Nam phổ biến
+- Dùng emoji vừa phải
+
+ĐƯỢC PHÉP:
+🍽️ Dinh dưỡng: gợi ý thực phẩm VN, đánh giá thực đơn, tư vấn calo/macro, low-carb/keto, ăn trước/sau tập
+🏋️ Tập luyện: bài tập gym, lịch tập, cardio, warm up/cool down, set/rep
+
+KHÔNG ĐƯỢC PHÉP (từ chối lịch sự, khuyên gặp bác sĩ):
+🚫 Bệnh lý (viêm gan, tiểu đường, gout, tim mạch, thận...)
+🚫 Kê đơn thuốc, thực phẩm chức năng liều cao
+🚫 Chẩn đoán triệu chứng, đau nhức
+🚫 Phụ nữ mang thai, cho con bú, trẻ em dưới 16
+🚫 Tập khi chấn thương, phục hồi chấn thương
+
+KHI TỪ CHỐI: "Với vấn đề [X], anh/chị nên gặp bác sĩ/chuyên gia để được tư vấn. Mình chỉ tư vấn dinh dưỡng và tập luyện cho người khỏe mạnh."
+
+CONTEXT:
+${buildContext()}`;
+
+  const sendMessage=async(text)=>{
+    if(!text.trim()||loading)return;
+    if(dailyCount>=MAX_DAILY){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"Bạn đã hết 20 lượt hỏi hôm nay. Quay lại ngày mai nhé! 😊"}]);return;}
+    const newMsgs=[...messages,{role:"user",content:text}];
+    setMessages(newMsgs);setInput("");setLoading(true);
+    try{
+      const apiMsgs=newMsgs.slice(-20).map(m=>({role:m.role,content:m.content}));
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:500,system:systemPrompt,messages:apiMsgs})});
+      const data=await res.json();
+      const reply=data.content?data.content.map(b=>b.text||"").filter(Boolean).join("\n"):"Xin lỗi, mình không thể trả lời lúc này.";
+      setMessages(prev=>[...prev,{role:"assistant",content:reply}]);
+      saveDailyCount(dailyCount+1);
+    }catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
+    setLoading(false);
+  };
+
+  useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[messages,loading]);
+
+  // Welcome message
+  useEffect(()=>{
+    if(messages.length===0){
+      const t=todayData||{};const m=macro||{};
+      const welcome=(t.cal||0)>0
+        ?(t.cal<m.calTarget?`Chào anh! Hôm nay còn thiếu ${m.calTarget-(t.cal||0)} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào anh! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
+        :"Chào anh! Mình là AI Coach. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪";
+      setMessages([{role:"assistant",content:welcome}]);
+    }
+  },[]);
+
+  const quickPrompts=(()=>{
+    const t=todayData||{};const m=macro||{};
+    if((t.cal||0)===0)return["Gợi ý thực đơn hôm nay","Bữa sáng nên ăn gì?","Bài tập gym hôm nay","TDEE là gì?"];
+    if((t.cal||0)<(m.calTarget||2000)*0.95)return["Hôm nay ăn gì thêm?","Gợi ý bữa phụ","Đánh giá thực đơn","Bài tập hôm nay"];
+    return["Đánh giá thực đơn","Ngày mai ăn gì?","Lịch tập tuần này","Làm sao giảm mỡ nhanh?"];
+  })();
+
+  const C2={primary:"#007AFF",bg:"#F0F2F5",surface:"#fff",border:"#E2E8F0",t1:"#1a1a2e",t2:"#64748B",t3:"#94A3B8"};
+
+  // Panel style
+  const panelStyle=mob?{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:999,background:C2.surface,display:"flex",flexDirection:"column"}
+    :{position:"fixed",top:0,right:0,width:400,bottom:0,zIndex:999,background:C2.surface,boxShadow:"-4px 0 20px rgba(0,0,0,0.1)",display:"flex",flexDirection:"column"};
+
+  return <div>
+    {/* Backdrop (PC only) */}
+    {!mob&&<div onClick={onClose} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.2)",zIndex:998}}/>}
+
+    <div style={panelStyle}>
+      {/* Header */}
+      <div style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`,display:"flex",alignItems:"center",gap:10}}>
+        {mob&&<span onClick={onClose} style={{fontSize:20,color:C2.primary,cursor:"pointer"}}>←</span>}
+        <span style={{fontSize:18}}>✨</span>
+        <span style={{fontSize:17,fontWeight:800,color:C2.t1,flex:1}}>AI Coach</span>
+        <span style={{fontSize:11,color:"#22C55E",display:"flex",alignItems:"center",gap:4}}>● Online</span>
+        {!mob&&<span onClick={onClose} style={{fontSize:18,color:C2.t3,cursor:"pointer"}}>✕</span>}
+      </div>
+
+      {/* Context bar */}
+      <div style={{padding:"8px 18px",background:"rgba(0,122,255,0.04)",display:"flex",flexWrap:"wrap",gap:4,alignItems:"center",borderBottom:`1px solid ${C2.border}`}}>
+        <span style={{fontSize:11,color:C2.primary,fontWeight:600}}>🧠</span>
+        {[`${profile?.kg||65}kg`,{gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Nghỉ"}[profile?.exerciseType||"gym"],
+          {balanced:"Cân bằng",low_carb:"Low-carb",keto:"Keto"}[profile?.dietStrategy||"balanced"],
+          `${(todayData?.cal||0)<(macro?.calTarget||2000)?"-"+(macro?.calTarget-(todayData?.cal||0)):"✓"} cal`
+        ].map((tag,i)=><span key={i} style={{fontSize:10,padding:"2px 6px",background:C2.surface,borderRadius:4,color:C2.t2,fontWeight:600}}>{tag}</span>)}
+      </div>
+
+      {/* Chat body */}
+      <div ref={chatRef} style={{flex:1,overflowY:"auto",padding:"12px 18px",display:"flex",flexDirection:"column",gap:10}}>
+        {messages.map((m,i)=><div key={i} style={{
+          maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap",
+          ...(m.role==="user"
+            ?{alignSelf:"flex-end",background:C2.primary,color:"#fff",borderBottomRightRadius:4}
+            :{alignSelf:"flex-start",background:C2.bg,color:C2.t1,borderTopLeftRadius:4})
+        }}>
+          {m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ AI Coach</div>}
+          {m.content}
+        </div>)}
+        {loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
+          <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ AI Coach</div>
+          Đang suy nghĩ...
+        </div>}
+      </div>
+
+      {/* Quick prompts */}
+      <div style={{display:"flex",gap:6,padding:"8px 18px",overflowX:"auto",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
+        {quickPrompts.map((q,i)=><div key={i} onClick={()=>sendMessage(q)} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${C2.border}`,fontSize:11,fontWeight:600,color:C2.primary,background:"rgba(0,122,255,0.04)",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{q}</div>)}
+      </div>
+
+      {/* Input */}
+      <div style={{display:"flex",gap:8,padding:"12px 18px",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
+        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage(input);}}}
+          placeholder="Hỏi AI Coach..." style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+        <button onClick={()=>sendMessage(input)} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:C2.primary,color:"#fff",border:"none",cursor:loading?"default":"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",opacity:loading||!input.trim()?0.5:1}}>↑</button>
+      </div>
+
+      {/* Disclaimer */}
+      <div style={{padding:"6px 18px 10px",fontSize:10,color:C2.t3,textAlign:"center",flexShrink:0}}>⚠️ AI Coach tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân. ({MAX_DAILY-dailyCount}/{MAX_DAILY} lượt)</div>
+    </div>
+  </div>;
+}
+
 function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSettings,mob}){
   const [period,setPeriod]=useState("month"); // "week" or "month"
   const [offset,setOffset]=useState(0); // 0=current, -1=prev, etc
@@ -3241,6 +3406,7 @@ export default function App(){
   const pcWeightInputRef=useRef(null);
   const [pcWeightSaved,setPcWeightSaved]=useState(false);
   const [pcDayManual,setPcDayManual]=useState(null);
+  const [showAICoach,setShowAICoach]=useState(false);
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
@@ -3345,7 +3511,7 @@ export default function App(){
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           {tab!=="meals"&&<div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayManual("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayManual("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>}
           <NotiBell appSettings={appSettings}/>
-          <button style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ AI Coach</button>
+          <button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ AI Coach</button>
         </div>
       </header>
       <main style={{padding:tab==="account"?"24px 100px":24,flex:1}}>
@@ -3414,6 +3580,7 @@ export default function App(){
         {tab==="templates_s"&&<AdminPanel key="tpl" {...adminP} forcedSection="settings" initialSection="templates" hidePills/>}
       </main>
     </div>
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)}/>}
   </div>;
 
 }
