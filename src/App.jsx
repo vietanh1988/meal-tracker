@@ -779,6 +779,15 @@ VÍ DỤ TRẢ LỜI ĐÚNG:
 - User hỏi "Mai ăn gì?": Đọc NGÀY MAI tập/nghỉ + target → lên thực đơn từ KHO → tính tổng cal khớp target
 - User hỏi "Đánh giá thực đơn": Đọc CHI TIẾT BỮA ĂN → so MACRO MỤC TIÊU → chỉ ra thiếu/dư gì
 
+QUY TẮC ĐÁNH GIÁ MACRO (BẮT BUỘC):
+- Mỗi macro (Calo, P, C, F) so với mục tiêu:
+  ✅ Trong ±10% = OK, đạt
+  ⚠️ Chênh 10-20% = Hơi lệch, cần điều chỉnh
+  ❌ Chênh >20% = Lệch nhiều, cần cảnh báo rõ ràng
+- KHÔNG BAO GIỜ nói "dư protein là tốt" — dư >10% vẫn là lệch, vì dư protein = thiếu carb hoặc fat
+- VÍ DỤ: Target P=129g, ăn 179g → dư 38% → ❌ phải cảnh báo "Protein dư 50g (38%), cần giảm"
+- Khi đánh giá, LUÔN tính % chênh lệch cho mỗi macro
+
 CONTEXT:
 ${buildContext()}`;
 
