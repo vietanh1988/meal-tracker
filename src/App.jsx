@@ -594,7 +594,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
 }
 
 // AI Coach Panel
-function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin}){
+function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate}){
   const [messages,setMessages]=useState([]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
@@ -624,7 +624,40 @@ function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings
     const eaten=t.cal||0;
     const deficit=todayTarget-eaten;
     const calStatus=eaten===0?"Chưa ăn gì":deficit>0?`Còn thiếu ${deficit} cal`:deficit<0?`Dư ${Math.abs(deficit)} cal`:"Vừa đủ calo";
-    // Tomorrow info
+    // Today's meal details
+    let mealDetails="";
+    if(getMeals){
+      try{
+        const mc=(()=>{try{return appSettings?.meal_config?JSON.parse(appSettings.meal_config):{train:["breakfast","lunch","snack","dinner"],rest:["breakfast","lunch","snack","dinner"]};}catch(e){return{train:["breakfast","lunch","snack","dinner"],rest:["breakfast","lunch","snack","dinner"]};}})();
+        const ids=mc[isRest?"rest":"train"]||mc.train;
+        const ms=getMeals(isRest?"rest":"train").filter(m2=>ids.includes(m2.id));
+        const mealNames={breakfast:"Bữa sáng",lunch:"Bữa trưa",snack:"Bữa phụ",dinner:"Bữa tối"};
+        const details=ms.filter(m2=>m2.items.length>0).map(m2=>{
+          const cal=Math.round(m2.items.reduce((s,i)=>s+(i.cal||0),0));
+          const items=m2.items.map(i=>`${i.name} (${Math.round(i.cal||0)} cal)`).join(", ");
+          return `  ${mealNames[m2.id]||m2.id}: ${items} → ${cal} cal`;
+        });
+        if(details.length>0) mealDetails="\n- Chi tiết:\n"+details.join("\n");
+      }catch(e){}
+    }
+
+    // Tomorrow planned meals
+    let tmrPlan="";
+    if(getWeeklyTemplate){
+      try{
+        const days=["cn","t2","t3","t4","t5","t6","t7"];
+        const tmrKey=days[tmrIdx];
+        const tpl=getWeeklyTemplate(tmrKey);
+        if(tpl&&tpl.meals){
+          const mealNames={breakfast:"Sáng",lunch:"Trưa",snack:"Phụ",dinner:"Tối"};
+          const planned=Object.entries(tpl.meals).filter(([,v])=>v&&v.items&&v.items.length>0).map(([k,v])=>{
+            const cal=Math.round(v.items.reduce((s,i)=>s+(i.cal||0),0));
+            return `  ${mealNames[k]||k}: ${v.items.map(i=>i.name).join(", ")} → ${cal} cal`;
+          });
+          if(planned.length>0) tmrPlan="\n- Đã lên kế hoạch:\n"+planned.join("\n");
+        }
+      }catch(e){}
+    }
     const tmr=new Date();tmr.setDate(tmr.getDate()+1);
     const tmrIdx=tmr.getDay();
     const tmrMapped=tmrIdx===0?6:tmrIdx-1;
@@ -642,10 +675,10 @@ MACRO MỤC TIÊU (${isRest?"ngày nghỉ":"ngày tập"}):
 
 HÔM NAY (${isRest?"nghỉ":"tập"}):
 - Đã ăn: ${eaten} cal (P:${t.p||0}g C:${t.c||0}g F:${t.f||0}g)
-- ${calStatus}
+- ${calStatus}${mealDetails}
 
 NGÀY MAI (${tmrDayLabel}, ${tmrIsRest?"nghỉ":"tập"}):
-- Calo mục tiêu: ${tmrTarget} cal | P: ${m.protein}g | C: ${tmrCarb}g | F: ${m.fat}g
+- Calo mục tiêu: ${tmrTarget} cal | P: ${m.protein}g | C: ${tmrCarb}g | F: ${m.fat}g${tmrPlan}
 
 CÂN NẶNG:
 - ${startW}kg → ${curW}kg → mục tiêu ${p.goalKg}kg
@@ -3527,7 +3560,7 @@ export default function App(){
     <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
     {/* AI Coach FAB — only on dashboard */}
     {!showAICoach&&tab==="dashboard"&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:100,right:14,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 14px rgba(0,122,255,0.4)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>FitPilot AI</span></div>}
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin}/>}
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate}/>}
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
       {[{id:"dashboard",label:"Tổng quan",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>},{id:"meals",label:"Bữa ăn",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>},{id:"weight",label:"Cân nặng",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="78" width="80" height="10" rx="5" fill={c}/><rect x="44" y="28" width="8" height="52" rx="4" fill={c}/><rect x="12" y="24" width="72" height="8" rx="4" fill={c}/><rect x="22" y="24" width="4" height="18" rx="2" fill={c}/><rect x="70" y="24" width="4" height="18" rx="2" fill={c}/><rect x="10" y="40" width="28" height="8" rx="4" fill={c}/><rect x="58" y="40" width="28" height="8" rx="4" fill={c}/><circle cx="48" cy="16" r="8" fill={c}/></svg>},{id:"report",label:"Báo cáo",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>},{id:"settings",label:"Cài đặt",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>}].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>{t.svg(a?"url(#navG)":"#A0A0A0")}<span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span></div>;})}
     </div>
@@ -3637,7 +3670,7 @@ export default function App(){
       </main>
     </div>
     {!showAICoach&&tab==="dashboard"&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:28,right:28,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 16px rgba(0,122,255,0.35)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>FitPilot AI</span></div>}
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin}/>}
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate}/>}
   </div>;
 
 }
