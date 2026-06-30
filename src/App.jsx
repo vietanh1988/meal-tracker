@@ -766,7 +766,7 @@ ${buildContext()}`;
       {/* Input */}
       <div style={{display:"flex",gap:8,padding:"12px 18px",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
         <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage(input);}}}
-          placeholder="Hỏi Trợ lý Fipilot..." style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+          placeholder="Hỏi Fipilot AI..." style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
         <button onClick={()=>sendMessage(input)} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:C2.primary,color:"#fff",border:"none",cursor:loading?"default":"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",opacity:loading||!input.trim()?0.5:1}}>↑</button>
       </div>
 
