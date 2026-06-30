@@ -722,6 +722,13 @@ MACRO MỤC TIÊU (${isRest?"ngày nghỉ":"ngày tập"}):
 HÔM NAY (${isRest?"nghỉ":"tập"}):
 - Đã ăn: ${eaten} cal (P:${t.p||0}g C:${t.c||0}g F:${t.f||0}g)
 - ${calStatus}${mealDetails}
+${eaten>0?`
+ĐÁNH GIÁ TỰ ĐỘNG (app đã tính sẵn, dùng để tư vấn):
+- Calo: ${eaten}/${todayTarget} (${eaten>=todayTarget?"dư":"thiếu"} ${Math.abs(todayTarget-eaten)} cal, ${Math.round(Math.abs(todayTarget-eaten)/todayTarget*100)}%)${Math.abs(todayTarget-eaten)/todayTarget<=0.1?" → OK":""}${Math.abs(todayTarget-eaten)/todayTarget>0.1&&Math.abs(todayTarget-eaten)/todayTarget<=0.2?" → hơi lệch":""}${Math.abs(todayTarget-eaten)/todayTarget>0.2?" → lệch nhiều":""}
+- Protein: ${t.p||0}/${m.protein}g (${(t.p||0)>=m.protein?"dư":"thiếu"} ${Math.abs(m.protein-(t.p||0))}g, ${Math.round(Math.abs(m.protein-(t.p||0))/m.protein*100)}%)${Math.abs(m.protein-(t.p||0))/m.protein<=0.1?" → OK":""}${Math.abs(m.protein-(t.p||0))/m.protein>0.1&&Math.abs(m.protein-(t.p||0))/m.protein<=0.2?" → hơi lệch":""}${Math.abs(m.protein-(t.p||0))/m.protein>0.2?" → lệch nhiều":""}
+- Carb: ${t.c||0}/${todayCarb}g (${(t.c||0)>=todayCarb?"dư":"thiếu"} ${Math.abs(todayCarb-(t.c||0))}g, ${Math.round(Math.abs(todayCarb-(t.c||0))/todayCarb*100)}%)${Math.abs(todayCarb-(t.c||0))/todayCarb<=0.1?" → OK":""}${Math.abs(todayCarb-(t.c||0))/todayCarb>0.1&&Math.abs(todayCarb-(t.c||0))/todayCarb<=0.2?" → hơi lệch":""}${Math.abs(todayCarb-(t.c||0))/todayCarb>0.2?" → lệch nhiều":""}
+- Fat: ${t.f||0}/${m.fat}g (${(t.f||0)>=m.fat?"dư":"thiếu"} ${Math.abs(m.fat-(t.f||0))}g, ${Math.round(Math.abs(m.fat-(t.f||0))/m.fat*100)}%)${Math.abs(m.fat-(t.f||0))/m.fat<=0.1?" → OK":""}${Math.abs(m.fat-(t.f||0))/m.fat>0.1&&Math.abs(m.fat-(t.f||0))/m.fat<=0.2?" → hơi lệch":""}${Math.abs(m.fat-(t.f||0))/m.fat>0.2?" → lệch nhiều":""}
+`:""}
 
 NGÀY MAI (${tmrDayLabel}, ${tmrIsRest?"nghỉ":"tập"}):
 - Calo mục tiêu: ${tmrTarget} cal | P: ${m.protein}g | C: ${tmrCarb}g | F: ${m.fat}g${tmrPlan}
@@ -780,13 +787,13 @@ VÍ DỤ TRẢ LỜI ĐÚNG:
 - User hỏi "Đánh giá thực đơn": Đọc CHI TIẾT BỮA ĂN → so MACRO MỤC TIÊU → chỉ ra thiếu/dư gì
 
 QUY TẮC ĐÁNH GIÁ MACRO (BẮT BUỘC):
-- Mỗi macro (Calo, P, C, F) so với mục tiêu:
-  ✅ Trong ±10% = OK, đạt
-  ⚠️ Chênh 10-20% = Hơi lệch, cần điều chỉnh
-  ❌ Chênh >20% = Lệch nhiều, cần cảnh báo rõ ràng
-- KHÔNG BAO GIỜ nói "dư protein là tốt" — dư >10% vẫn là lệch, vì dư protein = thiếu carb hoặc fat
-- VÍ DỤ: Target P=129g, ăn 179g → dư 38% → ❌ phải cảnh báo "Protein dư 50g (38%), cần giảm"
-- Khi đánh giá, LUÔN tính % chênh lệch cho mỗi macro
+- App đã tính sẵn % chênh lệch trong ĐÁNH GIÁ TỰ ĐỘNG — LUÔN dùng kết quả này
+- KHÔNG tự tính lại, KHÔNG đánh giá khác với kết quả app
+- Nếu app ghi "lệch nhiều" → phải cảnh báo, KHÔNG được nói "tốt" hay "chấp nhận được"
+- Nếu app ghi "hơi lệch" → nhắc nhẹ, gợi ý điều chỉnh
+- Nếu app ghi "OK" → khen
+- Trả lời tự nhiên, thân thiện — không cần bảng, không liệt kê máy móc
+- Tập trung vào 1-2 vấn đề quan trọng nhất + gợi ý cụ thể từ kho món ăn
 
 CONTEXT:
 ${buildContext()}`;
