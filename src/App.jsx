@@ -744,7 +744,7 @@ QUY TẮC GỢI Ý MÓN ĂN (BẮT BUỘC):
 5. KHÔNG BAO GIỜ tự bịa số calo — nếu không chắc, nói "mình không chắc calo chính xác, anh nên kiểm tra lại"`;
   };
 
-  const systemPrompt=`Bạn là FitPilot AI — trợ lý dinh dưỡng & tập luyện tích hợp trong app FitPilot.
+  const systemPrompt=`Bạn là Fipilot AI — trợ lý dinh dưỡng & tập luyện tích hợp trong app Fipilot.
 
 NGUYÊN TẮC QUAN TRỌNG NHẤT:
 1. BẮT BUỘC đọc toàn bộ CONTEXT bên dưới trước khi trả lời
@@ -790,8 +790,8 @@ ${buildContext()}`;
     setMessages(newMsgs);setInput("");setLoading(true);
     saveMsg("user",text);
     try{
-      const chatHistory=newMsgs.slice(-10).map(m=>`${m.role==="user"?"User":"FitPilot AI"}: ${m.content}`).join("\n");
-      const fullPrompt=`${systemPrompt}\n\n--- LỊCH SỬ CHAT ---\n${chatHistory}\n\n--- TRẢ LỜI ---\nFitPilot AI:`;
+      const chatHistory=newMsgs.slice(-10).map(m=>`${m.role==="user"?"User":"Fipilot AI"}: ${m.content}`).join("\n");
+      const fullPrompt=`${systemPrompt}\n\n--- LỊCH SỬ CHAT ---\n${chatHistory}\n\n--- TRẢ LỜI ---\nFipilot AI:`;
       const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({foodDesc:fullPrompt,provider:"claude",model:aiModel,apiKey})
@@ -799,7 +799,7 @@ ${buildContext()}`;
       const data=await res.json();
       if(data.error)throw new Error(data.error);
       const reply=(data.text||"").trim()||"Xin lỗi, mình không thể trả lời lúc này.";
-      const cleanReply=reply.replace(/^FitPilot AI:\s*/,"");
+      const cleanReply=reply.replace(/^Fipilot AI:\s*/,"");
       setMessages(prev=>[...prev,{role:"assistant",content:cleanReply}]);
       saveMsg("assistant",cleanReply);
       saveDailyCount(dailyCount+1);
@@ -819,7 +819,7 @@ ${buildContext()}`;
       const deficit=target-(t.cal||0);
       const welcome=(t.cal||0)>0
         ?(deficit>0?`Chào anh! Hôm nay (${isRest?"nghỉ":"tập"}) còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào anh! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
-        :"Chào anh! Mình là FitPilot AI. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪";
+        :"Chào anh! Mình là Fipilot AI. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪";
       setMessages([{role:"assistant",content:welcome}]);
       saveMsg("assistant",welcome);
     }
@@ -849,7 +849,7 @@ ${buildContext()}`;
       <div style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`,display:"flex",alignItems:"center",gap:10}}>
         {mob&&<span onClick={onClose} style={{fontSize:20,color:C2.primary,cursor:"pointer"}}>←</span>}
         <span style={{fontSize:18}}>✨</span>
-        <span style={{fontSize:17,fontWeight:800,color:C2.t1,flex:1}}>FitPilot AI <span style={{fontSize:12,fontWeight:500,color:C2.t3}}>(Hỏi gì cũng được)</span></span>
+        <span style={{fontSize:17,fontWeight:800,color:C2.t1,flex:1}}>Fipilot AI <span style={{fontSize:12,fontWeight:500,color:C2.t3}}>(Hỏi gì cũng được)</span></span>
         <span style={{fontSize:11,color:"#22C55E",display:"flex",alignItems:"center",gap:4}}>● Online</span>
         {!mob&&<span onClick={onClose} style={{fontSize:18,color:C2.t3,cursor:"pointer"}}>✕</span>}
       </div>
@@ -874,11 +874,11 @@ ${buildContext()}`;
             ?{alignSelf:"flex-end",background:C2.primary,color:"#fff",borderBottomRightRadius:4}
             :{alignSelf:"flex-start",background:C2.bg,color:C2.t1,borderTopLeftRadius:4})
         }}>
-          {m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ FitPilot AI</div>}
+          {m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>}
           {m.content}
         </div>)}
         {loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
-          <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ FitPilot AI</div>
+          <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>
           Đang suy nghĩ...
         </div>}
       </div>
@@ -891,12 +891,12 @@ ${buildContext()}`;
       {/* Input */}
       <div style={{display:"flex",gap:8,padding:"12px 18px",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
         <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage(input);}}}
-          placeholder="Hỏi FitPilot AI..." style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+          placeholder="Hỏi Fipilot AI..." style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
         <button onClick={()=>sendMessage(input)} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:C2.primary,color:"#fff",border:"none",cursor:loading?"default":"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",opacity:loading||!input.trim()?0.5:1}}>↑</button>
       </div>
 
       {/* Disclaimer */}
-      <div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ FitPilot AI tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân. {isAdmin?"(Admin ∞)":(`(${MAX_DAILY-dailyCount}/${MAX_DAILY} lượt)`)}</div>
+      <div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân. {isAdmin?"(Admin ∞)":(`(${MAX_DAILY-dailyCount}/${MAX_DAILY} lượt)`)}</div>
     </div>
   </div>;
 }
@@ -3631,7 +3631,7 @@ export default function App(){
     {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
     <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
     {/* AI Coach FAB — only on dashboard */}
-    {!showAICoach&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:100,right:14,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 14px rgba(0,122,255,0.4)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>FitPilot AI</span></div>}
+    {!showAICoach&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:100,right:14,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 14px rgba(0,122,255,0.4)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>Fipilot AI</span></div>}
     {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
       {[{id:"dashboard",label:"Tổng quan",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>},{id:"meals",label:"Bữa ăn",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>},{id:"weight",label:"Cân nặng",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="78" width="80" height="10" rx="5" fill={c}/><rect x="44" y="28" width="8" height="52" rx="4" fill={c}/><rect x="12" y="24" width="72" height="8" rx="4" fill={c}/><rect x="22" y="24" width="4" height="18" rx="2" fill={c}/><rect x="70" y="24" width="4" height="18" rx="2" fill={c}/><rect x="10" y="40" width="28" height="8" rx="4" fill={c}/><rect x="58" y="40" width="28" height="8" rx="4" fill={c}/><circle cx="48" cy="16" r="8" fill={c}/></svg>},{id:"report",label:"Báo cáo",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>},{id:"settings",label:"Cài đặt",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>}].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>{t.svg(a?"url(#navG)":"#A0A0A0")}<span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span></div>;})}
@@ -3643,7 +3643,7 @@ export default function App(){
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",display:"flex",minHeight:"100vh",background:C.bg,color:C.t1}}>
     {/* SIDEBAR */}
     <nav style={{width:220,background:"#fff",borderRight:`1px solid ${C.border}`,position:"fixed",top:0,left:0,bottom:0,zIndex:10,display:"flex",flexDirection:"column",padding:"20px 0",overflowY:"auto"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 20px",marginBottom:24}}><AppLogo size={40} radius={12}/><div><div style={{fontWeight:800,fontSize:15,color:C.t1}}>FitPilotAI</div><div style={{fontSize:10,color:C.primary,fontWeight:600,letterSpacing:"0.3px",marginTop:1}}>AI Nutrition Coach</div></div></div>
+      <div style={{display:"flex",alignItems:"center",gap:10,padding:"0 20px",marginBottom:24}}><AppLogo size={40} radius={12}/><div><div style={{fontWeight:800,fontSize:15,color:C.t1}}>FipilotAI</div><div style={{fontSize:10,color:C.primary,fontWeight:600,letterSpacing:"0.3px",marginTop:1}}>AI Nutrition Coach</div></div></div>
       <div style={{fontSize:10,fontWeight:700,color:"#64748B",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>MENU</div>
       {[{id:"dashboard",l:"Tổng quan",ic:"dashboard"},{id:"meals",l:"Bữa ăn",ic:"meals"},{id:"weight",l:"Cân nặng",ic:"weight"},{id:"report",l:"Báo cáo",ic:"report"}].map(s=><div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 20px",cursor:"pointer",fontSize:14,fontWeight:tab===s.id?700:500,color:tab===s.id?C.primary:C.t2,background:tab===s.id?"rgba(0,122,255,0.06)":"transparent",borderLeft:tab===s.id?`3px solid ${C.primary}`:"3px solid transparent"}}>{pcNavI(s.ic,tab===s.id)} {s.l}</div>)}
       <div style={{fontSize:10,fontWeight:700,color:"#64748B",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>CÀI ĐẶT</div>
@@ -3672,7 +3672,7 @@ export default function App(){
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           {tab!=="meals"&&<div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayManual("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayManual("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>}
           <NotiBell appSettings={appSettings}/>
-          <button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ FitPilot AI</button>
+          <button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ Fipilot AI</button>
         </div>
       </header>
       <main style={{padding:tab==="account"?"24px 100px":24,flex:1}}>
@@ -3718,7 +3718,7 @@ export default function App(){
           </div>
           {pcAC>0&&pcCR>0&&<div style={{...card,padding:"18px 24px",marginTop:20,display:"flex",alignItems:"center",gap:16}}>
             <div style={{width:48,height:48,borderRadius:14,background:"linear-gradient(135deg,#1E3A5F,#2D5A8E)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:24}}>🤖</div>
-            <div style={{minWidth:0}}><div style={{fontSize:14,fontWeight:700,color:C.t1}}>FitPilot AI gợi ý cho bạn</div><div style={{fontSize:12,color:C.t2,marginTop:3}}>Hôm nay bạn đang thiếu <b style={{color:"#D97706"}}>{Math.round(Math.max(0,pcHC-pcACb))}g Carb</b> để đạt mục tiêu.</div></div>
+            <div style={{minWidth:0}}><div style={{fontSize:14,fontWeight:700,color:C.t1}}>Fipilot AI gợi ý cho bạn</div><div style={{fontSize:12,color:C.t2,marginTop:3}}>Hôm nay bạn đang thiếu <b style={{color:"#D97706"}}>{Math.round(Math.max(0,pcHC-pcACb))}g Carb</b> để đạt mục tiêu.</div></div>
             <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
               <div style={{fontSize:12,color:C.t2,fontWeight:600,lineHeight:1.3}}>Gợi ý<br/>bổ sung:</div>
               <div style={{display:"flex",alignItems:"center",gap:4,padding:"10px 14px",background:C.surface,borderRadius:12}}><span style={{fontSize:22,marginRight:4}}>🍌</span><div><div style={{fontSize:12,fontWeight:700,color:C.t1}}>1 quả chuối</div><div style={{fontSize:10,color:C.t2}}>~ 27g Carb · 105 kcal</div></div></div>
@@ -3741,7 +3741,7 @@ export default function App(){
         {tab==="templates_s"&&<AdminPanel key="tpl" {...adminP} forcedSection="settings" initialSection="templates" hidePills/>}
       </main>
     </div>
-    {!showAICoach&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:28,right:28,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 16px rgba(0,122,255,0.35)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>FitPilot AI</span></div>}
+    {!showAICoach&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:28,right:28,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 16px rgba(0,122,255,0.35)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>Fipilot AI</span></div>}
     {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
   </div>;
 
