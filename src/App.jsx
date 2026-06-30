@@ -1770,17 +1770,17 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Provider</div>
       <div style={{display:"flex",gap:8,marginBottom:18}}>
         {[
-          {id:"claude",name:"Claude",desc:"Anthropic",bg:"#D97706",logo:"C",fs:15},
-          {id:"gemini",name:"Gemini",desc:"Google",bg:"#4285F4",logo:"G",fs:16},
-          {id:"gpt",name:"GPT",desc:"OpenAI",bg:"#10A37F",logo:"GPT",fs:10},
+          {id:"claude",name:"Claude",desc:"Anthropic",logo:"/icons/claude-logo.svg"},
+          {id:"gemini",name:"Gemini",desc:"Google",logo:"/icons/gemini-logo.svg"},
+          {id:"gpt",name:"GPT",desc:"OpenAI",logo:"/icons/gpt-logo.svg"},
         ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
-          flex:1,padding:"14px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",
-          background:"#fff",border:aiProvider===p.id?`1.5px solid ${C.primary}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
+          flex:1,padding:"14px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",position:"relative",
+          background:aiProvider===p.id?"rgba(0,122,255,0.04)":"#fff",border:aiProvider===p.id?`2px solid ${C.primary}`:`1px solid ${C.border}`,transition:"all 0.15s",
         }}>
-          <div style={{width:36,height:36,borderRadius:10,background:p.bg,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 6px",fontSize:p.fs,fontWeight:700,color:"#fff",fontFamily:"serif"}}>{p.logo}</div>
+          <img src={p.logo} alt={p.name} style={{width:36,height:36,margin:"0 auto 6px",display:"block",objectFit:"contain"}}/>
           <div style={{fontSize:12,fontWeight:700,color:C.t1}}>{p.name}</div>
           <div style={{fontSize:11,fontWeight:600,color:C.t2}}>{p.desc}</div>
-          {aiProvider===p.id&&<div style={{width:14,height:14,borderRadius:"50%",background:"transparent",color:C.primary,border:`1.5px solid ${C.primary}`,fontSize:8,margin:"4px auto 0",lineHeight:"14px",textAlign:"center"}}>✓</div>}
+          {aiProvider===p.id&&<div style={{position:"absolute",top:8,right:8,width:20,height:20,borderRadius:"50%",background:C.primary,color:"#fff",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>✓</div>}
         </div>)}
       </div>
 
@@ -3308,21 +3308,31 @@ function OnboardingWizard({profile,setProfile,onComplete}){
 function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   const about=(()=>{try{return appSettings.about_page?JSON.parse(appSettings.about_page):{}}catch(e){return{};}})();
   const [editing,setEditing]=useState(false);
-  const [form,setForm]=useState({
-    appName:about.appName||"Fipilot AI",
-    tagline:about.tagline||"Theo dõi dinh dưỡng thông minh cho người tập gym",
-    version:about.version||"2.6",
-    description:about.description||"Ứng dụng theo dõi bữa ăn và macro dinh dưỡng. Tính calo tự động từ kho 192 thực phẩm Việt Nam, hỗ trợ USDA API và AI (Claude, Gemini, GPT). Tính macro theo công thức Mifflin-St Jeor chuẩn ISSN.",
-    devName:about.devName||"Việt Anh Seoer",
-    devRole:about.devRole||"Founder & Developer",
-    devBio:about.devBio||"Đam mê fitness và công nghệ. Xây dựng Fipilot AI để giúp cộng đồng gym Việt Nam theo dõi dinh dưỡng dễ dàng hơn.",
-    devAvatar:about.devAvatar||"",
-    contact:about.contact||"",
-    facebook:about.facebook||"",
-    hotline:about.hotline||"",
-    zalo:about.zalo||"",
-    features:about.features||"192 món VN verified|3 AI tích hợp|USDA database|Công thức ISSN",
-  });
+  const [form,setForm]=useState({appName:"Fipilot AI",tagline:"",version:"3.0",description:"",devName:"",devRole:"",devBio:"",devAvatar:"",contact:"",facebook:"",hotline:"",zalo:"",features:""});
+
+  // Update form when appSettings loads
+  useEffect(()=>{
+    try{
+      const about=appSettings.about_page?JSON.parse(appSettings.about_page):{};
+      if(about.appName||about.tagline||about.features){
+        setForm({
+          appName:about.appName||"Fipilot AI",
+          tagline:about.tagline||"Theo dõi dinh dưỡng thông minh cho người tập gym",
+          version:about.version||"3.0",
+          description:about.description||"",
+          devName:about.devName||"Việt Anh Seoer",
+          devRole:about.devRole||"Founder & Developer",
+          devBio:about.devBio||"",
+          devAvatar:about.devAvatar||"",
+          contact:about.contact||"",
+          facebook:about.facebook||"",
+          hotline:about.hotline||"",
+          zalo:about.zalo||"",
+          features:about.features||"192 món VN verified|3 AI tích hợp|USDA database|Công thức ISSN",
+        });
+      }
+    }catch(e){}
+  },[appSettings.about_page]);
 
   const saveAbout=async()=>{
     await saveSetting("about_page",JSON.stringify(form));
