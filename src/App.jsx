@@ -624,6 +624,14 @@ function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings
     const eaten=t.cal||0;
     const deficit=todayTarget-eaten;
     const calStatus=eaten===0?"Chưa ăn gì":deficit>0?`Còn thiếu ${deficit} cal`:deficit<0?`Dư ${Math.abs(deficit)} cal`:"Vừa đủ calo";
+    // Tomorrow info
+    const tmr=new Date();tmr.setDate(tmr.getDate()+1);
+    const tmrIdx=tmr.getDay();
+    const tmrMapped=tmrIdx===0?6:tmrIdx-1;
+    const tmrIsRest=!(p.gymDays||[]).includes(tmrMapped);
+    const tmrTarget=tmrIsRest?(m.calRest||m.calTarget):m.calTarget;
+    const tmrCarb=tmrIsRest?(m.carbRest||m.carb):m.carb;
+    const tmrDayLabel=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"][tmrIdx];
     return `THÔNG TIN USER:
 - Giới tính: ${p.gender==="male"?"Nam":"Nữ"}, ${age} tuổi, ${p.kg}kg, ${p.cm}cm
 - BMI: ${m.bmi} | Tập: ${exLabel}, ${freqLabel}
@@ -636,6 +644,9 @@ HÔM NAY (${isRest?"nghỉ":"tập"}):
 - Đã ăn: ${eaten} cal (P:${t.p||0}g C:${t.c||0}g F:${t.f||0}g)
 - ${calStatus}
 
+NGÀY MAI (${tmrDayLabel}, ${tmrIsRest?"nghỉ":"tập"}):
+- Calo mục tiêu: ${tmrTarget} cal | P: ${m.protein}g | C: ${tmrCarb}g | F: ${m.fat}g
+
 CÂN NẶNG:
 - ${startW}kg → ${curW}kg → mục tiêu ${p.goalKg}kg
 - Trend: ${trend} kg/tuần (${wl.length} tuần)
@@ -643,7 +654,8 @@ CÂN NẶNG:
 LƯU Ý QUAN TRỌNG:
 - Chỉ tư vấn dựa trên MACRO MỤC TIÊU ở trên, KHÔNG tự suy diễn chế độ ăn khác
 - Nếu chế độ là "Cân bằng" thì gợi ý ăn bình thường (có cơm, tinh bột đầy đủ)
-- Nếu chế độ là "Low-carb" thì carb ≤100g, nếu "Keto" thì carb ≤50g`;
+- Nếu chế độ là "Low-carb" thì carb ≤100g, nếu "Keto" thì carb ≤50g
+- Khi user hỏi "ngày mai ăn gì", dùng MACRO NGÀY MAI để gợi ý`;
   };
 
   const systemPrompt=`Bạn là FitPilot AI — ứng dụng theo dõi dinh dưỡng cho người tập gym tại Việt Nam.
