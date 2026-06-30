@@ -3380,12 +3380,14 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
     </div>
 
     {/* Admin: Edit */}
-    {isAdmin&&<div style={{...card,marginTop:12,border:`2px solid ${C.red}`}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <div style={{fontSize:15,fontWeight:900,color:C.secondary}}>✏️ Chỉnh sửa trang giới thiệu</div>
-        <button onClick={()=>setEditing(!editing)} style={{padding:"5px 12px",fontSize:12,fontWeight:700,borderRadius:8,border:`1.5px solid ${C.red}`,background:editing?C.red:"transparent",color:editing?"#fff":C.red,cursor:"pointer",fontFamily:"inherit"}}>{editing?"✕ Đóng":"✏️ Sửa"}</button>
+    {isAdmin&&!editing&&<div style={{textAlign:"center",marginTop:16,marginBottom:16}}>
+      <button onClick={()=>setEditing(true)} style={{padding:"8px 20px",fontSize:13,fontWeight:700,borderRadius:10,border:`1.5px solid ${C.border}`,background:"#fff",color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Chỉnh sửa trang giới thiệu</button>
+    </div>}
+    {isAdmin&&editing&&<div style={{...card,marginTop:12,border:`1.5px solid ${C.primary}`,background:"rgba(0,122,255,0.02)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{fontSize:15,fontWeight:800,color:C.primary}}>✏️ Chỉnh sửa trang giới thiệu</div>
+        <button onClick={()=>setEditing(false)} style={{padding:"5px 14px",fontSize:12,fontWeight:700,borderRadius:8,border:`1.5px solid ${C.red}`,background:C.red,color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>✕ Đóng</button>
       </div>
-      {editing&&<div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
           <div>
             <div style={{...lbl,marginBottom:4}}>Tên ứng dụng</div>
@@ -3449,7 +3451,6 @@ function AboutPage({appSettings,isAdmin,saveSetting,mob}){
           </div>
         </div>
         <button onClick={saveAbout} style={{...redBtn,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu thay đổi</button>
-      </div>}
     </div>}
   </div>;
 }
