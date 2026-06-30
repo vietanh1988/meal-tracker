@@ -594,10 +594,41 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
 }
 
 // AI Coach Panel
-function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache}){
+function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId}){
   const [messages,setMessages]=useState([]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
+  const [historyLoaded,setHistoryLoaded]=useState(false);
+
+  // Load chat history from Supabase + auto cleanup
+  useEffect(()=>{
+    if(!userId){setHistoryLoaded(true);return;}
+    (async()=>{
+      try{
+        // Auto delete messages older than 30 days
+        const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);
+        await supabase.from("ai_chat_history").delete().eq("user_id",userId).lt("created_at",cutoff.toISOString());
+
+        // Load last 100 messages
+        const {data}=await supabase.from("ai_chat_history").select("id,role,content,created_at").eq("user_id",userId).order("created_at",{ascending:true}).limit(100);
+        if(data&&data.length>0){
+          // Keep max 100, delete overflow
+          if(data.length>=100){
+            const deleteIds=data.slice(0,data.length-100).map(d=>d.id);
+            if(deleteIds.length>0)await supabase.from("ai_chat_history").delete().in("id",deleteIds);
+          }
+          setMessages(data.map(d=>({role:d.role,content:d.content})));
+        }
+        setHistoryLoaded(true);
+      }catch(e){setHistoryLoaded(true);}
+    })();
+  },[userId]);
+
+  // Save message to Supabase
+  const saveMsg=async(role,content)=>{
+    if(!userId)return;
+    try{await supabase.from("ai_chat_history").insert({user_id:userId,role,content});}catch(e){}
+  };
   const [dailyCount,setDailyCount]=useState(()=>{try{const d=JSON.parse(localStorage.getItem("aicoach_usage")||"{}");return d.date===new Date().toDateString()?d.count:0;}catch(e){return 0;}});
   const chatRef=useRef(null);
   const MAX_DAILY=20;
@@ -749,6 +780,7 @@ ${buildContext()}`;
     if(!isAdmin&&dailyCount>=MAX_DAILY){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"Bạn đã hết 20 lượt hỏi hôm nay. Quay lại ngày mai nhé! 😊"}]);return;}
     const newMsgs=[...messages,{role:"user",content:text}];
     setMessages(newMsgs);setInput("");setLoading(true);
+    saveMsg("user",text);
     try{
       const chatHistory=newMsgs.slice(-10).map(m=>`${m.role==="user"?"User":"FitPilot AI"}: ${m.content}`).join("\n");
       const fullPrompt=`${systemPrompt}\n\n--- LỊCH SỬ CHAT ---\n${chatHistory}\n\n--- TRẢ LỜI ---\nFitPilot AI:`;
@@ -759,7 +791,9 @@ ${buildContext()}`;
       const data=await res.json();
       if(data.error)throw new Error(data.error);
       const reply=(data.text||"").trim()||"Xin lỗi, mình không thể trả lời lúc này.";
-      setMessages(prev=>[...prev,{role:"assistant",content:reply.replace(/^FitPilot AI:\s*/,"")}]);
+      const cleanReply=reply.replace(/^FitPilot AI:\s*/,"");
+      setMessages(prev=>[...prev,{role:"assistant",content:cleanReply}]);
+      saveMsg("assistant",cleanReply);
       saveDailyCount(dailyCount+1);
     }catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
     setLoading(false);
@@ -767,8 +801,9 @@ ${buildContext()}`;
 
   useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[messages,loading]);
 
-  // Welcome message
+  // Welcome message — only if no history from Supabase
   useEffect(()=>{
+    if(!historyLoaded)return;
     if(messages.length===0){
       const t=todayData||{};const m=macro||{};
       const isRest=t.dayType==="rest";
@@ -778,8 +813,9 @@ ${buildContext()}`;
         ?(deficit>0?`Chào anh! Hôm nay (${isRest?"nghỉ":"tập"}) còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào anh! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
         :"Chào anh! Mình là FitPilot AI. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪";
       setMessages([{role:"assistant",content:welcome}]);
+      saveMsg("assistant",welcome);
     }
-  },[]);
+  },[historyLoaded]);
 
   const quickPrompts=(()=>{
     const t=todayData||{};const m=macro||{};
@@ -3588,7 +3624,7 @@ export default function App(){
     <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
     {/* AI Coach FAB — only on dashboard */}
     {!showAICoach&&tab==="dashboard"&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:100,right:14,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 14px rgba(0,122,255,0.4)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>FitPilot AI</span></div>}
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache}/>}
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
       {[{id:"dashboard",label:"Tổng quan",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>},{id:"meals",label:"Bữa ăn",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>},{id:"weight",label:"Cân nặng",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="78" width="80" height="10" rx="5" fill={c}/><rect x="44" y="28" width="8" height="52" rx="4" fill={c}/><rect x="12" y="24" width="72" height="8" rx="4" fill={c}/><rect x="22" y="24" width="4" height="18" rx="2" fill={c}/><rect x="70" y="24" width="4" height="18" rx="2" fill={c}/><rect x="10" y="40" width="28" height="8" rx="4" fill={c}/><rect x="58" y="40" width="28" height="8" rx="4" fill={c}/><circle cx="48" cy="16" r="8" fill={c}/></svg>},{id:"report",label:"Báo cáo",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>},{id:"settings",label:"Cài đặt",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>}].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>{t.svg(a?"url(#navG)":"#A0A0A0")}<span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span></div>;})}
     </div>
@@ -3698,7 +3734,7 @@ export default function App(){
       </main>
     </div>
     {!showAICoach&&tab==="dashboard"&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:28,right:28,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 16px rgba(0,122,255,0.35)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>FitPilot AI</span></div>}
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache}/>}
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
   </div>;
 
 }
