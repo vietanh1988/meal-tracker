@@ -3616,6 +3616,7 @@ export default function App(){
         {tab==="templates_s"&&<AdminPanel key="tpl" {...adminP} forcedSection="settings" initialSection="templates" hidePills/>}
       </main>
     </div>
+    {!showAICoach&&tab==="dashboard"&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:28,right:28,display:"flex",alignItems:"center",gap:8,padding:"14px 22px",borderRadius:28,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",boxShadow:"0 4px 16px rgba(0,122,255,0.35)",zIndex:98,cursor:"pointer",fontSize:14,fontWeight:700}}>✨ FitPilot AI</div>}
     {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin}/>}
   </div>;
 
