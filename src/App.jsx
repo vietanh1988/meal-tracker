@@ -594,7 +594,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
 }
 
 // AI Coach Panel
-function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate}){
+function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache}){
   const [messages,setMessages]=useState([]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
@@ -665,6 +665,13 @@ function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings
     const tmrTarget=tmrIsRest?(m.calRest||m.calTarget):m.calTarget;
     const tmrCarb=tmrIsRest?(m.carbRest||m.carb):m.carb;
     const tmrDayLabel=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"][tmrIdx];
+    // Food database from cache
+    let foodDB="";
+    if(foodCache&&Object.keys(foodCache).length>0){
+      const foods=Object.entries(foodCache).slice(0,30).map(([name,v])=>`  ${name}: ${v.cal}cal/${v.gram||100}${v.unit||"g"} (P:${v.p}g C:${v.c}g F:${v.f}g)`);
+      foodDB=`\n\nKHO MÓN ĂN CỦA USER (${Object.keys(foodCache).length} món, ưu tiên gợi ý từ đây):\n${foods.join("\n")}`;
+    }
+
     return `THÔNG TIN USER:
 - Giới tính: ${p.gender==="male"?"Nam":"Nữ"}, ${age} tuổi, ${p.kg}kg, ${p.cm}cm
 - BMI: ${m.bmi} | Tập: ${exLabel}, ${freqLabel}
@@ -682,25 +689,41 @@ NGÀY MAI (${tmrDayLabel}, ${tmrIsRest?"nghỉ":"tập"}):
 
 CÂN NẶNG:
 - ${startW}kg → ${curW}kg → mục tiêu ${p.goalKg}kg
-- Trend: ${trend} kg/tuần (${wl.length} tuần)
+- Trend: ${trend} kg/tuần (${wl.length} tuần)${foodDB}
 
 LƯU Ý QUAN TRỌNG:
 - Chỉ tư vấn dựa trên MACRO MỤC TIÊU ở trên, KHÔNG tự suy diễn chế độ ăn khác
 - Nếu chế độ là "Cân bằng" thì gợi ý ăn bình thường (có cơm, tinh bột đầy đủ)
 - Nếu chế độ là "Low-carb" thì carb ≤100g, nếu "Keto" thì carb ≤50g
-- Khi user hỏi "ngày mai ăn gì", dùng MACRO NGÀY MAI để gợi ý`;
+- Khi user hỏi "ngày mai ăn gì", dùng MACRO NGÀY MAI để gợi ý
+
+QUY TẮC GỢI Ý MÓN ĂN (BẮT BUỘC):
+1. LUÔN gợi ý từ KHO MÓN ĂN CỦA USER trước — dùng ĐÚNG số calo/macro trong kho, KHÔNG tự tính lại
+2. Khi gợi ý, ghi rõ: "Theo kho của anh, [món] = [X] cal/[Y]g"
+3. Chỉ gợi ý món NGOÀI kho khi: user hỏi món cụ thể không có trong kho, hoặc kho không đủ đa dạng
+4. Khi gợi ý món ngoài kho, ghi rõ: "Món này chưa có trong kho, calo ước tính ~[X] cal"
+5. KHÔNG BAO GIỜ tự bịa số calo — nếu không chắc, nói "mình không chắc calo chính xác, anh nên kiểm tra lại"`;
   };
 
-  const systemPrompt=`Bạn là FitPilot AI — ứng dụng theo dõi dinh dưỡng cho người tập gym tại Việt Nam.
+  const systemPrompt=`Bạn là FitPilot AI — trợ lý dinh dưỡng & tập luyện tích hợp trong app FitPilot.
+
+NGUYÊN TẮC QUAN TRỌNG NHẤT:
+1. BẮT BUỘC đọc toàn bộ CONTEXT bên dưới trước khi trả lời
+2. Chỉ dùng số liệu calo/macro từ KHO MÓN ĂN hoặc MACRO MỤC TIÊU trong context
+3. KHÔNG BAO GIỜ tự ước lượng calo — nếu món không có trong kho, nói rõ "món này chưa có trong kho, calo ước tính khoảng X"
+4. Khi gợi ý thực đơn: ƯU TIÊN chọn từ KHO MÓN ĂN CỦA USER (đã có calo chính xác)
+5. Khi đánh giá: đọc CHI TIẾT BỮA ĂN HÔM NAY và so với MACRO MỤC TIÊU
+6. Khi hỏi "ngày mai": đọc NGÀY MAI (tập/nghỉ + target + kế hoạch nếu có)
 
 PHONG CÁCH:
 - Xưng "mình", gọi user "anh/chị"
 - Ngắn gọn 3-4 câu, thân thiện, dễ hiểu
 - Gợi ý thực phẩm Việt Nam phổ biến
+- Khi gợi ý món, LUÔN kèm gram + calo chính xác từ kho
 - Dùng emoji vừa phải
 
 ĐƯỢC PHÉP:
-🍽️ Dinh dưỡng: gợi ý thực phẩm VN, đánh giá thực đơn, tư vấn calo/macro, low-carb/keto, ăn trước/sau tập
+🍽️ Dinh dưỡng: gợi ý thực phẩm từ kho user, đánh giá thực đơn, tư vấn calo/macro, low-carb/keto, ăn trước/sau tập
 🏋️ Tập luyện: bài tập gym, lịch tập, cardio, warm up/cool down, set/rep
 
 KHÔNG ĐƯỢC PHÉP (từ chối lịch sự, khuyên gặp bác sĩ):
@@ -711,6 +734,11 @@ KHÔNG ĐƯỢC PHÉP (từ chối lịch sự, khuyên gặp bác sĩ):
 🚫 Tập khi chấn thương, phục hồi chấn thương
 
 KHI TỪ CHỐI: "Với vấn đề [X], anh/chị nên gặp bác sĩ/chuyên gia để được tư vấn. Mình chỉ tư vấn dinh dưỡng và tập luyện cho người khỏe mạnh."
+
+VÍ DỤ TRẢ LỜI ĐÚNG:
+- User hỏi "Bổ sung gì?": Đọc HÔM NAY thiếu bao nhiêu cal → chọn từ KHO MÓN ĂN → "Anh thêm 200g ức gà luộc (330 cal, P:62g) + 1 quả chuối (89 cal) là đủ!"
+- User hỏi "Mai ăn gì?": Đọc NGÀY MAI tập/nghỉ + target → lên thực đơn từ KHO → tính tổng cal khớp target
+- User hỏi "Đánh giá thực đơn": Đọc CHI TIẾT BỮA ĂN → so MACRO MỤC TIÊU → chỉ ra thiếu/dư gì
 
 CONTEXT:
 ${buildContext()}`;
@@ -3560,7 +3588,7 @@ export default function App(){
     <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
     {/* AI Coach FAB — only on dashboard */}
     {!showAICoach&&tab==="dashboard"&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:100,right:14,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 14px rgba(0,122,255,0.4)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>FitPilot AI</span></div>}
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate}/>}
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache}/>}
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
       {[{id:"dashboard",label:"Tổng quan",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>},{id:"meals",label:"Bữa ăn",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>},{id:"weight",label:"Cân nặng",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="78" width="80" height="10" rx="5" fill={c}/><rect x="44" y="28" width="8" height="52" rx="4" fill={c}/><rect x="12" y="24" width="72" height="8" rx="4" fill={c}/><rect x="22" y="24" width="4" height="18" rx="2" fill={c}/><rect x="70" y="24" width="4" height="18" rx="2" fill={c}/><rect x="10" y="40" width="28" height="8" rx="4" fill={c}/><rect x="58" y="40" width="28" height="8" rx="4" fill={c}/><circle cx="48" cy="16" r="8" fill={c}/></svg>},{id:"report",label:"Báo cáo",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>},{id:"settings",label:"Cài đặt",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>}].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>{t.svg(a?"url(#navG)":"#A0A0A0")}<span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span></div>;})}
     </div>
@@ -3670,7 +3698,7 @@ export default function App(){
       </main>
     </div>
     {!showAICoach&&tab==="dashboard"&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:28,right:28,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 16px rgba(0,122,255,0.35)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>FitPilot AI</span></div>}
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate}/>}
+    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache}/>}
   </div>;
 
 }
