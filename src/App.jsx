@@ -600,7 +600,7 @@ function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings
   const [loading,setLoading]=useState(false);
   const [historyLoaded,setHistoryLoaded]=useState(false);
 
-  // Load chat history from Supabase + auto cleanup
+  // Load chat history from Supabase (fallback localStorage)
   useEffect(()=>{
     if(!userId){setHistoryLoaded(true);return;}
     (async()=>{
@@ -610,24 +610,31 @@ function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings
         await supabase.from("ai_chat_history").delete().eq("user_id",userId).lt("created_at",cutoff.toISOString());
 
         // Load last 100 messages
-        const {data}=await supabase.from("ai_chat_history").select("id,role,content,created_at").eq("user_id",userId).order("created_at",{ascending:true}).limit(100);
+        const {data,error}=await supabase.from("ai_chat_history").select("id,role,content,created_at").eq("user_id",userId).order("created_at",{ascending:true}).limit(100);
+        if(error){console.warn("AI Chat load error:",error);throw error;}
         if(data&&data.length>0){
-          // Keep max 100, delete overflow
-          if(data.length>=100){
-            const deleteIds=data.slice(0,data.length-100).map(d=>d.id);
-            if(deleteIds.length>0)await supabase.from("ai_chat_history").delete().in("id",deleteIds);
-          }
           setMessages(data.map(d=>({role:d.role,content:d.content})));
+          localStorage.setItem("aicoach_backup",JSON.stringify(data.map(d=>({role:d.role,content:d.content}))));
         }
         setHistoryLoaded(true);
-      }catch(e){setHistoryLoaded(true);}
+      }catch(e){
+        // Fallback: load from localStorage
+        try{const backup=JSON.parse(localStorage.getItem("aicoach_backup")||"[]");if(backup.length>0)setMessages(backup);}catch(e2){}
+        setHistoryLoaded(true);
+      }
     })();
   },[userId]);
 
-  // Save message to Supabase
+  // Save message to Supabase + localStorage backup
   const saveMsg=async(role,content)=>{
+    // Always backup to localStorage
+    const updated=[...messages,{role,content}].slice(-20);
+    localStorage.setItem("aicoach_backup",JSON.stringify(updated));
     if(!userId)return;
-    try{await supabase.from("ai_chat_history").insert({user_id:userId,role,content});}catch(e){}
+    try{
+      const {error}=await supabase.from("ai_chat_history").insert({user_id:userId,role,content});
+      if(error)console.warn("AI Chat save error:",error);
+    }catch(e){console.warn("AI Chat save failed:",e);}
   };
   const [dailyCount,setDailyCount]=useState(()=>{try{const d=JSON.parse(localStorage.getItem("aicoach_usage")||"{}");return d.date===new Date().toDateString()?d.count:0;}catch(e){return 0;}});
   const chatRef=useRef(null);
