@@ -623,21 +623,27 @@ function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings
     const todayCarb=isRest?(m.carbRest||m.carb):m.carb;
     const eaten=t.cal||0;
     const deficit=todayTarget-eaten;
+    const calStatus=eaten===0?"Chưa ăn gì":deficit>0?`Còn thiếu ${deficit} cal`:deficit<0?`Dư ${Math.abs(deficit)} cal`:"Vừa đủ calo";
     return `THÔNG TIN USER:
 - Giới tính: ${p.gender==="male"?"Nam":"Nữ"}, ${age} tuổi, ${p.kg}kg, ${p.cm}cm
 - BMI: ${m.bmi} | Tập: ${exLabel}, ${freqLabel}
-- Mục tiêu: ${goalLabel} | Chế độ: ${dietLabel} | Calo: ${calMode}
+- Mục tiêu: ${goalLabel} | Chế độ ăn: ${dietLabel} | Calo: ${calMode}
 
 MACRO MỤC TIÊU (${isRest?"ngày nghỉ":"ngày tập"}):
 - Calo: ${todayTarget} cal | P: ${m.protein}g | C: ${todayCarb}g | F: ${m.fat}g
 
 HÔM NAY (${isRest?"nghỉ":"tập"}):
 - Đã ăn: ${eaten} cal (P:${t.p||0}g C:${t.c||0}g F:${t.f||0}g)
-- ${deficit>0?`Còn thiếu ${deficit} cal`:`Đủ calo`}
+- ${calStatus}
 
 CÂN NẶNG:
 - ${startW}kg → ${curW}kg → mục tiêu ${p.goalKg}kg
-- Trend: ${trend} kg/tuần (${wl.length} tuần)`;
+- Trend: ${trend} kg/tuần (${wl.length} tuần)
+
+LƯU Ý QUAN TRỌNG:
+- Chỉ tư vấn dựa trên MACRO MỤC TIÊU ở trên, KHÔNG tự suy diễn chế độ ăn khác
+- Nếu chế độ là "Cân bằng" thì gợi ý ăn bình thường (có cơm, tinh bột đầy đủ)
+- Nếu chế độ là "Low-carb" thì carb ≤100g, nếu "Keto" thì carb ≤50g`;
   };
 
   const systemPrompt=`Bạn là FitPilot AI — ứng dụng theo dõi dinh dưỡng cho người tập gym tại Việt Nam.
@@ -704,8 +710,10 @@ ${buildContext()}`;
 
   const quickPrompts=(()=>{
     const t=todayData||{};const m=macro||{};
+    const isR=t.dayType==="rest";
+    const tgt=isR?(m.calRest||m.calTarget):m.calTarget;
     if((t.cal||0)===0)return["Gợi ý thực đơn hôm nay","Bữa sáng nên ăn gì?","Bài tập gym hôm nay","TDEE là gì?"];
-    if((t.cal||0)<(m.calTarget||2000)*0.95)return["Hôm nay ăn gì thêm?","Gợi ý bữa phụ","Đánh giá thực đơn","Bài tập hôm nay"];
+    if((t.cal||0)<tgt*0.95)return["Hôm nay ăn gì thêm?","Gợi ý bữa phụ","Đánh giá thực đơn","Bài tập hôm nay"];
     return["Đánh giá thực đơn","Ngày mai ăn gì?","Lịch tập tuần này","Làm sao giảm mỡ nhanh?"];
   })();
 
