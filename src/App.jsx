@@ -3481,8 +3481,10 @@ export default function App(){
   const pcDt=new Date(),pcDS=`${["CN","T2","T3","T4","T5","T6","T7"][pcDt.getDay()]}, ${String(pcDt.getDate()).padStart(2,"0")}/${String(pcDt.getMonth()+1).padStart(2,"0")}/${pcDt.getFullYear()}`;
   const adminP={weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile:wrappedSetProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates};
 
-  // Mobile today data for AI Coach
-  const mobDayType=(profile?.gymDays||[]).includes(new Date().getDay())?"train":"rest";
+  // Mobile today data for AI Coach (same logic as Dashboard)
+  const mobTodayDayIdx=new Date().getDay();
+  const mobGymDayIdx=mobTodayDayIdx===0?6:mobTodayDayIdx-1;
+  const mobDayType=(profile?.gymDays||[]).includes(mobGymDayIdx)?"train":"rest";
   const mobTodayData=(()=>{
     if(!getMeals)return{cal:0,p:0,c:0,f:0,dayType:mobDayType};
     try{
