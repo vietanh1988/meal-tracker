@@ -1821,10 +1821,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       {/* API Keys */}
       {isAdmin&&<>
         <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>API Keys</div>
-        {aiProvider==="claude"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
-          <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Claude</span>
-          <input type="password" value={claudeKey} onChange={e=>setClaudeKey(e.target.value)} placeholder="sk-ant-api03-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
-          <div style={{width:6,height:6,borderRadius:"50%",background:claudeKey?"#34C759":"#ddd",flexShrink:0}}/>
+        {aiProvider==="claude"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg||"#F0FDF4",border:`0.5px solid ${C.green||"#34C759"}`,borderRadius:10,marginBottom:6}}>
+          <span style={{fontSize:14}}>🔒</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,fontWeight:700,color:C.t1}}>Claude — đã cấu hình trên server</div>
+            <div style={{fontSize:10,fontWeight:500,color:C.t2,marginTop:1}}>Key được bảo mật, không lưu ở trình duyệt</div>
+          </div>
+          <div style={{width:6,height:6,borderRadius:"50%",background:"#34C759",flexShrink:0}}/>
         </div>}
         {aiProvider==="gemini"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Gemini</span>
