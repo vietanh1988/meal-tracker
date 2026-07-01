@@ -4,7 +4,6 @@ import { calcMacro, defaultProfile } from "./calcMacro";
 import { fmtDate } from "./fmtDate";
 import { C, card, lbl, inp, redBtn } from "./theme";
 import { Pill } from "./Pill";
-import { MealIcon } from "./MealIcon";
 import { UserAvatar } from "./UserAvatar";
 import { SlidingTabs } from "./SlidingTabs";
 import { MacroRing } from "./MacroRing";
@@ -25,31 +24,11 @@ import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
 import { useUserData } from "./hooks/useUserData";
 import { useAppSettings } from "./hooks/useAppSettings";
-import { calcMacroAIDirect } from "./lib/aiService";
 import { searchUSDA, calcFromUSDA, translateFood, estimateGram } from "./lib/usdaService";
 import { lookupLocalFood } from "./lib/localFoodDB";
 
 
 
-
-// SVG icons for cross-platform consistency (no emoji dependency)
-const Icon=({d,color="#666",size=20})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={d}/></svg>;
-const Icons={
-  sunrise:"M17 18a5 5 0 0 0-10 0 M12 2v7 M4.22 10.22l1.42 1.42 M1 18h2 M21 18h2 M18.36 11.64l1.42-1.42 M23 22H1 M8 6l4-4 4 4",
-  sun:"M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z M12 1v2 M12 21v2 M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M1 12h2 M21 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42",
-  coffee:"M18 8h1a4 4 0 0 1 0 8h-1 M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z M6 1v3 M10 1v3 M14 1v3",
-  zap:"M13 2L3 14h9l-1 8 10-12h-9l1-8z",
-  moon:"M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
-  dumbbell:"M6.5 6.5h11 M6.5 17.5h11 M6.5 6.5v11 M17.5 6.5v11 M2 9v6 M22 9v6 M2 9h4.5 M17.5 9H22 M2 15h4.5 M17.5 15H22",
-  scale:"M12 3v17 M1 10l11 4 11-4 M1 10l11-4 11 4",
-  chart:"M18 20V10 M12 20V4 M6 20v-6",
-  user:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z",
-  calendar:"M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z M16 2v4 M8 2v4 M3 10h18",
-  weight:"M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M2 21h20 M5 21l3-9 M19 21l-3-9",
-  settings:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
-  link:"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
-  save:"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8",
-};
 
 // App Logo — uses pinned icon image instead of emoji
 const AppLogo=({size=48,radius,bg})=><img src="/icon-192.png" alt="Fipilot AI" style={{width:size,height:size,borderRadius:radius!=null?radius:size*0.22,objectFit:"cover",flexShrink:0,background:bg||"transparent"}}/>;
@@ -994,7 +973,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
                     </div>
                 </div>
                 {/* Expanded detail */}
-                {isSelected&&hasTpl&&<div style={{...card,marginTop:-4,borderTop:`1.5px solid ${C.border}`,borderTopLeftRadius:0,borderTopRightRadius:0,border:`2px solid ${C.red}`,borderTop:`1.5px solid ${C.border}`}}>
+                {isSelected&&hasTpl&&<div style={{...card,marginTop:-4,borderTopLeftRadius:0,borderTopRightRadius:0,border:`2px solid ${C.red}`,borderTop:`1.5px solid ${C.border}`}}>
                   {(tpl.meals||[]).map((m,mi)=>{
                     const mItems=m.items||[];
                     const mCal=mItems.reduce((s,it)=>s+(it.cal||0),0);
