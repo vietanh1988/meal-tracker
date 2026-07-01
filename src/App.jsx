@@ -4,7 +4,6 @@ import { calcMacro, defaultProfile } from "./calcMacro";
 import { fmtDate } from "./fmtDate";
 import { C, card, lbl, inp, redBtn } from "./theme";
 import { AdminTab } from "./adminTabs/AdminTab";
-import { ScheduleTab } from "./adminTabs/ScheduleTab";
 import { WeightTab } from "./adminTabs/WeightTab";
 import { AccountTab } from "./adminTabs/AccountTab";
 import { Pill } from "./Pill";
@@ -1384,7 +1383,6 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     </div>}
 
     {/* SCHEDULE */}
-    {section==="schedule"&&<ScheduleTab appSettings={appSettings} saveSetting={saveSetting} profile={profile} setProfile={setProfile} mob={mob}/>}
 
     {/* WEIGHT */}
     {section==="weight"&&<WeightTab weightLog={weightLog} addWeight={addWeight} deleteWeight={deleteWeight} setWeightLog={setWeightLog} profile={profile} setProfile={setProfile} mob={mob}/>}
@@ -1597,7 +1595,6 @@ export default function App(){
         {tab==="settings"&&<AdminPanel {...adminP} forcedSection="settings" signOut={signOut} user={user}/>}
         {tab==="about"&&<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={false}/>}
         {tab==="ai"&&<AdminPanel key="ai" {...adminP} forcedSection="settings" initialSection="ai" hidePills/>}
-        {tab==="schedule"&&<AdminPanel key="sch" {...adminP} forcedSection="profile" initialSection="schedule" hidePills/>}
         {tab==="weight"&&<AdminPanel key="wt" {...adminP} forcedSection="settings" initialSection="weight" hidePills/>}
         {tab==="account"&&<AdminPanel key="acc" {...adminP} forcedSection="settings" initialSection="account" signOut={signOut} user={user} hidePills/>}
         {tab==="admin_s"&&<AdminPanel key="adm" {...adminP} forcedSection="settings" initialSection="admin" hidePills/>}

@@ -5,23 +5,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const CLAUDE_API_KEY = Deno.env.get('CLAUDE_API_KEY') ?? ''
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { foodDesc, provider, model, apiKey } = await req.json()
+    const { foodDesc, provider, model } = await req.json()
 
     let text = ""
 
     if (provider === "claude") {
+      if (!CLAUDE_API_KEY) throw new Error("Server chưa cấu hình CLAUDE_API_KEY")
+
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "anthropic-version": "2023-06-01",
-          "x-api-key": apiKey,
+          "x-api-key": CLAUDE_API_KEY,
         },
         body: JSON.stringify({
           model: model || "claude-sonnet-4-20250514",
