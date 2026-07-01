@@ -2,6 +2,11 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase";
 import { calcMacro, defaultProfile } from "./calcMacro";
 import { fmtDate } from "./fmtDate";
+import { C } from "./theme";
+import { Pill } from "./Pill";
+import { MealIcon } from "./MealIcon";
+import { UserAvatar } from "./UserAvatar";
+import { SlidingTabs } from "./SlidingTabs";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
@@ -21,30 +26,11 @@ function useIsMobile(breakpoint=600){
   return m;
 }
 
-const C = {
-  protein:"#007AFF", carb:"#5AC8FA", fat:"#8E8E93", fiber:"#34C759",
-  red:"#EF4444", gold:"#FACC15", green:"#00C896", blue:"#007AFF",
-  primary:"#007AFF", secondary:"#36A3FF", deepBlue:"#0057FF", accent:"#7C3AED",
-  mint:"#00C896", violet:"#7C3AED",
-  bg:"#F8FAFC", card:"#FFF", surface:"#F1F5F9",
-  border:"#E2E8F0",
-  t1:"#0F172A", t2:"#64748B", t3:"#7A8A9B",
-  redBg:"rgba(239,68,68,0.07)", goldBg:"rgba(250,204,21,0.1)", greenBg:"rgba(0,200,150,0.08)", blueBg:"rgba(0,122,255,0.06)",
-  primaryBg:"rgba(0,122,255,0.08)", accentBg:"rgba(124,58,237,0.06)",
-};
 const card={background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"16px 18px",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"};
 const lbl={fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase"};
 const inp={width:"100%",boxSizing:"border-box",padding:"8px 12px",fontSize:14,fontWeight:600,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,color:C.t1,outline:"none",fontFamily:"inherit",height:40};
 const redBtn={padding:"12px",fontSize:14,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%"};
 
-function Pill({active,color=C.primary,children,onClick}){
-  return <button onClick={onClick} style={{
-    padding:"7px 16px",fontSize:13,fontWeight:active?800:600,border:"none",borderRadius:20,
-    cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s",
-    background:active?C.primaryBg:C.surface,
-    color:active?C.primary:C.t2,outline:active?`2px solid ${C.primary}`:`1.5px solid ${C.border}`,
-  }}>{children}</button>;
-}
 
 // SVG icons for cross-platform consistency (no emoji dependency)
 const Icon=({d,color="#666",size=20})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={d}/></svg>;
@@ -64,38 +50,11 @@ const Icons={
   link:"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
   save:"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8",
 };
-const MealIcon=({id,size=28})=>{
-  const s=size;
-  const icons={
-    sang:()=><svg viewBox="0 0 96 96" width={s} height={s}><defs><linearGradient id="mi1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="50%" stopColor="#0055FF"/><stop offset="100%" stopColor="#D97706"/></linearGradient></defs><path d="M10 62 A38 38 0 0 1 86 62 Z" fill="url(#mi1)"/><circle cx="48" cy="62" r="20" fill="url(#mi1)"/><rect x="45" y="4" width="6" height="16" rx="3" fill="url(#mi1)"/><rect x="45" y="4" width="6" height="14" rx="3" fill="url(#mi1)" transform="rotate(45 48 62)"/><rect x="45" y="4" width="6" height="14" rx="3" fill="url(#mi1)" transform="rotate(-45 48 62)"/><rect x="4" y="58" width="14" height="6" rx="3" fill="url(#mi1)"/><rect x="78" y="58" width="14" height="6" rx="3" fill="url(#mi1)"/><rect x="4" y="72" width="88" height="7" rx="3.5" fill="url(#mi1)"/></svg>,
-    phu_sang:()=><svg viewBox="0 0 96 96" width={s} height={s}><defs><linearGradient id="mi2" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="50%" stopColor="#0055FF"/><stop offset="100%" stopColor="#C2410C"/></linearGradient></defs><path d="M28 16 Q24 8 28 2 Q32 8 28 16" fill="none" stroke="url(#mi2)" strokeWidth="5" strokeLinecap="round"/><path d="M48 16 Q44 8 48 2 Q52 8 48 16" fill="none" stroke="url(#mi2)" strokeWidth="5" strokeLinecap="round"/><path d="M14 24 L20 78 Q20 84 28 84 L64 84 Q72 84 72 78 L78 24 Z" fill="url(#mi2)"/><path d="M78 38 Q94 38 94 56 Q94 74 78 74" fill="none" stroke="url(#mi2)" strokeWidth="8" strokeLinecap="round"/><rect x="6" y="86" width="76" height="8" rx="4" fill="url(#mi2)"/></svg>,
-    trua:()=><svg viewBox="0 0 96 96" width={s} height={s}><defs><linearGradient id="mi3" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="50%" stopColor="#0055FF"/><stop offset="100%" stopColor="#B45309"/></linearGradient></defs><circle cx="48" cy="48" r="24" fill="url(#mi3)"/><rect x="45" y="4" width="6" height="14" rx="3" fill="url(#mi3)"/><rect x="45" y="78" width="6" height="14" rx="3" fill="url(#mi3)"/><rect x="4" y="45" width="14" height="6" rx="3" fill="url(#mi3)"/><rect x="78" y="45" width="14" height="6" rx="3" fill="url(#mi3)"/><rect x="45" y="4" width="6" height="14" rx="3" fill="url(#mi3)" transform="rotate(45 48 48)"/><rect x="45" y="4" width="6" height="14" rx="3" fill="url(#mi3)" transform="rotate(135 48 48)"/><rect x="45" y="78" width="6" height="14" rx="3" fill="url(#mi3)" transform="rotate(45 48 48)"/><rect x="45" y="78" width="6" height="14" rx="3" fill="url(#mi3)" transform="rotate(-45 48 48)"/></svg>,
-    phu_chieu:()=><svg viewBox="0 0 96 96" width={s} height={s}><defs><linearGradient id="mi4" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="50%" stopColor="#0055FF"/><stop offset="100%" stopColor="#166534"/></linearGradient></defs><rect x="18" y="20" width="60" height="8" rx="4" fill="url(#mi4)"/><path d="M20 28 L26 88 Q26 94 34 94 L62 94 Q70 94 70 88 L76 28 Z" fill="url(#mi4)"/><rect x="52" y="2" width="8" height="56" rx="4" fill="url(#mi4)" transform="rotate(-18 56 30)"/></svg>,
-    pre:()=><svg viewBox="0 0 96 96" width={s} height={s}><defs><linearGradient id="mi5" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="50%" stopColor="#0055FF"/><stop offset="100%" stopColor="#991B1B"/></linearGradient></defs><polygon points="54,4 22,50 44,50 42,92 74,46 50,46" fill="url(#mi5)"/></svg>,
-    post:()=><svg viewBox="0 0 96 96" width={s} height={s}><defs><linearGradient id="mi6" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="50%" stopColor="#0055FF"/><stop offset="100%" stopColor="#115E59"/></linearGradient></defs><path d="M28 40 L34 90 Q34 96 42 96 L54 96 Q62 96 62 90 L68 40 Z" fill="url(#mi6)"/><rect x="24" y="26" width="48" height="16" rx="6" fill="url(#mi6)"/><rect x="32" y="10" width="32" height="18" rx="6" fill="url(#mi6)"/><rect x="40" y="4" width="16" height="10" rx="4" fill="url(#mi6)"/></svg>,
-    toi:()=><svg viewBox="0 0 100 100" width={s} height={s}><defs><linearGradient id="mi7" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="50%" stopColor="#0055FF"/><stop offset="100%" stopColor="#3730A3"/></linearGradient><mask id="mim"><rect width="100" height="100" fill="white"/><circle cx="62" cy="34" r="28" fill="black"/></mask></defs><circle cx="42" cy="52" r="34" fill="url(#mi7)" mask="url(#mim)"/><path d="M78 12 L81 22 L91 25 L81 28 L78 38 L75 28 L65 25 L75 22 Z" fill="url(#mi7)"/></svg>,
-  };
-  const render=icons[id]||icons.trua;
-  return render();
-};
 
 // App Logo — uses pinned icon image instead of emoji
 const AppLogo=({size=48,radius,bg})=><img src="/icon-192.png" alt="Fipilot AI" style={{width:size,height:size,borderRadius:radius!=null?radius:size*0.22,objectFit:"cover",flexShrink:0,background:bg||"transparent"}}/>;
 
 // User Avatar — emoji based on gender
-const UserAvatar=({gender,size=40})=>{
-  const isMale=(gender||"male")==="male";
-  return <div style={{width:size,height:size,borderRadius:"50%",background:isMale?"#DBEAFE":"#FCE7F3",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(size*0.55),flexShrink:0,lineHeight:1}}>{isMale?"🧔":"👩"}</div>;
-};
-const SlidingTabs=({tabs,active,onChange,style:extraStyle})=>{
-  const idx=tabs.findIndex(t=>t.id===active);
-  const count=tabs.length;
-  const m=window.innerWidth<700;
-  return <div style={{position:"relative",display:"flex",background:"rgba(0,0,0,0.04)",borderRadius:12,padding:3,...(extraStyle||{})}}>
-    <div style={{position:"absolute",top:3,left:3,width:`calc(${100/count}% - ${count>2?2:3}px)`,height:"calc(100% - 6px)",background:"rgba(255,255,255,0.9)",borderRadius:10,boxShadow:"0 1px 3px rgba(0,0,0,0.08)",transition:"transform 0.3s cubic-bezier(0.4,0,0.2,1)",zIndex:0,transform:`translateX(${idx*100}%)`}}/>
-    {tabs.map(t=><div key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:m?"8px 6px":"9px 12px",fontSize:m?12:13,fontWeight:active===t.id?700:600,cursor:"pointer",textAlign:"center",color:active===t.id?"#003D99":"#6B7280",transition:"color 0.2s",position:"relative",zIndex:1,whiteSpace:"nowrap"}}>{t.icon?t.icon+" ":""}{t.label}</div>)}
-  </div>;
-};
 
 // All 7 meals with icons and display names
 const ALL_MEALS=[
