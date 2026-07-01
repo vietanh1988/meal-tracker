@@ -2,11 +2,15 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase";
 import { calcMacro, defaultProfile } from "./calcMacro";
 import { fmtDate } from "./fmtDate";
-import { C } from "./theme";
+import { C, card, lbl, inp, redBtn } from "./theme";
 import { Pill } from "./Pill";
 import { MealIcon } from "./MealIcon";
 import { UserAvatar } from "./UserAvatar";
 import { SlidingTabs } from "./SlidingTabs";
+import { MacroRing } from "./MacroRing";
+import { MealCard } from "./MealCard";
+import { WeightBarChart } from "./WeightBarChart";
+import { useIsMobile } from "./hooks/useIsMobile";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
@@ -16,20 +20,7 @@ import { calcMacroAIDirect } from "./lib/aiService";
 import { searchUSDA, calcFromUSDA, translateFood, estimateGram } from "./lib/usdaService";
 import { lookupLocalFood } from "./lib/localFoodDB";
 
-function useIsMobile(breakpoint=600){
-  const [m,setM]=useState(typeof window!=="undefined"?window.innerWidth<=breakpoint:false);
-  useEffect(()=>{
-    const h=()=>setM(window.innerWidth<=breakpoint);
-    window.addEventListener("resize",h);
-    return()=>window.removeEventListener("resize",h);
-  },[breakpoint]);
-  return m;
-}
 
-const card={background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"16px 18px",marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"};
-const lbl={fontSize:11,fontWeight:700,color:C.t3,letterSpacing:"0.08em",textTransform:"uppercase"};
-const inp={width:"100%",boxSizing:"border-box",padding:"8px 12px",fontSize:14,fontWeight:600,background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,color:C.t1,outline:"none",fontFamily:"inherit",height:40};
-const redBtn={padding:"12px",fontSize:14,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit",width:"100%"};
 
 
 // SVG icons for cross-platform consistency (no emoji dependency)
@@ -78,223 +69,9 @@ const mealsData={
 const getMealsDefault=(type)=>mealsData[type];
 const wColors=["#EF4444","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];
 
-function MacroRing({l,v,max,color,color2,track,tc,sub,unit,size}){
-  const sz=size||72;const pct=Math.min((v/max)*100,100),r=sz*0.39,sw=sz*0.083,circ=2*Math.PI*r;const cx=sz/2;
-  const gradId=`ring-${l.replace(/\s/g,"")}`;
-  const c2=color2||color;
-  return <div style={{textAlign:"center"}}>
-    <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{display:"block",margin:"0 auto"}}>
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={color}/>
-          <stop offset="100%" stopColor={c2}/>
-        </linearGradient>
-      </defs>
-      <circle cx={cx} cy={cx} r={r} fill="none" stroke={track||"#E2E8F0"} strokeWidth={sw}/>
-      <circle cx={cx} cy={cx} r={r} fill="none" stroke={`url(#${gradId})`} strokeWidth={sw} strokeDasharray={`${(Math.min(pct,100)/100)*circ} ${circ}`} strokeLinecap="round" transform={`rotate(-90 ${cx} ${cx})`} style={{transition:"stroke-dasharray 0.5s"}}/>
-      <text x={cx} y={sub?cx*0.88:cx} textAnchor="middle" dominantBaseline="central" fill={tc||C.t1} fontSize={sz*0.22} fontWeight={900}>{Math.round(v)}</text>
-      {sub&&<text x={cx} y={cx*1.32} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.8)":"#666"} fontSize={sz*0.14} fontWeight={700}>{sub}</text>}
-      {!sub&&<text x={cx} y={cx*1.32} textAnchor="middle" dominantBaseline="central" fill={tc?"rgba(255,255,255,0.6)":C.t3} fontSize={sz*0.14} fontWeight={700}>{unit||"g"}</text>}
-    </svg>
-    <div style={{fontSize:sz>80?14:12,fontWeight:700,color:tc?"rgba(255,255,255,0.85)":C.t2,marginTop:4}}>{l}</div>
-  </div>;
-}
 
-function MealCard({meal}){
-  const mob=useIsMobile();
-  const [open,setOpen]=useState(false);
-  const t=meal.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
-  const total=t.p+t.c+t.f+t.fiber||1;
-  const iconBg={sang:"#FEF3C7",phu_sang:"#FEE0CC",trua:"#FEF3C7",phu_chieu:"#D1FAE5",pre:"#FEE2E2",post:"#CCFBF1",toi:"#EDE9FE"};
-  return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,flex:"1 1 auto",minWidth:0}}>
-        <div style={{width:44,height:44,borderRadius:11,background:iconBg[meal.id]||C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          <MealIcon id={meal.id} size={22}/>
-        </div>
-        <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
-        <span style={{fontSize:12,fontWeight:600,color:C.t2}}>{meal.items.length} món</span>
-      </div>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <span style={{fontSize:18,fontWeight:900,color:"#0F172A"}}>{Math.round(t.cal)}</span>
-        <span style={{fontSize:12,fontWeight:700,color:C.t2}}>cal</span>
-        <span style={{fontSize:14,fontWeight:700,color:C.t3,transition:"transform 0.2s",transform:open?"rotate(180deg)":"rotate(0)"}}>▾</span>
-      </div>
-    </div>
-    <div style={{display:"flex",height:5,borderRadius:3,overflow:"hidden",gap:1,marginTop:8}}>
-      <div style={{width:`${(t.p/total)*100}%`,background:C.protein,borderRadius:3}}/>
-      <div style={{width:`${(t.c/total)*100}%`,background:C.carb,borderRadius:3}}/>
-      <div style={{width:`${(t.f/total)*100}%`,background:C.fat,borderRadius:3}}/>
-      <div style={{width:`${(t.fiber/total)*100}%`,background:C.fiber,borderRadius:3}}/>
-    </div>
-    {open&&<div style={{marginTop:12,borderTop:`1.5px solid ${C.border}`,paddingTop:10}}>
-      <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:700,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`,textTransform:"uppercase",letterSpacing:"0.05em"}}>
-        <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>Lượng</span>
-        <span style={{color:C.protein,textAlign:"right"}}>P</span><span style={{color:C.carb,textAlign:"right"}}>C</span>
-        <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.fiber,textAlign:"right"}}>Xơ</span><span style={{color:C.t2,textAlign:"right"}}>Cal</span>
-      </div>
-      {meal.items.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<meal.items.length-1?`1px solid ${C.border}`:"none"}}>
-        <span style={{color:C.t1,fontWeight:700}}>{item.food}</span>
-        <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display?item.qty_display:item.gram?(item.gram+(item.unit==="ml"?"ml":"g")):""}</span>
-        <span style={{color:C.protein,textAlign:"right",fontSize:mob?11:13}}>{item.p}</span>
-        <span style={{color:C.carb,textAlign:"right",fontSize:mob?11:13}}>{item.c}</span>
-        <span style={{color:C.t1,textAlign:"right",fontSize:mob?11:13}}>{item.f}</span>
-        <span style={{color:C.fiber,textAlign:"right",fontSize:mob?11:13}}>{item.fiber||0}</span>
-        <span style={{color:C.t1,textAlign:"right",fontWeight:800,fontSize:mob?11:13}}>{item.cal}</span>
-      </div>)}
-      <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:900,paddingTop:8,marginTop:4,borderTop:`2px solid ${C.red}`}}>
-        <span style={{color:C.primary}}>Tổng</span><span/>
-        <span style={{color:C.protein,textAlign:"right"}}>{Math.round(t.p*10)/10}</span>
-        <span style={{color:C.carb,textAlign:"right"}}>{Math.round(t.c*10)/10}</span>
-        <span style={{color:C.t1,textAlign:"right"}}>{Math.round(t.f*10)/10}</span>
-        <span style={{color:C.fiber,textAlign:"right"}}>{Math.round(t.fiber*10)/10}</span>
-        <span style={{color:C.t1,textAlign:"right"}}>{Math.round(t.cal)}</span>
-      </div>
-    </div>}
-  </div>;
-}
 
 // Weight Bar Chart with goal-based color logic
-function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
-  const canvasRef=useRef(null);
-  const chartRef=useRef(null);
-  const [chartPage,setChartPage]=useState(0);
-  const PAGE_SIZE=7;
-
-  // Paginate: show 7 entries at a time, most recent last
-  const totalPages=Math.max(1,Math.ceil(weightLog.length/PAGE_SIZE));
-  const currentPage=Math.min(chartPage,totalPages-1);
-  const startIdx=Math.max(0,weightLog.length-PAGE_SIZE*(currentPage+1));
-  const endIdx=weightLog.length-PAGE_SIZE*currentPage;
-  const visibleLog=weightLog.slice(startIdx,endIdx);
-
-  // Compute chart height based on data range
-  const data0=visibleLog.map(w=>w.kg);
-  const allVals0=[...data0,goalKg,startKg];
-  const yRange0=data0.length>0?Math.ceil(Math.max(...allVals0))+1-(Math.floor(Math.min(...allVals0))-1):4;
-  const chartH=mob?(yRange0>6?220:190):(yRange0>6?280:240);
-
-  useEffect(()=>{
-    if(!canvasRef.current||visibleLog.length<2||!window.ChartJS)return;
-    if(chartRef.current)chartRef.current.destroy();
-
-    const data=visibleLog.map(w=>w.kg);
-    const labels=visibleLog.map(w=>"T"+w.week);
-    const goalData=visibleLog.map(()=>goalKg);
-
-    // Color logic based on goalType
-    function getBarType(diff){
-      if(Math.abs(diff)<0.01)return"neutral";
-      if(goalType==="bulk")return diff>0?"good":"bad";
-      if(goalType==="cut")return diff<0?"good":"bad";
-      return Math.abs(diff)<=0.2?"good":"bad";
-    }
-
-    const types=data.map((v,i)=>i===0?"neutral":getBarType(v-data[i-1]));
-
-    // Flat colors (no gradient — reliable cross-browser)
-    const colorMap={good:"#34A853",bad:"#E53935",neutral:"#F4B400"};
-    const actualColors=types.map(t=>colorMap[t]);
-    const lblColors={good:"#34A853",bad:"#E53935",neutral:"#F4B400"};
-
-    // Dynamic Y axis
-    const allVals=[...data,goalKg,startKg];
-    const yMin=Math.floor(Math.min(...allVals))-1;
-    const yMax=Math.ceil(Math.max(...allVals))+1;
-    const yRange=yMax-yMin;
-    const stepSize=yRange>6?2:1;
-    // Dynamic chart height based on range
-    const chartH=mob?(yRange>6?220:190):(yRange>6?280:240);
-
-    // Dynamic bar sizing
-    const n=data.length;
-    const catPct=n<=3?0.35:n<=5?0.45:0.55;
-    const maxBT=n<=4?36:n<=6?32:undefined;
-
-    const drawLbl={id:"dl",afterDatasetsDraw(chart){
-      const c=chart.ctx;
-      const hideGoalLbl=mob&&n>4;
-      const hideDiffLbl=mob&&n>5;
-      // Goal labels
-      if(!hideGoalLbl){
-        chart.getDatasetMeta(1).data.forEach(bar=>{
-          c.save();c.font="500 "+(mob?"8":"10")+"px sans-serif";c.fillStyle="#4285F4";
-          c.textAlign="center";c.fillText(goalKg,bar.x,bar.y-4);c.restore();
-        });
-      }
-      // Actual labels
-      chart.getDatasetMeta(0).data.forEach((bar,i)=>{
-        const v=data[i];const txt=v%1===0?v.toFixed(0):v.toFixed(1);
-        c.save();c.textAlign="center";
-        if(i>0&&!hideDiffLbl){
-          const diff=v-data[i-1];
-          const dtxt=Math.abs(diff)<0.01?"=":(diff>0?"+":"")+diff.toFixed(1);
-          c.font="500 "+(mob?"9":"12")+"px sans-serif";
-          c.fillStyle="#333";
-          c.fillText(txt,bar.x,bar.y-20);
-          c.font="500 "+(mob?"7":"10")+"px sans-serif";
-          c.fillStyle=lblColors[types[i]];
-          c.fillText(dtxt,bar.x,bar.y-9);
-        }else{
-          c.font="500 "+(mob?"9":"12")+"px sans-serif";
-          c.fillStyle="#333";
-          c.fillText(txt,bar.x,bar.y-6);
-        }
-        c.restore();
-      });
-    }};
-
-    chartRef.current=new window.ChartJS(canvasRef.current,{
-      type:"bar",
-      data:{labels,datasets:[
-        {data,backgroundColor:actualColors,borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:0.82,categoryPercentage:catPct,order:2,maxBarThickness:maxBT},
-        {data:goalData,backgroundColor:"#4285F4",borderWidth:0,borderRadius:3,borderSkipped:false,barPercentage:0.82,categoryPercentage:catPct,order:1,maxBarThickness:maxBT},
-      ]},
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        layout:{padding:{top:mob?28:32,right:8}},
-        plugins:{legend:{display:false},tooltip:{
-          backgroundColor:"#fff",titleColor:"#111",bodyColor:"#555",
-          borderColor:"#e0e0e0",borderWidth:1,cornerRadius:8,padding:10,displayColors:true,
-          callbacks:{label(ctx2){
-            if(ctx2.datasetIndex===0){
-              const v=ctx2.parsed.y,i=ctx2.dataIndex;
-              let l="Thực tế: "+v.toFixed(1)+" kg";
-              if(i>0){const d=v-data[i-1];l+=" ("+(d>=0?"+":"")+d.toFixed(1)+")";}
-              return l;
-            }
-            return "Mục tiêu: "+goalKg+" kg";
-          }}
-        }},
-        scales:{
-          y:{min:yMin,max:yMax,grid:{color:"rgba(0,0,0,0.06)",drawBorder:false},border:{display:false},
-            ticks:{color:"rgba(0,0,0,0.35)",font:{size:mob?9:11},callback:v=>v+" kg",stepSize,padding:4}},
-          x:{grid:{display:false},border:{display:false},ticks:{color:"rgba(0,0,0,0.35)",font:{size:mob?9:11},padding:4}}
-        }
-      },
-      plugins:[drawLbl]
-    });
-
-    return()=>{if(chartRef.current)chartRef.current.destroy();};
-  },[weightLog,goalKg,goalType,startKg,mob,chartPage]);
-
-  return <div>
-    <div style={{position:"relative",width:"100%",height:chartH}}>
-      <canvas ref={canvasRef}/>
-    </div>
-    {weightLog.length>PAGE_SIZE&&<div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginTop:8}}>
-      <button onClick={()=>setChartPage(Math.min(currentPage+1,totalPages-1))} disabled={currentPage>=totalPages-1} style={{padding:"4px 10px",borderRadius:6,border:`1px solid ${currentPage>=totalPages-1?"#E2E8F0":"#007AFF"}`,background:currentPage>=totalPages-1?"#F8FAFC":"#EFF6FF",color:currentPage>=totalPages-1?"#CBD5E1":"#007AFF",fontSize:12,fontWeight:600,cursor:currentPage>=totalPages-1?"default":"pointer"}}>◀ Trước</button>
-      <span style={{fontSize:11,color:"#94A3B8",fontWeight:600}}>T{visibleLog[0]?.week||1}–T{visibleLog[visibleLog.length-1]?.week||1}</span>
-      <button onClick={()=>setChartPage(Math.max(currentPage-1,0))} disabled={currentPage<=0} style={{padding:"4px 10px",borderRadius:6,border:`1px solid ${currentPage<=0?"#E2E8F0":"#007AFF"}`,background:currentPage<=0?"#F8FAFC":"#EFF6FF",color:currentPage<=0?"#CBD5E1":"#007AFF",fontSize:12,fontWeight:600,cursor:currentPage<=0?"default":"pointer"}}>Sau ▶</button>
-    </div>}
-    <div style={{display:"flex",flexWrap:"wrap",gap:mob?8:14,justifyContent:"center",marginTop:6,fontSize:mob?11:13,fontWeight:700,color:C.t1}}>
-      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#34A853"}}/>Đúng hướng</span>
-      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#E53935"}}/>Ngược hướng</span>
-      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#F4B400"}}/>Giữ nguyên</span>
-      <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:10,height:10,borderRadius:3,background:"#4285F4"}}/>Mục tiêu</span>
-    </div>
-  </div>;
-}
 
 // Smart weight suggestion based on trend analysis + AI
 function WeightSuggestion({weightLog,goalKg,goalType,startKg,curKg,profile,macro,getMeals,appSettings}){
