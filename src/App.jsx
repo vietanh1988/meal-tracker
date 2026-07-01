@@ -3239,8 +3239,6 @@ function NotiBell({appSettings,dark}){
 
 
 export default function App(){
-  window._renderCount=(window._renderCount||0)+1;
-  const _rc=window._renderCount;
   const {user,loading,signOut}=useAuth();
   const [tab,setTab]=useState(()=>{try{return localStorage.getItem("fitpilot_tab")||"dashboard";}catch(e){return "dashboard";}});
   useEffect(()=>{try{localStorage.setItem("fitpilot_tab",tab);}catch(e){}},[tab]);
@@ -3249,8 +3247,8 @@ export default function App(){
   const [pcWeightSaved,setPcWeightSaved]=useState(false);
   const [pcDayManual,setPcDayManual]=useState(null);
   const [showAICoach,setShowAICoach]=useState(false);
-  const {profile,setProfile,loading:profileLoading}=useProfile(user?.id);
-  const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id);
+  const {profile,setProfile,loading:profileLoading}=useProfile(user?.id,loading);
+  const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id,loading);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const macro=calcMacro(profile||defaultProfile);
@@ -3279,13 +3277,11 @@ export default function App(){
   })();
   const pcDayType=pcDayManual||pcDayAuto;
 
-  console.log(`🔍 R${_rc} [guard1]`,{authLoading:loading,profileLoading,profileExists:!!profile,onboardingDone:profile?.onboardingDone});
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
 
   // Onboarding: chỉ hiện cho user mới chưa có data thật (chờ data load xong)
   const needsOnboarding=userDataLoaded && !profileLoading && !weightLoading && !profile.onboardingDone && (!weightLog || weightLog.length===0);
-  console.log(`🔍 R${_rc} [guard2]`,{userDataLoaded,profileLoading,weightLoading,onboardingDone:profile.onboardingDone,weightLogLen:weightLog?weightLog.length:"null",needsOnboarding});
   if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>setTab("dashboard")}/>;
 
   // === PC DATA COMPUTATION ===

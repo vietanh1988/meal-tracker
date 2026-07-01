@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 
-export function useWeightLog(userId) {
+export function useWeightLog(userId, authLoading) {
   const [weightLog, setWeightLogState] = useState([]);
   const [loading, setLoading] = useState(true);
   const lastFetchRef = useRef(Date.now());
 
   const loadFromCloud = useCallback(async (silent = false) => {
+    if (authLoading) return; // auth chưa xác thực xong, chờ - không set state gì cả
     if (!userId) { setLoading(false); return; }
     try {
       const { data, error } = await supabase.from("weight_logs").select("*").eq("user_id", userId).order("week", { ascending: true });
@@ -23,7 +24,7 @@ export function useWeightLog(userId) {
     } catch (e) { console.error("Weight load error:", e); }
     setLoading(false);
     lastFetchRef.current = Date.now();
-  }, [userId]);
+  }, [userId, authLoading]);
 
   // Load on mount
   useEffect(() => { loadFromCloud(false); }, [loadFromCloud]);

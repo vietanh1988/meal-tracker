@@ -3,12 +3,13 @@ import { supabase } from "../lib/supabase";
 
 const DEFAULT = {cm:172,kg:63,birthYear:1987,goalKg:68,goalType:"bulk",months:4,exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard",gymDays:[0,2,4,5]};
 
-export function useProfile(userId) {
+export function useProfile(userId, authLoading) {
   const [profile, setProfileState] = useState(null);
   const [loading, setLoading] = useState(true);
   const lastFetchRef = useRef(Date.now());
 
   const fetchProfile = useCallback(async (silent = false) => {
+    if (authLoading) return; // auth chưa xác thực xong, chờ - không set state gì cả
     if (!userId) { setProfileState(DEFAULT); setLoading(false); return; }
     try {
       const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
@@ -51,7 +52,7 @@ export function useProfile(userId) {
     }
     setLoading(false);
     lastFetchRef.current = Date.now();
-  }, [userId]);
+  }, [userId, authLoading]);
 
   useEffect(() => { fetchProfile(false); }, [fetchProfile]);
 
