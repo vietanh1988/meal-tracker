@@ -21,7 +21,7 @@ export function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
   const chartH=mob?(yRange0>6?220:190):(yRange0>6?280:240);
 
   useEffect(()=>{
-    if(!canvasRef.current||visibleLog.length<2||!window.ChartJS)return;
+    if(!canvasRef.current||visibleLog.length<1||!window.ChartJS)return;
     if(chartRef.current)chartRef.current.destroy();
 
     const data=visibleLog.map(w=>w.kg);
