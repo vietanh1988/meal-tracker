@@ -3,6 +3,10 @@ import { supabase } from "./lib/supabase";
 import { calcMacro, defaultProfile } from "./calcMacro";
 import { fmtDate } from "./fmtDate";
 import { C, card, lbl, inp, redBtn } from "./theme";
+import { AdminTab } from "./adminTabs/AdminTab";
+import { ScheduleTab } from "./adminTabs/ScheduleTab";
+import { WeightTab } from "./adminTabs/WeightTab";
+import { AccountTab } from "./adminTabs/AccountTab";
 import { Pill } from "./Pill";
 import { UserAvatar } from "./UserAvatar";
 import { SlidingTabs } from "./SlidingTabs";
@@ -495,64 +499,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     </div>}
 
     {/* ADMIN PANEL */}
-    {section==="admin"&&isAdmin&&<div style={card}>
-      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🔧</span><span style={{fontWeight:800,color:C.t1}}>Quản trị</span></div>
-      <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:20}}>Quản lý thông báo và cập nhật cho tất cả users</div>
-
-      <div style={{marginBottom:20}}>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>📢 Quản lý thông báo</div>
-        <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Thêm thông báo hiện trong chuông 🔔 cho tất cả users</div>
-        <div style={{display:"flex",gap:8,marginBottom:12}}>
-          <input id="noti-text" type="text" placeholder="VD: 🎉 Phiên bản 2.6 — Kho 192 thực phẩm" style={{...inp,flex:1}}/>
-          <button onClick={async()=>{
-            const text=document.getElementById("noti-text")?.value?.trim();
-            if(!text)return;
-            const existing=(()=>{try{return appSettings.notifications?JSON.parse(appSettings.notifications):[];}catch(e){return[];}})();
-            const newNoti={id:"v"+Date.now(),text,date:new Date().toLocaleDateString("vi-VN"),isNew:true};
-            const updated=[newNoti,...existing.map(n=>({...n,isNew:false}))].slice(0,10);
-            await saveSetting("notifications",JSON.stringify(updated));
-            document.getElementById("noti-text").value="";
-            const el=document.getElementById("noti-added");
-            if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-          }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>+ Thêm</button>
-        </div>
-        <div id="noti-added" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:10}}>
-          <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Đã thêm thông báo!</span>
-        </div>
-        {(()=>{try{return appSettings.notifications?JSON.parse(appSettings.notifications):[];}catch(e){return[];}})().map((n,i)=>
-          <div key={n.id||i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 12px",background:C.surface,borderRadius:8,marginBottom:4,border:`1px solid ${C.border}`}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:12,fontWeight:n.isNew?700:600,color:C.t1}}>{n.isNew&&<span style={{width:6,height:6,borderRadius:"50%",background:"#EF4444",display:"inline-block",marginRight:6}}/>}{n.text}</div>
-              <div style={{fontSize:10,color:C.t3}}>{n.date}</div>
-            </div>
-            <button onClick={async()=>{
-              const existing=(()=>{try{return appSettings.notifications?JSON.parse(appSettings.notifications):[];}catch(e){return[];}})();
-              const updated=existing.filter(x=>x.id!==n.id);
-              await saveSetting("notifications",JSON.stringify(updated));
-            }} style={{fontSize:11,color:C.red,background:"none",border:"none",cursor:"pointer",fontWeight:700,padding:"4px 8px"}}>✕</button>
-          </div>
-        )}
-      </div>
-
-      <div style={{borderTop:`2px solid ${C.border}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>🔄 Force Update All Users</div>
-        <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8}}>Đổi version → tất cả users sẽ tự xóa cache + reload khi mở app</div>
-        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-          <div style={{fontSize:13,fontWeight:700,color:C.t2}}>Version hiện tại: <span style={{color:C.secondary,fontWeight:900}}>{appSettings.app_version||"chưa set"}</span></div>
-          <input id="new-version" type="text" placeholder="VD: 2.7" defaultValue={appSettings.app_version||""} style={{...inp,width:80}}/>
-          <button onClick={async()=>{
-            const ver=document.getElementById("new-version")?.value?.trim();
-            if(!ver)return;
-            await saveSetting("app_version",ver);
-            const el=document.getElementById("version-saved");
-            if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-          }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>🚀 Deploy</button>
-        </div>
-        <div id="version-saved" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Version updated! Users sẽ tự reload.</span>
-        </div>
-      </div>
-    </div>}
+    {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob}/>}
 
     {/* TEMPLATES (admin only — separate pill) */}
     {section==="templates"&&isAdmin&&<div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
@@ -1437,157 +1384,15 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     </div>}
 
     {/* SCHEDULE */}
-    {section==="schedule"&&(()=>{
-      const days=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
-      const toggleDay=(idx)=>{
-        const nd=days.includes(idx)?days.filter(d=>d!==idx):[...days,idx].sort();
-        setProfile({...profile,gymDays:nd,gym:nd.length});
-        if(saveSetting) saveSetting("gymDays",JSON.stringify(nd));
-      };
-      return <div style={card}>
-        <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16}}>Lịch tập gym</div>
-        <div><div style={{...lbl,marginBottom:6}}>Số buổi/tuần</div>
-          <div style={{fontSize:24,fontWeight:800,color:C.t1}}>{days.length} <span style={{fontSize:13,fontWeight:600,color:C.t3}}>buổi</span></div>
-        </div>
-        <div style={{marginTop:16}}>
-          <div style={{...lbl,marginBottom:8}}>Bấm chọn / bỏ chọn ngày tập</div>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {["T2","T3","T4","T5","T6","T7","CN"].map((d,i)=>{
-              const a=days.includes(i);
-              return <div key={i} onClick={()=>toggleDay(i)} style={{width:46,height:46,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:a?800:600,cursor:"pointer",background:a?C.redBg:C.surface,color:a?C.red:C.t3,border:a?`2px solid ${C.red}`:`1.5px solid ${C.border}`,transition:"all 0.15s"}}>{d}</div>;
-            })}
-          </div>
-        </div>
-        <button onClick={()=>{
-          if(saveSetting) saveSetting("gymDays",JSON.stringify(days));
-          const el=document.getElementById("schedule-saved");
-          if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},2500);}
-        }} style={{...redBtn,marginTop:20}}>💾 Lưu lịch tập</button>
-        <div id="schedule-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
-          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu! Tập {days.length} buổi/tuần — {days.map(d=>["T2","T3","T4","T5","T6","T7","CN"][d]).join(", ")}</span>
-        </div>
-      </div>;
-    })()}
+    {section==="schedule"&&<ScheduleTab appSettings={appSettings} saveSetting={saveSetting} profile={profile} setProfile={setProfile} mob={mob}/>}
 
     {/* WEIGHT */}
-    {section==="weight"&&(()=>{
-      const nextWeek=weightLog.length+1;
-      const today=fmtDate(new Date());
-      return <div style={card}>
-        {mob&&<div style={{fontSize:19,fontWeight:800,color:C.t1,marginBottom:16}}>Nhập cân nặng</div>}
-        <div style={!mob&&weightLog.length>=2?{display:"grid",gridTemplateColumns:"40% 58%",gap:20,marginBottom:16}:{marginBottom:16}}>
-        <div style={!mob?{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20}:{}}>
-        {!mob&&<div style={{fontSize:17,fontWeight:800,color:C.t1,marginBottom:20,display:"flex",alignItems:"center",gap:8}}>⚖️ Nhập cân nặng</div>}
-        <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:20,border:`1.5px solid ${C.border}`}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-            <span style={{fontSize:13,fontWeight:700,color:C.t1}}>Tuần {nextWeek}</span>
-            <span style={{fontSize:13,fontWeight:700,color:C.t2}}>{today}</span>
-          </div>
-          <div style={{fontSize:11,fontWeight:600,color:C.t3}}>Ngày tự động lấy từ hệ thống</div>
-        </div>
-        <div>
-          <div style={{...lbl,marginBottom:6}}>Cân nặng (kg)</div>
-          <input id="weightInput" type="text" inputMode="decimal" placeholder="VD: 64.3" style={inp}/>
-        </div>
-        <button onClick={async()=>{
-          const val=parseFloat(document.getElementById("weightInput").value.replace(",","."));
-          if(!val||val<30||val>200)return;
-          await addWeight(val);
-          setProfile({...profile,kg:val});
-          document.getElementById("weightInput").value="";
-          const el=document.getElementById("weight-saved");
-          if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...redBtn,marginTop:12}}>⚡ Lưu cân nặng</button>
-        <div id="weight-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:10}}>
-          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu & cập nhật macro theo cân nặng mới!</span>
-        </div>
-        </div>
-        {!mob&&weightLog.length>=2&&<div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20}}>
-          <div style={{fontSize:17,fontWeight:800,marginBottom:20,display:"flex",alignItems:"center",gap:8,color:C.t1}}>📈 Biểu đồ cân nặng</div>
-          <WeightBarChart weightLog={weightLog} goalKg={profile.goalKg||(weightLog.length>0?weightLog[0].kg:profile.kg)} goalType={profile.goalType} startKg={weightLog.length>0?weightLog[0].kg:profile.kg} mob={false}/>
-        </div>}
-        </div>
-        <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14,marginTop:16}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-            <div style={{...lbl,fontSize:14,fontWeight:800}}>📋 Lịch sử theo dõi cân nặng</div>
-            <button onClick={()=>{
-              if(window.confirm("Xóa toàn bộ lịch sử cân nặng?")){
-                resetWeights();
-              }
-            }} style={{fontSize:11,fontWeight:700,padding:"4px 10px",background:C.redBg,color:C.secondary,border:`1px solid ${C.secondary}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>
-              Reset hết
-            </button>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"0.7fr 1.1fr 0.7fr 0.5fr 0.8fr",gap:4,fontSize:11,fontWeight:700,color:C.t3,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`,textTransform:"uppercase",letterSpacing:"0.05em"}}>
-            <span>Tuần</span><span>Ngày</span><span style={{textAlign:"right"}}>Kg</span><span style={{textAlign:"right"}}>Δ</span><span style={{textAlign:"right"}}>Thao tác</span>
-          </div>
-          {weightLog.map((w,i)=>(
-            <WeightRow key={w.id||i} w={w} i={i} weightLog={weightLog} setWeightLog={setWeightLog} setProfile={setProfile} profile={profile} deleteWeight={deleteWeight}/>
-          ))}
-        </div>
-        {weightLog.length>=2&&(()=>{
-          const totalDelta=Math.round((weightLog[weightLog.length-1].kg-weightLog[0].kg)*10)/10;
-          const avgPerWeek=Math.round((totalDelta/(weightLog.length-1))*100)/100;
-          return <div style={{marginTop:12,padding:"12px 16px",background:C.goldBg,borderRadius:10,border:"1.5px solid #CA8A04"}}>
-            <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-              <span style={{fontSize:16,fontWeight:900,color:"#F59E0B"}}>⚡</span>
-              <span style={{fontSize:13,fontWeight:700,color:"#78350F",lineHeight:1.5}}>
-                Tổng: {totalDelta>0?"+":""}{totalDelta} kg trong {weightLog.length-1} tuần. Trung bình {avgPerWeek>0?"+":""}{avgPerWeek} kg/tuần.
-                {avgPerWeek>0&&avgPerWeek<=0.5?" Tốc độ lý tưởng tăng cơ!":avgPerWeek>0.5?" Hơi nhanh, cẩn thận tích mỡ.":avgPerWeek<0?" Đang giảm — kiểm tra lại chế độ ăn.":" Giữ ổn định."}
-              </span>
-            </div>
-          </div>;
-        })()}
-      </div>;
-    })()}
+    {section==="weight"&&<WeightTab weightLog={weightLog} addWeight={addWeight} deleteWeight={deleteWeight} setWeightLog={setWeightLog} profile={profile} setProfile={setProfile} mob={mob}/>}
     {/* ABOUT */}
     {section==="about"&&<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>}
 
     {/* ACCOUNT */}
-    {section==="account"&&<div style={card}>
-      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Tài khoản</span></div>
-      <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-          <UserAvatar gender={profile.gender} size={48}/>
-          <div style={{flex:1}}>
-            <div style={{fontSize:16,fontWeight:800,color:C.t1}}>{user?.user_metadata?.username||"User"}</div>
-            <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Thành viên Fipilot AI</div>
-          </div>
-        </div>
-        <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:12,display:"flex",flexDirection:"column",gap:10}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,borderRadius:8,background:C.blueBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>👤</div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.05em",textTransform:"uppercase"}}>Tên hiển thị</div>
-              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{user?.user_metadata?.username||"Chưa đặt"}</div>
-            </div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,borderRadius:8,background:C.goldBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>📧</div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.05em",textTransform:"uppercase"}}>Email</div>
-              <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{user?.email||"Chưa có"}</div>
-            </div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,borderRadius:8,background:C.greenBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>🛡️</div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:10,fontWeight:700,color:C.t3,letterSpacing:"0.05em",textTransform:"uppercase"}}>Vai trò</div>
-              <div style={{fontSize:14,fontWeight:700,color:isAdmin?C.red:C.t1}}>{isAdmin?"Admin":"Thành viên"}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style={!mob?{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}:{}}>
-      <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"linear-gradient(135deg,#EF4444,#DC2626)",color:"#fff",border:"none"}}>🚪 Đăng xuất</button>
-      <button onClick={()=>{
-        caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
-          if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
-          window.location.reload(true);
-        });
-      }} style={{...redBtn,marginTop:mob?8:0,background:"linear-gradient(135deg,#6B7280,#4B5563)"}}>🗑️ Xóa cache & cập nhật</button>
-      </div>
-    </div>}
+    {section==="account"&&<AccountTab user={user} signOut={signOut} isAdmin={isAdmin} profile={profile} mob={mob}/>}
 
     <style>{`@keyframes spin{to{transform:rotate(360deg);}} input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;} input[type=number]{-moz-appearance:textfield;}`}</style>
   </div>;
