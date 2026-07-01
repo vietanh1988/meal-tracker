@@ -472,7 +472,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
       if(provider==="claude"){
         const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",
           headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({foodDesc:prompt,provider:"claude",model:appSettings.ai_model||"claude-sonnet-4-20250514",apiKey:keys.claude})});
+          body:JSON.stringify({foodDesc:prompt,provider:"claude",model:appSettings.ai_model||"claude-sonnet-4-20250514"})});
         const d=await res.json();
         if(d.error)throw new Error(d.error);
         text=d.text||"";
@@ -578,7 +578,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
           }else if(provider==="claude"){
             const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",
               headers:{"Content-Type":"application/json"},
-              body:JSON.stringify({foodDesc:msg,provider:"claude",model:"claude-sonnet-4-20250514",apiKey:keys.claude})});
+              body:JSON.stringify({foodDesc:msg,provider:"claude",model:"claude-sonnet-4-20250514"})});
             const d=await res.json();text=d.text||"";
           }else{
             const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys.gemini}`,
@@ -640,7 +640,6 @@ function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings
   const [dailyCount,setDailyCount]=useState(()=>{try{const d=JSON.parse(localStorage.getItem("aicoach_usage")||"{}");return d.date===new Date().toDateString()?d.count:0;}catch(e){return 0;}});
   const chatRef=useRef(null);
   const MAX_DAILY=20;
-  const apiKey=appSettings?.claude_key||localStorage.getItem("claudeKey")||"";
   const aiModel=appSettings?.ai_model||"claude-sonnet-4-20250514";
 
   const saveDailyCount=(c)=>{setDailyCount(c);localStorage.setItem("aicoach_usage",JSON.stringify({date:new Date().toDateString(),count:c}));};
@@ -800,7 +799,6 @@ ${buildContext()}`;
 
   const sendMessage=async(text)=>{
     if(!text.trim()||loading)return;
-    if(!apiKey){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"⚠️ Chưa kết nối AI. Vào Cài đặt → Kết nối AI → nhập Claude API key."}]);return;}
     if(!isAdmin&&dailyCount>=MAX_DAILY){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"Bạn đã hết 20 lượt hỏi hôm nay. Quay lại ngày mai nhé! 😊"}]);return;}
     const newMsgs=[...messages,{role:"user",content:text}];
     setMessages(newMsgs);setInput("");setLoading(true);
@@ -810,7 +808,7 @@ ${buildContext()}`;
       const fullPrompt=`${systemPrompt}\n\n--- LỊCH SỬ CHAT ---\n${chatHistory}\n\n--- TRẢ LỜI ---\nFipilot AI:`;
       const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({foodDesc:fullPrompt,provider:"claude",model:aiModel,apiKey})
+        body:JSON.stringify({foodDesc:fullPrompt,provider:"claude",model:aiModel})
       });
       const data=await res.json();
       if(data.error)throw new Error(data.error);
@@ -1680,7 +1678,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       if(aiProvider==="claude"){
         const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
           method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:"claude",model:aiModel,apiKey:claudeKey})
+          body:JSON.stringify({foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:"claude",model:aiModel})
         });
         const data=await res.json();
         if(data.error)throw new Error(data.error);
@@ -1850,7 +1848,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         setAiConnected(false);
         try{
           if(aiProvider==="claude"){
-            const r=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({foodDesc:"OK",provider:"claude",model:aiModel,apiKey:claudeKey})});
+            const r=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({foodDesc:"OK",provider:"claude",model:aiModel})});
             const d=await r.json();setAiConnected(!d.error);
           }else if(aiProvider==="gemini"){
             if(!geminiKey){setAiConnected(false);return;}
