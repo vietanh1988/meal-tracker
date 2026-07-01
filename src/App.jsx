@@ -3239,6 +3239,8 @@ function NotiBell({appSettings,dark}){
 
 
 export default function App(){
+  window._renderCount=(window._renderCount||0)+1;
+  const _rc=window._renderCount;
   const {user,loading,signOut}=useAuth();
   const [tab,setTab]=useState(()=>{try{return localStorage.getItem("fitpilot_tab")||"dashboard";}catch(e){return "dashboard";}});
   useEffect(()=>{try{localStorage.setItem("fitpilot_tab",tab);}catch(e){}},[tab]);
@@ -3277,11 +3279,13 @@ export default function App(){
   })();
   const pcDayType=pcDayManual||pcDayAuto;
 
+  console.log(`🔍 R${_rc} [guard1]`,{authLoading:loading,profileLoading,profileExists:!!profile,onboardingDone:profile?.onboardingDone});
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
 
   // Onboarding: chỉ hiện cho user mới chưa có data thật (chờ data load xong)
   const needsOnboarding=userDataLoaded && !profileLoading && !weightLoading && !profile.onboardingDone && (!weightLog || weightLog.length===0);
+  console.log(`🔍 R${_rc} [guard2]`,{userDataLoaded,profileLoading,weightLoading,onboardingDone:profile.onboardingDone,weightLogLen:weightLog?weightLog.length:"null",needsOnboarding});
   if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>setTab("dashboard")}/>;
 
   // === PC DATA COMPUTATION ===
