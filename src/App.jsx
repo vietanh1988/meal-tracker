@@ -1788,9 +1788,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Model</div>
       <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:18}}>
         {(aiProvider==="claude"?[
-          {id:"claude-sonnet-4-20250514",name:"Sonnet 4",desc:"Nhanh, chính xác",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
-          {id:"claude-haiku-4-5-20251001",name:"Haiku 4.5",desc:"Siêu nhanh, tiết kiệm",badge:"Tiết kiệm",bc:"#DCFCE7",btc:"#14532D"},
-          {id:"claude-opus-4-6",name:"Opus 4.6",desc:"Mạnh nhất",badge:"Cao cấp",bc:"#F3F4F6",btc:"#666"},
+          {id:"claude-sonnet-4-20250514",name:"Sonnet 4",desc:"Nhanh, chính xác",badge:"Ổn định",bc:"#F3F4F6",btc:"#666"},
+          {id:"claude-sonnet-5",name:"Sonnet 5",desc:"Agentic mạnh, gần Opus",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
+          {id:"claude-opus-4-6",name:"Opus 4.6",desc:"Mạnh nhất",badge:"Cao cấp",bc:"#EFF6FF",btc:"#1E40AF"},
         ]:aiProvider==="gemini"?[
           {id:"gemini-2.5-flash",name:"Gemini 2.5 Flash",desc:"Nhanh, rẻ, thinking model",badge:"Tiết kiệm",bc:"#DCFCE7",btc:"#14532D"},
           {id:"gemini-3.5-flash",name:"Gemini 3.5 Flash",desc:"Mới nhất, agentic + coding",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
