@@ -3282,7 +3282,6 @@ export default function App(){
 
   // Onboarding: chỉ hiện cho user mới chưa có data thật (chờ data load xong)
   const needsOnboarding=userDataLoaded && !profileLoading && !weightLoading && !profile.onboardingDone && (!weightLog || weightLog.length===0);
-  console.log("🔍 DEBUG onboarding check:", {userDataLoaded, profileLoading, weightLoading, onboardingDone:profile.onboardingDone, weightLogLen:weightLog?weightLog.length:"null", needsOnboarding});
   if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>setTab("dashboard")}/>;
 
   // === PC DATA COMPUTATION ===
