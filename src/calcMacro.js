@@ -18,6 +18,8 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const goal=p.goalType||"bulk";
   // Block: none + bulk
   const effectiveGoal=(exerciseType==="none"&&goal==="bulk")?"maintain":goal;
+  // Phát hiện mục tiêu ngược hướng: chọn Tăng cơ nhưng đặt cân mục tiêu thấp hơn (hoặc ngược lại với Giảm mỡ)
+  const directionMismatch=effectiveGoal==="bulk"?diff<0:effectiveGoal==="cut"?diff>0:false;
   // === TRƯỜNG PHÁI 1.5 ===
   // P: giống nhau nam nữ (phụ thuộc mục tiêu, không phụ thuộc giới tính)
   // F: khác nhau nam nữ (nữ cần fat cao hơn cho hormone)
@@ -58,11 +60,11 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const calRest=protein*4+carbRest*4+fat*9;
   const fiber=Math.round(calFinal/1000*14);
   const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
-  const safe=effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true;
+  const safe=directionMismatch?false:(effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true);
   const pRatio=pRatioVal+"g/kg";
   const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
   const fRatio=fRatioVal+"g/kg";
-  return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
+  return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,directionMismatch,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
 }
 
 export const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};

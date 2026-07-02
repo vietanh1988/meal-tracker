@@ -236,7 +236,9 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         </div>
         <div style={{marginTop:10,padding:"8px 12px",background:macro.safe?C.greenBg:C.redBg,borderRadius:8,border:`1.5px solid ${macro.safe?C.green:C.red}`}}>
           <span style={{fontSize:12,fontWeight:700,color:macro.safe?"#14532D":"#7F1D1D"}}>
-            {macro.safe
+            {macro.directionMismatch
+              ?`⚠ Cân nặng mục tiêu (${profile.goalKg}kg) đang ngược hướng với mục tiêu "${profile.goalType==="bulk"?"Tăng cơ":"Giảm mỡ"}" (hiện tại ${profile.kg}kg). Hãy đặt lại cân nặng mục tiêu ${profile.goalType==="bulk"?"cao hơn":"thấp hơn"} cân hiện tại, hoặc đổi Mục tiêu cho khớp.`
+              :macro.safe
               ?`✓ An toàn! ${macro.perWeek} kg/tuần ${profile.goalType==="bulk"?"≤ 0.5 — chủ yếu tăng cơ, ít tích mỡ":"≤ 0.75 — giữ cơ, giảm mỡ hiệu quả"}`
               :`⚠ Quá nhanh! ${macro.perWeek} kg/tuần ${profile.goalType==="bulk"?"> 0.5 — dễ tích mỡ bụng. Nên kéo dài thời gian":"> 0.75 — dễ mất cơ. Nên kéo dài thời gian"}`
             }
