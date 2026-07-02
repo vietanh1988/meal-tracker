@@ -4,6 +4,7 @@ import { estimateGram } from "../lib/usdaService";
 
 export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, mealNames, mealsData, callAI, allFoodItems, setAllFoodItems, aiResult, setAiResult, aiLoading, aiError, setAiError, setDayType, setFoodItems, setUserHasEdited}){
   const [expandedId,setExpandedId]=useState(null);
+  const [editingId,setEditingId]=useState(null);
   return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:800,color:C.t1}}>Quản lý Template mẫu</span></div>
@@ -118,16 +119,23 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
           });
           if(mealsData.length===0){alert("Không có dữ liệu bữa ăn");return;}
           const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
-          if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsData,Math.round(totalCal));
+          if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsData,Math.round(totalCal),editingId);
           document.getElementById("tpl-name").value="";
+          setEditingId(null);
           setAiResult(null);
           // Reset all food items
           const init={};mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
           const el=document.getElementById("tpl-created");
           if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>📚 Lưu thành Template mẫu</button>
+        }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>{editingId?"💾 Cập nhật Template":"📚 Lưu thành Template mẫu"}</button>
+        {editingId&&<button onClick={()=>{
+          setEditingId(null);
+          document.getElementById("tpl-name").value="";
+          setAiResult(null);
+          const init={};mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
+        }} style={{...inp,marginTop:8,textAlign:"center",cursor:"pointer",fontWeight:700,color:C.t2}}>Hủy sửa</button>}
         <div id="tpl-created" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu.</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>{editingId?"✓ Đã cập nhật template!":"✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu."}</span>
         </div>
       </div>}
 
@@ -140,16 +148,37 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
             const isTrain=t.day_type==="train";
             const isOpen=expandedId===t.id;
             return <div key={t.id} style={{...card,padding:"12px 14px",position:"relative",marginBottom:0,cursor:"pointer"}} onClick={()=>setExpandedId(isOpen?null:t.id)}>
-              <button onClick={async(e)=>{
-                e.stopPropagation();
-                if(!confirm("Xóa template \""+t.name+"\"?"))return;
-                if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
-              }} style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:6,fontSize:11,color:C.t3,background:C.surface,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              <div style={{position:"absolute",top:8,right:8,display:"flex",gap:4}}>
+                <button onClick={(e)=>{
+                  e.stopPropagation();
+                  const el=document.getElementById("tpl-name");
+                  const selType=document.getElementById("tpl-type");
+                  if(el)el.value=t.name||"";
+                  if(selType)selType.value=t.day_type||"train";
+                  setDayType(t.day_type||"train");
+                  const init={};
+                  mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});
+                  (t.meals||[]).forEach(m=>{
+                    const items=(m.items||[]).map(it=>({name:it.food||"",gram:it.gram||"",unit:it.unit||"g",qty:it.qty||1}));
+                    if(items.length>0)init[m.meal_id]=items;
+                  });
+                  setAllFoodItems(init);
+                  setAiResult(null);
+                  setEditingId(t.id);
+                  setExpandedId(null);
+                  document.getElementById("tpl-name")?.scrollIntoView({behavior:"smooth",block:"center"});
+                }} style={{width:22,height:22,borderRadius:6,fontSize:11,color:C.primary,background:C.surface,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✎</button>
+                <button onClick={async(e)=>{
+                  e.stopPropagation();
+                  if(!confirm("Xóa template \""+t.name+"\"?"))return;
+                  if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
+                }} style={{width:22,height:22,borderRadius:6,fontSize:11,color:C.t3,background:C.surface,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              </div>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
                 <div style={{width:40,height:40,borderRadius:10,background:isTrain?C.primaryBg:"#DBEAFE",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18}}>
                   {isTrain?"🏋️":"😴"}
                 </div>
-                <div style={{flex:1,minWidth:0,paddingRight:20}}>
+                <div style={{flex:1,minWidth:0,paddingRight:52}}>
                   <div style={{fontSize:13,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name||"Template"}</div>
                   <div style={{fontSize:11,fontWeight:600,color:isTrain?"#003D99":"#1E40AF",marginTop:1}}>{isTrain?"Ngày tập":"Ngày nghỉ"}</div>
                 </div>

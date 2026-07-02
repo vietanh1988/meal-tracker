@@ -353,20 +353,31 @@ export function useUserData(userId) {
   // ===== DEFAULT TEMPLATES (admin-created) =====
 
   // Save default template (admin only)
-  const saveDefaultTemplate = useCallback(async (name, dayType, mealsData, totalCal) => {
+  const saveDefaultTemplate = useCallback(async (name, dayType, mealsData, totalCal, editId = null) => {
     if (!userId) return;
     try {
-      const { error } = await supabase.from("weekly_templates").insert({
-        user_id: userId,
-        name: name || "Template mới",
-        day_name: "thu_2",
-        day_type: dayType,
-        meals: mealsData,
-        total_cal: totalCal || 0,
-        is_default: true,
-      });
-      if (error) { console.error("Save default template error:", error); return; }
-      console.log("✅ Default template saved:", name);
+      if (editId) {
+        const { error } = await supabase.from("weekly_templates").update({
+          name: name || "Template mới",
+          day_type: dayType,
+          meals: mealsData,
+          total_cal: totalCal || 0,
+        }).eq("id", editId);
+        if (error) { console.error("Update default template error:", error); return; }
+        console.log("✅ Default template updated:", name);
+      } else {
+        const { error } = await supabase.from("weekly_templates").insert({
+          user_id: userId,
+          name: name || "Template mới",
+          day_name: "thu_2",
+          day_type: dayType,
+          meals: mealsData,
+          total_cal: totalCal || 0,
+          is_default: true,
+        });
+        if (error) { console.error("Save default template error:", error); return; }
+        console.log("✅ Default template saved:", name);
+      }
       const { data: refreshed } = await supabase.from("weekly_templates")
         .select("*").eq("is_default", true).order("created_at");
       if (refreshed) setDefaultTemplates(refreshed);
