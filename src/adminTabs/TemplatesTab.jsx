@@ -146,9 +146,11 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
 
       <div>
       {/* Existing templates list */}
-      {(defaultTemplates||[]).length>0&&<div style={{marginTop:20,borderTop:`2px solid ${C.border}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:10}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
-        <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"repeat(2,1fr)",gap:10}}>
+      <div style={{marginTop:mob?20:0,borderTop:mob?`2px solid ${C.border}`:"none",paddingTop:mob?16:0}}>
+        <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🗂️</span><span>Templates đã tạo ({(defaultTemplates||[]).length})</span></div>
+        <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Danh sách mẫu hiện có</div>
+        {(defaultTemplates||[]).length===0&&<div style={{padding:"20px 14px",textAlign:"center",fontSize:12,color:C.t3,background:C.surface,borderRadius:10}}>Chưa có template nào</div>}
+        <div style={{display:"grid",gridTemplateColumns:"1fr",gap:10}}>
           {(defaultTemplates||[]).map(t=>{
             const mealCount=(t.meals||[]).length;
             const isTrain=t.day_type==="train";
@@ -211,7 +213,7 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
             </div>;
           })}
         </div>
-      </div>}
+      </div>
       </div>
       </div>
     </div>
