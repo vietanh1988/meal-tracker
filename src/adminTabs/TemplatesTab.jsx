@@ -1,4 +1,5 @@
 import { C, card, inp, redBtn } from "../theme";
+import { estimateGram } from "../lib/usdaService";
 
 export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, mealNames, mealsData, callAI, allFoodItems, setAllFoodItems, aiResult, setAiResult, aiLoading, aiError, setAiError, setDayType, setFoodItems, setUserHasEdited}){
   return (
