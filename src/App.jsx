@@ -361,6 +361,19 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     </div>}
     {!hidePills&&mob&&forcedSection==="settings"&&section===null&&<div>
       <div style={{fontSize:22,fontWeight:800,color:C.t1,marginBottom:16}}>⚙️ Cài đặt</div>
+      {(()=>{
+        const exType=profile.exerciseType||"gym";
+        const exLabel=exType==="gym"?"Gym":exType==="gym_cardio"?"Gym+Cardio":exType==="cardio"?"Cardio":"Nghỉ ngơi";
+        const freqLabel=({occasional:"Thỉnh thoảng",regular:"Đều đặn",frequent:"Rất thường xuyên",daily:"Mỗi ngày"})[profile.frequency||"regular"]||"Đều đặn";
+        return <div onClick={()=>setSection("profile")} style={{display:"flex",alignItems:"center",gap:12,padding:14,background:C.card,borderRadius:14,border:`1.5px solid ${C.border}`,marginBottom:20,cursor:"pointer"}}>
+          <UserAvatar gender={profile?.gender} size={52}/>
+          <div style={{flex:1}}>
+            <div style={{fontSize:16,fontWeight:700,color:C.t1}}>{user.user_metadata?.username||user.email}</div>
+            <div style={{fontSize:13,color:C.t2,marginTop:2}}>{exLabel} · {freqLabel}</div>
+          </div>
+          <span style={{fontSize:18,color:C.t3}}>›</span>
+        </div>;
+      })()}
       <div style={{fontSize:12,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.5px",margin:"0 4px 8px"}}>Cá nhân</div>
       <div style={{background:C.card,borderRadius:14,border:`1.5px solid ${C.border}`,overflow:"hidden",marginBottom:20}}>
         {[
