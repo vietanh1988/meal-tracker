@@ -56,12 +56,12 @@ const AppLogo=({size=48,radius,bg})=><img src="/icon-192.png" alt="Fipilot AI" s
 
 function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,initialSection,hidePills}){if(!profile||!macro)return null;
   const mob=useIsMobile();
-  const [section,setSection]=useState(initialSection||(forcedSection==="settings"?"profile":(forcedSection==="profile"?"profile":(forcedSection||"meals"))));
+  const [section,setSection]=useState(initialSection||(forcedSection==="settings"?(mob?null:"profile"):(forcedSection==="profile"?"profile":(forcedSection||"meals"))));
   useEffect(()=>{
     if(initialSection){setSection(initialSection);return;}
     if(forcedSection==="profile")setSection("profile");
     else if(forcedSection==="meals")setSection("meals");
-    else if(forcedSection==="settings")setSection("profile");
+    else if(forcedSection==="settings")setSection(mob?null:"profile");
     else if(forcedSection)setSection(forcedSection);
   },[forcedSection,isAdmin,initialSection]);
   const [dayType,setDayType]=useState(()=>{
@@ -348,7 +348,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         <Pill key={s.id} active={section===s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
       )}
     </div>}
-    {!hidePills&&forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
+    {!hidePills&&!mob&&forcedSection==="settings"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16,overflowX:"auto",WebkitOverflowScrolling:"touch",scrollbarWidth:"none",msOverflowStyle:"none"}}>
       {[{id:"profile",t:"Hồ sơ",svg:<svg viewBox="0 0 96 96" width={14} height={14}><defs><linearGradient id="pp1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs><circle cx="48" cy="30" r="24" fill="url(#pp1)"/><path d="M4 96 C4 60 92 60 92 96 Z" fill="url(#pp1)"/></svg>},
         {id:"account",t:"Tài khoản",svg:<svg viewBox="0 0 96 96" width={14} height={14}><defs><linearGradient id="pi5" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs><rect x="4" y="16" width="88" height="64" rx="12" fill="url(#pi5)"/><circle cx="28" cy="42" r="16" fill="white" opacity="0.95"/><circle cx="28" cy="37" r="7" fill="url(#pi5)"/><path d="M14 54 C14 46 42 46 42 54" fill="url(#pi5)"/><rect x="52" y="34" width="32" height="7" rx="3.5" fill="white" opacity="0.9"/><rect x="52" y="46" width="24" height="6" rx="3" fill="white" opacity="0.5"/></svg>},
         {id:"about",t:"Giới thiệu",svg:<svg viewBox="0 0 96 96" width={14} height={14}><defs><linearGradient id="pi4" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs><circle cx="48" cy="48" r="42" fill="url(#pi4)"/><rect x="44" y="42" width="8" height="28" rx="4" fill="white"/><circle cx="48" cy="30" r="6" fill="white"/></svg>},
@@ -358,6 +358,41 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       ].map(s=>
         <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.primary:C.t2,borderBottom:section===s.id?`3px solid ${C.primary}`:"3px solid transparent",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,display:"flex",alignItems:"center",gap:4}}>{s.svg} {s.t}</button>
       )}
+    </div>}
+    {!hidePills&&mob&&forcedSection==="settings"&&section===null&&<div>
+      <div style={{fontSize:12,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.5px",margin:"0 4px 8px"}}>Cá nhân</div>
+      <div style={{background:C.card,borderRadius:14,border:`1.5px solid ${C.border}`,overflow:"hidden",marginBottom:20}}>
+        {[
+          {id:"profile",t:"Hồ sơ",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lp1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs><circle cx="48" cy="30" r="24" fill="url(#lp1)"/><path d="M4 96 C4 60 92 60 92 96 Z" fill="url(#lp1)"/></svg>},
+          {id:"account",t:"Tài khoản",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="li5" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs><rect x="4" y="16" width="88" height="64" rx="12" fill="url(#li5)"/><circle cx="28" cy="42" r="16" fill="white" opacity="0.95"/><circle cx="28" cy="37" r="7" fill="url(#li5)"/><path d="M14 54 C14 46 42 46 42 54" fill="url(#li5)"/><rect x="52" y="34" width="32" height="7" rx="3.5" fill="white" opacity="0.9"/><rect x="52" y="46" width="24" height="6" rx="3" fill="white" opacity="0.5"/></svg>},
+          {id:"about",t:"Giới thiệu",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="li4" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs><circle cx="48" cy="48" r="42" fill="url(#li4)"/><rect x="44" y="42" width="8" height="28" rx="4" fill="white"/><circle cx="48" cy="30" r="6" fill="white"/></svg>},
+        ].map((s,i,arr)=>
+          <div key={s.id} onClick={()=>setSection(s.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",borderBottom:i<arr.length-1?`1.5px solid ${C.border}`:"none",cursor:"pointer"}}>
+            <div style={{width:34,height:34,borderRadius:9,background:C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{s.svg}</div>
+            <span style={{flex:1,fontSize:15,color:C.t1}}>{s.t}</span>
+            <span style={{fontSize:18,color:C.t3}}>›</span>
+          </div>
+        )}
+      </div>
+      {isAdmin&&<>
+      <div style={{fontSize:12,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.5px",margin:"0 4px 8px"}}>Quản trị</div>
+      <div style={{background:C.card,borderRadius:14,border:`1.5px solid ${C.border}`,overflow:"hidden"}}>
+        {[
+          {id:"admin",t:"Quản trị",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lq1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><rect x="4" y="10" width="88" height="76" rx="14" fill="url(#lq1)"/><rect x="4" y="10" width="88" height="24" rx="14" fill="white" opacity="0.12"/><circle cx="22" cy="22" r="5" fill="white" opacity="0.6"/><circle cx="36" cy="22" r="5" fill="white" opacity="0.4"/><polyline points="18,52 32,62 18,72" fill="none" stroke="white" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/><rect x="38" y="67" width="40" height="7" rx="3.5" fill="white" opacity="0.65"/></svg>},
+          {id:"templates",t:"Kho mẫu",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lq2" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><rect x="12" y="70" width="72" height="16" rx="8" fill="url(#lq2)" opacity="0.45"/><rect x="16" y="52" width="64" height="16" rx="8" fill="url(#lq2)" opacity="0.7"/><rect x="20" y="34" width="56" height="16" rx="8" fill="url(#lq2)"/><polygon points="48,6 51,18 64,18 54,25 58,37 48,30 38,37 42,25 32,18 45,18" fill="url(#lq2)"/></svg>},
+          {id:"ai",t:"Kết nối AI",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="li1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs><rect x="28" y="28" width="40" height="40" rx="8" fill="url(#li1)"/><rect x="36" y="36" width="24" height="24" rx="4" fill="white" opacity="0.2"/><rect x="14" y="36" width="14" height="5" rx="2.5" fill="url(#li1)"/><rect x="14" y="46" width="14" height="5" rx="2.5" fill="url(#li1)"/><rect x="14" y="56" width="14" height="5" rx="2.5" fill="url(#li1)"/><rect x="68" y="36" width="14" height="5" rx="2.5" fill="url(#li1)"/><rect x="68" y="46" width="14" height="5" rx="2.5" fill="url(#li1)"/><rect x="68" y="56" width="14" height="5" rx="2.5" fill="url(#li1)"/></svg>},
+        ].map((s,i,arr)=>
+          <div key={s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",borderBottom:i<arr.length-1?`1.5px solid ${C.border}`:"none",cursor:"pointer"}}>
+            <div style={{width:34,height:34,borderRadius:9,background:C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{s.svg}</div>
+            <span style={{flex:1,fontSize:15,color:C.t1}}>{s.t}</span>
+            <span style={{fontSize:18,color:C.t3}}>›</span>
+          </div>
+        )}
+      </div>
+      </>}
+    </div>}
+    {!hidePills&&mob&&forcedSection==="settings"&&section!==null&&<div onClick={()=>setSection(null)} style={{display:"flex",alignItems:"center",gap:4,marginBottom:14,cursor:"pointer",color:C.primary,fontSize:15,fontWeight:600}}>
+      <span style={{fontSize:20}}>‹</span> Cài đặt
     </div>}
     {!hidePills&&forcedSection==="profile"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
       {[{id:"profile",t:"Hồ sơ",svg:<svg viewBox="0 0 96 96" width={14} height={14}><defs><linearGradient id="pp1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs><circle cx="48" cy="30" r="24" fill="url(#pp1)"/><path d="M4 96 C4 60 92 60 92 96 Z" fill="url(#pp1)"/></svg>}
