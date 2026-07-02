@@ -360,6 +360,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       )}
     </div>}
     {!hidePills&&mob&&forcedSection==="settings"&&section===null&&<div>
+      <div style={{fontSize:22,fontWeight:800,color:C.t1,marginBottom:16}}>⚙️ Cài đặt</div>
       <div style={{fontSize:12,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.5px",margin:"0 4px 8px"}}>Cá nhân</div>
       <div style={{background:C.card,borderRadius:14,border:`1.5px solid ${C.border}`,overflow:"hidden",marginBottom:20}}>
         {[
