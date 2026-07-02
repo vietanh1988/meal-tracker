@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { C, card, inp, redBtn } from "../theme";
 import { estimateGram } from "../lib/usdaService";
 
 export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, mealNames, mealsData, callAI, allFoodItems, setAllFoodItems, aiResult, setAiResult, aiLoading, aiError, setAiError, setDayType, setFoodItems, setUserHasEdited}){
+  const [expandedId,setExpandedId]=useState(null);
   return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:800,color:C.t1}}>Quản lý Template mẫu</span></div>
@@ -136,8 +138,10 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
           {(defaultTemplates||[]).map(t=>{
             const mealCount=(t.meals||[]).length;
             const isTrain=t.day_type==="train";
-            return <div key={t.id} style={{...card,padding:"12px 14px",position:"relative",marginBottom:0}}>
-              <button onClick={async()=>{
+            const isOpen=expandedId===t.id;
+            return <div key={t.id} style={{...card,padding:"12px 14px",position:"relative",marginBottom:0,cursor:"pointer"}} onClick={()=>setExpandedId(isOpen?null:t.id)}>
+              <button onClick={async(e)=>{
+                e.stopPropagation();
                 if(!confirm("Xóa template \""+t.name+"\"?"))return;
                 if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
               }} style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:6,fontSize:11,color:C.t3,background:C.surface,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
@@ -154,7 +158,21 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
                 <span style={{fontSize:17,fontWeight:900,color:C.t1}}>{t.total_cal||0}</span>
                 <span style={{fontSize:11,fontWeight:700,color:C.t3}}>cal</span>
                 <span style={{fontSize:11,color:C.t3,marginLeft:"auto"}}>{mealCount} bữa</span>
+                <span style={{fontSize:11,color:C.t3,transition:"transform 0.2s",transform:isOpen?"rotate(180deg)":"rotate(0)"}}>▾</span>
               </div>
+              {isOpen&&<div onClick={e=>e.stopPropagation()} style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`,cursor:"default"}}>
+                {(t.meals||[]).map((m,mi)=>(
+                  <div key={mi} style={{marginBottom:8}}>
+                    <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:3}}>{m.meal_name||m.meal_id}</div>
+                    {(m.items||[]).map((it,ii)=>(
+                      <div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.t3,padding:"2px 0"}}>
+                        <span>{it.food} {it.gram}g</span>
+                        <span>{Math.round(it.cal||0)} cal</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>}
             </div>;
           })}
         </div>
