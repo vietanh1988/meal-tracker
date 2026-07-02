@@ -10,6 +10,9 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:800,color:C.t1}}>Quản lý Template mẫu</span></div>
       <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
 
+      <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"7fr 3fr",gap:mob?0:20,alignItems:"start"}}>
+      <div>
+
       {/* Template name + type */}
       <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
         <input id="tpl-name" type="text" placeholder="VD: Ngày tập A — Ngực/Vai" style={{...inp,flex:1,minWidth:mob?120:200,fontSize:13,height:38}}/>
@@ -139,6 +142,9 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
         </div>
       </div>}
 
+      </div>
+
+      <div>
       {/* Existing templates list */}
       {(defaultTemplates||[]).length>0&&<div style={{marginTop:20,borderTop:`2px solid ${C.border}`,paddingTop:16}}>
         <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:10}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
@@ -206,6 +212,8 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
           })}
         </div>
       </div>}
+      </div>
+      </div>
     </div>
   );
 }
