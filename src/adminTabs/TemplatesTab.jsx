@@ -131,20 +131,33 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
 
       {/* Existing templates list */}
       {(defaultTemplates||[]).length>0&&<div style={{marginTop:20,borderTop:`2px solid ${C.border}`,paddingTop:16}}>
-        <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:8}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
-        {(defaultTemplates||[]).map(t=>{
-          const mealCount=(t.meals||[]).length;
-          return <div key={t.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:C.surface,borderRadius:8,marginBottom:4,border:`1px solid ${C.border}`}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{t.name||"Template"} <span style={{fontSize:11,fontWeight:600,padding:"2px 6px",borderRadius:8,background:t.day_type==="train"?C.primaryBg:"#DBEAFE",color:t.day_type==="train"?"#003D99":"#1E40AF"}}>{t.day_type==="train"?"Tập":"Nghỉ"}</span></div>
-              <div style={{fontSize:11,color:C.t3,marginTop:2}}>{mealCount} bữa • {t.total_cal||0} kcal</div>
-            </div>
-            <button onClick={async()=>{
-              if(!confirm("Xóa template \""+t.name+"\"?"))return;
-              if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
-            }} style={{fontSize:11,color:C.red,background:"none",border:"none",cursor:"pointer",fontWeight:700,padding:"4px 8px"}}>✕ Xóa</button>
-          </div>;
-        })}
+        <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:10}}>Templates đã tạo ({(defaultTemplates||[]).length})</div>
+        <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"repeat(2,1fr)",gap:10}}>
+          {(defaultTemplates||[]).map(t=>{
+            const mealCount=(t.meals||[]).length;
+            const isTrain=t.day_type==="train";
+            return <div key={t.id} style={{...card,padding:"12px 14px",position:"relative",marginBottom:0}}>
+              <button onClick={async()=>{
+                if(!confirm("Xóa template \""+t.name+"\"?"))return;
+                if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
+              }} style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:6,fontSize:11,color:C.t3,background:C.surface,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{width:40,height:40,borderRadius:10,background:isTrain?C.primaryBg:"#DBEAFE",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18}}>
+                  {isTrain?"🏋️":"😴"}
+                </div>
+                <div style={{flex:1,minWidth:0,paddingRight:20}}>
+                  <div style={{fontSize:13,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name||"Template"}</div>
+                  <div style={{fontSize:11,fontWeight:600,color:isTrain?"#003D99":"#1E40AF",marginTop:1}}>{isTrain?"Ngày tập":"Ngày nghỉ"}</div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
+                <span style={{fontSize:17,fontWeight:900,color:C.t1}}>{t.total_cal||0}</span>
+                <span style={{fontSize:11,fontWeight:700,color:C.t3}}>cal</span>
+                <span style={{fontSize:11,color:C.t3,marginLeft:"auto"}}>{mealCount} bữa</span>
+              </div>
+            </div>;
+          })}
+        </div>
       </div>}
     </div>
   );
