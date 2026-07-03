@@ -359,7 +359,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         <button key={s.id} onClick={()=>setSection(s.id)} style={{padding:"10px 14px",fontSize:13,fontWeight:section===s.id?800:600,border:"none",background:"transparent",cursor:"pointer",color:section===s.id?C.primary:C.t2,borderBottom:section===s.id?`3px solid ${C.primary}`:"3px solid transparent",fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,display:"flex",alignItems:"center",gap:4}}>{s.svg} {s.t}</button>
       )}
     </div>}
-    {!hidePills&&mob&&forcedSection==="settings"&&section===null&&<div>
+    {!hidePills&&mob&&forcedSection==="settings"&&!initialSection&&section===null&&<div>
       <div style={{fontSize:22,fontWeight:800,color:C.t1,marginBottom:16}}>⚙️ Cài đặt</div>
       {(()=>{
         const exType=profile.exerciseType||"gym";
@@ -405,7 +405,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       </div>
       </>}
     </div>}
-    {!hidePills&&mob&&forcedSection==="settings"&&section!==null&&<div onClick={()=>setSection(null)} style={{display:"flex",alignItems:"center",gap:4,marginBottom:14,cursor:"pointer",color:C.primary,fontSize:15,fontWeight:600}}>
+    {!hidePills&&mob&&forcedSection==="settings"&&!initialSection&&section!==null&&<div onClick={()=>setSection(null)} style={{display:"flex",alignItems:"center",gap:4,marginBottom:14,cursor:"pointer",color:C.primary,fontSize:15,fontWeight:600}}>
       <span style={{fontSize:20}}>‹</span> Cài đặt
     </div>}
     {!hidePills&&forcedSection==="profile"&&<div style={{display:"flex",borderBottom:`2px solid ${C.border}`,marginBottom:16}}>
