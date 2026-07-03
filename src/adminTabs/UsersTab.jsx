@@ -82,7 +82,7 @@ function UsersList({ onSelect, currentUserId }) {
     loadStats();
     loadTrends();
     // Ghi snapshot hôm nay (idempotent) để tích lũy dữ liệu cho chỉ số "Bị khóa" theo thời gian
-    supabase.rpc("admin_record_stats_snapshot").catch(e => console.error("snapshot error:", e));
+    (async () => { try { await supabase.rpc("admin_record_stats_snapshot"); } catch (e) { console.error("snapshot error:", e); } })();
   }, [loadStats, loadTrends]);
 
   const fetchUsers = useCallback(async () => {
