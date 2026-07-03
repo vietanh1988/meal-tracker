@@ -54,7 +54,7 @@ export function SubscriptionSettingsTab({ isAdmin }) {
   if (loading || !form) return <div style={card}>Đang tải...</div>;
 
   return (
-    <div style={card}>
+    <div style={{ ...card, maxWidth: 1000, margin: "0 auto" }}>
       <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>Cài đặt gói cước</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2, marginBottom: 20 }}>Áp dụng chung cho tất cả user cùng gói</div>
 
