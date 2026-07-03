@@ -306,6 +306,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
   const toggleAdmin = async () => {
     if (userId === currentUserId) { alert("Không thể tự bỏ quyền Admin của chính mình"); return; }
     const next = !detail.is_admin;
+    if (!window.confirm(next ? `Cấp quyền Admin cho "${detail.username}"?` : `Bỏ quyền Admin của "${detail.username}"?`)) return;
     const { error } = await supabase.from("profiles").update({ is_admin: next }).eq("id", userId);
     if (error) { alert("Thất bại: " + error.message); return; }
     await logAction(next ? "grant_admin" : "revoke_admin");
@@ -315,6 +316,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
 
   const toggleLock = async () => {
     const next = !detail.is_locked;
+    if (!window.confirm(next ? `Khóa tài khoản "${detail.username}"?` : `Mở khóa tài khoản "${detail.username}"?`)) return;
     const { error } = await supabase.from("profiles").update({ is_locked: next }).eq("id", userId);
     if (error) { alert("Thất bại: " + error.message); return; }
     await logAction(next ? "lock_account" : "unlock_account");
@@ -324,6 +326,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
 
   const resetPassword = async () => {
     if (!detail?.email) return;
+    if (!window.confirm(`Gửi email đặt lại mật khẩu tới "${detail.email}"?`)) return;
     const { error } = await supabase.auth.resetPasswordForEmail(detail.email);
     if (error) { alert("Gửi thất bại: " + error.message); return; }
     await logAction("reset_password_email");
