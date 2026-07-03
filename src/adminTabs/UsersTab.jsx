@@ -131,32 +131,55 @@ function UsersList({ onSelect, currentUserId }) {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
-        <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 240 }} />
-        <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 145 }}>
-          <option value="">Tất cả trạng thái</option>
-          <option value="active">Hoạt động</option>
-          <option value="locked">Bị khóa</option>
-        </select>
-        <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 130 }}>
-          <option value="">Tất cả gói</option>
-          <option value="free">Free</option>
-          <option value="trial">Trial</option>
-          <option value="premium">Premium</option>
-        </select>
-        <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 145 }}>
-          <option value="">Tất cả vai trò</option>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-        <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...inp, width: 180 }}>
-          <option value="">Tất cả hạn dùng</option>
-          <option value="expiring_7d">Sắp hết hạn (7 ngày)</option>
-          <option value="expired">Đã hết hạn</option>
-        </select>
-        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...inp, width: 140 }} title="Tham gia từ" />
-        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...inp, width: 140 }} title="Tham gia đến" />
-        {(dateFrom || dateTo || expiry) && <button onClick={() => { setDateFrom(""); setDateTo(""); setExpiry(""); }} style={{ fontSize: 12, fontWeight: 700, padding: "0 12px", height: 40, borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Xóa lọc</button>}
+      <div style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "flex-end", flexWrap: "wrap" }}>
+        <div>
+          <div style={lbl_style()}>Tìm kiếm</div>
+          <input placeholder="Tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 220 }} />
+        </div>
+        <div>
+          <div style={lbl_style()}>Trạng thái</div>
+          <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 140 }}>
+            <option value="">Tất cả</option>
+            <option value="active">Hoạt động</option>
+            <option value="locked">Bị khóa</option>
+          </select>
+        </div>
+        <div>
+          <div style={lbl_style()}>Gói</div>
+          <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 120 }}>
+            <option value="">Tất cả</option>
+            <option value="free">Free</option>
+            <option value="trial">Trial</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div>
+          <div style={lbl_style()}>Vai trò</div>
+          <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 130 }}>
+            <option value="">Tất cả</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div>
+          <div style={lbl_style()}>Hạn dùng</div>
+          <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...inp, width: 170 }}>
+            <option value="">Tất cả</option>
+            <option value="expiring_7d">Sắp hết hạn (7 ngày)</option>
+            <option value="expired">Đã hết hạn</option>
+          </select>
+        </div>
+        <div>
+          <div style={lbl_style()}>Tham gia từ</div>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...inp, width: 140 }} />
+        </div>
+        <div>
+          <div style={lbl_style()}>Đến ngày</div>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...inp, width: 140 }} />
+        </div>
+        {(search || status || tier || role || expiry || dateFrom || dateTo) && (
+          <button onClick={() => { setSearch(""); setStatus(""); setTier(""); setRole(""); setExpiry(""); setDateFrom(""); setDateTo(""); }} style={{ fontSize: 12, fontWeight: 700, padding: "0 12px", height: 40, borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Xóa tất cả lọc</button>
+        )}
       </div>
 
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" }}>
