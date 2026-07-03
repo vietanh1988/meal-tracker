@@ -4,7 +4,7 @@ import { C, card, inp } from "../theme";
 export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting, weightLog, mob}){
   const [profileAcc,setProfileAcc]=useState("info");
   return (
-<div style={card}>
+<div style={{...card, maxWidth: mob?undefined:880, margin: mob?undefined:"0 auto"}}>
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Hồ sơ cá nhân</span></div>
       <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>⚡ Nhập thông số → Macro (dinh dưỡng) tự tính theo công thức Mifflin-St Jeor</div>
 
