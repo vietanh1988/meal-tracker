@@ -107,7 +107,7 @@ export function MySubscription({ userId, mob, isAdmin }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 32, height: 32, borderRadius: 9, background: iconBoxBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>{stateIcon}</div>
-          <div style={{ fontSize: mob ? 17 : 16, fontWeight: 800, color: C.t1 }}>Gói cước của bạn</div>
+          <div style={{ fontSize: mob ? 17 : 16, fontWeight: 800, color: C.t1 }}>Hạng thành viên</div>
         </div>
         <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 999, ...badgeStyle }}>{badgeLabel}</span>
       </div>

@@ -465,7 +465,7 @@ export default function App(){
     (async()=>{try{await supabase.rpc("record_user_activity");}catch(e){console.error("record_user_activity error:",e);}})();
   },[user?.id]);
   const [tab,setTab]=useState(()=>{try{return localStorage.getItem("fitpilot_tab")||"dashboard";}catch(e){return "dashboard";}});
-  const [adminGrpOpen,setAdminGrpOpen]=useState({all:true});
+  const [adminGrpOpen,setAdminGrpOpen]=useState({all:false});
   useEffect(()=>{try{localStorage.setItem("fitpilot_tab",tab);}catch(e){}},[tab]);
   const [pcShowWeightInput,setPcShowWeightInput]=useState(false);
   const pcWeightInputRef=useRef(null);
