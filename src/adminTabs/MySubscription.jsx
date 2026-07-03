@@ -101,11 +101,11 @@ export function MySubscription({ userId, mob }) {
   const stateIcon = { free: "🆓", trial: "⏳", premium: "⭐" }[tier];
 
   const outerStyle = isPremium
-    ? { background: "linear-gradient(135deg,#0C447C,#185FA5)", borderRadius: 14, padding: "16px 18px", marginBottom: 16 }
+    ? { background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", borderRadius: 14, padding: "16px 18px", marginBottom: 16 }
     : { background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` };
 
   const btnStyle = isPremium
-    ? { width: "100%", padding: "12px", fontSize: 14, fontWeight: 800, border: "none", borderRadius: 10, background: "#fff", color: "#0C447C", cursor: "pointer" }
+    ? { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#EF4444,#DC2626)", color: "#fff", cursor: "pointer" }
     : { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#fff", cursor: "pointer" };
 
   return (
@@ -133,13 +133,13 @@ export function MySubscription({ userId, mob }) {
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
               <span>📊 AI tính macro</span><span style={{ color: C.t1, fontWeight: 700 }}>{macroUsed}/{macroLimit}</span>
             </div>
-            <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "#185FA5", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
+            <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
           </div>
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
               <span>💬 AI Chat</span><span style={{ color: C.t1, fontWeight: 700 }}>{chatUsed}/{chatLimit}</span>
             </div>
-            <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "#185FA5", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
+            <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
           </div>
         </div>
       )}
