@@ -118,7 +118,7 @@ function UsersList({ onSelect, currentUserId }) {
   );
 
   return (
-    <div style={{ ...card, maxWidth: 1180, margin: "0 auto" }}>
+    <div style={{ ...card, maxWidth: 1440, margin: "0 auto" }}>
       <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>Quản lý User</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2, marginBottom: 20 }}>Danh sách toàn bộ user, gói cước và trạng thái</div>
 
@@ -131,36 +131,32 @@ function UsersList({ onSelect, currentUserId }) {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center", flexWrap: "wrap" }}>
-        <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 260 }} />
-        <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 150 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+        <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 240 }} />
+        <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 145 }}>
           <option value="">Tất cả trạng thái</option>
           <option value="active">Hoạt động</option>
           <option value="locked">Bị khóa</option>
         </select>
-        <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 150 }}>
+        <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 130 }}>
           <option value="">Tất cả gói</option>
           <option value="free">Free</option>
           <option value="trial">Trial</option>
           <option value="premium">Premium</option>
         </select>
-        <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 150 }}>
+        <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 145 }}>
           <option value="">Tất cả vai trò</option>
           <option value="user">User</option>
           <option value="admin">Admin</option>
         </select>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
-        <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...inp, width: 190 }}>
+        <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...inp, width: 180 }}>
           <option value="">Tất cả hạn dùng</option>
           <option value="expiring_7d">Sắp hết hạn (7 ngày)</option>
           <option value="expired">Đã hết hạn</option>
         </select>
-        <span style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>Tham gia từ</span>
-        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...inp, width: 150 }} />
-        <span style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>đến</span>
-        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...inp, width: 150 }} />
-        {(dateFrom || dateTo || expiry) && <button onClick={() => { setDateFrom(""); setDateTo(""); setExpiry(""); }} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Xóa lọc ngày</button>}
+        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...inp, width: 140 }} title="Tham gia từ" />
+        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...inp, width: 140 }} title="Tham gia đến" />
+        {(dateFrom || dateTo || expiry) && <button onClick={() => { setDateFrom(""); setDateTo(""); setExpiry(""); }} style={{ fontSize: 12, fontWeight: 700, padding: "0 12px", height: 40, borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Xóa lọc</button>}
       </div>
 
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" }}>
@@ -344,7 +340,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
   ];
 
   return (
-    <div style={{ ...card, maxWidth: 760 }}>
+    <div style={{ ...card, maxWidth: 900, margin: "0 auto" }}>
       <div onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 14, cursor: "pointer", color: C.primary, fontSize: 14, fontWeight: 700 }}>← Quay lại danh sách</div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
