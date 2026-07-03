@@ -88,32 +88,26 @@ export function MySubscription({ userId, mob }) {
   const subDays = daysLeft(sub.subscription_end_date);
 
   const isPremium = tier === "premium";
-  const isTrial = tier === "trial";
 
-  const iconBoxBg = isPremium ? "rgba(255,255,255,0.15)" : isTrial ? C.goldBg : C.blueBg;
-  const titleColor = isPremium ? "#fff" : C.t1;
+  const iconBoxBg = { free: C.surface, trial: C.goldBg, premium: C.blueBg }[tier];
+  const stateIcon = { free: "📦", trial: "⏳", premium: "⭐" }[tier];
   const badgeStyle = {
     free: { background: C.surface, color: C.t2 },
     trial: { background: C.goldBg, color: "#92400E" },
-    premium: { background: "#fff", color: C.primary },
+    premium: { background: C.blueBg, color: C.primary },
   }[tier];
-  const badgeLabel = { free: "Free", trial: "Trial", premium: "Premium" }[tier];
-  const stateIcon = { free: "📦", trial: "⏳", premium: "⭐" }[tier];
-
-  const outerStyle = isPremium
-    ? { background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", borderRadius: 14, padding: "16px 18px", marginBottom: 16 }
-    : { background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` };
+  const badgeLabel = { free: `${stateIcon} Free`, trial: `${stateIcon} Trial`, premium: `${stateIcon} Premium` }[tier];
 
   const btnStyle = isPremium
     ? { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#EF4444,#DC2626)", color: "#fff", cursor: "pointer" }
     : { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#fff", cursor: "pointer" };
 
   return (
-    <div style={outerStyle}>
+    <div style={{ background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 32, height: 32, borderRadius: 9, background: iconBoxBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>{stateIcon}</div>
-          <div style={{ fontSize: mob ? 17 : 16, fontWeight: 800, color: titleColor }}>Gói cước của bạn</div>
+          <div style={{ fontSize: mob ? 17 : 16, fontWeight: 800, color: C.t1 }}>Gói cước của bạn</div>
         </div>
         <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 999, ...badgeStyle }}>{badgeLabel}</span>
       </div>
