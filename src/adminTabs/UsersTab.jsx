@@ -18,15 +18,24 @@ function initials(name) {
   return (name || "?").trim().split(/\s+/).slice(-2).map(w => w[0]).join("").toUpperCase();
 }
 
+async function logAudit(currentUserId, targetId, action, note) {
+  try { await supabase.from("admin_audit_log").insert({ admin_id: currentUserId, target_user_id: targetId, action, note: note || null }); } catch (e) { console.error("audit log error:", e); }
+}
+
 export function UsersTab({ isAdmin, currentUserId }) {
   const [selectedId, setSelectedId] = useState(null);
   if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
   return selectedId
     ? <UserDetail userId={selectedId} currentUserId={currentUserId} onBack={() => setSelectedId(null)} />
-    : <UsersList onSelect={setSelectedId} />;
+    : <UsersList onSelect={setSelectedId} currentUserId={currentUserId} />;
 }
 
-function UsersList({ onSelect }) {
+function SortIcon({ active, dir }) {
+  if (!active) return <span style={{ color: C.t3, marginLeft: 4, fontSize: 10 }}>↕</span>;
+  return <span style={{ color: C.primary, marginLeft: 4, fontSize: 10 }}>{dir === "asc" ? "↑" : "↓"}</span>;
+}
+
+function UsersList({ onSelect, currentUserId }) {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
@@ -35,16 +44,22 @@ function UsersList({ onSelect }) {
   const [status, setStatus] = useState("");
   const [tier, setTier] = useState("");
   const [role, setRole] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortDir, setSortDir] = useState("desc");
   const [page, setPage] = useState(0);
+  const [lockingId, setLockingId] = useState(null);
   const pageSize = 20;
 
-  useEffect(() => {
-    (async () => {
-      const { data, error } = await supabase.rpc("admin_user_stats");
-      if (error) { console.error("admin_user_stats error:", error); return; }
-      setStats((data && data[0]) || { total_users: 0, active_users: 0, new_7d: 0, locked_users: 0 });
-    })();
+  const loadStats = useCallback(async () => {
+    const { data, error } = await supabase.rpc("admin_user_stats");
+    if (error) { console.error("admin_user_stats error:", error); return; }
+    setStats((data && data[0]) || { total_users: 0, active_users: 0, new_7d: 0, locked_users: 0 });
   }, []);
+
+  useEffect(() => { loadStats(); }, [loadStats]);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -54,6 +69,11 @@ function UsersList({ onSelect }) {
         p_status: status || null,
         p_tier: tier || null,
         p_role: role || null,
+        p_expiry: expiry || null,
+        p_date_from: dateFrom || null,
+        p_date_to: dateTo || null,
+        p_sort: sortBy,
+        p_sort_dir: sortDir,
         p_limit: pageSize,
         p_offset: page * pageSize,
       });
@@ -61,10 +81,28 @@ function UsersList({ onSelect }) {
       else { setUsers(data || []); setTotal((data && data[0] && Number(data[0].total_count)) || 0); }
     } catch (e) { console.error("admin_list_users error:", e); }
     setLoading(false);
-  }, [search, status, tier, role, page]);
+  }, [search, status, tier, role, expiry, dateFrom, dateTo, sortBy, sortDir, page]);
 
   useEffect(() => { const t = setTimeout(fetchUsers, 300); return () => clearTimeout(t); }, [fetchUsers]);
-  useEffect(() => { setPage(0); }, [search, status, tier, role]);
+  useEffect(() => { setPage(0); }, [search, status, tier, role, expiry, dateFrom, dateTo, sortBy, sortDir]);
+
+  const toggleSort = (key) => {
+    if (sortBy === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortBy(key); setSortDir(key === "created_at" ? "desc" : "asc"); }
+  };
+
+  const quickLock = async (u, e) => {
+    e.stopPropagation();
+    const next = !u.is_locked;
+    if (!window.confirm(next ? `Khóa tài khoản "${u.username}"?` : `Mở khóa tài khoản "${u.username}"?`)) return;
+    setLockingId(u.id);
+    const { error } = await supabase.from("profiles").update({ is_locked: next }).eq("id", u.id);
+    setLockingId(null);
+    if (error) { alert("Thất bại: " + error.message); return; }
+    await logAudit(currentUserId, u.id, next ? "lock_account" : "unlock_account", "Khóa nhanh từ danh sách");
+    fetchUsers();
+    loadStats();
+  };
 
   const cards = stats ? [
     { l: "Tổng user", v: stats.total_users, c: C.t1 },
@@ -73,8 +111,14 @@ function UsersList({ onSelect }) {
     { l: "Bị khóa", v: stats.locked_users, c: C.red },
   ] : [];
 
+  const th = (label, key) => (
+    <th onClick={() => toggleSort(key)} style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700, cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}>
+      {label}<SortIcon active={sortBy === key} dir={sortDir} />
+    </th>
+  );
+
   return (
-    <div style={{ ...card, maxWidth: 1180 }}>
+    <div style={{ ...card, maxWidth: 1180, margin: "0 auto" }}>
       <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>Quản lý User</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2, marginBottom: 20 }}>Danh sách toàn bộ user, gói cước và trạng thái</div>
 
@@ -87,7 +131,7 @@ function UsersList({ onSelect }) {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center", flexWrap: "wrap" }}>
         <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 260 }} />
         <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 150 }}>
           <option value="">Tất cả trạng thái</option>
@@ -106,22 +150,36 @@ function UsersList({ onSelect }) {
           <option value="admin">Admin</option>
         </select>
       </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+        <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...inp, width: 190 }}>
+          <option value="">Tất cả hạn dùng</option>
+          <option value="expiring_7d">Sắp hết hạn (7 ngày)</option>
+          <option value="expired">Đã hết hạn</option>
+        </select>
+        <span style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>Tham gia từ</span>
+        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...inp, width: 150 }} />
+        <span style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>đến</span>
+        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...inp, width: 150 }} />
+        {(dateFrom || dateTo || expiry) && <button onClick={() => { setDateFrom(""); setDateTo(""); setExpiry(""); }} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Xóa lọc ngày</button>}
+      </div>
 
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${C.border}`, background: C.surface }}>
               <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>User</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Gói</th>
+              {th("Gói", "tier")}
               <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Trạng thái</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Hết hạn</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Tham gia</th>
+              {th("Hết hạn", "expiry")}
+              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Đăng nhập gần nhất</th>
+              {th("Tham gia", "created_at")}
+              <th></th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {loading && <tr><td colSpan={6} style={{ padding: 20, textAlign: "center", color: C.t2 }}>Đang tải...</td></tr>}
-            {!loading && users.length === 0 && <tr><td colSpan={6} style={{ padding: 20, textAlign: "center", color: C.t2 }}>Không tìm thấy user nào</td></tr>}
+            {loading && <tr><td colSpan={8} style={{ padding: 20, textAlign: "center", color: C.t2 }}>Đang tải...</td></tr>}
+            {!loading && users.length === 0 && <tr><td colSpan={8} style={{ padding: 20, textAlign: "center", color: C.t2 }}>Không tìm thấy user nào</td></tr>}
             {!loading && users.map(u => (
               <tr key={u.id} onClick={() => onSelect(u.id)} style={{ borderBottom: `1px solid ${C.border}`, cursor: "pointer" }}>
                 <td style={{ padding: "10px 12px" }}>
@@ -139,7 +197,11 @@ function UsersList({ onSelect }) {
                   : <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: C.greenBg, color: "#14532D" }}>Hoạt động</span>}
                 </td>
                 <td style={{ padding: "10px 12px", color: C.t2 }}>{u.tier === "premium" ? fmtDT(u.subscription_end_date) : u.tier === "trial" ? fmtDT(u.trial_end_date) : "-"}</td>
+                <td style={{ padding: "10px 12px", color: C.t2 }}>{fmtDT(u.last_sign_in_at)}</td>
                 <td style={{ padding: "10px 12px", color: C.t2 }}>{fmtDT(u.created_at)}</td>
+                <td style={{ padding: "10px 12px" }}>
+                  <button onClick={(e) => quickLock(u, e)} disabled={lockingId === u.id} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 7, border: `1px solid ${u.is_locked ? C.border : C.red}`, background: "#fff", color: u.is_locked ? C.t2 : C.red, cursor: "pointer", whiteSpace: "nowrap" }}>{u.is_locked ? "Mở khóa" : "Khóa"}</button>
+                </td>
                 <td style={{ padding: "10px 12px", textAlign: "right", color: C.t3 }}>›</td>
               </tr>
             ))}
@@ -188,9 +250,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
 
   const showFlash = (msg) => { setFlash(msg); setTimeout(() => setFlash(""), 3000); };
 
-  const logAction = async (action, note) => {
-    try { await supabase.from("admin_audit_log").insert({ admin_id: currentUserId, target_user_id: userId, action, note: note || null }); } catch (e) { console.error("audit log error:", e); }
-  };
+  const logAction = async (action, note) => logAudit(currentUserId, userId, action, note);
 
   const handleSaveTier = async () => {
     setSaving(true);
