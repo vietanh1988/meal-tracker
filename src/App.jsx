@@ -1106,7 +1106,6 @@ export default function App(){
         {tab==="report_biz_s"&&<AdminPanel key="report_biz" {...adminP} forcedSection="settings" initialSection="report_biz" signOut={signOut} user={user} hidePills/>}
       </main>
     </div>
-    {!showAICoach&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:28,right:28,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 16px rgba(0,122,255,0.35)",zIndex:98,cursor:"pointer"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>Fipilot AI</span></div>}
     {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
   </div>;
 
