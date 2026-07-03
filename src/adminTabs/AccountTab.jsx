@@ -1,9 +1,11 @@
 import { C, card, redBtn } from "../theme";
 import { UserAvatar } from "../UserAvatar";
+import { MySubscription } from "./MySubscription";
 
 export function AccountTab({user, signOut, isAdmin, profile, mob}){
   return (
 <div style={card}>
+      <MySubscription userId={user?.id} mob={mob}/>
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Tài khoản</span></div>
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
