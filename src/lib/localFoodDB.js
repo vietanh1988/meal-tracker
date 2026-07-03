@@ -124,9 +124,13 @@ export const LOCAL_FOODS = {
 
   // ==================== 5. TRỨNG & SỮA ====================
   "trứng gà":    {p:12.6, c:0.7, f:9.5,  cal:143, fiber:0, form:"raw",   cat:"egg_dairy"},
+  "trứng gà luộc":{p:12.6, c:0.7, f:9.5,  cal:143, fiber:0, form:"cooked",cat:"egg_dairy"},
   "trứng":       {p:12.6, c:0.7, f:9.5,  cal:143, fiber:0, form:"raw",   cat:"egg_dairy"},
+  "trứng luộc":  {p:12.6, c:0.7, f:9.5,  cal:143, fiber:0, form:"cooked",cat:"egg_dairy"},
   "trứng vịt":   {p:12.8, c:1.4, f:13.8, cal:185, fiber:0, form:"raw",   cat:"egg_dairy"},
+  "trứng vịt luộc":{p:12.8, c:1.4, f:13.8, cal:185, fiber:0, form:"cooked",cat:"egg_dairy"},
   "trứng cút":   {p:13.1, c:0.4, f:11.1, cal:158, fiber:0, form:"raw",   cat:"egg_dairy"},
+  "trứng cút luộc":{p:13.1, c:0.4, f:11.1, cal:158, fiber:0, form:"cooked",cat:"egg_dairy"},
   "lòng trắng trứng":{p:10.9,c:0.7,f:0.2,cal:52, fiber:0, form:"raw",   cat:"egg_dairy"},
   "lòng đỏ trứng":{p:15.9,c:3.6,f:26.5, cal:322, fiber:0, form:"raw",   cat:"egg_dairy"},
   "sữa tươi":    {p:3.2,  c:4.8, f:3.3,  cal:61,  fiber:0, form:"liquid",cat:"egg_dairy"},
