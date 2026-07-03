@@ -308,7 +308,7 @@ export function MealsTab({
                   })}
                   <div style={{display:"flex",gap:8,marginTop:14}}>
                     <button onClick={(e)=>{e.stopPropagation();setDayType(tpl.day_type);setMealMode("tu_nhap");setExpandedTpl(null);}} style={{flex:1,padding:"10px",fontSize:12,fontWeight:800,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Sửa</button>
-                    <button onClick={async(e)=>{e.stopPropagation();if(window.confirm(`Xóa lịch tuần ${dayLabels[i]}?`)){if(deleteWeeklyTemplate)await deleteWeeklyTemplate(dk);setExpandedTpl(null);}}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:"1.5px solid #FCA5A5",borderRadius:10,background:"#FEF2F2",color:"#DC2626",cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xóa</button>
+                    <button onClick={async(e)=>{e.stopPropagation();if(window.confirm(`Xóa lịch tuần ${dayLabels[i]}?`)){if(deleteWeeklyTemplate)await deleteWeeklyTemplate(dayKeys[i]);setExpandedTpl(null);}}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:"1.5px solid #FCA5A5",borderRadius:10,background:"#FEF2F2",color:"#DC2626",cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xóa</button>
                     <button onClick={(e)=>{e.stopPropagation();setExpandedTpl(null);}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Đóng</button>
                   </div>
                 </div>}
