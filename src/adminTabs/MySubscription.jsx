@@ -20,7 +20,7 @@ function fmtDMY(dateStr) {
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 }
 
-export function MySubscription({ userId, mob }) {
+export function MySubscription({ userId, mob, isAdmin }) {
   const [loading, setLoading] = useState(true);
   const [sub, setSub] = useState(null);
   const [settings, setSettings] = useState(null);
@@ -154,7 +154,9 @@ export function MySubscription({ userId, mob }) {
         <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", marginBottom: 14, fontSize: 13, color: C.t2 }}>🕐 Hết hạn: <b style={{ color: C.t1 }}>{fmtDMY(sub.subscription_end_date)}</b></div>
       )}
 
-      {pendingOrder ? (
+      {isAdmin ? (
+        <div style={{ background: C.blueBg, borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, fontWeight: 700, color: C.primary }}>👑 Tài khoản Admin — không cần gia hạn</div>
+      ) : pendingOrder ? (
         <div style={{ background: C.greenBg, borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "#14532D" }}>✓ Đã gửi yêu cầu nâng cấp ({PKG_LABEL[pendingOrder.package] || pendingOrder.package})</div>
           <div style={{ fontSize: 12, color: "#14532D", marginTop: 2 }}>Chờ Admin duyệt trong ít phút</div>
@@ -165,7 +167,7 @@ export function MySubscription({ userId, mob }) {
         </button>
       )}
 
-      {showPicker && !pendingOrder && (
+      {showPicker && !pendingOrder && !isAdmin && (
         <div style={{ marginTop: 14, background: "#fff", borderRadius: 12, padding: 14, border: `1px solid ${C.border}` }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>Chọn gói Premium</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
