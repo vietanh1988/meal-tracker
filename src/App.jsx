@@ -605,7 +605,7 @@ export default function App(){
             <span style={{fontSize:12,fontWeight:800,color:"#EF4444",letterSpacing:"0.8px",flex:1}}>QUẢN TRỊ</span>
             <svg width={12} height={12} viewBox="0 0 24 24" style={{transform:open?"rotate(0deg)":"rotate(-90deg)",transition:"transform .15s"}}><path d="M6 9l6 6 6-6" stroke="#EF4444" strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </div>
-          {open&&items.map(s=>{const a=tab===s.id;return <div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 20px",cursor:"pointer",fontSize:13,fontWeight:a?700:500,color:a?C.primary:C.t2,background:a?"rgba(0,122,255,0.06)":"transparent",borderLeft:a?`3px solid ${C.primary}`:"3px solid transparent"}}>{s.svg(a)} {s.l}</div>;})}
+          {open&&items.map(s=>{const a=tab===s.id;return <div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 20px 8px 34px",cursor:"pointer",fontSize:13,fontWeight:a?700:500,color:a?C.primary:C.t2,background:a?"rgba(0,122,255,0.06)":"transparent",borderLeft:a?`3px solid ${C.primary}`:"3px solid transparent"}}>{s.svg(a)} {s.l}</div>;})}
         </div>;
       })()}
       <div style={{marginTop:"auto",padding:"0 20px",borderTop:`1px solid ${C.border}`,paddingTop:14}}>
