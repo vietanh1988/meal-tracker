@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
+import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 
 export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId}){
   const [messages,setMessages]=useState([]);
@@ -43,12 +44,8 @@ export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appS
       if(error)console.warn("AI Chat save error:",error);
     }catch(e){console.warn("AI Chat save failed:",e);}
   };
-  const [dailyCount,setDailyCount]=useState(()=>{try{const d=JSON.parse(localStorage.getItem("aicoach_usage")||"{}");return d.date===new Date().toDateString()?d.count:0;}catch(e){return 0;}});
   const chatRef=useRef(null);
-  const MAX_DAILY=20;
   const aiModel=appSettings?.ai_model||"claude-sonnet-4-20250514";
-
-  const saveDailyCount=(c)=>{setDailyCount(c);localStorage.setItem("aicoach_usage",JSON.stringify({date:new Date().toDateString(),count:c}));};
 
   // Context engine
   const buildContext=()=>{
@@ -205,7 +202,10 @@ ${buildContext()}`;
 
   const sendMessage=async(text)=>{
     if(!text.trim()||loading)return;
-    if(!isAdmin&&dailyCount>=MAX_DAILY){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:"Bạn đã hết 20 lượt hỏi hôm nay. Quay lại ngày mai nhé! 😊"}]);return;}
+    if(!isAdmin){
+      const quota=await checkAndConsumeAiQuota(userId,"chat");
+      if(!quota.allowed){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:quota.message}]);return;}
+    }
     const newMsgs=[...messages,{role:"user",content:text}];
     setMessages(newMsgs);setInput("");setLoading(true);
     saveMsg("user",text);
@@ -222,7 +222,6 @@ ${buildContext()}`;
       const cleanReply=reply.replace(/^Fipilot AI:\s*/,"");
       setMessages(prev=>[...prev,{role:"assistant",content:cleanReply}]);
       saveMsg("assistant",cleanReply);
-      saveDailyCount(dailyCount+1);
     }catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
     setLoading(false);
   };
@@ -316,7 +315,7 @@ ${buildContext()}`;
       </div>
 
       {/* Disclaimer */}
-      <div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân. {isAdmin?"(Admin ∞)":(`(${MAX_DAILY-dailyCount}/${MAX_DAILY} lượt)`)}</div>
+      <div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân.</div>
     </div>
   </div>;
 }
