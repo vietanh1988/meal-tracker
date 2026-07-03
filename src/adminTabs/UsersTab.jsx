@@ -74,7 +74,7 @@ function UsersList({ onSelect }) {
   ] : [];
 
   return (
-    <div style={card}>
+    <div style={{ ...card, maxWidth: 1180 }}>
       <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>Quản lý User</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2, marginBottom: 20 }}>Danh sách toàn bộ user, gói cước và trạng thái</div>
 
@@ -87,20 +87,20 @@ function UsersList({ onSelect }) {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-        <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, flex: 1, minWidth: 180 }} />
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+        <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 260 }} />
         <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 150 }}>
           <option value="">Tất cả trạng thái</option>
           <option value="active">Hoạt động</option>
           <option value="locked">Bị khóa</option>
         </select>
-        <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 130 }}>
+        <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 150 }}>
           <option value="">Tất cả gói</option>
           <option value="free">Free</option>
           <option value="trial">Trial</option>
           <option value="premium">Premium</option>
         </select>
-        <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 130 }}>
+        <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 150 }}>
           <option value="">Tất cả vai trò</option>
           <option value="user">User</option>
           <option value="admin">Admin</option>
@@ -277,14 +277,14 @@ function UserDetail({ userId, currentUserId, onBack }) {
   if (!detail) return <div style={card}>Không tìm thấy user. <button onClick={onBack} style={{ marginLeft: 8 }}>Quay lại</button></div>;
 
   const statCards = [
-    { l: "Bữa ăn (ngày đã ghi)", v: detail.meal_days_logged },
+    { l: "Bữa ăn đã ghi", v: detail.meal_days_logged },
     { l: "Tuần cân nặng", v: detail.weight_weeks_logged },
     { l: "AI macro tháng này", v: detail.ai_macro_count_this_month },
     { l: "AI chat hôm nay", v: detail.ai_chat_count_today },
   ];
 
   return (
-    <div style={card}>
+    <div style={{ ...card, maxWidth: 760 }}>
       <div onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 14, cursor: "pointer", color: C.primary, fontSize: 14, fontWeight: 700 }}>← Quay lại danh sách</div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
