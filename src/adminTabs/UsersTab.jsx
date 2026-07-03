@@ -147,41 +147,43 @@ function UsersList({ onSelect, currentUserId }) {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+        {(() => { const fInp = { ...inp, height: 32, fontSize: 12, padding: "0 10px", fontWeight: 600 }; return <>
         <div style={{ position: "relative" }}>
-          <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: C.t3, pointerEvents: "none" }}>🔍</span>
-          <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 240, paddingLeft: 32 }} />
+          <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: C.t3, pointerEvents: "none" }}>🔍</span>
+          <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...fInp, width: 200, paddingLeft: 26 }} />
         </div>
-        <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 170 }}>
+        <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...fInp, width: 140 }}>
           <option value="">Trạng thái: Tất cả</option>
           <option value="active">Trạng thái: Hoạt động</option>
           <option value="locked">Trạng thái: Bị khóa</option>
         </select>
-        <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 140 }}>
+        <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...fInp, width: 115 }}>
           <option value="">Gói: Tất cả</option>
           <option value="free">Gói: Free</option>
           <option value="trial">Gói: Trial</option>
           <option value="premium">Gói: Premium</option>
         </select>
-        <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 150 }}>
+        <select value={role} onChange={e => setRole(e.target.value)} style={{ ...fInp, width: 125 }}>
           <option value="">Vai trò: Tất cả</option>
           <option value="user">Vai trò: User</option>
           <option value="admin">Vai trò: Admin</option>
         </select>
-        <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...inp, width: 190 }}>
+        <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...fInp, width: 160 }}>
           <option value="">Hạn dùng: Tất cả</option>
           <option value="expiring_7d">Sắp hết hạn (7 ngày)</option>
           <option value="expired">Đã hết hạn</option>
         </select>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 12, color: C.t3, fontWeight: 600 }}>Từ</span>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...inp, width: 140 }} title="Tham gia từ ngày" />
-          <span style={{ fontSize: 12, color: C.t3, fontWeight: 600 }}>đến</span>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...inp, width: 140 }} title="Tham gia đến ngày" />
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 11, color: C.t3, fontWeight: 600 }}>Từ</span>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...fInp, width: 120 }} title="Tham gia từ ngày" />
+          <span style={{ fontSize: 11, color: C.t3, fontWeight: 600 }}>đến</span>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...fInp, width: 120 }} title="Tham gia đến ngày" />
         </div>
         {(search || status || tier || role || expiry || dateFrom || dateTo) && (
-          <button onClick={() => { setSearch(""); setStatus(""); setTier(""); setRole(""); setExpiry(""); setDateFrom(""); setDateTo(""); }} style={{ fontSize: 12, fontWeight: 700, padding: "0 12px", height: 40, borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Xóa tất cả lọc</button>
+          <button onClick={() => { setSearch(""); setStatus(""); setTier(""); setRole(""); setExpiry(""); setDateFrom(""); setDateTo(""); }} style={{ fontSize: 11, fontWeight: 700, padding: "0 10px", height: 32, borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Xóa lọc</button>
         )}
+        </>; })()}
       </div>
 
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" }}>
