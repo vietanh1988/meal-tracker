@@ -119,11 +119,11 @@ export function MySubscription({ userId, mob }) {
       </div>
 
       {resultBanner && (
-        <div style={{ background: resultBanner.status === "confirmed" ? C.greenBg : C.redBg, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D" }}>
+        <div style={{ background: isPremium ? "rgba(255,255,255,0.15)" : (resultBanner.status === "confirmed" ? C.greenBg : C.redBg), borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: isPremium ? "#fff" : (resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D") }}>
             {resultBanner.status === "confirmed" ? `🎉 Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã được duyệt! Chào mừng đến với Premium.` : `Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã bị từ chối. Liên hệ Admin để biết thêm chi tiết.`}
           </div>
-          <button onClick={dismissBanner} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 16, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D", flexShrink: 0 }}>✕</button>
+          <button onClick={dismissBanner} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 16, color: isPremium ? "#fff" : (resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D"), flexShrink: 0 }}>✕</button>
         </div>
       )}
 
