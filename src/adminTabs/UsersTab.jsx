@@ -14,6 +14,21 @@ function fmtDT(iso) {
   if (!iso) return "-";
   try { return fmtDate(new Date(iso)); } catch (e) { return "-"; }
 }
+function relTime(iso) {
+  if (!iso) return "-";
+  const diffMs = Date.now() - new Date(iso).getTime();
+  if (diffMs < 0) return fmtDT(iso);
+  const min = Math.floor(diffMs / 60000);
+  if (min < 1) return "🟢 Vừa xong";
+  if (min < 60) return `${min} phút trước`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr} giờ trước`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day} ngày trước`;
+  const week = Math.floor(day / 7);
+  if (week < 5) return `${week} tuần trước`;
+  return fmtDT(iso);
+}
 function initials(name) {
   return (name || "?").trim().split(/\s+/).slice(-2).map(w => w[0]).join("").toUpperCase();
 }
@@ -106,10 +121,10 @@ function UsersList({ onSelect, currentUserId }) {
   };
 
   const cards = stats ? [
-    { l: "Tổng user", v: stats.total_users, c: C.t1 },
-    { l: "Đang hoạt động", v: stats.active_users, c: C.green },
-    { l: "Mới 7 ngày", v: stats.new_7d, c: C.primary },
-    { l: "Bị khóa", v: stats.locked_users, c: C.red },
+    { l: "Tổng user", v: stats.total_users, c: C.t1, icon: "👥", iconBg: C.blueBg },
+    { l: "Đang hoạt động", v: stats.active_users, c: C.green, icon: "✅", iconBg: C.greenBg },
+    { l: "Mới 7 ngày", v: stats.new_7d, c: C.primary, icon: "🆕", iconBg: C.blueBg },
+    { l: "Bị khóa", v: stats.locked_users, c: C.red, icon: "🔒", iconBg: C.redBg },
   ] : [];
 
   const th = (label, key) => (
@@ -125,9 +140,12 @@ function UsersList({ onSelect, currentUserId }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
         {cards.map((s, i) => (
-          <div key={i} style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 14 }}>
-            <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>{s.l}</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: s.c, marginTop: 4 }}>{s.v ?? "-"}</div>
+          <div key={i} style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 14, display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{s.icon}</div>
+            <div>
+              <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>{s.l}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: s.c }}>{s.v ?? "-"}</div>
+            </div>
           </div>
         ))}
       </div>
@@ -204,7 +222,7 @@ function UsersList({ onSelect, currentUserId }) {
               <tr key={u.id} onClick={() => onSelect(u.id)} style={{ borderBottom: `1px solid ${C.border}`, cursor: "pointer" }}>
                 <td style={{ padding: "10px 12px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.surface, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: C.t2 }}>{initials(u.username)}</div>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#60A5FA,#007AFF)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff" }}>{initials(u.username)}</div>
                     <div>
                       <div style={{ fontWeight: 700, color: C.t1, display: "flex", alignItems: "center", gap: 6 }}>{u.username}{u.is_admin && <span style={{ fontSize: 10, fontWeight: 800, color: C.red, background: C.redBg, padding: "1px 6px", borderRadius: 6 }}>ADMIN</span>}</div>
                       <div style={{ color: C.t3, fontSize: 12 }}>{u.email}</div>
@@ -213,11 +231,11 @@ function UsersList({ onSelect, currentUserId }) {
                 </td>
                 <td style={{ padding: "10px 12px" }}><span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: TIER_BG[u.tier] || C.surface, color: TIER_FG[u.tier] || C.t2 }}>{TIER_LABEL[u.tier] || u.tier}</span></td>
                 <td style={{ padding: "10px 12px" }}>{u.is_locked
-                  ? <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: C.redBg, color: C.red }}>Bị khóa</span>
-                  : <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: C.greenBg, color: "#14532D" }}>Hoạt động</span>}
+                  ? <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: C.redBg, color: C.red }}>● Bị khóa</span>
+                  : <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: C.greenBg, color: "#14532D" }}>● Hoạt động</span>}
                 </td>
                 <td style={{ padding: "10px 12px", color: C.t2 }}>{u.tier === "premium" ? fmtDT(u.subscription_end_date) : u.tier === "trial" ? fmtDT(u.trial_end_date) : "-"}</td>
-                <td style={{ padding: "10px 12px", color: C.t2 }}>{fmtDT(u.last_sign_in_at)}</td>
+                <td style={{ padding: "10px 12px", color: C.t2 }}>{relTime(u.last_sign_in_at)}</td>
                 <td style={{ padding: "10px 12px", color: C.t2 }}>{fmtDT(u.created_at)}</td>
                 <td style={{ padding: "10px 12px" }}>
                   <button onClick={(e) => quickLock(u, e)} disabled={lockingId === u.id} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 7, border: `1px solid ${u.is_locked ? C.border : C.red}`, background: "#fff", color: u.is_locked ? C.t2 : C.red, cursor: "pointer", whiteSpace: "nowrap" }}>{u.is_locked ? "Mở khóa" : "Khóa"}</button>
@@ -231,9 +249,19 @@ function UsersList({ onSelect, currentUserId }) {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, fontSize: 13, color: C.t2 }}>
         <span>{total > 0 ? `Hiển thị ${page * pageSize + 1}-${Math.min((page + 1) * pageSize, total)} trong ${total}` : ""}</span>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))} style={{ padding: "6px 14px", fontSize: 12, fontWeight: 700, border: `1px solid ${C.border}`, borderRadius: 8, background: "#fff", cursor: page === 0 ? "default" : "pointer", opacity: page === 0 ? 0.5 : 1 }}>Trước</button>
-          <button disabled={(page + 1) * pageSize >= total} onClick={() => setPage(p => p + 1)} style={{ padding: "6px 14px", fontSize: 12, fontWeight: 700, border: `1px solid ${C.border}`, borderRadius: 8, background: "#fff", cursor: (page + 1) * pageSize >= total ? "default" : "pointer", opacity: (page + 1) * pageSize >= total ? 0.5 : 1 }}>Sau</button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))} style={{ padding: "6px 10px", fontSize: 12, fontWeight: 700, border: `1px solid ${C.border}`, borderRadius: 8, background: "#fff", cursor: page === 0 ? "default" : "pointer", opacity: page === 0 ? 0.5 : 1 }}>‹</button>
+          {(() => {
+            const totalPages = Math.max(1, Math.ceil(total / pageSize));
+            const pages = [];
+            const start = Math.max(0, Math.min(page - 2, totalPages - 5));
+            const end = Math.min(totalPages, start + 5);
+            for (let i = Math.max(0, start); i < end; i++) pages.push(i);
+            return pages.map(i => (
+              <button key={i} onClick={() => setPage(i)} style={{ padding: "6px 12px", fontSize: 12, fontWeight: 700, border: `1px solid ${i === page ? C.primary : C.border}`, borderRadius: 8, background: i === page ? C.primary : "#fff", color: i === page ? "#fff" : C.t2, cursor: "pointer" }}>{i + 1}</button>
+            ));
+          })()}
+          <button disabled={(page + 1) * pageSize >= total} onClick={() => setPage(p => p + 1)} style={{ padding: "6px 10px", fontSize: 12, fontWeight: 700, border: `1px solid ${C.border}`, borderRadius: 8, background: "#fff", cursor: (page + 1) * pageSize >= total ? "default" : "pointer", opacity: (page + 1) * pageSize >= total ? 0.5 : 1 }}>›</button>
         </div>
       </div>
     </div>
