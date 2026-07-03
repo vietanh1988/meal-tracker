@@ -32,6 +32,7 @@ export function useProfile(userId, authLoading) {
         if(data.frequency) p.frequency = data.frequency;
         if(data.diet_strategy) p.dietStrategy = data.diet_strategy;
         if(data.calorie_mode) p.calorieMode = data.calorie_mode;
+        p.isLocked = !!data.is_locked;
         setProfileState(p);
         if (!silent) console.log("✅ Profile loaded from cloud");
       } else {

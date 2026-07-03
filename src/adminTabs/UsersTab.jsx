@@ -93,6 +93,7 @@ function UsersList({ onSelect, currentUserId }) {
 
   const quickLock = async (u, e) => {
     e.stopPropagation();
+    if (u.id === currentUserId) { alert("Không thể tự khóa tài khoản của chính mình"); return; }
     const next = !u.is_locked;
     if (!window.confirm(next ? `Khóa tài khoản "${u.username}"?` : `Mở khóa tài khoản "${u.username}"?`)) return;
     setLockingId(u.id);
@@ -316,6 +317,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
   };
 
   const toggleLock = async () => {
+    if (userId === currentUserId) { alert("Không thể tự khóa tài khoản của chính mình"); return; }
     const next = !detail.is_locked;
     if (!window.confirm(next ? `Khóa tài khoản "${detail.username}"?` : `Mở khóa tài khoản "${detail.username}"?`)) return;
     const { error } = await supabase.from("profiles").update({ is_locked: next }).eq("id", userId);
@@ -448,7 +450,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
         <div style={{ fontWeight: 800, color: C.red, marginBottom: 10 }}>Khu vực nguy hiểm</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button onClick={toggleLock} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>{detail.is_locked ? "Mở khóa tài khoản" : "Khóa tài khoản"}</button>
-          <button onClick={() => setConfirmDelete(true)} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>Xóa tài khoản</button>
+          <button onClick={() => { if (userId === currentUserId) { alert("Không thể tự xóa tài khoản của chính mình"); return; } setConfirmDelete(true); }} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>Xóa tài khoản</button>
         </div>
         {confirmDelete && (
           <div style={{ marginTop: 12, padding: 12, background: C.redBg, borderRadius: 10 }}>
