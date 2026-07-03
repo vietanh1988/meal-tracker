@@ -911,6 +911,8 @@ export default function App(){
     <div style={{width:"100%",maxWidth:380}}>
       <div style={{textAlign:"center",marginBottom:24}}>
         <img src="/logo.png" alt="Fipilot AI" style={{width:64,height:64,borderRadius:14,objectFit:"cover"}}/>
+        <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
+        <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>AI Nutrition Coach</div>
       </div>
       <div style={{...card,textAlign:"center",padding:"32px 24px"}}>
         <div style={{fontSize:40,marginBottom:12}}>🔒</div>
