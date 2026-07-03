@@ -12,19 +12,19 @@ function fmtDT(iso) {
   try { return fmtDate(new Date(iso)); } catch (e) { return "-"; }
 }
 function relTime(iso) {
-  if (!iso) return "-";
+  if (!iso) return { text: "-", dot: C.t3 };
   const diffMs = Date.now() - new Date(iso).getTime();
-  if (diffMs < 0) return fmtDT(iso);
+  if (diffMs < 0) return { text: fmtDT(iso), dot: C.t3 };
   const min = Math.floor(diffMs / 60000);
-  if (min < 1) return "🟢 Vừa xong";
-  if (min < 60) return `${min} phút trước`;
+  if (min < 1) return { text: "Vừa xong", dot: "#22C55E" };
+  if (min < 60) return { text: `${min} phút trước`, dot: "#22C55E" };
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr} giờ trước`;
+  if (hr < 24) return { text: `${hr} giờ trước`, dot: "#22C55E" };
   const day = Math.floor(hr / 24);
-  if (day < 7) return `${day} ngày trước`;
+  if (day < 7) return { text: `${day} ngày trước`, dot: "#F59E0B" };
   const week = Math.floor(day / 7);
-  if (week < 5) return `${week} tuần trước`;
-  return fmtDT(iso);
+  if (week < 5) return { text: `${week} tuần trước`, dot: "#EF4444" };
+  return { text: fmtDT(iso), dot: "#EF4444" };
 }
 function initials(name) {
   return (name || "?").trim().split(/\s+/).slice(-2).map(w => w[0]).join("").toUpperCase();
@@ -259,7 +259,7 @@ function UsersList({ onSelect, currentUserId }) {
                   : <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: C.greenBg, color: "#14532D" }}>● Hoạt động</span>}
                 </td>
                 <td style={{ padding: "10px 12px", color: C.t2 }}>{u.tier === "premium" ? fmtDT(u.subscription_end_date) : u.tier === "trial" ? fmtDT(u.trial_end_date) : "-"}</td>
-                <td style={{ padding: "10px 12px", color: C.t2 }}>{relTime(u.last_sign_in_at)}</td>
+                <td style={{ padding: "10px 12px", color: C.t2 }}>{(() => { const r = relTime(u.last_sign_in_at); return <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: r.dot, flexShrink: 0 }} />{r.text}</span>; })()}</td>
                 <td style={{ padding: "10px 12px", color: C.t2 }}>{fmtDT(u.created_at)}</td>
                 <td style={{ padding: "10px 12px" }}>
                   <button onClick={(e) => quickLock(u, e)} disabled={lockingId === u.id} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 7, border: `1px solid ${u.is_locked ? C.border : C.red}`, background: "#fff", color: u.is_locked ? C.t2 : C.red, cursor: "pointer", whiteSpace: "nowrap" }}>{u.is_locked ? "Mở khóa" : "Khóa"}</button>
