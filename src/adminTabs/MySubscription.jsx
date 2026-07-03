@@ -25,25 +25,39 @@ export function MySubscription({ userId, mob }) {
   const [sub, setSub] = useState(null);
   const [settings, setSettings] = useState(null);
   const [pendingOrder, setPendingOrder] = useState(null);
+  const [resultBanner, setResultBanner] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
   const [selectedPkg, setSelectedPkg] = useState("6m");
   const [submitting, setSubmitting] = useState(false);
+
+  const seenKey = (id) => `sub_order_seen_${id}`;
 
   const load = useCallback(async () => {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [{ data: p }, { data: s }, { data: o }] = await Promise.all([
+      const [{ data: p }, { data: s }, { data: latestOrder }] = await Promise.all([
         supabase.from("profiles").select("tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_chat_count_today").eq("id", userId).single(),
         supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
-        supabase.from("orders").select("id,package,status,created_at").eq("user_id", userId).eq("status", "pending").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("orders").select("id,package,status,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       setSub(p || null);
       setSettings(s || null);
-      setPendingOrder(o || null);
+      if (latestOrder?.status === "pending") {
+        setPendingOrder(latestOrder);
+      } else if (latestOrder && (latestOrder.status === "confirmed" || latestOrder.status === "rejected")) {
+        let seen = false;
+        try { seen = localStorage.getItem(seenKey(latestOrder.id)) === "1"; } catch (e) {}
+        if (!seen) setResultBanner(latestOrder);
+      }
     } catch (e) { console.error("MySubscription load error:", e); }
     setLoading(false);
   }, [userId]);
+
+  const dismissBanner = () => {
+    if (resultBanner) { try { localStorage.setItem(seenKey(resultBanner.id), "1"); } catch (e) {} }
+    setResultBanner(null);
+  };
 
   useEffect(() => { load(); }, [load]);
 
@@ -86,6 +100,15 @@ export function MySubscription({ userId, mob }) {
         <div style={{ fontSize: mob ? 17 : 16, fontWeight: 800, color: C.t1 }}>⭐ Gói cước của bạn</div>
         <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 8, ...badgeStyle }}>{badgeLabel}</span>
       </div>
+
+      {resultBanner && (
+        <div style={{ background: resultBanner.status === "confirmed" ? C.greenBg : C.redBg, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D" }}>
+            {resultBanner.status === "confirmed" ? `🎉 Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã được duyệt! Chào mừng đến với Premium.` : `Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã bị từ chối. Liên hệ Admin để biết thêm chi tiết.`}
+          </div>
+          <button onClick={dismissBanner} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 16, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D", flexShrink: 0 }}>✕</button>
+        </div>
+      )}
 
       {tier === "free" && (
         <div style={{ marginBottom: 16 }}>
