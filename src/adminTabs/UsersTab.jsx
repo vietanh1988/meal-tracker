@@ -71,7 +71,19 @@ function UsersList({ onSelect, currentUserId }) {
     setStats((data && data[0]) || { total_users: 0, active_users: 0, new_7d: 0, locked_users: 0 });
   }, []);
 
-  useEffect(() => { loadStats(); }, [loadStats]);
+  const [trends, setTrends] = useState(null);
+  const loadTrends = useCallback(async () => {
+    const { data, error } = await supabase.rpc("admin_user_stats_trends");
+    if (error) { console.error("admin_user_stats_trends error:", error); return; }
+    setTrends((data && data[0]) || null);
+  }, []);
+
+  useEffect(() => {
+    loadStats();
+    loadTrends();
+    // Ghi snapshot hôm nay (idempotent) để tích lũy dữ liệu cho chỉ số "Bị khóa" theo thời gian
+    supabase.rpc("admin_record_stats_snapshot").catch(e => console.error("snapshot error:", e));
+  }, [loadStats, loadTrends]);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -117,11 +129,37 @@ function UsersList({ onSelect, currentUserId }) {
     loadStats();
   };
 
+  const pctTrend = (current, past) => {
+    if (past == null) return { text: "Đang tích lũy dữ liệu", color: C.t3 };
+    if (past === 0) return current > 0 ? { text: `+${current} mới`, color: C.green, up: true } : { text: "Không đổi", color: C.t3 };
+    const pct = Math.round((current - past) / past * 1000) / 10;
+    const up = pct >= 0;
+    return { text: `${up ? "↑" : "↓"} ${Math.abs(pct)}% so với tháng trước`, color: up ? C.green : C.red, up };
+  };
+
   const cards = stats ? [
-    { l: "Tổng user", v: stats.total_users, c: C.t1, icon: "👥", iconBg: C.blueBg },
-    { l: "Đang hoạt động", v: stats.active_users, c: C.green, icon: "✅", iconBg: C.greenBg },
-    { l: "Mới 7 ngày", v: stats.new_7d, c: C.primary, icon: "🆕", iconBg: C.blueBg },
-    { l: "Bị khóa", v: stats.locked_users, c: C.red, icon: "🔒", iconBg: C.redBg },
+    { l: "Tổng user", v: stats.total_users, c: C.t1, icon: "👥", iconBg: C.blueBg,
+      sub: trends ? pctTrend(stats.total_users, trends.total_users_month_ago) : null },
+    { l: "Đang hoạt động", v: stats.active_users, c: C.green, icon: "✅", iconBg: C.greenBg,
+      sub: stats.total_users > 0 ? { text: `${Math.round(stats.active_users / stats.total_users * 100)}% tổng số người dùng`, color: C.t3 } : null },
+    { l: "Mới 7 ngày", v: stats.new_7d, c: C.primary, icon: "🆕", iconBg: C.blueBg,
+      sub: trends ? (() => {
+        const prev = trends.new_7d_prev_period;
+        if (prev == null) return { text: "Đang tích lũy dữ liệu", color: C.t3 };
+        if (prev === 0) return stats.new_7d > 0 ? { text: `+${stats.new_7d} so với 7 ngày trước`, color: C.green, up: true } : { text: "Không đổi", color: C.t3 };
+        const pct = Math.round((stats.new_7d - prev) / prev * 1000) / 10;
+        const up = pct >= 0;
+        return { text: `${up ? "↑" : "↓"} ${Math.abs(pct)}% so với 7 ngày trước`, color: up ? C.green : C.red };
+      })() : null },
+    { l: "Bị khóa", v: stats.locked_users, c: C.red, icon: "🔒", iconBg: C.redBg,
+      sub: trends ? (() => {
+        const past = trends.locked_snapshot_value;
+        if (past == null) return { text: "Đang tích lũy dữ liệu (~30 ngày)", color: C.t3 };
+        if (past === 0) return stats.locked_users > 0 ? { text: `+${stats.locked_users} so với tháng trước`, color: C.red, up: true } : { text: "Không đổi", color: C.t3 };
+        const pct = Math.round((stats.locked_users - past) / past * 1000) / 10;
+        const up = pct >= 0;
+        return { text: `${up ? "↑" : "↓"} ${Math.abs(pct)}% so với tháng trước`, color: up ? C.red : C.green };
+      })() : null },
   ] : [];
 
   const th = (label, key) => (
@@ -142,6 +180,7 @@ function UsersList({ onSelect, currentUserId }) {
             <div>
               <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>{s.l}</div>
               <div style={{ fontSize: 20, fontWeight: 800, color: s.c }}>{s.v ?? "-"}</div>
+              {s.sub && <div style={{ fontSize: 11, fontWeight: 600, color: s.sub.color, marginTop: 2 }}>{s.sub.text}</div>}
             </div>
           </div>
         ))}
