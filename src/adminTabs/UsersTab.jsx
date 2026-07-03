@@ -233,7 +233,7 @@ function UsersList({ onSelect, currentUserId }) {
               {th("Gói", "tier")}
               <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Trạng thái</th>
               {th("Hết hạn", "expiry")}
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Đăng nhập gần nhất</th>
+              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Hoạt động gần nhất</th>
               {th("Tham gia", "created_at")}
               <th></th>
               <th></th>
