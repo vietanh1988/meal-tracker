@@ -90,15 +90,15 @@ export function MySubscription({ userId, mob }) {
   const isPremium = tier === "premium";
   const isTrial = tier === "trial";
 
-  const iconBoxBg = isPremium ? "rgba(255,255,255,0.15)" : isTrial ? C.goldBg : C.surface;
+  const iconBoxBg = isPremium ? "rgba(255,255,255,0.15)" : isTrial ? C.goldBg : C.blueBg;
   const titleColor = isPremium ? "#fff" : C.t1;
   const badgeStyle = {
     free: { background: C.surface, color: C.t2 },
     trial: { background: C.goldBg, color: "#92400E" },
-    premium: { background: "rgba(255,255,255,0.2)", color: "#fff" },
+    premium: { background: "#fff", color: C.primary },
   }[tier];
-  const badgeLabel = { free: "🆓 Free", trial: "⏳ Trial", premium: "⭐ Premium" }[tier];
-  const stateIcon = { free: "🆓", trial: "⏳", premium: "⭐" }[tier];
+  const badgeLabel = { free: "Free", trial: "Trial", premium: "Premium" }[tier];
+  const stateIcon = { free: "📦", trial: "⏳", premium: "⭐" }[tier];
 
   const outerStyle = isPremium
     ? { background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", borderRadius: 14, padding: "16px 18px", marginBottom: 16 }
@@ -119,11 +119,11 @@ export function MySubscription({ userId, mob }) {
       </div>
 
       {resultBanner && (
-        <div style={{ background: isPremium ? "rgba(255,255,255,0.15)" : (resultBanner.status === "confirmed" ? C.greenBg : C.redBg), borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: isPremium ? "#fff" : (resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D") }}>
+        <div style={{ background: resultBanner.status === "confirmed" ? C.greenBg : C.redBg, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D" }}>
             {resultBanner.status === "confirmed" ? `🎉 Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã được duyệt! Chào mừng đến với Premium.` : `Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã bị từ chối. Liên hệ Admin để biết thêm chi tiết.`}
           </div>
-          <button onClick={dismissBanner} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 16, color: isPremium ? "#fff" : (resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D"), flexShrink: 0 }}>✕</button>
+          <button onClick={dismissBanner} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 16, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D", flexShrink: 0 }}>✕</button>
         </div>
       )}
 
@@ -152,18 +152,18 @@ export function MySubscription({ userId, mob }) {
       )}
 
       {tier === "premium" && subDays !== null && subDays <= 7 && (
-        <div style={{ background: "rgba(255,255,255,0.12)", borderRadius: 10, padding: "10px 12px", marginBottom: 14, fontSize: 13, fontWeight: 700, color: "#fff" }}>
+        <div style={{ background: C.goldBg, borderRadius: 10, padding: "10px 12px", marginBottom: 14, fontSize: 13, fontWeight: 700, color: "#92400E" }}>
           🕐 {subDays <= 0 ? "Gói Premium đã hết hạn" : `Còn ${subDays} ngày nữa hết hạn (${fmtDMY(sub.subscription_end_date)})`}
         </div>
       )}
       {tier === "premium" && (subDays === null || subDays > 7) && (
-        <div style={{ background: "rgba(255,255,255,0.12)", borderRadius: 10, padding: "10px 12px", marginBottom: 14, fontSize: 13, color: "#fff" }}>🕐 Hết hạn: <b>{fmtDMY(sub.subscription_end_date)}</b></div>
+        <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", marginBottom: 14, fontSize: 13, color: C.t2 }}>🕐 Hết hạn: <b style={{ color: C.t1 }}>{fmtDMY(sub.subscription_end_date)}</b></div>
       )}
 
       {pendingOrder ? (
-        <div style={{ background: isPremium ? "rgba(255,255,255,0.15)" : C.greenBg, borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: isPremium ? "#fff" : "#14532D" }}>✓ Đã gửi yêu cầu nâng cấp ({PKG_LABEL[pendingOrder.package] || pendingOrder.package})</div>
-          <div style={{ fontSize: 12, color: isPremium ? "#fff" : "#14532D", marginTop: 2 }}>Chờ Admin duyệt trong ít phút</div>
+        <div style={{ background: C.greenBg, borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#14532D" }}>✓ Đã gửi yêu cầu nâng cấp ({PKG_LABEL[pendingOrder.package] || pendingOrder.package})</div>
+          <div style={{ fontSize: 12, color: "#14532D", marginTop: 2 }}>Chờ Admin duyệt trong ít phút</div>
         </div>
       ) : (
         <button onClick={() => setShowPicker(v => !v)} style={btnStyle}>
@@ -172,19 +172,19 @@ export function MySubscription({ userId, mob }) {
       )}
 
       {showPicker && !pendingOrder && (
-        <div style={{ marginTop: 14, background: isPremium ? "rgba(255,255,255,0.1)" : C.surface, borderRadius: 12, padding: 14, border: isPremium ? "none" : `1px solid ${C.border}` }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: isPremium ? "#fff" : C.t1, marginBottom: 10 }}>Chọn gói Premium</div>
+        <div style={{ marginTop: 14, background: "#fff", borderRadius: 12, padding: 14, border: `1px solid ${C.border}` }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>Chọn gói Premium</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
             {["3m", "6m", "12m"].map(k => (
-              <div key={k} onClick={() => setSelectedPkg(k)} style={{ border: selectedPkg === k ? `2px solid ${isPremium ? "#fff" : C.primary}` : `1px solid ${isPremium ? "rgba(255,255,255,0.3)" : C.border}`, borderRadius: 10, padding: "10px 6px", textAlign: "center", cursor: "pointer", background: isPremium ? "rgba(255,255,255,0.08)" : "#fff" }}>
-                <div style={{ fontSize: 12, color: isPremium ? "rgba(255,255,255,0.8)" : C.t2, fontWeight: 600 }}>{PKG_LABEL[k]}</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: isPremium ? "#fff" : C.t1, marginTop: 2 }}>{fmtVND(settings?.[{ "3m": "price_3m", "6m": "price_6m", "12m": "price_12m" }[k]])}</div>
+              <div key={k} onClick={() => setSelectedPkg(k)} style={{ border: selectedPkg === k ? `2px solid ${C.primary}` : `1px solid ${C.border}`, borderRadius: 10, padding: "10px 6px", textAlign: "center", cursor: "pointer", background: selectedPkg === k ? C.blueBg : "#fff" }}>
+                <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>{PKG_LABEL[k]}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: C.t1, marginTop: 2 }}>{fmtVND(settings?.[{ "3m": "price_3m", "6m": "price_6m", "12m": "price_12m" }[k]])}</div>
               </div>
             ))}
           </div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: isPremium ? "rgba(255,255,255,0.7)" : C.t3, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Chuyển khoản tới</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: isPremium ? "#fff" : C.t1 }}>{settings?.bank_name || "-"} · {settings?.bank_account || "-"}</div>
-          <div style={{ fontSize: 13, color: isPremium ? "rgba(255,255,255,0.8)" : C.t2, marginBottom: 14 }}>{settings?.bank_account_name || "-"}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Chuyển khoản tới</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{settings?.bank_name || "-"} · {settings?.bank_account || "-"}</div>
+          <div style={{ fontSize: 13, color: C.t2, marginBottom: 14 }}>{settings?.bank_account_name || "-"}</div>
           <button onClick={handleConfirmPaid} disabled={submitting} style={{ width: "100%", padding: "10px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer", opacity: submitting ? 0.6 : 1 }}>
             {submitting ? "Đang gửi..." : "✓ Tôi đã chuyển khoản"}
           </button>
