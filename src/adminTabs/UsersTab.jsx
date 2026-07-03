@@ -279,7 +279,8 @@ function UserDetail({ userId, currentUserId, onBack }) {
       trial_end_date: tierForm.trial_end_date || null,
     }).eq("id", userId);
     if (error) { console.error(error); alert("Lưu thất bại: " + error.message); setSaving(false); return; }
-    await logAction("update_tier", `Đổi gói -> ${tierForm.tier}, hết hạn ${tierForm.subscription_end_date || tierForm.trial_end_date || "-"}`);
+    const relevantDate = tierForm.tier === "trial" ? tierForm.trial_end_date : tierForm.subscription_end_date;
+    await logAction("update_tier", `Đổi gói -> ${tierForm.tier}, hết hạn ${relevantDate || "-"}`);
     showFlash("✓ Đã lưu gói và thời hạn");
     setSaving(false);
     load();
