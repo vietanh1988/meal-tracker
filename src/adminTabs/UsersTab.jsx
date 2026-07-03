@@ -7,9 +7,6 @@ const TIER_LABEL = { free: "Free", trial: "Trial", premium: "Premium" };
 const TIER_BG = { free: C.surface, trial: C.goldBg, premium: C.blueBg };
 const TIER_FG = { free: C.t2, trial: "#92400E", premium: C.primary };
 
-function lbl_style() {
-  return { fontSize: 12, fontWeight: 600, color: C.t2, marginBottom: 4 };
-}
 function fmtDT(iso) {
   if (!iso) return "-";
   try { return fmtDate(new Date(iso)); } catch (e) { return "-"; }
@@ -150,51 +147,37 @@ function UsersList({ onSelect, currentUserId }) {
         ))}
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "flex-end", flexWrap: "wrap" }}>
-        <div>
-          <div style={lbl_style()}>Tìm kiếm</div>
-          <input placeholder="Tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 220 }} />
+      <div style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ position: "relative" }}>
+          <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: C.t3, pointerEvents: "none" }}>🔍</span>
+          <input placeholder="Tìm theo tên hoặc email" value={search} onChange={e => setSearch(e.target.value)} style={{ ...inp, width: 240, paddingLeft: 32 }} />
         </div>
-        <div>
-          <div style={lbl_style()}>Trạng thái</div>
-          <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 140 }}>
-            <option value="">Tất cả</option>
-            <option value="active">Hoạt động</option>
-            <option value="locked">Bị khóa</option>
-          </select>
-        </div>
-        <div>
-          <div style={lbl_style()}>Gói</div>
-          <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 120 }}>
-            <option value="">Tất cả</option>
-            <option value="free">Free</option>
-            <option value="trial">Trial</option>
-            <option value="premium">Premium</option>
-          </select>
-        </div>
-        <div>
-          <div style={lbl_style()}>Vai trò</div>
-          <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 130 }}>
-            <option value="">Tất cả</option>
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <div>
-          <div style={lbl_style()}>Hạn dùng</div>
-          <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...inp, width: 170 }}>
-            <option value="">Tất cả</option>
-            <option value="expiring_7d">Sắp hết hạn (7 ngày)</option>
-            <option value="expired">Đã hết hạn</option>
-          </select>
-        </div>
-        <div>
-          <div style={lbl_style()}>Tham gia từ</div>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...inp, width: 140 }} />
-        </div>
-        <div>
-          <div style={lbl_style()}>Đến ngày</div>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...inp, width: 140 }} />
+        <select value={status} onChange={e => setStatus(e.target.value)} style={{ ...inp, width: 170 }}>
+          <option value="">Trạng thái: Tất cả</option>
+          <option value="active">Trạng thái: Hoạt động</option>
+          <option value="locked">Trạng thái: Bị khóa</option>
+        </select>
+        <select value={tier} onChange={e => setTier(e.target.value)} style={{ ...inp, width: 140 }}>
+          <option value="">Gói: Tất cả</option>
+          <option value="free">Gói: Free</option>
+          <option value="trial">Gói: Trial</option>
+          <option value="premium">Gói: Premium</option>
+        </select>
+        <select value={role} onChange={e => setRole(e.target.value)} style={{ ...inp, width: 150 }}>
+          <option value="">Vai trò: Tất cả</option>
+          <option value="user">Vai trò: User</option>
+          <option value="admin">Vai trò: Admin</option>
+        </select>
+        <select value={expiry} onChange={e => setExpiry(e.target.value)} style={{ ...inp, width: 190 }}>
+          <option value="">Hạn dùng: Tất cả</option>
+          <option value="expiring_7d">Sắp hết hạn (7 ngày)</option>
+          <option value="expired">Đã hết hạn</option>
+        </select>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 12, color: C.t3, fontWeight: 600 }}>Từ</span>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ ...inp, width: 140 }} title="Tham gia từ ngày" />
+          <span style={{ fontSize: 12, color: C.t3, fontWeight: 600 }}>đến</span>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ ...inp, width: 140 }} title="Tham gia đến ngày" />
         </div>
         {(search || status || tier || role || expiry || dateFrom || dateTo) && (
           <button onClick={() => { setSearch(""); setStatus(""); setTier(""); setRole(""); setExpiry(""); setDateFrom(""); setDateTo(""); }} style={{ fontSize: 12, fontWeight: 700, padding: "0 12px", height: 40, borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Xóa tất cả lọc</button>
