@@ -92,7 +92,7 @@ export function MySubscription({ userId, mob }) {
     trial: { background: C.goldBg, color: "#92400E" },
     premium: { background: C.blueBg, color: C.primary },
   }[tier];
-  const badgeLabel = { free: "Free", trial: "Trial", premium: "Premium" }[tier];
+  const badgeLabel = { free: "🆓 Free", trial: "⏳ Trial", premium: "⭐ Premium" }[tier];
 
   return (
     <div style={{ background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` }}>

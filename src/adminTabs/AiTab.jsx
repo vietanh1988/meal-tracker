@@ -1,6 +1,7 @@
 import { C, card, redBtn } from "../theme";
 
 export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel, setAiModel, geminiModel, setGeminiModel, gptModel, setGptModel, aiConnected, setAiConnected, claudeKey, setClaudeKey, geminiKey, setGeminiKey, gptKey, setGptKey, usdaKey, setUsdaKey}){
+  if(!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
   return (
 <div style={card}>
