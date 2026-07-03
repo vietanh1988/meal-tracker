@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 
-const ADMIN_ID = "e2e39900-6390-4d0d-a387-cc707f0a2645";
-
 export function useAppSettings(userId) {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
-  const isAdmin = userId === ADMIN_ID;
+  const [isAdmin, setIsAdmin] = useState(false);
   const lastFetchRef = useRef(Date.now());
 
   const fetchSettings = useCallback(async (silent = false) => {
@@ -19,12 +17,22 @@ export function useAppSettings(userId) {
         setSettings(s);
         if (!silent) console.log("✅ Loaded app settings:", Object.keys(s).length, "keys", s);
       }
+
+      // Đọc quyền Admin từ database (thay vì hardcode ID)
+      if (userId) {
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles").select("is_admin").eq("id", userId).single();
+        if (profileError) { console.error("Load is_admin error:", profileError); }
+        setIsAdmin(!!profileData?.is_admin);
+      } else {
+        setIsAdmin(false);
+      }
     } catch (e) { console.error("AppSettings error:", e); }
     setLoading(false);
     lastFetchRef.current = Date.now();
-  }, []);
+  }, [userId]);
 
-  // Load on mount
+  // Load on mount + khi userId đổi
   useEffect(() => { fetchSettings(false); }, [fetchSettings]);
 
   // Re-sync on visibility change (30s debounce)
