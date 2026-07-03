@@ -908,11 +908,16 @@ export default function App(){
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
   if(profile.isLocked) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",padding:20}}>
-    <div style={{...card,maxWidth:380,textAlign:"center",padding:"32px 24px"}}>
-      <div style={{fontSize:40,marginBottom:12}}>🔒</div>
-      <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:8}}>Tài khoản đã bị khóa</div>
-      <div style={{fontSize:14,color:C.t2,marginBottom:20,lineHeight:1.5}}>Tài khoản của bạn đã bị Admin tạm khóa. Liên hệ hỗ trợ nếu bạn cho rằng đây là nhầm lẫn.</div>
-      <button onClick={signOut} style={redBtn}>Đăng xuất</button>
+    <div style={{width:"100%",maxWidth:380}}>
+      <div style={{textAlign:"center",marginBottom:24}}>
+        <img src="/logo.png" alt="Fipilot AI" style={{width:64,height:64,borderRadius:14,objectFit:"cover"}}/>
+      </div>
+      <div style={{...card,textAlign:"center",padding:"32px 24px"}}>
+        <div style={{fontSize:40,marginBottom:12}}>🔒</div>
+        <div style={{fontSize:18,fontWeight:800,color:C.t1,marginBottom:8}}>Tài khoản đã bị khóa</div>
+        <div style={{fontSize:14,color:C.t2,marginBottom:20,lineHeight:1.5}}>Tài khoản của bạn đã bị Admin tạm khóa. Liên hệ hỗ trợ nếu bạn cho rằng đây là nhầm lẫn.</div>
+        <button onClick={signOut} style={redBtn}>Đăng xuất</button>
+      </div>
     </div>
   </div>;
 
