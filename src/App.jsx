@@ -622,8 +622,10 @@ export default function App(){
         <div style={{flex:1}}><div style={{fontSize:20,fontWeight:800,color:C.t1}}>Xin chào, {pcDN} 👋</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{pcDS}</div></div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           {tab!=="meals"&&<div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayManual("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayManual("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>}
+          <div style={{width:1,height:24,background:C.border}}/>
+          <style>{`@keyframes fipilotPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,122,255,0.45);}50%{box-shadow:0 0 0 8px rgba(0,122,255,0);}}`}</style>
+          <button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",animation:"fipilotPulse 2s ease-in-out infinite"}}>✨ Fipilot AI</button>
           <NotiBell appSettings={appSettings}/>
-          <button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer"}}>✨ Fipilot AI</button>
         </div>
       </header>
       <main style={{padding:tab==="account"?"92px 100px 24px":"92px 24px 24px",flex:1}}>
