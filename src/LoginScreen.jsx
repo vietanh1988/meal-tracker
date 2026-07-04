@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { C, card, inp, lbl, redBtn } from "./theme";
+import { parseContent, stripEmptyParagraphs } from "./TermsPage";
 
-export function LoginScreen({onLogin}){
+export function LoginScreen({onLogin,appSettings}){
   const [user,setUser]=useState("");
   const [pass,setPass]=useState("");
   const [email,setEmail]=useState("");
@@ -12,6 +13,8 @@ export function LoginScreen({onLogin}){
   const [mode,setMode]=useState("login");
   const [success,setSuccess]=useState("");
   const [saving,setSaving]=useState(false);
+  const [termsModal,setTermsModal]=useState(null); // "tos" | "privacy" | null
+  const [agreedTerms,setAgreedTerms]=useState(false);
   const {signIn,signUp,sendPasswordReset}=useAuth();
 
   const handleSubmit=async()=>{
@@ -21,6 +24,7 @@ export function LoginScreen({onLogin}){
     }else{
       if(!user.trim()||!email.trim()||!pass.trim()){setErr("Vui lòng nhập đầy đủ");return;}
       if(!email.includes("@")){setErr("Vui lòng nhập email hợp lệ");return;}
+      if(!agreedTerms){setErr("Bạn cần đồng ý với điều khoản dịch vụ và chính sách bảo mật để đăng ký");return;}
     }
     if(pass.length<6){setErr("Mật khẩu tối thiểu 6 ký tự");return;}
     try{
@@ -108,13 +112,34 @@ export function LoginScreen({onLogin}){
         {mode==="login"&&<div style={{textAlign:"right",marginBottom:16}}>
           <span onClick={()=>{setMode("forgot");setErr("");setForgotEmail(email);}} style={{fontSize:12,fontWeight:700,color:C.primary,cursor:"pointer"}}>Quên mật khẩu?</span>
         </div>}
+        {mode==="register"&&<div style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:16,padding:"10px 12px",background:agreedTerms?C.surface:C.redBg,borderRadius:10,border:agreedTerms?`1.5px solid ${C.border}`:`1.5px solid ${C.red}`}}>
+          <input type="checkbox" checked={agreedTerms} onChange={e=>{setAgreedTerms(e.target.checked);if(e.target.checked)setErr("");}} style={{width:16,height:16,marginTop:1,flexShrink:0,cursor:"pointer"}}/>
+          <span onClick={()=>setAgreedTerms(v=>!v)} style={{fontSize:11,color:C.t2,lineHeight:1.5,cursor:"pointer"}}>Tôi đồng ý với <span onClick={(e)=>{e.stopPropagation();setTermsModal("tos");}} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>📄 điều khoản dịch vụ</span> và <span onClick={(e)=>{e.stopPropagation();setTermsModal("privacy");}} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>🔒 chính sách bảo mật</span> của Fipilot AI</span>
+        </div>}
         {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {err}</div>}
         {success&&<div style={{marginBottom:12,padding:"10px 14px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,fontSize:13,fontWeight:700,color:"#14532D"}}>{success}</div>}
         <button onClick={handleSubmit} disabled={!!success} style={{...redBtn,opacity:success?0.6:1}}>{mode==="login"?"Đăng nhập":"Đăng ký & Kích hoạt"}</button>
         {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
         {mode==="register"&&<div style={{textAlign:"center",marginTop:12,fontSize:11,fontWeight:600,color:C.red}}>Tài khoản sẽ được kích hoạt tự động ngay sau khi đăng ký</div>}
-        {mode==="register"&&<div style={{textAlign:"center",marginTop:8,fontSize:11,color:C.t3,lineHeight:1.5}}>Bằng việc đăng ký, bạn đồng ý với <span style={{color:C.primary,fontWeight:700}}>📄 điều khoản dịch vụ</span> và <span style={{color:C.primary,fontWeight:700}}>🔒 chính sách bảo mật</span></div>}
       </div>
     </div>
+    {termsModal&&(()=>{
+      const pages=parseContent(appSettings);
+      const page=pages.find(p=>p.id===termsModal)||pages[0];
+      return <div onClick={()=>setTermsModal(null)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,zIndex:200}}>
+        <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,maxWidth:520,width:"100%",maxHeight:"80vh",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px",borderBottom:`1.5px solid ${C.border}`,flexShrink:0}}>
+            <div style={{fontSize:15,fontWeight:800,color:C.t1}}>{page?.label||"Nội dung"}</div>
+            <span onClick={()=>setTermsModal(null)} style={{cursor:"pointer",fontSize:18,color:C.t3}}>✕</span>
+          </div>
+          <div style={{padding:"18px 20px",overflowY:"auto",fontSize:13,color:C.t1,lineHeight:1.6}}>
+            <style>{`.terms-modal-content p{margin:0 0 12px;}.terms-modal-content h1{font-size:18px;margin:14px 0 8px;font-weight:800;}.terms-modal-content h2{font-size:15px;margin:12px 0 6px;font-weight:800;}.terms-modal-content ul,.terms-modal-content ol{margin:0 0 12px;padding-left:20px;}`}</style>
+            {page?.html
+              ? <div className="terms-modal-content" dangerouslySetInnerHTML={{__html:stripEmptyParagraphs(page.html)}}/>
+              : <div style={{textAlign:"center",color:C.t3,padding:"20px 0"}}>Nội dung đang được cập nhật.</div>}
+          </div>
+        </div>
+      </div>;
+    })()}
   </div>;
 }
