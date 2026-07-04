@@ -72,6 +72,14 @@ export function OrdersTab({ isAdmin, currentUserId }) {
       if (oErr) { alert("Cập nhật đơn thất bại: " + oErr.message); setBusyId(null); return; }
 
       await logAction(o.user_id, "confirm_order", `Duyệt đơn ${PKG_LABEL[o.package] || o.package} (${fmtVND(o.amount)}) -> Premium hết hạn ${fmtDT(newEndDate)}`);
+      try {
+        await supabase.rpc("admin_send_push_notification", {
+          p_user_id: o.user_id,
+          p_title: "🎉 Đơn hàng đã được duyệt!",
+          p_body: `Gói ${PKG_LABEL[o.package] || o.package} đã kích hoạt. Premium hết hạn ${fmtDT(newEndDate)}.`,
+          p_url: "/",
+        });
+      } catch (e) { console.error("Push notification error:", e); }
       loadOrders(); loadStats();
     } catch (e) { console.error(e); alert("Có lỗi xảy ra"); }
     setBusyId(null);
