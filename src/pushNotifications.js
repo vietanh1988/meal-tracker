@@ -20,6 +20,23 @@ export function getPushPermission() {
   return Notification.permission; // "granted" | "denied" | "default"
 }
 
+// Kiểm tra trạng thái thật: permission + có subscription đang sống hay không
+// (Notification.permission="granted" không có nghĩa là subscription vẫn còn hợp lệ)
+export async function getPushStatus() {
+  if (!isPushSupported()) return "unsupported";
+  const permission = Notification.permission;
+  if (permission === "denied") return "denied";
+  if (permission === "default") return "default";
+  try {
+    const reg = await navigator.serviceWorker.getRegistration("/sw.js");
+    if (!reg) return "default";
+    const sub = await reg.pushManager.getSubscription();
+    return sub ? "granted" : "default";
+  } catch (e) {
+    return "default";
+  }
+}
+
 export async function enablePushNotifications() {
   if (!isPushSupported()) throw new Error("Trình duyệt không hỗ trợ thông báo đẩy");
 
@@ -50,12 +67,16 @@ export async function enablePushNotifications() {
 
 export async function disablePushNotifications() {
   if (!isPushSupported()) return;
-  const reg = await navigator.serviceWorker.getRegistration();
-  if (!reg) return;
-  const sub = await reg.pushManager.getSubscription();
-  if (!sub) return;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration("/sw.js");
+    if (!reg) return;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub) return;
 
-  const endpoint = sub.endpoint;
-  await sub.unsubscribe();
-  try { await supabase.rpc("delete_push_subscription", { p_endpoint: endpoint }); } catch (e) { console.error("delete_push_subscription error:", e); }
+    const endpoint = sub.endpoint;
+    await sub.unsubscribe();
+    try { await supabase.rpc("delete_push_subscription", { p_endpoint: endpoint }); } catch (e) { console.error("delete_push_subscription error:", e); }
+  } catch (e) {
+    console.error("disablePushNotifications error:", e);
+  }
 }

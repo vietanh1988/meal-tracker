@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { C, card, redBtn } from "../theme";
 import { UserAvatar } from "../UserAvatar";
 import { MySubscription } from "./MySubscription";
-import { isPushSupported, getPushPermission, enablePushNotifications, disablePushNotifications } from "../pushNotifications";
+import { isPushSupported, getPushStatus, enablePushNotifications, disablePushNotifications } from "../pushNotifications";
 
 export function AccountTab({user, signOut, isAdmin, profile, mob}){
   const [pushState,setPushState]=useState("checking"); // checking | unsupported | default | granted | denied
@@ -11,7 +11,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob}){
 
   useEffect(()=>{
     if(!isPushSupported()){setPushState("unsupported");return;}
-    setPushState(getPushPermission());
+    getPushStatus().then(setPushState);
   },[]);
 
   const handleEnablePush=async()=>{
@@ -21,7 +21,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob}){
       setPushState("granted");
     }catch(e){
       setPushError(e.message||"Không bật được thông báo");
-      setPushState(getPushPermission());
+      setPushState(await getPushStatus());
     }
     setPushLoading(false);
   };
@@ -29,7 +29,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob}){
   const handleDisablePush=async()=>{
     setPushLoading(true);
     try{ await disablePushNotifications(); }catch(e){ console.error(e); }
-    setPushState(getPushPermission());
+    setPushState(await getPushStatus());
     setPushLoading(false);
   };
 
