@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { C, card, inp } from "../theme";
 import { fmtDate } from "../fmtDate";
+import { parseFeatureFlags } from "./FeatureFlagsTab";
 
 const TARGET_LABEL = { single: "1 user", all: "Tất cả user", premium: "Chỉ Premium" };
 const STATUS_LABEL = { pending: "Đang gửi...", done: "Đã gửi", error: "Lỗi" };
@@ -13,7 +14,8 @@ function fmtDT(iso) {
   try { return fmtDate(new Date(iso)); } catch (e) { return "-"; }
 }
 
-export function NotifyTab({ isAdmin, currentUserId }) {
+export function NotifyTab({ isAdmin, currentUserId, appSettings }) {
+  const pushEnabled = parseFeatureFlags(appSettings).push;
   const [targetType, setTargetType] = useState("single");
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -68,6 +70,7 @@ export function NotifyTab({ isAdmin, currentUserId }) {
   }, [search, targetType]);
 
   const handleSend = async () => {
+    if (!pushEnabled) { alert("Push notification đang bị TẮT trong Feature Flags. Vào tab Feature Flags để bật lại."); return; }
     if (!title.trim()) { alert("Vui lòng nhập tiêu đề"); return; }
     if (targetType === "single" && !selectedUser) { alert("Vui lòng chọn người nhận"); return; }
     const confirmMsg = targetType === "single" ? `Gửi thông báo tới "${selectedUser.username}"?` : targetType === "all" ? "Gửi thông báo tới TẤT CẢ user?" : "Gửi thông báo tới tất cả user Premium?";
@@ -97,6 +100,13 @@ export function NotifyTab({ isAdmin, currentUserId }) {
     <div style={{ ...card, maxWidth: 900, margin: "0 auto" }}>
       <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>Gửi thông báo</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2, marginBottom: 20 }}>Gửi thủ công tới 1 user, tất cả user, hoặc chỉ user Premium</div>
+
+      {!pushEnabled && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: C.redBg, borderRadius: 10, padding: "10px 14px", marginBottom: 16 }}>
+          <span style={{ fontSize: 15 }}>⚠️</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#7F1D1D", lineHeight: 1.5 }}>Push notification đang TẮT trong Feature Flags — không gửi được thông báo nào (kể cả chuông trong-app) cho tới khi bật lại.</span>
+        </div>
+      )}
 
       <div style={{ background: C.surface, borderRadius: 14, border: `1px solid ${C.border}`, padding: 18, marginBottom: 20 }}>
         <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
@@ -131,7 +141,7 @@ export function NotifyTab({ isAdmin, currentUserId }) {
         {flash && <div style={{ marginBottom: 12, padding: "8px 12px", background: C.greenBg, borderRadius: 8, fontSize: 12, fontWeight: 700, color: "#14532D" }}>{flash}</div>}
 
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={handleSend} disabled={sending} style={{ padding: "10px 22px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#36A3FF,#007AFF)", color: "#fff", cursor: "pointer", opacity: sending ? 0.6 : 1 }}>{sending ? "Đang gửi..." : "📨 Gửi thông báo"}</button>
+          <button onClick={handleSend} disabled={sending||!pushEnabled} style={{ padding: "10px 22px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: pushEnabled?"linear-gradient(135deg,#36A3FF,#007AFF)":"#94A3B8", color: "#fff", cursor: (sending||!pushEnabled) ? "default" : "pointer", opacity: sending ? 0.6 : 1 }}>{sending ? "Đang gửi..." : "📨 Gửi thông báo"}</button>
         </div>
       </div>
 

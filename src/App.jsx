@@ -15,7 +15,7 @@ import { BusinessReportTab } from "./adminTabs/BusinessReportTab";
 import { ErrorLogsTab } from "./adminTabs/ErrorLogsTab";
 import { AuditLogTab } from "./adminTabs/AuditLogTab";
 import { NotifyTab } from "./adminTabs/NotifyTab";
-import { FeatureFlagsTab } from "./adminTabs/FeatureFlagsTab";
+import { FeatureFlagsTab, parseFeatureFlags } from "./adminTabs/FeatureFlagsTab";
 import { WeightTab } from "./adminTabs/WeightTab";
 import { AccountTab } from "./adminTabs/AccountTab";
 import { Pill } from "./Pill";
@@ -293,6 +293,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     }
 
     // === STEP 4: AI fallback (món lạ) ===
+    if(!flags.ai_macro){setAiError("Tính năng AI tính macro tự động đang tạm tắt. Món này chưa có trong Kho nội bộ/Cache/USDA, vui lòng nhập tay hoặc thử tên khác.");setAiLoading(false);return;}
     const quota=await checkAndConsumeAiQuota(user?.id,"macro");
     if(!quota.allowed){setAiError(quota.message);setAiLoading(false);return;}
     const foodDesc=stillUncached.map(f=>{
@@ -352,7 +353,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       setAiResult({items:newItems,tip:parsed.tip||"",_cacheEntries:newCacheEntries});
     }catch(err){setAiError(err.message||"Lỗi kết nối AI");console.error(err);}
     finally{setAiLoading(false);}
-  },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey,user]);
+  },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey,user,flags.ai_macro]);
 
   const mealNames=ALL_MEALS.filter(m=>mealConfig[dayType]?.includes(m.id)).map(m=>({id:m.id,l:`${m.icon} ${m.name}`}));
 
@@ -438,11 +439,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="ai"&&<AiTab isAdmin={isAdmin} saveSetting={saveSetting} aiProvider={aiProvider} setAiProvider={setAiProvider} aiModel={aiModel} setAiModel={setAiModel} geminiModel={geminiModel} setGeminiModel={setGeminiModel} gptModel={gptModel} setGptModel={setGptModel} aiConnected={aiConnected} setAiConnected={setAiConnected} claudeKey={claudeKey} setClaudeKey={setClaudeKey} geminiKey={geminiKey} setGeminiKey={setGeminiKey} gptKey={gptKey} setGptKey={setGptKey} usdaKey={usdaKey} setUsdaKey={setUsdaKey}/>}
     {section==="subscription_settings"&&isAdmin&&<SubscriptionSettingsTab isAdmin={isAdmin}/>}
     {section==="users"&&isAdmin&&<UsersTab isAdmin={isAdmin} currentUserId={user?.id}/>}
-    {section==="orders"&&isAdmin&&<OrdersTab isAdmin={isAdmin} currentUserId={user?.id}/>}
+    {section==="orders"&&isAdmin&&<OrdersTab isAdmin={isAdmin} currentUserId={user?.id} appSettings={appSettings}/>}
     {section==="report_biz"&&isAdmin&&<BusinessReportTab isAdmin={isAdmin}/>}
     {section==="error_logs"&&isAdmin&&<ErrorLogsTab isAdmin={isAdmin}/>}
     {section==="audit_log"&&isAdmin&&<AuditLogTab isAdmin={isAdmin}/>}
-    {section==="notify"&&isAdmin&&<NotifyTab isAdmin={isAdmin} currentUserId={user?.id}/>}
+    {section==="notify"&&isAdmin&&<NotifyTab isAdmin={isAdmin} currentUserId={user?.id} appSettings={appSettings}/>}
     {section==="feature_flags"&&isAdmin&&<FeatureFlagsTab appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob}/>}
@@ -504,6 +505,7 @@ export default function App(){
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id,loading);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
+  const flags=parseFeatureFlags(appSettings);
   const macro=calcMacro(profile||defaultProfile);
   const [macroBanner,setMacroBanner]=useState(null);
   const prevCalRef=useRef(null);
@@ -598,8 +600,8 @@ export default function App(){
     <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
     {/* AI Coach FAB — only on dashboard */}
     <style>{`@keyframes fabRedGlow{0%,100%{box-shadow:0 4px 14px rgba(0,122,255,0.4),0 0 0 0 rgba(239,68,68,0.35);}50%{box-shadow:0 4px 14px rgba(0,122,255,0.4),0 0 0 8px rgba(239,68,68,0);}}`}</style>
-    {!showAICoach&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:100,right:14,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",zIndex:98,cursor:"pointer",transition:"opacity 0.25s ease, transform 0.25s ease",opacity:aiFabHidden?0:1,transform:aiFabHidden?"translateY(20px) scale(0.85)":"translateY(0) scale(1)",pointerEvents:aiFabHidden?"none":"auto",animation:aiFabHidden?"none":"fabRedGlow 2s ease-in-out infinite"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>Fipilot AI</span></div>}
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
+    {flags.ai_chat&&!showAICoach&&<div onClick={()=>setShowAICoach(true)} style={{position:"fixed",bottom:100,right:14,width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",zIndex:98,cursor:"pointer",transition:"opacity 0.25s ease, transform 0.25s ease",opacity:aiFabHidden?0:1,transform:aiFabHidden?"translateY(20px) scale(0.85)":"translateY(0) scale(1)",pointerEvents:aiFabHidden?"none":"auto",animation:aiFabHidden?"none":"fabRedGlow 2s ease-in-out infinite"}}><span style={{fontSize:20}}>✨</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>Fipilot AI</span></div>}
+    {flags.ai_chat&&showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={mobTodayData} mob={true} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:99,background:"rgba(255,255,255,0.97)",borderTop:"0.5px solid rgba(0,0,0,0.12)",display:"flex",paddingTop:6,paddingBottom:"max(18px, env(safe-area-inset-bottom, 18px))"}}>
       {[{id:"dashboard",label:"Tổng quan",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>},{id:"meals",label:"Bữa ăn",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>},{id:"weight",label:"Cân nặng",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="78" width="80" height="10" rx="5" fill={c}/><rect x="44" y="28" width="8" height="52" rx="4" fill={c}/><rect x="12" y="24" width="72" height="8" rx="4" fill={c}/><rect x="22" y="24" width="4" height="18" rx="2" fill={c}/><rect x="70" y="24" width="4" height="18" rx="2" fill={c}/><rect x="10" y="40" width="28" height="8" rx="4" fill={c}/><rect x="58" y="40" width="28" height="8" rx="4" fill={c}/><circle cx="48" cy="16" r="8" fill={c}/></svg>},{id:"report",label:"Báo cáo",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>},{id:"settings",label:"Cài đặt",svg:(c)=><svg viewBox="0 0 96 96" width={28} height={28}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>}].map(t=>{const a=tab===t.id;return <div key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"6px 0"}}>{t.svg(a?"url(#navG)":"#A0A0A0")}<span style={{fontSize:10,fontWeight:a?700:500,color:a?"#007AFF":"#8E8E93"}}>{t.label}</span></div>;})}
     </div>
@@ -680,7 +682,7 @@ export default function App(){
           {tab!=="meals"&&<div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayManual("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayManual("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>}
           <div style={{width:1,height:24,background:C.border}}/>
           <style>{`@keyframes fipilotRedGlow{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.35);}50%{box-shadow:0 0 0 8px rgba(239,68,68,0);}}@keyframes fipilotShake{0%,91%,100%{transform:translateX(0);}92%{transform:translateX(-2px);}93%{transform:translateX(2px);}94%{transform:translateX(-2px);}95%{transform:translateX(2px);}96%{transform:translateX(-1px);}97%{transform:translateX(1px);}98%,99%{transform:translateX(0);}}`}</style>
-          <button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",animation:"fipilotRedGlow 2s ease-in-out infinite, fipilotShake 4s ease-in-out infinite"}}>✨ Fipilot AI</button>
+          {flags.ai_chat&&<button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",animation:"fipilotRedGlow 2s ease-in-out infinite, fipilotShake 4s ease-in-out infinite"}}>✨ Fipilot AI</button>}
           <NotificationBell appSettings={appSettings} userId={user?.id}/>
         </div>
       </header>
@@ -758,7 +760,7 @@ export default function App(){
         {tab==="feature_flags_s"&&<AdminPanel key="feature_flags" {...adminP} forcedSection="settings" initialSection="feature_flags" hidePills/>}
       </main>
     </div>
-    {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
+    {flags.ai_chat&&showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
   </div>;
 
 }

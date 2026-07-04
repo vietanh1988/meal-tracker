@@ -3,8 +3,10 @@ import { C, card, redBtn } from "../theme";
 import { UserAvatar } from "../UserAvatar";
 import { MySubscription } from "./MySubscription";
 import { isPushSupported, getPushStatus, enablePushNotifications, disablePushNotifications } from "../pushNotifications";
+import { parseFeatureFlags } from "./FeatureFlagsTab";
 
 export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
+  const pushFeatureEnabled = parseFeatureFlags(appSettings).push;
   const [pushState,setPushState]=useState("checking"); // checking | unsupported | default | granted | denied
   const [pushLoading,setPushLoading]=useState(false);
   const [pushError,setPushError]=useState("");
@@ -69,7 +71,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
           </div>
         </div>
       </div>
-      <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
+      {pushFeatureEnabled&&<div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:pushState==="unsupported"?0:10}}>
           <div style={{width:32,height:32,borderRadius:8,background:C.blueBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>🔔</div>
           <div style={{flex:1}}>
@@ -83,7 +85,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
         {(pushState==="default")&&<button disabled={pushLoading} onClick={handleEnablePush} style={{width:"100%",padding:"9px",borderRadius:8,border:"none",background:C.primary,color:"#fff",fontSize:13,fontWeight:700,cursor:pushLoading?"default":"pointer",opacity:pushLoading?0.6:1}}>{pushLoading?"Đang bật...":"🔔 Bật thông báo đẩy"}</button>}
         {pushState==="granted"&&<button disabled={pushLoading} onClick={handleDisablePush} style={{width:"100%",padding:"9px",borderRadius:8,border:`1.5px solid ${C.border}`,background:"#fff",color:C.t2,fontSize:13,fontWeight:700,cursor:pushLoading?"default":"pointer",opacity:pushLoading?0.6:1}}>{pushLoading?"Đang tắt...":"Tắt thông báo đẩy"}</button>}
         {pushError&&<div style={{fontSize:12,color:C.red,marginTop:6}}>{pushError}</div>}
-      </div>
+      </div>}
       <div style={!mob?{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}:{}}>
       <button onClick={()=>{if(signOut)signOut();}} style={{...redBtn,background:"linear-gradient(135deg,#EF4444,#DC2626)",color:"#fff",border:"none"}}>🚪 Đăng xuất</button>
       <button onClick={()=>{

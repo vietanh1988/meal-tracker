@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { C, card, inp } from "../theme";
 import { fmtDate } from "../fmtDate";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { parseFeatureFlags } from "./FeatureFlagsTab";
 
 const PKG_LABEL = { "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
 const PKG_MONTHS = { "3m": 3, "6m": 6, "12m": 12 };
@@ -20,7 +21,8 @@ function fmtDT(iso) {
   try { return fmtDate(new Date(iso)); } catch (e) { return "-"; }
 }
 
-export function OrdersTab({ isAdmin, currentUserId }) {
+export function OrdersTab({ isAdmin, currentUserId, appSettings }) {
+  const pushEnabled = parseFeatureFlags(appSettings).push;
   const mob = useIsMobile();
   const [stats, setStats] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -75,14 +77,16 @@ export function OrdersTab({ isAdmin, currentUserId }) {
       if (oErr) { alert("Cập nhật đơn thất bại: " + oErr.message); setBusyId(null); return; }
 
       await logAction(o.user_id, "confirm_order", `Duyệt đơn ${PKG_LABEL[o.package] || o.package} (${fmtVND(o.amount)}) -> Premium hết hạn ${fmtDT(newEndDate)}`);
-      try {
-        await supabase.rpc("admin_send_push_notification", {
-          p_user_id: o.user_id,
-          p_title: "🎉 Đơn hàng đã được duyệt!",
-          p_body: `Gói ${PKG_LABEL[o.package] || o.package} đã kích hoạt. Premium hết hạn ${fmtDT(newEndDate)}.`,
-          p_url: "/",
-        });
-      } catch (e) { console.error("Push notification error:", e); }
+      if (pushEnabled) {
+        try {
+          await supabase.rpc("admin_send_push_notification", {
+            p_user_id: o.user_id,
+            p_title: "🎉 Đơn hàng đã được duyệt!",
+            p_body: `Gói ${PKG_LABEL[o.package] || o.package} đã kích hoạt. Premium hết hạn ${fmtDT(newEndDate)}.`,
+            p_url: "/",
+          });
+        } catch (e) { console.error("Push notification error:", e); }
+      }
       loadOrders(); loadStats();
     } catch (e) { console.error(e); alert("Có lỗi xảy ra"); }
     setBusyId(null);
