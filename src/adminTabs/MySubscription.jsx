@@ -209,9 +209,7 @@ export function MySubscription({ userId, mob, isAdmin }) {
               <span style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>Số tài khoản</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 16, fontWeight: 900, color: C.t1, fontFamily: "monospace", letterSpacing: "0.02em" }}>{settings?.bank_account || "-"}</span>
-                <button onClick={copyAccountNumber} aria-label="Copy số tài khoản" style={{ width: 30, height: 30, padding: 0, border: `1px solid ${C.border}`, borderRadius: 8, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  {copiedAcc ? "✓" : "📋"}
-                </button>
+                <button onClick={copyAccountNumber} style={{ padding: "6px 14px", fontSize: 12, fontWeight: 800, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>{copiedAcc ? "✓ Đã copy" : "Copy"}</button>
               </div>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0" }}>
