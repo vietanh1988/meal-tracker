@@ -1,4 +1,5 @@
 import { Component } from "react";
+import { supabase } from "./lib/supabase";
 import { C, card, redBtn } from "./theme";
 
 // Bọc quanh toàn bộ <App/> — nếu 1 component con lỗi lúc render (runtime error),
@@ -17,6 +18,17 @@ export class ErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     console.error("[ErrorBoundary] Lỗi runtime bị chặn:", error, info?.componentStack);
+    try {
+      supabase.rpc("log_client_error", {
+        p_message: error?.message || String(error),
+        p_stack: error?.stack || null,
+        p_component_stack: info?.componentStack || null,
+        p_url: window.location.href,
+        p_user_agent: navigator.userAgent,
+      }).then(({ error: rpcError }) => {
+        if (rpcError) console.error("[ErrorBoundary] Ghi log lỗi thất bại:", rpcError);
+      });
+    } catch (e) { console.error("[ErrorBoundary] Không gọi được log_client_error:", e); }
   }
 
   render() {
