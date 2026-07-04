@@ -13,6 +13,7 @@ import { OrdersTab } from "./adminTabs/OrdersTab";
 import { MealsTab } from "./adminTabs/MealsTab";
 import { BusinessReportTab } from "./adminTabs/BusinessReportTab";
 import { ErrorLogsTab } from "./adminTabs/ErrorLogsTab";
+import { AuditLogTab } from "./adminTabs/AuditLogTab";
 import { WeightTab } from "./adminTabs/WeightTab";
 import { AccountTab } from "./adminTabs/AccountTab";
 import { Pill } from "./Pill";
@@ -432,6 +433,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="orders"&&isAdmin&&<OrdersTab isAdmin={isAdmin} currentUserId={user?.id}/>}
     {section==="report_biz"&&isAdmin&&<BusinessReportTab isAdmin={isAdmin}/>}
     {section==="error_logs"&&isAdmin&&<ErrorLogsTab isAdmin={isAdmin}/>}
+    {section==="audit_log"&&isAdmin&&<AuditLogTab isAdmin={isAdmin}/>}
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob}/>}
 
@@ -614,6 +616,7 @@ export default function App(){
           {id:"subscription_settings_s",l:"Gói cước",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="qi3" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="55%" stopColor={a?"#0050FF":"#64748B"}/><stop offset="100%" stopColor={a?"#DC2626":"#64748B"}/></linearGradient></defs><circle cx="48" cy="48" r="42" fill="url(#qi3)"/><path d="M48 22 L54 42 L74 42 L58 54 L64 74 L48 62 L32 74 L38 54 L22 42 L42 42 Z" fill="white" opacity="0.9"/></svg>},
           {id:"report_biz_s",l:"Báo cáo kinh doanh",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="qi6" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="55%" stopColor={a?"#0050FF":"#64748B"}/><stop offset="100%" stopColor={a?"#DC2626":"#64748B"}/></linearGradient></defs><rect x="10" y="10" width="76" height="76" rx="12" fill="url(#qi6)"/><rect x="24" y="52" width="10" height="24" rx="3" fill="white"/><rect x="43" y="38" width="10" height="38" rx="3" fill="white" opacity="0.85"/><rect x="62" y="26" width="10" height="50" rx="3" fill="white" opacity="0.7"/></svg>},
           {id:"error_logs_s",l:"Lỗi hệ thống",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="qi7" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="55%" stopColor={a?"#0050FF":"#64748B"}/><stop offset="100%" stopColor={a?"#DC2626":"#64748B"}/></linearGradient></defs><circle cx="48" cy="48" r="42" fill="url(#qi7)"/><rect x="43" y="26" width="10" height="34" rx="5" fill="white"/><circle cx="48" cy="70" r="6" fill="white"/></svg>},
+          {id:"audit_log_s",l:"Nhật ký hoạt động",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="qi8" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="55%" stopColor={a?"#0050FF":"#64748B"}/><stop offset="100%" stopColor={a?"#DC2626":"#64748B"}/></linearGradient></defs><rect x="14" y="8" width="68" height="80" rx="10" fill="url(#qi8)"/><rect x="26" y="26" width="44" height="6" rx="3" fill="white" opacity="0.85"/><rect x="26" y="42" width="44" height="6" rx="3" fill="white" opacity="0.6"/><rect x="26" y="58" width="30" height="6" rx="3" fill="white" opacity="0.4"/></svg>},
         ];
         const open=adminGrpOpen.all;
         return <div style={{marginTop:16}}>
@@ -713,6 +716,7 @@ export default function App(){
         {tab==="orders_s"&&<AdminPanel key="orders" {...adminP} forcedSection="settings" initialSection="orders" signOut={signOut} user={user} hidePills/>}
         {tab==="report_biz_s"&&<AdminPanel key="report_biz" {...adminP} forcedSection="settings" initialSection="report_biz" signOut={signOut} user={user} hidePills/>}
         {tab==="error_logs_s"&&<AdminPanel key="error_logs" {...adminP} forcedSection="settings" initialSection="error_logs" hidePills/>}
+        {tab==="audit_log_s"&&<AdminPanel key="audit_log" {...adminP} forcedSection="settings" initialSection="audit_log" hidePills/>}
       </main>
     </div>
     {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
