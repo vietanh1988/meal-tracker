@@ -29,6 +29,7 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
   const [activeTab, setActiveTab] = useState("tos");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
+  const [htmlMode, setHtmlMode] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const content = (() => {
@@ -39,6 +40,7 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
 
   const startEdit = () => {
     setDraft(content[activeTab] || "");
+    setHtmlMode(false);
     setEditing(true);
   };
 
@@ -90,10 +92,17 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
 
       {editing && !mob && (
         <div>
-          <div style={{ background: "#fff", borderRadius: 10, overflow: "hidden", border: `1.5px solid ${C.primary}`, marginBottom: 14 }}>
-            <style>{`.ql-editor{min-height:220px;font-size:14px;}`}</style>
-            <ReactQuill theme="snow" value={draft} onChange={setDraft} modules={QUILL_MODULES} style={{ minHeight: 260 }} />
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+            <button onClick={() => setHtmlMode(v => !v)} style={{ padding: "6px 14px", fontSize: 12, fontWeight: 700, borderRadius: 8, border: `1px solid ${C.border}`, background: htmlMode ? C.blueBg : "#fff", color: htmlMode ? C.primary : C.t2, cursor: "pointer", fontFamily: "inherit" }}>{htmlMode ? "🎨 Chuyển sang trực quan" : "🔤 Chuyển sang mã HTML"}</button>
           </div>
+          {htmlMode ? (
+            <textarea value={draft} onChange={e => setDraft(e.target.value)} placeholder="Dán mã HTML từ WordPress vào đây..." style={{ width: "100%", minHeight: 300, boxSizing: "border-box", padding: 14, fontSize: 12, fontFamily: "monospace", border: `1.5px solid ${C.primary}`, borderRadius: 10, color: C.t1, resize: "vertical", marginBottom: 14 }} />
+          ) : (
+            <div style={{ background: "#fff", borderRadius: 10, overflow: "hidden", border: `1.5px solid ${C.primary}`, marginBottom: 14 }}>
+              <style>{`.ql-editor{min-height:220px;font-size:14px;}`}</style>
+              <ReactQuill theme="snow" value={draft} onChange={setDraft} modules={QUILL_MODULES} style={{ minHeight: 260 }} />
+            </div>
+          )}
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <button onClick={() => setEditing(false)} style={{ padding: "8px 18px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: `1.5px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer", fontFamily: "inherit" }}>Hủy</button>
             <button onClick={saveEdit} disabled={saving} style={{ padding: "8px 18px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: "none", background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer", fontFamily: "inherit", opacity: saving ? 0.6 : 1 }}>{saving ? "Đang lưu..." : "💾 Lưu"}</button>
