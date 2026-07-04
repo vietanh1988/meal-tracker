@@ -33,16 +33,9 @@ self.addEventListener("push", (event) => {
   };
 
   event.waitUntil(
-    Promise.all([
-      self.registration.showNotification(title, options)
-        .then(() => console.log("[SW] showNotification succeeded"))
-        .catch((e) => console.error("[SW] showNotification FAILED:", e)),
-      self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-        clientList.forEach((client) => {
-          client.postMessage({ type: "fipilot-push", title, body: data.body || "", url: data.url || "/", ts: Date.now() });
-        });
-      }),
-    ])
+    self.registration.showNotification(title, options)
+      .then(() => console.log("[SW] showNotification succeeded"))
+      .catch((e) => console.error("[SW] showNotification FAILED:", e))
   );
 });
 

@@ -561,6 +561,7 @@ export default function App(){
 
   // ========== MOBILE ==========
   if(mob) return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:"0 10px 10px 10px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
+    <div style={{position:"fixed",top:"calc(env(safe-area-inset-top, 8px) + 8px)",right:14,zIndex:99}}><PushBell userId={user?.id}/></div>
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:100}}>
     {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={wrappedSetProfile} macro={macro} getMeals={getMeals} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner}/>}
     {tab==="weight"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" initialSection="weight" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates}/>}
@@ -626,7 +627,7 @@ export default function App(){
           <div style={{width:1,height:24,background:C.border}}/>
           <style>{`@keyframes fipilotPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,122,255,0.45);}50%{box-shadow:0 0 0 8px rgba(0,122,255,0);}}`}</style>
           <button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",animation:"fipilotPulse 2s ease-in-out infinite"}}>✨ Fipilot AI</button>
-          <PushBell/>
+          <PushBell userId={user?.id}/>
           <NotiBell appSettings={appSettings}/>
         </div>
       </header>
