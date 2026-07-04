@@ -2,6 +2,29 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 
+const REFUSAL_MESSAGE = "Mình không thể đưa ra tư vấn dành riêng cho các bệnh lý như tiểu đường, tăng huyết áp, bệnh thận... Nếu bạn đang điều trị hoặc có bệnh nền, hãy tham khảo bác sĩ hoặc chuyên gia dinh dưỡng nhé. Mình vẫn có thể hỗ trợ theo dõi calo, protein, carb, fat và xây dựng thói quen ăn uống lành mạnh! 💪";
+
+// Lớp chặn CỨNG bằng từ khoá — chạy TRƯỚC khi gọi AI, không phụ thuộc AI tự phán đoán.
+// Đây là lưới an toàn đầu tiên; systemPrompt gửi cho AI vẫn giữ nguyên làm lưới thứ 2
+// cho các cách hỏi không trúng đúng từ khoá (viết tắt, nói vòng...).
+const HEALTH_KEYWORDS = [
+  "tiểu đường","đái tháo đường","cao huyết áp","huyết áp cao","tăng huyết áp",
+  "bệnh gan","gan nhiễm mỡ","viêm gan","xơ gan",
+  "bệnh thận","suy thận","sỏi thận",
+  "ung thư","khối u",
+  "bệnh tim","tim mạch","nhồi máu cơ tim","suy tim",
+  "gout","gút","axit uric",
+  "cholesterol","mỡ máu","máu nhiễm mỡ",
+  "mang thai","có bầu","cho con bú","thai kỳ",
+  "trẻ em","trẻ sơ sinh","trẻ nhỏ",
+  "chấn thương","phục hồi chấn thương","đau khớp","thoát vị đĩa đệm",
+];
+
+function containsHealthKeyword(text) {
+  const normalized = (text || "").toLowerCase();
+  return HEALTH_KEYWORDS.some(k => normalized.includes(k));
+}
+
 export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId}){
   const [messages,setMessages]=useState([]);
   const [input,setInput]=useState("");
@@ -175,13 +198,13 @@ PHONG CÁCH:
 🏋️ Tập luyện: bài tập gym, lịch tập, cardio, warm up/cool down, set/rep
 
 KHÔNG ĐƯỢC PHÉP (từ chối lịch sự, khuyên gặp bác sĩ):
-🚫 Bệnh lý (viêm gan, tiểu đường, gout, tim mạch, thận...)
+🚫 Bệnh lý bất kỳ, kể cả không có trong danh sách này: tiểu đường, cao huyết áp/tăng huyết áp, bệnh gan/gan nhiễm mỡ/viêm gan, bệnh thận/suy thận, ung thư, tim mạch/bệnh tim, gout/gút, cholesterol/mỡ máu cao, và mọi bệnh mãn tính khác
 🚫 Kê đơn thuốc, thực phẩm chức năng liều cao
 🚫 Chẩn đoán triệu chứng, đau nhức
 🚫 Phụ nữ mang thai, cho con bú, trẻ em dưới 16
 🚫 Tập khi chấn thương, phục hồi chấn thương
 
-KHI TỪ CHỐI: "Với vấn đề [X], anh/chị nên gặp bác sĩ/chuyên gia để được tư vấn. Mình chỉ tư vấn dinh dưỡng và tập luyện cho người khỏe mạnh."
+KHI TỪ CHỐI, dùng đúng câu này: "${REFUSAL_MESSAGE}"
 
 VÍ DỤ TRẢ LỜI ĐÚNG:
 - User hỏi "Bổ sung gì?": Đọc HÔM NAY thiếu bao nhiêu cal → chọn từ KHO MÓN ĂN → "Anh thêm 200g ức gà luộc (330 cal, P:62g) + 1 quả chuối (89 cal) là đủ!"
@@ -202,6 +225,16 @@ ${buildContext()}`;
 
   const sendMessage=async(text)=>{
     if(!text.trim()||loading)return;
+
+    // LỚP CHẶN CỨNG — quét từ khoá TRƯỚC khi gọi AI, không tốn quota, không phụ thuộc AI phán đoán
+    if(containsHealthKeyword(text)){
+      setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:REFUSAL_MESSAGE}]);
+      setInput("");
+      saveMsg("user",text);
+      saveMsg("assistant",REFUSAL_MESSAGE);
+      return;
+    }
+
     if(!isAdmin){
       const quota=await checkAndConsumeAiQuota(userId,"chat");
       if(!quota.allowed){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:quota.message}]);return;}
