@@ -98,8 +98,8 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
           <div style={{ fontSize: mob ? 17 : 16, fontWeight: 800, color: C.t1 }}>Hạng thành viên</div>
         </div>
         <div style={{ background: C.greenBg, borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#14532D" }}>🎁 Fipilot AI đang miễn phí hoàn toàn</div>
-          <div style={{ fontSize: 12, color: "#14532D", marginTop: 4, lineHeight: 1.5 }}>Chưa thu phí, chưa có lộ trình thu phí ở thời điểm hiện tại. Cứ dùng thoải mái nhé!</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#14532D" }}>🎁 Fipilot AI hiện đang miễn phí 100%.</div>
+          <div style={{ fontSize: 12, color: "#14532D", marginTop: 4, lineHeight: 1.5 }}>Chúng mình chưa có kế hoạch thu phí trong thời gian tới. Hãy thoải mái trải nghiệm và góp ý để cùng xây dựng Fipilot AI ngày một tốt hơn! 💙</div>
         </div>
       </div>
     );
