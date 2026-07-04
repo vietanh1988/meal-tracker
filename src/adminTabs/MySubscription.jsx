@@ -31,6 +31,8 @@ export function MySubscription({ userId, mob, isAdmin }) {
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedAcc, setCopiedAcc] = useState(false);
+  const [orderHistory, setOrderHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   const seenKey = (id) => `sub_order_seen_${id}`;
 
@@ -38,13 +40,15 @@ export function MySubscription({ userId, mob, isAdmin }) {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [{ data: p }, { data: s }, { data: latestOrder }] = await Promise.all([
+      const [{ data: p }, { data: s }, { data: orders }] = await Promise.all([
         supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_chat_count_today").eq("id", userId).single(),
         supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
-        supabase.from("orders").select("id,package,status,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("orders").select("id,package,amount,status,created_at,confirmed_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
       ]);
       setSub(p || null);
       setSettings(s || null);
+      setOrderHistory(orders || []);
+      const latestOrder = orders && orders[0];
       if (latestOrder?.status === "pending") {
         setPendingOrder(latestOrder);
       } else if (latestOrder && (latestOrder.status === "confirmed" || latestOrder.status === "rejected")) {
@@ -74,6 +78,7 @@ export function MySubscription({ userId, mob, isAdmin }) {
       }).select().single();
       if (error) { alert("Gửi yêu cầu thất bại: " + error.message); setSubmitting(false); return; }
       setPendingOrder(data);
+      setOrderHistory(prev => [data, ...prev]);
       setShowPicker(false);
     } catch (e) { console.error(e); alert("Gửi yêu cầu thất bại"); }
     setSubmitting(false);
@@ -122,6 +127,10 @@ export function MySubscription({ userId, mob, isAdmin }) {
       setTimeout(() => setCopiedAcc(false), 2000);
     } catch (e) {}
   };
+
+  const STATUS_LABEL = { pending: "Chờ duyệt", confirmed: "Đã duyệt", rejected: "Đã từ chối" };
+  const STATUS_BG = { pending: C.goldBg, confirmed: C.greenBg, rejected: C.redBg };
+  const STATUS_FG = { pending: "#92400E", confirmed: "#14532D", rejected: "#7F1D1D" };
 
   return (
     <div style={{ background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` }}>
@@ -235,6 +244,31 @@ export function MySubscription({ userId, mob, isAdmin }) {
           <button onClick={handleConfirmPaid} disabled={submitting} style={{ width: "100%", padding: "10px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer", opacity: submitting ? 0.6 : 1 }}>
             {submitting ? "Đang gửi..." : "✓ Tôi đã chuyển khoản"}
           </button>
+        </div>
+      )}
+
+      {!isAdmin && orderHistory.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          <div onClick={() => setShowHistory(v => !v)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", padding: "8px 2px" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>📜 Lịch sử đơn hàng ({orderHistory.length})</span>
+            <span style={{ fontSize: 12, color: C.t3, transform: showHistory ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
+          </div>
+          {showHistory && (
+            <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+              {orderHistory.map((o, i) => (
+                <div key={o.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderBottom: i < orderHistory.length - 1 ? `1px solid ${C.border}` : "none" }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{PKG_LABEL[o.package] || o.package} · {fmtVND(o.amount)}</div>
+                    <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>
+                      {fmtDMY(o.created_at ? o.created_at.slice(0, 10) : null)}
+                      {o.status === "confirmed" && o.confirmed_at ? ` · duyệt ${fmtDMY(o.confirmed_at.slice(0, 10))}` : ""}
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: STATUS_BG[o.status], color: STATUS_FG[o.status], flexShrink: 0 }}>{STATUS_LABEL[o.status] || o.status}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
