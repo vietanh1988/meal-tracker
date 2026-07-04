@@ -462,7 +462,6 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
 
 export default function App(){
-  if(typeof window!=="undefined"&&window.location.search.includes("test-error")){throw new Error("TEST: Lỗi giả để kiểm tra Error Boundary — an toàn, sẽ gỡ sau khi test xong");}
   const {user,loading,signOut,isPasswordRecovery}=useAuth();
   useEffect(()=>{
     if(!user?.id)return;
