@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
+import { supabase } from "./lib/supabase";
 import { C, card, inp, lbl, redBtn } from "./theme";
 import { parseContent, stripEmptyParagraphs } from "./TermsPage";
 
@@ -7,6 +8,7 @@ export function LoginScreen({onLogin,appSettings}){
   const [user,setUser]=useState("");
   const [pass,setPass]=useState("");
   const [email,setEmail]=useState("");
+  const [showPass,setShowPass]=useState(false);
   const [forgotEmail,setForgotEmail]=useState("");
   const [forgotSent,setForgotSent]=useState(false);
   const [err,setErr]=useState("");
@@ -15,7 +17,37 @@ export function LoginScreen({onLogin,appSettings}){
   const [saving,setSaving]=useState(false);
   const [termsModal,setTermsModal]=useState(null); // "tos" | "privacy" | null
   const [agreedTerms,setAgreedTerms]=useState(false);
+  const [usernameStatus,setUsernameStatus]=useState(null); // null | "checking" | "taken" | "ok"
+  const [emailStatus,setEmailStatus]=useState(null); // null | "checking" | "taken" | "ok"
   const {signIn,signUp,sendPasswordReset}=useAuth();
+
+  // Check username realtime (chỉ khi đăng ký)
+  useEffect(()=>{
+    if(mode!=="register"||!user.trim()){setUsernameStatus(null);return;}
+    setUsernameStatus("checking");
+    const t=setTimeout(async()=>{
+      try{
+        const {data,error}=await supabase.rpc("check_username_available",{p_username:user.trim()});
+        if(error){setUsernameStatus(null);return;}
+        setUsernameStatus(data?"ok":"taken");
+      }catch(e){setUsernameStatus(null);}
+    },500);
+    return()=>clearTimeout(t);
+  },[user,mode]);
+
+  // Check email realtime (chỉ khi đăng ký)
+  useEffect(()=>{
+    if(mode!=="register"||!email.trim()||!email.includes("@")){setEmailStatus(null);return;}
+    setEmailStatus("checking");
+    const t=setTimeout(async()=>{
+      try{
+        const {data,error}=await supabase.rpc("check_email_available",{p_email:email.trim()});
+        if(error){setEmailStatus(null);return;}
+        setEmailStatus(data?"ok":"taken");
+      }catch(e){setEmailStatus(null);}
+    },500);
+    return()=>clearTimeout(t);
+  },[email,mode]);
 
   const handleSubmit=async()=>{
     setErr("");setSuccess("");
@@ -24,6 +56,8 @@ export function LoginScreen({onLogin,appSettings}){
     }else{
       if(!user.trim()||!email.trim()||!pass.trim()){setErr("Vui lòng nhập đầy đủ");return;}
       if(!email.includes("@")){setErr("Vui lòng nhập email hợp lệ");return;}
+      if(usernameStatus==="taken"){setErr("Tên hiển thị đã được sử dụng");return;}
+      if(emailStatus==="taken"){setErr("Email đã tồn tại");return;}
       if(!agreedTerms){setErr("Bạn cần đồng ý với điều khoản dịch vụ và chính sách bảo mật để đăng ký");return;}
     }
     if(pass.length<6){setErr("Mật khẩu tối thiểu 6 ký tự");return;}
@@ -100,14 +134,23 @@ export function LoginScreen({onLogin,appSettings}){
         {mode==="register"&&<div style={{marginBottom:12}}>
           <div style={{...lbl,marginBottom:6}}>Tên hiển thị</div>
           <input value={user} onChange={e=>setUser(e.target.value)} placeholder="VD: gymboy63" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+          {usernameStatus==="checking"&&<div style={{fontSize:11,color:C.t3,marginTop:4}}>Đang kiểm tra...</div>}
+          {usernameStatus==="taken"&&<div style={{fontSize:11,color:C.red,marginTop:4,fontWeight:700}}>❌ Tên hiển thị đã được sử dụng</div>}
+          {usernameStatus==="ok"&&<div style={{fontSize:11,color:C.green,marginTop:4,fontWeight:700}}>✓ Có thể dùng</div>}
         </div>}
         <div style={{marginBottom:12}}>
           <div style={{...lbl,marginBottom:6}}>Email</div>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="email@example.com" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+          {mode==="register"&&emailStatus==="checking"&&<div style={{fontSize:11,color:C.t3,marginTop:4}}>Đang kiểm tra...</div>}
+          {mode==="register"&&emailStatus==="taken"&&<div style={{fontSize:11,color:C.red,marginTop:4,fontWeight:700}}>❌ Email đã tồn tại</div>}
+          {mode==="register"&&emailStatus==="ok"&&<div style={{fontSize:11,color:C.green,marginTop:4,fontWeight:700}}>✓ Có thể dùng</div>}
         </div>
         <div style={{marginBottom:mode==="login"?6:16}}>
           <div style={{...lbl,marginBottom:6}}>Mật khẩu</div>
-          <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+          <div style={{position:"relative"}}>
+            <input type={showPass?"text":"password"} value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••" style={{...inp,paddingRight:40}} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
+            <span onClick={()=>setShowPass(v=>!v)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",cursor:"pointer",fontSize:16,userSelect:"none"}}>{showPass?"🙈":"👁️"}</span>
+          </div>
         </div>
         {mode==="login"&&<div style={{textAlign:"right",marginBottom:16}}>
           <span onClick={()=>{setMode("forgot");setErr("");setForgotEmail(email);}} style={{fontSize:12,fontWeight:700,color:C.primary,cursor:"pointer"}}>Quên mật khẩu?</span>
