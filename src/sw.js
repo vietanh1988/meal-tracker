@@ -1,4 +1,14 @@
-// Service Worker cho Web Push Notification — FipilotAI
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from "workbox-precaching";
+import { registerRoute, NavigationRoute } from "workbox-routing";
+
+self.skipWaiting();
+precacheAndRoute(self.__WB_MANIFEST);
+cleanupOutdatedCaches();
+registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html")));
+
+// ============================================================
+// PUSH NOTIFICATION — FipilotAI
+// ============================================================
 self.addEventListener("push", (event) => {
   console.log("[SW] Push event received, has data:", !!event.data);
 
@@ -39,14 +49,4 @@ self.addEventListener("notificationclick", (event) => {
       if (clients.openWindow) return clients.openWindow(url);
     })
   );
-});
-
-self.addEventListener("install", () => {
-  console.log("[SW] Installed");
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  console.log("[SW] Activated");
-  event.waitUntil(clients.claim());
 });
