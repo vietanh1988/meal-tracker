@@ -19,7 +19,7 @@ const QUILL_MODULES = {
   ],
 };
 
-const stripEmptyParagraphs = (html) => (html || "").replace(/<p>(\s*<br\s*\/?>\s*)?<\/p>/g, "");
+const stripEmptyParagraphs = (html) => (html || "").replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/g, "");
 
 // Trang Điều khoản dịch vụ / Chính sách bảo mật / Chính sách hoàn tiền.
 // Nội dung lưu trong appSettings.terms_content (JSON: {tos, privacy, refund} — mỗi field là HTML từ Quill),
