@@ -6,7 +6,7 @@ import { MacroRing } from "./MacroRing";
 import { MealCard } from "./MealCard";
 import { WeightBarChart } from "./WeightBarChart";
 import { UserAvatar } from "./UserAvatar";
-import { NotiBell } from "./NotiBell";
+import { NotificationBell } from "./NotificationBell";
 import { WeightSuggestion } from "./WeightSuggestion";
 
 export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
@@ -102,7 +102,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {new Date().toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
         </div>
       </div>
-      <NotiBell appSettings={appSettings}/>
+      <NotificationBell appSettings={appSettings} userId={user?.id}/>
     </div>}
 
     {/* Hero — White card */}
