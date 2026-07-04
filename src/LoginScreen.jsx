@@ -113,6 +113,7 @@ export function LoginScreen({onLogin}){
         <button onClick={handleSubmit} disabled={!!success} style={{...redBtn,opacity:success?0.6:1}}>{mode==="login"?"Đăng nhập":"Đăng ký & Kích hoạt"}</button>
         {mode==="login"&&<div style={{textAlign:"center",marginTop:12,fontSize:12,fontWeight:600,color:C.t3}}>Chưa có tài khoản? <span onClick={()=>setMode("register")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Đăng ký ngay</span></div>}
         {mode==="register"&&<div style={{textAlign:"center",marginTop:12,fontSize:11,fontWeight:600,color:C.t3}}>Tài khoản sẽ được kích hoạt tự động ngay sau khi đăng ký</div>}
+        {mode==="register"&&<div style={{textAlign:"center",marginTop:8,fontSize:11,color:C.t3,lineHeight:1.5}}>Bằng việc đăng ký, bạn đồng ý với <span style={{color:C.primary,fontWeight:700}}>điều khoản dịch vụ</span> và <span style={{color:C.primary,fontWeight:700}}>chính sách bảo mật</span></div>}
       </div>
     </div>
   </div>;
