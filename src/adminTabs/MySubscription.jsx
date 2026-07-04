@@ -29,6 +29,7 @@ export function MySubscription({ userId, mob, isAdmin }) {
   const [showPicker, setShowPicker] = useState(false);
   const [selectedPkg, setSelectedPkg] = useState("6m");
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const seenKey = (id) => `sub_order_seen_${id}`;
 
@@ -37,7 +38,7 @@ export function MySubscription({ userId, mob, isAdmin }) {
     setLoading(true);
     try {
       const [{ data: p }, { data: s }, { data: latestOrder }] = await Promise.all([
-        supabase.from("profiles").select("tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_chat_count_today").eq("id", userId).single(),
+        supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_chat_count_today").eq("id", userId).single(),
         supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
         supabase.from("orders").select("id,package,status,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
@@ -101,6 +102,16 @@ export function MySubscription({ userId, mob, isAdmin }) {
   const btnStyle = isPremium
     ? { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#EF4444,#DC2626)", color: "#fff", cursor: "pointer" }
     : { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#fff", cursor: "pointer" };
+
+  const transferContent = `FIPILOT ${(sub.username || userId || "").toString().replace(/[^a-zA-Z0-9]/g, "").slice(0, 12).toUpperCase()}`;
+
+  const copyContent = () => {
+    try {
+      navigator.clipboard.writeText(transferContent);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {}
+  };
 
   return (
     <div style={{ background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` }}>
@@ -180,7 +191,15 @@ export function MySubscription({ userId, mob, isAdmin }) {
           </div>
           <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Chuyển khoản tới</div>
           <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{settings?.bank_name || "-"} · {settings?.bank_account || "-"}</div>
-          <div style={{ fontSize: 13, color: C.t2, marginBottom: 14 }}>{settings?.bank_account_name || "-"}</div>
+          <div style={{ fontSize: 13, color: C.t2, marginBottom: 12 }}>{settings?.bank_account_name || "-"}</div>
+
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Nội dung chuyển khoản (bắt buộc)</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.blueBg, border: `1.5px dashed ${C.primary}`, borderRadius: 10, padding: "10px 12px", marginBottom: 6 }}>
+            <div style={{ flex: 1, fontSize: 15, fontWeight: 900, color: C.primary, letterSpacing: "0.03em", fontFamily: "monospace" }}>{transferContent}</div>
+            <button onClick={copyContent} style={{ padding: "6px 12px", fontSize: 12, fontWeight: 700, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", flexShrink: 0 }}>{copied ? "✓ Đã copy" : "Copy"}</button>
+          </div>
+          <div style={{ fontSize: 11, color: C.t3, marginBottom: 14, lineHeight: 1.5 }}>⚠️ Ghi đúng nội dung này khi chuyển khoản để Admin xác nhận đơn nhanh hơn.</div>
+
           <button onClick={handleConfirmPaid} disabled={submitting} style={{ width: "100%", padding: "10px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer", opacity: submitting ? 0.6 : 1 }}>
             {submitting ? "Đang gửi..." : "✓ Tôi đã chuyển khoản"}
           </button>
