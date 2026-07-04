@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { C, card, inp } from "../theme";
 import { fmtDate } from "../fmtDate";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const PKG_LABEL = { "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
 const PKG_MONTHS = { "3m": 3, "6m": 6, "12m": 12 };
 const STATUS_LABEL = { pending: "Chờ duyệt", confirmed: "Đã duyệt", rejected: "Đã từ chối" };
+const STATUS_ICON = { pending: "⏳", confirmed: "✅", rejected: "❌" };
 const STATUS_BG = { pending: "#FEF3C7", confirmed: "#DCFCE7", rejected: "#FEE2E2" };
 const STATUS_FG = { pending: "#92400E", confirmed: "#14532D", rejected: "#7F1D1D" };
 
@@ -19,6 +21,7 @@ function fmtDT(iso) {
 }
 
 export function OrdersTab({ isAdmin, currentUserId }) {
+  const mob = useIsMobile();
   const [stats, setStats] = useState(null);
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
@@ -97,68 +100,106 @@ export function OrdersTab({ isAdmin, currentUserId }) {
 
   if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
 
+  const statusTabs = [["pending", "Chờ duyệt"], ["confirmed", "Đã duyệt"], ["rejected", "Đã từ chối"], ["", "Tất cả"]];
+
   return (
-    <div style={{ ...card, maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>Duyệt đơn hàng</div>
+    <div style={{ ...card, maxWidth: mob ? "100%" : 1100, margin: "0 auto" }}>
+      <div style={{ fontSize: mob ? 18 : 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>📋 Duyệt đơn hàng</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2, marginBottom: 20 }}>User bấm "Tôi đã chuyển khoản" sẽ tạo đơn ở đây, kiểm tra tiền về rồi xác nhận</div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12, marginBottom: 20 }}>
-        <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 14 }}>
-          <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>Đơn chờ duyệt</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#92400E", marginTop: 4 }}>{stats?.pending_count ?? "-"}</div>
+        <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 14, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 20 }}>⏳</span>
+          <div>
+            <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>Đơn chờ duyệt</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#92400E" }}>{stats?.pending_count ?? "-"}</div>
+          </div>
         </div>
-        <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 14 }}>
-          <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>Doanh thu tháng này</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: C.green, marginTop: 4 }}>{fmtVND(stats?.revenue_this_month)}</div>
+        <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 14, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 20 }}>💰</span>
+          <div>
+            <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>Doanh thu tháng này</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: C.green }}>{fmtVND(stats?.revenue_this_month)}</div>
+          </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        {[["pending", "Chờ duyệt"], ["confirmed", "Đã duyệt"], ["rejected", "Đã từ chối"], ["", "Tất cả"]].map(([k, l]) => (
-          <button key={k} onClick={() => setStatus(k)} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1px solid ${status === k ? C.primary : C.border}`, background: status === k ? C.blueBg : "#fff", color: status === k ? C.primary : C.t2, cursor: "pointer" }}>{l}</button>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        {statusTabs.map(([k, l]) => (
+          <button key={k} onClick={() => setStatus(k)} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1px solid ${status === k ? C.primary : C.border}`, background: status === k ? C.blueBg : "#fff", color: status === k ? C.primary : C.t2, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>{l}</button>
         ))}
       </div>
 
-      <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ borderBottom: `1px solid ${C.border}`, background: C.surface }}>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>User</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Gói</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Số tiền</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Trạng thái</th>
-              <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Ngày tạo</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && <tr><td colSpan={6} style={{ padding: 20, textAlign: "center", color: C.t2 }}>Đang tải...</td></tr>}
-            {!loading && orders.length === 0 && <tr><td colSpan={6} style={{ padding: 20, textAlign: "center", color: C.t2 }}>Không có đơn nào</td></tr>}
-            {!loading && orders.map(o => (
-              <tr key={o.id} style={{ borderBottom: `1px solid ${C.border}` }}>
-                <td style={{ padding: "10px 12px" }}>
-                  <div style={{ fontWeight: 700, color: C.t1 }}>{o.username}</div>
+      {loading && <div style={{ padding: 20, textAlign: "center", color: C.t2 }}>Đang tải...</div>}
+      {!loading && orders.length === 0 && <div style={{ padding: 20, textAlign: "center", color: C.t2 }}>Không có đơn nào</div>}
+
+      {!loading && orders.length > 0 && mob && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {orders.map(o => (
+            <div key={o.id} style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: C.t1, fontSize: 14 }}>{o.username}</div>
                   <div style={{ color: C.t3, fontSize: 12 }}>{o.email}</div>
-                </td>
-                <td style={{ padding: "10px 12px", color: C.t1, fontWeight: 600 }}>{PKG_LABEL[o.package] || o.package}</td>
-                <td style={{ padding: "10px 12px", color: C.t1, fontWeight: 700 }}>{fmtVND(o.amount)}</td>
-                <td style={{ padding: "10px 12px" }}><span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: STATUS_BG[o.status], color: STATUS_FG[o.status] }}>{STATUS_LABEL[o.status] || o.status}</span></td>
-                <td style={{ padding: "10px 12px", color: C.t2 }}>{fmtDT(o.created_at)}</td>
-                <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                  {o.status === "pending" ? (
-                    <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                      <button onClick={() => rejectOrder(o)} disabled={busyId === o.id} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Từ chối</button>
-                      <button onClick={() => confirmOrder(o)} disabled={busyId === o.id} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer" }}>{busyId === o.id ? "Đang xử lý..." : "Xác nhận"}</button>
-                    </div>
-                  ) : (
-                    <span style={{ fontSize: 12, color: C.t3 }}>{o.confirmed_by_username ? `bởi ${o.confirmed_by_username}` : ""}</span>
-                  )}
-                </td>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: STATUS_BG[o.status], color: STATUS_FG[o.status], flexShrink: 0, whiteSpace: "nowrap" }}>{STATUS_ICON[o.status]} {STATUS_LABEL[o.status] || o.status}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 4 }}>
+                <span>Gói {PKG_LABEL[o.package] || o.package}</span>
+                <span style={{ fontWeight: 700, color: C.t1 }}>{fmtVND(o.amount)}</span>
+              </div>
+              <div style={{ fontSize: 11, color: C.t3, marginBottom: o.status === "pending" ? 10 : 0 }}>🕐 {fmtDT(o.created_at)}{o.confirmed_by_username ? ` · bởi ${o.confirmed_by_username}` : ""}</div>
+              {o.status === "pending" && (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => rejectOrder(o)} disabled={busyId === o.id} style={{ flex: 1, fontSize: 12, fontWeight: 700, padding: "8px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Từ chối</button>
+                  <button onClick={() => confirmOrder(o)} disabled={busyId === o.id} style={{ flex: 1, fontSize: 12, fontWeight: 700, padding: "8px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer" }}>{busyId === o.id ? "Đang xử lý..." : "✓ Xác nhận"}</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && orders.length > 0 && !mob && (
+        <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${C.border}`, background: C.surface }}>
+                <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>User</th>
+                <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Gói</th>
+                <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Số tiền</th>
+                <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Trạng thái</th>
+                <th style={{ textAlign: "left", padding: "10px 12px", color: C.t2, fontWeight: 700 }}>Ngày tạo</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {orders.map(o => (
+                <tr key={o.id} style={{ borderBottom: `1px solid ${C.border}` }}>
+                  <td style={{ padding: "10px 12px" }}>
+                    <div style={{ fontWeight: 700, color: C.t1 }}>{o.username}</div>
+                    <div style={{ color: C.t3, fontSize: 12 }}>{o.email}</div>
+                  </td>
+                  <td style={{ padding: "10px 12px", color: C.t1, fontWeight: 600 }}>{PKG_LABEL[o.package] || o.package}</td>
+                  <td style={{ padding: "10px 12px", color: C.t1, fontWeight: 700 }}>{fmtVND(o.amount)}</td>
+                  <td style={{ padding: "10px 12px" }}><span style={{ fontSize: 12, fontWeight: 700, padding: "3px 9px", borderRadius: 8, background: STATUS_BG[o.status], color: STATUS_FG[o.status] }}>{STATUS_ICON[o.status]} {STATUS_LABEL[o.status] || o.status}</span></td>
+                  <td style={{ padding: "10px 12px", color: C.t2 }}>{fmtDT(o.created_at)}</td>
+                  <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                    {o.status === "pending" ? (
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                        <button onClick={() => rejectOrder(o)} disabled={busyId === o.id} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Từ chối</button>
+                        <button onClick={() => confirmOrder(o)} disabled={busyId === o.id} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer" }}>{busyId === o.id ? "Đang xử lý..." : "Xác nhận"}</button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 12, color: C.t3 }}>{o.confirmed_by_username ? `bởi ${o.confirmed_by_username}` : ""}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, fontSize: 13, color: C.t2 }}>
         <span>{total > 0 ? `Hiển thị ${page * pageSize + 1}-${Math.min((page + 1) * pageSize, total)} trong ${total}` : ""}</span>

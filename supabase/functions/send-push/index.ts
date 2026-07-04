@@ -90,14 +90,15 @@ Deno.serve(async (req) => {
         totalSent += r.sent;
         totalFailed += Math.max(0, r.total - r.sent);
       }
-      await supabase.from("notification_batches").update({
+      const { error: updateErr } = await supabase.from("notification_batches").update({
         push_sent_count: totalSent,
         push_failed_count: totalFailed,
         status: "done",
         completed_at: new Date().toISOString(),
       }).eq("id", batch_id);
+      if (updateErr) console.error("Cập nhật notification_batches thất bại:", updateErr.message);
 
-      return new Response(JSON.stringify({ sent: totalSent, failed: totalFailed, recipients: user_ids.length }), {
+      return new Response(JSON.stringify({ sent: totalSent, failed: totalFailed, recipients: user_ids.length, update_error: updateErr?.message || null }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
