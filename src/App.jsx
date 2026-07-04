@@ -482,7 +482,7 @@ export default function App(){
   const {user,loading,signOut,isPasswordRecovery}=useAuth();
   useEffect(()=>{
     if(!user?.id)return;
-    const ping=()=>{supabase.rpc("record_user_activity").catch(e=>console.error("record_user_activity error:",e));};
+    const ping=async()=>{try{await supabase.rpc("record_user_activity");}catch(e){console.error("record_user_activity error:",e);}};
     ping(); // gọi ngay lúc mount/đăng nhập
     const interval=setInterval(ping,5*60*1000); // rồi lặp lại mỗi 5 phút khi app còn mở
     return ()=>clearInterval(interval);
