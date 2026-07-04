@@ -88,6 +88,23 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
 
   if (loading || !sub) return null;
 
+  // Khi TẮT bán hàng: user thường chỉ thấy đúng 1 banner, ẩn hết tier/hết hạn/lịch sử đơn cũ
+  // (kể cả dữ liệu test/cũ trong DB) — admin vẫn thấy bình thường để quản lý được.
+  if (!isAdmin && !salesEnabled) {
+    return (
+      <div style={{ background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 9, background: C.greenBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>🎁</div>
+          <div style={{ fontSize: mob ? 17 : 16, fontWeight: 800, color: C.t1 }}>Hạng thành viên</div>
+        </div>
+        <div style={{ background: C.greenBg, borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#14532D" }}>🎁 Fipilot AI đang miễn phí hoàn toàn</div>
+          <div style={{ fontSize: 12, color: "#14532D", marginTop: 4, lineHeight: 1.5 }}>Chưa thu phí, chưa có lộ trình thu phí ở thời điểm hiện tại. Cứ dùng thoải mái nhé!</div>
+        </div>
+      </div>
+    );
+  }
+
   const tier = sub.tier || "free";
   const macroLimit = settings?.free_ai_macro_limit ?? 100;
   const chatLimit = settings?.free_ai_chat_limit ?? 20;
@@ -188,11 +205,6 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
 
       {isAdmin ? (
         <div style={{ background: C.blueBg, borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, fontWeight: 700, color: C.primary }}>👑 Tài khoản Admin — không cần gia hạn</div>
-      ) : !salesEnabled ? (
-        <div style={{ background: C.greenBg, borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#14532D" }}>🎁 Fipilot AI đang miễn phí hoàn toàn</div>
-          <div style={{ fontSize: 12, color: "#14532D", marginTop: 4, lineHeight: 1.5 }}>Chưa thu phí, chưa có lộ trình thu phí ở thời điểm hiện tại. Cứ dùng thoải mái nhé!</div>
-        </div>
       ) : pendingOrder ? (
         <div style={{ background: C.greenBg, borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "#14532D" }}>✓ Đã gửi yêu cầu nâng cấp ({PKG_LABEL[pendingOrder.package] || pendingOrder.package})</div>
