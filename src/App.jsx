@@ -67,6 +67,7 @@ const AppLogo=({size=48,radius,bg})=><img src="/icon-192.png" alt="Fipilot AI" s
 
 
 function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,deleteWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,initialSection,hidePills}){if(!profile||!macro)return null;
+  const flags=parseFeatureFlags(appSettings);
   const mob=useIsMobile();
   const [section,setSection]=useState(initialSection||(forcedSection==="settings"?(mob?null:"profile"):(forcedSection==="profile"?"profile":(forcedSection||"meals"))));
   useEffect(()=>{
