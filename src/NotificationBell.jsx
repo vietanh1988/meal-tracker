@@ -21,15 +21,20 @@ function playDing() {
   } catch (e) {}
 }
 
-// Chuông báo push THỜI GIAN THỰC (đơn hàng duyệt, v.v.) — LƯU VÀO DB (bảng `notifications`),
-// đồng bộ qua Supabase Realtime nên dùng được trên mọi thiết bị (PC + Mobile), không mất
-// khi tải lại trang. Khác với NotiBell (báo "có bản cập nhật app mới").
-export function PushBell({ userId, dark }) {
-  const [items, setItems] = useState([]);
+// Chuông thông báo GỘP — thay thế NotiBell + PushBell cũ (2 chuông tách rời):
+// - Mục "Hoạt động của bạn": push thời gian thực (đơn hàng duyệt...), lưu DB, đồng bộ Realtime
+// - Mục "Cập nhật ứng dụng": thông báo phiên bản mới (giữ nguyên hành vi cũ — bấm để xoá cache & reload)
+export function NotificationBell({ appSettings, userId, dark }) {
+  const [pushItems, setPushItems] = useState([]);
   const [show, setShow] = useState(false);
   const [ringing, setRinging] = useState(false);
   const ref = useRef(null);
   const ringTimeoutRef = useRef(null);
+
+  const updateList = (() => {
+    try { return appSettings?.notifications ? JSON.parse(appSettings.notifications) : []; } catch (e) { return []; }
+  })();
+  const updateHasNew = updateList.some((n) => n.isNew);
 
   useEffect(() => {
     if (!userId) return;
@@ -40,8 +45,8 @@ export function PushBell({ userId, dark }) {
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(20);
-      if (error) { console.error("[PushBell] load notifications error:", error); return; }
-      if (data) setItems(data);
+      if (error) { console.error("[NotificationBell] load notifications error:", error); return; }
+      if (data) setPushItems(data);
     })();
   }, [userId]);
 
@@ -53,7 +58,7 @@ export function PushBell({ userId, dark }) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
         (payload) => {
-          setItems((prev) => [payload.new, ...prev].slice(0, 20));
+          setPushItems((prev) => [payload.new, ...prev].slice(0, 20));
           setRinging(true);
           playDing();
           if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
@@ -61,7 +66,7 @@ export function PushBell({ userId, dark }) {
         }
       )
       .subscribe((status) => {
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") console.error("[PushBell] realtime subscribe failed:", status);
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") console.error("[NotificationBell] realtime subscribe failed:", status);
       });
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
@@ -73,15 +78,23 @@ export function PushBell({ userId, dark }) {
     return () => document.removeEventListener("mousedown", h);
   }, [show]);
 
-  const unreadCount = items.filter((n) => !n.is_read).length;
+  const pushUnreadCount = pushItems.filter((n) => !n.is_read).length;
+  const totalBadge = pushUnreadCount + (updateHasNew ? updateList.filter((n) => n.isNew).length : 0);
 
   const openList = async () => {
     setShow((s) => !s);
-    const unreadIds = items.filter((n) => !n.is_read).map((n) => n.id);
+    const unreadIds = pushItems.filter((n) => !n.is_read).map((n) => n.id);
     if (unreadIds.length > 0) {
-      setItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      try { await supabase.from("notifications").update({ is_read: true }).in("id", unreadIds); } catch (e) { console.error("mark read error:", e); }
+      setPushItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
+      try { await supabase.from("notifications").update({ is_read: true }).in("id", unreadIds); } catch (e) { console.error("[NotificationBell] mark read error:", e); }
     }
+  };
+
+  const clearCacheAndReload = () => {
+    caches.keys().then((names) => Promise.all(names.map((k) => caches.delete(k)))).then(() => {
+      if (navigator.serviceWorker) { navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister())); }
+      window.location.reload(true);
+    });
   };
 
   const fmtTime = (ts) => {
@@ -90,7 +103,7 @@ export function PushBell({ userId, dark }) {
 
   return (
     <div style={{ position: "relative" }} ref={ref}>
-      <style>{`@keyframes pushBellRing{0%,100%{transform:rotate(0)}20%{transform:rotate(18deg)}40%{transform:rotate(-16deg)}60%{transform:rotate(10deg)}80%{transform:rotate(-6deg)}}@keyframes pushBellGlow{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}30%,70%{box-shadow:0 0 0 6px rgba(239,68,68,0.25)}}`}</style>
+      <style>{`@keyframes notifBellRing{0%,100%{transform:rotate(0)}20%{transform:rotate(18deg)}40%{transform:rotate(-16deg)}60%{transform:rotate(10deg)}80%{transform:rotate(-6deg)}}@keyframes notifBellGlow{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}30%,70%{box-shadow:0 0 0 6px rgba(239,68,68,0.25)}}`}</style>
       <div
         onClick={openList}
         style={{
@@ -100,21 +113,21 @@ export function PushBell({ userId, dark }) {
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: dark ? 16 : 18, cursor: "pointer",
           boxShadow: dark ? "none" : "0 1px 4px rgba(0,0,0,0.06)",
-          animation: ringing ? "pushBellRing 0.6s ease-in-out 0s 2, pushBellGlow 2s ease-in-out" : "none",
+          animation: ringing ? "notifBellRing 0.6s ease-in-out 0s 2, notifBellGlow 2s ease-in-out" : "none",
         }}
       >
         🔔
       </div>
-      {unreadCount > 0 && (
+      {totalBadge > 0 && (
         <div style={{ position: "absolute", top: -2, right: -2, minWidth: 16, height: 16, borderRadius: 8, background: "#EF4444", border: dark ? "2px solid #111" : "2px solid #fff", color: "#fff", fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>
-          {unreadCount > 9 ? "9+" : unreadCount}
+          {totalBadge > 9 ? "9+" : totalBadge}
         </div>
       )}
       {show && (
         <div style={{ position: "absolute", top: dark ? 44 : 48, right: 0, width: "min(320px, calc(100vw - 28px))", background: C.card, border: `1.5px solid ${C.border}`, borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.15)", zIndex: 50, overflow: "hidden" }}>
-          <div style={{ padding: "10px 14px", borderBottom: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.t1 }}>🔔 Hoạt động của bạn</div>
-          <div style={{ maxHeight: 320, overflowY: "auto" }}>
-            {items.map((n) => (
+          <div style={{ maxHeight: 420, overflowY: "auto" }}>
+            <div style={{ padding: "10px 14px", borderBottom: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.t1 }}>🔔 Hoạt động của bạn</div>
+            {pushItems.map((n) => (
               <div key={n.id} onClick={() => { if (n.url) window.location.href = n.url; }} style={{ padding: "10px 14px", cursor: n.url ? "pointer" : "default", borderBottom: `0.5px solid ${C.border}`, background: !n.is_read ? "rgba(220,38,38,0.04)" : "transparent" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   {!n.is_read && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", flexShrink: 0 }} />}
@@ -124,7 +137,19 @@ export function PushBell({ userId, dark }) {
                 <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{fmtTime(n.created_at)}</div>
               </div>
             ))}
-            {items.length === 0 && <div style={{ padding: "16px", textAlign: "center", fontSize: 12, color: C.t3 }}>Chưa có thông báo nào</div>}
+            {pushItems.length === 0 && <div style={{ padding: "14px", textAlign: "center", fontSize: 12, color: C.t3 }}>Chưa có hoạt động nào</div>}
+
+            <div style={{ padding: "10px 14px", borderBottom: `1.5px solid ${C.border}`, borderTop: `4px solid ${C.bg}`, fontSize: 13, fontWeight: 700, color: C.t1 }}>🆕 Cập nhật ứng dụng</div>
+            {updateList.map((n) => (
+              <div key={n.id} onClick={clearCacheAndReload} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: `0.5px solid ${C.border}`, background: n.isNew ? "rgba(220,38,38,0.04)" : "transparent" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {n.isNew && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", flexShrink: 0 }} />}
+                  <div style={{ fontSize: 12, fontWeight: n.isNew ? 700 : 600, color: C.t1, lineHeight: 1.4 }}>{n.text}</div>
+                </div>
+                <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{n.date} • Nhấn để cập nhật</div>
+              </div>
+            ))}
+            {updateList.length === 0 && <div style={{ padding: "14px", textAlign: "center", fontSize: 12, color: C.t3 }}>Không có bản cập nhật mới</div>}
           </div>
         </div>
       )}
