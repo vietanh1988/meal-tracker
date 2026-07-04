@@ -618,6 +618,16 @@ export default function App(){
           {id:"terms",l:"Điều khoản",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="si6" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="100%" stopColor={a?"#0050FF":"#64748B"}/></linearGradient></defs><rect x="18" y="6" width="60" height="84" rx="8" fill="url(#si6)"/><rect x="30" y="24" width="36" height="6" rx="3" fill="white" opacity="0.85"/><rect x="30" y="40" width="36" height="6" rx="3" fill="white" opacity="0.6"/><rect x="30" y="56" width="24" height="6" rx="3" fill="white" opacity="0.4"/></svg>},
           {id:"account",l:"Tài khoản",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="si5" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="100%" stopColor={a?"#0050FF":"#64748B"}/></linearGradient></defs><rect x="4" y="16" width="88" height="64" rx="12" fill="url(#si5)"/><circle cx="28" cy="42" r="16" fill="white" opacity="0.95"/><circle cx="28" cy="37" r="7" fill="url(#si5)"/><path d="M14 54 C14 46 42 46 42 54" fill="url(#si5)"/><rect x="52" y="34" width="32" height="7" rx="3.5" fill="white" opacity="0.9"/><rect x="52" y="46" width="24" height="6" rx="3" fill="white" opacity="0.5"/><rect x="52" y="57" width="18" height="5" rx="2.5" fill="white" opacity="0.3"/></svg>},
         ];
+
+        // User thường: luôn hiện mở, không thu gọn (giữ y hệt hành vi cũ)
+        if(!isAdmin){
+          return <>
+            <div style={{fontSize:12,fontWeight:800,color:"#64748B",padding:"0 20px",margin:"16px 0 6px",letterSpacing:"0.8px"}}>CÀI ĐẶT</div>
+            {items.map(s=>{const a=tab===s.id;return <div key={s.id} onClick={()=>setTab(s.id)} style={{display:"flex",alignItems:"center",gap:11,padding:"9px 20px",cursor:"pointer",fontSize:14,fontWeight:a?700:500,color:a?C.primary:C.t2,background:a?"rgba(0,122,255,0.06)":"transparent",borderLeft:a?`3px solid ${C.primary}`:"3px solid transparent"}}>{s.svg(a)} {s.l}</div>;})}
+          </>;
+        }
+
+        // Admin: thu gọn giống nhóm QUẢN TRỊ
         const open=settingsGrpOpen;
         return <div style={{marginTop:16}}>
           <div onClick={()=>setSettingsGrpOpen(v=>!v)} style={{display:"flex",alignItems:"center",gap:8,padding:"0 20px 6px",cursor:"pointer",userSelect:"none"}}>
