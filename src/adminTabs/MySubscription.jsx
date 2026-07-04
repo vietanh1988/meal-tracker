@@ -30,6 +30,7 @@ export function MySubscription({ userId, mob, isAdmin }) {
   const [selectedPkg, setSelectedPkg] = useState("6m");
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedAcc, setCopiedAcc] = useState(false);
 
   const seenKey = (id) => `sub_order_seen_${id}`;
 
@@ -114,6 +115,14 @@ export function MySubscription({ userId, mob, isAdmin }) {
     } catch (e) {}
   };
 
+  const copyAccountNumber = () => {
+    try {
+      navigator.clipboard.writeText(settings?.bank_account || "");
+      setCopiedAcc(true);
+      setTimeout(() => setCopiedAcc(false), 2000);
+    } catch (e) {}
+  };
+
   return (
     <div style={{ background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
@@ -190,16 +199,40 @@ export function MySubscription({ userId, mob, isAdmin }) {
               </div>
             ))}
           </div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Chuyển khoản tới</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{settings?.bank_name || "-"} · {settings?.bank_account || "-"}</div>
-          <div style={{ fontSize: 13, color: C.t2, marginBottom: 12 }}>{settings?.bank_account_name || "-"}</div>
-
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.t3, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Nội dung chuyển khoản (bắt buộc)</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.blueBg, border: `1.5px dashed ${C.primary}`, borderRadius: 10, padding: "10px 12px", marginBottom: 6 }}>
-            <div style={{ flex: 1, fontSize: 15, fontWeight: 900, color: C.primary, letterSpacing: "0.03em", fontFamily: "monospace" }}>{transferContent}</div>
-            <button onClick={copyContent} style={{ padding: "6px 12px", fontSize: 12, fontWeight: 700, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", flexShrink: 0 }}>{copied ? "✓ Đã copy" : "Copy"}</button>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.t2, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Chuyển khoản tới</div>
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: "2px 14px", marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>Ngân hàng</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{settings?.bank_name || "-"}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>Số tài khoản</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16, fontWeight: 900, color: C.t1, fontFamily: "monospace", letterSpacing: "0.02em" }}>{settings?.bank_account || "-"}</span>
+                <button onClick={copyAccountNumber} aria-label="Copy số tài khoản" style={{ width: 30, height: 30, padding: 0, border: `1px solid ${C.border}`, borderRadius: 8, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {copiedAcc ? "✓" : "📋"}
+                </button>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.t2 }}>Chủ tài khoản</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{settings?.bank_account_name || "-"}</span>
+            </div>
           </div>
-          <div style={{ fontSize: 11, color: C.t3, marginBottom: 14, lineHeight: 1.5 }}>⚠️ Ghi đúng nội dung này khi chuyển khoản để Admin xác nhận đơn nhanh hơn. Đổi gói ở trên sẽ tự cập nhật lại nội dung — nhớ copy lại nếu vừa đổi gói.</div>
+
+          <div style={{ background: C.blueBg, border: `1px solid ${C.primary}`, borderRadius: 12, padding: "14px 16px" }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: C.primary, marginBottom: 10 }}>✏️ Nội dung chuyển khoản</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ flex: 1, fontSize: 17, fontWeight: 900, color: C.primary, letterSpacing: "0.02em", fontFamily: "monospace", wordBreak: "break-all" }}>{transferContent}</div>
+              <button onClick={copyContent} style={{ padding: "8px 14px", fontSize: 12, fontWeight: 800, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>{copied ? "✓ Đã copy" : "Copy"}</button>
+            </div>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 6, marginTop: 12, background: C.goldBg, borderRadius: 8, padding: "8px 10px" }}>
+              <span style={{ fontSize: 14, flexShrink: 0 }}>⚠️</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "#92400E", lineHeight: 1.5 }}>Bắt buộc ghi đúng nội dung này khi chuyển khoản để Admin xác nhận đơn nhanh hơn. Đổi gói ở trên sẽ tự cập nhật lại nội dung — nhớ copy lại nếu vừa đổi gói.</span>
+            </div>
+          </div>
+
+          <div style={{ height: 14 }}/>
 
           <button onClick={handleConfirmPaid} disabled={submitting} style={{ width: "100%", padding: "10px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer", opacity: submitting ? 0.6 : 1 }}>
             {submitting ? "Đang gửi..." : "✓ Tôi đã chuyển khoản"}
