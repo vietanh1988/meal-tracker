@@ -40,7 +40,8 @@ export function PushBell({ userId, dark }) {
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(20);
-      if (!error && data) setItems(data);
+      if (error) { console.error("[PushBell] load notifications error:", error); return; }
+      if (data) setItems(data);
     })();
   }, [userId]);
 
@@ -59,7 +60,9 @@ export function PushBell({ userId, dark }) {
           ringTimeoutRef.current = setTimeout(() => setRinging(false), 2000);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") console.error("[PushBell] realtime subscribe failed:", status);
+      });
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
