@@ -19,6 +19,8 @@ const QUILL_MODULES = {
   ],
 };
 
+const stripEmptyParagraphs = (html) => (html || "").replace(/<p>(\s*<br\s*\/?>\s*)?<\/p>/g, "");
+
 // Trang Điều khoản dịch vụ / Chính sách bảo mật / Chính sách hoàn tiền.
 // Nội dung lưu trong appSettings.terms_content (JSON: {tos, privacy, refund} — mỗi field là HTML từ Quill),
 // dùng chung cơ chế saveSetting() như AboutPage.jsx, không cần bảng DB riêng.
@@ -66,7 +68,10 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
       {!editing && (
         <>
           {content[activeTab]
-            ? <div style={{ fontSize: 14, color: C.t1, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: content[activeTab] }} />
+            ? <>
+                <style>{`.terms-content p{margin:0 0 12px;}.terms-content h1{font-size:20px;margin:18px 0 10px;font-weight:800;}.terms-content h2{font-size:17px;margin:16px 0 8px;font-weight:800;}.terms-content ul,.terms-content ol{margin:0 0 12px;padding-left:20px;}.terms-content li{margin-bottom:4px;}`}</style>
+                <div className="terms-content" style={{ fontSize: 14, color: C.t1, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: stripEmptyParagraphs(content[activeTab]) }} />
+              </>
             : <div style={{ fontSize: 13, color: C.t3, textAlign: "center", padding: "40px 0" }}>Nội dung đang được cập nhật.</div>}
 
           {isAdmin && !mob && (
