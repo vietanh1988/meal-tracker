@@ -103,7 +103,8 @@ export function MySubscription({ userId, mob, isAdmin }) {
     ? { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#EF4444,#DC2626)", color: "#fff", cursor: "pointer" }
     : { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#fff", cursor: "pointer" };
 
-  const transferContent = `FIPILOT ${(sub.username || userId || "").toString().replace(/[^a-zA-Z0-9]/g, "").slice(0, 12).toUpperCase()}`;
+  const PKG_SHORT = { "3m": "3T", "6m": "6T", "12m": "12T" };
+  const transferContent = `FIPILOT ${(sub.username || userId || "").toString().replace(/[^a-zA-Z0-9]/g, "").slice(0, 12).toUpperCase()} ${PKG_SHORT[selectedPkg] || ""}`.trim();
 
   const copyContent = () => {
     try {
@@ -198,7 +199,7 @@ export function MySubscription({ userId, mob, isAdmin }) {
             <div style={{ flex: 1, fontSize: 15, fontWeight: 900, color: C.primary, letterSpacing: "0.03em", fontFamily: "monospace" }}>{transferContent}</div>
             <button onClick={copyContent} style={{ padding: "6px 12px", fontSize: 12, fontWeight: 700, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", flexShrink: 0 }}>{copied ? "✓ Đã copy" : "Copy"}</button>
           </div>
-          <div style={{ fontSize: 11, color: C.t3, marginBottom: 14, lineHeight: 1.5 }}>⚠️ Ghi đúng nội dung này khi chuyển khoản để Admin xác nhận đơn nhanh hơn.</div>
+          <div style={{ fontSize: 11, color: C.t3, marginBottom: 14, lineHeight: 1.5 }}>⚠️ Ghi đúng nội dung này khi chuyển khoản để Admin xác nhận đơn nhanh hơn. Đổi gói ở trên sẽ tự cập nhật lại nội dung — nhớ copy lại nếu vừa đổi gói.</div>
 
           <button onClick={handleConfirmPaid} disabled={submitting} style={{ width: "100%", padding: "10px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer", opacity: submitting ? 0.6 : 1 }}>
             {submitting ? "Đang gửi..." : "✓ Tôi đã chuyển khoản"}
