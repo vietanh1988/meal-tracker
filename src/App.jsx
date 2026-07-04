@@ -31,6 +31,7 @@ import { AboutPage } from "./AboutPage";
 import { NotificationBell } from "./NotificationBell";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { useAuth } from "./hooks/useAuth";
+import { ResetPasswordScreen } from "./ResetPasswordScreen";
 import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
 import { useUserData } from "./hooks/useUserData";
@@ -459,7 +460,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
 
 export default function App(){
-  const {user,loading,signOut}=useAuth();
+  const {user,loading,signOut,isPasswordRecovery}=useAuth();
   useEffect(()=>{
     if(!user?.id)return;
     (async()=>{try{await supabase.rpc("record_user_activity");}catch(e){console.error("record_user_activity error:",e);}})();
@@ -514,6 +515,7 @@ export default function App(){
   const pcDayType=pcDayManual||pcDayAuto;
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
+  if(isPasswordRecovery) return <ResetPasswordScreen/>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
   if(profile.isLocked) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",padding:20}}>
     <div style={{width:"100%",maxWidth:380}}>
