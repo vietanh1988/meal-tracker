@@ -4,7 +4,7 @@ import { UserAvatar } from "../UserAvatar";
 import { MySubscription } from "./MySubscription";
 import { isPushSupported, getPushStatus, enablePushNotifications, disablePushNotifications } from "../pushNotifications";
 
-export function AccountTab({user, signOut, isAdmin, profile, mob}){
+export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
   const [pushState,setPushState]=useState("checking"); // checking | unsupported | default | granted | denied
   const [pushLoading,setPushLoading]=useState(false);
   const [pushError,setPushError]=useState("");
@@ -35,7 +35,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob}){
 
   return (
 <div style={{...card, maxWidth: mob?undefined:720, margin: mob?undefined:"0 auto"}}>
-      <MySubscription userId={user?.id} mob={mob} isAdmin={isAdmin}/>
+      <MySubscription userId={user?.id} mob={mob} isAdmin={isAdmin} appSettings={appSettings}/>
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Tài khoản</span></div>
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>

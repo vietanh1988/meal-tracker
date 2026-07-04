@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { C } from "../theme";
+import { parseFeatureFlags } from "./FeatureFlagsTab";
 
 const PKG_LABEL = { "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
 
@@ -20,7 +21,8 @@ function fmtDMY(dateStr) {
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
 }
 
-export function MySubscription({ userId, mob, isAdmin }) {
+export function MySubscription({ userId, mob, isAdmin, appSettings }) {
+  const salesEnabled = parseFeatureFlags(appSettings).sales_enabled;
   const [loading, setLoading] = useState(true);
   const [sub, setSub] = useState(null);
   const [settings, setSettings] = useState(null);
@@ -186,6 +188,11 @@ export function MySubscription({ userId, mob, isAdmin }) {
 
       {isAdmin ? (
         <div style={{ background: C.blueBg, borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, fontWeight: 700, color: C.primary }}>👑 Tài khoản Admin — không cần gia hạn</div>
+      ) : !salesEnabled ? (
+        <div style={{ background: C.greenBg, borderRadius: 10, padding: "12px 14px", textAlign: "center" }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#14532D" }}>🎁 Fipilot AI đang miễn phí hoàn toàn</div>
+          <div style={{ fontSize: 12, color: "#14532D", marginTop: 4, lineHeight: 1.5 }}>Chưa thu phí, chưa có lộ trình thu phí ở thời điểm hiện tại. Cứ dùng thoải mái nhé!</div>
+        </div>
       ) : pendingOrder ? (
         <div style={{ background: C.greenBg, borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "#14532D" }}>✓ Đã gửi yêu cầu nâng cấp ({PKG_LABEL[pendingOrder.package] || pendingOrder.package})</div>
@@ -197,7 +204,7 @@ export function MySubscription({ userId, mob, isAdmin }) {
         </button>
       )}
 
-      {showPicker && !pendingOrder && !isAdmin && (
+      {showPicker && !pendingOrder && !isAdmin && salesEnabled && (
         <div style={{ marginTop: 14, background: "#fff", borderRadius: 12, padding: 14, border: `1px solid ${C.border}` }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>Chọn gói Premium</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>

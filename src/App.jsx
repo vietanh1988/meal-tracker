@@ -15,6 +15,7 @@ import { BusinessReportTab } from "./adminTabs/BusinessReportTab";
 import { ErrorLogsTab } from "./adminTabs/ErrorLogsTab";
 import { AuditLogTab } from "./adminTabs/AuditLogTab";
 import { NotifyTab } from "./adminTabs/NotifyTab";
+import { FeatureFlagsTab } from "./adminTabs/FeatureFlagsTab";
 import { WeightTab } from "./adminTabs/WeightTab";
 import { AccountTab } from "./adminTabs/AccountTab";
 import { Pill } from "./Pill";
@@ -441,6 +442,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="error_logs"&&isAdmin&&<ErrorLogsTab isAdmin={isAdmin}/>}
     {section==="audit_log"&&isAdmin&&<AuditLogTab isAdmin={isAdmin}/>}
     {section==="notify"&&isAdmin&&<NotifyTab isAdmin={isAdmin} currentUserId={user?.id}/>}
+    {section==="feature_flags"&&isAdmin&&<FeatureFlagsTab appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob}/>}
 
@@ -459,7 +461,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="terms"&&<TermsPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>}
 
     {/* ACCOUNT */}
-    {section==="account"&&<AccountTab user={user} signOut={signOut} isAdmin={isAdmin} profile={profile} mob={mob}/>}
+    {section==="account"&&<AccountTab user={user} signOut={signOut} isAdmin={isAdmin} profile={profile} mob={mob} appSettings={appSettings}/>}
 
     <style>{`@keyframes spin{to{transform:rotate(360deg);}} input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;} input[type=number]{-moz-appearance:textfield;}`}</style>
   </div>;
@@ -649,6 +651,7 @@ export default function App(){
           {id:"error_logs_s",l:"Lỗi hệ thống",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="qi7" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="55%" stopColor={a?"#0050FF":"#64748B"}/><stop offset="100%" stopColor={a?"#DC2626":"#64748B"}/></linearGradient></defs><circle cx="48" cy="48" r="42" fill="url(#qi7)"/><rect x="43" y="26" width="10" height="34" rx="5" fill="white"/><circle cx="48" cy="70" r="6" fill="white"/></svg>},
           {id:"audit_log_s",l:"Nhật ký hoạt động",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="qi8" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="55%" stopColor={a?"#0050FF":"#64748B"}/><stop offset="100%" stopColor={a?"#DC2626":"#64748B"}/></linearGradient></defs><rect x="14" y="8" width="68" height="80" rx="10" fill="url(#qi8)"/><rect x="26" y="26" width="44" height="6" rx="3" fill="white" opacity="0.85"/><rect x="26" y="42" width="44" height="6" rx="3" fill="white" opacity="0.6"/><rect x="26" y="58" width="30" height="6" rx="3" fill="white" opacity="0.4"/></svg>},
           {id:"notify_s",l:"Gửi thông báo",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="qi9" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="55%" stopColor={a?"#0050FF":"#64748B"}/><stop offset="100%" stopColor={a?"#DC2626":"#64748B"}/></linearGradient></defs><path d="M48 8 C56 8 62 15 62 24 L62 44 L70 56 L26 56 L34 44 L34 24 C34 15 40 8 48 8 Z" fill="url(#qi9)"/><circle cx="48" cy="70" r="8" fill="url(#qi9)"/></svg>},
+          {id:"feature_flags_s",l:"Feature Flags",svg:(a)=><svg viewBox="0 0 96 96" width={17} height={17}><defs><linearGradient id="qi10" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor={a?"#40C8FF":"#64748B"}/><stop offset="55%" stopColor={a?"#0050FF":"#64748B"}/><stop offset="100%" stopColor={a?"#DC2626":"#64748B"}/></linearGradient></defs><rect x="14" y="14" width="68" height="20" rx="10" fill="url(#qi10)"/><circle cx="66" cy="24" r="7" fill="white"/><rect x="14" y="42" width="68" height="20" rx="10" fill="url(#qi10)" opacity="0.6"/><circle cx="30" cy="52" r="7" fill="white"/><rect x="14" y="70" width="68" height="20" rx="10" fill="url(#qi10)"/><circle cx="66" cy="80" r="7" fill="white"/></svg>},
         ];
         const open=adminGrpOpen.all;
         return <div style={{marginTop:16}}>
@@ -751,6 +754,7 @@ export default function App(){
         {tab==="error_logs_s"&&<AdminPanel key="error_logs" {...adminP} forcedSection="settings" initialSection="error_logs" hidePills/>}
         {tab==="audit_log_s"&&<AdminPanel key="audit_log" {...adminP} forcedSection="settings" initialSection="audit_log" hidePills/>}
         {tab==="notify_s"&&<AdminPanel key="notify" {...adminP} forcedSection="settings" initialSection="notify" signOut={signOut} user={user} hidePills/>}
+        {tab==="feature_flags_s"&&<AdminPanel key="feature_flags" {...adminP} forcedSection="settings" initialSection="feature_flags" hidePills/>}
       </main>
     </div>
     {showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
