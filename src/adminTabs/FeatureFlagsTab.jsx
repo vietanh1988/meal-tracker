@@ -43,7 +43,7 @@ export function FeatureFlagsTab({ appSettings, isAdmin, saveSetting }) {
 
   return (
     <div style={{ ...card, maxWidth: 700, margin: "0 auto" }}>
-      <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>🚩 Feature Flags</div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 4 }}>🚩 Quản lý tính năng</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: C.t2, marginBottom: 20 }}>Bật/tắt nhanh các tính năng lớn của toàn app, không cần deploy lại code</div>
 
       {flags.sales_enabled === false && (
