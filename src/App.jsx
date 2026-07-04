@@ -29,6 +29,7 @@ import { LoginScreen } from "./LoginScreen";
 import { OnboardingWizard } from "./OnboardingWizard";
 import { AboutPage } from "./AboutPage";
 import { NotiBell } from "./NotiBell";
+import { PushBell } from "./PushBell";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
@@ -625,6 +626,7 @@ export default function App(){
           <div style={{width:1,height:24,background:C.border}}/>
           <style>{`@keyframes fipilotPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,122,255,0.45);}50%{box-shadow:0 0 0 8px rgba(0,122,255,0);}}`}</style>
           <button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",animation:"fipilotPulse 2s ease-in-out infinite"}}>✨ Fipilot AI</button>
+          <PushBell/>
           <NotiBell appSettings={appSettings}/>
         </div>
       </header>
