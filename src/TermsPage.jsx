@@ -19,11 +19,11 @@ const QUILL_MODULES = {
   ],
 };
 
-const stripEmptyParagraphs = (html) => (html || "").replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/g, "");
+export const stripEmptyParagraphs = (html) => (html || "").replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/g, "");
 
 // Đọc appSettings.terms_content, tự chuyển định dạng cũ ({tos,privacy,refund})
 // sang định dạng mới (mảng pages động) nếu gặp — không mất dữ liệu cũ đã lưu.
-function parseContent(appSettings) {
+export function parseContent(appSettings) {
   try {
     const raw = appSettings?.terms_content ? JSON.parse(appSettings.terms_content) : null;
     if (raw && Array.isArray(raw.pages) && raw.pages.length > 0) return raw.pages;

@@ -524,7 +524,7 @@ export default function App(){
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(isPasswordRecovery) return <ResetPasswordScreen/>;
-  if(!user) return <LoginScreen onLogin={()=>window.location.reload()}/>;
+  if(!user) return <LoginScreen onLogin={()=>window.location.reload()} appSettings={appSettings}/>;
   if(profile.isLocked) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",padding:20}}>
     <div style={{width:"100%",maxWidth:380}}>
       <div style={{textAlign:"center",marginBottom:24}}>
