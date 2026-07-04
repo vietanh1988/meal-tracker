@@ -36,13 +36,14 @@ export function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   };
 
   const features=(form.features||"").split("|").filter(Boolean);
+  const displayVersion=appSettings.app_version||form.version;
 
   return <div>
     {/* Hero — White card giống Dashboard */}
     <div style={{...card,textAlign:"center",padding:mob?"20px 16px":"28px 24px",border:`1.5px solid ${C.border}`}}>
       <img src="/logo.png" alt="Fipilot AI" style={{width:96,height:96,borderRadius:20,objectFit:"cover"}}/>
       <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>{form.appName}</div>
-      <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:4}}>v{form.version}</div>
+      <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:4}}>v{displayVersion}</div>
       <div style={{fontSize:14,fontWeight:600,color:C.t2,marginTop:6}}>{form.tagline}</div>
       {features.length>0&&<div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginTop:14}}>
         {features.map((f,i)=><span key={i} style={{fontSize:11,padding:"4px 12px",borderRadius:20,background:i%4===0?C.primaryBg:i%4===1?"#DCFCE7":i%4===2?"#EFF6FF":"#FEF3C7",color:i%4===0?"#007AFF":i%4===1?"#00C896":i%4===2?"#1E40AF":"#92400E",fontWeight:700}}>{f}</span>)}
@@ -100,8 +101,9 @@ export function AboutPage({appSettings,isAdmin,saveSetting,mob}){
             <input value={form.appName} onChange={e=>setForm({...form,appName:e.target.value})} style={inp}/>
           </div>
           <div>
-            <div style={{...lbl,marginBottom:4}}>Version</div>
+            <div style={{...lbl,marginBottom:4}}>Version dự phòng (chỉ dùng khi chưa Deploy lần nào ở "Quản lý version")</div>
             <input value={form.version} onChange={e=>setForm({...form,version:e.target.value})} style={inp}/>
+            {appSettings.app_version&&<div style={{fontSize:11,color:C.t3,marginTop:4}}>Đang hiển thị thật: v{appSettings.app_version} (lấy từ "Quản lý version", ô này bị bỏ qua)</div>}
           </div>
         </div>
         <div style={{marginBottom:8}}>
