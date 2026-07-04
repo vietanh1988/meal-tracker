@@ -24,17 +24,22 @@ function playDing() {
 // Chuông thông báo GỘP — thay thế NotiBell + PushBell cũ (2 chuông tách rời):
 // - Mục "Hoạt động của bạn": push thời gian thực (đơn hàng duyệt...), lưu DB, đồng bộ Realtime
 // - Mục "Cập nhật ứng dụng": thông báo phiên bản mới (giữ nguyên hành vi cũ — bấm để xoá cache & reload)
+const ACK_KEY = "fipilot_seen_update_ids";
+
 export function NotificationBell({ appSettings, userId, dark }) {
   const [pushItems, setPushItems] = useState([]);
   const [show, setShow] = useState(false);
   const [ringing, setRinging] = useState(false);
+  const [seenUpdateIds, setSeenUpdateIds] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(ACK_KEY) || "[]"); } catch (e) { return []; }
+  });
   const ref = useRef(null);
   const ringTimeoutRef = useRef(null);
 
   const updateList = (() => {
     try { return appSettings?.notifications ? JSON.parse(appSettings.notifications) : []; } catch (e) { return []; }
   })();
-  const updateHasNew = updateList.some((n) => n.isNew);
+
 
   useEffect(() => {
     if (!userId) return;
@@ -79,7 +84,8 @@ export function NotificationBell({ appSettings, userId, dark }) {
   }, [show]);
 
   const pushUnreadCount = pushItems.filter((n) => !n.is_read).length;
-  const totalBadge = pushUnreadCount + (updateHasNew ? updateList.filter((n) => n.isNew).length : 0);
+  const updateUnseenCount = updateList.filter((n) => n.isNew && !seenUpdateIds.includes(n.id)).length;
+  const totalBadge = pushUnreadCount + updateUnseenCount;
 
   const openList = async () => {
     setShow((s) => !s);
@@ -87,6 +93,12 @@ export function NotificationBell({ appSettings, userId, dark }) {
     if (unreadIds.length > 0) {
       setPushItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
       try { await supabase.from("notifications").update({ is_read: true }).in("id", unreadIds); } catch (e) { console.error("[NotificationBell] mark read error:", e); }
+    }
+    const newUpdateIds = updateList.filter((n) => n.isNew).map((n) => n.id);
+    if (newUpdateIds.length > 0) {
+      const merged = Array.from(new Set([...seenUpdateIds, ...newUpdateIds]));
+      setSeenUpdateIds(merged);
+      try { localStorage.setItem(ACK_KEY, JSON.stringify(merged)); } catch (e) {}
     }
   };
 
@@ -140,15 +152,18 @@ export function NotificationBell({ appSettings, userId, dark }) {
             {pushItems.length === 0 && <div style={{ padding: "14px", textAlign: "center", fontSize: 12, color: C.t3 }}>Chưa có hoạt động nào</div>}
 
             <div style={{ padding: "10px 14px", borderBottom: `1.5px solid ${C.border}`, borderTop: `4px solid ${C.bg}`, fontSize: 13, fontWeight: 700, color: C.t1 }}>🆕 Cập nhật ứng dụng</div>
-            {updateList.map((n) => (
-              <div key={n.id} onClick={clearCacheAndReload} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: `0.5px solid ${C.border}`, background: n.isNew ? "rgba(220,38,38,0.04)" : "transparent" }}>
+            {updateList.map((n) => {
+              const isUnseen = n.isNew && !seenUpdateIds.includes(n.id);
+              return (
+              <div key={n.id} onClick={clearCacheAndReload} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: `0.5px solid ${C.border}`, background: isUnseen ? "rgba(220,38,38,0.04)" : "transparent" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  {n.isNew && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", flexShrink: 0 }} />}
-                  <div style={{ fontSize: 12, fontWeight: n.isNew ? 700 : 600, color: C.t1, lineHeight: 1.4 }}>{n.text}</div>
+                  {isUnseen && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", flexShrink: 0 }} />}
+                  <div style={{ fontSize: 12, fontWeight: isUnseen ? 700 : 600, color: C.t1, lineHeight: 1.4 }}>{n.text}</div>
                 </div>
                 <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{n.date} • Nhấn để cập nhật</div>
               </div>
-            ))}
+              );
+            })}
             {updateList.length === 0 && <div style={{ padding: "14px", textAlign: "center", fontSize: 12, color: C.t3 }}>Không có bản cập nhật mới</div>}
           </div>
         </div>
