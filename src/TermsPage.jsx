@@ -54,10 +54,10 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
     <div style={{ ...card, maxWidth: 900, margin: "0 auto" }}>
       <div style={{ fontSize: 20, fontWeight: 800, color: C.t1, marginBottom: 16 }}>Điều khoản và chính sách</div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap", borderBottom: `1.5px solid ${C.border}`, paddingBottom: 14 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 20, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", borderBottom: `1.5px solid ${C.border}`, paddingBottom: 14 }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setActiveTab(t.key)} style={{
-            padding: "8px 16px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit",
+            padding: "8px 16px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0,
             background: activeTab === t.key ? C.primary : C.surface, color: activeTab === t.key ? "#fff" : C.t2,
           }}>{t.label}</button>
         ))}
@@ -75,7 +75,10 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
             </div>
           )}
           {isAdmin && mob && (
-            <div style={{ textAlign: "center", marginTop: 20, fontSize: 12, color: C.t3 }}>💻 Vào máy tính để chỉnh sửa nội dung này.</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 24, padding: "10px 14px", background: C.surface, borderRadius: 10 }}>
+              <span style={{ fontSize: 15 }}>💻</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Vào máy tính để chỉnh sửa nội dung này</span>
+            </div>
           )}
         </>
       )}
