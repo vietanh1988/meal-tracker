@@ -131,12 +131,22 @@ const COOK_MAP = {
   "om":"braised","rim":"caramelized","quay":"roasted","tần":"double boiled",
 };
 
-// Estimate gram per đơn vị
-const UNIT_GRAM = {
+// ============================================================
+// FIX: trước đây UNIT_GRAM áp dụng trọng lượng "1 quả nguyên" cho trái
+// cây/trứng BẤT KỂ đơn vị người dùng thực sự chọn trong dropdown (g/ml/quả/
+// hộp/lát/bát) — chỉ cần TÊN món khớp là áp dụng. Hậu quả: chọn "Chuối" +
+// đơn vị "lát" (lát mỏng) vẫn bị tính như 1 quả chuối NGUYÊN (120g) thay vì
+// 1 lát mỏng (~15-30g) — sai lệch 4-8 lần. Giờ tách riêng: nhóm "theo quả"
+// chỉ áp dụng khi unit thực sự là "quả", các món còn lại (bánh mì/sữa/đậu
+// phụ...) vẫn áp dụng theo tên vì đã khớp hợp lý với đơn vị hộp/lát hiện có.
+// ============================================================
+const UNIT_GRAM_PER_QUA = {
   "trứng gà":50,"trứng vịt":70,"trứng cút":9,"trứng":50,"lòng trắng trứng":33,"lòng đỏ trứng":17,
   "chuối":120,"táo":180,"cam":150,"bưởi":300,"xoài":200,"ổi":150,"lê":170,
   "mận":80,"kiwi":75,"dâu tây":15,"thanh long":250,"bơ quả":170,"quả bơ":170,
   "sầu riêng":50,"vải":10,"chôm chôm":20,"mít":30,
+};
+const UNIT_GRAM_ANY_UNIT = {
   "bánh mì":30, // 1 lát
   "bánh tráng":12, // 1 cái
   "sữa tươi":200,"sữa tách béo":200,"sữa chua":100,"sữa chua hy lạp":150,"sữa":200,
@@ -150,7 +160,7 @@ const UNIT_GRAM = {
 // ĐƠN VỊ MỞ RỘNG — scoop, chén, ly, con, miếng, khúc...
 // ============================================================
 const UNIT_DEFAULTS = {
-  "g": 0, "ml": 0,         // user nhập trực tiếp
+  "g": 0, "ml": 0, // user nhập trực tiếp
   "quả": 100, "trái": 100,
   "hộp": 200, "lon": 330,
   "lát": 30, "miếng": 50,
@@ -158,19 +168,20 @@ const UNIT_DEFAULTS = {
   "ly": 200, "cốc": 200,
   "muỗng": 30, "scoop": 30, // scoop whey ~30g
   "muỗng canh": 15, "muỗng cà phê": 5,
-  "con": 30,                // con tôm ~30g
-  "khúc": 150,              // khúc cá ~150g
-  "bắp": 200,               // bắp ngô ~200g
-  "củ": 150,                // củ khoai ~150g
-  "nắm": 30,                // nắm rau ~30g
-  "bó": 200,                // bó rau ~200g
-  "thanh": 40,              // thanh protein bar ~40g
+  "con": 30, // con tôm ~30g
+  "khúc": 150, // khúc cá ~150g
+  "bắp": 200, // bắp ngô ~200g
+  "củ": 150, // củ khoai ~150g
+  "nắm": 30, // nắm rau ~30g
+  "bó": 200, // bó rau ~200g
+  "thanh": 40, // thanh protein bar ~40g
 };
 
 // Keys sorted longest first for greedy matching
 const FOOD_KEYS = Object.keys(FOOD_MAP).sort((a, b) => b.length - a.length);
 const COOK_KEYS = Object.keys(COOK_MAP).sort((a, b) => b.length - a.length);
-const UNIT_KEYS = Object.keys(UNIT_GRAM).sort((a, b) => b.length - a.length);
+const UNIT_GRAM_QUA_KEYS = Object.keys(UNIT_GRAM_PER_QUA).sort((a, b) => b.length - a.length);
+const UNIT_GRAM_ANY_KEYS = Object.keys(UNIT_GRAM_ANY_UNIT).sort((a, b) => b.length - a.length);
 const COMBO_LOWER = COMBO_BLACKLIST.map(c => c.toLowerCase());
 
 // ============================================================
@@ -230,14 +241,23 @@ export function estimateGram(nameVN, unit, qty) {
 
   const lower = (nameVN || "").toLowerCase().trim();
 
-  // 1. Try food-specific estimate first (trứng gà = 50g/quả)
-  for (const key of UNIT_KEYS) {
-    if (lower.includes(key)) {
-      return Math.round(UNIT_GRAM[key] * qty);
+  // 1. Trọng lượng riêng theo "quả" — CHỈ áp dụng khi đơn vị thực sự là quả/trái
+  if (unit === "quả" || unit === "trái") {
+    for (const key of UNIT_GRAM_QUA_KEYS) {
+      if (lower.includes(key)) {
+        return Math.round(UNIT_GRAM_PER_QUA[key] * qty);
+      }
     }
   }
 
-  // 2. Fallback to unit-based default
+  // 2. Trọng lượng riêng áp dụng bất kể đơn vị (đã khớp hợp lý với hộp/lát/miếng)
+  for (const key of UNIT_GRAM_ANY_KEYS) {
+    if (lower.includes(key)) {
+      return Math.round(UNIT_GRAM_ANY_UNIT[key] * qty);
+    }
+  }
+
+  // 3. Fallback to unit-based default
   const unitGram = UNIT_DEFAULTS[unit] || UNIT_DEFAULTS[unit.toLowerCase()] || 100;
   return Math.round(unitGram * qty);
 }
