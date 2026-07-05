@@ -73,7 +73,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     }
   },[appSettings.app_version]);
   // Parse meal config
-  const mealConfig=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
+  const mealConfig=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
   const visibleIds=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];
   const allMeals=getMeals(dayType);
   const meals=allMeals.filter(m=>visibleIds.includes(m.id));
