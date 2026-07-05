@@ -80,6 +80,7 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
         <div style={{fontSize:14,fontWeight:900,color:C.primary,marginBottom:12}}>✓ Kết quả macro</div>
         {(()=>{
           const items=aiResult.items||[];
+          console.log("🔍 DEBUG aiResult.items:",items.map(it=>({name:it.name,source:it.source,_mealId:it._mealId,cal:it.cal})));
           return mealNames.map(meal=>{
             const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
             if(mealFoods.length===0)return null;
