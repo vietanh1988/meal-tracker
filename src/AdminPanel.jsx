@@ -163,6 +163,7 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
 
   const prompt=`Bạn là chuyên gia dinh dưỡng. Phân tích dinh dưỡng cho thức ăn dưới đây.
 Lưu ý: đồ uống (sữa, nước ép, sinh tố) tính theo ml chứ không phải g. 1ml nước/sữa ≈ 1g.
+QUAN TRỌNG: mảng "items" trả về PHẢI có ĐÚNG số lượng và ĐÚNG THỨ TỰ như danh sách món được liệt kê (không gộp, không tách, không đổi thứ tự) — vì hệ thống ghép kết quả theo đúng vị trí đã gửi.
 Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 {"items":[{"name":"tên","gram":số,"protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý cho người gym"}`;
 
@@ -180,7 +181,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       const gram=isWeight?(f.gram||100):estimateGram(f.name,unit,f.qty||1);
       const localResult=lookupLocalFood(f.name,gram||(isWeight?f.gram:100));
       if(localResult){
-        localResolved.push({...localResult,name:f.name,unit,qty:f.qty||1,qty_display:isWeight?null:`${f.qty||1} ${unit}`,source:"localDB"});
+        localResolved.push({...localResult,name:f.name,unit,qty:f.qty||1,qty_display:isWeight?null:`${f.qty||1} ${unit}`,source:"localDB",_mealId:f._mealId});
       }else{nonLocal.push(f);}
     });
 
@@ -199,9 +200,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const qty=f.qty||1;
         if(isWeight){
           const r=f.gram/(fc[k].gram||100);
-          cached.push({name:f.name,gram:f.gram,unit,qty,qty_display:null,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r),source:"cache"});
+          cached.push({name:f.name,gram:f.gram,unit,qty,qty_display:null,protein:Math.round(fc[k].p*r*10)/10,carb:Math.round(fc[k].c*r*10)/10,fat:Math.round(fc[k].f*r*10)/10,fiber:Math.round((fc[k].fiber||0)*r*10)/10,cal:Math.round(fc[k].cal*r),source:"cache",_mealId:f._mealId});
         }else{
-          cached.push({name:f.name,gram:Math.round((fc[k].gram||0)*qty),unit,qty,qty_display:`${qty} ${unit}`,protein:Math.round(fc[k].p*qty*10)/10,carb:Math.round(fc[k].c*qty*10)/10,fat:Math.round(fc[k].f*qty*10)/10,fiber:Math.round((fc[k].fiber||0)*qty*10)/10,cal:Math.round(fc[k].cal*qty),source:"cache"});
+          cached.push({name:f.name,gram:Math.round((fc[k].gram||0)*qty),unit,qty,qty_display:`${qty} ${unit}`,protein:Math.round(fc[k].p*qty*10)/10,carb:Math.round(fc[k].c*qty*10)/10,fat:Math.round(fc[k].f*qty*10)/10,fiber:Math.round((fc[k].fiber||0)*qty*10)/10,cal:Math.round(fc[k].cal*qty),source:"cache",_mealId:f._mealId});
         }
       }else{uncached.push(f);}
     });
@@ -229,7 +230,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
             const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
             const gram=f.gram||(isWeight?100:estimateGram(f.name,unit,f.qty));
             const macro=calcFromUSDA(result,gram);
-            usdaResolved.push({name:f.name,gram,unit,qty:f.qty,qty_display:isWeight?null:`${f.qty} ${unit}`,...macro,source:"USDA"});
+            usdaResolved.push({name:f.name,gram,unit,qty:f.qty,qty_display:isWeight?null:`${f.qty} ${unit}`,...macro,source:"USDA",_mealId:f._mealId});
           }else{stillUncached.push(f);}
         }catch(e){console.error("USDA error:",e);stillUncached.push(f);}
       }
@@ -299,7 +300,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       }
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       const aiSourceLabel=aiProvider==="gpt"?"GPT":aiProvider==="claude"?"Claude":"Gemini";
-      const aiItemsWithSource=(parsed.items||[]).map(it=>({...it,source:aiSourceLabel}));
+      const aiItemsWithSource=(parsed.items||[]).map((it,idx)=>({...it,source:aiSourceLabel,_mealId:stillUncached[idx]?._mealId}));
       const newItems=[...allResolved,...aiItemsWithSource];
       // Cache AI results (only non-localDB items)
       const newCacheEntries={};
