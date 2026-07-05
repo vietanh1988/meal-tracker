@@ -65,6 +65,10 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
   // Unified food items per meal (for all-in-one input)
   const [allFoodItems,setAllFoodItems]=useState({});
   const [mealConfig,setMealConfig]=useState(()=>{
+    // Ưu tiên cấu hình RIÊNG của user (profile.mealConfig, tự chỉnh trước đó) —
+    // chỉ dùng mặc định chung của admin (appSettings.meal_config) khi user
+    // chưa từng tự chỉnh.
+    if(profile.mealConfig)return profile.mealConfig;
     try{const saved=appSettings.meal_config?JSON.parse(appSettings.meal_config):null;return saved||{...DEFAULT_MEAL_CONFIG};}
     catch(e){return {...DEFAULT_MEAL_CONFIG};}
   });
@@ -135,8 +139,11 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
     if(appSettings.gpt_model)setGptModel(appSettings.gpt_model);
     if(appSettings.gemini_model)setGeminiModel(appSettings.gemini_model);
     if(appSettings.ai_model)setAiModel(appSettings.ai_model);
-    if(appSettings.meal_config){try{setMealConfig(JSON.parse(appSettings.meal_config));}catch(e){}}
-  },[appSettings]);
+    // Chỉ áp mặc định chung của admin nếu user CHƯA từng tự chỉnh (không có
+    // profile.mealConfig riêng) — tránh ghi đè mất cấu hình cá nhân mỗi khi
+    // appSettings tải lại (VD khi quay lại tab sau 30s).
+    if(appSettings.meal_config&&!profile.mealConfig){try{setMealConfig(JSON.parse(appSettings.meal_config));}catch(e){}}
+  },[appSettings,profile.mealConfig]);
 
   // Admin: save to both localStorage and Supabase
   useEffect(()=>{
@@ -433,7 +440,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="templates"&&isAdmin&&<TemplatesTab isAdmin={isAdmin} mob={mob} macro={macro} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} mealNames={mealNames} mealsData={mealsData} callAI={callAI} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} setDayType={setDayType} setFoodItems={setFoodItems} setUserHasEdited={setUserHasEdited} savePendingFoodCache={savePendingFoodCache} aiProvider={aiProvider}/>}
     {section==="food_cache_pending"&&isAdmin&&<FoodCachePendingTab mob={mob} allPending={allPending} pendingCount={pendingCount} approvedCount={approvedCount} approvePendingFood={approvePendingFood} rejectPendingFood={rejectPendingFood}/>}
     {/* MEALS */}
-    {section==="meals"&&<MealsTab mob={mob} profile={profile} macro={macro} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mealMode={mealMode} setMealMode={setMealMode} dayType={dayType} setDayType={setDayType} showMealSettings={showMealSettings} setShowMealSettings={setShowMealSettings} mealConfig={mealConfig} setMealConfig={setMealConfig} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} userHasEdited={userHasEdited} setUserHasEdited={setUserHasEdited} foodItems={foodItems} setFoodItems={setFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} aiProvider={aiProvider} callAI={callAI} mealNames={mealNames} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} savePendingFoodCache={savePendingFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} refreshDefaultTemplates={refreshDefaultTemplates} applyTemplate={applyTemplate} showSaveTpl={showSaveTpl} setShowSaveTpl={setShowSaveTpl} expandedTpl={expandedTpl} setExpandedTpl={setExpandedTpl} tplFilter={tplFilter} setTplFilter={setTplFilter} showAssignDays={showAssignDays} setShowAssignDays={setShowAssignDays} assignSelectedDays={assignSelectedDays} setAssignSelectedDays={setAssignSelectedDays}/>}
+    {section==="meals"&&<MealsTab mob={mob} profile={profile} setProfile={setProfile} macro={macro} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mealMode={mealMode} setMealMode={setMealMode} dayType={dayType} setDayType={setDayType} showMealSettings={showMealSettings} setShowMealSettings={setShowMealSettings} mealConfig={mealConfig} setMealConfig={setMealConfig} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} userHasEdited={userHasEdited} setUserHasEdited={setUserHasEdited} foodItems={foodItems} setFoodItems={setFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} aiProvider={aiProvider} callAI={callAI} mealNames={mealNames} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} savePendingFoodCache={savePendingFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} refreshDefaultTemplates={refreshDefaultTemplates} applyTemplate={applyTemplate} showSaveTpl={showSaveTpl} setShowSaveTpl={setShowSaveTpl} expandedTpl={expandedTpl} setExpandedTpl={setExpandedTpl} tplFilter={tplFilter} setTplFilter={setTplFilter} showAssignDays={showAssignDays} setShowAssignDays={setShowAssignDays} assignSelectedDays={assignSelectedDays} setAssignSelectedDays={setAssignSelectedDays}/>}
 
     {/* PROFILE */}
     {section==="profile"&&<ProfileTab profile={profile} setProfile={setProfile} macro={macro} appSettings={appSettings} saveSetting={saveSetting} weightLog={weightLog} mob={mob}/>}

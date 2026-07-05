@@ -4,7 +4,7 @@ import { SlidingTabs } from "../SlidingTabs";
 import { estimateGram } from "../lib/usdaService";
 
 export function MealsTab({
-mob, profile, macro, appSettings, isAdmin, saveSetting,
+mob, profile, setProfile, macro, appSettings, isAdmin, saveSetting,
 mealMode, setMealMode, dayType, setDayType,
 showMealSettings, setShowMealSettings, mealConfig, setMealConfig,
 allFoodItems, setAllFoodItems, userHasEdited, setUserHasEdited,
@@ -56,7 +56,7 @@ if(isTrainOnly)return;
 const cfg={...mealConfig};const arr=[...(cfg[dayType]||[])];
 if(isOn)cfg[dayType]=arr.filter(id=>id!==m.id);
 else{const allIds=ALL_MEALS.map(x=>x.id);arr.push(m.id);arr.sort((a,b)=>allIds.indexOf(a)-allIds.indexOf(b));cfg[dayType]=arr;}
-setMealConfig(cfg);if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));
+setMealConfig(cfg);if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));else if(setProfile)setProfile({...profile,mealConfig:cfg});
 }} style={{width:36,height:20,background:isOn?"#3B6D11":"#E2E8F0",borderRadius:10,position:"relative",cursor:isTrainOnly?"not-allowed":"pointer",transition:"background 0.2s"}}>
 <div style={{width:16,height:16,background:"#fff",borderRadius:"50%",position:"absolute",top:2,left:isOn?18:2,transition:"left 0.2s",boxShadow:"0 1px 2px rgba(0,0,0,0.15)"}}/>
 </div>
