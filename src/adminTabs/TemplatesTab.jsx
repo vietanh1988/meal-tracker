@@ -80,12 +80,10 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
         <div style={{fontSize:14,fontWeight:900,color:C.primary,marginBottom:12}}>✓ Kết quả macro</div>
         {(()=>{
           const items=aiResult.items||[];
-          let idx=0;
           return mealNames.map(meal=>{
             const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
             if(mealFoods.length===0)return null;
-            const mealItems=items.slice(idx,idx+mealFoods.length);
-            idx+=mealFoods.length;
+            const mealItems=items.filter(it=>it._mealId===meal.id);
             const mCal=mealItems.reduce((s,it)=>s+(it.cal||0),0);
             return <div key={meal.id} style={{marginBottom:10}}>
               <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:4,display:"flex",justifyContent:"space-between"}}>
@@ -110,13 +108,10 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
           const tplType=document.getElementById("tpl-type")?.value||"train";
           if(!name){alert("Nhập tên template ở ô trên!");return;}
           const items=aiResult.items||[];
-          let idx=0;
           const mealsData=[];
           mealNames.forEach(meal=>{
-            const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
-            if(mealFoods.length===0)return;
-            const mealItems=items.slice(idx,idx+mealFoods.length);
-            idx+=mealFoods.length;
+            const mealItems=items.filter(it=>it._mealId===meal.id);
+            if(mealItems.length===0)return;
             const saveItems=mealItems.map(ai=>({food:ai.name||"",gram:ai.gram||0,unit:ai.unit||"g",qty:ai.qty||1,p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0}));
             if(saveItems.length>0)mealsData.push({meal_id:meal.id,meal_name:meal.l,items:saveItems});
           });
