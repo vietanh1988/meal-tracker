@@ -26,6 +26,8 @@ import { useIsMobile } from "./hooks/useIsMobile";
 import { searchUSDA, calcFromUSDA, translateFood, estimateGram } from "./lib/usdaService";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { lookupLocalFood } from "./lib/localFoodDB";
+import { usePendingFoodCache } from "./hooks/usePendingFoodCache";
+import { FoodCachePendingTab } from "./adminTabs/FoodCachePendingTab";
 
 // AdminPanel — tách riêng khỏi App.jsx (component độc lập, xử lý toàn bộ
 // các tab trong "Cài đặt" và "Quản trị": Hồ sơ, Tài khoản, Điều khoản, Kết nối AI,
@@ -34,6 +36,7 @@ import { lookupLocalFood } from "./lib/localFoodDB";
 // Quản lý version, Kho mẫu, Bữa ăn, Cân nặng...
 export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,deleteWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,initialSection,hidePills}){if(!profile||!macro)return null;
   const flags=parseFeatureFlags(appSettings);
+  const {myPending,allPending,pendingCount,approvedCount,savePendingFoodCache,approvePendingFood,rejectPendingFood}=usePendingFoodCache(user?.id,isAdmin);
   const mob=useIsMobile();
   const [section,setSection]=useState(initialSection||(forcedSection==="settings"?(mob?null:"profile"):(forcedSection==="profile"?"profile":(forcedSection||"meals"))));
   useEffect(()=>{
@@ -171,7 +174,9 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     const itemsToCalc=overrideFoods||foodItems;
     if(itemsToCalc.length===0||itemsToCalc.every(f=>!f.name.trim()))return;
     setAiLoading(true);setAiError(null);setAiResult(null);
-    const fc=forceRefresh?{}:(foodCache||{});
+    // Món của chính user này đang chờ duyệt vẫn dùng được ngay (đỡ tốn thêm
+    // lượt AI khi ăn lại), cache dùng chung (đã duyệt) được ưu tiên hơn nếu trùng
+    const fc=forceRefresh?{}:({...(myPending||{}),...(foodCache||{})});
     const validItems=itemsToCalc.filter(f=>f.name.trim());
 
     // === STEP 1: LocalDB (192 món verified, ưu tiên cao nhất) ===
@@ -327,13 +332,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       setAiResult({items:newItems,tip:parsed.tip||"",_cacheEntries:newCacheEntries});
     }catch(err){setAiError(err.message||"Lỗi kết nối AI");console.error(err);}
     finally{setAiLoading(false);}
-  },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,usdaKey,user,flags.ai_macro]);
+  },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,myPending,usdaKey,user,flags.ai_macro]);
 
   const mealNames=ALL_MEALS.filter(m=>mealConfig[dayType]?.includes(m.id)).map(m=>({id:m.id,l:`${m.icon} ${m.name}`}));
 
   return <div>
     {!hidePills&&!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[{id:"meals",l:"🍽️ Bữa ăn"},...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"},{id:"admin",l:"🔧 Quản lý version"},{id:"templates",l:"📚 Mẫu"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+      {[{id:"meals",l:"🍽️ Bữa ăn"},...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"},{id:"admin",l:"🔧 Quản lý version"},{id:"templates",l:"📚 Mẫu"},{id:"food_cache_pending",l:`🗂️ Kho món${pendingCount>0?` (${pendingCount})`:""}`}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
       )}
     </div>}
@@ -389,6 +394,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           {id:"orders",t:"Duyệt đơn hàng",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lq5" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><rect x="18" y="10" width="60" height="76" rx="10" fill="url(#lq5)"/><rect x="28" y="26" width="40" height="6" rx="3" fill="white" opacity="0.8"/><rect x="28" y="40" width="40" height="6" rx="3" fill="white" opacity="0.5"/><circle cx="62" cy="66" r="16" fill="white"/><path d="M55 66 L60 71 L70 60" fill="none" stroke="url(#lq5)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/></svg>},
           {id:"report_biz",t:"Báo cáo kinh doanh",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lq6" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><rect x="10" y="10" width="76" height="76" rx="12" fill="url(#lq6)"/><rect x="24" y="52" width="10" height="24" rx="3" fill="white"/><rect x="43" y="38" width="10" height="38" rx="3" fill="white" opacity="0.85"/><rect x="62" y="26" width="10" height="50" rx="3" fill="white" opacity="0.7"/></svg>},
           {id:"feature_flags",t:"Quản lý tính năng",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lq7" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><rect x="14" y="14" width="68" height="20" rx="10" fill="url(#lq7)"/><circle cx="66" cy="24" r="7" fill="white"/><rect x="14" y="42" width="68" height="20" rx="10" fill="url(#lq7)" opacity="0.6"/><circle cx="30" cy="52" r="7" fill="white"/><rect x="14" y="70" width="68" height="20" rx="10" fill="url(#lq7)"/><circle cx="66" cy="80" r="7" fill="white"/></svg>},
+          {id:"food_cache_pending",t:`Kho món${pendingCount>0?` (${pendingCount})`:""}`,svg:"🗂️"},
         ].map((s,i,arr)=>
           <div key={s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",borderBottom:i<arr.length-1?`1.5px solid ${C.border}`:"none",cursor:"pointer"}}>
             <div style={{width:34,height:34,borderRadius:9,background:C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{s.svg}</div>
@@ -424,9 +430,10 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob}/>}
 
     {/* TEMPLATES (admin only — separate pill) */}
-    {section==="templates"&&isAdmin&&<TemplatesTab isAdmin={isAdmin} mob={mob} macro={macro} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} mealNames={mealNames} mealsData={mealsData} callAI={callAI} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} setDayType={setDayType} setFoodItems={setFoodItems} setUserHasEdited={setUserHasEdited}/>}
+    {section==="templates"&&isAdmin&&<TemplatesTab isAdmin={isAdmin} mob={mob} macro={macro} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} mealNames={mealNames} mealsData={mealsData} callAI={callAI} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} setDayType={setDayType} setFoodItems={setFoodItems} setUserHasEdited={setUserHasEdited} savePendingFoodCache={savePendingFoodCache} aiProvider={aiProvider}/>}
+    {section==="food_cache_pending"&&isAdmin&&<FoodCachePendingTab mob={mob} allPending={allPending} pendingCount={pendingCount} approvedCount={approvedCount} approvePendingFood={approvePendingFood} rejectPendingFood={rejectPendingFood}/>}
     {/* MEALS */}
-    {section==="meals"&&<MealsTab mob={mob} profile={profile} macro={macro} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mealMode={mealMode} setMealMode={setMealMode} dayType={dayType} setDayType={setDayType} showMealSettings={showMealSettings} setShowMealSettings={setShowMealSettings} mealConfig={mealConfig} setMealConfig={setMealConfig} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} userHasEdited={userHasEdited} setUserHasEdited={setUserHasEdited} foodItems={foodItems} setFoodItems={setFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} aiProvider={aiProvider} callAI={callAI} mealNames={mealNames} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} refreshDefaultTemplates={refreshDefaultTemplates} applyTemplate={applyTemplate} showSaveTpl={showSaveTpl} setShowSaveTpl={setShowSaveTpl} expandedTpl={expandedTpl} setExpandedTpl={setExpandedTpl} tplFilter={tplFilter} setTplFilter={setTplFilter} showAssignDays={showAssignDays} setShowAssignDays={setShowAssignDays} assignSelectedDays={assignSelectedDays} setAssignSelectedDays={setAssignSelectedDays}/>}
+    {section==="meals"&&<MealsTab mob={mob} profile={profile} macro={macro} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mealMode={mealMode} setMealMode={setMealMode} dayType={dayType} setDayType={setDayType} showMealSettings={showMealSettings} setShowMealSettings={setShowMealSettings} mealConfig={mealConfig} setMealConfig={setMealConfig} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} userHasEdited={userHasEdited} setUserHasEdited={setUserHasEdited} foodItems={foodItems} setFoodItems={setFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} aiProvider={aiProvider} callAI={callAI} mealNames={mealNames} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} savePendingFoodCache={savePendingFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} refreshDefaultTemplates={refreshDefaultTemplates} applyTemplate={applyTemplate} showSaveTpl={showSaveTpl} setShowSaveTpl={setShowSaveTpl} expandedTpl={expandedTpl} setExpandedTpl={setExpandedTpl} tplFilter={tplFilter} setTplFilter={setTplFilter} showAssignDays={showAssignDays} setShowAssignDays={setShowAssignDays} assignSelectedDays={assignSelectedDays} setAssignSelectedDays={setAssignSelectedDays}/>}
 
     {/* PROFILE */}
     {section==="profile"&&<ProfileTab profile={profile} setProfile={setProfile} macro={macro} appSettings={appSettings} saveSetting={saveSetting} weightLog={weightLog} mob={mob}/>}

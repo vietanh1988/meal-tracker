@@ -2,7 +2,7 @@ import { useState } from "react";
 import { C, card, inp, redBtn } from "../theme";
 import { estimateGram } from "../lib/usdaService";
 
-export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, mealNames, mealsData, callAI, allFoodItems, setAllFoodItems, aiResult, setAiResult, aiLoading, aiError, setAiError, setDayType, setFoodItems, setUserHasEdited}){
+export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, mealNames, mealsData, callAI, allFoodItems, setAllFoodItems, aiResult, setAiResult, aiLoading, aiError, setAiError, setDayType, setFoodItems, setUserHasEdited, savePendingFoodCache, aiProvider}){
 const [expandedId,setExpandedId]=useState(null);
 const [editingId,setEditingId]=useState(null);
 return (
@@ -118,6 +118,7 @@ if(saveItems.length>0)mealsData.push({meal_id:meal.id,meal_name:meal.l,items:sav
 if(mealsData.length===0){alert("Không có dữ liệu bữa ăn");return;}
 const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
 if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsData,Math.round(totalCal),editingId);
+if(aiResult._cacheEntries&&savePendingFoodCache) savePendingFoodCache(aiResult._cacheEntries,aiProvider);
 document.getElementById("tpl-name").value="";
 setEditingId(null);
 setAiResult(null);
