@@ -23,6 +23,18 @@ export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,
     }
   },[period,offset]);
 
+  // Chỉ dùng giá trị NGUYÊN THUỶ (number/string) làm dependency, KHÔNG dùng thẳng
+  // object weightLog/profile/macro — vì App.jsx tạo object mới mỗi lần render dù
+  // dữ liệu bên trong không đổi, khiến useEffect bị hiểu nhầm là "có thay đổi"
+  // và chạy lại liên tục (gây nhấp nháy "Đang tải báo cáo..." không dừng).
+  const weightLen=weightLog?.length||0;
+  const firstKg=weightLog?.length>0?weightLog[0].kg:null;
+  const lastKg=weightLog?.length>0?weightLog[weightLog.length-1].kg:null;
+  const profileKg=profile?.kg;
+  const profileGoalKg=profile?.goalKg;
+  const macroCalTarget=macro?.calTarget;
+  const macroProtein=macro?.protein;
+
   // Load data — try daily_logs first, fallback to meal_logs
   useEffect(()=>{
     (async()=>{
@@ -108,15 +120,15 @@ export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,
         }
       }
       // Weight data
-      const startKg=weightLog.length>0?weightLog[0].kg:profile.kg;
-      const curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg;
-      const goalKg=profile.goalKg||startKg;
+      const startKg=firstKg!==null?firstKg:profileKg;
+      const curKg=lastKg!==null?lastKg:profileKg;
+      const goalKg=profileGoalKg||startKg;
       const wPct=goalKg!==startKg?Math.round(((curKg-startKg)/(goalKg-startKg))*100):0;
 
       setData({range,byDate,dates,daysLogged,totalDays,avgCal,avgP,avgC,avgF,adhereDays,streak,topFoods,topProtein,weeks,target,startKg,curKg,goalKg,wPct});
       setLoading(false);
     })();
-  },[getMealHistory,getDailyLogs,getDateRange,weightLog,profile,macro]);
+  },[getMealHistory,getDailyLogs,getDateRange,weightLen,firstKg,lastKg,profileKg,profileGoalKg,macroCalTarget,macroProtein]);
 
   const range=getDateRange();
 
