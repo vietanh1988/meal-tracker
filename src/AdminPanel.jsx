@@ -300,7 +300,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       }
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       const aiSourceLabel=aiProvider==="gpt"?"GPT":aiProvider==="claude"?"Claude":"Gemini";
-      const aiItemsWithSource=(parsed.items||[]).map((it,idx)=>({...it,source:aiSourceLabel,_mealId:stillUncached[idx]?._mealId}));
+      const aiItemsWithSource=(parsed.items||[]).map((it,idx)=>{
+        // Khớp theo TÊN món trước (đáng tin hơn) — chỉ dùng vị trí trong mảng làm
+        // phương án dự phòng cuối cùng, phòng khi AI trả về không đúng thứ tự tuyệt đối.
+        const itName=(it.name||"").toLowerCase().trim();
+        const matched=stillUncached.find(f=>f.name.toLowerCase().trim()===itName)||stillUncached[idx];
+        return {...it,source:aiSourceLabel,_mealId:matched?._mealId};
+      });
       const newItems=[...allResolved,...aiItemsWithSource];
       // Cache AI results (only non-localDB items)
       const newCacheEntries={};
