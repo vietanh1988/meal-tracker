@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 import { C, card, redBtn } from "../theme";
 import { UserAvatar } from "../UserAvatar";
 import { MySubscription } from "./MySubscription";
@@ -10,6 +11,11 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
   const [pushState,setPushState]=useState("checking"); // checking | unsupported | default | granted | denied
   const [pushLoading,setPushLoading]=useState(false);
   const [pushError,setPushError]=useState("");
+  const [showDeleteModal,setShowDeleteModal]=useState(false);
+  const [deletePassword,setDeletePassword]=useState("");
+  const [deleteConfirmText,setDeleteConfirmText]=useState("");
+  const [deleting,setDeleting]=useState(false);
+  const [deleteError,setDeleteError]=useState("");
 
   useEffect(()=>{
     if(!isPushSupported()){setPushState("unsupported");return;}
@@ -33,6 +39,34 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
     try{ await disablePushNotifications(); }catch(e){ console.error(e); }
     setPushState(await getPushStatus());
     setPushLoading(false);
+  };
+
+  const handleDeleteAccount=async()=>{
+    setDeleteError("");
+    if(!deletePassword.trim()){setDeleteError("Vui lòng nhập mật khẩu để xác nhận");return;}
+    if(deleteConfirmText.trim().toUpperCase()!=="XOA"){setDeleteError('Vui lòng gõ đúng chữ "XOA" để xác nhận');return;}
+    setDeleting(true);
+    try{
+      // Xác thực lại mật khẩu trước khi xoá (re-auth) — đảm bảo đúng người, không phải ai đó
+      // mượn máy đã đăng nhập sẵn bấm nhầm
+      const {error: reAuthErr}=await supabase.auth.signInWithPassword({email:user.email,password:deletePassword});
+      if(reAuthErr){setDeleteError("Sai mật khẩu, vui lòng thử lại");setDeleting(false);return;}
+
+      const {data:sessionData}=await supabase.auth.getSession();
+      const token=sessionData?.session?.access_token;
+      if(!token){setDeleteError("Không lấy được phiên đăng nhập, vui lòng tải lại trang");setDeleting(false);return;}
+
+      const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/delete-account",{
+        method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      });
+      const result=await res.json();
+      if(result.error){setDeleteError(result.error);setDeleting(false);return;}
+
+      alert("Tài khoản đã được xoá vĩnh viễn. Cảm ơn bạn đã sử dụng Fipilot AI!");
+      if(signOut)signOut();
+      window.location.reload();
+    }catch(e){console.error(e);setDeleteError("Có lỗi xảy ra, vui lòng thử lại");}
+    setDeleting(false);
   };
 
   return (
@@ -95,6 +129,38 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
         });
       }} style={{...redBtn,marginTop:mob?8:0,background:"linear-gradient(135deg,#6B7280,#4B5563)"}}>🗑️ Xóa cache & cập nhật</button>
       </div>
+
+      <div style={{marginTop:20,paddingTop:16,borderTop:`1.5px dashed ${C.red}`}}>
+        <div style={{fontSize:12,fontWeight:800,color:C.red,marginBottom:8,letterSpacing:"0.05em",textTransform:"uppercase"}}>⚠️ Vùng nguy hiểm</div>
+        <button onClick={()=>{setShowDeleteModal(true);setDeletePassword("");setDeleteConfirmText("");setDeleteError("");}} style={{width:"100%",padding:"10px",borderRadius:8,border:`1.5px solid ${C.red}`,background:"#fff",color:C.red,fontSize:13,fontWeight:700,cursor:"pointer"}}>🗑️ Xoá tài khoản vĩnh viễn</button>
+        <div style={{fontSize:11,color:C.t3,marginTop:6,lineHeight:1.5}}>Xoá toàn bộ dữ liệu cá nhân (hồ sơ, cân nặng, bữa ăn, lịch sử chat AI...) — không thể khôi phục.</div>
+      </div>
+
+      {showDeleteModal&&(
+        <div onClick={()=>!deleting&&setShowDeleteModal(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,zIndex:300}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,maxWidth:420,width:"100%",padding:"24px 22px"}}>
+            <div style={{fontSize:36,textAlign:"center",marginBottom:10}}>⚠️</div>
+            <div style={{fontSize:17,fontWeight:800,color:C.t1,textAlign:"center",marginBottom:8}}>Xoá tài khoản vĩnh viễn?</div>
+            <div style={{fontSize:13,color:C.t2,textAlign:"center",lineHeight:1.6,marginBottom:18}}>Toàn bộ hồ sơ, cân nặng, bữa ăn, lịch sử chat AI sẽ bị xoá <b>vĩnh viễn, không thể khôi phục</b>. Hành động này không thể hoàn tác.</div>
+
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:5,textTransform:"uppercase",letterSpacing:"0.05em"}}>Nhập mật khẩu để xác nhận</div>
+              <input type="password" value={deletePassword} onChange={e=>setDeletePassword(e.target.value)} placeholder="Mật khẩu hiện tại" style={{width:"100%",padding:"10px 12px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:14,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
+            </div>
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:5,textTransform:"uppercase",letterSpacing:"0.05em"}}>Gõ "XOA" để xác nhận</div>
+              <input value={deleteConfirmText} onChange={e=>setDeleteConfirmText(e.target.value)} placeholder="XOA" style={{width:"100%",padding:"10px 12px",borderRadius:8,border:`1.5px solid ${C.border}`,fontSize:14,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
+            </div>
+
+            {deleteError&&<div style={{marginBottom:14,padding:"8px 12px",background:C.redBg,borderRadius:8,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {deleteError}</div>}
+
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setShowDeleteModal(false)} disabled={deleting} style={{flex:1,padding:"11px",borderRadius:8,border:`1.5px solid ${C.border}`,background:"#fff",color:C.t2,fontSize:13,fontWeight:700,cursor:deleting?"default":"pointer"}}>Huỷ</button>
+              <button onClick={handleDeleteAccount} disabled={deleting} style={{flex:1,padding:"11px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#EF4444,#DC2626)",color:"#fff",fontSize:13,fontWeight:700,cursor:deleting?"default":"pointer",opacity:deleting?0.6:1}}>{deleting?"Đang xoá...":"Xoá vĩnh viễn"}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
