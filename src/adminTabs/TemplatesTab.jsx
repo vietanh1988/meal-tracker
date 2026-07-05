@@ -62,6 +62,7 @@ export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefault
           const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
           foods.forEach(f=>combined.push({...f,_mealId:meal.id}));
         });
+        console.log("🔍 DEBUG combined (truoc khi goi callAI):",combined.map(f=>({name:f.name,_mealId:f._mealId})));
         if(combined.length===0){setAiError("Chưa nhập thức ăn nào");return;}
         setFoodItems(combined);
         callAI(false,combined);

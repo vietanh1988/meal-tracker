@@ -170,6 +170,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
   const callAI=useCallback(async(forceRefresh=false,overrideFoods=null)=>{
     const itemsToCalc=overrideFoods||foodItems;
     if(itemsToCalc.length===0||itemsToCalc.every(f=>!f.name.trim()))return;
+    console.log("🔍 DEBUG callAI itemsToCalc:",itemsToCalc.map(f=>({name:f.name,_mealId:f._mealId})));
     setAiLoading(true);setAiError(null);setAiResult(null);
     const fc=forceRefresh?{}:(foodCache||{});
     const validItems=itemsToCalc.filter(f=>f.name.trim());
