@@ -63,7 +63,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
       if(result.error){setDeleteError(result.error);setDeleting(false);return;}
 
       alert("Tài khoản đã được xoá vĩnh viễn. Cảm ơn bạn đã sử dụng Fipilot AI!");
-      if(signOut)signOut();
+      if(signOut)await signOut();
       window.location.reload();
     }catch(e){console.error(e);setDeleteError("Có lỗi xảy ra, vui lòng thử lại");}
     setDeleting(false);
