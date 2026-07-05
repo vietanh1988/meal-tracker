@@ -25,6 +25,10 @@ const defaultStructure = {
 export function useUserData(userId) {
   const [loaded, setLoaded] = useState(false);
   const [meals, setMeals] = useState({ train: defaultStructure.train, rest: defaultStructure.rest });
+  const mealsRef = useRef(meals); // luôn đồng bộ NGAY LẬP TỨC (không đợi React render lại)
+  // để tránh race condition khi saveMealToCloud được gọi liên tiếp nhiều lần
+  // (VD: "Lưu tất cả bữa" gọi 1 lần/bữa) — nếu đọc `meals` qua closure thì mỗi
+  // lần gọi đều thấy snapshot CŨ, làm bảng daily_logs chỉ lưu đúng bữa cuối cùng.
   const [foodCache, setFoodCache] = useState({});
   const [weeklyTemplates, setWeeklyTemplates] = useState([]);
   const [defaultTemplates, setDefaultTemplates] = useState([]);
@@ -53,6 +57,7 @@ export function useUserData(userId) {
             console.log(`✅ Synced ${Object.keys(bucket).length} meals for ${dt} from cloud`);
         });
         setMeals(newMeals);
+        mealsRef.current = newMeals;
       }
 
       // Load food cache
@@ -125,6 +130,7 @@ export function useUserData(userId) {
       const idx = list.findIndex(m => m.id === mealId);
       if (idx >= 0) list[idx] = { ...list[idx], items };
       updated[dayType] = list;
+      mealsRef.current = updated; // đồng bộ NGAY (chạy đồng bộ bên trong updater của setState)
       return updated;
     });
   }, []);
@@ -148,9 +154,11 @@ export function useUserData(userId) {
 
       // === Auto-save to daily_logs ===
       const today = new Date().toISOString().slice(0, 10);
-      const currentMeals = meals[dayType] || defaultStructure[dayType];
-      const updatedMeals = currentMeals.map(m => m.id === mealId ? { ...m, items } : m);
-      const mealsWithItems = updatedMeals
+      // Đọc từ mealsRef.current (đã đồng bộ NGAY qua updateMealsState ở trên) thay vì
+      // biến `meals` (closure) — tránh bị "cũ" khi hàm này được gọi liên tiếp nhiều
+      // lần trong cùng 1 lượt (VD "Lưu tất cả bữa" gọi 1 lần/bữa).
+      const currentMeals = mealsRef.current[dayType] || defaultStructure[dayType];
+      const mealsWithItems = currentMeals
         .filter(m => m.items && m.items.length > 0)
         .map(m => ({ meal_id: m.id, meal_name: m.name, items: m.items }));
 
@@ -176,7 +184,7 @@ export function useUserData(userId) {
     } catch (e) { console.error("Meal save error:", e); }
     // Block re-sync for 30s after save to prevent overwrite
     lastFetchRef.current = Date.now();
-  }, [userId, updateMealsState, meals]);
+  }, [userId, updateMealsState]);
 
   // Update food cache in state with pre-normalized entries
   const updateFoodCacheState = useCallback((normalizedEntries) => {
