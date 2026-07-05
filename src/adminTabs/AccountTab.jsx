@@ -154,10 +154,21 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
 
             {deleteError&&<div style={{marginBottom:14,padding:"8px 12px",background:C.redBg,borderRadius:8,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {deleteError}</div>}
 
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setShowDeleteModal(false)} disabled={deleting} style={{flex:1,padding:"11px",borderRadius:8,border:`1.5px solid ${C.border}`,background:"#fff",color:C.t2,fontSize:13,fontWeight:700,cursor:deleting?"default":"pointer"}}>Huỷ</button>
-              <button onClick={handleDeleteAccount} disabled={deleting} style={{flex:1,padding:"11px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#EF4444,#DC2626)",color:"#fff",fontSize:13,fontWeight:700,cursor:deleting?"default":"pointer",opacity:deleting?0.6:1}}>{deleting?"Đang xoá...":"Xoá vĩnh viễn"}</button>
-            </div>
+            {(()=>{
+              const pwOk=deletePassword.trim().length>0;
+              const confirmOk=deleteConfirmText.trim().toUpperCase()==="XOA";
+              const canDelete=pwOk&&confirmOk&&!deleting;
+              return <>
+                <div style={{marginBottom:16,padding:"10px 12px",background:C.bg,borderRadius:8,display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,fontWeight:700,color:pwOk?C.green:C.t3}}><span>{pwOk?"☑":"☐"}</span>Đã nhập mật khẩu</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,fontSize:12,fontWeight:700,color:confirmOk?C.green:C.t3}}><span>{confirmOk?"☑":"☐"}</span>Đã gõ đúng "XOA"</div>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>setShowDeleteModal(false)} disabled={deleting} style={{flex:1,padding:"11px",borderRadius:8,border:`1.5px solid ${C.border}`,background:"#fff",color:C.t2,fontSize:13,fontWeight:700,cursor:deleting?"default":"pointer"}}>Huỷ</button>
+                  <button onClick={handleDeleteAccount} disabled={!canDelete} style={{flex:1,padding:"11px",borderRadius:8,border:"none",background:canDelete?"linear-gradient(135deg,#EF4444,#DC2626)":"#CBD5E1",color:"#fff",fontSize:13,fontWeight:700,cursor:canDelete?"pointer":"not-allowed",opacity:deleting?0.6:1}}>{deleting?"Đang xoá...":"Xoá vĩnh viễn"}</button>
+                </div>
+              </>;
+            })()}
           </div>
         </div>
       )}
