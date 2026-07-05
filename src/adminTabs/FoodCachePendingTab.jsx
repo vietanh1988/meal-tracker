@@ -55,7 +55,7 @@ export function FoodCachePendingTab({ mob, allPending, pendingCount, approvedCou
         <div style={{ background: C.surface, border: `1.5px solid ${C.border}`, borderRadius: 12, padding: "10px 12px", marginBottom: 16, maxHeight: 320, overflowY: "auto" }}>
           {getAllFoods().sort((a, b) => a.name.localeCompare(b.name)).map((f, i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 600, padding: "5px 4px", borderBottom: i < localCount - 1 ? `1px solid ${C.border}` : "none", color: C.t2 }}>
-              <span>{f.name}</span>
+              <span><span style={{ color: C.t3, fontWeight: 700, marginRight: 6 }}>{i + 1}.</span>{f.name}</span>
               <span style={{ color: C.t3 }}>P:{f.p} C:{f.c} F:{f.f} = {f.cal}cal/100g</span>
             </div>
           ))}
@@ -71,7 +71,7 @@ export function FoodCachePendingTab({ mob, allPending, pendingCount, approvedCou
             <div style={{ textAlign: "center", fontSize: 12, color: C.t3, padding: 10 }}>Chưa có món nào được duyệt</div>
           ) : (approvedList || []).map((f, i) => (
             <div key={f.id || i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 600, padding: "5px 4px", borderBottom: i < approvedList.length - 1 ? "1px solid #BBF7D0" : "none", color: "#166534" }}>
-              <span>{f.food_name} {f.gram}g</span>
+              <span><span style={{ color: "#15803D", fontWeight: 700, marginRight: 6 }}>{i + 1}.</span>{f.food_name} {f.gram}g</span>
               <span style={{ color: "#15803D" }}>P:{f.protein} C:{f.carb} F:{f.fat} = {Math.round(f.cal)}cal · {f.ai_provider}</span>
             </div>
           ))}
