@@ -175,15 +175,25 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
     {/* Evaluation card — same style as PC */}
     {actualCal>0&&(()=>{
-      const cs=actualCal===0?0:actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?100:actualCal>=heroCal*0.85?85:70;
-      const ps=actualP===0?0:actualP>=heroP*0.9?100:actualP>=heroP*0.8?85:70;
-      const ms=actualCal===0?0:Math.round((cs+ps+85+85)/4);
+      // Điểm từng chỉ số: phạt CẢ 2 chiều (thiếu lẫn dư), không đứng yên ở 85 bất kể lệch bao nhiêu như trước
+      const scoreSym=(actual,target,tol=0.10)=>{if(!target||target<=0)return actual===0?0:100;if(actual<=0)return 0;const diff=Math.abs(actual/target-1);if(diff<=tol)return 100;return Math.max(0,Math.round(100-(diff-tol)*200));};
+      const scoreProtein=(actual,target)=>{if(!target||target<=0)return actual===0?0:100;if(actual<=0)return 0;if(actual>=target*0.9)return 100;return Math.max(0,Math.round(actual/(target*0.9)*100));};
+      const cs=scoreSym(actualCal,heroCal,0.10);
+      const ps=scoreProtein(actualP,heroP);
+      const cas=scoreSym(actualC,heroC,0.15);
+      const fas=scoreSym(actualF,heroF,0.15);
+      const ms=actualCal===0?0:Math.round((cs+ps+cas+fas)/4);
       const msl=ms>=90?"Rất phù hợp với mục tiêu":ms>=75?"Khá tốt, cần bổ sung thêm":"Cần điều chỉnh thêm";
       const cr=heroCal-actualCal;
+      // Liệt kê CỤ THỂ macro nào đang lệch nhiều, không chỉ nói mỗi calo như trước
+      const macroWarnings=[];
+      if(heroP>0){const r=actualP/heroP;if(r<0.85)macroWarnings.push(`thiếu đạm (${actualP}/${heroP}g)`);else if(r>1.5)macroWarnings.push(`dư khá nhiều đạm (${actualP}/${heroP}g)`);}
+      if(heroC>0){const r=actualC/heroC;if(r>1.2)macroWarnings.push(`dư tinh bột (${actualC}/${heroC}g)`);else if(r<0.8)macroWarnings.push(`thiếu tinh bột (${actualC}/${heroC}g)`);}
+      if(heroF>0){const r=actualF/heroF;if(r>1.2)macroWarnings.push(`dư chất béo (${actualF}/${heroF}g)`);else if(r<0.8)macroWarnings.push(`thiếu chất béo (${actualF}/${heroF}g)`);}
       return <div style={{...card,padding:"14px 16px",marginTop:6,background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)"}}>
         <div style={{display:"flex",alignItems:"center",gap:14}}>
           <div><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:3}}><span style={{fontSize:12}}>🎯</span><span style={{fontSize:11,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:28,fontWeight:900,color:"#059669",lineHeight:1}}>{ms}<span style={{fontSize:13,color:"#64748B",fontWeight:600}}> /100</span></div></div>
-          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{cr>0?`Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`:cr<0?`Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả."}</div></div>
+          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(cr>0?`Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`:cr<0?`Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả.")+(macroWarnings.length>0?" Ngoài ra đang "+macroWarnings.join(", ")+".":"")}</div></div>
         </div>
       </div>;
     })()}
