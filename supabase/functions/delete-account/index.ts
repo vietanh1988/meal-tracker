@@ -12,15 +12,25 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace("Bearer ", "").trim();
   if (!token) {
-    return new Response(JSON.stringify({ error: "Thiếu access token" }), { status: 401 });
+    return new Response(JSON.stringify({ error: "Thiếu access token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
@@ -28,18 +38,18 @@ Deno.serve(async (req) => {
   // Xác thực token này thực sự thuộc về 1 user đang đăng nhập hợp lệ
   const { data: userData, error: userErr } = await supabase.auth.getUser(token);
   if (userErr || !userData?.user) {
-    return new Response(JSON.stringify({ error: "Token không hợp lệ, vui lòng đăng nhập lại" }), { status: 401 });
+    return new Response(JSON.stringify({ error: "Token không hợp lệ, vui lòng đăng nhập lại" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   const userId = userData.user.id;
 
   const { error: delErr } = await supabase.auth.admin.deleteUser(userId);
   if (delErr) {
-    return new Response(JSON.stringify({ error: delErr.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: delErr.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   return new Response(JSON.stringify({ success: true }), {
     status: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });

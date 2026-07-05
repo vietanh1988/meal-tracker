@@ -114,24 +114,24 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       <div style={{fontSize:mob?17:18,fontWeight:600,color:C.t1,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
       <div style={{display:"flex",alignItems:"baseline",gap:8}}>
         <div style={{fontSize:mob?36:44,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>
-          {actualCal>0?actualCal.toLocaleString():heroCal.toLocaleString()}
+          {actualCal.toLocaleString()}
         </div>
         <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
       </div>
       {((profile.calorieMode||"standard")==="asian"||(profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"))&&<div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:6,alignItems:"center"}}>{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:11,fontWeight:700,color:"#007AFF",padding:"4px 10px",background:"rgba(0,122,255,0.08)",borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🇻🇳 Calo chuẩn Việt Nam</span>}{profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 10px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}</div>}
-      {actualCal>0&&<div style={{marginTop:6}}>
+      <div style={{marginTop:6}}>
         <span style={{fontSize:13,fontWeight:700,color:(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?"#B45309":pp<=105?"#16A34A":"#DC2626";})()}}>{(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?`⚠️ Còn thiếu ${calRemain} kcal`:pp<=105?"✅ Ổn rồi, giữ nhé!":`🔴 Dư ${Math.abs(calRemain)} kcal`;})()}</span>
-      </div>}
+      </div>
       {/* Progress bar */}
       <div style={{height:8,width:"100%",background:"#F3F4F6",borderRadius:4,marginTop:10,overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${Math.min(actualCal>0?(actualCal/heroCal)*100:0,120)}%`,background:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
+        <div style={{height:"100%",width:`${Math.min(heroCal>0?(actualCal/heroCal)*100:0,120)}%`,background:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
       </div>
       {/* Macro rings */}
       <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
-        <MacroRing l="Protein" v={actualP>0?actualP:heroP} max={heroP} color="#007AFF" color2="#007AFF" sub={actualP>0?`/${heroP}g`:null} unit="g"/>
-        <MacroRing l="Carb" v={actualC>0?actualC:heroC} max={heroC} color="#5AC8FA" color2="#5AC8FA" sub={actualC>0?`/${heroC}g`:null} unit="g"/>
-        <MacroRing l="Fat" v={actualF>0?actualF:heroF} max={heroF} color="#8E8E93" color2="#8E8E93" sub={actualF>0?`/${heroF}g`:null} unit="g"/>
-        <MacroRing l="Chất xơ" v={actualFiber>0?actualFiber:heroFiber} max={heroFiber} color="#34C759" color2="#34C759" sub={actualFiber>0?`/${heroFiber}g`:null} unit="g"/>
+        <MacroRing l="Protein" v={actualP} max={heroP} color="#007AFF" color2="#007AFF" sub={`/${heroP}g`} unit="g"/>
+        <MacroRing l="Carb" v={actualC} max={heroC} color="#5AC8FA" color2="#5AC8FA" sub={`/${heroC}g`} unit="g"/>
+        <MacroRing l="Fat" v={actualF} max={heroF} color="#8E8E93" color2="#8E8E93" sub={`/${heroF}g`} unit="g"/>
+        <MacroRing l="Chất xơ" v={actualFiber} max={heroFiber} color="#34C759" color2="#34C759" sub={`/${heroFiber}g`} unit="g"/>
       </div>
     </div>
 
