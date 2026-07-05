@@ -15,7 +15,9 @@ export function useAppSettings(userId) {
         const s = {};
         data.forEach(d => { s[d.key] = d.value; });
         setSettings(s);
-        if (!silent) console.log("✅ Loaded app settings:", Object.keys(s).length, "keys", s);
+        // Chỉ log SỐ LƯỢNG key, không log toàn bộ object — tránh in nhầm
+        // các giá trị nhạy cảm (API key...) ra Console cho ai cũng đọc được.
+        if (!silent) console.log("✅ Loaded app settings:", Object.keys(s).length, "keys");
       }
 
       // Đọc quyền Admin từ database (thay vì hardcode ID)
