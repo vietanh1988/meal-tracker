@@ -574,10 +574,8 @@ export default function App(){
   const pcET=profile.exerciseType||"gym",pcEL=pcET==="gym"?"Gym":pcET==="gym_cardio"?"Gym+Cardio":pcET==="cardio"?"Cardio":"Nghỉ ngơi";
   // Điểm từng chỉ số: phạt CẢ 2 chiều (thiếu lẫn dư), không đứng yên ở 85 bất kể lệch bao nhiêu như trước
   const pcScoreSym=(actual,target,tol=0.10)=>{if(!target||target<=0)return actual===0?0:100;if(actual<=0)return 0;const diff=Math.abs(actual/target-1);if(diff<=tol)return 100;return Math.max(0,Math.round(100-(diff-tol)*200));};
-  // Đạm: không phạt dư (dư đạm không hại), chỉ phạt khi thiếu
-  const pcScoreProtein=(actual,target)=>{if(!target||target<=0)return actual===0?0:100;if(actual<=0)return 0;if(actual>=target*0.9)return 100;return Math.max(0,Math.round(actual/(target*0.9)*100));};
   const pcCS=pcScoreSym(pcAC,pcHCal,0.10);
-  const pcPS=pcScoreProtein(pcAP,pcHP);
+  const pcPS=pcScoreSym(pcAP,pcHP,0.10);
   const pcCaS=pcScoreSym(pcACb,pcHC,0.15);
   const pcFaS=pcScoreSym(pcAF,pcHF,0.15);
   const pcMS=pcAC===0?0:Math.round((pcCS+pcPS+pcCaS+pcFaS)/4);

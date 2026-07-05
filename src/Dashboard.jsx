@@ -177,9 +177,8 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     {actualCal>0&&(()=>{
       // Điểm từng chỉ số: phạt CẢ 2 chiều (thiếu lẫn dư), không đứng yên ở 85 bất kể lệch bao nhiêu như trước
       const scoreSym=(actual,target,tol=0.10)=>{if(!target||target<=0)return actual===0?0:100;if(actual<=0)return 0;const diff=Math.abs(actual/target-1);if(diff<=tol)return 100;return Math.max(0,Math.round(100-(diff-tol)*200));};
-      const scoreProtein=(actual,target)=>{if(!target||target<=0)return actual===0?0:100;if(actual<=0)return 0;if(actual>=target*0.9)return 100;return Math.max(0,Math.round(actual/(target*0.9)*100));};
       const cs=scoreSym(actualCal,heroCal,0.10);
-      const ps=scoreProtein(actualP,heroP);
+      const ps=scoreSym(actualP,heroP,0.10);
       const cas=scoreSym(actualC,heroC,0.15);
       const fas=scoreSym(actualF,heroF,0.15);
       const ms=actualCal===0?0:Math.round((cs+ps+cas+fas)/4);
