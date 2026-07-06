@@ -410,3 +410,84 @@ export function getAllFoods() {
 export function getFoodCount() {
   return Object.keys(LOCAL_FOODS).length;
 }
+
+// ============================================================
+// VAI TRÒ DINH DƯỠNG — dùng cho Meal Engine (tự tính gram khớp target)
+// role: "protein" | "carb" | "fat" | "fixed" (rau/gia vị — giữ nguyên gram,
+// không scale). Mặc định suy theo `cat` sẵn có, chỉ liệt kê ngoại lệ lệch
+// khỏi mặc định của nhóm — KHÔNG gắn tay cho từng món trong 196 món để
+// tránh gõ sai (rút kinh nghiệm từ vụ "khoai tây carb nhanh" gắn sai).
+// ============================================================
+const ROLE_BY_CAT = {
+  poultry: "protein", beef: "protein", pork: "protein", seafood: "protein",
+  egg_dairy: "protein", // trứng — sữa/phô mai/bơ override riêng bên dưới
+  starch: "carb",
+  fruit: "fixed", veg: "fixed",
+  nuts: "fat", // dầu/hạt khô — đậu (trừ đậu nành) override thành carb bên dưới
+  sauce: "fixed", drink: "fixed",
+  supp: "protein", // whey/casein/protein bar — mass gainer/granola override carb
+  processed: "protein", // xúc xích/giò/chả/nem/patê — đạm từ thịt là chính
+};
+
+const ROLE_OVERRIDE = {
+  // Sữa/sữa chua — ít khi dùng làm nguồn đạm/carb chính trong 1 bữa, giữ cố định
+  "sữa tươi": "fixed", "sữa": "fixed", "sữa tách béo": "fixed",
+  "sữa đậu nành": "fixed", "sữa chua": "fixed", "sữa chua hy lạp": "fixed",
+  // Phô mai/bơ — chất béo thật, dù nằm chung nhóm egg_dairy với trứng
+  "phô mai": "fat", "bơ": "fat",
+  // Đậu phụ — đạm là chính dù nằm ở nhóm rau củ
+  "đậu phụ": "protein",
+  // Đậu nành khô — đạm cao nhất bảng (36.5g/100g), không phải béo dù cùng nhóm hạt/dầu
+  "đậu nành": "protein",
+  // Các loại đậu hạt (trừ đậu nành, vốn đạm cao hơn cả carb) — carb chiếm ưu thế
+  "đậu đen": "carb", "đậu xanh": "carb", "đậu đỏ": "carb", "đậu lăng": "carb", "edamame": "carb",
+  // Mass gainer/granola — năng lượng carb là chính dù có kèm đạm
+  "mass gainer": "carb", "granola": "carb", "granola bar": "carb",
+  // Creatine/bcaa — không có macro thật, không đóng vai trò gì trong scale
+  "creatine": "fixed", "bcaa": "fixed",
+};
+
+export function getFoodRole(foodKey) {
+  const key = (foodKey || "").toLowerCase().trim();
+  if (ROLE_OVERRIDE[key]) return ROLE_OVERRIDE[key];
+  const item = LOCAL_FOODS[key];
+  if (!item) return "fixed";
+  return ROLE_BY_CAT[item.cat] || "fixed";
+}
+
+// ============================================================
+// GIỚI HẠN GRAM — chặn Meal Engine ra kết quả vô lý (VD "520g cơm").
+// Chỉ liệt kê món hay dùng làm NGUỒN CHÍNH (đạm/carb/béo phổ biến nhất) —
+// món không có trong bảng dùng giới hạn mặc định theo vai trò.
+// ============================================================
+const GRAM_LIMIT_OVERRIDE = {
+  "ức gà": { min: 80, max: 300 }, "ức gà luộc": { min: 80, max: 300 }, "ức gà nướng": { min: 80, max: 300 },
+  "đùi gà": { min: 80, max: 280 }, "thịt vịt": { min: 80, max: 280 },
+  "thịt bò": { min: 80, max: 250 }, "thăn bò": { min: 80, max: 250 }, "thịt bò xay": { min: 80, max: 250 },
+  "thịt heo nạc": { min: 80, max: 250 }, "thịt lợn nạc": { min: 80, max: 250 }, "thịt heo xay": { min: 80, max: 250 },
+  "cá hồi": { min: 80, max: 250 }, "cá ngừ": { min: 80, max: 250 }, "cá": { min: 80, max: 250 },
+  "tôm": { min: 60, max: 200 }, "mực": { min: 60, max: 200 },
+  "trứng gà": { min: 50, max: 200 }, "trứng": { min: 50, max: 200 }, "trứng gà luộc": { min: 50, max: 200 },
+  "đậu phụ": { min: 100, max: 300 },
+  "cơm trắng": { min: 80, max: 350 }, "cơm": { min: 80, max: 350 }, "cơm gạo lứt": { min: 80, max: 350 },
+  "khoai lang": { min: 100, max: 300 }, "khoai tây": { min: 100, max: 300 },
+  "bánh mì": { min: 30, max: 150 }, "bún": { min: 100, max: 300 }, "miến": { min: 50, max: 200 },
+  "yến mạch": { min: 30, max: 100 }, "xôi": { min: 80, max: 300 },
+  "dầu ăn": { min: 5, max: 30 }, "dầu ô liu": { min: 5, max: 30 }, "dầu mè": { min: 5, max: 20 },
+  "bơ đậu phộng": { min: 10, max: 40 }, "hạt điều": { min: 10, max: 40 }, "hạnh nhân": { min: 10, max: 40 },
+};
+
+// Giới hạn mặc định theo vai trò — áp dụng cho món KHÔNG có trong bảng trên
+const DEFAULT_LIMIT_BY_ROLE = {
+  protein: { min: 50, max: 300 },
+  carb: { min: 50, max: 350 },
+  fat: { min: 5, max: 50 },
+  fixed: { min: 0, max: 1000 }, // gần như không giới hạn, Meal Engine không scale nhóm này
+};
+
+export function getGramLimit(foodKey) {
+  const key = (foodKey || "").toLowerCase().trim();
+  if (GRAM_LIMIT_OVERRIDE[key]) return GRAM_LIMIT_OVERRIDE[key];
+  const role = getFoodRole(key);
+  return DEFAULT_LIMIT_BY_ROLE[role] || DEFAULT_LIMIT_BY_ROLE.fixed;
+}

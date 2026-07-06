@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { C, card, inp, redBtn } from "../theme";
 import { ALL_MEALS } from "../mealConstants";
 import { SlidingTabs } from "../SlidingTabs";
 import { estimateGram } from "../lib/usdaService";
+import { applyMealEngineToTemplate } from "../mealEngine";
 
 export function MealsTab({
 mob, profile, setProfile, macro, appSettings, isAdmin, saveSetting,
@@ -17,6 +19,8 @@ showSaveTpl, setShowSaveTpl, expandedTpl, setExpandedTpl,
 tplFilter, setTplFilter, showAssignDays, setShowAssignDays,
 assignSelectedDays, setAssignSelectedDays,
 }) {
+const [dietTab, setDietTab] = useState(profile.dietStrategy === "low_carb" ? "low_carb" : profile.dietStrategy === "keto" ? "keto" : "balance");
+const [appliedTemplate, setAppliedTemplate] = useState(null);
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
 {!mob?<div style={{display:"grid",gridTemplateColumns:"63% 35%",gap:20,marginBottom:14,alignItems:"center"}}>
@@ -38,8 +42,12 @@ return (
 <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
 <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
-<div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ Quản lý</div>
+{!appliedTemplate&&<div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ Quản lý</div>}
 </div>
+{appliedTemplate&&<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",background:"#EFF6FF",border:"1.5px solid #BFDBFE",borderRadius:10,marginBottom:14,fontSize:12}}>
+<span style={{color:"#1D4ED8",fontWeight:600}}>📋 Đang dùng mẫu: <b>{appliedTemplate.name}</b> — gram tự tính, khoá sửa</span>
+<div onClick={()=>setAppliedTemplate(null)} style={{color:"#71717A",fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",marginLeft:10}}>Huỷ áp dụng</div>
+</div>}
 {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
 <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:10}}>⚙️ Tuỳ chỉnh bữa ăn — {dayType==="train"?"Ngày tập":"Ngày nghỉ"}</div>
 {ALL_MEALS.map(m=>{
@@ -82,16 +90,16 @@ return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.bord
 const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
 return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
 <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
-<input value={item.name} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?13:14,height:mob?38:40,padding:mob?"8px 10px":"10px 12px"}}/>
-<select value={item.unit||"g"} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?12:14,height:mob?38:40,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px"}}>
+<input value={item.name} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?13:14,height:mob?38:40,padding:mob?"8px 10px":"10px 12px",opacity:appliedTemplate?0.6:1}}/>
+<select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?12:14,height:mob?38:40,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px",opacity:appliedTemplate?0.6:1}}>
 <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option><option value="scoop">Scoop</option>
 </select>
-<input type="number" inputMode="numeric" value={item.qty||""} onChange={e=>{const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px"}} placeholder="SL"/>
-<input type="number" inputMode="numeric" value={item.gram||""} onChange={e=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px",opacity:isWeight?1:0.7}} placeholder={isWeight?"Gram":"~Gram"}/>
-<button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:"pointer"}}>×</button>
+<input type="number" inputMode="numeric" value={item.qty||""} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px",opacity:appliedTemplate?0.6:1}} placeholder="SL"/>
+<input type="number" inputMode="numeric" value={item.gram||""} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px",opacity:appliedTemplate?0.5:(isWeight?1:0.7)}} placeholder={isWeight?"Gram":"~Gram"}/>
+<button disabled={!!appliedTemplate} onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1}}>×</button>
 </div>;
 })}
-<button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:"6px",fontSize:12,fontWeight:700,background:C.surface,color:C.t3,border:`1.5px dashed ${C.border}`,borderRadius:8,width:"100%",cursor:"pointer",fontFamily:"inherit",marginTop:4}}>+ Thêm món</button>
+{!appliedTemplate&&<button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:"6px",fontSize:12,fontWeight:700,background:C.surface,color:C.t3,border:`1.5px dashed ${C.border}`,borderRadius:8,width:"100%",cursor:"pointer",fontFamily:"inherit",marginTop:4}}>+ Thêm món</button>}
 {!mob&&aiResult&&(()=>{const items=aiResult.items||[];const sl=items.filter(x=>x._mealId===meal.id);if(sl.length===0)return null;const ms=sl.reduce((a,x)=>({p:a.p+(x.protein||0),c:a.c+(x.carb||0),f:a.f+(x.fat||0),fi:a.fi+(x.fiber||0),cal:a.cal+(x.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});return <div style={{display:"flex",gap:14,marginTop:10,paddingTop:8,borderTop:`1px solid ${C.surface}`,flexWrap:"wrap"}}><div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.protein}}/> Protein: <b style={{color:C.t1}}>{Math.round(ms.p)}g</b></div><div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.carb}}/> Carb: <b style={{color:C.t1}}>{Math.round(ms.c)}g</b></div><div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.fat}}/> Fat: <b style={{color:C.t1}}>{Math.round(ms.f)}g</b></div><div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.fiber}}/> Chất xơ: <b style={{color:C.t1}}>{Math.round(ms.fi)}g</b></div><div style={{fontSize:12,fontWeight:700,color:C.t1,marginLeft:"auto"}}>{Math.round(ms.cal)} kcal</div></div>;})()}
 </div>;
 })}
@@ -339,16 +347,22 @@ return <div key={mi} style={{marginBottom:mi<(tpl.meals||[]).length-1?12:0}}>
 
 {/* === MODE: Kho mẫu === */}
 {mealMode==="kho_mau"&&(()=>{
-const filtered=tplFilter==="all"?(defaultTemplates||[]):(defaultTemplates||[]).filter(t=>t.day_type===tplFilter);
-const allCount=(defaultTemplates||[]).length;
-const trainCount=(defaultTemplates||[]).filter(t=>t.day_type==="train").length;
-const restCount=(defaultTemplates||[]).filter(t=>t.day_type==="rest").length;
+const goalMap={bulk:"tang_co",cut:"giam_mo",maintain:"duy_tri"};
+const userGoal=goalMap[macro.goal]||"duy_tri";
+const isGiamMo=userGoal==="giam_mo";
+const goalLabel={tang_co:"🏋️ Tăng cơ",giam_mo:"🔥 Giảm mỡ",duy_tri:"⚖️ Duy trì"}[userGoal];
+const dietLabel={balance:"Cân bằng",low_carb:"Low-carb",keto:"Keto"};
+
+let filtered=(defaultTemplates||[]).filter(t=>t.goal_type===userGoal&&t.day_type===dayType);
+if(isGiamMo) filtered=filtered.filter(t=>(t.diet_strategy||"balance")===dietTab);
+
 return <div>
-<div style={{display:"flex",gap:6,marginBottom:14}}>
-{[{id:"all",l:`Tất cả (${allCount})`},{id:"train",l:`💪 Ngày tập (${trainCount})`},{id:"rest",l:`😴 Ngày nghỉ (${restCount})`}].map(f=>
-<div key={f.id} onClick={()=>setTplFilter(f.id)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:tplFilter===f.id?700:600,background:tplFilter===f.id?C.primaryBg:"#F9FAFB",color:tplFilter===f.id?C.primary:"#6B7280",border:`1.5px solid ${tplFilter===f.id?C.primary:"#E5E7EB"}`,cursor:"pointer"}}>{f.l}</div>
+<div style={{fontSize:13,fontWeight:700,color:C.t2,marginBottom:10}}>{goalLabel} · {dayType==="train"?"💪 Ngày tập":"😴 Ngày nghỉ"}</div>
+{isGiamMo&&<div style={{display:"flex",gap:6,marginBottom:14}}>
+{["balance","low_carb","keto"].map(d=>
+<div key={d} onClick={()=>setDietTab(d)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:dietTab===d?700:600,background:dietTab===d?C.primaryBg:"#F9FAFB",color:dietTab===d?C.primary:"#6B7280",border:`1.5px solid ${dietTab===d?C.primary:"#E5E7EB"}`,cursor:"pointer"}}>{dietLabel[d]}</div>
 )}
-</div>
+</div>}
 {filtered.length>0?<div style={{display:"flex",flexDirection:"column",gap:8}}>
 {filtered.map(t=>{
 const isExpanded=expandedTpl===t.id;
@@ -387,7 +401,15 @@ return <div key={mi} style={{marginBottom:mi<tplMeals.length-1?12:0}}>
 <button onClick={async(e)=>{
 e.stopPropagation();
 if(applyTemplate){
-await applyTemplate(t);
+const dailyTarget={
+cal:t.day_type==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0),
+p:macro.protein||0,
+c:t.day_type==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0),
+f:macro.fat||0,
+};
+const engineTpl=applyMealEngineToTemplate(t,dailyTarget);
+await applyTemplate(engineTpl);
+setAppliedTemplate({id:t.id,name:t.name});
 setExpandedTpl(null);
 setMealMode("tu_nhap");
 setDayType(t.day_type);
@@ -426,8 +448,15 @@ cursor:sameType?"pointer":"not-allowed",opacity:sameType?1:0.5,
 <button onClick={async()=>{
 const days=assignSelectedDays||[];
 if(days.length===0){alert("Chọn ít nhất 1 ngày");return;}
-const mealsData=t.meals||[];
-const totalCal=t.total_cal||0;
+const dailyTarget={
+cal:t.day_type==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0),
+p:macro.protein||0,
+c:t.day_type==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0),
+f:macro.fat||0,
+};
+const engineTpl=applyMealEngineToTemplate(t,dailyTarget);
+const mealsData=engineTpl.meals||[];
+const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
 for(const dayKey of days){
 if(saveWeeklyTemplate) await saveWeeklyTemplate(dayKey,t.day_type,mealsData,totalCal);
 }
@@ -445,8 +474,9 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 </div>
 </div>:<div style={{textAlign:"center",padding:"30px 16px"}}>
 <div style={{fontSize:32,marginBottom:8}}>📚</div>
-<div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có mẫu nào</div>
-<div style={{fontSize:12,fontWeight:600,color:C.t3,lineHeight:1.5}}>{isAdmin?"Vào Admin → Mẫu để tạo template cho users.":"Admin chưa tạo template mẫu. Vui lòng chờ hoặc dùng tab Tự nhập."}</div>
+<div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có mẫu cho {goalLabel}{isGiamMo?` (${dietLabel[dietTab]})`:""}</div>
+<div style={{fontSize:12,fontWeight:600,color:C.t3,lineHeight:1.5,marginBottom:12}}>{isAdmin?"Vào Admin → Mẫu để tạo template cho nhóm này.":"Admin chưa tạo mẫu cho mục tiêu này, dùng Tự nhập nhé."}</div>
+{!isAdmin&&<div onClick={()=>setMealMode("tu_nhap")} style={{display:"inline-block",padding:"8px 20px",borderRadius:10,fontSize:13,fontWeight:700,color:"#fff",background:C.primary,cursor:"pointer"}}>✏️ Dùng Tự nhập</div>}
 </div>}
 </div>;
 })()}

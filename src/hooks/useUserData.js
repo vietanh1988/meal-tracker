@@ -361,7 +361,7 @@ export function useUserData(userId) {
   // ===== DEFAULT TEMPLATES (admin-created) =====
 
   // Save default template (admin only)
-  const saveDefaultTemplate = useCallback(async (name, dayType, mealsData, totalCal, editId = null) => {
+  const saveDefaultTemplate = useCallback(async (name, dayType, mealsData, totalCal, editId = null, goalType = null, dietStrategy = null) => {
     if (!userId) return;
     try {
       if (editId) {
@@ -370,6 +370,8 @@ export function useUserData(userId) {
           day_type: dayType,
           meals: mealsData,
           total_cal: totalCal || 0,
+          goal_type: goalType,
+          diet_strategy: dietStrategy,
         }).eq("id", editId);
         if (error) { console.error("Update default template error:", error); return; }
         console.log("✅ Default template updated:", name);
@@ -382,6 +384,8 @@ export function useUserData(userId) {
           meals: mealsData,
           total_cal: totalCal || 0,
           is_default: true,
+          goal_type: goalType,
+          diet_strategy: dietStrategy,
         });
         if (error) { console.error("Save default template error:", error); return; }
         console.log("✅ Default template saved:", name);

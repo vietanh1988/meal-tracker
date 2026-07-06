@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { C, card, inp, redBtn } from "../theme";
 import { estimateGram } from "../lib/usdaService";
+import { getFoodRole } from "../lib/localFoodDB";
 
 export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, mealNames, mealsData, callAI, allFoodItems, setAllFoodItems, aiResult, setAiResult, aiLoading, aiError, setAiError, setDayType, setFoodItems, setUserHasEdited, savePendingFoodCache, aiProvider}){
 const [expandedId,setExpandedId]=useState(null);
 const [editingId,setEditingId]=useState(null);
+const [tplGoal,setTplGoal]=useState("tang_co");
+const [tplDiet,setTplDiet]=useState("balance");
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
 <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:800,color:C.t1}}>Quản lý Template mẫu</span></div>
@@ -20,6 +23,16 @@ return (
 <option value="train">💪 Ngày tập</option>
 <option value="rest">😴 Ngày nghỉ</option>
 </select>
+<select id="tpl-goal" value={tplGoal} onChange={e=>setTplGoal(e.target.value)} style={{...inp,width:mob?120:130,fontSize:13,height:38,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 10px center",paddingRight:"28px"}}>
+<option value="tang_co">🏋️ Tăng cơ</option>
+<option value="giam_mo">🔥 Giảm mỡ</option>
+<option value="duy_tri">⚖️ Duy trì</option>
+</select>
+{tplGoal==="giam_mo"&&<select id="tpl-diet" value={tplDiet} onChange={e=>setTplDiet(e.target.value)} style={{...inp,width:mob?120:130,fontSize:13,height:38,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 10px center",paddingRight:"28px"}}>
+<option value="balance">Cân bằng</option>
+<option value="low_carb">Low-carb</option>
+<option value="keto">Keto</option>
+</select>}
 </div>
 
 <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
@@ -116,12 +129,24 @@ const saveItems=mealItems.map(ai=>({food:ai.name||"",gram:ai.gram||0,unit:ai.uni
 if(saveItems.length>0)mealsData.push({meal_id:meal.id,meal_name:meal.l,items:saveItems});
 });
 if(mealsData.length===0){alert("Không có dữ liệu bữa ăn");return;}
+// Validate: mỗi bữa phải có đủ ít nhất 1 món đạm + 1 món carb + 1 món béo,
+// nếu không Meal Engine không thể tính đúng gram khi user áp dụng mẫu này.
+for(const m of mealsData){
+const roles=new Set((m.items||[]).map(it=>getFoodRole(it.food)));
+const missing=[];
+if(!roles.has("protein"))missing.push("đạm");
+if(!roles.has("carb"))missing.push("carb");
+if(!roles.has("fat"))missing.push("béo");
+if(missing.length>0){alert(`${m.meal_name||m.meal_id} đang thiếu món vai trò: ${missing.join(", ")} — thêm món trước khi lưu.`);return;}
+}
 const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
-if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsData,Math.round(totalCal),editingId);
+if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsData,Math.round(totalCal),editingId,tplGoal,tplGoal==="giam_mo"?tplDiet:null);
 if(aiResult._cacheEntries&&savePendingFoodCache) savePendingFoodCache(aiResult._cacheEntries,aiProvider);
 document.getElementById("tpl-name").value="";
 setEditingId(null);
 setAiResult(null);
+setTplGoal("tang_co");
+setTplDiet("balance");
 // Reset all food items
 const init={};mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
 const el=document.getElementById("tpl-created");
@@ -160,6 +185,8 @@ const selType=document.getElementById("tpl-type");
 if(el)el.value=t.name||"";
 if(selType)selType.value=t.day_type||"train";
 setDayType(t.day_type||"train");
+setTplGoal(t.goal_type||"tang_co");
+setTplDiet(t.diet_strategy||"balance");
 const init={};
 mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});
 (t.meals||[]).forEach(m=>{
@@ -184,7 +211,7 @@ if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
 </div>
 <div style={{flex:1,minWidth:0,paddingRight:52}}>
 <div style={{fontSize:13,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name||"Template"}</div>
-<div style={{fontSize:11,fontWeight:600,color:isTrain?"#003D99":"#1E40AF",marginTop:1}}>{isTrain?"Ngày tập":"Ngày nghỉ"}</div>
+<div style={{fontSize:11,fontWeight:600,color:isTrain?"#003D99":"#1E40AF",marginTop:1}}>{isTrain?"Ngày tập":"Ngày nghỉ"}{t.goal_type&&` · ${({tang_co:"Tăng cơ",giam_mo:"Giảm mỡ",duy_tri:"Duy trì"})[t.goal_type]||t.goal_type}`}{t.diet_strategy&&t.diet_strategy!=="balance"&&` (${t.diet_strategy==="low_carb"?"Low-carb":"Keto"})`}</div>
 </div>
 </div>
 <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
