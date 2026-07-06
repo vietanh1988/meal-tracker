@@ -357,7 +357,14 @@ let filtered=(defaultTemplates||[]).filter(t=>t.goal_type===userGoal&&t.day_type
 if(isGiamMo) filtered=filtered.filter(t=>(t.diet_strategy||"balance")===dietTab);
 
 return <div>
-<div style={{fontSize:13,fontWeight:700,color:C.t2,marginBottom:10}}>{goalLabel} · {dayType==="train"?"💪 Ngày tập":"😴 Ngày nghỉ"}</div>
+<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:8}}>
+<div style={{fontSize:13,fontWeight:700,color:C.t2}}>{goalLabel}</div>
+<div style={{display:"flex",gap:4,background:C.surface,borderRadius:10,padding:3}}>
+{[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}].map(d=>
+<div key={d.id} onClick={()=>setDayType(d.id)} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:dayType===d.id?700:500,color:dayType===d.id?C.primary:C.t2,background:dayType===d.id?"#fff":"none",cursor:"pointer",boxShadow:dayType===d.id?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{d.icon} {d.label}</div>
+)}
+</div>
+</div>
 {isGiamMo&&<div style={{display:"flex",gap:6,marginBottom:14}}>
 {["balance","low_carb","keto"].map(d=>
 <div key={d} onClick={()=>setDietTab(d)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:dietTab===d?700:600,background:dietTab===d?C.primaryBg:"#F9FAFB",color:dietTab===d?C.primary:"#6B7280",border:`1.5px solid ${dietTab===d?C.primary:"#E5E7EB"}`,cursor:"pointer"}}>{dietLabel[d]}</div>
