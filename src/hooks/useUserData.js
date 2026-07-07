@@ -32,6 +32,7 @@ export function useUserData(userId) {
   const [foodCache, setFoodCache] = useState({});
   const [weeklyTemplates, setWeeklyTemplates] = useState([]);
   const [defaultTemplates, setDefaultTemplates] = useState([]);
+  const [weeklyBundles, setWeeklyBundles] = useState([]);
   const lastFetchRef = useRef(Date.now());
 
   // === Extracted fetch function — reusable ===
@@ -90,6 +91,15 @@ export function useUserData(userId) {
       if (defData) {
         setDefaultTemplates(defData);
         if (!silent) console.log(`✅ Loaded ${defData.length} default templates from admin`);
+      }
+
+      // Load weekly bundles (Gói tuần — admin ghép sẵn 7 mẫu/tuần, visible to all)
+      const { data: bundleData, error: bundleErr } = await supabase.from("weekly_bundles")
+        .select("*").order("created_at");
+      if (bundleErr) console.error("Load weekly bundles error:", bundleErr);
+      if (bundleData) {
+        setWeeklyBundles(bundleData);
+        if (!silent) console.log(`✅ Loaded ${bundleData.length} weekly bundles`);
       }
 
       if (!silent) console.log("✅ All data synced from cloud");
@@ -462,11 +472,54 @@ export function useUserData(userId) {
     } catch (e) { console.error("Refresh error:", e); }
   }, []);
 
+  // ===== WEEKLY BUNDLES (Gói tuần) =====
+
+  // Save (create or update) a weekly bundle. `days` = {thu_2: templateId, thu_3: templateId, ...}
+  const saveWeeklyBundle = useCallback(async (name, goalType, days, bundleId = null) => {
+    if (!userId) return;
+    try {
+      if (bundleId) {
+        const { error } = await supabase.from("weekly_bundles").update({
+          name: name || "Gói tuần mới", goal_type: goalType, days, updated_at: new Date().toISOString(),
+        }).eq("id", bundleId);
+        if (error) { console.error("Update weekly bundle error:", error); return; }
+        console.log("✅ Weekly bundle updated:", name);
+      } else {
+        const { error } = await supabase.from("weekly_bundles").insert({
+          name: name || "Gói tuần mới", goal_type: goalType, days, created_by: userId,
+        });
+        if (error) { console.error("Insert weekly bundle error:", error); return; }
+        console.log("✅ Weekly bundle saved:", name);
+      }
+      const { data: refreshed } = await supabase.from("weekly_bundles").select("*").order("created_at");
+      if (refreshed) setWeeklyBundles(refreshed);
+    } catch (e) { console.error("Weekly bundle save error:", e); }
+  }, [userId]);
+
+  // Delete a weekly bundle
+  const deleteWeeklyBundle = useCallback(async (bundleId) => {
+    try {
+      const { error } = await supabase.from("weekly_bundles").delete().eq("id", bundleId);
+      if (error) { console.error("Delete weekly bundle error:", error); return; }
+      setWeeklyBundles(prev => prev.filter(b => b.id !== bundleId));
+      console.log("🗑️ Weekly bundle deleted:", bundleId);
+    } catch (e) { console.error("Weekly bundle delete error:", e); }
+  }, []);
+
+  const refreshWeeklyBundles = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from("weekly_bundles").select("*").order("created_at");
+      if (error) { console.error("Refresh weekly bundles error:", error); return; }
+      if (data) setWeeklyBundles(data);
+    } catch (e) { console.error("Refresh error:", e); }
+  }, []);
+
   return {
     loaded, meals, getMeals, getMealHistory, foodCache,
     saveMealToCloud, saveFoodCache, deleteFoodCache,
     weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, getWeeklyTemplate,
     defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, refreshDefaultTemplates,
+    weeklyBundles, saveWeeklyBundle, deleteWeeklyBundle, refreshWeeklyBundles,
     applyTemplate,
     saveDailyLog, getDailyLogs, getDailyLog,
   };
