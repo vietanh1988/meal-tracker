@@ -348,7 +348,7 @@ export function lookupLocalFood(nameVN, gram) {
 // SCALE: apply gram + cooking modifier
 // ============================================================
 function scaleFood(base, foodKey, gram, cookKey) {
-  const g = gram || 100;
+  const g = gram===0?0:(gram||100);
   const r = g / 100;
 
   // FIX: modifier "cô đặc do mất nước" (luộc/hấp/áp chảo/nướng/hầm/quay...)

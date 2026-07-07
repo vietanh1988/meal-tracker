@@ -191,8 +191,8 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     const localResolved=[];const nonLocal=[];
     validItems.forEach(f=>{
       const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
-      const gram=isWeight?(f.gram||100):estimateGram(f.name,unit,f.qty||1);
-      const localResult=lookupLocalFood(f.name,gram||(isWeight?f.gram:100));
+      const gram=isWeight?(f.gram===0?0:(f.gram||100)):estimateGram(f.name,unit,f.qty||1);
+      const localResult=lookupLocalFood(f.name,gram===0?0:(gram||(isWeight?f.gram:100)));
       if(localResult){
         localResolved.push({...localResult,name:f.name,unit,qty:f.qty||1,qty_display:isWeight?null:`${f.qty||1} ${unit}`,source:"localDB",_mealId:f._mealId});
       }else{nonLocal.push(f);}
@@ -261,8 +261,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const qty=inputItem?.qty||1;
         if(k){
           if(isWeight){
-            const gram=inputItem?.gram||100;const r=100/gram;
-            newCacheEntries[k]={p:Math.round((it.protein||0)*r*10)/10,c:Math.round((it.carb||0)*r*10)/10,f:Math.round((it.fat||0)*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round((it.cal||0)*r),gram:100};
+            const gram=inputItem?.gram;
+            if(gram===0){/* 0g — không có gì để cache */}
+            else{
+              const r=100/(gram||100);
+              newCacheEntries[k]={p:Math.round((it.protein||0)*r*10)/10,c:Math.round((it.carb||0)*r*10)/10,f:Math.round((it.fat||0)*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round((it.cal||0)*r),gram:100};
+            }
           }else{
             newCacheEntries[k]={p:Math.round((it.protein||0)/qty*10)/10,c:Math.round((it.carb||0)/qty*10)/10,f:Math.round((it.fat||0)/qty*10)/10,fiber:Math.round((it.fiber||0)/qty*10)/10,cal:Math.round((it.cal||0)/qty),gram:Math.round((it.gram||0)/qty)};
           }
@@ -330,8 +334,12 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
         const qty=inputItem?.qty||1;
         if(k&&!fc[k]){
           if(isWeight){
-            const gram=it.gram||inputItem?.gram||100;const r=100/gram;
-            newCacheEntries[k]={p:Math.round((it.protein||0)*r*10)/10,c:Math.round((it.carb||0)*r*10)/10,f:Math.round((it.fat||0)*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round((it.cal||0)*r),gram:100};
+            const gram=it.gram===0?0:(it.gram||inputItem?.gram||100);
+            if(gram===0){/* 0g — không có gì để cache */}
+            else{
+              const r=100/gram;
+              newCacheEntries[k]={p:Math.round((it.protein||0)*r*10)/10,c:Math.round((it.carb||0)*r*10)/10,f:Math.round((it.fat||0)*r*10)/10,fiber:Math.round((it.fiber||0)*r*10)/10,cal:Math.round((it.cal||0)*r),gram:100};
+            }
           }else{
             newCacheEntries[k]={p:Math.round((it.protein||0)/qty*10)/10,c:Math.round((it.carb||0)/qty*10)/10,f:Math.round((it.fat||0)/qty*10)/10,fiber:Math.round((it.fiber||0)/qty*10)/10,cal:Math.round((it.cal||0)/qty),gram:Math.round((it.gram||0)/qty)};
           }
