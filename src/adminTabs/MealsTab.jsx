@@ -22,8 +22,9 @@ assignSelectedDays, setAssignSelectedDays, weeklyBundles,
 const [dietTab, setDietTab] = useState(profile.dietStrategy === "low_carb" ? "low_carb" : profile.dietStrategy === "keto" ? "keto" : "balance");
 const [appliedTemplate, setAppliedTemplate] = useState(null);
 const [expandedBundle, setExpandedBundle] = useState(null);
-const MODE_TITLE={tu_nhap:"Nhập bữa ăn",lich_tuan:"Lịch tuần",kho_mau:"Kho mẫu",goi_tuan:"Gói tuần"};
-const MODE_DESC={tu_nhap:"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn → Lưu vào lịch tuần (nếu muốn)",lich_tuan:"Xem & chỉnh thực đơn theo từng ngày trong tuần",kho_mau:`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`,goi_tuan:`Áp dụng 1 gói cho cả 7 ngày trong tuần${(weeklyBundles||[]).length>0?` (${(weeklyBundles||[]).length} gói)`:""}`};
+const [kmMode, setKmMode] = useState("template"); // template | bundle — chỉ dùng trong Kho mẫu
+const MODE_TITLE={tu_nhap:"Nhập bữa ăn",lich_tuan:"Lịch tuần",kho_mau:"Kho mẫu"};
+const MODE_DESC={tu_nhap:"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn → Lưu vào lịch tuần (nếu muốn)",lich_tuan:"Xem & chỉnh thực đơn theo từng ngày trong tuần",kho_mau:`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`};
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
 {!mob?<div style={{display:"grid",gridTemplateColumns:"63% 35%",gap:20,marginBottom:14,alignItems:"center"}}>
@@ -32,12 +33,12 @@ return (
 <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2}}>{MODE_DESC[mealMode]}</div>
 </div>
 <div style={{display:"flex",gap:4,background:C.surface,borderRadius:12,padding:4}}>
-{[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"},{id:"goi_tuan",icon:"🗓️",label:"Gói tuần"}].map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{flex:1,padding:"10px 0",borderRadius:10,fontSize:13,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none",textAlign:"center"}}>{t.icon} {t.label}</div>)}
+{[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{flex:1,padding:"10px 0",borderRadius:10,fontSize:14,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none",textAlign:"center"}}>{t.icon} {t.label}</div>)}
 </div>
 </div>:<>
 <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{MODE_TITLE[mealMode]}</div>
 <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2,marginBottom:12}}>{MODE_DESC[mealMode]}</div>
-<SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"},{id:"goi_tuan",icon:"🗓️",label:"Gói tuần"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{marginBottom:16}}/>
+<SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{marginBottom:16}}/>
 </>}
 
 {/* === MODE: Tự nhập — all meals in one flow === */}
@@ -364,10 +365,73 @@ return <div>
 <div style={{fontSize:13,fontWeight:700,color:C.t2}}>{goalLabel}</div>
 <div style={{display:"flex",gap:4,background:C.surface,borderRadius:10,padding:3}}>
 {[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}].map(d=>
-<div key={d.id} onClick={()=>setDayType(d.id)} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:dayType===d.id?700:500,color:dayType===d.id?C.primary:C.t2,background:dayType===d.id?"#fff":"none",cursor:"pointer",boxShadow:dayType===d.id?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{d.icon} {d.label}</div>
+<div key={d.id} onClick={()=>{setKmMode("template");setDayType(d.id);}} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:(kmMode==="template"&&dayType===d.id)?700:500,color:(kmMode==="template"&&dayType===d.id)?C.primary:C.t2,background:(kmMode==="template"&&dayType===d.id)?"#fff":"none",cursor:"pointer",boxShadow:(kmMode==="template"&&dayType===d.id)?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{d.icon} {d.label}</div>
 )}
+<div onClick={()=>setKmMode("bundle")} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:kmMode==="bundle"?700:500,color:kmMode==="bundle"?C.primary:C.t2,background:kmMode==="bundle"?"#fff":"none",cursor:"pointer",boxShadow:kmMode==="bundle"?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>🗓️ Gói tuần</div>
 </div>
 </div>
+{kmMode==="bundle"?(()=>{
+const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
+const dayLabels=["Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7","Chủ nhật"];
+const filteredBundles=(weeklyBundles||[]).filter(b=>b.goal_type===userGoal);
+return <div>
+{filteredBundles.length>0?<div style={{display:"flex",flexDirection:"column",gap:8}}>
+{filteredBundles.map(b=>{
+const isOpen=expandedBundle===b.id;
+const filledDays=dayKeys.filter(dk=>b.days&&b.days[dk]);
+return <div key={b.id} style={{background:C.card,border:`1.5px solid ${isOpen?C.red:C.border}`,borderRadius:12,overflow:"hidden"}}>
+<div style={{padding:mob?"12px":"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedBundle(isOpen?null:b.id)}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+<span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>🗓️ {b.name}</span>
+<span style={{fontSize:12,color:C.t3}}>{isOpen?"▲":"▼"}</span>
+</div>
+<div style={{fontSize:12,fontWeight:600,color:C.t3,marginTop:4}}>{filledDays.length}/7 ngày đã gán</div>
+</div>
+{isOpen&&<div style={{borderTop:`1.5px solid ${C.border}`,padding:mob?"12px":"14px 16px"}}>
+<div style={{fontSize:12,color:C.t2,marginBottom:10}}>Xem trước — mỗi ngày tự tính gram theo đúng target của bạn</div>
+{dayKeys.map((dk,i)=>{
+const tplId=b.days&&b.days[dk];
+const tpl=(defaultTemplates||[]).find(t=>t.id===tplId);
+return <div key={dk} style={{display:"flex",justifyContent:"space-between",padding:"8px 10px",background:C.surface,borderRadius:8,marginBottom:6,fontSize:12}}>
+<span style={{color:C.t1,fontWeight:600}}>{dayLabels[i]} {tpl?(tpl.day_type==="train"?"· 💪 tập":"· 😴 nghỉ"):""}</span>
+<span style={{color:C.t3}}>{tpl?tpl.name:"— chưa gán —"}</span>
+</div>;
+})}
+<button onClick={async()=>{
+if(!confirm(`Áp dụng "${b.name}" cho cả 7 ngày? Ngày nào đã có dữ liệu Lịch tuần sẽ bị ghi đè.`))return;
+for(const dk of dayKeys){
+const tplId=b.days&&b.days[dk];
+if(!tplId)continue;
+const tpl=(defaultTemplates||[]).find(t=>t.id===tplId);
+if(!tpl)continue;
+const dailyTarget={
+cal:tpl.day_type==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0),
+p:macro.protein||0,
+c:tpl.day_type==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0),
+f:macro.fat||0,
+};
+const engineTpl=applyMealEngineToTemplate(tpl,dailyTarget);
+const mealsData=engineTpl.meals||[];
+const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
+if(saveWeeklyTemplate) await saveWeeklyTemplate(dk,tpl.day_type,mealsData,Math.round(totalCal));
+}
+setExpandedBundle(null);
+const el=document.getElementById("bundle-applied");
+if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+}} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>Áp dụng cả tuần</button>
+</div>}
+</div>;
+})}
+<div id="bundle-applied" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:4}}>
+<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã áp dụng cả tuần! Vào tab Lịch tuần để xem.</span>
+</div>
+</div>:<div style={{textAlign:"center",padding:"30px 16px"}}>
+<div style={{fontSize:32,marginBottom:8}}>🗓️</div>
+<div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có Gói tuần cho {goalLabel}</div>
+<div style={{fontSize:12,fontWeight:600,color:C.t3,lineHeight:1.5}}>{isAdmin?"Vào Admin → Gói tuần để tạo.":"Admin chưa tạo gói tuần cho mục tiêu này."}</div>
+</div>}
+</div>;
+})():<>
 {isGiamMo&&<div style={{display:"flex",gap:6,marginBottom:14}}>
 {["balance","low_carb","keto"].map(d=>
 <div key={d} onClick={()=>setDietTab(d)} style={{padding:"6px 14px",borderRadius:18,fontSize:12,fontWeight:dietTab===d?700:600,background:dietTab===d?C.primaryBg:"#F9FAFB",color:dietTab===d?C.primary:"#6B7280",border:`1.5px solid ${dietTab===d?C.primary:"#E5E7EB"}`,cursor:"pointer"}}>{dietLabel[d]}</div>
@@ -488,75 +552,7 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 <div style={{fontSize:12,fontWeight:600,color:C.t3,lineHeight:1.5,marginBottom:12}}>{isAdmin?"Vào Admin → Mẫu để tạo template cho nhóm này.":"Admin chưa tạo mẫu cho mục tiêu này, dùng Tự nhập nhé."}</div>
 {!isAdmin&&<div onClick={()=>setMealMode("tu_nhap")} style={{display:"inline-block",padding:"8px 20px",borderRadius:10,fontSize:13,fontWeight:700,color:"#fff",background:C.primary,cursor:"pointer"}}>✏️ Dùng Tự nhập</div>}
 </div>}
-</div>;
-})()}
-
-{/* === MODE: Gói tuần — áp dụng 1 gói cho cả 7 ngày === */}
-{mealMode==="goi_tuan"&&(()=>{
-const goalMap={bulk:"tang_co",cut:"giam_mo",maintain:"duy_tri"};
-const userGoal=goalMap[macro.goal]||"duy_tri";
-const goalLabel={tang_co:"🏋️ Tăng cơ",giam_mo:"🔥 Giảm mỡ",duy_tri:"⚖️ Duy trì"}[userGoal];
-const filtered=(weeklyBundles||[]).filter(b=>b.goal_type===userGoal);
-const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
-const dayLabels=["Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7","Chủ nhật"];
-
-return <div>
-<div style={{fontSize:13,fontWeight:700,color:C.t2,marginBottom:10}}>{goalLabel}</div>
-{filtered.length>0?<div style={{display:"flex",flexDirection:"column",gap:8}}>
-{filtered.map(b=>{
-const isOpen=expandedBundle===b.id;
-const filledDays=dayKeys.filter(dk=>b.days&&b.days[dk]);
-return <div key={b.id} style={{background:C.card,border:`1.5px solid ${isOpen?C.red:C.border}`,borderRadius:12,overflow:"hidden"}}>
-<div style={{padding:mob?"12px":"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedBundle(isOpen?null:b.id)}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-<span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>🗓️ {b.name}</span>
-<span style={{fontSize:12,color:C.t3}}>{isOpen?"▲":"▼"}</span>
-</div>
-<div style={{fontSize:12,fontWeight:600,color:C.t3,marginTop:4}}>{filledDays.length}/7 ngày đã gán</div>
-</div>
-{isOpen&&<div style={{borderTop:`1.5px solid ${C.border}`,padding:mob?"12px":"14px 16px"}}>
-<div style={{fontSize:12,color:C.t2,marginBottom:10}}>Xem trước — mỗi ngày tự tính gram theo đúng target của bạn</div>
-{dayKeys.map((dk,i)=>{
-const tplId=b.days&&b.days[dk];
-const tpl=(defaultTemplates||[]).find(t=>t.id===tplId);
-return <div key={dk} style={{display:"flex",justifyContent:"space-between",padding:"8px 10px",background:C.surface,borderRadius:8,marginBottom:6,fontSize:12}}>
-<span style={{color:C.t1,fontWeight:600}}>{dayLabels[i]} {tpl?(tpl.day_type==="train"?"· 💪 tập":"· 😴 nghỉ"):""}</span>
-<span style={{color:C.t3}}>{tpl?tpl.name:"— chưa gán —"}</span>
-</div>;
-})}
-<button onClick={async()=>{
-if(!confirm(`Áp dụng "${b.name}" cho cả 7 ngày? Ngày nào đã có dữ liệu Lịch tuần sẽ bị ghi đè.`))return;
-for(const dk of dayKeys){
-const tplId=b.days&&b.days[dk];
-if(!tplId)continue;
-const tpl=(defaultTemplates||[]).find(t=>t.id===tplId);
-if(!tpl)continue;
-const dailyTarget={
-cal:tpl.day_type==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0),
-p:macro.protein||0,
-c:tpl.day_type==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0),
-f:macro.fat||0,
-};
-const engineTpl=applyMealEngineToTemplate(tpl,dailyTarget);
-const mealsData=engineTpl.meals||[];
-const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
-if(saveWeeklyTemplate) await saveWeeklyTemplate(dk,tpl.day_type,mealsData,Math.round(totalCal));
-}
-setExpandedBundle(null);
-const el=document.getElementById("bundle-applied");
-if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-}} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>Áp dụng cả tuần</button>
-</div>}
-</div>;
-})}
-<div id="bundle-applied" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:4}}>
-<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã áp dụng cả tuần! Vào tab Lịch tuần để xem.</span>
-</div>
-</div>:<div style={{textAlign:"center",padding:"30px 16px"}}>
-<div style={{fontSize:32,marginBottom:8}}>🗓️</div>
-<div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có Gói tuần cho {goalLabel}</div>
-<div style={{fontSize:12,fontWeight:600,color:C.t3,lineHeight:1.5}}>{isAdmin?"Vào Admin → Gói tuần để tạo.":"Admin chưa tạo gói tuần cho mục tiêu này."}</div>
-</div>}
+</>}
 </div>;
 })()}
 </div>
