@@ -2,12 +2,14 @@ import { useState } from "react";
 import { C, card, inp, redBtn } from "../theme";
 import { estimateGram } from "../lib/usdaService";
 import { getFoodRole } from "../lib/localFoodDB";
+import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 
 export function TemplatesTab({isAdmin, mob, macro, defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, mealNames, mealsData, callAI, allFoodItems, setAllFoodItems, aiResult, setAiResult, aiLoading, aiError, setAiError, setDayType, setFoodItems, setUserHasEdited, savePendingFoodCache, aiProvider}){
 const [expandedId,setExpandedId]=useState(null);
 const [editingId,setEditingId]=useState(null);
 const [tplGoal,setTplGoal]=useState("tang_co");
 const [tplDiet,setTplDiet]=useState("balance");
+const [selectedMeals,setSelectedMeals]=useState(DEFAULT_MEAL_CONFIG.train);
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
 <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:800,color:C.t1}}>Quản lý Template mẫu</span></div>
@@ -35,16 +37,24 @@ return (
 </select>}
 </div>
 
+<div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:8}}>Chọn bữa cho mẫu này</div>
+<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+{ALL_MEALS.map(m=>{
+const on=selectedMeals.includes(m.id);
+return <div key={m.id} onClick={()=>{setSelectedMeals(on?selectedMeals.filter(id=>id!==m.id):[...selectedMeals,m.id]);}} style={{padding:"7px 12px",borderRadius:18,fontSize:12,fontWeight:on?700:500,background:on?C.primaryBg:C.surface,color:on?C.primary:C.t3,border:`1.5px solid ${on?C.primary:C.border}`,cursor:"pointer"}}>{m.icon} {m.short}</div>;
+})}
+</div>
+
 <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
 
 {/* Inline meal input — same as Tự nhập */}
-{mealNames.map(meal=>{
+{ALL_MEALS.filter(m=>selectedMeals.includes(m.id)).map(meal=>{
 const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
 const mealColors={"sang":"#007AFF","phu_sang":"#007AFF","trua":"#007AFF","phu_chieu":"#007AFF","pre":"#007AFF","post":"#007AFF","toi":"#007AFF"};
 const mealTextColors={"sang":C.t1,"phu_sang":C.t1,"trua":C.t1,"phu_chieu":C.t1,"pre":C.t1,"post":C.t1,"toi":C.t1};
 return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
 <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
-<span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
+<span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.icon} {meal.short}</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
@@ -71,7 +81,7 @@ return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44p
 {/* Tính macro + Lưu template */}
 <button onClick={()=>{
 const combined=[];
-mealNames.forEach(meal=>{
+ALL_MEALS.filter(m=>selectedMeals.includes(m.id)).forEach(meal=>{
 const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
 foods.forEach(f=>combined.push({...f,_mealId:meal.id}));
 });
@@ -93,14 +103,14 @@ callAI(false,combined);
 <div style={{fontSize:14,fontWeight:900,color:C.primary,marginBottom:12}}>✓ Kết quả macro</div>
 {(()=>{
 const items=aiResult.items||[];
-return mealNames.map(meal=>{
+return ALL_MEALS.filter(m=>selectedMeals.includes(m.id)).map(meal=>{
 const mealFoods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());
 if(mealFoods.length===0)return null;
 const mealItems=items.filter(it=>it._mealId===meal.id);
 const mCal=mealItems.reduce((s,it)=>s+(it.cal||0),0);
 return <div key={meal.id} style={{marginBottom:10}}>
 <div style={{fontSize:13,fontWeight:700,color:C.t1,marginBottom:4,display:"flex",justifyContent:"space-between"}}>
-<span>{meal.l}</span><span style={{color:C.t1}}>{Math.round(mCal)} cal</span>
+<span>{meal.icon} {meal.short}</span><span style={{color:C.t1}}>{Math.round(mCal)} cal</span>
 </div>
 {mealItems.map((item,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
 <span>{item.name} {item.gram}g</span>
@@ -122,11 +132,11 @@ const tplType=document.getElementById("tpl-type")?.value||"train";
 if(!name){alert("Nhập tên template ở ô trên!");return;}
 const items=aiResult.items||[];
 const mealsData=[];
-mealNames.forEach(meal=>{
+ALL_MEALS.filter(m=>selectedMeals.includes(m.id)).forEach(meal=>{
 const mealItems=items.filter(it=>it._mealId===meal.id);
 if(mealItems.length===0)return;
 const saveItems=mealItems.map(ai=>({food:ai.name||"",gram:ai.gram||0,unit:ai.unit||"g",qty:ai.qty||1,p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0}));
-if(saveItems.length>0)mealsData.push({meal_id:meal.id,meal_name:meal.l,items:saveItems});
+if(saveItems.length>0)mealsData.push({meal_id:meal.id,meal_name:meal.name,items:saveItems});
 });
 if(mealsData.length===0){alert("Không có dữ liệu bữa ăn");return;}
 // Validate: mỗi bữa phải có đủ ít nhất 1 món đạm + 1 món carb + 1 món béo,
@@ -147,8 +157,9 @@ setEditingId(null);
 setAiResult(null);
 setTplGoal("tang_co");
 setTplDiet("balance");
+setSelectedMeals(DEFAULT_MEAL_CONFIG.train);
 // Reset all food items
-const init={};mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
+const init={};ALL_MEALS.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
 const el=document.getElementById("tpl-created");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 }} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#7C3AED,#6D28D9)"}}>{editingId?"💾 Cập nhật Template":"📚 Lưu thành Template mẫu"}</button>
@@ -156,7 +167,8 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 setEditingId(null);
 document.getElementById("tpl-name").value="";
 setAiResult(null);
-const init={};mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
+setSelectedMeals(DEFAULT_MEAL_CONFIG.train);
+const init={};ALL_MEALS.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);
 }} style={{...inp,marginTop:8,textAlign:"center",cursor:"pointer",fontWeight:700,color:C.t2}}>Hủy sửa</button>}
 <div id="tpl-created" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
 <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>{editingId?"✓ Đã cập nhật template!":"✓ Template mẫu đã tạo! Users sẽ thấy trong Kho mẫu."}</span>
@@ -171,13 +183,23 @@ const init={};mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}
 <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🗂️</span><span>Templates đã tạo ({(defaultTemplates||[]).length})</span></div>
 <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Danh sách mẫu hiện có</div>
 {(defaultTemplates||[]).length===0&&<div style={{padding:"20px 14px",textAlign:"center",fontSize:12,color:C.t3,background:C.surface,borderRadius:10}}>Chưa có template nào</div>}
-<div style={{display:"grid",gridTemplateColumns:"1fr",gap:10}}>
+<div style={{display:"flex",flexDirection:"column"}}>
 {(defaultTemplates||[]).map(t=>{
 const mealCount=(t.meals||[]).length;
 const isTrain=t.day_type==="train";
 const isOpen=expandedId===t.id;
-return <div key={t.id} style={{...card,padding:"12px 14px",position:"relative",marginBottom:0,cursor:"pointer"}} onClick={()=>setExpandedId(isOpen?null:t.id)}>
-<div style={{position:"absolute",top:8,right:8,display:"flex",gap:4}}>
+const goalLabel={tang_co:"Tăng cơ",giam_mo:"Giảm mỡ",duy_tri:"Duy trì"}[t.goal_type]||"";
+return <div key={t.id} style={{borderBottom:`0.5px solid ${C.border}`}}>
+<div style={{display:"flex",alignItems:"center",gap:8,padding:"9px 4px",cursor:"pointer"}} onClick={()=>setExpandedId(isOpen?null:t.id)}>
+<span style={{fontSize:15,flexShrink:0}}>{isTrain?"🏋️":"😴"}</span>
+<div style={{flex:1,minWidth:0}}>
+<div style={{fontSize:12,fontWeight:700,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name||"Template"}</div>
+<div style={{fontSize:10,color:C.t3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{isTrain?"💪Tập":"😴Nghỉ"} · {goalLabel}{t.diet_strategy&&t.diet_strategy!=="balance"&&`(${t.diet_strategy==="low_carb"?"Low-carb":"Keto"})`}</div>
+</div>
+<div style={{textAlign:"right",flexShrink:0}}>
+<div style={{fontSize:12,fontWeight:700,color:C.t1}}>{t.total_cal||0}</div>
+<div style={{fontSize:10,color:C.t3}}>{mealCount} bữa</div>
+</div>
 <button onClick={(e)=>{
 e.stopPropagation();
 const el=document.getElementById("tpl-name");
@@ -187,8 +209,10 @@ if(selType)selType.value=t.day_type||"train";
 setDayType(t.day_type||"train");
 setTplGoal(t.goal_type||"tang_co");
 setTplDiet(t.diet_strategy||"balance");
+const loadedMealIds=(t.meals||[]).map(m=>m.meal_id);
+setSelectedMeals(loadedMealIds.length>0?loadedMealIds:DEFAULT_MEAL_CONFIG[t.day_type||"train"]);
 const init={};
-mealNames.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});
+ALL_MEALS.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});
 (t.meals||[]).forEach(m=>{
 const items=(m.items||[]).map(it=>({name:it.food||"",gram:it.gram||"",unit:it.unit||"g",qty:it.qty||1}));
 if(items.length>0)init[m.meal_id]=items;
@@ -198,34 +222,19 @@ setAiResult(null);
 setEditingId(t.id);
 setExpandedId(null);
 document.getElementById("tpl-name")?.scrollIntoView({behavior:"smooth",block:"center"});
-}} style={{width:22,height:22,borderRadius:6,fontSize:11,color:C.primary,background:C.surface,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✎</button>
+}} style={{width:20,height:20,padding:0,borderRadius:6,fontSize:11,color:C.primary,background:"none",border:"none",cursor:"pointer",flexShrink:0}}>✎</button>
 <button onClick={async(e)=>{
 e.stopPropagation();
 if(!confirm("Xóa template \""+t.name+"\"?"))return;
 if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
-}} style={{width:22,height:22,borderRadius:6,fontSize:11,color:C.t3,background:C.surface,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+}} style={{width:20,height:20,padding:0,borderRadius:6,fontSize:11,color:C.t3,background:"none",border:"none",cursor:"pointer",flexShrink:0}}>✕</button>
 </div>
-<div style={{display:"flex",alignItems:"center",gap:10}}>
-<div style={{width:40,height:40,borderRadius:10,background:isTrain?C.primaryBg:"#DBEAFE",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18}}>
-{isTrain?"🏋️":"😴"}
-</div>
-<div style={{flex:1,minWidth:0,paddingRight:52}}>
-<div style={{fontSize:13,fontWeight:800,color:C.t1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name||"Template"}</div>
-<div style={{fontSize:11,fontWeight:600,color:isTrain?"#003D99":"#1E40AF",marginTop:1}}>{isTrain?"Ngày tập":"Ngày nghỉ"}{t.goal_type&&` · ${({tang_co:"Tăng cơ",giam_mo:"Giảm mỡ",duy_tri:"Duy trì"})[t.goal_type]||t.goal_type}`}{t.diet_strategy&&t.diet_strategy!=="balance"&&` (${t.diet_strategy==="low_carb"?"Low-carb":"Keto"})`}</div>
-</div>
-</div>
-<div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`}}>
-<span style={{fontSize:17,fontWeight:900,color:C.t1}}>{t.total_cal||0}</span>
-<span style={{fontSize:11,fontWeight:700,color:C.t3}}>cal</span>
-<span style={{fontSize:11,color:C.t3,marginLeft:"auto"}}>{mealCount} bữa</span>
-<span style={{fontSize:11,color:C.t3,transition:"transform 0.2s",transform:isOpen?"rotate(180deg)":"rotate(0)"}}>▾</span>
-</div>
-{isOpen&&<div onClick={e=>e.stopPropagation()} style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${C.border}`,cursor:"default"}}>
+{isOpen&&<div onClick={e=>e.stopPropagation()} style={{padding:"0 4px 10px 27px",cursor:"default"}}>
 {(t.meals||[]).map((m,mi)=>(
-<div key={mi} style={{marginBottom:8}}>
-<div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:3}}>{m.meal_name||m.meal_id}</div>
+<div key={mi} style={{marginBottom:6}}>
+<div style={{fontSize:11,fontWeight:700,color:C.t2,marginBottom:2}}>{m.meal_name||m.meal_id}</div>
 {(m.items||[]).map((it,ii)=>(
-<div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.t3,padding:"2px 0"}}>
+<div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.t3,padding:"1px 0"}}>
 <span>{it.food} {it.gram}g</span>
 <span>{Math.round(it.cal||0)} cal</span>
 </div>
