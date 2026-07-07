@@ -101,7 +101,7 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
     visibleIds.forEach(mid=>{
       const meal=currentMeals.find(m=>m.id===mid);
       if(meal&&meal.items&&meal.items.length>0){
-        init[mid]=meal.items.map(it=>({name:it.food||it.name||"",gram:it.gram||"",unit:it.unit||"g",qty:it.qty||1}));
+        init[mid]=meal.items.map(it=>({name:it.food||it.name||"",gram:it.gram===0?0:(it.gram||""),unit:it.unit||"g",qty:it.qty||1}));
       }else{
         init[mid]=[{name:"",gram:"",unit:"g",qty:1}];
       }
@@ -112,7 +112,7 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
   const [foodItems,setFoodItems]=useState(()=>{
     const meals=getMeals("train");
     const meal=meals.find(m=>m.id==="sang");
-    if(meal&&meal.items&&meal.items.length>0) return meal.items.map(it=>({name:it.food||it.name||"",qty:1,gram:it.gram||100}));
+    if(meal&&meal.items&&meal.items.length>0) return meal.items.map(it=>({name:it.food||it.name||"",qty:1,gram:it.gram===0?0:(it.gram||100)}));
     return [{name:"",qty:1,gram:100}];
   });
   const [aiResult,setAiResult]=useState(null);
@@ -163,7 +163,7 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
     const meals=getMealsRef.current(dayType);
     const meal=meals.find(m=>m.id===selectedMeal);
     if(meal&&meal.items&&meal.items.length>0){
-      setFoodItems(meal.items.map(it=>({name:it.food||it.name||"",qty:it.qty||1,gram:it.gram||100,unit:it.unit||"g"})));
+      setFoodItems(meal.items.map(it=>({name:it.food||it.name||"",qty:it.qty||1,gram:it.gram===0?0:(it.gram||100),unit:it.unit||"g"})));
     }else{
       setFoodItems([{name:"",qty:1,gram:100}]);
     }
