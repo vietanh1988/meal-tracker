@@ -118,21 +118,29 @@ export function computeMealGram(mealTarget, foods) {
 // Scale 1 nhóm món (VD tất cả món role=protein trong bữa) để tổng đúng
 // `needed` gram-chất-đó, giữ nguyên TỈ LỆ tương đối giữa các món trong nhóm
 // (theo refGram admin nhập), ép trong [min,max] từng món.
+//
+// FIX: nếu `needed<=0` (chất này đã ĐỦ hoặc DƯ ngay từ nhóm xử lý trước —
+// VD trứng vốn nhiều béo tự nhiên đã đủ target Fat của bữa), KHÔNG ép món
+// còn lại (VD Dầu ăn) lên sàn tối thiểu nữa — cho về 0 thay vì cộng dư
+// không cần thiết. Trước đây luôn ép min dù không cần, gây dư béo/carb.
 function scaleGroup(foodsInGroup, needed, macroKey) {
   if (foodsInGroup.length === 0) return [];
 
   const currentTotal = foodsInGroup.reduce((s, f) => s + f.per100[macroKey] * (f.refGram / 100), 0);
+  const alreadyEnough = needed <= 0;
 
   return foodsInGroup.map(food => {
     let gram;
-    if (currentTotal > 0) {
+    if (alreadyEnough) {
+      gram = 0;
+    } else if (currentTotal > 0) {
       gram = food.refGram * (needed / currentTotal);
     } else {
       // Món này vốn không có chất cần bù (VD carb=0) — không scale được theo
       // tỉ lệ, giữ nguyên gram tham khảo
       gram = food.refGram;
     }
-    return makeResult(food, gram, food.min, food.max);
+    return makeResult(food, gram, alreadyEnough ? 0 : food.min, food.max);
   });
 }
 
