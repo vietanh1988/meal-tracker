@@ -56,7 +56,7 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
   });
   useEffect(()=>{try{localStorage.setItem("fitpilot_dayType",dayType);}catch(e){}},[dayType]);
   const [selectedMeal,setSelectedMeal]=useState("sang");
-  const [mealMode,setMealMode]=useState(()=>{try{const s=localStorage.getItem("fitpilot_mealMode");if(s==="tu_nhap"||s==="lich_tuan"||s==="kho_mau")return s;}catch(e){}return "tu_nhap";}); // tu_nhap | lich_tuan | kho_mau
+  const [mealMode,setMealMode]=useState(()=>{try{const s=localStorage.getItem("fitpilot_mealMode");if(s==="tu_nhap"||s==="lich_tuan"||s==="kho_mau"||s==="goi_tuan")return s;}catch(e){}return "tu_nhap";}); // tu_nhap | lich_tuan | kho_mau | goi_tuan
   useEffect(()=>{try{localStorage.setItem("fitpilot_mealMode",mealMode);}catch(e){}},[mealMode]);
   const [tplFilter,setTplFilter]=useState("all"); // template filter: all | train | rest
   const [expandedTpl,setExpandedTpl]=useState(null); // expanded template ID for detail view
@@ -92,10 +92,10 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
       setAllFoodItems(init);
       return;
     }
-    // tu_nhap → load existing meals
+    // tu_nhap → load existing meals (luôn build lại, kể cả khi ngày mới chưa có
+    // dữ liệu gì — trước đây return sớm ở đây khiến món ăn của ngày cũ còn sót
+    // lại trên màn hình sau khi bấm đổi Ngày tập/Ngày nghỉ, nhìn như toggle không ăn)
     const currentMeals=getMeals(dayType);
-    const hasData=currentMeals.some(m=>m.items&&m.items.length>0);
-    if(!hasData)return;
     const init={};
     const visibleIds=mealConfig[dayType]||[];
     visibleIds.forEach(mid=>{
