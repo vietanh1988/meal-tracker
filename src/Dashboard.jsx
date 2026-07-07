@@ -33,31 +33,25 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   },[appSettings.gymDays]);
   // Auto-apply weekly template only if NO meals saved for today
   useEffect(()=>{
-    console.log("🔍DEBUG effect fired:",{hasGetWeeklyTemplate:!!getWeeklyTemplate,hasApplyTemplate:!!applyTemplate,hasGetMeals:!!getMeals,userDataLoaded});
-    if(!getWeeklyTemplate||!applyTemplate||!getMeals||!userDataLoaded){console.log("🔍DEBUG bailed at guard 1");return;}
+    if(!getWeeklyTemplate||!applyTemplate||!getMeals||!userDataLoaded)return;
     const today=new Date().toISOString().slice(0,10);
     const appliedKey="fitpilot_tpl_applied";
-    try{if(localStorage.getItem(appliedKey)===today){console.log("🔍DEBUG bailed: localStorage already set for today");return;}}catch(e){}
+    try{if(localStorage.getItem(appliedKey)===today)return;}catch(e){}
     // Check if user already has meals today → don't overwrite
     const currentMeals=getMeals(todayIsGym?"train":"rest");
-    console.log("🔍DEBUG currentMeals:",todayIsGym?"train":"rest",JSON.stringify(currentMeals));
     const hasMeals=currentMeals.some(m=>m.items&&m.items.length>0);
     if(hasMeals){
-      console.log("🔍DEBUG bailed: hasMeals=true");
       try{localStorage.setItem(appliedKey,today);}catch(e){}
       return;// already has meals, skip template
     }
     const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
     const todayKey=dayKeys[new Date().getDay()];
     const tpl=getWeeklyTemplate(todayKey);
-    console.log("🔍DEBUG todayKey:",todayKey,"tpl found:",JSON.stringify(tpl));
     if(tpl&&tpl.meals&&tpl.meals.length>0){
       try{localStorage.setItem(appliedKey,today);}catch(e){}
       applyTemplate(tpl);
       setDayType(tpl.day_type||"train");
       console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
-    } else {
-      console.log("🔍DEBUG tpl invalid, not applying");
     }
   },[getWeeklyTemplate,applyTemplate,getMeals,userDataLoaded]);
 

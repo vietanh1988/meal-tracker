@@ -106,6 +106,32 @@ export default function App(){
   })();
   const pcDayType=pcDayManual||pcDayAuto;
 
+  // Auto-apply Lịch tuần cho PC — Dashboard.jsx đã có sẵn bản này nhưng CHỈ
+  // chạy khi mob===true (PC dùng layout JSX riêng bên dưới, không qua
+  // <Dashboard>) nên PC chưa bao giờ có tính năng này. Thêm bản riêng ở đây,
+  // giữ nguyên logic + chung 1 localStorage key với bản mobile.
+  useEffect(()=>{
+    if(!getWeeklyTemplate||!applyTemplate||!getMeals||!userDataLoaded)return;
+    const today=new Date().toISOString().slice(0,10);
+    const appliedKey="fitpilot_tpl_applied";
+    try{if(localStorage.getItem(appliedKey)===today)return;}catch(e){}
+    const currentMeals=getMeals(pcDayType);
+    const hasMeals=currentMeals.some(m=>m.items&&m.items.length>0);
+    if(hasMeals){
+      try{localStorage.setItem(appliedKey,today);}catch(e){}
+      return;
+    }
+    const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
+    const todayKey=dayKeys[new Date().getDay()];
+    const tpl=getWeeklyTemplate(todayKey);
+    if(tpl&&tpl.meals&&tpl.meals.length>0){
+      try{localStorage.setItem(appliedKey,today);}catch(e){}
+      applyTemplate(tpl);
+      setPcDayManual(tpl.day_type||"train");
+      console.log("✅ Auto-applied weekly template (PC):",todayKey,tpl.day_type);
+    }
+  },[getWeeklyTemplate,applyTemplate,getMeals,userDataLoaded]);
+
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(isPasswordRecovery) return <ResetPasswordScreen/>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()} appSettings={appSettings}/>;
