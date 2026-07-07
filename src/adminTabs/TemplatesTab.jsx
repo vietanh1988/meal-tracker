@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { C, card, inp, redBtn } from "../theme";
 import { estimateGram } from "../lib/usdaService";
 import { getFoodRole } from "../lib/localFoodDB";
@@ -10,10 +10,197 @@ const [editingId,setEditingId]=useState(null);
 const [tplGoal,setTplGoal]=useState("tang_co");
 const [tplDiet,setTplDiet]=useState("balance");
 const [selectedMeals,setSelectedMeals]=useState(DEFAULT_MEAL_CONFIG.train);
+// === Import CSV (chỉ PC) ===
+const [importOpen,setImportOpen]=useState(false);
+const [importParsed,setImportParsed]=useState(null); // [{name,dayType,goalType,dietStrategy,meals:{mealId:[{food,pct}]}}]
+const [importReport,setImportReport]=useState(null); // kết quả cuối cùng sau khi tra macro
+const [importBusy,setImportBusy]=useState(false);
+const [importErr,setImportErr]=useState(null);
+
+// --- Parse 1 dòng CSV (hỗ trợ dấu phẩy trong ngoặc kép) ---
+function parseCsvLine(line){
+const out=[];let cur="";let inQ=false;
+for(let i=0;i<line.length;i++){
+const ch=line[i];
+if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
+else if(ch===","&&!inQ){out.push(cur);cur="";}
+else cur+=ch;
+}
+out.push(cur);
+return out.map(s=>s.trim());
+}
+
+function downloadTemplateCSV(){
+const rows=[
+["Tên mẫu","Ngày","Mục tiêu","Diet","Bữa","Món ăn","%"],
+["Ức gà cơm rau - Tăng cơ","Tập","Tăng cơ","","Sáng","Trứng gà luộc",""],
+["Ức gà cơm rau - Tăng cơ","Tập","Tăng cơ","","Sáng","Bánh mì",""],
+["Ức gà cơm rau - Tăng cơ","Tập","Tăng cơ","","Trưa","Ức gà luộc","60"],
+["Ức gà cơm rau - Tăng cơ","Tập","Tăng cơ","","Trưa","Thịt lợn nạc luộc","40"],
+["Ức gà cơm rau - Tăng cơ","Tập","Tăng cơ","","Trưa","Cơm",""],
+];
+const csv=rows.map(r=>r.map(v=>/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v).join(",")).join("\n");
+const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");a.href=url;a.download="mau_thuc_don_fipilot.csv";a.click();
+URL.revokeObjectURL(url);
+}
+
+const GOAL_MAP={"tăng cơ":"tang_co","giảm mỡ":"giam_mo","duy trì":"duy_tri"};
+const DIET_MAP={"low-carb":"low_carb","low carb":"low_carb","keto":"keto","cân bằng":"balance"};
+
+function matchMealId(raw){
+const k=(raw||"").toLowerCase().trim();
+const found=ALL_MEALS.find(m=>m.id===k||m.name.toLowerCase()===k||m.short.toLowerCase()===k);
+return found?found.id:null;
+}
+
+async function handleImportFile(file){
+setImportErr(null);setImportReport(null);setImportParsed(null);
+try{
+const text=await file.text();
+const lines=text.split(/\r?\n/).filter(l=>l.trim().length>0);
+if(lines.length<2){setImportErr("File rỗng hoặc thiếu dữ liệu.");return;}
+const header=parseCsvLine(lines[0]).map(h=>h.toLowerCase());
+const idx={name:header.indexOf("tên mẫu"),day:header.indexOf("ngày"),goal:header.indexOf("mục tiêu"),diet:header.indexOf("diet"),meal:header.indexOf("bữa"),food:header.indexOf("món ăn"),pct:header.indexOf("%")};
+if(idx.name<0||idx.meal<0||idx.food<0){setImportErr('File thiếu cột bắt buộc: "Tên mẫu", "Bữa", "Món ăn".');return;}
+
+let last={name:"",day:"",goal:"",diet:""};
+const rows=[];
+for(let i=1;i<lines.length;i++){
+const c=parseCsvLine(lines[i]);
+const name=c[idx.name]||last.name;
+const day=c[idx.day]||last.day;
+const goal=c[idx.goal]||last.goal;
+const diet=idx.diet>=0?(c[idx.diet]||last.diet):"";
+const mealRaw=c[idx.meal];
+const food=c[idx.food];
+const pct=idx.pct>=0?c[idx.pct]:"";
+if(!name||!mealRaw||!food)continue;
+last={name,day,goal,diet};
+const mealId=matchMealId(mealRaw);
+if(!mealId){setImportErr(`Dòng ${i+1}: "${mealRaw}" không phải tên bữa hợp lệ (VD: Sáng, Trưa, Phụ chiều, Pre, Post, Tối).`);return;}
+rows.push({name,day,goal,diet,mealId,food:food.trim(),pct:pct?Number(pct):null});
+}
+if(rows.length===0){setImportErr("Không có dòng dữ liệu hợp lệ nào.");return;}
+
+// Gộp theo Tên mẫu → Bữa
+const tplMap={};
+rows.forEach(r=>{
+if(!tplMap[r.name])tplMap[r.name]={name:r.name,dayType:(r.day||"").toLowerCase().includes("nghỉ")?"rest":"train",goalType:GOAL_MAP[(r.goal||"").toLowerCase().trim()]||"tang_co",dietStrategy:DIET_MAP[(r.diet||"").toLowerCase().trim()]||"balance",meals:{}};
+if(!tplMap[r.name].meals[r.mealId])tplMap[r.name].meals[r.mealId]=[];
+tplMap[r.name].meals[r.mealId].push({food:r.food,pct:r.pct});
+});
+const parsed=Object.values(tplMap);
+setImportParsed(parsed);
+
+// Tra macro/100g cho từng món (không trùng lặp), tận dụng đúng luồng DB→USDA→AI có sẵn
+const uniqueNames=[...new Set(rows.map(r=>r.food.toLowerCase().trim()))];
+const flatFoods=uniqueNames.map(n=>{
+const orig=rows.find(r=>r.food.toLowerCase().trim()===n).food;
+return {name:orig,gram:100,unit:"g",qty:1,_mealId:n};
+});
+setImportBusy(true);
+if(callAI)await callAI(false,flatFoods);
+}catch(e){setImportErr("Lỗi đọc file: "+e.message);setImportBusy(false);}
+}
+
+// Khi callAI xong (aiResult đổi) VÀ đang trong luồng import → build báo cáo cuối
+useEffect(()=>{
+if(!importBusy||!importParsed)return;
+if(aiError){setImportErr("Lỗi tra macro: "+aiError);setImportBusy(false);return;}
+if(!aiResult)return;
+const macroMap={};
+(aiResult.items||[]).forEach(it=>{
+const k=(it.name||"").toLowerCase().trim();
+const g=it.gram||100;const r=100/g;
+macroMap[k]={p:(it.protein||0)*r,c:(it.carb||0)*r,f:(it.fat||0)*r,fiber:(it.fiber||0)*r,cal:(it.cal||0)*r,source:it.source};
+});
+
+const DEFAULT_REF={protein:150,carb:150,fat:10,fixed:100};
+const report=importParsed.map(tpl=>{
+let hasError=false;const errors=[];const sources=new Set();
+const mealsData=[];
+Object.entries(tpl.meals).forEach(([mealId,items])=>{
+const resolved=items.map(it=>{
+const k=it.food.toLowerCase().trim();
+const m=macroMap[k];
+if(!m){hasError=true;errors.push(`Không tra được món "${it.food}"`);return null;}
+sources.add(m.source);
+return {...it,macro100:m,role:getFoodRole(it.food)};
+}).filter(Boolean);
+if(resolved.length===0)return;
+// nhóm theo vai trò, % làm gram tham chiếu tương đối (chỉ cần đúng tỉ lệ)
+const byRole={};
+resolved.forEach(it=>{(byRole[it.role]=byRole[it.role]||[]).push(it);});
+Object.values(byRole).forEach(group=>{
+group.forEach(it=>{it.refGram=it.pct!=null?Math.max(5,Number(it.pct)):(DEFAULT_REF[it.role]||100);});
+});
+const mealItems=resolved.map(it=>{
+const g=it.refGram;const s=g/100;
+return {food:it.food,gram:g,p:Math.round(it.macro100.p*s*10)/10,c:Math.round(it.macro100.c*s*10)/10,f:Math.round(it.macro100.f*s*10)/10,fiber:Math.round(it.macro100.fiber*s*10)/10,cal:Math.round(it.macro100.cal*s)};
+});
+const meal=ALL_MEALS.find(m=>m.id===mealId);
+mealsData.push({meal_id:mealId,meal_name:meal?meal.name:mealId,items:mealItems});
+});
+const totalCal=mealsData.reduce((s,m)=>s+m.items.reduce((a,it)=>a+it.cal,0),0);
+return {name:tpl.name,dayType:tpl.dayType,goalType:tpl.goalType,dietStrategy:tpl.dietStrategy,mealsData,totalCal:Math.round(totalCal),hasError:hasError||mealsData.length===0,errors,sources:[...sources]};
+});
+setImportReport(report);
+setImportBusy(false);
+},[aiResult,aiError]);
+
+async function confirmImportCreate(){
+if(!importReport)return;
+const valid=importReport.filter(r=>!r.hasError);
+for(const r of valid){
+if(saveDefaultTemplate)await saveDefaultTemplate(r.name,r.dayType,r.mealsData,r.totalCal,null,r.goalType,r.goalType==="giam_mo"?r.dietStrategy:null);
+}
+setImportOpen(false);setImportParsed(null);setImportReport(null);
+alert(`Đã tạo ${valid.length} mẫu thành công${importReport.length>valid.length?`, bỏ qua ${importReport.length-valid.length} mẫu lỗi`:""}.`);
+}
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
 <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📚</span><span style={{fontWeight:800,color:C.t1}}>Quản lý Template mẫu</span></div>
-<div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:16}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
+<div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:mob?16:8}}>Tạo template bữa ăn mẫu cho tất cả users xem trong tab Kho mẫu</div>
+
+{!mob&&<div style={{display:"flex",gap:8,marginBottom:16}}>
+<button onClick={downloadTemplateCSV} style={{padding:"8px 14px",fontSize:12,fontWeight:700,border:`1px solid ${C.border}`,borderRadius:8,background:C.surface,color:C.t2,cursor:"pointer"}}>⬇️ Tải file mẫu</button>
+<button onClick={()=>{setImportOpen(true);setImportParsed(null);setImportReport(null);setImportErr(null);}} style={{padding:"8px 14px",fontSize:12,fontWeight:700,border:"none",borderRadius:8,background:C.primary,color:"#fff",cursor:"pointer"}}>⬆️ Import từ CSV</button>
+</div>}
+
+{!mob&&importOpen&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:12,padding:16,marginBottom:16}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+<span style={{fontSize:14,fontWeight:800,color:C.t1}}>Import hàng loạt từ CSV</span>
+<span onClick={()=>setImportOpen(false)} style={{cursor:"pointer",color:C.t3,fontSize:14}}>✕</span>
+</div>
+
+{!importParsed&&!importBusy&&<div>
+<input type="file" accept=".csv" onChange={e=>{const f=e.target.files[0];if(f)handleImportFile(f);}} style={{...inp,fontSize:12}}/>
+<div style={{fontSize:11,color:C.t3,marginTop:6}}>Cột bắt buộc: Tên mẫu, Bữa, Món ăn. Cột % để trống nếu là món phụ tự tính (cơm, dầu ăn...).</div>
+</div>}
+
+{importErr&&<div style={{padding:"10px 12px",background:"#FEF2F2",borderRadius:8,fontSize:12,color:"#991B1B",marginTop:8}}>⚠️ {importErr}</div>}
+
+{importBusy&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"14px 0"}}>
+<span style={{fontSize:13,fontWeight:700,color:C.t2}}>⏳ Đang tra macro từng món (DB → USDA → AI)...</span>
+</div>}
+
+{importReport&&<div>
+<div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:8}}>Kết quả kiểm tra ({importReport.filter(r=>!r.hasError).length}/{importReport.length} mẫu hợp lệ):</div>
+{importReport.map((r,i)=>(
+<div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,padding:"9px 10px",background:r.hasError?"#FEF2F2":"#F0FDF4",borderRadius:8,marginBottom:6}}>
+<span style={{fontSize:14,color:r.hasError?"#DC2626":"#16A34A"}}>{r.hasError?"✕":"✓"}</span>
+<div style={{flex:1}}>
+<div style={{fontSize:12,fontWeight:700,color:r.hasError?"#991B1B":"#166534"}}>{r.name}</div>
+{r.hasError?<div style={{fontSize:11,color:"#DC2626",marginTop:2}}>{r.errors.join("; ")}</div>
+:<div style={{fontSize:11,color:"#4ADE80",marginTop:2}}>{r.mealsData.length} bữa, {r.totalCal}kcal — nguồn: {r.sources.map(s=>s==="localDB"?"📦 Kho gốc":s==="USDA"?"🔍 USDA":s==="cache"?"💾 Cache":"🤖 AI").join(", ")}</div>}
+</div>
+</div>
+))}
+<button onClick={confirmImportCreate} disabled={importReport.every(r=>r.hasError)} style={{...redBtn,marginTop:8,background:"#16A34A"}}>Tạo {importReport.filter(r=>!r.hasError).length} mẫu hợp lệ{importReport.some(r=>r.hasError)?` (bỏ qua ${importReport.filter(r=>r.hasError).length} mẫu lỗi)`:""}</button>
+</div>}
+</div>}
 
 <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"7fr 3fr",gap:mob?0:20,alignItems:"start"}}>
 <div>
