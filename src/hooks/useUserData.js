@@ -181,7 +181,11 @@ export function useUserData(userId) {
   }, []);
 
   // Save meal to Supabase
-  const saveMealToCloud = useCallback(async (mealId, dayType, items) => {
+  // skipDailyLog=true khi user đang SOẠN TRƯỚC cho loại ngày KHÁC hôm nay
+  // (VD hôm nay Nghỉ nhưng bật pill Ngày tập để chuẩn bị cho mai) — vẫn lưu
+  // bucket meal_logs bình thường, nhưng KHÔNG auto-ghi daily_logs của hôm
+  // nay với day_type/món sai loại, tránh làm bẩn số liệu Báo cáo.
+  const saveMealToCloud = useCallback(async (mealId, dayType, items, skipDailyLog = false) => {
     if (!userId) return;
     // Update local state immediately
     updateMealsState(mealId, dayType, items);
@@ -199,6 +203,7 @@ export function useUserData(userId) {
       else console.log("✅ Meal saved:", mealId, dayType);
 
       // === Auto-save to daily_logs ===
+      if (!skipDailyLog) {
       const today = new Date().toISOString().slice(0, 10);
       // Đọc từ mealsRef.current (đã đồng bộ NGAY qua updateMealsState ở trên) thay vì
       // biến `meals` (closure) — tránh bị "cũ" khi hàm này được gọi liên tiếp nhiều
@@ -226,6 +231,7 @@ export function useUserData(userId) {
         }, { onConflict: "user_id,log_date" });
         if (dlErr) console.error("Daily log auto-save error:", dlErr);
         else console.log("✅ Daily log auto-saved:", today, mealsWithItems.length, "bữa");
+      }
       }
     } catch (e) { console.error("Meal save error:", e); }
     // Block re-sync for 30s after save to prevent overwrite

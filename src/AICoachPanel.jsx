@@ -92,13 +92,19 @@ export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appS
     let mealDetails="";
     if(getMeals){
       try{
-        const mc=(()=>{try{return appSettings?.meal_config?JSON.parse(appSettings.meal_config):{train:["breakfast","lunch","snack","dinner"],rest:["breakfast","lunch","snack","dinner"]};}catch(e){return{train:["breakfast","lunch","snack","dinner"],rest:["breakfast","lunch","snack","dinner"]};}})();
+        // ids thật trong meal_logs/mealConstants là sang/phu_sang/trua/... —
+        // fallback cũ (breakfast/lunch/...) không khớp id nào, làm filter ra
+        // RỖNG mỗi khi chưa có meal_config → AI mất sạch chi tiết bữa ăn.
+        const defaultIds=["sang","phu_sang","trua","phu_chieu","pre","post","toi"];
+        const mc=(()=>{try{return appSettings?.meal_config?JSON.parse(appSettings.meal_config):{train:defaultIds,rest:defaultIds};}catch(e){return{train:defaultIds,rest:defaultIds};}})();
         const ids=mc[isRest?"rest":"train"]||mc.train;
         const ms=getMeals(isRest?"rest":"train").filter(m2=>ids.includes(m2.id));
-        const mealNames={breakfast:"Bữa sáng",lunch:"Bữa trưa",snack:"Bữa phụ",dinner:"Bữa tối"};
+        const mealNames={sang:"Bữa sáng",phu_sang:"Phụ sáng",trua:"Bữa trưa",phu_chieu:"Phụ chiều",pre:"Pre-workout",post:"Post-workout",toi:"Bữa tối",breakfast:"Bữa sáng",lunch:"Bữa trưa",snack:"Bữa phụ",dinner:"Bữa tối"};
         const details=ms.filter(m2=>m2.items.length>0).map(m2=>{
           const cal=Math.round(m2.items.reduce((s,i)=>s+(i.cal||0),0));
-          const items=m2.items.map(i=>`${i.name} (${Math.round(i.cal||0)} cal)`).join(", ");
+          // items trong meal_logs lưu key `food` (không phải `name`) — đọc sai
+          // key từng làm AI nhận "undefined (xxx cal)" cho mọi món.
+          const items=m2.items.map(i=>`${i.food||i.name} (${Math.round(i.cal||0)} cal)`).join(", ");
           return `  ${mealNames[m2.id]||m2.id}: ${items} → ${cal} cal`;
         });
         if(details.length>0) mealDetails="\n- Chi tiết:\n"+details.join("\n");
@@ -106,26 +112,32 @@ export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appS
     }
 
     // Tomorrow planned meals
+    // Tính ngày mai TRƯỚC khi dùng — bản cũ dùng tmrIdx ở đây nhưng khai báo
+    // `const` ở SAU (TDZ) → ReferenceError bị catch nuốt im lặng, cả block
+    // chết 100%. Kèm 3 lỗi nữa: day key sai (t2/t3... trong khi DB lưu
+    // thu_2/thu_3...), tpl.meals là ARRAY nhưng xử lý như object map, và
+    // đọc i.name trong khi meal_logs lưu key `food`.
+    const tmr=new Date();tmr.setDate(tmr.getDate()+1);
+    const tmrIdx=tmr.getDay();
+    const tmrMapped=tmrIdx===0?6:tmrIdx-1;
     let tmrPlan="";
     if(getWeeklyTemplate){
       try{
-        const days=["cn","t2","t3","t4","t5","t6","t7"];
+        const days=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
         const tmrKey=days[tmrIdx];
         const tpl=getWeeklyTemplate(tmrKey);
         if(tpl&&tpl.meals){
-          const mealNames={breakfast:"Sáng",lunch:"Trưa",snack:"Phụ",dinner:"Tối"};
-          const planned=Object.entries(tpl.meals).filter(([,v])=>v&&v.items&&v.items.length>0).map(([k,v])=>{
-            const cal=Math.round(v.items.reduce((s,i)=>s+(i.cal||0),0));
-            return `  ${mealNames[k]||k}: ${v.items.map(i=>i.name).join(", ")} → ${cal} cal`;
+          const mealNames={sang:"Sáng",phu_sang:"Phụ sáng",trua:"Trưa",phu_chieu:"Phụ chiều",pre:"Pre",post:"Post",toi:"Tối"};
+          const planned=(tpl.meals||[]).filter(mv=>mv&&mv.items&&mv.items.length>0).map(mv=>{
+            const cal=Math.round(mv.items.reduce((s,i)=>s+(i.cal||0),0));
+            return `  ${mealNames[mv.meal_id]||mv.meal_name||mv.meal_id}: ${mv.items.map(i=>i.food||i.name).join(", ")} → ${cal} cal`;
           });
           if(planned.length>0) tmrPlan="\n- Đã lên kế hoạch:\n"+planned.join("\n");
         }
       }catch(e){}
     }
-    const tmr=new Date();tmr.setDate(tmr.getDate()+1);
-    const tmrIdx=tmr.getDay();
-    const tmrMapped=tmrIdx===0?6:tmrIdx-1;
-    const tmrIsRest=!(p.gymDays||[]).includes(tmrMapped);
+    const tmrGd=(()=>{try{const s=appSettings?.gymDays;return s?JSON.parse(s):(p.gymDays||[0,2,4,5]);}catch(e){return p.gymDays||[0,2,4,5];}})();
+    const tmrIsRest=!tmrGd.includes(tmrMapped);
     const tmrTarget=tmrIsRest?(m.calRest||m.calTarget):m.calTarget;
     const tmrCarb=tmrIsRest?(m.carbRest||m.carb):m.carb;
     const tmrDayLabel=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"][tmrIdx];
