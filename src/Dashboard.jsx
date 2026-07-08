@@ -31,24 +31,20 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     const isGym=gd.includes(mapped);
     setDayType(isGym?"train":"rest");
   },[appSettings.gymDays]);
-  // Auto-apply weekly template only if NO meals saved for today
+  // Auto-apply weekly template only if NO meals saved for today — không
+  // dùng cờ localStorage "1 lần/ngày" nữa (từng gây kẹt), luôn check tươi
+  // mỗi lần tải trang; `hasMeals` bên dưới đã tự đủ để không ghi đè dữ
+  // liệu user đã có.
   useEffect(()=>{
     if(!getWeeklyTemplate||!applyTemplate||!getMeals||!userDataLoaded)return;
-    const today=new Date().toISOString().slice(0,10);
-    const appliedKey="fitpilot_tpl_applied";
-    try{if(localStorage.getItem(appliedKey)===today)return;}catch(e){}
     // Check if user already has meals today → don't overwrite
     const currentMeals=getMeals(todayIsGym?"train":"rest");
     const hasMeals=currentMeals.some(m=>m.items&&m.items.length>0);
-    if(hasMeals){
-      try{localStorage.setItem(appliedKey,today);}catch(e){}
-      return;// already has meals, skip template
-    }
+    if(hasMeals)return;// already has meals, skip template
     const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
     const todayKey=dayKeys[new Date().getDay()];
     const tpl=getWeeklyTemplate(todayKey);
     if(tpl&&tpl.meals&&tpl.meals.length>0){
-      try{localStorage.setItem(appliedKey,today);}catch(e){}
       applyTemplate(tpl);
       setDayType(tpl.day_type||"train");
       console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
