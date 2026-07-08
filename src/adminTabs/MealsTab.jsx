@@ -30,7 +30,7 @@ const MODE_DESC={tu_nhap:"Nhập thức ăn → nhấn \"Tính macro\" → trả
 // mẫu lên sẽ vẫn giữ nguyên trạng thái cũ, dễ áp nhầm mẫu Tập/Nghỉ. Nên mỗi
 // lần bấm vào tab Kho mẫu, luôn ép về ĐÚNG loại ngày thật hôm nay trước.
 const todayRealDayType=()=>{
-try{const s=appSettings.gymDays;const gd=s?JSON.parse(s):profile.gymDays||[0,2,4,5];const idx=new Date().getDay();return gd.includes(idx)?"train":"rest";}catch(e){return "train";}
+try{const s=appSettings.gymDays;const gd=s?JSON.parse(s):profile.gymDays||[0,2,4,5];const idx=new Date().getDay();const mapped=idx===0?6:idx-1;return gd.includes(mapped)?"train":"rest";}catch(e){return "train";}
 };
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
