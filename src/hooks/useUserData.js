@@ -34,6 +34,15 @@ export function useUserData(userId) {
   const [defaultTemplates, setDefaultTemplates] = useState([]);
   const [weeklyBundles, setWeeklyBundles] = useState([]);
   const lastFetchRef = useRef(Date.now());
+  // log_date thật của từng bữa trong `meals` — DB chỉ có đúng 2 "ô" (train/rest)
+  // mỗi user, KHÔNG theo ngày thật, nên `meals[type]` có thể đang chứa dữ liệu
+  // sót lại từ vài ngày trước (chưa bị ghi đè). Theo dõi riêng log_date để biết
+  // đâu là dữ liệu THẬT của hôm nay — dùng cho hasMealsToday() bên dưới, KHÔNG
+  // đổi hành vi getMeals() (nhiều nơi như WeightSuggestion cố tình lấy ví dụ
+  // bữa ăn cũ theo loại ngày, không quan tâm có phải hôm nay không).
+  const [mealLogDates, setMealLogDates] = useState({ train: {}, rest: {} });
+  const mealLogDatesRef = useRef(mealLogDates);
+  const todayStr = () => new Date().toISOString().slice(0, 10);
 
   // === Extracted fetch function — reusable ===
   const fetchAllData = useCallback(async (silent = false) => {
@@ -44,9 +53,11 @@ export function useUserData(userId) {
       if (error) console.error("Load meals error:", error);
       if (data && data.length > 0) {
         const trainMeals = {}, restMeals = {};
+        const newDates = { train: {}, rest: {} };
         data.forEach(d => {
           const target = d.day_type === "train" ? trainMeals : restMeals;
           target[d.meal_id] = d.items;
+          newDates[d.day_type === "train" ? "train" : "rest"][d.meal_id] = d.log_date;
         });
         const newMeals = {};
         ["train", "rest"].forEach(dt => {
@@ -59,6 +70,8 @@ export function useUserData(userId) {
         });
         setMeals(newMeals);
         mealsRef.current = newMeals;
+        setMealLogDates(newDates);
+        mealLogDatesRef.current = newDates;
       }
 
       // Load food cache
@@ -132,6 +145,18 @@ export function useUserData(userId) {
     return meals[type] || defaultStructure[type];
   }, [meals]);
 
+  // Có bữa THẬT của hôm nay trong bucket `type` không (khác getMeals() —
+  // hàm đó trả cả dữ liệu sót từ ngày cũ, cố tình giữ nguyên cho các chỗ
+  // như WeightSuggestion lấy ví dụ theo loại ngày, không quan tâm ngày nào).
+  // Dùng hàm này riêng cho những chỗ cần biết chính xác "hôm nay đã có gì
+  // chưa" — VD gate auto-apply Lịch tuần, tránh bị dữ liệu sót đánh lừa.
+  const hasMealsToday = useCallback((type) => {
+    const list = meals[type] || defaultStructure[type];
+    const dates = mealLogDates[type] || {};
+    const t = todayStr();
+    return list.some(m => m.items && m.items.length > 0 && dates[m.id] === t);
+  }, [meals, mealLogDates]);
+
   // Update meals in state after save
   const updateMealsState = useCallback((mealId, dayType, items) => {
     setMeals(prev => {
@@ -145,11 +170,22 @@ export function useUserData(userId) {
     });
   }, []);
 
+  // Đánh dấu log_date=hôm nay cho 1 bữa NGAY trong session (không đợi
+  // fetchAllData load lại) — gọi song song mỗi khi ghi meal_logs thật.
+  const markMealDateToday = useCallback((dayType, mealId) => {
+    setMealLogDates(prev => {
+      const updated = { ...prev, [dayType]: { ...(prev[dayType] || {}), [mealId]: todayStr() } };
+      mealLogDatesRef.current = updated;
+      return updated;
+    });
+  }, []);
+
   // Save meal to Supabase
   const saveMealToCloud = useCallback(async (mealId, dayType, items) => {
     if (!userId) return;
     // Update local state immediately
     updateMealsState(mealId, dayType, items);
+    markMealDateToday(dayType, mealId);
     try {
       const totalCal = items.reduce((s, i) => s + (i.cal || 0), 0);
       const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
@@ -429,6 +465,7 @@ export function useUserData(userId) {
       const items = m.items || [];
       if (mealId && items.length > 0) {
         updateMealsState(mealId, dayType, items);
+        markMealDateToday(dayType, mealId);
         try {
           const totalCal = items.reduce((s, i) => s + (i.cal || 0), 0);
           const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
@@ -515,7 +552,7 @@ export function useUserData(userId) {
   }, []);
 
   return {
-    loaded, meals, getMeals, getMealHistory, foodCache,
+    loaded, meals, getMeals, hasMealsToday, getMealHistory, foodCache,
     saveMealToCloud, saveFoodCache, deleteFoodCache,
     weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, getWeeklyTemplate,
     defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, refreshDefaultTemplates,

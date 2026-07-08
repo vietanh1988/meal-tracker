@@ -9,7 +9,7 @@ import { UserAvatar } from "./UserAvatar";
 import { NotificationBell } from "./NotificationBell";
 import { WeightSuggestion } from "./WeightSuggestion";
 
-export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
+export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [showWeightInput,setShowWeightInput]=useState(false);
   const weightInputRef=useRef(null);
@@ -36,11 +36,11 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   // mỗi lần tải trang; `hasMeals` bên dưới đã tự đủ để không ghi đè dữ
   // liệu user đã có.
   useEffect(()=>{
-    if(!getWeeklyTemplate||!applyTemplate||!getMeals||!userDataLoaded)return;
-    // Check if user already has meals today → don't overwrite
-    const currentMeals=getMeals(todayIsGym?"train":"rest");
-    const hasMeals=currentMeals.some(m=>m.items&&m.items.length>0);
-    if(hasMeals)return;// already has meals, skip template
+    if(!getWeeklyTemplate||!applyTemplate||!hasMealsToday||!userDataLoaded)return;
+    // hasMealsToday() thay vì getMeals().some(...) — bucket train/rest có thể
+    // đang chứa dữ liệu SÓT từ vài ngày trước (DB chỉ có 2 "ô" mỗi user,
+    // không theo ngày thật), khiến check kiểu cũ nhầm "đã có bữa hôm nay".
+    if(hasMealsToday(todayIsGym?"train":"rest"))return;
     const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
     const todayKey=dayKeys[new Date().getDay()];
     const tpl=getWeeklyTemplate(todayKey);
@@ -49,7 +49,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       setDayType(tpl.day_type||"train");
       console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
     }
-  },[getWeeklyTemplate,applyTemplate,getMeals,userDataLoaded]);
+  },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded]);
 
   // Auto version check — force clear cache when admin updates app_version
   const APP_VERSION="2.6";
