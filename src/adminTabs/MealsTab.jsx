@@ -25,6 +25,13 @@ const [expandedBundle, setExpandedBundle] = useState(null);
 const [kmMode, setKmMode] = useState("template"); // template | bundle — chỉ dùng trong Kho mẫu
 const MODE_TITLE={tu_nhap:"Nhập bữa ăn",lich_tuan:"Lịch tuần",kho_mau:"Kho mẫu"};
 const MODE_DESC={tu_nhap:"Nhập thức ăn → nhấn \"Tính macro\" → trả kết quả → Lưu bữa ăn → Lưu vào lịch tuần (nếu muốn)",lich_tuan:"Xem & chỉnh thực đơn theo từng ngày trong tuần",kho_mau:`Chọn template mẫu do admin tạo sẵn${(defaultTemplates||[]).length>0?` (${(defaultTemplates||[]).length} mẫu)`:""}`};
+// dayType là state DÙNG CHUNG toàn bộ MealsTab (Tự nhập/Lịch tuần/Kho mẫu đều
+// đọc chung 1 biến) — nếu vừa thao tác ở chỗ khác để lại dayType sai, mở Kho
+// mẫu lên sẽ vẫn giữ nguyên trạng thái cũ, dễ áp nhầm mẫu Tập/Nghỉ. Nên mỗi
+// lần bấm vào tab Kho mẫu, luôn ép về ĐÚNG loại ngày thật hôm nay trước.
+const todayRealDayType=()=>{
+try{const s=appSettings.gymDays;const gd=s?JSON.parse(s):profile.gymDays||[0,2,4,5];const idx=new Date().getDay();return gd.includes(idx)?"train":"rest";}catch(e){return "train";}
+};
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
 {!mob?<div style={{display:"grid",gridTemplateColumns:"63% 35%",gap:20,marginBottom:14,alignItems:"center"}}>
@@ -33,12 +40,12 @@ return (
 <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2}}>{MODE_DESC[mealMode]}</div>
 </div>
 <div style={{display:"flex",gap:4,background:C.surface,borderRadius:12,padding:4}}>
-{[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{flex:1,padding:"10px 0",borderRadius:10,fontSize:14,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none",textAlign:"center"}}>{t.icon} {t.label}</div>)}
+{[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"){if(refreshDefaultTemplates)refreshDefaultTemplates();setDayType(todayRealDayType());}}} style={{flex:1,padding:"10px 0",borderRadius:10,fontSize:14,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none",textAlign:"center"}}>{t.icon} {t.label}</div>)}
 </div>
 </div>:<>
 <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{MODE_TITLE[mealMode]}</div>
 <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2,marginBottom:12}}>{MODE_DESC[mealMode]}</div>
-<SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"&&refreshDefaultTemplates)refreshDefaultTemplates();}} style={{marginBottom:16}}/>
+<SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"){if(refreshDefaultTemplates)refreshDefaultTemplates();setDayType(todayRealDayType());}}} style={{marginBottom:16}}/>
 </>}
 
 {/* === MODE: Tự nhập — all meals in one flow === */}
@@ -241,11 +248,15 @@ const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 
 const todayIdx2=new Date().getDay();
 const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
 const totalCal2=(aiResult.items||[]).reduce((s,it)=>s+(it.cal||0),0);
+const todayMi=todayIdx2===0?6:todayIdx2-1;
+const todayMatchesType=(gd.includes(todayMi)?"train":"rest")===dayType;
+const defaultDayKey=todayMatchesType?dayKeys2[todayIdx2]:(dayKeys2.find((_,i2)=>{const mi2=i2===0?6:i2-1;return (gd.includes(mi2)?"train":"rest")===dayType;})||dayKeys2[todayIdx2]);
 return <div style={{marginTop:12,padding:"16px",background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
 <div style={{fontSize:15,fontWeight:800,color:"#3730A3",marginBottom:8}}>📅 Lưu vào lịch tuần?</div>
-<select id="save-tpl-day" defaultValue={dayKeys2[todayIdx2]} style={{...inp,marginBottom:12}}>
-{dayLabels2.map((l,i2)=>{const mi2=i2===0?6:i2-1;const ig=gd.includes(mi2);return <option key={i2} value={dayKeys2[i2]}>{l} — {ig?"Ngày tập":"Ngày nghỉ"}</option>;})}
+<select id="save-tpl-day" defaultValue={defaultDayKey} style={{...inp,marginBottom:12}}>
+{dayLabels2.map((l,i2)=>{const mi2=i2===0?6:i2-1;const ig=gd.includes(mi2);const sameType=(ig?"train":"rest")===dayType;return <option key={i2} value={dayKeys2[i2]} disabled={!sameType}>{l} — {ig?"Ngày tập":"Ngày nghỉ"}{!sameType?" (khác loại, không chọn được)":""}</option>;})}
 </select>
+<div style={{fontSize:11,color:"#4338CA",marginBottom:8}}>Chỉ lưu được vào ngày cùng loại ({dayType==="train"?"Ngày tập":"Ngày nghỉ"}) — tránh lệch dữ liệu.</div>
 <div style={{display:"flex",gap:8}}>
 <button onClick={async()=>{
 const sd=document.getElementById("save-tpl-day")?.value||dayKeys2[todayIdx2];
@@ -308,11 +319,15 @@ const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
 const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
 const todayIdx2=new Date().getDay();
 const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+const todayMi=todayIdx2===0?6:todayIdx2-1;
+const todayMatchesType=(gd.includes(todayMi)?"train":"rest")===dayType;
+const defaultDayKey=todayMatchesType?dayKeys2[todayIdx2]:(dayKeys2.find((_,i2)=>{const mi2=i2===0?6:i2-1;return (gd.includes(mi2)?"train":"rest")===dayType;})||dayKeys2[todayIdx2]);
 return <div style={{marginTop:12,padding:"16px",background:"linear-gradient(135deg,#EEF2FF,#E0E7FF)",borderRadius:12,border:"2px solid #818CF8"}}>
 <div style={{fontSize:15,fontWeight:800,color:"#3730A3",marginBottom:8}}>📅 Lưu vào lịch tuần?</div>
-<select id="save-tpl-day-pc" defaultValue={dayKeys2[todayIdx2]} style={{width:"100%",padding:"10px 12px",border:`1.5px solid ${C.border}`,borderRadius:10,fontSize:14,fontFamily:"inherit",marginBottom:12}}>
-{dayLabels2.map((l,i2)=>{const mi2=i2===0?6:i2-1;const ig=gd.includes(mi2);return <option key={i2} value={dayKeys2[i2]}>{l} — {ig?"Ngày tập":"Ngày nghỉ"}</option>;})}
+<select id="save-tpl-day-pc" defaultValue={defaultDayKey} style={{width:"100%",padding:"10px 12px",border:`1.5px solid ${C.border}`,borderRadius:10,fontSize:14,fontFamily:"inherit",marginBottom:12}}>
+{dayLabels2.map((l,i2)=>{const mi2=i2===0?6:i2-1;const ig=gd.includes(mi2);const sameType=(ig?"train":"rest")===dayType;return <option key={i2} value={dayKeys2[i2]} disabled={!sameType}>{l} — {ig?"Ngày tập":"Ngày nghỉ"}{!sameType?" (khác loại ngày, không chọn được)":""}</option>;})}
 </select>
+<div style={{fontSize:11,color:"#4338CA",marginBottom:8}}>Chỉ lưu được vào ngày cùng loại ({dayType==="train"?"Ngày tập":"Ngày nghỉ"}) — tránh lệch dữ liệu.</div>
 <div style={{display:"flex",gap:8}}>
 <button onClick={async()=>{
 const sd=document.getElementById("save-tpl-day-pc")?.value||dayKeys2[todayIdx2];
@@ -398,7 +413,22 @@ return <div key={mi} style={{marginBottom:mi<(tpl.meals||[]).length-1?12:0}}>
 </div>;
 })}
 <div style={{display:"flex",gap:8,marginTop:14}}>
-<button onClick={(e)=>{e.stopPropagation();setDayType(tpl.day_type);setMealMode("tu_nhap");setExpandedTpl(null);}} style={{flex:1,padding:"10px",fontSize:12,fontWeight:800,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Sửa</button>
+<button onClick={(e)=>{
+e.stopPropagation();
+setDayType(tpl.day_type);
+// Nạp ĐÚNG món ăn đã lưu của ngày này vào form — trước đây chỉ đổi tab,
+// không nạp gì cả, khiến "Sửa" hiện dữ liệu sai/trống, dễ gây nhầm lẫn.
+const init={};
+ALL_MEALS.forEach(m=>{init[m.id]=[{name:"",gram:"",unit:"g",qty:1}];});
+(tpl.meals||[]).forEach(m=>{
+const items=(m.items||[]).map(it=>({name:it.food||it.name||"",gram:it.gram===0?0:(it.gram||""),unit:it.unit||"g",qty:it.qty||1}));
+if(items.length>0)init[m.meal_id]=items;
+});
+setAllFoodItems(init);
+setUserHasEdited(true);
+setMealMode("tu_nhap");
+setExpandedTpl(null);
+}} style={{flex:1,padding:"10px",fontSize:12,fontWeight:800,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Sửa</button>
 <button onClick={async(e)=>{e.stopPropagation();if(window.confirm(`Xóa lịch tuần ${dayLabels[i]}?`)){if(deleteWeeklyTemplate)await deleteWeeklyTemplate(dayKeys[i]);setExpandedTpl(null);}}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:"1.5px solid #FCA5A5",borderRadius:10,background:"#FEF2F2",color:"#DC2626",cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xóa</button>
 <button onClick={(e)=>{e.stopPropagation();setExpandedTpl(null);}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Đóng</button>
 </div>
