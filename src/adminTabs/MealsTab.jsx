@@ -237,7 +237,7 @@ if(heroF>0)scores.push(scoreSym(s.f,heroF,0.15));
 const avg=scores.length>0?Math.round(scores.reduce((a2,b)=>a2+b,0)/scores.length):0;
 return <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}><div style={{fontSize:14,fontWeight:800,display:"flex",alignItems:"center",gap:8}}>📊 Đánh giá dinh dưỡng</div><div style={{fontSize:22,fontWeight:800,color:avg>=90?"#059669":avg>=70?C.primary:"#D97706"}}>{avg}<span style={{fontSize:13,fontWeight:500,color:C.t2}}>/100</span></div></div>{[{l:"Calo",v:s.cal,t:heroCal},{l:"Protein",v:s.p,t:heroP},{l:"Carb",v:s.c,t:heroC},{l:"Fat",v:s.f,t:heroF},{l:"Chất xơ",v:s.fi,t:heroFi}].map(r2=>{const pct2=r2.t>0?Math.round(r2.v/r2.t*100):0;const ok=pct2>=90&&pct2<=115;return <div key={r2.l} style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12,padding:"6px 10px",background:C.surface,borderRadius:8,marginBottom:4}}><span style={{color:C.t2}}>{r2.l}</span><span style={{fontWeight:700,color:ok?"#059669":"#D97706"}}>{ok?"✓":"⚠"} {pct2}%</span></div>;})}</div>;})()}
 {aiResult&&aiResult.items&&<>
-<button onClick={async()=>{const allNames=Object.values(allFoodItems).flat().map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);if(allNames.length>0&&deleteFoodCache)await deleteFoodCache(allNames);setAiResult(null);const c2=[];mealNames.forEach(meal=>{const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());foods.forEach(f=>c2.push({...f,_mealId:meal.id}));});setFoodItems(c2);callAI(true,c2);}} style={{padding:"8px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:10,cursor:"pointer",fontFamily:"inherit",width:"100%",marginBottom:8}}>🔄 Tính lại</button>
+<button onClick={async()=>{const allNames=Object.values(allFoodItems).flat().map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);if(allNames.length>0&&deleteFoodCache)await deleteFoodCache(allNames);setAiResult(null);const c2=[];mealNames.forEach(meal=>{const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());foods.forEach(f=>c2.push({...f,_mealId:meal.id}));});setFoodItems(c2);callAI(true,c2);}} style={{padding:"8px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:10,cursor:"pointer",fontFamily:"inherit",width:"100%",marginBottom:8}}>🔄 Tính lại (bỏ qua cache)</button>
 <button onClick={()=>{const items=aiResult.items||[];const saveByMeal={};items.forEach(ai=>{const mid=ai._mealId;if(!mid)return;if(!saveByMeal[mid])saveByMeal[mid]=[];const unit=ai.unit||"g";const isW=unit==="g"||unit==="ml";saveByMeal[mid].push({food:ai.name||"",gram:ai.gram||0,unit,qty:ai.qty||1,qty_display:ai.qty_display||(isW?null:`${ai.qty||1} ${unit}`),p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0});});Object.entries(saveByMeal).forEach(([mid,saveItems])=>{if(saveItems.length>0)saveMealToCloud(mid,dayType,saveItems);});if(aiResult._cacheEntries)savePendingFoodCache(aiResult._cacheEntries,aiProvider);const el=document.getElementById("meal-saved-pc");if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}}} style={{...redBtn,marginTop:0,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",width:"100%"}}>💾 Lưu bữa ăn hôm nay</button>
 <button onClick={()=>setShowSaveTpl(!showSaveTpl)} style={{...redBtn,marginTop:8,background:C.card,color:C.t2,border:`1.5px solid ${C.border}`,width:"100%"}}>📅 Gán vào lịch tuần</button>
 {showSaveTpl&&(()=>{
@@ -440,8 +440,20 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 {filtered.length>0?<div style={{display:"flex",flexDirection:"column",gap:8}}>
 {filtered.map(t=>{
 const isExpanded=expandedTpl===t.id;
-const tplMeals=t.meals||[];
 const mealNameMap={"sang":"Bữa sáng","phu_sang":"Phụ sáng","trua":"Bữa trưa","phu_chieu":"Phụ chiều","pre":"Pre-workout","post":"Post-workout","toi":"Bữa tối"};
+// Tính sẵn theo đúng target riêng của user NGAY TỪ LÚC XEM — không phải đợi
+// bấm "Dùng cho hôm nay" mới tính. Đây chỉ là phép toán JS thuần (không
+// gọi mạng/AI gì), macro/100g từng món đã có sẵn trong mẫu — nên tính
+// trước cho preview không tốn thêm gì cả.
+const dailyTarget={
+cal:t.day_type==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0),
+p:macro.protein||0,
+c:t.day_type==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0),
+f:macro.fat||0,
+};
+const engineTpl=applyMealEngineToTemplate(t,dailyTarget);
+const tplMeals=engineTpl.meals||[];
+const personalizedTotalCal=tplMeals.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
 return <div key={t.id} style={{background:C.card,border:`1.5px solid ${isExpanded?C.red:C.border}`,borderRadius:12,overflow:"hidden"}}>
 <div style={{padding:mob?"12px":"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedTpl(isExpanded?null:t.id)}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -450,11 +462,11 @@ return <div key={t.id} style={{background:C.card,border:`1.5px solid ${isExpande
 <span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>{t.name||"Template"}</span>
 </div>
 <div style={{display:"flex",alignItems:"center",gap:6}}>
-<span style={{fontSize:16,fontWeight:900,color:C.t1}}>{t.total_cal||0}</span>
+<span style={{fontSize:16,fontWeight:900,color:C.t1}}>{Math.round(personalizedTotalCal)}</span>
 <span style={{fontSize:12,color:C.t3}}>{isExpanded?"▲":"▼"}</span>
 </div>
 </div>
-<div style={{fontSize:12,fontWeight:600,color:C.t3,marginTop:4}}>{tplMeals.length} bữa • {t.total_cal||0} kcal</div>
+<div style={{fontSize:12,fontWeight:600,color:C.t3,marginTop:4}}>{tplMeals.length} bữa • {Math.round(personalizedTotalCal)} kcal <span style={{color:C.primary}}>· đã tính riêng cho bạn</span></div>
 </div>
 {isExpanded&&<div style={{borderTop:`1.5px solid ${C.border}`,padding:mob?"12px":"14px 16px"}}>
 {tplMeals.map((m,mi)=>{
@@ -466,7 +478,7 @@ return <div key={mi} style={{marginBottom:mi<tplMeals.length-1?12:0}}>
 <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{Math.round(mCal)} cal</span>
 </div>
 {mItems.map((it,ii)=><div key={ii} style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:600,padding:"3px 0",color:C.t2}}>
-<span>{it.food||it.name} {it.gram?`${it.gram}g`:""}</span>
+<span>{it.food||it.name} {it.gram!=null?`${it.gram}g`:""}</span>
 <span style={{color:C.t3}}>P:{it.p||0} C:{it.c||0} F:{it.f||0} = {it.cal||0}cal</span>
 </div>)}
 </div>;
@@ -475,13 +487,6 @@ return <div key={mi} style={{marginBottom:mi<tplMeals.length-1?12:0}}>
 <button onClick={async(e)=>{
 e.stopPropagation();
 if(applyTemplate){
-const dailyTarget={
-cal:t.day_type==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0),
-p:macro.protein||0,
-c:t.day_type==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0),
-f:macro.fat||0,
-};
-const engineTpl=applyMealEngineToTemplate(t,dailyTarget);
 await applyTemplate(engineTpl);
 setAppliedTemplate({id:t.id,name:t.name});
 setExpandedTpl(null);
@@ -490,14 +495,15 @@ setDayType(t.day_type);
 const el=document.getElementById("tpl-applied");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 }
-}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)"}}>📥 Hôm nay</button>
-<button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Gán lịch tuần</button>
+}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)"}}>📥 Dùng cho hôm nay</button>
+<button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Lưu cho ngày khác...</button>
 </div>
 {showAssignDays===t.id&&(()=>{
 const dayKeys2=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
 const dayLabels2=["T2","T3","T4","T5","T6","T7","CN"];
 const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
 return <div style={{marginTop:10,padding:12,background:"#EEF2FF",borderRadius:10,border:"1.5px solid #818CF8"}} onClick={e=>e.stopPropagation()}>
+{/* dùng lại đúng engineTpl đã tính sẵn, KHÔNG tính lại lần nữa */}
 <div style={{fontSize:13,fontWeight:700,color:"#3730A3",marginBottom:8}}>Gán vào ngày nào?</div>
 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
 {dayLabels2.map((dl,di)=>{
@@ -522,13 +528,6 @@ cursor:sameType?"pointer":"not-allowed",opacity:sameType?1:0.5,
 <button onClick={async()=>{
 const days=assignSelectedDays||[];
 if(days.length===0){alert("Chọn ít nhất 1 ngày");return;}
-const dailyTarget={
-cal:t.day_type==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0),
-p:macro.protein||0,
-c:t.day_type==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0),
-f:macro.fat||0,
-};
-const engineTpl=applyMealEngineToTemplate(t,dailyTarget);
 const mealsData=engineTpl.meals||[];
 const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
 for(const dayKey of days){
