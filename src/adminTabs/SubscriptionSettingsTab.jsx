@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
-import { C, card, inp, redBtn } from "../theme";
+import { C, card, inp, redBtn, numFix } from "../theme";
 
 export function SubscriptionSettingsTab({ isAdmin }) {
   const [form, setForm] = useState(null);
@@ -65,11 +65,11 @@ export function SubscriptionSettingsTab({ isAdmin }) {
           <div style={{ fontSize: 12, color: C.t3, marginBottom: 14 }}>Áp dụng cho user chưa nâng cấp</div>
           <div style={{ marginBottom: 12 }}>
             <div style={lbl_style(C)}>AI tính macro / tháng</div>
-            <input type="number" value={form.free_ai_macro_limit ?? ""} onChange={e => set("free_ai_macro_limit", e.target.value)} style={inp} />
+            <input type="number" {...numFix} value={form.free_ai_macro_limit ?? ""} onChange={e => set("free_ai_macro_limit", e.target.value)} style={inp} />
           </div>
           <div>
             <div style={lbl_style(C)}>AI Chat / ngày</div>
-            <input type="number" value={form.free_ai_chat_limit ?? ""} onChange={e => set("free_ai_chat_limit", e.target.value)} style={inp} />
+            <input type="number" {...numFix} value={form.free_ai_chat_limit ?? ""} onChange={e => set("free_ai_chat_limit", e.target.value)} style={inp} />
           </div>
         </div>
 
@@ -78,11 +78,11 @@ export function SubscriptionSettingsTab({ isAdmin }) {
           <div style={{ fontSize: 12, color: C.t3, marginBottom: 14 }}>Full quyền Premium trong thời gian này</div>
           <div style={{ marginBottom: 12 }}>
             <div style={lbl_style(C)}>Thời gian dùng thử (ngày)</div>
-            <input type="number" value={form.trial_days ?? ""} onChange={e => set("trial_days", e.target.value)} style={inp} />
+            <input type="number" {...numFix} value={form.trial_days ?? ""} onChange={e => set("trial_days", e.target.value)} style={inp} />
           </div>
           <div>
             <div style={lbl_style(C)}>Grace period sau hết hạn (ngày)</div>
-            <input type="number" value={form.grace_period_days ?? ""} onChange={e => set("grace_period_days", e.target.value)} style={inp} />
+            <input type="number" {...numFix} value={form.grace_period_days ?? ""} onChange={e => set("grace_period_days", e.target.value)} style={inp} />
           </div>
         </div>
 
@@ -96,17 +96,17 @@ export function SubscriptionSettingsTab({ isAdmin }) {
           <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 8 }}>Gói 3 tháng</div>
             <div style={lbl_style(C)}>Tổng tiền (VNĐ)</div>
-            <input type="number" placeholder="VD: 297000" value={form.price_3m ?? ""} onChange={e => set("price_3m", e.target.value)} style={{ ...inp, marginTop: 4 }} />
+            <input type="number" {...numFix} placeholder="VD: 297000" value={form.price_3m ?? ""} onChange={e => set("price_3m", e.target.value)} style={{ ...inp, marginTop: 4 }} />
           </div>
           <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 8 }}>Gói 6 tháng</div>
             <div style={lbl_style(C)}>Tổng tiền (VNĐ)</div>
-            <input type="number" placeholder="VD: 474000" value={form.price_6m ?? ""} onChange={e => set("price_6m", e.target.value)} style={{ ...inp, marginTop: 4 }} />
+            <input type="number" {...numFix} placeholder="VD: 474000" value={form.price_6m ?? ""} onChange={e => set("price_6m", e.target.value)} style={{ ...inp, marginTop: 4 }} />
           </div>
           <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 8 }}>Gói 12 tháng</div>
             <div style={lbl_style(C)}>Tổng tiền (VNĐ)</div>
-            <input type="number" placeholder="VD: 708000" value={form.price_12m ?? ""} onChange={e => set("price_12m", e.target.value)} style={{ ...inp, marginTop: 4 }} />
+            <input type="number" {...numFix} placeholder="VD: 708000" value={form.price_12m ?? ""} onChange={e => set("price_12m", e.target.value)} style={{ ...inp, marginTop: 4 }} />
           </div>
         </div>
 
