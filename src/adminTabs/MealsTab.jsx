@@ -141,7 +141,7 @@ const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
 const mealColors={"sang":"#007AFF","phu_sang":"#007AFF","trua":"#007AFF","phu_chieu":"#007AFF","pre":"#007AFF","post":"#007AFF","toi":"#007AFF"};
 const mealTextColors={"sang":C.t1,"phu_sang":C.t1,"trua":C.t1,"phu_chieu":C.t1,"pre":C.t1,"post":C.t1,"toi":C.t1};
 return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
-<div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
+<div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 40px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
 <span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.l}</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
@@ -151,7 +151,7 @@ return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.bord
 
 {foods.map((item,i)=>{
 const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
-return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 20px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
+return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 40px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
 <span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
 <input value={item.name} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?13:14,height:mob?38:40,padding:mob?"8px 10px":"10px 12px",opacity:appliedTemplate?0.6:1}}/>
 <select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?12:14,height:mob?38:40,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px",opacity:appliedTemplate?0.6:1}}>
@@ -159,7 +159,7 @@ return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44p
 </select>
 <input type="number" {...numFix} inputMode="numeric" value={item.qty||""} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px",opacity:appliedTemplate?0.6:1}} placeholder="SL"/>
 <input type="number" {...numFix} inputMode="numeric" value={item.gram===0?0:(item.gram||"")} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px",opacity:appliedTemplate?0.5:(isWeight?1:0.7)}} placeholder={isWeight?"Gram":"~Gram"}/>
-<button disabled={!!appliedTemplate} onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:0,width:mob?24:32,height:mob?24:32,background:C.redBg,color:C.red,borderRadius:8,fontSize:mob?14:16,fontWeight:900,border:"none",cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1}}>×</button>
+<button disabled={!!appliedTemplate} onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:0,width:mob?40:32,height:mob?40:32,background:C.redBg,borderRadius:8,fontSize:mob?15:14,border:"none",cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1,display:"flex",alignItems:"center",justifyContent:"center"}}>🗑️</button>
 </div>;
 })}
 {!appliedTemplate&&<button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:"6px",fontSize:12,fontWeight:700,background:C.surface,color:C.t3,border:`1.5px dashed ${C.border}`,borderRadius:8,width:"100%",cursor:"pointer",fontFamily:"inherit",marginTop:4}}>+ Thêm món</button>}
@@ -364,8 +364,20 @@ const totalCal=tpl?tpl.total_cal||0:0;
 const mealCount=(tpl?.meals||[]).length;
 const mealList=(tpl?.meals||[]).map(m=>mealNameMap[m.meal_id]||m.meal_name||m.meal_id).join(", ");
 const isSelected=expandedTpl===dayKeys[i];
+// Ngày lưu thật của mẫu (updated_at có trigger tự cập nhật mỗi lần update).
+// Mẫu lưu TRƯỚC bản cập nhật Meal Engine (08/07 ~14h VN) đang giữ số
+// gram/macro cũ đóng băng — hiện nút "Tính lại" để chạy Engine mới đè
+// tại chỗ, khỏi phải vào Kho mẫu áp lại tay.
+const ENGINE_V2="2026-07-08T07:00:00Z";
+const savedAt=tpl?.updated_at||tpl?.created_at||null;
+const isStale=hasTpl&&savedAt&&new Date(savedAt)<new Date(ENGINE_V2);
+const savedLabel=(()=>{if(!savedAt)return "";const sd=new Date(savedAt);const now=new Date();const same=sd.getFullYear()===now.getFullYear()&&sd.getMonth()===now.getMonth()&&sd.getDate()===now.getDate();return same?"lưu hôm nay":`lưu ${String(sd.getDate()).padStart(2,"0")}/${String(sd.getMonth()+1).padStart(2,"0")}`;})();
+// Cảnh báo mẫu lệch target quá xa (VD 624/2459 kcal) — trước đây vẫn hiện
+// "✓ Đã lưu" xanh như thể ổn, user không biết ngày đó thiếu trầm trọng.
+const dayTargetCal=dt==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0);
+const isLow=hasTpl&&dayTargetCal>0&&totalCal<dayTargetCal*0.7;
 return <div key={i}>
-<div style={{...card,cursor:"pointer",border:isSelected?`2px solid ${C.red}`:`1.5px solid ${C.border}`,padding:0,display:"flex",alignItems:"stretch",overflow:"hidden"}} onClick={()=>{
+<div style={{...card,cursor:"pointer",border:isSelected?`2px solid ${C.red}`:isStale?"1.5px solid #FCD34D":`1.5px solid ${C.border}`,padding:0,display:"flex",alignItems:"stretch",overflow:"hidden"}} onClick={()=>{
 if(hasTpl){
 setExpandedTpl(isSelected?null:dayKeys[i]);
 }else{
@@ -388,10 +400,27 @@ if(saveWeeklyTemplate) saveWeeklyTemplate(dayKeys[i],dt,mealsData,Math.round(tc)
 <div style={{flex:1}}>
 {hasTpl?<>
 <div style={{fontSize:14}}><span style={{fontWeight:800,color:C.t1}}>{totalCal} kcal</span> <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{mealCount} bữa</span></div>
-<div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:2}}>{mealList}</div>
+<div style={{fontSize:11,fontWeight:600,color:isLow?"#B45309":isStale?"#B45309":C.t3,marginTop:2}}>{mealList}{savedLabel?` · 🕐 ${savedLabel}`:""}{isStale?" — trước bản cập nhật cách tính":""}{isLow?` — ⚠ chỉ đạt ${Math.round(totalCal/dayTargetCal*100)}% mục tiêu (${dayTargetCal} kcal)`:""}</div>
 </>:<div style={{fontSize:13,fontWeight:600,color:C.t3}}>Chưa có dữ liệu</div>}
 </div>
-{hasTpl?<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#DCFCE7",color:"#007AFF",border:"1px solid #86EFAC",whiteSpace:"nowrap"}}>✓ Đã lưu</div>
+{hasTpl?(isStale?<button onClick={async(e)=>{
+e.stopPropagation();
+const btn=e.currentTarget;btn.disabled=true;btn.textContent="Đang tính…";
+try{
+const dailyTarget={
+cal:tpl.day_type==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0),
+p:macro.protein||0,
+c:tpl.day_type==="train"?(macro.carb||0):(macro.carbRest||macro.carb||0),
+f:macro.fat||0,
+};
+const engineTpl=applyMealEngineToTemplate(tpl,dailyTarget);
+const mealsData=engineTpl.meals||[];
+const tc=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
+if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeys[i],tpl.day_type,mealsData,Math.round(tc));
+}catch(err){console.error("Recalc template error:",err);btn.disabled=false;btn.textContent="🔄 Tính lại";}
+}} style={{padding:"6px 10px",borderRadius:10,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"inherit"}}>🔄 Tính lại</button>
+:isLow?<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1px solid #FCD34D",whiteSpace:"nowrap"}}>⚠ Thiếu nhiều</div>
+:<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#DCFCE7",color:"#007AFF",border:"1px solid #86EFAC",whiteSpace:"nowrap"}}>✓ Đã lưu</div>)
 :<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:C.surface,color:C.t3,border:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>+ Gán</div>}
 </div>
 </div>
