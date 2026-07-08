@@ -92,11 +92,15 @@ export function computeMealGram(mealTarget, foods) {
   const fixedTotal = sumResults(fixedResults);
 
   let proteinResults = [], fatResults = [], carbResults = [];
-  // Ước lượng ban đầu: carb chưa đóng góp gì thêm ngoài carb (vòng 1)
+  // Ước lượng ban đầu: carb/fat chưa đóng góp gì thêm (vòng 1)
   let carbSideEffect = { p: 0, f: 0 };
+  // Đạm mà nhóm FAT đóng góp (hạnh nhân ~21g đạm/100g, bơ đậu phộng ~25g...)
+  // — nhóm fat scale SAU protein nên vòng 1 chưa biết, vòng 2 trừ lại cho đúng.
+  // Thiếu hồi tiếp này từng gây dư đạm hệ thống ~6g/bữa khi mẫu có hạt/dầu.
+  let fatSideEffect = { p: 0 };
 
   for (let pass = 0; pass < 2; pass++) {
-    const proteinNeeded = Math.max(0, (mealTarget.p || 0) - fixedTotal.p - carbSideEffect.p);
+    const proteinNeeded = Math.max(0, (mealTarget.p || 0) - fixedTotal.p - carbSideEffect.p - fatSideEffect.p);
     proteinResults = scaleGroup(byRole.protein, proteinNeeded, "p");
     const proteinTotal = sumResults(proteinResults);
 
@@ -108,8 +112,9 @@ export function computeMealGram(mealTarget, foods) {
     carbResults = scaleGroup(byRole.carb, carbNeeded, "c");
     const carbTotal = sumResults(carbResults);
 
-    // Chuẩn bị cho vòng lặp kế tiếp: phần đạm/béo mà carb THỰC SỰ đóng góp
+    // Chuẩn bị cho vòng lặp kế tiếp: phần đạm/béo mà carb và fat THỰC SỰ đóng góp
     carbSideEffect = { p: carbTotal.p, f: carbTotal.f };
+    fatSideEffect = { p: fatTotal.p };
   }
 
   return [...fixedResults, ...proteinResults, ...fatResults, ...carbResults];
