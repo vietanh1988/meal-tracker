@@ -48,9 +48,61 @@ return (
 <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
 {!appliedTemplate&&<div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ Quản lý</div>}
 </div>
-{appliedTemplate&&<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",background:"#EFF6FF",border:"1.5px solid #BFDBFE",borderRadius:10,marginBottom:14,fontSize:12}}>
+{appliedTemplate&&<div style={{padding:"8px 12px",background:"#EFF6FF",border:"1.5px solid #BFDBFE",borderRadius:10,marginBottom:14,fontSize:12}}>
+<div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
 <span style={{color:"#1D4ED8",fontWeight:600}}>📋 Đang dùng mẫu: <b>{appliedTemplate.name}</b> — gram tự tính, khoá sửa</span>
-<div onClick={()=>setAppliedTemplate(null)} style={{color:"#71717A",fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",marginLeft:10}}>Huỷ áp dụng</div>
+<div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0,marginLeft:10}}>
+<div onClick={()=>setShowAssignDays(showAssignDays==="applied"?null:"applied")} style={{color:"#1D4ED8",fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>📅 Lưu vào lịch tuần</div>
+<div onClick={()=>setAppliedTemplate(null)} style={{color:"#71717A",fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>Huỷ áp dụng</div>
+</div>
+</div>
+{showAssignDays==="applied"&&(()=>{
+// Lưu ĐÚNG dữ liệu gram/macro đã tính sẵn (đã lưu vào meal_logs lúc bấm
+// "Dùng cho hôm nay") vào Lịch tuần — không tính lại lần nữa.
+const dayKeys3=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
+const dayLabels3=["T2","T3","T4","T5","T6","T7","CN"];
+const gd3=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+return <div style={{marginTop:10,paddingTop:10,borderTop:"1.5px solid #BFDBFE"}}>
+<div style={{fontSize:12,fontWeight:700,color:"#1D4ED8",marginBottom:8}}>Gán vào ngày nào? (chỉ chọn được ngày cùng loại {dayType==="train"?"Ngày tập":"Ngày nghỉ"})</div>
+<div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
+{dayLabels3.map((dl,di)=>{
+const isGym=gd3.includes(di);
+const dt3=isGym?"train":"rest";
+const sameType=dt3===dayType;
+const isSelected=(assignSelectedDays||[]).includes(dayKeys3[di]);
+return <div key={di} onClick={()=>{
+if(!sameType)return;
+const cur=[...(assignSelectedDays||[])];
+if(isSelected) setAssignSelectedDays(cur.filter(d=>d!==dayKeys3[di]));
+else setAssignSelectedDays([...cur,dayKeys3[di]]);
+}} style={{padding:"6px 12px",borderRadius:10,fontSize:12,fontWeight:isSelected?700:600,
+background:isSelected?"#1D4ED8":sameType?"#fff":"#F3F4F6",
+color:isSelected?"#fff":sameType?"#1D4ED8":"#9CA3AF",
+border:`1.5px solid ${isSelected?"#1D4ED8":sameType?"#93C5FD":"#E5E7EB"}`,
+cursor:sameType?"pointer":"not-allowed",opacity:sameType?1:0.5,
+}}>{dl} ({isGym?"Tập":"Nghỉ"})</div>;
+})}
+</div>
+<button onClick={async()=>{
+const days=assignSelectedDays||[];
+if(days.length===0){alert("Chọn ít nhất 1 ngày");return;}
+const savedMeals=(getMeals?getMeals(dayType):[]).filter(m=>m.items&&m.items.length>0);
+if(savedMeals.length===0){alert("Không tìm thấy dữ liệu đã lưu cho hôm nay");return;}
+const mealsData=savedMeals.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
+const totalCal=savedMeals.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
+for(const dayKey of days){
+if(saveWeeklyTemplate) await saveWeeklyTemplate(dayKey,dayType,mealsData,Math.round(totalCal));
+}
+setShowAssignDays(null);
+setAssignSelectedDays([]);
+const el=document.getElementById("tpl-applied-week-saved");
+if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+}} style={{...redBtn,marginTop:0,background:"linear-gradient(135deg,#1D4ED8,#1E40AF)"}}>Lưu</button>
+<div id="tpl-applied-week-saved" style={{display:"none",alignItems:"center",gap:8,padding:"8px 12px",background:C.greenBg,borderRadius:8,border:`1.5px solid ${C.green}`,marginTop:8}}>
+<span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>✓ Đã lưu vào Lịch tuần!</span>
+</div>
+</div>;
+})()}
 </div>}
 {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
 <div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:10}}>⚙️ Tuỳ chỉnh bữa ăn — {dayType==="train"?"Ngày tập":"Ngày nghỉ"}</div>
