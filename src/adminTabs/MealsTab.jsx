@@ -547,6 +547,11 @@ f:macro.fat||0,
 const engineTpl=applyMealEngineToTemplate(t,dailyTarget);
 const tplMeals=engineTpl.meals||[];
 const personalizedTotalCal=tplMeals.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
+// Mẫu đang xem có thể khác loại ngày thật hôm nay (user bấm pill Tập/Nghỉ
+// trong Kho mẫu chỉ để xem trước) — không cho "Dùng cho hôm nay" trong
+// trường hợp đó, tránh ghi nhầm day_type cho đúng ngày hôm nay ở cả
+// meal_logs lẫn daily_logs (ảnh hưởng luôn số liệu Báo cáo của ngày đó).
+const isTodayType=t.day_type===todayRealDayType();
 return <div key={t.id} style={{background:C.card,border:`1.5px solid ${isExpanded?C.red:C.border}`,borderRadius:12,overflow:"hidden"}}>
 <div style={{padding:mob?"12px":"14px 16px",cursor:"pointer"}} onClick={()=>setExpandedTpl(isExpanded?null:t.id)}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -577,8 +582,9 @@ return <div key={mi} style={{marginBottom:mi<tplMeals.length-1?12:0}}>
 </div>;
 })}
 <div style={{display:"flex",gap:8,marginTop:12}}>
-<button onClick={async(e)=>{
+<button disabled={!isTodayType} onClick={async(e)=>{
 e.stopPropagation();
+if(!isTodayType)return;
 if(applyTemplate){
 await applyTemplate(engineTpl);
 setAppliedTemplate({id:t.id,name:t.name});
@@ -588,9 +594,10 @@ setDayType(t.day_type);
 const el=document.getElementById("tpl-applied");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 }
-}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)"}}>📥 Dùng cho hôm nay</button>
+}} style={{...redBtn,flex:1,marginTop:0,background:isTodayType?"linear-gradient(135deg,#15803D,#166534)":"#E2E8F0",color:isTodayType?"#fff":"#9CA3AF",cursor:isTodayType?"pointer":"not-allowed",opacity:isTodayType?1:0.7}}>📥 Dùng cho hôm nay</button>
 <button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Lưu vào lịch tuần</button>
 </div>
+{!isTodayType&&<div style={{fontSize:11,color:"#B45309",fontWeight:600,marginTop:6}}>⚠️ Mẫu này là {t.day_type==="train"?"Ngày tập":"Ngày nghỉ"}, khác với hôm nay ({todayRealDayType()==="train"?"Ngày tập":"Ngày nghỉ"}) — chỉ lưu được vào Lịch tuần cho đúng ngày đó, không áp trực tiếp cho hôm nay.</div>}
 {showAssignDays===t.id&&(()=>{
 const dayKeys2=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
 const dayLabels2=["T2","T3","T4","T5","T6","T7","CN"];
