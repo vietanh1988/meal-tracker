@@ -45,3 +45,4 @@ export const radius = { xs:3, sm:4, md:5, lg:6, xl:8, "2xl":10, "3xl":12, "4xl":
 
 // spacing — dùng cho gap, và ghép cặp để tạo padding (VD: `${sp.lg}px ${sp.xl}px` = "10px 14px")
 export const sp = { xxs:1, xs:4, sm:5, md:6, lg:8, xl:10, "2xl":12, "3xl":14, "4xl":16, "5xl":20, "6xl":24 };
+export const numFix={onFocus:e=>e.target.select(),onBlur:e=>{const el=e.target;if(el.value!==""&&!isNaN(Number(el.value)))el.value=String(Number(el.value));}};
