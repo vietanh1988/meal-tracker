@@ -559,7 +559,7 @@ const el=document.getElementById("tpl-applied");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 }
 }} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#15803D,#166534)"}}>📥 Dùng cho hôm nay</button>
-<button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Lưu cho ngày khác...</button>
+<button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Lưu vào lịch tuần</button>
 </div>
 {showAssignDays===t.id&&(()=>{
 const dayKeys2=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
