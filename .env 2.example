@@ -1,0 +1,9 @@
+# Supabase
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# AI API Keys (để trống nếu dùng Supabase Edge Function)
+# Nếu muốn gọi trực tiếp từ frontend (chỉ dùng cho dev):
+VITE_ANTHROPIC_KEY=sk-ant-api03-...
+VITE_GEMINI_KEY=AIzaSy...
+VITE_OPENAI_KEY=sk-...
