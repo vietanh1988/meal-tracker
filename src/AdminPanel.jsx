@@ -120,7 +120,7 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
   const [aiError,setAiError]=useState(null);
   // Use shared keys from Supabase, fallback to localStorage for admin override
   const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||appSettings.ai_provider||"claude");
-  const [aiModel,setAiModel]=useState(()=>appSettings.ai_model||"claude-sonnet-4-20250514");
+  const [aiModel,setAiModel]=useState(()=>appSettings.ai_model||"claude-sonnet-5");
   const [geminiModel,setGeminiModel]=useState(()=>appSettings.gemini_model||"gemini-2.5-flash");
   const [gptModel,setGptModel]=useState(()=>appSettings.gpt_model||"gpt-4o-mini");
   const [aiConnected,setAiConnected]=useState(true);

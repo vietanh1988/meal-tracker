@@ -64,7 +64,7 @@ export async function calcMacroAIDirect({ foods, provider, model, keys }) {
       body: JSON.stringify({
         foodDesc: `${PROMPT}\n\nThức ăn cần phân tích:\n${foodDesc}`,
         provider: "claude",
-        model: model || "claude-sonnet-4-20250514",
+        model: model || "claude-sonnet-5",
         apiKey: keys.claude,
       }),
     });

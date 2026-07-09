@@ -28,7 +28,7 @@ serve(async (req) => {
           "x-api-key": CLAUDE_API_KEY,
         },
         body: JSON.stringify({
-          model: model || "claude-sonnet-4-20250514",
+          model: model || "claude-sonnet-5",
           // Chat coach cần trần cao hơn để không bỏ lửng giữa câu; các flow cũ
           // (tính macro) không gửi maxTokens nên vẫn 1000 như trước.
           max_tokens: maxTokens || 1000,

@@ -136,7 +136,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
       if(provider==="claude"){
         const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",
           headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({foodDesc:prompt,provider:"claude",model:appSettings.ai_model||"claude-sonnet-4-20250514"})});
+          body:JSON.stringify({foodDesc:prompt,provider:"claude",model:appSettings.ai_model||"claude-sonnet-5"})});
         const d=await res.json();
         if(d.error)throw new Error(d.error);
         text=d.text||"";
@@ -242,7 +242,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
           }else if(provider==="claude"){
             const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",
               headers:{"Content-Type":"application/json"},
-              body:JSON.stringify({foodDesc:msg,provider:"claude",model:"claude-sonnet-4-20250514"})});
+              body:JSON.stringify({foodDesc:msg,provider:"claude",model:"claude-sonnet-5"})});
             const d=await res.json();text=d.text||"";
           }else{
             const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys.gemini}`,

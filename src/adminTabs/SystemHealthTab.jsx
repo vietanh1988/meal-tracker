@@ -48,7 +48,7 @@ export function SystemHealthTab({ isAdmin, appSettings }) {
     setPinging(true);
     const t0 = Date.now();
     try {
-      const aiModel = appSettings?.ai_model || "claude-sonnet-4-20250514";
+      const aiModel = appSettings?.ai_model || "claude-sonnet-5";
       const res = await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ foodDesc: "Ping. Trả lời đúng 1 từ: OK", provider: "claude", model: aiModel }),
