@@ -29,6 +29,9 @@ export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appS
   const [messages,setMessages]=useState([]);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
+  // Mobile: bàn phím ảo đã chiếm nửa màn hình, disclaimer 2 dòng ăn thêm chỗ
+  // hiển thị chat — ẩn tạm khi user đang focus ô nhập, rời ô thì hiện lại.
+  const [inputFocused,setInputFocused]=useState(false);
   const [historyLoaded,setHistoryLoaded]=useState(false);
 
   // Load chat history from Supabase (fallback localStorage)
@@ -354,13 +357,13 @@ ${buildContext()}`;
 
       {/* Input */}
       <div style={{display:"flex",gap:8,padding:"12px 18px",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
-        <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage(input);}}}
+        <input value={input} onChange={e=>setInput(e.target.value)} onFocus={()=>setInputFocused(true)} onBlur={()=>setInputFocused(false)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage(input);}}}
           placeholder="Hỏi Fipilot AI..." style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
         <button onClick={()=>sendMessage(input)} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:C2.primary,color:"#fff",border:"none",cursor:loading?"default":"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",opacity:loading||!input.trim()?0.5:1}}>↑</button>
       </div>
 
-      {/* Disclaimer */}
-      <div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI chỉ tư vấn dinh dưỡng & cách tập luyện. Không thay thế bác sĩ hoặc HLV cá nhân.</div>
+      {/* Disclaimer — mobile ẩn khi đang gõ để nhường chỗ cho khung chat */}
+      {!(mob&&inputFocused)&&<div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI chỉ tư vấn dinh dưỡng & cách tập luyện. Không thay thế bác sĩ hoặc HLV cá nhân.</div>}
     </div>
   </div>;
 }
