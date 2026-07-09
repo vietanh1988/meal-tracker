@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { foodDesc, provider, model } = await req.json()
+    const { foodDesc, provider, model, system, messages, maxTokens } = await req.json()
 
     let text = ""
 
@@ -29,8 +29,13 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: model || "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{ role: "user", content: foodDesc }],
+          // Chat coach cần trần cao hơn để không bỏ lửng giữa câu; các flow cũ
+          // (tính macro) không gửi maxTokens nên vẫn 1000 như trước.
+          max_tokens: maxTokens || 1000,
+          // Đường mới: messages array role chuẩn + system riêng (chat coach).
+          // Đường cũ: foodDesc gói thành 1 user message (ai-macro giữ nguyên).
+          ...(system ? { system } : {}),
+          messages: (messages && messages.length) ? messages : [{ role: "user", content: foodDesc }],
         }),
       })
       const d = await res.json()

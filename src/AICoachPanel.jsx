@@ -231,7 +231,7 @@ NGUYÊN TẮC QUAN TRỌNG NHẤT:
 
 PHONG CÁCH:
 - Xưng "mình", gọi user "anh/chị"
-- Ngắn gọn 3-4 câu, thân thiện, dễ hiểu
+- Thân thiện, dễ hiểu. Câu hỏi đơn giản: trả lời gọn. Câu hỏi cần giải thích/lên kế hoạch/liệt kê món: trả lời đầy đủ, dùng gạch đầu dòng cho dễ đọc. LUÔN kết thúc trọn vẹn ý, không bỏ lửng giữa câu
 - Gợi ý thực phẩm Việt Nam phổ biến
 - Khi gợi ý món, LUÔN kèm gram + calo chính xác từ kho
 - Dùng emoji vừa phải
@@ -286,11 +286,13 @@ ${buildContext()}`;
     setMessages(newMsgs);setInput("");setLoading(true);
     saveMsg("user",text);
     try{
-      const chatHistory=newMsgs.slice(-10).map(m=>`${m.role==="user"?"User":"Fipilot AI"}: ${m.content}`).join("\n");
-      const fullPrompt=`${systemPrompt}\n\n--- LỊCH SỬ CHAT ---\n${chatHistory}\n\n--- TRẢ LỜI ---\nFipilot AI:`;
+      // Gửi messages array role chuẩn + system riêng thay vì nhồi cả hội thoại
+      // thành 1 chuỗi "User:.../Fipilot AI:..." — kiểu transcript cũ làm model
+      // sinh artifact: tự thấy "đến lượt User" là ngắt sớm, bỏ lửng giữa câu.
+      const chatMessages=newMsgs.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
       const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
         method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({foodDesc:fullPrompt,provider:"claude",model:aiModel})
+        body:JSON.stringify({provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500})
       });
       const data=await res.json();
       if(data.error)throw new Error(data.error);
