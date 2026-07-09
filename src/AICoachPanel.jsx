@@ -60,6 +60,25 @@ export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appS
   // Mobile: bàn phím ảo đã chiếm nửa màn hình, disclaimer 2 dòng ăn thêm chỗ
   // hiển thị chat — ẩn tạm khi user đang focus ô nhập, rời ô thì hiện lại.
   const [inputFocused,setInputFocused]=useState(false);
+  // Nhập bằng giọng nói (Web Speech API — có sẵn trong trình duyệt, miễn phí,
+  // không tốn quota AI). Chỉ hiện nút mic khi trình duyệt hỗ trợ; text nhận
+  // dạng đổ vào ô input để user XEM LẠI rồi tự bấm gửi, không tự gửi.
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const [listening,setListening]=useState(false);
+  const recRef=useRef(null);
+  const toggleMic=()=>{
+    if(!SR)return;
+    if(listening){try{recRef.current&&recRef.current.stop();}catch(e){}setListening(false);return;}
+    const rec=new SR();
+    rec.lang="vi-VN";rec.interimResults=true;rec.continuous=false;
+    const base=input; // giữ phần đã gõ sẵn, nói thêm thì nối vào sau
+    rec.onresult=(ev)=>{let t="";for(let i=0;i<ev.results.length;i++){t+=ev.results[i][0].transcript;}setInput((base?base+" ":"")+t);};
+    rec.onerror=()=>setListening(false);
+    rec.onend=()=>setListening(false);
+    recRef.current=rec;setListening(true);
+    try{rec.start();}catch(e){setListening(false);}
+  };
+  useEffect(()=>()=>{try{recRef.current&&recRef.current.stop();}catch(e){}},[]);
   const [historyLoaded,setHistoryLoaded]=useState(false);
 
   // Load chat history from Supabase (fallback localStorage)
@@ -391,9 +410,10 @@ ${buildContext()}`;
 
       {/* Input */}
       <div style={{display:"flex",gap:8,padding:"12px 18px",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
-        <input value={input} onChange={e=>setInput(e.target.value)} onFocus={()=>setInputFocused(true)} onBlur={()=>setInputFocused(false)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage(input);}}}
-          placeholder="Hỏi Fipilot AI..." style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
-        <button onClick={()=>sendMessage(input)} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:C2.primary,color:"#fff",border:"none",cursor:loading?"default":"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",opacity:loading||!input.trim()?0.5:1}}>↑</button>
+        <input value={input} onChange={e=>setInput(e.target.value)} onFocus={()=>setInputFocused(true)} onBlur={()=>setInputFocused(false)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(listening)toggleMic();sendMessage(input);}}}
+          placeholder={listening?"Đang nghe... nói đi bạn 🎤":"Hỏi Fipilot AI..."} style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${listening?"#EF4444":C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+        {SR&&<button onClick={toggleMic} title={listening?"Dừng ghi âm":"Nói để nhập"} style={{width:40,height:40,borderRadius:10,border:`1.5px solid ${listening?"#EF4444":C2.border}`,background:listening?"#FEE2E2":"transparent",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{listening?"⏹️":"🎤"}</button>}
+        <button onClick={()=>{if(listening)toggleMic();sendMessage(input);}} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:C2.primary,color:"#fff",border:"none",cursor:loading?"default":"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",opacity:loading||!input.trim()?0.5:1}}>↑</button>
       </div>
 
       {/* Disclaimer — mobile ẩn khi đang gõ để nhường chỗ cho khung chat */}
