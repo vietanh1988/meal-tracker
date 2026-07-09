@@ -118,7 +118,7 @@ export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appS
     }catch(e){console.warn("AI Chat save failed:",e);}
   };
   const chatRef=useRef(null);
-  const aiModel=appSettings?.ai_model||"claude-sonnet-4-20250514";
+  const aiModel=appSettings?.ai_model||"claude-sonnet-5";
 
   // Context engine
   const buildContext=()=>{

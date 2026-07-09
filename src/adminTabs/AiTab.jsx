@@ -4,7 +4,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
   if(!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
   return (
-<div style={card}>
+<div style={{...card,maxWidth:720,margin:"0 auto"}}>
       {/* Status bar */}
       <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:16}}>
         <div style={{width:8,height:8,borderRadius:"50%",background:aiConnected?C.green:C.red}}/>
@@ -19,7 +19,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
           {id:"claude",name:"Claude",desc:"Anthropic",logo:"/icons/claude-logo.svg"},
           {id:"gemini",name:"Gemini",desc:"Google",logo:"/icons/gemini-logo.svg"},
           {id:"gpt",name:"GPT",desc:"OpenAI",logo:"/icons/gpt-logo.svg"},
-        ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-4-20250514");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
+        ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-5");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
           flex:1,padding:"14px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",position:"relative",
           background:aiProvider===p.id?"rgba(0,122,255,0.04)":"#fff",border:aiProvider===p.id?`2px solid ${C.primary}`:`1px solid ${C.border}`,transition:"all 0.15s",
         }}>
@@ -34,7 +34,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
       <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Model</div>
       <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:18}}>
         {(aiProvider==="claude"?[
-          {id:"claude-sonnet-4-20250514",name:"Sonnet 4",desc:"Nhanh, chính xác",badge:"Ổn định",bc:"#F3F4F6",btc:"#666"},
+          {id:"claude-sonnet-4-6",name:"Sonnet 4.6",desc:"Nhanh, chính xác",badge:"Ổn định",bc:"#F3F4F6",btc:"#666"},
           {id:"claude-sonnet-5",name:"Sonnet 5",desc:"Agentic mạnh, gần Opus",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
           {id:"claude-opus-4-6",name:"Opus 4.6",desc:"Mạnh nhất",badge:"Cao cấp",bc:"#EFF6FF",btc:"#1E40AF"},
         ]:aiProvider==="gemini"?[
@@ -94,7 +94,8 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         </div>
       </>}
 
-      {/* Test button */}
+      {/* Test + Save — 1 hàng cho gọn */}
+      <div style={{display:"flex",gap:8,marginTop:10}}>
       <button onClick={async()=>{
         setAiConnected(false);
         try{
@@ -111,7 +112,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
             const d=await r.json();setAiConnected(!d.error);
           }
         }catch{setAiConnected(false);}
-      }} style={{...redBtn,marginTop:10}}>Test kết nối</button>
+      }} style={{...redBtn,marginTop:0,flex:1}}>Test kết nối</button>
 
       {isAdmin&&<button onClick={async()=>{
         await saveSetting("ai_provider",aiProvider);
@@ -124,7 +125,8 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         await saveSetting("gemini_model",geminiModel);
         const el=document.getElementById("cloud-keys-saved");
         if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-      }} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#0F172A,#1E293B)"}}>☁️ Lưu lên Cloud</button>}
+      }} style={{...redBtn,marginTop:0,flex:1,background:"linear-gradient(135deg,#0F172A,#1E293B)"}}>☁️ Lưu lên Cloud</button>}
+      </div>
       {isAdmin&&<div id="cloud-keys-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
         <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ Đã lưu!</span>
       </div>}
