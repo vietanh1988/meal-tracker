@@ -2,6 +2,34 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 
+// Render markdown NHẸ cho câu trả lời AI — chỉ những gì AI thật sự hay dùng:
+// **đậm**, gạch đầu dòng (-, •, *), danh sách số (1. 2. ...). Không thêm thư
+// viện markdown (nặng, thừa), không dangerouslySetInnerHTML (an toàn XSS vì
+// chỉ build React elements từ text). Dòng thường giữ nguyên.
+function boldParts(text, keyPrefix) {
+  const parts = text.split(/\*\*([^*]+)\*\*/g);
+  return parts.map((p, i) => i % 2 === 1 ? <b key={keyPrefix + "-" + i}>{p}</b> : p);
+}
+function renderMarkdownLite(content) {
+  const lines = String(content || "").split("\n");
+  return lines.map((line, li) => {
+    const bullet = line.match(/^\s*[-•*]\s+(.*)$/);
+    const numbered = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
+    if (bullet) {
+      return <div key={li} style={{display:"flex",gap:6,paddingLeft:2,margin:"2px 0"}}>
+        <span style={{flexShrink:0}}>•</span><span>{boldParts(bullet[1], li)}</span>
+      </div>;
+    }
+    if (numbered) {
+      return <div key={li} style={{display:"flex",gap:6,paddingLeft:2,margin:"2px 0"}}>
+        <span style={{flexShrink:0,fontWeight:600}}>{numbered[1]}.</span><span>{boldParts(numbered[2], li)}</span>
+      </div>;
+    }
+    if (line.trim() === "") return <div key={li} style={{height:6}}/>;
+    return <div key={li}>{boldParts(line, li)}</div>;
+  });
+}
+
 const REFUSAL_MESSAGE = "Mình không thể đưa ra tư vấn dành riêng cho các bệnh lý như tiểu đường, tăng huyết áp, bệnh thận... Nếu bạn đang điều trị hoặc có bệnh nền, hãy tham khảo bác sĩ hoặc chuyên gia dinh dưỡng nhé. Mình vẫn có thể hỗ trợ theo dõi calo, protein, carb, fat và xây dựng thói quen ăn uống lành mạnh! 💪";
 
 // Lớp chặn CỨNG bằng từ khoá — chạy TRƯỚC khi gọi AI, không phụ thuộc AI tự phán đoán.
@@ -334,15 +362,19 @@ ${buildContext()}`;
       </div>
 
       {/* Chat body */}
+      {/* Formatter nhẹ cho câu trả lời AI: AI hay trả markdown (**đậm**, gạch
+          đầu dòng, danh sách số) — trước đây hiện thô "**2374 cal**" rất xấu.
+          Tự parse ~95% trường hợp thật, không cần thêm thư viện markdown,
+          không dùng dangerouslySetInnerHTML (build React elements, an toàn). */}
       <div ref={chatRef} style={{flex:1,overflowY:"auto",padding:"12px 18px",display:"flex",flexDirection:"column",gap:10}}>
         {messages.map((m,i)=><div key={i} style={{
-          maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap",
+          maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,
           ...(m.role==="user"
-            ?{alignSelf:"flex-end",background:C2.primary,color:"#fff",borderBottomRightRadius:4}
+            ?{alignSelf:"flex-end",background:C2.primary,color:"#fff",borderBottomRightRadius:4,whiteSpace:"pre-wrap"}
             :{alignSelf:"flex-start",background:C2.bg,color:C2.t1,borderTopLeftRadius:4})
         }}>
           {m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>}
-          {m.content}
+          {m.role==="assistant"?renderMarkdownLite(m.content):m.content}
         </div>)}
         {loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
           <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>
