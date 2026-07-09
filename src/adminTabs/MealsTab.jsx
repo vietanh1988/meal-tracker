@@ -48,6 +48,13 @@ return (
 <SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"){if(refreshDefaultTemplates)refreshDefaultTemplates();setDayType(todayRealDayType());}}} style={{marginBottom:16}}/>
 </>}
 
+{/* Toast toàn cục: hiện SAU khi "Dùng cho hôm nay" chuyển user sang Tự nhập.
+    Trước đây toast nằm trong khối Kho mẫu — bị unmount ngay khi đổi mode nên
+    user áp mẫu xong không thấy bất kỳ xác nhận nào. */}
+<div id="tpl-applied" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:12}}>
+<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã áp dụng mẫu cho hôm nay — khối lượng từng món đã tính sẵn theo mục tiêu của bạn.</span>
+</div>
+
 {/* === MODE: Tự nhập — all meals in one flow === */}
 {mealMode==="tu_nhap"&&<div style={!mob?{display:"grid",gridTemplateColumns:"63% 35%",gap:20,alignItems:"start"}:{}}><div>
 <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
@@ -675,9 +682,6 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 })()}
 </div>}
 </div>;})}
-<div id="tpl-applied" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:4}}>
-<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã áp dụng cho hôm nay!</span>
-</div>
 <div id="tpl-assigned" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:4}}>
 <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã gán vào Lịch tuần!</span>
 </div>
