@@ -53,11 +53,12 @@ return (
 <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
 <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
-{!appliedTemplate&&<div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer"}}>⚙️ Quản lý</div>}
+{!appliedTemplate&&<div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",whiteSpace:"nowrap"}}>{mob?"⚙️ Bữa":"⚙️ Bật/tắt bữa"}</div>}
 </div>
+{dayType!==todayRealDayType()&&<div style={{fontSize:11,fontWeight:600,color:"#B45309",marginTop:-8,marginBottom:12}}>✏️ Đang soạn cho {dayType==="train"?"Ngày tập":"Ngày nghỉ"} (hôm nay là {todayRealDayType()==="train"?"Ngày tập":"Ngày nghỉ"}) — lưu sẽ không tính vào số liệu hôm nay.</div>}
 {appliedTemplate&&<div style={{padding:"8px 12px",background:"#EFF6FF",border:"1.5px solid #BFDBFE",borderRadius:10,marginBottom:14,fontSize:12}}>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-<span style={{color:"#1D4ED8",fontWeight:600}}>📋 Đang dùng mẫu: <b>{appliedTemplate.name}</b> — gram tự tính, khoá sửa</span>
+<span style={{color:"#1D4ED8",fontWeight:600}}>📋 Đang dùng mẫu: <b>{appliedTemplate.name}</b> — khối lượng đã tính sẵn theo mục tiêu của bạn. Muốn chỉnh tay, bấm Hủy dùng mẫu.</span>
 <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0,marginLeft:10}}>
 <div onClick={()=>setShowAssignDays(showAssignDays==="applied"?null:"applied")} style={{color:"#1D4ED8",fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>📅 Lưu vào lịch tuần</div>
 <div onClick={()=>setAppliedTemplate(null)} style={{color:"#71717A",fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>Huỷ áp dụng</div>
@@ -94,7 +95,7 @@ cursor:sameType?"pointer":"not-allowed",opacity:sameType?1:0.5,
 const days=assignSelectedDays||[];
 if(days.length===0){alert("Chọn ít nhất 1 ngày");return;}
 const savedMeals=(getMeals?getMeals(dayType):[]).filter(m=>m.items&&m.items.length>0);
-if(savedMeals.length===0){alert("Không tìm thấy dữ liệu đã lưu cho hôm nay");return;}
+if(savedMeals.length===0){alert("Chưa có bữa nào được lưu cho hôm nay — vào Tự nhập lưu bữa trước nhé");return;}
 const mealsData=savedMeals.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
 const totalCal=savedMeals.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
 for(const dayKey of days){
@@ -133,7 +134,7 @@ setMealConfig(cfg);if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));els
 </div>
 </div>;
 })}
-<div style={{marginTop:8,fontSize:13,fontWeight:700,color:"#B91C1C"}}>⚠ Bữa tắt sẽ không hiện trên Dashboard.</div>
+<div style={{marginTop:8,fontSize:13,fontWeight:700,color:"#B91C1C"}}>⚠ Bữa tắt sẽ không hiện trên Tổng quan.</div>
 </div>}
 {/* All meals — each as labeled card */}
 {mealNames.map(meal=>{
@@ -238,7 +239,7 @@ if(aiResult._cacheEntries)savePendingFoodCache(aiResult._cacheEntries,aiProvider
 const el=document.getElementById("meal-saved");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 setTimeout(()=>{setShowSaveTpl(true);},500);
-}} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu tất cả bữa</button>
+}} style={{...redBtn,marginTop:12,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu bữa ăn hôm nay</button>
 <div id="meal-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
 <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu thành công!</span>
 </div>
@@ -265,13 +266,13 @@ const tc=amd.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
 if(saveWeeklyTemplate)await saveWeeklyTemplate(sd,dayType,amd,Math.round(tc));
 setShowSaveTpl(false);
 const el2=document.getElementById("tpl-week-saved");if(el2){el2.style.display="flex";setTimeout(()=>{el2.style.display="none";},3000);}
-}} style={{flex:1,padding:"10px",fontSize:13,fontWeight:700,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu</button>
+}} style={{flex:1,padding:"10px",fontSize:13,fontWeight:700,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Gán vào ngày này</button>
 <button onClick={()=>setShowSaveTpl(false)} style={{padding:"10px 16px",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Không</button>
 </div>
 </div>;
 })()}
 <div id="tpl-week-saved" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
-<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu mẫu tuần!</span>
+<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã gán vào Lịch tuần!</span>
 </div>
 </div>}
 </div>
@@ -311,7 +312,7 @@ if(heroF>0)scores.push(scoreSym(s.f,heroF,0.15));
 const avg=scores.length>0?Math.round(scores.reduce((a2,b)=>a2+b,0)/scores.length):0;
 return <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}><div style={{fontSize:14,fontWeight:800,display:"flex",alignItems:"center",gap:8}}>📊 Đánh giá dinh dưỡng</div><div style={{fontSize:22,fontWeight:800,color:avg>=90?"#059669":avg>=70?C.primary:"#D97706"}}>{avg}<span style={{fontSize:13,fontWeight:500,color:C.t2}}>/100</span></div></div>{[{l:"Calo",v:s.cal,t:heroCal},{l:"Protein",v:s.p,t:heroP},{l:"Carb",v:s.c,t:heroC},{l:"Fat",v:s.f,t:heroF},{l:"Chất xơ",v:s.fi,t:heroFi}].map(r2=>{const pct2=r2.t>0?Math.round(r2.v/r2.t*100):0;const ok=pct2>=90&&pct2<=115;return <div key={r2.l} style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12,padding:"6px 10px",background:C.surface,borderRadius:8,marginBottom:4}}><span style={{color:C.t2}}>{r2.l}</span><span style={{fontWeight:700,color:ok?"#059669":"#D97706"}}>{ok?"✓":"⚠"} {pct2}%</span></div>;})}</div>;})()}
 {aiResult&&aiResult.items&&<>
-<button onClick={async()=>{const allNames=Object.values(allFoodItems).flat().map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);if(allNames.length>0&&deleteFoodCache)await deleteFoodCache(allNames);setAiResult(null);const c2=[];mealNames.forEach(meal=>{const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());foods.forEach(f=>c2.push({...f,_mealId:meal.id}));});setFoodItems(c2);callAI(true,c2);}} style={{padding:"8px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:10,cursor:"pointer",fontFamily:"inherit",width:"100%",marginBottom:8}}>🔄 Tính lại (bỏ qua cache)</button>
+<button onClick={async()=>{const allNames=Object.values(allFoodItems).flat().map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);if(allNames.length>0&&deleteFoodCache)await deleteFoodCache(allNames);setAiResult(null);const c2=[];mealNames.forEach(meal=>{const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());foods.forEach(f=>c2.push({...f,_mealId:meal.id}));});setFoodItems(c2);callAI(true,c2);}} style={{padding:"8px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:10,cursor:"pointer",fontFamily:"inherit",width:"100%",marginBottom:8}}>🔄 Tính lại từ đầu</button>
 <button onClick={()=>{const items=aiResult.items||[];const saveByMeal={};items.forEach(ai=>{const mid=ai._mealId;if(!mid)return;if(!saveByMeal[mid])saveByMeal[mid]=[];const unit=ai.unit||"g";const isW=unit==="g"||unit==="ml";saveByMeal[mid].push({food:ai.name||"",gram:ai.gram||0,unit,qty:ai.qty||1,qty_display:ai.qty_display||(isW?null:`${ai.qty||1} ${unit}`),p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0});});Object.entries(saveByMeal).forEach(([mid,saveItems])=>{if(saveItems.length>0)saveMealToCloud(mid,dayType,saveItems,dayType!==todayRealDayType());});if(aiResult._cacheEntries)savePendingFoodCache(aiResult._cacheEntries,aiProvider);const el=document.getElementById("meal-saved-pc");if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}}} style={{...redBtn,marginTop:0,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",width:"100%"}}>💾 Lưu bữa ăn hôm nay</button>
 <button onClick={()=>setShowSaveTpl(!showSaveTpl)} style={{...redBtn,marginTop:8,background:C.card,color:C.t2,border:`1.5px solid ${C.border}`,width:"100%"}}>📅 Gán vào lịch tuần</button>
 {showSaveTpl&&(()=>{
@@ -335,13 +336,13 @@ const amd=mealNames.map(meal=>{const it=(getMeals(dayType).find(m=>m.id===meal.i
 const tc=amd.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
 if(saveWeeklyTemplate)await saveWeeklyTemplate(sd,dayType,amd,Math.round(tc));
 setShowSaveTpl(false);
-const el2=document.getElementById("meal-saved-pc");if(el2){el2.style.display="flex";setTimeout(()=>{el2.style.display="none";},3000);}
-}} style={{flex:1,padding:"10px",fontSize:13,fontWeight:700,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Lưu</button>
+const el2=document.getElementById("tpl-week-saved-pc");if(el2){el2.style.display="flex";setTimeout(()=>{el2.style.display="none";},3000);}
+}} style={{flex:1,padding:"10px",fontSize:13,fontWeight:700,border:"none",borderRadius:10,background:"linear-gradient(135deg,#6366F1,#4F46E5)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📅 Gán vào ngày này</button>
 <button onClick={()=>setShowSaveTpl(false)} style={{padding:"10px 16px",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Không</button>
 </div>
 </div>;
 })()}
-<div id="meal-saved-pc" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}><span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu thành công!</span></div>
+<div id="meal-saved-pc" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}><span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã lưu thành công!</span></div><div id="tpl-week-saved-pc" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}><span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã gán vào Lịch tuần!</span></div>
 </>}
 </div>}
 </div>}
@@ -421,7 +422,7 @@ if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeys[i],tpl.day_type,mealsData
 }} style={{padding:"6px 10px",borderRadius:10,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"inherit"}}>🔄 Tính lại</button>
 :isLow?<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1px solid #FCD34D",whiteSpace:"nowrap"}}>⚠ Thiếu nhiều</div>
 :<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:"#DCFCE7",color:"#007AFF",border:"1px solid #86EFAC",whiteSpace:"nowrap"}}>✓ Đã lưu</div>)
-:<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:C.surface,color:C.t3,border:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>+ Gán</div>}
+:<div style={{padding:"4px 10px",borderRadius:12,fontSize:11,fontWeight:700,background:C.surface,color:C.t3,border:`1px solid ${C.border}`,whiteSpace:"nowrap"}}>+ Gán thực đơn</div>}
 </div>
 </div>
 {/* Expanded detail */}
@@ -485,11 +486,14 @@ if(isGiamMo) filtered=filtered.filter(t=>(t.diet_strategy||"balance")===dietTab)
 return <div>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:8}}>
 <div style={{fontSize:13,fontWeight:700,color:C.t2}}>{goalLabel}</div>
+<div style={{display:"flex",alignItems:"center",gap:6}}>
+<span style={{fontSize:11,fontWeight:600,color:C.t3,whiteSpace:"nowrap"}}>Xem mẫu:</span>
 <div style={{display:"flex",gap:4,background:C.surface,borderRadius:10,padding:3}}>
-{[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}].map(d=>
-<div key={d.id} onClick={()=>{setKmMode("template");setDayType(d.id);}} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:(kmMode==="template"&&dayType===d.id)?700:500,color:(kmMode==="template"&&dayType===d.id)?C.primary:C.t2,background:(kmMode==="template"&&dayType===d.id)?"#fff":"none",cursor:"pointer",boxShadow:(kmMode==="template"&&dayType===d.id)?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{d.icon} {d.label}</div>
+{[{id:"train",icon:"💪",label:mob?"Tập":"Ngày tập"},{id:"rest",icon:"😴",label:mob?"Nghỉ":"Ngày nghỉ"}].map(d=>
+<div key={d.id} onClick={()=>{setKmMode("template");setDayType(d.id);}} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:(kmMode==="template"&&dayType===d.id)?700:500,color:(kmMode==="template"&&dayType===d.id)?C.primary:C.t2,background:(kmMode==="template"&&dayType===d.id)?"#fff":"none",cursor:"pointer",boxShadow:(kmMode==="template"&&dayType===d.id)?"0 1px 3px rgba(0,0,0,0.08)":"none",whiteSpace:"nowrap"}}>{d.icon} {d.label}</div>
 )}
-<div onClick={()=>setKmMode("bundle")} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:kmMode==="bundle"?700:500,color:kmMode==="bundle"?C.primary:C.t2,background:kmMode==="bundle"?"#fff":"none",cursor:"pointer",boxShadow:kmMode==="bundle"?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>🗓️ Gói tuần</div>
+<div onClick={()=>setKmMode("bundle")} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:kmMode==="bundle"?700:500,color:kmMode==="bundle"?C.primary:C.t2,background:kmMode==="bundle"?"#fff":"none",cursor:"pointer",boxShadow:kmMode==="bundle"?"0 1px 3px rgba(0,0,0,0.08)":"none",whiteSpace:"nowrap"}}>🗓️ {mob?"Tuần":"Gói tuần"}</div>
+</div>
 </div>
 </div>
 {kmMode==="bundle"?(()=>{
@@ -624,7 +628,7 @@ const el=document.getElementById("tpl-applied");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 }
 }} style={{...redBtn,flex:1,marginTop:0,background:isTodayType?"linear-gradient(135deg,#15803D,#166534)":"#E2E8F0",color:isTodayType?"#fff":"#9CA3AF",cursor:isTodayType?"pointer":"not-allowed",opacity:isTodayType?1:0.7}}>📥 Dùng cho hôm nay</button>
-<button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Lưu vào lịch tuần</button>
+<button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Gán vào lịch tuần</button>
 </div>
 {!isTodayType&&<div style={{fontSize:11,color:"#B45309",fontWeight:600,marginTop:6}}>⚠️ Mẫu này là {t.day_type==="train"?"Ngày tập":"Ngày nghỉ"}, khác với hôm nay ({todayRealDayType()==="train"?"Ngày tập":"Ngày nghỉ"}) — chỉ lưu được vào Lịch tuần cho đúng ngày đó, không áp trực tiếp cho hôm nay.</div>}
 {showAssignDays===t.id&&(()=>{
@@ -664,7 +668,7 @@ if(saveWeeklyTemplate) await saveWeeklyTemplate(dayKey,t.day_type,mealsData,tota
 }
 setShowAssignDays(null);
 setAssignSelectedDays([]);
-const el=document.getElementById("tpl-applied");
+const el=document.getElementById("tpl-assigned");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 }} disabled={(assignSelectedDays||[]).length===0} style={{...redBtn,marginTop:0,background:(assignSelectedDays||[]).length>0?"linear-gradient(135deg,#6366F1,#4F46E5)":"#E2E8F0",opacity:(assignSelectedDays||[]).length>0?1:0.6}}>📅 Gán cho {(assignSelectedDays||[]).length} ngày</button>
 </div>;
@@ -672,7 +676,10 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 </div>}
 </div>;})}
 <div id="tpl-applied" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:4}}>
-<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã áp dụng thành công!</span>
+<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã áp dụng cho hôm nay!</span>
+</div>
+<div id="tpl-assigned" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:4}}>
+<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã gán vào Lịch tuần!</span>
 </div>
 </div>:<div style={{textAlign:"center",padding:"30px 16px"}}>
 <div style={{fontSize:32,marginBottom:8}}>📚</div>

@@ -360,7 +360,7 @@ ${buildContext()}`;
       </div>
 
       {/* Disclaimer */}
-      <div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI tư vấn dinh dưỡng & tập luyện cho người khỏe mạnh. Không thay thế bác sĩ hoặc HLV cá nhân.</div>
+      <div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI chỉ tư vấn dinh dưỡng & cách tập luyện. Không thay thế bác sĩ hoặc HLV cá nhân.</div>
     </div>
   </div>;
 }

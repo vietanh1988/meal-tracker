@@ -316,7 +316,7 @@ return <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fo
 <button onClick={async()=>{
 const name=document.getElementById("tpl-name")?.value?.trim();
 const tplType=document.getElementById("tpl-type")?.value||"train";
-if(!name){alert("Nhập tên template ở ô trên!");return;}
+if(!name){alert("Nhập tên mẫu ở ô trên!");return;}
 const items=aiResult.items||[];
 const mealsData=[];
 ALL_MEALS.filter(m=>selectedMeals.includes(m.id)).forEach(meal=>{
@@ -412,7 +412,7 @@ document.getElementById("tpl-name")?.scrollIntoView({behavior:"smooth",block:"ce
 }} style={{width:20,height:20,padding:0,borderRadius:6,fontSize:11,color:C.primary,background:"none",border:"none",cursor:"pointer",flexShrink:0}}>✎</button>
 <button onClick={async(e)=>{
 e.stopPropagation();
-if(!confirm("Xóa template \""+t.name+"\"?"))return;
+if(!confirm("Xóa mẫu \""+t.name+"\"?"))return;
 if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
 }} style={{width:20,height:20,padding:0,borderRadius:6,fontSize:11,color:C.t3,background:"none",border:"none",cursor:"pointer",flexShrink:0}}>✕</button>
 </div>
