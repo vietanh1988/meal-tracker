@@ -53,7 +53,7 @@ return (
 <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
 <SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
-{!appliedTemplate&&<div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",whiteSpace:"nowrap"}}>{mob?"⚙️ Bữa":"⚙️ Bật/tắt bữa"}</div>}
+{!appliedTemplate&&<div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",whiteSpace:"nowrap"}}>⚙️ Bật/tắt bữa</div>}
 </div>
 {dayType!==todayRealDayType()&&<div style={{fontSize:11,fontWeight:600,color:"#B45309",marginTop:-8,marginBottom:12}}>✏️ Đang soạn cho {dayType==="train"?"Ngày tập":"Ngày nghỉ"} (hôm nay là {todayRealDayType()==="train"?"Ngày tập":"Ngày nghỉ"}) — lưu sẽ không tính vào số liệu hôm nay.</div>}
 {appliedTemplate&&<div style={{padding:"8px 12px",background:"#EFF6FF",border:"1.5px solid #BFDBFE",borderRadius:10,marginBottom:14,fontSize:12}}>
