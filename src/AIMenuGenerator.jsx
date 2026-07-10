@@ -31,12 +31,12 @@ const STYLES = [
 const ROLE_LABEL = { protein: "Đạm", carb: "Tinh bột", fat: "Béo", fixed: "Rau/Phụ" };
 const ROLE_COLOR = { protein: C.protein, carb: C.carb, fat: C.fat, fixed: C.fiber };
 
-export default function AIMenuGenerator({ macro, profile, user, appSettings, onApply, onClose, onFallbackToLibrary }) {
+export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, onApply, onClose, onFallbackToLibrary }) {
   const mob = useIsMobile();
   const [step, setStep] = useState("prefs"); // prefs | loading | preview | error
   const [style, setStyle] = useState("vn");
   const [avoid, setAvoid] = useState("");
-  const [dayType, setDayType] = useState("train");
+  const [dayType, setDayType] = useState(initialDayType === "rest" ? "rest" : "train");
   const [template, setTemplate] = useState(null);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");

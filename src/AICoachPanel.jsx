@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
+import AIMenuGenerator from "./AIMenuGenerator";
+import { getAIMenuAccess } from "./lib/aiMenuService";
 
 // Render markdown NHẸ cho câu trả lời AI — chỉ những gì AI thật sự hay dùng:
 // **đậm**, gạch đầu dòng (-, •, *), danh sách số (1. 2. ...). Không thêm thư
@@ -53,8 +55,27 @@ function containsHealthKeyword(text) {
   return HEALTH_KEYWORDS.some(k => normalized.includes(k));
 }
 
-export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId}){
+// LỚP GỢI Ý MỞ CÔNG CỤ TẠO THỰC ĐƠN — cùng kiểu quét từ khoá TRƯỚC khi gọi
+// AI như containsHealthKeyword ở trên, nhưng thay vì từ chối thì mở thẳng
+// AIMenuGenerator (đã có sẵn, đã test, khớp đúng calo/macro qua mealEngine)
+// thay vì để Claude tự bịa gợi ý bằng văn xuôi tự do — vốn không đảm bảo
+// khớp target và không có nút "thêm vào thực đơn hôm nay".
+const MENU_GEN_KEYWORDS = [
+  "gợi ý thực đơn", "lên thực đơn", "tạo thực đơn", "tạo menu", "lên menu",
+  "cho tôi thực đơn", "cho tôi menu", "cho mình thực đơn", "cho mình menu",
+  "thực đơn hôm nay", "menu hôm nay", "thực đơn ngày mai", "menu ngày mai",
+  "ăn gì hôm nay", "hôm nay ăn gì", "nên ăn gì", "ăn gì bây giờ",
+  "chưa biết ăn gì", "không biết ăn gì", "chưa biết nấu gì", "không biết nấu gì",
+  "lên món", "tự động tạo thực đơn", "ai tạo thực đơn",
+];
+function containsMenuGenIntent(text) {
+  const normalized = (text || "").toLowerCase();
+  return MENU_GEN_KEYWORDS.some(k => normalized.includes(k));
+}
+
+export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate}){
   const [messages,setMessages]=useState([]);
+  const [showAIMenuFromChat,setShowAIMenuFromChat]=useState(false);
   const [input,setInput]=useState("");
   const [loading,setLoading]=useState(false);
   // Mobile: bàn phím ảo đã chiếm nửa màn hình, disclaimer 2 dòng ăn thêm chỗ
@@ -297,6 +318,19 @@ ${buildContext()}`;
       return;
     }
 
+    // Chỉ chặn khi user THỰC SỰ dùng được (trial/premium + cờ ai_menu_gen
+    // bật) — free tier hoặc cờ tắt thì rơi xuống chat bình thường như cũ,
+    // không bị gián đoạn bởi 1 tính năng họ chưa có quyền dùng.
+    const aiMenuAccess=getAIMenuAccess(profile,appSettings);
+    if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
+      const actionMsg={role:"assistant",content:"Mình có công cụ AI tự ghép thực đơn khớp đúng calo/macro mục tiêu của bạn — bấm nút bên dưới để tạo nhé, bạn chỉnh được phong cách ăn và món dị ứng ngay trong đó! 👇",action:"open_ai_menu"};
+      setMessages(prev=>[...prev,{role:"user",content:text},actionMsg]);
+      setInput("");
+      saveMsg("user",text);
+      saveMsg("assistant",actionMsg.content);
+      return;
+    }
+
     if(!isAdmin){
       const quota=await checkAndConsumeAiQuota(userId,"chat");
       if(!quota.allowed){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:quota.message}]);return;}
@@ -324,6 +358,21 @@ ${buildContext()}`;
   };
 
   useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[messages,loading]);
+
+  // Áp dụng thực đơn AI vừa tạo (mở từ nút trong chat) — lưu thành Lịch
+  // tuần hôm nay + apply vào meal_logs/daily_logs, rồi báo lại NGAY trong
+  // chính cuộc chat để user không phải rời panel mà vẫn biết đã xong.
+  const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
+  const handleApplyAIMenuChat=async(tpl)=>{
+    try{
+      if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
+      if(applyTemplate)await applyTemplate(tpl);
+      const doneMsg={role:"assistant",content:"✅ Đã thêm thực đơn vào hôm nay! Quay lại tab Tổng quan để xem chi tiết nhé."};
+      setMessages(prev=>[...prev,doneMsg]);
+      saveMsg("assistant",doneMsg.content);
+    }catch(e){console.error("Apply AI menu (chat) error:",e);}
+    setShowAIMenuFromChat(false);
+  };
 
   // Welcome message — only if no history from Supabase
   useEffect(()=>{
@@ -396,6 +445,7 @@ ${buildContext()}`;
         }}>
           {m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>}
           {m.role==="assistant"?renderMarkdownLite(m.content):m.content}
+          {m.action==="open_ai_menu"&&<button onClick={()=>setShowAIMenuFromChat(true)} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Mở AI tạo thực đơn</button>}
         </div>)}
         {loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
           <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>
@@ -423,5 +473,13 @@ ${buildContext()}`;
       {/* Disclaimer — mobile ẩn khi đang gõ để nhường chỗ cho khung chat */}
       {!(mob&&inputFocused)&&<div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI chỉ tư vấn dinh dưỡng & cách tập luyện. Không thay thế bác sĩ hoặc HLV cá nhân.</div>}
     </div>
+    {/* AI Menu Generator — mở từ nút trong chat, đè lên trên toàn bộ panel.
+        Tái dùng nguyên component đã test (39 test case), không viết logic
+        sinh thực đơn riêng cho chat — tránh 2 nơi cùng làm 1 việc rồi lệch nhau. */}
+    {showAIMenuFromChat&&<div onClick={()=>setShowAIMenuFromChat(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:1000,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":480,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:"#fff",borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
+        <AIMenuGenerator macro={macro} profile={profile} user={{id:userId}} appSettings={appSettings} initialDayType={todayData?.dayType==="rest"?"rest":"train"} onApply={handleApplyAIMenuChat} onClose={()=>setShowAIMenuFromChat(false)}/>
+      </div>
+    </div>}
   </div>;
 }
