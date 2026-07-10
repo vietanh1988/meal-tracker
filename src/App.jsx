@@ -25,6 +25,8 @@ import { useProfile } from "./hooks/useProfile";
 import { useWeightLog } from "./hooks/useWeightLog";
 import { useUserData } from "./hooks/useUserData";
 import { useAppSettings } from "./hooks/useAppSettings";
+import AIMenuGenerator from "./AIMenuGenerator";
+import { getAIMenuAccess } from "./lib/aiMenuService";
 
 
 
@@ -63,6 +65,7 @@ export default function App(){
   const pcWeightInputRef=useRef(null);
   const [pcWeightSaved,setPcWeightSaved]=useState(false);
   const [pcDayManual,setPcDayManual]=useState(null);
+  const [showAIMenuPC,setShowAIMenuPC]=useState(false);
   const [showAICoach,setShowAICoach]=useState(false);
   const [aiFabHidden,setAiFabHidden]=useState(false);
   const scrollHideTimerRef=useRef(null);
@@ -80,6 +83,7 @@ export default function App(){
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,hasMealsToday,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const flags=parseFeatureFlags(appSettings);
+  const aiAccess=getAIMenuAccess(profile,appSettings);
   const macro=calcMacro(profile||defaultProfile);
   const [macroBanner,setMacroBanner]=useState(null);
   const prevCalRef=useRef(null);
@@ -153,7 +157,7 @@ export default function App(){
 
   // Onboarding: chỉ hiện cho user mới chưa có data thật (chờ data load xong)
   const needsOnboarding=userDataLoaded && !profileLoading && !weightLoading && !profile.onboardingDone && (!weightLog || weightLog.length===0);
-  if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>setTab("dashboard")}/>;
+  if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>setTab("dashboard")} appSettings={appSettings} user={user} saveWeeklyTemplate={saveWeeklyTemplate} applyTemplate={applyTemplate}/>;
 
   // === PC DATA COMPUTATION ===
   const pcMC=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
@@ -201,10 +205,24 @@ export default function App(){
     }catch(e){return{cal:0,p:0,c:0,f:0,dayType:mobDayType};}
   })();
 
+  // Áp dụng thực đơn AI (dùng chung cho cả nút empty-state PC) — lưu thành
+  // Lịch tuần hôm nay, apply vào meal_logs/daily_logs, rồi đồng bộ pcDayManual
+  // theo đúng dayType của template vừa tạo (tránh tạo "Ngày nghỉ" nhưng PC
+  // đang đứng ở toggle "Ngày tập" nên không thấy ngay).
+  const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
+  const handleApplyAIMenuPC=async(tpl)=>{
+    try{
+      if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
+      if(applyTemplate)await applyTemplate(tpl);
+      setPcDayManual(tpl.day_type||"train");
+    }catch(e){console.error("Apply AI menu (PC) error:",e);}
+    setShowAIMenuPC(false);
+  };
+
   // ========== MOBILE ==========
   if(mob) return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:"0 10px 10px 10px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:100}}>
-    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={wrappedSetProfile} macro={macro} getMeals={getMeals} hasMealsToday={hasMealsToday} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner}/>}
+    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={wrappedSetProfile} macro={macro} getMeals={getMeals} hasMealsToday={hasMealsToday} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} saveWeeklyTemplate={saveWeeklyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner}/>}
     {tab==="weight"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" initialSection="weight" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
     {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
     {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
@@ -318,7 +336,12 @@ export default function App(){
           <div style={{display:"grid",gridTemplateColumns:"55fr 45fr",gap:24}}>
             <div style={{...card,padding:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:15,fontWeight:800,color:C.t1}}>Danh sách thực đơn</span><span onClick={()=>setTab("meals")} style={{fontSize:12,color:C.primary,fontWeight:700,cursor:"pointer"}}>Xem tất cả →</span></div>
               {pcMeals.filter(m=>m.items&&m.items.length>0).map(m=><MealCard key={m.id} meal={m}/>)}
-              {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>🍽️ Chưa có bữa ăn — <span onClick={()=>setTab("meals")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Nhập bữa ăn</span></div>}
+              {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>
+                🍽️ Chưa có bữa ăn — <span onClick={()=>setTab("meals")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Nhập bữa ăn</span>
+                {aiAccess.enabled&&(aiAccess.usable
+                  ?<> · <span onClick={()=>setShowAIMenuPC(true)} style={{color:"#7C3AED",fontWeight:700,cursor:"pointer"}}>✨ Để AI tạo thực đơn</span></>
+                  :<> · <span onClick={()=>setTab("account")} title="Nâng cấp Trial/Premium để mở khoá" style={{color:C.t3,fontWeight:700,cursor:"pointer"}}>🔒 AI tạo thực đơn</span></>)}
+              </div>}
               {pcAC>0&&<div style={{background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)",borderRadius:12,padding:"16px 18px",marginTop:12,display:"flex",alignItems:"center",gap:16}}>
                 <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:14}}>🎯</span><span style={{fontSize:12,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:34,fontWeight:900,color:"#059669",lineHeight:1}}>{pcMS}<span style={{fontSize:15,color:"#64748B",fontWeight:600}}> /100</span></div></div>
                 <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:16}}><div style={{fontSize:14,fontWeight:700,color:C.t1}}>{pcMSL}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(pcCR>0?`Thiếu ${pcCR} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`:pcCR<0?`Dư ${Math.abs(pcCR)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả.")+(pcMacroWarnings.length>0?" Ngoài ra đang "+pcMacroWarnings.join(", ")+".":"")}</div></div>
@@ -379,6 +402,11 @@ export default function App(){
       </main>
     </div>
     {flags.ai_chat&&showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id}/>}
+    {showAIMenuPC&&aiAccess.usable&&<div onClick={()=>setShowAIMenuPC(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:520,maxHeight:"88vh",overflowY:"auto",background:C.bg,borderRadius:16,padding:20}}>
+        <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} onApply={handleApplyAIMenuPC} onClose={()=>setShowAIMenuPC(false)}/>
+      </div>
+    </div>}
   </div>;
 
 }
