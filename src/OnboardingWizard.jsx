@@ -271,11 +271,19 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 setProfile({...p,onboardingDone:true});
 onComplete();
 }} style={{...redBtn,marginTop:16,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu & Vào Dashboard</button>
-{aiAccess.enabled&&(aiAccess.usable
-?<button onClick={()=>setShowAIMenu(true)} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn cho tôi</button>
-:<div style={{marginTop:8,padding:"10px 14px",borderRadius:10,background:C.surface,border:`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+{aiAccess.enabled&&<>
+<div style={{display:"flex",alignItems:"center",gap:10,margin:"14px 0"}}>
+<div style={{flex:1,height:1,background:C.border}}/>
+<span style={{fontSize:11,fontWeight:700,color:C.t3}}>HOẶC</span>
+<div style={{flex:1,height:1,background:C.border}}/>
+</div>
+{aiAccess.usable?<>
+<div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8,textAlign:"center"}}>Chưa biết ăn gì hôm nay?</div>
+<button onClick={()=>setShowAIMenu(true)} style={{...redBtn,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn cho tôi</button>
+</>:<div style={{padding:"10px 14px",borderRadius:10,background:C.surface,border:`1.5px solid ${C.border}`,textAlign:"center"}}>
 <span style={{fontSize:12,fontWeight:700,color:C.t2}}>🔒 AI tạo thực đơn — dành cho gói Trial/Premium</span>
-</div>)}
+</div>}
+</>}
 {backBtn}
 </div>}
 </div>

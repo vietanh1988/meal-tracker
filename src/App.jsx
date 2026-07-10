@@ -336,11 +336,21 @@ export default function App(){
           <div style={{display:"grid",gridTemplateColumns:"55fr 45fr",gap:24}}>
             <div style={{...card,padding:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:15,fontWeight:800,color:C.t1}}>Danh sách thực đơn</span><span onClick={()=>setTab("meals")} style={{fontSize:12,color:C.primary,fontWeight:700,cursor:"pointer"}}>Xem tất cả →</span></div>
               {pcMeals.filter(m=>m.items&&m.items.length>0).map(m=><MealCard key={m.id} meal={m}/>)}
-              {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:20,color:C.t3,fontSize:13}}>
-                🍽️ Chưa có bữa ăn — <span onClick={()=>setTab("meals")} style={{color:C.primary,fontWeight:700,cursor:"pointer"}}>Nhập bữa ăn</span>
-                {aiAccess.enabled&&(aiAccess.usable
-                  ?<> · <span onClick={()=>setShowAIMenuPC(true)} style={{color:"#7C3AED",fontWeight:700,cursor:"pointer"}}>✨ Để AI tạo thực đơn</span></>
-                  :<> · <span onClick={()=>setTab("account")} title="Nâng cấp Trial/Premium để mở khoá" style={{color:C.t3,fontWeight:700,cursor:"pointer"}}>🔒 AI tạo thực đơn</span></>)}
+              {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:"28px 20px"}}>
+                <div style={{fontSize:28,marginBottom:8}}>🍽️</div>
+                <div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:16}}>Chưa có bữa ăn nào hôm nay</div>
+                <button onClick={()=>setTab("meals")} style={{padding:"10px 24px",borderRadius:10,border:`1.5px solid ${C.border}`,background:"#fff",color:C.t1,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>📝 Tự nhập bữa ăn</button>
+                {aiAccess.enabled&&<>
+                  <div style={{display:"flex",alignItems:"center",gap:10,margin:"16px auto",maxWidth:240}}>
+                    <div style={{flex:1,height:1,background:C.border}}/>
+                    <span style={{fontSize:11,fontWeight:700,color:C.t3}}>HOẶC</span>
+                    <div style={{flex:1,height:1,background:C.border}}/>
+                  </div>
+                  {aiAccess.usable?<>
+                    <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8}}>Chưa biết ăn gì hôm nay?</div>
+                    <button onClick={()=>setShowAIMenuPC(true)} style={{padding:"10px 24px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Để AI tạo thực đơn cho tôi</button>
+                  </>:<button onClick={()=>setTab("account")} title="Nâng cấp Trial/Premium để mở khoá" style={{padding:"10px 24px",borderRadius:10,border:`1.5px solid ${C.border}`,background:C.surface,color:C.t2,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🔒 AI tạo thực đơn — Nâng cấp để mở khoá</button>}
+                </>}
               </div>}
               {pcAC>0&&<div style={{background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)",borderRadius:12,padding:"16px 18px",marginTop:12,display:"flex",alignItems:"center",gap:16}}>
                 <div><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}><span style={{fontSize:14}}>🎯</span><span style={{fontSize:12,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:34,fontWeight:900,color:"#059669",lineHeight:1}}>{pcMS}<span style={{fontSize:15,color:"#64748B",fontWeight:600}}> /100</span></div></div>

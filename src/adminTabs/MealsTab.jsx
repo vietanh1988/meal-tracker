@@ -198,7 +198,7 @@ callAI(false,combined);
     bước Lưu). Đây là lối riêng cho đúng 1 việc: xoá sạch dữ liệu cloud của
     NGÀY ĐANG XEM (dayType hiện tại), dùng khi form trống nhưng cloud vẫn
     còn data cũ (VD: test lại từ đầu, hoặc nhập nhầm cả ngày muốn làm lại). */}
-{getMeals(dayType).some(m=>m.items&&m.items.length>0)&&<button onClick={async()=>{
+{isAdmin&&getMeals(dayType).some(m=>m.items&&m.items.length>0)&&<button onClick={async()=>{
 if(!window.confirm(`Xoá TOÀN BỘ bữa ăn của "${dayType==="train"?"Ngày tập":"Ngày nghỉ"}" hôm nay? Không thể hoàn tác.`))return;
 const skipDaily=dayType!==todayRealDayType();
 const targets=getMeals(dayType).filter(m=>m.items&&m.items.length>0);

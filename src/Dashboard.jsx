@@ -182,16 +182,22 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     {meals.filter(m=>m.items&&m.items.length>0).map(m=><MealCard key={m.id} meal={m}/>)}
 
     {/* Empty state CTA — no meals logged */}
-    {meals.every(m=>!m.items||m.items.length===0)&&<div style={{...card,border:"2px dashed #CDCDCD",background:"transparent",textAlign:"center",padding:"20px 16px"}}>
+    {meals.every(m=>!m.items||m.items.length===0)&&<div style={{...card,border:"2px dashed #CDCDCD",background:"transparent",textAlign:"center",padding:"24px 16px"}}>
       <div style={{fontSize:28,marginBottom:6}}>🍽️</div>
-      <div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có bữa ăn nào</div>
-      <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Nhập thức ăn để theo dõi macro hàng ngày</div>
-      <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
-        <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
-        {aiAccess.enabled&&(aiAccess.usable
-          ?<button onClick={()=>setShowAIMenu(true)} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn</button>
-          :<button onClick={()=>setTab&&setTab("settings")} title="Nâng cấp Trial/Premium để mở khoá" style={{width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13,borderRadius:10,border:`1.5px solid ${C.border}`,background:C.surface,color:C.t2,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🔒 AI tạo thực đơn</button>)}
-      </div>
+      <div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có bữa ăn nào hôm nay</div>
+      <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:16}}>Nhập thức ăn để theo dõi macro hàng ngày</div>
+      <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"100%",maxWidth:280,margin:"0 auto",display:"block",padding:"12px",fontSize:14}}>📝 Tự nhập bữa ăn →</button>
+      {aiAccess.enabled&&<>
+        <div style={{display:"flex",alignItems:"center",gap:10,margin:"14px auto",maxWidth:280}}>
+          <div style={{flex:1,height:1,background:C.border}}/>
+          <span style={{fontSize:11,fontWeight:700,color:C.t3}}>HOẶC</span>
+          <div style={{flex:1,height:1,background:C.border}}/>
+        </div>
+        {aiAccess.usable?<>
+          <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8}}>Chưa biết ăn gì hôm nay?</div>
+          <button onClick={()=>setShowAIMenu(true)} style={{...redBtn,width:"100%",maxWidth:280,margin:"0 auto",display:"block",padding:"12px",fontSize:14,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn cho tôi</button>
+        </>:<button onClick={()=>setTab&&setTab("settings")} title="Nâng cấp Trial/Premium để mở khoá" style={{width:"100%",maxWidth:280,margin:"0 auto",display:"block",padding:"12px",fontSize:14,borderRadius:10,border:`1.5px solid ${C.border}`,background:C.surface,color:C.t2,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🔒 AI tạo thực đơn — Nâng cấp để mở khoá</button>}
+      </>}
     </div>}
 
     {/* AI Menu Generator — bottom sheet trên mobile, modal căn giữa trên PC.
