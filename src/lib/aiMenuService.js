@@ -17,6 +17,31 @@
 import { LOCAL_FOODS, getFoodRole } from "./localFoodDB";
 import { applyMealEngineToTemplate, computeMealGram, splitDayIntoMeals } from "../mealEngine";
 import { ALL_MEALS } from "../mealConstants";
+import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
+
+// ============================================================
+// QUYỀN DÙNG — 2 lớp độc lập:
+// 1. Cờ toàn cục "ai_menu_gen" (Quản lý tính năng) — admin tắt thì KHÔNG
+//    ai dùng được, kể cả Premium. Dùng khi cần dừng khẩn (lỗi AI, quá tải).
+// 2. Tier user — Free luôn bị khoá dù cờ có bật, Trial/Premium luôn được
+//    dùng khi cờ bật. Đây là gate SẢN PHẨM (bán hàng), tách khỏi cờ kỹ
+//    thuật ở trên để 2 việc không giẫm chân nhau.
+//
+// @returns {{enabled:boolean, locked:boolean, usable:boolean}}
+//   enabled = cờ toàn cục đang bật (chưa xét tier)
+//   locked  = cờ bật NHƯNG tier free → hiện nút dạng khoá + gợi ý nâng cấp
+//   usable  = cờ bật VÀ tier trial/premium → dùng bình thường
+// ============================================================
+export function getAIMenuAccess(profile, appSettings) {
+  const flags = parseFeatureFlags(appSettings);
+  const tier = profile?.tier || "free";
+  const unlocked = tier !== "free";
+  return {
+    enabled: !!flags.ai_menu_gen,
+    locked: !!flags.ai_menu_gen && !unlocked,
+    usable: !!flags.ai_menu_gen && unlocked,
+  };
+}
 
 const AI_PROXY_URL = "https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy";
 
@@ -273,6 +298,19 @@ export function buildVirtualTemplate(meals, dayType) {
  *   template = đã qua mealEngine, gram thật, đưa thẳng vào applyTemplate/saveWeeklyTemplate được.
  */
 export async function generateMenuAI({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, appSettings, provider, model }) {
+  // Chốt chặn thứ 2 (server-side-ish, chạy trước khi tốn quota/gọi AI) —
+  // phòng trường hợp UI bị bypass (devtools gọi thẳng hàm). UI chỉ ẩn/khoá
+  // nút là lớp 1; đây là lớp 2, không tin tưởng riêng UI.
+  const access = getAIMenuAccess(profile, appSettings);
+  if (!access.usable) {
+    return {
+      ok: false,
+      error: !access.enabled
+        ? "Tính năng AI tạo thực đơn đang tạm khoá."
+        : "Tính năng AI tạo thực đơn dành cho gói Trial/Premium. Nâng cấp để mở khoá.",
+    };
+  }
+
   // Theo đúng AI đang cấu hình trong tab AI (app_settings), cùng nguồn
   // với AICoachPanel. Truyền provider/model tường minh sẽ ghi đè.
   const prov = provider || appSettings?.ai_provider || "claude";

@@ -9,10 +9,12 @@ import { UserAvatar } from "./UserAvatar";
 import { NotificationBell } from "./NotificationBell";
 import { WeightSuggestion } from "./WeightSuggestion";
 import AIMenuGenerator from "./AIMenuGenerator";
+import { getAIMenuAccess } from "./lib/aiMenuService";
 
 export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [showAIMenu,setShowAIMenu]=useState(false);
+  const aiAccess=getAIMenuAccess(profile,appSettings);
   const [showWeightInput,setShowWeightInput]=useState(false);
   const weightInputRef=useRef(null);
   const [weightSaved,setWeightSaved]=useState(false);
@@ -186,12 +188,16 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Nhập thức ăn để theo dõi macro hàng ngày</div>
       <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
         <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
-        <button onClick={()=>setShowAIMenu(true)} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn</button>
+        {aiAccess.enabled&&(aiAccess.usable
+          ?<button onClick={()=>setShowAIMenu(true)} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn</button>
+          :<button onClick={()=>setTab&&setTab("settings")} title="Nâng cấp Trial/Premium để mở khoá" style={{width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13,borderRadius:10,border:`1.5px solid ${C.border}`,background:C.surface,color:C.t2,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🔒 AI tạo thực đơn</button>)}
       </div>
     </div>}
 
-    {/* AI Menu Generator — bottom sheet trên mobile, modal căn giữa trên PC */}
-    {showAIMenu&&<div onClick={()=>setShowAIMenu(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
+    {/* AI Menu Generator — bottom sheet trên mobile, modal căn giữa trên PC.
+        Chỉ render khi thật sự usable — chốt chặn UI thứ 2 dù nút locked
+        phía trên không mở được overlay này. */}
+    {showAIMenu&&aiAccess.usable&&<div onClick={()=>setShowAIMenu(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
       <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":520,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:C.bg,borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
         <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} onApply={handleApplyAIMenu} onClose={()=>setShowAIMenu(false)}/>
       </div>

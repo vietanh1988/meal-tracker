@@ -4,6 +4,7 @@ import { calcMacro } from "./calcMacro";
 import { MacroRing } from "./MacroRing";
 import { useIsMobile } from "./hooks/useIsMobile";
 import AIMenuGenerator from "./AIMenuGenerator";
+import { getAIMenuAccess } from "./lib/aiMenuService";
 
 export function OnboardingWizard({profile,setProfile,onComplete,appSettings,user,saveWeeklyTemplate,applyTemplate}){
 const mob=useIsMobile();
@@ -12,6 +13,7 @@ const [showAIMenu,setShowAIMenu]=useState(false);
 const p=profile||defaultProfile;
 const macro=calcMacro(p);
 const totalSteps=4;
+const aiAccess=getAIMenuAccess(p,appSettings);
 
 const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
 
@@ -269,7 +271,11 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 setProfile({...p,onboardingDone:true});
 onComplete();
 }} style={{...redBtn,marginTop:16,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu & Vào Dashboard</button>
-<button onClick={()=>setShowAIMenu(true)} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn cho tôi</button>
+{aiAccess.enabled&&(aiAccess.usable
+?<button onClick={()=>setShowAIMenu(true)} style={{...redBtn,marginTop:8,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn cho tôi</button>
+:<div style={{marginTop:8,padding:"10px 14px",borderRadius:10,background:C.surface,border:`1.5px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+<span style={{fontSize:12,fontWeight:700,color:C.t2}}>🔒 AI tạo thực đơn — dành cho gói Trial/Premium</span>
+</div>)}
 {backBtn}
 </div>}
 </div>

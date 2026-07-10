@@ -4,6 +4,7 @@ import { C, card } from "../theme";
 const FLAG_DEFS = [
   { key: "ai_chat", label: "🤖 AI Chat", desc: "Cho phép user chat với Fipilot AI", default: true },
   { key: "ai_macro", label: "📊 AI tính macro tự động", desc: "Cho phép AI tự tính calo/macro khi nhập món ăn", default: true },
+  { key: "ai_menu_gen", label: "✨ AI tự tạo thực đơn", desc: "Công tắc tổng cho tính năng AI ghép thực đơn (Onboarding + Dashboard trống). TẮT = ẩn với TẤT CẢ mọi tier kể cả Premium. Riêng gói Free luôn bị khoá tính năng này dù cờ BẬT hay TẮT — xem hàm getAIMenuAccess() trong src/lib/aiMenuService.js.", default: true },
   { key: "push", label: "🔔 Push notification", desc: "Gửi thông báo đẩy (đơn hàng, admin gửi thủ công...)", default: true },
   { key: "sales_enabled", label: "💰 Bán hàng (gói Premium)", desc: "Cho phép nâng cấp/gia hạn Premium qua chuyển khoản. TẮT = ẩn hẳn form mua, hiện banner miễn phí thay thế", default: false },
   { key: "registration_enabled", label: "📝 Cho phép đăng ký mới", desc: "Tắt tạm khi cần dừng nhận user mới (bảo trì, quá tải...)", default: true },
