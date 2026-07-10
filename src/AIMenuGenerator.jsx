@@ -16,10 +16,9 @@ import { useState } from "react";
 import { C, card, redBtn, fs, fw, sp, radius } from "./theme";
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "./mealConstants";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
-import { getFoodRole } from "./lib/localFoodDB";
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
-  generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget,
+  generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory,
 } from "./lib/aiMenuService";
 
 const STYLES = [
@@ -28,8 +27,10 @@ const STYLES = [
   { id: "easy", label: "⚡ Tiện lợi", desc: "Ít nấu nướng, đồ nhanh gọn" },
 ];
 
-const ROLE_LABEL = { protein: "Đạm", carb: "Tinh bột", fat: "Béo", fixed: "Rau/Phụ" };
-const ROLE_COLOR = { protein: C.protein, carb: C.carb, fat: C.fat, fixed: C.fiber };
+// 4 nhóm CỐ ĐỊNH khớp đúng cấu trúc bữa mới (sáng 3 món, trưa/tối 4 món) —
+// tách Rau và Hoa quả riêng thay vì gộp chung "Rau/Phụ" như trước.
+const CAT_LABEL = { protein: "Đạm", carb: "Tinh bột", veg: "Rau", fruit: "Hoa quả", other: "Khác" };
+const CAT_COLOR = { protein: C.protein, carb: C.carb, veg: C.fiber, fruit: C.gold, other: C.t3 };
 
 export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, onApply, onClose, onFallbackToLibrary }) {
   const mob = useIsMobile();
@@ -164,11 +165,11 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
               <span style={{ fontSize: fs.base, fontWeight: fw.bold, color: C.t3 }}>{mealCal} kcal</span>
             </div>
             {(m.items || []).map(it => {
-              const role = getFoodRole(it.food);
+              const cat = getFoodDisplayCategory(it.food);
               return (
                 <div key={it.food} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${sp.md}px 0`, borderBottom: `1px solid ${C.border}` }}>
                   <div>
-                    <span style={{ fontSize: fs.sm, fontWeight: fw.bold, color: ROLE_COLOR[role], background: C.surface, borderRadius: radius.sm, padding: "1px 6px", marginRight: sp.md }}>{ROLE_LABEL[role]}</span>
+                    <span style={{ fontSize: fs.sm, fontWeight: fw.bold, color: CAT_COLOR[cat], background: C.surface, borderRadius: radius.sm, padding: "1px 6px", marginRight: sp.md }}>{CAT_LABEL[cat]}</span>
                     <span style={{ fontSize: fs.lg, fontWeight: fw.semibold, color: C.t1, textTransform: "capitalize" }}>{it.food}</span>
                     <span style={{ fontSize: fs.md, color: C.t3, marginLeft: sp.md }}>{it.gram}g · {it.cal} kcal</span>
                   </div>
