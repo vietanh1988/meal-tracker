@@ -193,6 +193,22 @@ callAI(false,combined);
 {aiError&&<div style={{marginTop:12,padding:"12px 16px",background:C.redBg,borderRadius:10,border:`2px solid ${C.red}`}}>
 <span style={{fontSize:13,fontWeight:700,color:"#7F1D1D"}}>❌ {aiError}</span>
 </div>}
+{/* Xoá hết bữa hôm nay — KHÔNG qua "Tính macro" vì nút đó chặn cứng khi
+    form đang trống (combined.length===0 → lỗi ngay, không bao giờ tới được
+    bước Lưu). Đây là lối riêng cho đúng 1 việc: xoá sạch dữ liệu cloud của
+    NGÀY ĐANG XEM (dayType hiện tại), dùng khi form trống nhưng cloud vẫn
+    còn data cũ (VD: test lại từ đầu, hoặc nhập nhầm cả ngày muốn làm lại). */}
+{getMeals(dayType).some(m=>m.items&&m.items.length>0)&&<button onClick={async()=>{
+if(!window.confirm(`Xoá TOÀN BỘ bữa ăn của "${dayType==="train"?"Ngày tập":"Ngày nghỉ"}" hôm nay? Không thể hoàn tác.`))return;
+const skipDaily=dayType!==todayRealDayType();
+const targets=getMeals(dayType).filter(m=>m.items&&m.items.length>0);
+for(const m of targets){await saveMealToCloud(m.id,dayType,[],skipDaily);}
+const el=document.getElementById("meals-cleared");
+if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
+}} style={{width:"100%",marginTop:8,padding:"10px",fontSize:12,fontWeight:700,background:"none",border:`1.5px solid ${C.red}`,borderRadius:10,color:C.red,cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xoá hết bữa hôm nay</button>}
+<div id="meals-cleared" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
+<span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã xoá sạch bữa ăn hôm nay!</span>
+</div>
 {mob&&aiResult&&<div style={{marginTop:16,background:C.primaryBg,borderRadius:12,padding:16,border:`2px solid ${C.primary}`}}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
 <span style={{fontSize:14,fontWeight:900}}>✓</span>
