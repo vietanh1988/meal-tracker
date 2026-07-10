@@ -101,12 +101,12 @@ export function dayTarget(macro, dayType) {
 // 3. GỌI AI — qua ai-proxy (dùng CLAUDE_API_KEY phía server, user
 // mới onboard chưa có key riêng). Trả text thô, chưa parse.
 // ============================================================
-async function callAI(prompt, { model } = {}) {
+async function callAI(prompt, { provider, model } = {}) {
   const res = await fetch(AI_PROXY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      provider: "claude",
+      provider: provider || "claude",
       model: model || "claude-sonnet-5",
       maxTokens: 1500,
       messages: [{ role: "user", content: prompt }],
@@ -234,7 +234,15 @@ export function buildVirtualTemplate(meals, dayType) {
  * @returns {Promise<{ok:true, template:Object, note:string} | {ok:false, error:string}>}
  *   template = đã qua mealEngine, gram thật, đưa thẳng vào applyTemplate/saveWeeklyTemplate được.
  */
-export async function generateMenuAI({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, model }) {
+export async function generateMenuAI({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, appSettings, provider, model }) {
+  // Theo đúng AI đang cấu hình trong tab AI (app_settings), cùng nguồn
+  // với AICoachPanel. Truyền provider/model tường minh sẽ ghi đè.
+  const prov = provider || appSettings?.ai_provider || "claude";
+  const mdl = model || (
+    prov === "claude" ? (appSettings?.ai_model || "claude-sonnet-5")
+    : prov === "gemini" ? (appSettings?.gemini_model || "gemini-2.5-flash")
+    : (appSettings?.gpt_model || "gpt-4o-mini")
+  );
   const prompt = buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods });
   const target = dayTarget(macro, dayType);
 
@@ -243,7 +251,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
     try {
       const retryHint = attempt === 0 ? "" :
         `\n\nLẦN TRƯỚC BỊ LỖI, hãy sửa: ${lastErrors.join("; ")}. Nhớ: tên món phải ĐÚNG CHÍNH XÁC như danh sách.`;
-      const text = await callAI(prompt + retryHint, { model });
+      const text = await callAI(prompt + retryHint, { provider: prov, model: mdl });
       const raw = parseMenuJSON(text);
       const norm = normalizeMenu(raw, mealIds);
       if (!norm.ok) { lastErrors = norm.errors; continue; }

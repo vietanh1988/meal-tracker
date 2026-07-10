@@ -30,7 +30,7 @@ const STYLES = [
 const ROLE_LABEL = { protein: "Đạm", carb: "Tinh bột", fat: "Béo", fixed: "Rau/Phụ" };
 const ROLE_COLOR = { protein: C.protein, carb: C.carb, fat: C.fat, fixed: C.fiber };
 
-export default function AIMenuGenerator({ macro, profile, user, onApply, onClose, onFallbackToLibrary }) {
+export default function AIMenuGenerator({ macro, profile, user, appSettings, onApply, onClose, onFallbackToLibrary }) {
   const [step, setStep] = useState("prefs"); // prefs | loading | preview | error
   const [style, setStyle] = useState("vn");
   const [avoid, setAvoid] = useState("");
@@ -51,7 +51,7 @@ export default function AIMenuGenerator({ macro, profile, user, onApply, onClose
     const quota = await checkAndConsumeAiQuota(user?.id, "macro");
     if (!quota.allowed) { setError(quota.message); setStep("error"); return; }
 
-    const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs: { style, avoid } });
+    const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs: { style, avoid }, appSettings });
     if (res.ok) { setTemplate(res.template); setNote(res.note); setStep("preview"); }
     else { setError(res.error); setStep("error"); }
   };
