@@ -28,13 +28,50 @@ const DEFAULT_REF_GRAM = { protein: 150, carb: 150, fat: 10, fixed: 100 };
 const EXCLUDE_FROM_CATALOG = new Set(["creatine", "bcaa", "nước", "trà xanh", "cà phê", "cà phê đen"]);
 
 // ============================================================
+// LỌC DỊ ỨNG CỨNG — phòng trường hợp AI lờ đi câu "không dùng" trong
+// prompt. Đây là chốt chặn ở CODE, không phụ thuộc AI có tuân thủ hay
+// không. Khớp theo CATEGORY (cat trong LOCAL_FOODS) là chính vì user
+// gõ tự do ("hải sản", "không ăn thịt đỏ"...) chứ không gõ đúng key.
+// ============================================================
+const ALLERGY_KEYWORD_TO_CAT = {
+  "hải sản": ["seafood"], "tôm cá": ["seafood"], "seafood": ["seafood"],
+  "tôm": ["seafood"], "cá": ["seafood"], "mực": ["seafood"], "cua": ["seafood"], "sò": ["seafood"],
+  "sữa": ["egg_dairy"], "trứng": ["egg_dairy"], "trứng sữa": ["egg_dairy"], "dairy": ["egg_dairy"],
+  "đậu phộng": ["nuts"], "hạt": ["nuts"], "nuts": ["nuts"],
+  "thịt bò": ["beef"], "bò": ["beef"], "thịt heo": ["pork"], "heo": ["pork"], "thịt lợn": ["pork"],
+  "gà": ["poultry"], "thịt gà": ["poultry"], "vịt": ["poultry"],
+  "thịt đỏ": ["beef", "pork"],
+  "chay": ["seafood", "beef", "pork", "poultry"], // ăn chay — loại hết đạm động vật
+};
+
+// Trả về Set các key trong LOCAL_FOODS cần loại bỏ, dựa trên text tự do user gõ.
+export function buildExclusionKeys(avoidText) {
+  const excluded = new Set();
+  const lower = (avoidText || "").toLowerCase();
+  if (!lower.trim()) return excluded;
+
+  const cats = new Set();
+  Object.entries(ALLERGY_KEYWORD_TO_CAT).forEach(([kw, catList]) => {
+    if (lower.includes(kw)) catList.forEach(c => cats.add(c));
+  });
+
+  Object.entries(LOCAL_FOODS).forEach(([key, item]) => {
+    if (cats.has(item.cat)) excluded.add(key);
+    // Khớp trực tiếp tên món nằm trong câu user gõ (VD gõ đúng "cá hồi")
+    else if (key.length >= 3 && lower.includes(key)) excluded.add(key);
+  });
+  return excluded;
+}
+
+// ============================================================
 // 1. CATALOG — danh sách món gửi kèm prompt, nhóm theo role để AI
 // bắt buộc chọn trong đây. ~200 key ≈ 1.5k token, gọi 1 lần/generate.
 // ============================================================
-export function buildFoodCatalog() {
+export function buildFoodCatalog(exclude) {
   const byRole = { protein: [], carb: [], fat: [], fixed: [] };
   Object.keys(LOCAL_FOODS).forEach(key => {
     if (EXCLUDE_FROM_CATALOG.has(key)) return;
+    if (exclude?.has(key)) return;
     const role = getFoodRole(key);
     (byRole[role] || byRole.fixed).push(key);
   });
@@ -49,7 +86,7 @@ export function buildFoodCatalog() {
 // ============================================================
 // 2. PROMPT — không yêu cầu gram/calo. Chỉ chọn món + ghép bữa.
 // ============================================================
-function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods = [] }) {
+function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods = [], exclude }) {
   const goalLabel = { bulk: "tăng cơ", cut: "giảm mỡ", maintain: "duy trì" }[macro.goal] || "duy trì";
   const mealNames = mealIds
     .map(id => { const m = ALL_MEALS.find(x => x.id === id); return m ? `${id} (${m.name})` : id; })
@@ -80,7 +117,7 @@ QUY TẮC BẮT BUỘC:
 6. Mỗi bữa tối đa 4 món.
 
 DANH SÁCH MÓN ĐƯỢC PHÉP DÙNG:
-${buildFoodCatalog()}
+${buildFoodCatalog(exclude)}
 
 Trả về DUY NHẤT JSON sau, không markdown, không giải thích thêm:
 {"meals":[{"meal_id":"sang","items":[{"food":"tên món đúng như danh sách"}]}],"note":"1 câu mô tả ngắn về thực đơn"}`;
@@ -151,7 +188,7 @@ const MAIN_MEALS = new Set(["sang", "trua", "toi"]);
  * @returns {{ok:boolean, meals?:Array, errors?:string[]}}
  *   meals[i] = { meal_id, foods: [{key, role}] }
  */
-export function normalizeMenu(raw, mealIds) {
+export function normalizeMenu(raw, mealIds, exclude) {
   const errors = [];
   const wanted = new Set(mealIds);
   const byId = {};
@@ -167,6 +204,7 @@ export function normalizeMenu(raw, mealIds) {
     (m.items || []).forEach(it => {
       const key = matchFoodKey(it.food || it.name);
       if (!key || seen.has(key)) return; // loại món lạ + món trùng
+      if (exclude?.has(key)) return;      // loại món dị ứng dù AI lỡ chọn
       seen.add(key);
       foods.push({ key, role: getFoodRole(key) }); // role từ DB, không tin AI
     });
@@ -243,7 +281,8 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
     : prov === "gemini" ? (appSettings?.gemini_model || "gemini-2.5-flash")
     : (appSettings?.gpt_model || "gpt-4o-mini")
   );
-  const prompt = buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods });
+  const exclude = buildExclusionKeys(prefs?.avoid);
+  const prompt = buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods, exclude });
   const target = dayTarget(macro, dayType);
 
   let lastErrors = [];
@@ -253,7 +292,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         `\n\nLẦN TRƯỚC BỊ LỖI, hãy sửa: ${lastErrors.join("; ")}. Nhớ: tên món phải ĐÚNG CHÍNH XÁC như danh sách.`;
       const text = await callAI(prompt + retryHint, { provider: prov, model: mdl });
       const raw = parseMenuJSON(text);
-      const norm = normalizeMenu(raw, mealIds);
+      const norm = normalizeMenu(raw, mealIds, exclude);
       if (!norm.ok) { lastErrors = norm.errors; continue; }
 
       const virtualTpl = buildVirtualTemplate(norm.meals, dayType);

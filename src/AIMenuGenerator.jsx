@@ -17,6 +17,7 @@ import { C, card, redBtn, fs, fw, sp, radius } from "./theme";
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "./mealConstants";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { getFoodRole } from "./lib/localFoodDB";
+import { useIsMobile } from "./hooks/useIsMobile";
 import {
   generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget,
 } from "./lib/aiMenuService";
@@ -31,6 +32,7 @@ const ROLE_LABEL = { protein: "Đạm", carb: "Tinh bột", fat: "Béo", fixed: 
 const ROLE_COLOR = { protein: C.protein, carb: C.carb, fat: C.fat, fixed: C.fiber };
 
 export default function AIMenuGenerator({ macro, profile, user, appSettings, onApply, onClose, onFallbackToLibrary }) {
+  const mob = useIsMobile();
   const [step, setStep] = useState("prefs"); // prefs | loading | preview | error
   const [style, setStyle] = useState("vn");
   const [avoid, setAvoid] = useState("");
@@ -186,8 +188,8 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, onA
 
       {/* PICKER ĐỔI MÓN — cùng role, tính lại gram ngay, không tốn lượt AI */}
       {swapping && (
-        <div onClick={() => setSwapping(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: C.card, borderRadius: "16px 16px 0 0", width: "100%", maxWidth: 560, maxHeight: "60vh", overflowY: "auto", padding: 18 }}>
+        <div onClick={() => setSwapping(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 100, display: "flex", alignItems: mob ? "flex-end" : "center", justifyContent: "center", padding: mob ? 0 : 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: C.card, borderRadius: mob ? "16px 16px 0 0" : radius["2xl"], width: "100%", maxWidth: 420, maxHeight: mob ? "60vh" : "70vh", overflowY: "auto", padding: 18 }}>
             <div style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: C.t1, marginBottom: sp["2xl"] }}>
               Thay "{swapping.food}" bằng món cùng nhóm
             </div>

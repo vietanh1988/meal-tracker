@@ -8,9 +8,11 @@ import { WeightBarChart } from "./WeightBarChart";
 import { UserAvatar } from "./UserAvatar";
 import { NotificationBell } from "./NotificationBell";
 import { WeightSuggestion } from "./WeightSuggestion";
+import AIMenuGenerator from "./AIMenuGenerator";
 
-export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
+export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
   const mob=useIsMobile();
+  const [showAIMenu,setShowAIMenu]=useState(false);
   const [showWeightInput,setShowWeightInput]=useState(false);
   const weightInputRef=useRef(null);
   const [weightSaved,setWeightSaved]=useState(false);
@@ -50,6 +52,22 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
     }
   },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded]);
+
+  // Áp dụng thực đơn AI vừa tạo: lưu thành Lịch tuần cho hôm nay (để mai
+  // vẫn còn), apply vào meal_logs/daily_logs hôm nay, rồi đồng bộ dayType
+  // hiển thị theo đúng template (tránh trường hợp user tạo "Ngày nghỉ"
+  // trong lúc Dashboard đang ở tab "Ngày tập" — số liệu nằm đúng chỗ
+  // nhưng không ai nhìn thấy ngay).
+  const handleApplyAIMenu=async(tpl)=>{
+    try{
+      const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
+      const todayKey=dayKeys[new Date().getDay()];
+      if(saveWeeklyTemplate)await saveWeeklyTemplate(todayKey,tpl);
+      if(applyTemplate)await applyTemplate(tpl);
+      setDayType(tpl.day_type||"train");
+    }catch(e){console.error("Apply AI menu error:",e);}
+    setShowAIMenu(false);
+  };
 
   // Auto version check — force clear cache when admin updates app_version
   const APP_VERSION="2.6";
@@ -166,7 +184,17 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       <div style={{fontSize:28,marginBottom:6}}>🍽️</div>
       <div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:4}}>Chưa có bữa ăn nào</div>
       <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Nhập thức ăn để theo dõi macro hàng ngày</div>
-      <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
+      <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+        <button onClick={()=>setTab&&setTab("meals")} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13}}>🍽️ Nhập bữa ăn đầu tiên →</button>
+        <button onClick={()=>setShowAIMenu(true)} style={{...redBtn,width:"auto",display:"inline-block",padding:"10px 24px",fontSize:13,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn</button>
+      </div>
+    </div>}
+
+    {/* AI Menu Generator — bottom sheet trên mobile, modal căn giữa trên PC */}
+    {showAIMenu&&<div onClick={()=>setShowAIMenu(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":520,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:C.bg,borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
+        <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} onApply={handleApplyAIMenu} onClose={()=>setShowAIMenu(false)}/>
+      </div>
     </div>}
 
     {/* Evaluation card — same style as PC */}
