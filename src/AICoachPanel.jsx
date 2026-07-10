@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
-import { getAIMenuAccess } from "./lib/aiMenuService";
+import { getAIMenuAccess, generateMenuAI, sumTemplate } from "./lib/aiMenuService";
+import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "./mealConstants";
 
 // Render markdown NHẸ cho câu trả lời AI — chỉ những gì AI thật sự hay dùng:
 // **đậm**, gạch đầu dòng (-, •, *), danh sách số (1. 2. ...). Không thêm thư
@@ -321,13 +322,43 @@ ${buildContext()}`;
     // Chỉ chặn khi user THỰC SỰ dùng được (trial/premium + cờ ai_menu_gen
     // bật) — free tier hoặc cờ tắt thì rơi xuống chat bình thường như cũ,
     // không bị gián đoạn bởi 1 tính năng họ chưa có quyền dùng.
+    //
+    // Sinh THẲNG trong chat (không bắt user rời sang form riêng) — dùng
+    // prefs mặc định (phong cách "cơm nhà VN", không dị ứng) vì chat không
+    // có chỗ hỏi 2 câu như AIMenuGenerator. Ai muốn đổi khẩu vị/dị ứng thì
+    // bấm "✏️ Tuỳ chỉnh" trên card kết quả để mở form đầy đủ (vẫn dùng
+    // handleApplyAIMenuChat chung, không viết logic áp dụng riêng lần 2).
     const aiMenuAccess=getAIMenuAccess(profile,appSettings);
     if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
-      const actionMsg={role:"assistant",content:"Mình có công cụ AI tự ghép thực đơn khớp đúng calo/macro mục tiêu của bạn — bấm nút bên dưới để tạo nhé, bạn chỉnh được phong cách ăn và món dị ứng ngay trong đó! 👇",action:"open_ai_menu"};
-      setMessages(prev=>[...prev,{role:"user",content:text},actionMsg]);
+      const userMsg={role:"user",content:text};
+      const loadingId=Date.now();
+      const loadingMsg={id:loadingId,role:"assistant",content:"Đang ghép thực đơn khớp đúng calo/macro của bạn...",loading:true};
+      setMessages(prev=>[...prev,userMsg,loadingMsg]);
       setInput("");
       saveMsg("user",text);
-      saveMsg("assistant",actionMsg.content);
+      (async()=>{
+        const quota=await checkAndConsumeAiQuota(userId,"macro");
+        if(!quota.allowed){
+          const failMsg={role:"assistant",content:quota.message};
+          setMessages(prev=>prev.map(mm=>mm.id===loadingId?failMsg:mm));
+          saveMsg("assistant",quota.message);
+          return;
+        }
+        const dt=todayData?.dayType==="rest"?"rest":"train";
+        const mealIds=DEFAULT_MEAL_CONFIG[dt]||DEFAULT_MEAL_CONFIG.train;
+        const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},appSettings});
+        if(res.ok){
+          const total=sumTemplate(res.template);
+          const summary=`Đây là thực đơn AI ghép cho ${dt==="train"?"ngày tập":"ngày nghỉ"} hôm nay — ${total.cal} kcal (P${total.p}/C${total.c}/F${total.f}), khớp đúng mục tiêu của bạn:`;
+          const menuMsg={role:"assistant",content:summary,action:"menu_preview",template:res.template};
+          setMessages(prev=>prev.map(mm=>mm.id===loadingId?menuMsg:mm));
+          saveMsg("assistant",summary);
+        }else{
+          const errMsg={role:"assistant",content:`Mình chưa ghép được thực đơn tự động lúc này. Bạn mở công cụ đầy đủ để thử lại hoặc tự chỉnh nhé!`,action:"open_ai_menu"};
+          setMessages(prev=>prev.map(mm=>mm.id===loadingId?errMsg:mm));
+          saveMsg("assistant",errMsg.content);
+        }
+      })();
       return;
     }
 
@@ -406,6 +437,7 @@ ${buildContext()}`;
     :{position:"fixed",top:0,right:0,width:400,bottom:0,zIndex:999,background:C2.surface,boxShadow:"-4px 0 20px rgba(0,0,0,0.1)",display:"flex",flexDirection:"column"};
 
   return <div>
+    <style>{`@keyframes aicoachSpin{to{transform:rotate(360deg);}}`}</style>
     {/* Backdrop (PC only) */}
     {!mob&&<div onClick={onClose} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.2)",zIndex:998}}/>}
 
@@ -444,8 +476,30 @@ ${buildContext()}`;
             :{alignSelf:"flex-start",background:C2.bg,color:C2.t1,borderTopLeftRadius:4})
         }}>
           {m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>}
-          {m.role==="assistant"?renderMarkdownLite(m.content):m.content}
+          {m.loading
+            ?<span style={{display:"flex",alignItems:"center",gap:8,color:C2.t3}}>
+                <span style={{width:13,height:13,border:"2px solid #ddd",borderTopColor:C2.primary,borderRadius:"50%",display:"inline-block",animation:"aicoachSpin 0.6s linear infinite"}}/>
+                {m.content}
+              </span>
+            :(m.role==="assistant"?renderMarkdownLite(m.content):m.content)}
           {m.action==="open_ai_menu"&&<button onClick={()=>setShowAIMenuFromChat(true)} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Mở AI tạo thực đơn</button>}
+          {m.action==="menu_preview"&&m.template&&<div style={{marginTop:8,background:"#fff",borderRadius:10,border:`1px solid ${C2.border}`,padding:10}}>
+            {(m.template.meals||[]).map(mm=>{
+              const meta=ALL_MEALS.find(x=>x.id===mm.meal_id);
+              const cal=Math.round((mm.items||[]).reduce((s,it)=>s+(it.cal||0),0));
+              const foods=(mm.items||[]).map(it=>it.food).join(", ");
+              return <div key={mm.meal_id} style={{padding:"5px 0",borderBottom:`1px solid ${C2.border}`}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:700,color:C2.t1}}>
+                  <span>{meta?.icon} {meta?.name||mm.meal_id}</span><span style={{color:C2.t3,fontWeight:600}}>{cal} kcal</span>
+                </div>
+                <div style={{fontSize:11,color:C2.t2,marginTop:1}}>{foods}</div>
+              </div>;
+            })}
+            <div style={{display:"flex",gap:6,marginTop:10}}>
+              <button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1,padding:"9px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>➕ Thêm vào thực đơn hôm nay</button>
+              <button onClick={()=>setShowAIMenuFromChat(true)} style={{padding:"9px 12px",borderRadius:8,border:`1.5px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
+            </div>
+          </div>}
         </div>)}
         {loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
           <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>
