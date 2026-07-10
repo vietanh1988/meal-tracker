@@ -241,7 +241,21 @@ return <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fo
 const items=aiResult.items||[];
 const saveByMeal={};
 items.forEach(ai=>{const mid=ai._mealId;if(!mid)return;if(!saveByMeal[mid])saveByMeal[mid]=[];const unit=ai.unit||"g";const isW=unit==="g"||unit==="ml";saveByMeal[mid].push({food:ai.name||"",gram:ai.gram||0,unit,qty:ai.qty||1,qty_display:ai.qty_display||(isW?null:`${ai.qty||1} ${unit}`),p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0});});
-Object.entries(saveByMeal).forEach(([mid,saveItems])=>{if(saveItems.length>0)saveMealToCloud(mid,dayType,saveItems,dayType!==todayRealDayType());});
+const skipDaily=dayType!==todayRealDayType();
+Object.entries(saveByMeal).forEach(([mid,saveItems])=>{if(saveItems.length>0)saveMealToCloud(mid,dayType,saveItems,skipDaily);});
+// FIX: trước đây nếu 1 bữa bị xoá hết món (còn 0 dòng có tên) thì saveByMeal
+// không có key cho bữa đó → vòng lặp trên bỏ qua hoàn toàn → dữ liệu CŨ của
+// bữa đó trên cloud không bao giờ bị xoá dù user đã xoá sạch trên UI và bấm
+// Lưu. Giờ quét thêm mọi bữa đang hiện trong Tự nhập: nếu bữa đó KHÔNG còn
+// dòng nào có tên (user cố tình xoá hết, không phải đang gõ dở) và trước đó
+// CÓ dữ liệu trên cloud, chủ động lưu mảng rỗng để xoá sạch.
+(mealNames||[]).forEach(m=>{
+if(saveByMeal[m.id])return;
+const stillTyping=(allFoodItems[m.id]||[]).some(f=>f.name&&f.name.trim());
+if(stillTyping)return;
+const hadCloudData=(getMeals(dayType).find(x=>x.id===m.id)?.items?.length||0)>0;
+if(hadCloudData)saveMealToCloud(m.id,dayType,[],skipDaily);
+});
 if(aiResult._cacheEntries)savePendingFoodCache(aiResult._cacheEntries,aiProvider);
 const el=document.getElementById("meal-saved");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
@@ -320,7 +334,7 @@ const avg=scores.length>0?Math.round(scores.reduce((a2,b)=>a2+b,0)/scores.length
 return <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}><div style={{fontSize:14,fontWeight:800,display:"flex",alignItems:"center",gap:8}}>📊 Đánh giá dinh dưỡng</div><div style={{fontSize:22,fontWeight:800,color:avg>=90?"#059669":avg>=70?C.primary:"#D97706"}}>{avg}<span style={{fontSize:13,fontWeight:500,color:C.t2}}>/100</span></div></div>{[{l:"Calo",v:s.cal,t:heroCal},{l:"Protein",v:s.p,t:heroP},{l:"Carb",v:s.c,t:heroC},{l:"Fat",v:s.f,t:heroF},{l:"Chất xơ",v:s.fi,t:heroFi}].map(r2=>{const pct2=r2.t>0?Math.round(r2.v/r2.t*100):0;const ok=pct2>=90&&pct2<=115;return <div key={r2.l} style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:12,padding:"6px 10px",background:C.surface,borderRadius:8,marginBottom:4}}><span style={{color:C.t2}}>{r2.l}</span><span style={{fontWeight:700,color:ok?"#059669":"#D97706"}}>{ok?"✓":"⚠"} {pct2}%</span></div>;})}</div>;})()}
 {aiResult&&aiResult.items&&<>
 <button onClick={async()=>{const allNames=Object.values(allFoodItems).flat().map(f=>(f.name||"").toLowerCase().trim()).filter(Boolean);if(allNames.length>0&&deleteFoodCache)await deleteFoodCache(allNames);setAiResult(null);const c2=[];mealNames.forEach(meal=>{const foods=(allFoodItems[meal.id]||[]).filter(f=>f.name&&f.name.trim());foods.forEach(f=>c2.push({...f,_mealId:meal.id}));});setFoodItems(c2);callAI(true,c2);}} style={{padding:"8px",fontSize:12,fontWeight:700,background:C.surface,color:C.t2,border:`1.5px solid ${C.border}`,borderRadius:10,cursor:"pointer",fontFamily:"inherit",width:"100%",marginBottom:8}}>🔄 Tính lại từ đầu</button>
-<button onClick={()=>{const items=aiResult.items||[];const saveByMeal={};items.forEach(ai=>{const mid=ai._mealId;if(!mid)return;if(!saveByMeal[mid])saveByMeal[mid]=[];const unit=ai.unit||"g";const isW=unit==="g"||unit==="ml";saveByMeal[mid].push({food:ai.name||"",gram:ai.gram||0,unit,qty:ai.qty||1,qty_display:ai.qty_display||(isW?null:`${ai.qty||1} ${unit}`),p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0});});Object.entries(saveByMeal).forEach(([mid,saveItems])=>{if(saveItems.length>0)saveMealToCloud(mid,dayType,saveItems,dayType!==todayRealDayType());});if(aiResult._cacheEntries)savePendingFoodCache(aiResult._cacheEntries,aiProvider);const el=document.getElementById("meal-saved-pc");if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}}} style={{...redBtn,marginTop:0,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",width:"100%"}}>💾 Lưu bữa ăn hôm nay</button>
+<button onClick={()=>{const items=aiResult.items||[];const saveByMeal={};items.forEach(ai=>{const mid=ai._mealId;if(!mid)return;if(!saveByMeal[mid])saveByMeal[mid]=[];const unit=ai.unit||"g";const isW=unit==="g"||unit==="ml";saveByMeal[mid].push({food:ai.name||"",gram:ai.gram||0,unit,qty:ai.qty||1,qty_display:ai.qty_display||(isW?null:`${ai.qty||1} ${unit}`),p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0});});Object.entries(saveByMeal).forEach(([mid,saveItems])=>{if(saveItems.length>0)saveMealToCloud(mid,dayType,saveItems,dayType!==todayRealDayType());});(mealNames||[]).forEach(m=>{if(saveByMeal[m.id])return;const stillTyping=(allFoodItems[m.id]||[]).some(f=>f.name&&f.name.trim());if(stillTyping)return;const hadCloudData=(getMeals(dayType).find(x=>x.id===m.id)?.items?.length||0)>0;if(hadCloudData)saveMealToCloud(m.id,dayType,[],dayType!==todayRealDayType());});if(aiResult._cacheEntries)savePendingFoodCache(aiResult._cacheEntries,aiProvider);const el=document.getElementById("meal-saved-pc");if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}}} style={{...redBtn,marginTop:0,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",width:"100%"}}>💾 Lưu bữa ăn hôm nay</button>
 <button onClick={()=>setShowSaveTpl(!showSaveTpl)} style={{...redBtn,marginTop:8,background:C.card,color:C.t2,border:`1.5px solid ${C.border}`,width:"100%"}}>📅 Gán vào lịch tuần</button>
 {showSaveTpl&&(()=>{
 const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
