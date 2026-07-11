@@ -413,6 +413,24 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames) {
       });
     }
 
+    // BỮA CHÍNH KHÔNG ĐƯỢC PHÉP "custom" — user cần thấy TÊN MÓN CỤ THỂ
+    // ("Bún thịt"), không phải danh sách nguyên liệu rời ("rau muống, thịt
+    // heo, bún"). AI đôi khi tự quyết "custom" dù pattern vẫn còn (thường
+    // vì danh sách pattern hợp lệ bị Variety lọc ngắn lại, AI thấy ít lựa
+    // chọn rồi tự ý ghép thay vì chọn) — ép chọn NGẪU NHIÊN 1 pattern còn
+    // hợp lệ (đã lọc dị ứng + Variety) thay vì chấp nhận AI tự ghép.
+    // getAvailablePatterns LUÔN trả về ít nhất 1 pattern cho bữa chính TRỪ
+    // KHI dị ứng loại sạch (an toàn dị ứng > có tên món cụ thể) — lúc đó
+    // mới thật sự rơi xuống items AI đã ghép ở trên.
+    if (MAIN_MEALS.has(mealId) && !usedPattern) {
+      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames);
+      if (available.length > 0) {
+        const picked = available[Math.floor(Math.random() * available.length)];
+        slots = { ...picked.slots };
+        usedPattern = picked.name;
+      }
+    }
+
     const foods = finalizeMealSlots(mealId, slots, errors);
     meals.push({ meal_id: mealId, foods, pattern: usedPattern });
   }
