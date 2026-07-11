@@ -66,21 +66,23 @@ return HEALTH_KEYWORDS.some(k => normalized.includes(k));
 const MENU_GEN_KEYWORDS = [
 "gợi ý thực đơn", "lên thực đơn", "tạo thực đơn", "tạo menu", "lên menu",
 "cho tôi thực đơn", "cho tôi menu", "cho mình thực đơn", "cho mình menu",
-"thực đơn hôm nay", "menu hôm nay", "thực đơn ngày mai", "menu ngày mai",
-"ăn gì hôm nay", "hôm nay ăn gì", "nên ăn gì", "ăn gì bây giờ",
+"thực đơn ngày mai", "menu ngày mai",
 "chưa biết ăn gì", "không biết ăn gì", "chưa biết nấu gì", "không biết nấu gì",
 "lên món", "tự động tạo thực đơn", "ai tạo thực đơn",
 ];
+// Từ loại trừ — nếu có thì KHÔNG phải ý định tạo mới
+const MENU_EXCLUDE = ["đánh giá","xem lại","kiểm tra","review","nhận xét","phân tích","chấm điểm"];
 function containsMenuGenIntent(text) {
 const n = (text || "").toLowerCase();
+// Loại trừ trước — "đánh giá thực đơn" không phải tạo mới
+if (MENU_EXCLUDE.some(w => n.includes(w))) return false;
 // Exact keyword match
 if (MENU_GEN_KEYWORDS.some(k => n.includes(k))) return true;
-// Flexible: "thực đơn" hoặc "menu" + bất kỳ từ hành động nào
-// (bắt "bạn tạo giúp tôi thực đơn đi", "giúp mình lên menu", v.v.)
+// Flexible: "thực đơn"/"menu" + từ hành động tạo mới
 const hasMenu = n.includes("thực đơn") || n.includes("menu");
 const hasAction = ["tạo","lên","gợi ý","gợi","cho","giúp","làm","soạn","đề xuất","xây","viết","nghĩ"].some(w => n.includes(w));
 if (hasMenu && hasAction) return true;
-// "ăn gì" / "nấu gì" luôn là intent
+// "ăn gì" / "nấu gì"
 if (n.includes("ăn gì") || n.includes("nấu gì")) return true;
 return false;
 }
