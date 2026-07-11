@@ -18,7 +18,7 @@ import { ALL_MEALS } from "./mealConstants";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
-  generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds,
+  generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentPatternNames,
 } from "./lib/aiMenuService";
 
 const STYLES = [
@@ -32,7 +32,7 @@ const STYLES = [
 const CAT_LABEL = { protein: "Đạm", carb: "Tinh bột", veg: "Rau", fruit: "Hoa quả", fat: "Béo", other: "Khác" };
 const CAT_COLOR = { protein: C.protein, carb: C.carb, veg: C.fiber, fruit: C.gold, fat: C.fat, other: C.t3 };
 
-export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, onApply, onClose, onFallbackToLibrary }) {
+export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, getMealHistory, onApply, onClose, onFallbackToLibrary }) {
   const mob = useIsMobile();
   const [step, setStep] = useState("prefs"); // prefs | loading | preview | error
   const [style, setStyle] = useState("vn");
@@ -58,7 +58,19 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
     const quota = await checkAndConsumeAiQuota(user?.id, "macro");
     if (!quota.allowed) { setError(quota.message); setStep("error"); return; }
 
-    const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs: { style, avoid }, appSettings });
+    // Variety — không gợi ý lại pattern đã ăn trong 3 ngày gần nhất. Không
+    // có getMealHistory (chưa truyền prop, hoặc user mới chưa đăng nhập)
+    // thì bỏ qua bước này, generate vẫn chạy bình thường như trước.
+    let avoidPatternNames;
+    if (getMealHistory) {
+      try {
+        const start = new Date(); start.setDate(start.getDate() - 3);
+        const history = await getMealHistory(start.toISOString().slice(0, 10), new Date().toISOString().slice(0, 10));
+        avoidPatternNames = getRecentPatternNames(history, 3);
+      } catch (e) { console.error("Variety history fetch error:", e); }
+    }
+
+    const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs: { style, avoid }, avoidPatternNames, appSettings });
     if (res.ok) { setTemplate(res.template); setNote(res.note); setStep("preview"); }
     else { setError(res.error); setStep("error"); }
   };

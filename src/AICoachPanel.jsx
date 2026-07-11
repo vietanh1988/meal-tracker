@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
-import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds } from "./lib/aiMenuService";
+import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames } from "./lib/aiMenuService";
 import { ALL_MEALS } from "./mealConstants";
 
 // Render markdown NHẸ cho câu trả lời AI — chỉ những gì AI thật sự hay dùng:
@@ -74,7 +74,7 @@ const normalized = (text || "").toLowerCase();
 return MENU_GEN_KEYWORDS.some(k => normalized.includes(k));
 }
 
-export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate}){
+export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory}){
 const [messages,setMessages]=useState([]);
 const [showAIMenuFromChat,setShowAIMenuFromChat]=useState(false);
 const [input,setInput]=useState("");
@@ -349,7 +349,17 @@ const dt=todayData?.dayType==="rest"?"rest":"train";
 // nhân > appSettings.meal_config admin > mặc định cứng) — trước đây
 // hardcode DEFAULT_MEAL_CONFIG khiến AI sinh cả bữa user đã tắt.
 const mealIds=resolveMealIds(dt,profile,appSettings);
-const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},appSettings});
+// Variety — không gợi ý lại pattern đã ăn trong 3 ngày gần nhất, cùng cơ
+// chế với AIMenuGenerator (form đầy đủ), không viết logic riêng lần 2.
+let avoidPatternNames;
+if(getMealHistory){
+try{
+const start=new Date();start.setDate(start.getDate()-3);
+const history=await getMealHistory(start.toISOString().slice(0,10),new Date().toISOString().slice(0,10));
+avoidPatternNames=getRecentPatternNames(history,3);
+}catch(e){console.error("Variety history fetch error:",e);}
+}
+const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},avoidPatternNames,appSettings});
 if(res.ok){
 const total=sumTemplate(res.template);
 const summary=`Đây là thực đơn AI ghép cho ${dt==="train"?"ngày tập":"ngày nghỉ"} hôm nay — ${total.cal} kcal (P${total.p}/C${total.c}/F${total.f}), khớp đúng mục tiêu của bạn:`;
@@ -536,7 +546,7 @@ Tái dùng nguyên component đã test (39 test case), không viết logic
 sinh thực đơn riêng cho chat — tránh 2 nơi cùng làm 1 việc rồi lệch nhau. */}
 {showAIMenuFromChat&&<div onClick={()=>setShowAIMenuFromChat(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:1000,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
 <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":480,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:"#fff",borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
-<AIMenuGenerator macro={macro} profile={profile} user={{id:userId}} appSettings={appSettings} initialDayType={todayData?.dayType==="rest"?"rest":"train"} onApply={handleApplyAIMenuChat} onClose={()=>setShowAIMenuFromChat(false)}/>
+<AIMenuGenerator macro={macro} profile={profile} user={{id:userId}} appSettings={appSettings} initialDayType={todayData?.dayType==="rest"?"rest":"train"} getMealHistory={getMealHistory} onApply={handleApplyAIMenuChat} onClose={()=>setShowAIMenuFromChat(false)}/>
 </div>
 </div>}
 </div>;
