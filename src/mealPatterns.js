@@ -25,7 +25,7 @@
 export const MEAL_PATTERNS = {
   sang: [
     { name: "Bánh mì trứng",
-      slots: { protein: "trứng gà luộc", carb: "bánh mì", veg: "cà chua" },
+      slots: { protein: "trứng gà luộc", carb: "bánh mì", veg: "dưa leo" }, // dưa leo — bánh mì thật đi kèm dưa leo/đồ chua, KHÔNG phải cà chua sống để riêng (bug thật đã bị user bắt gặp)
       popularity: 5, prepMinutes: 5, buyable: true,
       reasonTemplate: { cut: "Nhẹ bụng, chuẩn bị dưới 10 phút", bulk: "Nhanh gọn, đủ năng lượng buổi sáng" } },
 
@@ -53,7 +53,7 @@ export const MEAL_PATTERNS = {
       reasonTemplate: { cut: "Cháo nhiều nước, no bụng mà ít calo" } },
 
     { name: "Cháo gà",
-      slots: { protein: "ức gà", carb: "cháo", veg: "hành tây" },
+      slots: { protein: "ức gà", carb: "cháo", veg: "cà rốt" }, // hành tây sống không ai ăn kèm cháo — DB thiếu hành lá/rau răm (garnish chuẩn), cà rốt hầm chung cháo là lựa chọn hợp lý nhất hiện có
       popularity: 4, prepMinutes: 20, buyable: true },
 
     { name: "Miến gà",
