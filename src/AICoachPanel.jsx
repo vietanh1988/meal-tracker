@@ -346,9 +346,7 @@ return;
 // trước, KHÔNG sinh thẳng với default. Kết quả từ popup hiện lại trong chat.
 const aiMenuAccess=getAIMenuAccess(profile,appSettings);
 if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
-setMessages(prev=>[...prev,{role:"user",content:text}]);
 setInput("");
-saveMsg("user",text);
 setShowAIMenuFromChat(true);
 return;
 }
