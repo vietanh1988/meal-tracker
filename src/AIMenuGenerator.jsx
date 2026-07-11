@@ -19,7 +19,7 @@ import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
   generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentPatternNames,
-  swapPatternInTemplate, getPatternReason, getAvailablePatterns, buildExclusionKeys, formatFoodPortion, capitalizeFirst, saveAIMenu,
+  getPatternReason, getAvailablePatterns, buildExclusionKeys, formatFoodPortion, capitalizeFirst, saveAIMenu,
 } from "./lib/aiMenuService";
 import { MEAL_TIMES } from "./mealPatterns";
 
@@ -44,7 +44,6 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
   const [swapping, setSwapping] = useState(null); // {mealId, food} — đổi 1 nguyên liệu
-  const [swappingPattern, setSwappingPattern] = useState(null); // mealId — đổi cả món
   // Variety tầng SESSION — nhớ pattern đã hiện trong phiên này (kể cả khi
   // chưa bấm "Dùng thực đơn này" để lưu thật) — bấm "🔄 Tạo lại" nhiều
   // lần liên tiếp sẽ KHÔNG ra lại y hệt lần trước.
@@ -89,12 +88,6 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
     if (!swapping) return;
     setTemplate(t => swapFoodInTemplate(t, swapping.mealId, swapping.food, newKey, macro, dayType));
     setSwapping(null);
-  };
-
-  const doSwapPattern = (newPatternName) => {
-    if (!swappingPattern) return;
-    setTemplate(t => swapPatternInTemplate(t, swappingPattern, newPatternName, macro, dayType));
-    setSwappingPattern(null);
   };
 
   // ---------- STEP 1: HỎI NHANH ----------
@@ -203,12 +196,6 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
                 <span style={{ fontSize: fs.base, fontWeight: fw.bold, color: "#3B82F6" }}>{mealCal} kcal</span>
-                {m.pattern && (
-                  <button onClick={() => setSwappingPattern(m.meal_id)}
-                    style={{ border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius.lg, padding: "3px 8px", cursor: "pointer", fontSize: fs.sm, fontFamily: "inherit", color: C.t2, fontWeight: fw.bold, whiteSpace: "nowrap" }}>
-                    🔄 Đổi cả món
-                  </button>
-                )}
               </div>
             </div>
             {visibleItems.map(it => {
@@ -254,29 +241,6 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
           </div>
         </div>
       )}
-      {/* PICKER ĐỔI CẢ MÓN — liệt kê pattern khác cho đúng bữa này, loại pattern
-          hiện tại + món dị ứng đã khai, tính lại gram ngay, không tốn lượt AI */}
-      {swappingPattern && (() => {
-        const exclude = buildExclusionKeys(avoid);
-        const candidates = getAvailablePatterns(swappingPattern, exclude)
-          .filter(p => p.name !== template.meals.find(m => m.meal_id === swappingPattern)?.pattern);
-        return (
-          <div onClick={() => setSwappingPattern(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 100, display: "flex", alignItems: mob ? "flex-end" : "center", justifyContent: "center", padding: mob ? 0 : 20 }}>
-            <div onClick={e => e.stopPropagation()} style={{ background: C.card, borderRadius: mob ? "16px 16px 0 0" : radius["2xl"], width: "100%", maxWidth: 420, maxHeight: mob ? "60vh" : "70vh", overflowY: "auto", padding: 18 }}>
-              <div style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: C.t1, marginBottom: sp["2xl"] }}>
-                Đổi sang món khác
-              </div>
-              {candidates.length === 0 && <div style={{ fontSize: fs.base, color: C.t3, padding: "10px 0" }}>Không còn món nào khác phù hợp (đã loại theo dị ứng bạn khai).</div>}
-              {candidates.map(p => (
-                <button key={p.name} onClick={() => doSwapPattern(p.name)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", padding: "10px 12px", border: "none", borderBottom: `1px solid ${C.border}`, background: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                  <span style={{ fontSize: fs.lg, color: C.t1, fontWeight: fw.semibold }}>{p.name}</span>
-                  {p.prepMinutes && <span style={{ fontSize: fs.sm, color: C.t3 }}>~{p.prepMinutes} phút</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 }
