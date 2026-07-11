@@ -521,6 +521,43 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
   return stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType)));
 }
 
+/**
+ * Đổi CẢ MÓN (không phải 1 nguyên liệu lẻ) — hành vi user làm HẰNG NGÀY:
+ * "không thích Phở bò, đổi sang Cơm gà" chứ không phải "tạo lại toàn bộ".
+ * Thay slots của bữa đó bằng pattern mới, tính lại gram bằng engine —
+ * KHÔNG tốn lượt AI, tái dùng finalizeMealSlots (validate+filler) và
+ * attachPatternNames (giữ tên pattern các bữa KHÁC không bị đổi).
+ */
+export function swapPatternInTemplate(template, mealId, newPatternName, macro, dayType) {
+  const newPattern = (MEAL_PATTERNS[mealId] || []).find(p => p.name === newPatternName);
+  if (!newPattern) return template;
+
+  const errors = [];
+  const foods = finalizeMealSlots(mealId, newPattern.slots, errors); // tự thêm filler béo nếu cần, giống lúc generate
+
+  const meals = (template.meals || []).map(m =>
+    m.meal_id === mealId ? { meal_id: mealId, items: foods.map(f => foodToItem(f.key)) } : m
+  );
+  // Giữ nguyên tên pattern của các bữa KHÔNG bị đổi — chỉ đổi tên bữa vừa swap.
+  const patternMap = (template.meals || []).map(m => ({
+    meal_id: m.meal_id, pattern: m.meal_id === mealId ? newPattern.name : (m.pattern || null),
+  }));
+
+  const recomputed = stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType)));
+  return attachPatternNames(recomputed, { meals: patternMap });
+}
+
+/**
+ * Lý do gợi ý TĨNH ("vì sao gợi ý món này") — đọc từ reasonTemplate đã
+ * soạn sẵn trong mealPatterns.js, KHÔNG tốn thêm lệnh AI, chỉ chọn câu
+ * khớp goalType hiện tại. Không có reasonTemplate hoặc không khớp goal
+ * nào → trả null, UI tự ẩn phần lý do (không phải lỗi).
+ */
+export function getPatternReason(mealId, patternName, goalType) {
+  const pattern = (MEAL_PATTERNS[mealId] || []).find(p => p.name === patternName);
+  return pattern?.reasonTemplate?.[goalType] || null;
+}
+
 export function getSwapCandidates(foodKey, currentMealFoods = []) {
   const cat = getFoodDisplayCategory(foodKey);
   const inMeal = new Set(currentMealFoods);
