@@ -10,27 +10,27 @@ import { ALL_MEALS } from "./mealConstants";
 // viện markdown (nặng, thừa), không dangerouslySetInnerHTML (an toàn XSS vì
 // chỉ build React elements từ text). Dòng thường giữ nguyên.
 function boldParts(text, keyPrefix) {
-  const parts = text.split(/\*\*([^*]+)\*\*/g);
-  return parts.map((p, i) => i % 2 === 1 ? <b key={keyPrefix + "-" + i}>{p}</b> : p);
+const parts = text.split(/\*\*([^*]+)\*\*/g);
+return parts.map((p, i) => i % 2 === 1 ? <b key={keyPrefix + "-" + i}>{p}</b> : p);
 }
 function renderMarkdownLite(content) {
-  const lines = String(content || "").split("\n");
-  return lines.map((line, li) => {
-    const bullet = line.match(/^\s*[-•*]\s+(.*)$/);
-    const numbered = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
-    if (bullet) {
-      return <div key={li} style={{display:"flex",gap:6,paddingLeft:2,margin:"2px 0"}}>
-        <span style={{flexShrink:0}}>•</span><span>{boldParts(bullet[1], li)}</span>
-      </div>;
-    }
-    if (numbered) {
-      return <div key={li} style={{display:"flex",gap:6,paddingLeft:2,margin:"2px 0"}}>
-        <span style={{flexShrink:0,fontWeight:600}}>{numbered[1]}.</span><span>{boldParts(numbered[2], li)}</span>
-      </div>;
-    }
-    if (line.trim() === "") return <div key={li} style={{height:6}}/>;
-    return <div key={li}>{boldParts(line, li)}</div>;
-  });
+const lines = String(content || "").split("\n");
+return lines.map((line, li) => {
+const bullet = line.match(/^\s*[-•*]\s+(.*)$/);
+const numbered = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
+if (bullet) {
+return <div key={li} style={{display:"flex",gap:6,paddingLeft:2,margin:"2px 0"}}>
+<span style={{flexShrink:0}}>•</span><span>{boldParts(bullet[1], li)}</span>
+</div>;
+}
+if (numbered) {
+return <div key={li} style={{display:"flex",gap:6,paddingLeft:2,margin:"2px 0"}}>
+<span style={{flexShrink:0,fontWeight:600}}>{numbered[1]}.</span><span>{boldParts(numbered[2], li)}</span>
+</div>;
+}
+if (line.trim() === "") return <div key={li} style={{height:6}}/>;
+return <div key={li}>{boldParts(line, li)}</div>;
+});
 }
 
 const REFUSAL_MESSAGE = "Mình không thể đưa ra tư vấn dành riêng cho các bệnh lý như tiểu đường, tăng huyết áp, bệnh thận... Nếu bạn đang điều trị hoặc có bệnh nền, hãy tham khảo bác sĩ hoặc chuyên gia dinh dưỡng nhé. Mình vẫn có thể hỗ trợ theo dõi calo, protein, carb, fat và xây dựng thói quen ăn uống lành mạnh! 💪";
@@ -39,21 +39,21 @@ const REFUSAL_MESSAGE = "Mình không thể đưa ra tư vấn dành riêng cho 
 // Đây là lưới an toàn đầu tiên; systemPrompt gửi cho AI vẫn giữ nguyên làm lưới thứ 2
 // cho các cách hỏi không trúng đúng từ khoá (viết tắt, nói vòng...).
 const HEALTH_KEYWORDS = [
-  "tiểu đường","đái tháo đường","cao huyết áp","huyết áp cao","tăng huyết áp",
-  "bệnh gan","gan nhiễm mỡ","viêm gan","xơ gan",
-  "bệnh thận","suy thận","sỏi thận",
-  "ung thư","khối u",
-  "bệnh tim","tim mạch","nhồi máu cơ tim","suy tim",
-  "gout","gút","axit uric",
-  "cholesterol","mỡ máu","máu nhiễm mỡ",
-  "mang thai","có bầu","cho con bú","thai kỳ",
-  "trẻ em","trẻ sơ sinh","trẻ nhỏ",
-  "chấn thương","phục hồi chấn thương","đau khớp","thoát vị đĩa đệm",
+"tiểu đường","đái tháo đường","cao huyết áp","huyết áp cao","tăng huyết áp",
+"bệnh gan","gan nhiễm mỡ","viêm gan","xơ gan",
+"bệnh thận","suy thận","sỏi thận",
+"ung thư","khối u",
+"bệnh tim","tim mạch","nhồi máu cơ tim","suy tim",
+"gout","gút","axit uric",
+"cholesterol","mỡ máu","máu nhiễm mỡ",
+"mang thai","có bầu","cho con bú","thai kỳ",
+"trẻ em","trẻ sơ sinh","trẻ nhỏ",
+"chấn thương","phục hồi chấn thương","đau khớp","thoát vị đĩa đệm",
 ];
 
 function containsHealthKeyword(text) {
-  const normalized = (text || "").toLowerCase();
-  return HEALTH_KEYWORDS.some(k => normalized.includes(k));
+const normalized = (text || "").toLowerCase();
+return HEALTH_KEYWORDS.some(k => normalized.includes(k));
 }
 
 // LỚP GỢI Ý MỞ CÔNG CỤ TẠO THỰC ĐƠN — cùng kiểu quét từ khoá TRƯỚC khi gọi
@@ -62,165 +62,165 @@ function containsHealthKeyword(text) {
 // thay vì để Claude tự bịa gợi ý bằng văn xuôi tự do — vốn không đảm bảo
 // khớp target và không có nút "thêm vào thực đơn hôm nay".
 const MENU_GEN_KEYWORDS = [
-  "gợi ý thực đơn", "lên thực đơn", "tạo thực đơn", "tạo menu", "lên menu",
-  "cho tôi thực đơn", "cho tôi menu", "cho mình thực đơn", "cho mình menu",
-  "thực đơn hôm nay", "menu hôm nay", "thực đơn ngày mai", "menu ngày mai",
-  "ăn gì hôm nay", "hôm nay ăn gì", "nên ăn gì", "ăn gì bây giờ",
-  "chưa biết ăn gì", "không biết ăn gì", "chưa biết nấu gì", "không biết nấu gì",
-  "lên món", "tự động tạo thực đơn", "ai tạo thực đơn",
+"gợi ý thực đơn", "lên thực đơn", "tạo thực đơn", "tạo menu", "lên menu",
+"cho tôi thực đơn", "cho tôi menu", "cho mình thực đơn", "cho mình menu",
+"thực đơn hôm nay", "menu hôm nay", "thực đơn ngày mai", "menu ngày mai",
+"ăn gì hôm nay", "hôm nay ăn gì", "nên ăn gì", "ăn gì bây giờ",
+"chưa biết ăn gì", "không biết ăn gì", "chưa biết nấu gì", "không biết nấu gì",
+"lên món", "tự động tạo thực đơn", "ai tạo thực đơn",
 ];
 function containsMenuGenIntent(text) {
-  const normalized = (text || "").toLowerCase();
-  return MENU_GEN_KEYWORDS.some(k => normalized.includes(k));
+const normalized = (text || "").toLowerCase();
+return MENU_GEN_KEYWORDS.some(k => normalized.includes(k));
 }
 
 export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate}){
-  const [messages,setMessages]=useState([]);
-  const [showAIMenuFromChat,setShowAIMenuFromChat]=useState(false);
-  const [input,setInput]=useState("");
-  const [loading,setLoading]=useState(false);
-  // Mobile: bàn phím ảo đã chiếm nửa màn hình, disclaimer 2 dòng ăn thêm chỗ
-  // hiển thị chat — ẩn tạm khi user đang focus ô nhập, rời ô thì hiện lại.
-  const [inputFocused,setInputFocused]=useState(false);
-  // Nhập bằng giọng nói (Web Speech API — có sẵn trong trình duyệt, miễn phí,
-  // không tốn quota AI). Chỉ hiện nút mic khi trình duyệt hỗ trợ; text nhận
-  // dạng đổ vào ô input để user XEM LẠI rồi tự bấm gửi, không tự gửi.
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const [listening,setListening]=useState(false);
-  const recRef=useRef(null);
-  const toggleMic=()=>{
-    if(!SR)return;
-    if(listening){try{recRef.current&&recRef.current.stop();}catch(e){}setListening(false);return;}
-    const rec=new SR();
-    rec.lang="vi-VN";rec.interimResults=true;rec.continuous=false;
-    const base=input; // giữ phần đã gõ sẵn, nói thêm thì nối vào sau
-    rec.onresult=(ev)=>{let t="";for(let i=0;i<ev.results.length;i++){t+=ev.results[i][0].transcript;}setInput((base?base+" ":"")+t);};
-    rec.onerror=()=>setListening(false);
-    rec.onend=()=>setListening(false);
-    recRef.current=rec;setListening(true);
-    try{rec.start();}catch(e){setListening(false);}
-  };
-  useEffect(()=>()=>{try{recRef.current&&recRef.current.stop();}catch(e){}},[]);
-  const [historyLoaded,setHistoryLoaded]=useState(false);
+const [messages,setMessages]=useState([]);
+const [showAIMenuFromChat,setShowAIMenuFromChat]=useState(false);
+const [input,setInput]=useState("");
+const [loading,setLoading]=useState(false);
+// Mobile: bàn phím ảo đã chiếm nửa màn hình, disclaimer 2 dòng ăn thêm chỗ
+// hiển thị chat — ẩn tạm khi user đang focus ô nhập, rời ô thì hiện lại.
+const [inputFocused,setInputFocused]=useState(false);
+// Nhập bằng giọng nói (Web Speech API — có sẵn trong trình duyệt, miễn phí,
+// không tốn quota AI). Chỉ hiện nút mic khi trình duyệt hỗ trợ; text nhận
+// dạng đổ vào ô input để user XEM LẠI rồi tự bấm gửi, không tự gửi.
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const [listening,setListening]=useState(false);
+const recRef=useRef(null);
+const toggleMic=()=>{
+if(!SR)return;
+if(listening){try{recRef.current&&recRef.current.stop();}catch(e){}setListening(false);return;}
+const rec=new SR();
+rec.lang="vi-VN";rec.interimResults=true;rec.continuous=false;
+const base=input; // giữ phần đã gõ sẵn, nói thêm thì nối vào sau
+rec.onresult=(ev)=>{let t="";for(let i=0;i<ev.results.length;i++){t+=ev.results[i][0].transcript;}setInput((base?base+" ":"")+t);};
+rec.onerror=()=>setListening(false);
+rec.onend=()=>setListening(false);
+recRef.current=rec;setListening(true);
+try{rec.start();}catch(e){setListening(false);}
+};
+useEffect(()=>()=>{try{recRef.current&&recRef.current.stop();}catch(e){}},[]);
+const [historyLoaded,setHistoryLoaded]=useState(false);
 
-  // Load chat history from Supabase (fallback localStorage)
-  useEffect(()=>{
-    if(!userId){setHistoryLoaded(true);return;}
-    (async()=>{
-      try{
-        // Auto delete messages older than 30 days
-        const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);
-        await supabase.from("ai_chat_history").delete().eq("user_id",userId).lt("created_at",cutoff.toISOString());
+// Load chat history from Supabase (fallback localStorage)
+useEffect(()=>{
+if(!userId){setHistoryLoaded(true);return;}
+(async()=>{
+try{
+// Auto delete messages older than 30 days
+const cutoff=new Date();cutoff.setDate(cutoff.getDate()-30);
+await supabase.from("ai_chat_history").delete().eq("user_id",userId).lt("created_at",cutoff.toISOString());
 
-        // Load last 100 messages
-        const {data,error}=await supabase.from("ai_chat_history").select("id,role,content,created_at").eq("user_id",userId).order("created_at",{ascending:true}).limit(100);
-        if(error){console.warn("AI Chat load error:",error);throw error;}
-        if(data&&data.length>0){
-          setMessages(data.map(d=>({role:d.role,content:d.content})));
-          localStorage.setItem("aicoach_backup",JSON.stringify(data.map(d=>({role:d.role,content:d.content}))));
-        }
-        setHistoryLoaded(true);
-      }catch(e){
-        // Fallback: load from localStorage
-        try{const backup=JSON.parse(localStorage.getItem("aicoach_backup")||"[]");if(backup.length>0)setMessages(backup);}catch(e2){}
-        setHistoryLoaded(true);
-      }
-    })();
-  },[userId]);
+// Load last 100 messages
+const {data,error}=await supabase.from("ai_chat_history").select("id,role,content,created_at").eq("user_id",userId).order("created_at",{ascending:true}).limit(100);
+if(error){console.warn("AI Chat load error:",error);throw error;}
+if(data&&data.length>0){
+setMessages(data.map(d=>({role:d.role,content:d.content})));
+localStorage.setItem("aicoach_backup",JSON.stringify(data.map(d=>({role:d.role,content:d.content}))));
+}
+setHistoryLoaded(true);
+}catch(e){
+// Fallback: load from localStorage
+try{const backup=JSON.parse(localStorage.getItem("aicoach_backup")||"[]");if(backup.length>0)setMessages(backup);}catch(e2){}
+setHistoryLoaded(true);
+}
+})();
+},[userId]);
 
-  // Save message to Supabase + localStorage backup
-  const saveMsg=async(role,content)=>{
-    // Always backup to localStorage
-    const updated=[...messages,{role,content}].slice(-20);
-    localStorage.setItem("aicoach_backup",JSON.stringify(updated));
-    if(!userId)return;
-    try{
-      const {error}=await supabase.from("ai_chat_history").insert({user_id:userId,role,content});
-      if(error)console.warn("AI Chat save error:",error);
-    }catch(e){console.warn("AI Chat save failed:",e);}
-  };
-  const chatRef=useRef(null);
-  const aiModel=appSettings?.ai_model||"claude-sonnet-5";
+// Save message to Supabase + localStorage backup
+const saveMsg=async(role,content)=>{
+// Always backup to localStorage
+const updated=[...messages,{role,content}].slice(-20);
+localStorage.setItem("aicoach_backup",JSON.stringify(updated));
+if(!userId)return;
+try{
+const {error}=await supabase.from("ai_chat_history").insert({user_id:userId,role,content});
+if(error)console.warn("AI Chat save error:",error);
+}catch(e){console.warn("AI Chat save failed:",e);}
+};
+const chatRef=useRef(null);
+const aiModel=appSettings?.ai_model||"claude-sonnet-5";
 
-  // Context engine
-  const buildContext=()=>{
-    const p=profile||{};const m=macro||{};const t=todayData||{};
-    const wl=weightLog||[];const curW=wl.length>0?wl[wl.length-1].kg:p.kg;
-    const startW=wl.length>0?wl[0].kg:p.kg;
-    const trend=wl.length>=2?((wl[wl.length-1].kg-wl[0].kg)/wl.length).toFixed(1):"chưa đủ data";
-    const age=p.birthYear?new Date().getFullYear()-p.birthYear:"?";
-    const freqLabel={occasional:"Thỉnh thoảng (1-2 buổi/tuần)",regular:"Đều đặn (3-4 buổi/tuần)",frequent:"Rất thường xuyên (5-6 buổi/tuần)",daily:"Gần như mỗi ngày"}[p.frequency||"regular"]||"Đều đặn";
-    const exLabel={gym:"Gym",gym_cardio:"Gym + Cardio",cardio:"Cardio",none:"Không tập"}[p.exerciseType||"gym"]||"Gym";
-    const goalLabel={bulk:"Tăng cơ (+250 cal)",cut:"Giảm mỡ (-350 cal)",maintain:"Duy trì"}[p.goalType||"bulk"]||"Tăng cơ";
-    const dietLabel=p.goalType==="cut"?{balanced:"Cân bằng",low_carb:"Low-carb (≤100g carb)",keto:"Keto (≤50g carb)"}[p.dietStrategy||"balanced"]||"Cân bằng":"Cân bằng (mặc định)";
-    const calMode=(p.calorieMode||"standard")==="asian"?"Việt Nam (-10%)":"Quốc tế";
-    const isRest=t.dayType==="rest";
-    const todayTarget=isRest?(m.calRest||m.calTarget):m.calTarget;
-    const todayCarb=isRest?(m.carbRest||m.carb):m.carb;
-    const eaten=t.cal||0;
-    const deficit=todayTarget-eaten;
-    const calStatus=eaten===0?"Chưa ăn gì":deficit>0?`Còn thiếu ${deficit} cal`:deficit<0?`Dư ${Math.abs(deficit)} cal`:"Vừa đủ calo";
-    // Today's meal details
-    let mealDetails="";
-    if(getMeals){
-      try{
-        // ids thật trong meal_logs/mealConstants là sang/phu_sang/trua/... —
-        // fallback cũ (breakfast/lunch/...) không khớp id nào, làm filter ra
-        // RỖNG mỗi khi chưa có meal_config → AI mất sạch chi tiết bữa ăn.
-        const defaultIds=["sang","phu_sang","trua","phu_chieu","pre","post","toi"];
-        const mc=(()=>{try{return appSettings?.meal_config?JSON.parse(appSettings.meal_config):{train:defaultIds,rest:defaultIds};}catch(e){return{train:defaultIds,rest:defaultIds};}})();
-        const ids=mc[isRest?"rest":"train"]||mc.train;
-        const ms=getMeals(isRest?"rest":"train").filter(m2=>ids.includes(m2.id));
-        const mealNames={sang:"Bữa sáng",phu_sang:"Phụ sáng",trua:"Bữa trưa",phu_chieu:"Phụ chiều",pre:"Pre-workout",post:"Post-workout",toi:"Bữa tối",breakfast:"Bữa sáng",lunch:"Bữa trưa",snack:"Bữa phụ",dinner:"Bữa tối"};
-        const details=ms.filter(m2=>m2.items.length>0).map(m2=>{
-          const cal=Math.round(m2.items.reduce((s,i)=>s+(i.cal||0),0));
-          // items trong meal_logs lưu key `food` (không phải `name`) — đọc sai
-          // key từng làm AI nhận "undefined (xxx cal)" cho mọi món.
-          const items=m2.items.map(i=>`${i.food||i.name} (${Math.round(i.cal||0)} cal)`).join(", ");
-          return `  ${mealNames[m2.id]||m2.id}: ${items} → ${cal} cal`;
-        });
-        if(details.length>0) mealDetails="\n- Chi tiết:\n"+details.join("\n");
-      }catch(e){}
-    }
+// Context engine
+const buildContext=()=>{
+const p=profile||{};const m=macro||{};const t=todayData||{};
+const wl=weightLog||[];const curW=wl.length>0?wl[wl.length-1].kg:p.kg;
+const startW=wl.length>0?wl[0].kg:p.kg;
+const trend=wl.length>=2?((wl[wl.length-1].kg-wl[0].kg)/wl.length).toFixed(1):"chưa đủ data";
+const age=p.birthYear?new Date().getFullYear()-p.birthYear:"?";
+const freqLabel={occasional:"Thỉnh thoảng (1-2 buổi/tuần)",regular:"Đều đặn (3-4 buổi/tuần)",frequent:"Rất thường xuyên (5-6 buổi/tuần)",daily:"Gần như mỗi ngày"}[p.frequency||"regular"]||"Đều đặn";
+const exLabel={gym:"Gym",gym_cardio:"Gym + Cardio",cardio:"Cardio",none:"Không tập"}[p.exerciseType||"gym"]||"Gym";
+const goalLabel={bulk:"Tăng cơ (+250 cal)",cut:"Giảm mỡ (-350 cal)",maintain:"Duy trì"}[p.goalType||"bulk"]||"Tăng cơ";
+const dietLabel=p.goalType==="cut"?{balanced:"Cân bằng",low_carb:"Low-carb (≤100g carb)",keto:"Keto (≤50g carb)"}[p.dietStrategy||"balanced"]||"Cân bằng":"Cân bằng (mặc định)";
+const calMode=(p.calorieMode||"standard")==="asian"?"Việt Nam (-10%)":"Quốc tế";
+const isRest=t.dayType==="rest";
+const todayTarget=isRest?(m.calRest||m.calTarget):m.calTarget;
+const todayCarb=isRest?(m.carbRest||m.carb):m.carb;
+const eaten=t.cal||0;
+const deficit=todayTarget-eaten;
+const calStatus=eaten===0?"Chưa ăn gì":deficit>0?`Còn thiếu ${deficit} cal`:deficit<0?`Dư ${Math.abs(deficit)} cal`:"Vừa đủ calo";
+// Today's meal details
+let mealDetails="";
+if(getMeals){
+try{
+// ids thật trong meal_logs/mealConstants là sang/phu_sang/trua/... —
+// fallback cũ (breakfast/lunch/...) không khớp id nào, làm filter ra
+// RỖNG mỗi khi chưa có meal_config → AI mất sạch chi tiết bữa ăn.
+const defaultIds=["sang","phu_sang","trua","phu_chieu","pre","post","toi"];
+const mc=(()=>{try{return appSettings?.meal_config?JSON.parse(appSettings.meal_config):{train:defaultIds,rest:defaultIds};}catch(e){return{train:defaultIds,rest:defaultIds};}})();
+const ids=mc[isRest?"rest":"train"]||mc.train;
+const ms=getMeals(isRest?"rest":"train").filter(m2=>ids.includes(m2.id));
+const mealNames={sang:"Bữa sáng",phu_sang:"Phụ sáng",trua:"Bữa trưa",phu_chieu:"Phụ chiều",pre:"Pre-workout",post:"Post-workout",toi:"Bữa tối",breakfast:"Bữa sáng",lunch:"Bữa trưa",snack:"Bữa phụ",dinner:"Bữa tối"};
+const details=ms.filter(m2=>m2.items.length>0).map(m2=>{
+const cal=Math.round(m2.items.reduce((s,i)=>s+(i.cal||0),0));
+// items trong meal_logs lưu key `food` (không phải `name`) — đọc sai
+// key từng làm AI nhận "undefined (xxx cal)" cho mọi món.
+const items=m2.items.map(i=>`${i.food||i.name} (${Math.round(i.cal||0)} cal)`).join(", ");
+return ` ${mealNames[m2.id]||m2.id}: ${items} → ${cal} cal`;
+});
+if(details.length>0) mealDetails="\n- Chi tiết:\n"+details.join("\n");
+}catch(e){}
+}
 
-    // Tomorrow planned meals
-    // Tính ngày mai TRƯỚC khi dùng — bản cũ dùng tmrIdx ở đây nhưng khai báo
-    // `const` ở SAU (TDZ) → ReferenceError bị catch nuốt im lặng, cả block
-    // chết 100%. Kèm 3 lỗi nữa: day key sai (t2/t3... trong khi DB lưu
-    // thu_2/thu_3...), tpl.meals là ARRAY nhưng xử lý như object map, và
-    // đọc i.name trong khi meal_logs lưu key `food`.
-    const tmr=new Date();tmr.setDate(tmr.getDate()+1);
-    const tmrIdx=tmr.getDay();
-    const tmrMapped=tmrIdx===0?6:tmrIdx-1;
-    let tmrPlan="";
-    if(getWeeklyTemplate){
-      try{
-        const days=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
-        const tmrKey=days[tmrIdx];
-        const tpl=getWeeklyTemplate(tmrKey);
-        if(tpl&&tpl.meals){
-          const mealNames={sang:"Sáng",phu_sang:"Phụ sáng",trua:"Trưa",phu_chieu:"Phụ chiều",pre:"Pre",post:"Post",toi:"Tối"};
-          const planned=(tpl.meals||[]).filter(mv=>mv&&mv.items&&mv.items.length>0).map(mv=>{
-            const cal=Math.round(mv.items.reduce((s,i)=>s+(i.cal||0),0));
-            return `  ${mealNames[mv.meal_id]||mv.meal_name||mv.meal_id}: ${mv.items.map(i=>i.food||i.name).join(", ")} → ${cal} cal`;
-          });
-          if(planned.length>0) tmrPlan="\n- Đã lên kế hoạch:\n"+planned.join("\n");
-        }
-      }catch(e){}
-    }
-    const tmrGd=(()=>{try{const s=appSettings?.gymDays;return s?JSON.parse(s):(p.gymDays||[0,2,4,5]);}catch(e){return p.gymDays||[0,2,4,5];}})();
-    const tmrIsRest=!tmrGd.includes(tmrMapped);
-    const tmrTarget=tmrIsRest?(m.calRest||m.calTarget):m.calTarget;
-    const tmrCarb=tmrIsRest?(m.carbRest||m.carb):m.carb;
-    const tmrDayLabel=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"][tmrIdx];
-    // Food database from cache
-    let foodDB="";
-    if(foodCache&&Object.keys(foodCache).length>0){
-      const foods=Object.entries(foodCache).slice(0,30).map(([name,v])=>`  ${name}: ${v.cal}cal/${v.gram||100}${v.unit||"g"} (P:${v.p}g C:${v.c}g F:${v.f}g)`);
-      foodDB=`\n\nKHO MÓN ĂN CỦA USER (${Object.keys(foodCache).length} món, ưu tiên gợi ý từ đây):\n${foods.join("\n")}`;
-    }
+// Tomorrow planned meals
+// Tính ngày mai TRƯỚC khi dùng — bản cũ dùng tmrIdx ở đây nhưng khai báo
+// `const` ở SAU (TDZ) → ReferenceError bị catch nuốt im lặng, cả block
+// chết 100%. Kèm 3 lỗi nữa: day key sai (t2/t3... trong khi DB lưu
+// thu_2/thu_3...), tpl.meals là ARRAY nhưng xử lý như object map, và
+// đọc i.name trong khi meal_logs lưu key `food`.
+const tmr=new Date();tmr.setDate(tmr.getDate()+1);
+const tmrIdx=tmr.getDay();
+const tmrMapped=tmrIdx===0?6:tmrIdx-1;
+let tmrPlan="";
+if(getWeeklyTemplate){
+try{
+const days=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
+const tmrKey=days[tmrIdx];
+const tpl=getWeeklyTemplate(tmrKey);
+if(tpl&&tpl.meals){
+const mealNames={sang:"Sáng",phu_sang:"Phụ sáng",trua:"Trưa",phu_chieu:"Phụ chiều",pre:"Pre",post:"Post",toi:"Tối"};
+const planned=(tpl.meals||[]).filter(mv=>mv&&mv.items&&mv.items.length>0).map(mv=>{
+const cal=Math.round(mv.items.reduce((s,i)=>s+(i.cal||0),0));
+return ` ${mealNames[mv.meal_id]||mv.meal_name||mv.meal_id}: ${mv.items.map(i=>i.food||i.name).join(", ")} → ${cal} cal`;
+});
+if(planned.length>0) tmrPlan="\n- Đã lên kế hoạch:\n"+planned.join("\n");
+}
+}catch(e){}
+}
+const tmrGd=(()=>{try{const s=appSettings?.gymDays;return s?JSON.parse(s):(p.gymDays||[0,2,4,5]);}catch(e){return p.gymDays||[0,2,4,5];}})();
+const tmrIsRest=!tmrGd.includes(tmrMapped);
+const tmrTarget=tmrIsRest?(m.calRest||m.calTarget):m.calTarget;
+const tmrCarb=tmrIsRest?(m.carbRest||m.carb):m.carb;
+const tmrDayLabel=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"][tmrIdx];
+// Food database from cache
+let foodDB="";
+if(foodCache&&Object.keys(foodCache).length>0){
+const foods=Object.entries(foodCache).slice(0,30).map(([name,v])=>` ${name}: ${v.cal}cal/${v.gram||100}${v.unit||"g"} (P:${v.p}g C:${v.c}g F:${v.f}g)`);
+foodDB=`\n\nKHO MÓN ĂN CỦA USER (${Object.keys(foodCache).length} món, ưu tiên gợi ý từ đây):\n${foods.join("\n")}`;
+}
 
-    return `THÔNG TIN USER:
+return `THÔNG TIN USER:
 - Giới tính: ${p.gender==="male"?"Nam":"Nữ"}, ${age} tuổi, ${p.kg}kg, ${p.cm}cm
 - BMI: ${m.bmi} | Tập: ${exLabel}, ${freqLabel}
 - Mục tiêu: ${goalLabel} | Chế độ ăn: ${dietLabel} | Calo: ${calMode}
@@ -258,9 +258,9 @@ QUY TẮC GỢI Ý MÓN ĂN (BẮT BUỘC):
 3. Chỉ gợi ý món NGOÀI kho khi: user hỏi món cụ thể không có trong kho, hoặc kho không đủ đa dạng
 4. Khi gợi ý món ngoài kho, ghi rõ: "Món này chưa có trong kho, calo ước tính ~[X] cal"
 5. KHÔNG BAO GIỜ tự bịa số calo — nếu không chắc, nói "mình không chắc calo chính xác, anh nên kiểm tra lại"`;
-  };
+};
 
-  const systemPrompt=`Bạn là Fipilot AI — trợ lý dinh dưỡng & tập luyện tích hợp trong app Fipilot.
+const systemPrompt=`Bạn là Fipilot AI — trợ lý dinh dưỡng & tập luyện tích hợp trong app Fipilot.
 
 NGUYÊN TẮC QUAN TRỌNG NHẤT:
 1. BẮT BUỘC đọc toàn bộ CONTEXT bên dưới trước khi trả lời
@@ -307,236 +307,237 @@ QUY TẮC ĐÁNH GIÁ MACRO (BẮT BUỘC):
 CONTEXT:
 ${buildContext()}`;
 
-  const sendMessage=async(text)=>{
-    if(!text.trim()||loading)return;
+const sendMessage=async(text)=>{
+if(!text.trim()||loading)return;
 
-    // LỚP CHẶN CỨNG — quét từ khoá TRƯỚC khi gọi AI, không tốn quota, không phụ thuộc AI phán đoán
-    if(containsHealthKeyword(text)){
-      setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:REFUSAL_MESSAGE}]);
-      setInput("");
-      saveMsg("user",text);
-      saveMsg("assistant",REFUSAL_MESSAGE);
-      return;
-    }
+// LỚP CHẶN CỨNG — quét từ khoá TRƯỚC khi gọi AI, không tốn quota, không phụ thuộc AI phán đoán
+if(containsHealthKeyword(text)){
+setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:REFUSAL_MESSAGE}]);
+setInput("");
+saveMsg("user",text);
+saveMsg("assistant",REFUSAL_MESSAGE);
+return;
+}
 
-    // Chỉ chặn khi user THỰC SỰ dùng được (trial/premium + cờ ai_menu_gen
-    // bật) — free tier hoặc cờ tắt thì rơi xuống chat bình thường như cũ,
-    // không bị gián đoạn bởi 1 tính năng họ chưa có quyền dùng.
-    //
-    // Sinh THẲNG trong chat (không bắt user rời sang form riêng) — dùng
-    // prefs mặc định (phong cách "cơm nhà VN", không dị ứng) vì chat không
-    // có chỗ hỏi 2 câu như AIMenuGenerator. Ai muốn đổi khẩu vị/dị ứng thì
-    // bấm "✏️ Tuỳ chỉnh" trên card kết quả để mở form đầy đủ (vẫn dùng
-    // handleApplyAIMenuChat chung, không viết logic áp dụng riêng lần 2).
-    const aiMenuAccess=getAIMenuAccess(profile,appSettings);
-    if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
-      const userMsg={role:"user",content:text};
-      const loadingId=Date.now();
-      const loadingMsg={id:loadingId,role:"assistant",content:"Đang ghép thực đơn khớp đúng calo/macro của bạn...",loading:true};
-      setMessages(prev=>[...prev,userMsg,loadingMsg]);
-      setInput("");
-      saveMsg("user",text);
-      (async()=>{
-        const quota=await checkAndConsumeAiQuota(userId,"macro");
-        if(!quota.allowed){
-          const failMsg={role:"assistant",content:quota.message};
-          setMessages(prev=>prev.map(mm=>mm.id===loadingId?failMsg:mm));
-          saveMsg("assistant",quota.message);
-          return;
-        }
-        const dt=todayData?.dayType==="rest"?"rest":"train";
-        // Đúng danh sách bữa THẬT user đang thấy (ưu tiên profile.mealConfig cá
-        // nhân > appSettings.meal_config admin > mặc định cứng) — trước đây
-        // hardcode DEFAULT_MEAL_CONFIG khiến AI sinh cả bữa user đã tắt.
-        const mealIds=resolveMealIds(dt,profile,appSettings);
-        const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},appSettings});
-        if(res.ok){
-          const total=sumTemplate(res.template);
-          const summary=`Đây là thực đơn AI ghép cho ${dt==="train"?"ngày tập":"ngày nghỉ"} hôm nay — ${total.cal} kcal (P${total.p}/C${total.c}/F${total.f}), khớp đúng mục tiêu của bạn:`;
-          const menuMsg={role:"assistant",content:summary,action:"menu_preview",template:res.template};
-          setMessages(prev=>prev.map(mm=>mm.id===loadingId?menuMsg:mm));
-          saveMsg("assistant",summary);
-        }else{
-          const errMsg={role:"assistant",content:`Mình chưa ghép được thực đơn tự động lúc này. Bạn mở công cụ đầy đủ để thử lại hoặc tự chỉnh nhé!`,action:"open_ai_menu"};
-          setMessages(prev=>prev.map(mm=>mm.id===loadingId?errMsg:mm));
-          saveMsg("assistant",errMsg.content);
-        }
-      })();
-      return;
-    }
+// Chỉ chặn khi user THỰC SỰ dùng được (trial/premium + cờ ai_menu_gen
+// bật) — free tier hoặc cờ tắt thì rơi xuống chat bình thường như cũ,
+// không bị gián đoạn bởi 1 tính năng họ chưa có quyền dùng.
+//
+// Sinh THẲNG trong chat (không bắt user rời sang form riêng) — dùng
+// prefs mặc định (phong cách "cơm nhà VN", không dị ứng) vì chat không
+// có chỗ hỏi 2 câu như AIMenuGenerator. Ai muốn đổi khẩu vị/dị ứng thì
+// bấm "✏️ Tuỳ chỉnh" trên card kết quả để mở form đầy đủ (vẫn dùng
+// handleApplyAIMenuChat chung, không viết logic áp dụng riêng lần 2).
+const aiMenuAccess=getAIMenuAccess(profile,appSettings);
+if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
+const userMsg={role:"user",content:text};
+const loadingId=Date.now();
+const loadingMsg={id:loadingId,role:"assistant",content:"Đang ghép thực đơn khớp đúng calo/macro của bạn...",loading:true};
+setMessages(prev=>[...prev,userMsg,loadingMsg]);
+setInput("");
+saveMsg("user",text);
+(async()=>{
+const quota=await checkAndConsumeAiQuota(userId,"macro");
+if(!quota.allowed){
+const failMsg={role:"assistant",content:quota.message};
+setMessages(prev=>prev.map(mm=>mm.id===loadingId?failMsg:mm));
+saveMsg("assistant",quota.message);
+return;
+}
+const dt=todayData?.dayType==="rest"?"rest":"train";
+// Đúng danh sách bữa THẬT user đang thấy (ưu tiên profile.mealConfig cá
+// nhân > appSettings.meal_config admin > mặc định cứng) — trước đây
+// hardcode DEFAULT_MEAL_CONFIG khiến AI sinh cả bữa user đã tắt.
+const mealIds=resolveMealIds(dt,profile,appSettings);
+const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},appSettings});
+if(res.ok){
+const total=sumTemplate(res.template);
+const summary=`Đây là thực đơn AI ghép cho ${dt==="train"?"ngày tập":"ngày nghỉ"} hôm nay — ${total.cal} kcal (P${total.p}/C${total.c}/F${total.f}), khớp đúng mục tiêu của bạn:`;
+const menuMsg={role:"assistant",content:summary,action:"menu_preview",template:res.template};
+setMessages(prev=>prev.map(mm=>mm.id===loadingId?menuMsg:mm));
+saveMsg("assistant",summary);
+}else{
+const errMsg={role:"assistant",content:`Mình chưa ghép được thực đơn tự động lúc này. Bạn mở công cụ đầy đủ để thử lại hoặc tự chỉnh nhé!`,action:"open_ai_menu"};
+setMessages(prev=>prev.map(mm=>mm.id===loadingId?errMsg:mm));
+saveMsg("assistant",errMsg.content);
+}
+})();
+return;
+}
 
-    if(!isAdmin){
-      const quota=await checkAndConsumeAiQuota(userId,"chat");
-      if(!quota.allowed){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:quota.message}]);return;}
-    }
-    const newMsgs=[...messages,{role:"user",content:text}];
-    setMessages(newMsgs);setInput("");setLoading(true);
-    saveMsg("user",text);
-    try{
-      // Gửi messages array role chuẩn + system riêng thay vì nhồi cả hội thoại
-      // thành 1 chuỗi "User:.../Fipilot AI:..." — kiểu transcript cũ làm model
-      // sinh artifact: tự thấy "đến lượt User" là ngắt sớm, bỏ lửng giữa câu.
-      const chatMessages=newMsgs.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
-      const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500})
-      });
-      const data=await res.json();
-      if(data.error)throw new Error(data.error);
-      const reply=(data.text||"").trim()||"Xin lỗi, mình không thể trả lời lúc này.";
-      const cleanReply=reply.replace(/^Fipilot AI:\s*/,"");
-      setMessages(prev=>[...prev,{role:"assistant",content:cleanReply}]);
-      saveMsg("assistant",cleanReply);
-    }catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
-    setLoading(false);
-  };
+if(!isAdmin){
+const quota=await checkAndConsumeAiQuota(userId,"chat");
+if(!quota.allowed){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:quota.message}]);return;}
+}
+const newMsgs=[...messages,{role:"user",content:text}];
+setMessages(newMsgs);setInput("");setLoading(true);
+saveMsg("user",text);
+try{
+// Gửi messages array role chuẩn + system riêng thay vì nhồi cả hội thoại
+// thành 1 chuỗi "User:.../Fipilot AI:..." — kiểu transcript cũ làm model
+// sinh artifact: tự thấy "đến lượt User" là ngắt sớm, bỏ lửng giữa câu.
+const chatMessages=newMsgs.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
+const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
+method:"POST",headers:{"Content-Type":"application/json"},
+body:JSON.stringify({provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500})
+});
+const data=await res.json();
+if(data.error)throw new Error(data.error);
+const reply=(data.text||"").trim()||"Xin lỗi, mình không thể trả lời lúc này.";
+const cleanReply=reply.replace(/^Fipilot AI:\s*/,"");
+setMessages(prev=>[...prev,{role:"assistant",content:cleanReply}]);
+saveMsg("assistant",cleanReply);
+}catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
+setLoading(false);
+};
 
-  useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[messages,loading]);
+useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scrollHeight;},[messages,loading]);
 
-  // Áp dụng thực đơn AI vừa tạo (mở từ nút trong chat) — lưu thành Lịch
-  // tuần hôm nay + apply vào meal_logs/daily_logs, rồi báo lại NGAY trong
-  // chính cuộc chat để user không phải rời panel mà vẫn biết đã xong.
-  const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
-  const handleApplyAIMenuChat=async(tpl)=>{
-    try{
-      if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
-      if(applyTemplate)await applyTemplate(tpl);
-      const doneMsg={role:"assistant",content:"✅ Đã thêm thực đơn vào hôm nay! Quay lại tab Tổng quan để xem chi tiết nhé."};
-      setMessages(prev=>[...prev,doneMsg]);
-      saveMsg("assistant",doneMsg.content);
-    }catch(e){console.error("Apply AI menu (chat) error:",e);}
-    setShowAIMenuFromChat(false);
-  };
+// Áp dụng thực đơn AI vừa tạo (mở từ nút trong chat) — lưu thành Lịch
+// tuần hôm nay + apply vào meal_logs/daily_logs, rồi báo lại NGAY trong
+// chính cuộc chat để user không phải rời panel mà vẫn biết đã xong.
+const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
+const handleApplyAIMenuChat=async(tpl)=>{
+try{
+if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
+if(applyTemplate)await applyTemplate(tpl);
+const doneMsg={role:"assistant",content:"✅ Đã thêm thực đơn vào hôm nay! Quay lại tab Tổng quan để xem chi tiết nhé."};
+setMessages(prev=>[...prev,doneMsg]);
+saveMsg("assistant",doneMsg.content);
+}catch(e){console.error("Apply AI menu (chat) error:",e);}
+setShowAIMenuFromChat(false);
+};
 
-  // Welcome message — only if no history from Supabase
-  useEffect(()=>{
-    if(!historyLoaded)return;
-    if(messages.length===0){
-      const t=todayData||{};const m=macro||{};
-      const isRest=t.dayType==="rest";
-      const target=isRest?(m.calRest||m.calTarget):m.calTarget;
-      const deficit=target-(t.cal||0);
-      const welcome=(t.cal||0)>0
-        ?(deficit>0?`Chào anh! Hôm nay (${isRest?"nghỉ":"tập"}) còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào anh! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
-        :"Chào anh! Mình là Fipilot AI. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪";
-      setMessages([{role:"assistant",content:welcome}]);
-      saveMsg("assistant",welcome);
-    }
-  },[historyLoaded]);
+// Welcome message — only if no history from Supabase
+useEffect(()=>{
+if(!historyLoaded)return;
+if(messages.length===0){
+const t=todayData||{};const m=macro||{};
+const isRest=t.dayType==="rest";
+const target=isRest?(m.calRest||m.calTarget):m.calTarget;
+const deficit=target-(t.cal||0);
+const welcome=(t.cal||0)>0
+?(deficit>0?`Chào anh! Hôm nay (${isRest?"nghỉ":"tập"}) còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào anh! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
+:"Chào anh! Mình là Fipilot AI. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪";
+setMessages([{role:"assistant",content:welcome}]);
+saveMsg("assistant",welcome);
+}
+},[historyLoaded]);
 
-  const quickPrompts=(()=>{
-    const t=todayData||{};const m=macro||{};
-    const isR=t.dayType==="rest";
-    const tgt=isR?(m.calRest||m.calTarget):m.calTarget;
-    if((t.cal||0)===0)return["Gợi ý thực đơn hôm nay","Bữa sáng nên ăn gì?","Bài tập gym hôm nay","TDEE là gì?"];
-    if((t.cal||0)<tgt*0.95)return["Hôm nay ăn gì thêm?","Gợi ý bữa phụ","Đánh giá thực đơn","Bài tập hôm nay"];
-    return["Đánh giá thực đơn","Ngày mai ăn gì?","Lịch tập tuần này","Làm sao giảm mỡ nhanh?"];
-  })();
+const quickPrompts=(()=>{
+const t=todayData||{};const m=macro||{};
+const isR=t.dayType==="rest";
+const tgt=isR?(m.calRest||m.calTarget):m.calTarget;
+if((t.cal||0)===0)return["Gợi ý thực đơn hôm nay","Bữa sáng nên ăn gì?","Bài tập gym hôm nay","TDEE là gì?"];
+if((t.cal||0)<tgt*0.95)return["Hôm nay ăn gì thêm?","Gợi ý bữa phụ","Đánh giá thực đơn","Bài tập hôm nay"];
+return["Đánh giá thực đơn","Ngày mai ăn gì?","Lịch tập tuần này","Làm sao giảm mỡ nhanh?"];
+})();
 
-  const C2={primary:"#007AFF",bg:"#F0F2F5",surface:"#fff",border:"#E2E8F0",t1:"#1a1a2e",t2:"#64748B",t3:"#94A3B8"};
+const C2={primary:"#007AFF",bg:"#F0F2F5",surface:"#fff",border:"#E2E8F0",t1:"#1a1a2e",t2:"#64748B",t3:"#94A3B8"};
 
-  // Panel style
-  const panelStyle=mob?{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:999,background:C2.surface,display:"flex",flexDirection:"column",paddingTop:"env(safe-area-inset-top, 0px)"}
-    :{position:"fixed",top:0,right:0,width:400,bottom:0,zIndex:999,background:C2.surface,boxShadow:"-4px 0 20px rgba(0,0,0,0.1)",display:"flex",flexDirection:"column"};
+// Panel style
+const panelStyle=mob?{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:999,background:C2.surface,display:"flex",flexDirection:"column",paddingTop:"env(safe-area-inset-top, 0px)"}
+:{position:"fixed",top:0,right:0,width:400,bottom:0,zIndex:999,background:C2.surface,boxShadow:"-4px 0 20px rgba(0,0,0,0.1)",display:"flex",flexDirection:"column"};
 
-  return <div>
-    <style>{`@keyframes aicoachSpin{to{transform:rotate(360deg);}}`}</style>
-    {/* Backdrop (PC only) */}
-    {!mob&&<div onClick={onClose} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.2)",zIndex:998}}/>}
+return <div>
+<style>{`@keyframes aicoachSpin{to{transform:rotate(360deg);}}`}</style>
+{/* Backdrop (PC only) */}
+{!mob&&<div onClick={onClose} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.2)",zIndex:998}}/>}
 
-    <div style={panelStyle}>
-      {/* Header */}
-      <div style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`,display:"flex",alignItems:"center",gap:10}}>
-        {mob&&<span onClick={onClose} style={{fontSize:20,color:C2.primary,cursor:"pointer"}}>←</span>}
-        <span style={{fontSize:18}}>✨</span>
-        <span style={{fontSize:17,fontWeight:800,color:C2.t1,flex:1}}>Fipilot AI <span style={{fontSize:12,fontWeight:500,color:C2.t3}}>(Dinh dưỡng & tập luyện)</span></span>
-        <span style={{fontSize:11,color:"#22C55E",display:"flex",alignItems:"center",gap:4}}>● Online</span>
-        {!mob&&<span onClick={onClose} style={{fontSize:18,color:C2.t3,cursor:"pointer"}}>✕</span>}
-      </div>
+<div style={panelStyle}>
+{/* Header */}
+<div style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`,display:"flex",alignItems:"center",gap:10}}>
+{mob&&<span onClick={onClose} style={{fontSize:20,color:C2.primary,cursor:"pointer"}}>←</span>}
+<span style={{fontSize:18}}>✨</span>
+<span style={{fontSize:17,fontWeight:800,color:C2.t1,flex:1}}>Fipilot AI <span style={{fontSize:12,fontWeight:500,color:C2.t3}}>(Dinh dưỡng & tập luyện)</span></span>
+<span style={{fontSize:11,color:"#22C55E",display:"flex",alignItems:"center",gap:4}}>● Online</span>
+{!mob&&<span onClick={onClose} style={{fontSize:18,color:C2.t3,cursor:"pointer"}}>✕</span>}
+</div>
 
-      {/* Context bar */}
-      <div style={{padding:"8px 18px",background:"rgba(0,122,255,0.04)",display:"flex",flexWrap:"wrap",gap:4,alignItems:"center",borderBottom:`1px solid ${C2.border}`}}>
-        <span style={{fontSize:11,color:C2.primary,fontWeight:600}}>🧠</span>
-        {[`${profile?.kg||65}kg`,{gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Nghỉ"}[profile?.exerciseType||"gym"],
-          {bulk:"💪 Tăng cơ",cut:"🔥 Giảm mỡ",maintain:"⚖️ Duy trì"}[profile?.goalType||"bulk"],
-          ...(profile?.goalType==="cut"&&(profile?.dietStrategy||"balanced")!=="balanced"?[{low_carb:"🥗 Low-carb",keto:"🥗 Keto"}[profile?.dietStrategy]]:[]),
-          todayData?.dayType==="train"?"🏋️ Ngày tập":"😴 Ngày nghỉ",
-          ...((profile?.calorieMode||"standard")==="asian"?["🇻🇳 VN"]:[]),
-          `${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;const eaten=todayData?.cal||0;const deficit=tgt-eaten;return eaten===0?"chưa ăn":deficit>0?`-${deficit}`:deficit<0?`+${Math.abs(deficit)}`:"✓";})()} cal`
-        ].map((tag,i)=>{const isCalTag=tag.endsWith("cal");const calColor=isCalTag?(tag.includes("chưa")?"#F59E0B":tag.startsWith("-")?"#EF4444":tag.startsWith("+")?"#EF4444":"#22C55E"):"";return <span key={i} style={{fontSize:10,padding:"2px 6px",background:isCalTag&&calColor?`${calColor}15`:C2.surface,borderRadius:4,color:isCalTag&&calColor?calColor:C2.t2,fontWeight:600}}>{tag}</span>})}
-      </div>
+{/* Context bar */}
+<div style={{padding:"8px 18px",background:"rgba(0,122,255,0.04)",display:"flex",flexWrap:"wrap",gap:4,alignItems:"center",borderBottom:`1px solid ${C2.border}`}}>
+<span style={{fontSize:11,color:C2.primary,fontWeight:600}}>🧠</span>
+{[`${profile?.kg||65}kg`,{gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Nghỉ"}[profile?.exerciseType||"gym"],
+{bulk:"💪 Tăng cơ",cut:"🔥 Giảm mỡ",maintain:"⚖️ Duy trì"}[profile?.goalType||"bulk"],
+...(profile?.goalType==="cut"&&(profile?.dietStrategy||"balanced")!=="balanced"?[{low_carb:"🥗 Low-carb",keto:"🥗 Keto"}[profile?.dietStrategy]]:[]),
+todayData?.dayType==="train"?"🏋️ Ngày tập":"😴 Ngày nghỉ",
+...((profile?.calorieMode||"standard")==="asian"?["🇻🇳 VN"]:[]),
+`${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;const eaten=todayData?.cal||0;const deficit=tgt-eaten;return eaten===0?"chưa ăn":deficit>0?`-${deficit}`:deficit<0?`+${Math.abs(deficit)}`:"✓";})()} cal`
+].map((tag,i)=>{const isCalTag=tag.endsWith("cal");const calColor=isCalTag?(tag.includes("chưa")?"#F59E0B":tag.startsWith("-")?"#EF4444":tag.startsWith("+")?"#EF4444":"#22C55E"):"";return <span key={i} style={{fontSize:10,padding:"2px 6px",background:isCalTag&&calColor?`${calColor}15`:C2.surface,borderRadius:4,color:isCalTag&&calColor?calColor:C2.t2,fontWeight:600}}>{tag}</span>})}
+</div>
 
-      {/* Chat body */}
-      {/* Formatter nhẹ cho câu trả lời AI: AI hay trả markdown (**đậm**, gạch
-          đầu dòng, danh sách số) — trước đây hiện thô "**2374 cal**" rất xấu.
-          Tự parse ~95% trường hợp thật, không cần thêm thư viện markdown,
-          không dùng dangerouslySetInnerHTML (build React elements, an toàn). */}
-      <div ref={chatRef} style={{flex:1,overflowY:"auto",padding:"12px 18px",display:"flex",flexDirection:"column",gap:10}}>
-        {messages.map((m,i)=><div key={i} style={{
-          maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,
-          ...(m.role==="user"
-            ?{alignSelf:"flex-end",background:C2.primary,color:"#fff",borderBottomRightRadius:4,whiteSpace:"pre-wrap"}
-            :{alignSelf:"flex-start",background:C2.bg,color:C2.t1,borderTopLeftRadius:4})
-        }}>
-          {m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>}
-          {m.loading
-            ?<span style={{display:"flex",alignItems:"center",gap:8,color:C2.t3}}>
-                <span style={{width:13,height:13,border:"2px solid #ddd",borderTopColor:C2.primary,borderRadius:"50%",display:"inline-block",animation:"aicoachSpin 0.6s linear infinite"}}/>
-                {m.content}
-              </span>
-            :(m.role==="assistant"?renderMarkdownLite(m.content):m.content)}
-          {m.action==="open_ai_menu"&&<button onClick={()=>setShowAIMenuFromChat(true)} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Mở AI tạo thực đơn</button>}
-          {m.action==="menu_preview"&&m.template&&<div style={{marginTop:8,background:"#fff",borderRadius:10,border:`1px solid ${C2.border}`,padding:10}}>
-            {(m.template.meals||[]).map(mm=>{
-              const meta=ALL_MEALS.find(x=>x.id===mm.meal_id);
-              const cal=Math.round((mm.items||[]).reduce((s,it)=>s+(it.cal||0),0));
-              const foods=(mm.items||[]).map(it=>it.food).join(", ");
-              return <div key={mm.meal_id} style={{padding:"5px 0",borderBottom:`1px solid ${C2.border}`}}>
-                <div style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:700,color:C2.t1}}>
-                  <span>{meta?.icon} {meta?.name||mm.meal_id}</span><span style={{color:C2.t3,fontWeight:600}}>{cal} kcal</span>
-                </div>
-                <div style={{fontSize:11,color:C2.t2,marginTop:1}}>{foods}</div>
-              </div>;
-            })}
-            <div style={{display:"flex",gap:6,marginTop:10}}>
-              <button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1,padding:"9px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>➕ Thêm vào thực đơn hôm nay</button>
-              <button onClick={()=>setShowAIMenuFromChat(true)} style={{padding:"9px 12px",borderRadius:8,border:`1.5px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
-            </div>
-          </div>}
-        </div>)}
-        {loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
-          <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>
-          Đang suy nghĩ...
-        </div>}
-      </div>
+{/* Chat body */}
+{/* Formatter nhẹ cho câu trả lời AI: AI hay trả markdown (**đậm**, gạch
+đầu dòng, danh sách số) — trước đây hiện thô "**2374 cal**" rất xấu.
+Tự parse ~95% trường hợp thật, không cần thêm thư viện markdown,
+không dùng dangerouslySetInnerHTML (build React elements, an toàn). */}
+<div ref={chatRef} style={{flex:1,overflowY:"auto",padding:"12px 18px",display:"flex",flexDirection:"column",gap:10}}>
+{messages.map((m,i)=><div key={i} style={{
+maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,
+...(m.role==="user"
+?{alignSelf:"flex-end",background:C2.primary,color:"#fff",borderBottomRightRadius:4,whiteSpace:"pre-wrap"}
+:{alignSelf:"flex-start",background:C2.bg,color:C2.t1,borderTopLeftRadius:4})
+}}>
+{m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>}
+{m.loading
+?<span style={{display:"flex",alignItems:"center",gap:8,color:C2.t3}}>
+<span style={{width:13,height:13,border:"2px solid #ddd",borderTopColor:C2.primary,borderRadius:"50%",display:"inline-block",animation:"aicoachSpin 0.6s linear infinite"}}/>
+{m.content}
+</span>
+:(m.role==="assistant"?renderMarkdownLite(m.content):m.content)}
+{m.action==="open_ai_menu"&&<button onClick={()=>setShowAIMenuFromChat(true)} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Mở AI tạo thực đơn</button>}
+{m.action==="menu_preview"&&m.template&&<div style={{marginTop:8,background:"#fff",borderRadius:10,border:`1px solid ${C2.border}`,padding:10}}>
+{(m.template.meals||[]).map(mm=>{
+const meta=ALL_MEALS.find(x=>x.id===mm.meal_id);
+const cal=Math.round((mm.items||[]).reduce((s,it)=>s+(it.cal||0),0));
+const foods=(mm.items||[]).map(it=>it.food).join(", ");
+return <div key={mm.meal_id} style={{padding:"5px 0",borderBottom:`1px solid ${C2.border}`}}>
+<div style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:700,color:C2.t1}}>
+<span>{meta?.icon} {mm.pattern||meta?.name||mm.meal_id}</span><span style={{color:C2.t3,fontWeight:600}}>{cal} kcal</span>
+</div>
+{mm.pattern&&<div style={{fontSize:10,color:C2.t3,marginTop:1}}>{meta?.name||mm.meal_id}</div>}
+<div style={{fontSize:11,color:C2.t2,marginTop:1}}>{foods}</div>
+</div>;
+})}
+<div style={{display:"flex",gap:6,marginTop:10}}>
+<button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1,padding:"9px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>➕ Thêm vào thực đơn hôm nay</button>
+<button onClick={()=>setShowAIMenuFromChat(true)} style={{padding:"9px 12px",borderRadius:8,border:`1.5px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
+</div>
+</div>}
+</div>)}
+{loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
+<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>
+Đang suy nghĩ...
+</div>}
+</div>
 
-      {/* Quick prompts */}
-      <div style={{display:"flex",gap:6,padding:"8px 18px",overflowX:"auto",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
-        {quickPrompts.map((q,i)=><div key={i} onClick={()=>sendMessage(q)} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${C2.border}`,fontSize:11,fontWeight:600,color:C2.primary,background:"rgba(0,122,255,0.04)",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{q}</div>)}
-      </div>
+{/* Quick prompts */}
+<div style={{display:"flex",gap:6,padding:"8px 18px",overflowX:"auto",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
+{quickPrompts.map((q,i)=><div key={i} onClick={()=>sendMessage(q)} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${C2.border}`,fontSize:11,fontWeight:600,color:C2.primary,background:"rgba(0,122,255,0.04)",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{q}</div>)}
+</div>
 
-      {/* Input */}
-      <div style={{display:"flex",gap:8,padding:"12px 18px",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
-        <input value={input} onChange={e=>setInput(e.target.value)} onFocus={()=>setInputFocused(true)} onBlur={()=>setInputFocused(false)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(listening)toggleMic();sendMessage(input);}}}
-          placeholder={listening?"Đang nghe... nói đi bạn 🎤":"Hỏi Fipilot AI..."} style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${listening?"#EF4444":C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
-        {SR&&<button onClick={toggleMic} title={listening?"Dừng ghi âm":"Nói để nhập"} style={{width:40,height:40,borderRadius:10,border:`1.5px solid ${listening?"#EF4444":C2.border}`,background:listening?"#FEE2E2":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}>
-          {listening
-            ?<svg width="16" height="16" viewBox="0 0 24 24" fill="#B91C1C" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-            :<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C2.t2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg>}
-        </button>}
-        <button onClick={()=>{if(listening)toggleMic();sendMessage(input);}} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:C2.primary,color:"#fff",border:"none",cursor:loading?"default":"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",opacity:loading||!input.trim()?0.5:1}}>↑</button>
-      </div>
+{/* Input */}
+<div style={{display:"flex",gap:8,padding:"12px 18px",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
+<input value={input} onChange={e=>setInput(e.target.value)} onFocus={()=>setInputFocused(true)} onBlur={()=>setInputFocused(false)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(listening)toggleMic();sendMessage(input);}}}
+placeholder={listening?"Đang nghe... nói đi bạn 🎤":"Hỏi Fipilot AI..."} style={{flex:1,padding:"10px 14px",borderRadius:10,border:`1.5px solid ${listening?"#EF4444":C2.border}`,fontSize:14,outline:"none",fontFamily:"inherit"}}/>
+{SR&&<button onClick={toggleMic} title={listening?"Dừng ghi âm":"Nói để nhập"} style={{width:40,height:40,borderRadius:10,border:`1.5px solid ${listening?"#EF4444":C2.border}`,background:listening?"#FEE2E2":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,padding:0}}>
+{listening
+?<svg width="16" height="16" viewBox="0 0 24 24" fill="#B91C1C" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C2.t2} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/></svg>}
+</button>}
+<button onClick={()=>{if(listening)toggleMic();sendMessage(input);}} disabled={loading||!input.trim()} style={{width:40,height:40,borderRadius:10,background:C2.primary,color:"#fff",border:"none",cursor:loading?"default":"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",opacity:loading||!input.trim()?0.5:1}}>↑</button>
+</div>
 
-      {/* Disclaimer — mobile ẩn khi đang gõ để nhường chỗ cho khung chat */}
-      {!(mob&&inputFocused)&&<div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI chỉ tư vấn dinh dưỡng & cách tập luyện. Không thay thế bác sĩ hoặc HLV cá nhân.</div>}
-    </div>
-    {/* AI Menu Generator — mở từ nút trong chat, đè lên trên toàn bộ panel.
-        Tái dùng nguyên component đã test (39 test case), không viết logic
-        sinh thực đơn riêng cho chat — tránh 2 nơi cùng làm 1 việc rồi lệch nhau. */}
-    {showAIMenuFromChat&&<div onClick={()=>setShowAIMenuFromChat(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:1000,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":480,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:"#fff",borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
-        <AIMenuGenerator macro={macro} profile={profile} user={{id:userId}} appSettings={appSettings} initialDayType={todayData?.dayType==="rest"?"rest":"train"} onApply={handleApplyAIMenuChat} onClose={()=>setShowAIMenuFromChat(false)}/>
-      </div>
-    </div>}
-  </div>;
+{/* Disclaimer — mobile ẩn khi đang gõ để nhường chỗ cho khung chat */}
+{!(mob&&inputFocused)&&<div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI chỉ tư vấn dinh dưỡng & cách tập luyện. Không thay thế bác sĩ hoặc HLV cá nhân.</div>}
+</div>
+{/* AI Menu Generator — mở từ nút trong chat, đè lên trên toàn bộ panel.
+Tái dùng nguyên component đã test (39 test case), không viết logic
+sinh thực đơn riêng cho chat — tránh 2 nơi cùng làm 1 việc rồi lệch nhau. */}
+{showAIMenuFromChat&&<div onClick={()=>setShowAIMenuFromChat(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:1000,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
+<div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":480,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:"#fff",borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
+<AIMenuGenerator macro={macro} profile={profile} user={{id:userId}} appSettings={appSettings} initialDayType={todayData?.dayType==="rest"?"rest":"train"} onApply={handleApplyAIMenuChat} onClose={()=>setShowAIMenuFromChat(false)}/>
+</div>
+</div>}
+</div>;
 }

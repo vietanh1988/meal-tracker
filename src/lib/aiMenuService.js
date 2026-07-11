@@ -397,6 +397,19 @@ function stripZeroGramItems(template) {
   };
 }
 
+// mealEngine.js tính lại gram nên KHÔNG biết/giữ tên pattern đã dùng —
+// nối lại bằng meal_id SAU KHI engine chạy xong (post-processing thuần,
+// không đụng mealEngine.js). Thiếu bước này thì UI không có gì để hiện
+// "Phở bò" — chỉ thấy nguyên liệu rời, đúng bug vừa gặp.
+function attachPatternNames(template, norm) {
+  const patternByMealId = {};
+  (norm.meals || []).forEach(m => { if (m.pattern) patternByMealId[m.meal_id] = m.pattern; });
+  return {
+    ...template,
+    meals: (template.meals || []).map(m => ({ ...m, pattern: patternByMealId[m.meal_id] || null })),
+  };
+}
+
 // ============================================================
 // 6. HÀM CHÍNH — generateMenuAI
 // ============================================================
@@ -433,7 +446,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       if (!norm.ok) { lastErrors = norm.errors; continue; }
 
       const virtualTpl = buildVirtualTemplate(norm.meals, dayType);
-      const template = stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target));
+      const template = attachPatternNames(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)), norm);
       return { ok: true, template, note: raw.note || "" };
     } catch (e) {
       lastErrors = [e.message || "Lỗi không xác định"];
@@ -453,7 +466,10 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
     const items = (m.items || []).map(it =>
       it.food === oldFood ? foodToItem(newFoodKey) : foodToItem(it.food, it.gram)
     );
-    return { ...m, items };
+    // Đổi 1 nguyên liệu → bữa không còn ĐÚNG là món gốc nữa (VD "Bún thịt"
+    // nhưng đã đổi thịt heo → cá hồi) — chủ động bỏ tên pattern, tránh hiện
+    // sai tên món. Người dùng vẫn thấy nguyên liệu, chỉ mất "tên gọi đẹp".
+    return { ...m, items, pattern: null };
   });
   return stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType)));
 }

@@ -165,7 +165,10 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
         return (
           <div key={m.meal_id} style={card}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: sp.lg }}>
-              <span style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: C.t1 }}>{meta?.icon} {meta?.name || m.meal_id}</span>
+              <div>
+                <span style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: C.t1 }}>{meta?.icon} {m.pattern || meta?.name || m.meal_id}</span>
+                {m.pattern && <div style={{ fontSize: fs.sm, color: C.t3, marginTop: 1 }}>{meta?.name || m.meal_id}</div>}
+              </div>
               <span style={{ fontSize: fs.base, fontWeight: fw.bold, color: C.t3 }}>{mealCal} kcal</span>
             </div>
             {(m.items || []).map(it => {
