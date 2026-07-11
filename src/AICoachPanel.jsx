@@ -63,28 +63,14 @@ return HEALTH_KEYWORDS.some(k => normalized.includes(k));
 // AIMenuGenerator (đã có sẵn, đã test, khớp đúng calo/macro qua mealEngine)
 // thay vì để Claude tự bịa gợi ý bằng văn xuôi tự do — vốn không đảm bảo
 // khớp target và không có nút "thêm vào thực đơn hôm nay".
-const MENU_GEN_KEYWORDS = [
-"gợi ý thực đơn", "lên thực đơn", "tạo thực đơn", "tạo menu", "lên menu",
-"cho tôi thực đơn", "cho tôi menu", "cho mình thực đơn", "cho mình menu",
-"thực đơn ngày mai", "menu ngày mai",
-"chưa biết ăn gì", "không biết ăn gì", "chưa biết nấu gì", "không biết nấu gì",
-"lên món", "tự động tạo thực đơn", "ai tạo thực đơn",
-];
-// Từ loại trừ — nếu có thì KHÔNG phải ý định tạo mới
+// Nhận diện ý định tạo thực đơn — trả lời + nút điều hướng, KHÔNG tự mở popup
 const MENU_EXCLUDE = ["đánh giá","xem lại","kiểm tra","review","nhận xét","phân tích","chấm điểm"];
 function containsMenuGenIntent(text) {
 const n = (text || "").toLowerCase();
-// Loại trừ trước — "đánh giá thực đơn" không phải tạo mới
 if (MENU_EXCLUDE.some(w => n.includes(w))) return false;
-// Exact keyword match
-if (MENU_GEN_KEYWORDS.some(k => n.includes(k))) return true;
-// Flexible: "thực đơn"/"menu" + từ hành động tạo mới
 const hasMenu = n.includes("thực đơn") || n.includes("menu");
-const hasAction = ["tạo","lên","gợi ý","gợi","cho","giúp","làm","soạn","đề xuất","xây","viết","nghĩ"].some(w => n.includes(w));
-if (hasMenu && hasAction) return true;
-// "ăn gì" / "nấu gì"
-if (n.includes("ăn gì") || n.includes("nấu gì")) return true;
-return false;
+const hasCreate = ["tạo","lên","gợi ý","soạn","làm","giúp","cho"].some(w => n.includes(w));
+return hasMenu && hasCreate;
 }
 
 export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory}){
@@ -348,8 +334,14 @@ return;
 // trước, KHÔNG sinh thẳng với default. Kết quả từ popup hiện lại trong chat.
 const aiMenuAccess=getAIMenuAccess(profile,appSettings);
 if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
+const userMsg={role:"user",content:text};
+const dt=todayData?.dayType==="rest"?"nghỉ":"tập";
+const tgt=todayData?.dayType==="rest"?(macro?.calRest||macro?.calTarget):macro?.calTarget;
+const aiMsg={role:"assistant",content:`Mình sẽ tạo thực đơn ${dt==="tập"?"ngày tập":"ngày nghỉ"} (~${tgt} kcal) phù hợp với bạn. Bấm nút bên dưới để chọn phong cách ăn rồi mình ghép nhé!`,action:"open_ai_menu"};
+setMessages(prev=>[...prev,userMsg,aiMsg]);
 setInput("");
-setShowAIMenuFromChat(true);
+saveMsg("user",text);
+saveMsg("assistant",aiMsg.content);
 return;
 }
 
