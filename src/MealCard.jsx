@@ -3,6 +3,11 @@ import { C, card } from "./theme";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { MealIcon } from "./MealIcon";
 import { formatFoodPortion } from "./lib/aiMenuService";
+import { getFoodRole } from "./lib/localFoodDB";
+
+// Filler béo (mè, lạc, đậu phộng) có display=null — ẩn khỏi danh sách
+// nhưng VẪN tính trong tổng macro (t.p/c/f/cal ở trên đã gồm rồi).
+const isHiddenFiller = (item) => item.display === null && getFoodRole(item.food) === "fat";
 
 export function MealCard({meal}){
   const mob=useIsMobile();
@@ -17,7 +22,7 @@ export function MealCard({meal}){
           <MealIcon id={meal.id} size={22}/>
         </div>
         <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
-        <span style={{fontSize:12,fontWeight:600,color:C.t2}}>{meal.items.length} món</span>
+        <span style={{fontSize:12,fontWeight:600,color:C.t2}}>{meal.items.filter(it=>!isHiddenFiller(it)).length} món</span>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:18,fontWeight:900,color:"#0F172A"}}>{Math.round(t.cal)}</span>
@@ -37,7 +42,7 @@ export function MealCard({meal}){
         <span style={{color:C.protein,textAlign:"right"}}>P</span><span style={{color:C.carb,textAlign:"right"}}>C</span>
         <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.fiber,textAlign:"right"}}>Xơ</span><span style={{color:C.t2,textAlign:"right"}}>Cal</span>
       </div>
-      {meal.items.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<meal.items.length-1?`1px solid ${C.border}`:"none"}}>
+      {meal.items.filter(item=>!isHiddenFiller(item)).map((item,i,arr)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
         <span style={{color:C.t1,fontWeight:700}}>{(item.display||item.food||"").charAt(0).toUpperCase()+(item.display||item.food||"").slice(1)}</span>
         <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display?item.qty_display:formatFoodPortion(item.food,item.gram)}</span>
         <span style={{color:C.protein,textAlign:"right",fontSize:mob?11:13}}>{item.p}</span>
