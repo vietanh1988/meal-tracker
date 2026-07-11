@@ -333,58 +333,14 @@ return;
 // không bị gián đoạn bởi 1 tính năng họ chưa có quyền dùng.
 //
 // Sinh THẲNG trong chat (không bắt user rời sang form riêng) — dùng
-// prefs mặc định (phong cách "cơm nhà VN", không dị ứng) vì chat không
-// có chỗ hỏi 2 câu như AIMenuGenerator. Ai muốn đổi khẩu vị/dị ứng thì
-// bấm "✏️ Tuỳ chỉnh" trên card kết quả để mở form đầy đủ (vẫn dùng
-// handleApplyAIMenuChat chung, không viết logic áp dụng riêng lần 2).
+// Menu intent → mở popup AIMenuGenerator để user chọn phong cách/dị ứng
+// trước, KHÔNG sinh thẳng với default. Kết quả từ popup hiện lại trong chat.
 const aiMenuAccess=getAIMenuAccess(profile,appSettings);
 if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
-const userMsg={role:"user",content:text};
-const loadingId=Date.now();
-const loadingMsg={id:loadingId,role:"assistant",content:"Đang ghép thực đơn khớp đúng calo/macro của bạn...",loading:true};
-setMessages(prev=>[...prev,userMsg,loadingMsg]);
+setMessages(prev=>[...prev,{role:"user",content:text}]);
 setInput("");
 saveMsg("user",text);
-(async()=>{
-const quota=await checkAndConsumeAiQuota(userId,"macro");
-if(!quota.allowed){
-const failMsg={role:"assistant",content:quota.message};
-setMessages(prev=>prev.map(mm=>mm.id===loadingId?failMsg:mm));
-saveMsg("assistant",quota.message);
-return;
-}
-const dt=todayData?.dayType==="rest"?"rest":"train";
-// Đúng danh sách bữa THẬT user đang thấy (ưu tiên profile.mealConfig cá
-// nhân > appSettings.meal_config admin > mặc định cứng) — trước đây
-// hardcode DEFAULT_MEAL_CONFIG khiến AI sinh cả bữa user đã tắt.
-const mealIds=resolveMealIds(dt,profile,appSettings);
-// Variety — gộp 2 nguồn: (1) đã ăn thật 3 ngày gần nhất (meal_logs), (2)
-// đã hiện ra trong CHÍNH phiên chat này dù chưa lưu (shownPatternsRef).
-// Thiếu nguồn (2) thì gõ lại nhiều lần liên tiếp dễ ra y hệt lần trước.
-const avoidPatternNames=new Set(shownPatternsRef.current);
-if(getMealHistory){
-try{
-const start=new Date();start.setDate(start.getDate()-3);
-const history=await getMealHistory(start.toISOString().slice(0,10),new Date().toISOString().slice(0,10));
-getRecentPatternNames(history,3).forEach(n=>avoidPatternNames.add(n));
-}catch(e){console.error("Variety history fetch error:",e);}
-}
-const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},avoidPatternNames,appSettings});
-if(res.ok){
-const total=sumTemplate(res.template);
-const summary=`Đây là thực đơn AI gợi ý cho bạn hôm nay, phù hợp với mục tiêu ${macro?.goal==="bulk"?"tăng cơ":macro?.goal==="cut"?"giảm mỡ":"duy trì"}.`;
-const menuMsg={role:"assistant",content:summary,action:"menu_preview",template:res.template};
-setMessages(prev=>prev.map(mm=>mm.id===loadingId?menuMsg:mm));
-saveMsg("assistant",summary);
-// Lưu localStorage để reload không mất
-saveAIMenu(res.template,userId);
-res.template.meals.forEach(m=>{if(m.pattern)shownPatternsRef.current.add(m.pattern);});
-}else{
-const errMsg={role:"assistant",content:`Mình chưa ghép được thực đơn tự động lúc này. Bạn mở công cụ đầy đủ để thử lại hoặc tự chỉnh nhé!`,action:"open_ai_menu"};
-setMessages(prev=>prev.map(mm=>mm.id===loadingId?errMsg:mm));
-saveMsg("assistant",errMsg.content);
-}
-})();
+setShowAIMenuFromChat(true);
 return;
 }
 
@@ -424,10 +380,15 @@ const handleApplyAIMenuChat=async(tpl)=>{
 try{
 if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
 if(applyTemplate)await applyTemplate(tpl);
-await clearAIMenu(userId);
+await saveAIMenu(tpl,userId);
+// Hiện menu preview ngay trong chat để user thấy đã áp dụng gì
+const summary=`Đây là thực đơn AI gợi ý cho bạn hôm nay, phù hợp với mục tiêu ${macro?.goal==="bulk"?"tăng cơ":macro?.goal==="cut"?"giảm mỡ":"duy trì"}.`;
+const menuMsg={role:"assistant",content:summary,action:"menu_preview",template:tpl};
 const doneMsg={role:"assistant",content:"✅ Đã thêm thực đơn vào hôm nay! Quay lại tab Tổng quan để xem chi tiết nhé."};
-setMessages(prev=>[...prev,doneMsg]);
+setMessages(prev=>[...prev,menuMsg,doneMsg]);
+saveMsg("assistant",summary);
 saveMsg("assistant",doneMsg.content);
+tpl.meals.forEach(m=>{if(m.pattern)shownPatternsRef.current.add(m.pattern);});
 }catch(e){console.error("Apply AI menu (chat) error:",e);}
 setShowAIMenuFromChat(false);
 };
