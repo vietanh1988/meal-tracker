@@ -2,8 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
-import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst } from "./lib/aiMenuService";
+import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst, saveAIMenu, loadAIMenu } from "./lib/aiMenuService";
+import { getFoodRole } from "./lib/localFoodDB";
 import { ALL_MEALS } from "./mealConstants";
+import { MEAL_TIMES } from "./mealPatterns";
 
 // Render markdown NHẸ cho câu trả lời AI — chỉ những gì AI thật sự hay dùng:
 // **đậm**, gạch đầu dòng (-, •, *), danh sách số (1. 2. ...). Không thêm thư
@@ -370,12 +372,12 @@ getRecentPatternNames(history,3).forEach(n=>avoidPatternNames.add(n));
 const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},avoidPatternNames,appSettings});
 if(res.ok){
 const total=sumTemplate(res.template);
-const summary=`Đây là thực đơn AI ghép cho ${dt==="train"?"ngày tập":"ngày nghỉ"} hôm nay — ${total.cal} kcal (P${total.p}/C${total.c}/F${total.f}), khớp đúng mục tiêu của bạn:`;
+const summary=`Đây là thực đơn AI gợi ý cho bạn hôm nay, phù hợp với mục tiêu ${macro?.goal==="bulk"?"tăng cơ":macro?.goal==="cut"?"giảm mỡ":"duy trì"}.`;
 const menuMsg={role:"assistant",content:summary,action:"menu_preview",template:res.template};
 setMessages(prev=>prev.map(mm=>mm.id===loadingId?menuMsg:mm));
 saveMsg("assistant",summary);
-// Ghi nhớ pattern vừa hiện — lần gõ TIẾP THEO trong phiên này sẽ tránh lặp,
-// kể cả khi user chưa bấm "Thêm vào thực đơn hôm nay" để lưu thật.
+// Lưu localStorage để reload không mất
+saveAIMenu(res.template,userId);
 res.template.meals.forEach(m=>{if(m.pattern)shownPatternsRef.current.add(m.pattern);});
 }else{
 const errMsg={role:"assistant",content:`Mình chưa ghép được thực đơn tự động lúc này. Bạn mở công cụ đầy đủ để thử lại hoặc tự chỉnh nhé!`,action:"open_ai_menu"};
@@ -445,6 +447,20 @@ saveMsg("assistant",welcome);
 }
 },[historyLoaded]);
 
+// Restore saved AI menu from localStorage on mount
+useEffect(()=>{
+if(!historyLoaded||!userId)return;
+const saved=loadAIMenu(userId);
+if(saved&&saved.meals&&saved.meals.length>0){
+const total=sumTemplate(saved);
+const summary="Đây là thực đơn AI đã gợi ý cho bạn hôm nay (khôi phục từ phiên trước):";
+const alreadyHasMenu=messages.some(mm=>mm.action==="menu_preview");
+if(!alreadyHasMenu){
+setMessages(prev=>[...prev,{role:"assistant",content:summary,action:"menu_preview",template:saved}]);
+}
+}
+},[historyLoaded,userId]);
+
 const quickPrompts=(()=>{
 const t=todayData||{};const m=macro||{};
 const isR=t.dayType==="rest";
@@ -511,43 +527,61 @@ maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,
 const total=sumTemplate(m.template);
 const target=dayTarget(macro,m.template.day_type||"train");
 const pct=(v,t)=>t?Math.round(v/t*100):0;
-return <div style={{marginTop:8,background:"#fff",borderRadius:10,border:`1px solid ${C2.border}`,padding:10}}>
-{/* Thẻ tổng macro — cùng kiểu Cal/P/C/F + % target như tab Tổng quan, để
-    user thấy rõ ràng ngay trong chat, không phải đọc từng bữa mới suy ra. */}
-<div style={{padding:"8px 10px",background:C2.bg,borderRadius:8,marginBottom:8}}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6}}>
-<span style={{fontSize:11,fontWeight:700,color:C2.t3}}>TỔNG NĂNG LƯỢNG</span>
-<span><b style={{fontSize:16,color:C2.t1}}>{total.cal}</b><span style={{fontSize:11,color:C2.t3}}> / {target.cal} kcal</span></span>
-</div>
-<div style={{display:"flex",gap:10}}>
-{[["Đạm",total.p,target.p,"#007AFF"],["Carb",total.c,target.c,"#5AC8FA"],["Béo",total.f,target.f,"#8E8E93"]].map(([label,v,t,color])=>
+const pctBar=(v,t)=>Math.min(100,pct(v,t));
+const macroColor=(v,t)=>{const r=pct(v,t);return r>110?"#EF4444":r>=90?"#22C55E":"#3B82F6";};
+return <div style={{marginTop:8,background:"#fff",borderRadius:12,border:`1px solid ${C2.border}`,overflow:"hidden"}}>
+
+{/* Macro summary — 4 columns with progress bars */}
+<div style={{padding:"14px 16px",borderBottom:`1px solid ${C2.border}`}}>
+<div style={{display:"flex",gap:8,marginBottom:10}}>
+{[["Tổng năng lượng",total.cal,target.cal,"#3B82F6",true],["Protein",total.p,target.p,"#8B5CF6",false],["Carb",total.c,target.c,"#F59E0B",false],["Fat",total.f,target.f,"#22C55E",false]].map(([label,v,t,color,isCal])=>
 <div key={label} style={{flex:1,minWidth:0}}>
-<div style={{fontSize:10,color:C2.t3,fontWeight:600}}>{label}</div>
-<div style={{fontSize:12,fontWeight:700,color}}>{v}g</div>
-<div style={{fontSize:10,color:C2.t3,fontWeight:600}}>{pct(v,t)}%</div>
+<div style={{fontSize:10,color:C2.t3,fontWeight:500,marginBottom:2}}>{label}</div>
+<div style={{fontSize:isCal?18:16,fontWeight:700,color:isCal?C2.t1:macroColor(v,t)}}>{isCal?v.toLocaleString():v+"g"}</div>
+<div style={{fontSize:10,color:C2.t3}}>/ {isCal?t.toLocaleString()+" kcal":t+"g"} ({pct(v,t)}%)</div>
 </div>)}
 </div>
+{/* Progress bar */}
+<div style={{height:4,borderRadius:2,background:"#E2E8F0",display:"flex",overflow:"hidden",gap:1}}>
+<div style={{width:pctBar(total.p,target.p)*0.25+"%",background:"#8B5CF6",borderRadius:2,transition:"width 0.3s"}}/>
+<div style={{width:pctBar(total.c,target.c)*0.5+"%",background:"#F59E0B",borderRadius:2,transition:"width 0.3s"}}/>
+<div style={{width:pctBar(total.f,target.f)*0.25+"%",background:"#22C55E",borderRadius:2,transition:"width 0.3s"}}/>
+</div>
+{profile&&<div style={{fontSize:10,color:C2.t3,marginTop:8,textAlign:"center"}}>Gợi ý được cá nhân hóa dựa trên: {profile.kg||65}kg • {profile.cm||170}cm • Tập {profile.trainDays||5} buổi/tuần</div>}
 </div>
 
+{/* Meal cards */}
 {(m.template.meals||[]).map(mm=>{
 const meta=ALL_MEALS.find(x=>x.id===mm.meal_id);
 const cal=Math.round((mm.items||[]).reduce((s,it)=>s+(it.cal||0),0));
-return <div key={mm.meal_id} style={{padding:"6px 0",borderBottom:`1px solid ${C2.border}`}}>
-<div style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:700,color:C2.t1}}>
-<span>{meta?.icon} {mm.pattern||meta?.name||mm.meal_id}</span><span style={{color:C2.t3,fontWeight:600}}>{cal} kcal</span>
+const time=MEAL_TIMES[mm.meal_id]||"";
+// Hiển thị items — ẩn filler béo (display=null hoặc role fat có gram nhỏ)
+const visibleItems=(mm.items||[]).filter(it=>it.display!==null&&it.gram>0&&!(getFoodRole(it.food)==="fat"&&it.gram<30));
+return <div key={mm.meal_id} style={{padding:"12px 16px",borderBottom:`1px solid ${C2.border}`}}>
+{/* Meal header */}
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
+<span><span style={{fontSize:13,fontWeight:700,color:"#3B82F6"}}>{meta?.name||mm.meal_id}</span>{time&&<span style={{fontSize:11,color:C2.t3,marginLeft:6}}>{time}</span>}</span>
+<span style={{fontSize:13,fontWeight:700,color:"#3B82F6"}}>{cal} kcal</span>
 </div>
-{mm.pattern&&<div style={{fontSize:10,color:C2.t3,marginTop:1,marginBottom:3}}>{meta?.name||mm.meal_id}</div>}
-{/* Mỗi món 1 dòng riêng, dùng đơn vị tự nhiên ("3 quả (150g)") thay vì
-    gộp chung "trứng gà, cơm, rau" — rõ ràng hơn, đúng góp ý user. */}
-{(mm.items||[]).map(it=><div key={it.food} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C2.t2,padding:"1px 0"}}>
-<span style={{textTransform:"none"}}>{capitalizeFirst(it.food)}</span>
-<span style={{color:C2.t3}}>{formatFoodPortion(it.food,it.gram)}</span>
-</div>)}
+{/* Dishes — tên món có cách nấu, portion bên dưới */}
+{visibleItems.map(it=>{
+const displayName=it.display||capitalizeFirst(it.food);
+const portion=formatFoodPortion(it.food,it.gram);
+const itemCal=Math.round(it.cal||0);
+return <div key={it.food+displayName} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"4px 0 4px 8px"}}>
+<div>
+<div style={{fontSize:12,fontWeight:600,color:C2.t1}}>{capitalizeFirst(displayName)}</div>
+<div style={{fontSize:11,color:C2.t3}}>{portion}</div>
+</div>
+<div style={{fontSize:11,color:C2.t3,flexShrink:0,marginLeft:8,paddingTop:1}}>{itemCal} kcal</div>
+</div>;})}
 </div>;
 })}
-<div style={{display:"flex",gap:6,marginTop:10}}>
-<button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1,padding:"9px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>➕ Thêm vào thực đơn hôm nay</button>
-<button onClick={()=>setShowAIMenuFromChat(true)} style={{padding:"9px 12px",borderRadius:8,border:`1.5px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
+
+{/* Action buttons */}
+<div style={{display:"flex",gap:0,borderTop:`1px solid ${C2.border}`}}>
+<button onClick={()=>{setShowAIMenuFromChat(true);}} style={{flex:1,padding:"11px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Đổi thực đơn khác</button>
+<button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1.2,padding:"11px",border:"none",background:"#3B82F6",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",borderRadius:"0 0 12px 0"}}>Thêm vào hôm nay</button>
 </div>
 </div>;
 })()}
