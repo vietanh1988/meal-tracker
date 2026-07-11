@@ -14,11 +14,11 @@
 // ============================================================
 import { useState } from "react";
 import { C, card, redBtn, fs, fw, sp, radius } from "./theme";
-import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "./mealConstants";
+import { ALL_MEALS } from "./mealConstants";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
-  generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory,
+  generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds,
 } from "./lib/aiMenuService";
 
 const STYLES = [
@@ -29,8 +29,8 @@ const STYLES = [
 
 // 4 nhóm CỐ ĐỊNH khớp đúng cấu trúc bữa mới (sáng 3 món, trưa/tối 4 món) —
 // tách Rau và Hoa quả riêng thay vì gộp chung "Rau/Phụ" như trước.
-const CAT_LABEL = { protein: "Đạm", carb: "Tinh bột", veg: "Rau", fruit: "Hoa quả", other: "Khác" };
-const CAT_COLOR = { protein: C.protein, carb: C.carb, veg: C.fiber, fruit: C.gold, other: C.t3 };
+const CAT_LABEL = { protein: "Đạm", carb: "Tinh bột", veg: "Rau", fruit: "Hoa quả", fat: "Béo", other: "Khác" };
+const CAT_COLOR = { protein: C.protein, carb: C.carb, veg: C.fiber, fruit: C.gold, fat: C.fat, other: C.t3 };
 
 export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, onApply, onClose, onFallbackToLibrary }) {
   const mob = useIsMobile();
@@ -43,7 +43,11 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   const [error, setError] = useState("");
   const [swapping, setSwapping] = useState(null); // {mealId, food}
 
-  const mealIds = DEFAULT_MEAL_CONFIG[dayType] || DEFAULT_MEAL_CONFIG.train;
+  // Đúng danh sách bữa THẬT user đang thấy (ưu tiên profile.mealConfig cá
+  // nhân > appSettings.meal_config admin > mặc định cứng) — KHÔNG hardcode
+  // DEFAULT_MEAL_CONFIG nữa, tránh AI sinh bữa mà user đã tắt (VD tắt
+  // pre/post-workout qua "⚙️ Bật/tắt bữa").
+  const mealIds = resolveMealIds(dayType, profile, appSettings);
   const target = dayTarget(macro, dayType);
 
   const generate = async () => {

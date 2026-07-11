@@ -17,8 +17,34 @@
 
 import { LOCAL_FOODS, getFoodRole } from "./localFoodDB";
 import { applyMealEngineToTemplate, computeMealGram, splitDayIntoMeals } from "../mealEngine";
-import { ALL_MEALS } from "../mealConstants";
+import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
+
+// ============================================================
+// DANH SÁCH BỮA THẬT — cùng thứ tự ưu tiên App.jsx/Dashboard.jsx/
+// AdminPanel.jsx đang dùng ở mọi nơi khác trong app:
+//   1. profile.mealConfig   — user TỰ chỉnh riêng (bấm "⚙️ Bật/tắt bữa"
+//      khi KHÔNG phải admin → lưu vào profile cá nhân, không ảnh hưởng ai)
+//   2. appSettings.meal_config — admin đặt làm mặc định CHUNG cho mọi user
+//      chưa tự chỉnh gì (JSON string, cần parse)
+//   3. DEFAULT_MEAL_CONFIG  — hằng số cứng trong mealConstants.js, chỉ
+//      dùng khi cả 2 trên đều không có (tài khoản hoàn toàn mới/lỗi parse)
+//
+// TRƯỚC ĐÂY AIMenuGenerator.jsx và AICoachPanel.jsx BỎ QUA 2 lớp đầu,
+// luôn dùng cứng DEFAULT_MEAL_CONFIG — nghĩa là user tắt bớt bữa (VD tắt
+// pre/post-workout) thì AI vẫn cứ sinh đủ 5 bữa mặc định, phớt lờ lựa
+// chọn của họ. Giờ dùng chung đúng 1 hàm này ở mọi nơi AI sinh thực đơn.
+// ============================================================
+export function resolveMealIds(dayType, profile, appSettings) {
+  let mealConfig;
+  if (profile?.mealConfig) {
+    mealConfig = profile.mealConfig;
+  } else {
+    try { mealConfig = appSettings?.meal_config ? JSON.parse(appSettings.meal_config) : DEFAULT_MEAL_CONFIG; }
+    catch (e) { mealConfig = DEFAULT_MEAL_CONFIG; }
+  }
+  return mealConfig[dayType] || DEFAULT_MEAL_CONFIG[dayType];
+}
 
 // ============================================================
 // QUYỀN DÙNG — 2 lớp độc lập:
@@ -106,6 +132,10 @@ export function getFoodDisplayCategory(foodKey) {
   if (role === "carb") return "carb";
   if (item.cat === "veg") return "veg";
   if (item.cat === "fruit") return "fruit";
+  // Filler béo hệ thống tự thêm (dầu ô liu/hạnh nhân/hạt điều...) — tách
+  // riêng khỏi "other" để hiển thị đúng nhãn "Béo" thay vì "Khác" mơ hồ,
+  // và để getSwapCandidates gợi ý đổi đúng trong nhóm béo, không lẫn lộn.
+  if (role === "fat") return "fat";
   return "other";
 }
 
@@ -278,7 +308,7 @@ export function normalizeMenu(raw, mealIds, exclude) {
       if (!key) return;
       if (exclude?.has(key)) return; // loại món dị ứng dù AI lỡ chọn
       const cat = getFoodDisplayCategory(key);
-      if (cat === "other") return; // ngoài 4 nhóm cho phép — bỏ thẳng
+      if (cat === "other" || cat === "fat") return; // ngoài 4 nhóm AI được chọn — bỏ thẳng (béo do hệ thống tự thêm riêng, không phải AI chọn)
       if (!slots[cat]) slots[cat] = key; // slot đã có thì bỏ món dư, không ghi đè
     });
 

@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
-import { getAIMenuAccess, generateMenuAI, sumTemplate } from "./lib/aiMenuService";
-import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "./mealConstants";
+import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds } from "./lib/aiMenuService";
+import { ALL_MEALS } from "./mealConstants";
 
 // Render markdown NHẸ cho câu trả lời AI — chỉ những gì AI thật sự hay dùng:
 // **đậm**, gạch đầu dòng (-, •, *), danh sách số (1. 2. ...). Không thêm thư
@@ -345,7 +345,10 @@ ${buildContext()}`;
           return;
         }
         const dt=todayData?.dayType==="rest"?"rest":"train";
-        const mealIds=DEFAULT_MEAL_CONFIG[dt]||DEFAULT_MEAL_CONFIG.train;
+        // Đúng danh sách bữa THẬT user đang thấy (ưu tiên profile.mealConfig cá
+        // nhân > appSettings.meal_config admin > mặc định cứng) — trước đây
+        // hardcode DEFAULT_MEAL_CONFIG khiến AI sinh cả bữa user đã tắt.
+        const mealIds=resolveMealIds(dt,profile,appSettings);
         const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},appSettings});
         if(res.ok){
           const total=sumTemplate(res.template);
