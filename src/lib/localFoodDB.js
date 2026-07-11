@@ -116,7 +116,7 @@ export const LOCAL_FOODS = {
   "heo": {p:20.5, c:0, f:11.0, cal:187, fiber:0, form:"raw", cat:"pork"},
 
   // ==================== 4. CÁ & HẢI SẢN ====================
-  "cá hồi": {p:20.4, c:0, f:13.4, cal:208, fiber:0, form:"raw", cat:"seafood"},
+  "cá hồi": {p:20.4, c:0, f:13.4, cal:208, fiber:0, form:"raw", cat:"seafood", tier:"occasional"},
   "cá ngừ": {p:29.9, c:0, f:1.0, cal:130, fiber:0, form:"raw", cat:"seafood"},
   "cá rô phi": {p:20.1, c:0, f:1.7, cal:96, fiber:0, form:"raw", cat:"seafood"},
   "cá basa": {p:15.0, c:0, f:6.0, cal:116, fiber:0, form:"raw", cat:"seafood"},
@@ -129,13 +129,13 @@ export const LOCAL_FOODS = {
   "cá saba": {p:18.6, c:0, f:13.9, cal:205, fiber:0, form:"raw", cat:"seafood"},
   "cá": {p:18.0, c:0, f:5.0, cal:120, fiber:0, form:"raw", cat:"seafood"},
   "tôm": {p:24.0, c:0.2, f:0.3, cal:99, fiber:0, form:"raw", cat:"seafood"},
-  "tôm sú": {p:21.0, c:0, f:0.6, cal:90, fiber:0, form:"raw", cat:"seafood"},
+  "tôm sú": {p:21.0, c:0, f:0.6, cal:90, fiber:0, form:"raw", cat:"seafood", tier:"occasional"},
   "mực": {p:15.6, c:3.1, f:1.4, cal:92, fiber:0, form:"raw", cat:"seafood"},
   "ngao": {p:12.8, c:3.6, f:1.0, cal:74, fiber:0, form:"raw", cat:"seafood"},
   "nghêu": {p:12.8, c:3.6, f:1.0, cal:74, fiber:0, form:"raw", cat:"seafood"},
-  "cua": {p:18.1, c:0, f:1.1, cal:83, fiber:0, form:"raw", cat:"seafood"},
-  "hàu": {p:9.0, c:4.7, f:2.5, cal:81, fiber:0, form:"raw", cat:"seafood"},
-  "bạch tuộc": {p:14.9, c:2.2, f:1.0, cal:82, fiber:0, form:"raw", cat:"seafood"},
+  "cua": {p:18.1, c:0, f:1.1, cal:83, fiber:0, form:"raw", cat:"seafood", tier:"occasional"},
+  "hàu": {p:9.0, c:4.7, f:2.5, cal:81, fiber:0, form:"raw", cat:"seafood", tier:"occasional"},
+  "bạch tuộc": {p:14.9, c:2.2, f:1.0, cal:82, fiber:0, form:"raw", cat:"seafood", tier:"occasional"},
   "cá ngừ hộp": {p:26.5, c:0, f:0.8, cal:116, fiber:0, form:"cooked",cat:"seafood"},
 
   // ==================== 5. TRỨNG & SỮA ====================
@@ -154,8 +154,8 @@ export const LOCAL_FOODS = {
   "sữa tách béo":{p:3.4, c:5.0, f:0.1, cal:34, fiber:0, form:"liquid",cat:"egg_dairy"},
   "sữa đậu nành":{p:3.3, c:6.3, f:1.8, cal:54, fiber:0.6,form:"liquid",cat:"egg_dairy"},
   "sữa chua": {p:3.5, c:4.7, f:3.3, cal:61, fiber:0, form:"liquid",cat:"egg_dairy"},
-  "sữa chua hy lạp":{p:10.0,c:3.6,f:0.7, cal:59, fiber:0, form:"liquid",cat:"egg_dairy"},
-  "phô mai": {p:25.0, c:1.3, f:33.1, cal:403, fiber:0, form:"solid", cat:"egg_dairy"},
+  "sữa chua hy lạp":{p:10.0,c:3.6,f:0.7, cal:59, fiber:0, form:"liquid",cat:"egg_dairy", tier:"occasional"},
+  "phô mai": {p:25.0, c:1.3, f:33.1, cal:403, fiber:0, form:"solid", cat:"egg_dairy", tier:"occasional"},
   "bơ": {p:0.9, c:0.1, f:81.1, cal:717, fiber:0, form:"solid", cat:"egg_dairy"},
 
   // ==================== 6. TINH BỘT & NGŨ CỐC ====================
@@ -173,6 +173,15 @@ export const LOCAL_FOODS = {
   "bánh mì đen": {p:10.0, c:43.0,f:3.5, cal:247, fiber:6.0,form:"cooked",cat:"starch"},
   "bún": {p:3.4, c:24.9,f:0.1, cal:109, fiber:0.4,form:"cooked",cat:"starch"},
   "miến": {p:0.1, c:86.1,f:0.1, cal:334, fiber:0.5,form:"dry", cat:"starch"},
+  // bánh phở — bún gạo dẹt, cùng nhóm bún/miến, tỉ lệ macro gần như giống hệt bún
+  // (đều là mì gạo trắng đã nấu chín) nên lấy đúng số của "bún" cho nhất quán,
+  // không tự bịa số khác biệt không có cơ sở.
+  "bánh phở": {p:3.4, c:24.9,f:0.1, cal:109, fiber:0.4,form:"cooked",cat:"starch"},
+  // cháo (cháo trắng) — gạo nấu với nhiều nước hơn cơm nhiều lần (~1:8-10 so với
+  // ~1:1.2-1.5 của cơm) nên mật độ calo/100g thấp hơn "cơm trắng" (130 kcal) rất
+  // nhiều — số tham khảo theo tỉ lệ pha loãng thông thường, KHÔNG phải số đo
+  // trực tiếp, cần verify lại nếu có nguồn chính xác hơn.
+  "cháo": {p:0.6, c:6.5, f:0.1, cal:30, fiber:0.1, form:"cooked", cat:"starch"},
   "mì ý": {p:5.8, c:30.9,f:0.9, cal:158, fiber:1.8,form:"cooked",cat:"starch"},
   "ngô": {p:3.3, c:19.0,f:1.5, cal:86, fiber:2.7,form:"raw", cat:"starch"},
   "bắp": {p:3.3, c:19.0,f:1.5, cal:86, fiber:2.7,form:"raw", cat:"starch"},
@@ -249,9 +258,9 @@ export const LOCAL_FOODS = {
   "edamame": {p:11.9, c:8.4, f:5.2, cal:121, fiber:5.2,form:"cooked",cat:"nuts"},
   "lạc": {p:25.8, c:16.1,f:49.2, cal:567, fiber:8.5,form:"raw", cat:"nuts"},
   "đậu phộng": {p:25.8, c:16.1,f:49.2, cal:567, fiber:8.5,form:"raw", cat:"nuts"},
-  "hạt điều": {p:18.2, c:30.2,f:43.9, cal:553, fiber:3.3,form:"raw", cat:"nuts"},
-  "hạnh nhân": {p:21.2, c:21.6,f:49.9, cal:579, fiber:12.5,form:"raw", cat:"nuts"},
-  "hạt óc chó": {p:15.2, c:13.7,f:65.2, cal:654, fiber:6.7,form:"raw", cat:"nuts"},
+  "hạt điều": {p:18.2, c:30.2,f:43.9, cal:553, fiber:3.3,form:"raw", cat:"nuts", tier:"occasional"},
+  "hạnh nhân": {p:21.2, c:21.6,f:49.9, cal:579, fiber:12.5,form:"raw", cat:"nuts", tier:"occasional"},
+  "hạt óc chó": {p:15.2, c:13.7,f:65.2, cal:654, fiber:6.7,form:"raw", cat:"nuts", tier:"occasional"},
   "hạt chia": {p:16.5, c:42.1,f:30.7, cal:486, fiber:34.4,form:"dry", cat:"nuts"},
   "hạt lanh": {p:18.3, c:28.9,f:42.2, cal:534, fiber:27.3,form:"dry", cat:"nuts"},
   "hạt bí": {p:30.2, c:10.7,f:49.1, cal:559, fiber:6.0,form:"raw", cat:"nuts"},
@@ -260,7 +269,7 @@ export const LOCAL_FOODS = {
   "vừng": {p:17.7, c:23.5,f:49.7, cal:573, fiber:11.8,form:"raw", cat:"nuts"},
   "hạt mắc ca": {p:7.9, c:13.8,f:75.8, cal:718, fiber:8.6,form:"raw", cat:"nuts"},
   "bơ đậu phộng":{p:25.1, c:20.0,f:50.4, cal:588, fiber:6.0,form:"solid", cat:"nuts"},
-  "dầu ô liu": {p:0, c:0, f:100, cal:884, fiber:0, form:"liquid",cat:"nuts"},
+  "dầu ô liu": {p:0, c:0, f:100, cal:884, fiber:0, form:"liquid",cat:"nuts", tier:"occasional"},
   "dầu dừa": {p:0, c:0, f:100, cal:862, fiber:0, form:"liquid",cat:"nuts"},
   "dầu ăn": {p:0, c:0, f:100, cal:884, fiber:0, form:"liquid",cat:"nuts"},
   "dầu mè": {p:0, c:0, f:100, cal:884, fiber:0, form:"liquid",cat:"nuts"},
@@ -471,7 +480,8 @@ const GRAM_LIMIT_OVERRIDE = {
   "đậu phụ": { min: 100, max: 300 },
   "cơm trắng": { min: 80, max: 450 }, "cơm": { min: 80, max: 450 }, "cơm gạo lứt": { min: 80, max: 450 },
   "khoai lang": { min: 100, max: 400 }, "khoai tây": { min: 100, max: 400 },
-  "bánh mì": { min: 30, max: 200 }, "bún": { min: 100, max: 350 }, "miến": { min: 50, max: 250 },
+  "bánh mì": { min: 30, max: 200 }, "bún": { min: 100, max: 350 }, "miến": { min: 50, max: 250 }, "bánh phở": { min: 100, max: 350 },
+  "cháo": { min: 200, max: 500 }, // 1 tô cháo thường 300-400g, nhiều nước hơn cơm/bún nên sàn/trần cao hơn
   "yến mạch": { min: 10, max: 100 }, "xôi": { min: 80, max: 350 },
   "dầu ăn": { min: 5, max: 30 }, "dầu ô liu": { min: 5, max: 30 }, "dầu mè": { min: 5, max: 20 },
   "bơ đậu phộng": { min: 10, max: 40 }, "hạt điều": { min: 10, max: 40 }, "hạnh nhân": { min: 10, max: 40 },
