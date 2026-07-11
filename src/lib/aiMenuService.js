@@ -2,13 +2,13 @@
 // AI MENU SERVICE — AI CHỈ CHỌN MÓN, KHÔNG TÍNH SỐ.
 //
 // Luồng: buildPrompt (kèm catalog món từ localFoodDB, nhóm theo 4 nhóm CỐ
-//   ĐỊNH: Đạm/Tinh bột/Rau/Hoa quả — KHÔNG còn nhóm "chất béo" riêng)
-//   → gọi ai-proxy (server key) → parse JSON {meals[].items[].food}
-//   → normalizeMenu: khớp từng món về key trong LOCAL_FOODS, mỗi bữa lấy
-//     ĐÚNG 1 món/nhóm theo slot cố định (sáng = đạm+carb+rau = 3 món;
-//     trưa/tối = +1 hoa quả = 4 món), món dư/ngoài 4 nhóm bị bỏ lặng lẽ
-//   → buildVirtualTemplate: dựng template ảo (gram = refGram mặc định)
-//   → applyMealEngineToTemplate(virtualTpl, dailyTarget) tính gram thật.
+// ĐỊNH: Đạm/Tinh bột/Rau/Hoa quả — KHÔNG còn nhóm "chất béo" riêng)
+// → gọi ai-proxy (server key) → parse JSON {meals[].items[].food}
+// → normalizeMenu: khớp từng món về key trong LOCAL_FOODS, mỗi bữa lấy
+// ĐÚNG 1 món/nhóm theo slot cố định (sáng = đạm+carb+rau = 3 món;
+// trưa/tối = +1 hoa quả = 4 món), món dư/ngoài 4 nhóm bị bỏ lặng lẽ
+// → buildVirtualTemplate: dựng template ảo (gram = refGram mặc định)
+// → applyMealEngineToTemplate(virtualTpl, dailyTarget) tính gram thật.
 //
 // Gram/macro cuối cùng LUÔN từ mealEngine + LOCAL_FOODS (data verify),
 // nên khớp target ±5% như mọi template khác trong app. AI sai thì retry
@@ -19,16 +19,18 @@ import { LOCAL_FOODS, getFoodRole } from "./localFoodDB";
 import { applyMealEngineToTemplate, computeMealGram, splitDayIntoMeals } from "../mealEngine";
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
+import { MEAL_PATTERNS } from "../mealPatterns";
+import { resolveBlueprint } from "../mealBlueprints";
 
 // ============================================================
 // DANH SÁCH BỮA THẬT — cùng thứ tự ưu tiên App.jsx/Dashboard.jsx/
 // AdminPanel.jsx đang dùng ở mọi nơi khác trong app:
-//   1. profile.mealConfig   — user TỰ chỉnh riêng (bấm "⚙️ Bật/tắt bữa"
-//      khi KHÔNG phải admin → lưu vào profile cá nhân, không ảnh hưởng ai)
-//   2. appSettings.meal_config — admin đặt làm mặc định CHUNG cho mọi user
-//      chưa tự chỉnh gì (JSON string, cần parse)
-//   3. DEFAULT_MEAL_CONFIG  — hằng số cứng trong mealConstants.js, chỉ
-//      dùng khi cả 2 trên đều không có (tài khoản hoàn toàn mới/lỗi parse)
+// 1. profile.mealConfig — user TỰ chỉnh riêng (bấm "⚙️ Bật/tắt bữa"
+// khi KHÔNG phải admin → lưu vào profile cá nhân, không ảnh hưởng ai)
+// 2. appSettings.meal_config — admin đặt làm mặc định CHUNG cho mọi user
+// chưa tự chỉnh gì (JSON string, cần parse)
+// 3. DEFAULT_MEAL_CONFIG — hằng số cứng trong mealConstants.js, chỉ
+// dùng khi cả 2 trên đều không có (tài khoản hoàn toàn mới/lỗi parse)
 //
 // TRƯỚC ĐÂY AIMenuGenerator.jsx và AICoachPanel.jsx BỎ QUA 2 lớp đầu,
 // luôn dùng cứng DEFAULT_MEAL_CONFIG — nghĩa là user tắt bớt bữa (VD tắt
@@ -49,15 +51,15 @@ export function resolveMealIds(dayType, profile, appSettings) {
 // ============================================================
 // QUYỀN DÙNG — 2 lớp độc lập:
 // 1. Cờ toàn cục "ai_menu_gen" (Quản lý tính năng) — admin tắt thì KHÔNG
-//    ai dùng được, kể cả Premium. Dùng khi cần dừng khẩn (lỗi AI, quá tải).
+// ai dùng được, kể cả Premium. Dùng khi cần dừng khẩn (lỗi AI, quá tải).
 // 2. Tier user — Free luôn bị khoá dù cờ có bật, Trial/Premium luôn được
-//    dùng khi cờ bật. Đây là gate SẢN PHẨM (bán hàng), tách khỏi cờ kỹ
-//    thuật ở trên để 2 việc không giẫm chân nhau.
+// dùng khi cờ bật. Đây là gate SẢN PHẨM (bán hàng), tách khỏi cờ kỹ
+// thuật ở trên để 2 việc không giẫm chân nhau.
 //
 // @returns {{enabled:boolean, locked:boolean, usable:boolean}}
-//   enabled = cờ toàn cục đang bật (chưa xét tier)
-//   locked  = cờ bật NHƯNG tier free → hiện nút dạng khoá + gợi ý nâng cấp
-//   usable  = cờ bật VÀ tier trial/premium → dùng bình thường
+// enabled = cờ toàn cục đang bật (chưa xét tier)
+// locked = cờ bật NHƯNG tier free → hiện nút dạng khoá + gợi ý nâng cấp
+// usable = cờ bật VÀ tier trial/premium → dùng bình thường
 // ============================================================
 export function getAIMenuAccess(profile, appSettings) {
   const flags = parseFeatureFlags(appSettings);
@@ -109,7 +111,6 @@ export function buildExclusionKeys(avoidText) {
 
   Object.entries(LOCAL_FOODS).forEach(([key, item]) => {
     if (cats.has(item.cat)) excluded.add(key);
-    // Khớp trực tiếp tên món nằm trong câu user gõ (VD gõ đúng "cá hồi")
     else if (key.length >= 3 && lower.includes(key)) excluded.add(key);
   });
   return excluded;
@@ -127,16 +128,30 @@ export function getFoodDisplayCategory(foodKey) {
   const key = (foodKey || "").toLowerCase().trim();
   const item = LOCAL_FOODS[key];
   if (!item) return "other";
-  const role = getFoodRole(key); // vẫn ưu tiên role đã override đúng (VD đậu nành cat=nuts nhưng role=protein)
+  const role = getFoodRole(key);
   if (role === "protein") return "protein";
   if (role === "carb") return "carb";
   if (item.cat === "veg") return "veg";
   if (item.cat === "fruit") return "fruit";
-  // Filler béo hệ thống tự thêm (dầu ô liu/hạnh nhân/hạt điều...) — tách
-  // riêng khỏi "other" để hiển thị đúng nhãn "Béo" thay vì "Khác" mơ hồ,
-  // và để getSwapCandidates gợi ý đổi đúng trong nhóm béo, không lẫn lộn.
   if (role === "fat") return "fat";
   return "other";
+}
+
+// ============================================================
+// PATTERN LIBRARY — ưu tiên số 1 trong Recommendation (Product Principle:
+// "Phở bò" là ngôn ngữ của user, "protein+carb+rau" là ngôn ngữ của engine).
+// AI được yêu cầu chọn TÊN pattern trước; chỉ ghép nguyên liệu rời (Food
+// Pool, dự phòng ẩn) khi KHÔNG pattern nào hợp — dị ứng đặc biệt, phong
+// cách khác thường.
+// ============================================================
+
+// Lọc pattern KHÔNG dính dị ứng (mọi nguyên liệu trong slots đều không
+// nằm trong exclude) — dùng chung cho cả lúc build prompt (chỉ cho AI thấy
+// pattern hợp lệ) lẫn lúc validate (đề phòng AI chọn tên pattern đã bị loại).
+export function getAvailablePatterns(mealId, exclude) {
+  const patterns = MEAL_PATTERNS[mealId] || [];
+  if (!exclude || exclude.size === 0) return patterns;
+  return patterns.filter(p => !Object.values(p.slots).some(foodKey => exclude.has(foodKey)));
 }
 
 // ============================================================
@@ -151,6 +166,7 @@ export function buildFoodCatalog(exclude) {
   Object.keys(LOCAL_FOODS).forEach(key => {
     if (EXCLUDE_FROM_CATALOG.has(key)) return;
     if (exclude?.has(key)) return;
+    if (LOCAL_FOODS[key].tier === "occasional") return; // Product Principle: rẻ/phổ thông mặc định, đắt/hiếm chỉ khi user chủ động chọn (chưa có ở Phase 1)
     const cat = getFoodDisplayCategory(key);
     if (byCat[cat]) byCat[cat].push(key);
   });
@@ -184,25 +200,33 @@ function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods =
   }
   if (avoidFoods.length) prefLines.push(`- KHÔNG lặp lại các món: ${avoidFoods.join(", ")}`);
 
+  // Danh sách PATTERN theo từng bữa cần tạo — ưu tiên số 1, AI chỉ cần trả
+  // TÊN, không cần liệt kê nguyên liệu (hệ thống tự tra sẵn).
+  const patternLines = mealIds.map(mealId => {
+    const patterns = getAvailablePatterns(mealId, exclude);
+    if (patterns.length === 0) return null;
+    return `${mealId}: ${patterns.map(p => p.name).join(", ")}`;
+  }).filter(Boolean).join("\n");
+
   return `Bạn là chuyên gia dinh dưỡng Việt Nam. Hãy CHỌN MÓN xây thực đơn 1 ngày (${dayType === "train" ? "ngày tập" : "ngày nghỉ"}) cho người dùng sau:
 - Mục tiêu: ${goalLabel}, target cả ngày ~${target.cal} kcal (P ${target.p}g / C ${target.c}g / F ${target.f}g) — hệ thống sẽ TỰ tính gram, bạn KHÔNG cần tính.
 ${prefLines.length ? prefLines.join("\n") + "\n" : ""}
-QUY TẮC BẮT BUỘC — SỐ MÓN THEO TỪNG BỮA:
-1. CHỈ được chọn món có TÊN CHÍNH XÁC trong DANH SÁCH bên dưới. Không tự bịa món ngoài danh sách.
-2. Tạo đúng các bữa: ${mealNames}.
-3. Bữa sáng (sang): ĐÚNG 3 món — 1 ĐẠM + 1 TINH BỘT + 1 RAU. KHÔNG thêm hoa quả.
-4. Bữa trưa (trua): ĐÚNG 4 món — 1 ĐẠM + 1 TINH BỘT + 1 RAU + 1 HOA QUẢ (bắt buộc).
-5. Bữa tối (toi): 3-4 món — BẮT BUỘC 1 ĐẠM + 1 TINH BỘT + 1 RAU, hoa quả TUỲ CHỌN (thêm 1 nếu hợp lý, không bắt buộc).
-6. Bữa phụ sáng/chiều, pre-workout, post-workout (nếu có trong danh sách bữa cần tạo): 1-2 món, chọn ĐẠM hoặc TINH BỘT (không cần rau/hoa quả) — pre-workout ưu tiên carb nhanh nhẹ bụng, post-workout ưu tiên đạm hấp thu nhanh.
-7. KHÔNG chọn dầu ăn, mỡ, bơ hay bất kỳ món nào ngoài 4 nhóm ĐẠM/TINH BỘT/RAU/HOA QUẢ — hệ thống sẽ tự bổ sung chất béo hợp lý phía sau nếu cần, bạn không cần lo phần này.
-8. Món ăn phải HỢP LÝ với bữa (sáng không ăn lẩu).
-9. Đa dạng: không dùng 1 món đạm cho quá 2 bữa trong ngày.
+QUY TẮC BẮT BUỘC — ƯU TIÊN CHỌN PATTERN (món có tên quen thuộc) TRƯỚC:
+1. Với MỖI bữa, xem danh sách PATTERN GỢI Ý bên dưới trước — nếu có pattern hợp phong cách/mục tiêu, trả về "pattern":"<tên pattern đúng chính xác>" cho bữa đó, KHÔNG cần liệt kê "items".
+2. CHỈ khi KHÔNG pattern nào trong danh sách hợp (dị ứng đặc biệt, phong cách khác thường) mới tự ghép nguyên liệu: trả "pattern":"custom" kèm "items" chọn từ DANH SÁCH MÓN RỜI bên dưới — CHỈ được chọn món có TÊN CHÍNH XÁC trong danh sách đó, không tự bịa.
+3. Nếu tự ghép ("custom"), theo đúng cấu trúc: sáng = ĐÚNG 3 món (1 ĐẠM+1 TINH BỘT+1 RAU, không hoa quả); trưa = ĐÚNG 4 món (+1 HOA QUẢ bắt buộc); tối = 3-4 món (đạm+carb+rau bắt buộc, hoa quả tuỳ chọn); bữa phụ/pre/post = 1-2 món (đạm hoặc carb).
+4. KHÔNG chọn dầu ăn, mỡ, bơ hay bất kỳ món nào ngoài ĐẠM/TINH BỘT/RAU/HOA QUẢ dù ở pattern hay tự ghép — hệ thống tự bổ sung chất béo hợp lý phía sau.
+5. Đa dạng: không dùng 1 món đạm/1 pattern cho quá 2 bữa trong ngày.
+6. Tạo đúng các bữa: ${mealNames}.
 
-DANH SÁCH MÓN ĐƯỢC PHÉP DÙNG:
+PATTERN GỢI Ý THEO TỪNG BỮA (ưu tiên chọn từ đây):
+${patternLines || "(không có pattern nào — mọi bữa tự ghép nguyên liệu)"}
+
+DANH SÁCH MÓN RỜI (chỉ dùng khi "pattern":"custom"):
 ${buildFoodCatalog(exclude)}
 
 Trả về DUY NHẤT JSON sau, không markdown, không giải thích thêm:
-{"meals":[{"meal_id":"sang","items":[{"food":"tên món đúng như danh sách"}]}],"note":"1 câu mô tả ngắn về thực đơn"}`;
+{"meals":[{"meal_id":"sang","pattern":"Phở bò"},{"meal_id":"trua","pattern":"custom","items":[{"food":"tên món đúng như danh sách"}]}],"note":"1 câu mô tả ngắn về thực đơn"}`;
 }
 
 // Target cả ngày theo dayType — khớp cách Dashboard đang đọc macro
@@ -238,7 +262,6 @@ async function callAI(prompt, { provider, model } = {}) {
 
 function parseMenuJSON(text) {
   const clean = text.replace(/```json|```/g, "").trim();
-  // AI đôi khi thêm câu dẫn trước/sau JSON — cắt từ { đầu đến } cuối
   const start = clean.indexOf("{");
   const end = clean.lastIndexOf("}");
   if (start === -1 || end === -1) throw new Error("AI không trả JSON hợp lệ");
@@ -249,10 +272,8 @@ function parseMenuJSON(text) {
 // 4. NORMALIZE + VALIDATE
 // ============================================================
 
-// Keys sort dài trước — cùng logic greedy match với lookupLocalFood
 const CATALOG_KEYS = Object.keys(LOCAL_FOODS).sort((a, b) => b.length - a.length);
 
-// Khớp tên AI trả về → key chuẩn trong LOCAL_FOODS. null nếu không khớp.
 export function matchFoodKey(name) {
   const lower = (name || "").toLowerCase().trim();
   if (!lower) return null;
@@ -264,29 +285,42 @@ export function matchFoodKey(name) {
 }
 
 const MAIN_MEALS = new Set(["sang", "trua", "toi"]);
-// Chỉ bữa TRƯA bắt buộc có hoa quả — sáng không cần, tối TUỲ CHỌN (AI có
-// thể thêm hoặc không, tuỳ số món 3-4 theo đúng yêu cầu linh hoạt).
 const FRUIT_MEALS = new Set(["trua"]);
 
-// ============================================================
-// FILLER BÉO — tự động thêm 1 món béo HỢP LÝ cho mỗi bữa chính (KHÔNG để
-// AI tự chọn, tránh chọn "dầu ăn" nghe như gia vị chứ không phải món ăn).
-// Xoay theo từng bữa cho đỡ lặp lại y hệt cả ngày. mealEngine sẽ tự tính
-// ra gram=0 nếu bữa đó KHÔNG thật sự cần thêm béo (đạm đã đủ béo tự
-// nhiên) — generateMenuAI lọc bỏ mọi món gram=0 trước khi trả về, nên
-// user KHÔNG BAO GIỜ thấy dòng "Dầu ô liu 0g" vô nghĩa.
-// ============================================================
-const AUTO_FAT_FILLER = { sang: "dầu ô liu", trua: "hạnh nhân", toi: "hạt điều" };
+// Filler béo — rẻ, phổ thông, đúng Product Principle (KHÔNG dùng dầu ô
+// liu/hạnh nhân/hạt điều nữa — đồ nhập, không rẻ với bữa cơm nhà bình dân).
+const AUTO_FAT_FILLER = { sang: "lạc", trua: "mè", toi: "đậu phộng" };
+
+// Validate slots đã điền (protein/carb/veg/fruit) + thêm filler béo — dùng
+// CHUNG cho cả nhánh pattern lẫn nhánh ghép rời, để 2 đường không lệch luật.
+function finalizeMealSlots(mealId, slots, errors) {
+  const isMain = MAIN_MEALS.has(mealId);
+  const needsFruit = FRUIT_MEALS.has(mealId);
+  const foods = [];
+  if (slots.protein) foods.push({ key: slots.protein, role: "protein" });
+  if (slots.carb) foods.push({ key: slots.carb, role: "carb" });
+  if (slots.veg) foods.push({ key: slots.veg, role: "fixed" });
+  if (slots.fruit) foods.push({ key: slots.fruit, role: "fixed" });
+
+  if (isMain) {
+    if (!slots.protein) errors.push(`Bữa "${mealId}" thiếu món đạm`);
+    if (!slots.carb) errors.push(`Bữa "${mealId}" thiếu món tinh bột`);
+    if (!slots.veg) errors.push(`Bữa "${mealId}" thiếu món rau`);
+    if (needsFruit && !slots.fruit) errors.push(`Bữa "${mealId}" thiếu món hoa quả`);
+    const fillerKey = AUTO_FAT_FILLER[mealId];
+    if (fillerKey && LOCAL_FOODS[fillerKey]) foods.push({ key: fillerKey, role: "fat" });
+  } else if (!slots.protein && !slots.carb) {
+    errors.push(`Bữa phụ "${mealId}" không có món đạm hoặc tinh bột nào`);
+  }
+  if (foods.length === 0) errors.push(`Bữa "${mealId}" rỗng sau khi lọc`);
+  return foods;
+}
 
 /**
- * Chuẩn hoá output AI về danh sách bữa hợp lệ, theo cấu trúc SLOT CỐ ĐỊNH
- * (không phải "có ít nhất 1 món đạm+carb" như trước): mỗi bữa chính lấy
- * ĐÚNG 1 món cho mỗi nhóm (đạm/carb/rau/[hoa quả]) — món dư ra cùng nhóm
- * (VD AI lỡ chọn 2 món rau) bị bỏ lặng lẽ, không tính là lỗi; món KHÔNG
- * thuộc 4 nhóm cho phép (VD AI lỡ chọn dầu ăn dù đã bị cấm) cũng bị bỏ
- * thẳng — chỉ báo lỗi khi THIẾU hẳn 1 nhóm bắt buộc.
- * @returns {{ok:boolean, meals?:Array, errors?:string[]}}
- *   meals[i] = { meal_id, foods: [{key, role}] }
+ * Chuẩn hoá output AI — ƯU TIÊN nhận PATTERN nếu AI trả tên hợp lệ (khớp
+ * đúng 1 pattern trong getAvailablePatterns, chưa bị lọc dị ứng). CHỈ khi
+ * không dùng được pattern (AI trả "custom", tên không khớp, hoặc bị dị
+ * ứng lọc mất) mới rơi xuống ghép nguyên liệu rời như cũ.
  */
 export function normalizeMenu(raw, mealIds, exclude) {
   const errors = [];
@@ -299,44 +333,31 @@ export function normalizeMenu(raw, mealIds, exclude) {
     const m = byId[mealId];
     if (!m) { errors.push(`Thiếu bữa "${mealId}"`); continue; }
 
-    // Mỗi nhóm chỉ giữ ĐÚNG 1 món — món khớp nhóm đến SAU bị bỏ (không lỗi,
-    // không cộng dồn); món cat="other" (ngoài 4 nhóm, VD AI lỡ chọn dầu ăn)
-    // bị bỏ thẳng ngay từ đầu.
-    const slots = { protein: null, carb: null, veg: null, fruit: null };
-    (m.items || []).forEach(it => {
-      const key = matchFoodKey(it.food || it.name);
-      if (!key) return;
-      if (exclude?.has(key)) return; // loại món dị ứng dù AI lỡ chọn
-      const cat = getFoodDisplayCategory(key);
-      if (cat === "other" || cat === "fat") return; // ngoài 4 nhóm AI được chọn — bỏ thẳng (béo do hệ thống tự thêm riêng, không phải AI chọn)
-      if (!slots[cat]) slots[cat] = key; // slot đã có thì bỏ món dư, không ghi đè
-    });
+    let slots = { protein: null, carb: null, veg: null, fruit: null };
+    let usedPattern = null;
 
-    const isMain = MAIN_MEALS.has(mealId);
-    const needsFruit = FRUIT_MEALS.has(mealId);
-    const foods = [];
-    if (slots.protein) foods.push({ key: slots.protein, role: "protein" });
-    if (slots.carb) foods.push({ key: slots.carb, role: "carb" });
-    if (slots.veg) foods.push({ key: slots.veg, role: "fixed" });
-    // Hoa quả LUÔN được nhận nếu AI có chọn (kể cả bữa không bắt buộc như
-    // tối) — chỉ validate lỗi khi bữa THUỘC FRUIT_MEALS mà lại thiếu.
-    if (slots.fruit) foods.push({ key: slots.fruit, role: "fixed" });
-
-    if (isMain) {
-      if (!slots.protein) errors.push(`Bữa "${mealId}" thiếu món đạm`);
-      if (!slots.carb) errors.push(`Bữa "${mealId}" thiếu món tinh bột`);
-      if (!slots.veg) errors.push(`Bữa "${mealId}" thiếu món rau`);
-      if (needsFruit && !slots.fruit) errors.push(`Bữa "${mealId}" thiếu món hoa quả`);
-      // Filler béo — thêm SAU khi validate, không tính vào slot bắt buộc,
-      // không phải lỗi nếu thiếu (đây là code tự thêm, không phải AI chọn).
-      const fillerKey = AUTO_FAT_FILLER[mealId];
-      if (fillerKey && LOCAL_FOODS[fillerKey]) foods.push({ key: fillerKey, role: "fat" });
-    } else if (!slots.protein && !slots.carb) {
-      errors.push(`Bữa phụ "${mealId}" không có món đạm hoặc tinh bột nào`);
+    const patternName = (m.pattern || "").trim();
+    if (patternName && patternName.toLowerCase() !== "custom") {
+      const available = getAvailablePatterns(mealId, exclude);
+      const found = available.find(p => p.name.toLowerCase() === patternName.toLowerCase());
+      if (found) { slots = { ...found.slots }; usedPattern = found.name; }
+      // Không khớp (AI hallucinate tên, hoặc pattern bị lọc dị ứng) → rơi
+      // xuống ghép items bên dưới, KHÔNG báo lỗi ngay — items có thể vẫn hợp lệ.
     }
-    if (foods.length === 0) errors.push(`Bữa "${mealId}" rỗng sau khi lọc`);
 
-    meals.push({ meal_id: mealId, foods });
+    if (!usedPattern) {
+      (m.items || []).forEach(it => {
+        const key = matchFoodKey(it.food || it.name);
+        if (!key) return;
+        if (exclude?.has(key)) return;
+        const cat = getFoodDisplayCategory(key);
+        if (cat === "other" || cat === "fat") return;
+        if (!slots[cat]) slots[cat] = key;
+      });
+    }
+
+    const foods = finalizeMealSlots(mealId, slots, errors);
+    meals.push({ meal_id: mealId, foods, pattern: usedPattern });
   }
 
   return errors.length ? { ok: false, errors, meals } : { ok: true, meals };
@@ -346,7 +367,6 @@ export function normalizeMenu(raw, mealIds, exclude) {
 // 5. VIRTUAL TEMPLATE → MEAL ENGINE
 // ============================================================
 
-// item shape khớp đúng thứ applyMealEngineToTemplate đọc: food/gram/cal/p/c/f/fiber
 function foodToItem(key, refGram) {
   const base = LOCAL_FOODS[key];
   const g = refGram ?? DEFAULT_REF_GRAM[getFoodRole(key)] ?? 100;
@@ -370,12 +390,6 @@ export function buildVirtualTemplate(meals, dayType) {
   };
 }
 
-// Lọc bỏ mọi món gram=0 khỏi template ĐÃ QUA mealEngine — filler béo
-// (dầu ô liu/hạnh nhân/hạt điều) được đưa vào engine để CÓ THỂ dùng khi
-// cần, nhưng khi đạm tự nhiên đã đủ béo, engine trả gram=0 cho nó. Không
-// lọc bước này thì user thấy dòng "Dầu ô liu 0g · 0 kcal" vô nghĩa —
-// đúng lỗi UI ban đầu. gram=0 không đóng góp gì vào tổng macro nên lọc
-// bỏ an toàn tuyệt đối, không lệch số liệu.
 function stripZeroGramItems(template) {
   return {
     ...template,
@@ -387,21 +401,7 @@ function stripZeroGramItems(template) {
 // 6. HÀM CHÍNH — generateMenuAI
 // ============================================================
 
-/**
- * @param {Object} p
- * @param {Object} p.macro     - output calcMacro() (calTarget, protein, carb, fat, carbRest, calRest, goal)
- * @param {Object} p.profile   - profile user (chỉ đọc, đưa vào prompt)
- * @param {"train"|"rest"} p.dayType
- * @param {string[]} p.mealIds - VD DEFAULT_MEAL_CONFIG[dayType]
- * @param {{avoid?:string, style?:"vn"|"clean"|"easy"}} p.prefs
- * @param {string[]} [p.avoidFoods] - món cần tránh lặp (dùng khi tạo nhiều ngày)
- * @returns {Promise<{ok:true, template:Object, note:string} | {ok:false, error:string}>}
- *   template = đã qua mealEngine, gram thật, đưa thẳng vào applyTemplate/saveWeeklyTemplate được.
- */
 export async function generateMenuAI({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, appSettings, provider, model }) {
-  // Chốt chặn thứ 2 (server-side-ish, chạy trước khi tốn quota/gọi AI) —
-  // phòng trường hợp UI bị bypass (devtools gọi thẳng hàm). UI chỉ ẩn/khoá
-  // nút là lớp 1; đây là lớp 2, không tin tưởng riêng UI.
   const access = getAIMenuAccess(profile, appSettings);
   if (!access.usable) {
     return {
@@ -412,8 +412,6 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
     };
   }
 
-  // Theo đúng AI đang cấu hình trong tab AI (app_settings), cùng nguồn
-  // với AICoachPanel. Truyền provider/model tường minh sẽ ghi đè.
   const prov = provider || appSettings?.ai_provider || "claude";
   const mdl = model || (
     prov === "claude" ? (appSettings?.ai_model || "claude-sonnet-5")
@@ -448,15 +446,6 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
 // 7. TIỆN ÍCH CHO PREVIEW — đổi món / tính lại 1 bữa, KHÔNG tốn AI
 // ============================================================
 
-/**
- * Đổi 1 món trong 1 bữa rồi tính lại gram bữa đó bằng engine.
- * @param {Object} template  - template hiện tại (đã qua engine)
- * @param {string} mealId
- * @param {string} oldFood   - key món đang có
- * @param {string} newFoodKey- key món mới (phải có trong LOCAL_FOODS, cùng role càng tốt)
- * @param {Object} macro
- * @param {"train"|"rest"} dayType
- */
 export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro, dayType) {
   if (!LOCAL_FOODS[newFoodKey]) return template;
   const meals = (template.meals || []).map(m => {
@@ -466,11 +455,9 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
     );
     return { ...m, items };
   });
-  // Tính lại toàn bộ (engine chia target theo danh sách bữa nên phải chạy cả template)
   return stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType)));
 }
 
-/** Gợi ý món thay thế cùng NHÓM HIỂN THỊ (đạm/carb/rau/hoa quả), loại các món đã có trong bữa */
 export function getSwapCandidates(foodKey, currentMealFoods = []) {
   const cat = getFoodDisplayCategory(foodKey);
   const inMeal = new Set(currentMealFoods);
@@ -479,7 +466,6 @@ export function getSwapCandidates(foodKey, currentMealFoods = []) {
     .sort();
 }
 
-/** Tổng macro cả ngày của template — dùng cho MacroRing preview */
 export function sumTemplate(template) {
   const all = (template.meals || []).flatMap(m => m.items || []);
   return {
