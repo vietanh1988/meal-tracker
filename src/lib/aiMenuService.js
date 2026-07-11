@@ -576,6 +576,54 @@ export function getSwapCandidates(foodKey, currentMealFoods = []) {
     .sort();
 }
 
+// ============================================================
+// ĐƠN VỊ TỰ NHIÊN — CHỈ dùng để HIỂN THỊ ("3 quả (150g)" thay vì chỉ
+// "150g"), KHÔNG đụng gì tới gram/macro thật (vẫn tính bằng gram như cũ,
+// đây chỉ là lớp format phía trên). Chỉ định nghĩa cho món có đơn vị tự
+// nhiên RÕ RÀNG (đếm được/múc muỗng/múc bát) — món cân theo trọng lượng
+// (thịt/cá/rau lá) vẫn hiện gram thẳng, đúng cách app dinh dưỡng VN
+// thường làm, không cố ép đơn vị cho mọi món.
+// Số liệu hiệu chỉnh theo đúng ảnh mẫu user gửi (trứng 50g/quả, chuối
+// 120g/quả, cơm ~150g/bát, bánh mì lát 40g/lát...).
+// ============================================================
+const DISPLAY_UNIT = {
+  "trứng gà": { unit: "quả", gramPerUnit: 50 },
+  "trứng gà luộc": { unit: "quả", gramPerUnit: 50 },
+  "chuối": { unit: "quả", gramPerUnit: 120 },
+  "cam": { unit: "quả", gramPerUnit: 150 },
+  "táo": { unit: "quả", gramPerUnit: 150 },
+  "ổi": { unit: "quả", gramPerUnit: 150 },
+  "dưa leo": { unit: "quả", gramPerUnit: 100 },
+  "cà chua": { unit: "quả", gramPerUnit: 80 },
+  "khoai lang": { unit: "củ", gramPerUnit: 100 },
+  "lạc": { unit: "muỗng", gramPerUnit: 10 },
+  "đậu phộng": { unit: "muỗng", gramPerUnit: 10 },
+  "mè": { unit: "muỗng", gramPerUnit: 5 },
+  "whey": { unit: "muỗng", gramPerUnit: 30 },
+  "cơm trắng": { unit: "bát", gramPerUnit: 150 },
+  "bún": { unit: "bát", gramPerUnit: 150 },
+  "cháo": { unit: "bát", gramPerUnit: 250 },
+  "xôi": { unit: "phần", gramPerUnit: 150 },
+  "bánh mì": { unit: "lát", gramPerUnit: 40 },
+  "dưa hấu": { unit: "miếng", gramPerUnit: 150 },
+};
+
+/**
+ * Format gram thành đơn vị tự nhiên cho user đọc dễ hơn, VD "3 quả (150g)".
+ * Món không có trong bảng (thịt/cá/rau cân theo trọng lượng) → trả thẳng
+ * "150g" như trước — không phải lỗi, là thiết kế (đúng cách cân đo thật).
+ */
+export function formatFoodPortion(foodKey, gram) {
+  const key = (foodKey || "").toLowerCase().trim();
+  const unit = DISPLAY_UNIT[key];
+  if (!unit || !gram) return `${gram}g`;
+  const qty = gram / unit.gramPerUnit;
+  const rounded = Math.round(qty * 2) / 2; // làm tròn tới 0.5 gần nhất — tự nhiên hơn số lẻ
+  const qtyLabel = Number.isInteger(rounded) ? rounded : rounded.toFixed(1);
+  if (rounded <= 0) return `${gram}g`;
+  return `${qtyLabel} ${unit.unit} (${gram}g)`;
+}
+
 export function sumTemplate(template) {
   const all = (template.meals || []).flatMap(m => m.items || []);
   return {

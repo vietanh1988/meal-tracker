@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
-import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames } from "./lib/aiMenuService";
+import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion } from "./lib/aiMenuService";
 import { ALL_MEALS } from "./mealConstants";
 
 // Render markdown NHẸ cho câu trả lời AI — chỉ những gì AI thật sự hay dùng:
@@ -507,24 +507,49 @@ maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,
 </span>
 :(m.role==="assistant"?renderMarkdownLite(m.content):m.content)}
 {m.action==="open_ai_menu"&&<button onClick={()=>setShowAIMenuFromChat(true)} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Mở AI tạo thực đơn</button>}
-{m.action==="menu_preview"&&m.template&&<div style={{marginTop:8,background:"#fff",borderRadius:10,border:`1px solid ${C2.border}`,padding:10}}>
+{m.action==="menu_preview"&&m.template&&(()=>{
+const total=sumTemplate(m.template);
+const target=dayTarget(macro,m.template.day_type||"train");
+const pct=(v,t)=>t?Math.round(v/t*100):0;
+return <div style={{marginTop:8,background:"#fff",borderRadius:10,border:`1px solid ${C2.border}`,padding:10}}>
+{/* Thẻ tổng macro — cùng kiểu Cal/P/C/F + % target như tab Tổng quan, để
+    user thấy rõ ràng ngay trong chat, không phải đọc từng bữa mới suy ra. */}
+<div style={{padding:"8px 10px",background:C2.bg,borderRadius:8,marginBottom:8}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6}}>
+<span style={{fontSize:11,fontWeight:700,color:C2.t3}}>TỔNG NĂNG LƯỢNG</span>
+<span><b style={{fontSize:16,color:C2.t1}}>{total.cal}</b><span style={{fontSize:11,color:C2.t3}}> / {target.cal} kcal</span></span>
+</div>
+<div style={{display:"flex",gap:10}}>
+{[["Đạm",total.p,target.p,"#007AFF"],["Carb",total.c,target.c,"#5AC8FA"],["Béo",total.f,target.f,"#8E8E93"]].map(([label,v,t,color])=>
+<div key={label} style={{flex:1}}>
+<div style={{fontSize:10,color:C2.t3,fontWeight:600}}>{label}</div>
+<div style={{fontSize:12,fontWeight:700,color}}>{v}g <span style={{fontSize:10,color:C2.t3,fontWeight:600}}>({pct(v,t)}%)</span></div>
+</div>)}
+</div>
+</div>
+
 {(m.template.meals||[]).map(mm=>{
 const meta=ALL_MEALS.find(x=>x.id===mm.meal_id);
 const cal=Math.round((mm.items||[]).reduce((s,it)=>s+(it.cal||0),0));
-const foods=(mm.items||[]).map(it=>it.food).join(", ");
-return <div key={mm.meal_id} style={{padding:"5px 0",borderBottom:`1px solid ${C2.border}`}}>
+return <div key={mm.meal_id} style={{padding:"6px 0",borderBottom:`1px solid ${C2.border}`}}>
 <div style={{display:"flex",justifyContent:"space-between",fontSize:12,fontWeight:700,color:C2.t1}}>
 <span>{meta?.icon} {mm.pattern||meta?.name||mm.meal_id}</span><span style={{color:C2.t3,fontWeight:600}}>{cal} kcal</span>
 </div>
-{mm.pattern&&<div style={{fontSize:10,color:C2.t3,marginTop:1}}>{meta?.name||mm.meal_id}</div>}
-<div style={{fontSize:11,color:C2.t2,marginTop:1}}>{foods}</div>
+{mm.pattern&&<div style={{fontSize:10,color:C2.t3,marginTop:1,marginBottom:3}}>{meta?.name||mm.meal_id}</div>}
+{/* Mỗi món 1 dòng riêng, dùng đơn vị tự nhiên ("3 quả (150g)") thay vì
+    gộp chung "trứng gà, cơm, rau" — rõ ràng hơn, đúng góp ý user. */}
+{(mm.items||[]).map(it=><div key={it.food} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C2.t2,padding:"1px 0"}}>
+<span style={{textTransform:"capitalize"}}>{it.food}</span>
+<span style={{color:C2.t3}}>{formatFoodPortion(it.food,it.gram)}</span>
+</div>)}
 </div>;
 })}
 <div style={{display:"flex",gap:6,marginTop:10}}>
 <button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1,padding:"9px",borderRadius:8,border:"none",background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>➕ Thêm vào thực đơn hôm nay</button>
 <button onClick={()=>setShowAIMenuFromChat(true)} style={{padding:"9px 12px",borderRadius:8,border:`1.5px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
 </div>
-</div>}
+</div>;
+})()}
 </div>)}
 {loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
 <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>
