@@ -64,6 +64,10 @@ export const MEAL_PATTERNS = {
       slots: { protein: "trứng gà", carb: "yến mạch", veg: "cà chua" },
       popularity: 3, prepMinutes: 10, buyable: false,
       reasonTemplate: { bulk: "Yến mạch giàu carb phức hợp, no lâu cho ngày tập" } },
+
+    { name: "Xôi đậu phụ",
+      slots: { protein: "đậu phụ", carb: "xôi", veg: "dưa leo" }, // hoàn toàn không trứng — cho người vừa chay vừa tránh trứng, 9 pattern sáng còn lại đều dùng trứng
+      popularity: 2, prepMinutes: 10, buyable: true },
   ],
 
   trua: [
@@ -91,6 +95,15 @@ export const MEAL_PATTERNS = {
       slots: { protein: "đậu phụ", carb: "cơm trắng", veg: "bông cải xanh", fruit: "chuối" },
       popularity: 3, prepMinutes: 20, buyable: true,
       reasonTemplate: { cut: "Đạm thực vật, ít béo, hợp người ăn chay" } },
+
+    { name: "Đậu nành xào nấm",
+      slots: { protein: "đậu nành", carb: "cơm trắng", veg: "nấm", fruit: "cam" },
+      popularity: 3, prepMinutes: 20, buyable: false,
+      reasonTemplate: { cut: "Đạm thực vật, nấm giàu chất xơ ít calo" } },
+
+    { name: "Bún đậu phụ",
+      slots: { protein: "đậu phụ", carb: "bún", veg: "rau muống", fruit: "chuối" },
+      popularity: 4, prepMinutes: 15, buyable: true },
 
     { name: "Cơm cá rô phi",
       slots: { protein: "cá rô phi", carb: "cơm trắng", veg: "bí đỏ", fruit: "dưa hấu" },
@@ -135,6 +148,11 @@ export const MEAL_PATTERNS = {
       slots: { protein: "đậu phụ", carb: "khoai lang", veg: "bông cải xanh" },
       popularity: 3, prepMinutes: 20, buyable: false,
       reasonTemplate: { cut: "Khoai lang thay cơm — carb chậm hơn, no lâu hơn buổi tối" } },
+
+    { name: "Đậu nành xào nấm",
+      slots: { protein: "đậu nành", carb: "cơm trắng", veg: "nấm" },
+      popularity: 3, prepMinutes: 20, buyable: false,
+      reasonTemplate: { cut: "Đạm thực vật, nấm giàu chất xơ ít calo" } },
 
     { name: "Tôm rau",
       slots: { protein: "tôm", carb: "cơm trắng", veg: "su su" },
