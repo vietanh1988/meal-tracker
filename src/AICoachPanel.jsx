@@ -72,8 +72,17 @@ const MENU_GEN_KEYWORDS = [
 "lên món", "tự động tạo thực đơn", "ai tạo thực đơn",
 ];
 function containsMenuGenIntent(text) {
-const normalized = (text || "").toLowerCase();
-return MENU_GEN_KEYWORDS.some(k => normalized.includes(k));
+const n = (text || "").toLowerCase();
+// Exact keyword match
+if (MENU_GEN_KEYWORDS.some(k => n.includes(k))) return true;
+// Flexible: "thực đơn" hoặc "menu" + bất kỳ từ hành động nào
+// (bắt "bạn tạo giúp tôi thực đơn đi", "giúp mình lên menu", v.v.)
+const hasMenu = n.includes("thực đơn") || n.includes("menu");
+const hasAction = ["tạo","lên","gợi ý","gợi","cho","giúp","làm","soạn","đề xuất","xây","viết","nghĩ"].some(w => n.includes(w));
+if (hasMenu && hasAction) return true;
+// "ăn gì" / "nấu gì" luôn là intent
+if (n.includes("ăn gì") || n.includes("nấu gì")) return true;
+return false;
 }
 
 export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory}){
