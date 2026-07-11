@@ -424,7 +424,7 @@ const handleApplyAIMenuChat=async(tpl)=>{
 try{
 if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
 if(applyTemplate)await applyTemplate(tpl);
-clearAIMenu();
+await clearAIMenu(userId);
 const doneMsg={role:"assistant",content:"✅ Đã thêm thực đơn vào hôm nay! Quay lại tab Tổng quan để xem chi tiết nhé."};
 setMessages(prev=>[...prev,doneMsg]);
 saveMsg("assistant",doneMsg.content);
@@ -448,18 +448,19 @@ saveMsg("assistant",welcome);
 }
 },[historyLoaded]);
 
-// Restore saved AI menu from localStorage on mount
+// Restore saved AI menu from Supabase on mount (mọi thiết bị đều thấy)
 useEffect(()=>{
 if(!historyLoaded||!userId)return;
-const saved=loadAIMenu(userId);
+(async()=>{
+const saved=await loadAIMenu(userId);
 if(saved&&saved.meals&&saved.meals.length>0){
-const total=sumTemplate(saved);
 const summary="Đây là thực đơn AI đã gợi ý cho bạn hôm nay (khôi phục từ phiên trước):";
 const alreadyHasMenu=messages.some(mm=>mm.action==="menu_preview");
 if(!alreadyHasMenu){
 setMessages(prev=>[...prev,{role:"assistant",content:summary,action:"menu_preview",template:saved}]);
 }
 }
+})();
 },[historyLoaded,userId]);
 
 const quickPrompts=(()=>{
@@ -511,10 +512,10 @@ Tự parse ~95% trường hợp thật, không cần thêm thư viện markdown,
 không dùng dangerouslySetInnerHTML (build React elements, an toàn). */}
 <div ref={chatRef} style={{flex:1,overflowY:"auto",padding:"12px 18px",display:"flex",flexDirection:"column",gap:10}}>
 {messages.map((m,i)=><div key={i} style={{
-maxWidth:"85%",padding:"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,
+maxWidth:m.action==="menu_preview"?"100%":"85%",padding:m.action==="menu_preview"?"4px 0":"10px 14px",borderRadius:12,fontSize:13,lineHeight:1.6,
 ...(m.role==="user"
-?{alignSelf:"flex-end",background:C2.primary,color:"#fff",borderBottomRightRadius:4,whiteSpace:"pre-wrap"}
-:{alignSelf:"flex-start",background:C2.bg,color:C2.t1,borderTopLeftRadius:4})
+?{alignSelf:"flex-end",background:C2.primary,color:"#fff",borderBottomRightRadius:4,whiteSpace:"pre-wrap",maxWidth:"85%",padding:"10px 14px"}
+:{alignSelf:"flex-start",background:m.action==="menu_preview"?"transparent":C2.bg,color:C2.t1,borderTopLeftRadius:4})
 }}>
 {m.role==="assistant"&&<div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>}
 {m.loading
@@ -530,59 +531,56 @@ const target=dayTarget(macro,m.template.day_type||"train");
 const pct=(v,t)=>t?Math.round(v/t*100):0;
 const pctBar=(v,t)=>Math.min(100,pct(v,t));
 const macroColor=(v,t)=>{const r=pct(v,t);return r>110?"#EF4444":r>=90?"#22C55E":"#3B82F6";};
-return <div style={{marginTop:8,background:"#fff",borderRadius:12,border:`1px solid ${C2.border}`,overflow:"hidden"}}>
+return <div style={{marginTop:8,background:"#fff",borderRadius:12,border:`1px solid ${C2.border}`,overflow:"hidden",maxWidth:"100%",width:"100%"}}>
 
-{/* Macro summary — 4 columns with progress bars */}
-<div style={{padding:"14px 16px",borderBottom:`1px solid ${C2.border}`}}>
-<div style={{display:"flex",gap:8,marginBottom:10}}>
+{/* Macro summary */}
+<div style={{padding:"16px 18px",borderBottom:`1px solid ${C2.border}`}}>
+<div style={{display:"flex",gap:12,marginBottom:12}}>
 {[["Tổng năng lượng",total.cal,target.cal,"#3B82F6",true],["Protein",total.p,target.p,"#8B5CF6",false],["Carb",total.c,target.c,"#F59E0B",false],["Fat",total.f,target.f,"#22C55E",false]].map(([label,v,t,color,isCal])=>
 <div key={label} style={{flex:1,minWidth:0}}>
-<div style={{fontSize:10,color:C2.t3,fontWeight:500,marginBottom:2}}>{label}</div>
-<div style={{fontSize:isCal?18:16,fontWeight:700,color:isCal?C2.t1:macroColor(v,t)}}>{isCal?v.toLocaleString():v+"g"}</div>
-<div style={{fontSize:10,color:C2.t3}}>/ {isCal?t.toLocaleString()+" kcal":t+"g"} ({pct(v,t)}%)</div>
+<div style={{fontSize:10,color:C2.t3,fontWeight:500,marginBottom:3}}>{label}</div>
+<div style={{fontSize:isCal?20:17,fontWeight:700,color:isCal?C2.t1:macroColor(v,t)}}>{isCal?v.toLocaleString():v+"g"}</div>
+<div style={{fontSize:10,color:C2.t3,marginTop:1}}>/ {isCal?t.toLocaleString()+" kcal":t+"g"} ({pct(v,t)}%)</div>
 </div>)}
 </div>
-{/* Progress bar */}
-<div style={{height:4,borderRadius:2,background:"#E2E8F0",display:"flex",overflow:"hidden",gap:1}}>
-<div style={{width:pctBar(total.p,target.p)*0.25+"%",background:"#8B5CF6",borderRadius:2,transition:"width 0.3s"}}/>
-<div style={{width:pctBar(total.c,target.c)*0.5+"%",background:"#F59E0B",borderRadius:2,transition:"width 0.3s"}}/>
-<div style={{width:pctBar(total.f,target.f)*0.25+"%",background:"#22C55E",borderRadius:2,transition:"width 0.3s"}}/>
+<div style={{height:5,borderRadius:3,background:"#E2E8F0",display:"flex",overflow:"hidden",gap:1}}>
+<div style={{width:pctBar(total.p,target.p)*0.25+"%",background:"#8B5CF6",borderRadius:3}}/>
+<div style={{width:pctBar(total.c,target.c)*0.5+"%",background:"#F59E0B",borderRadius:3}}/>
+<div style={{width:pctBar(total.f,target.f)*0.25+"%",background:"#22C55E",borderRadius:3}}/>
 </div>
-{profile&&<div style={{fontSize:10,color:C2.t3,marginTop:8,textAlign:"center"}}>Gợi ý được cá nhân hóa dựa trên: {profile.kg||65}kg • {profile.cm||170}cm • Tập {profile.trainDays||5} buổi/tuần</div>}
+{profile&&<div style={{fontSize:10,color:C2.t3,marginTop:10,textAlign:"center"}}>Gợi ý được cá nhân hóa dựa trên: {profile.kg||65}kg • {profile.cm||170}cm • Tập {profile.trainDays||5} buổi/tuần</div>}
 </div>
 
-{/* Meal cards */}
+{/* Meal cards — spacious */}
 {(m.template.meals||[]).map(mm=>{
 const meta=ALL_MEALS.find(x=>x.id===mm.meal_id);
 const cal=Math.round((mm.items||[]).reduce((s,it)=>s+(it.cal||0),0));
 const time=MEAL_TIMES[mm.meal_id]||"";
-// Hiển thị items — ẩn filler béo (display=null hoặc role fat có gram nhỏ)
 const visibleItems=(mm.items||[]).filter(it=>it.display!==null&&it.gram>0&&!(getFoodRole(it.food)==="fat"&&it.gram<30));
-return <div key={mm.meal_id} style={{padding:"12px 16px",borderBottom:`1px solid ${C2.border}`}}>
-{/* Meal header */}
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:8}}>
-<span><span style={{fontSize:13,fontWeight:700,color:"#3B82F6"}}>{meta?.name||mm.meal_id}</span>{time&&<span style={{fontSize:11,color:C2.t3,marginLeft:6}}>{time}</span>}</span>
-<span style={{fontSize:13,fontWeight:700,color:"#3B82F6"}}>{cal} kcal</span>
+return <div key={mm.meal_id} style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}>
+<span><span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{meta?.name||mm.meal_id}</span>{time&&<span style={{fontSize:12,color:C2.t3,marginLeft:8}}>{time}</span>}</span>
+<span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{cal} kcal</span>
 </div>
-{/* Dishes — tên món có cách nấu, portion bên dưới */}
 {visibleItems.map(it=>{
-const displayName=it.display||capitalizeFirst(it.food);
+const dn=it.display||capitalizeFirst(it.food);
 const portion=formatFoodPortion(it.food,it.gram);
-const itemCal=Math.round(it.cal||0);
-return <div key={it.food+displayName} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"4px 0 4px 8px"}}>
-<div>
-<div style={{fontSize:12,fontWeight:600,color:C2.t1}}>{capitalizeFirst(displayName)}</div>
-<div style={{fontSize:11,color:C2.t3}}>{portion}</div>
+const ic=Math.round(it.cal||0);
+return <div key={it.food+dn} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"6px 0 6px 10px"}}>
+<div style={{flex:1}}>
+<div style={{fontSize:13,fontWeight:600,color:C2.t1}}>{capitalizeFirst(dn)}</div>
+<div style={{fontSize:11,color:C2.t3,marginTop:1}}>{portion}</div>
 </div>
-<div style={{fontSize:11,color:C2.t3,flexShrink:0,marginLeft:8,paddingTop:1}}>{itemCal} kcal</div>
+<div style={{fontSize:12,color:C2.t3,flexShrink:0,marginLeft:12,paddingTop:2}}>{ic} kcal</div>
 </div>;})}
 </div>;
 })}
 
-{/* Action buttons */}
-<div style={{display:"flex",gap:0,borderTop:`1px solid ${C2.border}`}}>
-<button onClick={()=>{setShowAIMenuFromChat(true);}} style={{flex:1,padding:"11px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Đổi thực đơn khác</button>
-<button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1.2,padding:"11px",border:"none",background:"#3B82F6",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",borderRadius:"0 0 12px 0"}}>Thêm vào hôm nay</button>
+{/* 3 buttons: Đổi | Tính lại | Thêm */}
+<div style={{display:"flex",gap:0}}>
+<button onClick={()=>setShowAIMenuFromChat(true)} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Đổi thực đơn khác</button>
+<button onClick={()=>sendMessage("Gợi ý thực đơn hôm nay")} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:"#F59E0B",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🔄 Tính lại</button>
+<button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1.2,padding:"12px",border:"none",background:"#3B82F6",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",borderRadius:"0 0 12px 0"}}>Thêm vào hôm nay</button>
 </div>
 </div>;
 })()}

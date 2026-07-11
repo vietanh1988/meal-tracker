@@ -430,17 +430,10 @@ export function buildVirtualTemplate(meals, dayType) {
       const items = m.foods
         .map(f => foodToItem(f.key, undefined, f.display))
         .filter(Boolean);
-      // dessert thêm cuối (trước filler)
       if (m.dessert) {
         const di = foodToItem(m.dessert.key, undefined, m.dessert.display);
         if (di) items.push(di);
       }
-      // Sắp xếp: carb → protein → rau/canh → dessert → filler béo
-      items.sort((a, b) => {
-        const ra = ROLE_ORDER[getFoodRole(a.food)] ?? 2;
-        const rb = ROLE_ORDER[getFoodRole(b.food)] ?? 2;
-        return ra - rb;
-      });
       return { meal_id: m.meal_id, items };
     }),
   };
@@ -455,14 +448,22 @@ function stripZeroGramItems(template) {
   };
 }
 
-// Attach pattern + display names AFTER engine recalculates grams
+// Attach pattern + display names AFTER engine recalculates grams,
+// then SORT by Vietnamese meal order (carb → protein → rau → filler)
+// Engine reorders by role internally, so sorting before engine is useless.
+const DISPLAY_ORDER = { carb: 0, protein: 1, fixed: 2, fat: 9 };
+
 function attachPatternAndDisplay(template, norm) {
   const infoByMealId = {};
   (norm.meals || []).forEach(m => {
     const displayMap = {};
-    (m.foods || []).forEach(f => { if (f.display) displayMap[f.key] = f.display; });
+    const roleMap = {};
+    (m.foods || []).forEach(f => {
+      if (f.display) displayMap[f.key] = f.display;
+      if (f.role) roleMap[f.key] = f.role;
+    });
     if (m.dessert && m.dessert.display) displayMap[m.dessert.key] = m.dessert.display;
-    infoByMealId[m.meal_id] = { pattern: m.pattern, displayMap };
+    infoByMealId[m.meal_id] = { pattern: m.pattern, displayMap, roleMap };
   });
   return {
     ...template,
@@ -472,6 +473,12 @@ function attachPatternAndDisplay(template, norm) {
         ...it,
         display: it.display || info.displayMap?.[it.food] || null,
       }));
+      // Sort: carb (cơm/bún) → protein (thịt/cá) → fixed (rau/canh) → fat (filler)
+      items.sort((a, b) => {
+        const ra = DISPLAY_ORDER[info.roleMap?.[a.food] || getFoodRole(a.food)] ?? 2;
+        const rb = DISPLAY_ORDER[info.roleMap?.[b.food] || getFoodRole(b.food)] ?? 2;
+        return ra - rb;
+      });
       return { ...m, items, pattern: info.pattern || null };
     }),
   };
@@ -654,29 +661,41 @@ export function sumTemplate(template) {
 }
 
 // ============================================================
-// 8. PERSISTENCE — lưu menu qua localStorage
+// 8. PERSISTENCE — lưu menu qua Supabase (mọi thiết bị đều thấy)
 // ============================================================
-const STORAGE_KEY = "fipilot_ai_menu";
+import { supabase } from "./supabase";
 
-export function saveAIMenu(template, userId) {
+export async function saveAIMenu(template, userId) {
+  if (!userId || !template) return;
   try {
-    const data = { template, userId, savedAt: new Date().toISOString(), date: new Date().toISOString().slice(0, 10) };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const today = new Date().toISOString().slice(0, 10);
+    await supabase.from("ai_menu_cache").upsert({
+      user_id: userId,
+      menu_date: today,
+      template,
+    }, { onConflict: "user_id,menu_date" });
   } catch (e) { console.error("saveAIMenu error:", e); }
 }
 
-export function loadAIMenu(userId) {
+export async function loadAIMenu(userId) {
+  if (!userId) return null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    // Chỉ trả về nếu cùng user + cùng ngày
     const today = new Date().toISOString().slice(0, 10);
-    if (data.userId !== userId || data.date !== today) return null;
+    const { data, error } = await supabase
+      .from("ai_menu_cache")
+      .select("template")
+      .eq("user_id", userId)
+      .eq("menu_date", today)
+      .maybeSingle();
+    if (error || !data) return null;
     return data.template;
   } catch (e) { return null; }
 }
 
-export function clearAIMenu() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+export async function clearAIMenu(userId) {
+  if (!userId) return;
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    await supabase.from("ai_menu_cache").delete().eq("user_id", userId).eq("menu_date", today);
+  } catch (e) {}
 }
