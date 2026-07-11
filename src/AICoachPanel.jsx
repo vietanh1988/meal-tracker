@@ -77,6 +77,13 @@ return MENU_GEN_KEYWORDS.some(k => normalized.includes(k));
 export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory}){
 const [messages,setMessages]=useState([]);
 const [showAIMenuFromChat,setShowAIMenuFromChat]=useState(false);
+// Variety tầng SESSION — nhớ pattern đã hiện ra trong CHÍNH phiên chat này
+// (kể cả khi user CHƯA bấm "Thêm vào thực đơn hôm nay" để lưu thật). Trước
+// đây Variety chỉ đọc lịch sử ĐÃ LƯU (meal_logs) — nếu user gõ lại nhiều
+// lần liên tiếp mà không lưu lần nào, AI không có gì để tránh lặp, dễ ra
+// lại y hệt (bug thật: "Bún thịt" lặp lại nhiều lần trong 1 phiên test).
+// useRef (không phải useState) vì chỉ cần đọc/ghi, không cần re-render.
+const shownPatternsRef=useRef(new Set());
 const [input,setInput]=useState("");
 const [loading,setLoading]=useState(false);
 // Mobile: bàn phím ảo đã chiếm nửa màn hình, disclaimer 2 dòng ăn thêm chỗ
@@ -349,14 +356,15 @@ const dt=todayData?.dayType==="rest"?"rest":"train";
 // nhân > appSettings.meal_config admin > mặc định cứng) — trước đây
 // hardcode DEFAULT_MEAL_CONFIG khiến AI sinh cả bữa user đã tắt.
 const mealIds=resolveMealIds(dt,profile,appSettings);
-// Variety — không gợi ý lại pattern đã ăn trong 3 ngày gần nhất, cùng cơ
-// chế với AIMenuGenerator (form đầy đủ), không viết logic riêng lần 2.
-let avoidPatternNames;
+// Variety — gộp 2 nguồn: (1) đã ăn thật 3 ngày gần nhất (meal_logs), (2)
+// đã hiện ra trong CHÍNH phiên chat này dù chưa lưu (shownPatternsRef).
+// Thiếu nguồn (2) thì gõ lại nhiều lần liên tiếp dễ ra y hệt lần trước.
+const avoidPatternNames=new Set(shownPatternsRef.current);
 if(getMealHistory){
 try{
 const start=new Date();start.setDate(start.getDate()-3);
 const history=await getMealHistory(start.toISOString().slice(0,10),new Date().toISOString().slice(0,10));
-avoidPatternNames=getRecentPatternNames(history,3);
+getRecentPatternNames(history,3).forEach(n=>avoidPatternNames.add(n));
 }catch(e){console.error("Variety history fetch error:",e);}
 }
 const res=await generateMenuAI({macro,profile,dayType:dt,mealIds,prefs:{style:"vn",avoid:""},avoidPatternNames,appSettings});
@@ -366,6 +374,9 @@ const summary=`Đây là thực đơn AI ghép cho ${dt==="train"?"ngày tập":
 const menuMsg={role:"assistant",content:summary,action:"menu_preview",template:res.template};
 setMessages(prev=>prev.map(mm=>mm.id===loadingId?menuMsg:mm));
 saveMsg("assistant",summary);
+// Ghi nhớ pattern vừa hiện — lần gõ TIẾP THEO trong phiên này sẽ tránh lặp,
+// kể cả khi user chưa bấm "Thêm vào thực đơn hôm nay" để lưu thật.
+res.template.meals.forEach(m=>{if(m.pattern)shownPatternsRef.current.add(m.pattern);});
 }else{
 const errMsg={role:"assistant",content:`Mình chưa ghép được thực đơn tự động lúc này. Bạn mở công cụ đầy đủ để thử lại hoặc tự chỉnh nhé!`,action:"open_ai_menu"};
 setMessages(prev=>prev.map(mm=>mm.id===loadingId?errMsg:mm));

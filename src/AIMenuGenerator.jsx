@@ -12,7 +12,7 @@
 //   onClose   : () => void
 //   onFallbackToLibrary : () => void — mở Kho mẫu khi AI fail hẳn
 // ============================================================
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { C, card, redBtn, fs, fw, sp, radius } from "./theme";
 import { ALL_MEALS } from "./mealConstants";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
@@ -44,6 +44,10 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   const [error, setError] = useState("");
   const [swapping, setSwapping] = useState(null); // {mealId, food} — đổi 1 nguyên liệu
   const [swappingPattern, setSwappingPattern] = useState(null); // mealId — đổi cả món
+  // Variety tầng SESSION — nhớ pattern đã hiện trong phiên này (kể cả khi
+  // chưa bấm "Dùng thực đơn này" để lưu thật) — bấm "🔄 Tạo lại" nhiều
+  // lần liên tiếp sẽ KHÔNG ra lại y hệt lần trước.
+  const shownPatternsRef = useRef(new Set());
 
   // Đúng danh sách bữa THẬT user đang thấy (ưu tiên profile.mealConfig cá
   // nhân > appSettings.meal_config admin > mặc định cứng) — KHÔNG hardcode
@@ -60,20 +64,23 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
     const quota = await checkAndConsumeAiQuota(user?.id, "macro");
     if (!quota.allowed) { setError(quota.message); setStep("error"); return; }
 
-    // Variety — không gợi ý lại pattern đã ăn trong 3 ngày gần nhất. Không
-    // có getMealHistory (chưa truyền prop, hoặc user mới chưa đăng nhập)
-    // thì bỏ qua bước này, generate vẫn chạy bình thường như trước.
-    let avoidPatternNames;
+    // Variety — gộp 2 nguồn: (1) đã ăn thật 3 ngày gần nhất (meal_logs),
+    // (2) đã hiện trong CHÍNH phiên này dù chưa lưu (shownPatternsRef).
+    const avoidPatternNames = new Set(shownPatternsRef.current);
     if (getMealHistory) {
       try {
         const start = new Date(); start.setDate(start.getDate() - 3);
         const history = await getMealHistory(start.toISOString().slice(0, 10), new Date().toISOString().slice(0, 10));
-        avoidPatternNames = getRecentPatternNames(history, 3);
+        getRecentPatternNames(history, 3).forEach(n => avoidPatternNames.add(n));
       } catch (e) { console.error("Variety history fetch error:", e); }
     }
 
     const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs: { style, avoid }, avoidPatternNames, appSettings });
-    if (res.ok) { setTemplate(res.template); setNote(res.note); setStep("preview"); }
+    if (res.ok) {
+      setTemplate(res.template); setNote(res.note); setStep("preview");
+      // Ghi nhớ pattern vừa hiện — bấm "Tạo lại" lần sau sẽ tránh lặp.
+      res.template.meals.forEach(m => { if (m.pattern) shownPatternsRef.current.add(m.pattern); });
+    }
     else { setError(res.error); setStep("error"); }
   };
 
