@@ -37,7 +37,7 @@ export function MealCard({meal}){
         <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.fiber,textAlign:"right"}}>Xơ</span><span style={{color:C.t2,textAlign:"right"}}>Cal</span>
       </div>
       {meal.items.map((item,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<meal.items.length-1?`1px solid ${C.border}`:"none"}}>
-        <span style={{color:C.t1,fontWeight:700}}>{item.food}</span>
+        <span style={{color:C.t1,fontWeight:700}}>{(item.display||item.food||"").charAt(0).toUpperCase()+(item.display||item.food||"").slice(1)}</span>
         <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display?item.qty_display:item.gram?(item.gram+(item.unit==="ml"?"ml":"g")):""}</span>
         <span style={{color:C.protein,textAlign:"right",fontSize:mob?11:13}}>{item.p}</span>
         <span style={{color:C.carb,textAlign:"right",fontSize:mob?11:13}}>{item.c}</span>

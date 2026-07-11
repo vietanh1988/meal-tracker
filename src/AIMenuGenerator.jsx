@@ -19,8 +19,9 @@ import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
   generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentPatternNames,
-  swapPatternInTemplate, getPatternReason, getAvailablePatterns, buildExclusionKeys, formatFoodPortion, capitalizeFirst,
+  swapPatternInTemplate, getPatternReason, getAvailablePatterns, buildExclusionKeys, formatFoodPortion, capitalizeFirst, saveAIMenu,
 } from "./lib/aiMenuService";
+import { MEAL_TIMES } from "./mealPatterns";
 
 const STYLES = [
   { id: "vn", label: "🍚 Cơm nhà VN", desc: "Cơm, canh, món mặn quen thuộc" },
@@ -78,7 +79,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
     const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs: { style, avoid }, avoidPatternNames, appSettings });
     if (res.ok) {
       setTemplate(res.template); setNote(res.note); setStep("preview");
-      // Ghi nhớ pattern vừa hiện — bấm "Tạo lại" lần sau sẽ tránh lặp.
+      saveAIMenu(res.template, user?.id);
       res.template.meals.forEach(m => { if (m.pattern) shownPatternsRef.current.add(m.pattern); });
     }
     else { setError(res.error); setStep("error"); }
@@ -190,16 +191,18 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
         const meta = ALL_MEALS.find(x => x.id === m.meal_id);
         const mealCal = Math.round((m.items || []).reduce((s, i) => s + (i.cal || 0), 0));
         const reason = m.pattern ? getPatternReason(m.meal_id, m.pattern, macro.goal) : null;
+        const time = MEAL_TIMES[m.meal_id] || "";
+        const visibleItems = (m.items || []).filter(it => it.display !== null && it.gram > 0 && !(getFoodDisplayCategory(it.food) === "fat" && it.gram < 30));
         return (
           <div key={m.meal_id} style={card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: sp.lg }}>
               <div>
-                <span style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: C.t1 }}>{meta?.icon} {m.pattern || meta?.name || m.meal_id}</span>
-                {m.pattern && <div style={{ fontSize: fs.sm, color: C.t3, marginTop: 1 }}>{meta?.name || m.meal_id}</div>}
+                <span style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: "#3B82F6" }}>{meta?.name || m.meal_id}</span>
+                {time && <span style={{ fontSize: fs.md, color: C.t3, marginLeft: 6 }}>{time}</span>}
                 {reason && <div style={{ fontSize: fs.sm, color: C.primary, marginTop: 3 }}>💡 {reason}</div>}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                <span style={{ fontSize: fs.base, fontWeight: fw.bold, color: C.t3 }}>{mealCal} kcal</span>
+                <span style={{ fontSize: fs.base, fontWeight: fw.bold, color: "#3B82F6" }}>{mealCal} kcal</span>
                 {m.pattern && (
                   <button onClick={() => setSwappingPattern(m.meal_id)}
                     style={{ border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius.lg, padding: "3px 8px", cursor: "pointer", fontSize: fs.sm, fontFamily: "inherit", color: C.t2, fontWeight: fw.bold, whiteSpace: "nowrap" }}>
@@ -208,19 +211,23 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
                 )}
               </div>
             </div>
-            {(m.items || []).map(it => {
-              const cat = getFoodDisplayCategory(it.food);
+            {visibleItems.map(it => {
+              const displayName = capitalizeFirst(it.display || it.food);
+              const portion = formatFoodPortion(it.food, it.gram);
+              const itemCal = Math.round(it.cal || 0);
               return (
-                <div key={it.food} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${sp.md}px 0`, borderBottom: `1px solid ${C.border}` }}>
-                  <div>
-                    <span style={{ fontSize: fs.sm, fontWeight: fw.bold, color: CAT_COLOR[cat], background: C.surface, borderRadius: radius.sm, padding: "1px 6px", marginRight: sp.md }}>{CAT_LABEL[cat]}</span>
-                    <span style={{ fontSize: fs.lg, fontWeight: fw.semibold, color: C.t1 }}>{capitalizeFirst(it.food)}</span>
-                    <span style={{ fontSize: fs.md, color: C.t3, marginLeft: sp.md }}>{formatFoodPortion(it.food, it.gram)} · {it.cal} kcal</span>
+                <div key={it.food + (it.display||"")} style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: `${sp.md}px 0`, borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: fs.lg, fontWeight: fw.semibold, color: C.t1 }}>{displayName}</div>
+                    <div style={{ fontSize: fs.md, color: C.t3 }}>{portion}</div>
                   </div>
-                  <button onClick={() => setSwapping({ mealId: m.meal_id, food: it.food, inMeal: m.items.map(x => x.food) })}
-                    style={{ border: "none", background: C.surface, borderRadius: radius.lg, padding: "4px 10px", cursor: "pointer", fontSize: fs.sm, fontFamily: "inherit", color: C.t2, fontWeight: fw.bold }}>
-                    Đổi
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                    <span style={{ fontSize: fs.md, color: C.t3 }}>{itemCal} kcal</span>
+                    <button onClick={() => setSwapping({ mealId: m.meal_id, food: it.food, inMeal: m.items.map(x => x.food) })}
+                      style={{ border: "none", background: C.surface, borderRadius: radius.lg, padding: "4px 10px", cursor: "pointer", fontSize: fs.sm, fontFamily: "inherit", color: C.t2, fontWeight: fw.bold }}>
+                      Đổi
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -239,8 +246,9 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
               Thay "{swapping.food}" bằng món cùng nhóm
             </div>
             {getSwapCandidates(swapping.food, swapping.inMeal).map(k => (
-              <button key={k} onClick={() => doSwap(k)} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 12px", border: "none", borderBottom: `1px solid ${C.border}`, background: "none", cursor: "pointer", fontFamily: "inherit", fontSize: fs.lg, color: C.t1 }}>
-                {capitalizeFirst(k)}
+              <button key={k} onClick={() => doSwap(k)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", padding: "10px 12px", border: "none", borderBottom: `1px solid ${C.border}`, background: "none", cursor: "pointer", fontFamily: "inherit", fontSize: fs.lg, color: C.t1 }}>
+                <span>{capitalizeFirst(k)}</span>
+                <span style={{ fontSize: fs.sm, color: C.t3 }}>{getFoodDisplayCategory(k) === "protein" ? "Đạm" : getFoodDisplayCategory(k) === "carb" ? "Tinh bột" : getFoodDisplayCategory(k) === "veg" ? "Rau" : getFoodDisplayCategory(k) === "fruit" ? "Hoa quả" : ""}</span>
               </button>
             ))}
           </div>

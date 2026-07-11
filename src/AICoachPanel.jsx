@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
-import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst, saveAIMenu, loadAIMenu } from "./lib/aiMenuService";
+import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst, saveAIMenu, loadAIMenu, clearAIMenu } from "./lib/aiMenuService";
 import { getFoodRole } from "./lib/localFoodDB";
 import { ALL_MEALS } from "./mealConstants";
 import { MEAL_TIMES } from "./mealPatterns";
@@ -424,6 +424,7 @@ const handleApplyAIMenuChat=async(tpl)=>{
 try{
 if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
 if(applyTemplate)await applyTemplate(tpl);
+clearAIMenu();
 const doneMsg={role:"assistant",content:"✅ Đã thêm thực đơn vào hôm nay! Quay lại tab Tổng quan để xem chi tiết nhé."};
 setMessages(prev=>[...prev,doneMsg]);
 saveMsg("assistant",doneMsg.content);

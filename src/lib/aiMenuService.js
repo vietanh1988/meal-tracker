@@ -18,7 +18,7 @@ import { applyMealEngineToTemplate, computeMealGram, splitDayIntoMeals } from ".
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { MEAL_PATTERNS, MEAL_TIMES } from "../mealPatterns";
-import { resolveBlueprint } from "../mealBlueprints";
+// mealBlueprints.js kept for Phase 2 but not used in v2 flow
 
 // ============================================================
 // DANH SÁCH BỮA THẬT — cùng thứ tự ưu tiên App/Dashboard/AdminPanel
@@ -418,6 +418,9 @@ function foodToItem(key, refGram, display) {
   };
 }
 
+// Thứ tự hiển thị tự nhiên cho bữa ăn Việt: cơm → đạm → rau/canh → tráng miệng → filler
+const ROLE_ORDER = { carb: 0, protein: 1, fixed: 2, fat: 3 };
+
 export function buildVirtualTemplate(meals, dayType) {
   return {
     name: `AI · ${dayType === "train" ? "Ngày tập" : "Ngày nghỉ"}`,
@@ -427,11 +430,17 @@ export function buildVirtualTemplate(meals, dayType) {
       const items = m.foods
         .map(f => foodToItem(f.key, undefined, f.display))
         .filter(Boolean);
-      // dessert thêm cuối
+      // dessert thêm cuối (trước filler)
       if (m.dessert) {
         const di = foodToItem(m.dessert.key, undefined, m.dessert.display);
         if (di) items.push(di);
       }
+      // Sắp xếp: carb → protein → rau/canh → dessert → filler béo
+      items.sort((a, b) => {
+        const ra = ROLE_ORDER[getFoodRole(a.food)] ?? 2;
+        const rb = ROLE_ORDER[getFoodRole(b.food)] ?? 2;
+        return ra - rb;
+      });
       return { meal_id: m.meal_id, items };
     }),
   };
