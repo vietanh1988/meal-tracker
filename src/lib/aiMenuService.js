@@ -18,7 +18,7 @@ import { applyMealEngineToTemplate, computeMealGram, splitDayIntoMeals } from ".
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { MEAL_PATTERNS, MEAL_TIMES } from "../mealPatterns";
-// mealBlueprints.js kept for Phase 2 but not used in v2 flow
+import { supabase } from "./supabase";
 
 // ============================================================
 // DANH SÁCH BỮA THẬT — cùng thứ tự ưu tiên App/Dashboard/AdminPanel
@@ -663,17 +663,18 @@ export function sumTemplate(template) {
 // ============================================================
 // 8. PERSISTENCE — lưu menu qua Supabase (mọi thiết bị đều thấy)
 // ============================================================
-import { supabase } from "./supabase";
 
 export async function saveAIMenu(template, userId) {
-  if (!userId || !template) return;
+  if (!userId || !template) { console.warn("saveAIMenu: missing userId or template"); return; }
   try {
     const today = new Date().toISOString().slice(0, 10);
-    await supabase.from("ai_menu_cache").upsert({
+    const { error } = await supabase.from("ai_menu_cache").upsert({
       user_id: userId,
       menu_date: today,
       template,
     }, { onConflict: "user_id,menu_date" });
+    if (error) console.error("saveAIMenu DB error:", error);
+    else console.log("✅ AI menu saved to cache:", today);
   } catch (e) { console.error("saveAIMenu error:", e); }
 }
 
@@ -687,9 +688,10 @@ export async function loadAIMenu(userId) {
       .eq("user_id", userId)
       .eq("menu_date", today)
       .maybeSingle();
-    if (error || !data) return null;
-    return data.template;
-  } catch (e) { return null; }
+    if (error) { console.error("loadAIMenu DB error:", error); return null; }
+    if (data) console.log("✅ AI menu restored from cache:", today);
+    return data?.template || null;
+  } catch (e) { console.error("loadAIMenu error:", e); return null; }
 }
 
 export async function clearAIMenu(userId) {
