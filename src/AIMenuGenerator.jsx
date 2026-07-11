@@ -19,7 +19,7 @@ import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
   generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentPatternNames,
-  swapPatternInTemplate, getPatternReason, getAvailablePatterns, buildExclusionKeys, formatFoodPortion,
+  swapPatternInTemplate, getPatternReason, getAvailablePatterns, buildExclusionKeys, formatFoodPortion, capitalizeFirst,
 } from "./lib/aiMenuService";
 
 const STYLES = [
@@ -214,7 +214,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
                 <div key={it.food} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: `${sp.md}px 0`, borderBottom: `1px solid ${C.border}` }}>
                   <div>
                     <span style={{ fontSize: fs.sm, fontWeight: fw.bold, color: CAT_COLOR[cat], background: C.surface, borderRadius: radius.sm, padding: "1px 6px", marginRight: sp.md }}>{CAT_LABEL[cat]}</span>
-                    <span style={{ fontSize: fs.lg, fontWeight: fw.semibold, color: C.t1, textTransform: "capitalize" }}>{it.food}</span>
+                    <span style={{ fontSize: fs.lg, fontWeight: fw.semibold, color: C.t1 }}>{capitalizeFirst(it.food)}</span>
                     <span style={{ fontSize: fs.md, color: C.t3, marginLeft: sp.md }}>{formatFoodPortion(it.food, it.gram)} · {it.cal} kcal</span>
                   </div>
                   <button onClick={() => setSwapping({ mealId: m.meal_id, food: it.food, inMeal: m.items.map(x => x.food) })}
@@ -239,8 +239,8 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
               Thay "{swapping.food}" bằng món cùng nhóm
             </div>
             {getSwapCandidates(swapping.food, swapping.inMeal).map(k => (
-              <button key={k} onClick={() => doSwap(k)} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 12px", border: "none", borderBottom: `1px solid ${C.border}`, background: "none", cursor: "pointer", fontFamily: "inherit", fontSize: fs.lg, color: C.t1, textTransform: "capitalize" }}>
-                {k}
+              <button key={k} onClick={() => doSwap(k)} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 12px", border: "none", borderBottom: `1px solid ${C.border}`, background: "none", cursor: "pointer", fontFamily: "inherit", fontSize: fs.lg, color: C.t1 }}>
+                {capitalizeFirst(k)}
               </button>
             ))}
           </div>

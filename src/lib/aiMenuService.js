@@ -642,6 +642,17 @@ export function formatFoodPortion(foodKey, gram) {
   return `${qtyLabel} ${unit.unit} (${gram}g)`;
 }
 
+/**
+ * Viết hoa CHỈ chữ cái đầu ("Rau muống"), KHÔNG viết hoa mọi từ như CSS
+ * text-transform:capitalize ("Rau Muống" — đúng kiểu tiếng Anh, sai kiểu
+ * tiếng Việt, không khớp ảnh thiết kế mẫu). Dùng thay text-transform CSS
+ * ở mọi nơi hiện tên món.
+ */
+export function capitalizeFirst(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function sumTemplate(template) {
   const all = (template.meals || []).flatMap(m => m.items || []);
   return {

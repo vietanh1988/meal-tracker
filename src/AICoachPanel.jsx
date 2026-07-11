@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
-import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion } from "./lib/aiMenuService";
+import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst } from "./lib/aiMenuService";
 import { ALL_MEALS } from "./mealConstants";
 
 // Render markdown NHẸ cho câu trả lời AI — chỉ những gì AI thật sự hay dùng:
@@ -521,9 +521,10 @@ return <div style={{marginTop:8,background:"#fff",borderRadius:10,border:`1px so
 </div>
 <div style={{display:"flex",gap:10}}>
 {[["Đạm",total.p,target.p,"#007AFF"],["Carb",total.c,target.c,"#5AC8FA"],["Béo",total.f,target.f,"#8E8E93"]].map(([label,v,t,color])=>
-<div key={label} style={{flex:1}}>
+<div key={label} style={{flex:1,minWidth:0}}>
 <div style={{fontSize:10,color:C2.t3,fontWeight:600}}>{label}</div>
-<div style={{fontSize:12,fontWeight:700,color}}>{v}g <span style={{fontSize:10,color:C2.t3,fontWeight:600}}>({pct(v,t)}%)</span></div>
+<div style={{fontSize:12,fontWeight:700,color}}>{v}g</div>
+<div style={{fontSize:10,color:C2.t3,fontWeight:600}}>{pct(v,t)}%</div>
 </div>)}
 </div>
 </div>
@@ -539,7 +540,7 @@ return <div key={mm.meal_id} style={{padding:"6px 0",borderBottom:`1px solid ${C
 {/* Mỗi món 1 dòng riêng, dùng đơn vị tự nhiên ("3 quả (150g)") thay vì
     gộp chung "trứng gà, cơm, rau" — rõ ràng hơn, đúng góp ý user. */}
 {(mm.items||[]).map(it=><div key={it.food} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C2.t2,padding:"1px 0"}}>
-<span style={{textTransform:"capitalize"}}>{it.food}</span>
+<span style={{textTransform:"none"}}>{capitalizeFirst(it.food)}</span>
 <span style={{color:C2.t3}}>{formatFoodPortion(it.food,it.gram)}</span>
 </div>)}
 </div>;
