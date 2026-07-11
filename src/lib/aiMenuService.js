@@ -336,7 +336,15 @@ const FRUIT_MEALS = new Set(["trua"]);
 
 // Filler béo — rẻ, phổ thông, đúng Product Principle (KHÔNG dùng dầu ô
 // liu/hạnh nhân/hạt điều nữa — đồ nhập, không rẻ với bữa cơm nhà bình dân).
-const AUTO_FAT_FILLER = { sang: "lạc", trua: "mè", toi: "đậu phộng" };
+// Áp cho CẢ bữa phụ/pre/post — trước đây chỉ áp bữa chính, khiến bữa phụ
+// (VD "chỉ có whey", "chỉ có bánh mì") hoàn toàn không đóng góp béo, cộng
+// dồn lại làm Fat cả ngày hụt tới 15-17% (bug thật, phát hiện qua test
+// sống). Vẫn đúng giới hạn "1-2 món" của bữa phụ: base 1 món + filler = 2
+// món tối đa, và filler tự vô hình (gram=0, bị strip) nếu không cần tới.
+const AUTO_FAT_FILLER = {
+  sang: "lạc", trua: "mè", toi: "đậu phộng",
+  phu_sang: "lạc", phu_chieu: "mè", pre: "đậu phộng", post: "lạc",
+};
 
 // Validate slots đã điền (protein/carb/veg/fruit) + thêm filler béo — dùng
 // CHUNG cho cả nhánh pattern lẫn nhánh ghép rời, để 2 đường không lệch luật.
@@ -349,15 +357,17 @@ function finalizeMealSlots(mealId, slots, errors) {
   if (slots.veg) foods.push({ key: slots.veg, role: "fixed" });
   if (slots.fruit) foods.push({ key: slots.fruit, role: "fixed" });
 
+  const fillerKey = AUTO_FAT_FILLER[mealId];
   if (isMain) {
     if (!slots.protein) errors.push(`Bữa "${mealId}" thiếu món đạm`);
     if (!slots.carb) errors.push(`Bữa "${mealId}" thiếu món tinh bột`);
     if (!slots.veg) errors.push(`Bữa "${mealId}" thiếu món rau`);
     if (needsFruit && !slots.fruit) errors.push(`Bữa "${mealId}" thiếu món hoa quả`);
-    const fillerKey = AUTO_FAT_FILLER[mealId];
     if (fillerKey && LOCAL_FOODS[fillerKey]) foods.push({ key: fillerKey, role: "fat" });
   } else if (!slots.protein && !slots.carb) {
     errors.push(`Bữa phụ "${mealId}" không có món đạm hoặc tinh bột nào`);
+  } else {
+    if (fillerKey && LOCAL_FOODS[fillerKey]) foods.push({ key: fillerKey, role: "fat" });
   }
   if (foods.length === 0) errors.push(`Bữa "${mealId}" rỗng sau khi lọc`);
   return foods;
