@@ -1,10 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "./lib/supabase";
 import { C, card, inp, lbl, redBtn } from "./theme";
 
 export function AboutPage({appSettings,isAdmin,saveSetting,mob}){
   const about=(()=>{try{return appSettings.about_page?JSON.parse(appSettings.about_page):{}}catch(e){return{};}})();
   const [editing,setEditing]=useState(false);
   const [form,setForm]=useState({appName:"Fipilot AI",tagline:"",version:"3.0",description:"",devName:"",devRole:"",devBio:"",devAvatar:"",contact:"",facebook:"",hotline:"",zalo:"",features:""});
+  const [uploading,setUploading]=useState(false);
+  const fileRef=useRef(null);
+
+  const uploadAvatar=async(e)=>{
+    const file=e.target.files?.[0];
+    if(!file)return;
+    if(file.size>2*1024*1024){alert("Ảnh tối đa 2MB");return;}
+    setUploading(true);
+    try{
+      const ext=file.name.split(".").pop();
+      const path=`dev-avatar-${Date.now()}.${ext}`;
+      const {error}=await supabase.storage.from("avatars").upload(path,file,{upsert:true});
+      if(error)throw error;
+      const {data:{publicUrl}}=supabase.storage.from("avatars").getPublicUrl(path);
+      setForm(f=>({...f,devAvatar:publicUrl}));
+    }catch(err){alert("Upload lỗi: "+err.message);}
+    setUploading(false);
+    if(fileRef.current)fileRef.current.value="";
+  };
 
   // Update form when appSettings loads
   useEffect(()=>{
@@ -129,12 +149,16 @@ export function AboutPage({appSettings,isAdmin,saveSetting,mob}){
           </div>
         </div>
         <div style={{marginBottom:8}}>
-          <div style={{...lbl,marginBottom:4}}>Avatar URL (link ảnh)</div>
-          <input value={form.devAvatar} onChange={e=>setForm({...form,devAvatar:e.target.value})} placeholder="https://example.com/avatar.jpg" style={inp}/>
-          {form.devAvatar&&<div style={{marginTop:6,display:"flex",alignItems:"center",gap:8}}>
-            <img src={form.devAvatar} alt="Preview" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover",border:`1.5px solid ${C.border}`}}/>
-            <span style={{fontSize:11,color:C.t3}}>Preview</span>
-          </div>}
+          <div style={{...lbl,marginBottom:4}}>Avatar</div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            {form.devAvatar?<img src={form.devAvatar} alt="Avatar" style={{width:48,height:48,borderRadius:"50%",objectFit:"cover",border:`1.5px solid ${C.border}`}}/>:<div style={{width:48,height:48,borderRadius:"50%",background:C.surface,border:`1.5px dashed ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>📷</div>}
+            <div style={{display:"flex",flexDirection:"column",gap:4}}>
+              <input ref={fileRef} type="file" accept="image/*" onChange={uploadAvatar} style={{display:"none"}}/>
+              <button onClick={()=>fileRef.current?.click()} disabled={uploading} style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,border:`1.5px solid ${C.primary}`,background:uploading?"#eee":"#fff",color:uploading?"#999":C.primary,cursor:uploading?"wait":"pointer",fontFamily:"inherit"}}>{uploading?"⏳ Đang tải...":"📤 Tải ảnh lên"}</button>
+              {form.devAvatar&&<button onClick={()=>setForm(f=>({...f,devAvatar:""}))} style={{fontSize:11,fontWeight:600,padding:"4px 10px",borderRadius:6,border:"none",background:"none",color:C.red,cursor:"pointer",fontFamily:"inherit"}}>✕ Xóa ảnh</button>}
+            </div>
+          </div>
+          <div style={{fontSize:11,color:C.t3,marginTop:4}}>JPG, PNG, WebP — tối đa 2MB</div>
         </div>
         <div style={{marginBottom:8}}>
           <div style={{...lbl,marginBottom:4}}>Bio</div>
