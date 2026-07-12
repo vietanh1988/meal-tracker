@@ -491,7 +491,13 @@ const GRAM_LIMIT_OVERRIDE = {
   // Bột đạm — đo bằng scoop (~30g/scoop), không phải thực phẩm nguyên miếng như thịt/cá,
   // nên KHÔNG dùng sàn mặc định 50g theo vai trò protein (quá cao so với 1 scoop thật,
   // gây Engine ép dư đạm khi bữa chỉ còn thiếu ít). 15g~nửa scoop, 60g~2 scoop.
-  "whey": { min: 15, max: 60 }, "bột whey": { min: 15, max: 60 }, "whey isolate": { min: 15, max: 60 }, "casein": { min: 15, max: 60 },
+  "whey": { min: 15, max: 60 },
+  // Snack drivers — khi làm nguồn đạm/carb của bữa phụ cần trần thực tế
+  // (không có thì rơi về fixed 1000g khi engine scale)
+  "sữa chua": { min: 100, max: 300 }, "sữa chua hy lạp": { min: 100, max: 250 },
+  "sữa tươi": { min: 100, max: 400 }, "chuối": { min: 50, max: 250 },
+  "granola": { min: 20, max: 60 }, "ngô": { min: 100, max: 300 }, "bắp": { min: 100, max: 300 },
+  "mật ong": { min: 5, max: 30 }, "bột whey": { min: 15, max: 60 }, "whey isolate": { min: 15, max: 60 }, "casein": { min: 15, max: 60 },
 };
 
 // Giới hạn mặc định theo vai trò — áp dụng cho món KHÔNG có trong bảng trên

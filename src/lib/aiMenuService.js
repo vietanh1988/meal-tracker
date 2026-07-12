@@ -470,13 +470,15 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
 // 5. VIRTUAL TEMPLATE → MEAL ENGINE (giữ display name)
 // ============================================================
 
-function foodToItem(key, refGram, display) {
+function foodToItem(key, refGram, display, role) {
   const base = LOCAL_FOODS[key];
   if (!base) return null;
-  const g = refGram ?? DEFAULT_REF_GRAM[getFoodRole(key)] ?? 100;
+  const effRole = role || getFoodRole(key);
+  const g = refGram ?? DEFAULT_REF_GRAM[effRole] ?? 100;
   const r = g / 100;
   return {
     food: key, gram: g, unit: "g", qty: 1,
+    role: effRole,
     display: display || null,
     p: Math.round(base.p * r * 10) / 10,
     c: Math.round(base.c * r * 10) / 10,
@@ -494,10 +496,10 @@ export function buildVirtualTemplate(meals, dayType) {
     source: "ai",
     meals: meals.map(m => {
       const items = m.foods
-        .map(f => foodToItem(f.key, undefined, f.display))
+        .map(f => foodToItem(f.key, undefined, f.display, f.role))
         .filter(Boolean);
       if (m.dessert) {
-        const di = foodToItem(m.dessert.key, undefined, m.dessert.display);
+        const di = foodToItem(m.dessert.key, undefined, m.dessert.display, "fixed");
         if (di) items.push(di);
       }
       return { meal_id: m.meal_id, items };
@@ -561,8 +563,8 @@ function attachPatternAndDisplay(template, norm) {
       }));
       // Sort: carb (cơm/bún) → protein (thịt/cá) → fixed (rau/canh) → fat (filler)
       items.sort((a, b) => {
-        const ra = DISPLAY_ORDER[info.roleMap?.[a.food] || getFoodRole(a.food)] ?? 2;
-        const rb = DISPLAY_ORDER[info.roleMap?.[b.food] || getFoodRole(b.food)] ?? 2;
+        const ra = DISPLAY_ORDER[a.role || info.roleMap?.[a.food] || getFoodRole(a.food)] ?? 2;
+        const rb = DISPLAY_ORDER[b.role || info.roleMap?.[b.food] || getFoodRole(b.food)] ?? 2;
         return ra - rb;
       });
       return { ...m, items, pattern: info.pattern || null, composite: !!info.composite };
@@ -657,7 +659,7 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
   const meals = (template.meals || []).map(m => {
     if (m.meal_id !== mealId) return m;
     const items = (m.items || []).map(it =>
-      it.food === oldFood ? foodToItem(newFoodKey) : foodToItem(it.food, it.gram)
+      it.food === oldFood ? foodToItem(newFoodKey, undefined, undefined, it.role) : foodToItem(it.food, it.gram, undefined, it.role)
     );
     return { ...m, items, pattern: null };
   });
@@ -676,8 +678,8 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
         display: info.map[it.food] !== undefined ? info.map[it.food] : null,
       }));
       items.sort((a, b) => {
-        const ra = DISPLAY_ORDER[getFoodRole(a.food)] ?? 2;
-        const rb = DISPLAY_ORDER[getFoodRole(b.food)] ?? 2;
+        const ra = DISPLAY_ORDER[a.role || getFoodRole(a.food)] ?? 2;
+        const rb = DISPLAY_ORDER[b.role || getFoodRole(b.food)] ?? 2;
         return ra - rb;
       });
       return { ...m, pattern: info.pattern, items };

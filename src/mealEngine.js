@@ -195,7 +195,9 @@ export function applyMealEngineToTemplate(template, dailyTarget) {
       } : { cal: 0, p: 0, c: 0, f: 0 };
       const fiberPer100 = refGram > 0 ? (it.fiber || 0) / refGram * 100 : 0;
       const limit = getGramLimit(name);
-      return { name, role: getFoodRole(name), per100, refGram, min: limit.min, max: limit.max, fiberPer100 };
+      // Ưu tiên role item mang theo (pattern snack khai sữa chua=protein, chuối=carb
+      // — getFoodRole trả "fixed" theo ngữ cảnh bữa chính, sai cho snack)
+      return { name, role: it.role || getFoodRole(name), per100, refGram, min: limit.min, max: limit.max, fiberPer100 };
     });
 
     const computed = computeMealGram(mealTarget, foods);
@@ -203,6 +205,7 @@ export function applyMealEngineToTemplate(template, dailyTarget) {
       const src = foods.find(f => f.name === r.name);
       return {
         food: r.name,
+        role: src?.role,
         gram: r.gram,
         unit: "g",
         qty: 1,
