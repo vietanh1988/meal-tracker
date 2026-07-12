@@ -63,8 +63,9 @@ export const MEAL_PATTERNS = {
       popularity: 5, prepMinutes: 15, buyable: true,
       reasonTemplate: { cut: "Gà nạc, ít béo hơn phở bò" } },
 
-    { name: "Bún thịt",
+    { name: "Bún thịt", composite: true,
       dishes: [
+        { display: "Nước dùng", food: "dầu ăn", role: "fat" },
         { display: "Bún", food: "bún", role: "carb" },
         { display: "Thịt heo luộc", food: "thịt heo nạc", role: "protein" },
         { display: "Rau muống", food: "rau muống", role: "fixed" },

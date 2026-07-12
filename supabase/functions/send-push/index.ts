@@ -1,26 +1,43 @@
-// Supabase Edge Function: send-push
-// Gửi Web Push notification tới user — hỗ trợ 2 chế độ:
-//
-// 1) Chế độ CŨ (1 user, dùng cho "đơn hàng được duyệt"...):
-//    { "secret": "...", "user_id": "...", "title": "...", "body": "...", "url": "/" }
-//
-// 2) Chế độ MỚI — gửi hàng loạt (dùng cho tab admin "Gửi thông báo"):
-//    { "secret": "...", "batch_id": "...", "user_ids": ["...","..."], "title": "...", "body": "...", "url": "/" }
-//    Sau khi gửi xong, tự cập nhật bảng notification_batches (status, số liệu thật)
-//    bằng service_role — đây là lý do có thể báo trạng thái THẬT thay vì fire-and-forget mù.
-//
-// "secret" phải khớp với PUSH_SECRET đã set qua `supabase secrets set`.
+// Supabase Edge Function: send-push — Hỗ trợ 2 cách auth:
+// 1) Bearer JWT → verify admin (dùng từ client mới)
+// 2) PUSH_SECRET trong body (backward compat cho Postgres RPC function)
+// Deploy: supabase functions deploy send-push
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
 const PUSH_SECRET = Deno.env.get("PUSH_SECRET")!;
 
 webpush.setVapidDetails("mailto:admin@fipilotai.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+
+// ---- Auth: JWT admin HOẶC PUSH_SECRET (backward compat) ----
+async function verifyAuth(req: Request, bodySecret?: string): Promise<boolean> {
+  // Path 1: JWT admin
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.replace("Bearer ", "");
+  if (token && token !== SUPABASE_ANON_KEY) {
+    try {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      });
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (!error && user) {
+        const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+        const { data: profile } = await adminClient
+          .from("profiles").select("is_admin").eq("id", user.id).maybeSingle();
+        if (profile?.is_admin) return true;
+      }
+    } catch (e) { /* fall through to secret check */ }
+  }
+  // Path 2: PUSH_SECRET (cho Postgres RPC gọi qua net.http_post)
+  if (bodySecret && bodySecret === PUSH_SECRET) return true;
+  return false;
+}
 
 async function sendToUser(supabase: any, user_id: string, payloadStr: string) {
   const { data: subs, error } = await supabase
@@ -71,9 +88,12 @@ Deno.serve(async (req) => {
 
   const { secret, user_id, batch_id, user_ids, title, body, url } = payload;
 
-  if (!secret || secret !== PUSH_SECRET) {
+  // ---- Verify auth (JWT hoặc secret) ----
+  const authorized = await verifyAuth(req, secret);
+  if (!authorized) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
+
   if (!title) {
     return new Response(JSON.stringify({ error: "Thiếu title" }), { status: 400 });
   }

@@ -171,14 +171,19 @@ export function useUserData(userId) {
   }, [meals, mealLogDates]);
 
   // Update meals in state after save
-  const updateMealsState = useCallback((mealId, dayType, items) => {
+  const updateMealsState = useCallback((mealId, dayType, items, extra) => {
     setMeals(prev => {
       const updated = { ...prev };
       const list = [...(updated[dayType] || defaultStructure[dayType])];
       const idx = list.findIndex(m => m.id === mealId);
-      if (idx >= 0) list[idx] = { ...list[idx], items };
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], items };
+        // Truyền thêm composite + pattern cho MealCard hiển thị đúng
+        if (extra?.composite !== undefined) list[idx].composite = extra.composite;
+        if (extra?.pattern !== undefined) list[idx].pattern = extra.pattern;
+      }
       updated[dayType] = list;
-      mealsRef.current = updated; // đồng bộ NGAY (chạy đồng bộ bên trong updater của setState)
+      mealsRef.current = updated;
       return updated;
     });
   }, []);
@@ -483,7 +488,7 @@ export function useUserData(userId) {
       const mealId = m.meal_id;
       const items = m.items || [];
       if (mealId && items.length > 0) {
-        updateMealsState(mealId, dayType, items);
+        updateMealsState(mealId, dayType, items, { composite: !!m.composite, pattern: m.pattern || null });
         markMealDateToday(dayType, mealId);
         try {
           const totalCal = items.reduce((s, i) => s + (i.cal || 0), 0);

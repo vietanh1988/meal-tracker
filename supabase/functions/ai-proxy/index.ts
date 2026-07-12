@@ -1,28 +1,59 @@
-// supabase/functions/ai-proxy/index.ts — BẢN MỞ RỘNG
-// Thêm nhánh gemini/gpt chạy bằng key SERVER (trước chỉ có claude).
-// Secrets: CLAUDE_API_KEY (đã có), GEMINI_KEY (ai-macro đã dùng),
-//          OPENAI_KEY (chỉ cần nếu admin chọn GPT).
+// supabase/functions/ai-proxy/index.ts — BẢN MỞ RỘNG + JWT AUTH
 // Deploy: supabase functions deploy ai-proxy
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "npm:@supabase/supabase-js@2"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const ALLOWED_ORIGINS = [
+  "https://fipilotai.com",
+  "https://www.fipilotai.com",
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
 }
 
 const CLAUDE_API_KEY = Deno.env.get('CLAUDE_API_KEY') ?? ''
 const GEMINI_KEY = Deno.env.get('GEMINI_KEY') ?? ''
 const OPENAI_KEY = Deno.env.get('OPENAI_KEY') ?? ''
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
+
+// ---- JWT Auth helper ----
+async function verifyUser(req: Request) {
+  const authHeader = req.headers.get("authorization") || req.headers.get("apikey") || "";
+  const token = authHeader.replace("Bearer ", "");
+  if (!token) return null;
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return user;
+}
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    // ---- Verify JWT (grace period: log warning nếu thiếu, chưa block) ----
+    const user = await verifyUser(req);
+    if (!user) {
+      // GRACE PERIOD: chỉ log warning, không block — sau khi sửa hết client thì bỏ grace
+      // return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      console.warn("⚠️ ai-proxy called WITHOUT valid JWT — grace period active");
+    }
+
     const { foodDesc, provider = "claude", model, system, messages, maxTokens } = await req.json()
 
-    // Chuẩn hoá: cả 2 đường (foodDesc cũ / messages mới) về 1 mảng messages
     const msgs = (messages && messages.length) ? messages : [{ role: "user", content: foodDesc }]
     let text = ""
 
@@ -48,7 +79,6 @@ serve(async (req) => {
 
     } else if (provider === "gemini") {
       if (!GEMINI_KEY) throw new Error("Server chưa cấu hình GEMINI_KEY")
-      // Gemini: system riêng + messages map sang contents (role model/user)
       const contents = msgs.map((m: any) => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],

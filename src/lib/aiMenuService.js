@@ -261,9 +261,14 @@ export function dayTarget(macro, dayType) {
 // 3. GỌI AI
 // ============================================================
 async function callAI(prompt, { provider, model } = {}) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token || "";
   const res = await fetch(AI_PROXY_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({
       provider: provider || "claude",
       model: model || "claude-sonnet-5",

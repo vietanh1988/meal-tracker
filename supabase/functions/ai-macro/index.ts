@@ -1,20 +1,53 @@
-// supabase/functions/ai-macro/index.ts
+// supabase/functions/ai-macro/index.ts + JWT AUTH
 // Deploy: supabase functions deploy ai-macro
-// Set secrets: supabase secrets set ANTHROPIC_KEY=sk-ant-...
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+const ALLOWED_ORIGINS = [
+  "https://fipilotai.com",
+  "https://www.fipilotai.com",
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+}
+
+async function verifyUser(req: Request) {
+  const authHeader = req.headers.get("authorization") || req.headers.get("apikey") || "";
+  const token = authHeader.replace("Bearer ", "");
+  if (!token) return null;
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  return user;
+}
 
 const PROMPT = `Bạn là chuyên gia dinh dưỡng. Phân tích dinh dưỡng cho thức ăn dưới đây.
 Trả lời CHÍNH XÁC bằng JSON, không markdown:
 {"items":[{"name":"tên","gram":số,"protein":số,"carb":số,"fat":số,"fiber":số,"cal":số}],"tip":"1 câu gợi ý cho người gym tăng cơ"}`;
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  // ---- Verify JWT (grace period: log warning nếu thiếu, chưa block) ----
+  const user = await verifyUser(req);
+  if (!user) {
+    // GRACE PERIOD: chỉ log, không block — bỏ comment dòng return khi sửa xong client
+    // return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    console.warn("⚠️ ai-macro called WITHOUT valid JWT — grace period active");
+  }
 
   const { foodDesc, provider = "claude", model } = await req.json();
 
