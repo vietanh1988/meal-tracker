@@ -14,7 +14,7 @@
 // ============================================================
 
 import { LOCAL_FOODS, getFoodRole } from "./localFoodDB";
-import { applyMealEngineToTemplate, computeMealGram, splitDayIntoMeals } from "../mealEngine";
+import { applyMealEngineToTemplate } from "../mealEngine";
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { MEAL_PATTERNS, MEAL_TIMES } from "../mealPatterns";
@@ -86,7 +86,6 @@ export function buildExclusionKeys(avoidText) {
 // ============================================================
 // NHÃN HIỂN THỊ
 // ============================================================
-const PROTEIN_CATS = new Set(["poultry", "beef", "pork", "seafood", "egg_dairy"]);
 export function getFoodDisplayCategory(foodKey) {
   const key = (foodKey || "").toLowerCase().trim();
   const item = LOCAL_FOODS[key];
@@ -419,8 +418,6 @@ function foodToItem(key, refGram, display) {
 }
 
 // Thứ tự hiển thị tự nhiên cho bữa ăn Việt: cơm → đạm → rau/canh → tráng miệng → filler
-const ROLE_ORDER = { carb: 0, protein: 1, fixed: 2, fat: 3 };
-
 export function buildVirtualTemplate(meals, dayType) {
   return {
     name: `AI · ${dayType === "train" ? "Ngày tập" : "Ngày nghỉ"}`,
@@ -548,52 +545,6 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
     return { ...m, items, pattern: null };
   });
   return stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType)));
-}
-
-export function swapPatternInTemplate(template, mealId, newPatternName, macro, dayType) {
-  const newPattern = (MEAL_PATTERNS[mealId] || []).find(p => p.name === newPatternName);
-  if (!newPattern) return template;
-
-  const pd = patternToDishes(newPattern);
-  const errors = [];
-  const finalized = finalizeMealDishes(mealId, pd.dishes, pd.dessert, errors);
-
-  const meals = (template.meals || []).map(m => {
-    if (m.meal_id !== mealId) return m;
-    const items = finalized.foods.map(f => foodToItem(f.key, undefined, f.display)).filter(Boolean);
-    if (finalized.dessert) {
-      const di = foodToItem(finalized.dessert.key, undefined, finalized.dessert.display);
-      if (di) items.push(di);
-    }
-    return { meal_id: mealId, items };
-  });
-
-  const patternMap = (template.meals || []).map(m => ({
-    meal_id: m.meal_id,
-    pattern: m.meal_id === mealId ? newPattern.name : (m.pattern || null),
-  }));
-
-  const recomputed = stripZeroGramItems(
-    applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType))
-  );
-
-  // Re-attach display + pattern
-  const displayMap = {};
-  finalized.foods.forEach(f => { if (f.display) displayMap[f.key] = f.display; });
-  if (finalized.dessert) displayMap[finalized.dessert.key] = finalized.dessert.display;
-
-  return {
-    ...recomputed,
-    meals: recomputed.meals.map(m => {
-      const pm = patternMap.find(x => x.meal_id === m.meal_id);
-      if (m.meal_id !== mealId) return { ...m, pattern: pm?.pattern || null };
-      return {
-        ...m,
-        pattern: newPattern.name,
-        items: (m.items || []).map(it => ({ ...it, display: displayMap[it.food] || it.display || null })),
-      };
-    }),
-  };
 }
 
 export function getPatternReason(mealId, patternName, goalType) {

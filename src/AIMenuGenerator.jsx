@@ -19,7 +19,7 @@ import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
   generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentPatternNames,
-  getPatternReason, getAvailablePatterns, buildExclusionKeys, formatFoodPortion, capitalizeFirst, saveAIMenu,
+  getPatternReason, formatFoodPortion, capitalizeFirst, saveAIMenu,
 } from "./lib/aiMenuService";
 import { MEAL_TIMES } from "./mealPatterns";
 
@@ -28,11 +28,6 @@ const STYLES = [
   { id: "clean", label: "🥗 Eat clean", desc: "Ức gà, khoai lang, yến mạch" },
   { id: "easy", label: "⚡ Tiện lợi", desc: "Ít nấu nướng, đồ nhanh gọn" },
 ];
-
-// 4 nhóm CỐ ĐỊNH khớp đúng cấu trúc bữa mới (sáng 3 món, trưa/tối 4 món) —
-// tách Rau và Hoa quả riêng thay vì gộp chung "Rau/Phụ" như trước.
-const CAT_LABEL = { protein: "Đạm", carb: "Tinh bột", veg: "Rau", fruit: "Hoa quả", fat: "Béo", other: "Khác" };
-const CAT_COLOR = { protein: C.protein, carb: C.carb, veg: C.fiber, fruit: C.gold, fat: C.fat, other: C.t3 };
 
 export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, getMealHistory, onApply, onClose, onFallbackToLibrary }) {
   const mob = useIsMobile();
