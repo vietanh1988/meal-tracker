@@ -198,17 +198,17 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
         const time = MEAL_TIMES[m.meal_id] || "";
         const visibleItems = (m.items || []).filter(it => it.display !== null && it.gram > 0);
         const totalGram = Math.round((m.items || []).reduce((s, it) => s + (it.gram || 0), 0));
-        // Có pattern → hiện gọn 1 dòng tên món, không xổ nguyên liệu
-        const showCompact = !!m.pattern;
-        // Nhãn đơn vị: tô (phở/bún/cháo/mì/hủ tiếu) vs phần (cơm/bánh mì/xôi...)
-        const isBowl = !!m.composite;
-        const unitLabel = isBowl ? `1 tô (~${totalGram}g)` : `1 phần (~${totalGram}g)`;
+        // Chỉ món TÔ (composite: phở/bún/cháo/mì) hiện gọn 1 dòng
+        // Món ĐĨA (cơm + các món) vẫn liệt kê từng món chi tiết
+        const showCompact = !!m.composite;
+        const totalGram = Math.round((m.items || []).reduce((s, it) => s + (it.gram || 0), 0));
         return (
           <div key={m.meal_id} style={card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: sp.lg }}>
               <div>
                 <span style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: "#3B82F6" }}>{meta?.name || m.meal_id}</span>
                 {time && <span style={{ fontSize: fs.md, color: C.t3, marginLeft: 6 }}>{time}</span>}
+                {m.pattern && !showCompact && <span style={{ fontSize: fs.lg, fontWeight: fw.bold, color: C.t1, marginLeft: 8 }}>· {m.pattern}</span>}
                 {reason && <div style={{ fontSize: fs.sm, color: C.primary, marginTop: 3 }}>💡 {reason}</div>}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
@@ -219,7 +219,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: `${sp.md}px 0` }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: fs.lg, fontWeight: fw.bold, color: C.t1 }}>{m.pattern}</div>
-                  <div style={{ fontSize: fs.md, color: C.t3 }}>{unitLabel}</div>
+                  <div style={{ fontSize: fs.md, color: C.t3 }}>1 tô (~{totalGram}g)</div>
                 </div>
                 <span style={{ fontSize: fs.md, fontWeight: fw.bold, color: C.t3 }}>{mealCal} kcal</span>
               </div>
