@@ -177,6 +177,9 @@ export const LOCAL_FOODS = {
   // (đều là mì gạo trắng đã nấu chín) nên lấy đúng số của "bún" cho nhất quán,
   // không tự bịa số khác biệt không có cơ sở.
   "bánh phở": {p:3.4, c:24.9,f:0.1, cal:109, fiber:0.4,form:"cooked",cat:"starch"},
+  "mì": {p:4.5, c:25.0, f:2.0, cal:138, fiber:1.2, form:"cooked", cat:"starch"},
+  "hủ tiếu": {p:1.8, c:24.0, f:0.3, cal:107, fiber:0.9, form:"cooked", cat:"starch"},
+  "bánh cuốn": {p:3.0, c:22.0, f:1.5, cal:115, fiber:0.5, form:"cooked", cat:"starch"},
   // cháo (cháo trắng) — gạo nấu với nhiều nước hơn cơm nhiều lần (~1:8-10 so với
   // ~1:1.2-1.5 của cơm) nên mật độ calo/100g thấp hơn "cơm trắng" (130 kcal) rất
   // nhiều — số tham khảo theo tỉ lệ pha loãng thông thường, KHÔNG phải số đo
@@ -480,7 +483,7 @@ const GRAM_LIMIT_OVERRIDE = {
   "đậu phụ": { min: 100, max: 300 },
   "cơm trắng": { min: 80, max: 450 }, "cơm": { min: 80, max: 450 }, "cơm gạo lứt": { min: 80, max: 450 },
   "khoai lang": { min: 100, max: 400 }, "khoai tây": { min: 100, max: 400 },
-  "bánh mì": { min: 30, max: 200 }, "bún": { min: 100, max: 350 }, "miến": { min: 50, max: 250 }, "bánh phở": { min: 100, max: 350 },
+  "bánh mì": { min: 30, max: 200 }, "bún": { min: 100, max: 350 }, "mì": { min: 100, max: 300 }, "hủ tiếu": { min: 100, max: 350 }, "bánh cuốn": { min: 150, max: 400 }, "miến": { min: 50, max: 250 }, "bánh phở": { min: 100, max: 350 },
   "cháo": { min: 200, max: 500 }, // 1 tô cháo thường 300-400g, nhiều nước hơn cơm/bún nên sàn/trần cao hơn
   "yến mạch": { min: 10, max: 100 }, "xôi": { min: 80, max: 350 },
   "dầu ăn": { min: 5, max: 30 }, "dầu ô liu": { min: 5, max: 30 }, "dầu mè": { min: 5, max: 20 },
