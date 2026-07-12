@@ -133,15 +133,21 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
         </div>
       )}
 
-      {/* Tabs — underline style */}
-      <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        {pages.map(p => (
-          <button key={p.id} onClick={() => setActiveId(p.id)} style={{
-            padding: "10px 16px", fontSize: 13, fontWeight: activeId === p.id ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: "all .15s",
-            background: "transparent", color: activeId === p.id ? C.primary : C.t2, borderBottom: activeId === p.id ? `2.5px solid ${C.primary}` : "2.5px solid transparent", marginBottom: -2,
-          }}>{p.label}</button>
-        ))}
-      </div>
+      {/* Tabs — dropdown trên mobile, underline trên PC */}
+      {mob ? (
+        <select value={activeId} onChange={e => setActiveId(e.target.value)} style={{ width: "100%", padding: "10px 14px", fontSize: 14, fontWeight: 700, color: C.t1, border: `1.5px solid ${C.border}`, borderRadius: 10, background: C.surface, marginBottom: 16, fontFamily: "inherit", appearance: "auto" }}>
+          {pages.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+        </select>
+      ) : (
+        <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20 }}>
+          {pages.map(p => (
+            <button key={p.id} onClick={() => setActiveId(p.id)} style={{
+              padding: "10px 16px", fontSize: 13, fontWeight: activeId === p.id ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: "all .15s",
+              background: "transparent", color: activeId === p.id ? C.primary : C.t2, borderBottom: activeId === p.id ? `2.5px solid ${C.primary}` : "2.5px solid transparent", marginBottom: -2,
+            }}>{p.label}</button>
+          ))}
+        </div>
+      )}
 
       {!editing && (
         <>
