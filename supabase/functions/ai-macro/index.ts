@@ -9,6 +9,7 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const ALLOWED_ORIGINS = [
   "https://fipilotai.com",
   "https://www.fipilotai.com",
+  "https://app.fipilotai.com",
 ];
 
 function getCorsHeaders(req: Request) {

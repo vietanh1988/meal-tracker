@@ -6,6 +6,7 @@ import { createClient } from "npm:@supabase/supabase-js@2"
 const ALLOWED_ORIGINS = [
   "https://fipilotai.com",
   "https://www.fipilotai.com",
+  "https://app.fipilotai.com",
 ];
 
 function getCorsHeaders(req: Request) {
