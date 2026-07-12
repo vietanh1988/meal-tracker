@@ -336,7 +336,7 @@ if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
 const userMsg={role:"user",content:text};
 const dt=todayData?.dayType==="rest"?"nghỉ":"tập";
 const tgt=todayData?.dayType==="rest"?(macro?.calRest||macro?.calTarget):macro?.calTarget;
-const aiMsg={role:"assistant",content:`Mình sẽ tạo thực đơn ${dt==="tập"?"ngày tập":"ngày nghỉ"} (~${tgt} kcal) phù hợp với bạn. Bấm nút bên dưới để chọn phong cách ăn rồi mình ghép nhé!`,action:"open_ai_menu"};
+const aiMsg={role:"assistant",content:`OK! Mình lên thực đơn ${dt==="tập"?"ngày tập":"ngày nghỉ"} ~${tgt} kcal cho bạn. Chọn nhanh khẩu vị trước đã 👇`,action:"open_ai_menu"};
 setMessages(prev=>[...prev,userMsg,aiMsg]);
 setInput("");
 saveMsg("user",text);
@@ -384,7 +384,7 @@ await saveAIMenu(tpl,userId);
 // Hiện menu preview ngay trong chat để user thấy đã áp dụng gì
 const summary=`Đây là thực đơn AI gợi ý cho bạn hôm nay, phù hợp với mục tiêu ${macro?.goal==="bulk"?"tăng cơ":macro?.goal==="cut"?"giảm mỡ":"duy trì"}.`;
 const menuMsg={role:"assistant",content:summary,action:"menu_preview",template:tpl};
-const doneMsg={role:"assistant",content:"✅ Đã thêm thực đơn vào hôm nay! Quay lại tab Tổng quan để xem chi tiết nhé."};
+const doneMsg={role:"assistant",content:"✅ Xong! Thực đơn đã vào hôm nay — xem chi tiết ở tab Tổng quan nhé."};
 setMessages(prev=>[...prev,menuMsg,doneMsg]);
 saveMsg("assistant",summary);
 saveMsg("assistant",doneMsg.content);
@@ -415,7 +415,7 @@ if(!historyLoaded||!userId)return;
 (async()=>{
 const saved=await loadAIMenu(userId);
 if(saved&&saved.meals&&saved.meals.length>0){
-const summary="Đây là thực đơn AI đã gợi ý cho bạn hôm nay (khôi phục từ phiên trước):";
+const summary="Thực đơn bạn tạo hôm nay vẫn đây nhé 👇";
 const alreadyHasMenu=messages.some(mm=>mm.action==="menu_preview");
 if(!alreadyHasMenu){
 setMessages(prev=>[...prev,{role:"assistant",content:summary,action:"menu_preview",template:saved}]);
@@ -485,7 +485,7 @@ maxWidth:m.action==="menu_preview"?"100%":"85%",padding:m.action==="menu_preview
 {m.content}
 </span>
 :(m.role==="assistant"?renderMarkdownLite(m.content):m.content)}
-{m.action==="open_ai_menu"&&<button onClick={()=>setShowAIMenuFromChat(true)} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Mở AI tạo thực đơn</button>}
+{m.action==="open_ai_menu"&&<button onClick={()=>setShowAIMenuFromChat(true)} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Chọn khẩu vị & lên món</button>}
 {m.action==="menu_preview"&&m.template&&(()=>{
 const total=sumTemplate(m.template);
 const target=dayTarget(macro,m.template.day_type||"train");
@@ -539,8 +539,8 @@ return <div key={it.food+dn} style={{display:"flex",justifyContent:"space-betwee
 
 {/* 3 buttons: Đổi | Tính lại | Thêm */}
 <div style={{display:"flex",gap:0}}>
-<button onClick={()=>setShowAIMenuFromChat(true)} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Đổi thực đơn khác</button>
-<button onClick={()=>sendMessage("Gợi ý thực đơn hôm nay")} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:"#F59E0B",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🔄 Tính lại</button>
+<button onClick={()=>setShowAIMenuFromChat(true)} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
+<button onClick={()=>sendMessage("Gợi ý thực đơn hôm nay")} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:"#F59E0B",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🎲 Đổi bộ khác</button>
 <button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1.2,padding:"12px",border:"none",background:"#3B82F6",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",borderRadius:"0 0 12px 0"}}>Thêm vào hôm nay</button>
 </div>
 </div>;
@@ -548,7 +548,7 @@ return <div key={it.food+dn} style={{display:"flex",justifyContent:"space-betwee
 </div>)}
 {loading&&<div style={{alignSelf:"flex-start",background:C2.bg,padding:"10px 14px",borderRadius:12,borderTopLeftRadius:4,fontSize:13,color:C2.t3}}>
 <div style={{fontSize:11,fontWeight:700,color:C2.primary,marginBottom:4}}>✨ Fipilot AI</div>
-Đang suy nghĩ...
+Fipilot đang trả lời...
 </div>}
 </div>
 

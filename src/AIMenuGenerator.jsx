@@ -1,7 +1,7 @@
 // ============================================================
 // AI MENU GENERATOR — màn hình cho user "không biết nhập gì".
 // 3 bước: prefs (hỏi nhanh) → loading → preview (đổi món / tạo lại).
-// Bấm "Dùng thực đơn này" → onApply(template) — cha quyết định
+// Bấm "Áp dụng cho hôm nay" → onApply(template) — cha quyết định
 // applyTemplate + saveWeeklyTemplate (giữ nguyên pipeline cũ).
 //
 // Props:
@@ -12,8 +12,30 @@
 //   onClose   : () => void
 //   onFallbackToLibrary : () => void — mở Kho mẫu khi AI fail hẳn
 // ============================================================
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { C, card, redBtn, fs, fw, sp, radius } from "./theme";
+
+// AI mất 8–21 giây — xoay vòng câu trạng thái mỗi 3.5s để user thấy tiến triển
+const LOADING_LINES = [
+  "Đang chọn món hợp khẩu vị bạn...",
+  "Đang cân khẩu phần theo mục tiêu...",
+  "Đang xếp mâm cho từng bữa...",
+  "Sắp xong rồi, chờ xíu nhé...",
+];
+function LoadingCard() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => Math.min(i + 1, LOADING_LINES.length - 1)), 3500);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div style={{ ...card, textAlign: "center", padding: "40px 18px" }}>
+      <div style={{ fontSize: 32, marginBottom: 12 }}>🍳</div>
+      <div style={{ fontSize: fs["2xl"], fontWeight: fw.bold, color: C.t1, marginBottom: 6 }}>Đang lên thực đơn cho bạn</div>
+      <div style={{ fontSize: fs.base, color: C.t3, minHeight: 20, transition: "opacity 0.3s" }}>{LOADING_LINES[idx]}</div>
+    </div>
+  );
+}
 import { ALL_MEALS } from "./mealConstants";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { useIsMobile } from "./hooks/useIsMobile";
@@ -40,7 +62,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   const [error, setError] = useState("");
   const [swapping, setSwapping] = useState(null); // {mealId, food} — đổi 1 nguyên liệu
   // Variety tầng SESSION — nhớ pattern đã hiện trong phiên này (kể cả khi
-  // chưa bấm "Dùng thực đơn này" để lưu thật) — bấm "🔄 Tạo lại" nhiều
+  // chưa bấm "Áp dụng cho hôm nay" để lưu thật) — bấm "🎲 Đổi bộ khác" nhiều
   // lần liên tiếp sẽ KHÔNG ra lại y hệt lần trước.
   const shownPatternsRef = useRef(new Set());
 
@@ -88,9 +110,9 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   // ---------- STEP 1: HỎI NHANH ----------
   if (step === "prefs") return (
     <div style={card}>
-      <div style={{ fontSize: fs["4xl"], fontWeight: fw.extrabold, color: C.t1, marginBottom: 4 }}>✨ AI tạo thực đơn cho bạn</div>
+      <div style={{ fontSize: fs["4xl"], fontWeight: fw.extrabold, color: C.t1, marginBottom: 4 }}>✨ Fipilot lên thực đơn cho bạn</div>
       <div style={{ fontSize: fs.base, color: C.t2, marginBottom: sp["4xl"] }}>
-        Trả lời 2 câu, AI sẽ ghép thực đơn khớp đúng {target.cal} kcal (P{target.p}/C{target.c}/F{target.f}) của bạn.
+        Chọn nhanh 2 mục — Fipilot lên thực đơn món Việt vừa đúng {target.cal} kcal cho bạn.
       </div>
 
       <div style={{ fontSize: fs.md, fontWeight: fw.bold, color: C.t3, marginBottom: sp.md }}>PHONG CÁCH ĂN</div>
@@ -124,19 +146,13 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
         ))}
       </div>
 
-      <button onClick={generate} style={redBtn}>✨ Tạo thực đơn</button>
+      <button onClick={generate} style={redBtn}>✨ Lên thực đơn ngay</button>
       <button onClick={onClose} style={{ width: "100%", marginTop: sp.lg, padding: "10px", background: "none", border: "none", color: C.t3, fontSize: fs.base, cursor: "pointer", fontFamily: "inherit" }}>Để sau</button>
     </div>
   );
 
   // ---------- STEP 2: LOADING ----------
-  if (step === "loading") return (
-    <div style={{ ...card, textAlign: "center", padding: "40px 18px" }}>
-      <div style={{ fontSize: 32, marginBottom: sp["2xl"] }}>🍳</div>
-      <div style={{ fontSize: fs["2xl"], fontWeight: fw.bold, color: C.t1 }}>AI đang ghép thực đơn...</div>
-      <div style={{ fontSize: fs.base, color: C.t3, marginTop: sp.md }}>Chọn món → hệ thống tự cân gram khớp {target.cal} kcal</div>
-    </div>
-  );
+  if (step === "loading") return <LoadingCard />;
 
   // ---------- STEP LỖI ----------
   if (step === "error") return (
@@ -164,7 +180,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
             <div style={{ fontSize: fs["3xl"], fontWeight: fw.extrabold, color: C.t1 }}>Thực đơn AI · {dayType === "train" ? "Ngày tập" : "Ngày nghỉ"}</div>
             {note && <div style={{ fontSize: fs.md, color: C.t3, marginTop: 2 }}>{note}</div>}
           </div>
-          <button onClick={generate} title="Tạo lại toàn bộ" style={{ border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius["2xl"], padding: "8px 12px", cursor: "pointer", fontSize: fs.base, fontFamily: "inherit", fontWeight: fw.bold, color: C.t2 }}>🔄 Tạo lại</button>
+          <button onClick={generate} title="Tạo lại toàn bộ" style={{ border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius["2xl"], padding: "8px 12px", cursor: "pointer", fontSize: fs.base, fontFamily: "inherit", fontWeight: fw.bold, color: C.t2 }}>🎲 Đổi bộ khác</button>
         </div>
         <div style={{ display: "flex", gap: sp["2xl"], marginTop: sp["2xl"], fontSize: fs.base, fontWeight: fw.bold }}>
           <span style={{ color: C.t1 }}>{total.cal} <span style={{ color: C.t3, fontWeight: fw.medium }}>/ {target.cal} kcal</span></span>
@@ -217,7 +233,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
         );
       })}
 
-      <button onClick={() => onApply(template)} style={{ ...redBtn, marginTop: sp.md }}>✅ Dùng thực đơn này</button>
+      <button onClick={() => onApply(template)} style={{ ...redBtn, marginTop: sp.md }}>✅ Áp dụng cho hôm nay</button>
       <button onClick={onClose} style={{ width: "100%", marginTop: sp.lg, padding: "10px", background: "none", border: "none", color: C.t3, fontSize: fs.base, cursor: "pointer", fontFamily: "inherit" }}>Đóng</button>
 
       {/* PICKER ĐỔI MÓN — cùng role, tính lại gram ngay, không tốn lượt AI */}
