@@ -201,7 +201,6 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
         // Chỉ món TÔ (composite: phở/bún/cháo/mì) hiện gọn 1 dòng
         // Món ĐĨA (cơm + các món) vẫn liệt kê từng món chi tiết
         const showCompact = !!m.composite;
-        const totalGram = Math.round((m.items || []).reduce((s, it) => s + (it.gram || 0), 0));
         return (
           <div key={m.meal_id} style={card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: sp.lg }}>
