@@ -13,8 +13,8 @@
 // Menu lưu localStorage để reload không mất.
 // ============================================================
 
-import { LOCAL_FOODS, getFoodRole } from "./localFoodDB";
-import { applyMealEngineToTemplate } from "../mealEngine";
+import { LOCAL_FOODS, getFoodRole, getGramLimit } from "./localFoodDB";
+import { applyMealEngineToTemplate, splitDayIntoMeals } from "../mealEngine";
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { MEAL_PATTERNS, MEAL_TIMES } from "../mealPatterns";
@@ -103,8 +103,23 @@ export function getFoodDisplayCategory(foodKey) {
 // PATTERN LIBRARY — dishes format (v2)
 // ============================================================
 
-// Lọc pattern không dính dị ứng + không lặp gần đây
-export function getAvailablePatterns(mealId, exclude, avoidPatternNames) {
+// Sức chứa đạm tối đa của 1 pattern = tổng (trần gram × mật độ đạm) các món protein
+// — profile cần nhiều đạm (giảm mỡ 2.2g/kg) mà trúng pattern đạm yếu (trứng, đậu phụ)
+// thì engine bị trần gram chặn, hụt hệ thống ~40-50g đạm/ngày.
+export function patternProteinCapacity(pattern) {
+  let cap = 0;
+  for (const d of pattern.dishes || []) {
+    const role = d.role || getFoodRole(d.food);
+    if (role !== "protein") continue;
+    const lim = getGramLimit(d.food);
+    const per100 = LOCAL_FOODS[d.food]?.p || 0;
+    cap += ((lim?.max || 300) * per100) / 100;
+  }
+  return cap;
+}
+
+// Lọc pattern: dị ứng + không lặp gần đây + đủ sức chứa đạm cho bữa
+export function getAvailablePatterns(mealId, exclude, avoidPatternNames, minProteinPerMeal = 0) {
   const patterns = MEAL_PATTERNS[mealId] || [];
   let result = patterns;
   if (exclude && exclude.size > 0) {
@@ -113,6 +128,12 @@ export function getAvailablePatterns(mealId, exclude, avoidPatternNames) {
       if (p.dessert) foods.push(p.dessert.food);
       return !foods.some(f => exclude.has(f));
     });
+  }
+  // Lọc theo sức chứa đạm (nhân 0.8 khoan dung — filler + carb phụ gánh phần còn lại).
+  // Nếu lọc xong rỗng → giữ nguyên (an toàn hơn là không có gì).
+  if (minProteinPerMeal > 0) {
+    const strong = result.filter(p => patternProteinCapacity(p) >= minProteinPerMeal * 0.8);
+    if (strong.length > 0) result = strong;
   }
   if (avoidPatternNames && avoidPatternNames.size > 0) {
     const still = result.filter(p => !avoidPatternNames.has(p.name));
@@ -168,7 +189,7 @@ export function buildFoodCatalog(exclude) {
 // ============================================================
 // 2. PROMPT — AI sinh món ăn thật, không slot
 // ============================================================
-function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods = [], exclude, avoidPatternNames }) {
+function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods = [], exclude, avoidPatternNames, pNeedByMeal = {} }) {
   const goalLabel = { bulk: "tăng cơ", cut: "giảm mỡ", maintain: "duy trì" }[macro.goal] || "duy trì";
   const mealNames = mealIds
     .map(id => { const m = ALL_MEALS.find(x => x.id === id); return m ? `${id} (${m.name})` : id; })
@@ -188,7 +209,7 @@ function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods =
   if (avoidFoods.length) prefLines.push(`- KHÔNG lặp lại các món: ${avoidFoods.join(", ")}`);
 
   const patternLines = mealIds.map(mealId => {
-    const patterns = getAvailablePatterns(mealId, exclude, avoidPatternNames);
+    const patterns = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0);
     if (patterns.length === 0) return null;
     const pList = patterns.map(p => {
       const dishNames = (p.dishes || []).map(d => d.display).join(", ");
@@ -353,7 +374,7 @@ function finalizeMealDishes(mealId, dishes, dessert, errors) {
 }
 
 // Main normalize — ưu tiên pattern, fallback custom dishes
-export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames) {
+export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByMeal = {}) {
   const errors = [];
   const wanted = new Set(mealIds);
   const byId = {};
@@ -370,7 +391,7 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames) {
 
     const patternName = (m.pattern || "").trim();
     if (patternName && patternName.toLowerCase() !== "custom") {
-      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames);
+      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0);
       const found = available.find(p => p.name.toLowerCase() === patternName.toLowerCase());
       if (found) {
         const pd = patternToDishes(found);
@@ -412,7 +433,7 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames) {
 
     // Bữa chính PHẢI có pattern — nếu AI không chọn, ép 1 pattern ngẫu nhiên
     if (MAIN_MEALS.has(mealId) && !usedPattern && dishes.length === 0) {
-      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames);
+      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0);
       if (available.length > 0) {
         const picked = available[Math.floor(Math.random() * available.length)];
         const pd = patternToDishes(picked);
@@ -540,8 +561,13 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
     : (appSettings?.gpt_model || "gpt-4o-mini")
   );
   const exclude = buildExclusionKeys(prefs?.avoid);
-  const prompt = buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods, exclude, avoidPatternNames });
   const target = dayTarget(macro, dayType);
+  // Sức chứa đạm cần thiết mỗi bữa — dùng ĐÚNG cách chia engine dùng,
+  // để lọc pattern đạm yếu ngay từ khâu chọn (fix hụt đạm profile giảm mỡ)
+  const perMeal = splitDayIntoMeals(target, mealIds);
+  const pNeedByMeal = {};
+  mealIds.forEach(id => { pNeedByMeal[id] = perMeal[id]?.p || 0; });
+  const prompt = buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods, exclude, avoidPatternNames, pNeedByMeal });
 
   let lastErrors = [];
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -550,7 +576,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         `\n\nLẦN TRƯỚC BỊ LỖI: ${lastErrors.join("; ")}. Hãy sửa lại.`;
       const text = await callAI(prompt + retryHint, { provider: prov, model: mdl });
       const raw = parseMenuJSON(text);
-      const norm = normalizeMenu(raw, mealIds, exclude, avoidPatternNames);
+      const norm = normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByMeal);
       if (!norm.ok) { lastErrors = norm.errors; continue; }
 
       const virtualTpl = buildVirtualTemplate(norm.meals, dayType);
