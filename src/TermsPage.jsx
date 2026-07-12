@@ -94,20 +94,51 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
     if (activeId === id) setActiveId(next[0]?.id);
   };
 
+  const [managing, setManaging] = useState(false);
+
+  const movePage = async (idx, dir) => {
+    const next = [...pages];
+    const target = idx + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[idx], next[target]] = [next[target], next[idx]];
+    await savePages(next);
+  };
+
   return (
     <div style={{ ...card, maxWidth: 900, margin: "0 auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ fontSize: 20, fontWeight: 800, color: C.t1 }}>Điều khoản và chính sách</div>
         {isAdmin && !mob && (
-          <button onClick={addPage} style={{ fontSize: 12, fontWeight: 700, padding: "6px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.primary, cursor: "pointer", fontFamily: "inherit" }}>+ Thêm trang</button>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => setManaging(v => !v)} style={{ fontSize: 12, fontWeight: 700, padding: "6px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: managing ? C.primaryBg : "#fff", color: managing ? C.primary : C.t2, cursor: "pointer", fontFamily: "inherit" }}>{managing ? "✓ Xong" : "⚙ Quản lý"}</button>
+            <button onClick={addPage} style={{ fontSize: 12, fontWeight: 700, padding: "6px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.primary, cursor: "pointer", fontFamily: "inherit" }}>+ Thêm trang</button>
+          </div>
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 4 }}>
+      {/* Manage mode: reorder + delete */}
+      {managing && isAdmin && !mob && (
+        <div style={{ marginBottom: 16, padding: 12, background: C.surface, borderRadius: 12, border: `1px solid ${C.border}` }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, marginBottom: 8 }}>Kéo thứ tự / xóa trang:</div>
+          {pages.map((p, i) => (
+            <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: i < pages.length - 1 ? `1px solid ${C.border}` : "none" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <button onClick={() => movePage(i, -1)} disabled={i === 0} style={{ width: 22, height: 16, padding: 0, border: "none", background: "none", cursor: i === 0 ? "default" : "pointer", fontSize: 10, color: i === 0 ? C.border : C.t2, fontFamily: "inherit" }}>▲</button>
+                <button onClick={() => movePage(i, 1)} disabled={i === pages.length - 1} style={{ width: 22, height: 16, padding: 0, border: "none", background: "none", cursor: i === pages.length - 1 ? "default" : "pointer", fontSize: 10, color: i === pages.length - 1 ? C.border : C.t2, fontFamily: "inherit" }}>▼</button>
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.t1, flex: 1 }}>{p.label}</span>
+              {pages.length > 1 && <button onClick={() => removePage(p.id, p.label)} style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer", fontFamily: "inherit" }}>Xóa</button>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Tabs — underline style */}
+      <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {pages.map(p => (
           <button key={p.id} onClick={() => setActiveId(p.id)} style={{
-            padding: "8px 18px", fontSize: 13, fontWeight: activeId === p.id ? 700 : 500, borderRadius: 20, border: activeId === p.id ? "none" : `1.5px solid ${C.border}`, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: "all .15s",
-            background: activeId === p.id ? C.primary : "#fff", color: activeId === p.id ? "#fff" : C.t2,
+            padding: "10px 16px", fontSize: 13, fontWeight: activeId === p.id ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: "all .15s",
+            background: "transparent", color: activeId === p.id ? C.primary : C.t2, borderBottom: activeId === p.id ? `2.5px solid ${C.primary}` : "2.5px solid transparent", marginBottom: -2,
           }}>{p.label}</button>
         ))}
       </div>
@@ -124,7 +155,6 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
           {isAdmin && !mob && (
             <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 24 }}>
               <button onClick={startEdit} style={{ padding: "8px 20px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: `1.5px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer", fontFamily: "inherit" }}>✏️ Chỉnh sửa {activePage?.label}</button>
-              {pages.length > 1 && <button onClick={() => removePage(activeId, activePage?.label)} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer", fontFamily: "inherit" }}>🗑 Xóa trang này</button>}
             </div>
           )}
           {isAdmin && mob && (
