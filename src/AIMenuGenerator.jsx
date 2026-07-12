@@ -197,20 +197,31 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
         const reason = m.pattern ? getPatternReason(m.meal_id, m.pattern, macro.goal) : null;
         const time = MEAL_TIMES[m.meal_id] || "";
         const visibleItems = (m.items || []).filter(it => it.display !== null && it.gram > 0);
+        const isComposite = !!m.composite;
+        const totalGram = Math.round((m.items || []).reduce((s, it) => s + (it.gram || 0), 0));
         return (
           <div key={m.meal_id} style={card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: sp.lg }}>
               <div>
                 <span style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: "#3B82F6" }}>{meta?.name || m.meal_id}</span>
                 {time && <span style={{ fontSize: fs.md, color: C.t3, marginLeft: 6 }}>{time}</span>}
-                {m.pattern && <span style={{ fontSize: fs.lg, fontWeight: fw.bold, color: C.t1, marginLeft: 8 }}>· {m.pattern}</span>}
+                {m.pattern && !isComposite && <span style={{ fontSize: fs.lg, fontWeight: fw.bold, color: C.t1, marginLeft: 8 }}>· {m.pattern}</span>}
                 {reason && <div style={{ fontSize: fs.sm, color: C.primary, marginTop: 3 }}>💡 {reason}</div>}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
                 <span style={{ fontSize: fs.base, fontWeight: fw.bold, color: "#3B82F6" }}>{mealCal} kcal</span>
               </div>
             </div>
-            {visibleItems.map(it => {
+            {isComposite && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: `${sp.md}px 0`, borderBottom: `1px solid ${C.border}` }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: fs.lg, fontWeight: fw.semibold, color: C.t1 }}>{m.pattern}</div>
+                  <div style={{ fontSize: fs.md, color: C.t3 }}>1 tô (~{totalGram}g)</div>
+                </div>
+                <span style={{ fontSize: fs.md, color: C.t3 }}>{mealCal} kcal</span>
+              </div>
+            )}
+            {!isComposite && visibleItems.map(it => {
               const displayName = capitalizeFirst(it.display || it.food);
               const portion = formatFoodPortion(it.food, it.gram);
               const itemCal = Math.round(it.cal || 0);

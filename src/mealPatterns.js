@@ -44,16 +44,18 @@ export const MEAL_PATTERNS = {
       popularity: 4, prepMinutes: 10, buyable: true,
       reasonTemplate: { bulk: "Ngày tập cần nhiều carb hơn, xôi no lâu" } },
 
-    { name: "Phở bò",
+    { name: "Phở bò", composite: true,
       dishes: [
+        { display: "Nước dùng", food: "dầu ăn", role: "fat" },
         { display: "Bánh phở", food: "bánh phở", role: "carb" },
         { display: "Thịt bò", food: "thịt bò", role: "protein" },
         { display: "Giá đỗ", food: "giá đỗ", role: "fixed" },
       ],
       popularity: 5, prepMinutes: 15, buyable: true },
 
-    { name: "Phở gà",
+    { name: "Phở gà", composite: true,
       dishes: [
+        { display: "Nước dùng", food: "dầu ăn", role: "fat" },
         { display: "Bánh phở", food: "bánh phở", role: "carb" },
         { display: "Gà luộc xé", food: "ức gà luộc", role: "protein" },
         { display: "Giá đỗ", food: "giá đỗ", role: "fixed" },
@@ -69,8 +71,9 @@ export const MEAL_PATTERNS = {
       ],
       popularity: 3, prepMinutes: 15, buyable: true },
 
-    { name: "Cháo thịt",
+    { name: "Cháo thịt", composite: true,
       dishes: [
+        { display: "Nước dùng", food: "dầu ăn", role: "fat" },
         { display: "Cháo", food: "cháo", role: "carb" },
         { display: "Thịt heo xay", food: "thịt heo xay", role: "protein" },
         { display: "Cà rốt", food: "cà rốt", role: "fixed" },
@@ -78,8 +81,9 @@ export const MEAL_PATTERNS = {
       popularity: 4, prepMinutes: 20, buyable: true,
       reasonTemplate: { cut: "Cháo nhiều nước, no bụng mà ít calo" } },
 
-    { name: "Cháo gà",
+    { name: "Cháo gà", composite: true,
       dishes: [
+        { display: "Nước dùng", food: "dầu ăn", role: "fat" },
         { display: "Cháo", food: "cháo", role: "carb" },
         { display: "Gà xé", food: "ức gà", role: "protein" },
         { display: "Cà rốt", food: "cà rốt", role: "fixed" },
@@ -133,8 +137,9 @@ export const MEAL_PATTERNS = {
       ],
       popularity: 5, prepMinutes: 25, buyable: true },
 
-    { name: "Bún bò",
+    { name: "Bún bò", composite: true,
       dishes: [
+        { display: "Nước dùng", food: "dầu ăn", role: "fat" },
         { display: "Bún", food: "bún", role: "carb" },
         { display: "Thịt bò", food: "thịt bò", role: "protein" },
         { display: "Rau muống", food: "rau muống", role: "fixed" },

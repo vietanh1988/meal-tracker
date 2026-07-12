@@ -518,12 +518,22 @@ const meta=ALL_MEALS.find(x=>x.id===mm.meal_id);
 const cal=Math.round((mm.items||[]).reduce((s,it)=>s+(it.cal||0),0));
 const time=MEAL_TIMES[mm.meal_id]||"";
 const visibleItems=(mm.items||[]).filter(it=>it.display!==null&&it.gram>0);
+const isComposite=!!mm.composite;
+const totalGram=Math.round((mm.items||[]).reduce((s,it)=>s+(it.gram||0),0));
 return <div key={mm.meal_id} style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}>
-<span><span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{meta?.name||mm.meal_id}</span>{time&&<span style={{fontSize:12,color:C2.t3,marginLeft:8}}>{time}</span>}{mm.pattern&&<span style={{fontSize:13,fontWeight:700,color:C2.t1,marginLeft:8}}>· {mm.pattern}</span>}</span>
+<span><span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{meta?.name||mm.meal_id}</span>{time&&<span style={{fontSize:12,color:C2.t3,marginLeft:8}}>{time}</span>}{mm.pattern&&!isComposite&&<span style={{fontSize:13,fontWeight:700,color:C2.t1,marginLeft:8}}>· {mm.pattern}</span>}</span>
 <span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{cal} kcal</span>
 </div>
-{visibleItems.map(it=>{
+{isComposite
+?<div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"6px 0 6px 10px"}}>
+<div style={{flex:1}}>
+<div style={{fontSize:13,fontWeight:600,color:C2.t1}}>{mm.pattern}</div>
+<div style={{fontSize:11,color:C2.t3,marginTop:1}}>1 tô (~{totalGram}g)</div>
+</div>
+<div style={{fontSize:12,color:C2.t3,flexShrink:0,marginLeft:12,paddingTop:2}}>{cal} kcal</div>
+</div>
+:visibleItems.map(it=>{
 const dn=it.display||capitalizeFirst(it.food);
 const portion=formatFoodPortion(it.food,it.gram);
 const ic=Math.round(it.cal||0);

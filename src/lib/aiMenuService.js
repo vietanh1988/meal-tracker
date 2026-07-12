@@ -327,11 +327,11 @@ function patternToDishes(pattern) {
   const dishes = (pattern.dishes || []).map(d => ({
     display: d.display, food: d.food, role: d.role || getFoodRole(d.food) || "fixed",
   }));
-  return { dishes, dessert: pattern.dessert || null };
+  return { dishes, dessert: pattern.dessert || null, composite: !!pattern.composite };
 }
 
 // Finalize — validate dishes + thêm filler béo
-function finalizeMealDishes(mealId, dishes, dessert, errors) {
+function finalizeMealDishes(mealId, dishes, dessert, errors, skipFiller = false) {
   const isMain = MAIN_MEALS.has(mealId);
   const foods = [];
 
@@ -357,9 +357,10 @@ function finalizeMealDishes(mealId, dishes, dessert, errors) {
     errors.push(`Bữa "${mealId}" rỗng`);
   }
 
-  // Filler béo = món Việt thật có tên (Muối vừng, Lạc rang...), hiển thị công khai
+  // Filler béo = món Việt thật có tên (Muối vừng, Lạc rang...), hiển thị công khai.
+  // Món tô (phở/bún/cháo) đã có "Nước dùng" làm fat lever — không thêm lạc/mè (sai văn hoá).
   const filler = AUTO_FAT_FILLER[mealId];
-  if (filler && LOCAL_FOODS[filler.food]) {
+  if (!skipFiller && filler && LOCAL_FOODS[filler.food]) {
     foods.push({ key: filler.food, role: "fat", display: filler.display });
   }
 
@@ -388,6 +389,7 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
     let dishes = [];
     let dessert = null;
     let usedPattern = null;
+    let composite = false;
 
     const patternName = (m.pattern || "").trim();
     if (patternName && patternName.toLowerCase() !== "custom") {
@@ -397,6 +399,7 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
         const pd = patternToDishes(found);
         dishes = pd.dishes;
         dessert = pd.dessert;
+        composite = pd.composite;
         usedPattern = found.name;
       }
     }
@@ -439,16 +442,18 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
         const pd = patternToDishes(picked);
         dishes = pd.dishes;
         dessert = pd.dessert;
+        composite = pd.composite;
         usedPattern = picked.name;
       }
     }
 
-    const finalized = finalizeMealDishes(mealId, dishes, dessert, errors);
+    const finalized = finalizeMealDishes(mealId, dishes, dessert, errors, composite);
     meals.push({
       meal_id: mealId,
       foods: finalized.foods,
       dessert: finalized.dessert,
       pattern: usedPattern,
+      composite,
     });
   }
 
@@ -518,7 +523,7 @@ function attachPatternAndDisplay(template, norm) {
       if (f.role) roleMap[f.key] = f.role;
     });
     if (m.dessert && m.dessert.display) displayMap[m.dessert.key] = m.dessert.display;
-    infoByMealId[m.meal_id] = { pattern: m.pattern, displayMap, roleMap };
+    infoByMealId[m.meal_id] = { pattern: m.pattern, displayMap, roleMap, composite: !!m.composite };
   });
   return {
     ...template,
@@ -534,7 +539,7 @@ function attachPatternAndDisplay(template, norm) {
         const rb = DISPLAY_ORDER[info.roleMap?.[b.food] || getFoodRole(b.food)] ?? 2;
         return ra - rb;
       });
-      return { ...m, items, pattern: info.pattern || null };
+      return { ...m, items, pattern: info.pattern || null, composite: !!info.composite };
     }),
   };
 }
@@ -570,13 +575,15 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
   const prompt = buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods, exclude, avoidPatternNames, pNeedByMeal });
 
   let lastErrors = [];
+  let bestCandidate = null; // best-of-2: giữ bản lệch target ít nhất
+  const localAvoid = new Set(avoidPatternNames || []);
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const retryHint = attempt === 0 ? "" :
         `\n\nLẦN TRƯỚC BỊ LỖI: ${lastErrors.join("; ")}. Hãy sửa lại.`;
       const text = await callAI(prompt + retryHint, { provider: prov, model: mdl });
       const raw = parseMenuJSON(text);
-      const norm = normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByMeal);
+      const norm = normalizeMenu(raw, mealIds, exclude, localAvoid, pNeedByMeal);
       if (!norm.ok) { lastErrors = norm.errors; continue; }
 
       const virtualTpl = buildVirtualTemplate(norm.meals, dayType);
@@ -584,11 +591,21 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)),
         norm
       );
-      return { ok: true, template, note: raw.note || "" };
+      const total = sumTemplate(template);
+      const dev = target.cal ? Math.abs(total.cal - target.cal) / target.cal : 0;
+      if (!bestCandidate || dev < bestCandidate.dev) {
+        bestCandidate = { template, note: raw.note || "", dev };
+      }
+      // Khớp tốt (≤10%) → dùng luôn. Lệch nhiều → thử lại 1 lần với combo
+      // pattern khác (avoid pattern vừa dùng), giữ bản nào lệch ít hơn.
+      if (dev <= 0.10) return { ok: true, template, note: raw.note || "" };
+      norm.meals.forEach(m => { if (m.pattern) localAvoid.add(m.pattern); });
+      lastErrors = [`Lệch ${Math.round(dev * 100)}% so với target`];
     } catch (e) {
       lastErrors = [e.message || "Lỗi không xác định"];
     }
   }
+  if (bestCandidate) return { ok: true, template: bestCandidate.template, note: bestCandidate.note };
   return { ok: false, error: lastErrors.join("; ") || "AI không tạo được thực đơn hợp lệ" };
 }
 
