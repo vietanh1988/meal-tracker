@@ -10,6 +10,9 @@ const DEFAULT_PAGES = [
   { id: "refund", label: "Chính sách hoàn tiền", html: "" },
 ];
 
+const PAGE_ICONS = { tos: "📄", privacy: "🔒", refund: "💰", privacy_policy: "👁️", disclaimer: "🛡️", ai_policy: "🤖", shipping: "🚚", payment: "💳", cookie: "🍪" };
+const getIcon = (id, label) => PAGE_ICONS[id] || (label.match(/bảo mật|privacy/i) ? "🔒" : label.match(/hoàn|refund/i) ? "💰" : label.match(/AI/i) ? "🤖" : label.match(/miễn trừ|disclaimer/i) ? "🛡️" : label.match(/riêng tư/i) ? "👁️" : label.match(/thanh toán|payment/i) ? "💳" : "📋");
+
 const QUILL_MODULES = {
   toolbar: [
     [{ header: [1, 2, false] }],
@@ -133,30 +136,45 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
         </div>
       )}
 
-      {/* Tabs — danh sách dọc trên mobile, underline trên PC */}
+      {/* Mobile: accordion — PC: underline tabs */}
       {mob ? (
-        <div style={{ display: "flex", flexDirection: "column", border: `1.5px solid ${C.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
-          {pages.map((p, i) => {
-            const active = activeId === p.id;
-            return <button key={p.id} onClick={() => setActiveId(p.id)} style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", fontSize: 13, fontWeight: active ? 700 : 500, border: "none", borderTop: i > 0 ? `1px solid ${C.border}` : "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left",
-              background: active ? "rgba(0,122,255,0.06)" : "#fff", color: active ? C.primary : C.t2, borderLeft: active ? `3px solid ${C.primary}` : "3px solid transparent",
-            }}>
-              <span>{p.label}</span>
-              <span style={{ fontSize: 14, color: active ? C.primary : C.border }}>{active ? "▼" : "›"}</span>
-            </button>;
-          })}
-        </div>
-      ) : (
+        <>
+          <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
+            {pages.map((p, i) => {
+              const active = activeId === p.id;
+              const icon = getIcon(p.id, p.label);
+              return <div key={p.id}>
+                {i > 0 && <div style={{ borderTop: `1px solid ${C.border}` }} />}
+                <button onClick={() => setActiveId(active ? null : p.id)} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", width: "100%", fontSize: 13, fontWeight: active ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+                  background: active ? "rgba(0,122,255,0.06)" : "#fff", color: active ? C.primary : C.t2, borderLeft: active ? `3px solid ${C.primary}` : "3px solid transparent",
+                }}>
+                  <span>{icon} {p.label}</span>
+                  <span style={{ fontSize: 12, color: active ? C.primary : C.border, transition: "transform .2s", display: "inline-block", transform: active ? "rotate(180deg)" : "rotate(0deg)" }}>▼</span>
+                </button>
+                {active && <div style={{ padding: "0 14px 14px", borderLeft: `3px solid ${C.primary}`, background: "rgba(0,122,255,0.02)" }}>
+                  {p.html ? <>
+                    <style>{`.terms-content p{margin:0 0 12px;}.terms-content h1{font-size:18px;margin:14px 0 8px;font-weight:800;}.terms-content h2{font-size:15px;margin:12px 0 6px;font-weight:800;}.terms-content ul,.terms-content ol{margin:0 0 12px;padding-left:20px;}.terms-content li{margin-bottom:4px;}`}</style>
+                    <div className="terms-content" style={{ fontSize: 13, color: C.t1, lineHeight: 1.7 }} dangerouslySetInnerHTML={{ __html: stripEmptyParagraphs(p.html) }} />
+                  </> : <div style={{ fontSize: 13, color: C.t3, padding: "16px 0", textAlign: "center" }}>Nội dung đang được cập nhật.</div>}
+                </div>}
+              </div>;
+            })}
+          </div>
+          {isAdmin && <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "10px 14px", background: C.surface, borderRadius: 10 }}>
+            <span style={{ fontSize: 15 }}>💻</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Vào máy tính để chỉnh sửa nội dung này</span>
+          </div>}
+        </>
+      ) : (<>
         <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20 }}>
           {pages.map(p => (
             <button key={p.id} onClick={() => setActiveId(p.id)} style={{
               padding: "10px 16px", fontSize: 13, fontWeight: activeId === p.id ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: "all .15s",
               background: "transparent", color: activeId === p.id ? C.primary : C.t2, borderBottom: activeId === p.id ? `2.5px solid ${C.primary}` : "2.5px solid transparent", marginBottom: -2,
-            }}>{p.label}</button>
+            }}>{getIcon(p.id, p.label)} {p.label}</button>
           ))}
         </div>
-      )}
 
       {!editing && (
         <>
@@ -167,21 +185,15 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
               </>
             : <div style={{ fontSize: 13, color: C.t3, textAlign: "center", padding: "40px 0" }}>Nội dung đang được cập nhật.</div>}
 
-          {isAdmin && !mob && (
+          {isAdmin && (
             <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 24 }}>
               <button onClick={startEdit} style={{ padding: "8px 20px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: `1.5px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer", fontFamily: "inherit" }}>✏️ Chỉnh sửa {activePage?.label}</button>
-            </div>
-          )}
-          {isAdmin && mob && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 24, padding: "10px 14px", background: C.surface, borderRadius: 10 }}>
-              <span style={{ fontSize: 15 }}>💻</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.t2 }}>Vào máy tính để chỉnh sửa nội dung này</span>
             </div>
           )}
         </>
       )}
 
-      {editing && !mob && (
+      {editing && (
         <div>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
             <button onClick={() => setHtmlMode(v => !v)} style={{ padding: "6px 14px", fontSize: 12, fontWeight: 700, borderRadius: 8, border: `1px solid ${C.border}`, background: htmlMode ? C.blueBg : "#fff", color: htmlMode ? C.primary : C.t2, cursor: "pointer", fontFamily: "inherit" }}>{htmlMode ? "🎨 Chuyển sang trực quan" : "🔤 Chuyển sang mã HTML"}</button>
@@ -200,6 +212,7 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
           </div>
         </div>
       )}
+      </>)}
     </div>
   );
 }
