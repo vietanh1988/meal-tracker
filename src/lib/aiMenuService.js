@@ -302,10 +302,10 @@ const MAIN_MEALS = new Set(["sang", "trua", "toi"]);
 const AUTO_FAT_FILLER = {
   sang: { food: "lạc", display: "Lạc rang" },
   trua: { food: "mè", display: "Muối vừng" },
-  toi: { food: "đậu phộng", display: "Đậu phộng rang" },
+  toi: { food: "đậu phộng", display: "Lạc rang" },
   phu_sang: { food: "lạc", display: "Lạc rang" },
   phu_chieu: { food: "mè", display: "Muối vừng" },
-  pre: { food: "đậu phộng", display: "Đậu phộng rang" },
+  pre: { food: "đậu phộng", display: "Lạc rang" },
   post: { food: "lạc", display: "Lạc rang" },
 };
 
@@ -677,6 +677,9 @@ export function getSwapCandidates(foodKey, currentMealFoods = []) {
 const DISPLAY_UNIT = {
   "trứng gà": { unit: "quả", gramPerUnit: 50 },
   "trứng gà luộc": { unit: "quả", gramPerUnit: 50 },
+  "trứng": { unit: "quả", gramPerUnit: 50 },
+  "trứng luộc": { unit: "quả", gramPerUnit: 50 },
+  "trứng vịt": { unit: "quả", gramPerUnit: 60 },
   "chuối": { unit: "quả", gramPerUnit: 120 },
   "cam": { unit: "quả", gramPerUnit: 150 },
   "táo": { unit: "quả", gramPerUnit: 150 },

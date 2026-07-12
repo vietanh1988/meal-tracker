@@ -175,12 +175,12 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   return (
     <div>
       <div style={card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: fs["3xl"], fontWeight: fw.extrabold, color: C.t1 }}>Thực đơn AI · {dayType === "train" ? "Ngày tập" : "Ngày nghỉ"}</div>
             {note && <div style={{ fontSize: fs.md, color: C.t3, marginTop: 2 }}>{note}</div>}
           </div>
-          <button onClick={generate} title="Tạo lại toàn bộ" style={{ border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius["2xl"], padding: "8px 12px", cursor: "pointer", fontSize: fs.base, fontFamily: "inherit", fontWeight: fw.bold, color: C.t2 }}>🔄 Tạo lại menu</button>
+          <button onClick={generate} title="Tạo lại toàn bộ" style={{ flexShrink: 0, whiteSpace: "nowrap", border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius["2xl"], padding: "8px 12px", cursor: "pointer", fontSize: fs.sm, fontFamily: "inherit", fontWeight: fw.bold, color: C.t2 }}>🔄 Tạo lại</button>
         </div>
         <div style={{ display: "flex", gap: sp["2xl"], marginTop: sp["2xl"], fontSize: fs.base, fontWeight: fw.bold }}>
           <span style={{ color: C.t1 }}>{total.cal} <span style={{ color: C.t3, fontWeight: fw.medium }}>/ {target.cal} kcal</span></span>
