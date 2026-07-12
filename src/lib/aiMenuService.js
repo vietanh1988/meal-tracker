@@ -535,16 +535,47 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
 
 export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro, dayType) {
   if (!LOCAL_FOODS[newFoodKey]) return template;
+
+  // Ghi lại display map TOÀN template trước khi chạy engine (engine xoá display)
+  const displayByMeal = {};
+  (template.meals || []).forEach(m => {
+    const map = {};
+    (m.items || []).forEach(it => {
+      if (it.food === oldFood && m.meal_id === mealId) map[newFoodKey] = capitalizeFirst(newFoodKey);
+      else if (it.display !== undefined) map[it.food] = it.display;
+    });
+    displayByMeal[m.meal_id] = { map, pattern: m.meal_id === mealId ? null : (m.pattern || null) };
+  });
+
   const meals = (template.meals || []).map(m => {
     if (m.meal_id !== mealId) return m;
     const items = (m.items || []).map(it =>
-      it.food === oldFood
-        ? { ...foodToItem(newFoodKey), display: capitalizeFirst(newFoodKey) }
-        : { ...foodToItem(it.food, it.gram), display: it.display }
+      it.food === oldFood ? foodToItem(newFoodKey) : foodToItem(it.food, it.gram)
     );
     return { ...m, items, pattern: null };
   });
-  return stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType)));
+
+  const recomputed = stripZeroGramItems(
+    applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType))
+  );
+
+  // Re-attach display + pattern (engine đã xoá) + sort lại đúng thứ tự Việt
+  return {
+    ...recomputed,
+    meals: (recomputed.meals || []).map(m => {
+      const info = displayByMeal[m.meal_id] || { map: {}, pattern: null };
+      const items = (m.items || []).map(it => ({
+        ...it,
+        display: info.map[it.food] !== undefined ? info.map[it.food] : null,
+      }));
+      items.sort((a, b) => {
+        const ra = DISPLAY_ORDER[getFoodRole(a.food)] ?? 2;
+        const rb = DISPLAY_ORDER[getFoodRole(b.food)] ?? 2;
+        return ra - rb;
+      });
+      return { ...m, pattern: info.pattern, items };
+    }),
+  };
 }
 
 export function getPatternReason(mealId, patternName, goalType) {
