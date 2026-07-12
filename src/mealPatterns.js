@@ -409,7 +409,7 @@ export const MEAL_PATTERNS = {
       ], popularity: 5, prepMinutes: 2, buyable: true },
     { name: "Whey chuối", goals: ["bulk", "cut"],
       dishes: [
-        { display: "Sữa whey pha nước", food: "whey", role: "protein" },
+        { display: "Whey protein", food: "whey", role: "protein" },
         { display: "Chuối", food: "chuối", role: "carb" },
       ], popularity: 5, prepMinutes: 2, buyable: true,
       reasonTemplate: { bulk: "Đạm nhanh giữa buổi, hỗ trợ tăng cơ" } },
@@ -461,18 +461,18 @@ export const MEAL_PATTERNS = {
       ], popularity: 4, prepMinutes: 8, buyable: true },
     { name: "Whey chuối", goals: ["bulk", "cut"],
       dishes: [
-        { display: "Sữa whey pha nước", food: "whey", role: "protein" },
+        { display: "Whey protein", food: "whey", role: "protein" },
         { display: "Chuối", food: "chuối", role: "carb" },
       ], popularity: 5, prepMinutes: 2, buyable: true,
       reasonTemplate: { bulk: "Đạm hấp thu nhanh sau tập — cửa sổ vàng phục hồi cơ" } },
     { name: "Whey yến mạch", goals: ["bulk", "cut"],
       dishes: [
-        { display: "Sữa whey pha nước", food: "whey", role: "protein" },
+        { display: "Whey protein", food: "whey", role: "protein" },
         { display: "Yến mạch", food: "yến mạch", role: "carb" },
       ], popularity: 4, prepMinutes: 3, buyable: false },
     { name: "Sữa chua whey", goals: ["bulk", "cut"],
       dishes: [
-        { display: "Sữa chua Hy Lạp trộn whey", food: "sữa chua hy lạp", role: "protein" },
+        { display: "Sữa chua Hy Lạp", food: "sữa chua hy lạp", role: "protein" },
         { display: "Whey", food: "whey", role: "protein" },
         { display: "Chuối", food: "chuối", role: "carb" },
       ], popularity: 4, prepMinutes: 3, buyable: true },
