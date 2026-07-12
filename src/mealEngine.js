@@ -85,9 +85,10 @@ export function computeMealGram(mealTarget, foods) {
   });
 
   // Fixed — tính 1 lần duy nhất, không đổi qua các vòng lặp
+  // VẪN phải clamp theo min/max (mật ong max 30g, không để 100g mặc định)
   const fixedResults = byRole.fixed.map(food => {
     const gram = Math.max(0, food.refGram || 0);
-    return makeResult(food, gram);
+    return makeResult(food, gram, food.min, food.max);
   });
   const fixedTotal = sumResults(fixedResults);
 

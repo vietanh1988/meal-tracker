@@ -367,10 +367,14 @@ function finalizeMealDishes(mealId, dishes, dessert, errors, skipFiller = false)
     errors.push(`Bữa "${mealId}" rỗng`);
   }
 
-  // Filler béo = món Việt thật có tên (Muối vừng, Lạc rang...), hiển thị công khai.
-  // Món tô (phở/bún/cháo) đã có "Nước dùng" làm fat lever — không thêm lạc/mè (sai văn hoá).
+  // Filler béo = món Việt thật có tên (Muối vừng, Lạc rang...).
+  // CHỈ thêm cho bữa chính dạng CƠM (không có pattern sẵn — pattern đã có
+  // đủ thành phần, thêm lạc vào phở/bún/bánh mì = sai văn hoá).
+  // KHÔNG thêm cho pre/post/snack — bữa phụ không ai ăn kèm lạc rang.
   const filler = AUTO_FAT_FILLER[mealId];
-  if (!skipFiller && filler && LOCAL_FOODS[filler.food]) {
+  const shouldAddFiller = !skipFiller && isMain && filler && LOCAL_FOODS[filler.food]
+    && !foods.some(f => f.role === "fat"); // đã có fat item (VD nước dùng) thì thôi
+  if (shouldAddFiller) {
     foods.push({ key: filler.food, role: "fat", display: filler.display });
   }
 
