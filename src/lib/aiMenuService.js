@@ -226,7 +226,7 @@ QUY TẮC:
 1. ƯU TIÊN chọn PATTERN từ danh sách dưới — trả "pattern":"<tên chính xác>", hệ thống tự tra dishes.
 2. CHỈ khi không pattern nào hợp mới TỰ SOẠN: trả "pattern":"custom" kèm "dishes" — mỗi dish gồm "display" (tên MÓN ĂN có cách nấu: "Gà luộc", "Rau muống xào tỏi", "Canh bí đỏ") và "food" (tên NGUYÊN LIỆU CHÍNH XÁC từ danh sách món rời dưới đây).
 3. BẮT BUỘC 100% món VIỆT NAM thuần (luộc/xào/kho/nướng/hấp/canh). CẤM TUYỆT ĐỐI món Tây/fusion: salad, sandwich, pasta, soup kem, smoothie, bowl, steak... "display" không được bỏ trống.
-4. Bữa chính: 3-4 món (đạm+carb+rau+canh). Bữa phụ/pre/post: 1-2 món.
+4. Bữa chính: 3-4 món (đạm+carb+rau+canh). Bữa phụ/pre/post: chọn PATTERN trong danh sách (đã có sẵn), chỉ custom khi thật cần.
 5. Tráng miệng (fruit) tách riêng: "dessert":{"display":"Chuối","food":"chuối"} — chỉ bữa trưa cần.
 6. KHÔNG chọn dầu ăn/mỡ/bơ — hệ thống tự bổ sung.
 7. Đa dạng: không lặp protein giữa các bữa.
@@ -304,7 +304,7 @@ const AUTO_FAT_FILLER = {
   trua: { food: "mè", display: "Muối vừng" },
   toi: { food: "đậu phộng", display: "Lạc rang" },
   phu_sang: { food: "lạc", display: "Lạc rang" },
-  phu_chieu: { food: "mè", display: "Muối vừng" },
+  phu_chieu: { food: "lạc", display: "Lạc rang" },
   pre: { food: "đậu phộng", display: "Lạc rang" },
   post: { food: "lạc", display: "Lạc rang" },
 };
@@ -425,7 +425,7 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
 
     // HARD BLOCK: bữa chính custom có món Tây → vứt toàn bộ custom,
     // rơi xuống force-pick pattern Việt bên dưới
-    if (!usedPattern && MAIN_MEALS.has(mealId) && dishes.length > 0) {
+    if (!usedPattern && (MEAL_PATTERNS[mealId] || []).length > 0 && dishes.length > 0) {
       const hasWestern = dishes.some(d => !isVietnameseDish(d.display));
       if (hasWestern) {
         errors.push(`Bữa "${mealId}" có món không thuần Việt — thay bằng pattern`);
@@ -434,8 +434,9 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
       }
     }
 
-    // Bữa chính PHẢI có pattern — nếu AI không chọn, ép 1 pattern ngẫu nhiên
-    if (MAIN_MEALS.has(mealId) && !usedPattern && dishes.length === 0) {
+    // Bữa có pattern library PHẢI ra pattern — nếu AI không chọn, ép 1 pattern
+    // ngẫu nhiên (bữa phụ giờ cũng có pattern, hết cảnh AI tự chế món quái)
+    if ((MEAL_PATTERNS[mealId] || []).length > 0 && !usedPattern && dishes.length === 0) {
       const available = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0);
       if (available.length > 0) {
         const picked = available[Math.floor(Math.random() * available.length)];

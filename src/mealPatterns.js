@@ -372,4 +372,99 @@ export const MEAL_PATTERNS = {
       ],
       popularity: 4, prepMinutes: 20, buyable: false },
   ],
+
+  // ============================================================
+  // BỮA PHỤ — snack chuẩn gymer VN, 2 món gọn. Không có pattern
+  // thì AI tự chế từ nguyên liệu → sinh món quái (đậu phụ chấm mắm
+  // gừng làm bữa xế). Có pattern = tái dùng nguyên flow bữa chính.
+  // ============================================================
+  phu_sang: [
+    { name: "Sữa chua chuối",
+      dishes: [
+        { display: "Sữa chua", food: "sữa chua", role: "protein" },
+        { display: "Chuối", food: "chuối", role: "carb" },
+      ], popularity: 5, prepMinutes: 2, buyable: true },
+    { name: "Khoai lang trứng",
+      dishes: [
+        { display: "Khoai lang luộc", food: "khoai lang", role: "carb" },
+        { display: "Trứng gà luộc", food: "trứng gà luộc", role: "protein" },
+      ], popularity: 4, prepMinutes: 10, buyable: true },
+    { name: "Sữa chua granola",
+      dishes: [
+        { display: "Sữa chua Hy Lạp", food: "sữa chua hy lạp", role: "protein" },
+        { display: "Granola", food: "granola", role: "carb" },
+      ], popularity: 4, prepMinutes: 2, buyable: true },
+    { name: "Sữa tươi chuối",
+      dishes: [
+        { display: "Sữa tươi", food: "sữa tươi", role: "protein" },
+        { display: "Chuối", food: "chuối", role: "carb" },
+      ], popularity: 4, prepMinutes: 1, buyable: true },
+  ],
+
+  phu_chieu: [
+    { name: "Sữa chua chuối",
+      dishes: [
+        { display: "Sữa chua", food: "sữa chua", role: "protein" },
+        { display: "Chuối", food: "chuối", role: "carb" },
+      ], popularity: 5, prepMinutes: 2, buyable: true },
+    { name: "Whey chuối",
+      dishes: [
+        { display: "Sữa whey pha nước", food: "whey", role: "protein" },
+        { display: "Chuối", food: "chuối", role: "carb" },
+      ], popularity: 5, prepMinutes: 2, buyable: true,
+      reasonTemplate: { bulk: "Đạm nhanh giữa buổi, hỗ trợ tăng cơ" } },
+    { name: "Khoai lang trứng",
+      dishes: [
+        { display: "Khoai lang luộc", food: "khoai lang", role: "carb" },
+        { display: "Trứng gà luộc", food: "trứng gà luộc", role: "protein" },
+      ], popularity: 4, prepMinutes: 10, buyable: true },
+    { name: "Ngô luộc sữa chua",
+      dishes: [
+        { display: "Ngô luộc", food: "ngô", role: "carb" },
+        { display: "Sữa chua", food: "sữa chua", role: "protein" },
+      ], popularity: 3, prepMinutes: 10, buyable: true },
+  ],
+
+  pre: [
+    { name: "Bánh mì chuối",
+      dishes: [
+        { display: "Bánh mì nướng", food: "bánh mì", role: "carb" },
+        { display: "Chuối", food: "chuối", role: "fixed" },
+      ], popularity: 5, prepMinutes: 3, buyable: true,
+      reasonTemplate: { bulk: "Carb nhanh trước tập, dễ tiêu" } },
+    { name: "Yến mạch chuối",
+      dishes: [
+        { display: "Yến mạch nấu chuối", food: "yến mạch", role: "carb" },
+        { display: "Chuối", food: "chuối", role: "fixed" },
+      ], popularity: 4, prepMinutes: 5, buyable: false },
+    { name: "Khoai lang luộc",
+      dishes: [
+        { display: "Khoai lang luộc", food: "khoai lang", role: "carb" },
+      ], popularity: 4, prepMinutes: 10, buyable: true },
+    { name: "Bánh mì mật ong",
+      dishes: [
+        { display: "Bánh mì nướng", food: "bánh mì", role: "carb" },
+        { display: "Mật ong", food: "mật ong", role: "fixed" },
+      ], popularity: 3, prepMinutes: 3, buyable: true },
+  ],
+
+  post: [
+    { name: "Whey chuối",
+      dishes: [
+        { display: "Sữa whey pha nước", food: "whey", role: "protein" },
+        { display: "Chuối", food: "chuối", role: "carb" },
+      ], popularity: 5, prepMinutes: 2, buyable: true,
+      reasonTemplate: { bulk: "Đạm hấp thu nhanh sau tập — cửa sổ vàng phục hồi cơ" } },
+    { name: "Whey yến mạch",
+      dishes: [
+        { display: "Sữa whey pha nước", food: "whey", role: "protein" },
+        { display: "Yến mạch", food: "yến mạch", role: "carb" },
+      ], popularity: 4, prepMinutes: 3, buyable: false },
+    { name: "Sữa chua whey",
+      dishes: [
+        { display: "Sữa chua Hy Lạp trộn whey", food: "sữa chua hy lạp", role: "protein" },
+        { display: "Whey", food: "whey", role: "protein" },
+        { display: "Chuối", food: "chuối", role: "carb" },
+      ], popularity: 4, prepMinutes: 3, buyable: true },
+  ],
 };
