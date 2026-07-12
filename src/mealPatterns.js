@@ -407,7 +407,7 @@ export const MEAL_PATTERNS = {
         { display: "Sữa chua", food: "sữa chua", role: "protein" },
         { display: "Chuối", food: "chuối", role: "carb" },
       ], popularity: 5, prepMinutes: 2, buyable: true },
-    { name: "Whey chuối",
+    { name: "Whey chuối", goals: ["bulk", "cut"],
       dishes: [
         { display: "Sữa whey pha nước", food: "whey", role: "protein" },
         { display: "Chuối", food: "chuối", role: "carb" },
@@ -449,18 +449,28 @@ export const MEAL_PATTERNS = {
   ],
 
   post: [
-    { name: "Whey chuối",
+    { name: "Sữa chua chuối",
+      dishes: [
+        { display: "Sữa chua", food: "sữa chua", role: "protein" },
+        { display: "Chuối", food: "chuối", role: "carb" },
+      ], popularity: 4, prepMinutes: 2, buyable: true },
+    { name: "Trứng luộc chuối",
+      dishes: [
+        { display: "Trứng gà luộc", food: "trứng gà luộc", role: "protein" },
+        { display: "Chuối", food: "chuối", role: "carb" },
+      ], popularity: 4, prepMinutes: 8, buyable: true },
+    { name: "Whey chuối", goals: ["bulk", "cut"],
       dishes: [
         { display: "Sữa whey pha nước", food: "whey", role: "protein" },
         { display: "Chuối", food: "chuối", role: "carb" },
       ], popularity: 5, prepMinutes: 2, buyable: true,
       reasonTemplate: { bulk: "Đạm hấp thu nhanh sau tập — cửa sổ vàng phục hồi cơ" } },
-    { name: "Whey yến mạch",
+    { name: "Whey yến mạch", goals: ["bulk", "cut"],
       dishes: [
         { display: "Sữa whey pha nước", food: "whey", role: "protein" },
         { display: "Yến mạch", food: "yến mạch", role: "carb" },
       ], popularity: 4, prepMinutes: 3, buyable: false },
-    { name: "Sữa chua whey",
+    { name: "Sữa chua whey", goals: ["bulk", "cut"],
       dishes: [
         { display: "Sữa chua Hy Lạp trộn whey", food: "sữa chua hy lạp", role: "protein" },
         { display: "Whey", food: "whey", role: "protein" },
