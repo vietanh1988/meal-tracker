@@ -103,17 +103,12 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", borderBottom: `1.5px solid ${C.border}`, paddingBottom: 14 }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 4 }}>
         {pages.map(p => (
-          <div key={p.id} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-            <button onClick={() => setActiveId(p.id)} style={{
-              padding: "8px 16px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap",
-              background: activeId === p.id ? C.primary : C.surface, color: activeId === p.id ? "#fff" : C.t2,
-            }}>{p.label}</button>
-            {isAdmin && !mob && pages.length > 1 && (
-              <button onClick={() => removePage(p.id, p.label)} aria-label={`Xóa ${p.label}`} style={{ width: 22, height: 22, marginLeft: 2, padding: 0, border: "none", background: "transparent", color: C.t3, cursor: "pointer", fontSize: 14, flexShrink: 0 }}>✕</button>
-            )}
-          </div>
+          <button key={p.id} onClick={() => setActiveId(p.id)} style={{
+            padding: "8px 18px", fontSize: 13, fontWeight: activeId === p.id ? 700 : 500, borderRadius: 20, border: activeId === p.id ? "none" : `1.5px solid ${C.border}`, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: "all .15s",
+            background: activeId === p.id ? C.primary : "#fff", color: activeId === p.id ? "#fff" : C.t2,
+          }}>{p.label}</button>
         ))}
       </div>
 
@@ -127,8 +122,9 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
             : <div style={{ fontSize: 13, color: C.t3, textAlign: "center", padding: "40px 0" }}>Nội dung đang được cập nhật.</div>}
 
           {isAdmin && !mob && (
-            <div style={{ textAlign: "center", marginTop: 24 }}>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 24 }}>
               <button onClick={startEdit} style={{ padding: "8px 20px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: `1.5px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer", fontFamily: "inherit" }}>✏️ Chỉnh sửa {activePage?.label}</button>
+              {pages.length > 1 && <button onClick={() => removePage(activeId, activePage?.label)} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, borderRadius: 10, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer", fontFamily: "inherit" }}>🗑 Xóa trang này</button>}
             </div>
           )}
           {isAdmin && mob && (
