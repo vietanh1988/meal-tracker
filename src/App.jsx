@@ -81,7 +81,7 @@ export default function App(){
   },[]);
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id,loading);
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id,loading);
-  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,hasMealsToday,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
+  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getTodayMeals,hasMealsToday,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   const flags=parseFeatureFlags(appSettings);
   const aiAccess=getAIMenuAccess(profile,appSettings);
@@ -163,7 +163,7 @@ export default function App(){
   // === PC DATA COMPUTATION ===
   const pcMC=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
   const pcVis=pcMC[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];
-  const pcMeals=getMeals(pcDayType).filter(m=>pcVis.includes(m.id));
+  const pcMeals=getTodayMeals(pcDayType).filter(m=>pcVis.includes(m.id));
   const pcTot=pcMeals.reduce((a,m)=>{const t=m.items.reduce((s,i)=>({p:s.p+(i.p||0),c:s.c+(i.c||0),f:s.f+(i.f||0),fiber:s.fiber+(i.fiber||0),cal:s.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:a.p+t.p,c:a.c+t.c,f:a.f+t.f,fiber:a.fiber+t.fiber,cal:a.cal+t.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
   const pcHP=macro.protein,pcHF=macro.fat,pcHFib=macro.fiber,pcHC=pcDayType==="train"?macro.carb:macro.carbRest,pcHCal=pcDayType==="train"?macro.calTarget:macro.calRest;
   const pcGK=profile.goalKg,pcSK=weightLog.length>0?weightLog[0].kg:profile.kg,pcCK=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg;
@@ -196,11 +196,11 @@ export default function App(){
   const mobGymDayIdx=mobTodayDayIdx===0?6:mobTodayDayIdx-1;
   const mobDayType=(profile?.gymDays||[]).includes(mobGymDayIdx)?"train":"rest";
   const mobTodayData=(()=>{
-    if(!getMeals)return{cal:0,p:0,c:0,f:0,dayType:mobDayType};
+    if(!getTodayMeals)return{cal:0,p:0,c:0,f:0,dayType:mobDayType};
     try{
       const mc=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
       const ids=mc[mobDayType]||DEFAULT_MEAL_CONFIG[mobDayType];
-      const ms=getMeals(mobDayType).filter(m=>ids.includes(m.id));
+      const ms=getTodayMeals(mobDayType).filter(m=>ids.includes(m.id));
       const t=ms.reduce((a,m)=>{const mt=m.items.reduce((a2,i)=>({p:a2.p+(i.p||0),c:a2.c+(i.c||0),f:a2.f+(i.f||0),cal:a2.cal+(i.cal||0)}),{p:0,c:0,f:0,cal:0});return{p:a.p+mt.p,c:a.c+mt.c,f:a.f+mt.f,cal:a.cal+mt.cal};},{p:0,c:0,f:0,cal:0});
       return{cal:Math.round(t.cal),p:Math.round(t.p),c:Math.round(t.c),f:Math.round(t.f),dayType:mobDayType};
     }catch(e){return{cal:0,p:0,c:0,f:0,dayType:mobDayType};}
@@ -223,7 +223,7 @@ export default function App(){
   // ========== MOBILE ==========
   if(mob) return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,color:C.t1,minHeight:"100vh",padding:"0 10px 10px 10px",maxWidth:700,margin:"0 auto",overflowX:"hidden",width:"100%",boxSizing:"border-box"}}>
     <div style={{paddingTop:"calc(env(safe-area-inset-top, 8px) + 8px)",paddingBottom:100}}>
-    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={wrappedSetProfile} macro={macro} getMeals={getMeals} hasMealsToday={hasMealsToday} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} saveWeeklyTemplate={saveWeeklyTemplate} getMealHistory={getMealHistory} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner}/>}
+    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={wrappedSetProfile} macro={macro} getMeals={getMeals} getTodayMeals={getTodayMeals} hasMealsToday={hasMealsToday} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} saveWeeklyTemplate={saveWeeklyTemplate} getMealHistory={getMealHistory} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner}/>}
     {tab==="weight"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" initialSection="weight" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
     {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
     {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}

@@ -170,6 +170,16 @@ export function useUserData(userId) {
     return list.some(m => m.items && m.items.length > 0 && dates[m.id] === t);
   }, [meals, mealLogDates]);
 
+  // Lấy bữa ăn CHỈ CỦA HÔM NAY — dùng cho Dashboard/Tổng quan.
+  // Bữa nào log_date !== today → trả items rỗng (không hiện data cũ).
+  // getMeals() vẫn giữ nguyên cho WeightSuggestion, AI Coach... cần data mẫu.
+  const getTodayMeals = useCallback((type) => {
+    const list = meals[type] || defaultStructure[type];
+    const dates = mealLogDates[type] || {};
+    const t = todayStr();
+    return list.map(m => (dates[m.id] === t) ? m : { ...m, items: [] });
+  }, [meals, mealLogDates]);
+
   // Update meals in state after save
   const updateMealsState = useCallback((mealId, dayType, items, extra) => {
     setMeals(prev => {
@@ -576,7 +586,7 @@ export function useUserData(userId) {
   }, []);
 
   return {
-    loaded, meals, getMeals, hasMealsToday, getMealHistory, foodCache,
+    loaded, meals, getMeals, getTodayMeals, hasMealsToday, getMealHistory, foodCache,
     saveMealToCloud, saveFoodCache, deleteFoodCache,
     weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, getWeeklyTemplate,
     defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, refreshDefaultTemplates,
