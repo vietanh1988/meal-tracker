@@ -41,12 +41,10 @@ serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  // ---- Verify JWT (grace period: log warning nếu thiếu, chưa block) ----
+  // ---- Verify JWT ----
   const user = await verifyUser(req);
   if (!user) {
-    // GRACE PERIOD: chỉ log, không block — bỏ comment dòng return khi sửa xong client
-    // return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    console.warn("⚠️ ai-macro called WITHOUT valid JWT — grace period active");
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   const { foodDesc, provider = "claude", model } = await req.json();

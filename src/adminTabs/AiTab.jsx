@@ -1,4 +1,5 @@
 import { C, card, redBtn } from "../theme";
+import { authFetch } from "../lib/authFetch";
 
 export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel, setAiModel, geminiModel, setGeminiModel, gptModel, setGptModel, aiConnected, setAiConnected, claudeKey, setClaudeKey, geminiKey, setGeminiKey, gptKey, setGptKey, usdaKey, setUsdaKey}){
   if(!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
@@ -100,8 +101,8 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         setAiConnected(false);
         try{
           if(aiProvider==="claude"){
-            const r=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({foodDesc:"OK",provider:"claude",model:aiModel})});
-            const d=await r.json();setAiConnected(!d.error);
+            const d=await authFetch("ai-proxy",{foodDesc:"OK",provider:"claude",model:aiModel});
+            setAiConnected(!d.error);
           }else if(aiProvider==="gemini"){
             if(!geminiKey){setAiConnected(false);return;}
             const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"OK"}]}]})});

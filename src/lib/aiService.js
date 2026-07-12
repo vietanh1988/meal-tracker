@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import { authFetch } from "./authFetch";
 
 const PROMPT = `Bạn là chuyên gia dinh dưỡng. Tính CHÍNH XÁC macro cho thực phẩm.
 
@@ -58,17 +59,11 @@ export async function calcMacroAIDirect({ foods, provider, model, keys }) {
 
   if (provider === "claude") {
     // Gọi qua Supabase Edge Function proxy (tránh CORS)
-    const res = await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        foodDesc: `${PROMPT}\n\nThức ăn cần phân tích:\n${foodDesc}`,
-        provider: "claude",
-        model: model || "claude-sonnet-5",
-        apiKey: keys.claude,
-      }),
+    const d = await authFetch("ai-proxy", {
+      foodDesc: `${PROMPT}\n\nThức ăn cần phân tích:\n${foodDesc}`,
+      provider: "claude",
+      model: model || "claude-sonnet-5",
     });
-    const d = await res.json();
     if (d.error) throw new Error(d.error);
     text = d.text || "";
 

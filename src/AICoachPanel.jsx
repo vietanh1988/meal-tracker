@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { appConfirm } from "./lib/dialog";
 import { supabase } from "./lib/supabase";
+import { authFetch } from "./lib/authFetch";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst, saveAIMenu, loadAIMenu, clearAIMenu } from "./lib/aiMenuService";
@@ -357,11 +358,7 @@ try{
 // thành 1 chuỗi "User:.../Fipilot AI:..." — kiểu transcript cũ làm model
 // sinh artifact: tự thấy "đến lượt User" là ngắt sớm, bỏ lửng giữa câu.
 const chatMessages=newMsgs.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
-const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
-method:"POST",headers:{"Content-Type":"application/json"},
-body:JSON.stringify({provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500})
-});
-const data=await res.json();
+const data=await authFetch("ai-proxy",{provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500});
 if(data.error)throw new Error(data.error);
 const reply=(data.text||"").trim()||"Xin lỗi, mình không thể trả lời lúc này.";
 const cleanReply=reply.replace(/^Fipilot AI:\s*/,"");

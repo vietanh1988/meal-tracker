@@ -19,6 +19,7 @@ import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { MEAL_PATTERNS, MEAL_TIMES } from "../mealPatterns";
 import { supabase } from "./supabase";
+import { authFetch } from "./authFetch";
 
 // ============================================================
 // DANH SÁCH BỮA THẬT — cùng thứ tự ưu tiên App/Dashboard/AdminPanel
@@ -48,7 +49,6 @@ export function getAIMenuAccess(profile, appSettings) {
   };
 }
 
-const AI_PROXY_URL = "https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy";
 
 const DEFAULT_REF_GRAM = { protein: 150, carb: 150, fat: 10, fixed: 100 };
 
@@ -261,22 +261,12 @@ export function dayTarget(macro, dayType) {
 // 3. GỌI AI
 // ============================================================
 async function callAI(prompt, { provider, model } = {}) {
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token || "";
-  const res = await fetch(AI_PROXY_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify({
-      provider: provider || "claude",
-      model: model || "claude-sonnet-5",
-      maxTokens: 1500,
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const d = await authFetch("ai-proxy", {
+    provider: provider || "claude",
+    model: model || "claude-sonnet-5",
+    maxTokens: 1500,
+    messages: [{ role: "user", content: prompt }],
   });
-  const d = await res.json();
   if (d.error) throw new Error(d.error);
   return d.text || "";
 }

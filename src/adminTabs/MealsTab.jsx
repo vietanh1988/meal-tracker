@@ -3,6 +3,7 @@ import { appAlert, appConfirm } from "../lib/dialog";
 import { C, card, inp, redBtn, numFix } from "../theme";
 import { ALL_MEALS } from "../mealConstants";
 import { SlidingTabs } from "../SlidingTabs";
+import { parseFeatureFlags } from "./FeatureFlagsTab";
 import { estimateGram } from "../lib/usdaService";
 import { applyMealEngineToTemplate } from "../mealEngine";
 
@@ -33,6 +34,8 @@ const MODE_DESC={tu_nhap:"Nhập thức ăn → nhấn \"Tính macro\" → trả
 const todayRealDayType=()=>{
 try{const s=appSettings.gymDays;const gd=s?JSON.parse(s):profile.gymDays||[0,2,4,5];const idx=new Date().getDay();const mapped=idx===0?6:idx-1;return gd.includes(mapped)?"train":"rest";}catch(e){return "train";}
 };
+const flags=parseFeatureFlags(appSettings);
+const mealTabs=[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].filter(t=>t.id!=="kho_mau"||flags.template_library);
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
 {!mob?<div style={{display:"grid",gridTemplateColumns:"63% 35%",gap:20,marginBottom:14,alignItems:"center"}}>
@@ -41,12 +44,12 @@ return (
 <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2}}>{MODE_DESC[mealMode]}</div>
 </div>
 <div style={{display:"flex",gap:4,background:C.surface,borderRadius:12,padding:4}}>
-{[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"){if(refreshDefaultTemplates)refreshDefaultTemplates();setDayType(todayRealDayType());}}} style={{flex:1,padding:"10px 0",borderRadius:10,fontSize:14,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none",textAlign:"center"}}>{t.icon} {t.label}</div>)}
+{mealTabs.map(t=><div key={t.id} onClick={()=>{setMealMode(t.id);if(t.id==="kho_mau"){if(refreshDefaultTemplates)refreshDefaultTemplates();setDayType(todayRealDayType());}}} style={{flex:1,padding:"10px 0",borderRadius:10,fontSize:14,fontWeight:mealMode===t.id?700:500,color:mealMode===t.id?C.primary:C.t2,background:mealMode===t.id?"#fff":"none",cursor:"pointer",boxShadow:mealMode===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none",textAlign:"center"}}>{t.icon} {t.label}</div>)}
 </div>
 </div>:<>
 <div style={{fontSize:19,fontWeight:800,color:C.t1}}>{MODE_TITLE[mealMode]}</div>
 <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:2,marginBottom:12}}>{MODE_DESC[mealMode]}</div>
-<SlidingTabs tabs={[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}]} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"){if(refreshDefaultTemplates)refreshDefaultTemplates();setDayType(todayRealDayType());}}} style={{marginBottom:16}}/>
+<SlidingTabs tabs={mealTabs} active={mealMode} onChange={id=>{setMealMode(id);if(id==="kho_mau"){if(refreshDefaultTemplates)refreshDefaultTemplates();setDayType(todayRealDayType());}}} style={{marginBottom:16}}/>
 </>}
 
 {/* Toast toàn cục: hiện SAU khi "Dùng cho hôm nay" chuyển user sang Tự nhập.

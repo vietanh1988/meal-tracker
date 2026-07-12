@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase";
+import { authFetch } from "./lib/authFetch";
 import { C, card } from "./theme";
 import { AdminTab } from "./adminTabs/AdminTab";
 import { AiTab } from "./adminTabs/AiTab";
@@ -289,11 +290,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     try{
       let text="";
       if(aiProvider==="claude"){
-        const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy",{
-          method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:"claude",model:aiModel})
-        });
-        const data=await res.json();
+        const data=await authFetch("ai-proxy",{foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:"claude",model:aiModel});
         if(data.error)throw new Error(data.error);
         text=data.text||"";
       } else if(aiProvider==="gemini"){

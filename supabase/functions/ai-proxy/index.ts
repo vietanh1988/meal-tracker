@@ -44,12 +44,10 @@ serve(async (req) => {
   }
 
   try {
-    // ---- Verify JWT (grace period: log warning nếu thiếu, chưa block) ----
+    // ---- Verify JWT ----
     const user = await verifyUser(req);
     if (!user) {
-      // GRACE PERIOD: chỉ log warning, không block — sau khi sửa hết client thì bỏ grace
-      // return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-      console.warn("⚠️ ai-proxy called WITHOUT valid JWT — grace period active");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const { foodDesc, provider = "claude", model, system, messages, maxTokens } = await req.json()

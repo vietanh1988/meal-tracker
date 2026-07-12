@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { authFetch } from "../lib/authFetch";
 import { C, card } from "../theme";
 import { fmtDate } from "../fmtDate";
 
@@ -49,11 +50,7 @@ export function SystemHealthTab({ isAdmin, appSettings }) {
     const t0 = Date.now();
     try {
       const aiModel = appSettings?.ai_model || "claude-sonnet-5";
-      const res = await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/ai-proxy", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ foodDesc: "Ping. Trả lời đúng 1 từ: OK", provider: "claude", model: aiModel }),
-      });
-      const data = await res.json();
+      const data = await authFetch("ai-proxy", { foodDesc: "Ping. Trả lời đúng 1 từ: OK", provider: "claude", model: aiModel });
       setAiPing({ ok: !data.error, ms: Date.now() - t0 });
     } catch (e) {
       setAiPing({ ok: false, ms: Date.now() - t0 });
