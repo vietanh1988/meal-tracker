@@ -133,11 +133,20 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
         </div>
       )}
 
-      {/* Tabs — dropdown trên mobile, underline trên PC */}
+      {/* Tabs — danh sách dọc trên mobile, underline trên PC */}
       {mob ? (
-        <select value={activeId} onChange={e => setActiveId(e.target.value)} style={{ width: "100%", padding: "10px 14px", fontSize: 14, fontWeight: 700, color: C.t1, border: `1.5px solid ${C.border}`, borderRadius: 10, background: C.surface, marginBottom: 16, fontFamily: "inherit", appearance: "auto" }}>
-          {pages.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-        </select>
+        <div style={{ display: "flex", flexDirection: "column", border: `1.5px solid ${C.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 16 }}>
+          {pages.map((p, i) => {
+            const active = activeId === p.id;
+            return <button key={p.id} onClick={() => setActiveId(p.id)} style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", fontSize: 13, fontWeight: active ? 700 : 500, border: "none", borderTop: i > 0 ? `1px solid ${C.border}` : "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+              background: active ? "rgba(0,122,255,0.06)" : "#fff", color: active ? C.primary : C.t2, borderLeft: active ? `3px solid ${C.primary}` : "3px solid transparent",
+            }}>
+              <span>{p.label}</span>
+              <span style={{ fontSize: 14, color: active ? C.primary : C.border }}>{active ? "▼" : "›"}</span>
+            </button>;
+          })}
+        </div>
       ) : (
         <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20 }}>
           {pages.map(p => (
