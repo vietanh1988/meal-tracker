@@ -508,6 +508,26 @@ function stripZeroGramItems(template) {
   };
 }
 
+
+// Món đếm nguyên (trứng, lát bánh mì): snap gram về bội số nguyên đơn vị
+// SAU engine — không ai ăn 1.5 quả trứng. Macro scale lại theo gram mới.
+function snapWholeUnit(item) {
+  const unit = DISPLAY_UNIT[(item.food || "").toLowerCase().trim()];
+  if (!unit?.whole || !item.gram) return item;
+  const qty = Math.max(1, Math.round(item.gram / unit.gramPerUnit));
+  const newGram = qty * unit.gramPerUnit;
+  if (newGram === item.gram) return item;
+  const r = newGram / item.gram;
+  return {
+    ...item, gram: newGram,
+    p: Math.round((item.p || 0) * r * 10) / 10,
+    c: Math.round((item.c || 0) * r * 10) / 10,
+    f: Math.round((item.f || 0) * r * 10) / 10,
+    fiber: Math.round((item.fiber || 0) * r * 10) / 10,
+    cal: Math.round((item.cal || 0) * r),
+  };
+}
+
 // Attach pattern + display names AFTER engine recalculates grams,
 // then SORT by Vietnamese meal order (carb → protein → rau → filler)
 // Engine reorders by role internally, so sorting before engine is useless.
@@ -529,7 +549,7 @@ function attachPatternAndDisplay(template, norm) {
     ...template,
     meals: (template.meals || []).map(m => {
       const info = infoByMealId[m.meal_id] || {};
-      const items = (m.items || []).map(it => ({
+      const items = (m.items || []).map(it => snapWholeUnit({
         ...it,
         display: it.display || info.displayMap?.[it.food] || null,
       }));
@@ -644,7 +664,7 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
     ...recomputed,
     meals: (recomputed.meals || []).map(m => {
       const info = displayByMeal[m.meal_id] || { map: {}, pattern: null };
-      const items = (m.items || []).map(it => ({
+      const items = (m.items || []).map(it => snapWholeUnit({
         ...it,
         display: info.map[it.food] !== undefined ? info.map[it.food] : null,
       }));
@@ -675,11 +695,11 @@ export function getSwapCandidates(foodKey, currentMealFoods = []) {
 // ĐƠN VỊ TỰ NHIÊN
 // ============================================================
 const DISPLAY_UNIT = {
-  "trứng gà": { unit: "quả", gramPerUnit: 50 },
-  "trứng gà luộc": { unit: "quả", gramPerUnit: 50 },
-  "trứng": { unit: "quả", gramPerUnit: 50 },
-  "trứng luộc": { unit: "quả", gramPerUnit: 50 },
-  "trứng vịt": { unit: "quả", gramPerUnit: 60 },
+  "trứng gà": { unit: "quả", gramPerUnit: 50, whole: true },
+  "trứng gà luộc": { unit: "quả", gramPerUnit: 50, whole: true },
+  "trứng": { unit: "quả", gramPerUnit: 50, whole: true },
+  "trứng luộc": { unit: "quả", gramPerUnit: 50, whole: true },
+  "trứng vịt": { unit: "quả", gramPerUnit: 60, whole: true },
   "chuối": { unit: "quả", gramPerUnit: 120 },
   "cam": { unit: "quả", gramPerUnit: 150 },
   "táo": { unit: "quả", gramPerUnit: 150 },
@@ -695,7 +715,7 @@ const DISPLAY_UNIT = {
   "bún": { unit: "bát", gramPerUnit: 150 },
   "cháo": { unit: "bát", gramPerUnit: 250 },
   "xôi": { unit: "phần", gramPerUnit: 150 },
-  "bánh mì": { unit: "lát", gramPerUnit: 40 },
+  "bánh mì": { unit: "lát", gramPerUnit: 40, whole: true },
   "dưa hấu": { unit: "miếng", gramPerUnit: 150 },
 };
 
