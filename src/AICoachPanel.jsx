@@ -520,7 +520,7 @@ const time=MEAL_TIMES[mm.meal_id]||"";
 const visibleItems=(mm.items||[]).filter(it=>it.display!==null&&it.gram>0);
 return <div key={mm.meal_id} style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}>
-<span><span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{meta?.name||mm.meal_id}</span>{time&&<span style={{fontSize:12,color:C2.t3,marginLeft:8}}>{time}</span>}</span>
+<span><span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{meta?.name||mm.meal_id}</span>{time&&<span style={{fontSize:12,color:C2.t3,marginLeft:8}}>{time}</span>}{mm.pattern&&<span style={{fontSize:13,fontWeight:700,color:C2.t1,marginLeft:8}}>· {mm.pattern}</span>}</span>
 <span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{cal} kcal</span>
 </div>
 {visibleItems.map(it=>{
@@ -540,7 +540,7 @@ return <div key={it.food+dn} style={{display:"flex",justifyContent:"space-betwee
 {/* 3 buttons: Đổi | Tính lại | Thêm */}
 <div style={{display:"flex",gap:0}}>
 <button onClick={()=>setShowAIMenuFromChat(true)} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
-<button onClick={()=>sendMessage("Gợi ý thực đơn hôm nay")} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:"#F59E0B",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🎲 Đổi bộ khác</button>
+<button onClick={()=>sendMessage("Gợi ý thực đơn hôm nay")} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:"#F59E0B",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🔄 Tạo lại menu</button>
 <button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1.2,padding:"12px",border:"none",background:"#3B82F6",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",borderRadius:"0 0 12px 0"}}>Thêm vào hôm nay</button>
 </div>
 </div>;

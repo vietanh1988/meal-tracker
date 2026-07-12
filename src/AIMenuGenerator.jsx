@@ -62,7 +62,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   const [error, setError] = useState("");
   const [swapping, setSwapping] = useState(null); // {mealId, food} — đổi 1 nguyên liệu
   // Variety tầng SESSION — nhớ pattern đã hiện trong phiên này (kể cả khi
-  // chưa bấm "Áp dụng cho hôm nay" để lưu thật) — bấm "🎲 Đổi bộ khác" nhiều
+  // chưa bấm "Áp dụng cho hôm nay" để lưu thật) — bấm "🔄 Tạo lại menu" nhiều
   // lần liên tiếp sẽ KHÔNG ra lại y hệt lần trước.
   const shownPatternsRef = useRef(new Set());
 
@@ -180,7 +180,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
             <div style={{ fontSize: fs["3xl"], fontWeight: fw.extrabold, color: C.t1 }}>Thực đơn AI · {dayType === "train" ? "Ngày tập" : "Ngày nghỉ"}</div>
             {note && <div style={{ fontSize: fs.md, color: C.t3, marginTop: 2 }}>{note}</div>}
           </div>
-          <button onClick={generate} title="Tạo lại toàn bộ" style={{ border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius["2xl"], padding: "8px 12px", cursor: "pointer", fontSize: fs.base, fontFamily: "inherit", fontWeight: fw.bold, color: C.t2 }}>🎲 Đổi bộ khác</button>
+          <button onClick={generate} title="Tạo lại toàn bộ" style={{ border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius["2xl"], padding: "8px 12px", cursor: "pointer", fontSize: fs.base, fontFamily: "inherit", fontWeight: fw.bold, color: C.t2 }}>🔄 Tạo lại menu</button>
         </div>
         <div style={{ display: "flex", gap: sp["2xl"], marginTop: sp["2xl"], fontSize: fs.base, fontWeight: fw.bold }}>
           <span style={{ color: C.t1 }}>{total.cal} <span style={{ color: C.t3, fontWeight: fw.medium }}>/ {target.cal} kcal</span></span>
@@ -203,6 +203,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
               <div>
                 <span style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: "#3B82F6" }}>{meta?.name || m.meal_id}</span>
                 {time && <span style={{ fontSize: fs.md, color: C.t3, marginLeft: 6 }}>{time}</span>}
+                {m.pattern && <span style={{ fontSize: fs.lg, fontWeight: fw.bold, color: C.t1, marginLeft: 8 }}>· {m.pattern}</span>}
                 {reason && <div style={{ fontSize: fs.sm, color: C.primary, marginTop: 3 }}>💡 {reason}</div>}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
