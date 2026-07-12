@@ -483,7 +483,11 @@ function foodToItem(key, refGram, display, role) {
   const base = LOCAL_FOODS[key];
   if (!base) return null;
   const effRole = role || getFoodRole(key);
-  const g = refGram ?? DEFAULT_REF_GRAM[effRole] ?? 100;
+  const limit = getGramLimit(key);
+  // Clamp refGram NGAY theo gram limit — tránh mật ong 100g (max 30g),
+  // dầu ăn 100g (max 30g), hay bất kỳ fixed item nào vượt trần thực tế.
+  const raw = refGram ?? DEFAULT_REF_GRAM[effRole] ?? 100;
+  const g = Math.min(limit.max, Math.max(limit.min, raw));
   const r = g / 100;
   return {
     food: key, gram: g, unit: "g", qty: 1,
