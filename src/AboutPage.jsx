@@ -73,7 +73,7 @@ export function AboutPage({appSettings,isAdmin,saveSetting,mob}){
     {/* Mô tả */}
     <div style={{...card,marginTop:12}}>
       <div style={{fontSize:15,fontWeight:900,color:C.blue,marginBottom:8}}>📖 Về ứng dụng</div>
-      <div style={{fontSize:13,fontWeight:500,color:C.t2,lineHeight:1.7}}>{form.description}</div>
+      <div style={{fontSize:13,fontWeight:500,color:C.t2,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{form.description}</div>
     </div>
 
     {/* Developer */}
@@ -89,7 +89,7 @@ export function AboutPage({appSettings,isAdmin,saveSetting,mob}){
           <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>{form.devRole}</div>
         </div>
       </div>
-      <div style={{fontSize:13,fontWeight:600,color:C.t3,marginTop:10,lineHeight:1.6,padding:"10px 0",borderTop:`1px solid ${C.border}`}}>{form.devBio}</div>
+      <div style={{fontSize:13,fontWeight:600,color:C.t3,marginTop:10,lineHeight:1.6,padding:"10px 0",borderTop:`1px solid ${C.border}`,whiteSpace:"pre-wrap"}}>{form.devBio}</div>
       {(form.contact||form.facebook||form.hotline||form.zalo)&&<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {form.contact&&<a href={`mailto:${form.contact}`} target="_blank" rel="noopener" style={{fontSize:12,fontWeight:700,padding:"6px 14px",borderRadius:8,background:"#EFF6FF",color:"#007AFF",textDecoration:"none",border:"1px solid #BFDBFE",display:"flex",alignItems:"center",gap:4}}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
