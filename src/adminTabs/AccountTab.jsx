@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, redBtn } from "../theme";
 import { UserAvatar } from "../UserAvatar";
@@ -62,7 +63,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
       const result=await res.json();
       if(result.error){setDeleteError(result.error);setDeleting(false);return;}
 
-      alert("Tài khoản đã được xoá vĩnh viễn. Cảm ơn bạn đã sử dụng Fipilot AI!");
+      appAlert("Tài khoản đã được xoá vĩnh viễn. Cảm ơn bạn đã sử dụng Fipilot AI!");
       if(signOut)await signOut();
       window.location.reload();
     }catch(e){console.error(e);setDeleteError("Có lỗi xảy ra, vui lòng thử lại");}

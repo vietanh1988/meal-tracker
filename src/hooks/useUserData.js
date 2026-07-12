@@ -45,7 +45,20 @@ export function useUserData(userId) {
   const todayStr = () => new Date().toISOString().slice(0, 10);
 
   // === Extracted fetch function — reusable ===
+  const inFlightRef = useRef(false);
   const fetchAllData = useCallback(async (silent = false) => {
+    // Guard chống gọi trùng: focus tab + mount + auth refresh có thể bắn
+    // cùng lúc — request sau bị bỏ qua khi request trước chưa xong.
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+    try {
+      return await _fetchAllDataInner(silent);
+    } finally {
+      inFlightRef.current = false;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+  const _fetchAllDataInner = useCallback(async (silent = false) => {
     if (!userId) { setLoaded(true); return; }
     try {
       // Load meals

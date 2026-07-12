@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { C, card, inp, redBtn } from "../theme";
 
 const DAY_KEYS = ["thu_2", "thu_3", "thu_4", "thu_5", "thu_6", "thu_7", "cn"];
@@ -19,9 +20,9 @@ export function WeeklyBundlesTab({ mob, defaultTemplates, weeklyBundles, saveWee
   };
 
   const handleSave = async () => {
-    if (!name.trim()) { alert("Nhập tên gói tuần!"); return; }
+    if (!name.trim()) { appAlert("Nhập tên gói tuần!"); return; }
     const filledDays = Object.keys(days).filter(k => days[k]);
-    if (filledDays.length === 0) { alert("Chọn ít nhất 1 mẫu cho 1 ngày trong tuần!"); return; }
+    if (filledDays.length === 0) { appAlert("Chọn ít nhất 1 mẫu cho 1 ngày trong tuần!"); return; }
     if (saveWeeklyBundle) await saveWeeklyBundle(name.trim(), goalType, days, editingId);
     resetForm();
     const el = document.getElementById("bundle-saved");
@@ -127,7 +128,7 @@ export function WeeklyBundlesTab({ mob, defaultTemplates, weeklyBundles, saveWee
                         <div style={{ fontSize: 10, color: C.t3 }}>{GOAL_LABEL[b.goal_type] || b.goal_type} · {filledCount}/7 ngày</div>
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); handleEdit(b); }} style={{ width: 20, height: 20, padding: 0, borderRadius: 6, fontSize: 11, color: C.primary, background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>✎</button>
-                      <button onClick={async (e) => { e.stopPropagation(); if (!confirm(`Xóa gói "${b.name}"?`)) return; if (deleteWeeklyBundle) await deleteWeeklyBundle(b.id); }} style={{ width: 20, height: 20, padding: 0, borderRadius: 6, fontSize: 11, color: C.t3, background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>✕</button>
+                      <button onClick={async (e) => { e.stopPropagation(); if (!await appConfirm(`Xóa gói "${b.name}"?`, { danger: true })) return; if (deleteWeeklyBundle) await deleteWeeklyBundle(b.id); }} style={{ width: 20, height: 20, padding: 0, borderRadius: 6, fontSize: 11, color: C.t3, background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>✕</button>
                     </div>
                     {isOpen && (
                       <div onClick={e => e.stopPropagation()} style={{ padding: "0 4px 10px 27px", cursor: "default" }}>

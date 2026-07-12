@@ -57,23 +57,62 @@ export function NotificationBell({ appSettings, userId, dark }) {
 
   useEffect(() => {
     if (!userId) return;
-    const channel = supabase
-      .channel(`notifications-${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
-        (payload) => {
-          setPushItems((prev) => [payload.new, ...prev].slice(0, 20));
-          setRinging(true);
-          playDing();
-          if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
-          ringTimeoutRef.current = setTimeout(() => setRinging(false), 2000);
-        }
-      )
-      .subscribe((status) => {
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") console.error("[NotificationBell] realtime subscribe failed:", status);
-      });
-    return () => { supabase.removeChannel(channel); };
+    // Realtime với retry: CHANNEL_ERROR/TIMED_OUT hay xảy ra khi tab sleep hoặc
+    // token refresh — trước đây channel chết vĩnh viễn tới khi reload trang.
+    // Giờ: backoff 2s→4s→8s→16s→30s (tối đa 5 lần), và khi tab visible lại
+    // nếu channel đang chết thì thử subscribe lại ngay.
+    let channel = null;
+    let retryCount = 0;
+    let retryTimer = null;
+    let disposed = false;
+    let dead = false;
+
+    const subscribe = () => {
+      if (disposed) return;
+      if (channel) { try { supabase.removeChannel(channel); } catch (e) {} }
+      dead = false;
+      channel = supabase
+        .channel(`notifications-${userId}-${Date.now()}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+          (payload) => {
+            setPushItems((prev) => [payload.new, ...prev].slice(0, 20));
+            setRinging(true);
+            playDing();
+            if (ringTimeoutRef.current) clearTimeout(ringTimeoutRef.current);
+            ringTimeoutRef.current = setTimeout(() => setRinging(false), 2000);
+          }
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") { retryCount = 0; dead = false; return; }
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            dead = true;
+            if (disposed || retryCount >= 5) return;
+            const delay = Math.min(2000 * 2 ** retryCount, 30000);
+            retryCount++;
+            console.warn(`[NotificationBell] realtime ${status} — retry ${retryCount}/5 sau ${delay / 1000}s`);
+            if (retryTimer) clearTimeout(retryTimer);
+            retryTimer = setTimeout(subscribe, delay);
+          }
+        });
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && dead && !disposed) {
+        retryCount = 0;
+        subscribe();
+      }
+    };
+
+    subscribe();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      disposed = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      document.removeEventListener("visibilitychange", onVisible);
+      if (channel) { try { supabase.removeChannel(channel); } catch (e) {} }
+    };
   }, [userId]);
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, inp, redBtn } from "../theme";
 import { fmtDate } from "../fmtDate";
@@ -117,13 +118,13 @@ function UsersList({ onSelect, currentUserId }) {
 
   const quickLock = async (u, e) => {
     e.stopPropagation();
-    if (u.id === currentUserId) { alert("Không thể tự khóa tài khoản của chính mình"); return; }
+    if (u.id === currentUserId) { appAlert("Không thể tự khóa tài khoản của chính mình"); return; }
     const next = !u.is_locked;
-    if (!window.confirm(next ? `Khóa tài khoản "${u.username}"?` : `Mở khóa tài khoản "${u.username}"?`)) return;
+    if (!await appConfirm(next ? `Khóa tài khoản "${u.username}"?` : `Mở khóa tài khoản "${u.username}"?`)) return;
     setLockingId(u.id);
     const { error } = await supabase.from("profiles").update({ is_locked: next }).eq("id", u.id);
     setLockingId(null);
-    if (error) { alert("Thất bại: " + error.message); return; }
+    if (error) { appAlert("Thất bại: " + error.message); return; }
     await logAudit(currentUserId, u.id, next ? "lock_account" : "unlock_account", "Khóa nhanh từ danh sách");
     fetchUsers();
     loadStats();
@@ -331,7 +332,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
       subscription_end_date: tierForm.subscription_end_date || null,
       trial_end_date: tierForm.trial_end_date || null,
     }).eq("id", userId);
-    if (error) { console.error(error); alert("Lưu thất bại: " + error.message); setSaving(false); return; }
+    if (error) { console.error(error); appAlert("Lưu thất bại: " + error.message); setSaving(false); return; }
     const relevantDate = tierForm.tier === "trial" ? tierForm.trial_end_date : tierForm.subscription_end_date;
     await logAction("update_tier", `Đổi gói -> ${tierForm.tier}, hết hạn ${relevantDate || "-"}`);
     showFlash("✓ Đã lưu gói và thời hạn");
@@ -349,7 +350,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
     const iso = d.toISOString().slice(0, 10);
     setSaving(true);
     const { error } = await supabase.from("profiles").update({ tier: "premium", subscription_end_date: iso }).eq("id", userId);
-    if (error) { console.error(error); alert("Gia hạn thất bại: " + error.message); setSaving(false); return; }
+    if (error) { console.error(error); appAlert("Gia hạn thất bại: " + error.message); setSaving(false); return; }
     await logAction("extend_subscription", `Gia hạn ${kind} -> hết hạn ${fmtDT(iso)}`);
     setTierForm(f => ({ ...f, tier: "premium", subscription_end_date: iso }));
     showFlash("✓ Đã gia hạn");
@@ -358,22 +359,22 @@ function UserDetail({ userId, currentUserId, onBack }) {
   };
 
   const toggleAdmin = async () => {
-    if (userId === currentUserId) { alert("Không thể tự bỏ quyền Admin của chính mình"); return; }
+    if (userId === currentUserId) { appAlert("Không thể tự bỏ quyền Admin của chính mình"); return; }
     const next = !detail.is_admin;
-    if (!window.confirm(next ? `Cấp quyền Admin cho "${detail.username}"?` : `Bỏ quyền Admin của "${detail.username}"?`)) return;
+    if (!await appConfirm(next ? `Cấp quyền Admin cho "${detail.username}"?` : `Bỏ quyền Admin của "${detail.username}"?`)) return;
     const { error } = await supabase.from("profiles").update({ is_admin: next }).eq("id", userId);
-    if (error) { alert("Thất bại: " + error.message); return; }
+    if (error) { appAlert("Thất bại: " + error.message); return; }
     await logAction(next ? "grant_admin" : "revoke_admin");
     showFlash(next ? "✓ Đã cấp quyền Admin" : "✓ Đã bỏ quyền Admin");
     load();
   };
 
   const toggleLock = async () => {
-    if (userId === currentUserId) { alert("Không thể tự khóa tài khoản của chính mình"); return; }
+    if (userId === currentUserId) { appAlert("Không thể tự khóa tài khoản của chính mình"); return; }
     const next = !detail.is_locked;
-    if (!window.confirm(next ? `Khóa tài khoản "${detail.username}"?` : `Mở khóa tài khoản "${detail.username}"?`)) return;
+    if (!await appConfirm(next ? `Khóa tài khoản "${detail.username}"?` : `Mở khóa tài khoản "${detail.username}"?`)) return;
     const { error } = await supabase.from("profiles").update({ is_locked: next }).eq("id", userId);
-    if (error) { alert("Thất bại: " + error.message); return; }
+    if (error) { appAlert("Thất bại: " + error.message); return; }
     await logAction(next ? "lock_account" : "unlock_account");
     showFlash(next ? "✓ Đã khóa tài khoản" : "✓ Đã mở khóa tài khoản");
     load();
@@ -381,9 +382,9 @@ function UserDetail({ userId, currentUserId, onBack }) {
 
   const resetPassword = async () => {
     if (!detail?.email) return;
-    if (!window.confirm(`Gửi email đặt lại mật khẩu tới "${detail.email}"?`)) return;
+    if (!await appConfirm(`Gửi email đặt lại mật khẩu tới "${detail.email}"?`)) return;
     const { error } = await supabase.auth.resetPasswordForEmail(detail.email);
-    if (error) { alert("Gửi thất bại: " + error.message); return; }
+    if (error) { appAlert("Gửi thất bại: " + error.message); return; }
     await logAction("reset_password_email");
     showFlash("✓ Đã gửi email đặt lại mật khẩu");
   };
@@ -391,7 +392,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
   const saveNotes = async () => {
     setSaving(true);
     const { error } = await supabase.from("profiles").update({ admin_notes: notes }).eq("id", userId);
-    if (error) { alert("Lưu thất bại: " + error.message); setSaving(false); return; }
+    if (error) { appAlert("Lưu thất bại: " + error.message); setSaving(false); return; }
     await logAction("update_notes");
     showFlash("✓ Đã lưu ghi chú");
     setSaving(false);
@@ -403,7 +404,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
       is_locked: true,
       admin_notes: (notes ? notes + "\n" : "") + `[Đã yêu cầu xóa ${fmtDate(new Date())} bởi admin]`,
     }).eq("id", userId);
-    if (error) { alert("Thất bại: " + error.message); return; }
+    if (error) { appAlert("Thất bại: " + error.message); return; }
     await logAction("delete_requested", "Khóa tài khoản, chờ xóa vĩnh viễn qua Edge Function (chưa triển khai)");
     setConfirmDelete(false);
     showFlash("✓ Đã khóa tài khoản (xóa vĩnh viễn cần thêm Edge Function, xem ghi chú trong file SQL)");
@@ -502,7 +503,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
         <div style={{ fontWeight: 800, color: C.red, marginBottom: 10 }}>Khu vực nguy hiểm</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button onClick={toggleLock} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>{detail.is_locked ? "Mở khóa tài khoản" : "Khóa tài khoản"}</button>
-          <button onClick={() => { if (userId === currentUserId) { alert("Không thể tự xóa tài khoản của chính mình"); return; } setConfirmDelete(true); }} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>Xóa tài khoản</button>
+          <button onClick={() => { if (userId === currentUserId) { appAlert("Không thể tự xóa tài khoản của chính mình"); return; } setConfirmDelete(true); }} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>Xóa tài khoản</button>
         </div>
         {confirmDelete && (
           <div style={{ marginTop: 12, padding: 12, background: C.redBg, borderRadius: 10 }}>

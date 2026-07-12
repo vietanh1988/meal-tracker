@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, inp, redBtn, numFix } from "../theme";
 
@@ -27,7 +28,7 @@ export function SubscriptionSettingsTab({ isAdmin }) {
   const set = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
   const handleSave = async () => {
-    if (!isAdmin) { alert("Chỉ Admin mới sửa được cài đặt này"); return; }
+    if (!isAdmin) { appAlert("Chỉ Admin mới sửa được cài đặt này"); return; }
     setSaving(true);
     try {
       const { error } = await supabase.from("subscription_settings").upsert({
@@ -44,7 +45,7 @@ export function SubscriptionSettingsTab({ isAdmin }) {
         bank_account_name: form.bank_account_name || "",
         updated_at: new Date().toISOString(),
       });
-      if (error) { console.error("Save subscription_settings error:", error); alert("Lưu thất bại: " + error.message); return; }
+      if (error) { console.error("Save subscription_settings error:", error); appAlert("Lưu thất bại: " + error.message); return; }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) { console.error("Save subscription_settings error:", e); }

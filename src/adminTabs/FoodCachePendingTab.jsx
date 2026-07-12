@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { C, card, redBtn } from "../theme";
 import { getFoodCount, getAllFoods } from "../lib/localFoodDB";
 import { supabase } from "../lib/supabase";
@@ -105,7 +106,7 @@ export function FoodCachePendingTab({ mob, allPending, pendingCount, approvedCou
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => approvePendingFood(row)} style={{ ...redBtn, flex: 1, marginTop: 0, background: "linear-gradient(135deg,#15803D,#166534)" }}>✓ Duyệt vào kho chung</button>
-                <button onClick={() => { if (confirm(`Từ chối "${row.food_name}"?`)) rejectPendingFood(row.id); }} style={{ padding: "10px 16px", fontSize: 13, fontWeight: 700, border: "1.5px solid #FCA5A5", borderRadius: 10, background: "#FEF2F2", color: "#DC2626", cursor: "pointer", fontFamily: "inherit" }}>✕ Từ chối</button>
+                <button onClick={async () => { if (await appConfirm(`Từ chối "${row.food_name}"?`, { danger: true })) rejectPendingFood(row.id); }} style={{ padding: "10px 16px", fontSize: 13, fontWeight: 700, border: "1.5px solid #FCA5A5", borderRadius: 10, background: "#FEF2F2", color: "#DC2626", cursor: "pointer", fontFamily: "inherit" }}>✕ Từ chối</button>
               </div>
             </div>
           ))}

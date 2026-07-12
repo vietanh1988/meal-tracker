@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { C, card, inp, redBtn, numFix } from "../theme";
 import { estimateGram } from "../lib/usdaService";
 import { getFoodRole } from "../lib/localFoodDB";
@@ -157,7 +158,7 @@ for(const r of valid){
 if(saveDefaultTemplate)await saveDefaultTemplate(r.name,r.dayType,r.mealsData,r.totalCal,null,r.goalType,r.goalType==="giam_mo"?r.dietStrategy:null);
 }
 setImportOpen(false);setImportParsed(null);setImportReport(null);
-alert(`Đã tạo ${valid.length} mẫu thành công${importReport.length>valid.length?`, bỏ qua ${importReport.length-valid.length} mẫu lỗi`:""}.`);
+appAlert(`Đã tạo ${valid.length} mẫu thành công${importReport.length>valid.length?`, bỏ qua ${importReport.length-valid.length} mẫu lỗi`:""}.`);
 }
 return (
 <div style={{...card,padding:mob?"12px 10px":"16px 18px"}}>
@@ -316,7 +317,7 @@ return <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fo
 <button onClick={async()=>{
 const name=document.getElementById("tpl-name")?.value?.trim();
 const tplType=document.getElementById("tpl-type")?.value||"train";
-if(!name){alert("Nhập tên mẫu ở ô trên!");return;}
+if(!name){appAlert("Nhập tên mẫu ở ô trên!");return;}
 const items=aiResult.items||[];
 const mealsData=[];
 ALL_MEALS.filter(m=>selectedMeals.includes(m.id)).forEach(meal=>{
@@ -325,7 +326,7 @@ if(mealItems.length===0)return;
 const saveItems=mealItems.map(ai=>({food:ai.name||"",gram:ai.gram||0,unit:ai.unit||"g",qty:ai.qty||1,p:ai.protein||0,c:ai.carb||0,f:ai.fat||0,fiber:ai.fiber||0,cal:ai.cal||0}));
 if(saveItems.length>0)mealsData.push({meal_id:meal.id,meal_name:meal.name,items:saveItems});
 });
-if(mealsData.length===0){alert("Không có dữ liệu bữa ăn");return;}
+if(mealsData.length===0){appAlert("Không có dữ liệu bữa ăn");return;}
 // Validate: mỗi bữa phải có đủ ít nhất 1 món đạm + 1 món carb + 1 món béo,
 // nếu không Meal Engine không thể tính đúng gram khi user áp dụng mẫu này.
 for(const m of mealsData){
@@ -334,7 +335,7 @@ const missing=[];
 if(!roles.has("protein"))missing.push("đạm");
 if(!roles.has("carb"))missing.push("carb");
 if(!roles.has("fat"))missing.push("béo");
-if(missing.length>0){alert(`${m.meal_name||m.meal_id} đang thiếu món vai trò: ${missing.join(", ")} — thêm món trước khi lưu.`);return;}
+if(missing.length>0){appAlert(`${m.meal_name||m.meal_id} đang thiếu món vai trò: ${missing.join(", ")} — thêm món trước khi lưu.`);return;}
 }
 const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
 if(saveDefaultTemplate) await saveDefaultTemplate(name,tplType,mealsData,Math.round(totalCal),editingId,tplGoal,tplGoal==="giam_mo"?tplDiet:null);
@@ -412,7 +413,7 @@ document.getElementById("tpl-name")?.scrollIntoView({behavior:"smooth",block:"ce
 }} style={{width:20,height:20,padding:0,borderRadius:6,fontSize:11,color:C.primary,background:"none",border:"none",cursor:"pointer",flexShrink:0}}>✎</button>
 <button onClick={async(e)=>{
 e.stopPropagation();
-if(!confirm("Xóa mẫu \""+t.name+"\"?"))return;
+if(!await appConfirm("Xóa mẫu \""+t.name+"\"?"))return;
 if(deleteDefaultTemplate) await deleteDefaultTemplate(t.id);
 }} style={{width:20,height:20,padding:0,borderRadius:6,fontSize:11,color:C.t3,background:"none",border:"none",cursor:"pointer",flexShrink:0}}>✕</button>
 </div>

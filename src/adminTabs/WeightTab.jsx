@@ -1,4 +1,5 @@
 import { C, card, inp, lbl, redBtn } from "../theme";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { fmtDate } from "../fmtDate";
 import { WeightRow } from "../WeightRow";
 import { WeightBarChart } from "../WeightBarChart";
@@ -43,8 +44,8 @@ export function WeightTab({weightLog, addWeight, deleteWeight, setWeightLog, pro
         <div style={{borderTop:`1.5px solid ${C.border}`,paddingTop:14,marginTop:16}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
             <div style={{...lbl,fontSize:14,fontWeight:800}}>📋 Lịch sử theo dõi cân nặng</div>
-            <button onClick={()=>{
-              if(window.confirm("Xóa toàn bộ lịch sử cân nặng?")){
+            <button onClick={async()=>{
+              if(await appConfirm("Xóa toàn bộ lịch sử cân nặng?", { danger: true, confirmText: "Xoá" })){
                 resetWeights();
               }
             }} style={{fontSize:11,fontWeight:700,padding:"4px 10px",background:C.redBg,color:C.secondary,border:`1px solid ${C.secondary}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>

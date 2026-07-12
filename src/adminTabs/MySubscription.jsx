@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C } from "../theme";
 import { parseFeatureFlags } from "./FeatureFlagsTab";
@@ -78,11 +79,11 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
       const { data, error } = await supabase.from("orders").insert({
         user_id: userId, package: selectedPkg, amount: amount || null, status: "pending",
       }).select().single();
-      if (error) { alert("Gửi yêu cầu thất bại: " + error.message); setSubmitting(false); return; }
+      if (error) { appAlert("Gửi yêu cầu thất bại: " + error.message); setSubmitting(false); return; }
       setPendingOrder(data);
       setOrderHistory(prev => [data, ...prev]);
       setShowPicker(false);
-    } catch (e) { console.error(e); alert("Gửi yêu cầu thất bại"); }
+    } catch (e) { console.error(e); appAlert("Gửi yêu cầu thất bại"); }
     setSubmitting(false);
   };
 

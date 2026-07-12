@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, inp } from "../theme";
 import { fmtDate } from "../fmtDate";
@@ -60,21 +61,21 @@ export function OrdersTab({ isAdmin, currentUserId, appSettings }) {
   };
 
   const confirmOrder = async (o) => {
-    if (!window.confirm(`Xác nhận đã nhận tiền gói ${PKG_LABEL[o.package] || o.package} (${fmtVND(o.amount)}) từ ${o.username}?`)) return;
+    if (!await appConfirm(`Xác nhận đã nhận tiền gói ${PKG_LABEL[o.package] || o.package} (${fmtVND(o.amount)}) từ ${o.username}?`)) return;
     setBusyId(o.id);
     try {
       const { data: profile, error: pErr } = await supabase.from("profiles").select("tier,subscription_end_date").eq("id", o.user_id).single();
-      if (pErr) { alert("Lỗi đọc profile: " + pErr.message); setBusyId(null); return; }
+      if (pErr) { appAlert("Lỗi đọc profile: " + pErr.message); setBusyId(null); return; }
       const months = PKG_MONTHS[o.package] || 0;
       const base = (profile.subscription_end_date && new Date(profile.subscription_end_date) > new Date()) ? new Date(profile.subscription_end_date) : new Date();
       base.setMonth(base.getMonth() + months);
       const newEndDate = base.toISOString().slice(0, 10);
 
       const { error: uErr } = await supabase.from("profiles").update({ tier: "premium", subscription_end_date: newEndDate }).eq("id", o.user_id);
-      if (uErr) { alert("Cập nhật profile thất bại: " + uErr.message); setBusyId(null); return; }
+      if (uErr) { appAlert("Cập nhật profile thất bại: " + uErr.message); setBusyId(null); return; }
 
       const { error: oErr } = await supabase.from("orders").update({ status: "confirmed", confirmed_by: currentUserId, confirmed_at: new Date().toISOString() }).eq("id", o.id);
-      if (oErr) { alert("Cập nhật đơn thất bại: " + oErr.message); setBusyId(null); return; }
+      if (oErr) { appAlert("Cập nhật đơn thất bại: " + oErr.message); setBusyId(null); return; }
 
       await logAction(o.user_id, "confirm_order", `Duyệt đơn ${PKG_LABEL[o.package] || o.package} (${fmtVND(o.amount)}) -> Premium hết hạn ${fmtDT(newEndDate)}`);
       if (pushEnabled) {
@@ -88,15 +89,15 @@ export function OrdersTab({ isAdmin, currentUserId, appSettings }) {
         } catch (e) { console.error("Push notification error:", e); }
       }
       loadOrders(); loadStats();
-    } catch (e) { console.error(e); alert("Có lỗi xảy ra"); }
+    } catch (e) { console.error(e); appAlert("Có lỗi xảy ra"); }
     setBusyId(null);
   };
 
   const rejectOrder = async (o) => {
-    if (!window.confirm(`Từ chối đơn hàng của ${o.username}?`)) return;
+    if (!await appConfirm(`Từ chối đơn hàng của ${o.username}?`, { danger: true })) return;
     setBusyId(o.id);
     const { error } = await supabase.from("orders").update({ status: "rejected", confirmed_by: currentUserId, confirmed_at: new Date().toISOString() }).eq("id", o.id);
-    if (error) { alert("Thất bại: " + error.message); setBusyId(null); return; }
+    if (error) { appAlert("Thất bại: " + error.message); setBusyId(null); return; }
     await logAction(o.user_id, "reject_order", `Từ chối đơn ${PKG_LABEL[o.package] || o.package}`);
     loadOrders(); loadStats();
     setBusyId(null);

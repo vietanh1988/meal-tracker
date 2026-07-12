@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { C, card, inp, redBtn, numFix } from "../theme";
 import { ALL_MEALS } from "../mealConstants";
 import { SlidingTabs } from "../SlidingTabs";
@@ -100,9 +101,9 @@ cursor:sameType?"pointer":"not-allowed",opacity:sameType?1:0.5,
 </div>
 <button onClick={async()=>{
 const days=assignSelectedDays||[];
-if(days.length===0){alert("Chọn ít nhất 1 ngày");return;}
+if(days.length===0){appAlert("Chọn ít nhất 1 ngày");return;}
 const savedMeals=(getMeals?getMeals(dayType):[]).filter(m=>m.items&&m.items.length>0);
-if(savedMeals.length===0){alert("Chưa có bữa nào được lưu cho hôm nay — vào Tự nhập lưu bữa trước nhé");return;}
+if(savedMeals.length===0){appAlert("Chưa có bữa nào được lưu cho hôm nay — vào Tự nhập lưu bữa trước nhé");return;}
 const mealsData=savedMeals.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
 const totalCal=savedMeals.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
 for(const dayKey of days){
@@ -199,7 +200,7 @@ callAI(false,combined);
     NGÀY ĐANG XEM (dayType hiện tại), dùng khi form trống nhưng cloud vẫn
     còn data cũ (VD: test lại từ đầu, hoặc nhập nhầm cả ngày muốn làm lại). */}
 {isAdmin&&getMeals(dayType).some(m=>m.items&&m.items.length>0)&&<button onClick={async()=>{
-if(!window.confirm(`Xoá TOÀN BỘ bữa ăn của "${dayType==="train"?"Ngày tập":"Ngày nghỉ"}" hôm nay? Không thể hoàn tác.`))return;
+if(!await appConfirm(`Xoá TOÀN BỘ bữa ăn của "${dayType==="train"?"Ngày tập":"Ngày nghỉ"}" hôm nay? Không thể hoàn tác.`, { danger: true }))return;
 const skipDaily=dayType!==todayRealDayType();
 const targets=getMeals(dayType).filter(m=>m.items&&m.items.length>0);
 for(const m of targets){await saveMealToCloud(m.id,dayType,[],skipDaily);}
@@ -415,7 +416,7 @@ const savedLabel=(()=>{if(!savedAt)return "";const sd=new Date(savedAt);const no
 const dayTargetCal=dt==="train"?(macro.calTarget||0):(macro.calRest||macro.calTarget||0);
 const isLow=hasTpl&&dayTargetCal>0&&totalCal<dayTargetCal*0.7;
 return <div key={i}>
-<div style={{...card,cursor:"pointer",border:isSelected?`2px solid ${C.red}`:isStale?"1.5px solid #FCD34D":`1.5px solid ${C.border}`,padding:0,display:"flex",alignItems:"stretch",overflow:"hidden"}} onClick={()=>{
+<div style={{...card,cursor:"pointer",border:isSelected?`2px solid ${C.red}`:isStale?"1.5px solid #FCD34D":`1.5px solid ${C.border}`,padding:0,display:"flex",alignItems:"stretch",overflow:"hidden"}} onClick={async()=>{
 if(hasTpl){
 setExpandedTpl(isSelected?null:dayKeys[i]);
 }else{
@@ -423,7 +424,7 @@ const currentMeals=getMeals(dt);
 const filled=currentMeals.filter(m=>m.items&&m.items.length>0);
 if(filled.length===0){setMealMode("tu_nhap");setDayType(dt);return;}
 const dayLabel2={"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[dayKeys[i]];
-if(confirm(`Gán ${filled.length} bữa ${dt==="train"?"ngày tập":"ngày nghỉ"} hiện tại vào ${dayLabel2}?`)){
+if(await appConfirm(`Gán ${filled.length} bữa ${dt==="train"?"ngày tập":"ngày nghỉ"} hiện tại vào ${dayLabel2}?`)){
 const mealsData=filled.map(m=>({meal_id:m.id,meal_name:m.name,items:m.items}));
 const tc=filled.reduce((s,m)=>s+m.items.reduce((a,it)=>a+(it.cal||0),0),0);
 if(saveWeeklyTemplate) saveWeeklyTemplate(dayKeys[i],dt,mealsData,Math.round(tc));
@@ -496,7 +497,7 @@ setUserHasEdited(true);
 setMealMode("tu_nhap");
 setExpandedTpl(null);
 }} style={{flex:1,padding:"10px",fontSize:12,fontWeight:800,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Sửa</button>
-<button onClick={async(e)=>{e.stopPropagation();if(window.confirm(`Xóa lịch tuần ${dayLabels[i]}?`)){if(deleteWeeklyTemplate)await deleteWeeklyTemplate(dayKeys[i]);setExpandedTpl(null);}}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:"1.5px solid #FCA5A5",borderRadius:10,background:"#FEF2F2",color:"#DC2626",cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xóa</button>
+<button onClick={async(e)=>{e.stopPropagation();if(await appConfirm(`Xóa lịch tuần ${dayLabels[i]}?`, { danger: true })){if(deleteWeeklyTemplate)await deleteWeeklyTemplate(dayKeys[i]);setExpandedTpl(null);}}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:"1.5px solid #FCA5A5",borderRadius:10,background:"#FEF2F2",color:"#DC2626",cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xóa</button>
 <button onClick={(e)=>{e.stopPropagation();setExpandedTpl(null);}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Đóng</button>
 </div>
 </div>}
@@ -561,7 +562,7 @@ return <div key={dk} style={{display:"flex",justifyContent:"space-between",paddi
 </div>;
 })}
 <button onClick={async()=>{
-if(!confirm(`Áp dụng "${b.name}" cho cả 7 ngày? Ngày nào đã có dữ liệu Lịch tuần sẽ bị ghi đè.`))return;
+if(!await appConfirm(`Áp dụng "${b.name}" cho cả 7 ngày? Ngày nào đã có dữ liệu Lịch tuần sẽ bị ghi đè.`))return;
 for(const dk of dayKeys){
 const tplId=b.days&&b.days[dk];
 if(!tplId)continue;
@@ -697,7 +698,7 @@ cursor:sameType?"pointer":"not-allowed",opacity:sameType?1:0.5,
 <div style={{fontSize:11,color:"#4338CA",marginBottom:8}}>Chọn ngày cùng loại ({t.day_type==="train"?"Tập":"Nghỉ"}). {(assignSelectedDays||[]).length} ngày đã chọn.</div>
 <button onClick={async()=>{
 const days=assignSelectedDays||[];
-if(days.length===0){alert("Chọn ít nhất 1 ngày");return;}
+if(days.length===0){appAlert("Chọn ít nhất 1 ngày");return;}
 const mealsData=engineTpl.meals||[];
 const totalCal=mealsData.reduce((s,m)=>s+(m.items||[]).reduce((a,it)=>a+(it.cal||0),0),0);
 for(const dayKey of days){

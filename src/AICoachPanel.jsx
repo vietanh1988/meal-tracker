@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { appConfirm } from "./lib/dialog";
 import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
@@ -376,6 +377,15 @@ useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scro
 // tuần hôm nay + apply vào meal_logs/daily_logs, rồi báo lại NGAY trong
 // chính cuộc chat để user không phải rời panel mà vẫn biết đã xong.
 const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
+const clearChatHistory=async()=>{
+if(!(await appConfirm("Xoá toàn bộ lịch sử chat với Fipilot AI? Không thể hoàn tác.",{danger:true,confirmText:"Xoá"})))return;
+try{
+await supabase.from("ai_chat_history").delete().eq("user_id",userId);
+await clearAIMenu(userId);
+shownPatternsRef.current=new Set();
+setMessages([]); // effect welcome (messages.length===0) tự chào lại
+}catch(e){console.error("clearChatHistory error:",e);}
+};
 const handleApplyAIMenuChat=async(tpl)=>{
 try{
 if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
@@ -407,7 +417,7 @@ const welcome=(t.cal||0)>0
 setMessages([{role:"assistant",content:welcome}]);
 saveMsg("assistant",welcome);
 }
-},[historyLoaded]);
+},[historyLoaded,messages.length]);
 
 // Restore saved AI menu from Supabase on mount (mọi thiết bị đều thấy)
 useEffect(()=>{
@@ -451,6 +461,7 @@ return <div>
 <span style={{fontSize:18}}>✨</span>
 <span style={{fontSize:17,fontWeight:800,color:C2.t1,flex:1}}>Fipilot AI <span style={{fontSize:12,fontWeight:500,color:C2.t3}}>(Dinh dưỡng & tập luyện)</span></span>
 <span style={{fontSize:11,color:"#22C55E",display:"flex",alignItems:"center",gap:4}}>● Online</span>
+<span onClick={clearChatHistory} title="Xoá lịch sử chat" style={{fontSize:15,color:C2.t3,cursor:"pointer",marginRight:mob?0:2}}>🗑️</span>
 {!mob&&<span onClick={onClose} style={{fontSize:18,color:C2.t3,cursor:"pointer"}}>✕</span>}
 </div>
 

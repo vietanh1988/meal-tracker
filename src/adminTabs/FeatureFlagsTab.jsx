@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { C, card } from "../theme";
 
 const FLAG_DEFS = [
@@ -38,7 +39,7 @@ export function FeatureFlagsTab({ appSettings, isAdmin, saveSetting }) {
       await saveSetting("feature_flags", JSON.stringify(next));
       setFlash(`✓ Đã ${next[key] ? "bật" : "tắt"} "${FLAG_DEFS.find(f => f.key === key)?.label}"`);
       setTimeout(() => setFlash(""), 3000);
-    } catch (e) { console.error(e); alert("Lưu thất bại"); }
+    } catch (e) { console.error(e); appAlert("Lưu thất bại"); }
     setSaving(false);
   };
 

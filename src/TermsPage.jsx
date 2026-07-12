@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { appAlert, appConfirm } from "./lib/dialog";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { C, card } from "./theme";
@@ -59,7 +60,7 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
   const activePage = pages.find(p => p.id === activeId);
 
   const savePages = async (nextPages) => {
-    try { await saveSetting("terms_content", JSON.stringify({ pages: nextPages })); } catch (e) { console.error(e); alert("Lưu thất bại"); }
+    try { await saveSetting("terms_content", JSON.stringify({ pages: nextPages })); } catch (e) { console.error(e); appAlert("Lưu thất bại"); }
   };
 
   const startEdit = () => {
@@ -86,8 +87,8 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
   };
 
   const removePage = async (id, label) => {
-    if (pages.length <= 1) { alert("Phải giữ lại ít nhất 1 trang."); return; }
-    if (!window.confirm(`Xóa trang "${label}"? Không thể hoàn tác.`)) return;
+    if (pages.length <= 1) { appAlert("Phải giữ lại ít nhất 1 trang."); return; }
+    if (!await appConfirm(`Xóa trang "${label}"? Không thể hoàn tác.`, { danger: true })) return;
     const next = pages.filter(p => p.id !== id);
     await savePages(next);
     if (activeId === id) setActiveId(next[0]?.id);

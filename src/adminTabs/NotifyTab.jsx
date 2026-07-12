@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, inp } from "../theme";
 import { fmtDate } from "../fmtDate";
@@ -70,11 +71,11 @@ export function NotifyTab({ isAdmin, currentUserId, appSettings }) {
   }, [search, targetType]);
 
   const handleSend = async () => {
-    if (!pushEnabled) { alert("Push notification đang bị TẮT trong Feature Flags. Vào tab Feature Flags để bật lại."); return; }
-    if (!title.trim()) { alert("Vui lòng nhập tiêu đề"); return; }
-    if (targetType === "single" && !selectedUser) { alert("Vui lòng chọn người nhận"); return; }
+    if (!pushEnabled) { appAlert("Push notification đang bị TẮT trong Feature Flags. Vào tab Feature Flags để bật lại."); return; }
+    if (!title.trim()) { appAlert("Vui lòng nhập tiêu đề"); return; }
+    if (targetType === "single" && !selectedUser) { appAlert("Vui lòng chọn người nhận"); return; }
     const confirmMsg = targetType === "single" ? `Gửi thông báo tới "${selectedUser.username}"?` : targetType === "all" ? "Gửi thông báo tới TẤT CẢ user?" : "Gửi thông báo tới tất cả user Premium?";
-    if (!window.confirm(confirmMsg)) return;
+    if (!await appConfirm(confirmMsg)) return;
 
     setSending(true);
     try {
@@ -85,12 +86,12 @@ export function NotifyTab({ isAdmin, currentUserId, appSettings }) {
         p_body: body.trim() || null,
         p_url: "/",
       });
-      if (error) { alert("Gửi thất bại: " + error.message); setSending(false); return; }
+      if (error) { appAlert("Gửi thất bại: " + error.message); setSending(false); return; }
       setFlash("✓ Đã tạo yêu cầu gửi, đang xử lý...");
       setTimeout(() => setFlash(""), 4000);
       setTitle(""); setBody(""); setSelectedUser(null); setSearch("");
       loadHistory();
-    } catch (e) { console.error(e); alert("Có lỗi xảy ra"); }
+    } catch (e) { console.error(e); appAlert("Có lỗi xảy ra"); }
     setSending(false);
   };
 
