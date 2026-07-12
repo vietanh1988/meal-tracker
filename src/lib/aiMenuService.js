@@ -204,11 +204,12 @@ ${prefLines.length ? prefLines.join("\n") + "\n" : ""}
 QUY TẮC:
 1. ƯU TIÊN chọn PATTERN từ danh sách dưới — trả "pattern":"<tên chính xác>", hệ thống tự tra dishes.
 2. CHỈ khi không pattern nào hợp mới TỰ SOẠN: trả "pattern":"custom" kèm "dishes" — mỗi dish gồm "display" (tên MÓN ĂN có cách nấu: "Gà luộc", "Rau muống xào tỏi", "Canh bí đỏ") và "food" (tên NGUYÊN LIỆU CHÍNH XÁC từ danh sách món rời dưới đây).
-3. Bữa chính: 3-4 món (đạm+carb+rau+canh). Bữa phụ/pre/post: 1-2 món.
-4. Tráng miệng (fruit) tách riêng: "dessert":{"display":"Chuối","food":"chuối"} — chỉ bữa trưa cần.
-5. KHÔNG chọn dầu ăn/mỡ/bơ — hệ thống tự bổ sung.
-6. Đa dạng: không lặp protein giữa các bữa.
-7. Tạo đúng: ${mealNames}.
+3. BẮT BUỘC 100% món VIỆT NAM thuần (luộc/xào/kho/nướng/hấp/canh). CẤM TUYỆT ĐỐI món Tây/fusion: salad, sandwich, pasta, soup kem, smoothie, bowl, steak... "display" không được bỏ trống.
+4. Bữa chính: 3-4 món (đạm+carb+rau+canh). Bữa phụ/pre/post: 1-2 món.
+5. Tráng miệng (fruit) tách riêng: "dessert":{"display":"Chuối","food":"chuối"} — chỉ bữa trưa cần.
+6. KHÔNG chọn dầu ăn/mỡ/bơ — hệ thống tự bổ sung.
+7. Đa dạng: không lặp protein giữa các bữa.
+8. Tạo đúng: ${mealNames}.
 
 PATTERN (ưu tiên):
 ${patternLines || "(không có)"}
@@ -275,11 +276,30 @@ export function matchFoodKey(name) {
 
 const MAIN_MEALS = new Set(["sang", "trua", "toi"]);
 
-// Filler béo tự động
+// Filler béo = MÓN VIỆT THẬT có tên (Muối vừng, Lạc rang) — user thấy và ăn
+// được, không giấu. Muối vừng/lạc rang là cách ăn kèm cơm kinh điển của VN.
 const AUTO_FAT_FILLER = {
-  sang: "lạc", trua: "mè", toi: "đậu phộng",
-  phu_sang: "lạc", phu_chieu: "mè", pre: "đậu phộng", post: "lạc",
+  sang: { food: "lạc", display: "Lạc rang" },
+  trua: { food: "mè", display: "Muối vừng" },
+  toi: { food: "đậu phộng", display: "Đậu phộng rang" },
+  phu_sang: { food: "lạc", display: "Lạc rang" },
+  phu_chieu: { food: "mè", display: "Muối vừng" },
+  pre: { food: "đậu phộng", display: "Đậu phộng rang" },
+  post: { food: "lạc", display: "Lạc rang" },
 };
+
+// HARD BLOCK món Tây — display chứa từ này bị coi là không hợp lệ,
+// bữa chính rơi về force-pick pattern Việt, bữa phụ fallback tên nguyên liệu.
+const NON_VIETNAMESE_DISH_WORDS = [
+  "salad", "sandwich", "pasta", "pizza", "burger", "hamburger", "steak",
+  "smoothie", "sốt kem", "soup kem", "taco", "sushi", "kimbap", "wrap",
+  "toast", "pancake", "waffle", "cereal", "bowl", "salat", "spaghetti",
+  "mì ý", "risotto", "lasagna", "hotdog", "bbq kiểu mỹ",
+];
+export function isVietnameseDish(display) {
+  const lower = (display || "").toLowerCase();
+  return !NON_VIETNAMESE_DISH_WORDS.some(w => lower.includes(w));
+}
 
 // Dựng danh sách dishes từ pattern (v2)
 function patternToDishes(pattern) {
@@ -298,7 +318,13 @@ function finalizeMealDishes(mealId, dishes, dessert, errors) {
     const key = matchFoodKey(d.food);
     if (!key) { errors.push(`"${d.food}" không có trong danh sách`); continue; }
     const role = d.role || getFoodRole(key) || "fixed";
-    foods.push({ key, role, display: d.display || capitalizeFirst(key) });
+    // HARD BLOCK món Tây: display kiểu Tây → thay bằng tên nguyên liệu Việt
+    let display = d.display || capitalizeFirst(key);
+    if (!isVietnameseDish(display)) {
+      errors.push(`"${display}" không phải món Việt`);
+      display = capitalizeFirst(key);
+    }
+    foods.push({ key, role, display });
   }
 
   if (isMain) {
@@ -310,10 +336,10 @@ function finalizeMealDishes(mealId, dishes, dessert, errors) {
     errors.push(`Bữa "${mealId}" rỗng`);
   }
 
-  // Filler béo tự động
-  const fillerKey = AUTO_FAT_FILLER[mealId];
-  if (fillerKey && LOCAL_FOODS[fillerKey]) {
-    foods.push({ key: fillerKey, role: "fat", display: null }); // display null = ẩn
+  // Filler béo = món Việt thật có tên (Muối vừng, Lạc rang...), hiển thị công khai
+  const filler = AUTO_FAT_FILLER[mealId];
+  if (filler && LOCAL_FOODS[filler.food]) {
+    foods.push({ key: filler.food, role: "fat", display: filler.display });
   }
 
   // Dessert riêng
@@ -371,6 +397,17 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames) {
         food: it.food || it.name,
         role: null,
       }));
+    }
+
+    // HARD BLOCK: bữa chính custom có món Tây → vứt toàn bộ custom,
+    // rơi xuống force-pick pattern Việt bên dưới
+    if (!usedPattern && MAIN_MEALS.has(mealId) && dishes.length > 0) {
+      const hasWestern = dishes.some(d => !isVietnameseDish(d.display));
+      if (hasWestern) {
+        errors.push(`Bữa "${mealId}" có món không thuần Việt — thay bằng pattern`);
+        dishes = [];
+        dessert = null;
+      }
     }
 
     // Bữa chính PHẢI có pattern — nếu AI không chọn, ép 1 pattern ngẫu nhiên

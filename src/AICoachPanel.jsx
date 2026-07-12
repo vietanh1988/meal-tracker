@@ -3,7 +3,6 @@ import { supabase } from "./lib/supabase";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst, saveAIMenu, loadAIMenu, clearAIMenu } from "./lib/aiMenuService";
-import { getFoodRole } from "./lib/localFoodDB";
 import { ALL_MEALS } from "./mealConstants";
 import { MEAL_TIMES } from "./mealPatterns";
 
@@ -518,7 +517,7 @@ return <div style={{marginTop:8,background:"#fff",borderRadius:12,border:`1px so
 const meta=ALL_MEALS.find(x=>x.id===mm.meal_id);
 const cal=Math.round((mm.items||[]).reduce((s,it)=>s+(it.cal||0),0));
 const time=MEAL_TIMES[mm.meal_id]||"";
-const visibleItems=(mm.items||[]).filter(it=>it.display!==null&&it.gram>0&&!(getFoodRole(it.food)==="fat"&&it.gram<30));
+const visibleItems=(mm.items||[]).filter(it=>it.display!==null&&it.gram>0);
 return <div key={mm.meal_id} style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}>
 <span><span style={{fontSize:14,fontWeight:700,color:"#3B82F6"}}>{meta?.name||mm.meal_id}</span>{time&&<span style={{fontSize:12,color:C2.t3,marginLeft:8}}>{time}</span>}</span>

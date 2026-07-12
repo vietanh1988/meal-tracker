@@ -180,7 +180,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
         const mealCal = Math.round((m.items || []).reduce((s, i) => s + (i.cal || 0), 0));
         const reason = m.pattern ? getPatternReason(m.meal_id, m.pattern, macro.goal) : null;
         const time = MEAL_TIMES[m.meal_id] || "";
-        const visibleItems = (m.items || []).filter(it => it.display !== null && it.gram > 0 && !(getFoodDisplayCategory(it.food) === "fat" && it.gram < 30));
+        const visibleItems = (m.items || []).filter(it => it.display !== null && it.gram > 0);
         return (
           <div key={m.meal_id} style={card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: sp.lg }}>
