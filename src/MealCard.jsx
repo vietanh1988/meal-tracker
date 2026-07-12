@@ -15,10 +15,12 @@ export function MealCard({meal}){
   const total=t.p+t.c+t.f+t.fiber||1;
   const iconBg={sang:"#FEF3C7",phu_sang:"#FEE0CC",trua:"#FEF3C7",phu_chieu:"#D1FAE5",pre:"#FEE2E2",post:"#CCFBF1",toi:"#EDE9FE"};
 
-  // Composite: hiện TÊN MÓN (pattern) thay vì xổ nguyên liệu
-  const isComposite = !!meal.composite;
+  // Có pattern → hiện gọn 1 dòng tên món, không xổ nguyên liệu
   const patternName = meal.pattern || null;
+  const showCompact = !!patternName;
+  const isBowl = !!meal.composite;
   const totalGram = Math.round(meal.items.reduce((s, it) => s + (it.gram || 0), 0));
+  const unitLabel = isBowl ? `1 tô (~${totalGram}g)` : `1 phần (~${totalGram}g)`;
 
   return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -47,12 +49,12 @@ export function MealCard({meal}){
       <div style={{width:`${(t.fiber/total)*100}%`,background:C.fiber,borderRadius:3}}/>
     </div>
     {open&&<div style={{marginTop:12,borderTop:`1.5px solid ${C.border}`,paddingTop:10}}>
-      {/* Composite: hiện như 1 tô thay vì xổ nguyên liệu */}
-      {isComposite ? (
+      {/* Có pattern → gọn 1 dòng tên món */}
+      {showCompact ? (
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0"}}>
           <div>
             <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{patternName}</div>
-            <div style={{fontSize:12,color:C.t3}}>1 tô (~{totalGram}g)</div>
+            <div style={{fontSize:12,color:C.t3}}>{unitLabel}</div>
           </div>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:13,fontWeight:800,color:C.t1}}>{Math.round(t.cal)} cal</div>
