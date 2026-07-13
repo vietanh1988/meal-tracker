@@ -104,7 +104,10 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
     visibleIds.forEach(mid=>{
       const meal=currentMeals.find(m=>m.id===mid);
       if(meal&&meal.items&&meal.items.length>0){
-        init[mid]=meal.items.map(it=>({name:it.food||it.name||"",gram:it.gram===0?0:(it.gram||""),unit:it.unit||"g",qty:it.qty||1}));
+        init[mid]=meal.items.map(it=>({name:it.display||it.food||it.name||"",gram:it.gram===0?0:(it.gram||""),unit:it.unit||"g",qty:it.qty||1,qty_display:it.qty_display||null}));
+        // Giữ pattern (tên món) để MealsTab hiển thị — VD "Phở gà", "Bò xào hành tây"
+        if(meal.pattern) init[mid]._pattern=meal.pattern;
+        if(meal.composite) init[mid]._composite=true;
       }else{
         init[mid]=[{name:"",gram:"",unit:"g",qty:1}];
       }
