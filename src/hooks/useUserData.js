@@ -74,6 +74,15 @@ export function useUserData(userId) {
           target[d.meal_id] = d.items;
           newDates[d.day_type === "train" ? "train" : "rest"][d.meal_id] = d.log_date;
         });
+        let metaByKey = {};
+        data.forEach(d => {
+          const target = d.day_type === "train" ? trainMeals : restMeals;
+          target[d.meal_id] = d.items;
+          newDates[d.day_type === "train" ? "train" : "rest"][d.meal_id] = d.log_date;
+          // Lưu pattern + composite từ DB (nếu có)
+          const mk = `${d.day_type}_${d.meal_id}`;
+          if (d.pattern || d.composite) metaByKey[mk] = { pattern: d.pattern, composite: !!d.composite };
+        });
         const newMeals = {};
         ["train", "rest"].forEach(dt => {
           const bucket = dt === "train" ? trainMeals : restMeals;
@@ -81,16 +90,26 @@ export function useUserData(userId) {
           base.forEach(m => {
             if (bucket[m.id]) {
               m.items = bucket[m.id];
-              // Khôi phục pattern + composite từ items (bị mất sau reload
-              // vì DB chỉ lưu items, không lưu 2 field này)
-              const patternName = inferPatternFromItems(m.id, m.items);
-              if (patternName) {
-                m.pattern = patternName;
+              const mk = `${dt}_${m.id}`;
+              const dbMeta = metaByKey[mk];
+              if (dbMeta && dbMeta.pattern) {
+                // Đọc thẳng từ DB — chính xác 100%
+                m.pattern = dbMeta.pattern;
+                m.composite = !!dbMeta.composite;
+              } else {
+                // Fallback: suy đoán từ items (data cũ chưa có cột pattern)
+                const patternName = inferPatternFromItems(m.id, m.items);
+                if (patternName) {
+                  m.pattern = patternName;
+                  const patterns = MEAL_PATTERNS[m.id] || [];
+                  const found = patterns.find(p => p.name === patternName);
+                  m.composite = !!(found && found.composite);
+                }
+              }
+              // Khôi phục display name nếu thiếu
+              if (m.pattern) {
                 const patterns = MEAL_PATTERNS[m.id] || [];
-                const found = patterns.find(p => p.name === patternName);
-                m.composite = !!(found && found.composite);
-                // Khôi phục display name cho items nếu thiếu (data cũ trong DB
-                // không có display → hiện raw food key thay vì tên món)
+                const found = patterns.find(p => p.name === m.pattern);
                 if (found && found.dishes) {
                   const dishMap = {};
                   found.dishes.forEach(d => { if (d.food && d.display) dishMap[d.food] = d.display; });
@@ -532,7 +551,7 @@ export function useUserData(userId) {
           const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
           const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
           const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
-          const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: today, items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
+          const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: today, items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF, pattern: m.pattern || null, composite: !!m.composite };
           await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
         } catch (e) { console.error("Apply meal_logs error:", e); }
       }
