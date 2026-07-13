@@ -89,6 +89,18 @@ export function useUserData(userId) {
                 const patterns = MEAL_PATTERNS[m.id] || [];
                 const found = patterns.find(p => p.name === patternName);
                 m.composite = !!(found && found.composite);
+                // Khôi phục display name cho items nếu thiếu (data cũ trong DB
+                // không có display → hiện raw food key thay vì tên món)
+                if (found && found.dishes) {
+                  const dishMap = {};
+                  found.dishes.forEach(d => { if (d.food && d.display) dishMap[d.food] = d.display; });
+                  m.items = m.items.map(it => {
+                    if (!it.display && it.food && dishMap[it.food]) {
+                      return { ...it, display: dishMap[it.food] };
+                    }
+                    return it;
+                  });
+                }
               }
             }
           });

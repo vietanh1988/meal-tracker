@@ -27,7 +27,7 @@ export const MEAL_PATTERNS = {
       popularity: 5, prepMinutes: 10, buyable: true,
       reasonTemplate: { cut: "Nhẹ bụng, chuẩn bị dưới 10 phút", bulk: "Nhanh gọn, đủ năng lượng buổi sáng" } },
 
-    { name: "Bánh mì trứng",
+    { name: "Bánh mì trứng", composite: true,
       dishes: [
         { display: "Bánh mì", food: "bánh mì", role: "carb" },
         { display: "Trứng chiên", food: "trứng gà", role: "protein" },
@@ -35,7 +35,7 @@ export const MEAL_PATTERNS = {
       ],
       popularity: 5, prepMinutes: 5, buyable: true },
 
-    { name: "Xôi trứng",
+    { name: "Xôi trứng", composite: true,
       dishes: [
         { display: "Xôi", food: "xôi", role: "carb" },
         { display: "Trứng gà luộc", food: "trứng gà luộc", role: "protein" },
@@ -100,7 +100,7 @@ export const MEAL_PATTERNS = {
       popularity: 3, prepMinutes: 10, buyable: false,
       reasonTemplate: { bulk: "Yến mạch giàu carb phức hợp, no lâu cho ngày tập" } },
 
-    { name: "Xôi đậu phụ",
+    { name: "Xôi đậu phụ", composite: true,
       dishes: [
         { display: "Xôi", food: "xôi", role: "carb" },
         { display: "Đậu phụ chiên", food: "đậu phụ", role: "protein" },
@@ -108,7 +108,7 @@ export const MEAL_PATTERNS = {
       ],
       popularity: 2, prepMinutes: 10, buyable: true },
 
-    { name: "Bánh mì patê",
+    { name: "Bánh mì patê", composite: true,
       dishes: [
         { display: "Bánh mì", food: "bánh mì", role: "carb" },
         { display: "Trứng chiên", food: "trứng gà", role: "protein" },
@@ -127,7 +127,7 @@ export const MEAL_PATTERNS = {
       popularity: 5, prepMinutes: 7, buyable: false,
       reasonTemplate: { bulk: "Nhanh gọn 7 phút, đủ carb cho buổi sáng" } },
 
-    { name: "Bánh cuốn",
+    { name: "Bánh cuốn", composite: true,
       dishes: [
         { display: "Bánh cuốn", food: "bánh cuốn", role: "carb" },
         { display: "Chả lụa", food: "chả lụa", role: "protein" },
@@ -203,7 +203,7 @@ export const MEAL_PATTERNS = {
       popularity: 3, prepMinutes: 20, buyable: true,
       reasonTemplate: { cut: "Đạm thực vật, ít béo, hợp người ăn chay" } },
 
-    { name: "Bún đậu",
+    { name: "Bún đậu", composite: true,
       dishes: [
         { display: "Bún", food: "bún", role: "carb" },
         { display: "Đậu phụ chiên", food: "đậu phụ", role: "protein" },
@@ -220,7 +220,7 @@ export const MEAL_PATTERNS = {
       ],
       popularity: 3, prepMinutes: 20, buyable: true },
 
-    { name: "Bún thịt nướng",
+    { name: "Bún thịt nướng", composite: true,
       dishes: [
         { display: "Bún", food: "bún", role: "carb" },
         { display: "Thịt heo nướng", food: "thịt heo nạc", role: "protein" },
@@ -427,7 +427,7 @@ export const MEAL_PATTERNS = {
   ],
 
   pre: [
-    { name: "Bánh mì chuối",
+    { name: "Bánh mì chuối", composite: true,
       dishes: [
         { display: "Bánh mì nướng", food: "bánh mì", role: "carb" },
         { display: "Chuối", food: "chuối", role: "fixed" },
@@ -442,7 +442,7 @@ export const MEAL_PATTERNS = {
       dishes: [
         { display: "Khoai lang luộc", food: "khoai lang", role: "carb" },
       ], popularity: 4, prepMinutes: 10, buyable: true },
-    { name: "Bánh mì mật ong",
+    { name: "Bánh mì mật ong", composite: true,
       dishes: [
         { display: "Bánh mì nướng", food: "bánh mì", role: "carb" },
         { display: "Mật ong", food: "mật ong", role: "fixed" },
