@@ -143,6 +143,52 @@ export const MEAL_PATTERNS = {
         { display: "Giá đỗ", food: "giá đỗ", role: "fixed" },
       ],
       popularity: 4, prepMinutes: 15, buyable: true },
+
+    // ---- SÁNG MỚI ----
+    { name: "Bún riêu", composite: true,
+      dishes: [
+        { display: "Nước dùng riêu", food: "dầu ăn", role: "fat" },
+        { display: "Bún", food: "bún", role: "carb" },
+        { display: "Riêu cua", food: "cua", role: "protein" },
+        { display: "Rau muống", food: "rau muống", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 15, buyable: true },
+
+    { name: "Bánh canh giò heo", composite: true,
+      dishes: [
+        { display: "Nước dùng", food: "dầu ăn", role: "fat" },
+        { display: "Bánh canh", food: "bánh phở", role: "carb" },
+        { display: "Giò heo", food: "thịt heo nạc", role: "protein" },
+        { display: "Hành lá", food: "hành lá", role: "fixed" },
+      ],
+      popularity: 3, prepMinutes: 15, buyable: true },
+
+    { name: "Cơm tấm sườn", composite: true,
+      dishes: [
+        { display: "Cơm tấm", food: "cơm trắng", role: "carb" },
+        { display: "Sườn nướng", food: "sườn heo", role: "protein" },
+        { display: "Dưa leo", food: "dưa leo", role: "fixed" },
+        { display: "Trứng ốp la", food: "trứng gà", role: "fixed" },
+      ],
+      popularity: 5, prepMinutes: 10, buyable: true },
+
+    { name: "Xôi xéo", composite: true,
+      dishes: [
+        { display: "Xôi", food: "xôi", role: "carb" },
+        { display: "Đậu xanh", food: "đậu xanh", role: "protein" },
+        { display: "Hành phi", food: "dầu ăn", role: "fat" },
+      ],
+      popularity: 3, prepMinutes: 10, buyable: true },
+
+    { name: "Bún bò Huế", composite: true,
+      dishes: [
+        { display: "Nước dùng", food: "dầu ăn", role: "fat" },
+        { display: "Bún", food: "bún", role: "carb" },
+        { display: "Thịt bò", food: "thịt bò", role: "protein" },
+        { display: "Giò heo", food: "thịt heo nạc", role: "protein" },
+        { display: "Rau sống", food: "giá đỗ", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 15, buyable: true },
   ],
 
   trua: [
@@ -276,6 +322,61 @@ export const MEAL_PATTERNS = {
         { display: "Canh rau ngót", food: "rau ngót", role: "fixed" },
       ],
       popularity: 4, prepMinutes: 20, buyable: true },
+
+    // ---- TRƯA MỚI ----
+    { name: "Cơm cá hồi áp chảo",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Cá hồi áp chảo", food: "cá hồi", role: "protein" },
+        { display: "Rau bina xào", food: "rau bina", role: "fixed" },
+        { display: "Canh bí đỏ", food: "bí đỏ", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 20, buyable: false },
+
+    { name: "Cơm tôm xào rau",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Tôm xào", food: "tôm", role: "protein" },
+        { display: "Bông cải xanh luộc", food: "bông cải xanh", role: "fixed" },
+        { display: "Canh rau cải", food: "rau cải", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 20, buyable: false },
+
+    { name: "Cơm cá thu kho",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Cá thu kho", food: "cá thu", role: "protein" },
+        { display: "Rau muống luộc", food: "rau muống", role: "fixed" },
+        { display: "Canh cải thảo", food: "cải thảo", role: "fixed" },
+      ],
+      popularity: 3, prepMinutes: 25, buyable: false },
+
+    { name: "Cơm mực xào",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Mực xào sả ớt", food: "mực", role: "protein" },
+        { display: "Rau cải luộc", food: "rau cải", role: "fixed" },
+        { display: "Canh bí xanh", food: "bí xanh", role: "fixed" },
+      ],
+      popularity: 3, prepMinutes: 20, buyable: false },
+
+    { name: "Cơm gà luộc",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Gà luộc", food: "ức gà luộc", role: "protein" },
+        { display: "Rau muống luộc", food: "rau muống", role: "fixed" },
+        { display: "Canh bầu", food: "bí xanh", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 20, buyable: true },
+
+    { name: "Cơm thịt heo kho tiêu",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Thịt heo kho tiêu", food: "thịt heo nạc", role: "protein" },
+        { display: "Đậu que luộc", food: "đậu que", role: "fixed" },
+        { display: "Canh mồng tơi", food: "mồng tơi", role: "fixed" },
+      ],
+      popularity: 3, prepMinutes: 25, buyable: false },
   ],
 
   toi: [
@@ -372,6 +473,70 @@ export const MEAL_PATTERNS = {
         { display: "Canh mồng tơi", food: "mồng tơi", role: "fixed" },
       ],
       popularity: 4, prepMinutes: 20, buyable: false },
+
+    // ---- TỐI MỚI ----
+    { name: "Cơm cá hồi nướng",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Cá hồi nướng", food: "cá hồi", role: "protein" },
+        { display: "Rau bina xào tỏi", food: "rau bina", role: "fixed" },
+        { display: "Canh rau ngót", food: "rau ngót", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 20, buyable: false },
+
+    { name: "Cơm tôm hấp",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Tôm hấp", food: "tôm", role: "protein" },
+        { display: "Rau muống luộc", food: "rau muống", role: "fixed" },
+        { display: "Canh bí đỏ", food: "bí đỏ", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 15, buyable: false },
+
+    { name: "Cơm cá ngừ kho",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Cá ngừ kho", food: "cá ngừ", role: "protein" },
+        { display: "Đậu bắp luộc", food: "đậu bắp", role: "fixed" },
+        { display: "Canh cải thảo", food: "cải thảo", role: "fixed" },
+      ],
+      popularity: 3, prepMinutes: 25, buyable: false },
+
+    { name: "Cơm mực hấp gừng",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Mực hấp gừng", food: "mực", role: "protein" },
+        { display: "Rau cải luộc", food: "rau cải", role: "fixed" },
+        { display: "Canh bí xanh", food: "bí xanh", role: "fixed" },
+      ],
+      popularity: 3, prepMinutes: 20, buyable: false },
+
+    { name: "Cơm thịt bò lúc lắc",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Bò lúc lắc", food: "thịt bò", role: "protein" },
+        { display: "Xà lách", food: "xà lách", role: "fixed" },
+        { display: "Canh rau dền", food: "rau dền", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 20, buyable: false },
+
+    { name: "Cơm cá rô phi chiên",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Cá rô phi chiên", food: "cá rô phi", role: "protein" },
+        { display: "Đậu que luộc", food: "đậu que", role: "fixed" },
+        { display: "Canh mồng tơi", food: "mồng tơi", role: "fixed" },
+      ],
+      popularity: 3, prepMinutes: 20, buyable: false },
+
+    { name: "Cơm sườn nướng",
+      dishes: [
+        { display: "Cơm trắng", food: "cơm trắng", role: "carb" },
+        { display: "Sườn nướng", food: "sườn heo", role: "protein" },
+        { display: "Dưa leo", food: "dưa leo", role: "fixed" },
+        { display: "Canh bắp cải", food: "bắp cải", role: "fixed" },
+      ],
+      popularity: 4, prepMinutes: 25, buyable: true },
   ],
 
   // ============================================================
