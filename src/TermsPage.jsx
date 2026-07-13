@@ -167,7 +167,8 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
           </div>}
         </>
       ) : (<>
-        <div style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20 }}>
+        <div className="terms-tabs" style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <style>{`.terms-tabs::-webkit-scrollbar{height:0;}.terms-tabs{scrollbar-width:none;}`}</style>
           {pages.map(p => (
             <button key={p.id} onClick={() => setActiveId(p.id)} style={{
               padding: "10px 16px", fontSize: 13, fontWeight: activeId === p.id ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: "all .15s",
@@ -180,7 +181,7 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
         <>
           {activePage?.html
             ? <>
-                <style>{`.terms-content p{margin:0 0 12px;}.terms-content h1{font-size:20px;margin:18px 0 10px;font-weight:800;}.terms-content h2{font-size:17px;margin:16px 0 8px;font-weight:800;}.terms-content ul,.terms-content ol{margin:0 0 12px;padding-left:20px;}.terms-content li{margin-bottom:4px;}`}</style>
+                <style>{`.terms-content p{margin:0 0 12px;}.terms-content h1{font-size:20px;margin:18px 0 10px;font-weight:800;}.terms-content h2{font-size:17px;margin:16px 0 8px;font-weight:800;}.terms-content ul,.terms-content ol{margin:0 0 12px;padding-left:20px;}.terms-content li{margin-bottom:4px;}.terms-content{word-wrap:break-word;overflow-wrap:break-word;overflow:hidden;}`}</style>
                 <div className="terms-content" style={{ fontSize: 14, color: C.t1, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: stripEmptyParagraphs(activePage.html) }} />
               </>
             : <div style={{ fontSize: 13, color: C.t3, textAlign: "center", padding: "40px 0" }}>Nội dung đang được cập nhật.</div>}
