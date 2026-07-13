@@ -119,9 +119,25 @@ export function patternProteinCapacity(pattern) {
 }
 
 // Lọc pattern: dị ứng + không lặp gần đây + đủ sức chứa đạm cho bữa
-export function getAvailablePatterns(mealId, exclude, avoidPatternNames, minProteinPerMeal = 0, goalType = null) {
+export function getAvailablePatterns(mealId, exclude, avoidPatternNames, minProteinPerMeal = 0, goalType = null, style = null) {
   const patterns = MEAL_PATTERNS[mealId] || [];
   let result = patterns;
+
+  // ── Style filter: lọc pattern theo phong cách ăn TRƯỚC KHI gửi AI ──
+  // Data đã có sẵn metadata (prepMinutes, buyable, composite) — tận dụng
+  // để AI chỉ thấy pattern phù hợp, không cần đoán.
+  if (style === "easy") {
+    // Tiện lợi: mua sẵn HOẶC nấu ≤10 phút HOẶC tô/bát (composite)
+    const quick = result.filter(p => p.buyable || (p.prepMinutes && p.prepMinutes <= 10) || p.composite);
+    if (quick.length > 0) result = quick;
+  } else if (style === "clean") {
+    // Eat clean: ưu tiên pattern không có composite (tô bún phở = nhiều carb),
+    // và prepMinutes ≤ 20 (eat clean thường nấu nhanh gọn)
+    const clean = result.filter(p => !p.composite && (!p.prepMinutes || p.prepMinutes <= 20));
+    if (clean.length > 0) result = clean;
+  }
+  // style === "vn" hoặc null → không lọc thêm, giữ nguyên tất cả
+
   // Pattern có tag goals chỉ hiện cho đúng mục tiêu (VD whey: bulk+cut, không maintain
   // — người duy trì thường không sắm whey; giảm mỡ NGƯỢC LẠI rất cần đạm rẻ calo)
   if (goalType) {
@@ -225,7 +241,7 @@ function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods =
   }
 
   const patternLines = mealIds.map(mealId => {
-    const patterns = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0, goalType);
+    const patterns = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0, goalType, prefs?.style);
     if (patterns.length === 0) return null;
     const pList = patterns.map(p => {
       const dishNames = (p.dishes || []).map(d => d.display).join(", ");
@@ -421,7 +437,7 @@ function finalizeMealDishes(mealId, dishes, dessert, errors, skipFiller = false)
 }
 
 // Main normalize — ưu tiên pattern, fallback custom dishes
-export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByMeal = {}, goalType = null) {
+export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByMeal = {}, goalType = null, style = null) {
   const errors = [];
   const wanted = new Set(mealIds);
   const byId = {};
@@ -439,7 +455,7 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
 
     const patternName = (m.pattern || "").trim();
     if (patternName && patternName.toLowerCase() !== "custom") {
-      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0, goalType);
+      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0, goalType, style);
       const found = available.find(p => p.name.toLowerCase() === patternName.toLowerCase());
       if (found) {
         const pd = patternToDishes(found);
@@ -483,7 +499,7 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
     // Bữa có pattern library PHẢI ra pattern — nếu AI không chọn, ép 1 pattern
     // ngẫu nhiên (bữa phụ giờ cũng có pattern, hết cảnh AI tự chế món quái)
     if ((MEAL_PATTERNS[mealId] || []).length > 0 && !usedPattern && dishes.length === 0) {
-      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0, goalType);
+      const available = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0, goalType, style);
       if (available.length > 0) {
         const picked = available[Math.floor(Math.random() * available.length)];
         const pd = patternToDishes(picked);
@@ -657,7 +673,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         `\n\nLẦN TRƯỚC BỊ LỖI: ${lastErrors.join("; ")}. Hãy sửa lại.`;
       const text = await callAI(prompt + retryHint, { provider: prov, model: mdl });
       const raw = parseMenuJSON(text);
-      const norm = normalizeMenu(raw, mealIds, exclude, localAvoid, pNeedByMeal, goalType);
+      const norm = normalizeMenu(raw, mealIds, exclude, localAvoid, pNeedByMeal, goalType, prefs?.style);
       if (!norm.ok) { lastErrors = norm.errors; continue; }
 
       const virtualTpl = buildVirtualTemplate(norm.meals, dayType);

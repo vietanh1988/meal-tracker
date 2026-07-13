@@ -411,9 +411,10 @@ const t=todayData||{};const m=macro||{};
 const isRest=t.dayType==="rest";
 const target=isRest?(m.calRest||m.calTarget):m.calTarget;
 const deficit=target-(t.cal||0);
+const xung=(profile||{}).gender==="male"?"anh":"chị";
 const welcome=(t.cal||0)>0
-?(deficit>0?`Chào anh! Hôm nay (${isRest?"nghỉ":"tập"}) còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào anh! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
-:"Chào anh! Mình là Fipilot AI. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪";
+?(deficit>0?`Chào ${xung}! Hôm nay (${isRest?"nghỉ":"tập"}) còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào ${xung}! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
+:`Chào ${xung}! Mình là Fipilot AI. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪`;
 setMessages([{role:"assistant",content:welcome}]);
 saveMsg("assistant",welcome);
 }
