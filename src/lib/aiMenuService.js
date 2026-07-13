@@ -251,12 +251,15 @@ function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods =
     return `${mealId}: ${pList}`;
   }).filter(Boolean).join("\n");
 
+  // Style easy: ép chọn pattern, không cho custom → bỏ food catalog
+  const showFoodCatalog = prefs?.style !== "easy";
+
   return `Bạn là chuyên gia dinh dưỡng Việt Nam. Soạn thực đơn 1 ngày (${dayType === "train" ? "ngày tập" : "ngày nghỉ"}) cho:
 - Mục tiêu: ${goalLabel}, ~${target.cal} kcal (P${target.p}g/C${target.c}g/F${target.f}g) — hệ thống TỰ tính gram.
 ${prefLines.length ? prefLines.join("\n") + "\n" : ""}
 QUY TẮC:
-1. ƯU TIÊN chọn PATTERN từ danh sách dưới — trả "pattern":"<tên chính xác>", hệ thống tự tra dishes.
-2. CHỈ khi không pattern nào hợp mới TỰ SOẠN: trả "pattern":"custom" kèm "dishes" — mỗi dish gồm "display" (tên MÓN ĂN có cách nấu: "Gà luộc", "Rau muống xào tỏi", "Canh bí đỏ") và "food" (tên NGUYÊN LIỆU CHÍNH XÁC từ danh sách món rời dưới đây).
+1. ${prefs?.style === "easy" ? "BẮT BUỘC chọn PATTERN từ danh sách dưới — trả \"pattern\":\"<tên chính xác>\". KHÔNG ĐƯỢC dùng \"custom\". Mọi bữa PHẢI là pattern có sẵn." : "ƯU TIÊN chọn PATTERN từ danh sách dưới — trả \"pattern\":\"<tên chính xác>\", hệ thống tự tra dishes."}
+2. ${prefs?.style === "easy" ? "KHÔNG tự soạn món. KHÔNG trả \"pattern\":\"custom\". Chỉ chọn từ danh sách PATTERN bên dưới." : "CHỈ khi không pattern nào hợp mới TỰ SOẠN: trả \"pattern\":\"custom\" kèm \"dishes\" — mỗi dish gồm \"display\" (tên MÓN ĂN có cách nấu: \"Gà luộc\", \"Rau muống xào tỏi\", \"Canh bí đỏ\") và \"food\" (tên NGUYÊN LIỆU CHÍNH XÁC từ danh sách món rời dưới đây)."}
 3. BẮT BUỘC 100% món VIỆT NAM thuần (luộc/xào/kho/nướng/hấp/canh/bánh mì Việt/xôi/whey). CẤM TUYỆT ĐỐI món Tây/fusion: salad, pasta, soup kem, smoothie, bowl, steak. "display" không được bỏ trống.
 4. Bữa chính: 3-4 món (đạm+carb+rau+canh). Bữa phụ/pre/post: chọn PATTERN trong danh sách (đã có sẵn), chỉ custom khi thật cần.
 5. Tráng miệng (fruit) tách riêng: "dessert":{"display":"Chuối","food":"chuối"} — chỉ bữa trưa cần.
@@ -266,14 +269,13 @@ QUY TẮC:
 
 QUAN TRỌNG: chỉ trả JSON, KHÔNG viết gì khác. Không giải thích, không markdown.
 
-PATTERN (ưu tiên):
+PATTERN (${prefs?.style === "easy" ? "BẮT BUỘC chọn từ đây" : "ưu tiên"}):
 ${patternLines || "(không có)"}
-
+${showFoodCatalog ? `
 NGUYÊN LIỆU RỜI (chỉ cho custom):
-${buildFoodCatalog(exclude)}
-
+${buildFoodCatalog(exclude)}` : ""}
 JSON duy nhất:
-{"meals":[{"meal_id":"sang","pattern":"Phở bò"},{"meal_id":"trua","pattern":"custom","dishes":[{"display":"Cơm trắng","food":"cơm trắng"},{"display":"Gà luộc","food":"ức gà luộc"},{"display":"Rau muống xào","food":"rau muống"},{"display":"Canh bí đỏ","food":"bí đỏ"}],"dessert":{"display":"Chuối","food":"chuối"}}],"note":"mô tả ngắn"}`;
+{"meals":[{"meal_id":"sang","pattern":"Phở bò"},{"meal_id":"trua","pattern":"${prefs?.style === "easy" ? "Cơm gà nướng" : "custom\",\"dishes\":[{\"display\":\"Cơm trắng\",\"food\":\"cơm trắng\"},{\"display\":\"Gà luộc\",\"food\":\"ức gà luộc\"},{\"display\":\"Rau muống xào\",\"food\":\"rau muống\"},{\"display\":\"Canh bí đỏ\",\"food\":\"bí đỏ\"}],\"dessert\":{\"display\":\"Chuối\",\"food\":\"chuối\"}"}"}],"note":"mô tả ngắn"}`;
 }
 
 export function dayTarget(macro, dayType) {
