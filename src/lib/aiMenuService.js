@@ -469,7 +469,8 @@ export function normalizeMenu(raw, mealIds, exclude, avoidPatternNames, pNeedByM
     }
 
     // Custom dishes from AI
-    if (!usedPattern && m.dishes && m.dishes.length > 0) {
+    // Easy style: CẤM custom — nếu AI trả custom, bỏ qua → rơi xuống force-pick
+    if (!usedPattern && m.dishes && m.dishes.length > 0 && style !== "easy") {
       dishes = m.dishes.map(d => ({
         display: d.display || d.dish || d.food,
         food: d.food,
