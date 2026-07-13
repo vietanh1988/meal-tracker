@@ -47,18 +47,24 @@ export function MealCard({meal}){
       <div style={{width:`${(t.fiber/total)*100}%`,background:C.fiber,borderRadius:3}}/>
     </div>
     {open&&<div style={{marginTop:12,borderTop:`1.5px solid ${C.border}`,paddingTop:10}}>
-      {/* Chỉ tô (composite) gọn — đĩa cơm vẫn xổ chi tiết */}
+      {/* Composite (tô/bát): vẫn hiện tên món nhưng xổ bảng macro chi tiết */}
       {showCompact ? (
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0"}}>
-          <div>
-            <div style={{fontSize:14,fontWeight:700,color:C.t1}}>{patternName}</div>
-            <div style={{fontSize:12,color:C.t3}}>1 tô (~{totalGram}g)</div>
+        <>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:700,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`,textTransform:"uppercase",letterSpacing:"0.05em"}}>
+            <span style={{color:C.t3}}>Thức ăn</span><span style={{color:C.t3,textAlign:"right"}}>Lượng</span>
+            <span style={{color:C.protein,textAlign:"right"}}>P</span><span style={{color:C.carb,textAlign:"right"}}>C</span>
+            <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.fiber,textAlign:"right"}}>Xơ</span><span style={{color:C.t2,textAlign:"right"}}>Cal</span>
           </div>
-          <div style={{textAlign:"right"}}>
-            <div style={{fontSize:13,fontWeight:800,color:C.t1}}>{Math.round(t.cal)} cal</div>
-            <div style={{fontSize:11,color:C.t3}}>P{Math.round(t.p*10)/10} · C{Math.round(t.c*10)/10} · F{Math.round(t.f*10)/10}</div>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
+            <span style={{color:C.t1,fontWeight:700}}>{patternName}</span>
+            <span style={{color:C.t3,textAlign:"right",fontSize:12}}>{totalGram>0?`${totalGram}g`:""}</span>
+            <span style={{color:C.protein,textAlign:"right"}}>{Math.round(t.p*10)/10}</span>
+            <span style={{color:C.carb,textAlign:"right"}}>{Math.round(t.c*10)/10}</span>
+            <span style={{color:C.t2,textAlign:"right"}}>{Math.round(t.f*10)/10}</span>
+            <span style={{color:C.fiber,textAlign:"right"}}>{Math.round((t.fiber||0)*10)/10}</span>
+            <span style={{color:C.t2,textAlign:"right",fontWeight:700}}>{Math.round(t.cal)}</span>
           </div>
-        </div>
+        </>
       ) : (
         <>
           <div style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:11,fontWeight:700,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`,textTransform:"uppercase",letterSpacing:"0.05em"}}>
