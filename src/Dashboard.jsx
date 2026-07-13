@@ -65,7 +65,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
       const todayKey=dayKeys[new Date().getDay()];
       const tplDayType=tpl.day_type||"train";
-      const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[]}));
+      const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[],composite:!!m.composite,pattern:m.pattern||null}));
       const tplCal=Math.round((tpl.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.cal||0),s),0));
       if(saveWeeklyTemplate)await saveWeeklyTemplate(todayKey,tplDayType,tplMeals,tplCal);
       if(applyTemplate)await applyTemplate(tpl);

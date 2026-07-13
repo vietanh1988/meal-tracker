@@ -22,7 +22,7 @@ const finishOnboarding=()=>{setProfile({...p,onboardingDone:true});onComplete();
 const handleApplyAIMenu=async(tpl)=>{
 try{
 const tplDayType=tpl.day_type||"train";
-const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[]}));
+const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[],composite:!!m.composite,pattern:m.pattern||null}));
 const tplCal=Math.round((tpl.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.cal||0),s),0));
 if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tplDayType,tplMeals,tplCal);
 if(applyTemplate)await applyTemplate(tpl);
