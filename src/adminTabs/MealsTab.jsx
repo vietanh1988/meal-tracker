@@ -151,11 +151,21 @@ setMealConfig(cfg);if(isAdmin)saveSetting("meal_config",JSON.stringify(cfg));els
 {mealNames.map(meal=>{
 const foods=allFoodItems[meal.id]||[{name:"",gram:"",unit:"g",qty:1}];
 const mealPattern=foods._pattern||null;
+const mealComposite=!!foods._composite;
 const mealColors={"sang":"#007AFF","phu_sang":"#007AFF","trua":"#007AFF","phu_chieu":"#007AFF","pre":"#007AFF","post":"#007AFF","toi":"#007AFF"};
 const mealTextColors={"sang":C.t1,"phu_sang":C.t1,"trua":C.t1,"phu_chieu":C.t1,"pre":C.t1,"post":C.t1,"toi":C.t1};
+const totalGram=Math.round(foods.reduce((s,it)=>s+(Number(it.gram)||0),0));
+const totalCal=Math.round(foods.reduce((s,it)=>s+(Number(it.cal)||0),0));
 return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.border}`,borderLeft:`3px solid ${mealColors[meal.id]||C.border}`,borderRadius:12,padding:mob?10:16,marginBottom:10}}>
+{/* Header */}
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:mealComposite?0:8,paddingBottom:mealComposite?0:6,borderBottom:mealComposite?"none":`1px solid ${C.border}`}}>
+<span style={{fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.l}{mealPattern?<span style={{fontSize:12,fontWeight:600,color:"#3B82F6",marginLeft:8}}>· {mealPattern}</span>:null}</span>
+{mealComposite&&<span style={{fontSize:13,fontWeight:700,color:C.t3}}>1 tô (~{totalGram}g)</span>}
+</div>
+{/* Composite (tô/bát): hiện gọn — KHÔNG xổ nguyên liệu */}
+{mealComposite?null:<>
 <div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 40px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
-<span style={{gridColumn:"1/3",fontSize:14,fontWeight:700,color:mealTextColors[meal.id]||C.t1}}>{meal.l}{mealPattern?<span style={{fontSize:12,fontWeight:600,color:"#3B82F6",marginLeft:8}}>· {mealPattern}</span>:null}</span>
+<span style={{gridColumn:"1/3",fontSize:10,fontWeight:700,color:C.t3}}>THỨC ĂN</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
@@ -176,6 +186,7 @@ return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44p
 </div>;
 })}
 {!appliedTemplate&&<button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:"6px",fontSize:12,fontWeight:700,background:C.surface,color:C.t3,border:`1.5px dashed ${C.border}`,borderRadius:8,width:"100%",cursor:"pointer",fontFamily:"inherit",marginTop:4}}>+ Thêm món</button>}
+</>}
 {!mob&&aiResult&&(()=>{const items=aiResult.items||[];const sl=items.filter(x=>x._mealId===meal.id);if(sl.length===0)return null;const ms=sl.reduce((a,x)=>({p:a.p+(x.protein||0),c:a.c+(x.carb||0),f:a.f+(x.fat||0),fi:a.fi+(x.fiber||0),cal:a.cal+(x.cal||0)}),{p:0,c:0,f:0,fi:0,cal:0});return <div style={{display:"flex",gap:14,marginTop:10,paddingTop:8,borderTop:`1px solid ${C.surface}`,flexWrap:"wrap"}}><div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.protein}}/> Protein: <b style={{color:C.t1}}>{Math.round(ms.p)}g</b></div><div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.carb}}/> Carb: <b style={{color:C.t1}}>{Math.round(ms.c)}g</b></div><div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.fat}}/> Fat: <b style={{color:C.t1}}>{Math.round(ms.f)}g</b></div><div style={{fontSize:12,color:C.t2,display:"flex",alignItems:"center",gap:4}}><span style={{width:8,height:8,borderRadius:"50%",background:C.fiber}}/> Chất xơ: <b style={{color:C.t1}}>{Math.round(ms.fi)}g</b></div><div style={{fontSize:12,fontWeight:700,color:C.t1,marginLeft:"auto"}}>{Math.round(ms.cal)} kcal</div></div>;})()}
 </div>;
 })}
