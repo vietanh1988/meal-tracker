@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
+import { inferPatternFromItems } from "../lib/aiMenuService";
+import { MEAL_PATTERNS } from "../mealPatterns";
 
 const defaultStructure = {
   train: [
@@ -76,7 +78,20 @@ export function useUserData(userId) {
         ["train", "rest"].forEach(dt => {
           const bucket = dt === "train" ? trainMeals : restMeals;
           const base = JSON.parse(JSON.stringify(defaultStructure[dt]));
-          base.forEach(m => { if (bucket[m.id]) m.items = bucket[m.id]; });
+          base.forEach(m => {
+            if (bucket[m.id]) {
+              m.items = bucket[m.id];
+              // Khôi phục pattern + composite từ items (bị mất sau reload
+              // vì DB chỉ lưu items, không lưu 2 field này)
+              const patternName = inferPatternFromItems(m.id, m.items);
+              if (patternName) {
+                m.pattern = patternName;
+                const patterns = MEAL_PATTERNS[m.id] || [];
+                const found = patterns.find(p => p.name === patternName);
+                m.composite = !!(found && found.composite);
+              }
+            }
+          });
           newMeals[dt] = base;
           if (!silent && Object.keys(bucket).length > 0)
             console.log(`✅ Synced ${Object.keys(bucket).length} meals for ${dt} from cloud`);

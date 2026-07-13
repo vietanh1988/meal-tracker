@@ -304,3 +304,27 @@ if (failed > 0) {
   console.log("✅ TẤT CẢ LOGIC ĐỀU ĐÚNG — an toàn để deploy.");
 }
 console.log("════════════════════════════════════════════════\n");
+
+// ============================================================
+// HOTFIX TEST: fetchAllData khôi phục pattern + composite
+// ============================================================
+console.log("\n🔍 15. fetchAllData — KHÔI PHỤC pattern + composite SAU RELOAD");
+console.log("================================================");
+
+test("useUserData: import inferPatternFromItems", () => {
+  assert(SRC.useUserData.includes("inferPatternFromItems"), "Thiếu import → pattern mất sau reload");
+});
+
+test("useUserData: import MEAL_PATTERNS", () => {
+  assert(SRC.useUserData.includes("MEAL_PATTERNS"), "Thiếu import → composite mất sau reload");
+});
+
+test("useUserData: fetchAllData gọi inferPatternFromItems khi load meals", () => {
+  assert(SRC.useUserData.includes("inferPatternFromItems(m.id"),
+    "fetchAllData không khôi phục pattern → MealCard hiện nguyên liệu thay vì tên món sau reload");
+});
+
+test("useUserData: fetchAllData set m.composite từ MEAL_PATTERNS", () => {
+  assert(SRC.useUserData.includes("m.composite") && SRC.useUserData.includes("found.composite"),
+    "fetchAllData không khôi phục composite → tô/bún hiện dạng xổ thay vì gọn sau reload");
+});
