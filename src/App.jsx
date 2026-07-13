@@ -126,7 +126,7 @@ export default function App(){
     // hasMealsToday() (không phải getMeals().some(...)) — bucket train/rest
     // trong DB có thể đang chứa dữ liệu SÓT từ vài ngày trước (chưa bị ghi
     // đè), khiến check kiểu cũ nhầm "đã có bữa hôm nay" rồi bỏ qua auto-apply.
-    if(hasMealsToday(pcDayType))return;
+    if(hasMealsToday("train")||hasMealsToday("rest"))return;
     const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
     const todayKey=dayKeys[new Date().getDay()];
     const tpl=getWeeklyTemplate(todayKey);
@@ -213,9 +213,12 @@ export default function App(){
   const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
   const handleApplyAIMenuPC=async(tpl)=>{
     try{
-      if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
+      const tplDayType=tpl.day_type||"train";
+      const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[]}));
+      const tplCal=Math.round((tpl.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.cal||0),s),0));
+      if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tplDayType,tplMeals,tplCal);
       if(applyTemplate)await applyTemplate(tpl);
-      setPcDayManual(tpl.day_type||"train");
+      setPcDayManual(tplDayType);
     }catch(e){console.error("Apply AI menu (PC) error:",e);}
     setShowAIMenuPC(false);
   };

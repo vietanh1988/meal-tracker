@@ -21,7 +21,10 @@ const finishOnboarding=()=>{setProfile({...p,onboardingDone:true});onComplete();
 
 const handleApplyAIMenu=async(tpl)=>{
 try{
-if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tpl);
+const tplDayType=tpl.day_type||"train";
+const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[]}));
+const tplCal=Math.round((tpl.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.cal||0),s),0));
+if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tplDayType,tplMeals,tplCal);
 if(applyTemplate)await applyTemplate(tpl);
 }catch(e){console.error("Apply AI menu on onboarding error:",e);}
 finishOnboarding();

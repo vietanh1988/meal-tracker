@@ -11,7 +11,7 @@ import { WeightSuggestion } from "./WeightSuggestion";
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess } from "./lib/aiMenuService";
 
-export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
+export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,getMealHistory,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [showAIMenu,setShowAIMenu]=useState(false);
   const aiAccess=getAIMenuAccess(profile,appSettings);
@@ -41,10 +41,10 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   // liệu user đã có.
   useEffect(()=>{
     if(!getWeeklyTemplate||!applyTemplate||!hasMealsToday||!userDataLoaded)return;
-    // hasMealsToday() thay vì getMeals().some(...) — bucket train/rest có thể
-    // đang chứa dữ liệu SÓT từ vài ngày trước (DB chỉ có 2 "ô" mỗi user,
-    // không theo ngày thật), khiến check kiểu cũ nhầm "đã có bữa hôm nay".
-    if(hasMealsToday(todayIsGym?"train":"rest"))return;
+    // Check CẢ HAI bucket train + rest: nếu BẤT KỲ bucket nào đã có bữa
+    // hôm nay thì KHÔNG auto-apply (tránh ghi đè khi user vừa tạo menu AI
+    // cho loại ngày KHÁC với auto-detect từ gymDays).
+    if(hasMealsToday("train")||hasMealsToday("rest"))return;
     const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
     const todayKey=dayKeys[new Date().getDay()];
     const tpl=getWeeklyTemplate(todayKey);
@@ -64,9 +64,12 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     try{
       const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
       const todayKey=dayKeys[new Date().getDay()];
-      if(saveWeeklyTemplate)await saveWeeklyTemplate(todayKey,tpl);
+      const tplDayType=tpl.day_type||"train";
+      const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[]}));
+      const tplCal=Math.round((tpl.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.cal||0),s),0));
+      if(saveWeeklyTemplate)await saveWeeklyTemplate(todayKey,tplDayType,tplMeals,tplCal);
       if(applyTemplate)await applyTemplate(tpl);
-      setDayType(tpl.day_type||"train");
+      setDayType(tplDayType);
     }catch(e){console.error("Apply AI menu error:",e);}
     setShowAIMenu(false);
   };
@@ -205,7 +208,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         phía trên không mở được overlay này. */}
     {showAIMenu&&aiAccess.usable&&<div onClick={()=>setShowAIMenu(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
       <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":520,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:C.bg,borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
-        <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} onApply={handleApplyAIMenu} onClose={()=>setShowAIMenu(false)}/>
+        <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} initialDayType={dayType} getMealHistory={getMealHistory} onApply={handleApplyAIMenu} onClose={()=>setShowAIMenu(false)}/>
       </div>
     </div>}
 
