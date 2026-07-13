@@ -454,7 +454,7 @@ export const MEAL_PATTERNS = {
         { display: "Cải thảo luộc", food: "cải thảo", role: "fixed" },
         { display: "Canh bí xanh", food: "bí xanh", role: "fixed" },
       ],
-      popularity: 4, prepMinutes: 25, buyable: false },
+      popularity: 4, prepMinutes: 25, buyable: true },
 
     { name: "Cơm canh chua cá",
       dishes: [
@@ -472,7 +472,7 @@ export const MEAL_PATTERNS = {
         { display: "Rau cải luộc", food: "rau cải", role: "fixed" },
         { display: "Canh mồng tơi", food: "mồng tơi", role: "fixed" },
       ],
-      popularity: 4, prepMinutes: 20, buyable: false },
+      popularity: 4, prepMinutes: 20, buyable: true },
 
     // ---- TỐI MỚI ----
     { name: "Cơm cá hồi nướng",
@@ -482,7 +482,7 @@ export const MEAL_PATTERNS = {
         { display: "Rau bina xào tỏi", food: "rau bina", role: "fixed" },
         { display: "Canh rau ngót", food: "rau ngót", role: "fixed" },
       ],
-      popularity: 4, prepMinutes: 20, buyable: false },
+      popularity: 4, prepMinutes: 20, buyable: true },
 
     { name: "Cơm tôm hấp",
       dishes: [
@@ -491,7 +491,7 @@ export const MEAL_PATTERNS = {
         { display: "Rau muống luộc", food: "rau muống", role: "fixed" },
         { display: "Canh bí đỏ", food: "bí đỏ", role: "fixed" },
       ],
-      popularity: 4, prepMinutes: 15, buyable: false },
+      popularity: 4, prepMinutes: 15, buyable: true },
 
     { name: "Cơm cá ngừ kho",
       dishes: [
@@ -518,7 +518,7 @@ export const MEAL_PATTERNS = {
         { display: "Xà lách", food: "xà lách", role: "fixed" },
         { display: "Canh rau dền", food: "rau dền", role: "fixed" },
       ],
-      popularity: 4, prepMinutes: 20, buyable: false },
+      popularity: 4, prepMinutes: 20, buyable: true },
 
     { name: "Cơm cá rô phi chiên",
       dishes: [
@@ -527,7 +527,7 @@ export const MEAL_PATTERNS = {
         { display: "Đậu que luộc", food: "đậu que", role: "fixed" },
         { display: "Canh mồng tơi", food: "mồng tơi", role: "fixed" },
       ],
-      popularity: 3, prepMinutes: 20, buyable: false },
+      popularity: 3, prepMinutes: 20, buyable: true },
 
     { name: "Cơm sườn nướng",
       dishes: [
