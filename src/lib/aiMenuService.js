@@ -206,12 +206,23 @@ function buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods =
   if (prefs?.style) {
     const styleMap = {
       vn: "cơm nhà Việt Nam (cơm, canh, món mặn, rau luộc — bữa ăn thật)",
-      clean: "eat clean (ức gà nướng, khoai lang, yến mạch, rau xanh)",
-      easy: "tiện lợi, ít nấu nướng (trứng luộc, bánh mì, whey, trái cây)",
+      clean: "eat clean (ức gà nướng, khoai lang, yến mạch, rau xanh — vẫn dùng nguyên liệu Việt)",
+      easy: "tiện lợi Việt Nam, ít nấu nướng (trứng luộc, bánh mì Việt, xôi, whey, trái cây, cơm hộp). ƯU TIÊN chọn PATTERN có sẵn (bánh mì trứng, xôi trứng, whey chuối...) — PHẢI là món Việt, KHÔNG dùng sandwich/toast/smoothie/salad",
     };
     prefLines.push(`- Phong cách: ${styleMap[prefs.style] || prefs.style}`);
   }
   if (avoidFoods.length) prefLines.push(`- KHÔNG lặp lại các món: ${avoidFoods.join(", ")}`);
+
+  // Keto/low-carb context: khi user chọn giảm mỡ + keto/low-carb,
+  // hướng dẫn AI ưu tiên tinh bột chậm thay vì cơm trắng/bánh phở
+  const dietStrategy = profile?.dietStrategy || "balanced";
+  if (profile?.goalType === "cut" && dietStrategy !== "balanced") {
+    if (dietStrategy === "keto") {
+      prefLines.push(`- Chế độ KETO (≤50g carb/ngày): ưu tiên khoai lang, yến mạch, gạo lứt. TRÁNH cơm trắng, bánh phở, bún, bánh mì trắng.`);
+    } else if (dietStrategy === "low_carb") {
+      prefLines.push(`- Chế độ LOW-CARB (≤100g carb/ngày): ưu tiên tinh bột chậm (khoai lang, gạo lứt, yến mạch). Hạn chế cơm trắng, bánh phở, bún.`);
+    }
+  }
 
   const patternLines = mealIds.map(mealId => {
     const patterns = getAvailablePatterns(mealId, exclude, avoidPatternNames, pNeedByMeal[mealId] || 0, goalType);
@@ -230,12 +241,14 @@ ${prefLines.length ? prefLines.join("\n") + "\n" : ""}
 QUY TẮC:
 1. ƯU TIÊN chọn PATTERN từ danh sách dưới — trả "pattern":"<tên chính xác>", hệ thống tự tra dishes.
 2. CHỈ khi không pattern nào hợp mới TỰ SOẠN: trả "pattern":"custom" kèm "dishes" — mỗi dish gồm "display" (tên MÓN ĂN có cách nấu: "Gà luộc", "Rau muống xào tỏi", "Canh bí đỏ") và "food" (tên NGUYÊN LIỆU CHÍNH XÁC từ danh sách món rời dưới đây).
-3. BẮT BUỘC 100% món VIỆT NAM thuần (luộc/xào/kho/nướng/hấp/canh). CẤM TUYỆT ĐỐI món Tây/fusion: salad, sandwich, pasta, soup kem, smoothie, bowl, steak... "display" không được bỏ trống.
+3. BẮT BUỘC 100% món VIỆT NAM thuần (luộc/xào/kho/nướng/hấp/canh/bánh mì Việt/xôi/whey). CẤM TUYỆT ĐỐI món Tây/fusion: salad, pasta, soup kem, smoothie, bowl, steak. "display" không được bỏ trống.
 4. Bữa chính: 3-4 món (đạm+carb+rau+canh). Bữa phụ/pre/post: chọn PATTERN trong danh sách (đã có sẵn), chỉ custom khi thật cần.
 5. Tráng miệng (fruit) tách riêng: "dessert":{"display":"Chuối","food":"chuối"} — chỉ bữa trưa cần.
 6. KHÔNG chọn dầu ăn/mỡ/bơ — hệ thống tự bổ sung.
 7. Đa dạng: không lặp protein giữa các bữa.
 8. Tạo đúng: ${mealNames}.
+
+QUAN TRỌNG: chỉ trả JSON, KHÔNG viết gì khác. Không giải thích, không markdown.
 
 PATTERN (ưu tiên):
 ${patternLines || "(không có)"}
@@ -275,8 +288,37 @@ function parseMenuJSON(text) {
   const clean = text.replace(/```json|```/g, "").trim();
   const start = clean.indexOf("{");
   const end = clean.lastIndexOf("}");
-  if (start === -1 || end === -1) throw new Error("AI không trả JSON hợp lệ");
-  return JSON.parse(clean.slice(start, end + 1));
+  if (start === -1 || end === -1) {
+    console.error("parseMenuJSON: no JSON object found in AI response:", clean.slice(0, 200));
+    throw new Error("AI không trả JSON hợp lệ");
+  }
+  const jsonStr = clean.slice(start, end + 1);
+  try {
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    // JSON bị cắt do maxTokens — thử sửa: đóng ngoặc còn thiếu
+    console.warn("parseMenuJSON: JSON.parse failed, attempting truncation fix:", e.message);
+    let fixed = jsonStr;
+    // Đóng string đang mở
+    const quoteCount = (fixed.match(/(?<!\\)"/g) || []).length;
+    if (quoteCount % 2 !== 0) fixed += '"';
+    // Đếm và đóng ngoặc còn thiếu
+    let brackets = 0, braces = 0;
+    for (const ch of fixed) {
+      if (ch === "[") brackets++;
+      else if (ch === "]") brackets--;
+      else if (ch === "{") braces++;
+      else if (ch === "}") braces--;
+    }
+    while (brackets > 0) { fixed += "]"; brackets--; }
+    while (braces > 0) { fixed += "}"; braces--; }
+    try {
+      return JSON.parse(fixed);
+    } catch (e2) {
+      console.error("parseMenuJSON: even truncation fix failed:", e2.message, "original:", jsonStr.slice(0, 300));
+      throw new Error("AI không trả JSON hợp lệ");
+    }
+  }
 }
 
 // ============================================================

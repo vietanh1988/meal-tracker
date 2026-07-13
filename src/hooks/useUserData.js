@@ -69,11 +69,6 @@ export function useUserData(userId) {
       if (data && data.length > 0) {
         const trainMeals = {}, restMeals = {};
         const newDates = { train: {}, rest: {} };
-        data.forEach(d => {
-          const target = d.day_type === "train" ? trainMeals : restMeals;
-          target[d.meal_id] = d.items;
-          newDates[d.day_type === "train" ? "train" : "rest"][d.meal_id] = d.log_date;
-        });
         let metaByKey = {};
         data.forEach(d => {
           const target = d.day_type === "train" ? trainMeals : restMeals;

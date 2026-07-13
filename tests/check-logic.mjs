@@ -293,20 +293,6 @@ test("aiMenuService: buildVirtualTemplate set day_type", () => {
   assert(SRC.aiMenuService.includes("day_type: dayType"), "Thiếu day_type");
 });
 
-// ════════════════════════════════════════════════
-console.log("\n════════════════════════════════════════════════");
-console.log(`📊 KẾT QUẢ: ${passed} passed, ${failed} failed`);
-if (failed > 0) {
-  console.log("\n❌ CÁC LỖI CẦN SỬA:");
-  failures.forEach((f, i) => console.log(`   ${i + 1}. ${f.name}\n      ${f.error}`));
-  process.exit(1);
-} else {
-  console.log("✅ TẤT CẢ LOGIC ĐỀU ĐÚNG — an toàn để deploy.");
-}
-console.log("════════════════════════════════════════════════\n");
-
-// ============================================================
-// HOTFIX TEST: fetchAllData khôi phục pattern + composite
 // ============================================================
 console.log("\n🔍 15. fetchAllData — KHÔI PHỤC pattern + composite SAU RELOAD");
 console.log("================================================");
@@ -328,3 +314,35 @@ test("useUserData: fetchAllData set m.composite từ MEAL_PATTERNS", () => {
   assert(SRC.useUserData.includes("m.composite") && SRC.useUserData.includes("found.composite"),
     "fetchAllData không khôi phục composite → tô/bún hiện dạng xổ thay vì gọn sau reload");
 });
+
+// ============================================================
+console.log("\n🔍 16. AI Prompt — keto/low-carb context");
+console.log("================================================");
+
+test("aiMenuService: prompt thêm context keto/low-carb", () => {
+  assert(SRC.aiMenuService.includes("dietStrategy"), "Thiếu dietStrategy → AI không biết user đang keto/low-carb");
+  assert(SRC.aiMenuService.includes("khoai lang") && SRC.aiMenuService.includes("gạo lứt"),
+    "Thiếu hướng dẫn tinh bột chậm cho keto/low-carb");
+});
+
+test("aiMenuService: prompt easy style rõ ràng VN-only", () => {
+  assert(SRC.aiMenuService.includes("tiện lợi Việt Nam"),
+    "Style easy phải ghi rõ Việt Nam để tránh AI trả món Tây");
+});
+
+test("aiMenuService: prompt yêu cầu chỉ trả JSON", () => {
+  assert(SRC.aiMenuService.includes("chỉ trả JSON, KHÔNG viết gì khác"),
+    "Thiếu chỉ thị JSON-only → AI có thể trả text giải thích thay vì JSON");
+});
+
+// ════════════════════════════════════════════════
+console.log("\n════════════════════════════════════════════════");
+console.log(`📊 KẾT QUẢ: ${passed} passed, ${failed} failed`);
+if (failed > 0) {
+  console.log("\n❌ CÁC LỖI CẦN SỬA:");
+  failures.forEach((f, i) => console.log(`   ${i + 1}. ${f.name}\n      ${f.error}`));
+  process.exit(1);
+} else {
+  console.log("✅ TẤT CẢ LOGIC ĐỀU ĐÚNG — an toàn để deploy.");
+}
+console.log("════════════════════════════════════════════════");
