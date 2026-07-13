@@ -167,8 +167,8 @@ export function TermsPage({ appSettings, isAdmin, saveSetting, mob }) {
           </div>}
         </>
       ) : (<>
-        <div className="terms-tabs" style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-          <style>{`.terms-tabs::-webkit-scrollbar{height:0;}.terms-tabs{scrollbar-width:none;}`}</style>
+        <div className="terms-tabs" style={{ display: "flex", gap: 0, borderBottom: `2px solid ${C.border}`, marginBottom: 20, overflowX: "auto", overflowY: "hidden", WebkitOverflowScrolling: "touch" }}>
+          <style>{`.terms-tabs{scrollbar-width:thin !important;-ms-overflow-style:auto !important;overflow-x:auto !important;}.terms-tabs::-webkit-scrollbar{height:4px !important;display:block !important;}.terms-tabs::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:4px;}.terms-tabs::-webkit-scrollbar-track{background:transparent;}`}</style>
           {pages.map(p => (
             <button key={p.id} onClick={() => setActiveId(p.id)} style={{
               padding: "10px 16px", fontSize: 13, fontWeight: activeId === p.id ? 700 : 500, border: "none", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0, transition: "all .15s",
