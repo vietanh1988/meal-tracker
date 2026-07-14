@@ -238,7 +238,7 @@ console.log("\n🔍 11. MealCard — DISPLAY ĐÚNG");
 console.log("================================================");
 
 test("MealCard: dùng display name", () => {
-  assert(SRC.mealCard.includes("item.display||item.food"), "Thiếu display fallback");
+  assert(SRC.mealCard.includes("item.display||getFoodDisplay(item.food)"), "Thiếu display fallback qua DISPLAY_MAP");
 });
 
 test("MealCard: hiện pattern + compact view", () => {

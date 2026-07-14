@@ -44,6 +44,7 @@ import {
   getPatternReason, formatFoodPortion, capitalizeFirst, saveAIMenu,
 } from "./lib/aiMenuService";
 import { buildWhitelist } from "./lib/whitelistBuilder";
+import { getFoodDisplay } from "./lib/localFoodDB";
 import { MEAL_TIMES } from "./mealPatterns";
 
 const STYLES = [
@@ -240,7 +241,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
                 <span style={{ fontSize: fs.md, fontWeight: fw.bold, color: C.t3 }}>{mealCal} kcal</span>
               </div>
             ) : visibleItems.map(it => {
-              const displayName = capitalizeFirst(it.display || it.food);
+              const displayName = it.display || getFoodDisplay(it.food);
               const portion = formatFoodPortion(it.food, it.gram);
               const itemCal = Math.round(it.cal || 0);
               return (

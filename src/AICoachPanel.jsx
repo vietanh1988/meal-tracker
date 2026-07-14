@@ -4,6 +4,7 @@ import { supabase } from "./lib/supabase";
 import { authFetch } from "./lib/authFetch";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import AIMenuGenerator from "./AIMenuGenerator";
+import { getFoodDisplay } from "./lib/localFoodDB";
 import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst, saveAIMenu, loadAIMenu, clearAIMenu } from "./lib/aiMenuService";
 import { ALL_MEALS } from "./mealConstants";
 import { MEAL_TIMES } from "./mealPatterns";
@@ -546,7 +547,7 @@ return <div key={mm.meal_id} style={{padding:"14px 18px",borderBottom:`1px solid
 <div style={{fontSize:12,color:C2.t3,flexShrink:0,marginLeft:12,paddingTop:2}}>{cal} kcal</div>
 </div>
 :visibleItems.map(it=>{
-const dn=it.display||capitalizeFirst(it.food);
+const dn=it.display||getFoodDisplay(it.food);
 const portion=formatFoodPortion(it.food,it.gram);
 const ic=Math.round(it.cal||0);
 return <div key={it.food+dn} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"6px 0 6px 10px"}}>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { C, card } from "./theme";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { formatFoodPortion } from "./lib/aiMenuService";
-import { getFoodRole } from "./lib/localFoodDB";
+import { getFoodRole, getFoodDisplay } from "./lib/localFoodDB";
 
 // Filler béo (mè, lạc, đậu phộng) có display=null — ẩn khỏi danh sách
 // nhưng VẪN tính trong tổng macro (t.p/c/f/cal ở trên đã gồm rồi).
@@ -73,7 +73,7 @@ export function MealCard({meal}){
             <span style={{color:C.t2,textAlign:"right"}}>F</span><span style={{color:C.fiber,textAlign:"right"}}>Xơ</span><span style={{color:C.t2,textAlign:"right"}}>Cal</span>
           </div>
           {meal.items.filter(item=>!isHiddenFiller(item)).map((item,i,arr)=><div key={i} style={{display:"grid",gridTemplateColumns:"2fr 0.7fr 0.6fr 0.6fr 0.6fr 0.6fr 0.7fr",gap:4,fontSize:13,fontWeight:600,padding:"6px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
-            <span style={{color:C.t1,fontWeight:700}}>{(item.display||item.food||"").charAt(0).toUpperCase()+(item.display||item.food||"").slice(1)}</span>
+            <span style={{color:C.t1,fontWeight:700}}>{item.display||getFoodDisplay(item.food)}</span>
             <span style={{color:C.t3,textAlign:"right"}}>{item.qty_display?item.qty_display:formatFoodPortion(item.food,item.gram)}</span>
             <span style={{color:C.protein,textAlign:"right",fontSize:mob?11:13}}>{item.p}</span>
             <span style={{color:C.carb,textAlign:"right",fontSize:mob?11:13}}>{item.c}</span>

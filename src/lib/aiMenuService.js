@@ -414,7 +414,8 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
     }
   }
   if (bestCandidate) return { ok: true, template: bestCandidate.template, note: bestCandidate.note };
-  return { ok: false, error: lastErrors.join("; ") || "AI không tạo được thực đơn hợp lệ" };
+  console.warn("[AI Menu V2] fail detail:", lastErrors.join(" | "));
+  return { ok: false, error: "AI chưa tạo được thực đơn phù hợp. Bấm Thử lại — mỗi lần tạo sẽ ra kết quả khác nhau." };
 }
 
 // ============================================================
