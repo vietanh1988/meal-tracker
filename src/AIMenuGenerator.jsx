@@ -12,7 +12,7 @@
 //   onClose   : () => void
 //   onFallbackToLibrary : () => void — mở Kho mẫu khi AI fail hẳn
 // ============================================================
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { C, card, redBtn, fs, fw, sp, radius } from "./theme";
 
 // AI mất 8–21 giây — xoay vòng câu trạng thái mỗi 3.5s để user thấy tiến triển
@@ -43,6 +43,7 @@ import {
   generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentFoodKeys,
   getPatternReason, formatFoodPortion, capitalizeFirst, saveAIMenu,
 } from "./lib/aiMenuService";
+import { buildWhitelist } from "./lib/whitelistBuilder";
 import { MEAL_TIMES } from "./mealPatterns";
 
 const STYLES = [
@@ -71,6 +72,18 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   // DEFAULT_MEAL_CONFIG nữa, tránh AI sinh bữa mà user đã tắt (VD tắt
   // pre/post-workout qua "⚙️ Bật/tắt bữa").
   const mealIds = resolveMealIds(dayType, profile, appSettings);
+
+  // Swap candidates phải tôn trọng diet/style/supplement giống lúc TẠO menu —
+  // không để user low-carb bấm "Đổi" khoai lang ra cơm trắng/xôi
+  const swapAllowed = useMemo(() => {
+    const wl = buildWhitelist({
+      style, diet: macro?.dietStrategy || profile?.dietStrategy || "balanced",
+      goal: macro?.goal || profile?.goalType || null,
+      usesSupplements: profile?.usesSupplements === true,
+      mealIds,
+    });
+    return new Set(wl.items.map(i => i.key));
+  }, [style, dayType, macro?.dietStrategy, macro?.goal, profile?.dietStrategy, profile?.goalType, profile?.usesSupplements]);
   const target = dayTarget(macro, dayType);
 
   const generate = async () => {
@@ -260,7 +273,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
             <div style={{ fontSize: fs.xl, fontWeight: fw.extrabold, color: C.t1, marginBottom: sp["2xl"] }}>
               Thay "{swapping.food}" bằng món cùng nhóm
             </div>
-            {getSwapCandidates(swapping.food, swapping.inMeal).map(k => (
+            {getSwapCandidates(swapping.food, swapping.inMeal, swapAllowed).map(k => (
               <button key={k} onClick={() => doSwap(k)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", textAlign: "left", padding: "10px 12px", border: "none", borderBottom: `1px solid ${C.border}`, background: "none", cursor: "pointer", fontFamily: "inherit", fontSize: fs.lg, color: C.t1 }}>
                 <span>{capitalizeFirst(k)}</span>
                 <span style={{ fontSize: fs.sm, color: C.t3 }}>{getFoodDisplayCategory(k) === "protein" ? "Đạm" : getFoodDisplayCategory(k) === "carb" ? "Tinh bột" : getFoodDisplayCategory(k) === "veg" ? "Rau" : getFoodDisplayCategory(k) === "fruit" ? "Hoa quả" : ""}</span>

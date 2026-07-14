@@ -429,7 +429,7 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
   (template.meals || []).forEach(m => {
     const map = {};
     (m.items || []).forEach(it => {
-      if (it.food === oldFood && m.meal_id === mealId) map[newFoodKey] = capitalizeFirst(newFoodKey);
+      if (it.food === oldFood && m.meal_id === mealId) map[newFoodKey] = getFoodDisplay(newFoodKey);
       else if (it.display !== undefined) map[it.food] = it.display;
     });
     displayByMeal[m.meal_id] = { map, pattern: m.meal_id === mealId ? null : (m.pattern || null) };
@@ -471,11 +471,12 @@ export function getPatternReason(mealId, patternName, goalType) {
   return pattern?.reasonTemplate?.[goalType] || null;
 }
 
-export function getSwapCandidates(foodKey, currentMealFoods = []) {
+export function getSwapCandidates(foodKey, currentMealFoods = [], allowedKeys = null) {
   const cat = getFoodDisplayCategory(foodKey);
   const inMeal = new Set(currentMealFoods);
   return Object.keys(LOCAL_FOODS)
-    .filter(k => k !== foodKey && !inMeal.has(k) && !EXCLUDE_FROM_CATALOG.has(k) && getFoodDisplayCategory(k) === cat)
+    .filter(k => k !== foodKey && !inMeal.has(k) && !EXCLUDE_FROM_CATALOG.has(k) && getFoodDisplayCategory(k) === cat
+      && (!allowedKeys || allowedKeys.has(k)))  // tôn trọng diet/style/supplement — không gợi ý món whitelist đã chặn
     .sort();
 }
 
