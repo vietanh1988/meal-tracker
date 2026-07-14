@@ -514,3 +514,181 @@ export function getGramLimit(foodKey) {
   const role = getFoodRole(key);
   return DEFAULT_LIMIT_BY_ROLE[role] || DEFAULT_LIMIT_BY_ROLE.fixed;
 }
+
+// ============================================================
+// ===== AI MENU V2 — FOOD METADATA (Bước 2) ==================
+// Chỉ THÊM metadata, không sửa data/logic cũ phía trên.
+// ============================================================
+
+// ------------------------------------------------------------
+// mealOverride — món LỆCH khỏi điểm hợp-bữa mặc định của nhóm
+// (CAT_MEAL_SCORE trong mealGrammar.js). Gắn vào entry runtime
+// để getMealScore đọc item.mealOverride — sau này chuyển DB/API
+// là 1 bảng duy nhất, không có file override riêng.
+// VD: cháo thuộc starch (sáng mặc định 8) nhưng là món sáng
+// đặc trưng → sang:10. Cơm thuộc starch nhưng KHÔNG AI ăn cơm
+// bữa sáng → sang:1 (validator sẽ chặn dưới MIN_SLOT_SCORE=3).
+// ------------------------------------------------------------
+const MEAL_OVERRIDE_DATA = {
+  // Món sáng đặc trưng VN — nâng điểm sáng
+  "cháo":          { sang: 10, toi: 6 },
+  "bánh phở":      { sang: 10 },
+  "bún":           { sang: 9 },
+  "bánh mì":       { sang: 10 },
+  "bánh mì đen":   { sang: 9 },
+  "xôi":           { sang: 10, toi: 3 },   // tối ăn xôi lạ
+  "bánh cuốn":     { sang: 10, toi: 4 },
+  "hủ tiếu":       { sang: 9 },
+  "yến mạch":      { sang: 9 },
+  "bột yến mạch":  { sang: 9 },
+  "patê":          { sang: 9 },            // bánh mì patê
+  "giò":           { sang: 8 },            // xôi giò, bánh mì giò
+  "chả lụa":       { sang: 8 },
+  "cá ngừ hộp":    { sang: 6 },            // bánh mì cá hộp
+  // Cấm cơm bữa sáng — văn hóa VN không nấu cơm sáng
+  "cơm trắng":     { sang: 1 },
+  "cơm":           { sang: 1 },
+  "cơm gạo lứt":   { sang: 1 },
+  "gạo lứt":       { sang: 1 },
+  "mì ý":          { sang: 1 },
+  // Bữa phụ chuẩn VN — nâng điểm phụ
+  "khoai lang":    { sang: 9, phu_sang: 9, phu_chieu: 9 },
+  "ngô":           { phu_sang: 9, phu_chieu: 9 },
+  "bắp":           { phu_sang: 9, phu_chieu: 9 },
+};
+Object.entries(MEAL_OVERRIDE_DATA).forEach(([k, v]) => {
+  if (LOCAL_FOODS[k]) LOCAL_FOODS[k].mealOverride = v;
+});
+
+// ------------------------------------------------------------
+// CONVENIENCE — độ tiện lợi 1-10 (10 = mua sẵn/ăn liền,
+// 1 = nấu lâu). Style "Tiện lợi" lọc theo ngưỡng ≥ 6.
+// Cat-level mặc định + override cho món lệch khỏi nhóm.
+// ------------------------------------------------------------
+export const CAT_CONVENIENCE = {
+  poultry: 4, beef: 3, pork: 3, seafood: 3,
+  egg_dairy: 9, starch: 6, fruit: 10, veg: 5,
+  nuts: 8, sauce: 10, supp: 10, processed: 9, drink: 10,
+};
+
+const CONVENIENCE_OVERRIDE = {
+  // Đạm mua sẵn được (cơm hộp, quán, siêu thị)
+  "ức gà nướng": 8, "ức gà luộc": 7,
+  "trứng gà luộc": 10, "trứng luộc": 10, "trứng vịt luộc": 10, "trứng cút luộc": 10,
+  "cá ngừ hộp": 10, "đậu phụ": 7, "tôm": 5,
+  // Tinh bột: mua sẵn vs nấu
+  "bánh mì": 10, "bánh mì đen": 9, "xôi": 10, "bánh cuốn": 9,
+  "cháo": 8, "bánh phở": 8, "bún": 8, "hủ tiếu": 8, "miến": 7,
+  "cơm trắng": 6, "cơm": 6, "cơm gạo lứt": 5,
+  "khoai lang": 9, "khoai tây": 6, "ngô": 9, "bắp": 9,
+  "yến mạch": 8, "bột yến mạch": 8,
+};
+
+export function getConvenienceScore(foodKey) {
+  const key = (foodKey || "").toLowerCase().trim();
+  if (CONVENIENCE_OVERRIDE[key] !== undefined) return CONVENIENCE_OVERRIDE[key];
+  const item = LOCAL_FOODS[key];
+  if (!item) return 5;
+  return CAT_CONVENIENCE[item.cat] ?? 5;
+}
+
+// ------------------------------------------------------------
+// DISPLAY_MAP — tên món hiển thị trên UI. LOOKUP 1:1 THUẦN,
+// KHÔNG suy luận runtime. Data tĩnh duyệt tay 1 lần: key nguyên
+// liệu → tên món phổ biến nhất trong bữa VN (VD "bí đỏ" →
+// "Canh bí đỏ"). Phase 2 tách variant (nướng/kho/hấp) thành
+// key riêng, DISPLAY_MAP vẫn chỉ lookup.
+// AI KHÔNG BAO GIỜ đặt tên món — chỉ trả food key.
+// ------------------------------------------------------------
+const DISPLAY_MAP = {
+  // POULTRY
+  "ức gà": "Ức gà áp chảo", "ức gà nướng": "Ức gà nướng", "ức gà luộc": "Gà luộc",
+  "đùi gà": "Đùi gà kho", "cánh gà": "Cánh gà chiên", "gà nguyên con": "Gà luộc",
+  "lòng gà": "Lòng gà xào", "thịt vịt": "Vịt luộc", "vịt": "Vịt luộc",
+  // BEEF
+  "thăn bò": "Bò xào", "bắp bò": "Bắp bò luộc", "nạm bò": "Nạm bò kho",
+  "gân bò": "Gân bò hầm", "thịt bò xay": "Bò xay xào", "sườn bò": "Sườn bò nướng",
+  "thịt bò": "Bò xào", "bò": "Bò xào", "bò viên": "Bò viên",
+  // PORK
+  "thịt heo nạc": "Thịt heo luộc", "thịt lợn nạc": "Thịt lợn luộc",
+  "ba chỉ": "Ba chỉ luộc", "ba rọi": "Ba rọi luộc",
+  "sườn heo": "Sườn heo rim", "sườn lợn": "Sườn rim",
+  "thịt heo xay": "Thịt băm rang", "thịt lợn xay": "Thịt băm rang",
+  "nạc vai heo": "Nạc vai rang", "thịt heo": "Thịt heo luộc",
+  "thịt lợn": "Thịt lợn luộc", "heo": "Thịt heo luộc",
+  // SEAFOOD
+  "cá hồi": "Cá hồi áp chảo", "cá ngừ": "Cá ngừ kho", "cá rô phi": "Cá rô phi kho",
+  "cá basa": "Cá basa kho", "cá thu": "Cá thu sốt cà", "cá diêu hồng": "Cá diêu hồng hấp",
+  "cá lóc": "Cá lóc kho", "cá tra": "Cá tra kho", "cá nục": "Cá nục kho",
+  "cá chép": "Cá chép om", "cá saba": "Cá saba nướng", "cá": "Cá kho",
+  "tôm": "Tôm hấp", "tôm sú": "Tôm sú hấp", "mực": "Mực hấp",
+  "ngao": "Ngao hấp", "nghêu": "Nghêu hấp", "cua": "Cua hấp",
+  "hàu": "Hàu nướng", "bạch tuộc": "Bạch tuộc hấp", "cá ngừ hộp": "Cá ngừ hộp",
+  // EGG_DAIRY
+  "trứng gà": "Trứng luộc", "trứng gà luộc": "Trứng luộc", "trứng": "Trứng luộc",
+  "trứng luộc": "Trứng luộc", "trứng vịt": "Trứng vịt luộc", "trứng vịt luộc": "Trứng vịt luộc",
+  "trứng cút": "Trứng cút luộc", "trứng cút luộc": "Trứng cút luộc",
+  "lòng trắng trứng": "Lòng trắng trứng", "lòng đỏ trứng": "Lòng đỏ trứng",
+  "sữa tươi": "Sữa tươi", "sữa": "Sữa tươi", "sữa tách béo": "Sữa tách béo",
+  "sữa đậu nành": "Sữa đậu nành", "sữa chua": "Sữa chua", "sữa chua hy lạp": "Sữa chua Hy Lạp",
+  "phô mai": "Phô mai", "bơ": "Bơ",
+  // STARCH
+  "cơm trắng": "Cơm trắng", "cơm": "Cơm trắng", "cơm gạo lứt": "Cơm gạo lứt",
+  "gạo lứt": "Cơm gạo lứt", "khoai lang": "Khoai lang luộc", "khoai tây": "Khoai tây luộc",
+  "khoai sọ": "Khoai sọ luộc", "khoai môn": "Khoai môn luộc",
+  "yến mạch": "Yến mạch nấu", "bột yến mạch": "Yến mạch nấu",
+  "bánh mì": "Bánh mì", "bánh mì đen": "Bánh mì đen", "bún": "Bún",
+  "miến": "Miến", "bánh phở": "Phở", "mì": "Mì", "hủ tiếu": "Hủ tiếu",
+  "bánh cuốn": "Bánh cuốn", "cháo": "Cháo", "mì ý": "Mì Ý",
+  "ngô": "Ngô luộc", "bắp": "Bắp luộc", "xôi": "Xôi", "bánh tráng": "Bánh tráng",
+  // FRUIT
+  "chuối": "Chuối", "táo": "Táo", "cam": "Cam", "bưởi": "Bưởi", "xoài": "Xoài",
+  "ổi": "Ổi", "dưa hấu": "Dưa hấu", "nho": "Nho", "dâu tây": "Dâu tây",
+  "thanh long": "Thanh long", "bơ quả": "Quả bơ", "quả bơ": "Quả bơ",
+  "đu đủ": "Đu đủ", "kiwi": "Kiwi", "lê": "Lê", "mận": "Mận", "vải": "Vải",
+  "chôm chôm": "Chôm chôm", "sầu riêng": "Sầu riêng", "mít": "Mít", "dừa": "Dừa",
+  "chanh": "Chanh", "việt quất": "Việt quất", "na": "Na", "sapoche": "Sapoche",
+  "măng cụt": "Măng cụt",
+  // VEG — tên món phổ biến nhất bữa VN
+  "bông cải xanh": "Bông cải xanh luộc", "bông cải trắng": "Bông cải trắng luộc",
+  "rau bina": "Rau bina luộc", "rau muống": "Rau muống luộc", "rau dền": "Canh rau dền",
+  "rau ngót": "Canh rau ngót", "mồng tơi": "Canh mồng tơi", "rau cải": "Rau cải luộc",
+  "cải thảo": "Cải thảo luộc", "bắp cải": "Bắp cải luộc", "xà lách": "Xà lách",
+  "cà chua": "Cà chua", "dưa chuột": "Dưa chuột", "dưa leo": "Dưa leo",
+  "cà rốt": "Cà rốt luộc", "hành tây": "Hành tây", "ớt chuông": "Ớt chuông xào",
+  "nấm": "Nấm xào", "đậu bắp": "Đậu bắp luộc", "bí đỏ": "Canh bí đỏ",
+  "bí xanh": "Canh bí xanh", "su su": "Su su luộc", "su hào": "Su hào luộc",
+  "măng": "Măng luộc", "măng tây": "Măng tây xào", "giá đỗ": "Giá đỗ",
+  "đậu cô ve": "Đậu cô ve luộc", "đậu que": "Đậu que luộc", "đậu phụ": "Đậu phụ",
+  "tỏi": "Tỏi", "gừng": "Gừng",
+  // NUTS
+  "đậu nành": "Đậu nành", "đậu đen": "Chè đậu đen", "đậu xanh": "Chè đậu xanh",
+  "đậu đỏ": "Chè đậu đỏ", "đậu lăng": "Đậu lăng", "edamame": "Đậu nành Nhật",
+  "lạc": "Lạc rang", "đậu phộng": "Đậu phộng rang", "hạt điều": "Hạt điều",
+  "hạnh nhân": "Hạnh nhân", "hạt óc chó": "Hạt óc chó", "hạt chia": "Hạt chia",
+  "hạt lanh": "Hạt lanh", "hạt bí": "Hạt bí", "hạt hướng dương": "Hạt hướng dương",
+  "mè": "Mè rang", "vừng": "Vừng rang", "hạt mắc ca": "Hạt mắc ca",
+  "bơ đậu phộng": "Bơ đậu phộng", "dầu ô liu": "Dầu ô liu", "dầu dừa": "Dầu dừa",
+  "dầu ăn": "Dầu ăn", "dầu mè": "Dầu mè",
+  // SAUCE
+  "nước mắm": "Nước mắm", "xì dầu": "Xì dầu", "nước tương": "Nước tương",
+  "mật ong": "Mật ong", "đường": "Đường", "tương ớt": "Tương ớt",
+  "mayonnaise": "Mayonnaise",
+  // SUPP
+  "whey": "Whey protein", "bột whey": "Whey protein", "whey isolate": "Whey isolate",
+  "mass gainer": "Mass gainer", "casein": "Casein", "protein bar": "Protein bar",
+  "granola": "Granola", "granola bar": "Granola bar", "creatine": "Creatine", "bcaa": "BCAA",
+  // PROCESSED
+  "xúc xích": "Xúc xích", "giò": "Giò lụa", "chả lụa": "Chả lụa", "chả": "Chả",
+  "nem": "Nem rán", "patê": "Patê",
+  // DRINK
+  "nước dừa": "Nước dừa", "nước cam": "Nước cam", "cà phê đen": "Cà phê đen",
+  "cà phê": "Cà phê", "trà xanh": "Trà xanh",
+};
+
+export function getFoodDisplay(foodKey) {
+  const key = (foodKey || "").toLowerCase().trim();
+  if (DISPLAY_MAP[key]) return DISPLAY_MAP[key];
+  // Fallback an toàn: viết hoa chữ đầu — không bao giờ hiện tên bịa
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
