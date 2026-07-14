@@ -13,7 +13,10 @@
 // Menu lưu localStorage để reload không mất.
 // ============================================================
 
-import { LOCAL_FOODS, getFoodRole, getGramLimit } from "./localFoodDB";
+import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay } from "./localFoodDB";
+import { buildWhitelist } from "./whitelistBuilder";
+import { buildPromptV2 } from "./promptBuilderV2";
+import { validateMenuV2, checkDryRun } from "./menuValidatorV2";
 import { applyMealEngineToTemplate, splitDayIntoMeals } from "../mealEngine";
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
@@ -657,43 +660,64 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
     : prov === "gemini" ? (appSettings?.gemini_model || "gemini-2.5-flash")
     : (appSettings?.gpt_model || "gpt-4o-mini")
   );
-  const exclude = buildExclusionKeys(prefs?.avoid);
+  // ===== V2 PIPELINE: whitelist → scoring prompt → validate → engine dry-run =====
   const target = dayTarget(macro, dayType);
-  // Sức chứa đạm cần thiết mỗi bữa — dùng ĐÚNG cách chia engine dùng,
-  // để lọc pattern đạm yếu ngay từ khâu chọn (fix hụt đạm profile giảm mỡ)
-  const perMeal = splitDayIntoMeals(target, mealIds);
-  const pNeedByMeal = {};
-  mealIds.forEach(id => { pNeedByMeal[id] = perMeal[id]?.p || 0; });
-  const goalType = macro?.goal || null;
-  const prompt = buildMenuPrompt({ profile, macro, dayType, mealIds, prefs, avoidFoods, exclude, avoidPatternNames, pNeedByMeal, goalType });
+  const goalType = macro?.goal || profile?.goalType || null;
+  const diet = macro?.dietStrategy || profile?.dietStrategy || "balanced";
+
+  // Whitelist: code lọc TRƯỚC — AI không thấy được nguyên liệu sai.
+  // avoid dị ứng (prefs.avoid) cũng chặn cứng khỏi whitelist.
+  const exclude = buildExclusionKeys(prefs?.avoid);
+  const whitelist = buildWhitelist({
+    style: prefs?.style || null,
+    diet,
+    goal: goalType,
+    usesSupplements: profile?.usesSupplements === true,
+    avoidFoods: avoidFoods || [],
+    mealIds,
+  });
+  whitelist.items = whitelist.items.filter(it => !exclude.has(it.key));
+
+  const prompt = buildPromptV2({ profile, target, dayType, mealIds, whitelist, prefs: prefs || {} });
 
   let lastErrors = [];
   let bestCandidate = null; // best-of-2: giữ bản lệch target ít nhất
-  const localAvoid = new Set(avoidPatternNames || []);
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const retryHint = attempt === 0 ? "" :
-        `\n\nLẦN TRƯỚC BỊ LỖI: ${lastErrors.join("; ")}. Hãy sửa lại.`;
+        `\n\nLẦN TRƯỚC BỊ LỖI — SỬA CHÍNH XÁC THEO TỪNG DÒNG SAU:\n- ${lastErrors.join("\n- ")}`;
       const text = await callAI(prompt + retryHint, { provider: prov, model: mdl });
       const raw = parseMenuJSON(text);
-      const norm = normalizeMenu(raw, mealIds, exclude, localAvoid, pNeedByMeal, goalType, prefs?.style);
-      if (!norm.ok) { lastErrors = norm.errors; continue; }
 
-      const virtualTpl = buildVirtualTemplate(norm.meals, dayType);
+      // Lớp 1: key ∈ whitelist, slot rules, diversity — feedback cụ thể
+      const val = validateMenuV2(raw, { mealIds, whitelist });
+      if (!val.ok && val.meals.every(m => m.foods.length === 0)) {
+        lastErrors = val.errors; continue;
+      }
+
+      // Convert sang norm shape — display do CODE tra (AI không đặt tên)
+      const normMeals = val.meals.map(m => ({
+        meal_id: m.meal_id,
+        foods: m.foods.map(k => ({ key: k, display: getFoodDisplay(k), role: getFoodRole(k) })),
+        dessert: m.dessert ? { key: m.dessert, display: getFoodDisplay(m.dessert) } : null,
+        pattern: null, composite: false,
+      }));
+
+      // Lớp 2: ENGINE DRY-RUN — chạy thật, số thật, không capacity engine riêng
+      const virtualTpl = buildVirtualTemplate(normMeals, dayType);
       const template = attachPatternAndDisplay(
         stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)),
-        norm
+        { meals: normMeals }
       );
       const total = sumTemplate(template);
+      const dry = checkDryRun(total, target);
       const dev = target.cal ? Math.abs(total.cal - target.cal) / target.cal : 0;
+
       if (!bestCandidate || dev < bestCandidate.dev) {
         bestCandidate = { template, note: raw.note || "", dev };
       }
-      // Khớp tốt (≤10%) → dùng luôn. Lệch nhiều → thử lại 1 lần với combo
-      // pattern khác (avoid pattern vừa dùng), giữ bản nào lệch ít hơn.
-      if (dev <= 0.10) return { ok: true, template, note: raw.note || "" };
-      norm.meals.forEach(m => { if (m.pattern) localAvoid.add(m.pattern); });
-      lastErrors = [`Lệch ${Math.round(dev * 100)}% so với target`];
+      if (val.ok && dry.ok) return { ok: true, template, note: raw.note || "" };
+      lastErrors = [...val.errors, ...dry.errors];
     } catch (e) {
       lastErrors = [e.message || "Lỗi không xác định"];
     }
