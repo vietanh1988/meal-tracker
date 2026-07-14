@@ -40,7 +40,7 @@ import { ALL_MEALS } from "./mealConstants";
 import { checkAndConsumeAiQuota } from "./lib/aiQuota";
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
-  generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentPatternNames,
+  generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentFoodKeys,
   getPatternReason, formatFoodPortion, capitalizeFirst, saveAIMenu,
 } from "./lib/aiMenuService";
 import { MEAL_TIMES } from "./mealPatterns";
@@ -81,22 +81,26 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
     const quota = await checkAndConsumeAiQuota(user?.id, "macro");
     if (!quota.allowed) { setError(quota.message); setStep("error"); return; }
 
-    // Variety — gộp 2 nguồn: (1) đã ăn thật 3 ngày gần nhất (meal_logs),
-    // (2) đã hiện trong CHÍNH phiên này dù chưa lưu (shownPatternsRef).
-    const avoidPatternNames = new Set(shownPatternsRef.current);
+    // Variety V2 — theo FOOD KEY (V2 không dùng pattern): gộp 2 nguồn:
+    // (1) đã ăn thật 3 ngày gần nhất (meal_logs), (2) đã hiện trong
+    // CHÍNH phiên này dù chưa lưu (shownPatternsRef giờ chứa food keys).
+    const avoidFoodSet = new Set(shownPatternsRef.current);
     if (getMealHistory) {
       try {
         const start = new Date(); start.setDate(start.getDate() - 3);
         const history = await getMealHistory(start.toISOString().slice(0, 10), new Date().toISOString().slice(0, 10));
-        getRecentPatternNames(history, 3).forEach(n => avoidPatternNames.add(n));
+        getRecentFoodKeys(history, 3).forEach(k => avoidFoodSet.add(k));
       } catch (e) { console.error("Variety history fetch error:", e); }
     }
 
-    const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs: { style, avoid }, avoidPatternNames, appSettings });
+    const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs: { style, avoid }, avoidFoods: [...avoidFoodSet], appSettings });
     if (res.ok) {
       setTemplate(res.template); setNote(res.note); setStep("preview");
       saveAIMenu(res.template, user?.id);
-      res.template.meals.forEach(m => { if (m.pattern) shownPatternsRef.current.add(m.pattern); });
+      // Ghi food key nguồn chính vừa hiện — "Tạo lại" sẽ tránh lặp
+      res.template.meals.forEach(m => (m.items || []).forEach(it => {
+        if (it.role === "protein" || it.role === "carb") shownPatternsRef.current.add(it.food);
+      }));
     }
     else { setError(res.error); setStep("error"); }
   };

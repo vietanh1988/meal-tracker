@@ -20,7 +20,7 @@ const DIET_LABEL = { keto: "Keto (≤50g carb/ngày)", low_carb: "Low-carb (≤1
  * buildPromptV2({ profile, target, dayType, mealIds, whitelist, prefs })
  * target = {cal,p,c,f} từ dayTarget(). whitelist từ buildWhitelist().
  */
-export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelist, prefs = {} }) {
+export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelist, prefs = {}, avoidFoods = [] }) {
   const style = prefs.style || null;
   const goal = profile.goalType || "maintain";
   const diet = profile.dietStrategy || "balanced";
@@ -51,6 +51,8 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
   if (style) prefLines.push(`- Phong cách: ${STYLE_LABEL[style] || style}`);
   if (DIET_LABEL[diet]) prefLines.push(`- Chế độ: ${DIET_LABEL[diet]} — whitelist đã lọc sẵn, cứ chọn thoải mái trong danh sách`);
   if (prefs.avoid?.trim()) prefLines.push(`- KHÔNG dùng (dị ứng): ${prefs.avoid}`);
+  const avoidList = (avoidFoods || []).filter(k => whitelist.items.some(it => it.key === k));
+  if (avoidList.length) prefLines.push(`- HẠN CHẾ lặp món vừa ăn gần đây (ưu tiên chọn khác): ${avoidList.slice(0, 20).join(", ")}`);
 
   return `Bạn là chuyên gia dinh dưỡng Việt Nam. Soạn thực đơn 1 ngày (${dayType === "train" ? "ngày tập" : "ngày nghỉ"}).
 

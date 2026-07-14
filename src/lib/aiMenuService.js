@@ -122,6 +122,26 @@ export function getRecentPatternNames(historyRows, days = 3) {
   return names;
 }
 
+// V2 variety: lấy FOOD KEY đã ăn gần đây (thay pattern name) —
+// whitelist builder hạ ưu tiên các key này để menu mới khác menu cũ.
+// Chỉ lấy nguồn chính (protein/carb) — rau/gia vị lặp lại là bình thường.
+export function getRecentFoodKeys(historyRows, days = 3) {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const keys = new Set();
+  (historyRows || []).forEach(row => {
+    if (!row.log_date || row.log_date < cutoffStr) return;
+    (row.items || []).forEach(it => {
+      const k = (it.food || "").toLowerCase().trim();
+      if (!k) return;
+      const role = getFoodRole(k);
+      if (role === "protein" || role === "carb") keys.add(k);
+    });
+  });
+  return keys;
+}
+
 export function dayTarget(macro, dayType) {
   const isTrain = dayType !== "rest";
   return {
@@ -340,7 +360,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
   });
   whitelist.items = whitelist.items.filter(it => !exclude.has(it.key));
 
-  const prompt = buildPromptV2({ profile, target, dayType, mealIds, whitelist, prefs: prefs || {} });
+  const prompt = buildPromptV2({ profile, target, dayType, mealIds, whitelist, prefs: prefs || {}, avoidFoods: avoidFoods || [] });
 
   let lastErrors = [];
   let bestCandidate = null; // best-of-2: giữ bản lệch target ít nhất
