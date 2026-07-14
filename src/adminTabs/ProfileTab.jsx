@@ -185,6 +185,24 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
           </div>
         </div>}
 
+        {/* Supplement toggle — whey/TPBS chỉ gợi ý trong AI menu khi bật */}
+        <div style={{maxWidth:mob?"100%":540}}>
+          <div style={{fontSize:mob?11:13,fontWeight:mob?600:700,color:C.t2,marginBottom:6}}>💊 Thực phẩm bổ sung</div>
+          <div onClick={()=>setProfile({...profile,usesSupplements:!(profile.usesSupplements===true)})} style={{
+            display:"flex",alignItems:"center",justifyContent:"space-between",padding:mob?"11px 14px":"13px 16px",borderRadius:10,cursor:"pointer",
+            background:profile.usesSupplements===true?"#EFF6FF":C.surface,
+            border:profile.usesSupplements===true?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+          }}>
+            <div>
+              <div style={{fontSize:mob?13:14,fontWeight:600,color:profile.usesSupplements===true?"#2563EB":C.t1}}>Tôi có dùng whey / TPBS</div>
+              <div style={{fontSize:mob?11:12,color:C.t3,marginTop:2}}>Bật để AI gợi ý whey trong thực đơn. Tắt = chỉ món ăn thường.</div>
+            </div>
+            <div style={{width:44,height:24,borderRadius:99,background:profile.usesSupplements===true?"#3B82F6":C.border,position:"relative",transition:"all .15s",flexShrink:0}}>
+              <div style={{width:20,height:20,borderRadius:"50%",background:"#fff",position:"absolute",top:2,left:profile.usesSupplements===true?22:2,transition:"all .15s"}}/>
+            </div>
+          </div>
+        </div>
+
         {/* Goal weight + duration */}
         {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,maxWidth:mob?"100%":540}}>
           {[
