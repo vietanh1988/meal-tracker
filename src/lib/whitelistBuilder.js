@@ -49,7 +49,6 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     if (suppBlock.has(key)) continue;          // HARD
     if (cleanBlock.has(key)) continue;         // SEMI (clean)
     if (style === "easy" && getConvenienceScore(key) < AI_LIMITS.easyConvenienceMin) continue; // SEMI (easy ngưỡng)
-    if (v.tier === "occasional") continue;     // món thi thoảng — không gợi ý chủ động
 
     // Score per slot (chỉ slot đang cần) — AI + validator dùng chung
     const slots = {};
@@ -65,6 +64,7 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     // Tổng score để cap: hợp bữa + tiện lợi + goal hint + tránh món cũ
     let score = maxSlotScore + getConvenienceScore(key) * (style === "easy" ? 1 : 0.3);
     if (avoid.has(key)) score -= 6; // soft — vừa ăn gần đây, hạ ưu tiên
+    if (v.tier === "occasional") score -= 3; // món đắt (cá hồi, hạt điều...) — hạ ưu tiên, KHÔNG loại hẳn
     if (goal === "cut" && ["poultry", "seafood", "veg", "egg_dairy"].includes(v.cat)) score += 2;
     if (goal === "bulk" && ["starch", "beef", "pork", "egg_dairy"].includes(v.cat)) score += 2;
 
@@ -73,14 +73,18 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
 
   // Cap — prompt không bao giờ phụ thuộc size FoodDB
   if (items.length > AI_LIMITS.maxWhitelistItems) {
-    // Giữ cân bằng role: sort theo score trong từng role rồi lấy tỷ lệ
+    // Giữ cân bằng: rau có quota RIÊNG (không để trái cây conv cao
+    // đá rau văng khỏi nhóm fixed — bữa chính VN bắt buộc có rau/canh)
     items.sort((a, b) => b._score - a._score);
-    const byRole = { protein: [], carb: [], fat: [], fixed: [] };
-    items.forEach(it => byRole[it.role]?.push(it));
-    const quota = { protein: 0.32, carb: 0.22, fixed: 0.36, fat: 0.10 };
+    const group = it => it.role === "fixed"
+      ? (LOCAL_FOODS[it.key]?.cat === "veg" ? "veg" : "fixedOther")
+      : it.role;
+    const byGroup = { protein: [], carb: [], veg: [], fixedOther: [], fat: [] };
+    items.forEach(it => byGroup[group(it)]?.push(it));
+    const quota = { protein: 0.32, carb: 0.22, veg: 0.20, fixedOther: 0.16, fat: 0.10 };
     const capped = [];
-    Object.entries(quota).forEach(([role, q]) => {
-      capped.push(...byRole[role].slice(0, Math.ceil(AI_LIMITS.maxWhitelistItems * q)));
+    Object.entries(quota).forEach(([g, q]) => {
+      capped.push(...byGroup[g].slice(0, Math.ceil(AI_LIMITS.maxWhitelistItems * q)));
     });
     items = capped.slice(0, AI_LIMITS.maxWhitelistItems);
   }

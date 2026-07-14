@@ -567,7 +567,7 @@ Object.entries(MEAL_OVERRIDE_DATA).forEach(([k, v]) => {
 // ------------------------------------------------------------
 export const CAT_CONVENIENCE = {
   poultry: 4, beef: 3, pork: 3, seafood: 3,
-  egg_dairy: 9, starch: 6, fruit: 10, veg: 5,
+  egg_dairy: 9, starch: 6, fruit: 10, veg: 7,
   nuts: 8, sauce: 10, supp: 10, processed: 9, drink: 10,
 };
 
@@ -575,11 +575,11 @@ const CONVENIENCE_OVERRIDE = {
   // Đạm mua sẵn được (cơm hộp, quán, siêu thị)
   "ức gà nướng": 8, "ức gà luộc": 7,
   "trứng gà luộc": 10, "trứng luộc": 10, "trứng vịt luộc": 10, "trứng cút luộc": 10,
-  "cá ngừ hộp": 10, "đậu phụ": 7, "tôm": 5,
+  "cá ngừ hộp": 10, "đậu phụ": 7, "tôm": 6,
   // Tinh bột: mua sẵn vs nấu
   "bánh mì": 10, "bánh mì đen": 9, "xôi": 10, "bánh cuốn": 9,
   "cháo": 8, "bánh phở": 8, "bún": 8, "hủ tiếu": 8, "miến": 7,
-  "cơm trắng": 6, "cơm": 6, "cơm gạo lứt": 5,
+  "cơm trắng": 6, "cơm": 6, "cơm gạo lứt": 6,
   "khoai lang": 9, "khoai tây": 6, "ngô": 9, "bắp": 9,
   "yến mạch": 8, "bột yến mạch": 8,
 };
