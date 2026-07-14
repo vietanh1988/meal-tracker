@@ -40,6 +40,12 @@ const SRC = {
   mealsTab:      read("src/adminTabs/MealsTab.jsx"),
   useUserData:   read("src/hooks/useUserData.js"),
   aiMenuService: read("src/lib/aiMenuService.js"),
+  mealGrammar:   read("src/mealGrammar.js"),
+  localFoodDB:   read("src/lib/localFoodDB.js"),
+  whitelist:     read("src/lib/whitelistBuilder.js"),
+  promptV2:      read("src/lib/promptBuilderV2.js"),
+  validatorV2:   read("src/lib/menuValidatorV2.js"),
+  useProfile:    read("src/hooks/useProfile.js"),
   mealCard:      read("src/MealCard.jsx"),
   dialog:        read("src/lib/dialog.jsx"),
 };
@@ -316,23 +322,63 @@ test("useUserData: fetchAllData set m.composite từ MEAL_PATTERNS", () => {
 });
 
 // ============================================================
-console.log("\n🔍 16. AI Prompt — keto/low-carb context");
+console.log("\n🔍 16. AI MENU V2 — grammar, whitelist, prompt, validator");
 console.log("================================================");
 
-test("aiMenuService: prompt thêm context keto/low-carb", () => {
-  assert(SRC.aiMenuService.includes("dietStrategy"), "Thiếu dietStrategy → AI không biết user đang keto/low-carb");
-  assert(SRC.aiMenuService.includes("khoai lang") && SRC.aiMenuService.includes("gạo lứt"),
-    "Thiếu hướng dẫn tinh bột chậm cho keto/low-carb");
+test("mealGrammar: SLOT_RULES đủ 7 bữa + CAT_MEAL_SCORE 13 cat", () => {
+  ["sang","phu_sang","trua","phu_chieu","pre","post","toi"].forEach(s =>
+    assert(SRC.mealGrammar.includes(`${s}:`), `Thiếu slot ${s}`));
+  assert(SRC.mealGrammar.includes("CAT_MEAL_SCORE") && SRC.mealGrammar.includes("getMealScore"),
+    "Thiếu CAT_MEAL_SCORE/getMealScore");
 });
 
-test("aiMenuService: prompt easy style rõ ràng VN-only", () => {
-  assert(SRC.aiMenuService.includes("tiện lợi Việt Nam"),
-    "Style easy phải ghi rõ Việt Nam để tránh AI trả món Tây");
+test("localFoodDB: metadata V2 — mealOverride, convenience, DISPLAY_MAP", () => {
+  assert(SRC.localFoodDB.includes("MEAL_OVERRIDE_DATA"), "Thiếu mealOverride");
+  assert(SRC.localFoodDB.includes('"cơm trắng":     { sang: 1 }'), "Cơm bữa sáng phải bị chặn (sang:1)");
+  assert(SRC.localFoodDB.includes("getConvenienceScore"), "Thiếu convenience score");
+  assert(SRC.localFoodDB.includes("DISPLAY_MAP") && SRC.localFoodDB.includes("getFoodDisplay"),
+    "Thiếu DISPLAY_MAP — AI không được đặt tên món");
 });
 
-test("aiMenuService: prompt yêu cầu chỉ trả JSON", () => {
-  assert(SRC.aiMenuService.includes("chỉ trả JSON, KHÔNG viết gì khác"),
-    "Thiếu chỉ thị JSON-only → AI có thể trả text giải thích thay vì JSON");
+test("whitelistBuilder: diet/supplement HARD filter + cap", () => {
+  assert(SRC.whitelist.includes("DIET_BLOCK") && SRC.whitelist.includes("keto"),
+    "Thiếu diet hard filter");
+  assert(SRC.whitelist.includes("SUPPLEMENT_KEYS") && SRC.whitelist.includes("usesSupplements"),
+    "Whey phải mặc định loại, chỉ vào khi usesSupplements");
+  assert(SRC.whitelist.includes("maxWhitelistItems"),
+    "Thiếu cap — prompt sẽ phụ thuộc size FoodDB");
+});
+
+test("promptBuilderV2: scoring rubric + AI chỉ trả food key", () => {
+  assert(SRC.promptV2.includes("P1.") && SRC.promptV2.includes("35đ"),
+    "Thiếu priority + bảng điểm");
+  assert(SRC.promptV2.includes("Sinh 3 phương án"), "Thiếu sinh-3-chọn-1");
+  assert(!SRC.promptV2.includes('"display"'), "Prompt không được yêu cầu AI trả display");
+});
+
+test("validatorV2: key/slot/diversity + dry-run feedback số thật", () => {
+  assert(SRC.validatorV2.includes("nearestKey"), "Thiếu gợi ý key gần nhất khi retry");
+  assert(SRC.validatorV2.includes("MIN_SLOT_SCORE"), "Thiếu chặn món lạc bữa (cơm bữa sáng)");
+  assert(SRC.validatorV2.includes("checkDryRun") && SRC.validatorV2.includes("MACRO_TOLERANCE"),
+    "Thiếu dry-run check");
+});
+
+test("generateMenuAI: pipeline V2 + fat filler + display từ CODE", () => {
+  assert(SRC.aiMenuService.includes("buildWhitelist(") && SRC.aiMenuService.includes("buildPromptV2("),
+    "generateMenuAI chưa chạy pipeline V2");
+  assert(SRC.aiMenuService.includes("validateMenuV2(") && SRC.aiMenuService.includes("checkDryRun("),
+    "Thiếu validate + dry-run");
+  assert(SRC.aiMenuService.includes("AUTO_FAT_FILLER[m.meal_id]"),
+    "Thiếu fat filler → engine hụt fat cả ngày");
+  assert(SRC.aiMenuService.includes("getFoodDisplay(k)"),
+    "Display phải do CODE tra, không phải AI");
+  assert(!SRC.aiMenuService.includes("function buildMenuPrompt") && !SRC.aiMenuService.includes("function normalizeMenu"),
+    "Code cũ chưa dọn — buildMenuPrompt/normalizeMenu phải xoá");
+});
+
+test("useProfile: usesSupplements sync 2 chiều với DB", () => {
+  assert(SRC.useProfile.includes("data.uses_supplements"), "Thiếu load uses_supplements");
+  assert(SRC.useProfile.includes("payload.uses_supplements"), "Thiếu save uses_supplements");
 });
 
 // ════════════════════════════════════════════════
