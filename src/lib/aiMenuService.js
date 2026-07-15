@@ -159,7 +159,8 @@ async function callAI(prompt, { provider, model } = {}, _retriesLeft = 1) {
   const d = await authFetch("ai-proxy", {
     provider: provider || "claude",
     model: model || "claude-sonnet-5",
-    maxTokens: 2500, // không có scratchpad riêng — mọi suy nghĩ AI viết ra đều tính vào đây
+    maxTokens: 1800, // đủ buffer JSON (whitelist gọn sau khi bỏ macro dư thừa)
+                     // không quá cao để tránh cost lãng phí nếu model verbose
     messages: [{ role: "user", content: prompt }],
   });
   if (d.error) throw new Error(d.error);
@@ -371,7 +372,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
 
   let lastErrors = [];
   let bestCandidate = null; // best-of-2: giữ bản lệch target ít nhất
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const retryHint = attempt === 0 ? "" :
         `\n\nLẦN TRƯỚC BỊ LỖI — SỬA CHÍNH XÁC THEO TỪNG DÒNG SAU:\n- ${lastErrors.join("\n- ")}`;

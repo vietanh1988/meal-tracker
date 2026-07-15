@@ -40,7 +40,10 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
   const fmtItem = it => {
     const bestSlots = Object.entries(it.slots || {}).filter(([, s]) => s >= 8).map(([k]) => k);
     const tag = isStandaloneDish(it.key) ? " [TRỌN SUẤT]" : "";
-    return `${it.key}${tag} (${it.cal}cal/${it.p}P/${it.c}C/${it.f}F${bestSlots.length ? " · hợp: " + bestSlots.join(",") : ""})`;
+    // KHÔNG in macro (cal/P/C/F) — AI không tính gram, chỉ chọn món.
+    // Macro chính xác được engine dry-run kiểm tra riêng ở bước sau.
+    // Bớt ~65% token phần whitelist (phần chiếm nhiều nhất của prompt).
+    return `${it.key}${tag}${bestSlots.length ? " [" + bestSlots.join(",") + "]" : ""}`;
   };
   const wlText = [
     `ĐẠM: ${byRole.protein.map(fmtItem).join("; ")}`,
