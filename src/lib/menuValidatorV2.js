@@ -51,19 +51,33 @@ export function validateMenuV2(raw, { mealIds, whitelist }) {
   const meals = [];
   const usedProteinGroups = {}; // group → meal_id đã dùng (bữa chính)
 
+  // AI thật có thể trả foods là string HOẶC object {key}/{food}/{name} — normalize hết
+  const toKey = (f) => {
+    if (typeof f === "string") return f.toLowerCase().trim();
+    if (f && typeof f === "object") return (f.key || f.food || f.name || "").toLowerCase().trim();
+    return "";
+  };
+
   for (const id of mealIds) {
     const m = byId[id];
     if (!m) continue;
     const rule = SLOT_RULES[id] || {};
-    let foods = Array.isArray(m.foods) ? m.foods.map(f => (f || "").toLowerCase().trim()).filter(Boolean) : [];
+    let foods = Array.isArray(m.foods) ? m.foods.map(toKey).filter(Boolean) : [];
 
-    // Key ∈ whitelist
-    foods = foods.filter(k => {
-      if (wlKeys.has(k)) return true;
+    // Key ∈ whitelist — key lệch nhẹ (không dấu, thừa chữ) → TỰ MAP key gần nhất
+    // thay vì loại (cứu menu, giảm retry); không map được mới loại + báo lỗi
+    foods = foods.map(k => {
+      if (wlKeys.has(k)) return k;
       const near = nearestKey(k, wlArr);
-      errors.push(`Bữa "${id}": key "${k}" không có trong WHITELIST${near ? ` — key đúng gần nhất: "${near}"` : ""}. Copy nguyên văn key từ whitelist.`);
-      return false;
-    });
+      if (near) {
+        console.warn(`[AI Menu V2] auto-map key "${k}" → "${near}"`);
+        return near;
+      }
+      errors.push(`Bữa "${id}": key "${k}" không có trong WHITELIST. Copy nguyên văn key từ whitelist.`);
+      return null;
+    }).filter(Boolean);
+    // Auto-map có thể tạo trùng trong cùng bữa → dedupe
+    foods = [...new Set(foods)];
 
     // Slot rules
     if (rule.maxDishes && foods.length > rule.maxDishes) {
@@ -107,9 +121,13 @@ export function validateMenuV2(raw, { mealIds, whitelist }) {
     // Dessert
     let dessert = null;
     if (m.dessert) {
-      const dk = (typeof m.dessert === "string" ? m.dessert : m.dessert.key || "").toLowerCase().trim();
+      const dk = toKey(m.dessert);
       if (dk && wlKeys.has(dk)) dessert = dk;
-      else if (dk) errors.push(`Dessert "${dk}" không trong whitelist — bỏ hoặc thay key đúng.`);
+      else if (dk) {
+        const near = nearestKey(dk, wlArr);
+        if (near) dessert = near;
+        // dessert sai không đáng fail menu — bỏ qua im lặng nếu không map được
+      }
     }
 
     meals.push({ meal_id: id, foods, dessert });
