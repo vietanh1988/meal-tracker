@@ -7,7 +7,7 @@
 // FAIL → trả feedback CỤ THỂ để retry AI.
 // ============================================================
 
-import { LOCAL_FOODS, getFoodRole } from "./localFoodDB";
+import { LOCAL_FOODS, getFoodRole, isStandaloneDish } from "./localFoodDB";
 import { SLOT_RULES, getMealScore, MIN_SLOT_SCORE } from "../mealGrammar";
 
 // Nhóm đạm để check diversity (P4) — cat là proxy đủ tốt
@@ -103,6 +103,24 @@ export function validateMenuV2(raw, { mealIds, whitelist }) {
       }
       return true;
     });
+
+    // Món trọn suất (bánh cuốn, phở, bún, cháo...) đã tự đủ tinh bột
+    // + đạm bên trong công thức thực tế — KHÔNG ghép thêm carb/protein
+    // rời khác cùng bữa (vô lý kiểu "bánh cuốn + trứng luộc rời")
+    const standalone = foods.filter(isStandaloneDish);
+    if (standalone.length > 0) {
+      const extras = foods.filter(k =>
+        !isStandaloneDish(k) && ["carb", "protein"].includes(getFoodRole(k))
+      );
+      if (extras.length > 0) {
+        errors.push(`Bữa "${id}": "${standalone[0]}" là món trọn suất (đã có sẵn tinh bột+đạm) — không ghép thêm "${extras.join(", ")}". Bỏ bớt hoặc chỉ giữ 1 standalone dish.`);
+        foods = foods.filter(k => isStandaloneDish(k) || !extras.includes(k));
+      }
+      if (standalone.length > 1) {
+        errors.push(`Bữa "${id}" có ${standalone.length} món trọn suất cùng lúc — chỉ chọn 1.`);
+        foods = foods.filter(k => k === standalone[0] || !isStandaloneDish(k));
+      }
+    }
 
     // Diversity: nhóm đạm không lặp giữa các BỮA CHÍNH
     if (MAIN_MEALS.has(id)) {

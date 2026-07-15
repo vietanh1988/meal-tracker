@@ -6,6 +6,7 @@
 // ============================================================
 
 import { SLOT_RULES } from "../mealGrammar";
+import { isStandaloneDish } from "./localFoodDB";
 
 const STYLE_LABEL = {
   vn: "Cơm nhà Việt Nam — bữa cơm truyền thống tự nấu (cơm/canh/món mặn/rau)",
@@ -38,7 +39,8 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
   whitelist.items.forEach(it => byRole[it.role]?.push(it));
   const fmtItem = it => {
     const bestSlots = Object.entries(it.slots || {}).filter(([, s]) => s >= 8).map(([k]) => k);
-    return `${it.key} (${it.cal}cal/${it.p}P/${it.c}C/${it.f}F${bestSlots.length ? " · hợp: " + bestSlots.join(",") : ""})`;
+    const tag = isStandaloneDish(it.key) ? " [TRỌN SUẤT]" : "";
+    return `${it.key}${tag} (${it.cal}cal/${it.p}P/${it.c}C/${it.f}F${bestSlots.length ? " · hợp: " + bestSlots.join(",") : ""})`;
   };
   const wlText = [
     `ĐẠM: ${byRole.protein.map(fmtItem).join("; ")}`,
@@ -63,7 +65,7 @@ QUY TẮC TỪNG BỮA:
 ${slotLines}
 
 PRIORITY (vi phạm P1 = menu bị loại):
-P1. Chỉ dùng food key CHÍNH XÁC từ WHITELIST (copy nguyên văn, kể cả dấu). Đúng JSON schema. Tuân thủ quy tắc từng bữa.
+P1. Chỉ dùng food key CHÍNH XÁC từ WHITELIST (copy nguyên văn, kể cả dấu). Đúng JSON schema. Tuân thủ quy tắc từng bữa. Món đánh dấu [TRỌN SUẤT] (bánh cuốn, phở, bún, cháo...) đã tự đủ tinh bột+đạm — nếu chọn thì KHÔNG ghép thêm carb/protein khác cùng bữa (trái cây/dessert vẫn được).
 P2. Tổng macro ước tính (theo khẩu phần thông thường) gần TARGET nhất.
 P3. Hợp phong cách${style ? ` "${STYLE_LABEL[style]}"` : ""}.
 P4. Không lặp nhóm đạm giữa các bữa (gà/bò/heo/cá/tôm/trứng — mỗi nhóm tối đa 1 bữa chính).

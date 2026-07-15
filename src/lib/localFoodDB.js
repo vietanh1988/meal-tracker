@@ -692,3 +692,22 @@ export function getFoodDisplay(foodKey) {
   // Fallback an toàn: viết hoa chữ đầu — không bao giờ hiện tên bịa
   return key.charAt(0).toUpperCase() + key.slice(1);
 }
+
+// ------------------------------------------------------------
+// STANDALONE_DISHES — món "trọn suất" kiểu quán VN: đã tự đủ
+// tinh bột + đạm + gia vị bên trong công thức thực tế (bánh
+// cuốn có nhân thịt/mộc nhĩ, phở/bún/hủ tiếu có nước dùng +
+// thịt, cháo có thịt bằm...). KHÁC với nguyên liệu rời (cơm,
+// khoai lang, bánh mì) vốn cần ghép thêm đạm mới thành bữa.
+// Validator chặn: chọn standalone rồi ghép thêm carb/protein
+// rời khác cùng bữa (VD "bánh cuốn + trứng luộc" — vô lý vì
+// bánh cuốn đã là 1 suất, không ai ăn kèm trứng luộc rời).
+// Dessert/trái cây vẫn ghép bình thường.
+// ------------------------------------------------------------
+export const STANDALONE_DISHES = new Set([
+  "bún", "miến", "bánh phở", "hủ tiếu", "bánh cuốn", "cháo", "mì ý", "phở",
+]);
+
+export function isStandaloneDish(foodKey) {
+  return STANDALONE_DISHES.has((foodKey || "").toLowerCase().trim());
+}
