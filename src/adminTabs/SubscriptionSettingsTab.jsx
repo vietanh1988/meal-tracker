@@ -77,14 +77,11 @@ export function SubscriptionSettingsTab({ isAdmin }) {
             <div style={lbl_style(C)}>AI tính macro / tháng</div>
             <input type="number" {...numFix} value={form.free_ai_macro_limit ?? ""} onChange={e => set("free_ai_macro_limit", e.target.value)} style={inp} />
           </div>
-          <div style={{ marginBottom: 12 }}>
-            <div style={lbl_style(C)}>🍽️ AI tạo thực đơn / ngày</div>
-            <input type="number" {...numFix} value={form.free_ai_menu_limit ?? ""} onChange={e => set("free_ai_menu_limit", e.target.value)} style={inp} />
-          </div>
           <div>
             <div style={lbl_style(C)}>AI Chat / ngày</div>
             <input type="number" {...numFix} value={form.free_ai_chat_limit ?? ""} onChange={e => set("free_ai_chat_limit", e.target.value)} style={inp} />
           </div>
+          <div style={{ fontSize: 11, color: C.t3, marginTop: 12, fontStyle: "italic" }}>🍽️ AI tạo thực đơn: khoá hẳn với Free — chỉ Trial/Premium (xem card bên)</div>
         </div>
 
         <div style={{ background: C.surface, borderRadius: 14, border: `1.5px solid #F59E0B`, padding: 16 }}>

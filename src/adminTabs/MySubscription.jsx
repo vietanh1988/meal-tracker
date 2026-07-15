@@ -184,18 +184,21 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
             </div>
             <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
           </div>
+          {tier !== "free" && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
               <span>🍽️ AI tạo thực đơn</span><span style={{ color: C.t1, fontWeight: 700 }}>{menuUsed}/{menuLimit}</span>
             </div>
             <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (menuUsed / menuLimit) * 100)}%` }} /></div>
           </div>
+          )}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
               <span>💬 AI Chat</span><span style={{ color: C.t1, fontWeight: 700 }}>{chatUsed}/{chatLimit}</span>
             </div>
             <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
         </div>
+        {tier === "free" && <div style={{ fontSize: 11, color: C.t3, marginTop: 12 }}>🍽️ AI tạo thực đơn tự động — tính năng Premium/Trial. Nâng cấp để dùng thử!</div>}
       </div>
 
       {tier === "trial" && (

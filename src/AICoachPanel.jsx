@@ -346,6 +346,19 @@ saveMsg("user",text);
 saveMsg("assistant",aiMsg.content);
 return;
 }
+// Free tier có ý định tạo menu nhưng chưa đủ quyền — nói THẲNG cần nâng
+// cấp, KHÔNG để rơi xuống chat thường (AI Chat sẽ tự bịa 1 "thực đơn"
+// bằng lời không qua engine chuẩn macro, khiến user tưởng đã dùng tính
+// năng thật nhưng thực chất nhận lời khuyên không chính xác/không lưu).
+if(aiMenuAccess.locked&&containsMenuGenIntent(text)){
+const userMsg={role:"user",content:text};
+const aiMsg={role:"assistant",content:"Tính năng AI tạo thực đơn (tự động, chuẩn macro, lưu thẳng vào lịch) dành cho gói Premium/Trial. Bạn vẫn có thể hỏi mình tư vấn món ăn qua chat bình thường, hoặc nâng cấp để dùng đầy đủ nhé! ⭐"};
+setMessages(prev=>[...prev,userMsg,aiMsg]);
+setInput("");
+saveMsg("user",text);
+saveMsg("assistant",aiMsg.content);
+return;
+}
 
 if(!isAdmin){
 const quota=await checkAndConsumeAiQuota(userId,"chat");
