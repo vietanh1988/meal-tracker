@@ -359,10 +359,19 @@ try{
 // thành 1 chuỗi "User:.../Fipilot AI:..." — kiểu transcript cũ làm model
 // sinh artifact: tự thấy "đến lượt User" là ngắt sớm, bỏ lửng giữa câu.
 const chatMessages=newMsgs.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
-const data=await authFetch("ai-proxy",{provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500,feature:"chat"});
+const callChat=()=>authFetch("ai-proxy",{provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500,feature:"chat"});
+let data=await callChat();
 if(data.error)throw new Error(data.error);
-const reply=(data.text||"").trim()||"Xin lỗi, mình không thể trả lời lúc này.";
-const cleanReply=reply.replace(/^Fipilot AI:\s*/,"");
+let reply=(data.text||"").trim();
+// text rỗng dù HTTP OK = lỗi mạng/rate-limit thoáng qua phía provider —
+// tự thử lại 1 lần trước khi báo user, không bắt họ tự bấm lại
+if(!reply){
+  console.warn("[chat] text rỗng lần 1, tự thử lại...");
+  data=await callChat();
+  if(data.error)throw new Error(data.error);
+  reply=(data.text||"").trim();
+}
+const cleanReply=(reply||"Mình chưa trả lời được, bạn hỏi lại giúp mình nhé 🙏").replace(/^Fipilot AI:\s*/,"");
 setMessages(prev=>[...prev,{role:"assistant",content:cleanReply}]);
 saveMsg("assistant",cleanReply);
 }catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
