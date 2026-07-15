@@ -161,6 +161,7 @@ async function callAI(prompt, { provider, model } = {}, _retriesLeft = 1) {
     model: model || "claude-sonnet-5",
     maxTokens: 1800, // đủ buffer JSON (whitelist gọn sau khi bỏ macro dư thừa)
                      // không quá cao để tránh cost lãng phí nếu model verbose
+    feature: "menu_gen",
     messages: [{ role: "user", content: prompt }],
   });
   if (d.error) throw new Error(d.error);

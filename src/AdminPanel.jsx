@@ -296,7 +296,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     try{
       let text="";
       if(aiProvider==="claude"){
-        const data=await authFetch("ai-proxy",{foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:"claude",model:aiModel});
+        const data=await authFetch("ai-proxy",{foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:"claude",model:aiModel,feature:"macro_lookup"});
         if(data.error)throw new Error(data.error);
         text=data.text||"";
       } else if(aiProvider==="gemini"){

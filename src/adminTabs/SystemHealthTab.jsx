@@ -50,7 +50,7 @@ export function SystemHealthTab({ isAdmin, appSettings }) {
     const t0 = Date.now();
     try {
       const aiModel = appSettings?.ai_model || "claude-sonnet-5";
-      const data = await authFetch("ai-proxy", { foodDesc: "Ping. Trả lời đúng 1 từ: OK", provider: "claude", model: aiModel });
+      const data = await authFetch("ai-proxy", { foodDesc: "Ping. Trả lời đúng 1 từ: OK", provider: "claude", model: aiModel, feature: "ping_test" });
       setAiPing({ ok: !data.error, ms: Date.now() - t0 });
     } catch (e) {
       setAiPing({ ok: false, ms: Date.now() - t0 });

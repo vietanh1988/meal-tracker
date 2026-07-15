@@ -13,6 +13,32 @@ function fmtUSD(n) {
   return v < 0.01 ? `$${v.toFixed(4)}` : `$${v.toFixed(2)}`;
 }
 
+const CHART_COLORS = [C.primary, C.mint, C.violet, C.gold, C.secondary, C.red];
+
+function BarChart({ data, labelKey, valueKey }) {
+  if (!data.length) return null;
+  const max = Math.max(...data.map(d => Number(d[valueKey]) || 0), 0.0001);
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {data.map((d, i) => {
+        const v = Number(d[valueKey]) || 0;
+        const pct = Math.max((v / max) * 100, 2);
+        return (
+          <div key={i} style={{ marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: C.t2, marginBottom: 3 }}>
+              <span style={{ fontWeight: 600 }}>{d[labelKey]}</span>
+              <span style={{ fontWeight: 700, color: C.t1 }}>{fmtUSD(v)}</span>
+            </div>
+            <div style={{ height: 8, background: C.surface, borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ width: `${pct}%`, height: "100%", background: CHART_COLORS[i % CHART_COLORS.length], borderRadius: 4, transition: "width .3s" }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function AiCostTab({ isAdmin }) {
   const [summary, setSummary] = useState(null);
   const [byModel, setByModel] = useState([]);
@@ -88,34 +114,24 @@ export function AiCostTab({ isAdmin }) {
 
       {byModel.length > 0 && (
         <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16, marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>Theo model (7 ngày)</div>
-          {byModel.map(m => (
-            <div key={m.model} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${C.border}` }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{m.model}</div>
-                <div style={{ fontSize: 11, color: C.t3 }}>{m.calls} lượt · {m.total_input_tokens?.toLocaleString()} in / {m.total_output_tokens?.toLocaleString()} out token</div>
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{fmtUSD(m.total_cost)}</div>
-            </div>
-          ))}
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 12 }}>Theo model (7 ngày)</div>
+          <BarChart data={byModel} labelKey="model" valueKey="total_cost" />
+          <div style={{ fontSize: 11, color: C.t3, borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
+            {byModel.map(m => `${m.model}: ${m.calls} lượt · ${m.total_input_tokens?.toLocaleString()} in / ${m.total_output_tokens?.toLocaleString()} out`).join("  ·  ")}
+          </div>
         </div>
       )}
 
       {byFeature.length > 0 && (
         <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16, marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>Theo tính năng (7 ngày)</div>
-          {byFeature.map(f => (
-            <div key={f.feature} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${C.border}` }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{f.feature}</div>
-              <div style={{ fontSize: 13, color: C.t2 }}>{f.calls} lượt · <span style={{ fontWeight: 800, color: C.t1 }}>{fmtUSD(f.total_cost)}</span></div>
-            </div>
-          ))}
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 12 }}>Theo tính năng (7 ngày)</div>
+          <BarChart data={byFeature} labelKey="feature" valueKey="total_cost" />
         </div>
       )}
 
       {byUser.length > 0 && (
         <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16, marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>Theo user (7 ngày) — bấm để xem chi tiết</div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 12 }}>Theo user (7 ngày) — bấm để xem chi tiết</div>
           {byUser.map(u => (
             <div key={u.user_id}>
               <div onClick={() => toggleUser(u.user_id)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: expandedUser === u.user_id ? "none" : `1px solid ${C.border}`, cursor: "pointer" }}>

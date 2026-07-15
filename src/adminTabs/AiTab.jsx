@@ -101,7 +101,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         setAiConnected(false);
         try{
           if(aiProvider==="claude"){
-            const d=await authFetch("ai-proxy",{foodDesc:"OK",provider:"claude",model:aiModel});
+            const d=await authFetch("ai-proxy",{foodDesc:"OK",provider:"claude",model:aiModel,feature:"ping_test"});
             setAiConnected(!d.error);
           }else if(aiProvider==="gemini"){
             if(!geminiKey){setAiConnected(false);return;}

@@ -359,7 +359,7 @@ try{
 // thành 1 chuỗi "User:.../Fipilot AI:..." — kiểu transcript cũ làm model
 // sinh artifact: tự thấy "đến lượt User" là ngắt sớm, bỏ lửng giữa câu.
 const chatMessages=newMsgs.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
-const data=await authFetch("ai-proxy",{provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500});
+const data=await authFetch("ai-proxy",{provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500,feature:"chat"});
 if(data.error)throw new Error(data.error);
 const reply=(data.text||"").trim()||"Xin lỗi, mình không thể trả lời lúc này.";
 const cleanReply=reply.replace(/^Fipilot AI:\s*/,"");

@@ -63,6 +63,7 @@ export async function calcMacroAIDirect({ foods, provider, model, keys }) {
       foodDesc: `${PROMPT}\n\nThức ăn cần phân tích:\n${foodDesc}`,
       provider: "claude",
       model: model || "claude-sonnet-5",
+      feature: "macro_lookup",
     });
     if (d.error) throw new Error(d.error);
     text = d.text || "";
