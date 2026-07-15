@@ -87,9 +87,15 @@ export function validateMenuV2(raw, { mealIds, whitelist }) {
     if (rule.minDishes && foods.length < rule.minDishes) {
       errors.push(`Bữa "${id}" chỉ ${foods.length} món — cần tối thiểu ${rule.minDishes}.`);
     }
-    // need roles
+    // need roles — standalone dish (bún/phở/cháo...) tự thoả cả
+    // protein LẪN carb: công thức thật đã có thịt/đạm bên trong,
+    // DB chỉ track macro phần tinh bột nên role ghi "carb" đơn thuần.
+    // Không coi là thiếu đạm rồi bắt ghép thêm — mâu thuẫn với rule
+    // "không ghép carb/protein rời vào standalone" ngay bên dưới.
     if (rule.need) {
+      const hasStandalone = foods.some(isStandaloneDish);
       const roles = new Set(foods.map(getFoodRole));
+      if (hasStandalone) { roles.add("protein"); roles.add("carb"); }
       for (const r of Object.keys(rule.need)) {
         if (!roles.has(r)) errors.push(`Bữa "${id}" thiếu món ${r === "protein" ? "đạm" : r === "carb" ? "tinh bột" : r}.`);
       }

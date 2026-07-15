@@ -705,7 +705,7 @@ export function getFoodDisplay(foodKey) {
 // Dessert/trái cây vẫn ghép bình thường.
 // ------------------------------------------------------------
 export const STANDALONE_DISHES = new Set([
-  "bún", "miến", "bánh phở", "hủ tiếu", "bánh cuốn", "cháo", "mì ý", "phở",
+  "bún", "miến", "bánh phở", "hủ tiếu", "bánh cuốn", "cháo", "mì ý",
 ]);
 
 export function isStandaloneDish(foodKey) {
