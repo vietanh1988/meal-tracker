@@ -45,7 +45,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
     try {
       const [{ data: p }, { data: s }, { data: orders }] = await Promise.all([
         supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_chat_count_today,ai_menu_count_today").eq("id", userId).single(),
-        supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,free_ai_menu_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
+        supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,free_ai_menu_limit,trial_ai_macro_limit,trial_ai_chat_limit,trial_ai_menu_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
         supabase.from("orders").select("id,package,amount,status,created_at,confirmed_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
       ]);
       setSub(p || null);
@@ -110,9 +110,9 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
   }
 
   const tier = sub.tier || "free";
-  const macroLimit = settings?.free_ai_macro_limit ?? 100;
-  const chatLimit = settings?.free_ai_chat_limit ?? 20;
-  const menuLimit = settings?.free_ai_menu_limit ?? 5;
+  const macroLimit = settings?.[`${tier}_ai_macro_limit`] ?? (tier === "premium" ? 1000 : tier === "trial" ? 500 : 100);
+  const chatLimit = settings?.[`${tier}_ai_chat_limit`] ?? (tier === "premium" ? 150 : tier === "trial" ? 100 : 20);
+  const menuLimit = settings?.[`${tier}_ai_menu_limit`] ?? (tier === "premium" ? 50 : tier === "trial" ? 30 : 5);
   const macroUsed = sub.ai_macro_count_this_month || 0;
   const chatUsed = sub.ai_chat_count_today || 0;
   const menuUsed = sub.ai_menu_count_today || 0;
@@ -176,9 +176,9 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
         </div>
       )}
 
-      {tier === "free" && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 16 }}>
+        {tier !== "free" && <div style={{ fontSize: 11, color: C.t3, marginBottom: 10 }}>Hạn mức cao — gần như không đụng tới khi dùng bình thường</div>}
+        <div style={{ marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
               <span>📊 AI tính macro</span><span style={{ color: C.t1, fontWeight: 700 }}>{macroUsed}/{macroLimit}</span>
             </div>
@@ -195,9 +195,8 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
               <span>💬 AI Chat</span><span style={{ color: C.t1, fontWeight: 700 }}>{chatUsed}/{chatLimit}</span>
             </div>
             <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
-          </div>
         </div>
-      )}
+      </div>
 
       {tier === "trial" && (
         <div style={{ textAlign: "center", padding: "8px 0 16px" }}>
