@@ -159,7 +159,7 @@ async function callAI(prompt, { provider, model } = {}) {
   const d = await authFetch("ai-proxy", {
     provider: provider || "claude",
     model: model || "claude-sonnet-5",
-    maxTokens: 1500,
+    maxTokens: 2500, // không có scratchpad riêng — mọi suy nghĩ AI viết ra đều tính vào đây
     messages: [{ role: "user", content: prompt }],
   });
   if (d.error) throw new Error(d.error);

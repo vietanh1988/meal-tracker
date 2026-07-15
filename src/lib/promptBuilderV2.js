@@ -69,14 +69,12 @@ P3. Hợp phong cách${style ? ` "${STYLE_LABEL[style]}"` : ""}.
 P4. Không lặp nhóm đạm giữa các bữa (gà/bò/heo/cá/tôm/trứng — mỗi nhóm tối đa 1 bữa chính).
 P5. Bữa ăn tự nhiên kiểu Việt (món đi với nhau hợp lý).
 
-BẢNG ĐIỂM TỰ CHẤM:
-- Macro accuracy: 35đ
-- Style matching: 25đ
-- VN naturalness: 15đ
-- Slot-fit (đúng văn hóa bữa: sáng nhanh, phụ nhẹ, chính đủ): 15đ
-- Protein diversity: 10đ
+BẢNG ĐIỂM (để bạn tự cân nhắc khi chọn món, KHÔNG viết ra):
+- Macro accuracy: 35đ · Style matching: 25đ · VN naturalness: 15đ
+- Slot-fit (sáng nhanh, phụ nhẹ, chính đủ): 15đ · Protein diversity: 10đ
 
-Sinh 3 phương án nội bộ → tự chấm điểm → CHỈ trả JSON của phương án cao điểm nhất. Không giải thích, không markdown, không text ngoài JSON.
+QUAN TRỌNG: Suy nghĩ trong đầu, KHÔNG viết ra nháp/phương án/giải thích/lý do.
+Trả lời NGAY bằng JSON — không có bất kỳ ký tự nào trước dấu { đầu tiên hoặc sau dấu } cuối cùng.
 
 WHITELIST (chỉ chọn từ đây):
 ${wlText}

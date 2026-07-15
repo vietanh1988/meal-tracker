@@ -352,7 +352,8 @@ test("whitelistBuilder: diet/supplement HARD filter + cap", () => {
 test("promptBuilderV2: scoring rubric + AI chỉ trả food key", () => {
   assert(SRC.promptV2.includes("P1.") && SRC.promptV2.includes("35đ"),
     "Thiếu priority + bảng điểm");
-  assert(SRC.promptV2.includes("Sinh 3 phương án"), "Thiếu sinh-3-chọn-1");
+  assert(SRC.promptV2.includes("KHÔNG viết ra nháp") || SRC.promptV2.includes("Trả lời NGAY bằng JSON"),
+    "Prompt phải cấm AI viết reasoning hiển thị (không có scratchpad riêng, tốn maxTokens)");
   assert(!SRC.promptV2.includes('"display"'), "Prompt không được yêu cầu AI trả display");
 });
 
