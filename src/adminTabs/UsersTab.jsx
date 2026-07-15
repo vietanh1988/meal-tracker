@@ -459,6 +459,11 @@ function UserDetail({ userId, currentUserId, onBack }) {
             : <input type="date" value={tierForm.subscription_end_date || ""} onChange={e => setTierForm(f => ({ ...f, subscription_end_date: e.target.value }))} style={{ ...inp, width: 160 }} />}
           <button onClick={handleSaveTier} disabled={saving} style={{ padding: "0 16px", fontSize: 13, fontWeight: 700, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#36A3FF,#007AFF)", color: "#fff", cursor: "pointer", height: 40 }}>Lưu thay đổi</button>
         </div>
+        {tierForm.tier !== "free" && !(tierForm.tier === "trial" ? tierForm.trial_end_date : tierForm.subscription_end_date) && (
+          <div style={{ fontSize: 12, color: "#B45309", background: "#FEF3C7", borderRadius: 8, padding: "6px 10px", marginBottom: 10 }}>
+            ⚠️ Chưa chọn ngày hết hạn — để trống nghĩa là gói {tierForm.tier === "trial" ? "Trial" : "Premium"} này KHÔNG BAO GIỜ tự hết hạn (cron sẽ bỏ qua user này mãi mãi). Chỉ để trống nếu bạn cố ý cấp vĩnh viễn.
+          </div>
+        )}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {[["30d", "+30 ngày"], ["3m", "+3 tháng"], ["6m", "+6 tháng"], ["12m", "+12 tháng"]].map(([k, l]) => (
             <button key={k} onClick={() => quickExtend(k)} disabled={saving} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t1, cursor: "pointer" }}>{l}</button>
