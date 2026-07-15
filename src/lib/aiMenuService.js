@@ -155,7 +155,7 @@ export function dayTarget(macro, dayType) {
 // ============================================================
 // 3. GỌI AI
 // ============================================================
-async function callAI(prompt, { provider, model } = {}) {
+async function callAI(prompt, { provider, model } = {}, _retriesLeft = 1) {
   const d = await authFetch("ai-proxy", {
     provider: provider || "claude",
     model: model || "claude-sonnet-5",
@@ -163,7 +163,14 @@ async function callAI(prompt, { provider, model } = {}) {
     messages: [{ role: "user", content: prompt }],
   });
   if (d.error) throw new Error(d.error);
-  return d.text || "";
+  const text = d.text || "";
+  // Response rỗng = lỗi tạm thời phía provider (rate limit/overload không set
+  // d.error rõ ràng) — retry NGAY LẬP TỨC, không tính vào vòng validate-feedback.
+  if (!text.trim() && _retriesLeft > 0) {
+    console.warn("[AI Menu V2] callAI: response rỗng (lỗi tạm thời) — retry ngay");
+    return callAI(prompt, { provider, model }, _retriesLeft - 1);
+  }
+  return text;
 }
 
 function parseMenuJSON(text) {
@@ -364,7 +371,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
 
   let lastErrors = [];
   let bestCandidate = null; // best-of-2: giữ bản lệch target ít nhất
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const retryHint = attempt === 0 ? "" :
         `\n\nLẦN TRƯỚC BỊ LỖI — SỬA CHÍNH XÁC THEO TỪNG DÒNG SAU:\n- ${lastErrors.join("\n- ")}`;
