@@ -17,21 +17,27 @@ export function AiCostTab({ isAdmin }) {
   const [summary, setSummary] = useState(null);
   const [byModel, setByModel] = useState([]);
   const [byFeature, setByFeature] = useState([]);
+  const [byUser, setByUser] = useState([]);
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedUser, setExpandedUser] = useState(null);
+  const [userDetail, setUserDetail] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [{ data: s }, { data: bm }, { data: bf }, { data: r }] = await Promise.all([
+      const [{ data: s }, { data: bm }, { data: bf }, { data: bu }, { data: r }] = await Promise.all([
         supabase.rpc("admin_ai_cost_summary"),
         supabase.rpc("admin_ai_cost_by_model_7d"),
         supabase.rpc("admin_ai_cost_by_feature_7d"),
+        supabase.rpc("admin_ai_cost_by_user_7d", { p_limit: 30 }),
         supabase.rpc("admin_ai_cost_recent", { p_limit: 20 }),
       ]);
       setSummary((s && s[0]) || null);
       setByModel(bm || []);
       setByFeature(bf || []);
+      setByUser(bu || []);
       setRecent(r || []);
     } catch (e) {
       console.error("AiCostTab load error:", e);
@@ -40,6 +46,20 @@ export function AiCostTab({ isAdmin }) {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const toggleUser = async (userId) => {
+    if (expandedUser === userId) { setExpandedUser(null); setUserDetail(null); return; }
+    setExpandedUser(userId);
+    setLoadingDetail(true);
+    try {
+      const { data } = await supabase.rpc("admin_ai_cost_by_user_detail", { p_user_id: userId });
+      setUserDetail(data || []);
+    } catch (e) {
+      console.error("user detail error:", e);
+      setUserDetail([]);
+    }
+    setLoadingDetail(false);
+  };
 
   if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
 
@@ -88,6 +108,38 @@ export function AiCostTab({ isAdmin }) {
             <div key={f.feature} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${C.border}` }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{f.feature}</div>
               <div style={{ fontSize: 13, color: C.t2 }}>{f.calls} lượt · <span style={{ fontWeight: 800, color: C.t1 }}>{fmtUSD(f.total_cost)}</span></div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {byUser.length > 0 && (
+        <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>Theo user (7 ngày) — bấm để xem chi tiết</div>
+          {byUser.map(u => (
+            <div key={u.user_id}>
+              <div onClick={() => toggleUser(u.user_id)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: expandedUser === u.user_id ? "none" : `1px solid ${C.border}`, cursor: "pointer" }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.t1 }}>{u.username}{u.tier ? ` · ${u.tier}` : ""}</div>
+                  <div style={{ fontSize: 11, color: C.t3 }}>{u.calls} lượt · {u.total_input_tokens?.toLocaleString()} in / {u.total_output_tokens?.toLocaleString()} out token</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{fmtUSD(u.total_cost)}</div>
+                  <span style={{ fontSize: 11, color: C.t3, transform: expandedUser === u.user_id ? "rotate(180deg)" : "none", display: "inline-block" }}>▼</span>
+                </div>
+              </div>
+              {expandedUser === u.user_id && (
+                <div style={{ padding: "4px 0 10px 12px", borderBottom: `1px solid ${C.border}`, background: "#FAFAFA", borderRadius: 6 }}>
+                  {loadingDetail && <div style={{ fontSize: 12, color: C.t3, padding: "6px 0" }}>Đang tải...</div>}
+                  {!loadingDetail && userDetail?.length === 0 && <div style={{ fontSize: 12, color: C.t3, padding: "6px 0" }}>Không có dữ liệu 30 ngày qua.</div>}
+                  {!loadingDetail && userDetail?.map((d, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, padding: "4px 0" }}>
+                      <div style={{ color: C.t2 }}>{d.feature} · {d.model}</div>
+                      <div style={{ color: C.t2 }}>{d.calls} lượt · <span style={{ fontWeight: 700, color: C.t1 }}>{fmtUSD(d.total_cost)}</span></div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
