@@ -44,8 +44,8 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
     setLoading(true);
     try {
       const [{ data: p }, { data: s }, { data: orders }] = await Promise.all([
-        supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_chat_count_today").eq("id", userId).single(),
-        supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
+        supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_chat_count_today,ai_menu_count_today").eq("id", userId).single(),
+        supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,free_ai_menu_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
         supabase.from("orders").select("id,package,amount,status,created_at,confirmed_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
       ]);
       setSub(p || null);
@@ -112,8 +112,10 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
   const tier = sub.tier || "free";
   const macroLimit = settings?.free_ai_macro_limit ?? 100;
   const chatLimit = settings?.free_ai_chat_limit ?? 20;
+  const menuLimit = settings?.free_ai_menu_limit ?? 5;
   const macroUsed = sub.ai_macro_count_this_month || 0;
   const chatUsed = sub.ai_chat_count_today || 0;
+  const menuUsed = sub.ai_menu_count_today || 0;
   const trialDays = daysLeft(sub.trial_end_date);
   const subDays = daysLeft(sub.subscription_end_date);
 
@@ -181,6 +183,12 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
               <span>📊 AI tính macro</span><span style={{ color: C.t1, fontWeight: 700 }}>{macroUsed}/{macroLimit}</span>
             </div>
             <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
+              <span>🍽️ AI tạo thực đơn</span><span style={{ color: C.t1, fontWeight: 700 }}>{menuUsed}/{menuLimit}</span>
+            </div>
+            <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (menuUsed / menuLimit) * 100)}%` }} /></div>
           </div>
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>

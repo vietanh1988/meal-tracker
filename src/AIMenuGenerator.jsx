@@ -90,9 +90,10 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   const generate = async () => {
     setStep("loading");
     setError("");
-    // Quota: dùng chung pool "macro" hiện có — hoặc đổi thành kind "menu"
-    // sau khi thêm cột ai_menu_count vào profiles (xem INTEGRATION.md).
-    const quota = await checkAndConsumeAiQuota(user?.id, "macro");
+    // Quota riêng cho AI tạo menu (theo NGÀY) — tách khỏi "macro" vì
+    // đắt hơn nhiều, gộp chung trước đây khiến 1 quota macro rẻ bị
+    // "ăn" hết bởi vài chục lần bấm Tạo lại.
+    const quota = await checkAndConsumeAiQuota(user?.id, "menu");
     if (!quota.allowed) { setError(quota.message); setStep("error"); return; }
 
     // Variety V2 — theo FOOD KEY (V2 không dùng pattern): gộp 2 nguồn:

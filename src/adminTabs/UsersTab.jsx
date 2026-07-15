@@ -418,6 +418,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
     { l: "Bữa ăn đã ghi", v: detail.meal_days_logged },
     { l: "Tuần cân nặng", v: detail.weight_weeks_logged },
     { l: "AI macro tháng này", v: detail.ai_macro_count_this_month },
+    { l: "AI tạo thực đơn hôm nay", v: detail.ai_menu_count_today },
     { l: "AI chat hôm nay", v: detail.ai_chat_count_today },
   ];
 

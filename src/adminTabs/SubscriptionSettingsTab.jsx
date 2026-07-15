@@ -15,7 +15,7 @@ export function SubscriptionSettingsTab({ isAdmin }) {
         const { data, error } = await supabase.from("subscription_settings").select("*").eq("id", 1).single();
         if (error) { console.error("Load subscription_settings error:", error); }
         setForm(data || {
-          free_ai_macro_limit: 100, free_ai_chat_limit: 20,
+          free_ai_macro_limit: 100, free_ai_chat_limit: 20, free_ai_menu_limit: 5,
           trial_days: 90, grace_period_days: 3,
           price_3m: null, price_6m: null, price_12m: null,
           bank_name: "", bank_account: "", bank_account_name: "",
@@ -35,6 +35,7 @@ export function SubscriptionSettingsTab({ isAdmin }) {
         id: 1,
         free_ai_macro_limit: Number(form.free_ai_macro_limit) || 0,
         free_ai_chat_limit: Number(form.free_ai_chat_limit) || 0,
+        free_ai_menu_limit: Number(form.free_ai_menu_limit) || 0,
         trial_days: Number(form.trial_days) || 0,
         grace_period_days: Number(form.grace_period_days) || 0,
         price_3m: form.price_3m ? Number(form.price_3m) : null,
@@ -67,6 +68,10 @@ export function SubscriptionSettingsTab({ isAdmin }) {
           <div style={{ marginBottom: 12 }}>
             <div style={lbl_style(C)}>AI tính macro / tháng</div>
             <input type="number" {...numFix} value={form.free_ai_macro_limit ?? ""} onChange={e => set("free_ai_macro_limit", e.target.value)} style={inp} />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <div style={lbl_style(C)}>🍽️ AI tạo thực đơn / ngày</div>
+            <input type="number" {...numFix} value={form.free_ai_menu_limit ?? ""} onChange={e => set("free_ai_menu_limit", e.target.value)} style={inp} />
           </div>
           <div>
             <div style={lbl_style(C)}>AI Chat / ngày</div>
