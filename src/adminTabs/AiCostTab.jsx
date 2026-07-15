@@ -1,7 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from "chart.js";
 import { supabase } from "../lib/supabase";
 import { C, card } from "../theme";
 import { fmtDate } from "../fmtDate";
+
+Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
 function fmtDT(iso) {
   if (!iso) return "-";
@@ -13,24 +16,25 @@ function fmtUSD(n) {
   return v < 0.01 ? `$${v.toFixed(4)}` : `$${v.toFixed(2)}`;
 }
 
-const CHART_COLORS = [C.primary, C.mint, C.violet, C.gold, C.secondary, C.red];
+// 1 màu duy nhất — so sánh độ lớn (magnitude) dùng sequential, không phải categorical
+const BAR_BLUE = "#2a78d6";
 
-function BarChart({ data, labelKey, valueKey }) {
+function HBar({ data, labelKey, valueKey }) {
   if (!data.length) return null;
   const max = Math.max(...data.map(d => Number(d[valueKey]) || 0), 0.0001);
   return (
-    <div style={{ marginBottom: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       {data.map((d, i) => {
         const v = Number(d[valueKey]) || 0;
         const pct = Math.max((v / max) * 100, 2);
         return (
-          <div key={i} style={{ marginBottom: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: C.t2, marginBottom: 3 }}>
-              <span style={{ fontWeight: 600 }}>{d[labelKey]}</span>
-              <span style={{ fontWeight: 700, color: C.t1 }}>{fmtUSD(v)}</span>
+          <div key={i}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+              <span style={{ color: C.t2 }}>{d[labelKey]}</span>
+              <span style={{ color: C.t1, fontWeight: 700 }}>{fmtUSD(v)}</span>
             </div>
-            <div style={{ height: 8, background: C.surface, borderRadius: 4, overflow: "hidden" }}>
-              <div style={{ width: `${pct}%`, height: "100%", background: CHART_COLORS[i % CHART_COLORS.length], borderRadius: 4, transition: "width .3s" }} />
+            <div style={{ height: 6, background: C.surface, borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ width: `${pct}%`, height: "100%", background: BAR_BLUE, borderRadius: 3, transition: "width .3s" }} />
             </div>
           </div>
         );
@@ -39,8 +43,53 @@ function BarChart({ data, labelKey, valueKey }) {
   );
 }
 
+// Chart.js daily bar chart — canvas quản lý bằng ref, tự huỷ instance cũ khi data đổi
+function DailyChart({ data }) {
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    if (!canvasRef.current || !data.length) return;
+    if (chartRef.current) chartRef.current.destroy();
+
+    const labels = data.map(d => {
+      const dt = new Date(d.day);
+      return `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}`;
+    });
+    const costs = data.map(d => Number(d.cost_usd) || 0);
+
+    chartRef.current = new Chart(canvasRef.current, {
+      type: "bar",
+      data: { labels, datasets: [{ data: costs, backgroundColor: BAR_BLUE, borderRadius: 4, maxBarThickness: 24 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => "$" + ctx.parsed.y.toFixed(4) } },
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: C.t3, font: { size: 11 } } },
+          y: { grid: { color: C.border }, border: { display: false }, ticks: { color: C.t3, font: { size: 11 }, callback: (v) => "$" + v.toFixed(2) } },
+        },
+      },
+    });
+
+    return () => { if (chartRef.current) chartRef.current.destroy(); };
+  }, [data]);
+
+  if (!data.length) return null;
+  return (
+    <div style={{ position: "relative", width: "100%", height: 260 }}>
+      <canvas ref={canvasRef} role="img" aria-label="Biểu đồ chi phí AI theo ngày">
+        Chi phí AI theo ngày, {data.length} ngày gần nhất.
+      </canvas>
+    </div>
+  );
+}
+
 export function AiCostTab({ isAdmin }) {
   const [summary, setSummary] = useState(null);
+  const [daily, setDaily] = useState([]);
   const [byModel, setByModel] = useState([]);
   const [byFeature, setByFeature] = useState([]);
   const [byUser, setByUser] = useState([]);
@@ -53,14 +102,16 @@ export function AiCostTab({ isAdmin }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [{ data: s }, { data: bm }, { data: bf }, { data: bu }, { data: r }] = await Promise.all([
+      const [{ data: s }, { data: dd }, { data: bm }, { data: bf }, { data: bu }, { data: r }] = await Promise.all([
         supabase.rpc("admin_ai_cost_summary"),
+        supabase.rpc("admin_ai_cost_daily", { p_days: 14 }),
         supabase.rpc("admin_ai_cost_by_model_7d"),
         supabase.rpc("admin_ai_cost_by_feature_7d"),
         supabase.rpc("admin_ai_cost_by_user_7d", { p_limit: 30 }),
         supabase.rpc("admin_ai_cost_recent", { p_limit: 20 }),
       ]);
       setSummary((s && s[0]) || null);
+      setDaily(dd || []);
       setByModel(bm || []);
       setByFeature(bf || []);
       setByUser(bu || []);
@@ -112,22 +163,32 @@ export function AiCostTab({ isAdmin }) {
         </div>
       </div>
 
-      {byModel.length > 0 && (
+      {daily.length > 0 && (
         <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16, marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 12 }}>Theo model (7 ngày)</div>
-          <BarChart data={byModel} labelKey="model" valueKey="total_cost" />
-          <div style={{ fontSize: 11, color: C.t3, borderTop: `1px solid ${C.border}`, paddingTop: 8 }}>
-            {byModel.map(m => `${m.model}: ${m.calls} lượt · ${m.total_input_tokens?.toLocaleString()} in / ${m.total_output_tokens?.toLocaleString()} out`).join("  ·  ")}
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 2 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>Chi phí theo ngày</div>
+            <div style={{ fontSize: 11, color: C.t3 }}>14 ngày gần nhất</div>
           </div>
+          <div style={{ fontSize: 11, color: C.t3, marginBottom: 12 }}>Gồm cả token vào và ra</div>
+          <DailyChart data={daily} />
         </div>
       )}
 
-      {byFeature.length > 0 && (
-        <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16, marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 12 }}>Theo tính năng (7 ngày)</div>
-          <BarChart data={byFeature} labelKey="feature" valueKey="total_cost" />
-        </div>
-      )}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+        {byModel.length > 0 && (
+          <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 14 }}>Theo model (7 ngày)</div>
+            <HBar data={byModel} labelKey="model" valueKey="total_cost" />
+          </div>
+        )}
+
+        {byFeature.length > 0 && (
+          <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 14 }}>Theo tính năng (7 ngày)</div>
+            <HBar data={byFeature} labelKey="feature" valueKey="total_cost" />
+          </div>
+        )}
+      </div>
 
       {byUser.length > 0 && (
         <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: 16, marginBottom: 16 }}>
