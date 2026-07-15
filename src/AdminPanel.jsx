@@ -17,6 +17,7 @@ import { AuditLogTab } from "./adminTabs/AuditLogTab";
 import { NotifyTab } from "./adminTabs/NotifyTab";
 import { FeatureFlagsTab, parseFeatureFlags } from "./adminTabs/FeatureFlagsTab";
 import { SystemHealthTab } from "./adminTabs/SystemHealthTab";
+import { AiCostTab } from "./adminTabs/AiCostTab";
 import { WeightTab } from "./adminTabs/WeightTab";
 import { AccountTab } from "./adminTabs/AccountTab";
 import { Pill } from "./Pill";
@@ -443,6 +444,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="notify"&&isAdmin&&<NotifyTab isAdmin={isAdmin} currentUserId={user?.id} appSettings={appSettings}/>}
     {section==="feature_flags"&&isAdmin&&<FeatureFlagsTab appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
     {section==="system_health"&&isAdmin&&<SystemHealthTab isAdmin={isAdmin} appSettings={appSettings}/>}
+    {section==="ai_cost"&&isAdmin&&<AiCostTab isAdmin={isAdmin}/>}
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob}/>}
 
