@@ -1,5 +1,6 @@
 import { C, card, redBtn } from "../theme";
 import { authFetch } from "../lib/authFetch";
+import { pickAiModel } from "../lib/aiProvider";
 
 export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel, setAiModel, geminiModel, setGeminiModel, gptModel, setGptModel, aiConnected, setAiConnected, claudeKey, setClaudeKey, geminiKey, setGeminiKey, gptKey, setGptKey, usdaKey, setUsdaKey}){
   if(!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
@@ -100,8 +101,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
       <button onClick={async()=>{
         setAiConnected(false);
         try{
-          const modelByProvider={claude:aiModel,gemini:geminiModel,gpt:gptModel};
-          const d=await authFetch("ai-proxy",{foodDesc:"OK",provider:aiProvider,model:modelByProvider[aiProvider],feature:"ping_test"});
+          const d=await authFetch("ai-proxy",{foodDesc:"OK",provider:aiProvider,model:pickAiModel(aiProvider,{claudeModel:aiModel,geminiModel,gptModel}),feature:"ping_test"});
           setAiConnected(!d.error);
         }catch{setAiConnected(false);}
       }} style={{...redBtn,marginTop:0,flex:1}}>Test kết nối</button>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "./lib/supabase";
 import { authFetch } from "./lib/authFetch";
+import { pickAiModelFromSettings } from "./lib/aiProvider";
 
 export function WeightSuggestion({weightLog,goalKg,goalType,startKg,curKg,profile,macro,getMeals,appSettings}){
   const [aiResponse,setAiResponse]=useState(null);
@@ -134,8 +135,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
       // Không bao giờ tự gọi thẳng OpenAI/Gemini từ client (buộc phải lộ
       // key thật ra trình duyệt) — mọi provider đều đi qua ai-proxy, server
       // tự đọc đúng key từ app_settings theo request.
-      const modelByProvider={claude:appSettings.ai_model||"claude-sonnet-5",gemini:appSettings.gemini_model||"gemini-2.0-flash",gpt:appSettings.gpt_model||"gpt-4o-mini"};
-      const d=await authFetch("ai-proxy",{foodDesc:prompt,provider,model:modelByProvider[provider],feature:"weight_advice"});
+      const d=await authFetch("ai-proxy",{foodDesc:prompt,provider,model:pickAiModelFromSettings(appSettings,provider),feature:"weight_advice"});
       if(d.error)throw new Error(d.error);
       setAiResponse((d.text||"").trim());
     }catch(e){
@@ -212,8 +212,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
         setAiResponse(null);setAiLoading(true);
         (async()=>{try{
           const provider=appSettings.ai_provider||"gpt";
-          const modelByProvider={claude:"claude-sonnet-5",gemini:"gemini-2.0-flash",gpt:"gpt-4o-mini"};
-          const d=await authFetch("ai-proxy",{foodDesc:msg,provider,model:modelByProvider[provider],feature:"weight_advice"});
+          const d=await authFetch("ai-proxy",{foodDesc:msg,provider,model:pickAiModelFromSettings(appSettings,provider),feature:"weight_advice"});
           if(d.error)throw new Error(d.error);
           setAiResponse((d.text||"").trim());
         }catch(e){setAiResponse("❌ Lỗi: "+e.message);}setAiLoading(false);})();

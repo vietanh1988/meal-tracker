@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase";
 import { authFetch } from "./lib/authFetch";
+import { pickAiModel } from "./lib/aiProvider";
 import { C, card } from "./theme";
 import { AdminTab } from "./adminTabs/AdminTab";
 import { AiTab } from "./adminTabs/AiTab";
@@ -297,8 +298,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       // thật ra trình duyệt của MỌI user, không chỉ admin — vì MealsTab
       // chạy cho mọi tier). Mọi provider đi qua ai-proxy, server tự đọc
       // đúng key từ app_settings (chỉ admin đọc được qua RLS) theo request.
-      const modelByProvider={claude:aiModel,gemini:geminiModel,gpt:gptModel};
-      const data=await authFetch("ai-proxy",{foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:aiProvider,model:modelByProvider[aiProvider],feature:"macro_lookup"});
+      const data=await authFetch("ai-proxy",{foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:aiProvider,model:pickAiModel(aiProvider,{claudeModel:aiModel,geminiModel,gptModel}),feature:"macro_lookup"});
       if(data.error)throw new Error(data.error);
       const text=data.text||"";
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
