@@ -44,7 +44,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
     setLoading(true);
     try {
       const [{ data: p }, { data: s }, { data: orders }] = await Promise.all([
-        supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_chat_count_today,ai_menu_count_today").eq("id", userId).single(),
+        supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at").eq("id", userId).single(),
         supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,free_ai_menu_limit,trial_ai_macro_limit,trial_ai_chat_limit,trial_ai_menu_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
         supabase.from("orders").select("id,package,amount,status,created_at,confirmed_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
       ]);
@@ -113,9 +113,15 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
   const macroLimit = settings?.[`${tier}_ai_macro_limit`] ?? (tier === "premium" ? 1000 : tier === "trial" ? 500 : 100);
   const chatLimit = settings?.[`${tier}_ai_chat_limit`] ?? (tier === "premium" ? 150 : tier === "trial" ? 100 : 20);
   const menuLimit = settings?.[`${tier}_ai_menu_limit`] ?? (tier === "premium" ? 50 : tier === "trial" ? 30 : 5);
-  const macroUsed = sub.ai_macro_count_this_month || 0;
-  const chatUsed = sub.ai_chat_count_today || 0;
-  const menuUsed = sub.ai_menu_count_today || 0;
+  // Số lượt lưu trong DB chỉ reset khi có LƯỢT GỌI MỚI (server tự tính
+  // lại lúc đó) — nếu hôm nay CHƯA gọi gì, DB vẫn giữ số của kỳ trước.
+  // Hiển thị phải TỰ kiểm tra "số này còn thuộc kỳ hiện tại không" trước
+  // khi show, nếu không sẽ hiện nhầm số cũ như còn hiệu lực hôm nay.
+  const today = new Date().toISOString().slice(0, 10);
+  const thisMonth = today.slice(0, 7);
+  const macroUsed = ((sub.ai_macro_count_reset_at || "").slice(0, 7) === thisMonth) ? (sub.ai_macro_count_this_month || 0) : 0;
+  const chatUsed = (sub.ai_chat_count_reset_at === today) ? (sub.ai_chat_count_today || 0) : 0;
+  const menuUsed = (sub.ai_menu_count_reset_at === today) ? (sub.ai_menu_count_today || 0) : 0;
   const trialDays = daysLeft(sub.trial_end_date);
   const subDays = daysLeft(sub.subscription_end_date);
 

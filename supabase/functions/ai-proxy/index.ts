@@ -77,16 +77,26 @@ async function verifyUser(req: Request) {
 // feature flag tắt hẳn thì mọi tier đều bị chặn (kể cả Premium).
 // feature không thuộc 3 loại có quota (weight_advice, ping_test, null)
 // → không chặn, giữ hành vi cũ.
+// 5 feature hợp lệ duy nhất mà UI thật của app gửi lên (đã gắn tag đủ ở
+// mọi điểm gọi AI). Bất kỳ giá trị nào khác — kể cả rỗng/null — là dấu
+// hiệu request không qua UI chuẩn (tự soạn request bypass) → từ chối
+// thẳng, không cho gọi AI. Trước đây feature "lạ" bị bỏ qua im lặng
+// (kind=null → allowed:true) — đây chính là khe hở để né mọi quota.
+const KNOWN_FEATURES = new Set(["menu_gen", "chat", "macro_lookup", "weight_advice", "ping_test"]);
+
 async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: string | null) {
+  if (!feature || !KNOWN_FEATURES.has(feature)) {
+    return { allowed: false, message: "Yêu cầu không hợp lệ." };
+  }
   const FEATURE_TO_KIND: Record<string, string> = {
     menu_gen: "menu", chat: "chat", macro_lookup: "macro",
   };
-  const kind = feature ? FEATURE_TO_KIND[feature] : null;
-  if (!kind) return { allowed: true }; // ping_test/weight_advice/không rõ — không chặn
+  const kind = FEATURE_TO_KIND[feature] || null;
+  if (!kind) return { allowed: true }; // weight_advice/ping_test — hợp lệ nhưng chưa có quota
 
   const { data: profile, error: pErr } = await admin
     .from("profiles")
-    .select("tier,is_admin,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at")
+    .select("tier,is_admin,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at,ai_menu_last_call_at,ai_chat_last_call_at")
     .eq("id", userId)
     .single();
   if (pErr || !profile) return { allowed: true }; // fail-open: lỗi hạ tầng không chặn user
@@ -109,6 +119,23 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
   // gốc "AI tạo thực đơn là tính năng Premium/Trial độc quyền".
   if (kind === "menu" && tier === "free") {
     return { allowed: false, message: "Tính năng AI tạo thực đơn dành cho gói Premium/Trial. Nâng cấp để mở khoá." };
+  }
+
+  // Chống double-count khi pipeline tự retry nội bộ (JSON không hợp lệ,
+  // response rỗng do provider lag) — mỗi lần retry là 1 request HTTP
+  // riêng, nếu không có cơ chế này sẽ tính nhầm thành nhiều lượt dùng.
+  // Dùng TIMESTAMP THẬT của server (client không thể giả mạo) — 2 lần
+  // gọi CÙNG loại cách nhau dưới 30s = coi là cùng 1 lần bấm nút.
+  const RETRY_WINDOW_MS = 30_000;
+  const now = new Date();
+  const LAST_CALL_FIELD: Record<string, string> = { menu: "ai_menu_last_call_at", chat: "ai_chat_last_call_at" };
+  const lastCallField = LAST_CALL_FIELD[kind];
+  if (lastCallField && profile[lastCallField]) {
+    const diffMs = now.getTime() - new Date(profile[lastCallField]).getTime();
+    if (diffMs >= 0 && diffMs < RETRY_WINDOW_MS) {
+      await admin.from("profiles").update({ [lastCallField]: now.toISOString() }).eq("id", userId);
+      return { allowed: true };
+    }
   }
 
   const { data: settings } = await admin
@@ -145,6 +172,7 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
     await admin.from("profiles").update({
       ai_menu_count_today: count + 1,
       ai_menu_count_reset_at: sameDay ? profile.ai_menu_count_reset_at : today,
+      ai_menu_last_call_at: now.toISOString(),
     }).eq("id", userId);
     return { allowed: true };
   }
@@ -155,6 +183,7 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
   await admin.from("profiles").update({
     ai_chat_count_today: count + 1,
     ai_chat_count_reset_at: sameDay ? profile.ai_chat_count_reset_at : today,
+    ai_chat_last_call_at: now.toISOString(),
   }).eq("id", userId);
   return { allowed: true };
 }

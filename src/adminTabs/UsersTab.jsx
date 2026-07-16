@@ -414,12 +414,22 @@ function UserDetail({ userId, currentUserId, onBack }) {
   if (loading) return <div style={card}>Đang tải...</div>;
   if (!detail) return <div style={card}>Không tìm thấy user. <button onClick={onBack} style={{ marginLeft: 8 }}>Quay lại</button></div>;
 
+  // Số lượt trong DB chỉ reset khi có LƯỢT GỌI MỚI (server tự tính lại
+  // lúc đó) — nếu từ hôm/tháng trước chưa có lượt nào mới, DB vẫn giữ
+  // số cũ. Phải tự kiểm tra trước khi hiện, tránh admin hiểu nhầm số
+  // liệu hết hạn là số liệu hôm nay khi debug/hỗ trợ user.
+  const today = new Date().toISOString().slice(0, 10);
+  const thisMonth = today.slice(0, 7);
+  const macroUsed = ((detail.ai_macro_count_reset_at || "").slice(0, 7) === thisMonth) ? (detail.ai_macro_count_this_month || 0) : 0;
+  const chatUsed = (detail.ai_chat_count_reset_at === today) ? (detail.ai_chat_count_today || 0) : 0;
+  const menuUsed = (detail.ai_menu_count_reset_at === today) ? (detail.ai_menu_count_today || 0) : 0;
+
   const statCards = [
     { l: "Bữa ăn đã ghi", v: detail.meal_days_logged },
     { l: "Tuần cân nặng", v: detail.weight_weeks_logged },
-    { l: "AI macro tháng này", v: detail.ai_macro_count_this_month },
-    { l: "AI tạo thực đơn hôm nay", v: detail.ai_menu_count_today },
-    { l: "AI chat hôm nay", v: detail.ai_chat_count_today },
+    { l: "AI macro tháng này", v: macroUsed },
+    { l: "AI tạo thực đơn hôm nay", v: menuUsed },
+    { l: "AI chat hôm nay", v: chatUsed },
   ];
 
   return (
