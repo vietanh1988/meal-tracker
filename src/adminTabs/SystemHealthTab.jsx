@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { authFetch } from "../lib/authFetch";
+import { pickAiModelFromSettings } from "../lib/aiProvider";
 import { C, card } from "../theme";
 import { fmtDate } from "../fmtDate";
 
@@ -49,8 +50,8 @@ export function SystemHealthTab({ isAdmin, appSettings }) {
     setPinging(true);
     const t0 = Date.now();
     try {
-      const aiModel = appSettings?.ai_model || "claude-sonnet-5";
-      const data = await authFetch("ai-proxy", { foodDesc: "Ping. Trả lời đúng 1 từ: OK", provider: "claude", model: aiModel, feature: "ping_test" });
+      const prov = appSettings?.ai_provider || "claude";
+      const data = await authFetch("ai-proxy", { foodDesc: "Ping. Trả lời đúng 1 từ: OK", provider: prov, model: pickAiModelFromSettings(appSettings, prov), feature: "ping_test" });
       setAiPing({ ok: !data.error, ms: Date.now() - t0 });
     } catch (e) {
       setAiPing({ ok: false, ms: Date.now() - t0 });
