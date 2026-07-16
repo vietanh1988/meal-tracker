@@ -392,6 +392,32 @@ export async function searchUSDA(foodName, apiKey) {
   }
 }
 
+// ============================================================
+// Bổ sung dầu/mỡ theo cách chế biến — chỉ dùng cho USDA items
+// (LocalDB đã có macro chế biến sẵn, AI tự biết cộng dầu, Cache
+// lưu kết quả đã xử lý → 3 nguồn kia KHÔNG gọi hàm này).
+// Bảng tra dựa trên thực tế nấu ăn VN: rán/chiên ngập dầu ~5ml,
+// xào/áp chảo ~3ml, rang ~2ml. Luộc/hấp/kho/hầm +0.
+// 1ml dầu ăn ≈ 0.92g → fat = ml * 0.92, cal = fat * 9.
+// ============================================================
+const OIL_ML_BY_COOK = {
+  "fried": 5, "pan fried": 4, "stir fried": 3,
+  "roasted": 2,  // rang/quay
+};
+
+export function adjustCookingOil(macro, cookEN) {
+  if (!cookEN) return macro;
+  const oilMl = OIL_ML_BY_COOK[cookEN];
+  if (!oilMl) return macro;
+  const addFat = Math.round(oilMl * 0.92 * 10) / 10;
+  const addCal = Math.round(addFat * 9);
+  return {
+    ...macro,
+    fat: Math.round(((macro.fat || 0) + addFat) * 10) / 10,
+    cal: Math.round((macro.cal || 0) + addCal),
+  };
+}
+
 export function calcFromUSDA(usdaData, gram) {
   const p = usdaData.per100g;
   const r = (gram || 100) / 100;

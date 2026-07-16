@@ -27,7 +27,7 @@ import { ALL_MEALS, DEFAULT_MEAL_CONFIG, mealsData } from "./mealConstants";
 import { AboutPage } from "./AboutPage";
 import { TermsPage } from "./TermsPage";
 import { useIsMobile } from "./hooks/useIsMobile";
-import { searchUSDA, calcFromUSDA, translateFood, estimateGram } from "./lib/usdaService";
+import { searchUSDA, calcFromUSDA, translateFood, estimateGram, adjustCookingOil } from "./lib/usdaService";
 // Quota check chuyển hẳn sang server (edge function)
 import { lookupLocalFood } from "./lib/localFoodDB";
 import { usePendingFoodCache } from "./hooks/usePendingFoodCache";
@@ -250,7 +250,11 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           if(result){
             const unit=f.unit||"g";const isWeight=unit==="g"||unit==="ml";
             const gram=f.gram||(isWeight?100:estimateGram(f.name,unit,f.qty));
-            const macro=calcFromUSDA(result,gram);
+            const rawMacro=calcFromUSDA(result,gram);
+            // Cộng dầu theo cách chế biến (rán +5ml, xào +3ml...) —
+            // USDA trả macro nguyên liệu raw, chưa tính dầu khi nấu.
+            // Phải cộng TRƯỚC khi cache để cache lưu đúng giá trị cuối.
+            const macro=adjustCookingOil(rawMacro,translated.cookEN);
             usdaResolved.push({name:f.name,gram,unit,qty:f.qty,qty_display:isWeight?null:`${f.qty} ${unit}`,...macro,source:"USDA",_mealId:f._mealId});
           }else{stillUncached.push(f);}
         }catch(e){console.error("USDA error:",e);stillUncached.push(f);}
