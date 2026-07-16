@@ -138,7 +138,13 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
   // gọi CÙNG loại cách nhau dưới 30s = coi là cùng 1 lần bấm nút.
   const RETRY_WINDOW_MS = 30_000;
   const now = new Date();
-  const LAST_CALL_FIELD: Record<string, string> = { menu: "ai_menu_last_call_at", chat: "ai_chat_last_call_at" };
+  // Chỉ "menu" có retry NỘI BỘ THẬT (pipeline tự gọi lại trong vài giây
+  // nếu JSON không hợp lệ) — "chat" là user CHỦ ĐỘNG gõ nhiều tin nhắn,
+  // có thể cách nhau dưới 30s hoàn toàn bình thường (không phải retry).
+  // Trước đây áp dụng chung cho cả chat khiến nhiều tin nhắn liên tục
+  // bị coi nhầm là "cùng 1 lượt" → không tăng count, reset_at kẹt ở
+  // ngày cũ mãi mãi nếu user chat đều đặn (luôn có tin trong 30s).
+  const LAST_CALL_FIELD: Record<string, string> = { menu: "ai_menu_last_call_at" };
   const lastCallField = LAST_CALL_FIELD[kind];
   if (lastCallField && profile[lastCallField]) {
     const diffMs = now.getTime() - new Date(profile[lastCallField]).getTime();

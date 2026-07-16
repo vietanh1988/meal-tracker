@@ -443,20 +443,10 @@ saveMsg("assistant",welcome);
 }
 },[historyLoaded,messages.length]);
 
-// Restore saved AI menu from Supabase on mount (mọi thiết bị đều thấy)
-useEffect(()=>{
-if(!historyLoaded||!userId)return;
-(async()=>{
-const saved=await loadAIMenu(userId);
-if(saved&&saved.meals&&saved.meals.length>0){
-const summary="Thực đơn bạn tạo hôm nay vẫn đây nhé 👇";
-const alreadyHasMenu=messages.some(mm=>mm.action==="menu_preview");
-if(!alreadyHasMenu){
-setMessages(prev=>[...prev,{role:"assistant",content:summary,action:"menu_preview",template:saved}]);
-}
-}
-})();
-},[historyLoaded,userId]);
+// Đã bỏ: trước đây mỗi lần mở lại chat sẽ tự hiện lại menu đã tạo
+// ("Thực đơn bạn tạo hôm nay vẫn đây nhé 👇"). User chỉ muốn thấy menu
+// NGAY SAU khi bấm tạo (handleApplyAIMenuChat), không muốn nó lặp lại
+// mỗi lần mở chat. Menu vẫn được lưu (saveAIMenu) và xem ở tab Tổng quan.
 
 const quickPrompts=(()=>{
 const t=todayData||{};const m=macro||{};
