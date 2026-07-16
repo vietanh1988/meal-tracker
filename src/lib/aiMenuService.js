@@ -13,7 +13,7 @@
 // Menu lưu Supabase (saveAIMenu) để reload không mất.
 // ============================================================
 
-import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay } from "./localFoodDB";
+import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay, isStandaloneDish } from "./localFoodDB";
 import { buildWhitelist } from "./whitelistBuilder";
 import { buildPromptV2 } from "./promptBuilderV2";
 import { validateMenuV2, checkDryRun } from "./menuValidatorV2";
@@ -397,9 +397,19 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       const normMeals = val.meals.map(m => {
         const foods = m.foods.map(k => ({ key: k, display: getFoodDisplay(k), role: getFoodRole(k) }));
         // Fat filler: bữa chính thêm lạc/vừng (món VN thật, có tên) —
-        // engine cần nhóm fat để scale, thiếu là hụt fat cả ngày
+        // engine cần nhóm fat để scale, thiếu là hụt fat cả ngày.
+        // BỎ QUA nếu:
+        // - Bữa có standalone dish (phở/bún/cháo — trọn suất, không kèm lạc)
+        // - Filler food nằm trong danh sách avoid (dị ứng đậu phộng/lạc)
+        // - Style = clean (lạc rang = đồ chế biến)
+        const hasStandalone = foods.some(f => isStandaloneDish(f.key));
         const filler = AUTO_FAT_FILLER[m.meal_id];
-        if (MAIN_MEALS.has(m.meal_id) && filler && !foods.some(f => f.role === "fat")) {
+        const avoidSet = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
+        const styleId = prefs?.style || null;
+        const fillerBlocked = !filler || hasStandalone
+          || avoidSet.has(filler.food)
+          || styleId === "clean";
+        if (MAIN_MEALS.has(m.meal_id) && !fillerBlocked && !foods.some(f => f.role === "fat")) {
           foods.push({ key: filler.food, display: filler.display, role: "fat" });
         }
         return {

@@ -27,6 +27,15 @@ const SUPPLEMENT_KEYS = ["whey", "bột whey", "whey isolate", "mass gainer", "c
 // Clean style — loại đồ chiên/chế biến sẵn/béo nặng
 const CLEAN_BLOCK = ["xúc xích", "giò", "chả lụa", "chả", "nem", "patê", "ba chỉ", "ba rọi", "bò viên", "mayonnaise", "đường", "cánh gà", "mì ý", "sầu riêng"];
 
+// VN style — hạ điểm mạnh món tây/không truyền thống để AI ưu tiên
+// cơm/canh/món mặn/rau VN. Không chặn hẳn (vẫn nằm trong whitelist
+// với score thấp — AI có thể chọn nếu hết lựa chọn VN).
+const VN_DEMOTE = new Set([
+  "yến mạch", "bột yến mạch", "granola", "mì ý", "phô mai",
+  "bơ đậu phộng", "cá hồi", "cá ngừ", "tôm hùm",
+  "bánh mì sandwich", "ngũ cốc", "thanh protein",
+]);
+
 // Không đưa vào whitelist cho AI chọn (gia vị/dầu — hệ thống tự thêm)
 const NEVER_LIST = ["dầu ăn", "dầu ô liu", "dầu dừa", "dầu mè", "nước mắm", "xì dầu", "nước tương", "tương ớt", "tỏi", "gừng", "chanh", "đường", "creatine", "bcaa"];
 
@@ -67,6 +76,8 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     if (v.tier === "occasional") score -= 3; // món đắt (cá hồi, hạt điều...) — hạ ưu tiên, KHÔNG loại hẳn
     if (goal === "cut" && ["poultry", "seafood", "veg", "egg_dairy"].includes(v.cat)) score += 2;
     if (goal === "bulk" && ["starch", "beef", "pork", "egg_dairy"].includes(v.cat)) score += 2;
+    // VN style: hạ điểm mạnh món tây → AI ưu tiên cơm/canh/rau VN trước
+    if (style === "vn" && VN_DEMOTE.has(key)) score -= 5;
 
     items.push({ key, role: getFoodRole(key), cal: v.cal, p: v.p, c: v.c, f: v.f, slots, _score: score });
   }
