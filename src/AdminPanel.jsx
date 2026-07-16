@@ -27,7 +27,7 @@ import { AboutPage } from "./AboutPage";
 import { TermsPage } from "./TermsPage";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { searchUSDA, calcFromUSDA, translateFood, estimateGram } from "./lib/usdaService";
-import { checkAndConsumeAiQuota } from "./lib/aiQuota";
+// Quota check chuyển hẳn sang server (edge function)
 import { lookupLocalFood } from "./lib/localFoodDB";
 import { usePendingFoodCache } from "./hooks/usePendingFoodCache";
 import { FoodCachePendingTab } from "./adminTabs/FoodCachePendingTab";
@@ -286,8 +286,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     // === STEP 4: AI fallback (món lạ) ===
     if(!flags.ai_macro){setAiError("Tính năng AI tính macro tự động đang tạm tắt. Món này chưa có trong Kho nội bộ/Cache/USDA, vui lòng nhập tay hoặc thử tên khác.");setAiLoading(false);return;}
-    const quota=await checkAndConsumeAiQuota(user?.id,"macro");
-    if(!quota.allowed){setAiError(quota.message);setAiLoading(false);return;}
+    // Quota macro (theo THÁNG) giờ chặn Ở SERVER (edge function ai-proxy).
     const foodDesc=stillUncached.map(f=>{
       const unit=f.unit||"g";
       if(unit==="g"||unit==="ml") return `${f.qty>1?f.qty+" ":""}${f.name} ${f.gram}${unit}`;

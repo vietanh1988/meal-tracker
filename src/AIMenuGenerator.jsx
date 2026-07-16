@@ -37,7 +37,7 @@ function LoadingCard() {
   );
 }
 import { ALL_MEALS } from "./mealConstants";
-import { checkAndConsumeAiQuota } from "./lib/aiQuota";
+// Quota check chuyển hẳn sang server (edge function) — xem generate()
 import { useIsMobile } from "./hooks/useIsMobile";
 import {
   generateMenuAI, swapFoodInTemplate, getSwapCandidates, sumTemplate, dayTarget, getFoodDisplayCategory, resolveMealIds, getRecentFoodKeys,
@@ -90,11 +90,9 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   const generate = async () => {
     setStep("loading");
     setError("");
-    // Quota riêng cho AI tạo menu (theo NGÀY) — tách khỏi "macro" vì
-    // đắt hơn nhiều, gộp chung trước đây khiến 1 quota macro rẻ bị
-    // "ăn" hết bởi vài chục lần bấm Tạo lại.
-    const quota = await checkAndConsumeAiQuota(user?.id, "menu");
-    if (!quota.allowed) { setError(quota.message); setStep("error"); return; }
+    // Quota (theo NGÀY, riêng khỏi macro) giờ CHẶN Ở SERVER (edge function
+    // ai-proxy) — nguồn sự thật duy nhất, client không thể bypass qua
+    // DevTools. Không tự tăng counter ở đây nữa (tránh double-count).
 
     // Variety V2 — theo FOOD KEY (V2 không dùng pattern): gộp 2 nguồn:
     // (1) đã ăn thật 3 ngày gần nhất (meal_logs), (2) đã hiện trong

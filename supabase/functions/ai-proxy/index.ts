@@ -1,4 +1,4 @@
-// supabase/functions/ai-proxy/index.ts — BẢN MỞ RỘNG + JWT AUTH + COST LOGGING
+// supabase/functions/ai-proxy/index.ts — JWT AUTH + SERVER-SIDE QUOTA + COST LOGGING
 // Deploy: supabase functions deploy ai-proxy
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "npm:@supabase/supabase-js@2"
@@ -26,39 +26,30 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 
-// ---- Bảng giá USD / 1 TRIỆU token — tra cứu 15/07/2026, xem thêm README_PRICING.md ----
-// input/output theo model string thực tế app đang dùng (khớp AiTab.jsx)
+// ---- Bảng giá USD / 1 TRIỆU token — tra cứu 15/07/2026 ----
 const PRICING: Record<string, { in: number; out: number }> = {
   "claude-sonnet-4-6": { in: 3, out: 15 },
-  "claude-sonnet-5": { in: 2, out: 10 }, // giá intro đến 31/8/2026, sau đó $3/$15
+  "claude-sonnet-5": { in: 2, out: 10 },
   "claude-opus-4-6": { in: 5, out: 25 },
   "gemini-2.5-flash": { in: 0.30, out: 2.50 },
   "gemini-3.5-flash": { in: 1.50, out: 9 },
   "gemini-3.1-pro": { in: 2, out: 12 },
   "gpt-4o-mini": { in: 0.15, out: 0.60 },
-  "chat-latest": { in: 5, out: 30 }, // GPT-5.5 Instant — chưa có giá API riêng công bố, tạm dùng giá GPT-5.5
+  "chat-latest": { in: 5, out: 30 },
   "gpt-5.5": { in: 5, out: 30 },
 };
 
 function calcCost(model: string, inputTok: number, outputTok: number) {
   const p = PRICING[model];
-  if (!p) return 0; // model lạ/chưa cập nhật giá — không chặn request, chỉ không tính được cost
+  if (!p) return 0;
   return (inputTok / 1e6) * p.in + (outputTok / 1e6) * p.out;
 }
 
-// ---- Log cost — KHÔNG BAO GIỜ làm fail request chính nếu log lỗi ----
-async function logUsage(userId: string | null, provider: string, model: string, inputTok: number, outputTok: number, feature: string | null) {
-  if (!SUPABASE_SERVICE_KEY) {
-    console.error("[ai_usage_log] SUPABASE_SERVICE_ROLE_KEY rỗng — bỏ qua log");
-    return;
-  }
+async function logUsage(admin: any, userId: string | null, provider: string, model: string, inputTok: number, outputTok: number, feature: string | null) {
   try {
-    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     const { error } = await admin.from("ai_usage_log").insert({
-      user_id: userId,
-      provider, model, feature,
-      input_tokens: inputTok,
-      output_tokens: outputTok,
+      user_id: userId, provider, model, feature,
+      input_tokens: inputTok, output_tokens: outputTok,
       cost_usd: calcCost(model, inputTok, outputTok),
     });
     if (error) console.error("[ai_usage_log] insert lỗi:", error.message, error.code);
@@ -67,7 +58,6 @@ async function logUsage(userId: string | null, provider: string, model: string, 
   }
 }
 
-// ---- JWT Auth helper ----
 async function verifyUser(req: Request) {
   const authHeader = req.headers.get("authorization") || req.headers.get("apikey") || "";
   const token = authHeader.replace("Bearer ", "");
@@ -80,6 +70,95 @@ async function verifyUser(req: Request) {
   return user;
 }
 
+// ---- SERVER-SIDE quota enforcement — nguồn sự thật DUY NHẤT, client
+// không thể bypass (khác aiQuota.js phía client vốn chỉ chạy trong trình
+// duyệt user, có thể bị thao túng qua DevTools). Đồng bộ luật với
+// aiQuota.js + getAIMenuAccess: free luôn khoá cứng menu_gen bất kể quota;
+// feature flag tắt hẳn thì mọi tier đều bị chặn (kể cả Premium).
+// feature không thuộc 3 loại có quota (weight_advice, ping_test, null)
+// → không chặn, giữ hành vi cũ.
+async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: string | null) {
+  const FEATURE_TO_KIND: Record<string, string> = {
+    menu_gen: "menu", chat: "chat", macro_lookup: "macro",
+  };
+  const kind = feature ? FEATURE_TO_KIND[feature] : null;
+  if (!kind) return { allowed: true }; // ping_test/weight_advice/không rõ — không chặn
+
+  const { data: profile, error: pErr } = await admin
+    .from("profiles")
+    .select("tier,is_admin,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at")
+    .eq("id", userId)
+    .single();
+  if (pErr || !profile) return { allowed: true }; // fail-open: lỗi hạ tầng không chặn user
+  if (profile.is_admin) return { allowed: true }; // admin bypass TẤT CẢ (kể cả feature flag) — cần test bất kỳ lúc nào
+
+  // Công tắc tổng (admin tắt khẩn cấp cho user thường) — check server-side,
+  // không chỉ ẩn UI. Trước đây user có thể bypass UI gọi thẳng edge
+  // function dù admin đã tắt tính năng để xử lý sự cố.
+  const { data: appSet } = await admin.from("app_settings").select("value").eq("key", "feature_flags").single();
+  let flags: Record<string, boolean> = {};
+  try { flags = JSON.parse(appSet?.value || "{}"); } catch (e) { /* fail-open nếu parse lỗi */ }
+  const FLAG_KEY: Record<string, string> = { menu: "ai_menu_gen", chat: "ai_chat", macro: "ai_macro" };
+  if (flags[FLAG_KEY[kind]] === false) {
+    return { allowed: false, message: "Tính năng này đang tạm khoá để bảo trì." };
+  }
+
+  const tier = profile.tier || "free";
+
+  // menu_gen: Free luôn khoá cứng — không liên quan quota, đúng ý định
+  // gốc "AI tạo thực đơn là tính năng Premium/Trial độc quyền".
+  if (kind === "menu" && tier === "free") {
+    return { allowed: false, message: "Tính năng AI tạo thực đơn dành cho gói Premium/Trial. Nâng cấp để mở khoá." };
+  }
+
+  const { data: settings } = await admin
+    .from("subscription_settings")
+    .select("free_ai_macro_limit,free_ai_chat_limit,trial_ai_macro_limit,trial_ai_chat_limit,trial_ai_menu_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit")
+    .eq("id", 1)
+    .single();
+
+  const LIMITS: Record<string, Record<string, number>> = {
+    free:    { macro: settings?.free_ai_macro_limit ?? 100, chat: settings?.free_ai_chat_limit ?? 20, menu: 0 },
+    trial:   { macro: settings?.trial_ai_macro_limit ?? 500, chat: settings?.trial_ai_chat_limit ?? 100, menu: settings?.trial_ai_menu_limit ?? 30 },
+    premium: { macro: settings?.premium_ai_macro_limit ?? 1000, chat: settings?.premium_ai_chat_limit ?? 150, menu: settings?.premium_ai_menu_limit ?? 50 },
+  };
+  const lim = (LIMITS[tier] || LIMITS.free)[kind];
+  const upgradeHint = tier === "free" ? " Nâng cấp Premium để có hạn mức cao hơn." : "";
+
+  const today = new Date().toISOString().slice(0, 10);
+  const thisMonth = today.slice(0, 7);
+
+  if (kind === "macro") {
+    const sameMonth = (profile.ai_macro_count_reset_at || "").slice(0, 7) === thisMonth;
+    const count = sameMonth ? (profile.ai_macro_count_this_month || 0) : 0;
+    if (count >= lim) return { allowed: false, message: `Bạn đã dùng hết ${lim} lượt AI tính macro trong tháng này.${upgradeHint}` };
+    await admin.from("profiles").update({
+      ai_macro_count_this_month: count + 1,
+      ai_macro_count_reset_at: sameMonth ? profile.ai_macro_count_reset_at : today,
+    }).eq("id", userId);
+    return { allowed: true };
+  }
+  if (kind === "menu") {
+    const sameDay = profile.ai_menu_count_reset_at === today;
+    const count = sameDay ? (profile.ai_menu_count_today || 0) : 0;
+    if (count >= lim) return { allowed: false, message: `Bạn đã dùng hết ${lim} lượt AI tạo thực đơn hôm nay.${upgradeHint}` };
+    await admin.from("profiles").update({
+      ai_menu_count_today: count + 1,
+      ai_menu_count_reset_at: sameDay ? profile.ai_menu_count_reset_at : today,
+    }).eq("id", userId);
+    return { allowed: true };
+  }
+  // chat
+  const sameDay = profile.ai_chat_count_reset_at === today;
+  const count = sameDay ? (profile.ai_chat_count_today || 0) : 0;
+  if (count >= lim) return { allowed: false, message: `Bạn đã dùng hết ${lim} tin nhắn AI Chat hôm nay.${upgradeHint}` };
+  await admin.from("profiles").update({
+    ai_chat_count_today: count + 1,
+    ai_chat_count_reset_at: sameDay ? profile.ai_chat_count_reset_at : today,
+  }).eq("id", userId);
+  return { allowed: true };
+}
+
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') {
@@ -87,13 +166,24 @@ serve(async (req) => {
   }
 
   try {
-    // ---- Verify JWT ----
     const user = await verifyUser(req);
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const { foodDesc, provider = "claude", model, system, messages, maxTokens, feature } = await req.json()
+
+    // ---- Quota check — TRƯỚC khi gọi AI thật, chặn sớm tiết kiệm tiền ----
+    // admin client (service role) dùng CHUNG cho cả quota lẫn log — tạo 1
+    // lần, tránh làm 2 lần createClient không cần thiết.
+    let admin: any = null;
+    if (SUPABASE_SERVICE_KEY) {
+      admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+      const quota = await checkAndConsumeQuotaServer(admin, user.id, feature || null);
+      if (!quota.allowed) {
+        return new Response(JSON.stringify({ error: quota.message, quotaExceeded: true }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+    }
 
     const msgs = (messages && messages.length) ? messages : [{ role: "user", content: foodDesc }]
     let text = ""
@@ -167,10 +257,7 @@ serve(async (req) => {
       outputTok = d.usage?.completion_tokens || 0;
     }
 
-    // Log usage — await trực tiếp (đơn giản, chắc chắn insert hoàn thành
-    // trước khi function đóng). Thêm ~100-200ms, không đáng kể so với
-    // AI call vốn đã mất 10-30s.
-    await logUsage(user.id, provider, usedModel, inputTok, outputTok, feature || null);
+    if (admin) await logUsage(admin, user.id, provider, usedModel, inputTok, outputTok, feature || null);
 
     return new Response(JSON.stringify({ text, usage: { input_tokens: inputTok, output_tokens: outputTok } }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

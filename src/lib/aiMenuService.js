@@ -164,7 +164,14 @@ async function callAI(prompt, { provider, model } = {}, _retriesLeft = 1) {
     feature: "menu_gen",
     messages: [{ role: "user", content: prompt }],
   });
-  if (d.error) throw new Error(d.error);
+  if (d.error) {
+    const err = new Error(d.error);
+    // Server chặn bởi quota (403, vĩnh viễn trong phiên này) — khác lỗi
+    // mạng/API tạm thời. Đánh dấu để tầng gọi ngoài KHÔNG retry vô ích
+    // (biết chắc lần sau vẫn bị chặn y hệt, tốn round-trip không cần).
+    if (d.quotaExceeded) err.quotaExceeded = true;
+    throw err;
+  }
   const text = d.text || "";
   // Response rỗng = lỗi tạm thời phía provider (rate limit/overload không set
   // d.error rõ ràng) — retry NGAY LẬP TỨC, không tính vào vòng validate-feedback.
@@ -419,6 +426,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       if (val.ok && dry.ok) return { ok: true, template, note: raw.note || "" };
       lastErrors = [...val.errors, ...dry.errors];
     } catch (e) {
+      if (e.quotaExceeded) return { ok: false, error: e.message }; // vĩnh viễn — dừng ngay, không thử lại
       lastErrors = [e.message || "Lỗi không xác định"];
     }
   }

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { appConfirm } from "./lib/dialog";
 import { supabase } from "./lib/supabase";
 import { authFetch } from "./lib/authFetch";
-import { checkAndConsumeAiQuota } from "./lib/aiQuota";
+// Quota check chuyển hẳn sang server (edge function) — xem handleSend()
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getFoodDisplay } from "./lib/localFoodDB";
 import { getAIMenuAccess, generateMenuAI, sumTemplate, resolveMealIds, getRecentPatternNames, dayTarget, formatFoodPortion, capitalizeFirst, saveAIMenu, loadAIMenu, clearAIMenu } from "./lib/aiMenuService";
@@ -360,10 +360,8 @@ saveMsg("assistant",aiMsg.content);
 return;
 }
 
-if(!isAdmin){
-const quota=await checkAndConsumeAiQuota(userId,"chat");
-if(!quota.allowed){setMessages(prev=>[...prev,{role:"user",content:text},{role:"assistant",content:quota.message}]);return;}
-}
+// Quota chat (theo NGÀY) giờ chặn Ở SERVER (edge function ai-proxy) —
+// nguồn sự thật duy nhất, admin tự bypass ở đó luôn (is_admin check).
 const newMsgs=[...messages,{role:"user",content:text}];
 setMessages(newMsgs);setInput("");setLoading(true);
 saveMsg("user",text);
