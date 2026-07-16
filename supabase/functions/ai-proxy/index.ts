@@ -281,12 +281,17 @@ serve(async (req) => {
       const OPENAI_KEY = await getAppSettingValue(admin, "gpt_key");
       if (!OPENAI_KEY) throw new Error("Chưa cấu hình OpenAI API Key — vào Cài đặt → Kết nối AI để nhập.")
       usedModel = model || "gpt-4o-mini";
+      // gpt-4o-mini dùng max_tokens (cũ); model mới hơn (gpt-5.5-*) yêu
+      // cầu max_completion_tokens — gửi sai tên bị OpenAI từ chối thẳng.
+      const tokenParam = usedModel === "gpt-4o-mini"
+        ? { max_tokens: maxTokens || 1000 }
+        : { max_completion_tokens: maxTokens || 1000 };
       const res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_KEY}` },
         body: JSON.stringify({
           model: usedModel,
-          max_tokens: maxTokens || 1000,
+          ...tokenParam,
           messages: [...(system ? [{ role: "system", content: system }] : []), ...msgs],
         }),
       })

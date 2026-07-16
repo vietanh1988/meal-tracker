@@ -148,8 +148,13 @@ if(error)console.warn("AI Chat save error:",error);
 }catch(e){console.warn("AI Chat save failed:",e);}
 };
 const chatRef=useRef(null);
-const aiModel=appSettings?.ai_model||"claude-sonnet-5";
 const aiProvider=appSettings?.ai_provider||"claude";
+// Mỗi provider có field model riêng trong settings (ai_model cho Claude,
+// gpt_model/gemini_model cho 2 provider kia) — trước đây luôn dùng
+// aiModel (= model Claude) bất kể provider, khiến gửi provider="gpt"
+// kèm model="claude-sonnet-5" → OpenAI từ chối thẳng (model không tồn tại).
+const modelByProvider={claude:appSettings?.ai_model||"claude-sonnet-5",gemini:appSettings?.gemini_model||"gemini-2.0-flash",gpt:appSettings?.gpt_model||"gpt-4o-mini"};
+const aiModel=modelByProvider[aiProvider];
 
 // Context engine
 const buildContext=()=>{
