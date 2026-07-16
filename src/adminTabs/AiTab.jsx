@@ -100,18 +100,9 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
       <button onClick={async()=>{
         setAiConnected(false);
         try{
-          if(aiProvider==="claude"){
-            const d=await authFetch("ai-proxy",{foodDesc:"OK",provider:"claude",model:aiModel,feature:"ping_test"});
-            setAiConnected(!d.error);
-          }else if(aiProvider==="gemini"){
-            if(!geminiKey){setAiConnected(false);return;}
-            const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:"OK"}]}]})});
-            const d=await r.json();setAiConnected(!d.error);
-          }else{
-            if(!gptKey){setAiConnected(false);return;}
-            const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${gptKey}`},body:JSON.stringify({model:gptModel,messages:[{role:"user",content:"OK"}],...(gptModel==="gpt-4o-mini"?{max_tokens:10}:{max_completion_tokens:10})})});
-            const d=await r.json();setAiConnected(!d.error);
-          }
+          const modelByProvider={claude:aiModel,gemini:geminiModel,gpt:gptModel};
+          const d=await authFetch("ai-proxy",{foodDesc:"OK",provider:aiProvider,model:modelByProvider[aiProvider],feature:"ping_test"});
+          setAiConnected(!d.error);
         }catch{setAiConnected(false);}
       }} style={{...redBtn,marginTop:0,flex:1}}>Test kết nối</button>
 

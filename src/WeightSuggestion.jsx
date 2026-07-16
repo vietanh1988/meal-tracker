@@ -130,32 +130,14 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
     setAiLoading(true);setAiResponse(null);
     try{
       const provider=appSettings.ai_provider||"gpt";
-      const keys={claude:appSettings.claude_key,gemini:appSettings.gemini_key,gpt:appSettings.gpt_key};
       const prompt=buildPrompt();
-      let text="";
-
-      if(provider==="claude"){
-        const d=await authFetch("ai-proxy",{foodDesc:prompt,provider:"claude",model:appSettings.ai_model||"claude-sonnet-5",feature:"weight_advice"});
-        if(d.error)throw new Error(d.error);
-        text=d.text||"";
-      }else if(provider==="gemini"){
-        const model=appSettings.gemini_model||"gemini-2.0-flash";
-        const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${keys.gemini}`,
-          {method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
-        const d=await res.json();
-        if(d.error)throw new Error(d.error.message);
-        text=d.candidates?.[0]?.content?.parts?.[0]?.text||"";
-      }else{
-        const model=appSettings.gpt_model||"gpt-4o-mini";
-        const res=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",
-          headers:{"Content-Type":"application/json","Authorization":`Bearer ${keys.gpt}`},
-          body:JSON.stringify({model,messages:[{role:"user",content:prompt}],max_tokens:500})});
-        const d=await res.json();
-        if(d.error)throw new Error(d.error.message);
-        text=d.choices?.[0]?.message?.content||"";
-      }
-      setAiResponse(text.trim());
+      // Không bao giờ tự gọi thẳng OpenAI/Gemini từ client (buộc phải lộ
+      // key thật ra trình duyệt) — mọi provider đều đi qua ai-proxy, server
+      // tự đọc đúng key từ app_settings theo request.
+      const modelByProvider={claude:appSettings.ai_model||"claude-sonnet-5",gemini:appSettings.gemini_model||"gemini-2.0-flash",gpt:appSettings.gpt_model||"gpt-4o-mini"};
+      const d=await authFetch("ai-proxy",{foodDesc:prompt,provider,model:modelByProvider[provider],feature:"weight_advice"});
+      if(d.error)throw new Error(d.error);
+      setAiResponse((d.text||"").trim());
     }catch(e){
       setAiResponse("❌ Lỗi: "+e.message);
     }
@@ -230,22 +212,10 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
         setAiResponse(null);setAiLoading(true);
         (async()=>{try{
           const provider=appSettings.ai_provider||"gpt";
-          const keys={gpt:appSettings.gpt_key,claude:appSettings.claude_key,gemini:appSettings.gemini_key};
-          let text="";
-          if(provider==="gpt"){
-            const res=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",
-              headers:{"Content-Type":"application/json","Authorization":`Bearer ${keys.gpt}`},
-              body:JSON.stringify({model:"gpt-4o-mini",messages:[{role:"user",content:msg}],max_tokens:500})});
-            const d=await res.json();text=d.choices?.[0]?.message?.content||"";
-          }else if(provider==="claude"){
-            const d=await authFetch("ai-proxy",{foodDesc:msg,provider:"claude",model:"claude-sonnet-5",feature:"weight_advice"});
-            text=d.text||"";
-          }else{
-            const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys.gemini}`,
-              {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:msg}]}]})});
-            const d=await res.json();text=d.candidates?.[0]?.content?.parts?.[0]?.text||"";
-          }
-          setAiResponse(text.trim());
+          const modelByProvider={claude:"claude-sonnet-5",gemini:"gemini-2.0-flash",gpt:"gpt-4o-mini"};
+          const d=await authFetch("ai-proxy",{foodDesc:msg,provider,model:modelByProvider[provider],feature:"weight_advice"});
+          if(d.error)throw new Error(d.error);
+          setAiResponse((d.text||"").trim());
         }catch(e){setAiResponse("❌ Lỗi: "+e.message);}setAiLoading(false);})();
       }} style={{fontSize:13,fontWeight:700,padding:"10px 16px",borderRadius:8,border:"none",background:"#6366F1",color:"#fff",cursor:"pointer"}}>
         🔍 Tìm PT phù hợp

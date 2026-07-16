@@ -293,30 +293,14 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
       return `${f.qty} ${unit} ${f.name}`;
     }).join(", ");
     try{
-      let text="";
-      if(aiProvider==="claude"){
-        const data=await authFetch("ai-proxy",{foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:"claude",model:aiModel,feature:"macro_lookup"});
-        if(data.error)throw new Error(data.error);
-        text=data.text||"";
-      } else if(aiProvider==="gemini"){
-        if(!geminiKey)throw new Error("Chưa nhập Gemini API Key");
-        const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`,{
-          method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({contents:[{parts:[{text:`${prompt}\nThức ăn: ${foodDesc}`}]}]})
-        });
-        const data=await res.json();
-        if(data.error)throw new Error(data.error.message);
-        text=data.candidates?.[0]?.content?.parts?.[0]?.text||"";
-      } else if(aiProvider==="gpt"){
-        if(!gptKey)throw new Error("Chưa nhập OpenAI API Key");
-        const res=await fetch("https://api.openai.com/v1/chat/completions",{
-          method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${gptKey}`},
-          body:JSON.stringify({model:gptModel,messages:[{role:"system",content:prompt},{role:"user",content:`Thức ăn cần phân tích:\n${foodDesc}`}],...(gptModel==="gpt-4o-mini"?{max_tokens:1000}:{max_completion_tokens:1000})})
-        });
-        const data=await res.json();
-        if(data.error)throw new Error(data.error.message);
-        text=data.choices?.[0]?.message?.content||"";
-      }
+      // Không bao giờ tự gọi thẳng Gemini/OpenAI từ client (buộc lộ key
+      // thật ra trình duyệt của MỌI user, không chỉ admin — vì MealsTab
+      // chạy cho mọi tier). Mọi provider đi qua ai-proxy, server tự đọc
+      // đúng key từ app_settings (chỉ admin đọc được qua RLS) theo request.
+      const modelByProvider={claude:aiModel,gemini:geminiModel,gpt:gptModel};
+      const data=await authFetch("ai-proxy",{foodDesc:`${prompt}\nThức ăn: ${foodDesc}`,provider:aiProvider,model:modelByProvider[aiProvider],feature:"macro_lookup"});
+      if(data.error)throw new Error(data.error);
+      const text=data.text||"";
       const parsed=JSON.parse(text.replace(/```json|```/g,"").trim());
       const aiSourceLabel=aiProvider==="gpt"?"GPT":aiProvider==="claude"?"Claude":"Gemini";
       const aiItemsWithSource=(parsed.items||[]).map((it,idx)=>{

@@ -149,6 +149,7 @@ if(error)console.warn("AI Chat save error:",error);
 };
 const chatRef=useRef(null);
 const aiModel=appSettings?.ai_model||"claude-sonnet-5";
+const aiProvider=appSettings?.ai_provider||"claude";
 
 // Context engine
 const buildContext=()=>{
@@ -370,7 +371,7 @@ try{
 // thành 1 chuỗi "User:.../Fipilot AI:..." — kiểu transcript cũ làm model
 // sinh artifact: tự thấy "đến lượt User" là ngắt sớm, bỏ lửng giữa câu.
 const chatMessages=newMsgs.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
-const callChat=()=>authFetch("ai-proxy",{provider:"claude",model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500,feature:"chat"});
+const callChat=()=>authFetch("ai-proxy",{provider:aiProvider,model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500,feature:"chat"});
 let data=await callChat();
 if(data.error)throw new Error(data.error);
 let reply=(data.text||"").trim();

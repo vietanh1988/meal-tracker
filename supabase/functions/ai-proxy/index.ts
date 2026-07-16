@@ -19,12 +19,22 @@ function getCorsHeaders(req: Request) {
   };
 }
 
+// Chỉ CLAUDE_API_KEY dùng Supabase Secret (ổn định từ đầu, không đổi qua
+// UI thường xuyên). GEMINI_KEY/OPENAI_KEY KHÔNG dùng Secret nữa — đọc
+// trực tiếp từ app_settings mỗi request (đúng nơi admin nhập qua UI
+// Kết nối AI) — 1 nguồn duy nhất, đổi provider/key trong UI có hiệu lực
+// NGAY LẬP TỨC, không cần vào Supabase Dashboard set thêm Secret riêng
+// (trước đây 2 nguồn tách biệt từng lệch nhau, gây lỗi "Incorrect API
+// key" dù admin đã nhập đúng key qua UI).
 const CLAUDE_API_KEY = Deno.env.get('CLAUDE_API_KEY') ?? ''
-const GEMINI_KEY = Deno.env.get('GEMINI_KEY') ?? ''
-const OPENAI_KEY = Deno.env.get('OPENAI_KEY') ?? ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+
+async function getAppSettingValue(admin: any, key: string): Promise<string> {
+  const { data } = await admin.from("app_settings").select("value").eq("key", key).single();
+  return data?.value || "";
+}
 
 // ---- Bảng giá USD / 1 TRIỆU token — tra cứu 15/07/2026 ----
 const PRICING: Record<string, { in: number; out: number }> = {
@@ -202,16 +212,15 @@ serve(async (req) => {
 
     const { foodDesc, provider = "claude", model, system, messages, maxTokens, feature } = await req.json()
 
+    // admin client (service role) — tạo SỚM, dùng chung cho quota check,
+    // đọc key Gemini/GPT từ app_settings, và log chi phí.
+    if (!SUPABASE_SERVICE_KEY) throw new Error("Server chưa cấu hình SUPABASE_SERVICE_ROLE_KEY")
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
     // ---- Quota check — TRƯỚC khi gọi AI thật, chặn sớm tiết kiệm tiền ----
-    // admin client (service role) dùng CHUNG cho cả quota lẫn log — tạo 1
-    // lần, tránh làm 2 lần createClient không cần thiết.
-    let admin: any = null;
-    if (SUPABASE_SERVICE_KEY) {
-      admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-      const quota = await checkAndConsumeQuotaServer(admin, user.id, feature || null);
-      if (!quota.allowed) {
-        return new Response(JSON.stringify({ error: quota.message, quotaExceeded: true }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-      }
+    const quota = await checkAndConsumeQuotaServer(admin, user.id, feature || null);
+    if (!quota.allowed) {
+      return new Response(JSON.stringify({ error: quota.message, quotaExceeded: true }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const msgs = (messages && messages.length) ? messages : [{ role: "user", content: foodDesc }]
@@ -243,7 +252,8 @@ serve(async (req) => {
       outputTok = d.usage?.output_tokens || 0;
 
     } else if (provider === "gemini") {
-      if (!GEMINI_KEY) throw new Error("Server chưa cấu hình GEMINI_KEY")
+      const GEMINI_KEY = await getAppSettingValue(admin, "gemini_key");
+      if (!GEMINI_KEY) throw new Error("Chưa cấu hình Gemini API Key — vào Cài đặt → Kết nối AI để nhập.")
       usedModel = model || "gemini-2.5-flash";
       const contents = msgs.map((m: any) => ({
         role: m.role === "assistant" ? "model" : "user",
@@ -268,7 +278,8 @@ serve(async (req) => {
       outputTok = d.usageMetadata?.candidatesTokenCount || 0;
 
     } else if (provider === "gpt") {
-      if (!OPENAI_KEY) throw new Error("Server chưa cấu hình OPENAI_KEY")
+      const OPENAI_KEY = await getAppSettingValue(admin, "gpt_key");
+      if (!OPENAI_KEY) throw new Error("Chưa cấu hình OpenAI API Key — vào Cài đặt → Kết nối AI để nhập.")
       usedModel = model || "gpt-4o-mini";
       const res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -286,7 +297,7 @@ serve(async (req) => {
       outputTok = d.usage?.completion_tokens || 0;
     }
 
-    if (admin) await logUsage(admin, user.id, provider, usedModel, inputTok, outputTok, feature || null);
+    await logUsage(admin, user.id, provider, usedModel, inputTok, outputTok, feature || null);
 
     return new Response(JSON.stringify({ text, usage: { input_tokens: inputTok, output_tokens: outputTok } }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
