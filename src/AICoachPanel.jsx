@@ -374,20 +374,38 @@ try{
 const chatMessages=newMsgs.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
 const callChat=()=>authFetch("ai-proxy",{provider:aiProvider,model:aiModel,system:systemPrompt,messages:chatMessages,maxTokens:1500,feature:"chat"});
 let data=await callChat();
-if(data.error)throw new Error(data.error);
+if(data.error){
+  // Server chặn bởi quota → gắn cờ để catch phân biệt với lỗi mạng,
+  // và hiển thị ĐÚNG message server trả về (chứa hạn mức + gợi ý
+  // nâng cấp cụ thể) thay vì "⚠️ Lỗi kết nối..." chung chung.
+  const err=new Error(data.error);
+  if(data.quotaExceeded)err.quotaExceeded=true;
+  throw err;
+}
 let reply=(data.text||"").trim();
 // text rỗng dù HTTP OK = lỗi mạng/rate-limit thoáng qua phía provider —
 // tự thử lại 1 lần trước khi báo user, không bắt họ tự bấm lại
 if(!reply){
   console.warn("[chat] text rỗng lần 1, tự thử lại...");
   data=await callChat();
-  if(data.error)throw new Error(data.error);
+  if(data.error){
+    const err=new Error(data.error);
+    if(data.quotaExceeded)err.quotaExceeded=true;
+    throw err;
+  }
   reply=(data.text||"").trim();
 }
 const cleanReply=(reply||"Mình chưa trả lời được, bạn hỏi lại giúp mình nhé 🙏").replace(/^Fipilot AI:\s*/,"");
 setMessages(prev=>[...prev,{role:"assistant",content:cleanReply}]);
 saveMsg("assistant",cleanReply);
-}catch(e){setMessages(prev=>[...prev,{role:"assistant",content:"⚠️ Lỗi kết nối. Thử lại sau nhé!"}]);}
+}catch(e){
+  // Lỗi quota → hiện đúng message của server (VD: "Bạn đã dùng hết 5
+  // tin nhắn AI Chat hôm nay. Nâng cấp Premium để có hạn mức cao hơn.")
+  // Các lỗi khác (mạng, provider timeout) → giữ nguyên câu chung.
+  const msg=e.quotaExceeded?e.message:"⚠️ Lỗi kết nối. Thử lại sau nhé!";
+  setMessages(prev=>[...prev,{role:"assistant",content:msg}]);
+  if(e.quotaExceeded)saveMsg("assistant",msg);
+}
 setLoading(false);
 };
 
