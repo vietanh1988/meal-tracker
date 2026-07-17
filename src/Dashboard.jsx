@@ -185,7 +185,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>
       {/* 4 macro — MacroBar mới (icon+số+thanh ngang), nhãn Việt hoá */}
       <div style={{display:"flex",justifyContent:"space-between",marginTop:16}}>
-        <MacroBar label="Đạm" v={actualP} max={heroP} barColor="#2563EB" icon="💪"/>
+        <MacroBar label="Đạm" v={actualP} max={heroP} barColor="#2563EB" icon="🥩"/>
         <MacroBar label="Tinh bột" v={actualC} max={heroC} barColor="#38BDF8" icon="🌾"/>
         <MacroBar label="Chất béo" v={actualF} max={heroF} barColor="#F59E0B" icon="💧"/>
         <MacroBar label="Chất xơ" v={actualFiber} max={heroFiber} barColor="#22C55E" icon="🍃"/>
