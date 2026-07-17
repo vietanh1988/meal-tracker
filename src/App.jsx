@@ -354,11 +354,11 @@ export default function App(){
               </div>
               <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:10,background:C.border,borderRadius:5}}><div style={{height:10,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcHCal>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div></div>
             </div>
-            <div style={{flex:"0 0 60%",display:"flex",justifyContent:"center",gap:48}}>
-              <MacroBar label="Đạm" v={pcAP} max={pcHP} barColor="#2563EB" icon="🥩" size={1.4}/>
-              <MacroBar label="Tinh bột" v={pcACb} max={pcHC} barColor="#38BDF8" icon="🌾" size={1.4}/>
-              <MacroBar label="Chất béo" v={pcAF} max={pcHF} barColor="#F59E0B" icon="💧" size={1.4}/>
-              <MacroBar label="Chất xơ" v={pcAFib} max={pcHFib} barColor="#22C55E" icon="🍃" size={1.4}/>
+            <div style={{flex:"0 0 60%",display:"flex",justifyContent:"center",gap:64}}>
+              <MacroBar label="Đạm" v={pcAP} max={pcHP} barColor="#2563EB" icon="🥩" size={1.2}/>
+              <MacroBar label="Tinh bột" v={pcACb} max={pcHC} barColor="#38BDF8" icon="🌾" size={1.2}/>
+              <MacroBar label="Chất béo" v={pcAF} max={pcHF} barColor="#F59E0B" icon="💧" size={1.2}/>
+              <MacroBar label="Chất xơ" v={pcAFib} max={pcHFib} barColor="#22C55E" icon="🍃" size={1.2}/>
             </div>
           </div>
           {/* STATS */}
