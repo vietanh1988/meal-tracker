@@ -172,7 +172,7 @@ export function NotificationBell({ appSettings, userId, dark }) {
         clearInterval(tick);
         setUpdateProgress(100);
         setUpdateStage("done");
-        setTimeout(() => { window.location.reload(true); }, 700);
+        setTimeout(() => { window.location.reload(true); }, 1500);
       });
   };
 
