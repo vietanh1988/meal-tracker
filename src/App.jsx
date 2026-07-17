@@ -7,7 +7,7 @@ import { C, card, lbl, inp, redBtn } from "./theme";
 import { parseFeatureFlags } from "./adminTabs/FeatureFlagsTab";
 import { AdminPanel } from "./AdminPanel";
 import { UserAvatar } from "./UserAvatar";
-import { MacroRing } from "./MacroRing";
+import { MacroBar } from "./MacroBar";
 import { MealCard } from "./MealCard";
 import { WeightBarChart } from "./WeightBarChart";
 import { DEFAULT_MEAL_CONFIG } from "./mealConstants";
@@ -334,8 +334,47 @@ export default function App(){
               <span style={{fontSize:14}}>🔄</span>
               <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>Macro đã cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff} cal)</span>
             </div>}
-            <div style={{flex:"0 0 40%"}}><div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div><div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcAC.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>{((profile.calorieMode||"standard")==="asian"||((profile.goalType==="cut")&&(profile.dietStrategy||"balanced")!=="balanced"))&&<div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8,alignItems:"center"}}>{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:13,fontWeight:700,color:"#007AFF",padding:"4px 12px",background:"rgba(0,122,255,0.08)",borderRadius:8,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🇻🇳 Calo chuẩn Việt Nam</span>}{profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:13,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 12px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:8,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}</div>}<div style={{marginTop:10,fontSize:14,fontWeight:700,color:(()=>{const pp=pcHCal>0?Math.round(pcAC/pcHCal*100):0;return pp<95?"#B45309":pp<=105?"#16A34A":"#DC2626";})()}}>{(()=>{const pp=pcHCal>0?Math.round(pcAC/pcHCal*100):0;return pp<95?`⚠️ Còn thiếu ${pcCR} kcal`:pp<=105?"✅ Ổn rồi, giữ nhé!":`🔴 Dư ${Math.abs(pcCR)} kcal`;})()}</div><div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:10,background:C.border,borderRadius:5}}><div style={{height:10,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcHCal>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div></div></div>
-            <div style={{flex:"0 0 60%",display:"flex",justifyContent:"center",gap:24}}><MacroRing size={110} l="Protein" v={pcAP} max={pcHP} color="#007AFF" color2="#007AFF" sub={`/${pcHP}g`} unit="g"/><MacroRing size={110} l="Carb" v={pcACb} max={pcHC} color="#5AC8FA" color2="#5AC8FA" sub={`/${pcHC}g`} unit="g"/><MacroRing size={110} l="Fat" v={pcAF} max={pcHF} color="#8E8E93" color2="#8E8E93" sub={`/${pcHF}g`} unit="g"/><MacroRing size={110} l="Chất xơ" v={pcAFib} max={pcHFib} color="#34C759" color2="#34C759" sub={`/${pcHFib}g`} unit="g"/></div>
+            <div style={{width:"100%"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div style={{flex:1,paddingRight:16}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase"}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+                  <div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1,marginTop:6}}>{pcAC.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>
+                </div>
+                {/* Illustration clipboard+lửa — thuần trang trí, không mang logic */}
+                <svg width={110} height={110} viewBox="0 0 140 140" style={{flexShrink:0}}>
+                  <defs><linearGradient id="pcHeroFireGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#FCD34D"/><stop offset="100%" stopColor="#F59E0B"/></linearGradient></defs>
+                  <rect x="18" y="10" width="80" height="105" rx="14" fill="#EEF2FF" stroke="#6366F1" strokeWidth="3.5"/>
+                  <rect x="42" y="4" width="32" height="16" rx="6" fill="#6366F1"/>
+                  <circle cx="34" cy="42" r="4.5" fill="#818CF8"/><rect x="46" y="38.5" width="38" height="7" rx="3.5" fill="#C7D2FE"/>
+                  <circle cx="34" cy="62" r="4.5" fill="#818CF8"/><rect x="46" y="58.5" width="30" height="7" rx="3.5" fill="#C7D2FE"/>
+                  <circle cx="34" cy="82" r="4.5" fill="#818CF8"/><rect x="46" y="78.5" width="24" height="7" rx="3.5" fill="#C7D2FE"/>
+                  <circle cx="98" cy="100" r="26" fill="url(#pcHeroFireGrad)"/>
+                  <path d="M98 84c-2 6-9 9-9 17a9 9 0 0018 0c0-4-2-6-3-9 1 4-1 6-3 6-3 0-4-3-3-6-1-3 1-6 0-8z" fill="#EA580C"/>
+                </svg>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:14,alignItems:"center"}}>
+                {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"#2563EB",padding:"5px 12px 5px 8px",background:"#EFF6FF",borderRadius:8}}>
+                  <svg width={18} height={12} viewBox="0 0 30 20"><rect width="30" height="20" fill="#DA251D"/><polygon points="15,4 16.76,9.35 22.39,9.35 17.82,12.65 19.58,18 15,14.7 10.42,18 12.18,12.65 7.61,9.35 13.24,9.35" fill="#FFCD00"/></svg>
+                  Calo chuẩn Việt Nam
+                </span>}
+                {profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:13,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 12px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:8,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}
+                {(()=>{const pp=pcHCal>0?Math.round(pcAC/pcHCal*100):0;
+                  if(pp<95)return <span style={{fontSize:13,fontWeight:700,color:"#B45309",padding:"5px 12px",background:"#FEF3C7",borderRadius:8}}>⚠️ Còn thiếu {pcCR} kcal</span>;
+                  if(pp<=105)return <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"#16A34A",padding:"5px 12px 5px 8px",background:"#F0FDF4",borderRadius:8}}>
+                    <svg width={16} height={16} viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Ổn rồi, giữ nhé!
+                  </span>;
+                  return <span style={{fontSize:13,fontWeight:700,color:"#DC2626",padding:"5px 12px",background:"#FEE2E2",borderRadius:8}}>🔴 Dư {Math.abs(pcCR)} kcal</span>;
+                })()}
+              </div>
+              <div style={{maxWidth:400,marginTop:16}}><div style={{height:10,background:C.border,borderRadius:5}}><div style={{height:10,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcHCal>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div></div>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:32,maxWidth:520}}>
+                <MacroBar label="Đạm" v={pcAP} max={pcHP} barColor="#2563EB" icon="🥩"/>
+                <MacroBar label="Tinh bột" v={pcACb} max={pcHC} barColor="#38BDF8" icon="🌾"/>
+                <MacroBar label="Chất béo" v={pcAF} max={pcHF} barColor="#F59E0B" icon="💧"/>
+                <MacroBar label="Chất xơ" v={pcAFib} max={pcHFib} barColor="#22C55E" icon="🍃"/>
+              </div>
+            </div>
           </div>
           {/* STATS */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>{[{l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},{l:"Cân nặng",v:pcCK,u:"kg",icon:"stat_weight",d:pcCK!==pcSK?`${pcCK>pcSK?"+":""}${Math.round((pcCK-pcSK)*10)/10} kg`:null},{l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"Bình thường":"Thừa cân",icon:"stat_bmi"},{l:pcEL,v:pcET==="none"?"—":({occasional:"Thỉnh thoảng",regular:"Đều đặn",frequent:"Rất chăm",daily:"Mỗi ngày"})[profile.frequency||"regular"]||"Đều đặn",u:"",icon:pcET==="gym"?"stat_gym":pcET==="gym_cardio"?"ex_gym_cardio":pcET==="cardio"?"ex_cardio":"ex_none"}].map((s,i)=><div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:16,display:"flex",alignItems:"center",gap:12,height:100}}><div style={{width:44,height:44,borderRadius:12,background:"rgba(0,122,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/></div><div><div style={{fontSize:13,color:C.t2,fontWeight:600}}>{s.l}</div><div style={{fontSize:22,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:13,color:C.t2}}>{s.u}</span></div>{s.d&&<div style={{fontSize:12,fontWeight:700,color:C.primary,marginTop:1}}>{s.d}</div>}</div></div>)}</div>
