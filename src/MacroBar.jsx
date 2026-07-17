@@ -17,12 +17,12 @@ export function MacroBar({ icon, iconBg, label, v, max, barColor, size }) {
   const pct = Math.min(ratio * 100, 100);
   const s = size || 1; // hệ số scale — 1 = mặc định mobile, PC truyền lớn hơn
   return (
-    <div style={{ textAlign: "left" }}>
+    <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: 26 * s, lineHeight: 1 }}>{icon}</div>
       <div style={{ fontSize: 12 * s, color: C.t2, marginTop: 6 * s }}>{label}</div>
       <div style={{ fontSize: 20 * s, fontWeight: 800, marginTop: 1, color: isOver ? activeColor : C.t1 }}>{Math.round(v)}g{isOver ? " ⚠" : ""}</div>
       <div style={{ fontSize: 11 * s, color: C.t3, fontWeight: 600 }}>/{max}g</div>
-      <div style={{ height: 4 * s, width: 52 * s, background: C.surface, borderRadius: 2, marginTop: 5 * s }}>
+      <div style={{ height: 4 * s, width: 52 * s, background: C.surface, borderRadius: 2, margin: `${5 * s}px auto 0` }}>
         <div style={{ height: "100%", width: `${pct}%`, background: activeColor, borderRadius: 2, transition: "width 0.4s, background 0.3s" }} />
       </div>
     </div>
