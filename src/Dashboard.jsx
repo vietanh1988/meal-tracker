@@ -164,25 +164,6 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>
     </div>
 
-    {/* Stats — Clean white cards with SVG icons */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:24}}>
-      {[
-        {l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},
-        {l:"Cân nặng",v:curKg,u:"kg",icon:"stat_weight"},
-        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",icon:"stat_bmi"},
-        {l:exLabel,v:exType==="none"?"—":({occasional:"Thỉnh thoảng",regular:"Đều đặn",frequent:"Rất chăm",daily:"Mỗi ngày"})[profile.frequency||"regular"]||"Đều đặn",u:"",icon:exType==="gym"?"stat_gym":exType==="gym_cardio"?"ex_gym_cardio":exType==="cardio"?"ex_cardio":"ex_none"},
-      ].map((s,i)=>(
-        <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:44,height:44,borderRadius:11,background:"rgba(0,122,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/>
-          </div>
-          <div>
-            <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t2}}>{s.l}</div>
-            <div style={{fontSize:mob?18:18,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:mob?11:11,fontWeight:700,color:C.t2}}>{s.u}</span></div>
-          </div>
-        </div>
-      ))}
-    </div>
 
     {/* Section label: Dynamic meal label + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
@@ -246,8 +227,29 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>;
     })()}
 
+    {/* Stats — Clean white cards with SVG icons — đặt liền trước Weight
+        Chart để tạo 1 cụm "thông tin cơ thể" thay vì tách rời như trước */}
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:24,marginBottom:8}}>
+      {[
+        {l:"Chiều cao",v:profile.cm,u:"cm",icon:"stat_height"},
+        {l:"Cân nặng",v:curKg,u:"kg",icon:"stat_weight"},
+        {l:"BMI",v:macro.bmi,u:macro.bmi<18.5?"Gầy":macro.bmi<25?"OK":"Thừa",icon:"stat_bmi"},
+        {l:exLabel,v:exType==="none"?"—":({occasional:"Thỉnh thoảng",regular:"Đều đặn",frequent:"Rất chăm",daily:"Mỗi ngày"})[profile.frequency||"regular"]||"Đều đặn",u:"",icon:exType==="gym"?"stat_gym":exType==="gym_cardio"?"ex_gym_cardio":exType==="cardio"?"ex_cardio":"ex_none"},
+      ].map((s,i)=>(
+        <div key={i} style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:44,height:44,borderRadius:11,background:"rgba(0,122,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <img src={`/icons/${s.icon}.png`} alt="" style={{width:34,height:34,objectFit:"contain"}}/>
+          </div>
+          <div>
+            <div style={{fontSize:mob?13:12,fontWeight:700,color:C.t2}}>{s.l}</div>
+            <div style={{fontSize:mob?18:18,fontWeight:800,color:C.t1}}>{s.v} <span style={{fontSize:mob?11:11,fontWeight:700,color:C.t2}}>{s.u}</span></div>
+          </div>
+        </div>
+      ))}
+    </div>
+
     {/* Weight Chart */}
-    <div style={{...card,marginTop:24,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF) 1"}}>
+    <div style={{...card,marginTop:8,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
