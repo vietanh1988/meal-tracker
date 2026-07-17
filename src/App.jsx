@@ -361,7 +361,7 @@ export default function App(){
               <MacroBar label="Chất xơ" v={pcAFib} max={pcHFib} barColor="#22C55E" icon="🍃" size={1.2}/>
             </div>
             {/* Illustration clipboard+lửa — thuần trang trí, không mang logic */}
-            <svg width={90} height={90} viewBox="0 0 140 140" style={{flexShrink:0}}>
+            <svg width={140} height={140} viewBox="0 0 140 140" style={{flexShrink:0}}>
               <defs><linearGradient id="pcHeroFireGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#FCD34D"/><stop offset="100%" stopColor="#F59E0B"/></linearGradient></defs>
               <rect x="18" y="10" width="80" height="105" rx="14" fill="#EEF2FF" stroke="#6366F1" strokeWidth="3.5"/>
               <rect x="42" y="4" width="32" height="16" rx="6" fill="#6366F1"/>
