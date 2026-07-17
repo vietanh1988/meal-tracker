@@ -31,6 +31,9 @@ export function NotificationBell({ appSettings, userId, dark }) {
   const [show, setShow] = useState(false);
   const [ringing, setRinging] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState(null);
+  const [selectedUpdate, setSelectedUpdate] = useState(null);
+  const [updateStage, setUpdateStage] = useState(null); // null | "confirm" | "running" | "done"
+  const [updateProgress, setUpdateProgress] = useState(0);
   const [seenUpdateIds, setSeenUpdateIds] = useState(() => {
     try { return JSON.parse(localStorage.getItem(ACK_KEY) || "[]"); } catch (e) { return []; }
   });
@@ -142,11 +145,35 @@ export function NotificationBell({ appSettings, userId, dark }) {
     }
   };
 
-  const clearCacheAndReload = () => {
-    caches.keys().then((names) => Promise.all(names.map((k) => caches.delete(k)))).then(() => {
-      if (navigator.serviceWorker) { navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister())); }
-      window.location.reload(true);
-    });
+  const openUpdateConfirm = (n) => {
+    setSelectedUpdate(n);
+    setUpdateStage("confirm");
+    setShow(false);
+  };
+
+  const startUpdate = () => {
+    setUpdateStage("running");
+    setUpdateProgress(0);
+    // Thanh tiến độ chỉ mang tính hình ảnh (xoá cache thực tế diễn ra rất
+    // nhanh, không có "phần trăm" thật để đo) — tăng dần ngẫu nhiên tới 90%,
+    // dừng lại chờ công việc thật xong rồi mới nhảy lên 100%.
+    const tick = setInterval(() => {
+      setUpdateProgress((p) => (p >= 90 ? p : p + Math.random() * 18 + 6));
+    }, 180);
+    caches.keys()
+      .then((names) => Promise.all(names.map((k) => caches.delete(k))))
+      .then(() => {
+        if (navigator.serviceWorker) {
+          return navigator.serviceWorker.getRegistrations().then((regs) => Promise.all(regs.map((r) => r.unregister())));
+        }
+      })
+      .catch((e) => console.error("[NotificationBell] update error:", e))
+      .finally(() => {
+        clearInterval(tick);
+        setUpdateProgress(100);
+        setUpdateStage("done");
+        setTimeout(() => { window.location.reload(true); }, 700);
+      });
   };
 
   const fmtTime = (ts) => {
@@ -195,12 +222,12 @@ export function NotificationBell({ appSettings, userId, dark }) {
             {updateList.map((n) => {
               const isUnseen = n.isNew && !seenUpdateIds.includes(n.id);
               return (
-              <div key={n.id} onClick={clearCacheAndReload} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: `0.5px solid ${C.border}`, background: isUnseen ? "rgba(220,38,38,0.04)" : "transparent" }}>
+              <div key={n.id} onClick={() => openUpdateConfirm(n)} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: `0.5px solid ${C.border}`, background: isUnseen ? "rgba(220,38,38,0.04)" : "transparent" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   {isUnseen && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", flexShrink: 0 }} />}
                   <div style={{ fontSize: 12, fontWeight: isUnseen ? 700 : 600, color: C.t1, lineHeight: 1.4 }}>{n.text}</div>
                 </div>
-                <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{n.date} • Nhấn để cập nhật</div>
+                <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{n.date} • Nhấn để xem</div>
               </div>
               );
             })}
@@ -229,6 +256,41 @@ export function NotificationBell({ appSettings, userId, dark }) {
               )}
               <button onClick={() => setSelectedNotif(null)} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Đóng</button>
             </div>
+          </div>
+        </div>
+      )}
+      {selectedUpdate && updateStage && (
+        <div onClick={() => { if (updateStage === "confirm") { setSelectedUpdate(null); setUpdateStage(null); } }} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 200 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, maxWidth: 380, width: "100%", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: `1.5px solid ${C.border}` }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>🆕 Cập nhật ứng dụng</div>
+              {updateStage === "confirm" && <span onClick={() => { setSelectedUpdate(null); setUpdateStage(null); }} style={{ cursor: "pointer", fontSize: 18, color: C.t3 }}>✕</span>}
+            </div>
+            <div style={{ padding: "18px 20px" }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, lineHeight: 1.4, marginBottom: 6 }}>{selectedUpdate.text}</div>
+              <div style={{ fontSize: 11, color: C.t3, marginBottom: 16 }}>{selectedUpdate.date}</div>
+
+              {updateStage === "confirm" && (
+                <div style={{ fontSize: 12, color: C.t2, lineHeight: 1.5 }}>Cập nhật sẽ xoá bộ nhớ đệm và tải lại ứng dụng để lấy phiên bản mới nhất.</div>
+              )}
+
+              {(updateStage === "running" || updateStage === "done") && (
+                <div>
+                  <div style={{ height: 8, borderRadius: 4, background: C.surface, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${Math.min(updateProgress, 100)}%`, background: updateStage === "done" ? "#16A34A" : C.primary, borderRadius: 4, transition: "width 0.2s ease" }} />
+                  </div>
+                  <div style={{ fontSize: 12, color: C.t2, marginTop: 8, textAlign: "center", fontWeight: 600 }}>
+                    {updateStage === "done" ? "✓ Đã cập nhật xong! Đang tải lại..." : `Đang cập nhật... ${Math.round(Math.min(updateProgress, 100))}%`}
+                  </div>
+                </div>
+              )}
+            </div>
+            {updateStage === "confirm" && (
+              <div style={{ padding: "12px 20px", borderTop: `1.5px solid ${C.border}`, display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <button onClick={() => { setSelectedUpdate(null); setUpdateStage(null); }} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, border: `1.5px solid ${C.border}`, borderRadius: 8, background: "#fff", color: C.t1, cursor: "pointer", fontFamily: "inherit" }}>Để sau</button>
+                <button onClick={startUpdate} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Update ngay</button>
+              </div>
+            )}
           </div>
         </div>
       )}
