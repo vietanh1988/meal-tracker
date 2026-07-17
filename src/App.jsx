@@ -334,25 +334,10 @@ export default function App(){
               <span style={{fontSize:14}}>🔄</span>
               <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>Macro đã cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff} cal)</span>
             </div>}
-            <div style={{width:"100%"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <div style={{flex:1,paddingRight:16}}>
-                  <div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase"}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
-                  <div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1,marginTop:6}}>{pcAC.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>
-                </div>
-                {/* Illustration clipboard+lửa — thuần trang trí, không mang logic */}
-                <svg width={110} height={110} viewBox="0 0 140 140" style={{flexShrink:0}}>
-                  <defs><linearGradient id="pcHeroFireGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#FCD34D"/><stop offset="100%" stopColor="#F59E0B"/></linearGradient></defs>
-                  <rect x="18" y="10" width="80" height="105" rx="14" fill="#EEF2FF" stroke="#6366F1" strokeWidth="3.5"/>
-                  <rect x="42" y="4" width="32" height="16" rx="6" fill="#6366F1"/>
-                  <circle cx="34" cy="42" r="4.5" fill="#818CF8"/><rect x="46" y="38.5" width="38" height="7" rx="3.5" fill="#C7D2FE"/>
-                  <circle cx="34" cy="62" r="4.5" fill="#818CF8"/><rect x="46" y="58.5" width="30" height="7" rx="3.5" fill="#C7D2FE"/>
-                  <circle cx="34" cy="82" r="4.5" fill="#818CF8"/><rect x="46" y="78.5" width="24" height="7" rx="3.5" fill="#C7D2FE"/>
-                  <circle cx="98" cy="100" r="26" fill="url(#pcHeroFireGrad)"/>
-                  <path d="M98 84c-2 6-9 9-9 17a9 9 0 0018 0c0-4-2-6-3-9 1 4-1 6-3 6-3 0-4-3-3-6-1-3 1-6 0-8z" fill="#EA580C"/>
-                </svg>
-              </div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:14,alignItems:"center"}}>
+            <div style={{flex:"0 0 40%"}}>
+              <div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+              <div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcAC.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10,alignItems:"center"}}>
                 {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"#2563EB",padding:"5px 12px 5px 8px",background:"#EFF6FF",borderRadius:8}}>
                   <svg width={18} height={12} viewBox="0 0 30 20"><rect width="30" height="20" fill="#DA251D"/><polygon points="15,4 16.76,9.35 22.39,9.35 17.82,12.65 19.58,18 15,14.7 10.42,18 12.18,12.65 7.61,9.35 13.24,9.35" fill="#FFCD00"/></svg>
                   Calo chuẩn Việt Nam
@@ -367,13 +352,13 @@ export default function App(){
                   return <span style={{fontSize:13,fontWeight:700,color:"#DC2626",padding:"5px 12px",background:"#FEE2E2",borderRadius:8}}>🔴 Dư {Math.abs(pcCR)} kcal</span>;
                 })()}
               </div>
-              <div style={{maxWidth:400,marginTop:16}}><div style={{height:10,background:C.border,borderRadius:5}}><div style={{height:10,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcHCal>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div></div>
-              <div style={{display:"flex",justifyContent:"space-between",marginTop:32,width:"100%",maxWidth:640}}>
-                <MacroBar label="Đạm" v={pcAP} max={pcHP} barColor="#2563EB" icon="🥩" size={1.4}/>
-                <MacroBar label="Tinh bột" v={pcACb} max={pcHC} barColor="#38BDF8" icon="🌾" size={1.4}/>
-                <MacroBar label="Chất béo" v={pcAF} max={pcHF} barColor="#F59E0B" icon="💧" size={1.4}/>
-                <MacroBar label="Chất xơ" v={pcAFib} max={pcHFib} barColor="#22C55E" icon="🍃" size={1.4}/>
-              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:10,background:C.border,borderRadius:5}}><div style={{height:10,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcHCal>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div></div>
+            </div>
+            <div style={{flex:"0 0 60%",display:"flex",justifyContent:"center",gap:24}}>
+              <MacroBar label="Đạm" v={pcAP} max={pcHP} barColor="#2563EB" icon="🥩" size={1.4}/>
+              <MacroBar label="Tinh bột" v={pcACb} max={pcHC} barColor="#38BDF8" icon="🌾" size={1.4}/>
+              <MacroBar label="Chất béo" v={pcAF} max={pcHF} barColor="#F59E0B" icon="💧" size={1.4}/>
+              <MacroBar label="Chất xơ" v={pcAFib} max={pcHFib} barColor="#22C55E" icon="🍃" size={1.4}/>
             </div>
           </div>
           {/* STATS */}
