@@ -204,7 +204,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         </div>
 
         {/* Goal weight + duration */}
-        {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,maxWidth:mob?"100%":540}}>
+        {profile.goalType!=="maintain"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:mob?8:10,maxWidth:mob?"100%":540,marginTop:16}}>
           {[
             {key:"goalKg",label:"Cân nặng mục tiêu",icon:"⚖️",unit:"kg",mode:"decimal"},
             {key:"months",label:"Thời gian mong muốn",icon:"📅",unit:"tháng",mode:"numeric"},
