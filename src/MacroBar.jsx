@@ -9,19 +9,20 @@ import { C } from "./theme";
 // - Vượt >140% → màu đỏ đậm hơn (severe)
 // - Thanh bar cap tối đa 100% dù tỷ lệ thật vượt xa hơn, tránh tràn khung
 // - Số hiển thị luôn làm tròn
-export function MacroBar({ icon, iconBg, label, v, max, barColor }) {
+export function MacroBar({ icon, iconBg, label, v, max, barColor, size }) {
   const ratio = max > 0 ? v / max : 0;
   const isSevereOver = ratio > 1.4;
   const isOver = ratio > 1.15;
   const activeColor = isSevereOver ? "#DC2626" : isOver ? "#F59E0B" : barColor;
   const pct = Math.min(ratio * 100, 100);
+  const s = size || 1; // hệ số scale — 1 = mặc định mobile, PC truyền lớn hơn
   return (
     <div style={{ textAlign: "left" }}>
-      <div style={{ fontSize: 26, lineHeight: 1 }}>{icon}</div>
-      <div style={{ fontSize: 12, color: C.t2, marginTop: 6 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 800, marginTop: 1, color: isOver ? activeColor : C.t1 }}>{Math.round(v)}g{isOver ? " ⚠" : ""}</div>
-      <div style={{ fontSize: 11, color: C.t3, fontWeight: 600 }}>/{max}g</div>
-      <div style={{ height: 4, width: 52, background: C.surface, borderRadius: 2, marginTop: 5 }}>
+      <div style={{ fontSize: 26 * s, lineHeight: 1 }}>{icon}</div>
+      <div style={{ fontSize: 12 * s, color: C.t2, marginTop: 6 * s }}>{label}</div>
+      <div style={{ fontSize: 20 * s, fontWeight: 800, marginTop: 1, color: isOver ? activeColor : C.t1 }}>{Math.round(v)}g{isOver ? " ⚠" : ""}</div>
+      <div style={{ fontSize: 11 * s, color: C.t3, fontWeight: 600 }}>/{max}g</div>
+      <div style={{ height: 4 * s, width: 52 * s, background: C.surface, borderRadius: 2, marginTop: 5 * s }}>
         <div style={{ height: "100%", width: `${pct}%`, background: activeColor, borderRadius: 2, transition: "width 0.4s, background 0.3s" }} />
       </div>
     </div>
