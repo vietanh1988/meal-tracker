@@ -17,8 +17,8 @@ export function MacroBar({ icon, iconBg, label, v, max, barColor }) {
   const pct = Math.min(ratio * 100, 100);
   return (
     <div style={{ textAlign: "left" }}>
-      <div style={{ width: 36, height: 36, borderRadius: "50%", background: iconBg || barColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>{icon}</div>
-      <div style={{ fontSize: 12, color: C.t2, marginTop: 5 }}>{label}</div>
+      <div style={{ fontSize: 26, lineHeight: 1 }}>{icon}</div>
+      <div style={{ fontSize: 12, color: C.t2, marginTop: 6 }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 800, marginTop: 1, color: isOver ? activeColor : C.t1 }}>{Math.round(v)}g{isOver ? " ⚠" : ""}</div>
       <div style={{ fontSize: 11, color: C.t3, fontWeight: 600 }}>/{max}g</div>
       <div style={{ height: 4, width: 52, background: C.surface, borderRadius: 2, marginTop: 5 }}>
