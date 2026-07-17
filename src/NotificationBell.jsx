@@ -186,19 +186,21 @@ export function NotificationBell({ appSettings, userId, dark }) {
       <div
         onClick={openList}
         style={{
-          width: dark ? 36 : 40, height: dark ? 36 : 40, borderRadius: "50%",
-          background: dark ? "rgba(255,255,255,0.1)" : C.card,
-          border: dark ? "1px solid rgba(255,255,255,0.2)" : `1.5px solid ${C.border}`,
+          width: dark ? 40 : 40, height: dark ? 40 : 40, borderRadius: "50%",
+          background: dark ? "rgba(255,255,255,0.22)" : C.card,
+          border: dark ? "1.5px solid rgba(255,255,255,0.5)" : `1.5px solid ${C.border}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: dark ? 16 : 18, cursor: "pointer",
           boxShadow: dark ? "none" : "0 1px 4px rgba(0,0,0,0.06)",
           animation: ringing ? "notifBellRing 0.6s ease-in-out 0s 2, notifBellGlow 2s ease-in-out" : "none",
         }}
       >
-        <svg viewBox="0 0 24 24" width={dark ? 17 : 19} height={dark ? 17 : 19} fill="none" stroke={dark ? "#fff" : "#475569"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 01-3.46 0"/>
-        </svg>
+        {dark ? (
+          <svg viewBox="0 0 24 24" width={19} height={19} fill="none" stroke="#fff" strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+        ) : "🔔"}
       </div>
       {totalBadge > 0 && (
         <div style={{ position: "absolute", top: -2, right: -2, minWidth: 16, height: 16, borderRadius: 8, background: "#EF4444", border: dark ? "2px solid #111" : "2px solid #fff", color: "#fff", fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>
