@@ -39,7 +39,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
             {key:"kg",label:"Cân nặng",icon:"⚖️",unit:"kg",mode:"decimal"},
             {key:"birthYear",label:"Năm sinh",icon:"🎂",unit:profile.birthYear?`${new Date().getFullYear()-profile.birthYear} tuổi`:"",mode:"numeric"},
           ].map(f=><div key={f.key}>
-            <div style={{fontSize:mob?11:13,fontWeight:mob?600:700,color:C.t2,marginBottom:4,display:"flex",alignItems:"center",gap:6}}>{f.icon} {f.label}{f.key==="kg"&&weightLog&&weightLog.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#DCFCE7",padding:"1px 6px",borderRadius:8}}>{mob?"🔄 Auto":"🔄 Update cân nặng mới nhất"}</span>}</div>
+            <div style={{fontSize:mob?11:13,fontWeight:mob?600:700,color:C.t2,marginBottom:8,display:"flex",alignItems:"center",gap:6}}>{f.icon} {f.label}{f.key==="kg"&&weightLog&&weightLog.length>0&&<span style={{fontSize:10,fontWeight:700,color:"#16A34A",background:"#DCFCE7",padding:"1px 6px",borderRadius:8}}>{mob?"🔄 Auto":"🔄 Update cân nặng mới nhất"}</span>}</div>
             <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
               <input type="text" inputMode={f.mode} value={f.key==="kg"?profile.kg:profile[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...profile,[f.key]:Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
               <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
@@ -60,7 +60,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         <div style={{padding:mob?"12px 14px 14px":"12px 20px 20px"}}>
 
         {/* Câu 1: Bạn thường tập gì? */}
-        <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>Bạn thường tập gì?</div>
+        <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:12}}>Bạn thường tập gì?</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"1fr 1fr":"1fr 1fr 1fr 1fr",gap:mob?6:8,marginBottom:16}}>
           {[
             {id:"gym",icon:"ex_gym",name:"Gym"},
@@ -83,7 +83,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
 
         {/* Câu 2: Tần suất (ẩn khi Không tập) */}
         {(profile.exerciseType||"gym")!=="none"&&<>
-          <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:10,marginTop:6}}>Bạn tập thường xuyên đến mức nào?</div>
+          <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:12,marginTop:24}}>Bạn tập thường xuyên đến mức nào?</div>
           <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:8,marginBottom:22}}>
             {[
               {id:"occasional",name:"Thỉnh thoảng",desc:"1-2 buổi/tuần"},
@@ -187,7 +187,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
 
         {/* Supplement toggle — whey/TPBS chỉ gợi ý trong AI menu khi bật */}
         <div style={{maxWidth:mob?"100%":540}}>
-          <div style={{fontSize:mob?11:13,fontWeight:mob?600:700,color:C.t2,marginBottom:6}}>💊 Thực phẩm bổ sung</div>
+          <div style={{fontSize:mob?11:13,fontWeight:mob?600:700,color:C.t2,marginBottom:10}}>💊 Thực phẩm bổ sung</div>
           <div onClick={()=>setProfile({...profile,usesSupplements:!(profile.usesSupplements===true)})} style={{
             display:"flex",alignItems:"center",justifyContent:"space-between",padding:mob?"11px 14px":"13px 16px",borderRadius:10,cursor:"pointer",
             background:profile.usesSupplements===true?"#EFF6FF":C.surface,
@@ -209,7 +209,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
             {key:"goalKg",label:"Cân nặng mục tiêu",icon:"⚖️",unit:"kg",mode:"decimal"},
             {key:"months",label:"Thời gian mong muốn",icon:"📅",unit:"tháng",mode:"numeric"},
           ].map(f=><div key={f.key}>
-            <div style={{fontSize:mob?11:13,fontWeight:mob?600:700,color:C.t2,marginBottom:4}}>{f.icon} {f.label}</div>
+            <div style={{fontSize:mob?11:13,fontWeight:mob?600:700,color:C.t2,marginBottom:8}}>{f.icon} {f.label}</div>
             <div style={{display:"flex",alignItems:"center",background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden"}}>
               <input type="text" inputMode={f.mode} value={profile[f.key]} onChange={e=>{const v=f.mode==="decimal"?e.target.value.replace(",","."):e.target.value;setProfile({...profile,[f.key]:f.key==="months"?Math.max(1,Number(v)):Number(v)});}} style={{...inp,border:"none",borderRadius:0,flex:1}}/>
               <span style={{padding:"0 10px",fontSize:12,fontWeight:600,color:C.t3,background:"#F3F4F6",height:"100%",display:"flex",alignItems:"center",borderLeft:`1px solid ${C.border}`}}>{f.unit}</span>
