@@ -163,10 +163,10 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>
       {/* Macro rings */}
       <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
-        <MacroRing l="Protein" v={actualP} max={heroP} color="#007AFF" color2="#007AFF" sub={`/${heroP}g`} unit="g" icon="💪"/>
-        <MacroRing l="Carb" v={actualC} max={heroC} color="#5AC8FA" color2="#5AC8FA" sub={`/${heroC}g`} unit="g" icon="🌾"/>
-        <MacroRing l="Fat" v={actualF} max={heroF} color="#8E8E93" color2="#8E8E93" sub={`/${heroF}g`} unit="g" icon="💧"/>
-        <MacroRing l="Chất xơ" v={actualFiber} max={heroFiber} color="#34C759" color2="#34C759" sub={`/${heroFiber}g`} unit="g" icon="🍃"/>
+        <MacroRing l="Protein" v={actualP} max={heroP} color="#007AFF" color2="#007AFF" sub={`/${heroP}g`} unit="g" icon="💪" size={mob?58:72}/>
+        <MacroRing l="Carb" v={actualC} max={heroC} color="#5AC8FA" color2="#5AC8FA" sub={`/${heroC}g`} unit="g" icon="🌾" size={mob?58:72}/>
+        <MacroRing l="Fat" v={actualF} max={heroF} color="#8E8E93" color2="#8E8E93" sub={`/${heroF}g`} unit="g" icon="💧" size={mob?58:72}/>
+        <MacroRing l="Chất xơ" v={actualFiber} max={heroFiber} color="#34C759" color2="#34C759" sub={`/${heroFiber}g`} unit="g" icon="🍃" size={mob?58:72}/>
       </div>
     </div>
 
