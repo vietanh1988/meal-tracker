@@ -329,7 +329,7 @@ export default function App(){
       <main style={{padding:tab==="account"?"92px 100px 24px":"92px 24px 24px",flex:1}}>
         {tab==="dashboard"&&<div>
           {/* HERO */}
-          <div style={{...card,padding:"28px 32px",borderRadius:20,display:"flex",alignItems:"center",gap:32,marginBottom:24,border:`1.5px solid ${C.border}`,flexWrap:"wrap"}}>
+          <div style={{...card,padding:"28px 32px",borderRadius:20,display:"flex",alignItems:"flex-end",gap:32,marginBottom:24,border:`1.5px solid ${C.border}`,flexWrap:"wrap"}}>
             {macroBanner&&<div style={{width:"100%",background:"#DCFCE7",border:"1.5px solid #86EFAC",borderRadius:10,padding:"8px 14px",marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontSize:14}}>🔄</span>
               <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>Macro đã cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff} cal)</span>
