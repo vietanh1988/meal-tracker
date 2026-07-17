@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "./lib/supabase";
 import { authFetch } from "./lib/authFetch";
-import { pickAiModelFromSettings } from "./lib/aiProvider";
+import { pickAiModelFromSettings, pickAiProvider } from "./lib/aiProvider";
 
 export function WeightSuggestion({weightLog,goalKg,goalType,startKg,curKg,profile,macro,getMeals,appSettings}){
   const [aiResponse,setAiResponse]=useState(null);
@@ -130,7 +130,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
   async function callAI(){
     setAiLoading(true);setAiResponse(null);
     try{
-      const provider=appSettings.ai_provider||"gpt";
+      const provider=pickAiProvider(appSettings);
       const prompt=buildPrompt();
       // Không bao giờ tự gọi thẳng OpenAI/Gemini từ client (buộc phải lộ
       // key thật ra trình duyệt) — mọi provider đều đi qua ai-proxy, server
@@ -211,7 +211,7 @@ Gợi ý CỤ THỂ: tên món + gram + kcal thay đổi. KHÔNG nói chung chun
         const msg=`Tôi đang ${goalLabel}, ${curKg}kg muốn ${goalKg}kg, tập ${({gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"không"})[profile.exerciseType||"gym"]} ${({occasional:"1-2",regular:"3-4",frequent:"5-6",daily:"6-7"})[profile.frequency||"regular"]} buổi/tuần ở Hà Nội. Gợi ý cách chọn PT phù hợp, budget hợp lý.`;
         setAiResponse(null);setAiLoading(true);
         (async()=>{try{
-          const provider=appSettings.ai_provider||"gpt";
+          const provider=pickAiProvider(appSettings);
           const d=await authFetch("ai-proxy",{foodDesc:msg,provider,model:pickAiModelFromSettings(appSettings,provider),feature:"weight_advice"});
           if(d.error)throw new Error(d.error);
           setAiResponse((d.text||"").trim());
