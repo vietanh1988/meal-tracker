@@ -165,7 +165,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         {(profile.exerciseType||"gym")==="none"&&profile.goalType==="bulk"&&<div style={{marginBottom:12,padding:"10px 14px",borderRadius:8,background:"#FEE2E2",border:"1px solid #FCA5A5",fontSize:12,color:"#003D99",display:"flex",alignItems:"center",gap:6}}>⚠️ Không thể tăng cơ khi không tập luyện.</div>}
 
         {/* Chế độ ăn (chỉ khi Giảm mỡ) */}
-        {profile.goalType==="cut"&&<div style={{marginBottom:14,paddingTop:12,borderTop:`1.5px solid #F3F4F6`}}>
+        {profile.goalType==="cut"&&<div style={{marginBottom:20,paddingTop:12,borderTop:`1.5px solid #F3F4F6`}}>
           <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:8}}>🍽️ Chế độ ăn giảm mỡ</div>
           <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr 1fr",gap:6}}>
             {[
@@ -292,7 +292,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
           </div>)}
         </div>
 
-        <div style={{marginTop:14,padding:14,borderRadius:12,border:`1.5px solid rgba(0,122,255,0.2)`,background:"rgba(0,122,255,0.02)"}}>
+        <div style={{marginTop:20,padding:14,borderRadius:12,border:`1.5px solid rgba(0,122,255,0.2)`,background:"rgba(0,122,255,0.02)"}}>
         <div style={{fontSize:14,fontWeight:800,color:C.primary,marginBottom:10,display:"flex",alignItems:"center",gap:6}}>💪 Macro ngày tập</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
           {[
@@ -308,7 +308,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         </div>
         </div>
 
-        <div style={{marginTop:10,padding:14,borderRadius:12,border:`1.5px solid rgba(249,115,22,0.2)`,background:"rgba(249,115,22,0.02)"}}>
+        <div style={{marginTop:18,padding:14,borderRadius:12,border:`1.5px solid rgba(249,115,22,0.2)`,background:"rgba(249,115,22,0.02)"}}>
         <div style={{fontSize:14,fontWeight:800,color:"#D97706",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>😴 Macro ngày nghỉ</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
           {[
@@ -324,12 +324,12 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         </div>
         </div>
 
-        {(profile.calorieMode||"standard")==="asian"&&<div style={{marginTop:10,padding:"10px 14px",borderRadius:10,background:"#EFF6FF",border:"1px solid #BFDBFE",display:"flex",alignItems:"flex-start",gap:8}}>
+        {(profile.calorieMode||"standard")==="asian"&&<div style={{marginTop:16,padding:"10px 14px",borderRadius:10,background:"#EFF6FF",border:"1px solid #BFDBFE",display:"flex",alignItems:"flex-start",gap:8}}>
           <span style={{fontSize:14,flexShrink:0}}>🇻🇳</span>
           <span style={{fontSize:12,fontWeight:600,color:"#1E40AF",lineHeight:1.6}}>Đang dùng công thức Việt Nam (BMR ×0.9). Phù hợp hơn cho người Việt Nam và Đông Nam Á.</span>
         </div>}
 
-        <div style={{marginTop:12,background:C.goldBg,borderRadius:10,padding:"10px 14px",border:"1.5px solid #CA8A04"}}>
+        <div style={{marginTop:18,background:C.goldBg,borderRadius:10,padding:"10px 14px",border:"1.5px solid #CA8A04"}}>
           <span style={{fontSize:12,fontWeight:700,color:"#78350F",lineHeight:1.6}}>
             💡 BMR = {macro.bmr}{(profile.calorieMode||"standard")==="asian"?" (×0.9 Việt Nam)":""} → ×{macro.actMul} = TDEE {macro.tdee} cal.
             {macro.goal==="bulk"?"Tăng cơ":macro.goal==="cut"?"Giảm mỡ":"Duy trì"}: P = {profile.kg}×{macro.pRatio.replace("g/kg","")} = {macro.protein}g, C = {profile.kg}×{macro.cRatio.replace("g/kg","")} = {macro.carb}g, F = {profile.kg}×{macro.fRatio.replace("g/kg","")} = {macro.fat}g.
