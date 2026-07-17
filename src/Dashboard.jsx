@@ -122,7 +122,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         .fp-hdr{animation:hdrSlideFadeIn 0.5s ease-out}
         .fp-hdr-avt{animation:hdrAvatarPulse 1.2s ease-out 2}
       `}</style>
-      <div className="fp-hdr" style={{display:"flex",alignItems:"center",gap:12,margin:"-8px -10px -12px",padding:"18px 16px 50px",background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",borderRadius:"0 0 24px 24px"}}>
+      <div className="fp-hdr" style={{display:"flex",alignItems:"center",gap:12,margin:"-8px 0 -40px",padding:"18px 16px 50px",background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",borderRadius:24}}>
         <div className="fp-hdr-avt" style={{borderRadius:"50%"}}><UserAvatar gender={profile.gender} size={48} bg="rgba(255,255,255,0.3)" border="2px solid rgba(255,255,255,0.75)"/></div>
         <div style={{flex:1}}>
           <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>Chào {displayName}! 👋</div>
@@ -134,14 +134,11 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>
     </>}
 
-    {/* Hero — White card. margin ngang -10px khớp với header (cũng full-bleed
-        -10px) để 2 mép trái/phải thẳng hàng — trước đây thiếu, khiến card hẹp
-        hơn header 20px, lộ viền gradient 2 bên. Padding trong +10px bù lại.
-        Không spread {...card} vì nó có sẵn marginBottom:10 xung đột với
-        margin shorthand mới — viết rõ từng thuộc tính cần để tránh 2 property
-        margin cùng tồn tại trong style (thứ tự áp dụng của trình duyệt không
-        đoán trước được khi cả margin và marginBottom cùng có mặt). */}
-    <div style={{background:C.card,borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",padding:mob?"16px 26px":"24px",margin:mob?"-40px -10px 10px":"0 0 10px",border:`1.5px solid ${C.border}`}}>
+    {/* Hero — White card. Không full-bleed — giữ nguyên padding tự nhiên
+        10px của container cha ở 2 bên, giống thiết kế tham khảo (thẻ nổi
+        gọn, có khoảng cách đều với mép màn hình, không tràn sát viền).
+        Chỉ margin-top âm để đè lớp lên phần bo góc dưới của header. */}
+    <div style={{background:C.card,borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",padding:mob?"16px 18px":"24px",margin:mob?"-40px 0 10px":"0 0 10px",border:`1.5px solid ${C.border}`}}>
       {macroBanner&&<div style={{background:"#DCFCE7",border:"1.5px solid #86EFAC",borderRadius:10,padding:"8px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:14}}>🔄</span>
         <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>Macro cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff})</span>
