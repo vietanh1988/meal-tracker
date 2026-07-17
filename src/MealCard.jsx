@@ -24,9 +24,10 @@ export function MealCard({meal}){
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
       <div style={{display:"flex",alignItems:"center",gap:10,flex:"1 1 auto",minWidth:0}}>
         <div style={{width:44,height:44,borderRadius:11,background:iconBg[meal.id]||C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          <span style={{fontSize:22}}>{
-            {sang:"🌅",phu_sang:"🥤",trua:"☀️",phu_chieu:"🍎",pre:"⚡",post:"💪",toi:"🌙"}[meal.id]||"🍽️"
-          }</span>
+          <img src={`/icons/${
+            // meal_postworkout/meal_morningsnack chưa có asset riêng — tái dùng icon gần nghĩa nhất (pre~post, snack~phụ sáng)
+            {sang:"meal_morning",phu_sang:"meal_snack",trua:"meal_lunch",phu_chieu:"meal_snack",pre:"meal_preworkout",post:"meal_preworkout",toi:"meal_dinner"}[meal.id]||"meal_snack"
+          }.png`} alt="" style={{width:28,height:28,objectFit:"contain"}}/>
         </div>
         <div style={{minWidth:0}}>
           <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
