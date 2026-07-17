@@ -138,7 +138,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         10px của container cha ở 2 bên, giống thiết kế tham khảo (thẻ nổi
         gọn, có khoảng cách đều với mép màn hình, không tràn sát viền).
         Chỉ margin-top âm để đè lớp lên phần bo góc dưới của header. */}
-    <div style={{background:C.card,borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",padding:"16px 18px",margin:"-40px 0 10px",border:"2px solid #2563EB"}}>
+    <div style={{background:C.card,borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",padding:"16px 18px",margin:"-40px 0 10px",border:`1.5px solid ${C.border}`}}>
       {macroBanner&&<div style={{background:"#DCFCE7",border:"1.5px solid #86EFAC",borderRadius:10,padding:"8px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:14}}>🔄</span>
         <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>Macro cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff})</span>
