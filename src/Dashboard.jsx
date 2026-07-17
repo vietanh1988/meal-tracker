@@ -11,7 +11,7 @@ import { WeightSuggestion } from "./WeightSuggestion";
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess } from "./lib/aiMenuService";
 
-export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,getMealHistory,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
+export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,userDataLoaded,macroBanner}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [showAIMenu,setShowAIMenu]=useState(false);
   const aiAccess=getAIMenuAccess(profile,appSettings);
@@ -208,7 +208,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         phía trên không mở được overlay này. */}
     {showAIMenu&&aiAccess.usable&&<div onClick={()=>setShowAIMenu(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
       <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":520,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:C.bg,borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
-        <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} initialDayType={dayType} getMealHistory={getMealHistory} onApply={handleApplyAIMenu} onClose={()=>setShowAIMenu(false)}/>
+        <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} initialDayType={dayType} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} onApply={handleApplyAIMenu} onClose={()=>setShowAIMenu(false)}/>
       </div>
     </div>}
 

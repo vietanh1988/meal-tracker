@@ -53,7 +53,7 @@ const STYLES = [
   { id: "easy", label: "⚡ Tiện lợi", desc: "Ít nấu nướng, đồ nhanh gọn" },
 ];
 
-export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, getMealHistory, onApply, onClose, onFallbackToLibrary }) {
+export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, getMealHistory, getDailyLogs, onApply, onClose, onFallbackToLibrary }) {
   const mob = useIsMobile();
   const [step, setStep] = useState("prefs"); // prefs | loading | preview | error
   const [style, setStyle] = useState("vn");
@@ -95,10 +95,29 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
     // DevTools. Không tự tăng counter ở đây nữa (tránh double-count).
 
     // Variety V2 — theo FOOD KEY (V2 không dùng pattern): gộp 2 nguồn:
-    // (1) đã ăn thật 3 ngày gần nhất (meal_logs), (2) đã hiện trong
-    // CHÍNH phiên này dù chưa lưu (shownPatternsRef giờ chứa food keys).
+    // (1) đã ăn thật 3 ngày gần nhất, (2) đã hiện trong CHÍNH phiên này
+    // dù chưa lưu (shownPatternsRef giờ chứa food keys).
+    // Ưu tiên daily_logs (mỗi ngày 1 bản ghi, KHÔNG bị ghi đè) thay vì
+    // meal_logs (chỉ giữ bản mới nhất/loại bữa — nếu 2 ngày liền lưu cùng
+    // bữa trưa, bữa hôm qua bị mất, "3 ngày gần nhất" chỉ còn thấy 1 bữa
+    // bất kỳ ngày nào, không phải lịch sử thật 3 ngày).
     const avoidFoodSet = new Set(shownPatternsRef.current);
-    if (getMealHistory) {
+    if (getDailyLogs) {
+      try {
+        const start = new Date(); start.setDate(start.getDate() - 3);
+        const dailyRows = await getDailyLogs(start.toISOString().slice(0, 10), new Date().toISOString().slice(0, 10));
+        // daily_logs lưu nested (1 ngày → nhiều bữa → mỗi bữa có items
+        // riêng trong .meals[]), khác meal_logs (1 row = 1 bữa, items
+        // phẳng ở top-level). Flatten về đúng shape getRecentFoodKeys
+        // cần — không sửa hàm cũ để tránh ảnh hưởng chỗ khác dùng nó.
+        const flatHistory = (dailyRows || []).flatMap(row =>
+          (row.meals || []).map(m => ({ log_date: row.log_date, items: m.items || [] }))
+        );
+        getRecentFoodKeys(flatHistory, 3).forEach(k => avoidFoodSet.add(k));
+      } catch (e) { console.error("Variety daily_logs fetch error:", e); }
+    } else if (getMealHistory) {
+      // Fallback cho nơi chưa truyền getDailyLogs (VD OnboardingWizard,
+      // user mới chưa có lịch sử gì đáng kể nên không ảnh hưởng nhiều).
       try {
         const start = new Date(); start.setDate(start.getDate() - 3);
         const history = await getMealHistory(start.toISOString().slice(0, 10), new Date().toISOString().slice(0, 10));

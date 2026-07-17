@@ -76,7 +76,7 @@ const hasCreate = ["tạo","lên","gợi ý","soạn","làm","giúp","cho"].some
 return hasMenu && hasCreate;
 }
 
-export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory}){
+export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs}){
 const [messages,setMessages]=useState([]);
 const [showAIMenuFromChat,setShowAIMenuFromChat]=useState(false);
 // Variety tầng SESSION — nhớ pattern đã hiện ra trong CHÍNH phiên chat này
@@ -630,7 +630,7 @@ Tái dùng nguyên component đã test (39 test case), không viết logic
 sinh thực đơn riêng cho chat — tránh 2 nơi cùng làm 1 việc rồi lệch nhau. */}
 {showAIMenuFromChat&&<div onClick={()=>setShowAIMenuFromChat(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:1000,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
 <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":480,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:"#fff",borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
-<AIMenuGenerator macro={macro} profile={profile} user={{id:userId}} appSettings={appSettings} initialDayType={todayData?.dayType==="rest"?"rest":"train"} getMealHistory={getMealHistory} onApply={handleApplyAIMenuChat} onClose={()=>setShowAIMenuFromChat(false)}/>
+<AIMenuGenerator macro={macro} profile={profile} user={{id:userId}} appSettings={appSettings} initialDayType={todayData?.dayType==="rest"?"rest":"train"} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} onApply={handleApplyAIMenuChat} onClose={()=>setShowAIMenuFromChat(false)}/>
 </div>
 </div>}
 </div>;
