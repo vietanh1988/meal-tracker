@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { C, card, inp, redBtn } from "./theme";
 import { DEFAULT_MEAL_CONFIG } from "./mealConstants";
 import { useIsMobile } from "./hooks/useIsMobile";
-import { MacroRing } from "./MacroRing";
+import { MacroBar } from "./MacroBar";
 import { MealCard } from "./MealCard";
 import { WeightBarChart } from "./WeightBarChart";
 import { UserAvatar } from "./UserAvatar";
@@ -138,32 +138,57 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         10px của container cha ở 2 bên, giống thiết kế tham khảo (thẻ nổi
         gọn, có khoảng cách đều với mép màn hình, không tràn sát viền).
         Chỉ margin-top âm để đè lớp lên phần bo góc dưới của header. */}
-    <div style={{background:C.card,borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",padding:mob?"16px 18px":"24px",margin:mob?"-40px 0 10px":"0 0 10px",border:`1.5px solid ${C.border}`}}>
+    <div style={{background:C.card,borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",padding:"16px 18px",margin:"-40px 0 10px",border:"2px solid #2563EB"}}>
       {macroBanner&&<div style={{background:"#DCFCE7",border:"1.5px solid #86EFAC",borderRadius:10,padding:"8px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:14}}>🔄</span>
         <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>Macro cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff})</span>
       </div>}
-      <div style={{fontSize:mob?17:18,fontWeight:600,color:C.t1,marginBottom:4}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
-      <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-        <div style={{fontSize:mob?36:44,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>
-          {actualCal.toLocaleString()}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div style={{flex:1,paddingRight:8}}>
+          <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+          <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:4}}>
+            <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{actualCal.toLocaleString()}</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
+          </div>
         </div>
-        <div style={{fontSize:mob?14:16,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
+        {/* Illustration clipboard+lửa — thuần trang trí, không mang logic */}
+        <svg width={66} height={66} viewBox="0 0 140 140" style={{flexShrink:0}}>
+          <defs><linearGradient id="heroFireGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#FCD34D"/><stop offset="100%" stopColor="#F59E0B"/></linearGradient></defs>
+          <rect x="18" y="10" width="80" height="105" rx="14" fill="#EEF2FF" stroke="#6366F1" strokeWidth="3.5"/>
+          <rect x="42" y="4" width="32" height="16" rx="6" fill="#6366F1"/>
+          <circle cx="34" cy="42" r="4.5" fill="#818CF8"/><rect x="46" y="38.5" width="38" height="7" rx="3.5" fill="#C7D2FE"/>
+          <circle cx="34" cy="62" r="4.5" fill="#818CF8"/><rect x="46" y="58.5" width="30" height="7" rx="3.5" fill="#C7D2FE"/>
+          <circle cx="34" cy="82" r="4.5" fill="#818CF8"/><rect x="46" y="78.5" width="24" height="7" rx="3.5" fill="#C7D2FE"/>
+          <circle cx="98" cy="100" r="26" fill="url(#heroFireGrad)"/>
+          <path d="M98 84c-2 6-9 9-9 17a9 9 0 0018 0c0-4-2-6-3-9 1 4-1 6-3 6-3 0-4-3-3-6-1-3 1-6 0-8z" fill="#EA580C"/>
+        </svg>
       </div>
-      {((profile.calorieMode||"standard")==="asian"||(profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"))&&<div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:6,alignItems:"center"}}>{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:11,fontWeight:700,color:"#007AFF",padding:"4px 10px",background:"rgba(0,122,255,0.08)",borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🇻🇳 Calo chuẩn Việt Nam</span>}{profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 10px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}</div>}
-      <div style={{marginTop:6}}>
-        <span style={{fontSize:13,fontWeight:700,color:(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?"#B45309":pp<=105?"#16A34A":"#DC2626";})()}}>{(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;return pp<95?`⚠️ Còn thiếu ${calRemain} kcal`:pp<=105?"✅ Ổn rồi, giữ nhé!":`🔴 Dư ${Math.abs(calRemain)} kcal`;})()}</span>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10,alignItems:"center"}}>
+        {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#2563EB",padding:"4px 9px 4px 6px",background:"#EFF6FF",borderRadius:6}}>
+          <svg width={16} height={11} viewBox="0 0 30 20"><rect width="30" height="20" fill="#DA251D"/><polygon points="15,4 16.76,9.35 22.39,9.35 17.82,12.65 19.58,18 15,14.7 10.42,18 12.18,12.65 7.61,9.35 13.24,9.35" fill="#FFCD00"/></svg>
+          Calo chuẩn Việt Nam
+        </span>}
+        {profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 10px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}
+        {(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;
+          if(pp<95)return <span style={{fontSize:11,fontWeight:700,color:"#B45309",padding:"4px 9px",background:"#FEF3C7",borderRadius:6}}>⚠️ Còn thiếu {calRemain} kcal</span>;
+          if(pp<=105)return <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#16A34A",padding:"4px 9px 4px 6px",background:"#F0FDF4",borderRadius:6}}>
+            <svg width={14} height={14} viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Ổn rồi, giữ nhé!
+          </span>;
+          return <span style={{fontSize:11,fontWeight:700,color:"#DC2626",padding:"4px 9px",background:"#FEE2E2",borderRadius:6}}>🔴 Dư {Math.abs(calRemain)} kcal</span>;
+        })()}
       </div>
-      {/* Progress bar */}
+      {/* Progress bar tổng — cap 120% (khác 100% của macro bar bên dưới),
+          giữ nguyên logic gốc không đổi */}
       <div style={{height:8,width:"100%",background:"#F3F4F6",borderRadius:4,marginTop:10,overflow:"hidden"}}>
         <div style={{height:"100%",width:`${Math.min(heroCal>0?(actualCal/heroCal)*100:0,120)}%`,background:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
       </div>
-      {/* Macro rings */}
-      <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
-        <MacroRing l="Protein" v={actualP} max={heroP} color="#007AFF" color2="#007AFF" sub={`/${heroP}g`} unit="g" icon="💪" size={mob?58:72}/>
-        <MacroRing l="Carb" v={actualC} max={heroC} color="#5AC8FA" color2="#5AC8FA" sub={`/${heroC}g`} unit="g" icon="🌾" size={mob?58:72}/>
-        <MacroRing l="Fat" v={actualF} max={heroF} color="#8E8E93" color2="#8E8E93" sub={`/${heroF}g`} unit="g" icon="💧" size={mob?58:72}/>
-        <MacroRing l="Chất xơ" v={actualFiber} max={heroFiber} color="#34C759" color2="#34C759" sub={`/${heroFiber}g`} unit="g" icon="🍃" size={mob?58:72}/>
+      {/* 4 macro — MacroBar mới (icon+số+thanh ngang), nhãn Việt hoá */}
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:16}}>
+        <MacroBar label="Đạm" v={actualP} max={heroP} barColor="#2563EB" icon="💪"/>
+        <MacroBar label="Tinh bột" v={actualC} max={heroC} barColor="#38BDF8" icon="🌾"/>
+        <MacroBar label="Chất béo" v={actualF} max={heroF} barColor="#F59E0B" icon="💧"/>
+        <MacroBar label="Chất xơ" v={actualFiber} max={heroFiber} barColor="#22C55E" icon="🍃"/>
       </div>
     </div>
 
