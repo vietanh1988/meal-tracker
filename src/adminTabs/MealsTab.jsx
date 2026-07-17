@@ -680,8 +680,8 @@ setDayType(t.day_type);
 const el=document.getElementById("tpl-applied");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 }
-}} style={{...redBtn,flex:1,marginTop:0,background:isTodayType?"linear-gradient(135deg,#15803D,#166534)":"#E2E8F0",color:isTodayType?"#fff":"#9CA3AF",cursor:isTodayType?"pointer":"not-allowed",opacity:isTodayType?1:0.7}}>📥 Dùng cho hôm nay</button>
-<button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Gán vào lịch tuần</button>
+}} style={{...redBtn,flex:1,marginTop:0,fontSize:13,padding:"12px 10px",minHeight:44,background:isTodayType?"linear-gradient(135deg,#15803D,#166534)":"#E2E8F0",color:isTodayType?"#fff":"#9CA3AF",cursor:isTodayType?"pointer":"not-allowed",opacity:isTodayType?1:0.7}}>📥 Dùng cho hôm nay</button>
+<button onClick={(e)=>{e.stopPropagation();setShowAssignDays(showAssignDays===t.id?null:t.id);}} style={{...redBtn,flex:1,marginTop:0,fontSize:13,padding:"12px 10px",minHeight:44,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}>📅 Gán vào lịch tuần</button>
 </div>
 {!isTodayType&&<div style={{fontSize:11,color:"#B45309",fontWeight:600,marginTop:6}}>⚠️ Mẫu này là {t.day_type==="train"?"Ngày tập":"Ngày nghỉ"}, khác với hôm nay ({todayRealDayType()==="train"?"Ngày tập":"Ngày nghỉ"}) — chỉ lưu được vào Lịch tuần cho đúng ngày đó, không áp trực tiếp cho hôm nay.</div>}
 {showAssignDays===t.id&&(()=>{

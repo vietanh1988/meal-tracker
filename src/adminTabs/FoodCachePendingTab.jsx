@@ -105,8 +105,8 @@ export function FoodCachePendingTab({ mob, allPending, pendingCount, approvedCou
                 <span>Xơ: {row.fiber}g</span>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => approvePendingFood(row)} style={{ ...redBtn, flex: 1, marginTop: 0, background: "linear-gradient(135deg,#15803D,#166534)" }}>✓ Duyệt vào kho chung</button>
-                <button onClick={async () => { if (await appConfirm(`Từ chối "${row.food_name}"?`, { danger: true })) rejectPendingFood(row.id); }} style={{ padding: "10px 16px", fontSize: 13, fontWeight: 700, border: "1.5px solid #FCA5A5", borderRadius: 10, background: "#FEF2F2", color: "#DC2626", cursor: "pointer", fontFamily: "inherit" }}>✕ Từ chối</button>
+                <button onClick={() => approvePendingFood(row)} style={{ ...redBtn, flex: 1, marginTop: 0, fontSize: 14, padding: "12px 10px", minHeight: 44, background: "linear-gradient(135deg,#15803D,#166534)" }}>✓ Duyệt vào kho chung</button>
+                <button onClick={async () => { if (await appConfirm(`Từ chối "${row.food_name}"?`, { danger: true })) rejectPendingFood(row.id); }} style={{ flex: 1, padding: "12px 10px", fontSize: 14, fontWeight: 700, border: "1.5px solid #FCA5A5", borderRadius: 14, minHeight: 44, background: "#FEF2F2", color: "#DC2626", cursor: "pointer", fontFamily: "inherit" }}>✕ Từ chối</button>
               </div>
             </div>
           ))}
