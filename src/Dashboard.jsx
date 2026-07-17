@@ -112,17 +112,27 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const displayName=user?.user_metadata?.username||user?.email?.split("@")[0]||"bạn";
 
   return <div>
-    {/* Greeting Header — mobile only */}
-    {mob&&<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-      <UserAvatar gender={profile.gender} size={48}/>
-      <div style={{flex:1}}>
-        <div style={{fontSize:mob?16:18,fontWeight:800,color:C.t1}}>Chào {displayName}! 👋</div>
-        <div style={{fontSize:mob?13:13,fontWeight:600,color:C.t2}}>
-          {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {new Date().toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
+    {/* Greeting Header — mobile only. Gradient thương hiệu + bo góc dưới,
+        đồng bộ với nút CTA (redBtn) và logo dùng cùng gradient này.
+        2 hiệu ứng nhẹ, CHỈ chạy 1 lần khi mount — không lặp gây rối mắt. */}
+    {mob&&<>
+      <style>{`
+        @keyframes hdrSlideFadeIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes hdrAvatarPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0.6)}50%{box-shadow:0 0 0 6px rgba(255,255,255,0)}}
+        .fp-hdr{animation:hdrSlideFadeIn 0.5s ease-out}
+        .fp-hdr-avt{animation:hdrAvatarPulse 1.2s ease-out 2}
+      `}</style>
+      <div className="fp-hdr" style={{display:"flex",alignItems:"center",gap:12,margin:"-8px -10px 16px",padding:"18px 16px 22px",background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",borderRadius:"0 0 24px 24px"}}>
+        <div className="fp-hdr-avt" style={{borderRadius:"50%"}}><UserAvatar gender={profile.gender} size={48} bg="rgba(255,255,255,0.25)" border="2px solid rgba(255,255,255,0.6)"/></div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>Chào {displayName}! 👋</div>
+          <div style={{fontSize:13,fontWeight:600,color:"rgba(255,255,255,0.85)"}}>
+            {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {new Date().toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
+          </div>
         </div>
+        <NotificationBell appSettings={appSettings} userId={user?.id} dark/>
       </div>
-      <NotificationBell appSettings={appSettings} userId={user?.id}/>
-    </div>}
+    </>}
 
     {/* Hero — White card */}
     <div style={{...card,padding:mob?"16px":"24px",border:`1.5px solid ${C.border}`}}>
