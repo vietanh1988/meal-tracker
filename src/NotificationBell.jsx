@@ -30,6 +30,7 @@ export function NotificationBell({ appSettings, userId, dark }) {
   const [pushItems, setPushItems] = useState([]);
   const [show, setShow] = useState(false);
   const [ringing, setRinging] = useState(false);
+  const [selectedNotif, setSelectedNotif] = useState(null);
   const [seenUpdateIds, setSeenUpdateIds] = useState(() => {
     try { return JSON.parse(localStorage.getItem(ACK_KEY) || "[]"); } catch (e) { return []; }
   });
@@ -179,7 +180,7 @@ export function NotificationBell({ appSettings, userId, dark }) {
           <div style={{ maxHeight: 420, overflowY: "auto" }}>
             <div style={{ padding: "10px 14px", borderBottom: `1.5px solid ${C.border}`, fontSize: 13, fontWeight: 700, color: C.t1 }}>🔔 Hoạt động của bạn</div>
             {pushItems.map((n) => (
-              <div key={n.id} onClick={() => { if (n.url) window.location.href = n.url; }} style={{ padding: "10px 14px", cursor: n.url ? "pointer" : "default", borderBottom: `0.5px solid ${C.border}`, background: !n.is_read ? "rgba(220,38,38,0.04)" : "transparent" }}>
+              <div key={n.id} onClick={() => setSelectedNotif(n)} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: `0.5px solid ${C.border}`, background: !n.is_read ? "rgba(220,38,38,0.04)" : "transparent" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   {!n.is_read && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", flexShrink: 0 }} />}
                   <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, lineHeight: 1.4 }}>{n.title}</div>
@@ -204,6 +205,30 @@ export function NotificationBell({ appSettings, userId, dark }) {
               );
             })}
             {updateList.length === 0 && <div style={{ padding: "14px", textAlign: "center", fontSize: 12, color: C.t3 }}>Không có bản cập nhật mới</div>}
+          </div>
+        </div>
+      )}
+      {selectedNotif && (
+        <div onClick={() => setSelectedNotif(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 200 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, maxWidth: 420, width: "100%", maxHeight: "70vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: `1.5px solid ${C.border}`, flexShrink: 0 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: C.t1 }}>🔔 Thông báo</div>
+              <span onClick={() => setSelectedNotif(null)} style={{ cursor: "pointer", fontSize: 18, color: C.t3 }}>✕</span>
+            </div>
+            <div style={{ padding: "18px 20px", overflowY: "auto" }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, lineHeight: 1.4, marginBottom: 8 }}>{selectedNotif.title}</div>
+              {selectedNotif.body && <div style={{ fontSize: 13, color: C.t2, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{selectedNotif.body}</div>}
+              <div style={{ fontSize: 11, color: C.t3, marginTop: 12 }}>{fmtTime(selectedNotif.created_at)}</div>
+            </div>
+            <div style={{ padding: "12px 20px", borderTop: `1.5px solid ${C.border}`, display: "flex", gap: 8, justifyContent: "flex-end", flexShrink: 0 }}>
+              {/* Chỉ hiện nếu url là link thật có ý nghĩa — hiện tại NotifyTab
+                  luôn gửi "/" (mặc định vô nghĩa), nên nút này thường ẩn.
+                  Giữ lại phòng khi sau này admin thêm được url thật. */}
+              {selectedNotif.url && selectedNotif.url !== "/" && (
+                <button onClick={() => { window.location.href = selectedNotif.url; }} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, border: `1.5px solid ${C.border}`, borderRadius: 8, background: "#fff", color: C.t1, cursor: "pointer", fontFamily: "inherit" }}>Xem chi tiết</button>
+              )}
+              <button onClick={() => setSelectedNotif(null)} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Đóng</button>
+            </div>
           </div>
         </div>
       )}
