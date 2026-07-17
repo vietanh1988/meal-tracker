@@ -152,7 +152,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           </div>
         </div>
         {/* Illustration clipboard+lửa — thuần trang trí, không mang logic */}
-        <svg width={66} height={66} viewBox="0 0 140 140" style={{flexShrink:0}}>
+        <svg width={84} height={84} viewBox="0 0 140 140" style={{flexShrink:0}}>
           <defs><linearGradient id="heroFireGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#FCD34D"/><stop offset="100%" stopColor="#F59E0B"/></linearGradient></defs>
           <rect x="18" y="10" width="80" height="105" rx="14" fill="#EEF2FF" stroke="#6366F1" strokeWidth="3.5"/>
           <rect x="42" y="4" width="32" height="16" rx="6" fill="#6366F1"/>
