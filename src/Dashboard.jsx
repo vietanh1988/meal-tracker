@@ -134,8 +134,14 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>
     </>}
 
-    {/* Hero — White card */}
-    <div style={{...card,padding:mob?"16px":"24px",border:`1.5px solid ${C.border}`}}>
+    {/* Hero — White card. margin ngang -10px khớp với header (cũng full-bleed
+        -10px) để 2 mép trái/phải thẳng hàng — trước đây thiếu, khiến card hẹp
+        hơn header 20px, lộ viền gradient 2 bên. Padding trong +10px bù lại.
+        Không spread {...card} vì nó có sẵn marginBottom:10 xung đột với
+        margin shorthand mới — viết rõ từng thuộc tính cần để tránh 2 property
+        margin cùng tồn tại trong style (thứ tự áp dụng của trình duyệt không
+        đoán trước được khi cả margin và marginBottom cùng có mặt). */}
+    <div style={{background:C.card,borderRadius:14,boxShadow:"0 2px 8px rgba(0,0,0,0.06)",padding:mob?"16px 26px":"24px",margin:mob?"-12px -10px 10px":"0 0 10px",border:`1.5px solid ${C.border}`}}>
       {macroBanner&&<div style={{background:"#DCFCE7",border:"1.5px solid #86EFAC",borderRadius:10,padding:"8px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
         <span style={{fontSize:14}}>🔄</span>
         <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>Macro cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff})</span>
@@ -157,10 +163,10 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>
       {/* Macro rings */}
       <div style={{display:"flex",gap:mob?6:14,justifyContent:"space-around",marginTop:16}}>
-        <MacroRing l="Protein" v={actualP} max={heroP} color="#007AFF" color2="#007AFF" sub={`/${heroP}g`} unit="g"/>
-        <MacroRing l="Carb" v={actualC} max={heroC} color="#5AC8FA" color2="#5AC8FA" sub={`/${heroC}g`} unit="g"/>
-        <MacroRing l="Fat" v={actualF} max={heroF} color="#8E8E93" color2="#8E8E93" sub={`/${heroF}g`} unit="g"/>
-        <MacroRing l="Chất xơ" v={actualFiber} max={heroFiber} color="#34C759" color2="#34C759" sub={`/${heroFiber}g`} unit="g"/>
+        <MacroRing l="Protein" v={actualP} max={heroP} color="#007AFF" color2="#007AFF" sub={`/${heroP}g`} unit="g" icon="💪"/>
+        <MacroRing l="Carb" v={actualC} max={heroC} color="#5AC8FA" color2="#5AC8FA" sub={`/${heroC}g`} unit="g" icon="🌾"/>
+        <MacroRing l="Fat" v={actualF} max={heroF} color="#8E8E93" color2="#8E8E93" sub={`/${heroF}g`} unit="g" icon="💧"/>
+        <MacroRing l="Chất xơ" v={actualFiber} max={heroFiber} color="#34C759" color2="#34C759" sub={`/${heroFiber}g`} unit="g" icon="🍃"/>
       </div>
     </div>
 
