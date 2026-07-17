@@ -187,11 +187,11 @@ export function NotificationBell({ appSettings, userId, dark }) {
         onClick={openList}
         style={{
           width: dark ? 40 : 40, height: dark ? 40 : 40, borderRadius: "50%",
-          background: dark ? "rgba(255,255,255,0.22)" : C.card,
-          border: dark ? "1.5px solid rgba(255,255,255,0.5)" : `1.5px solid ${C.border}`,
+          background: dark ? "rgba(255,255,255,0.32)" : C.card,
+          border: dark ? "1.5px solid rgba(255,255,255,0.65)" : `1.5px solid ${C.border}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: dark ? 16 : 18, cursor: "pointer",
-          boxShadow: dark ? "none" : "0 1px 4px rgba(0,0,0,0.06)",
+          boxShadow: dark ? "0 2px 6px rgba(0,0,0,0.15)" : "0 1px 4px rgba(0,0,0,0.06)",
           animation: ringing ? "notifBellRing 0.6s ease-in-out 0s 2, notifBellGlow 2s ease-in-out" : "none",
         }}
       >
