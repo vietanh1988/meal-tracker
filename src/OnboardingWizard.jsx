@@ -12,7 +12,7 @@ const [step,setStep]=useState(1);
 const [showAIMenu,setShowAIMenu]=useState(false);
 const p=profile||defaultProfile;
 const macro=calcMacro(p);
-const totalSteps=4;
+const totalSteps=5;
 const aiAccess=getAIMenuAccess(p,appSettings);
 
 const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
@@ -31,7 +31,7 @@ finishOnboarding();
 };
 
 const stepDots=<div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:20}}>
-{[1,2,3,4].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#36A3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
+{[1,2,3,4,5].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#36A3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
 </div>;
 
 const nextBtn=(label,disabled,color)=><button onClick={()=>setStep(step+1)} disabled={disabled} style={{...redBtn,marginTop:16,opacity:disabled?0.5:1,background:color||"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>{label} →</button>;
@@ -227,8 +227,44 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 {backBtn}
 </div>}
 
-{/* STEP 4: Hoàn tất — Preview macro */}
+{/* STEP 4: Phong cách ăn */}
 {step===4&&<div>
+<div style={{textAlign:"center",marginBottom:16}}>
+<div style={{fontSize:20}}>🍽️</div>
+<div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Phong cách ăn</div>
+<div style={{fontSize:12,fontWeight:600,color:C.t3}}>Bước 4/{totalSteps}</div>
+</div>
+
+<div style={{...lbl,marginBottom:8}}>Bạn muốn ăn theo kiểu nào?</div>
+<div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+{[
+{id:"vn",emoji:"🍚",name:"Cơm nhà Việt Nam",desc:"Cơm, canh, món mặn quen thuộc hàng ngày"},
+{id:"clean",emoji:"🥗",name:"Eat clean",desc:"Ức gà, khoai lang, yến mạch, rau xanh"},
+{id:"easy",emoji:"⚡",name:"Tiện lợi",desc:"Ít nấu nướng, đồ nhanh gọn, dễ mua"},
+].map(s=><div key={s.id} onClick={()=>setProfile({...p,mealStyle:s.id})} style={{
+display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:12,cursor:"pointer",
+background:(p.mealStyle||"vn")===s.id?"#EFF6FF":C.surface,
+border:(p.mealStyle||"vn")===s.id?`2px solid #60A5FA`:`1.5px solid ${C.border}`,
+}}>
+<div style={{fontSize:28,flexShrink:0}}>{s.emoji}</div>
+<div style={{flex:1}}>
+<div style={{fontSize:14,fontWeight:700,color:(p.mealStyle||"vn")===s.id?"#2563EB":C.t1}}>{s.name}</div>
+<div style={{fontSize:11,fontWeight:500,color:C.t3,marginTop:2}}>{s.desc}</div>
+</div>
+<div style={{width:20,height:20,borderRadius:"50%",border:(p.mealStyle||"vn")===s.id?`2.5px solid #3B82F6`:`2.5px solid ${C.border}`,background:(p.mealStyle||"vn")===s.id?"#3B82F6":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+{(p.mealStyle||"vn")===s.id&&<div style={{width:8,height:8,borderRadius:"50%",background:"#fff"}}/>}
+</div>
+</div>)}
+</div>
+
+<div style={{padding:"10px 14px",borderRadius:10,background:"#FEF3C7",border:"1px solid #FDE68A",fontSize:12,color:"#92400E",display:"flex",alignItems:"center",gap:6}}>💡 Bạn có thể thay đổi bất cứ lúc nào. AI sẽ gợi ý thực đơn phù hợp phong cách này.</div>
+
+{nextBtn("Tiếp theo")}
+{backBtn}
+</div>}
+
+{/* STEP 5: Hoàn tất — Preview macro */}
+{step===5&&<div>
 <div style={{textAlign:"center",marginBottom:16}}>
 <div style={{fontSize:20}}>✨</div>
 <div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Hoàn tất!</div>

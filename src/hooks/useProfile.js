@@ -33,6 +33,7 @@ export function useProfile(userId, authLoading) {
         if(data.diet_strategy) p.dietStrategy = data.diet_strategy;
         if(data.calorie_mode) p.calorieMode = data.calorie_mode;
         p.usesSupplements = data.uses_supplements === true;
+        if(data.meal_style) p.mealStyle = data.meal_style;
         // Cấu hình bật/tắt bữa RIÊNG của user (override cá nhân, khác với cấu hình
         // mặc định chung do admin đặt trong appSettings.meal_config). Nếu user chưa
         // từng tự chỉnh thì cột này null, app sẽ dùng mặc định chung của admin.
@@ -97,6 +98,7 @@ export function useProfile(userId, authLoading) {
         if(merged.dietStrategy) payload.diet_strategy = merged.dietStrategy;
         if(merged.calorieMode) payload.calorie_mode = merged.calorieMode;
         if(merged.usesSupplements !== undefined) payload.uses_supplements = merged.usesSupplements === true;
+        if(merged.mealStyle) payload.meal_style = merged.mealStyle;
         if(merged.mealConfig) payload.meal_config = merged.mealConfig;
         // Legacy fields
         if(merged.gym) payload.gym = merged.gym;
