@@ -50,7 +50,10 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
     else if(forcedSection==="settings")setSection(mob?null:"profile");
     else if(forcedSection)setSection(forcedSection);
   },[forcedSection,isAdmin,initialSection]);
+  const isNoneExercise=(profile?.exerciseType||"gym")==="none";
   const [dayType,setDayType]=useState(()=>{
+    // exerciseType=none → luôn "rest" (1 giá trị cố định)
+    if((profile?.exerciseType||"gym")==="none") return "rest";
     // Luôn auto-detect theo gymDays hôm nay — KHÔNG đọc localStorage nữa
     // (localStorage giữ dayType từ phiên trước, dễ kẹt sai khi hôm nay đổi
     // loại ngày, VD hôm qua Tập → hôm nay Nghỉ mà toggle vẫn hiện Tập).
@@ -340,7 +343,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     finally{setAiLoading(false);}
   },[foodItems,aiModel,aiProvider,claudeKey,geminiKey,gptKey,geminiModel,gptModel,foodCache,myPending,usdaKey,user,flags.ai_macro]);
 
-  const mealNames=ALL_MEALS.filter(m=>mealConfig[dayType]?.includes(m.id)).map(m=>({id:m.id,l:`${m.icon} ${m.name}`}));
+  const mealNames=ALL_MEALS.filter(m=>{if(isNoneExercise&&(m.id==="pre"||m.id==="post"))return false;return mealConfig[dayType]?.includes(m.id);}).map(m=>({id:m.id,l:`${m.icon} ${m.name}`}));
 
   return <div>
     {!hidePills&&!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>

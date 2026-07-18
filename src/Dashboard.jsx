@@ -21,20 +21,23 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   // Dashboard date nav
   const [dashDate,setDashDate]=useState(new Date());
   const isToday=dashDate.toDateString()===new Date().toDateString();
+  // exerciseType=none → 1 dayType cố định, không phân biệt train/rest
+  const isNoneExercise=(profile.exerciseType||"gym")==="none";
   // Auto-detect dayType from gymDays + today
   const gymDays=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
   const todayDayIdx=new Date().getDay();// 0=CN,1=T2...
   const todayIsGym=gymDays.includes(todayDayIdx===0?6:todayDayIdx-1);// gymDays: 0=T2,1=T3...6=CN
-  const [dayType,setDayType]=useState(todayIsGym?"train":"rest");
+  const [dayType,setDayType]=useState(isNoneExercise?"rest":(todayIsGym?"train":"rest"));
   // Sync dayType when appSettings.gymDays loads (may load after initial render)
   useEffect(()=>{
+    if(isNoneExercise){setDayType("rest");return;}
     const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):null;}catch(e){return null;}})();
     if(!gd)return;// not loaded yet, keep default
     const idx=new Date().getDay();
     const mapped=idx===0?6:idx-1;
     const isGym=gd.includes(mapped);
     setDayType(isGym?"train":"rest");
-  },[appSettings.gymDays]);
+  },[appSettings.gymDays,isNoneExercise]);
   // Auto-apply weekly template only if NO meals saved for today — không
   // dùng cờ localStorage "1 lần/ngày" nữa (từng gây kẹt), luôn check tươi
   // mỗi lần tải trang; `hasMeals` bên dưới đã tự đủ để không ghi đè dữ
@@ -93,7 +96,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   },[appSettings.app_version]);
   // Parse meal config
   const mealConfig=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
-  const visibleIds=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];
+  const visibleIds=(()=>{let ids=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];if(isNoneExercise)ids=ids.filter(id=>id!=="pre"&&id!=="post");return ids;})();
   const allMeals=getTodayMeals(dayType);
   const meals=allMeals.filter(m=>visibleIds.includes(m.id));
   const totals=meals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
@@ -127,7 +130,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         <div style={{flex:1}}>
           <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>Chào {displayName}! 👋</div>
           <div style={{fontSize:13,fontWeight:600,color:"rgba(255,255,255,0.85)"}}>
-            {dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {new Date().toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
+            {isNoneExercise?"Hôm nay":dayType==="train"?"Ngày tập":"Ngày nghỉ"} • {new Date().toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
           </div>
         </div>
         <NotificationBell appSettings={appSettings} userId={user?.id} dark/>
@@ -145,7 +148,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div style={{flex:1,paddingRight:8}}>
-          <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+          <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Tổng calo hôm nay":dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:4}}>
             <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{actualCal.toLocaleString()}</div>
             <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
@@ -204,8 +207,8 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
     {/* Section label: Dynamic meal label + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,marginTop:8}}>
-      <span style={{fontSize:mob?18:24}}>{dayType==="train"?"💪":"😴"}</span>
-      <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{dayType==="train"?"Thực đơn ngày tập":"Thực đơn ngày nghỉ"}</span>
+      <span style={{fontSize:mob?18:24}}>{isNoneExercise?"🍽️":dayType==="train"?"💪":"😴"}</span>
+      <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{isNoneExercise?"Thực đơn hôm nay":dayType==="train"?"Thực đơn ngày tập":"Thực đơn ngày nghỉ"}</span>
       <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)"}}/>
       <span style={{fontSize:13,fontWeight:700,color:C.secondary}}>{String(new Date().getDate()).padStart(2,"0")}/{String(new Date().getMonth()+1).padStart(2,"0")}/{new Date().getFullYear()}</span>
     </div>
@@ -259,7 +262,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       return <div style={{...card,padding:"14px 16px",marginTop:6,background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)"}}>
         <div style={{display:"flex",alignItems:"center",gap:14}}>
           <div><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:3}}><span style={{fontSize:12}}>🎯</span><span style={{fontSize:11,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:28,fontWeight:900,color:"#059669",lineHeight:1}}>{ms}<span style={{fontSize:13,color:"#64748B",fontWeight:600}}> /100</span></div></div>
-          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(cr>0?`Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`:cr<0?`Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả.")+(macroWarnings.length>0?" Ngoài ra đang "+macroWarnings.join(", ")+".":"")}</div></div>
+          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(cr>0?`Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`:cr<0?`Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:(isNoneExercise?"Cân đối dinh dưỡng, đủ năng lượng cho cả ngày.":"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả."))+(macroWarnings.length>0?" Ngoài ra đang "+macroWarnings.join(", ")+".":"")}</div></div>
         </div>
       </div>;
     })()}

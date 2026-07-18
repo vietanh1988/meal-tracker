@@ -55,9 +55,10 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   // Fat floor sau diet adjustment
   if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
   // Ngày nghỉ: carb giảm 25%, fat giữ nguyên (option A)
-  const carbRest=dietStrategy==="keto"?carb:Math.round(carb*0.75);
+  // Khi exerciseType=none: chỉ 1 set macro duy nhất (không phân biệt train/rest)
+  const carbRest=exerciseType==="none"?carb:(dietStrategy==="keto"?carb:Math.round(carb*0.75));
   const calFinal=protein*4+carb*4+fat*9;
-  const calRest=protein*4+carbRest*4+fat*9;
+  const calRest=exerciseType==="none"?calFinal:(protein*4+carbRest*4+fat*9);
   const fiber=Math.round(calFinal/1000*14);
   const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
   const safe=directionMismatch?false:(effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true);

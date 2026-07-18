@@ -58,7 +58,8 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
   const [step, setStep] = useState("prefs"); // prefs | loading | preview | error
   const [style, setStyle] = useState("vn");
   const [avoid, setAvoid] = useState("");
-  const [dayType, setDayType] = useState(initialDayType === "rest" ? "rest" : "train");
+  const isNoneExercise = (profile?.exerciseType || "gym") === "none";
+  const [dayType, setDayType] = useState(isNoneExercise ? "rest" : (initialDayType === "rest" ? "rest" : "train"));
   const [template, setTemplate] = useState(null);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
@@ -170,6 +171,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
       <input value={avoid} onChange={e => setAvoid(e.target.value)} placeholder="VD: hải sản, sữa, thịt bò..."
         style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", fontSize: fs.lg, borderRadius: radius["2xl"], border: `1.5px solid ${C.border}`, background: C.surface, outline: "none", fontFamily: "inherit", marginBottom: sp["4xl"] }} />
 
+      {!isNoneExercise && <>
       <div style={{ fontSize: fs.md, fontWeight: fw.bold, color: C.t3, marginBottom: sp.md }}>TẠO CHO</div>
       <div style={{ display: "flex", gap: sp.lg, marginBottom: sp["5xl"] }}>
         {[["train", "💪 Ngày tập"], ["rest", "😴 Ngày nghỉ"]].map(([id, label]) => (
@@ -181,6 +183,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
           }}>{label}</button>
         ))}
       </div>
+      </>}
 
       <button onClick={generate} style={redBtn}>✨ Lên thực đơn ngay</button>
       <button onClick={onClose} style={{ width: "100%", marginTop: sp.lg, padding: "10px", background: "none", border: "none", color: C.t3, fontSize: fs.base, cursor: "pointer", fontFamily: "inherit" }}>Để sau</button>
@@ -213,7 +216,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
       <div style={card}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: fs["3xl"], fontWeight: fw.extrabold, color: C.t1 }}>Thực đơn AI · {dayType === "train" ? "Ngày tập" : "Ngày nghỉ"}</div>
+            <div style={{ fontSize: fs["3xl"], fontWeight: fw.extrabold, color: C.t1 }}>Thực đơn AI{isNoneExercise ? "" : ` · ${dayType === "train" ? "Ngày tập" : "Ngày nghỉ"}`}</div>
             {note && <div style={{ fontSize: fs.md, color: C.t3, marginTop: 2 }}>{note}</div>}
           </div>
           <button onClick={generate} title="Tạo lại toàn bộ" style={{ flexShrink: 0, whiteSpace: "nowrap", border: `1.5px solid ${C.border}`, background: C.surface, borderRadius: radius["2xl"], padding: "8px 12px", cursor: "pointer", fontSize: fs.sm, fontFamily: "inherit", fontWeight: fw.bold, color: C.t2 }}>🔄 Tạo lại</button>

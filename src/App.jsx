@@ -101,15 +101,18 @@ export default function App(){
     prevCalRef.current=macro.calTarget;
   },[macro?.calTarget,profileUserEdited]);
   const mob=useIsMobile();
+  // exerciseType=none → 1 dayType cố định, không phân biệt train/rest
+  const pcIsNoneExercise=(profile?.exerciseType||"gym")==="none";
   // Auto-detect PC day type from gym schedule (computed, not state)
   const pcDayAuto=(()=>{
+    if(pcIsNoneExercise)return"rest";
     if(!appSettings||!profile)return"train";
     const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
     const todayIdx=new Date().getDay();
     const mappedIdx=todayIdx===0?6:todayIdx-1;
     return gd.includes(mappedIdx)?"train":"rest";
   })();
-  const pcDayType=pcDayManual||pcDayAuto;
+  const pcDayType=pcIsNoneExercise?"rest":(pcDayManual||pcDayAuto);
 
   // Auto-apply Lịch tuần cho PC — Dashboard.jsx đã có sẵn bản này nhưng CHỈ
   // chạy khi mob===true (PC dùng layout JSX riêng bên dưới, không qua
@@ -162,7 +165,7 @@ export default function App(){
 
   // === PC DATA COMPUTATION ===
   const pcMC=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
-  const pcVis=pcMC[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];
+  const pcVis=(()=>{let ids=pcMC[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];if(pcIsNoneExercise)ids=ids.filter(id=>id!=="pre"&&id!=="post");return ids;})();
   const pcMeals=getTodayMeals(pcDayType).filter(m=>pcVis.includes(m.id));
   const pcTot=pcMeals.reduce((a,m)=>{const t=m.items.reduce((s,i)=>({p:s.p+(i.p||0),c:s.c+(i.c||0),f:s.f+(i.f||0),fiber:s.fiber+(i.fiber||0),cal:s.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:a.p+t.p,c:a.c+t.c,f:a.f+t.f,fiber:a.fiber+t.fiber,cal:a.cal+t.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
   const pcHP=macro.protein,pcHF=macro.fat,pcHFib=macro.fiber,pcHC=pcDayType==="train"?macro.carb:macro.carbRest,pcHCal=pcDayType==="train"?macro.calTarget:macro.calRest;
@@ -194,7 +197,7 @@ export default function App(){
   // Mobile today data for AI Coach (same logic as Dashboard)
   const mobTodayDayIdx=new Date().getDay();
   const mobGymDayIdx=mobTodayDayIdx===0?6:mobTodayDayIdx-1;
-  const mobDayType=(profile?.gymDays||[]).includes(mobGymDayIdx)?"train":"rest";
+  const mobDayType=pcIsNoneExercise?"rest":((profile?.gymDays||[]).includes(mobGymDayIdx)?"train":"rest");
   const mobTodayData=(()=>{
     if(!getTodayMeals)return{cal:0,p:0,c:0,f:0,dayType:mobDayType};
     try{
@@ -319,7 +322,7 @@ export default function App(){
       <header style={{height:68,display:"flex",alignItems:"center",padding:"0 28px",background:"#fff",borderBottom:`1px solid ${C.border}`,position:"fixed",top:0,left:220,right:0,zIndex:20}}>
         <div style={{flex:1}}><div style={{fontSize:20,fontWeight:800,color:C.t1}}>Xin chào, {pcDN} 👋</div><div style={{fontSize:12,color:C.t2,marginTop:2}}>{pcDS}</div></div>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
-          {tab==="dashboard"&&<div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayManual("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayManual("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>}
+          {tab==="dashboard"&&!pcIsNoneExercise&&<div style={{display:"flex",borderRadius:10,overflow:"hidden",border:`1.5px solid ${C.border}`}}><div onClick={()=>setPcDayManual("train")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="train"?C.primary:"#fff",color:pcDayType==="train"?"#fff":C.t2}}>🏋️ Ngày tập</div><div onClick={()=>setPcDayManual("rest")} style={{padding:"7px 16px",fontSize:12,fontWeight:700,cursor:"pointer",background:pcDayType==="rest"?C.primary:"#fff",color:pcDayType==="rest"?"#fff":C.t2}}>😴 Ngày nghỉ</div></div>}
           <div style={{width:1,height:24,background:C.border}}/>
           <style>{`@keyframes fipilotRedGlow{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.35);}50%{box-shadow:0 0 0 8px rgba(239,68,68,0);}}@keyframes fipilotShake{0%,91%,100%{transform:translateX(0);}92%{transform:translateX(-2px);}93%{transform:translateX(2px);}94%{transform:translateX(-2px);}95%{transform:translateX(2px);}96%{transform:translateX(-1px);}97%{transform:translateX(1px);}98%,99%{transform:translateX(0);}}`}</style>
           {flags.ai_chat&&<button onClick={()=>setShowAICoach(true)} style={{padding:"7px 16px",borderRadius:10,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",animation:"fipilotRedGlow 2s ease-in-out infinite, fipilotShake 4s ease-in-out infinite"}}>✨ Fipilot AI</button>}
@@ -335,7 +338,7 @@ export default function App(){
               <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>Macro đã cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff} cal)</span>
             </div>}
             <div style={{flex:"0 0 30%"}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+              <div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcIsNoneExercise?"Tổng calo hôm nay":pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
               <div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcAC.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>
               <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10,alignItems:"center"}}>
                 {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"#2563EB",padding:"5px 12px 5px 8px",background:"#EFF6FF",borderRadius:8}}>

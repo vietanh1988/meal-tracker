@@ -31,7 +31,9 @@ const MODE_DESC={tu_nhap:"Nhập thức ăn → nhấn \"Tính macro\" → trả
 // đọc chung 1 biến) — nếu vừa thao tác ở chỗ khác để lại dayType sai, mở Kho
 // mẫu lên sẽ vẫn giữ nguyên trạng thái cũ, dễ áp nhầm mẫu Tập/Nghỉ. Nên mỗi
 // lần bấm vào tab Kho mẫu, luôn ép về ĐÚNG loại ngày thật hôm nay trước.
+const isNoneExercise=(profile?.exerciseType||"gym")==="none";
 const todayRealDayType=()=>{
+if(isNoneExercise)return "rest";
 try{const s=appSettings.gymDays;const gd=s?JSON.parse(s):profile.gymDays||[0,2,4,5];const idx=new Date().getDay();const mapped=idx===0?6:idx-1;return gd.includes(mapped)?"train":"rest";}catch(e){return "train";}
 };
 const flags=parseFeatureFlags(appSettings);
@@ -64,10 +66,10 @@ return (
 {mealMode==="tu_nhap"&&<div style={!mob?{display:"grid",gridTemplateColumns:"63% 35%",gap:20,alignItems:"start"}:{}}><div>
 <div style={{height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)",marginBottom:14}}/>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-<SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>
+{!isNoneExercise&&<SlidingTabs tabs={[{id:"train",icon:"💪",label:"Ngày tập"},{id:"rest",icon:"😴",label:"Ngày nghỉ"}]} active={dayType} onChange={dt=>{setDayType(dt);setAiResult(null);}}/>}
 {!appliedTemplate&&<div onClick={()=>setShowMealSettings(!showMealSettings)} style={{padding:"5px 10px",borderRadius:16,fontSize:11,fontWeight:700,background:"#FEF3C7",color:"#92400E",border:"1.5px solid #FCD34D",cursor:"pointer",whiteSpace:"nowrap"}}>⚙️ Bật/tắt bữa</div>}
 </div>
-{dayType!==todayRealDayType()&&<div style={{fontSize:11,fontWeight:600,color:"#B45309",marginTop:-8,marginBottom:12}}>✏️ Đang soạn cho {dayType==="train"?"Ngày tập":"Ngày nghỉ"} (hôm nay là {todayRealDayType()==="train"?"Ngày tập":"Ngày nghỉ"}) — lưu sẽ không tính vào số liệu hôm nay.</div>}
+{!isNoneExercise&&dayType!==todayRealDayType()&&<div style={{fontSize:11,fontWeight:600,color:"#B45309",marginTop:-8,marginBottom:12}}>✏️ Đang soạn cho {dayType==="train"?"Ngày tập":"Ngày nghỉ"} (hôm nay là {todayRealDayType()==="train"?"Ngày tập":"Ngày nghỉ"}) — lưu sẽ không tính vào số liệu hôm nay.</div>}
 {appliedTemplate&&<div style={{padding:"8px 12px",background:"#EFF6FF",border:"1.5px solid #BFDBFE",borderRadius:10,marginBottom:14,fontSize:12}}>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
 <span style={{color:"#1D4ED8",fontWeight:600}}>📋 Đang dùng mẫu: <b>{appliedTemplate.name}</b> — khối lượng đã tính sẵn theo mục tiêu của bạn. Muốn chỉnh tay, bấm Hủy dùng mẫu.</span>
@@ -125,10 +127,10 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 })()}
 </div>}
 {showMealSettings&&<div style={{background:C.surface,border:`1.5px solid ${C.border}`,borderRadius:10,padding:mob?12:14,marginBottom:16}}>
-<div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:10}}>⚙️ Tuỳ chỉnh bữa ăn — {dayType==="train"?"Ngày tập":"Ngày nghỉ"}</div>
-{ALL_MEALS.map(m=>{
+<div style={{fontSize:12,fontWeight:700,color:C.t2,marginBottom:10}}>⚙️ Tuỳ chỉnh bữa ăn — {isNoneExercise?"Hôm nay":dayType==="train"?"Ngày tập":"Ngày nghỉ"}</div>
+{ALL_MEALS.filter(m=>isNoneExercise?(m.id!=="pre"&&m.id!=="post"):true).map(m=>{
 const isOn=mealConfig[dayType]?.includes(m.id);
-const isTrainOnly=(m.id==="pre"||m.id==="post")&&dayType==="rest";
+const isTrainOnly=!isNoneExercise&&(m.id==="pre"||m.id==="post")&&dayType==="rest";
 return <div key={m.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"7px 0",borderBottom:`0.5px solid ${C.border}`,opacity:isTrainOnly?0.35:isOn?1:0.45}}>
 <div style={{display:"flex",alignItems:"center",gap:6}}>
 <span style={{fontSize:15}}>{m.icon}</span>
@@ -348,7 +350,7 @@ const el2=document.getElementById("tpl-week-saved");if(el2){el2.style.display="f
 </div>
 {!mob&&<div>
 <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20,marginBottom:14}}>
-<div style={{fontSize:14,fontWeight:800,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{display:"flex",alignItems:"center",gap:8}}>📊 Tổng hôm nay</span><span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:12,background:dayType==="train"?"rgba(0,122,255,0.1)":"rgba(249,115,22,0.1)",color:dayType==="train"?C.primary:"#D97706"}}>{dayType==="train"?"💪 Ngày tập":"😴 Ngày nghỉ"}</span></div>
+<div style={{fontSize:14,fontWeight:800,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{display:"flex",alignItems:"center",gap:8}}>📊 Tổng hôm nay</span>{!isNoneExercise&&<span style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:12,background:dayType==="train"?"rgba(0,122,255,0.1)":"rgba(249,115,22,0.1)",color:dayType==="train"?C.primary:"#D97706"}}>{dayType==="train"?"💪 Ngày tập":"😴 Ngày nghỉ"}</span>}</div>
 {(()=>{
 // Ưu tiên aiResult (vừa bấm "Tính macro tất cả") — nếu chưa có, dùng luôn
 // dữ liệu ĐÃ LƯU (vd vừa áp mẫu qua Kho mẫu/Gói tuần, Engine đã tính sẵn
@@ -465,7 +467,7 @@ if(saveWeeklyTemplate) saveWeeklyTemplate(dayKeys[i],dt,mealsData,Math.round(tc)
 }}>
 <div style={{width:48,background:"#007AFF",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,borderRadius:"12px 0 0 12px"}}>
 <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>{d}</div>
-<div style={{fontSize:10,fontWeight:600,color:isGym?"#FCA5A5":"#93C5FD"}}>{isGym?"Tập":"Nghỉ"}</div>
+{!isNoneExercise&&<div style={{fontSize:10,fontWeight:600,color:isGym?"#FCA5A5":"#93C5FD"}}>{isGym?"Tập":"Nghỉ"}</div>}
 </div>
 <div style={{flex:1,padding:"12px 14px",display:"flex",alignItems:"center",gap:8}}>
 <div style={{flex:1}}>
@@ -556,7 +558,10 @@ if(isGiamMo) filtered=filtered.filter(t=>(t.diet_strategy||"balance")===dietTab)
 return <div>
 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:8}}>
 <div style={{fontSize:13,fontWeight:700,color:C.t2}}>{goalLabel}</div>
-<div style={{display:"flex",alignItems:"center",gap:6}}>
+{isNoneExercise?<div style={{display:"flex",gap:4,background:C.surface,borderRadius:10,padding:3}}>
+<div onClick={()=>setKmMode("template")} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:kmMode==="template"?700:500,color:kmMode==="template"?C.primary:C.t2,background:kmMode==="template"?"#fff":"none",cursor:"pointer",boxShadow:kmMode==="template"?"0 1px 3px rgba(0,0,0,0.08)":"none",whiteSpace:"nowrap"}}>📋 {mob?"Mẫu":"Mẫu ngày"}</div>
+<div onClick={()=>setKmMode("bundle")} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:kmMode==="bundle"?700:500,color:kmMode==="bundle"?C.primary:C.t2,background:kmMode==="bundle"?"#fff":"none",cursor:"pointer",boxShadow:kmMode==="bundle"?"0 1px 3px rgba(0,0,0,0.08)":"none",whiteSpace:"nowrap"}}>🗓️ {mob?"Tuần":"Gói tuần"}</div>
+</div>:<div style={{display:"flex",alignItems:"center",gap:6}}>
 <span style={{fontSize:11,fontWeight:600,color:C.t3,whiteSpace:"nowrap"}}>Xem mẫu:</span>
 <div style={{display:"flex",gap:4,background:C.surface,borderRadius:10,padding:3}}>
 {[{id:"train",icon:"💪",label:mob?"Tập":"Ngày tập"},{id:"rest",icon:"😴",label:mob?"Nghỉ":"Ngày nghỉ"}].map(d=>
@@ -564,7 +569,7 @@ return <div>
 )}
 <div onClick={()=>setKmMode("bundle")} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontWeight:kmMode==="bundle"?700:500,color:kmMode==="bundle"?C.primary:C.t2,background:kmMode==="bundle"?"#fff":"none",cursor:"pointer",boxShadow:kmMode==="bundle"?"0 1px 3px rgba(0,0,0,0.08)":"none",whiteSpace:"nowrap"}}>🗓️ {mob?"Tuần":"Gói tuần"}</div>
 </div>
-</div>
+</div>}
 </div>
 {kmMode==="bundle"?(()=>{
 const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];

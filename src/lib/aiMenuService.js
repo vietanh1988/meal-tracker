@@ -35,7 +35,12 @@ export function resolveMealIds(dayType, profile, appSettings) {
     try { mealConfig = appSettings?.meal_config ? JSON.parse(appSettings.meal_config) : DEFAULT_MEAL_CONFIG; }
     catch (e) { mealConfig = DEFAULT_MEAL_CONFIG; }
   }
-  return mealConfig[dayType] || DEFAULT_MEAL_CONFIG[dayType];
+  let ids = mealConfig[dayType] || DEFAULT_MEAL_CONFIG[dayType];
+  // exerciseType=none → loại bỏ pre/post-workout
+  if (profile?.exerciseType === "none") {
+    ids = ids.filter(id => id !== "pre" && id !== "post");
+  }
+  return ids;
 }
 
 // ============================================================
