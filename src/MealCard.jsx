@@ -12,40 +12,32 @@ export function MealCard({meal}){
   const mob=useIsMobile();
   const [open,setOpen]=useState(false);
   const t=meal.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
-  const total=t.p+t.c+t.f+t.fiber||1;
-  const iconBg={sang:"#FEF3C7",phu_sang:"#FEE0CC",trua:"#FEF3C7",phu_chieu:"#D1FAE5",pre:"#FEE2E2",post:"#CCFBF1",toi:"#EDE9FE"};
+  const borderColor={sang:"#D97706",phu_sang:"#F59E0B",trua:"#EA580C",phu_chieu:"#16A34A",pre:"#F59E0B",post:"#0EA5E9",toi:"#7C3AED"};
 
   // Chỉ món TÔ (composite) hiện gọn — đĩa cơm vẫn liệt kê từng món
   const patternName = meal.pattern || null;
   const showCompact = !!meal.composite;
   const totalGram = Math.round(meal.items.reduce((s, it) => s + (it.gram || 0), 0));
 
-  return <div style={{...card,cursor:"pointer"}} onClick={()=>setOpen(!open)}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,flex:"1 1 auto",minWidth:0}}>
-        <div style={{width:44,height:44,borderRadius:11,background:iconBg[meal.id]||C.surface,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          <img src={`/icons/${
-            // meal_postworkout/meal_morningsnack chưa có asset riêng — tái dùng icon gần nghĩa nhất (pre~post, snack~phụ sáng)
-            {sang:"meal_morning",phu_sang:"meal_snack",trua:"meal_lunch",phu_chieu:"meal_snack",pre:"meal_preworkout",post:"meal_preworkout",toi:"meal_dinner"}[meal.id]||"meal_snack"
-          }.png`} alt="" style={{width:28,height:28,objectFit:"contain"}}/>
+  return <div style={{...card,cursor:"pointer",borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`,borderRadius:"0 12px 12px 0"}} onClick={()=>setOpen(!open)}>
+    <div style={{display:"flex",alignItems:"center"}}>
+      <div style={{flex:"1 1 auto",minWidth:0}}>
+        <div>
+          <span style={{fontSize:14,fontWeight:800,color:C.t1}}>{meal.name}</span>
+          {patternName && <span style={{fontSize:11,fontWeight:600,color:C.t3,marginLeft:5}}>· {patternName}</span>}
+          {!patternName && <span style={{fontSize:11,fontWeight:600,color:C.t2,marginLeft:5}}>{meal.items.filter(it=>!isHiddenFiller(it)).length} món</span>}
         </div>
-        <div style={{minWidth:0}}>
-          <span style={{fontSize:15,fontWeight:800,color:C.t1}}>{meal.name}</span>
-          {patternName && <span style={{fontSize:12,fontWeight:600,color:C.t3,marginLeft:6}}>· {patternName}</span>}
-          {!patternName && <span style={{fontSize:12,fontWeight:600,color:C.t2,marginLeft:6}}>{meal.items.filter(it=>!isHiddenFiller(it)).length} món</span>}
+        <div style={{display:"flex",gap:8,marginTop:4}}>
+          <span style={{fontSize:10,fontWeight:700,color:C.protein}}>P {Math.round(t.p)}g</span>
+          <span style={{fontSize:10,fontWeight:700,color:C.carb}}>C {Math.round(t.c)}g</span>
+          <span style={{fontSize:10,fontWeight:700,color:C.fat}}>F {Math.round(t.f)}g</span>
         </div>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:8}}>
-        <span style={{fontSize:18,fontWeight:900,color:"#0F172A"}}>{Math.round(t.cal)}</span>
-        <span style={{fontSize:12,fontWeight:700,color:C.t2}}>cal</span>
-        <span style={{fontSize:14,fontWeight:700,color:C.t3,transition:"transform 0.2s",transform:open?"rotate(180deg)":"rotate(0)"}}>▾</span>
+      <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+        <span style={{fontSize:17,fontWeight:900,color:"#0F172A"}}>{Math.round(t.cal)}</span>
+        <span style={{fontSize:11,fontWeight:700,color:C.t2}}>cal</span>
+        <span style={{fontSize:13,fontWeight:700,color:C.t3,transition:"transform 0.2s",transform:open?"rotate(180deg)":"rotate(0)",marginLeft:2}}>▾</span>
       </div>
-    </div>
-    <div style={{display:"flex",height:5,borderRadius:3,overflow:"hidden",gap:1,marginTop:8}}>
-      <div style={{width:`${(t.p/total)*100}%`,background:C.protein,borderRadius:3}}/>
-      <div style={{width:`${(t.c/total)*100}%`,background:C.carb,borderRadius:3}}/>
-      <div style={{width:`${(t.f/total)*100}%`,background:C.fat,borderRadius:3}}/>
-      <div style={{width:`${(t.fiber/total)*100}%`,background:C.fiber,borderRadius:3}}/>
     </div>
     {open&&<div style={{marginTop:12,borderTop:`1.5px solid ${C.border}`,paddingTop:10}}>
       {/* Composite (tô/bát): vẫn hiện tên món nhưng xổ bảng macro chi tiết */}
