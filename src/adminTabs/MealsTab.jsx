@@ -171,31 +171,30 @@ return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.bord
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
 <span/>
 </div>}
+{mob&&<div style={{display:"flex",alignItems:"center",gap:8,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`}}>
+<span style={{width:16,flexShrink:0}}/>
+<span style={{flex:1,fontSize:10,fontWeight:700,color:C.t3}}>Thức ăn</span>
+<span style={{fontSize:10,fontWeight:700,color:C.t3,width:50,textAlign:"center"}}>Lượng</span>
+<span style={{fontSize:10,fontWeight:700,color:C.t3,width:52,textAlign:"center"}}>Đơn vị</span>
+<span style={{width:28}}/>
+</div>}
 
 {foods.map((item,i)=>{
 const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
 return mob ? (
-<div key={i} style={{display:"flex",alignItems:"flex-end",gap:8,padding:"12px 0",borderBottom:i<foods.length-1?`1px solid ${C.border}`:"none"}}>
-<span style={{fontSize:12,fontWeight:700,color:C.t3,width:16,textAlign:"center",flexShrink:0,paddingBottom:10}}>{i+1}</span>
-<div style={{flex:1,minWidth:0,paddingBottom:8}}>
-<input value={item.name} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="VD: Cá kho" style={{width:"100%",border:"none",outline:"none",fontSize:15,fontWeight:700,color:C.t1,fontFamily:"inherit",background:"transparent",padding:0,opacity:appliedTemplate?0.6:1}}/>
+<div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 0",borderBottom:i<foods.length-1?`1px solid ${C.border}`:"none"}}>
+<span style={{fontSize:12,fontWeight:700,color:C.t3,width:16,textAlign:"center",flexShrink:0}}>{i+1}</span>
+<input value={item.name} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="Cá kho, phở..." style={{flex:1,minWidth:0,border:"none",outline:"none",fontSize:14,fontWeight:600,color:C.t1,fontFamily:"inherit",background:"transparent",padding:0,opacity:appliedTemplate?0.6:1}}/>
+<div style={{display:"flex",alignItems:"center",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`,overflow:"hidden",height:34,flexShrink:0}}>
+<input type="text" inputMode="numeric" value={isWeight?(item.gram===0?"0":(item.gram??"")):(item.qty??"")} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const raw=e.target.value.replace(/[^0-9]/g,"");const u={...allFoodItems};const a=[...(u[meal.id]||[])];if(isWeight){a[i]={...a[i],gram:raw===""?"":Number(raw)};}else{const q=raw===""?"":Number(raw);a[i]={...a[i],qty:q,gram:q===""?0:estimateGram(item.name,item.unit,q)};}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:46,border:"none",outline:"none",background:"transparent",textAlign:"center",fontSize:14,fontWeight:700,color:C.t1,fontFamily:"inherit",padding:"0 2px",opacity:appliedTemplate?0.5:1}} placeholder="—"/>
 </div>
-<div style={{flexShrink:0}}>
-<div style={{fontSize:9,fontWeight:700,color:C.t3,marginBottom:3,textTransform:"uppercase",letterSpacing:"0.03em"}}>{isWeight?"Khối lượng":"Số lượng"}</div>
-<div style={{display:"flex",alignItems:"center",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`,overflow:"hidden",height:38}}>
-<input type="text" inputMode="numeric" value={isWeight?(item.gram===0?"0":(item.gram??"")):(item.qty??"")} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const raw=e.target.value.replace(/[^0-9]/g,"");const u={...allFoodItems};const a=[...(u[meal.id]||[])];if(isWeight){a[i]={...a[i],gram:raw===""?"":Number(raw)};}else{const q=raw===""?"":Number(raw);a[i]={...a[i],qty:q,gram:q===""?0:estimateGram(item.name,item.unit,q)};}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:50,border:"none",outline:"none",background:"transparent",textAlign:"center",fontSize:15,fontWeight:700,color:C.t1,fontFamily:"inherit",padding:"0 4px",opacity:appliedTemplate?0.5:1}} placeholder={isWeight?"gram":"1"}/>
-</div>
-</div>
-<div style={{flexShrink:0}}>
-<div style={{fontSize:9,fontWeight:700,color:C.t3,marginBottom:3,textTransform:"uppercase",letterSpacing:"0.03em"}}>Đơn vị</div>
-<div style={{display:"flex",alignItems:"center",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`,overflow:"hidden",height:38}}>
-<select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{border:"none",outline:"none",padding:"0 8px",fontSize:13,fontWeight:600,color:C.t2,fontFamily:"inherit",background:"transparent",height:"100%",WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"16px",minWidth:52}}>
+<div style={{display:"flex",alignItems:"center",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`,overflow:"hidden",height:34,flexShrink:0}}>
+<select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{border:"none",outline:"none",padding:"0 6px",fontSize:12,fontWeight:600,color:C.t2,fontFamily:"inherit",background:"transparent",height:"100%",WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px",minWidth:48}}>
 <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option><option value="scoop">Scoop</option>
 </select>
 </div>
-</div>
-<div onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:28,height:28,cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,paddingBottom:6}}>
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+<div onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:28,height:28,cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
 </div>
 </div>
 ) : (
