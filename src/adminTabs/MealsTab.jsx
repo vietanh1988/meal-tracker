@@ -164,26 +164,50 @@ return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.bord
 </div>
 {/* Composite (tô/bát): hiện gọn — KHÔNG xổ nguyên liệu */}
 {mealComposite?null:<>
-<div style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 40px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
+{!mob&&<div style={{display:"grid",gridTemplateColumns:"28px 2fr 56px 52px 72px 28px",gap:8,alignItems:"center",marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${C.border}`}}>
 <span style={{gridColumn:"1/3",fontSize:10,fontWeight:700,color:C.t3}}>THỨC ĂN</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>ĐV</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>SL</span>
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
 <span/>
-</div>
+</div>}
 
 {foods.map((item,i)=>{
 const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
-return <div key={i} style={{display:"grid",gridTemplateColumns:mob?"18px 1fr 44px 36px 50px 40px":"28px 2fr 56px 52px 72px 28px",gap:mob?6:8,alignItems:"center",marginBottom:8}}>
-<span style={{fontSize:mob?11:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
-<input value={item.name} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="VD: Cá kho" style={{...inp,fontSize:mob?13:14,height:mob?38:40,padding:mob?"8px 10px":"10px 12px",opacity:appliedTemplate?0.6:1}}/>
-<select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:mob?12:14,height:mob?38:40,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px",opacity:appliedTemplate?0.6:1}}>
+return mob ? (
+<div key={i} style={{padding:"10px 0",borderBottom:i<foods.length-1?`1px solid ${C.border}`:"none"}}>
+{/* Row 1: index + name + delete */}
+<div style={{display:"flex",alignItems:"center",gap:8}}>
+<span style={{fontSize:11,fontWeight:800,color:C.t3,width:16,textAlign:"center",flexShrink:0}}>{i+1}</span>
+<input value={item.name} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="VD: Cá kho" style={{...inp,flex:1,fontSize:14,fontWeight:700,height:38,padding:"8px 10px",opacity:appliedTemplate?0.6:1}}/>
+<button disabled={!!appliedTemplate} onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:34,height:34,background:C.redBg,borderRadius:8,fontSize:14,border:"none",cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>🗑️</button>
+</div>
+{/* Row 2: unit+gram gộp chip, qty bên cạnh */}
+<div style={{display:"flex",alignItems:"center",gap:8,marginTop:8,marginLeft:24}}>
+<div style={{display:"flex",alignItems:"center",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`,overflow:"hidden",height:36}}>
+<input type="number" {...numFix} inputMode="numeric" value={item.gram===0?0:(item.gram||"")} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:52,border:"none",outline:"none",background:"transparent",textAlign:"center",fontSize:14,fontWeight:700,color:C.t1,fontFamily:"inherit",padding:"0 4px",opacity:appliedTemplate?0.5:(isWeight?1:0.7)}} placeholder={isWeight?"g":"~g"}/>
+<select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{border:"none",outline:"none",borderLeft:`1px solid ${C.border}`,padding:"0 8px",fontSize:13,fontWeight:600,color:C.t2,fontFamily:"inherit",background:"transparent",height:"100%",WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"16px",minWidth:52}}>
 <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option><option value="scoop">Scoop</option>
 </select>
-<input type="number" {...numFix} inputMode="numeric" value={item.qty||""} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px",opacity:appliedTemplate?0.6:1}} placeholder="SL"/>
-<input type="number" {...numFix} inputMode="numeric" value={item.gram===0?0:(item.gram||"")} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:mob?12:14,height:mob?38:40,padding:mob?"8px 6px":"10px 12px",opacity:appliedTemplate?0.5:(isWeight?1:0.7)}} placeholder={isWeight?"Gram":"~Gram"}/>
-<button disabled={!!appliedTemplate} onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:0,width:mob?40:32,height:mob?40:32,background:C.redBg,borderRadius:8,fontSize:mob?15:14,border:"none",cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1,display:"flex",alignItems:"center",justifyContent:"center"}}>🗑️</button>
-</div>;
+</div>
+<div style={{display:"flex",alignItems:"center",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`,overflow:"hidden",height:36}}>
+<span style={{padding:"0 8px",fontSize:11,fontWeight:600,color:C.t3}}>SL</span>
+<input type="number" {...numFix} inputMode="numeric" value={item.qty||""} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:36,border:"none",outline:"none",borderLeft:`1px solid ${C.border}`,background:"transparent",textAlign:"center",fontSize:14,fontWeight:700,color:C.t1,fontFamily:"inherit",padding:"0 4px",opacity:appliedTemplate?0.6:1}} placeholder="1"/>
+</div>
+</div>
+</div>
+) : (
+<div key={i} style={{display:"grid",gridTemplateColumns:"28px 2fr 56px 52px 72px 28px",gap:8,alignItems:"center",marginBottom:8}}>
+<span style={{fontSize:13,fontWeight:800,color:C.t3,textAlign:"center"}}>{i+1}.</span>
+<input value={item.name} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="VD: Cá kho" style={{...inp,fontSize:14,height:40,padding:"10px 12px",opacity:appliedTemplate?0.6:1}}/>
+<select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",textAlignLast:"center",padding:"0 2px",fontSize:14,height:40,WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px",opacity:appliedTemplate?0.6:1}}>
+<option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option><option value="scoop">Scoop</option>
+</select>
+<input type="number" {...numFix} inputMode="numeric" value={item.qty||""} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const q=Math.max(0,Number(e.target.value)||0);const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],qty:q};if(!isWeight&&q>0){a[i].gram=estimateGram(item.name,item.unit,q);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:14,height:40,padding:"10px 12px",opacity:appliedTemplate?0.6:1}} placeholder="SL"/>
+<input type="number" {...numFix} inputMode="numeric" value={item.gram===0?0:(item.gram||"")} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],gram:Math.max(0,Number(e.target.value)||0)};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{...inp,textAlign:"center",fontSize:14,height:40,padding:"10px 12px",opacity:appliedTemplate?0.5:(isWeight?1:0.7)}} placeholder={isWeight?"Gram":"~Gram"}/>
+<button disabled={!!appliedTemplate} onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:0,width:32,height:32,background:C.redBg,borderRadius:8,fontSize:14,border:"none",cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1,display:"flex",alignItems:"center",justifyContent:"center"}}>🗑️</button>
+</div>
+);
 })}
 {!appliedTemplate&&<button onClick={()=>{const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{padding:"6px",fontSize:12,fontWeight:700,background:C.surface,color:C.t3,border:`1.5px dashed ${C.border}`,borderRadius:8,width:"100%",cursor:"pointer",fontFamily:"inherit",marginTop:4}}>+ Thêm món</button>}
 </>}
