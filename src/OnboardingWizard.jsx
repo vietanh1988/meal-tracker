@@ -237,7 +237,7 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 
 {/* Macro hero preview */}
 <div style={{background:"linear-gradient(135deg,#0A1628 0%,#162544 100%)",border:"2.5px solid #007AFF",borderRadius:14,padding:16,marginBottom:12}}>
-<div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>CALO MỤC TIÊU NGÀY TẬP</div>
+<div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>{(profile.exerciseType||"gym")==="none"?"CALO MỤC TIÊU":"CALO MỤC TIÊU NGÀY TẬP"}</div>
 <div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span>{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:11,fontWeight:700,color:"#5AC8FA",marginLeft:8,padding:"2px 8px",background:"rgba(90,200,250,0.15)",borderRadius:6}}>🇻🇳 Calo chuẩn Việt Nam</span>}{profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),marginLeft:6,padding:"2px 8px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.15)":"rgba(251,191,36,0.15)"),borderRadius:6}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}</div>
 <div style={{display:"flex",gap:14,marginTop:12}}>
 <MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#007AFF" color2="#007AFF" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
@@ -255,9 +255,9 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
 <span style={{color:C.t3}}>TDEE (×{macro.actMul})</span><span style={{fontWeight:800,color:C.t1}}>{macro.tdee} cal</span>
 </div>
-<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+{(profile.exerciseType||"gym")!=="none"&&<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
 <span style={{color:C.t3}}>Calo ngày nghỉ</span><span style={{fontWeight:800,color:C.blue}}>{macro.calRest} cal</span>
-</div>
+</div>}
 <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0"}}>
 <span style={{color:C.t3}}>{macro.goal==="bulk"?"Surplus":macro.goal==="cut"?"Deficit":"Điều chỉnh"}</span>
 <span style={{fontWeight:800,color:macro.goal==="bulk"?C.green:macro.goal==="cut"?C.red:C.t1}}>
