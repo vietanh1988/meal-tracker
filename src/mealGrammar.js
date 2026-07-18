@@ -125,3 +125,112 @@ export function getMealScore(foodKey, slotId) {
   if (catScores && catScores[slotId] !== undefined) return catScores[slotId];
   return 5;
 }
+
+// ============================================================
+// GOAL_RULES — soft: ưu tiên chọn món, KHÔNG cấm
+// goal: "cut" | "bulk" | "maintain"
+// ============================================================
+export const GOAL_RULES = {
+  cut: {
+    preferLean: true,        // ưu tiên protein nạc (ức gà, cá, trứng trắng)
+    preferHighFiber: true,    // ưu tiên rau xơ, carb no lâu
+    eveningCarbOptional: true, // tối: carb không bắt buộc
+    snackPreferProtein: true, // bữa phụ: ưu tiên protein snack
+    penalize: ["processed"],  // hạ điểm processed, fat đậm đặc
+  },
+  bulk: {
+    preferDenseCarb: true,   // ưu tiên carb năng lượng cao (cơm, mì, khoai)
+    eveningCarbRequired: true, // tối: carb bắt buộc
+    preStrongCarb: true,     // pre: carb mạnh
+  },
+  maintain: {
+    // cân bằng, linh hoạt nhất — không rule đặc biệt
+  },
+};
+
+// ============================================================
+// DIET_RULES — hard: chỉ áp khi goal = "cut"
+// diet: "balanced" | "low_carb" | "keto"
+// ============================================================
+export const DIET_RULES = {
+  balanced: {
+    // giữ P/C/F theo tỷ lệ chuẩn, không rule đặc biệt
+  },
+  low_carb: {
+    noEveningCarb: true,       // tối: KHÔNG carb (role=carb)
+    noCarbSnack: true,         // bữa phụ: KHÔNG carb
+    preferLowGI: true,         // trưa: ưu tiên low GI (khoai lang, gạo lứt)
+    preAllowLightCarb: true,   // pre-workout: vẫn cho carb nhẹ
+  },
+  keto: {
+    maxCarbPerDay: 50,         // budget ≤50g carb/ngày — check ở engine dry-run
+    noStarchWhitelist: true,   // loại cat=starch khỏi whitelist
+    breakfastNoStandaloneCarb: true, // sáng: trứng + protein, không standalone tinh bột
+    preAllowLightCarb: true,   // pre vẫn cho carb nhẹ
+  },
+};
+
+// ============================================================
+// STYLE_CRITERIA — hard: filter whitelist + validate combo
+// style: "vn" | "easy" | "clean"
+// ============================================================
+export const STYLE_CRITERIA = {
+  vn: {
+    regionFilter: ["vn", "both"],  // food phải có region ∈ ["vn","both"]
+    breakfastComplexity: 1,        // sáng: standalone dish, complexity ≤ 1
+    mealStructure: { trua: ["carb","protein","veg"], toi: ["protein","veg"] },
+    bannedKeys: ["granola", "yến mạch", "pasta", "quinoa"], // trưa/tối
+  },
+  easy: {
+    minConvenience: 7,             // food phải có convenience ≥ 7
+    breakfastMinConvenience: 8,    // sáng: convenience ≥ 8
+    allowProcessed: true,          // cho phép processed nếu convenience cao
+    maxDishesOverride: { trua: 3, toi: 3, sang: 2 },
+  },
+  clean: {
+    bannedCats: ["processed"],     // cat ≠ "processed"
+    cleanBlockedModifiers: ["chiên", "rán", "chiên giòn", "tẩm bột chiên", "quay"],
+    mealStructure: { trua: ["carb","protein","veg"], toi: ["protein","veg"] },
+    preferWholeGrain: true,        // carb ưu tiên whole grain
+    cleanSafeFat: ["dầu ô liu", "bơ (avocado)", "hạt chia"], // fat filler cho clean
+  },
+};
+
+// ============================================================
+// BASE_RULES — áp tất cả trường hợp (validator dùng)
+// ============================================================
+export const BASE_RULES = {
+  maxCarbPerMeal: 1,          // max 1 role=carb per bữa chính
+  maxVegPerMeal: 2,           // max 2 cat=veg per bữa (rau + canh OK)
+  maxProteinPerMeal: 2,       // max 2 role=protein per bữa (1 chính + 1 phụ)
+  maxStandalonePerMeal: 1,    // max 1 standalone dish per bữa
+  noDuplicateProteinGroup: true, // trưa gà → tối không gà
+};
+
+// ============================================================
+// mergeRules(goal, diet, style) → object tổng hợp tất cả rules
+// Consumer: promptBuilderV2, menuValidatorV2, buildWhitelist
+// ============================================================
+export function mergeRules(goal, diet, style) {
+  const g = GOAL_RULES[goal] || GOAL_RULES.maintain || {};
+  // diet chỉ áp khi goal = cut
+  const d = goal === "cut" ? (DIET_RULES[diet] || DIET_RULES.balanced || {}) : {};
+  const s = STYLE_CRITERIA[style] || STYLE_CRITERIA.vn || {};
+  return {
+    base: { ...BASE_RULES },
+    goal: { ...g },
+    diet: { ...d },
+    style: { ...s },
+    // Convenience: merged maxDishes (style override > slot default)
+    getMaxDishes: (slotId) => {
+      if (s.maxDishesOverride && s.maxDishesOverride[slotId]) return s.maxDishesOverride[slotId];
+      return SLOT_RULES[slotId]?.maxDishes || 4;
+    },
+    // Convenience: check if carb allowed in slot
+    isSlotCarbAllowed: (slotId) => {
+      if (d.noEveningCarb && slotId === "toi") return false;
+      if (d.noCarbSnack && (slotId === "phu_sang" || slotId === "phu_chieu")) return false;
+      return true;
+    },
+  };
+}
