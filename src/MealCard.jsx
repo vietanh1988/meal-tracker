@@ -44,27 +44,29 @@ export function MealCard({meal}){
       {showCompact ? (
         <div style={{padding:"6px 0"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-            <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{patternName}</span>
+            <span style={{fontSize:14,fontWeight:800,color:C.t1}}>{patternName}</span>
             <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{totalGram>0?`${totalGram}g`:""}</span>
           </div>
-          <div style={{display:"flex",gap:8,marginTop:3}}>
+          <div style={{display:"flex",gap:8,marginTop:4,paddingLeft:2}}>
             <span style={{fontSize:10,fontWeight:600,color:C.protein}}>P {Math.round(t.p*10)/10}</span>
             <span style={{fontSize:10,fontWeight:600,color:C.carb}}>C {Math.round(t.c*10)/10}</span>
             <span style={{fontSize:10,fontWeight:600,color:C.fat}}>F {Math.round(t.f*10)/10}</span>
-            <span style={{fontSize:10,fontWeight:800,color:C.t1}}>{Math.round(t.cal)} cal</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.fiber}}>Xơ {Math.round((t.fiber||0)*10)/10}</span>
+            <span style={{fontSize:10,fontWeight:800,color:C.t2,marginLeft:"auto"}}>{Math.round(t.cal)} cal</span>
           </div>
         </div>
       ) : (
-        meal.items.filter(item=>!isHiddenFiller(item)).map((item,i,arr)=><div key={i} style={{padding:"7px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
+        meal.items.filter(item=>!isHiddenFiller(item)).map((item,i,arr)=><div key={i} style={{padding:"8px 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline"}}>
-            <span style={{fontSize:13,fontWeight:700,color:C.t1}}>{item.display||getFoodDisplay(item.food)}</span>
+            <span style={{fontSize:mob?13:14,fontWeight:800,color:C.t1}}>{item.display||getFoodDisplay(item.food)}</span>
             <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{item.qty_display?item.qty_display:formatFoodPortion(item.food,item.gram)}</span>
           </div>
-          <div style={{display:"flex",gap:8,marginTop:3}}>
+          <div style={{display:"flex",gap:8,marginTop:4,paddingLeft:2}}>
             <span style={{fontSize:10,fontWeight:600,color:C.protein}}>P {item.p}</span>
             <span style={{fontSize:10,fontWeight:600,color:C.carb}}>C {item.c}</span>
             <span style={{fontSize:10,fontWeight:600,color:C.fat}}>F {item.f}</span>
-            <span style={{fontSize:10,fontWeight:800,color:C.t1}}>{item.cal} cal</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.fiber}}>Xơ {item.fiber||0}</span>
+            <span style={{fontSize:10,fontWeight:800,color:C.t2,marginLeft:"auto"}}>{item.cal} cal</span>
           </div>
         </div>)
       )}
