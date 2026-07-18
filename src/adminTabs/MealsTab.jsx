@@ -184,7 +184,7 @@ return mob ? (
 <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option><option value="scoop">Scoop</option>
 </select>
 </div>
-<div onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:32,height:32,background:C.redBg,borderRadius:8,border:"none",cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14}}>🗑️</div>
+<div onClick={()=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a.splice(i,1);if(a.length===0)a.push({name:"",gram:"",unit:"g",qty:1});u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:32,height:32,background:"transparent",borderRadius:8,border:"none",cursor:appliedTemplate?"not-allowed":"pointer",opacity:appliedTemplate?0.4:1,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:16,color:"#DC2626"}}>🗑️</div>
 </div>
 ) : (
 <div key={i} style={{display:"grid",gridTemplateColumns:"28px 2fr 56px 52px 72px 28px",gap:8,alignItems:"center",marginBottom:8}}>
