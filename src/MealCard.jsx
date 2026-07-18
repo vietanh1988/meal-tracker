@@ -48,10 +48,10 @@ export function MealCard({meal}){
             <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{totalGram>0?`${totalGram}g`:""}</span>
           </div>
           <div style={{display:"flex",gap:8,marginTop:4,paddingLeft:2}}>
-            <span style={{fontSize:10,fontWeight:600,color:C.protein}}>P {Math.round(t.p*10)/10}</span>
-            <span style={{fontSize:10,fontWeight:600,color:C.carb}}>C {Math.round(t.c*10)/10}</span>
-            <span style={{fontSize:10,fontWeight:600,color:C.fat}}>F {Math.round(t.f*10)/10}</span>
-            <span style={{fontSize:10,fontWeight:600,color:C.fiber}}>Xơ {Math.round((t.fiber||0)*10)/10}</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.t2}}>P {Math.round(t.p*10)/10}</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.t2}}>C {Math.round(t.c*10)/10}</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.t2}}>F {Math.round(t.f*10)/10}</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.t2}}>Xơ {Math.round((t.fiber||0)*10)/10}</span>
             <span style={{fontSize:10,fontWeight:800,color:C.t2,marginLeft:"auto"}}>{Math.round(t.cal)} cal</span>
           </div>
         </div>
@@ -62,10 +62,10 @@ export function MealCard({meal}){
             <span style={{fontSize:12,fontWeight:600,color:C.t3}}>{item.qty_display?item.qty_display:formatFoodPortion(item.food,item.gram)}</span>
           </div>
           <div style={{display:"flex",gap:8,marginTop:4,paddingLeft:2}}>
-            <span style={{fontSize:10,fontWeight:600,color:C.protein}}>P {item.p}</span>
-            <span style={{fontSize:10,fontWeight:600,color:C.carb}}>C {item.c}</span>
-            <span style={{fontSize:10,fontWeight:600,color:C.fat}}>F {item.f}</span>
-            <span style={{fontSize:10,fontWeight:600,color:C.fiber}}>Xơ {item.fiber||0}</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.t2}}>P {item.p}</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.t2}}>C {item.c}</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.t2}}>F {item.f}</span>
+            <span style={{fontSize:10,fontWeight:600,color:C.t2}}>Xơ {item.fiber||0}</span>
             <span style={{fontSize:10,fontWeight:800,color:C.t2,marginLeft:"auto"}}>{item.cal} cal</span>
           </div>
         </div>)
