@@ -166,18 +166,18 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         {(()=>{const calPct=heroCal>0?Math.min(Math.round(actualCal/heroCal*100),150):0;
           const r=38,circ=2*Math.PI*r,offset=circ-(calPct/100)*circ;
           const ringColor=calPct>115?"#F59E0B":calPct>140?"#DC2626":"#007AFF";
-          return <div style={{width:100,height:100,position:"relative",flexShrink:0}}>
-            <svg width={100} height={100} viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r={r} fill="none" stroke="#E8EDF2" strokeWidth="7"/>
-              <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="7"
+          return <div style={{width:120,height:120,position:"relative",flexShrink:0}}>
+            <svg width={120} height={120} viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r={r} fill="none" stroke="#E8EDF2" strokeWidth="6"/>
+              <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="6"
                 strokeDasharray={circ} strokeDashoffset={Math.max(offset,0)}
                 strokeLinecap="round" transform="rotate(-90 50 50)"
                 style={{transition:"stroke-dashoffset 0.6s ease, stroke 0.3s"}}/>
             </svg>
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center"}}>
-              <span style={{fontSize:18,lineHeight:1}}>🔥</span>
-              <span style={{fontSize:16,fontWeight:600,color:ringColor,lineHeight:1,marginTop:1}}>{calPct}%</span>
-              <span style={{fontSize:9,fontWeight:600,color:C.t3,marginTop:1}}>mục tiêu</span>
+              <span style={{fontSize:20,lineHeight:1}}>🔥</span>
+              <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>{calPct}%</span>
+              <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>mục tiêu</span>
             </div>
           </div>;
         })()}
