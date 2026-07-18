@@ -73,7 +73,13 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
   return (
 <div style={{...card, maxWidth: mob?undefined:720, margin: mob?undefined:"0 auto"}}>
       <MySubscription userId={user?.id} mob={mob} isAdmin={isAdmin} appSettings={appSettings}/>
-      <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>👤</span><span style={{fontWeight:800,color:C.t1}}>Tài khoản</span></div>
+      {mob?<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
+        <div>
+          <div style={{fontSize:18,fontWeight:900,color:C.t1}}>Tài khoản</div>
+          <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:3}}>Quản lý đăng nhập, gói thành viên & bảo mật</div>
+        </div>
+        <span style={{fontSize:28,flexShrink:0,marginLeft:12}}>🔐</span>
+      </div>:<div style={{fontSize:17,fontWeight:800,color:C.t1,marginBottom:16,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🔐</span><span style={{fontWeight:800,color:C.t1}}>Tài khoản</span></div>}
       <div style={{background:C.surface,borderRadius:10,padding:"16px",marginBottom:16,border:`1.5px solid ${C.border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
           <UserAvatar gender={profile.gender} size={48}/>

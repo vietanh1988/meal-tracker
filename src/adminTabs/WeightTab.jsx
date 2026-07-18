@@ -8,7 +8,13 @@ export function WeightTab({weightLog, addWeight, deleteWeight, setWeightLog, pro
       const nextWeek=weightLog.length+1;
       const today=fmtDate(new Date());
       return <div style={card}>
-        {mob&&<div style={{fontSize:19,fontWeight:800,color:C.t1,marginBottom:16}}>Nhập cân nặng</div>}
+        {mob&&<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:900,color:C.t1}}>Theo dõi cân nặng</div>
+            <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:3}}>Ghi lại cân nặng hàng tuần để theo dõi tiến trình</div>
+          </div>
+          <span style={{fontSize:28,flexShrink:0,marginLeft:12}}>⚖️</span>
+        </div>}
         <div style={!mob&&weightLog.length>=2?{display:"grid",gridTemplateColumns:"40% 58%",gap:20,marginBottom:16}:{marginBottom:16}}>
         <div style={!mob?{background:C.card,border:`1.5px solid ${C.border}`,borderRadius:14,padding:20}:{}}>
         {!mob&&<div style={{fontSize:17,fontWeight:800,color:C.t1,marginBottom:20,display:"flex",alignItems:"center",gap:8}}>⚖️ Nhập cân nặng</div>}

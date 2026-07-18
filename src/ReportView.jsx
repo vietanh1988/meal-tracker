@@ -134,6 +134,13 @@ export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,
 
   if(loading)return <div style={{textAlign:"center",padding:40,color:C.t3}}>Đang tải báo cáo...</div>;
   if(!data||data.daysLogged===0)return <div>
+    {mob&&<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
+      <div>
+        <div style={{fontSize:18,fontWeight:900,color:C.t1}}>Báo cáo</div>
+        <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:3}}>Thống kê calo & macro theo tuần hoặc tháng</div>
+      </div>
+      <span style={{fontSize:28,flexShrink:0,marginLeft:12}}>📊</span>
+    </div>}
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
       <div style={{display:"flex",background:"#F3F4F6",borderRadius:8,overflow:"hidden",padding:2}}>
         <div onClick={()=>{setPeriod("week");setOffset(0);}} style={{padding:"6px 12px",fontSize:12,fontWeight:700,color:period==="week"?"#007AFF":"#9CA3AF",background:period==="week"?"#fff":"transparent",borderRadius:6,cursor:"pointer"}}>Tuần</div>
@@ -155,6 +162,13 @@ export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,
   const maxWeekCal=Math.max(...data.weeks.map(w=>w.cal),data.target);
 
   return <div>
+    {mob&&<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
+      <div>
+        <div style={{fontSize:18,fontWeight:900,color:C.t1}}>Báo cáo</div>
+        <div style={{fontSize:13,fontWeight:500,color:C.t2,marginTop:3}}>Thống kê calo & macro theo tuần hoặc tháng</div>
+      </div>
+      <span style={{fontSize:28,flexShrink:0,marginLeft:12}}>📊</span>
+    </div>}
     {/* Period toggle + nav */}
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
       <div style={{display:"flex",background:"#F3F4F6",borderRadius:8,overflow:"hidden",padding:2}}>
