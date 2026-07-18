@@ -28,9 +28,9 @@ export function MealCard({meal}){
           {!patternName && <span style={{fontSize:11,fontWeight:600,color:C.t2,marginLeft:5}}>{meal.items.filter(it=>!isHiddenFiller(it)).length} món</span>}
         </div>
         <div style={{display:"flex",gap:mob?8:12,marginTop:4}}>
-          <span style={{fontSize:mob?10:12,fontWeight:700,color:C.protein,display:"inline-flex",alignItems:"center",gap:3}}><span style={{width:6,height:6,borderRadius:3,background:C.protein,flexShrink:0}}/>P {Math.round(t.p)}g</span>
-          <span style={{fontSize:mob?10:12,fontWeight:700,color:C.carb,display:"inline-flex",alignItems:"center",gap:3}}><span style={{width:6,height:6,borderRadius:3,background:C.carb,flexShrink:0}}/>C {Math.round(t.c)}g</span>
-          <span style={{fontSize:mob?10:12,fontWeight:700,color:C.fat,display:"inline-flex",alignItems:"center",gap:3}}><span style={{width:6,height:6,borderRadius:3,background:C.fat,flexShrink:0}}/>F {Math.round(t.f)}g</span>
+          <span style={{fontSize:mob?10:12,fontWeight:700,color:C.protein,display:"inline-flex",alignItems:"center",gap:2}}><span style={{fontSize:mob?10:13}}>🥩</span>P {Math.round(t.p)}g</span>
+          <span style={{fontSize:mob?10:12,fontWeight:700,color:C.carb,display:"inline-flex",alignItems:"center",gap:2}}><span style={{fontSize:mob?10:13}}>🌾</span>C {Math.round(t.c)}g</span>
+          <span style={{fontSize:mob?10:12,fontWeight:700,color:C.fat,display:"inline-flex",alignItems:"center",gap:2}}><span style={{fontSize:mob?10:13}}>💧</span>F {Math.round(t.f)}g</span>
         </div>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
