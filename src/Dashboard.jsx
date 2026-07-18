@@ -182,7 +182,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           </div>;
         })()}
       </div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10,alignItems:"center"}}>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:6,alignItems:"center"}}>
         {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#2563EB",padding:"4px 9px 4px 6px",background:"#EFF6FF",borderRadius:6}}>
           <svg width={16} height={11} viewBox="0 0 30 20"><rect width="30" height="20" fill="#DA251D"/><polygon points="15,4 16.76,9.35 22.39,9.35 17.82,12.65 19.58,18 15,14.7 10.42,18 12.18,12.65 7.61,9.35 13.24,9.35" fill="#FFCD00"/></svg>
           Calo chuẩn Việt Nam
@@ -190,7 +190,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         {profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 10px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}
       </div>
       {/* Line phân cách badges ↔ macro */}
-      <div style={{height:1,background:"#F1F5F9",margin:"14px 0 0"}}/>
+      <div style={{height:1,background:"#F1F5F9",margin:"10px 0 0"}}/>
       {/* 4 macro — MacroBar mới (icon+số+thanh ngang), nhãn Việt hoá */}
       <div style={{display:"flex",justifyContent:"space-between",marginTop:14}}>
         <MacroBar label="Đạm" v={actualP} max={heroP} barColor="#2563EB" icon="🥩" size={0.85}/>
