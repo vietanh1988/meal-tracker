@@ -203,7 +203,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
 
     {/* Section label: Dynamic meal label + Date Nav */}
-    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,marginTop:8}}>
       <span style={{fontSize:mob?18:24}}>{dayType==="train"?"💪":"😴"}</span>
       <span style={{fontSize:mob?18:18,fontWeight:800,color:C.t1,letterSpacing:"0.06em"}}>{dayType==="train"?"Thực đơn ngày tập":"Thực đơn ngày nghỉ"}</span>
       <div style={{flex:1,height:1,background:"linear-gradient(90deg,transparent,#E2E8F0,transparent)"}}/>
