@@ -150,18 +150,37 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
             <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{actualCal.toLocaleString()}</div>
             <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
           </div>
+          {/* Trạng thái dynamic — chuyển lên đây thế chỗ dòng cũ */}
+          <div style={{marginTop:8}}>
+            {(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;
+              if(pp<95)return <span style={{fontSize:11,fontWeight:700,color:"#B45309",padding:"4px 9px",background:"#FEF3C7",borderRadius:6}}>⚠️ Còn thiếu {calRemain} kcal</span>;
+              if(pp<=105)return <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#16A34A",padding:"4px 9px 4px 6px",background:"#F0FDF4",borderRadius:6}}>
+                <svg width={14} height={14} viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                Ổn rồi, giữ nhé!
+              </span>;
+              return <span style={{fontSize:11,fontWeight:700,color:"#DC2626",padding:"4px 9px",background:"#FEE2E2",borderRadius:6}}>🔴 Dư {Math.abs(calRemain)} kcal</span>;
+            })()}
+          </div>
         </div>
-        {/* Illustration clipboard+lửa — thuần trang trí, không mang logic */}
-        <svg width={84} height={84} viewBox="0 0 140 140" style={{flexShrink:0}}>
-          <defs><linearGradient id="heroFireGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#FCD34D"/><stop offset="100%" stopColor="#F59E0B"/></linearGradient></defs>
-          <rect x="18" y="10" width="80" height="105" rx="14" fill="#EEF2FF" stroke="#6366F1" strokeWidth="3.5"/>
-          <rect x="42" y="4" width="32" height="16" rx="6" fill="#6366F1"/>
-          <circle cx="34" cy="42" r="4.5" fill="#818CF8"/><rect x="46" y="38.5" width="38" height="7" rx="3.5" fill="#C7D2FE"/>
-          <circle cx="34" cy="62" r="4.5" fill="#818CF8"/><rect x="46" y="58.5" width="30" height="7" rx="3.5" fill="#C7D2FE"/>
-          <circle cx="34" cy="82" r="4.5" fill="#818CF8"/><rect x="46" y="78.5" width="24" height="7" rx="3.5" fill="#C7D2FE"/>
-          <circle cx="98" cy="100" r="26" fill="url(#heroFireGrad)"/>
-          <path d="M98 84c-2 6-9 9-9 17a9 9 0 0018 0c0-4-2-6-3-9 1 4-1 6-3 6-3 0-4-3-3-6-1-3 1-6 0-8z" fill="#EA580C"/>
-        </svg>
+        {/* Vòng tròn % mục tiêu calo — thay illustration clipboard+lửa */}
+        {(()=>{const calPct=heroCal>0?Math.min(Math.round(actualCal/heroCal*100),150):0;
+          const r=38,circ=2*Math.PI*r,offset=circ-(calPct/100)*circ;
+          const ringColor=calPct>115?"#F59E0B":calPct>140?"#DC2626":"#007AFF";
+          return <div style={{width:88,height:88,position:"relative",flexShrink:0}}>
+            <svg width={88} height={88} viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r={r} fill="none" stroke="#E8EDF2" strokeWidth="7"/>
+              <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="7"
+                strokeDasharray={circ} strokeDashoffset={Math.max(offset,0)}
+                strokeLinecap="round" transform="rotate(-90 50 50)"
+                style={{transition:"stroke-dashoffset 0.6s ease, stroke 0.3s"}}/>
+            </svg>
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center"}}>
+              <span style={{fontSize:18,lineHeight:1}}>🔥</span>
+              <span style={{fontSize:16,fontWeight:600,color:ringColor,lineHeight:1,marginTop:1}}>{calPct}%</span>
+              <span style={{fontSize:9,fontWeight:600,color:C.t3,marginTop:1}}>mục tiêu</span>
+            </div>
+          </div>;
+        })()}
       </div>
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10,alignItems:"center"}}>
         {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#2563EB",padding:"4px 9px 4px 6px",background:"#EFF6FF",borderRadius:6}}>
@@ -169,19 +188,6 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           Calo chuẩn Việt Nam
         </span>}
         {profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 10px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}
-        {(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;
-          if(pp<95)return <span style={{fontSize:11,fontWeight:700,color:"#B45309",padding:"4px 9px",background:"#FEF3C7",borderRadius:6}}>⚠️ Còn thiếu {calRemain} kcal</span>;
-          if(pp<=105)return <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#16A34A",padding:"4px 9px 4px 6px",background:"#F0FDF4",borderRadius:6}}>
-            <svg width={14} height={14} viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            Ổn rồi, giữ nhé!
-          </span>;
-          return <span style={{fontSize:11,fontWeight:700,color:"#DC2626",padding:"4px 9px",background:"#FEE2E2",borderRadius:6}}>🔴 Dư {Math.abs(calRemain)} kcal</span>;
-        })()}
-      </div>
-      {/* Progress bar tổng — cap 120% (khác 100% của macro bar bên dưới),
-          giữ nguyên logic gốc không đổi */}
-      <div style={{height:8,width:"100%",background:"#F3F4F6",borderRadius:4,marginTop:10,overflow:"hidden"}}>
-        <div style={{height:"100%",width:`${Math.min(heroCal>0?(actualCal/heroCal)*100:0,120)}%`,background:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)",borderRadius:4,transition:"width 0.4s"}}/>
       </div>
       {/* 4 macro — MacroBar mới (icon+số+thanh ngang), nhãn Việt hoá */}
       <div style={{display:"flex",justifyContent:"space-between",marginTop:16}}>
