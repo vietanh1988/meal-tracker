@@ -189,8 +189,10 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </span>}
         {profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 10px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}
       </div>
+      {/* Line phân cách badges ↔ macro */}
+      <div style={{height:1,background:"#F1F5F9",margin:"14px 0 0"}}/>
       {/* 4 macro — MacroBar mới (icon+số+thanh ngang), nhãn Việt hoá */}
-      <div style={{display:"flex",justifyContent:"space-between",marginTop:16}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:14}}>
         <MacroBar label="Đạm" v={actualP} max={heroP} barColor="#2563EB" icon="🥩" size={0.85}/>
         <MacroBar label="Tinh bột" v={actualC} max={heroC} barColor="#38BDF8" icon="🌾" size={0.85}/>
         <MacroBar label="Chất béo" v={actualF} max={heroF} barColor="#F59E0B" icon="💧" size={0.85}/>
