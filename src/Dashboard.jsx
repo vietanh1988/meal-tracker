@@ -166,8 +166,8 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         {(()=>{const calPct=heroCal>0?Math.min(Math.round(actualCal/heroCal*100),150):0;
           const r=38,circ=2*Math.PI*r,offset=circ-(calPct/100)*circ;
           const ringColor=calPct>115?"#F59E0B":calPct>140?"#DC2626":"#007AFF";
-          return <div style={{width:88,height:88,position:"relative",flexShrink:0}}>
-            <svg width={88} height={88} viewBox="0 0 100 100">
+          return <div style={{width:100,height:100,position:"relative",flexShrink:0}}>
+            <svg width={100} height={100} viewBox="0 0 100 100">
               <circle cx="50" cy="50" r={r} fill="none" stroke="#E8EDF2" strokeWidth="7"/>
               <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="7"
                 strokeDasharray={circ} strokeDashoffset={Math.max(offset,0)}
