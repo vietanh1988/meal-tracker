@@ -56,7 +56,7 @@ const STYLES = [
 export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, getMealHistory, getDailyLogs, onApply, onClose, onFallbackToLibrary }) {
   const mob = useIsMobile();
   const [step, setStep] = useState("prefs"); // prefs | loading | preview | error
-  const [style, setStyle] = useState(profile?.mealStyle || "vn");
+  const [style, setStyle] = useState("vn");
   const [avoid, setAvoid] = useState("");
   const isNoneExercise = (profile?.exerciseType || "gym") === "none";
   const [dayType, setDayType] = useState(isNoneExercise ? "rest" : (initialDayType === "rest" ? "rest" : "train"));
