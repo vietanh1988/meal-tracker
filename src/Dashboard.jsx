@@ -162,7 +162,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
             })()}
           </div>
           {/* Badges VN + diet — gộp vào cột trái để không tạo khoảng trắng dưới ring */}
-          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:6,alignItems:"center"}}>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10,alignItems:"center"}}>
             {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#2563EB",padding:"4px 9px 4px 6px",background:"#EFF6FF",borderRadius:6}}>
               <svg width={16} height={11} viewBox="0 0 30 20"><rect width="30" height="20" fill="#DA251D"/><polygon points="15,4 16.76,9.35 22.39,9.35 17.82,12.65 19.58,18 15,14.7 10.42,18 12.18,12.65 7.61,9.35 13.24,9.35" fill="#FFCD00"/></svg>
               Calo chuẩn Việt Nam
@@ -174,8 +174,8 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         {(()=>{const calPct=heroCal>0?Math.min(Math.round(actualCal/heroCal*100),150):0;
           const r=38,circ=2*Math.PI*r,offset=circ-(calPct/100)*circ;
           const ringColor=calPct>115?"#F59E0B":calPct>140?"#DC2626":"#007AFF";
-          return <div style={{width:120,height:120,position:"relative",flexShrink:0}}>
-            <svg width={120} height={120} viewBox="0 0 100 100">
+          return <div style={{width:130,height:130,position:"relative",flexShrink:0}}>
+            <svg width={130} height={130} viewBox="0 0 100 100">
               <circle cx="50" cy="50" r={r} fill="none" stroke="#E8EDF2" strokeWidth="6"/>
               <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="6"
                 strokeDasharray={circ} strokeDashoffset={Math.max(offset,0)}
