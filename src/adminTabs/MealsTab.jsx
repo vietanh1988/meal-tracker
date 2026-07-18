@@ -171,13 +171,6 @@ return <div key={meal.id} style={{background:C.card,border:`1.5px solid ${C.bord
 <span style={{fontSize:10,fontWeight:700,color:C.t3,textAlign:"center"}}>TL</span>
 <span/>
 </div>}
-{mob&&<div style={{display:"flex",alignItems:"center",gap:8,paddingBottom:6,marginBottom:4,borderBottom:`1px solid ${C.border}`}}>
-<span style={{width:16,flexShrink:0}}/>
-<span style={{flex:1,fontSize:10,fontWeight:700,color:C.t3}}>Thức ăn</span>
-<span style={{fontSize:10,fontWeight:700,color:C.t3,width:50,textAlign:"center"}}>Lượng</span>
-<span style={{fontSize:10,fontWeight:700,color:C.t3,width:52,textAlign:"center"}}>Đơn vị</span>
-<span style={{width:28}}/>
-</div>}
 
 {foods.map((item,i)=>{
 const isWeight=!item.unit||item.unit==="g"||item.unit==="ml";
@@ -187,9 +180,7 @@ return mob ? (
 <input value={item.name} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],name:e.target.value};u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} placeholder="Cá kho, phở..." style={{flex:1,minWidth:0,border:"none",outline:"none",fontSize:14,fontWeight:600,color:C.t1,fontFamily:"inherit",background:"transparent",padding:0,opacity:appliedTemplate?0.6:1}}/>
 <div style={{display:"flex",alignItems:"center",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`,overflow:"hidden",height:34,flexShrink:0}}>
 <input type="text" inputMode="numeric" value={isWeight?(item.gram===0?"0":(item.gram??"")):(item.qty??"")} readOnly={!!appliedTemplate} onChange={e=>{if(appliedTemplate)return;const raw=e.target.value.replace(/[^0-9]/g,"");const u={...allFoodItems};const a=[...(u[meal.id]||[])];if(isWeight){a[i]={...a[i],gram:raw===""?"":Number(raw)};}else{const q=raw===""?"":Number(raw);a[i]={...a[i],qty:q,gram:q===""?0:estimateGram(item.name,item.unit,q)};}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{width:46,border:"none",outline:"none",background:"transparent",textAlign:"center",fontSize:14,fontWeight:700,color:C.t1,fontFamily:"inherit",padding:"0 2px",opacity:appliedTemplate?0.5:1}} placeholder="—"/>
-</div>
-<div style={{display:"flex",alignItems:"center",background:C.surface,borderRadius:8,border:`1px solid ${C.border}`,overflow:"hidden",height:34,flexShrink:0}}>
-<select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{border:"none",outline:"none",padding:"0 6px",fontSize:12,fontWeight:600,color:C.t2,fontFamily:"inherit",background:"transparent",height:"100%",WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px",minWidth:48}}>
+<select value={item.unit||"g"} disabled={!!appliedTemplate} onChange={e=>{const v=e.target.value;const u={...allFoodItems};const a=[...(u[meal.id]||[])];a[i]={...a[i],unit:v};if(v!=="g"&&v!=="ml"){a[i].gram=estimateGram(item.name,v,item.qty||1);}u[meal.id]=a;setAllFoodItems(u);setUserHasEdited(true);}} style={{border:"none",outline:"none",borderLeft:`1px solid ${C.border}`,padding:"0 6px",fontSize:12,fontWeight:600,color:C.t2,fontFamily:"inherit",background:"transparent",height:"100%",WebkitAppearance:"none",MozAppearance:"none",appearance:"none",backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E\")",backgroundRepeat:"no-repeat",backgroundPosition:"right 4px center",paddingRight:"14px",minWidth:44}}>
 <option value="g">g</option><option value="ml">ml</option><option value="quả">quả</option><option value="hộp">hộp</option><option value="lát">lát</option><option value="bát">bát</option><option value="scoop">Scoop</option>
 </select>
 </div>
