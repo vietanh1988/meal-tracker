@@ -165,6 +165,7 @@ const goalLabel={bulk:"Tăng cơ (+250 cal)",cut:"Giảm mỡ (-350 cal)",mainta
 const dietLabel=p.goalType==="cut"?{balanced:"Cân bằng",low_carb:"Low-carb (≤100g carb)",keto:"Keto (≤50g carb)"}[p.dietStrategy||"balanced"]||"Cân bằng":"Cân bằng (mặc định)";
 const calMode=(p.calorieMode||"standard")==="asian"?"Việt Nam (-10%)":"Quốc tế";
 const isRest=t.dayType==="rest";
+const isNoneEx3=(p.exerciseType||"gym")==="none";
 const todayTarget=isRest?(m.calRest||m.calTarget):m.calTarget;
 const todayCarb=isRest?(m.carbRest||m.carb):m.carb;
 const eaten=t.cal||0;
@@ -235,10 +236,10 @@ return `THÔNG TIN USER:
 - BMI: ${m.bmi} | Tập: ${exLabel}, ${freqLabel}
 - Mục tiêu: ${goalLabel} | Chế độ ăn: ${dietLabel} | Calo: ${calMode}
 
-MACRO MỤC TIÊU (${isRest?"ngày nghỉ":"ngày tập"}):
+MACRO MỤC TIÊU (${isNoneEx3?"hôm nay":isRest?"ngày nghỉ":"ngày tập"}):
 - Calo: ${todayTarget} cal | P: ${m.protein}g | C: ${todayCarb}g | F: ${m.fat}g
 
-HÔM NAY (${isRest?"nghỉ":"tập"}):
+HÔM NAY${isNoneEx3?"":(isRest?" (nghỉ)":" (tập)")}:
 - Đã ăn: ${eaten} cal (P:${t.p||0}g C:${t.c||0}g F:${t.f||0}g)
 - ${calStatus}${mealDetails}
 ${eaten>0?`
@@ -339,9 +340,10 @@ return;
 const aiMenuAccess=getAIMenuAccess(profile,appSettings);
 if(aiMenuAccess.usable&&containsMenuGenIntent(text)){
 const userMsg={role:"user",content:text};
+const isNoneEx=(profile?.exerciseType||"gym")==="none";
 const dt=todayData?.dayType==="rest"?"nghỉ":"tập";
 const tgt=todayData?.dayType==="rest"?(macro?.calRest||macro?.calTarget):macro?.calTarget;
-const aiMsg={role:"assistant",content:`OK! Mình lên thực đơn ${dt==="tập"?"ngày tập":"ngày nghỉ"} ~${tgt} kcal cho bạn. Chọn nhanh khẩu vị trước đã 👇`,action:"open_ai_menu"};
+const aiMsg={role:"assistant",content:`OK! Mình lên thực đơn ${isNoneEx?"hôm nay":dt==="tập"?"ngày tập":"ngày nghỉ"} ~${tgt} kcal cho bạn. Chọn nhanh khẩu vị trước đã 👇`,action:"open_ai_menu"};
 setMessages(prev=>[...prev,userMsg,aiMsg]);
 setInput("");
 saveMsg("user",text);
@@ -453,8 +455,9 @@ const isRest=t.dayType==="rest";
 const target=isRest?(m.calRest||m.calTarget):m.calTarget;
 const deficit=target-(t.cal||0);
 const xung=(profile||{}).gender==="male"?"anh":"chị";
+const isNoneEx2=(profile||{}).exerciseType==="none";
 const welcome=(t.cal||0)>0
-?(deficit>0?`Chào ${xung}! Hôm nay (${isRest?"nghỉ":"tập"}) còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào ${xung}! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
+?(deficit>0?`Chào ${xung}! Hôm nay${isNoneEx2?"":(isRest?" (nghỉ)":" (tập)")} còn thiếu ${deficit} cal. Mình có thể gợi ý bữa ăn phù hợp! 💪`:`Chào ${xung}! Hôm nay ăn đủ calo rồi. Cần mình tư vấn gì thêm không? 😊`)
 :`Chào ${xung}! Mình là Fipilot AI. Hỏi mình về dinh dưỡng hoặc tập luyện nhé! 💪`;
 setMessages([{role:"assistant",content:welcome}]);
 saveMsg("assistant",welcome);
@@ -503,7 +506,7 @@ return <div>
 {[`${profile?.kg||65}kg`,{gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Nghỉ"}[profile?.exerciseType||"gym"],
 {bulk:"💪 Tăng cơ",cut:"🔥 Giảm mỡ",maintain:"⚖️ Duy trì"}[profile?.goalType||"bulk"],
 ...(profile?.goalType==="cut"&&(profile?.dietStrategy||"balanced")!=="balanced"?[{low_carb:"🥗 Low-carb",keto:"🥗 Keto"}[profile?.dietStrategy]]:[]),
-todayData?.dayType==="train"?"🏋️ Ngày tập":"😴 Ngày nghỉ",
+(profile?.exerciseType||"gym")==="none"?"📋 Hôm nay":(todayData?.dayType==="train"?"🏋️ Ngày tập":"😴 Ngày nghỉ"),
 ...((profile?.calorieMode||"standard")==="asian"?["🇻🇳 VN"]:[]),
 `${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;const eaten=todayData?.cal||0;const deficit=tgt-eaten;return eaten===0?"chưa ăn":deficit>0?`-${deficit}`:deficit<0?`+${Math.abs(deficit)}`:"✓";})()} cal`
 ].map((tag,i)=>{const isCalTag=tag.endsWith("cal");const calColor=isCalTag?(tag.includes("chưa")?"#F59E0B":tag.startsWith("-")?"#EF4444":tag.startsWith("+")?"#EF4444":"#22C55E"):"";return <span key={i} style={{fontSize:10,padding:"2px 6px",background:isCalTag&&calColor?`${calColor}15`:C2.surface,borderRadius:4,color:isCalTag&&calColor?calColor:C2.t2,fontWeight:600}}>{tag}</span>})}
