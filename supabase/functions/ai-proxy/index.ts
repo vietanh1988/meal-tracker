@@ -92,14 +92,14 @@ async function verifyUser(req: Request) {
 // hiệu request không qua UI chuẩn (tự soạn request bypass) → từ chối
 // thẳng, không cho gọi AI. Trước đây feature "lạ" bị bỏ qua im lặng
 // (kind=null → allowed:true) — đây chính là khe hở để né mọi quota.
-const KNOWN_FEATURES = new Set(["menu_gen", "chat", "macro_lookup", "weight_advice", "ping_test"]);
+const KNOWN_FEATURES = new Set(["menu_gen", "chat", "macro_lookup", "weight_advice", "ping_test", "photo_macro"]);
 
 async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: string | null) {
   if (!feature || !KNOWN_FEATURES.has(feature)) {
     return { allowed: false, message: "Yêu cầu không hợp lệ." };
   }
   const FEATURE_TO_KIND: Record<string, string> = {
-    menu_gen: "menu", chat: "chat", macro_lookup: "macro",
+    menu_gen: "menu", chat: "chat", macro_lookup: "macro", photo_macro: "macro",
   };
   const kind = FEATURE_TO_KIND[feature] || null;
   if (!kind) return { allowed: true }; // weight_advice/ping_test — hợp lệ nhưng chưa có quota
@@ -118,7 +118,11 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
   const { data: appSet } = await admin.from("app_settings").select("value").eq("key", "feature_flags").single();
   let flags: Record<string, boolean> = {};
   try { flags = JSON.parse(appSet?.value || "{}"); } catch (e) { /* fail-open nếu parse lỗi */ }
-  const FLAG_KEY: Record<string, string> = { menu: "ai_menu_gen", chat: "ai_chat", macro: "ai_macro" };
+  const FLAG_KEY: Record<string, string> = { menu: "ai_menu_gen", chat: "ai_chat", macro: "ai_macro", photo_macro: "photo_macro" };
+  // photo_macro feature: check trực tiếp flag riêng
+  if (feature === "photo_macro" && flags["photo_macro"] === false) {
+    return { allowed: false, message: "Tính năng Photo Macro đang tắt." };
+  }
   if (flags[FLAG_KEY[kind]] === false) {
     return { allowed: false, message: "Tính năng này đang tạm khoá để bảo trì." };
   }
@@ -216,7 +220,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { foodDesc, provider = "claude", model, system, messages, maxTokens, feature } = await req.json()
+    const { foodDesc, provider = "claude", model, system, messages, maxTokens, feature, image } = await req.json()
 
     // admin client (service role) — tạo SỚM, dùng chung cho quota check,
     // đọc key Gemini/GPT từ app_settings, và log chi phí.
@@ -229,7 +233,18 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: quota.message, quotaExceeded: true }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const msgs = (messages && messages.length) ? messages : [{ role: "user", content: foodDesc }]
+    // Build messages — nếu có image thì gửi multimodal (text + image)
+    let msgs: any[];
+    if (image) {
+      // Multimodal: image + text prompt
+      const imageContent = [
+        { type: "image", source: { type: "base64", media_type: "image/jpeg", data: image } },
+        { type: "text", text: foodDesc || "Describe this image" },
+      ];
+      msgs = [{ role: "user", content: imageContent }];
+    } else {
+      msgs = (messages && messages.length) ? messages : [{ role: "user", content: foodDesc }];
+    }
     let text = ""
     let usedModel = model || "";
     let inputTok = 0, outputTok = 0;
@@ -261,10 +276,22 @@ serve(async (req) => {
       const GEMINI_KEY = await getAppSettingValue(admin, "gemini_key");
       if (!GEMINI_KEY) throw new Error("Chưa cấu hình Gemini API Key — vào Cài đặt → Kết nối AI để nhập.")
       usedModel = model || "gemini-2.5-flash";
-      const contents = msgs.map((m: any) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      }))
+      let contents: any[];
+      if (image) {
+        // Gemini Vision: inlineData + text
+        contents = [{
+          role: "user",
+          parts: [
+            { inlineData: { mimeType: "image/jpeg", data: image } },
+            { text: foodDesc || "Describe this image" },
+          ],
+        }];
+      } else {
+        contents = msgs.map((m: any) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: typeof m.content === "string" ? m.content : JSON.stringify(m.content) }],
+        }));
+      }
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${usedModel}:generateContent?key=${GEMINI_KEY}`,
         {
@@ -287,18 +314,31 @@ serve(async (req) => {
       const OPENAI_KEY = await getAppSettingValue(admin, "gpt_key");
       if (!OPENAI_KEY) throw new Error("Chưa cấu hình OpenAI API Key — vào Cài đặt → Kết nối AI để nhập.")
       usedModel = model || "gpt-4o-mini";
-      // gpt-4o-mini dùng max_tokens (cũ); model mới hơn (gpt-5.5-*) yêu
-      // cầu max_completion_tokens — gửi sai tên bị OpenAI từ chối thẳng.
       const tokenParam = usedModel === "gpt-4o-mini"
         ? { max_tokens: maxTokens || 1000 }
         : { max_completion_tokens: maxTokens || 1000 };
+      let gptMsgs: any[];
+      if (image) {
+        // GPT Vision: image_url with base64
+        gptMsgs = [
+          ...(system ? [{ role: "system", content: system }] : []),
+          { role: "user", content: [
+            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${image}` } },
+            { type: "text", text: foodDesc || "Describe this image" },
+          ]},
+        ];
+      } else {
+        gptMsgs = [...(system ? [{ role: "system", content: system }] : []), ...msgs.map((m: any) => ({
+          role: m.role, content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
+        }))];
+      }
       const res = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${OPENAI_KEY}` },
         body: JSON.stringify({
           model: usedModel,
           ...tokenParam,
-          messages: [...(system ? [{ role: "system", content: system }] : []), ...msgs],
+          messages: gptMsgs,
         }),
       })
       const d = await res.json()

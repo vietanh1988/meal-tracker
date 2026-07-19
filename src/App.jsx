@@ -17,6 +17,7 @@ import { Dashboard } from "./Dashboard";
 import { LoginScreen } from "./LoginScreen";
 import { OnboardingWizard } from "./OnboardingWizard";
 import PWAInstallPrompt from "./PWAInstallPrompt";
+import PhotoMacroChecker from "./PhotoMacroChecker";
 import { AboutPage } from "./AboutPage";
 import { TermsPage } from "./TermsPage";
 import { NotificationBell } from "./NotificationBell";
@@ -69,6 +70,7 @@ export default function App(){
   const [pcDayManual,setPcDayManual]=useState(null);
   const [showAIMenuPC,setShowAIMenuPC]=useState(false);
   const [showAICoach,setShowAICoach]=useState(false);
+  const [showPhotoMacro,setShowPhotoMacro]=useState(false);
   const [aiFabHidden,setAiFabHidden]=useState(false);
   const scrollHideTimerRef=useRef(null);
   useEffect(()=>{
@@ -246,6 +248,8 @@ export default function App(){
     </div>
     </div>
     <PWAInstallPrompt />
+    {flags.photo_macro&&!showAICoach&&!showPhotoMacro&&<div onClick={()=>setShowPhotoMacro(true)} style={{position:"fixed",bottom:100,left:14,width:50,height:50,borderRadius:14,background:"linear-gradient(135deg,#059669,#047857)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:"#fff",zIndex:98,cursor:"pointer",transition:"opacity 0.25s ease, transform 0.25s ease",opacity:aiFabHidden?0:1,transform:aiFabHidden?"translateY(20px) scale(0.85)":"translateY(0) scale(1)",pointerEvents:aiFabHidden?"none":"auto",boxShadow:"0 4px 12px rgba(5,150,105,0.4)"}}><span style={{fontSize:20}}>📸</span><span style={{fontSize:7,fontWeight:800,letterSpacing:"0.3px",opacity:0.9,marginTop:1}}>Macro</span></div>}
+    {showPhotoMacro&&<PhotoMacroChecker onClose={()=>setShowPhotoMacro(false)} appSettings={appSettings}/>}
   </div>;
 
   // ========== PC LAYOUT ==========

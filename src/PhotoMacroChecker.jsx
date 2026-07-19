@@ -18,7 +18,12 @@ function getVisionProvider(appSettings, fallbackProvider) {
   return (override && override !== "auto") ? override : fallbackProvider;
 }
 
-export default function PhotoMacroChecker({ onClose, appSettings, aiProvider, aiModel, geminiModel, gptModel }) {
+export default function PhotoMacroChecker({ onClose, appSettings }) {
+  // Đọc AI provider/model từ appSettings
+  const aiProvider = appSettings?.ai_provider || "claude";
+  const aiModel = appSettings?.ai_model || "claude-sonnet-5";
+  const geminiModel = appSettings?.gemini_model || "gemini-2.5-flash";
+  const gptModel = appSettings?.gpt_model || "gpt-4o-mini";
   const [step, setStep] = useState(() => {
     try { return localStorage.getItem(ONBOARDING_KEY) ? 1 : 0; } catch { return 0; }
   });
