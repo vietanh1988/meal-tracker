@@ -165,45 +165,47 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
 
   return (
     <div style={{ marginBottom: 16 }}>
-      {/* Hero membership card — nền tối */}
-      <div style={{ background: "linear-gradient(135deg, #0A1628 0%, #162544 60%, #1E3A5F 100%)", borderRadius: 16, padding: "20px 18px", color: "#fff", position: "relative", overflow: "hidden", marginBottom: resultBanner ? 0 : 0 }}>
+      {/* Hero membership card — nền xanh primary */}
+      <div style={{ background: "linear-gradient(135deg, #36A3FF, #007AFF, #0057FF)", borderRadius: 16, padding: "22px 20px", color: "#fff", boxShadow: "0 4px 16px rgba(0,122,255,0.3)" }}>
         {/* Tier badge + expire */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: tier === "premium" ? "linear-gradient(135deg,#F59E0B,#D97706)" : tier === "trial" ? "linear-gradient(135deg,#A855F7,#7C3AED)" : "rgba(255,255,255,0.15)", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 800, color: "#fff" }}>{stateIcon} {tier === "premium" ? "Premium" : tier === "trial" ? "Trial" : "Free"}</div>
-          {tier !== "free" && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>Hết hạn: {fmtDMY(tier === "trial" ? sub.trial_end_date : sub.subscription_end_date)}</div>}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, background: tier === "premium" ? "linear-gradient(135deg,#F59E0B,#D97706)" : tier === "trial" ? "linear-gradient(135deg,#A855F7,#7C3AED)" : "rgba(255,255,255,0.2)", padding: "5px 14px", borderRadius: 10, fontSize: 13, fontWeight: 800, color: "#fff" }}>{stateIcon} {tier === "premium" ? "Premium" : tier === "trial" ? "Trial" : "Free"}</div>
+          {tier !== "free" && <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.15)", padding: "5px 12px", borderRadius: 10, fontSize: 12, fontWeight: 700, color: "#fff" }}>🕐 {fmtDMY(tier === "trial" ? sub.trial_end_date : sub.subscription_end_date)}</div>}
         </div>
 
         {/* Quota bars */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(59,130,246,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>📊</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>📊</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>AI tính macro</div>
-              <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 4, marginTop: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#3B82F6", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>AI tính macro</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 1 }}>Tháng này</div>
+              <div style={{ height: 8, background: "rgba(255,255,255,0.2)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#fff", width: `${Math.min(100, macroLimit > 0 ? (macroUsed / macroLimit) * 100 : 0)}%` }} /></div>
             </div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{macroUsed}/{macroLimit}</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{macroUsed}<span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>/{macroLimit}</span></div>
           </div>
-          {tier !== "free" && <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(168,85,247,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>✨</div>
+          {tier !== "free" && <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>✨</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>AI tạo thực đơn</div>
-              <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 4, marginTop: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#A855F7", width: `${Math.min(100, (menuUsed / menuLimit) * 100)}%` }} /></div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>AI tạo thực đơn</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 1 }}>Hôm nay</div>
+              <div style={{ height: 8, background: "rgba(255,255,255,0.2)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#fff", width: `${Math.min(100, menuLimit > 0 ? (menuUsed / menuLimit) * 100 : 0)}%` }} /></div>
             </div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{menuUsed}/{menuLimit}</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{menuUsed}<span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>/{menuLimit}</span></div>
           </div>}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(34,197,94,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>💬</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>💬</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>AI Chat</div>
-              <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 4, marginTop: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#22C55E", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>AI Chat</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 1 }}>Hôm nay</div>
+              <div style={{ height: 8, background: "rgba(255,255,255,0.2)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#fff", width: `${Math.min(100, chatLimit > 0 ? (chatUsed / chatLimit) * 100 : 0)}%` }} /></div>
             </div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{chatUsed}/{chatLimit}</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{chatUsed}<span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>/{chatLimit}</span></div>
           </div>
         </div>
 
-        {tier === "free" && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 12 }}>🍽️ AI tạo thực đơn — tính năng Premium/Trial</div>}
-
-        {isAdmin && <div style={{ marginTop: 14, background: "rgba(59,130,246,0.15)", borderRadius: 10, padding: "8px 14px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#93C5FD" }}>👑 Admin — không cần gia hạn</div>}
+        {tier === "free" && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 14 }}>🍽️ AI tạo thực đơn — tính năng Premium/Trial</div>}
+        {isAdmin && <div style={{ marginTop: 16, background: "rgba(255,255,255,0.15)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#fff" }}>👑 Admin — không cần gia hạn</div>}
       </div>
 
       {resultBanner && (
