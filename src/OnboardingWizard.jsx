@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { C, card, inp, lbl, redBtn } from "./theme";
 import { calcMacro } from "./calcMacro";
-import { MacroRing } from "./MacroRing";
 import { useIsMobile } from "./hooks/useIsMobile";
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess } from "./lib/aiMenuService";
@@ -235,30 +234,43 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 <div style={{fontSize:12,fontWeight:600,color:C.t3}}>Macro đã tính xong</div>
 </div>
 
-{/* Macro hero preview */}
-<div style={{background:"linear-gradient(135deg,#0A1628 0%,#162544 100%)",border:"2.5px solid #007AFF",borderRadius:14,padding:16,marginBottom:12}}>
-<div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.5)",letterSpacing:"0.08em"}}>{(profile.exerciseType||"gym")==="none"?"CALO MỤC TIÊU":"CALO MỤC TIÊU NGÀY TẬP"}</div>
-<div style={{fontSize:32,fontWeight:900,color:"#FFF",letterSpacing:"-0.03em",marginTop:4}}>{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.5)"}}>kcal</span>{(profile.calorieMode||"standard")==="asian"&&<span style={{fontSize:11,fontWeight:700,color:"#5AC8FA",marginLeft:8,padding:"2px 8px",background:"rgba(90,200,250,0.15)",borderRadius:6}}>🇻🇳 Calo chuẩn Việt Nam</span>}{profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),marginLeft:6,padding:"2px 8px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.15)":"rgba(251,191,36,0.15)"),borderRadius:6}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}</div>
-<div style={{display:"flex",gap:14,marginTop:12}}>
-<MacroRing l="Protein" v={macro.protein} max={macro.protein} color="#007AFF" color2="#007AFF" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-<MacroRing l="Carb" v={macro.carb} max={macro.carb} color="#5AC8FA" color2="#5AC8FA" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-<MacroRing l="Fat" v={macro.fat} max={macro.fat} color="#8E8E93" color2="#8E8E93" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
-<MacroRing l="Chất xơ" v={macro.fiber} max={macro.fiber} color="#34C759" color2="#34C759" track="rgba(255,255,255,0.18)" tc="#FFF" unit="g"/>
+{/* Macro hero preview — nền sáng + bars */}
+<div style={{background:"linear-gradient(135deg,#EFF6FF,#DBEAFE)",border:"1.5px solid #93C5FD",borderRadius:14,padding:20,marginBottom:12,textAlign:"center"}}>
+<div style={{fontSize:11,fontWeight:700,color:"#64748B",letterSpacing:"0.08em"}}>{(profile.exerciseType||"gym")==="none"?"CALO MỤC TIÊU":"CALO MỤC TIÊU NGÀY TẬP"}</div>
+<div style={{fontSize:36,fontWeight:900,color:"#0F172A",marginTop:6}}>
+{macro.calTarget} <span style={{fontSize:14,fontWeight:700,color:"#94A3B8"}}>kcal</span>
+</div>
+{(profile.calorieMode||"standard")==="asian"&&<span style={{display:"inline-block",fontSize:11,fontWeight:700,color:"#1D4ED8",padding:"2px 8px",background:"rgba(59,130,246,0.1)",borderRadius:6,marginTop:4}}>🇻🇳 Calo chuẩn Việt Nam</span>}
+{profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{display:"inline-block",fontSize:11,fontWeight:700,color:"#92400E",padding:"2px 8px",background:"rgba(251,191,36,0.2)",borderRadius:6,marginTop:4,marginLeft:4}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}
+
+<div style={{display:"flex",flexDirection:"column",gap:10,marginTop:16}}>
+{[
+{name:"Protein",val:macro.protein,pct:Math.min(100,Math.round(macro.protein/macro.calTarget*400)),color:"#007AFF"},
+{name:"Carb",val:macro.carb,pct:Math.min(100,Math.round(macro.carb/macro.calTarget*400)),color:"#5AC8FA"},
+{name:"Fat",val:macro.fat,pct:Math.min(100,Math.round(macro.fat/macro.calTarget*900)),color:"#8E8E93"},
+{name:"Chất xơ",val:macro.fiber,pct:Math.min(100,Math.round(macro.fiber/50*100)),color:"#34C759"},
+].map(m=><div key={m.name} style={{display:"flex",alignItems:"center",gap:10}}>
+<div style={{fontSize:12,fontWeight:700,color:"#475569",width:55,textAlign:"right"}}>{m.name}</div>
+<div style={{flex:1,height:10,background:"rgba(0,0,0,0.06)",borderRadius:5,overflow:"hidden"}}>
+<div style={{height:"100%",borderRadius:5,background:m.color,width:`${m.pct}%`,transition:"width 0.5s ease"}}/>
+</div>
+<div style={{fontSize:13,fontWeight:800,color:"#0F172A",width:40}}>{m.val}g</div>
+</div>)}
 </div>
 </div>
 
 {/* Breakdown */}
 <div style={{background:C.surface,borderRadius:10,padding:"10px 14px",marginBottom:12,border:`1.5px solid ${C.border}`}}>
-<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
 <span style={{color:C.t3}}>BMR</span><span style={{fontWeight:800,color:C.t1}}>{macro.bmr} cal</span>
 </div>
-<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
 <span style={{color:C.t3}}>TDEE (×{macro.actMul})</span><span style={{fontWeight:800,color:C.t1}}>{macro.tdee} cal</span>
 </div>
-{(profile.exerciseType||"gym")!=="none"&&<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",borderBottom:`1px solid ${C.border}`}}>
+{(profile.exerciseType||"gym")!=="none"&&<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"6px 0",borderBottom:`1px solid ${C.border}`}}>
 <span style={{color:C.t3}}>Calo ngày nghỉ</span><span style={{fontWeight:800,color:C.blue}}>{macro.calRest} cal</span>
 </div>}
-<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0"}}>
+<div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"6px 0"}}>
 <span style={{color:C.t3}}>{macro.goal==="bulk"?"Surplus":macro.goal==="cut"?"Deficit":"Điều chỉnh"}</span>
 <span style={{fontWeight:800,color:macro.goal==="bulk"?C.green:macro.goal==="cut"?C.red:C.t1}}>
 {macro.goal==="bulk"?"+250":macro.goal==="cut"?"-350":"0"} cal
