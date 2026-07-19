@@ -164,76 +164,80 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
   const STATUS_FG = { pending: "#92400E", confirmed: "#14532D", rejected: "#7F1D1D" };
 
   return (
-    <div style={{ background: C.surface, borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1.5px solid ${C.border}` }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 9, background: iconBoxBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>{stateIcon}</div>
-          <div style={{ fontSize: mob ? 17 : 16, fontWeight: 800, color: C.t1 }}>Hạng thành viên</div>
+    <div style={{ marginBottom: 16 }}>
+      {/* Hero membership card — nền tối */}
+      <div style={{ background: "linear-gradient(135deg, #0A1628 0%, #162544 60%, #1E3A5F 100%)", borderRadius: 16, padding: "20px 18px", color: "#fff", position: "relative", overflow: "hidden", marginBottom: resultBanner ? 0 : 0 }}>
+        {/* Tier badge + expire */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, background: tier === "premium" ? "linear-gradient(135deg,#F59E0B,#D97706)" : tier === "trial" ? "linear-gradient(135deg,#A855F7,#7C3AED)" : "rgba(255,255,255,0.15)", padding: "4px 12px", borderRadius: 8, fontSize: 12, fontWeight: 800, color: "#fff" }}>{stateIcon} {tier === "premium" ? "Premium" : tier === "trial" ? "Trial" : "Free"}</div>
+          {tier !== "free" && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>Hết hạn: {fmtDMY(tier === "trial" ? sub.trial_end_date : sub.subscription_end_date)}</div>}
         </div>
-        <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 10px", borderRadius: 999, ...badgeStyle }}>{badgeLabel}</span>
+
+        {/* Quota bars */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>📊</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>AI tính macro</div>
+              <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, marginTop: 4, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 3, background: "#3B82F6", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{macroUsed}/{macroLimit}</div>
+          </div>
+          {tier !== "free" && <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(168,85,247,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>✨</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>AI tạo thực đơn</div>
+              <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, marginTop: 4, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 3, background: "#A855F7", width: `${Math.min(100, (menuUsed / menuLimit) * 100)}%` }} /></div>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{menuUsed}/{menuLimit}</div>
+          </div>}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(34,197,94,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>💬</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>AI Chat</div>
+              <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, marginTop: 4, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 3, background: "#22C55E", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{chatUsed}/{chatLimit}</div>
+          </div>
+        </div>
+
+        {tier === "free" && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 12 }}>🍽️ AI tạo thực đơn — tính năng Premium/Trial</div>}
+
+        {isAdmin && <div style={{ marginTop: 14, background: "rgba(59,130,246,0.15)", borderRadius: 10, padding: "8px 14px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#93C5FD" }}>👑 Admin — không cần gia hạn</div>}
       </div>
 
       {resultBanner && (
-        <div style={{ background: resultBanner.status === "confirmed" ? C.greenBg : C.redBg, borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <div style={{ background: resultBanner.status === "confirmed" ? C.greenBg : C.redBg, borderRadius: "0 0 12px 12px", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D" }}>
-            {resultBanner.status === "confirmed" ? `🎉 Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã được duyệt! Chào mừng đến với Premium.` : `Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã bị từ chối. Liên hệ Admin để biết thêm chi tiết.`}
+            {resultBanner.status === "confirmed" ? `🎉 Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã được duyệt!` : `Đơn bị từ chối. Liên hệ Admin.`}
           </div>
           <button onClick={dismissBanner} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 16, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D", flexShrink: 0 }}>✕</button>
         </div>
       )}
 
-      <div style={{ marginBottom: 16 }}>
-        {tier !== "free" && <div style={{ fontSize: 11, color: C.t3, marginBottom: 10 }}>Hạn mức cao — gần như không đụng tới khi dùng bình thường</div>}
-        <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
-              <span>📊 AI tính macro</span><span style={{ color: C.t1, fontWeight: 700 }}>{macroUsed}/{macroLimit}</span>
-            </div>
-            <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
-          </div>
-          {tier !== "free" && (
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
-              <span>🍽️ AI tạo thực đơn</span><span style={{ color: C.t1, fontWeight: 700 }}>{menuUsed}/{menuLimit}</span>
-            </div>
-            <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (menuUsed / menuLimit) * 100)}%` }} /></div>
-          </div>
-          )}
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: C.t2, marginBottom: 6, fontWeight: 600 }}>
-              <span>💬 AI Chat</span><span style={{ color: C.t1, fontWeight: 700 }}>{chatUsed}/{chatLimit}</span>
-            </div>
-            <div style={{ height: 10, background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 5, background: "linear-gradient(90deg,#36A3FF,#007AFF)", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
-        </div>
-        {tier === "free" && <div style={{ fontSize: 11, color: C.t3, marginTop: 12 }}>🍽️ AI tạo thực đơn tự động — tính năng Premium/Trial. Nâng cấp để dùng thử!</div>}
-      </div>
-
       {tier === "trial" && (
-        <div style={{ textAlign: "center", padding: "8px 0 16px" }}>
-          <div style={{ fontSize: 36, fontWeight: 800, color: C.t1 }}>{trialDays !== null ? Math.max(0, trialDays) : "-"} ngày</div>
-          <div style={{ fontSize: 13, color: C.t2, marginTop: 4 }}>còn lại · đang dùng đầy đủ quyền Premium</div>
+        <div style={{ textAlign: "center", padding: "10px 0 4px" }}>
+          <span style={{ fontSize: 28, fontWeight: 800, color: C.t1 }}>{trialDays !== null ? Math.max(0, trialDays) : "-"}</span>
+          <span style={{ fontSize: 13, color: C.t2, marginLeft: 6 }}>ngày trial còn lại</span>
         </div>
       )}
 
       {tier === "premium" && subDays !== null && subDays <= 7 && (
-        <div style={{ background: C.goldBg, borderRadius: 10, padding: "10px 12px", marginBottom: 14, fontSize: 13, fontWeight: 700, color: "#92400E" }}>
-          🕐 {subDays <= 0 ? "Gói Premium đã hết hạn" : `Còn ${subDays} ngày nữa hết hạn (${fmtDMY(sub.subscription_end_date)})`}
+        <div style={{ background: C.goldBg, borderRadius: 10, padding: "10px 12px", marginTop: 10, fontSize: 13, fontWeight: 700, color: "#92400E" }}>
+          🕐 {subDays <= 0 ? "Gói Premium đã hết hạn" : `Còn ${subDays} ngày nữa hết hạn`}
         </div>
-      )}
-      {tier === "premium" && (subDays === null || subDays > 7) && (
-        <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", marginBottom: 14, fontSize: 13, color: C.t2 }}>🕐 Hết hạn: <b style={{ color: C.t1 }}>{fmtDMY(sub.subscription_end_date)}</b></div>
       )}
 
-      {isAdmin ? (
-        <div style={{ background: C.blueBg, borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, fontWeight: 700, color: C.primary }}>👑 Tài khoản Admin — không cần gia hạn</div>
-      ) : pendingOrder ? (
-        <div style={{ background: C.greenBg, borderRadius: 10, padding: "10px 14px", textAlign: "center" }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#14532D" }}>✓ Đã gửi yêu cầu nâng cấp ({PKG_LABEL[pendingOrder.package] || pendingOrder.package})</div>
-          <div style={{ fontSize: 12, color: "#14532D", marginTop: 2 }}>Chờ Admin duyệt trong ít phút</div>
-        </div>
-      ) : (
-        <button onClick={() => setShowPicker(v => !v)} style={btnStyle}>
+      {!isAdmin && !pendingOrder && (
+        <button onClick={() => setShowPicker(v => !v)} style={{ ...btnStyle, marginTop: 12 }}>
           {tier === "premium" ? "🔄 Gia hạn" : "⭐ Nâng cấp Premium"}
         </button>
+      )}
+
+      {pendingOrder && !isAdmin && (
+        <div style={{ background: C.greenBg, borderRadius: 10, padding: "10px 14px", textAlign: "center", marginTop: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#14532D" }}>✓ Đã gửi yêu cầu ({PKG_LABEL[pendingOrder.package] || pendingOrder.package}) — chờ Admin duyệt</div>
+        </div>
       )}
 
       {showPicker && !pendingOrder && !isAdmin && salesEnabled && (
