@@ -268,8 +268,13 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
               </div>
               <div style={{ flex: 1 }}>
                 <input value={d.name} onChange={e => { const nd = [...dishes]; nd[i].name = e.target.value; setDishes(nd); }}
-                  style={{ fontSize: 15, fontWeight: 600, color: C.t1, border: "none", background: "transparent", width: "100%", padding: 0, fontFamily: "inherit", outline: "none" }} />
-                <div style={{ fontSize: 12, color: C.t3, marginTop: 2 }}>~{d.gram}g</div>
+                  style={{ fontSize: 15, fontWeight: 600, color: C.t1, border: `1px solid ${C.border}`, background: C.surface, borderRadius: 8, width: "100%", padding: "6px 8px", fontFamily: "inherit", outline: "none" }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+                  <span style={{ fontSize: 12, color: C.t3 }}>~</span>
+                  <input type="number" value={d.gram} onChange={e => { const nd = [...dishes]; nd[i].gram = parseInt(e.target.value) || 0; setDishes(nd); }}
+                    style={{ width: 50, fontSize: 12, fontWeight: 600, color: C.t2, border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, padding: "3px 6px", textAlign: "center", fontFamily: "inherit" }} />
+                  <span style={{ fontSize: 12, color: C.t3 }}>g</span>
+                </div>
               </div>
               <button onClick={() => { const nd = dishes.filter((_, j) => j !== i); setDishes(nd); }}
                 style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid #FECACA`, background: "#FEF2F2", color: "#EF4444", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14 }}>✕</button>
