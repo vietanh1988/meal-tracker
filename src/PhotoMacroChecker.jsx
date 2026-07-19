@@ -261,23 +261,23 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
         </div>
         <div style={{ ...body, gap: 10, marginTop: 12 }}>
           {dishes.map((d, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, background: "#fff", borderRadius: 14, border: `1px solid ${C.border}` }}>
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "#fff", borderRadius: 14, border: `1px solid ${C.border}` }}>
               <div onClick={() => { const nd = [...dishes]; nd[i].checked = !nd[i].checked; setDishes(nd); }}
                 style={{ width: 22, height: 22, borderRadius: 6, background: d.checked ? "#059669" : "#E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
                 {d.checked && <span style={{ color: "#fff", fontSize: 12, fontWeight: 800 }}>✓</span>}
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <input value={d.name} onChange={e => { const nd = [...dishes]; nd[i].name = e.target.value; setDishes(nd); }}
-                  style={{ fontSize: 15, fontWeight: 600, color: C.t1, border: `1px solid ${C.border}`, background: C.surface, borderRadius: 8, width: "100%", padding: "6px 8px", fontFamily: "inherit", outline: "none" }} />
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-                  <span style={{ fontSize: 12, color: C.t3 }}>~</span>
-                  <input type="number" value={d.gram} onChange={e => { const nd = [...dishes]; nd[i].gram = parseInt(e.target.value) || 0; setDishes(nd); }}
-                    style={{ width: 50, fontSize: 12, fontWeight: 600, color: C.t2, border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, padding: "3px 6px", textAlign: "center", fontFamily: "inherit" }} />
-                  <span style={{ fontSize: 12, color: C.t3 }}>g</span>
-                </div>
+                  style={{ fontSize: 14, fontWeight: 600, color: C.t1, border: `1px solid ${C.border}`, background: C.surface, borderRadius: 8, width: "100%", padding: "5px 8px", fontFamily: "inherit", outline: "none" }} />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
+                <span style={{ fontSize: 12, color: C.t3 }}>~</span>
+                <input type="number" value={d.gram} onChange={e => { const nd = [...dishes]; nd[i].gram = parseInt(e.target.value) || 0; setDishes(nd); }}
+                  style={{ width: 44, fontSize: 13, fontWeight: 600, color: C.t2, border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, padding: "5px 4px", textAlign: "center", fontFamily: "inherit" }} />
+                <span style={{ fontSize: 12, color: C.t3 }}>g</span>
               </div>
               <button onClick={() => { const nd = dishes.filter((_, j) => j !== i); setDishes(nd); }}
-                style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid #FECACA`, background: "#FEF2F2", color: "#EF4444", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14 }}>✕</button>
+                style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid #FECACA`, background: "#FEF2F2", color: "#EF4444", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 12, flexShrink: 0 }}>✕</button>
             </div>
           ))}
           <button onClick={() => setDishes([...dishes, { name: "", gram: 100, checked: true }])}
@@ -291,7 +291,6 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
       {/* Step 4: Serving size */}
       {step === 4 && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          {dots(3)}
           <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
           <button style={backBtn} onClick={() => setStep(3)}>← Quay lại</button>
           <div style={title}>Chỉnh khẩu phần</div>
