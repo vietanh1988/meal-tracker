@@ -220,7 +220,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { foodDesc, provider = "claude", model, system, messages, maxTokens, feature, image } = await req.json()
+    const { foodDesc, provider = "claude", model, system, messages, maxTokens, feature, image, temperature } = await req.json()
 
     // admin client (service role) — tạo SỚM, dùng chung cho quota check,
     // đọc key Gemini/GPT từ app_settings, và log chi phí.
@@ -263,6 +263,7 @@ serve(async (req) => {
           model: usedModel,
           max_tokens: maxTokens || 1000,
           ...(system ? { system } : {}),
+          ...(temperature !== undefined ? { temperature } : {}),
           messages: msgs,
         }),
       })
@@ -300,7 +301,7 @@ serve(async (req) => {
           body: JSON.stringify({
             ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
             contents,
-            generationConfig: { maxOutputTokens: maxTokens || 1000 },
+            generationConfig: { maxOutputTokens: maxTokens || 1000, ...(temperature !== undefined ? { temperature } : {}) },
           }),
         }
       )
@@ -338,6 +339,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: usedModel,
           ...tokenParam,
+          ...(temperature !== undefined ? { temperature } : {}),
           messages: gptMsgs,
         }),
       })

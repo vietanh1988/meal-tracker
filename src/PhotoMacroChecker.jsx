@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { C, redBtn } from "./theme";
+import { lookupLocalFood } from "./lib/localFoodDB";
 import { authFetch } from "./lib/authFetch";
 import { pickAiModel } from "./lib/aiProvider";
 
@@ -74,6 +75,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
         model,
         feature: "photo_macro",
         image: base64.split(",")[1], // bỏ prefix data:image/...;base64,
+        temperature: 0,
       });
 
       if (res.error) throw new Error(res.error);
@@ -123,7 +125,17 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
   // Step 4 → Step 5: calculate macro
   const handleCalcMacro = () => {
     const items = servings.map(s => {
-      // Scale macro theo gram user sửa vs gram AI ban đầu
+      // Hybrid: nếu DB có thì dùng macro DB (chính xác per 100g verified)
+      const lookup = lookupLocalFood(s.name, s.gram);
+      if (lookup && lookup.cal > 0 && lookup.source === "localDB") {
+        return {
+          name: s.name, gram: s.gram,
+          cal: Math.round(lookup.cal), p: Math.round(lookup.protein || 0),
+          c: Math.round(lookup.carb || 0), f: Math.round(lookup.fat || 0),
+          estimated: false,
+        };
+      }
+      // Fallback: scale AI macro theo gram user sửa
       const ratio = s.aiGram > 0 ? s.gram / s.aiGram : 1;
       return {
         name: s.name, gram: s.gram,
