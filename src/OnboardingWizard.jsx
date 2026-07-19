@@ -245,9 +245,9 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 
 <div style={{display:"flex",flexDirection:"column",gap:10,marginTop:16}}>
 {[
-{name:"Protein",val:macro.protein,pct:Math.min(100,Math.round(macro.protein/macro.calTarget*400)),color:"#007AFF"},
-{name:"Carb",val:macro.carb,pct:Math.min(100,Math.round(macro.carb/macro.calTarget*400)),color:"#5AC8FA"},
-{name:"Fat",val:macro.fat,pct:Math.min(100,Math.round(macro.fat/macro.calTarget*900)),color:"#8E8E93"},
+{name:"Đạm",val:macro.protein,pct:Math.min(100,Math.round(macro.protein/macro.calTarget*400)),color:"#007AFF"},
+{name:"Tinh bột",val:macro.carb,pct:Math.min(100,Math.round(macro.carb/macro.calTarget*400)),color:"#5AC8FA"},
+{name:"Chất béo",val:macro.fat,pct:Math.min(100,Math.round(macro.fat/macro.calTarget*900)),color:"#8E8E93"},
 {name:"Chất xơ",val:macro.fiber,pct:Math.min(100,Math.round(macro.fiber/50*100)),color:"#34C759"},
 ].map(m=><div key={m.name} style={{display:"flex",alignItems:"center",gap:10}}>
 <div style={{fontSize:12,fontWeight:700,color:"#475569",width:55,textAlign:"right"}}>{m.name}</div>

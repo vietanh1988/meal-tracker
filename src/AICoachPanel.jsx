@@ -543,7 +543,7 @@ return <div style={{marginTop:8,background:"#fff",borderRadius:12,border:`1px so
 {/* Macro summary */}
 <div style={{padding:"16px 18px",borderBottom:`1px solid ${C2.border}`}}>
 <div style={{display:"flex",gap:12,marginBottom:12}}>
-{[["Tổng năng lượng",total.cal,target.cal,"#3B82F6",true],["Protein",total.p,target.p,"#8B5CF6",false],["Carb",total.c,target.c,"#F59E0B",false],["Fat",total.f,target.f,"#22C55E",false]].map(([label,v,t,color,isCal])=>
+{[["Tổng năng lượng",total.cal,target.cal,"#3B82F6",true],["Đạm",total.p,target.p,"#8B5CF6",false],["Tinh bột",total.c,target.c,"#F59E0B",false],["Chất béo",total.f,target.f,"#22C55E",false]].map(([label,v,t,color,isCal])=>
 <div key={label} style={{flex:1,minWidth:0}}>
 <div style={{fontSize:10,color:C2.t3,fontWeight:500,marginBottom:3}}>{label}</div>
 <div style={{fontSize:isCal?20:17,fontWeight:700,color:isCal?C2.t1:macroColor(v,t)}}>{isCal?v.toLocaleString():v+"g"}</div>

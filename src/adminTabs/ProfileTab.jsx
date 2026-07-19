@@ -298,9 +298,9 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         <div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:10,display:"flex",alignItems:"center",gap:6}}>🎯 Macro mục tiêu</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
           {[
-            {l:"Protein",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
-            {l:"Carb (tinh bột)",v:`${macro.carb}g`,sub:`${macro.carb*4} cal · ${macro.cRatio}`,c:C.gold},
-            {l:"Fat (chất béo)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
+            {l:"Đạm (Protein)",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
+            {l:"Tinh bột (Carb)",v:`${macro.carb}g`,sub:`${macro.carb*4} cal · ${macro.cRatio}`,c:C.gold},
+            {l:"Chất béo (Fat)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
             {l:"Chất xơ",v:`${macro.fiber}g`,sub:"Khuyến nghị",c:C.green},
           ].map((r,i)=><div key={i} style={{background:"#fff",borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
             <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>{r.l}</div>
@@ -315,9 +315,9 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         <div style={{fontSize:14,fontWeight:800,color:C.primary,marginBottom:10,display:"flex",alignItems:"center",gap:6}}>💪 Macro ngày tập</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
           {[
-            {l:"Protein",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
-            {l:"Carb (tinh bột)",v:`${macro.carb}g`,sub:`${macro.carb*4} cal · ${macro.cRatio}`,c:C.gold},
-            {l:"Fat (chất béo)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
+            {l:"Đạm (Protein)",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
+            {l:"Tinh bột (Carb)",v:`${macro.carb}g`,sub:`${macro.carb*4} cal · ${macro.cRatio}`,c:C.gold},
+            {l:"Chất béo (Fat)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
             {l:"Chất xơ",v:`${macro.fiber}g`,sub:"Khuyến nghị",c:C.green},
           ].map((r,i)=><div key={i} style={{background:"#fff",borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
             <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>{r.l}</div>
@@ -331,9 +331,9 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
         <div style={{fontSize:14,fontWeight:800,color:"#D97706",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>😴 Macro ngày nghỉ</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
           {[
-            {l:"Protein",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
-            {l:"Carb (tinh bột)",v:`${macro.carbRest}g`,sub:`${macro.carbRest*4} cal · ×0.75`,c:C.gold},
-            {l:"Fat (chất béo)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
+            {l:"Đạm (Protein)",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
+            {l:"Tinh bột (Carb)",v:`${macro.carbRest}g`,sub:`${macro.carbRest*4} cal · ×0.75`,c:C.gold},
+            {l:"Chất béo (Fat)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
             {l:"Chất xơ",v:`${Math.round(macro.calRest/1000*14)}g`,sub:"Khuyến nghị",c:C.green},
           ].map((r,i)=><div key={i} style={{background:"#fff",borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
             <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>{r.l}</div>
