@@ -645,6 +645,73 @@ export function getConvenienceScore(foodKey) {
 }
 
 // ------------------------------------------------------------
+// REGION — "vn" | "both" | "intl". Style VN lọc region ∈ ["vn","both"].
+// Cat-level mặc định + override cho món lệch.
+// "both" = dùng phổ biến cả VN lẫn quốc tế (trứng, rau chung...)
+// Food chưa có region → loại khỏi whitelist style VN (an toàn).
+// ------------------------------------------------------------
+const CAT_REGION = {
+  poultry: "both", beef: "both", pork: "both", seafood: "both",
+  egg_dairy: "both", starch: "both", fruit: "both", veg: "both",
+  nuts: "both", sauce: "both", supp: "intl", processed: "vn", drink: "both",
+};
+const REGION_OVERRIDE = {
+  // Starch VN đặc trưng
+  "cơm trắng": "vn", "cơm": "vn", "cơm gạo lứt": "vn", "gạo lứt": "vn",
+  "bún": "vn", "bánh phở": "vn", "hủ tiếu": "vn", "miến": "vn",
+  "bánh cuốn": "vn", "cháo": "vn", "xôi": "vn", "bánh mì": "both",
+  "bánh tráng": "vn",
+  // Starch quốc tế
+  "yến mạch": "intl", "bột yến mạch": "intl", "granola": "intl",
+  "mì ý": "intl", "pasta": "intl", "quinoa": "intl", "bánh mì đen": "intl",
+  // Processed VN
+  "giò": "vn", "chả lụa": "vn", "chả": "vn", "nem": "vn", "patê": "vn",
+  "xúc xích": "both",
+  // Supp
+  "whey": "intl", "whey isolate": "intl", "casein": "intl",
+  "mass gainer": "intl", "creatine": "intl", "bcaa": "intl",
+};
+
+export function getFoodRegion(foodKey) {
+  const key = (foodKey || "").toLowerCase().trim();
+  if (REGION_OVERRIDE[key] !== undefined) return REGION_OVERRIDE[key];
+  const item = LOCAL_FOODS[key];
+  if (!item) return null; // unknown → loại khỏi whitelist VN
+  if (item.region) return item.region; // composite entries đã có inline
+  return CAT_REGION[item.cat] ?? null;
+}
+
+// ------------------------------------------------------------
+// COMPLEXITY — 1=nhanh/mua sẵn, 2=vừa, 3=bữa nấu đầy đủ
+// Style VN sáng cần complexity ≤ 1.
+// Cat-level mặc định + override.
+// ------------------------------------------------------------
+const CAT_COMPLEXITY = {
+  poultry: 2, beef: 2, pork: 2, seafood: 2,
+  egg_dairy: 1, starch: 1, fruit: 1, veg: 2,
+  nuts: 1, sauce: 1, supp: 1, processed: 1, drink: 1,
+};
+const COMPLEXITY_OVERRIDE = {
+  // Đạm nấu lâu
+  "gân bò": 3, "bắp bò": 3, "sườn bò": 3, "sườn heo": 2, "sườn lợn": 2,
+  // Đạm nhanh
+  "trứng gà luộc": 1, "trứng luộc": 1, "cá ngừ hộp": 1, "đậu phụ": 1,
+  // Starch nấu
+  "cơm trắng": 2, "cơm": 2, "cơm gạo lứt": 2,
+  // Rau nhanh
+  "rau sống": 1, "xà lách": 1, "dưa chuột": 1, "cà chua": 1,
+};
+
+export function getFoodComplexity(foodKey) {
+  const key = (foodKey || "").toLowerCase().trim();
+  if (COMPLEXITY_OVERRIDE[key] !== undefined) return COMPLEXITY_OVERRIDE[key];
+  const item = LOCAL_FOODS[key];
+  if (!item) return 2;
+  if (item.complexity !== undefined) return item.complexity; // composite entries
+  return CAT_COMPLEXITY[item.cat] ?? 2;
+}
+
+// ------------------------------------------------------------
 // DISPLAY_MAP — tên món hiển thị trên UI. LOOKUP 1:1 THUẦN,
 // KHÔNG suy luận runtime. Data tĩnh duyệt tay 1 lần: key nguyên
 // liệu → tên món phổ biến nhất trong bữa VN (VD "bí đỏ" →
