@@ -190,7 +190,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
           <div style={title}>📸 Photo Macro Checker</div>
           <div style={desc}>Chụp ảnh bữa ăn — AI nhận diện — xem calo ngay!</div>
         </div>
-        <div style={{ ...body, gap: 16, marginTop: 12 }}>
+        <div style={{ padding: "12px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
           {[
             { icon: "📸", bg: "rgba(124,58,237,0.1)", t: "Chụp ảnh bữa ăn", d: "Chụp ngay hoặc chọn ảnh từ thư viện. Chụp rõ, đủ sáng để AI nhận diện chính xác." },
             { icon: "🤖", bg: "rgba(5,150,105,0.1)", t: "AI nhận diện tự động", d: "AI sẽ liệt kê tên món + ước lượng khẩu phần. Bạn kiểm tra và sửa nếu cần." },
@@ -204,33 +204,31 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
               </div>
             </div>
           ))}
-        </div>
-        <div style={bottomArea}>
-          <button style={mainBtn} onClick={handleOnboarded}>Đã hiểu, bắt đầu!</button>
+          <button style={{ ...mainBtn, marginTop: 8 }} onClick={handleOnboarded}>Đã hiểu, bắt đầu!</button>
         </div>
       </>}
 
       {/* Step 1: Camera */}
       {step === 1 && <>
-        {dots(1)}
         <div style={header}>
+          {dots(1)}
           <button style={backBtn} onClick={onClose}>← Đóng</button>
           <div style={title}>📸 Chụp ảnh bữa ăn</div>
           <div style={desc}>Chụp toàn bộ đĩa/mâm cơm, rõ nét, đủ sáng.</div>
         </div>
-        <div style={{ ...body, alignItems: "center", justifyContent: "center", gap: 20 }}>
+        <div style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
           {error && <div style={{ padding: "10px 14px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, fontSize: 13, color: "#991B1B", width: "100%" }}>⚠️ {error}</div>}
           {imageData ? (
-            <img src={imageData} alt="preview" style={{ width: 220, height: 220, borderRadius: 20, objectFit: "cover", border: `2px solid ${C.border}` }} />
+            <img src={imageData} alt="preview" style={{ width: 240, height: 240, borderRadius: 20, objectFit: "cover", border: `2px solid ${C.border}` }} />
           ) : (
-            <div style={{ width: 220, height: 220, borderRadius: 24, border: `2px dashed ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, color: C.t3 }}>
-              <span style={{ fontSize: 56 }}>📷</span>
-              <span style={{ fontSize: 13 }}>Chưa có ảnh</span>
+            <div style={{ width: 240, height: 240, borderRadius: 24, border: `2px dashed ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, color: C.t3, background: "#fff" }}>
+              <span style={{ fontSize: 64 }}>📷</span>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>Chưa có ảnh</span>
             </div>
           )}
           <div style={{ display: "flex", gap: 12, width: "100%" }}>
             <button onClick={() => cameraRef.current?.click()} style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", background: "#059669", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>📸 Chụp ảnh</button>
-            <button onClick={() => fileRef.current?.click()} style={{ flex: 1, padding: 14, borderRadius: 14, border: `1px solid ${C.border}`, fontSize: 15, fontWeight: 700, cursor: "pointer", background: "#fff", color: C.t2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>🖼️ Thư viện</button>
+            <button onClick={() => fileRef.current?.click()} style={{ flex: 1, padding: 14, borderRadius: 14, border: `1.5px solid ${C.border}`, fontSize: 15, fontWeight: 700, cursor: "pointer", background: "#fff", color: C.t2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>🖼️ Thư viện</button>
           </div>
           <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleCapture} />
           <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleCapture} />
@@ -239,8 +237,8 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
       {/* Step 2: Loading */}
       {step === 2 && <>
-        {dots(2)}
         <div style={header}>
+          {dots(2)}
           <div style={title}>Đang nhận diện...</div>
         </div>
         <div style={{ ...body, alignItems: "center", justifyContent: "center" }}>
@@ -254,8 +252,8 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
       {/* Step 3: Confirm dishes */}
       {step === 3 && <>
-        {dots(2)}
         <div style={header}>
+          {dots(2)}
           <button style={backBtn} onClick={() => { setStep(1); setError(null); }}>← Chụp lại</button>
           <div style={title}>Đây có đúng không?</div>
           <div style={desc}>AI nhận diện được {dishes.length} món. Kiểm tra lại tên, sửa nếu sai hoặc thêm món bị thiếu.</div>
@@ -286,8 +284,8 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
       {/* Step 4: Serving size */}
       {step === 4 && <>
-        {dots(3)}
         <div style={header}>
+          {dots(3)}
           <button style={backBtn} onClick={() => setStep(3)}>← Quay lại</button>
           <div style={title}>Chỉnh khẩu phần</div>
           <div style={desc}>AI đã ước lượng sẵn. Bạn sửa lại nếu thấy chưa đúng.</div>
@@ -320,8 +318,8 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
       {/* Step 5: Results */}
       {step === 5 && results && <>
-        {dots(4)}
         <div style={header}>
+          {dots(4)}
           <button style={backBtn} onClick={() => setStep(4)}>← Sửa khẩu phần</button>
           <div style={title}>Kết quả</div>
         </div>
