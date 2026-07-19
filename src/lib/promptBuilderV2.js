@@ -61,7 +61,8 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
   const avoidList = (avoidFoods || []).filter(k => whitelist.items.some(it => it.key === k));
   if (avoidList.length) prefLines.push(`- HẠN CHẾ lặp món vừa ăn gần đây (ưu tiên chọn khác): ${avoidList.slice(0, 20).join(", ")}`);
 
-  return `Bạn là chuyên gia dinh dưỡng Việt Nam. Soạn thực đơn 1 ngày (${dayType === "train" ? "ngày tập" : "ngày nghỉ"}).
+  const isNoneEx = (profile.exerciseType || "gym") === "none";
+  return `Bạn là chuyên gia dinh dưỡng Việt Nam. Soạn thực đơn 1 ngày (${isNoneEx ? "hôm nay" : dayType === "train" ? "ngày tập" : "ngày nghỉ"}).
 
 USER: ${profile.gender === "male" ? "Nam" : "Nữ"}, mục tiêu ${GOAL_LABEL[goal] || goal}.
 TARGET NGÀY: ~${target.cal} kcal · P ${target.p}g · C ${target.c}g · F ${target.f}g (hệ thống TỰ tính gram từng món — bạn KHÔNG tính gram).

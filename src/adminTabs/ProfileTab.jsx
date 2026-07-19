@@ -283,15 +283,34 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
           {[
             {l:"TDEE",v:`${macro.tdee} cal`,desc:"Calo duy trì",c:C.t1},
             {l:"BMI (chỉ số cơ thể)",v:macro.bmi,desc:macro.bmi<18.5?"Thiếu cân":macro.bmi<25?"Bình thường":"Thừa cân",c:C.gold},
-            {l:"Calo mục tiêu",v:`${macro.calTarget} cal`,desc:profile.goalType==="bulk"?"Tăng cơ +250":profile.goalType==="cut"?"Giảm mỡ -350":"Duy trì",c:C.red},
-            {l:"Calo ngày nghỉ",v:`${macro.calRest} cal`,desc:"Giảm carb, giữ P/F",c:C.blue},
-          ].map((r,i)=><div key={i} style={{background:C.surface,borderRadius:10,padding:"10px 14px",border:`1.5px solid ${C.border}`}}>
+            {l:"Calo mục tiêu",v:`${macro.calTarget} cal`,desc:profile.goalType==="bulk"?"Tăng cơ +250":profile.goalType==="cut"?"Giảm mỡ -350":"Duy trì",c:C.red,span:(profile.exerciseType||"gym")==="none"},
+            ...((profile.exerciseType||"gym")!=="none"?[{l:"Calo ngày nghỉ",v:`${macro.calRest} cal`,desc:"Giảm carb, giữ P/F",c:C.blue}]:[]),
+          ].map((r,i)=><div key={i} style={{background:C.surface,borderRadius:10,padding:"10px 14px",border:`1.5px solid ${C.border}`,...(r.span?{gridColumn:"span 2"}:{})}}>
             <div style={{fontSize:11,fontWeight:700,color:C.t3,textTransform:"uppercase",letterSpacing:"0.05em"}}>{r.l}</div>
             <div style={{fontSize:20,fontWeight:900,color:r.c,marginTop:2}}>{r.v}</div>
             <div style={{fontSize:11,fontWeight:600,color:C.t3,marginTop:2}}>{r.desc}</div>
           </div>)}
         </div>
 
+        {(profile.exerciseType||"gym")==="none"?<>
+        {/* Không tập: 1 section duy nhất */}
+        <div style={{marginTop:20,padding:14,borderRadius:12,border:"1.5px solid rgba(34,197,94,0.2)",background:"rgba(34,197,94,0.02)"}}>
+        <div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:10,display:"flex",alignItems:"center",gap:6}}>🎯 Macro mục tiêu</div>
+        <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
+          {[
+            {l:"Protein",v:`${macro.protein}g`,sub:`${macro.protein*4} cal · ${macro.pRatio}`,c:C.red},
+            {l:"Carb (tinh bột)",v:`${macro.carb}g`,sub:`${macro.carb*4} cal · ${macro.cRatio}`,c:C.gold},
+            {l:"Fat (chất béo)",v:`${macro.fat}g`,sub:`${macro.fat*9} cal · ${macro.fRatio}`,c:C.t1},
+            {l:"Chất xơ",v:`${macro.fiber}g`,sub:"Khuyến nghị",c:C.green},
+          ].map((r,i)=><div key={i} style={{background:"#fff",borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1.5px solid ${C.border}`}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.t3,textTransform:"uppercase"}}>{r.l}</div>
+            <div style={{fontSize:18,fontWeight:900,color:r.c,marginTop:2}}>{r.v}</div>
+            <div style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:2}}>{r.sub}</div>
+          </div>)}
+        </div>
+        </div>
+        </>:<>
+        {/* Tập gym: 2 section ngày tập + ngày nghỉ */}
         <div style={{marginTop:20,padding:14,borderRadius:12,border:`1.5px solid rgba(0,122,255,0.2)`,background:"rgba(0,122,255,0.02)"}}>
         <div style={{fontSize:14,fontWeight:800,color:C.primary,marginBottom:10,display:"flex",alignItems:"center",gap:6}}>💪 Macro ngày tập</div>
         <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8}}>
@@ -323,6 +342,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
           </div>)}
         </div>
         </div>
+        </>}
 
         {(profile.calorieMode||"standard")==="asian"&&<div style={{marginTop:16,padding:"10px 14px",borderRadius:10,background:"#EFF6FF",border:"1px solid #BFDBFE",display:"flex",alignItems:"flex-start",gap:8}}>
           <span style={{fontSize:14,flexShrink:0}}>🇻🇳</span>
@@ -333,7 +353,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
           <span style={{fontSize:12,fontWeight:700,color:"#78350F",lineHeight:1.6}}>
             💡 BMR = {macro.bmr}{(profile.calorieMode||"standard")==="asian"?" (×0.9 Việt Nam)":""} → ×{macro.actMul} = TDEE {macro.tdee} cal.
             {macro.goal==="bulk"?"Tăng cơ":macro.goal==="cut"?"Giảm mỡ":"Duy trì"}: P = {profile.kg}×{macro.pRatio.replace("g/kg","")} = {macro.protein}g, C = {profile.kg}×{macro.cRatio.replace("g/kg","")} = {macro.carb}g, F = {profile.kg}×{macro.fRatio.replace("g/kg","")} = {macro.fat}g.
-            Ngày nghỉ: C giảm → {macro.carbRest}g. Tổng: {macro.calTarget} cal (tập) / {macro.calRest} cal (nghỉ).
+            {(profile.exerciseType||"gym")==="none"?`Tổng: ${macro.calTarget} cal.`:`Ngày nghỉ: C giảm → ${macro.carbRest}g. Tổng: ${macro.calTarget} cal (tập) / ${macro.calRest} cal (nghỉ).`}
           </span>
         </div>
       </div>
