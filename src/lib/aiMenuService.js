@@ -399,24 +399,10 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       }
 
       // Convert sang norm shape — display do CODE tra (AI không đặt tên)
+      const avoidSet = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
+      const styleId = prefs?.style || null;
       const normMeals = val.meals.map(m => {
         const foods = m.foods.map(k => ({ key: k, display: getFoodDisplay(k), role: getFoodRole(k) }));
-        // Fat filler: bữa chính thêm lạc/vừng (món VN thật, có tên) —
-        // engine cần nhóm fat để scale, thiếu là hụt fat cả ngày.
-        // BỎ QUA nếu:
-        // - Bữa có standalone dish (phở/bún/cháo — trọn suất, không kèm lạc)
-        // - Filler food nằm trong danh sách avoid (dị ứng đậu phộng/lạc)
-        // - Style = clean (lạc rang = đồ chế biến)
-        const hasStandalone = foods.some(f => isStandaloneDish(f.key));
-        const filler = AUTO_FAT_FILLER[m.meal_id];
-        const avoidSet = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
-        const styleId = prefs?.style || null;
-        const fillerBlocked = !filler || hasStandalone
-          || avoidSet.has(filler.food)
-          || styleId === "clean";
-        if (MAIN_MEALS.has(m.meal_id) && !fillerBlocked && !foods.some(f => f.role === "fat")) {
-          foods.push({ key: filler.food, display: filler.display, role: "fat" });
-        }
         return {
           meal_id: m.meal_id,
           foods,
@@ -425,7 +411,36 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         };
       });
 
-      // Lớp 2: ENGINE DRY-RUN — chạy thật, số thật, không capacity engine riêng
+      // Lớp 2: ENGINE DRY-RUN lần 1 — chạy TRƯỚC fat filler để đo fat thiếu bao nhiêu
+      const virtualTpl1 = buildVirtualTemplate(normMeals, dayType);
+      const template1 = attachPatternAndDisplay(
+        stripZeroGramItems(applyMealEngineToTemplate(virtualTpl1, target)),
+        { meals: normMeals }
+      );
+      const total1 = sumTemplate(template1);
+
+      // Fat filler: bù theo tổng fat còn thiếu sau dry-run
+      // - Thiếu < 5g → không bù
+      // - Thiếu 5-15g → bù 1 bữa chính
+      // - Thiếu > 15g → bù 2 bữa chính
+      // BỎ QUA bữa nếu: standalone dish, filler bị avoid, style=clean, hoặc bữa đã có fat
+      const fatGap = (target.f || 0) - (total1.f || 0);
+      const fillerSlots = fatGap >= 5 ? (fatGap > 15 ? 2 : 1) : 0;
+      if (fillerSlots > 0) {
+        let filled = 0;
+        for (const m of normMeals) {
+          if (filled >= fillerSlots) break;
+          if (!MAIN_MEALS.has(m.meal_id)) continue;
+          if (m.foods.some(f => f.role === "fat")) continue;
+          if (m.foods.some(f => isStandaloneDish(f.key))) continue;
+          const filler = AUTO_FAT_FILLER[m.meal_id];
+          if (!filler || avoidSet.has(filler.food) || styleId === "clean") continue;
+          m.foods.push({ key: filler.food, display: filler.display, role: "fat" });
+          filled++;
+        }
+      }
+
+      // Lớp 2b: ENGINE DRY-RUN lần 2 — sau fat filler, kiểm tra macro cuối cùng
       const virtualTpl = buildVirtualTemplate(normMeals, dayType);
       const template = attachPatternAndDisplay(
         stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)),
