@@ -209,7 +209,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
       </div>
 
       {resultBanner && (
-        <div style={{ background: resultBanner.status === "confirmed" ? C.greenBg : C.redBg, borderRadius: "0 0 12px 12px", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <div style={{ background: resultBanner.status === "confirmed" ? C.greenBg : C.redBg, borderRadius: 12, padding: "10px 14px", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${resultBanner.status === "confirmed" ? "#A7F3D0" : "#FECACA"}` }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: resultBanner.status === "confirmed" ? "#14532D" : "#7F1D1D" }}>
             {resultBanner.status === "confirmed" ? `🎉 Đơn nâng cấp ${PKG_LABEL[resultBanner.package] || resultBanner.package} đã được duyệt!` : `Đơn bị từ chối. Liên hệ Admin.`}
           </div>
