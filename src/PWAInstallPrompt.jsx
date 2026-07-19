@@ -51,17 +51,33 @@ export default function PWAInstallPrompt() {
       if (isInAppBrowser()) setMode("webview");
       else setMode("ios");
       setShow(true);
+      return;
     }
 
     // Android: listen for beforeinstallprompt
+    let got = false;
     const handler = (e) => {
       e.preventDefault();
       deferredPrompt.current = e;
+      got = true;
       setMode("android");
       setShow(true);
     };
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+
+    // Fallback: nếu 3s không bắt được event → hiện hướng dẫn thủ công
+    const timer = setTimeout(() => {
+      if (!got && !isStandalone()) {
+        if (isInAppBrowser()) setMode("webview_android");
+        else setMode("android_manual");
+        setShow(true);
+      }
+    }, 3000);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleInstall = async () => {
@@ -173,19 +189,45 @@ export default function PWAInstallPrompt() {
           </>}
 
           {/* ===== In-app browser ===== */}
-          {mode === "webview" && <>
+          {(mode === "webview" || mode === "webview_android") && <>
             <div style={{ background: "#FEF3C7", border: "1px solid #FDE68A", borderRadius: 10, padding: "10px 12px", fontSize: 12, color: "#92400E", display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              ⚠️ Bạn đang mở trong ứng dụng khác. Cần mở bằng Safari để cài đặt.
+              ⚠️ Bạn đang mở trong ứng dụng khác. Cần mở bằng {isIOS() ? "Safari" : "Chrome"} để cài đặt.
             </div>
             <div style={iconRow}>
               <div style={appIcon}>🍽️</div>
               <div>
-                <div style={title}>Mở bằng Safari</div>
-                <div style={sub}>Nhấn nút bên dưới để mở trình duyệt Safari</div>
+                <div style={title}>Mở bằng {isIOS() ? "Safari" : "Chrome"}</div>
+                <div style={sub}>Nhấn nút bên dưới để mở trình duyệt</div>
               </div>
             </div>
-            <button style={{ ...primaryBtn, background: "linear-gradient(135deg, #F59E0B, #D97706)" }} onClick={handleOpenSafari}>🧭 Mở bằng Safari</button>
+            <button style={{ ...primaryBtn, background: "linear-gradient(135deg, #F59E0B, #D97706)" }} onClick={handleOpenSafari}>🧭 Mở bằng {isIOS() ? "Safari" : "Chrome"}</button>
             <button style={laterBtn} onClick={handleDismiss}>Để sau</button>
+          </>}
+
+          {/* ===== Android manual (không bắt được beforeinstallprompt) ===== */}
+          {mode === "android_manual" && <>
+            <div style={iconRow}>
+              <div style={appIcon}>🍽️</div>
+              <div>
+                <div style={title}>Cài Fipilot AI</div>
+                <div style={sub}>Thêm vào màn hình chính để truy cập nhanh</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#334155" }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#007AFF", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>1</div>
+                <div>Nhấn <b>⋮</b> (menu 3 chấm) ở góc phải trên</div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#334155" }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#007AFF", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>2</div>
+                <div>Chọn <b>"Thêm vào MH chính"</b> hoặc <b>"Cài đặt ứng dụng"</b></div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#334155" }}>
+                <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#007AFF", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>3</div>
+                <div>Nhấn <b>"Thêm"</b> — xong!</div>
+              </div>
+            </div>
+            <button style={laterBtn} onClick={handleDismiss}>Đã hiểu, để sau</button>
           </>}
         </div>
       </div>
