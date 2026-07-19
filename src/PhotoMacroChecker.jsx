@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { C, redBtn } from "./theme";
-import { lookupLocalFood } from "./lib/localFoodDB";
 import { authFetch } from "./lib/authFetch";
 import { pickAiModel } from "./lib/aiProvider";
 
@@ -63,10 +62,10 @@ export default function PhotoMacroChecker({ onClose, appSettings }) {
       const provider = getVisionProvider(appSettings, aiProvider);
       const model = pickAiModel(provider, { claudeModel: aiModel, geminiModel, gptModel });
       const prompt = `Nhìn ảnh bữa ăn này. Liệt kê TẤT CẢ các món ăn/thức uống bạn nhìn thấy.
-Với mỗi món, ước lượng khối lượng (gram) dựa trên kích thước nhìn thấy.
+Với mỗi món, ước lượng: khối lượng (gram), calo, protein, carb, fat.
 Trả lời ĐÚNG JSON, không có text trước/sau:
-[{"name":"tên món tiếng Việt","gram":số_gram}]
-Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":150}]`;
+[{"name":"tên món tiếng Việt","gram":số,"cal":số,"p":số,"c":số,"f":số}]
+Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"name":"ức gà chiên","gram":150,"cal":280,"p":35,"c":5,"f":14}]`;
 
       // Gửi qua authFetch — server sẽ route tới provider phù hợp
       const res = await authFetch("ai-proxy", {
@@ -92,6 +91,10 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
       const dishList = parsed.map(d => ({
         name: (d.name || "").trim(),
         gram: Math.round(d.gram || 100),
+        cal: Math.round(d.cal || 0),
+        p: Math.round(d.p || 0),
+        c: Math.round(d.c || 0),
+        f: Math.round(d.f || 0),
         checked: true,
       }));
       
@@ -111,7 +114,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
     const confirmed = dishes.filter(d => d.checked);
     const sv = confirmed.map(d => {
       const presets = getPresets(d.name);
-      return { name: d.name, gram: d.gram, aiGram: d.gram, presets };
+      return { name: d.name, gram: d.gram, aiGram: d.gram, presets, cal: d.cal, p: d.p, c: d.c, f: d.f };
     });
     setServings(sv);
     setStep(4);
@@ -120,20 +123,14 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
   // Step 4 → Step 5: calculate macro
   const handleCalcMacro = () => {
     const items = servings.map(s => {
-      const lookup = lookupLocalFood(s.name, s.gram);
-      if (lookup && lookup.cal > 0) {
-        return {
-          name: s.name, gram: s.gram,
-          cal: Math.round(lookup.cal), p: Math.round(lookup.protein || 0),
-          c: Math.round(lookup.carb || 0), f: Math.round(lookup.fat || 0),
-          estimated: false,
-        };
-      }
-      // Fallback: rough estimate per 100g
+      // Scale macro theo gram user sửa vs gram AI ban đầu
+      const ratio = s.aiGram > 0 ? s.gram / s.aiGram : 1;
       return {
         name: s.name, gram: s.gram,
-        cal: Math.round(s.gram * 1.5), p: Math.round(s.gram * 0.1),
-        c: Math.round(s.gram * 0.15), f: Math.round(s.gram * 0.05),
+        cal: Math.round((s.cal || 0) * ratio),
+        p: Math.round((s.p || 0) * ratio),
+        c: Math.round((s.c || 0) * ratio),
+        f: Math.round((s.f || 0) * ratio),
         estimated: true,
       };
     });
@@ -169,13 +166,20 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
   const mainBtn = { width: "100%", padding: 14, borderRadius: 14, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", color: "#fff", background: "linear-gradient(135deg, #059669, #047857)" };
   const outlineBtn = { ...mainBtn, background: "transparent", color: C.t3, border: `1.5px solid ${C.border}`, marginTop: 8 };
 
-  // Step dots
-  const dots = (active) => (
-    <div style={{ display: "flex", alignItems: "center", gap: 0, padding: "16px 20px 8px", flexShrink: 0 }}>
+  // Step bar — ① ② ③ ④ tròn 30px
+  const stepBar = (active) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 0, padding: "8px 0" }}>
       {[1, 2, 3, 4].map((s, i) => (
         <div key={s} style={{ display: "flex", alignItems: "center", flex: i < 3 ? 1 : "none" }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: s < active ? "#059669" : s === active ? "#34d399" : "#CBD5E1", boxShadow: s === active ? "0 0 8px rgba(52,211,153,0.4)" : "none", flexShrink: 0 }} />
-          {i < 3 && <div style={{ flex: 1, height: 2, background: s < active ? "#059669" : "#CBD5E1" }} />}
+          <div style={{
+            width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
+            background: s < active ? "#047857" : s === active ? "#34d399" : "#CBD5E1",
+            color: s <= active ? "#fff" : "#94A3B8",
+            fontSize: 13, fontWeight: 800,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: s === active ? "0 0 10px rgba(52,211,153,0.5)" : "none",
+          }}>{s}</div>
+          {i < 3 && <div style={{ flex: 1, height: 3, background: s < active ? "#047857" : "#E2E8F0", borderRadius: 2 }} />}
         </div>
       ))}
     </div>
@@ -214,7 +218,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
           <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
           <div style={title}>📸 Chụp ảnh bữa ăn</div>
           <div style={desc}>Chụp toàn bộ đĩa/mâm cơm, rõ nét, đủ sáng.</div>
-          <div style={{ marginTop: 12 }}>{dots(1)}</div>
+          <div style={{ marginTop: 12 }}>{stepBar(1)}</div>
         </div>
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
           {error && <div style={{ padding: "10px 14px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, fontSize: 13, color: "#991B1B", width: "100%" }}>⚠️ {error}</div>}
@@ -239,7 +243,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
       {step === 2 && <>
         <div style={header}>
           <div style={title}>Đang nhận diện...</div>
-          <div style={{ marginTop: 12 }}>{dots(2)}</div>
+          <div style={{ marginTop: 12 }}>{stepBar(2)}</div>
         </div>
         <div style={{ ...body, alignItems: "center", justifyContent: "center" }}>
           {imageData && <img src={imageData} alt="analyzing" style={{ width: 200, height: 200, borderRadius: 20, objectFit: "cover", border: `1px solid ${C.border}`, marginBottom: 24 }} />}
@@ -257,7 +261,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
           <button style={backBtn} onClick={() => { setStep(1); setError(null); }}>← Chụp lại</button>
           <div style={title}>Đây có đúng không?</div>
           <div style={desc}>AI nhận diện được {dishes.length} món. Kiểm tra lại tên, sửa nếu sai hoặc thêm món bị thiếu.</div>
-          <div style={{ marginTop: 12 }}>{dots(2)}</div>
+          <div style={{ marginTop: 12 }}>{stepBar(2)}</div>
         </div>
         <div style={{ ...body, gap: 10, marginTop: 12 }}>
           {dishes.map((d, i) => (
@@ -295,7 +299,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
           <button style={backBtn} onClick={() => setStep(3)}>← Quay lại</button>
           <div style={title}>Chỉnh khẩu phần</div>
           <div style={desc}>AI đã ước lượng sẵn. Bạn sửa lại nếu thấy chưa đúng.</div>
-          <div style={{ marginTop: 12 }}>{dots(3)}</div>
+          <div style={{ marginTop: 12 }}>{stepBar(3)}</div>
         </div>
         <div style={{ ...body, gap: 10, marginTop: 12 }}>
           {servings.map((s, i) => (
@@ -329,7 +333,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
           <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
           <button style={backBtn} onClick={() => setStep(4)}>← Sửa khẩu phần</button>
           <div style={title}>Kết quả</div>
-          <div style={{ marginTop: 12 }}>{dots(4)}</div>
+          <div style={{ marginTop: 12 }}>{stepBar(4)}</div>
         </div>
         <div style={{ ...body, gap: 16, marginTop: 12 }}>
           {/* Total card */}
