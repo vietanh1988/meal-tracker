@@ -312,6 +312,29 @@ export const LOCAL_FOODS = {
   "cà phê đen": {p:0.1, c:0, f:0, cal:2, fiber:0, form:"liquid",cat:"drink"},
   "cà phê": {p:0.1, c:0, f:0, cal:2, fiber:0, form:"liquid",cat:"drink"},
   "trà xanh": {p:0, c:0, f:0, cal:1, fiber:0, form:"liquid",cat:"drink"},
+
+  // ==================== 14. MÓN COMPOSITE (per 100g cả tô/đĩa) ====================
+  // Macro tính theo công thức thật (nước dùng + bánh/bún + thịt + rau), per 100g tổng.
+  // form:"composite" — engine dùng trực tiếp, KHÔNG áp cooking modifier.
+  // Standalone → validator chặn không ghép thêm carb/protein rời.
+  "phở bò":       {p:5.5, c:8.2, f:1.8, cal:72, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "phở gà":       {p:5.8, c:8.0, f:1.5, cal:68, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "bún bò huế":   {p:5.0, c:7.5, f:2.5, cal:73, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bún riêu":     {p:4.5, c:7.0, f:2.0, cal:65, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bún chả":      {p:6.0, c:7.8, f:3.5, cal:88, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "bún thịt nướng":{p:5.5, c:8.0, f:3.0, cal:82, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "hủ tiếu nam vang":{p:5.2, c:8.5, f:2.0, cal:73, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bánh canh":    {p:4.8, c:9.0, f:1.5, cal:69, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "mì quảng":     {p:5.0, c:8.5, f:2.5, cal:77, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "cháo gà":      {p:3.5, c:6.5, f:1.0, cal:50, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "cháo thịt bằm":{p:3.0, c:6.5, f:1.5, cal:52, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "xôi xéo":      {p:4.0, c:30.0,f:5.0, cal:182, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "xôi gà":       {p:6.0, c:28.0,f:4.5, cal:178, fiber:0.6, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "xôi lạc":      {p:5.5, c:29.0,f:6.0, cal:192, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "bánh cuốn nhân thịt":{p:5.0, c:14.0,f:2.5, cal:100, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bánh mì thịt": {p:8.0, c:25.0,f:6.0, cal:188, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "cơm tấm":      {p:7.5, c:22.0,f:5.0, cal:165, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "bún đậu mắm tôm":{p:7.0, c:8.0, f:5.5, cal:110, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
 };
 
 // Keys sorted longest first for greedy matching
@@ -485,6 +508,16 @@ const GRAM_LIMIT_OVERRIDE = {
   "khoai lang": { min: 100, max: 400 }, "khoai tây": { min: 100, max: 400 },
   "bánh mì": { min: 30, max: 200 }, "bún": { min: 100, max: 350 }, "mì": { min: 100, max: 300 }, "hủ tiếu": { min: 100, max: 350 }, "bánh cuốn": { min: 150, max: 400 }, "miến": { min: 50, max: 250 }, "bánh phở": { min: 100, max: 350 },
   "cháo": { min: 200, max: 500 }, // 1 tô cháo thường 300-400g, nhiều nước hơn cơm/bún nên sàn/trần cao hơn
+  // Composite dishes — 1 tô/đĩa thật
+  "phở bò": { min: 300, max: 500 }, "phở gà": { min: 300, max: 500 },
+  "bún bò huế": { min: 300, max: 500 }, "bún riêu": { min: 300, max: 500 },
+  "bún chả": { min: 250, max: 450 }, "bún thịt nướng": { min: 250, max: 450 },
+  "hủ tiếu nam vang": { min: 300, max: 500 }, "bánh canh": { min: 300, max: 500 },
+  "mì quảng": { min: 300, max: 450 }, "cháo gà": { min: 250, max: 500 },
+  "cháo thịt bằm": { min: 250, max: 500 },
+  "xôi xéo": { min: 100, max: 250 }, "xôi gà": { min: 100, max: 250 }, "xôi lạc": { min: 100, max: 250 },
+  "bánh cuốn nhân thịt": { min: 150, max: 400 }, "bánh mì thịt": { min: 100, max: 250 },
+  "cơm tấm": { min: 250, max: 450 }, "bún đậu mắm tôm": { min: 250, max: 450 },
   "yến mạch": { min: 10, max: 100 }, "xôi": { min: 80, max: 350 },
   "dầu ăn": { min: 5, max: 30 }, "dầu ô liu": { min: 5, max: 30 }, "dầu mè": { min: 5, max: 20 },
   "bơ đậu phộng": { min: 10, max: 40 }, "hạt điều": { min: 10, max: 40 }, "hạnh nhân": { min: 10, max: 40 },
@@ -555,6 +588,25 @@ const MEAL_OVERRIDE_DATA = {
   "khoai lang":    { sang: 9, phu_sang: 9, phu_chieu: 9 },
   "ngô":           { phu_sang: 9, phu_chieu: 9 },
   "bắp":           { phu_sang: 9, phu_chieu: 9 },
+  // Composite dishes — sáng đặc trưng, trưa/tối tuỳ món
+  "phở bò":        { sang: 10, trua: 7, toi: 6 },
+  "phở gà":        { sang: 10, trua: 7, toi: 6 },
+  "bún bò huế":    { sang: 10, trua: 8, toi: 6 },
+  "bún riêu":      { sang: 9, trua: 8, toi: 5 },
+  "bún chả":       { sang: 4, trua: 10, toi: 7 },
+  "bún thịt nướng":{ sang: 4, trua: 10, toi: 7 },
+  "hủ tiếu nam vang":{ sang: 9, trua: 7, toi: 5 },
+  "bánh canh":     { sang: 8, trua: 8, toi: 6 },
+  "mì quảng":      { sang: 7, trua: 9, toi: 6 },
+  "cháo gà":       { sang: 10, trua: 5, toi: 7 },
+  "cháo thịt bằm": { sang: 10, trua: 5, toi: 7 },
+  "xôi xéo":       { sang: 10, toi: 3 },
+  "xôi gà":        { sang: 10, toi: 3 },
+  "xôi lạc":       { sang: 10, toi: 3 },
+  "bánh cuốn nhân thịt":{ sang: 10, toi: 4 },
+  "bánh mì thịt":  { sang: 10, trua: 6, toi: 4 },
+  "cơm tấm":       { sang: 5, trua: 10, toi: 8 },
+  "bún đậu mắm tôm":{ sang: 3, trua: 9, toi: 7 },
 };
 Object.entries(MEAL_OVERRIDE_DATA).forEach(([k, v]) => {
   if (LOCAL_FOODS[k]) LOCAL_FOODS[k].mealOverride = v;
@@ -640,6 +692,14 @@ const DISPLAY_MAP = {
   "bánh mì": "Bánh mì", "bánh mì đen": "Bánh mì đen", "bún": "Bún",
   "miến": "Miến", "bánh phở": "Phở", "mì": "Mì", "hủ tiếu": "Hủ tiếu",
   "bánh cuốn": "Bánh cuốn", "cháo": "Cháo", "mì ý": "Mì Ý",
+  // COMPOSITE DISHES
+  "phở bò": "Phở bò", "phở gà": "Phở gà", "bún bò huế": "Bún bò Huế",
+  "bún riêu": "Bún riêu", "bún chả": "Bún chả", "bún thịt nướng": "Bún thịt nướng",
+  "hủ tiếu nam vang": "Hủ tiếu Nam Vang", "bánh canh": "Bánh canh",
+  "mì quảng": "Mì Quảng", "cháo gà": "Cháo gà", "cháo thịt bằm": "Cháo thịt bằm",
+  "xôi xéo": "Xôi xéo", "xôi gà": "Xôi gà", "xôi lạc": "Xôi lạc",
+  "bánh cuốn nhân thịt": "Bánh cuốn nhân thịt", "bánh mì thịt": "Bánh mì thịt",
+  "cơm tấm": "Cơm tấm sườn", "bún đậu mắm tôm": "Bún đậu mắm tôm",
   "ngô": "Ngô luộc", "bắp": "Bắp luộc", "xôi": "Xôi", "bánh tráng": "Bánh tráng",
   // FRUIT
   "chuối": "Chuối", "táo": "Táo", "cam": "Cam", "bưởi": "Bưởi", "xoài": "Xoài",
@@ -706,6 +766,11 @@ export function getFoodDisplay(foodKey) {
 // ------------------------------------------------------------
 export const STANDALONE_DISHES = new Set([
   "bún", "miến", "bánh phở", "hủ tiếu", "bánh cuốn", "cháo", "mì ý",
+  // Composite dishes (đã có macro cả tô)
+  "phở bò", "phở gà", "bún bò huế", "bún riêu", "bún chả", "bún thịt nướng",
+  "hủ tiếu nam vang", "bánh canh", "mì quảng", "cháo gà", "cháo thịt bằm",
+  "xôi xéo", "xôi gà", "xôi lạc", "bánh cuốn nhân thịt", "bánh mì thịt",
+  "cơm tấm", "bún đậu mắm tôm",
 ]);
 
 export function isStandaloneDish(foodKey) {
