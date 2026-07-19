@@ -55,6 +55,8 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
   const prefLines = [];
   if (style) prefLines.push(`- Phong cách: ${STYLE_LABEL[style] || style}`);
   if (DIET_LABEL[diet]) prefLines.push(`- Chế độ: ${DIET_LABEL[diet]} — whitelist đã lọc sẵn, cứ chọn thoải mái trong danh sách`);
+  if (goal === "bulk") prefLines.push(`- TĂNG CƠ: ưu tiên carb năng lượng cao (cơm trắng, mì, bánh mì), TRÁNH gạo lứt/bánh mì đen (ít calo, no lâu — khó ăn đủ surplus)`);
+  if (goal === "cut") prefLines.push(`- GIẢM MỠ: ưu tiên carb no lâu low GI (gạo lứt, khoai lang), protein nạc (ức gà, cá), rau xơ cao`);
   if (prefs.avoid?.trim()) prefLines.push(`- KHÔNG dùng (dị ứng): ${prefs.avoid}`);
   const avoidList = (avoidFoods || []).filter(k => whitelist.items.some(it => it.key === k));
   if (avoidList.length) prefLines.push(`- HẠN CHẾ lặp món vừa ăn gần đây (ưu tiên chọn khác): ${avoidList.slice(0, 20).join(", ")}`);

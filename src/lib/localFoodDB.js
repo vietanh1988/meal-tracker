@@ -657,7 +657,7 @@ const CAT_REGION = {
 };
 const REGION_OVERRIDE = {
   // Starch VN đặc trưng
-  "cơm trắng": "vn", "cơm": "vn", "cơm gạo lứt": "vn", "gạo lứt": "vn",
+  "cơm trắng": "vn", "cơm": "vn", "cơm gạo lứt": "both", "gạo lứt": "both",
   "bún": "vn", "bánh phở": "vn", "hủ tiếu": "vn", "miến": "vn",
   "bánh cuốn": "vn", "cháo": "vn", "xôi": "vn", "bánh mì": "both",
   "bánh tráng": "vn",

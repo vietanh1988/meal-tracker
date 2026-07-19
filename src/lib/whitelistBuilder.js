@@ -85,6 +85,12 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     if (v.tier === "occasional") score -= 3; // món đắt — hạ ưu tiên, KHÔNG loại hẳn
     if (goal === "cut" && ["poultry", "seafood", "veg", "egg_dairy"].includes(v.cat)) score += 2;
     if (goal === "bulk" && ["starch", "beef", "pork", "egg_dairy"].includes(v.cat)) score += 2;
+    // Bulk: hạ điểm carb low-cal / no lâu (gạo lứt, khoai lang) — bulk cần cơm trắng, mì, năng lượng cao
+    const BULK_DEMOTE_CARB = new Set(["cơm gạo lứt", "gạo lứt", "bánh mì đen", "quinoa"]);
+    if (goal === "bulk" && BULK_DEMOTE_CARB.has(key)) score -= 4;
+    // Cut: nâng điểm carb no lâu (gạo lứt, khoai lang) — cut cần low GI
+    const CUT_PREFER_CARB = new Set(["cơm gạo lứt", "gạo lứt", "khoai lang"]);
+    if (goal === "cut" && CUT_PREFER_CARB.has(key)) score += 2;
     // VN bannedKeys: hạ điểm mạnh (vẫn trong whitelist nhưng AI ít chọn)
     if (vnBanned && vnBanned.has(key)) score -= 5;
 
