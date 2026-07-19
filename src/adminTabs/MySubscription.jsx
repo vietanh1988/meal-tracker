@@ -174,30 +174,30 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
         </div>
 
         {/* Quota bars */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(59,130,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>📊</div>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(59,130,246,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>📊</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>AI tính macro</div>
-              <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, marginTop: 4, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 3, background: "#3B82F6", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>AI tính macro</div>
+              <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 4, marginTop: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#3B82F6", width: `${Math.min(100, (macroUsed / macroLimit) * 100)}%` }} /></div>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{macroUsed}/{macroLimit}</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{macroUsed}/{macroLimit}</div>
           </div>
           {tier !== "free" && <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(168,85,247,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>✨</div>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(168,85,247,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>✨</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>AI tạo thực đơn</div>
-              <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, marginTop: 4, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 3, background: "#A855F7", width: `${Math.min(100, (menuUsed / menuLimit) * 100)}%` }} /></div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>AI tạo thực đơn</div>
+              <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 4, marginTop: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#A855F7", width: `${Math.min(100, (menuUsed / menuLimit) * 100)}%` }} /></div>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{menuUsed}/{menuLimit}</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{menuUsed}/{menuLimit}</div>
           </div>}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(34,197,94,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>💬</div>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(34,197,94,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>💬</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>AI Chat</div>
-              <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, marginTop: 4, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 3, background: "#22C55E", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>AI Chat</div>
+              <div style={{ height: 8, background: "rgba(255,255,255,0.15)", borderRadius: 4, marginTop: 5, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#22C55E", width: `${Math.min(100, (chatUsed / chatLimit) * 100)}%` }} /></div>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{chatUsed}/{chatLimit}</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{chatUsed}/{chatLimit}</div>
           </div>
         </div>
 
