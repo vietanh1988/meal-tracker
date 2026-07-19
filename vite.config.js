@@ -12,17 +12,17 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "icon-192.png", "icon-512.png"],
       manifest: {
-        name: "Meal Tracker",
-        short_name: "MealTracker",
-        description: "Theo dõi bữa ăn và macro dinh dưỡng",
-        theme_color: "#DC2626",
-        background_color: "#FAFAF9",
+        name: "Fipilot AI - AI Nutrition Coach",
+        short_name: "Fipilot AI",
+        description: "Theo dõi dinh dưỡng thông minh với AI",
+        theme_color: "#007AFF",
+        background_color: "#F8FAFC",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
         icons: [
-          { src: "icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "icon-512.png", sizes: "512x512", type: "image/png" }
+          { src: "icon-192.png?v=3", sizes: "192x192", type: "image/png" },
+          { src: "icon-512.png?v=3", sizes: "512x512", type: "image/png" }
         ]
       },
       injectManifest: {
