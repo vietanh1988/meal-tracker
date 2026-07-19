@@ -44,7 +44,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
     setLoading(true);
     try {
       const [{ data: p }, { data: s }, { data: orders }] = await Promise.all([
-        supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at").eq("id", userId).single(),
+        supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at,ai_photo_count_this_month,ai_photo_count_reset_at").eq("id", userId).single(),
         supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,free_ai_menu_limit,trial_ai_macro_limit,trial_ai_chat_limit,trial_ai_menu_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
         supabase.from("orders").select("id,package,amount,status,created_at,confirmed_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
       ]);
@@ -113,6 +113,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
   const macroLimit = settings?.[`${tier}_ai_macro_limit`] ?? (tier === "premium" ? 1000 : tier === "trial" ? 500 : 100);
   const chatLimit = settings?.[`${tier}_ai_chat_limit`] ?? (tier === "premium" ? 150 : tier === "trial" ? 100 : 20);
   const menuLimit = settings?.[`${tier}_ai_menu_limit`] ?? (tier === "premium" ? 50 : tier === "trial" ? 30 : 5);
+  const photoLimit = settings?.[`${tier}_ai_photo_limit`] ?? (tier === "premium" ? 300 : tier === "trial" ? 100 : 30);
   // Số lượt lưu trong DB chỉ reset khi có LƯỢT GỌI MỚI (server tự tính
   // lại lúc đó) — nếu hôm nay CHƯA gọi gì, DB vẫn giữ số của kỳ trước.
   // Hiển thị phải TỰ kiểm tra "số này còn thuộc kỳ hiện tại không" trước
@@ -122,6 +123,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
   const macroUsed = ((sub.ai_macro_count_reset_at || "").slice(0, 7) === thisMonth) ? (sub.ai_macro_count_this_month || 0) : 0;
   const chatUsed = (sub.ai_chat_count_reset_at === today) ? (sub.ai_chat_count_today || 0) : 0;
   const menuUsed = (sub.ai_menu_count_reset_at === today) ? (sub.ai_menu_count_today || 0) : 0;
+  const photoUsed = ((sub.ai_photo_count_reset_at || "").slice(0, 7) === thisMonth) ? (sub.ai_photo_count_this_month || 0) : 0;
   const trialDays = daysLeft(sub.trial_end_date);
   const subDays = daysLeft(sub.subscription_end_date);
 
@@ -201,6 +203,15 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
               <div style={{ height: 8, background: "rgba(255,255,255,0.2)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#fff", width: `${Math.min(100, chatLimit > 0 ? (chatUsed / chatLimit) * 100 : 0)}%` }} /></div>
             </div>
             <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flexShrink: 0 }}>{chatUsed}<span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>/{chatLimit}</span></div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>📸</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>Chụp ảnh kiểm tra</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: 600, marginTop: 1 }}>Tháng này</div>
+              <div style={{ height: 8, background: "rgba(255,255,255,0.2)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}><div style={{ height: "100%", borderRadius: 4, background: "#fff", width: `${Math.min(100, photoLimit > 0 ? (photoUsed / photoLimit) * 100 : 0)}%` }} /></div>
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", flexShrink: 0 }}>{photoUsed}<span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>/{photoLimit}</span></div>
           </div>
         </div>
 

@@ -99,14 +99,14 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
     return { allowed: false, message: "Yêu cầu không hợp lệ." };
   }
   const FEATURE_TO_KIND: Record<string, string> = {
-    menu_gen: "menu", chat: "chat", macro_lookup: "macro", photo_macro: "macro",
+    menu_gen: "menu", chat: "chat", macro_lookup: "macro", photo_macro: "photo",
   };
   const kind = FEATURE_TO_KIND[feature] || null;
   if (!kind) return { allowed: true }; // weight_advice/ping_test — hợp lệ nhưng chưa có quota
 
   const { data: profile, error: pErr } = await admin
     .from("profiles")
-    .select("tier,is_admin,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at,ai_menu_last_call_at,ai_chat_last_call_at")
+    .select("tier,is_admin,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at,ai_menu_last_call_at,ai_chat_last_call_at,ai_photo_count_this_month,ai_photo_count_reset_at")
     .eq("id", userId)
     .single();
   if (pErr || !profile) return { allowed: true }; // fail-open: lỗi hạ tầng không chặn user
@@ -118,10 +118,10 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
   const { data: appSet } = await admin.from("app_settings").select("value").eq("key", "feature_flags").single();
   let flags: Record<string, boolean> = {};
   try { flags = JSON.parse(appSet?.value || "{}"); } catch (e) { /* fail-open nếu parse lỗi */ }
-  const FLAG_KEY: Record<string, string> = { menu: "ai_menu_gen", chat: "ai_chat", macro: "ai_macro", photo_macro: "photo_macro" };
-  // photo_macro feature: check trực tiếp flag riêng
-  if (feature === "photo_macro" && flags["photo_macro"] === false) {
-    return { allowed: false, message: "Tính năng Photo Macro đang tắt." };
+  const FLAG_KEY: Record<string, string> = { menu: "ai_menu_gen", chat: "ai_chat", macro: "ai_macro", photo: "photo_macro" };
+  // photo feature: check flag riêng
+  if (kind === "photo" && flags["photo_macro"] === false) {
+    return { allowed: false, message: "Tính năng chụp ảnh kiểm tra dinh dưỡng đang tắt." };
   }
   if (flags[FLAG_KEY[kind]] === false) {
     return { allowed: false, message: "Tính năng này đang tạm khoá để bảo trì." };
@@ -160,14 +160,14 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
 
   const { data: settings } = await admin
     .from("subscription_settings")
-    .select("free_ai_macro_limit,free_ai_chat_limit,trial_ai_macro_limit,trial_ai_chat_limit,trial_ai_menu_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit")
+    .select("free_ai_macro_limit,free_ai_chat_limit,trial_ai_macro_limit,trial_ai_chat_limit,trial_ai_menu_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit,free_ai_photo_limit,trial_ai_photo_limit,premium_ai_photo_limit")
     .eq("id", 1)
     .single();
 
   const LIMITS: Record<string, Record<string, number>> = {
-    free:    { macro: settings?.free_ai_macro_limit ?? 100, chat: settings?.free_ai_chat_limit ?? 20, menu: 0 },
-    trial:   { macro: settings?.trial_ai_macro_limit ?? 500, chat: settings?.trial_ai_chat_limit ?? 100, menu: settings?.trial_ai_menu_limit ?? 30 },
-    premium: { macro: settings?.premium_ai_macro_limit ?? 1000, chat: settings?.premium_ai_chat_limit ?? 150, menu: settings?.premium_ai_menu_limit ?? 50 },
+    free:    { macro: settings?.free_ai_macro_limit ?? 100, chat: settings?.free_ai_chat_limit ?? 20, menu: 0, photo: settings?.free_ai_photo_limit ?? 30 },
+    trial:   { macro: settings?.trial_ai_macro_limit ?? 500, chat: settings?.trial_ai_chat_limit ?? 100, menu: settings?.trial_ai_menu_limit ?? 30, photo: settings?.trial_ai_photo_limit ?? 100 },
+    premium: { macro: settings?.premium_ai_macro_limit ?? 1000, chat: settings?.premium_ai_chat_limit ?? 150, menu: settings?.premium_ai_menu_limit ?? 50, photo: settings?.premium_ai_photo_limit ?? 300 },
   };
   const lim = (LIMITS[tier] || LIMITS.free)[kind];
   const upgradeHint = tier === "free" ? " Nâng cấp Premium để có hạn mức cao hơn." : "";
@@ -182,6 +182,16 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
     await admin.from("profiles").update({
       ai_macro_count_this_month: count + 1,
       ai_macro_count_reset_at: sameMonth ? profile.ai_macro_count_reset_at : today,
+    }).eq("id", userId);
+    return { allowed: true };
+  }
+  if (kind === "photo") {
+    const sameMonth = (profile.ai_photo_count_reset_at || "").slice(0, 7) === thisMonth;
+    const count = sameMonth ? (profile.ai_photo_count_this_month || 0) : 0;
+    if (count >= lim) return { allowed: false, message: `Bạn đã dùng hết ${lim} lượt chụp ảnh kiểm tra dinh dưỡng trong tháng này.${upgradeHint}` };
+    await admin.from("profiles").update({
+      ai_photo_count_this_month: count + 1,
+      ai_photo_count_reset_at: sameMonth ? profile.ai_photo_count_reset_at : today,
     }).eq("id", userId);
     return { allowed: true };
   }
