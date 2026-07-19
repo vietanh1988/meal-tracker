@@ -13,7 +13,7 @@
 // Menu lưu Supabase (saveAIMenu) để reload không mất.
 // ============================================================
 
-import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay, isStandaloneDish } from "./localFoodDB";
+import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay, isStandaloneDish, lookupLocalFood } from "./localFoodDB";
 import { buildWhitelist } from "./whitelistBuilder";
 import { buildPromptV2 } from "./promptBuilderV2";
 import { validateMenuV2, checkDryRun } from "./menuValidatorV2";
