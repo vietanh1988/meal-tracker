@@ -179,7 +179,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
   const desc = { fontSize: 14, color: C.t3, marginTop: 6, lineHeight: 1.5 };
   const body = { flex: 1, padding: "0 20px 20px", display: "flex", flexDirection: "column" };
   const bottomArea = { padding: "12px 20px 28px", background: "#fff", borderTop: `1px solid ${C.border}`, flexShrink: 0 };
-  const mainBtn = { width: "100%", padding: 14, borderRadius: 14, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", color: "#fff", background: "linear-gradient(135deg, #059669, #047857)" };
+  const mainBtn = { width: "100%", padding: 14, borderRadius: 14, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", color: "#fff", background: "linear-gradient(135deg, #F97316, #EA580C)" };
   const outlineBtn = { ...mainBtn, background: "transparent", color: C.t3, border: `1.5px solid ${C.border}`, marginTop: 8 };
 
   // Step bar — ① ② ③ ④ tròn 30px
@@ -189,13 +189,13 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
         <div key={s} style={{ display: "flex", alignItems: "center", flex: i < 3 ? 1 : "none" }}>
           <div style={{
             width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
-            background: s < active ? "#047857" : s === active ? "#34d399" : "#CBD5E1",
+            background: s < active ? "#EA580C" : s === active ? "#FDBA74" : "#CBD5E1",
             color: s <= active ? "#fff" : "#94A3B8",
             fontSize: 13, fontWeight: 800,
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: s === active ? "0 0 10px rgba(52,211,153,0.5)" : "none",
           }}>{s}</div>
-          {i < 3 && <div style={{ flex: 1, height: 3, background: s < active ? "#047857" : "#E2E8F0", borderRadius: 2 }} />}
+          {i < 3 && <div style={{ flex: 1, height: 3, background: s < active ? "#EA580C" : "#E2E8F0", borderRadius: 2 }} />}
         </div>
       ))}
     </div>
@@ -247,7 +247,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
             </div>
           )}
           <div style={{ display: "flex", gap: 12, width: "100%" }}>
-            <button onClick={() => cameraRef.current?.click()} style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", background: "#059669", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>📸 Chụp ảnh</button>
+            <button onClick={() => cameraRef.current?.click()} style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", background: "#F97316", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>📸 Chụp ảnh</button>
             <button onClick={() => fileRef.current?.click()} style={{ flex: 1, padding: 14, borderRadius: 14, border: `1.5px solid ${C.border}`, fontSize: 15, fontWeight: 700, cursor: "pointer", background: "#fff", color: C.t2, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit" }}>🖼️ Thư viện</button>
           </div>
           <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleCapture} />
@@ -263,7 +263,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
         </div>
         <div style={{ ...body, alignItems: "center", justifyContent: "center" }}>
           {imageData && <img src={imageData} alt="analyzing" style={{ width: 200, height: 200, borderRadius: 20, objectFit: "cover", border: `1px solid ${C.border}`, marginBottom: 24 }} />}
-          <div style={{ width: 40, height: 40, border: "4px solid #E2E8F0", borderTopColor: "#059669", borderRadius: "50%", animation: "photo-spin 0.8s linear infinite" }} />
+          <div style={{ width: 40, height: 40, border: "4px solid #E2E8F0", borderTopColor: "#F97316", borderRadius: "50%", animation: "photo-spin 0.8s linear infinite" }} />
           <div style={{ fontSize: 15, fontWeight: 600, color: C.t1, marginTop: 16 }}>AI đang phân tích ảnh...</div>
           <div style={{ fontSize: 13, color: C.t3, marginTop: 4 }}>Thường mất 3-5 giây</div>
         </div>
@@ -283,7 +283,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
           {dishes.map((d, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "#fff", borderRadius: 14, border: `1px solid ${C.border}` }}>
               <div onClick={() => { const nd = [...dishes]; nd[i].checked = !nd[i].checked; setDishes(nd); }}
-                style={{ width: 22, height: 22, borderRadius: 6, background: d.checked ? "#059669" : "#E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                style={{ width: 22, height: 22, borderRadius: 6, background: d.checked ? "#F97316" : "#E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
                 {d.checked && <span style={{ color: "#fff", fontSize: 12, fontWeight: 800 }}>✓</span>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -398,7 +398,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
             ))}
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-            <button style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "linear-gradient(135deg, #059669, #047857)", color: "#fff", fontFamily: "inherit" }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
+            <button style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "linear-gradient(135deg, #F97316, #EA580C)", color: "#fff", fontFamily: "inherit" }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
             <button style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "#EF4444", color: "#fff", fontFamily: "inherit" }} onClick={onClose}>Đóng</button>
           </div>
         </div>
