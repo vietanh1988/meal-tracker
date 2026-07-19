@@ -68,7 +68,7 @@ QUY TẮC TỪNG BỮA:
 ${slotLines}
 
 PRIORITY (vi phạm P1 = menu bị loại):
-P1. Chỉ dùng food key CHÍNH XÁC từ WHITELIST (copy nguyên văn, kể cả dấu). Đúng JSON schema. Tuân thủ quy tắc từng bữa. Món đánh dấu [TRỌN SUẤT] (bánh cuốn, phở, bún, cháo...) đã tự đủ tinh bột+đạm — nếu chọn thì KHÔNG ghép thêm carb/protein khác cùng bữa (trái cây/dessert vẫn được).
+P1. Chọn nguyên liệu từ WHITELIST, viết KÈM cách chế biến cụ thể (VD: "ức gà nướng", "đậu phụ chiên", "cá hồi áp chảo", "rau muống xào"). Nếu là món TRỌN SUẤT (phở bò, bún riêu, cháo gà...) thì viết nguyên tên. Đúng JSON schema. Tuân thủ quy tắc từng bữa. Món [TRỌN SUẤT] đã tự đủ tinh bột+đạm — KHÔNG ghép thêm carb/protein khác cùng bữa.
 P2. Tổng macro ước tính (theo khẩu phần thông thường) gần TARGET nhất.
 P3. Hợp phong cách${style ? ` "${STYLE_LABEL[style]}"` : ""}.
 P4. Không lặp nhóm đạm giữa các bữa (gà/bò/heo/cá/tôm/trứng — mỗi nhóm tối đa 1 bữa chính).
@@ -81,9 +81,9 @@ BẢNG ĐIỂM (để bạn tự cân nhắc khi chọn món, KHÔNG viết ra):
 QUAN TRỌNG: Suy nghĩ trong đầu, KHÔNG viết ra nháp/phương án/giải thích/lý do.
 Trả lời NGAY bằng JSON — không có bất kỳ ký tự nào trước dấu { đầu tiên hoặc sau dấu } cuối cùng.
 
-WHITELIST (chỉ chọn từ đây):
+WHITELIST (chọn nguyên liệu từ đây, viết kèm cách chế biến):
 ${wlText}
 
-JSON SCHEMA (foods = mảng food key, dessert chỉ bữa trưa nếu hợp):
-{"meals":[{"meal_id":"sang","foods":["trứng gà","khoai lang"]},{"meal_id":"trua","foods":["cơm trắng","ức gà nướng","rau muống","bí đỏ"],"dessert":"cam"}],"note":"1 câu mô tả thực đơn"}`;
+JSON SCHEMA (foods = tên món đầy đủ kèm cách nấu, dessert chỉ bữa trưa nếu hợp):
+{"meals":[{"meal_id":"sang","foods":["trứng gà luộc","khoai lang luộc"]},{"meal_id":"trua","foods":["cơm trắng","ức gà nướng","rau muống xào","canh bí đỏ"],"dessert":"cam"}],"note":"1 câu mô tả thực đơn"}`;
 }

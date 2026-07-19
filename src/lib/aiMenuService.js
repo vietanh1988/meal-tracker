@@ -393,7 +393,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       const raw = parseMenuJSON(text);
 
       // Lớp 1: key ∈ whitelist, slot rules, diversity — feedback cụ thể
-      const val = validateMenuV2(raw, { mealIds, whitelist });
+      const val = validateMenuV2(raw, { mealIds, whitelist, style: prefs?.style || null });
       if (!val.ok && val.meals.every(m => m.foods.length === 0)) {
         lastErrors = val.errors; continue;
       }
@@ -402,7 +402,15 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       const avoidSet = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
       const styleId = prefs?.style || null;
       const normMeals = val.meals.map(m => {
-        const foods = m.foods.map(k => ({ key: k, display: getFoodDisplay(k), role: getFoodRole(k) }));
+        const foods = m.foods.map(k => {
+          // AI trả tên đầy đủ ("ức gà nướng") → resolve base key cho role
+          const lookup = lookupLocalFood(k, 100);
+          const baseKey = lookup?.key || k;
+          // Display: ưu tiên tên AI trả (capitalize), fallback getFoodDisplay(k)
+          const aiDisplay = k.charAt(0).toUpperCase() + k.slice(1);
+          const display = getFoodDisplay(k) !== k ? getFoodDisplay(k) : aiDisplay;
+          return { key: baseKey, display, role: getFoodRole(baseKey), cookKey: lookup?.cookKey || null, fullName: k };
+        });
         return {
           meal_id: m.meal_id,
           foods,
