@@ -63,10 +63,13 @@ export default function PhotoMacroChecker({ onClose, appSettings }) {
       const provider = getVisionProvider(appSettings, aiProvider);
       const model = pickAiModel(provider, { claudeModel: aiModel, geminiModel, gptModel });
       const prompt = `Nhìn ảnh bữa ăn này. Liệt kê TẤT CẢ các món ăn/thức uống bạn nhìn thấy.
-Với mỗi món, ước lượng: khối lượng (gram), calo, protein, carb, fat.
+Với mỗi món, ước lượng khối lượng (gram) dựa trên kích thước nhìn thấy.
+QUAN TRỌNG: Tên món viết bằng tiếng Việt, tách riêng từng NGUYÊN LIỆU CHÍNH (không gộp). 
+VD: "bò xào hành tây ớt chuông" → tách thành: "thịt bò" 120g, "hành tây" 40g, "ớt chuông" 20g.
+VD: "cơm với thịt kho" → tách: "cơm trắng" 200g, "thịt heo kho" 150g.
 Trả lời ĐÚNG JSON, không có text trước/sau:
-[{"name":"tên món tiếng Việt","gram":số,"cal":số,"p":số,"c":số,"f":số}]
-Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"name":"ức gà chiên","gram":150,"cal":280,"p":35,"c":5,"f":14}]`;
+[{"name":"tên nguyên liệu tiếng Việt","gram":số}]
+Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"thịt bò","gram":120},{"name":"hành tây","gram":40}]`;
 
       // Gửi qua authFetch — server sẽ route tới provider phù hợp
       const res = await authFetch("ai-proxy", {
@@ -93,10 +96,6 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
       const dishList = parsed.map(d => ({
         name: (d.name || "").trim(),
         gram: Math.round(d.gram || 100),
-        cal: Math.round(d.cal || 0),
-        p: Math.round(d.p || 0),
-        c: Math.round(d.c || 0),
-        f: Math.round(d.f || 0),
         checked: true,
       }));
       
@@ -116,7 +115,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
     const confirmed = dishes.filter(d => d.checked);
     const sv = confirmed.map(d => {
       const presets = getPresets(d.name);
-      return { name: d.name, gram: d.gram, aiGram: d.gram, presets, cal: d.cal, p: d.p, c: d.c, f: d.f };
+      return { name: d.name, gram: d.gram, aiGram: d.gram, presets };
     });
     setServings(sv);
     setStep(4);
@@ -125,9 +124,9 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
   // Step 4 → Step 5: calculate macro
   const handleCalcMacro = () => {
     const items = servings.map(s => {
-      // Hybrid: nếu DB có thì dùng macro DB (chính xác per 100g verified)
+      // Luôn tra DB trước — macro verified chính xác
       const lookup = lookupLocalFood(s.name, s.gram);
-      if (lookup && lookup.cal > 0 && lookup.source === "localDB") {
+      if (lookup && lookup.cal > 0) {
         return {
           name: s.name, gram: s.gram,
           cal: Math.round(lookup.cal), p: Math.round(lookup.protein || 0),
@@ -135,14 +134,13 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
           estimated: false,
         };
       }
-      // Fallback: scale AI macro theo gram user sửa
-      const ratio = s.aiGram > 0 ? s.gram / s.aiGram : 1;
+      // Fallback: estimate thô per 100g (average food)
+      // Protein ~10g, Carb ~15g, Fat ~5g per 100g = ~145cal/100g
+      const r = s.gram / 100;
       return {
         name: s.name, gram: s.gram,
-        cal: Math.round((s.cal || 0) * ratio),
-        p: Math.round((s.p || 0) * ratio),
-        c: Math.round((s.c || 0) * ratio),
-        f: Math.round((s.f || 0) * ratio),
+        cal: Math.round(145 * r), p: Math.round(10 * r),
+        c: Math.round(15 * r), f: Math.round(5 * r),
         estimated: true,
       };
     });
