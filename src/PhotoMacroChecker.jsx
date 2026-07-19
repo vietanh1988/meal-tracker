@@ -131,23 +131,24 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"thịt bò","gram":120},{
           name: s.name, gram: s.gram,
           cal: Math.round(lookup.cal), p: Math.round(lookup.protein || 0),
           c: Math.round(lookup.carb || 0), f: Math.round(lookup.fat || 0),
+          fiber: Math.round(lookup.fiber || 0),
           estimated: false,
         };
       }
       // Fallback: estimate thô per 100g (average food)
-      // Protein ~10g, Carb ~15g, Fat ~5g per 100g = ~145cal/100g
       const r = s.gram / 100;
       return {
         name: s.name, gram: s.gram,
         cal: Math.round(145 * r), p: Math.round(10 * r),
         c: Math.round(15 * r), f: Math.round(5 * r),
+        fiber: Math.round(2 * r),
         estimated: true,
       };
     });
 
     const total = items.reduce((acc, it) => ({
-      cal: acc.cal + it.cal, p: acc.p + it.p, c: acc.c + it.c, f: acc.f + it.f,
-    }), { cal: 0, p: 0, c: 0, f: 0 });
+      cal: acc.cal + it.cal, p: acc.p + it.p, c: acc.c + it.c, f: acc.f + it.f, fiber: acc.fiber + (it.fiber || 0),
+    }), { cal: 0, p: 0, c: 0, f: 0, fiber: 0 });
 
     setResults({ total, items });
     setStep(5);
@@ -355,6 +356,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"thịt bò","gram":120},{
                 { v: results.total.p, l: "Protein", color: "#3B82F6" },
                 { v: results.total.c, l: "Carb", color: "#EAB308" },
                 { v: results.total.f, l: "Fat", color: "#EF4444" },
+                { v: results.total.fiber, l: "Fiber", color: "#22C55E" },
               ].map(m => (
                 <div key={m.l} style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 20, fontWeight: 800, color: m.color }}>{m.v}g</div>
@@ -383,6 +385,8 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"thịt bò","gram":120},{
                     <span style={{ color: "#EAB308", fontWeight: 600 }}>C:{it.c}</span>
                     {" "}
                     <span style={{ color: "#EF4444", fontWeight: 600 }}>F:{it.f}</span>
+                    {" "}
+                    <span style={{ color: "#22C55E", fontWeight: 600 }}>Fi:{it.fiber || 0}</span>
                   </div>
                 </div>
               </div>
