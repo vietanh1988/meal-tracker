@@ -124,8 +124,8 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
       if (lookup && lookup.cal > 0) {
         return {
           name: s.name, gram: s.gram,
-          cal: Math.round(lookup.cal), p: Math.round(lookup.p),
-          c: Math.round(lookup.c), f: Math.round(lookup.f),
+          cal: Math.round(lookup.cal), p: Math.round(lookup.protein || 0),
+          c: Math.round(lookup.carb || 0), f: Math.round(lookup.fat || 0),
           estimated: false,
         };
       }
@@ -334,18 +334,18 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
         </div>
         <div style={{ ...body, gap: 16, marginTop: 12 }}>
           {/* Total card */}
-          <div style={{ padding: "24px 20px", background: "linear-gradient(135deg, #ECFDF5, #D1FAE5)", borderRadius: 18, border: "1px solid #6EE7B7", textAlign: "center" }}>
-            <div style={{ fontSize: 42, fontWeight: 900, color: "#059669", lineHeight: 1 }}>{results.total.cal}</div>
-            <div style={{ fontSize: 14, color: "#34D399", fontWeight: 600, marginTop: 4 }}>kcal</div>
+          <div style={{ padding: "24px 20px", background: "linear-gradient(135deg, #0A1628, #162544)", borderRadius: 18, border: "2px solid #007AFF", textAlign: "center" }}>
+            <div style={{ fontSize: 42, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{results.total.cal}</div>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", fontWeight: 600, marginTop: 4 }}>kcal</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 16 }}>
               {[
-                { v: results.total.p, l: "Protein" },
-                { v: results.total.c, l: "Carb" },
-                { v: results.total.f, l: "Fat" },
+                { v: results.total.p, l: "Protein", color: "#3B82F6" },
+                { v: results.total.c, l: "Carb", color: "#EAB308" },
+                { v: results.total.f, l: "Fat", color: "#EF4444" },
               ].map(m => (
                 <div key={m.l} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: C.t1 }}>{m.v}g</div>
-                  <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>{m.l}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: m.color }}>{m.v}g</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{m.l}</div>
                 </div>
               ))}
             </div>
@@ -364,7 +364,13 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{it.cal} kcal</div>
-                  <div style={{ fontSize: 11, color: C.t3, marginTop: 2 }}>P:{it.p} C:{it.c} F:{it.f}</div>
+                  <div style={{ fontSize: 11, marginTop: 2 }}>
+                    <span style={{ color: "#3B82F6", fontWeight: 600 }}>P:{it.p}</span>
+                    {" "}
+                    <span style={{ color: "#EAB308", fontWeight: 600 }}>C:{it.c}</span>
+                    {" "}
+                    <span style={{ color: "#EF4444", fontWeight: 600 }}>F:{it.f}</span>
+                  </div>
                 </div>
               </div>
             ))}
