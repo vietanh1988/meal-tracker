@@ -170,7 +170,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
   // ========== STYLES ==========
   const overlay = { position: "fixed", inset: 0, zIndex: 99998, background: "#F8FAFC", display: "flex", flexDirection: "column", overflowY: "auto" };
   const header = { padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0 };
-  const backBtn = { display: "inline-flex", alignItems: "center", gap: 4, color: C.t3, fontSize: 13, cursor: "pointer", background: "none", border: "none", padding: "4px 0", marginBottom: 8, fontFamily: "inherit" };
+  const backBtn = { display: "inline-flex", alignItems: "center", gap: 4, color: C.primary, fontSize: 14, fontWeight: 700, cursor: "pointer", background: "none", border: "none", padding: "6px 0", marginBottom: 8, fontFamily: "inherit" };
   const title = { fontSize: 20, fontWeight: 800, color: C.t1, lineHeight: 1.3 };
   const desc = { fontSize: 14, color: C.t3, marginTop: 6, lineHeight: 1.5 };
   const body = { flex: 1, padding: "0 20px 20px", display: "flex", flexDirection: "column" };
@@ -392,7 +392,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
           </div>
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
             <button style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "linear-gradient(135deg, #059669, #047857)", color: "#fff", fontFamily: "inherit" }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
-            <button style={{ flex: 1, padding: 14, borderRadius: 14, border: `1.5px solid ${C.border}`, fontSize: 14, fontWeight: 700, cursor: "pointer", background: "#fff", color: C.t2, fontFamily: "inherit" }} onClick={onClose}>Đóng</button>
+            <button style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "#EF4444", color: "#fff", fontFamily: "inherit" }} onClick={onClose}>Đóng</button>
           </div>
         </div>
       </>}
