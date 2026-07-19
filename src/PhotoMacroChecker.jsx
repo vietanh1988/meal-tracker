@@ -64,12 +64,17 @@ export default function PhotoMacroChecker({ onClose, appSettings }) {
       const model = pickAiModel(provider, { claudeModel: aiModel, geminiModel, gptModel });
       const prompt = `Nhìn ảnh bữa ăn này. Liệt kê TẤT CẢ các món ăn/thức uống bạn nhìn thấy.
 Với mỗi món, ước lượng khối lượng (gram) dựa trên kích thước nhìn thấy.
-QUAN TRỌNG: Tên món viết bằng tiếng Việt, tách riêng từng NGUYÊN LIỆU CHÍNH (không gộp). 
-VD: "bò xào hành tây ớt chuông" → tách thành: "thịt bò" 120g, "hành tây" 40g, "ớt chuông" 20g.
-VD: "cơm với thịt kho" → tách: "cơm trắng" 200g, "thịt heo kho" 150g.
+
+NGUYÊN TẮC TÁCH / GIỮ NGUYÊN:
+- Nếu các thành phần nằm RIÊNG BIỆT trên đĩa/khay (nhìn rõ từng loại): TÁCH ra từng nguyên liệu.
+  VD: "bò xào hành tây ớt chuông" → "thịt bò" 120g, "hành tây" 40g, "ớt chuông" 20g
+  VD: "cơm với thịt kho rau luộc" → "cơm trắng" 200g, "thịt heo kho" 100g, "rau muống luộc" 80g
+- Nếu là món TRỘN LẪN / có nước (phở, bún bò, cháo, canh, lẩu, bánh mì kẹp, xôi, bánh cuốn): GIỮ NGUYÊN tên cả món.
+  VD: phở bò → "phở bò" 500g (không tách bánh phở, thịt, nước dùng)
+
+Tên món viết bằng tiếng Việt.
 Trả lời ĐÚNG JSON, không có text trước/sau:
-[{"name":"tên nguyên liệu tiếng Việt","gram":số}]
-Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"thịt bò","gram":120},{"name":"hành tây","gram":40}]`;
+[{"name":"tên tiếng Việt","gram":số}]`;
 
       // Gửi qua authFetch — server sẽ route tới provider phù hợp
       const res = await authFetch("ai-proxy", {
@@ -373,7 +378,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"thịt bò","gram":120},{
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, display: "flex", alignItems: "center", gap: 6 }}>
                     {it.name}
-                    {it.estimated && <span style={{ fontSize: 10, fontWeight: 700, color: "#D97706", background: "rgba(245,158,11,0.12)", padding: "1px 6px", borderRadius: 4 }}>⚠ ước lượng</span>}
+                    {it.estimated && <span style={{ fontSize: 10, fontWeight: 700, color: "#D97706", background: "#FEF3C7", padding: "1px 6px", borderRadius: 4 }}>⚠ ước lượng</span>}
                   </div>
                   <div style={{ fontSize: 12, color: C.t3, marginTop: 2 }}>{it.gram}g</div>
                 </div>
