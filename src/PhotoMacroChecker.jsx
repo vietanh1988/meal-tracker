@@ -160,7 +160,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
   // ========== STYLES ==========
   const overlay = { position: "fixed", inset: 0, zIndex: 99998, background: "#F8FAFC", display: "flex", flexDirection: "column", overflowY: "auto" };
-  const header = { padding: "16px 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0 };
+  const header = { padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0 };
   const backBtn = { display: "inline-flex", alignItems: "center", gap: 4, color: C.t3, fontSize: 13, cursor: "pointer", background: "none", border: "none", padding: "4px 0", marginBottom: 8, fontFamily: "inherit" };
   const title = { fontSize: 20, fontWeight: 800, color: C.t1, lineHeight: 1.3 };
   const desc = { fontSize: 14, color: C.t3, marginTop: 6, lineHeight: 1.5 };
@@ -185,8 +185,8 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
     <div style={overlay}>
       {/* Step 0: Onboarding */}
       {step === 0 && <>
-        <div style={{ padding: "16px 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: 14, right: 16, width: 36, height: 36, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18, color: C.t2 }}>✕</button>
+        <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
           <div style={title}>📸 Photo Macro Checker</div>
           <div style={desc}>Chụp ảnh bữa ăn — AI nhận diện — xem calo ngay!</div>
         </div>
@@ -210,11 +210,11 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
       {/* Step 1: Camera */}
       {step === 1 && <>
-        <div style={{ padding: "16px 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          {dots(1)}
-          <button onClick={onClose} style={{ position: "absolute", top: 14, right: 16, width: 36, height: 36, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18, color: C.t2 }}>✕</button>
+        <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
           <div style={title}>📸 Chụp ảnh bữa ăn</div>
           <div style={desc}>Chụp toàn bộ đĩa/mâm cơm, rõ nét, đủ sáng.</div>
+          <div style={{ marginTop: 12 }}>{dots(1)}</div>
         </div>
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
           {error && <div style={{ padding: "10px 14px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, fontSize: 13, color: "#991B1B", width: "100%" }}>⚠️ {error}</div>}
@@ -238,8 +238,8 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
       {/* Step 2: Loading */}
       {step === 2 && <>
         <div style={header}>
-          {dots(2)}
           <div style={title}>Đang nhận diện...</div>
+          <div style={{ marginTop: 12 }}>{dots(2)}</div>
         </div>
         <div style={{ ...body, alignItems: "center", justifyContent: "center" }}>
           {imageData && <img src={imageData} alt="analyzing" style={{ width: 200, height: 200, borderRadius: 20, objectFit: "cover", border: `1px solid ${C.border}`, marginBottom: 24 }} />}
@@ -252,12 +252,12 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
       {/* Step 3: Confirm dishes */}
       {step === 3 && <>
-        <div style={{ padding: "16px 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          {dots(2)}
-          <button onClick={onClose} style={{ position: "absolute", top: 14, right: 16, width: 36, height: 36, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18, color: C.t2 }}>✕</button>
+        <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
           <button style={backBtn} onClick={() => { setStep(1); setError(null); }}>← Chụp lại</button>
           <div style={title}>Đây có đúng không?</div>
           <div style={desc}>AI nhận diện được {dishes.length} món. Kiểm tra lại tên, sửa nếu sai hoặc thêm món bị thiếu.</div>
+          <div style={{ marginTop: 12 }}>{dots(2)}</div>
         </div>
         <div style={{ ...body, gap: 10, marginTop: 12 }}>
           {dishes.map((d, i) => (
@@ -290,12 +290,13 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
       {/* Step 4: Serving size */}
       {step === 4 && <>
-        <div style={{ padding: "16px 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
+        <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
           {dots(3)}
-          <button onClick={onClose} style={{ position: "absolute", top: 14, right: 16, width: 36, height: 36, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18, color: C.t2 }}>✕</button>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
           <button style={backBtn} onClick={() => setStep(3)}>← Quay lại</button>
           <div style={title}>Chỉnh khẩu phần</div>
           <div style={desc}>AI đã ước lượng sẵn. Bạn sửa lại nếu thấy chưa đúng.</div>
+          <div style={{ marginTop: 12 }}>{dots(3)}</div>
         </div>
         <div style={{ ...body, gap: 10, marginTop: 12 }}>
           {servings.map((s, i) => (
@@ -325,11 +326,11 @@ Ví dụ: [{"name":"cơm trắng","gram":200},{"name":"ức gà chiên","gram":1
 
       {/* Step 5: Results */}
       {step === 5 && results && <>
-        <div style={{ padding: "16px 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          {dots(4)}
-          <button onClick={onClose} style={{ position: "absolute", top: 14, right: 16, width: 36, height: 36, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18, color: C.t2 }}>✕</button>
+        <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
           <button style={backBtn} onClick={() => setStep(4)}>← Sửa khẩu phần</button>
           <div style={title}>Kết quả</div>
+          <div style={{ marginTop: 12 }}>{dots(4)}</div>
         </div>
         <div style={{ ...body, gap: 16, marginTop: 12 }}>
           {/* Total card */}
