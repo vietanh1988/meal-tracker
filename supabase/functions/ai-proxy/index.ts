@@ -263,7 +263,6 @@ serve(async (req) => {
           model: usedModel,
           max_tokens: maxTokens || 1000,
           ...(system ? { system } : {}),
-          ...(temperature !== undefined ? { temperature } : {}),
           messages: msgs,
         }),
       })
@@ -339,7 +338,6 @@ serve(async (req) => {
         body: JSON.stringify({
           model: usedModel,
           ...tokenParam,
-          ...(temperature !== undefined ? { temperature } : {}),
           messages: gptMsgs,
         }),
       })
