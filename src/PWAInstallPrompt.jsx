@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 // ============================================================
 // PWAInstallPrompt — Bottom sheet hướng dẫn cài app
@@ -65,14 +66,14 @@ export default function PWAInstallPrompt() {
     };
     window.addEventListener("beforeinstallprompt", handler);
 
-    // Fallback: nếu 3s không bắt được event → hiện hướng dẫn thủ công
+    // Fallback: nếu 10s không bắt được event → hiện hướng dẫn thủ công
     const timer = setTimeout(() => {
       if (!got && !isStandalone()) {
         if (isInAppBrowser()) setMode("webview_android");
         else setMode("android_manual");
         setShow(true);
       }
-    }, 3000);
+    }, 10000);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
@@ -109,7 +110,8 @@ export default function PWAInstallPrompt() {
   };
   const sheet = {
     background: "#fff", borderRadius: "16px 16px 0 0",
-    padding: "20px 16px 28px", width: "100%",
+    padding: "20px 16px", paddingBottom: "max(28px, env(safe-area-inset-bottom, 28px))", width: "100%",
+    maxWidth: 500, margin: "0 auto",
     boxShadow: "0 -4px 20px rgba(0,0,0,0.12)",
     animation: "pwa-slide-up 0.3s ease",
     position: "relative",
@@ -139,7 +141,7 @@ export default function PWAInstallPrompt() {
     color: "#94A3B8", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginTop: 4,
   };
 
-  return (
+  return createPortal(
     <>
       <style>{`
         @keyframes pwa-fade-in { from { opacity: 0 } to { opacity: 1 } }
@@ -231,6 +233,7 @@ export default function PWAInstallPrompt() {
           </>}
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
