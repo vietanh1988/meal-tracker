@@ -207,14 +207,14 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
       {step === 0 && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
           <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
-          <div style={title}>📸 Photo Macro Checker</div>
+          <div style={title}>📸 Kiểm tra dinh dưỡng</div>
           <div style={desc}>Chụp ảnh bữa ăn — AI nhận diện — xem calo ngay!</div>
         </div>
         <div style={{ padding: "12px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
           {[
             { icon: "📸", bg: "rgba(124,58,237,0.1)", t: "Chụp ảnh bữa ăn", d: "Chụp ngay hoặc chọn ảnh từ thư viện. Chụp rõ, đủ sáng để AI nhận diện chính xác." },
             { icon: "🤖", bg: "rgba(5,150,105,0.1)", t: "AI nhận diện tự động", d: "AI sẽ liệt kê tên món + ước lượng khẩu phần. Bạn kiểm tra và sửa nếu cần." },
-            { icon: "📊", bg: "rgba(245,158,11,0.1)", t: "Xem kết quả macro", d: "Calo, Protein, Carb, Fat — hiển thị ngay. Không lưu vào nhật ký, chỉ kiểm tra nhanh." },
+            { icon: "📊", bg: "rgba(245,158,11,0.1)", t: "Xem kết quả dinh dưỡng", d: "Calo, Đạm, Tinh bột, Chất béo, Chất xơ — hiển thị ngay. Không lưu vào nhật ký, chỉ kiểm tra nhanh." },
           ].map((c, i) => (
             <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: 16, background: "#fff", borderRadius: 14, border: `1px solid ${C.border}` }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: c.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{c.icon}</div>
@@ -358,10 +358,10 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
             <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", fontWeight: 600, marginTop: 4 }}>kcal</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 16 }}>
               {[
-                { v: results.total.p, l: "Protein", color: "#3B82F6" },
-                { v: results.total.c, l: "Carb", color: "#EAB308" },
-                { v: results.total.f, l: "Fat", color: "#EF4444" },
-                { v: results.total.fiber, l: "Fiber", color: "#22C55E" },
+                { v: results.total.p, l: "Đạm", color: "#3B82F6" },
+                { v: results.total.c, l: "Tinh bột", color: "#EAB308" },
+                { v: results.total.f, l: "Chất béo", color: "#EF4444" },
+                { v: results.total.fiber, l: "Chất xơ", color: "#22C55E" },
               ].map(m => (
                 <div key={m.l} style={{ textAlign: "center" }}>
                   <div style={{ fontSize: 20, fontWeight: 800, color: m.color }}>{m.v}g</div>
@@ -385,13 +385,13 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
                 <div style={{ textAlign: "right" }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.t1 }}>{it.cal} kcal</div>
                   <div style={{ fontSize: 11, marginTop: 2 }}>
-                    <span style={{ color: "#3B82F6", fontWeight: 600 }}>P:{it.p}</span>
+                    <span style={{ color: "#3B82F6", fontWeight: 600 }}>Đ:{it.p}</span>
                     {" "}
-                    <span style={{ color: "#EAB308", fontWeight: 600 }}>C:{it.c}</span>
+                    <span style={{ color: "#EAB308", fontWeight: 600 }}>T:{it.c}</span>
                     {" "}
-                    <span style={{ color: "#EF4444", fontWeight: 600 }}>F:{it.f}</span>
+                    <span style={{ color: "#EF4444", fontWeight: 600 }}>B:{it.f}</span>
                     {" "}
-                    <span style={{ color: "#22C55E", fontWeight: 600 }}>Fi:{it.fiber || 0}</span>
+                    <span style={{ color: "#22C55E", fontWeight: 600 }}>X:{it.fiber || 0}</span>
                   </div>
                 </div>
               </div>
