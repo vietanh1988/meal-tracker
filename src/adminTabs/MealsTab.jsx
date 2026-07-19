@@ -424,7 +424,7 @@ const el2=document.getElementById("tpl-week-saved-pc");if(el2){el2.style.display
 const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
 const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
 const gymDays=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
-const mealNameMap={"sang":"Sáng","phu_sang":"Phụ sáng","trua":"Trưa","phu_chieu":"Phụ chiều","pre":"Pre","post":"Post","toi":"Tối"};
+const mealNameMap={"sang":"Sáng","phu_sang":"Phụ sáng","trua":"Trưa","phu_chieu":"Phụ chiều","pre":"Trước tập","post":"Sau tập","toi":"Tối"};
 const savedCount=dayKeys.filter(dk=>{const t=getWeeklyTemplate?getWeeklyTemplate(dk):null;return t&&t.meals&&t.meals.length>0;}).length;
 return <div>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -641,7 +641,7 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 {filtered.length>0?<div style={{display:"flex",flexDirection:"column",gap:8}}>
 {filtered.map(t=>{
 const isExpanded=expandedTpl===t.id;
-const mealNameMap={"sang":"Bữa sáng","phu_sang":"Phụ sáng","trua":"Bữa trưa","phu_chieu":"Phụ chiều","pre":"Pre-workout","post":"Post-workout","toi":"Bữa tối"};
+const mealNameMap={"sang":"Bữa sáng","phu_sang":"Phụ sáng","trua":"Bữa trưa","phu_chieu":"Phụ chiều","pre":"Trước tập","post":"Sau tập","toi":"Bữa tối"};
 // Tính sẵn theo đúng target riêng của user NGAY TỪ LÚC XEM — không phải đợi
 // bấm "Dùng cho hôm nay" mới tính. Đây chỉ là phép toán JS thuần (không
 // gọi mạng/AI gì), macro/100g từng món đã có sẵn trong mẫu — nên tính

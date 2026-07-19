@@ -3,8 +3,8 @@ export const ALL_MEALS=[
   {id:"phu_sang",icon:"🍌",name:"Bữa phụ sáng",short:"Phụ sáng"},
   {id:"trua",icon:"☀️",name:"Bữa trưa",short:"Trưa"},
   {id:"phu_chieu",icon:"🥤",name:"Bữa phụ chiều",short:"Phụ chiều"},
-  {id:"pre",icon:"💪",name:"Pre-workout",short:"Pre"},
-  {id:"post",icon:"🥛",name:"Post-workout",short:"Post"},
+  {id:"pre",icon:"💪",name:"Trước tập",short:"Trước tập"},
+  {id:"post",icon:"🥛",name:"Sau tập",short:"Sau tập"},
   {id:"toi",icon:"🌙",name:"Bữa tối",short:"Tối"},
 ];
 // Default visible meals per day type

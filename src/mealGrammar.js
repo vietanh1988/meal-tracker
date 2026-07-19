@@ -60,14 +60,14 @@ export const SLOT_RULES = {
     hint: "Ăn nhẹ buổi chiều: sữa chua, trái cây, khoai, ngô. 1-2 món gọn.",
   },
   pre: {
-    name: "Pre-workout",
+    name: "Trước tập",
     maxDishes: 2, minDishes: 1,
     need: { carb: 1 },
     complexity: 1,
     hint: "Trước tập ~1h: carb nhanh, nhẹ bụng (chuối, bánh mì, khoai lang). Không đồ béo/khó tiêu.",
   },
   post: {
-    name: "Post-workout",
+    name: "Sau tập",
     maxDishes: 2, minDishes: 1,
     need: { protein: 1 },
     complexity: 1,

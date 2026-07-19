@@ -182,7 +182,7 @@ const defaultIds=["sang","phu_sang","trua","phu_chieu","pre","post","toi"];
 const mc=(()=>{try{return appSettings?.meal_config?JSON.parse(appSettings.meal_config):{train:defaultIds,rest:defaultIds};}catch(e){return{train:defaultIds,rest:defaultIds};}})();
 const ids=mc[isRest?"rest":"train"]||mc.train;
 const ms=getMeals(isRest?"rest":"train").filter(m2=>ids.includes(m2.id));
-const mealNames={sang:"Bữa sáng",phu_sang:"Phụ sáng",trua:"Bữa trưa",phu_chieu:"Phụ chiều",pre:"Pre-workout",post:"Post-workout",toi:"Bữa tối",breakfast:"Bữa sáng",lunch:"Bữa trưa",snack:"Bữa phụ",dinner:"Bữa tối"};
+const mealNames={sang:"Bữa sáng",phu_sang:"Phụ sáng",trua:"Bữa trưa",phu_chieu:"Phụ chiều",pre:"Trước tập",post:"Sau tập",toi:"Bữa tối",breakfast:"Bữa sáng",lunch:"Bữa trưa",snack:"Bữa phụ",dinner:"Bữa tối"};
 const details=ms.filter(m2=>m2.items.length>0).map(m2=>{
 const cal=Math.round(m2.items.reduce((s,i)=>s+(i.cal||0),0));
 // items trong meal_logs lưu key `food` (không phải `name`) — đọc sai
@@ -210,7 +210,7 @@ const days=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
 const tmrKey=days[tmrIdx];
 const tpl=getWeeklyTemplate(tmrKey);
 if(tpl&&tpl.meals){
-const mealNames={sang:"Sáng",phu_sang:"Phụ sáng",trua:"Trưa",phu_chieu:"Phụ chiều",pre:"Pre",post:"Post",toi:"Tối"};
+const mealNames={sang:"Sáng",phu_sang:"Phụ sáng",trua:"Trưa",phu_chieu:"Phụ chiều",pre:"Trước tập",post:"Sau tập",toi:"Tối"};
 const planned=(tpl.meals||[]).filter(mv=>mv&&mv.items&&mv.items.length>0).map(mv=>{
 const cal=Math.round(mv.items.reduce((s,i)=>s+(i.cal||0),0));
 return ` ${mealNames[mv.meal_id]||mv.meal_name||mv.meal_id}: ${mv.items.map(i=>i.food||i.name).join(", ")} → ${cal} cal`;
