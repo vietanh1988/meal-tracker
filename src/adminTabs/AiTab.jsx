@@ -2,7 +2,7 @@ import { C, card, redBtn } from "../theme";
 import { authFetch } from "../lib/authFetch";
 import { pickAiModel } from "../lib/aiProvider";
 
-export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel, setAiModel, geminiModel, setGeminiModel, gptModel, setGptModel, aiConnected, setAiConnected, claudeKey, setClaudeKey, geminiKey, setGeminiKey, gptKey, setGptKey, usdaKey, setUsdaKey}){
+export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel, setAiModel, geminiModel, setGeminiModel, gptModel, setGptModel, aiConnected, setAiConnected, claudeKey, setClaudeKey, geminiKey, setGeminiKey, gptKey, setGptKey, usdaKey, setUsdaKey, appSettings}){
   if(!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
   return (
@@ -126,6 +126,22 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
       {!isAdmin&&(claudeKey||geminiKey||gptKey)&&<div style={{marginTop:12,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1px solid ${C.green}`}}>
         <span style={{fontSize:12,fontWeight:600,color:"#14532D"}}>✅ API đã được admin cấu hình sẵn</span>
       </div>}
+
+      {/* Photo Vision provider override */}
+      {isAdmin&&<>
+        <div style={{marginTop:24,borderTop:`1px solid ${C.border}`,paddingTop:18}}>
+        <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>📸 Photo Macro — AI Vision</div>
+        <div style={{fontSize:12,color:C.t3,marginBottom:10}}>Chọn AI xử lý ảnh cho Photo Macro Checker. Mặc định dùng chung provider AI menu.</div>
+        <select value={appSettings?.photo_vision_provider||"auto"} onChange={async(e)=>{
+          await saveSetting("photo_vision_provider",e.target.value);
+        }} style={{width:"100%",padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C.border}`,fontSize:13,fontWeight:600,fontFamily:"inherit",background:"#fff",color:C.t1,cursor:"pointer"}}>
+          <option value="auto">🔄 Theo AI menu ({providerName})</option>
+          <option value="claude">🟤 Claude (Anthropic)</option>
+          <option value="gemini">🔵 Gemini (Google)</option>
+          <option value="gpt">🟢 GPT (OpenAI)</option>
+        </select>
+        </div>
+      </>}
     </div>
   );
 }

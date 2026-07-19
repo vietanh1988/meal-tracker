@@ -10,6 +10,7 @@ const FLAG_DEFS = [
   { key: "sales_enabled", label: "💰 Bán hàng (gói Premium)", desc: "Cho phép nâng cấp/gia hạn Premium qua chuyển khoản. TẮT = ẩn hẳn form mua, hiện banner miễn phí thay thế", default: false },
   { key: "registration_enabled", label: "📝 Cho phép đăng ký mới", desc: "Tắt tạm khi cần dừng nhận user mới (bảo trì, quá tải...)", default: true },
   { key: "template_library", label: "📚 Kho mẫu", desc: "Hiện tab Kho mẫu trong Bữa ăn + sidebar. TẮT = ẩn hoàn toàn", default: false },
+  { key: "photo_macro", label: "📸 Photo Macro Checker", desc: "Chụp ảnh bữa ăn → AI nhận diện → xem calo nhanh. Mobile only. Giới hạn lượt trong admin AI settings.", default: false },
 ];
 
 // Đọc/ghi appSettings.feature_flags (JSON), dùng chung cơ chế saveSetting() như các trang khác.
