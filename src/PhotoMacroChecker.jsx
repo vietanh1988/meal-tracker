@@ -190,7 +190,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
       {/* Step 0: Onboarding */}
       {step === 0 && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
           <div style={title}>📸 Photo Macro Checker</div>
           <div style={desc}>Chụp ảnh bữa ăn — AI nhận diện — xem calo ngay!</div>
         </div>
@@ -215,7 +215,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
       {/* Step 1: Camera */}
       {step === 1 && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
           <div style={title}>📸 Chụp ảnh bữa ăn</div>
           <div style={desc}>Chụp toàn bộ đĩa/mâm cơm, rõ nét, đủ sáng.</div>
           <div style={{ marginTop: 12 }}>{stepBar(1)}</div>
@@ -257,7 +257,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
       {/* Step 3: Confirm dishes */}
       {step === 3 && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
           <button style={backBtn} onClick={() => { setStep(1); setError(null); }}>← Chụp lại</button>
           <div style={title}>Đây có đúng không?</div>
           <div style={desc}>AI nhận diện được {dishes.length} món. Kiểm tra lại tên, sửa nếu sai hoặc thêm món bị thiếu.</div>
@@ -295,7 +295,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
       {/* Step 4: Serving size */}
       {step === 4 && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
           <button style={backBtn} onClick={() => setStep(3)}>← Quay lại</button>
           <div style={title}>Chỉnh khẩu phần</div>
           <div style={desc}>AI đã ước lượng sẵn. Bạn sửa lại nếu thấy chưa đúng.</div>
@@ -330,7 +330,7 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
       {/* Step 5: Results */}
       {step === 5 && results && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: C.surface, border: `1.5px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: C.t2, zIndex: 2 }}>✕</button>
+          <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
           <button style={backBtn} onClick={() => setStep(4)}>← Sửa khẩu phần</button>
           <div style={title}>Kết quả</div>
           <div style={{ marginTop: 12 }}>{stepBar(4)}</div>
@@ -378,10 +378,10 @@ Ví dụ: [{"name":"cơm trắng","gram":200,"cal":260,"p":5,"c":58,"f":1},{"nam
               </div>
             ))}
           </div>
-        </div>
-        <div style={bottomArea}>
-          <button style={mainBtn} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
-          <button style={outlineBtn} onClick={onClose}>Đóng</button>
+          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+            <button style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "linear-gradient(135deg, #059669, #047857)", color: "#fff", fontFamily: "inherit" }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
+            <button style={{ flex: 1, padding: 14, borderRadius: 14, border: `1.5px solid ${C.border}`, fontSize: 14, fontWeight: 700, cursor: "pointer", background: "#fff", color: C.t2, fontFamily: "inherit" }} onClick={onClose}>Đóng</button>
+          </div>
         </div>
       </>}
     </div>,
