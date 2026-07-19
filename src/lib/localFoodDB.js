@@ -566,11 +566,14 @@ const MEAL_OVERRIDE_DATA = {
   // Món sáng đặc trưng VN — nâng điểm sáng
   "cháo":          { sang: 10, toi: 6 },
   "bánh phở":      { sang: 10 },
-  "bún":           { sang: 9 },
+  "bún":           { sang: 9, pre: 2 },
   "bánh mì":       { sang: 10 },
   "bánh mì đen":   { sang: 9 },
   "xôi":           { sang: 10, toi: 3 },   // tối ăn xôi lạ
   "bánh cuốn":     { sang: 10, toi: 4 },
+  "mì":            { sang: 5, pre: 2, toi: 7 },  // mì nặng bụng, không hợp pre-workout
+  "miến":          { sang: 5, pre: 2 },
+  "hủ tiếu":       { sang: 9, pre: 2 },
   "hủ tiếu":       { sang: 9 },
   "yến mạch":      { sang: 9 },
   "bột yến mạch":  { sang: 9 },
@@ -579,10 +582,10 @@ const MEAL_OVERRIDE_DATA = {
   "chả lụa":       { sang: 8 },
   "cá ngừ hộp":    { sang: 6 },            // bánh mì cá hộp
   // Cấm cơm bữa sáng — văn hóa VN không nấu cơm sáng
-  "cơm trắng":     { sang: 1 },
-  "cơm":           { sang: 1 },
-  "cơm gạo lứt":   { sang: 1 },
-  "gạo lứt":       { sang: 1 },
+  "cơm trắng":     { sang: 1, pre: 2 },
+  "cơm":           { sang: 1, pre: 2 },
+  "cơm gạo lứt":   { sang: 1, pre: 2 },
+  "gạo lứt":       { sang: 1, pre: 2 },
   "mì ý":          { sang: 1 },
   // Bữa phụ chuẩn VN — nâng điểm phụ
   "khoai lang":    { sang: 9, phu_sang: 9, phu_chieu: 9 },
@@ -757,7 +760,7 @@ const DISPLAY_MAP = {
   "khoai sọ": "Khoai sọ luộc", "khoai môn": "Khoai môn luộc",
   "yến mạch": "Yến mạch nấu", "bột yến mạch": "Yến mạch nấu",
   "bánh mì": "Bánh mì", "bánh mì đen": "Bánh mì đen", "bún": "Bún",
-  "miến": "Miến", "bánh phở": "Phở", "mì": "Mì", "hủ tiếu": "Hủ tiếu",
+  "miến": "Miến", "bánh phở": "Phở", "mì": "Mì trứng", "hủ tiếu": "Hủ tiếu",
   "bánh cuốn": "Bánh cuốn", "cháo": "Cháo", "mì ý": "Mì Ý",
   // COMPOSITE DISHES
   "phở bò": "Phở bò", "phở gà": "Phở gà", "bún bò huế": "Bún bò Huế",

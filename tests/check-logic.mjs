@@ -334,7 +334,7 @@ test("mealGrammar: SLOT_RULES đủ 7 bữa + CAT_MEAL_SCORE 13 cat", () => {
 
 test("localFoodDB: metadata V2 — mealOverride, convenience, DISPLAY_MAP", () => {
   assert(SRC.localFoodDB.includes("MEAL_OVERRIDE_DATA"), "Thiếu mealOverride");
-  assert(SRC.localFoodDB.includes('"cơm trắng":     { sang: 1 }'), "Cơm bữa sáng phải bị chặn (sang:1)");
+  assert(SRC.localFoodDB.includes('"cơm trắng":     { sang: 1, pre: 2 }'), "Cơm bữa sáng phải bị chặn (sang:1)");
   assert(SRC.localFoodDB.includes("getConvenienceScore"), "Thiếu convenience score");
   assert(SRC.localFoodDB.includes("DISPLAY_MAP") && SRC.localFoodDB.includes("getFoodDisplay"),
     "Thiếu DISPLAY_MAP — AI không được đặt tên món");
