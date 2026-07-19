@@ -120,8 +120,21 @@ export function LoginScreen({onLogin,appSettings}){
     </div>;
   }
 
+  const isInApp = /FBAN|FBAV|Instagram|Zalo|Line|MicroMessenger|Messenger/i.test(navigator.userAgent || "");
+  const isIOSDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+  const browserName = isIOSDevice ? "Safari" : "Chrome";
+
+  const handleOpenBrowser = () => {
+    window.open(window.location.href, "_system") || window.open(window.location.href, "_blank");
+  };
+
   return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
     <div style={{width:"100%",maxWidth:400}}>
+      {isInApp && <div style={{background:"#FEF3C7",border:"1.5px solid #FDE68A",borderRadius:14,padding:"14px 16px",marginBottom:16,textAlign:"center"}}>
+        <div style={{fontSize:13,fontWeight:700,color:"#92400E",marginBottom:8}}>⚠️ Bạn đang mở trong ứng dụng khác</div>
+        <div style={{fontSize:12,color:"#92400E",marginBottom:12}}>Để đăng nhập và cài app, hãy mở bằng {browserName}</div>
+        <button onClick={handleOpenBrowser} style={{padding:"10px 24px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#F59E0B,#D97706)",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:"inherit"}}>🧭 Mở bằng {browserName}</button>
+      </div>}
       <div style={{textAlign:"center",marginBottom:32}}>
         <img src="/logo.png" alt="Fipilot AI" style={{width:80,height:80,borderRadius:17,objectFit:"cover"}}/>
         <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:12,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
