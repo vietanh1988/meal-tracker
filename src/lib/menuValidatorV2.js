@@ -8,7 +8,7 @@
 // ============================================================
 
 import { LOCAL_FOODS, getFoodRole, isStandaloneDish } from "./localFoodDB";
-import { SLOT_RULES, getMealScore, MIN_SLOT_SCORE } from "../mealGrammar";
+import { SLOT_RULES, getMealScore, MIN_SLOT_SCORE, BASE_RULES } from "../mealGrammar";
 
 // Nhóm đạm để check diversity (P4) — cat là proxy đủ tốt
 const PROTEIN_GROUP = { poultry: "gà", beef: "bò", pork: "heo", seafood: "cá/hải sản", egg_dairy: "trứng/sữa" };
@@ -125,6 +125,28 @@ export function validateMenuV2(raw, { mealIds, whitelist }) {
       if (standalone.length > 1) {
         errors.push(`Bữa "${id}" có ${standalone.length} món trọn suất cùng lúc — chỉ chọn 1.`);
         foods = foods.filter(k => k === standalone[0] || !isStandaloneDish(k));
+      }
+    }
+
+    // R5: Max carb (role=carb) per bữa chính — BASE_RULES.maxCarbPerMeal
+    if (MAIN_MEALS.has(id)) {
+      const carbFoods = foods.filter(k => getFoodRole(k) === "carb" && !isStandaloneDish(k));
+      if (carbFoods.length > BASE_RULES.maxCarbPerMeal) {
+        errors.push(`Bữa "${id}" có ${carbFoods.length} nguồn tinh bột (${carbFoods.join(", ")}) — tối đa ${BASE_RULES.maxCarbPerMeal}. Chỉ giữ 1.`);
+      }
+    }
+    // R6: Max veg (cat=veg) per bữa — BASE_RULES.maxVegPerMeal (rau + canh OK)
+    {
+      const vegFoods = foods.filter(k => LOCAL_FOODS[k]?.cat === "veg");
+      if (vegFoods.length > BASE_RULES.maxVegPerMeal) {
+        errors.push(`Bữa "${id}" có ${vegFoods.length} món rau (${vegFoods.join(", ")}) — tối đa ${BASE_RULES.maxVegPerMeal}.`);
+      }
+    }
+    // R7: Max protein (role=protein) per bữa — BASE_RULES.maxProteinPerMeal
+    {
+      const protFoods = foods.filter(k => getFoodRole(k) === "protein");
+      if (protFoods.length > BASE_RULES.maxProteinPerMeal) {
+        errors.push(`Bữa "${id}" có ${protFoods.length} nguồn đạm (${protFoods.join(", ")}) — tối đa ${BASE_RULES.maxProteinPerMeal}. Giữ 1 chính + 1 phụ.`);
       }
     }
 
