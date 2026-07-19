@@ -2,39 +2,31 @@
 // whitelistBuilder.js — AI Menu V2 Bước 3
 // Lọc LOCAL_FOODS thành whitelist AI được thấy.
 // AI không thể chọn sai thứ nó không nhìn thấy.
-// Pipeline: Diet(HARD) → Supplement(HARD) → Style(ngưỡng) →
+// Pipeline: Diet(HARD) → Supplement(HARD) → Style(HARD) →
 //           avoidFoods(soft) → cap theo score.
 // ============================================================
 
-import { LOCAL_FOODS, getFoodRole, getConvenienceScore } from "./localFoodDB";
-import { getMealScore, MIN_SLOT_SCORE } from "../mealGrammar";
+import { LOCAL_FOODS, getFoodRole, getConvenienceScore, getFoodRegion } from "./localFoodDB";
+import { getMealScore, MIN_SLOT_SCORE, STYLE_CRITERIA } from "../mealGrammar";
 
 // Config — không hardcode trong logic, đổi model chỉ chỉnh đây
 export const AI_LIMITS = {
   maxWhitelistItems: 110,
-  easyConvenienceMin: 6,
 };
 
 // Diet HARD filter — tinh bột nhanh bị loại hẳn khỏi tầm nhìn AI
 const DIET_BLOCK = {
-  keto: ["cơm trắng", "cơm", "cơm gạo lứt", "gạo lứt", "bún", "bánh phở", "xôi", "bánh mì", "bánh mì đen", "mì", "miến", "hủ tiếu", "bánh cuốn", "mì ý", "cháo", "bánh tráng", "đường", "mật ong", "mass gainer", "granola", "granola bar"],
+  keto: ["cơm trắng", "cơm", "cơm gạo lứt", "gạo lứt", "bún", "bánh phở", "xôi", "bánh mì", "bánh mì đen", "mì", "miến", "hủ tiếu", "bánh cuốn", "mì ý", "cháo", "bánh tráng", "đường", "mật ong", "mass gainer", "granola", "granola bar",
+    // Composite starch dishes
+    "phở bò", "phở gà", "bún bò huế", "bún riêu", "bún chả", "bún thịt nướng",
+    "hủ tiếu nam vang", "bánh canh", "mì quảng", "cháo gà", "cháo thịt bằm",
+    "xôi xéo", "xôi gà", "xôi lạc", "bánh cuốn nhân thịt", "bánh mì thịt", "cơm tấm", "bún đậu mắm tôm",
+  ],
   low_carb: ["cơm trắng", "cơm", "bún", "bánh phở", "xôi", "mì", "hủ tiếu", "mì ý", "đường", "mass gainer"],
 };
 
 // Supplement HARD filter — dân VN phổ thông không dùng, mặc định loại
 const SUPPLEMENT_KEYS = ["whey", "bột whey", "whey isolate", "mass gainer", "casein", "protein bar", "bcaa", "creatine"];
-
-// Clean style — loại đồ chiên/chế biến sẵn/béo nặng
-const CLEAN_BLOCK = ["xúc xích", "giò", "chả lụa", "chả", "nem", "patê", "ba chỉ", "ba rọi", "bò viên", "mayonnaise", "đường", "cánh gà", "mì ý", "sầu riêng"];
-
-// VN style — hạ điểm mạnh món tây/không truyền thống để AI ưu tiên
-// cơm/canh/món mặn/rau VN. Không chặn hẳn (vẫn nằm trong whitelist
-// với score thấp — AI có thể chọn nếu hết lựa chọn VN).
-const VN_DEMOTE = new Set([
-  "yến mạch", "bột yến mạch", "granola", "mì ý", "phô mai",
-  "bơ đậu phộng", "cá hồi", "cá ngừ", "tôm hùm",
-  "bánh mì sandwich", "ngũ cốc", "thanh protein",
-]);
 
 // Không đưa vào whitelist cho AI chọn (gia vị/dầu — hệ thống tự thêm)
 const NEVER_LIST = ["dầu ăn", "dầu ô liu", "dầu dừa", "dầu mè", "nước mắm", "xì dầu", "nước tương", "tương ớt", "tỏi", "gừng", "chanh", "đường", "creatine", "bcaa"];
@@ -49,15 +41,32 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
   const avoid = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
   const never = new Set(NEVER_LIST);
   const suppBlock = usesSupplements ? new Set() : new Set(SUPPLEMENT_KEYS);
-  const cleanBlock = style === "clean" ? new Set(CLEAN_BLOCK) : new Set();
+  const styleCfg = STYLE_CRITERIA[style] || {};
 
   let items = [];
   for (const [key, v] of Object.entries(LOCAL_FOODS)) {
     if (never.has(key)) continue;
     if (dietBlock.has(key)) continue;          // HARD
     if (suppBlock.has(key)) continue;          // HARD
-    if (cleanBlock.has(key)) continue;         // SEMI (clean)
-    if (style === "easy" && getConvenienceScore(key) < AI_LIMITS.easyConvenienceMin) continue; // SEMI (easy ngưỡng)
+
+    // ---- STYLE HARD FILTERS ----
+    // VN: food phải có region ∈ ["vn","both"]
+    if (styleCfg.regionFilter) {
+      const region = getFoodRegion(key);
+      if (!region || !styleCfg.regionFilter.includes(region)) continue;
+    }
+    // Clean: cat ∈ bannedCats → loại
+    if (styleCfg.bannedCats && styleCfg.bannedCats.includes(v.cat)) continue;
+    // Clean: thêm block list truyền thống (ba chỉ, đường, processed cụ thể)
+    if (style === "clean") {
+      const cleanExtra = new Set(["ba chỉ", "ba rọi", "mayonnaise", "đường", "sầu riêng", "bò viên", "mì ý"]);
+      if (cleanExtra.has(key)) continue;
+    }
+    // Easy: convenience < minConvenience → loại
+    if (styleCfg.minConvenience && getConvenienceScore(key) < styleCfg.minConvenience) continue;
+    // VN: bannedKeys (trưa/tối sẽ check riêng ở validator, nhưng cũng hạ điểm ở đây)
+    // Không chặn hoàn toàn vì yến mạch VN sáng vẫn OK cho bữa phụ
+    const vnBanned = styleCfg.bannedKeys ? new Set(styleCfg.bannedKeys) : null;
 
     // Score per slot (chỉ slot đang cần) — AI + validator dùng chung
     const slots = {};
@@ -73,11 +82,11 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     // Tổng score để cap: hợp bữa + tiện lợi + goal hint + tránh món cũ
     let score = maxSlotScore + getConvenienceScore(key) * (style === "easy" ? 1 : 0.3);
     if (avoid.has(key)) score -= 6; // soft — vừa ăn gần đây, hạ ưu tiên
-    if (v.tier === "occasional") score -= 3; // món đắt (cá hồi, hạt điều...) — hạ ưu tiên, KHÔNG loại hẳn
+    if (v.tier === "occasional") score -= 3; // món đắt — hạ ưu tiên, KHÔNG loại hẳn
     if (goal === "cut" && ["poultry", "seafood", "veg", "egg_dairy"].includes(v.cat)) score += 2;
     if (goal === "bulk" && ["starch", "beef", "pork", "egg_dairy"].includes(v.cat)) score += 2;
-    // VN style: hạ điểm mạnh món tây → AI ưu tiên cơm/canh/rau VN trước
-    if (style === "vn" && VN_DEMOTE.has(key)) score -= 5;
+    // VN bannedKeys: hạ điểm mạnh (vẫn trong whitelist nhưng AI ít chọn)
+    if (vnBanned && vnBanned.has(key)) score -= 5;
 
     items.push({ key, role: getFoodRole(key), cal: v.cal, p: v.p, c: v.c, f: v.f, slots, _score: score });
   }
