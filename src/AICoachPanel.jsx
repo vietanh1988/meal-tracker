@@ -264,10 +264,11 @@ LƯU Ý QUAN TRỌNG:
 - Khi user hỏi "ngày mai ăn gì", dùng MACRO NGÀY MAI để gợi ý
 
 QUY TẮC GỢI Ý MÓN ĂN (BẮT BUỘC):
-1. LUÔN gợi ý từ KHO MÓN ĂN CỦA USER trước — dùng ĐÚNG số calo/macro trong kho, KHÔNG tự tính lại
-2. Khi gợi ý, ghi rõ: "Theo kho của anh, [món] = [X] cal/[Y]g"
-3. Chỉ gợi ý món NGOÀI kho khi: user hỏi món cụ thể không có trong kho, hoặc kho không đủ đa dạng
-4. Khi gợi ý món ngoài kho, ghi rõ: "Món này chưa có trong kho, calo ước tính ~[X] cal"
+1. Gợi ý BỮA ĂN CỤ THỂ, THỰC TẾ kiểu Việt Nam — VD: "Sáng nay anh có thể ăn phở bò (1 tô vừa ~450 cal), hoặc 2 trứng luộc + 1 củ khoai lang (~350 cal)"
+2. Ưu tiên gợi ý từ KHO MÓN ĂN CỦA USER nếu có — nhưng KHÔNG ghi "theo kho của anh", KHÔNG liệt kê macro per 100g. Chỉ ghi tổng calo ước tính cho khẩu phần gợi ý
+3. Gợi ý 2-3 phương án bữa ăn hoàn chỉnh (không liệt kê nguyên liệu rời rạc), mỗi phương án ghi tổng calo
+4. Giọng văn TỰ NHIÊN như HLV dinh dưỡng nói chuyện, KHÔNG như đọc database
+5. Khi gợi ý bữa sáng VN: phở, bún, bánh mì, xôi, cháo, trứng+khoai — KHÔNG cơm+canh+món mặn (không ai nấu cơm sáng)
 5. KHÔNG BAO GIỜ tự bịa số calo — nếu không chắc, nói "mình không chắc calo chính xác, anh nên kiểm tra lại"`;
 };
 
@@ -508,8 +509,8 @@ return <div>
 ...(profile?.goalType==="cut"&&(profile?.dietStrategy||"balanced")!=="balanced"?[{low_carb:"🥗 Low-carb",keto:"🥗 Keto"}[profile?.dietStrategy]]:[]),
 (profile?.exerciseType||"gym")==="none"?"📋 Hôm nay":(todayData?.dayType==="train"?"🏋️ Ngày tập":"😴 Ngày nghỉ"),
 ...((profile?.calorieMode||"standard")==="asian"?["🇻🇳 VN"]:[]),
-`${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;const eaten=todayData?.cal||0;const deficit=tgt-eaten;return eaten===0?"chưa ăn":deficit>0?`-${deficit}`:deficit<0?`+${Math.abs(deficit)}`:"✓";})()} cal`
-].map((tag,i)=>{const isCalTag=tag.endsWith("cal");const calColor=isCalTag?(tag.includes("chưa")?"#F59E0B":tag.startsWith("-")?"#EF4444":tag.startsWith("+")?"#EF4444":"#22C55E"):"";return <span key={i} style={{fontSize:10,padding:"2px 6px",background:isCalTag&&calColor?`${calColor}15`:C2.surface,borderRadius:4,color:isCalTag&&calColor?calColor:C2.t2,fontWeight:600}}>{tag}</span>})}
+`${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;const eaten=todayData?.cal||0;const deficit=tgt-eaten;return eaten===0?`0/${tgt}`:deficit>0?`${eaten}/${tgt}`:deficit<0?`${eaten}/${tgt}`:"✓";})()} cal`
+].map((tag,i)=>{const isCalTag=tag.endsWith("cal");const calColor=isCalTag?(tag.startsWith("0/")?"#F59E0B":tag.includes("✓")?"#22C55E":"#3B82F6"):"";return <span key={i} style={{fontSize:10,padding:"2px 6px",background:isCalTag&&calColor?`${calColor}15`:C2.surface,borderRadius:4,color:isCalTag&&calColor?calColor:C2.t2,fontWeight:600}}>{tag}</span>})}
 </div>
 
 {/* Chat body */}
