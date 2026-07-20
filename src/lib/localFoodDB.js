@@ -47,6 +47,7 @@ export const COOK_MODIFIERS = {
   // Sấy — mất nước hoàn toàn, macro × ~3
   "sấy": {p:0, c:0, f:0, cal:0, note:"multiply_3x"},
   "sấy khô": {p:0, c:0, f:0, cal:0, note:"multiply_3x"},
+  "khô": {p:0, c:0, f:0, cal:0, note:"multiply_3x"},
 
   // Rang — hạt
   "rang": {p:0, c:0, f:2, cal:20},
@@ -98,6 +99,7 @@ export const LOCAL_FOODS = {
   "sườn bò": {p:17.5, c:0, f:22.6, cal:274, fiber:0, form:"raw", cat:"beef"},
   "thịt bò": {p:20.0, c:0, f:12.0, cal:192, fiber:0, form:"raw", cat:"beef"},
   "bò viên": {p:14.0, c:3.0, f:8.0, cal:140, fiber:0, form:"cooked",cat:"beef"},
+  "bò khô": {p:55.0, c:8.0, f:10.0, cal:350, fiber:0, form:"cooked",cat:"beef"},
 
   // ==================== 3. THỊT HEO ====================
   "thịt heo nạc":{p:27.3, c:0, f:3.5, cal:143, fiber:0, form:"raw", cat:"pork"},
@@ -410,7 +412,9 @@ function scaleFood(base, foodKey, gram, cookKey) {
   // như dạng sống, chỉ có tên hiển thị đổi theo cách chế biến).
   const isWaterLossMod = cookKey && WATER_LOSS_CONCENTRATION_MODIFIERS.has(cookKey);
   const shouldSkipMod = isWaterLossMod && NON_MEAT_CATEGORIES.has(base.cat);
-  const mod = (cookKey && !shouldSkipMod) ? COOK_MODIFIERS[cookKey] : null;
+  // Skip modifier nếu food đã cooked + modifier là multiply_3x (tránh nhân đôi — VD "bò khô" đã có macro sấy, "bò khô lát" không nên x3 thêm)
+  const isAlreadyCooked = base.form === "cooked";
+  const mod = (cookKey && !shouldSkipMod && !(isAlreadyCooked && COOK_MODIFIERS[cookKey]?.note === "multiply_3x")) ? COOK_MODIFIERS[cookKey] : null;
 
   // Base per 100g
   let p = base.p;
@@ -747,7 +751,7 @@ const DISPLAY_MAP = {
   // BEEF
   "thăn bò": "Bò xào", "bắp bò": "Bắp bò luộc", "nạm bò": "Nạm bò kho",
   "gân bò": "Gân bò hầm", "thịt bò xay": "Bò xay xào", "sườn bò": "Sườn bò nướng",
-  "thịt bò": "Bò xào", "bò viên": "Bò viên",
+  "thịt bò": "Bò xào", "bò viên": "Bò viên", "bò khô": "Bò khô",
   // PORK
   "thịt heo nạc": "Thịt heo luộc", "thịt lợn nạc": "Thịt lợn luộc",
   "ba chỉ": "Ba chỉ luộc", "ba rọi": "Ba rọi luộc",
