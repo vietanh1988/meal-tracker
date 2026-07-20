@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/((?!assets|og-image|logo|favicon|apple-touch-icon|manifest|robots|sw).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
