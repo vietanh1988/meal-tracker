@@ -292,7 +292,8 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
                 <span style={{ fontSize: 12, color: C.t3 }}>~</span>
-                <input type="number" value={d.gram} onChange={e => { const nd = [...dishes]; nd[i].gram = parseInt(e.target.value) || 0; setDishes(nd); }}
+                <input inputMode="numeric" pattern="[0-9]*" value={d.gram || ""} onChange={e => { const nd = [...dishes]; nd[i].gram = parseInt(e.target.value.replace(/^0+/, "")) || 0; setDishes(nd); }}
+                  onFocus={e => { if (e.target.value === "0") e.target.value = ""; }}
                   style={{ width: 44, fontSize: 13, fontWeight: 600, color: C.t2, border: `1px solid ${C.border}`, background: C.surface, borderRadius: 6, padding: "5px 4px", textAlign: "center", fontFamily: "inherit" }} />
                 <span style={{ fontSize: 12, color: C.t3 }}>g</span>
               </div>
@@ -325,7 +326,8 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
                 <span style={{ fontSize: 11, color: "#D97706", background: "rgba(245,158,11,0.12)", padding: "2px 8px", borderRadius: 6, fontWeight: 600 }}>AI ~{s.aiGram}g</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <input type="number" value={s.gram} onChange={e => { const ns = [...servings]; ns[i].gram = parseInt(e.target.value) || 0; setServings(ns); }}
+                <input inputMode="numeric" pattern="[0-9]*" value={s.gram || ""} onChange={e => { const ns = [...servings]; ns[i].gram = parseInt(e.target.value.replace(/^0+/, "")) || 0; setServings(ns); }}
+                  onFocus={e => { if (e.target.value === "0") e.target.value = ""; }}
                   style={{ width: 56, padding: "10px 4px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.t1, fontSize: 15, fontWeight: 700, textAlign: "center", fontFamily: "inherit" }} />
                 <span style={{ color: C.t3, fontSize: 13, flexShrink: 0 }}>g</span>
                 <span style={{ color: C.t3, fontSize: 12, flexShrink: 0 }}>hoặc</span>
