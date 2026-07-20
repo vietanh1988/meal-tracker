@@ -42,14 +42,36 @@ export default function PhotoMacroChecker({ onClose, appSettings }) {
     setStep(1);
   };
 
+  // Resize image to max 1024px to save tokens + speed up
+  const resizeImage = (dataUrl, maxSize = 1024) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) { height = Math.round(height * maxSize / width); width = maxSize; }
+          else { width = Math.round(width * maxSize / height); height = maxSize; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.src = dataUrl;
+    });
+  };
+
   // Step 1: Capture image
-  const handleCapture = (e) => {
+  const handleCapture = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      setImageData(reader.result);
-      analyzeImage(reader.result);
+    reader.onload = async () => {
+      const resized = await resizeImage(reader.result);
+      setImageData(resized);
+      analyzeImage(resized);
     };
     reader.readAsDataURL(file);
   };
