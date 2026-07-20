@@ -72,15 +72,6 @@ export default function App(){
   const [showAICoach,setShowAICoach]=useState(false);
   const [showPhotoMacro,setShowPhotoMacro]=useState(false);
   const [showFeedbackPrompt,setShowFeedbackPrompt]=useState(false);
-  useEffect(()=>{
-    if (isAdmin) return;
-    const prompted = localStorage.getItem("feedback_prompted");
-    if (prompted) return;
-    let firstVisit = localStorage.getItem("first_visit_date");
-    if (!firstVisit) { localStorage.setItem("first_visit_date", new Date().toISOString()); return; }
-    const days = (Date.now() - new Date(firstVisit).getTime()) / 86400000;
-    if (days >= 3) { setTimeout(()=>setShowFeedbackPrompt(true), 5000); }
-  },[isAdmin]);
   const [aiFabHidden,setAiFabHidden]=useState(false);
   const scrollHideTimerRef=useRef(null);
   useEffect(()=>{
@@ -96,6 +87,15 @@ export default function App(){
   const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id,loading);
   const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getTodayMeals,hasMealsToday,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
+  useEffect(()=>{
+    if (isAdmin) return;
+    const prompted = localStorage.getItem("feedback_prompted");
+    if (prompted) return;
+    let firstVisit = localStorage.getItem("first_visit_date");
+    if (!firstVisit) { localStorage.setItem("first_visit_date", new Date().toISOString()); return; }
+    const days = (Date.now() - new Date(firstVisit).getTime()) / 86400000;
+    if (days >= 3) { setTimeout(()=>setShowFeedbackPrompt(true), 5000); }
+  },[isAdmin]);
   const flags=parseFeatureFlags(appSettings);
   const aiAccess=getAIMenuAccess(profile,appSettings);
   const macro=calcMacro(profile||defaultProfile);
