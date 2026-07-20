@@ -199,7 +199,7 @@ export default function FeedbackTab({ user, isAdmin }) {
   };
 
   return (
-    <div>
+    <div style={{ maxWidth: 800, margin: "0 auto" }}>
       {/* Segment tabs */}
       <div style={{ display: "flex", margin: "0 0 14px", background: C.surface, borderRadius: 10, padding: 3 }}>
         {!isAdmin && <>
