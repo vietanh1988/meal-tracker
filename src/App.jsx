@@ -498,6 +498,15 @@ export default function App(){
         <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} onApply={handleApplyAIMenuPC} onClose={()=>setShowAIMenuPC(false)}/>
       </div>
     </div>}
+    {!isAdmin&&showFeedbackPrompt&&<div style={{position:"fixed",inset:0,zIndex:99999,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>{setShowFeedbackPrompt(false);localStorage.setItem("feedback_prompted","1");}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,padding:"28px 24px",maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,0.2)"}}>
+        <div style={{fontSize:40,marginBottom:12}}>💬</div>
+        <div style={{fontSize:18,fontWeight:800,color:"#0F172A",marginBottom:8}}>Bạn thấy app thế nào?</div>
+        <div style={{fontSize:13,color:"#64748B",lineHeight:1.6,marginBottom:20}}>Mình rất muốn nghe ý kiến của bạn để cải thiện Fipilot AI tốt hơn!</div>
+        <button onClick={()=>{setShowFeedbackPrompt(false);localStorage.setItem("feedback_prompted","1");setTab("feedback");}} style={{width:"100%",padding:14,borderRadius:12,border:"none",fontSize:15,fontWeight:800,color:"#fff",background:"linear-gradient(135deg,#36A3FF,#007AFF)",cursor:"pointer",fontFamily:"inherit",marginBottom:8}}>💡 Góp ý ngay</button>
+        <button onClick={()=>{setShowFeedbackPrompt(false);localStorage.setItem("feedback_prompted","1");}} style={{width:"100%",padding:12,borderRadius:12,border:"none",fontSize:13,fontWeight:600,color:"#64748B",background:"transparent",cursor:"pointer",fontFamily:"inherit"}}>Để sau</button>
+      </div>
+    </div>}
   </div>;
 
 }
