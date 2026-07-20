@@ -16,7 +16,8 @@ const FEATURES = [
 ];
 
 export default function FeedbackTab({ user, isAdmin }) {
-  const [tab, setTab] = useState("feedback"); // feedback | bug | rating | admin
+  // Admin mặc định vào tab admin
+  const [tab, setTab] = useState(isAdmin ? "admin" : "feedback");
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -24,6 +25,7 @@ export default function FeedbackTab({ user, isAdmin }) {
   const [myRatings, setMyRatings] = useState({});
   const [ratingComments, setRatingComments] = useState({});
   const [allFeedback, setAllFeedback] = useState([]);
+  const [allRatings, setAllRatings] = useState([]);
   const [avgRatings, setAvgRatings] = useState({});
   const [totalRatings, setTotalRatings] = useState(0);
   const [replyText, setReplyText] = useState({});
@@ -57,7 +59,8 @@ export default function FeedbackTab({ user, isAdmin }) {
       setAllFeedback(allFb || []);
 
       // Avg ratings per feature
-      const { data: allRt } = await supabase.from("feature_ratings").select("*");
+      const { data: allRt } = await supabase.from("feature_ratings").select("*").order("created_at", { ascending: false });
+      setAllRatings(allRt || []);
       if (allRt && allRt.length > 0) {
         const byFeature = {};
         allRt.forEach(r => {
@@ -180,10 +183,12 @@ export default function FeedbackTab({ user, isAdmin }) {
     <div>
       {/* Segment tabs */}
       <div style={{ display: "flex", margin: "0 0 14px", background: C.surface, borderRadius: 10, padding: 3 }}>
-        <div style={segTab(tab === "feedback")} onClick={() => setTab("feedback")}>💡 Góp ý</div>
-        <div style={segTab(tab === "bug")} onClick={() => setTab("bug")}>🐛 Báo lỗi</div>
-        <div style={segTab(tab === "rating")} onClick={() => setTab("rating")}>⭐ Đánh giá</div>
-        {isAdmin && <div style={segTab(tab === "admin")} onClick={() => setTab("admin")}>👑 Admin</div>}
+        {!isAdmin && <>
+          <div style={segTab(tab === "feedback")} onClick={() => setTab("feedback")}>💡 Góp ý</div>
+          <div style={segTab(tab === "bug")} onClick={() => setTab("bug")}>🐛 Báo lỗi</div>
+          <div style={segTab(tab === "rating")} onClick={() => setTab("rating")}>⭐ Đánh giá</div>
+        </>}
+        {isAdmin && <div style={segTab(tab === "admin")} onClick={() => setTab("admin")}>👑 Quản lý phản hồi</div>}
       </div>
 
       {/* ====== TAB: Góp ý ====== */}
@@ -330,6 +335,22 @@ export default function FeedbackTab({ user, isAdmin }) {
             );
           })}
         </div>
+
+        {/* Nhận xét rating từ user */}
+        {allRatings.length > 0 && <div style={{ ...card, marginBottom: 14 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>💬 Nhận xét đánh giá</div>
+          {allRatings.filter(r => r.comment?.trim()).map(r => (
+            <div key={r.id} style={{ padding: 10, background: C.surface, borderRadius: 8, marginBottom: 6, borderLeft: "3px solid #007AFF" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{r.username}</span>
+                <span style={{ fontSize: 11, color: "#F59E0B" }}>{"⭐".repeat(r.rating)}</span>
+              </div>
+              <div style={{ fontSize: 10, color: C.t3, marginTop: 2 }}>{FEATURES.find(f => f.id === r.feature)?.label || r.feature} · {new Date(r.created_at).toLocaleDateString("vi-VN")}</div>
+              <div style={{ fontSize: 12, color: "#334155", marginTop: 4, lineHeight: 1.5 }}>{r.comment}</div>
+            </div>
+          ))}
+          {allRatings.filter(r => r.comment?.trim()).length === 0 && <div style={{ fontSize: 12, color: C.t3 }}>Chưa có nhận xét nào.</div>}
+        </div>}
 
         {/* Feedback list */}
         <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>📩 Phản hồi</div>
