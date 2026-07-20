@@ -246,15 +246,15 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
   }
 
   // ========== STYLES ==========
-  const overlay = { position: "fixed", inset: 0, zIndex: 99998, background: "#F8FAFC", display: "flex", flexDirection: "column", overflowY: "auto" };
+  const overlay = { position: "fixed", inset: 0, zIndex: 99998, background: "#F8FAFC", display: "flex", flexDirection: "column", overflowY: "auto", paddingBottom: 90 };
   const header = { padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0 };
-  const backBtn = { display: "inline-flex", alignItems: "center", gap: 4, color: C.primary, fontSize: 14, fontWeight: 700, cursor: "pointer", background: "none", border: "none", padding: "6px 0", marginBottom: 8, fontFamily: "inherit" };
+  const backBtn = { display: "inline-flex", alignItems: "center", gap: 4, color: "#F97316", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "none", border: "none", padding: "6px 0", marginBottom: 8, fontFamily: "inherit" };
   const title = { fontSize: 20, fontWeight: 800, color: C.t1, lineHeight: 1.3 };
   const desc = { fontSize: 14, color: C.t3, marginTop: 6, lineHeight: 1.5 };
   const body = { flex: 1, padding: "0 20px 20px", display: "flex", flexDirection: "column" };
-  const bottomArea = { padding: "12px 20px 28px", background: "#fff", borderTop: `1px solid ${C.border}`, flexShrink: 0 };
-  const mainBtn = { width: "100%", padding: 14, borderRadius: 14, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", color: "#fff", background: "linear-gradient(135deg, #F97316, #EA580C)" };
-  const outlineBtn = { ...mainBtn, background: "transparent", color: C.t3, border: `1.5px solid ${C.border}`, marginTop: 8 };
+  const pinnedBottom = { position: "fixed", bottom: 0, left: 0, right: 0, padding: "14px 20px", paddingBottom: "max(20px, env(safe-area-inset-bottom, 20px))", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,0,0,0.06)", zIndex: 99999 };
+  const mainBtn = { width: "100%", padding: 16, borderRadius: 14, border: "none", fontSize: 16, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", color: "#fff", background: "linear-gradient(135deg, #F97316, #EA580C)", boxShadow: "0 4px 12px rgba(249,115,22,0.3)" };
+  const outlineBtn = { ...mainBtn, background: "transparent", color: C.t3, border: `1.5px solid ${C.border}`, marginTop: 8, boxShadow: "none" };
 
   // Step bar — ① ② ③ ④ tròn 30px
   const stepBar = (active) => (
@@ -378,7 +378,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
           <button onClick={() => setDishes([...dishes, { name: "", gram: 100, checked: true }])}
             style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 12, borderRadius: 14, border: `2px dashed ${C.border}`, background: "transparent", color: C.t3, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>+ Thêm món bị thiếu</button>
         </div>
-        <div style={bottomArea}>
+        <div style={pinnedBottom}>
           <button style={mainBtn} onClick={handleConfirmDishes} disabled={!dishes.some(d => d.checked && d.name.trim())}>Đúng rồi, tiếp tục →</button>
         </div>
       </>}
@@ -414,7 +414,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
             </div>
           ))}
         </div>
-        <div style={bottomArea}>
+        <div style={pinnedBottom}>
           <button style={mainBtn} onClick={handleCalcMacro}>Tính macro →</button>
         </div>
       </>}
@@ -473,9 +473,11 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
               </div>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-            <button style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "linear-gradient(135deg, #F97316, #EA580C)", color: "#fff", fontFamily: "inherit" }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
-            <button style={{ flex: 1, padding: 14, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "#EF4444", color: "#fff", fontFamily: "inherit" }} onClick={onClose}>Đóng</button>
+          <div style={pinnedBottom}>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button style={{ ...mainBtn, flex: 1, fontSize: 14 }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
+              <button style={{ flex: 1, padding: 16, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 800, cursor: "pointer", background: "#EF4444", color: "#fff", fontFamily: "inherit" }} onClick={onClose}>Đóng</button>
+            </div>
           </div>
         </div>
       </>}
