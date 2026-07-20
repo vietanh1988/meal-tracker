@@ -88,7 +88,6 @@ export const LOCAL_FOODS = {
   "gà nguyên con":{p:17.4, c:0, f:15.1, cal:215, fiber:0, form:"raw", cat:"poultry"},
   "lòng gà": {p:17.5, c:1.4, f:5.6, cal:127, fiber:0, form:"raw", cat:"poultry"},
   "thịt vịt": {p:19.3, c:0, f:11.2, cal:180, fiber:0, form:"raw", cat:"poultry"},
-  "vịt": {p:19.3, c:0, f:11.2, cal:180, fiber:0, form:"raw", cat:"poultry"},
 
   // ==================== 2. THỊT BÒ ====================
   "thăn bò": {p:26.0, c:0, f:8.0, cal:179, fiber:0, form:"raw", cat:"beef"},
@@ -98,7 +97,6 @@ export const LOCAL_FOODS = {
   "thịt bò xay": {p:17.2, c:0, f:15.0, cal:215, fiber:0, form:"raw", cat:"beef"},
   "sườn bò": {p:17.5, c:0, f:22.6, cal:274, fiber:0, form:"raw", cat:"beef"},
   "thịt bò": {p:20.0, c:0, f:12.0, cal:192, fiber:0, form:"raw", cat:"beef"},
-  "bò": {p:20.0, c:0, f:12.0, cal:192, fiber:0, form:"raw", cat:"beef"},
   "bò viên": {p:14.0, c:3.0, f:8.0, cal:140, fiber:0, form:"cooked",cat:"beef"},
 
   // ==================== 3. THỊT HEO ====================
@@ -113,7 +111,6 @@ export const LOCAL_FOODS = {
   "nạc vai heo": {p:16.5, c:0, f:18.3, cal:233, fiber:0, form:"raw", cat:"pork"},
   "thịt heo": {p:20.5, c:0, f:11.0, cal:187, fiber:0, form:"raw", cat:"pork"},
   "thịt lợn": {p:20.5, c:0, f:11.0, cal:187, fiber:0, form:"raw", cat:"pork"},
-  "heo": {p:20.5, c:0, f:11.0, cal:187, fiber:0, form:"raw", cat:"pork"},
 
   // ==================== 4. CÁ & HẢI SẢN ====================
   "cá hồi": {p:20.4, c:0, f:13.4, cal:208, fiber:0, form:"raw", cat:"seafood", tier:"occasional"},
@@ -127,8 +124,7 @@ export const LOCAL_FOODS = {
   "cá nục": {p:19.5, c:0, f:4.2, cal:118, fiber:0, form:"raw", cat:"seafood"},
   "cá chép": {p:17.8, c:0, f:5.6, cal:127, fiber:0, form:"raw", cat:"seafood"},
   "cá saba": {p:18.6, c:0, f:13.9, cal:205, fiber:0, form:"raw", cat:"seafood"},
-  "cá": {p:18.0, c:0, f:5.0, cal:120, fiber:0, form:"raw", cat:"seafood"},
-  "tôm": {p:24.0, c:0.2, f:0.3, cal:99, fiber:0, form:"raw", cat:"seafood"},
+  "tôm tươi": {p:24.0, c:0.2, f:0.3, cal:99, fiber:0, form:"raw", cat:"seafood"},
   "tôm sú": {p:21.0, c:0, f:0.6, cal:90, fiber:0, form:"raw", cat:"seafood", tier:"occasional"},
   "mực": {p:15.6, c:3.1, f:1.4, cal:92, fiber:0, form:"raw", cat:"seafood"},
   "ngao": {p:12.8, c:3.6, f:1.0, cal:74, fiber:0, form:"raw", cat:"seafood"},
@@ -141,7 +137,6 @@ export const LOCAL_FOODS = {
   // ==================== 5. TRỨNG & SỮA ====================
   "trứng gà": {p:12.6, c:0.7, f:9.5, cal:143, fiber:0, form:"raw", cat:"egg_dairy"},
   "trứng gà luộc":{p:12.6, c:0.7, f:9.5, cal:143, fiber:0, form:"cooked",cat:"egg_dairy"},
-  "trứng": {p:12.6, c:0.7, f:9.5, cal:143, fiber:0, form:"raw", cat:"egg_dairy"},
   "trứng luộc": {p:12.6, c:0.7, f:9.5, cal:143, fiber:0, form:"cooked",cat:"egg_dairy"},
   "trứng vịt": {p:12.8, c:1.4, f:13.8, cal:185, fiber:0, form:"raw", cat:"egg_dairy"},
   "trứng vịt luộc":{p:12.8, c:1.4, f:13.8, cal:185, fiber:0, form:"cooked",cat:"egg_dairy"},
@@ -150,17 +145,15 @@ export const LOCAL_FOODS = {
   "lòng trắng trứng":{p:10.9,c:0.7,f:0.2,cal:52, fiber:0, form:"raw", cat:"egg_dairy"},
   "lòng đỏ trứng":{p:15.9,c:3.6,f:26.5, cal:322, fiber:0, form:"raw", cat:"egg_dairy"},
   "sữa tươi": {p:3.2, c:4.8, f:3.3, cal:61, fiber:0, form:"liquid",cat:"egg_dairy"},
-  "sữa": {p:3.2, c:4.8, f:3.3, cal:61, fiber:0, form:"liquid",cat:"egg_dairy"},
   "sữa tách béo":{p:3.4, c:5.0, f:0.1, cal:34, fiber:0, form:"liquid",cat:"egg_dairy"},
   "sữa đậu nành":{p:3.3, c:6.3, f:1.8, cal:54, fiber:0.6,form:"liquid",cat:"egg_dairy"},
   "sữa chua": {p:3.5, c:4.7, f:3.3, cal:61, fiber:0, form:"liquid",cat:"egg_dairy"},
   "sữa chua hy lạp":{p:10.0,c:3.6,f:0.7, cal:59, fiber:0, form:"liquid",cat:"egg_dairy", tier:"occasional"},
   "phô mai": {p:25.0, c:1.3, f:33.1, cal:403, fiber:0, form:"solid", cat:"egg_dairy", tier:"occasional"},
-  "bơ": {p:0.9, c:0.1, f:81.1, cal:717, fiber:0, form:"solid", cat:"egg_dairy"},
+  "bơ lạt": {p:0.9, c:0.1, f:81.1, cal:717, fiber:0, form:"solid", cat:"egg_dairy"},
 
   // ==================== 6. TINH BỘT & NGŨ CỐC ====================
   "cơm trắng": {p:2.7, c:28.2,f:0.3, cal:130, fiber:0.4,form:"cooked",cat:"starch"},
-  "cơm": {p:2.7, c:28.2,f:0.3, cal:130, fiber:0.4,form:"cooked",cat:"starch"},
   "cơm gạo lứt": {p:2.6, c:23.5,f:0.9, cal:112, fiber:1.8,form:"cooked",cat:"starch"},
   "gạo lứt": {p:7.9, c:77.2,f:2.9, cal:370, fiber:3.5,form:"dry", cat:"starch"},
   "khoai lang": {p:1.6, c:20.1,f:0.1, cal:86, fiber:3.0,form:"raw", cat:"starch"},
@@ -300,9 +293,9 @@ export const LOCAL_FOODS = {
 
   // ==================== 12. CHẾ BIẾN SẴN ====================
   "xúc xích": {p:12.0, c:2.0, f:28.0, cal:301, fiber:0, form:"cooked",cat:"processed"},
-  "giò": {p:15.5, c:2.0, f:5.5, cal:120, fiber:0, form:"cooked",cat:"processed"},
+  "giò lụa": {p:15.5, c:2.0, f:5.5, cal:120, fiber:0, form:"cooked",cat:"processed"},
   "chả lụa": {p:15.5, c:2.0, f:5.5, cal:120, fiber:0, form:"cooked",cat:"processed"},
-  "chả": {p:14.0, c:3.0, f:8.0, cal:140, fiber:0, form:"cooked",cat:"processed"},
+  "chả quế": {p:14.0, c:3.0, f:8.0, cal:140, fiber:0, form:"cooked",cat:"processed"},
   "nem": {p:8.0, c:20.0,f:12.0, cal:220, fiber:1.0,form:"cooked",cat:"processed"},
   "patê": {p:11.4, c:1.5, f:28.0, cal:319, fiber:0, form:"cooked",cat:"processed"},
 
@@ -349,19 +342,43 @@ export function lookupLocalFood(nameVN, gram) {
   const lower = (nameVN || "").toLowerCase().trim();
   if (!lower) return null;
 
-  // 1. Try exact match first (e.g. "ức gà nướng" is a dedicated entry)
+  // 1. Exact match — fastest, most accurate
   if (LOCAL_FOODS[lower]) {
     return scaleFood(LOCAL_FOODS[lower], lower, gram, null);
   }
 
-  // 2. Find food base + cooking modifier
+  // 2. Find food base with priority matching:
+  //    a) startsWith — "thịt bò xào" starts with "thịt bò" ✅
+  //    b) endsWith   — "gà luộc ức" ends with... (rare)
+  //    c) includes   — fallback, only for keys ≥ 4 chars to avoid false matches
   let foodKey = null;
   let cookKey = null;
 
+  // 2a. startsWith (key dài trước)
   for (const key of LOCAL_KEYS) {
-    if (lower.includes(key)) {
+    if (lower.startsWith(key + " ") || lower.startsWith(key)) {
       foodKey = key;
       break;
+    }
+  }
+
+  // 2b. endsWith (key dài trước)
+  if (!foodKey) {
+    for (const key of LOCAL_KEYS) {
+      if (lower.endsWith(" " + key) || lower.endsWith(key)) {
+        foodKey = key;
+        break;
+      }
+    }
+  }
+
+  // 2c. includes — only keys ≥ 4 chars to prevent "bò" matching "bò viên" etc.
+  if (!foodKey) {
+    for (const key of LOCAL_KEYS) {
+      if (key.length >= 4 && lower.includes(key)) {
+        foodKey = key;
+        break;
+      }
     }
   }
 
@@ -466,10 +483,10 @@ const ROLE_BY_CAT = {
 
 const ROLE_OVERRIDE = {
   // Sữa/sữa chua — ít khi dùng làm nguồn đạm/carb chính trong 1 bữa, giữ cố định
-  "sữa tươi": "fixed", "sữa": "fixed", "sữa tách béo": "fixed",
+  "sữa tươi": "fixed", "sữa tách béo": "fixed",
   "sữa đậu nành": "fixed", "sữa chua": "fixed", "sữa chua hy lạp": "fixed",
   // Phô mai/bơ — chất béo thật, dù nằm chung nhóm egg_dairy với trứng
-  "phô mai": "fat", "bơ": "fat",
+  "phô mai": "fat", "bơ lạt": "fat",
   // Đậu phụ — đạm là chính dù nằm ở nhóm rau củ
   "đậu phụ": "protein",
   // Đậu nành khô — đạm cao nhất bảng (36.5g/100g), không phải béo dù cùng nhóm hạt/dầu
@@ -500,11 +517,11 @@ const GRAM_LIMIT_OVERRIDE = {
   "đùi gà": { min: 80, max: 280 }, "thịt vịt": { min: 80, max: 280 },
   "thịt bò": { min: 80, max: 250 }, "thăn bò": { min: 80, max: 250 }, "thịt bò xay": { min: 80, max: 250 },
   "thịt heo nạc": { min: 80, max: 250 }, "thịt lợn nạc": { min: 80, max: 250 }, "thịt heo xay": { min: 80, max: 250 },
-  "cá hồi": { min: 80, max: 250 }, "cá ngừ": { min: 80, max: 250 }, "cá": { min: 80, max: 250 },
-  "tôm": { min: 60, max: 200 }, "mực": { min: 60, max: 200 },
-  "trứng gà": { min: 50, max: 200 }, "trứng": { min: 50, max: 200 }, "trứng gà luộc": { min: 50, max: 200 },
+  "cá hồi": { min: 80, max: 250 }, "cá ngừ": { min: 80, max: 250 },
+  "tôm tươi": { min: 60, max: 200 }, "mực": { min: 60, max: 200 },
+  "trứng gà": { min: 50, max: 200 }, "trứng gà luộc": { min: 50, max: 200 },
   "đậu phụ": { min: 100, max: 300 },
-  "cơm trắng": { min: 80, max: 450 }, "cơm": { min: 80, max: 450 }, "cơm gạo lứt": { min: 80, max: 450 },
+  "cơm trắng": { min: 80, max: 450 }, "cơm gạo lứt": { min: 80, max: 450 },
   "khoai lang": { min: 100, max: 400 }, "khoai tây": { min: 100, max: 400 },
   "bánh mì": { min: 30, max: 200 }, "bún": { min: 100, max: 350 }, "mì": { min: 100, max: 300 }, "hủ tiếu": { min: 100, max: 350 }, "bánh cuốn": { min: 150, max: 400 }, "miến": { min: 50, max: 250 }, "bánh phở": { min: 100, max: 350 },
   "cháo": { min: 200, max: 500 }, // 1 tô cháo thường 300-400g, nhiều nước hơn cơm/bún nên sàn/trần cao hơn
@@ -578,12 +595,12 @@ const MEAL_OVERRIDE_DATA = {
   "yến mạch":      { sang: 9 },
   "bột yến mạch":  { sang: 9 },
   "patê":          { sang: 9 },            // bánh mì patê
-  "giò":           { sang: 8 },            // xôi giò, bánh mì giò
+  "giò lụa":       { sang: 8 },            // xôi giò, bánh mì giò
   "chả lụa":       { sang: 8 },
   "cá ngừ hộp":    { sang: 6 },            // bánh mì cá hộp
   // Cấm cơm bữa sáng — văn hóa VN không nấu cơm sáng
   "cơm trắng":     { sang: 1, pre: 2 },
-  "cơm":           { sang: 1, pre: 2 },
+  "cơm trắng":     { sang: 1, pre: 2 },
   "cơm gạo lứt":   { sang: 1, pre: 2 },
   "gạo lứt":       { sang: 1, pre: 2 },
   "mì ý":          { sang: 1 },
@@ -630,7 +647,7 @@ const CONVENIENCE_OVERRIDE = {
   // Đạm mua sẵn được (cơm hộp, quán, siêu thị)
   "ức gà nướng": 8, "ức gà luộc": 7,
   "trứng gà luộc": 10, "trứng luộc": 10, "trứng vịt luộc": 10, "trứng cút luộc": 10,
-  "cá ngừ hộp": 10, "đậu phụ": 7, "tôm": 6,
+  "cá ngừ hộp": 10, "đậu phụ": 7, "tôm tươi": 6,
   // Tinh bột: mua sẵn vs nấu
   "bánh mì": 10, "bánh mì đen": 9, "xôi": 10, "bánh cuốn": 9,
   "cháo": 8, "bánh phở": 8, "bún": 8, "hủ tiếu": 8, "miến": 7,
@@ -668,7 +685,7 @@ const REGION_OVERRIDE = {
   "yến mạch": "intl", "bột yến mạch": "intl", "granola": "intl",
   "mì ý": "intl", "pasta": "intl", "quinoa": "intl", "bánh mì đen": "intl",
   // Processed VN
-  "giò": "vn", "chả lụa": "vn", "chả": "vn", "nem": "vn", "patê": "vn",
+  "giò lụa": "vn", "chả lụa": "vn", "chả quế": "vn", "nem": "vn", "patê": "vn",
   "xúc xích": "both",
   // Supp
   "whey": "intl", "whey isolate": "intl", "casein": "intl",
@@ -730,20 +747,20 @@ const DISPLAY_MAP = {
   // BEEF
   "thăn bò": "Bò xào", "bắp bò": "Bắp bò luộc", "nạm bò": "Nạm bò kho",
   "gân bò": "Gân bò hầm", "thịt bò xay": "Bò xay xào", "sườn bò": "Sườn bò nướng",
-  "thịt bò": "Bò xào", "bò": "Bò xào", "bò viên": "Bò viên",
+  "thịt bò": "Bò xào", "bò viên": "Bò viên",
   // PORK
   "thịt heo nạc": "Thịt heo luộc", "thịt lợn nạc": "Thịt lợn luộc",
   "ba chỉ": "Ba chỉ luộc", "ba rọi": "Ba rọi luộc",
   "sườn heo": "Sườn heo rim", "sườn lợn": "Sườn rim",
   "thịt heo xay": "Thịt băm rang", "thịt lợn xay": "Thịt băm rang",
   "nạc vai heo": "Nạc vai rang", "thịt heo": "Thịt heo luộc",
-  "thịt lợn": "Thịt lợn luộc", "heo": "Thịt heo luộc",
+  "thịt lợn": "Thịt lợn luộc",
   // SEAFOOD
   "cá hồi": "Cá hồi áp chảo", "cá ngừ": "Cá ngừ kho", "cá rô phi": "Cá rô phi kho",
   "cá basa": "Cá basa kho", "cá thu": "Cá thu sốt cà", "cá diêu hồng": "Cá diêu hồng hấp",
   "cá lóc": "Cá lóc kho", "cá tra": "Cá tra kho", "cá nục": "Cá nục kho",
-  "cá chép": "Cá chép om", "cá saba": "Cá saba nướng", "cá": "Cá kho",
-  "tôm": "Tôm hấp", "tôm sú": "Tôm sú hấp", "mực": "Mực hấp",
+  "cá chép": "Cá chép om", "cá saba": "Cá saba nướng",
+  "tôm tươi": "Tôm hấp", "tôm sú": "Tôm sú hấp", "mực": "Mực hấp",
   "ngao": "Ngao hấp", "nghêu": "Nghêu hấp", "cua": "Cua hấp",
   "hàu": "Hàu nướng", "bạch tuộc": "Bạch tuộc hấp", "cá ngừ hộp": "Cá ngừ hộp",
   // EGG_DAIRY
@@ -751,9 +768,9 @@ const DISPLAY_MAP = {
   "trứng luộc": "Trứng luộc", "trứng vịt": "Trứng vịt luộc", "trứng vịt luộc": "Trứng vịt luộc",
   "trứng cút": "Trứng cút luộc", "trứng cút luộc": "Trứng cút luộc",
   "lòng trắng trứng": "Lòng trắng trứng", "lòng đỏ trứng": "Lòng đỏ trứng",
-  "sữa tươi": "Sữa tươi", "sữa": "Sữa tươi", "sữa tách béo": "Sữa tách béo",
+  "sữa tươi": "Sữa tươi", "sữa tách béo": "Sữa tách béo",
   "sữa đậu nành": "Sữa đậu nành", "sữa chua": "Sữa chua", "sữa chua hy lạp": "Sữa chua Hy Lạp",
-  "phô mai": "Phô mai", "bơ": "Bơ",
+  "phô mai": "Phô mai", "bơ lạt": "Bơ lạt",
   // STARCH
   "cơm trắng": "Cơm trắng", "cơm": "Cơm trắng", "cơm gạo lứt": "Cơm gạo lứt",
   "gạo lứt": "Cơm gạo lứt", "khoai lang": "Khoai lang luộc", "khoai tây": "Khoai tây luộc",
