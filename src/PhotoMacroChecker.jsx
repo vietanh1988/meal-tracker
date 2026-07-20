@@ -405,7 +405,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
                   style={{ width: 56, padding: "10px 4px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.t1, fontSize: 15, fontWeight: 700, textAlign: "center", fontFamily: "inherit" }} />
                 <span style={{ color: C.t3, fontSize: 13, flexShrink: 0 }}>g</span>
                 <span style={{ color: C.t3, fontSize: 12, flexShrink: 0 }}>hoặc</span>
-                <select value="" onChange={e => { if (e.target.value) { const ns = [...servings]; ns[i].gram = parseInt(e.target.value); setServings(ns); e.target.value = ""; } }}
+                <select key={`preset-${i}-${s.gram}`} defaultValue="" onChange={e => { if (e.target.value) { const ns = [...servings]; ns[i].gram = parseInt(e.target.value); setServings(ns); } }}
                   style={{ flex: 1, minWidth: 0, padding: "10px 26px 10px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.t2, fontSize: 13, fontFamily: "inherit", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   <option value="">Chọn nhanh</option>
                   {s.presets.map((p, j) => <option key={j} value={p.gram}>{p.label}</option>)}
