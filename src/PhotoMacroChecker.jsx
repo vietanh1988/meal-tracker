@@ -149,36 +149,88 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
   };
 
   // Step 4 → Step 5: calculate macro
-  const handleCalcMacro = () => {
-    const items = servings.map(s => {
-      // Luôn tra DB trước — macro verified chính xác
-      const lookup = lookupLocalFood(s.name, s.gram);
-      if (lookup && lookup.cal > 0) {
-        return {
-          name: s.name, gram: s.gram,
-          cal: Math.round(lookup.cal), p: Math.round(lookup.protein || 0),
-          c: Math.round(lookup.carb || 0), f: Math.round(lookup.fat || 0),
-          fiber: Math.round(lookup.fiber || 0),
-          estimated: false,
-        };
+  const handleCalcMacro = async () => {
+    setStep(2); // show loading while calculating
+    setLoading(true);
+    try {
+      const dbItems = [];
+      const unknownItems = [];
+
+      servings.forEach((s, i) => {
+        const lookup = lookupLocalFood(s.name, s.gram);
+        if (lookup && lookup.cal > 0) {
+          dbItems.push({
+            idx: i, name: s.name, gram: s.gram,
+            cal: Math.round(lookup.cal), p: Math.round(lookup.protein || 0),
+            c: Math.round(lookup.carb || 0), f: Math.round(lookup.fat || 0),
+            fiber: Math.round(lookup.fiber || 0),
+            estimated: false,
+          });
+        } else {
+          unknownItems.push({ idx: i, name: s.name, gram: s.gram });
+        }
+      });
+
+      // AI estimate cho các món không có trong DB
+      let aiEstimated = [];
+      if (unknownItems.length > 0) {
+        try {
+          const photoProvider = appSettings?.photo_vision_provider || appSettings?.ai_provider || "gemini";
+          const providerMap = { "Theo AI menu": appSettings?.ai_provider || "gemini" };
+          const provider = providerMap[photoProvider] || photoProvider;
+
+          const estimatePrompt = `Ước lượng macro dinh dưỡng cho các món ăn sau. Trả lời ĐÚNG JSON, không text trước/sau:
+[{"name":"tên","cal":số,"p":số,"c":số,"f":số,"fiber":số}]
+
+Danh sách:
+${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
+
+          const res = await authFetch({ provider, system: "Bạn là chuyên gia dinh dưỡng Việt Nam. Trả lời chính xác macro per khẩu phần được hỏi.", messages: [{ role: "user", content: estimatePrompt }], maxTokens: 500, feature: "photo_macro" });
+          const text = (res.text || "").replace(/```json|```/g, "").trim();
+          const parsed = JSON.parse(text);
+          aiEstimated = unknownItems.map((it, j) => {
+            const ai = parsed[j] || {};
+            return {
+              idx: it.idx, name: it.name, gram: it.gram,
+              cal: Math.round(ai.cal || 0), p: Math.round(ai.p || 0),
+              c: Math.round(ai.c || 0), f: Math.round(ai.f || 0),
+              fiber: Math.round(ai.fiber || 0),
+              estimated: true,
+            };
+          });
+        } catch (aiErr) {
+          console.error("AI estimate fallback error:", aiErr);
+          // Fallback thô nếu AI cũng fail
+          aiEstimated = unknownItems.map(it => {
+            const r = it.gram / 100;
+            return {
+              idx: it.idx, name: it.name, gram: it.gram,
+              cal: Math.round(145 * r), p: Math.round(10 * r),
+              c: Math.round(15 * r), f: Math.round(5 * r),
+              fiber: Math.round(2 * r),
+              estimated: true,
+            };
+          });
+        }
       }
-      // Fallback: estimate thô per 100g (average food)
-      const r = s.gram / 100;
-      return {
-        name: s.name, gram: s.gram,
-        cal: Math.round(145 * r), p: Math.round(10 * r),
-        c: Math.round(15 * r), f: Math.round(5 * r),
-        fiber: Math.round(2 * r),
-        estimated: true,
-      };
-    });
 
-    const total = items.reduce((acc, it) => ({
-      cal: acc.cal + it.cal, p: acc.p + it.p, c: acc.c + it.c, f: acc.f + it.f, fiber: acc.fiber + (it.fiber || 0),
-    }), { cal: 0, p: 0, c: 0, f: 0, fiber: 0 });
+      // Gộp lại theo thứ tự gốc
+      const allItems = [...dbItems, ...aiEstimated].sort((a, b) => a.idx - b.idx);
+      const items = allItems.map(({ idx, ...rest }) => rest);
 
-    setResults({ total, items });
-    setStep(5);
+      const total = items.reduce((acc, it) => ({
+        cal: acc.cal + it.cal, p: acc.p + it.p, c: acc.c + it.c, f: acc.f + it.f, fiber: acc.fiber + (it.fiber || 0),
+      }), { cal: 0, p: 0, c: 0, f: 0, fiber: 0 });
+
+      setResults({ total, items });
+      setStep(5);
+    } catch (e) {
+      console.error("CalcMacro error:", e);
+      setError("Lỗi tính dinh dưỡng");
+      setStep(4);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Presets for common foods
