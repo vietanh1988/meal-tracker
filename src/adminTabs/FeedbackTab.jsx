@@ -280,16 +280,14 @@ export default function FeedbackTab({ user, isAdmin }) {
                 ))}
                 {myR > 0 && <span style={{ fontSize: 11, color: "#10B981", fontWeight: 700, marginLeft: 8, display: "flex", alignItems: "center" }}>✓ Đã lưu</span>}
               </div>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <input
                   value={ratingComments[feat.id] ?? myRatings[feat.id]?.comment ?? ""}
                   onChange={e => setRatingComments(prev => ({ ...prev, [feat.id]: e.target.value }))}
                   placeholder="Nhận xét thêm..."
                   style={{ flex: 1, padding: 8, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
                 />
-                {ratingComments[feat.id] !== undefined && ratingComments[feat.id] !== (myRatings[feat.id]?.comment || "") && (
-                  <button onClick={() => handleRate(feat.id, myR || 5)} style={{ padding: "6px 12px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 700, color: "#fff", background: "#007AFF", cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>Lưu</button>
-                )}
+                <button onClick={() => handleRate(feat.id, myR || 5)} style={{ padding: "8px 14px", borderRadius: 8, border: "none", fontSize: 12, fontWeight: 700, color: "#fff", background: "#007AFF", cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>Lưu</button>
               </div>
             </div>
           );
