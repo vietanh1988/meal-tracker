@@ -30,6 +30,9 @@ export default function FeedbackTab({ user, isAdmin }) {
 
   const userId = user?.id;
   const username = user?.user_metadata?.username || user?.email?.split("@")[0] || "";
+  
+  // Debug
+  useEffect(() => { console.log("[FeedbackTab] user:", user?.id, "isAdmin:", isAdmin); }, [user, isAdmin]);
 
   // Load data
   const loadData = useCallback(async () => {
@@ -99,9 +102,10 @@ export default function FeedbackTab({ user, isAdmin }) {
   // Submit/update rating
   const handleRate = async (feature, rating) => {
     const comment = ratingComments[feature] || myRatings[feature]?.comment || "";
-    await supabase.from("feature_ratings").upsert({
+    const { error } = await supabase.from("feature_ratings").upsert({
       user_id: userId, username, feature, rating, comment,
     }, { onConflict: "user_id,feature" });
+    if (error) console.error("Rating error:", error);
     loadData();
   };
 
@@ -155,16 +159,20 @@ export default function FeedbackTab({ user, isAdmin }) {
 
   const handleSubmit = async (cat) => {
     if (!content.trim() || sending) return;
+    if (!userId) { alert("Lỗi: không xác định được user. Vui lòng đăng nhập lại."); return; }
     setSending(true);
     try {
-      await supabase.from("user_feedback").insert({
+      const { error } = await supabase.from("user_feedback").insert({
         user_id: userId, username, category: cat, content: content.trim(),
       });
-      setContent("");
-      setSent(true);
-      setTimeout(() => setSent(false), 3000);
-      loadData();
-    } catch (e) { console.error(e); }
+      if (error) { console.error("Feedback insert error:", error); alert("Lỗi gửi: " + error.message); }
+      else {
+        setContent("");
+        setSent(true);
+        setTimeout(() => setSent(false), 3000);
+        loadData();
+      }
+    } catch (e) { console.error("Feedback error:", e); alert("Lỗi: " + e.message); }
     setSending(false);
   };
 
