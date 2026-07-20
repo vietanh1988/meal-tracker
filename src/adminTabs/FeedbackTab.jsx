@@ -165,9 +165,17 @@ export default function FeedbackTab({ user, isAdmin }) {
   const textareaStyle = { width: "100%", minHeight: 90, padding: 10, border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 13, fontFamily: "inherit", resize: "vertical", outline: "none", lineHeight: 1.5, boxSizing: "border-box" };
   const submitBtnStyle = (enabled) => ({ width: "100%", padding: 14, borderRadius: 12, border: "none", fontSize: 15, fontWeight: 800, color: "#fff", background: enabled ? "linear-gradient(135deg, #36A3FF, #007AFF)" : C.border, boxShadow: enabled ? "0 4px 12px rgba(0,122,255,0.25)" : "none", marginTop: 10, cursor: enabled ? "pointer" : "default", fontFamily: "inherit", opacity: sending ? 0.6 : 1 });
 
-  const overallAvg = totalRatings > 0
-    ? Math.round(Object.values(avgRatings).reduce((s, v) => s + v.avg, 0) / Object.values(avgRatings).length * 10) / 10
+  // Summary cho user: tính từ myRatings. Admin: từ avgRatings
+  const myRatedFeatures = Object.values(myRatings).filter(r => r.rating > 0);
+  const userOverallAvg = myRatedFeatures.length > 0
+    ? Math.round(myRatedFeatures.reduce((s, r) => s + r.rating, 0) / myRatedFeatures.length * 10) / 10
     : 0;
+  const userTotalRatings = myRatedFeatures.length;
+
+  const overallAvg = isAdmin
+    ? (totalRatings > 0 ? Math.round(Object.values(avgRatings).reduce((s, v) => s + v.avg, 0) / Object.values(avgRatings).length * 10) / 10 : 0)
+    : userOverallAvg;
+  const displayTotalRatings = isAdmin ? totalRatings : userTotalRatings;
 
   const pendingCount = allFeedback.filter(f => f.status === "pending").length;
 
@@ -272,7 +280,7 @@ export default function FeedbackTab({ user, isAdmin }) {
           <div style={{ fontSize: 12, fontWeight: 700, color: "#007AFF", marginBottom: 6 }}>Điểm hài lòng tổng thể</div>
           <div style={{ fontSize: 36, fontWeight: 900, color: "#007AFF" }}>{overallAvg || "—"}<span style={{ fontSize: 16, color: "#64748B" }}>/5</span></div>
           <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>
-            {"⭐".repeat(Math.round(overallAvg))}{"☆".repeat(5 - Math.round(overallAvg))} · {totalRatings} đánh giá
+            {"⭐".repeat(Math.round(overallAvg))}{"☆".repeat(5 - Math.round(overallAvg))} · {displayTotalRatings} đánh giá
           </div>
         </div>
 
