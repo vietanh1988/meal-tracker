@@ -543,6 +543,7 @@ const GRAM_LIMIT_OVERRIDE = {
   "yến mạch": { min: 10, max: 100 }, "xôi": { min: 80, max: 350 },
   "dầu ăn": { min: 5, max: 30 }, "dầu ô liu": { min: 5, max: 30 }, "dầu mè": { min: 5, max: 20 },
   "bơ đậu phộng": { min: 10, max: 40 }, "hạt điều": { min: 10, max: 40 }, "hạnh nhân": { min: 10, max: 40 },
+  "lạc": { min: 5, max: 25 }, "đậu phộng": { min: 5, max: 25 }, "mè": { min: 5, max: 25 }, "vừng": { min: 5, max: 25 },
   // Bột đạm — đo bằng scoop (~30g/scoop), không phải thực phẩm nguyên miếng như thịt/cá,
   // nên KHÔNG dùng sàn mặc định 50g theo vai trò protein (quá cao so với 1 scoop thật,
   // gây Engine ép dư đạm khi bữa chỉ còn thiếu ít). 15g~nửa scoop, 60g~2 scoop.
