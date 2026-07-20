@@ -237,11 +237,15 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
   function getPresets(name) {
     const n = (name || "").toLowerCase();
     if (n.includes("cơm")) return [{ label: "Nửa chén (100g)", gram: 100 }, { label: "1 chén vừa (200g)", gram: 200 }, { label: "1 chén đầy (250g)", gram: 250 }];
-    if (n.includes("phở") || n.includes("bún") || n.includes("hủ tiếu")) return [{ label: "1 tô nhỏ (300g)", gram: 300 }, { label: "1 tô vừa (400g)", gram: 400 }, { label: "1 tô lớn (500g)", gram: 500 }];
-    if (n.includes("gà") || n.includes("bò") || n.includes("heo") || n.includes("thịt")) return [{ label: "1 miếng (80g)", gram: 80 }, { label: "2 miếng vừa (150g)", gram: 150 }, { label: "3 miếng (220g)", gram: 220 }];
-    if (n.includes("trứng")) return [{ label: "1 quả (50g)", gram: 50 }, { label: "2 quả (100g)", gram: 100 }];
+    if (n.includes("phở") || n.includes("bún") || n.includes("hủ tiếu") || n.includes("cháo")) return [{ label: "1 tô nhỏ (300g)", gram: 300 }, { label: "1 tô vừa (400g)", gram: 400 }, { label: "1 tô lớn (500g)", gram: 500 }];
+    if (n.includes("trứng")) return [{ label: "1 quả (50g)", gram: 50 }, { label: "2 quả (100g)", gram: 100 }, { label: "3 quả (150g)", gram: 150 }];
+    if (n.includes("khoai")) return [{ label: "1 củ nhỏ (100g)", gram: 100 }, { label: "1 củ vừa (200g)", gram: 200 }, { label: "2 củ (350g)", gram: 350 }];
+    if (n.includes("gà") || n.includes("bò") || n.includes("heo") || n.includes("thịt") || n.includes("lợn")) return [{ label: "1 miếng (80g)", gram: 80 }, { label: "2 miếng vừa (150g)", gram: 150 }, { label: "3 miếng (220g)", gram: 220 }];
+    if (n.includes("cá") || n.includes("tôm") || n.includes("mực")) return [{ label: "1 khúc/nắm (80g)", gram: 80 }, { label: "Vừa (150g)", gram: 150 }, { label: "Nhiều (250g)", gram: 250 }];
     if (n.includes("canh") || n.includes("rau")) return [{ label: "1 bát nhỏ (150g)", gram: 150 }, { label: "1 bát vừa (250g)", gram: 250 }, { label: "1 bát lớn (400g)", gram: 400 }];
     if (n.includes("xôi")) return [{ label: "1 nắm (100g)", gram: 100 }, { label: "1 gói vừa (200g)", gram: 200 }];
+    if (n.includes("sữa")) return [{ label: "1 hộp nhỏ (180ml)", gram: 180 }, { label: "1 ly (250ml)", gram: 250 }];
+    if (n.includes("chuối")) return [{ label: "1 quả (100g)", gram: 100 }, { label: "2 quả (200g)", gram: 200 }];
     return [{ label: "Ít (80g)", gram: 80 }, { label: "Vừa (150g)", gram: 150 }, { label: "Nhiều (250g)", gram: 250 }];
   }
 
@@ -405,7 +409,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
                   style={{ width: 56, padding: "10px 4px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.t1, fontSize: 15, fontWeight: 700, textAlign: "center", fontFamily: "inherit" }} />
                 <span style={{ color: C.t3, fontSize: 13, flexShrink: 0 }}>g</span>
                 <span style={{ color: C.t3, fontSize: 12, flexShrink: 0 }}>hoặc</span>
-                <select key={`preset-${i}-${s.gram}`} defaultValue="" onChange={e => { if (e.target.value) { const ns = [...servings]; ns[i].gram = parseInt(e.target.value); setServings(ns); } }}
+                <select value={s.presets.some(p => p.gram === s.gram) ? String(s.gram) : ""} onChange={e => { if (e.target.value) { const ns = [...servings]; ns[i].gram = parseInt(e.target.value); setServings(ns); } }}
                   style={{ flex: 1, minWidth: 0, padding: "10px 26px 10px 10px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.t2, fontSize: 13, fontFamily: "inherit", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   <option value="">Chọn nhanh</option>
                   {s.presets.map((p, j) => <option key={j} value={p.gram}>{p.label}</option>)}
