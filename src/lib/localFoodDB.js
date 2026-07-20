@@ -99,7 +99,7 @@ export const LOCAL_FOODS = {
   "sườn bò": {p:17.5, c:0, f:22.6, cal:274, fiber:0, form:"raw", cat:"beef"},
   "thịt bò": {p:20.0, c:0, f:12.0, cal:192, fiber:0, form:"raw", cat:"beef"},
   "bò viên": {p:14.0, c:3.0, f:8.0, cal:140, fiber:0, form:"cooked",cat:"beef"},
-  "bò khô": {p:55.0, c:8.0, f:10.0, cal:350, fiber:0, form:"cooked",cat:"beef"},
+  "bò khô": {p:62.0, c:0, f:12.0, cal:405, fiber:0, form:"cooked",cat:"beef"},
 
   // ==================== 3. THỊT HEO ====================
   "thịt heo nạc":{p:27.3, c:0, f:3.5, cal:143, fiber:0, form:"raw", cat:"pork"},
