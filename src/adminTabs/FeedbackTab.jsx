@@ -116,9 +116,20 @@ export default function FeedbackTab({ user, isAdmin }) {
   const handleReply = async (feedbackId) => {
     const text = replyText[feedbackId];
     if (!text?.trim()) return;
+    // Update feedback
     await supabase.from("user_feedback").update({
       admin_reply: text.trim(), status: "replied", admin_replied_at: new Date().toISOString(),
     }).eq("id", feedbackId);
+    // Send notification to user
+    const fb = allFeedback.find(f => f.id === feedbackId);
+    if (fb?.user_id) {
+      await supabase.from("notifications").insert({
+        user_id: fb.user_id,
+        title: "💬 Admin đã trả lời góp ý của bạn",
+        body: text.trim().slice(0, 100),
+        url: "feedback",
+      });
+    }
     setReplyText(prev => ({ ...prev, [feedbackId]: "" }));
     loadData();
   };
