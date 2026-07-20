@@ -8,15 +8,6 @@ import { supabase } from "../lib/supabase";
 // Admin: xem tất cả feedback + reply + xem rating tổng hợp
 // ============================================================
 
-const CATEGORIES = [
-  { id: "suggestion", label: "💡 Góp ý" },
-  { id: "bug", label: "🐛 Báo lỗi" },
-  { id: "ai_menu", label: "🍽️ AI Menu" },
-  { id: "photo", label: "📸 Chụp ảnh" },
-  { id: "ai_chat", label: "💬 AI Chat" },
-  { id: "other", label: "📊 Khác" },
-];
-
 const FEATURES = [
   { id: "ai_menu", label: "AI tạo thực đơn", sub: "Thực đơn có phù hợp mục tiêu?", icon: "✨", bg: "rgba(124,58,237,0.1)" },
   { id: "photo", label: "Chụp ảnh kiểm tra", sub: "AI nhận diện có chính xác?", icon: "📸", bg: "rgba(249,115,22,0.1)" },
@@ -25,8 +16,7 @@ const FEATURES = [
 ];
 
 export default function FeedbackTab({ user, isAdmin }) {
-  const [tab, setTab] = useState("feedback"); // feedback | rating | admin
-  const [category, setCategory] = useState("suggestion");
+  const [tab, setTab] = useState("feedback"); // feedback | bug | rating | admin
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -83,21 +73,28 @@ export default function FeedbackTab({ user, isAdmin }) {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Submit feedback
-  const handleSubmitFeedback = async () => {
-    if (!content.trim() || sending) return;
-    setSending(true);
-    try {
-      await supabase.from("user_feedback").insert({
-        user_id: userId, username, category, content: content.trim(),
-      });
-      setContent("");
-      setSent(true);
-      setTimeout(() => setSent(false), 3000);
-      loadData();
-    } catch (e) { console.error(e); }
-    setSending(false);
-  };
+  // Render feedback item (shared)
+  const CAT_LABELS = { suggestion: "💡 Góp ý", ai_menu: "🍽️ AI Menu", photo: "📸 Chụp ảnh", ai_chat: "💬 AI Chat", ui: "📊 Giao diện", other: "🔧 Khác", bug: "🐛 Lỗi" };
+  const renderFeedbackItem = (fb) => (
+    <div key={fb.id} style={{ padding: 12, background: C.surface, borderRadius: 10, marginBottom: 8, border: `1px solid ${C.border}` }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: "#007AFF", background: "rgba(0,122,255,0.06)", padding: "2px 8px", borderRadius: 6 }}>
+          {CAT_LABELS[fb.category] || fb.category}
+        </span>
+        <span style={{ fontSize: 10, color: C.t3 }}>{new Date(fb.created_at).toLocaleDateString("vi-VN")}</span>
+      </div>
+      <div style={{ fontSize: 12, color: "#334155", marginTop: 6, lineHeight: 1.5 }}>{fb.content}</div>
+      <div style={{ fontSize: 10, fontWeight: 700, marginTop: 6, color: fb.status === "replied" ? "#10B981" : "#F59E0B" }}>
+        {fb.status === "replied" ? "✅ Đã phản hồi" : "⏳ Đang xử lý"}
+      </div>
+      {fb.admin_reply && (
+        <div style={{ marginTop: 6, padding: "8px 10px", background: "#F0FDF4", borderRadius: 8, borderLeft: "3px solid #10B981" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#10B981", marginBottom: 3 }}>👑 Admin</div>
+          <div style={{ fontSize: 11, color: "#334155", lineHeight: 1.5 }}>{fb.admin_reply}</div>
+        </div>
+      )}
+    </div>
+  );
 
   // Submit/update rating
   const handleRate = async (feature, rating) => {
@@ -119,6 +116,16 @@ export default function FeedbackTab({ user, isAdmin }) {
     loadData();
   };
 
+  const [bugFeature, setBugFeature] = useState("ai_menu");
+
+  const BUG_FEATURES = [
+    { id: "ai_menu", label: "🍽️ AI Menu" },
+    { id: "photo", label: "📸 Chụp ảnh" },
+    { id: "ai_chat", label: "💬 AI Chat" },
+    { id: "ui", label: "📊 Giao diện" },
+    { id: "other", label: "🔧 Khác" },
+  ];
+
   // Styles
   const segTab = (active) => ({
     flex: 1, padding: "8px 4px", textAlign: "center", fontSize: 12, fontWeight: 700,
@@ -137,6 +144,8 @@ export default function FeedbackTab({ user, isAdmin }) {
     fontSize: 16, cursor: "pointer", border: `1.5px solid ${filled ? "#007AFF" : C.border}`,
     background: filled ? "rgba(0,122,255,0.06)" : "#fff",
   });
+  const textareaStyle = { width: "100%", minHeight: 90, padding: 10, border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 13, fontFamily: "inherit", resize: "vertical", outline: "none", lineHeight: 1.5, boxSizing: "border-box" };
+  const submitBtnStyle = (enabled) => ({ width: "100%", padding: 14, borderRadius: 12, border: "none", fontSize: 15, fontWeight: 800, color: "#fff", background: enabled ? "linear-gradient(135deg, #36A3FF, #007AFF)" : C.border, boxShadow: enabled ? "0 4px 12px rgba(0,122,255,0.25)" : "none", marginTop: 10, cursor: enabled ? "pointer" : "default", fontFamily: "inherit", opacity: sending ? 0.6 : 1 });
 
   const overallAvg = totalRatings > 0
     ? Math.round(Object.values(avgRatings).reduce((s, v) => s + v.avg, 0) / Object.values(avgRatings).length * 10) / 10
@@ -144,11 +153,27 @@ export default function FeedbackTab({ user, isAdmin }) {
 
   const pendingCount = allFeedback.filter(f => f.status === "pending").length;
 
+  const handleSubmit = async (cat) => {
+    if (!content.trim() || sending) return;
+    setSending(true);
+    try {
+      await supabase.from("user_feedback").insert({
+        user_id: userId, username, category: cat, content: content.trim(),
+      });
+      setContent("");
+      setSent(true);
+      setTimeout(() => setSent(false), 3000);
+      loadData();
+    } catch (e) { console.error(e); }
+    setSending(false);
+  };
+
   return (
     <div>
       {/* Segment tabs */}
       <div style={{ display: "flex", margin: "0 0 14px", background: C.surface, borderRadius: 10, padding: 3 }}>
-        <div style={segTab(tab === "feedback")} onClick={() => setTab("feedback")}>💬 Góp ý</div>
+        <div style={segTab(tab === "feedback")} onClick={() => setTab("feedback")}>💡 Góp ý</div>
+        <div style={segTab(tab === "bug")} onClick={() => setTab("bug")}>🐛 Báo lỗi</div>
         <div style={segTab(tab === "rating")} onClick={() => setTab("rating")}>⭐ Đánh giá</div>
         {isAdmin && <div style={segTab(tab === "admin")} onClick={() => setTab("admin")}>👑 Admin</div>}
       </div>
@@ -156,52 +181,63 @@ export default function FeedbackTab({ user, isAdmin }) {
       {/* ====== TAB: Góp ý ====== */}
       {tab === "feedback" && <>
         <div style={{ ...card }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 8 }}>Loại phản hồi</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-            {CATEGORIES.map(c => (
-              <div key={c.id} style={chip(category === c.id)} onClick={() => setCategory(c.id)}>{c.label}</div>
-            ))}
-          </div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 4 }}>💡 Đề xuất & Góp ý</div>
+          <div style={{ fontSize: 12, color: C.t3, marginBottom: 14, lineHeight: 1.5 }}>Chia sẻ ý tưởng, tính năng bạn muốn có, hoặc điều bạn muốn cải thiện.</div>
 
-          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 6 }}>Nội dung</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 6 }}>Nội dung góp ý</div>
           <textarea
             value={content} onChange={e => setContent(e.target.value.slice(0, 500))}
-            placeholder="VD: Mình muốn app có thêm chế độ ăn chay..."
-            style={{ width: "100%", minHeight: 90, padding: 10, border: `1.5px solid ${C.border}`, borderRadius: 10, fontSize: 13, fontFamily: "inherit", resize: "vertical", outline: "none", lineHeight: 1.5, boxSizing: "border-box" }}
+            placeholder="VD: Mình muốn app có thêm chế độ ăn chay, hoặc tính năng xuất báo cáo PDF..."
+            style={textareaStyle}
           />
           <div style={{ fontSize: 10, color: C.t3, textAlign: "right", marginTop: 2 }}>{content.length} / 500</div>
 
-          {sent && <div style={{ padding: "10px 14px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 10, fontSize: 13, color: "#15803D", fontWeight: 600, marginTop: 8 }}>✅ Đã gửi phản hồi! Cảm ơn bạn.</div>}
+          {sent && <div style={{ padding: "10px 14px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 10, fontSize: 13, color: "#15803D", fontWeight: 600, marginTop: 8 }}>✅ Đã gửi góp ý! Cảm ơn bạn.</div>}
 
-          <button onClick={handleSubmitFeedback} disabled={!content.trim() || sending}
-            style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", fontSize: 15, fontWeight: 800, color: "#fff", background: content.trim() ? "linear-gradient(135deg, #36A3FF, #007AFF)" : C.border, boxShadow: content.trim() ? "0 4px 12px rgba(0,122,255,0.25)" : "none", marginTop: 10, cursor: content.trim() ? "pointer" : "default", fontFamily: "inherit", opacity: sending ? 0.6 : 1 }}>
-            {sending ? "Đang gửi..." : "Gửi phản hồi →"}
+          <button onClick={() => handleSubmit("suggestion")} disabled={!content.trim() || sending} style={submitBtnStyle(!!content.trim())}>
+            {sending ? "Đang gửi..." : "Gửi góp ý →"}
           </button>
         </div>
 
-        {/* My previous feedback */}
-        {myFeedback.length > 0 && <>
-          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, margin: "16px 0 8px" }}>Phản hồi trước của bạn</div>
-          {myFeedback.map(fb => (
-            <div key={fb.id} style={{ padding: 12, background: C.surface, borderRadius: 10, marginBottom: 8, border: `1px solid ${C.border}` }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#007AFF", background: "rgba(0,122,255,0.06)", padding: "2px 8px", borderRadius: 6 }}>
-                  {CATEGORIES.find(c => c.id === fb.category)?.label || fb.category}
-                </span>
-                <span style={{ fontSize: 10, color: C.t3 }}>{new Date(fb.created_at).toLocaleDateString("vi-VN")}</span>
-              </div>
-              <div style={{ fontSize: 12, color: "#334155", marginTop: 6, lineHeight: 1.5 }}>{fb.content}</div>
-              <div style={{ fontSize: 10, fontWeight: 700, marginTop: 6, color: fb.status === "replied" ? "#10B981" : "#F59E0B" }}>
-                {fb.status === "replied" ? "✅ Đã phản hồi" : "⏳ Đang xử lý"}
-              </div>
-              {fb.admin_reply && (
-                <div style={{ marginTop: 6, padding: "8px 10px", background: "#F0FDF4", borderRadius: 8, borderLeft: "3px solid #10B981" }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#10B981", marginBottom: 3 }}>👑 Admin</div>
-                  <div style={{ fontSize: 11, color: "#334155", lineHeight: 1.5 }}>{fb.admin_reply}</div>
-                </div>
-              )}
-            </div>
-          ))}
+        {/* Lịch sử góp ý */}
+        {myFeedback.filter(f => f.category === "suggestion").length > 0 && <>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, margin: "16px 0 8px" }}>Góp ý trước của bạn</div>
+          {myFeedback.filter(f => f.category === "suggestion").map(fb => renderFeedbackItem(fb))}
+        </>}
+      </>}
+
+      {/* ====== TAB: Báo lỗi ====== */}
+      {tab === "bug" && <>
+        <div style={{ ...card }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 4 }}>🐛 Báo lỗi</div>
+          <div style={{ fontSize: 12, color: C.t3, marginBottom: 14, lineHeight: 1.5 }}>Gặp lỗi hoặc sự cố? Cho mình biết để sửa nhanh nhất.</div>
+
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 8 }}>Tính năng bị lỗi</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+            {BUG_FEATURES.map(f => (
+              <div key={f.id} style={chip(bugFeature === f.id)} onClick={() => setBugFeature(f.id)}>{f.label}</div>
+            ))}
+          </div>
+
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginBottom: 6 }}>Mô tả lỗi</div>
+          <textarea
+            value={content} onChange={e => setContent(e.target.value.slice(0, 500))}
+            placeholder="VD: Chụp ảnh phở bò mà AI nhận diện thành bún bò. Xảy ra khi dùng camera sau..."
+            style={textareaStyle}
+          />
+          <div style={{ fontSize: 10, color: C.t3, textAlign: "right", marginTop: 2 }}>{content.length} / 500</div>
+
+          {sent && <div style={{ padding: "10px 14px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 10, fontSize: 13, color: "#15803D", fontWeight: 600, marginTop: 8 }}>✅ Đã gửi báo lỗi! Mình sẽ kiểm tra sớm.</div>}
+
+          <button onClick={() => handleSubmit(bugFeature)} disabled={!content.trim() || sending} style={submitBtnStyle(!!content.trim())}>
+            {sending ? "Đang gửi..." : "Gửi báo lỗi →"}
+          </button>
+        </div>
+
+        {/* Lịch sử báo lỗi */}
+        {myFeedback.filter(f => f.category !== "suggestion").length > 0 && <>
+          <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, margin: "16px 0 8px" }}>Báo lỗi trước của bạn</div>
+          {myFeedback.filter(f => f.category !== "suggestion").map(fb => renderFeedbackItem(fb))}
         </>}
       </>}
 
@@ -291,7 +327,7 @@ export default function FeedbackTab({ user, isAdmin }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#007AFF", background: "rgba(0,122,255,0.06)", padding: "2px 8px", borderRadius: 6 }}>
-                  {CATEGORIES.find(c => c.id === fb.category)?.label || fb.category}
+                  {CAT_LABELS[fb.category] || fb.category}
                 </span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: C.t1, marginLeft: 8 }}>{fb.username}</span>
               </div>
