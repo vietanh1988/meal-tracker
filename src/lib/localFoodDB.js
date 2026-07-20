@@ -521,6 +521,7 @@ const GRAM_LIMIT_OVERRIDE = {
   "đùi gà": { min: 80, max: 280 }, "thịt vịt": { min: 80, max: 280 },
   "thịt bò": { min: 80, max: 250 }, "thăn bò": { min: 80, max: 250 }, "thịt bò xay": { min: 80, max: 250 },
   "thịt heo nạc": { min: 80, max: 250 }, "thịt lợn nạc": { min: 80, max: 250 }, "thịt heo xay": { min: 80, max: 250 },
+  "thịt heo": { min: 80, max: 250 }, "thịt lợn": { min: 80, max: 250 },
   "cá hồi": { min: 80, max: 250 }, "cá ngừ": { min: 80, max: 250 },
   "tôm tươi": { min: 60, max: 200 }, "mực": { min: 60, max: 200 },
   "trứng gà": { min: 50, max: 200 }, "trứng gà luộc": { min: 50, max: 200 },

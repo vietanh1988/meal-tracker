@@ -430,25 +430,82 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       // Fat filler: bù theo tổng fat còn thiếu sau dry-run
       // - Thiếu < 5g → không bù
       // - Thiếu 5-15g → bù 1 bữa chính
-      // - Thiếu > 15g → bù 2 bữa chính
-      // BỎ QUA bữa nếu: standalone dish, filler bị avoid, style=clean, hoặc bữa đã có fat
+      // - Thiếu 15-30g → bù 2 bữa chính
+      // - Thiếu > 30g → bù 3 bữa (tất cả bữa chính)
+      // BỎ QUA bữa nếu: standalone dish, filler bị avoid, style=clean
       const fatGap = (target.f || 0) - (total1.f || 0);
-      const fillerSlots = fatGap >= 5 ? (fatGap > 15 ? 2 : 1) : 0;
+      const fillerSlots = fatGap >= 5 ? (fatGap > 30 ? 3 : fatGap > 15 ? 2 : 1) : 0;
       if (fillerSlots > 0) {
         let filled = 0;
         for (const m of normMeals) {
           if (filled >= fillerSlots) break;
           if (!MAIN_MEALS.has(m.meal_id)) continue;
-          if (m.foods.some(f => f.role === "fat")) continue;
           if (m.foods.some(f => isStandaloneDish(f.key))) continue;
           const filler = AUTO_FAT_FILLER[m.meal_id];
           if (!filler || avoidSet.has(filler.food) || styleId === "clean") continue;
+          if (m.foods.some(f => f.key === filler.food)) continue; // tránh trùng
           m.foods.push({ key: filler.food, display: filler.display, role: "fat" });
           filled++;
         }
       }
 
-      // Lớp 2b: ENGINE DRY-RUN lần 2 — sau fat filler, kiểm tra macro cuối cùng
+      // Carb filler: bù calo khi P+F đã đủ target nhưng tổng cal còn thiếu >10%
+      // Chạy dry-run tạm sau fat filler để đo cal gap
+      const virtualTplMid = buildVirtualTemplate(normMeals, dayType);
+      const templateMid = stripZeroGramItems(applyMealEngineToTemplate(virtualTplMid, target));
+      const totalMid = sumTemplate(templateMid);
+      const calGap = (target.cal || 0) - (totalMid.cal || 0);
+      const calGapPct = target.cal > 0 ? calGap / target.cal : 0;
+      const pOk = totalMid.p >= (target.p || 0) * 0.85;
+      const fOk = totalMid.f >= (target.f || 0) * 0.85;
+
+      if (calGapPct > 0.10 && pOk && fOk) {
+        // Carb bữa chính — thêm carb vào bữa thiếu calo nhất
+        const CARB_FILLER_MAIN = {
+          sang: { food: "chuối", display: "Chuối", role: "carb" },
+          trua: { food: "cơm trắng", display: "Cơm trắng (thêm)", role: "carb" },
+          toi: { food: "khoai lang", display: "Khoai lang", role: "carb" },
+        };
+        // Hoa quả bữa phụ
+        const CARB_FILLER_SNACK = {
+          phu_sang: { food: "chuối", display: "Chuối", role: "carb" },
+          phu_chieu: { food: "xoài", display: "Xoài", role: "carb" },
+        };
+
+        // Tính cal per bữa để tìm bữa thiếu nhất
+        const mealWeights = { sang: 25, phu_sang: 10, trua: 30, phu_chieu: 10, pre: 12, post: 15, toi: 25 };
+        const totalWeight = normMeals.reduce((s, m) => s + (mealWeights[m.meal_id] || 0), 0);
+        const perMealCal = {};
+        for (const meal of templateMid.meals || []) {
+          perMealCal[meal.meal_id] = (meal.items || []).reduce((s, it) => s + (it.cal || 0), 0);
+        }
+
+        // Sort bữa theo cal gap (thiếu nhiều nhất trước)
+        const sortedMeals = [...normMeals]
+          .filter(m => !m.foods.some(f => isStandaloneDish(f.key)))
+          .sort((a, b) => {
+            const tA = totalWeight > 0 ? Math.round(target.cal * (mealWeights[a.meal_id] || 0) / totalWeight) : 0;
+            const tB = totalWeight > 0 ? Math.round(target.cal * (mealWeights[b.meal_id] || 0) / totalWeight) : 0;
+            return (tB - (perMealCal[b.meal_id] || 0)) - (tA - (perMealCal[a.meal_id] || 0));
+          });
+
+        let carbFilled = 0;
+        for (const m of sortedMeals) {
+          if (carbFilled >= 2) break;
+          const tgtCal = totalWeight > 0 ? Math.round(target.cal * (mealWeights[m.meal_id] || 0) / totalWeight) : 0;
+          const gap = tgtCal - (perMealCal[m.meal_id] || 0);
+          if (gap < 50) continue; // bữa đã đủ calo
+
+          // Chọn filler: bữa chính dùng carb, bữa phụ dùng hoa quả
+          const filler = MAIN_MEALS.has(m.meal_id) ? CARB_FILLER_MAIN[m.meal_id] : CARB_FILLER_SNACK[m.meal_id];
+          if (!filler || avoidSet.has(filler.food)) continue;
+          if (m.foods.some(f => f.key === filler.food)) continue; // tránh trùng
+          m.foods.push({ key: filler.food, display: filler.display, role: filler.role });
+          carbFilled++;
+        }
+      }
+
+      // Lớp 2b: ENGINE DRY-RUN lần 2 — sau fat+carb filler, kiểm tra macro cuối cùng
       const virtualTpl = buildVirtualTemplate(normMeals, dayType);
       const template = attachPatternAndDisplay(
         stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)),

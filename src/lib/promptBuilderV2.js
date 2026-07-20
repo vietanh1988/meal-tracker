@@ -31,7 +31,7 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
     const r = SLOT_RULES[m];
     if (!r) return null;
     const need = Object.keys(r.need).length ? ` — bắt buộc có: ${Object.keys(r.need).join("+")}` : "";
-    return `${m} (${r.name}): tối đa ${r.maxDishes} món${need}. ${r.hint}`;
+    return `${m} (${r.name}): ${r.minDishes}-${r.maxDishes} món${need}. ${r.hint}`;
   }).filter(Boolean).join("\n");
 
   // Whitelist — nhóm theo role, kèm macro + điểm hợp bữa cao nhất
