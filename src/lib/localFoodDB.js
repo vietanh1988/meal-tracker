@@ -1339,6 +1339,62 @@ export const LOCAL_FOODS = {
   "sapoche":         {p:0.4, c:20.0, f:1.1, cal:83, fiber:5.3, form:"raw", cat:"fruit"},
   "măng cụt":        {p:0.4, c:18.0, f:0.6, cal:73, fiber:1.8, form:"raw", cat:"fruit"},
   "chanh dây":       {p:2.2, c:23.4, f:0.7, cal:97, fiber:10.4, form:"raw", cat:"fruit"},
+
+  // ==================== BATCH 35 — CƠM PHẦN + COMBO ====================
+  "cơm sườn nướng":  {p:9.0, c:22.0, f:8.0, cal:200, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:8},
+  "cơm gà nướng":    {p:10.0, c:22.0, f:6.0, cal:185, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:8},
+  "cơm cá kho":      {p:8.0, c:22.0, f:4.0, cal:158, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "cơm thịt kho":    {p:8.0, c:22.0, f:6.0, cal:175, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "cơm chiên bò":    {p:7.0, c:24.0, f:6.0, cal:180, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "cơm tấm bì":      {p:7.0, c:25.0, f:4.0, cal:165, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:8},
+  "cơm cuộn cá hồi": {p:7.0, c:25.0, f:5.0, cal:175, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+
+  // ==================== BATCH 35 — BÁNH MÌ VARIANTS ====================
+  "bánh mì thịt nướng":{p:10.0, c:25.0, f:8.0, cal:215, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:10},
+  "bánh mì gà":      {p:10.0, c:24.0, f:6.0, cal:192, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:10},
+  "bánh mì xíu mại": {p:9.0, c:25.0, f:7.0, cal:200, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "bánh mì trứng":   {p:9.0, c:24.0, f:8.0, cal:208, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:10},
+  "bánh mì thịt nguội":{p:8.0, c:25.0, f:7.0, cal:195, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:10},
+
+  // ==================== BATCH 35 — CHÁO VARIANTS ====================
+  "cháo tôm":        {p:4.0, c:6.5, f:1.0, cal:52, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "cháo bò":         {p:4.5, c:6.5, f:1.5, cal:58, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "cháo thịt bằm":   {p:4.0, c:6.5, f:1.5, cal:56, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "cháo hành":       {p:1.0, c:8.0, f:0.2, cal:38, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+
+  // ==================== BATCH 36 — MÓN CUỐN + GỎI CUỐN ====================
+  "gỏi cuốn chay":   {p:3.0, c:15.0, f:1.0, cal:82, fiber:1.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bì cuốn":         {p:5.0, c:14.0, f:2.0, cal:95, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "nem cuốn":        {p:4.0, c:15.0, f:2.0, cal:95, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "cuốn diếp":       {p:5.0, c:8.0, f:2.0, cal:70, fiber:1.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "phở cuốn bò":     {p:5.0, c:12.0, f:2.5, cal:92, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+
+  // ==================== BATCH 36 — DIMSUM/HÁ CẢO CHI TIẾT ====================
+  "hoành thánh":     {p:7.0, c:18.0, f:4.0, cal:138, fiber:0.5, form:"cooked", cat:"starch"},
+  "bánh bao nhân thịt":{p:8.0, c:28.0, f:6.0, cal:200, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "bánh bao nhân đậu":{p:6.0, c:30.0, f:3.0, cal:172, fiber:2.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "xíu mại nước":    {p:10.0, c:5.0, f:8.0, cal:135, fiber:0.5, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:7},
+
+  // ==================== BATCH 36 — SALAD + HEALTHY ====================
+  "salad cá hồi":    {p:12.0, c:5.0, f:8.0, cal:142, fiber:2.0, form:"composite", cat:"seafood", region:"intl", complexity:1, convenience:8},
+  "salad tôm":       {p:10.0, c:5.0, f:4.0, cal:98, fiber:2.0, form:"composite", cat:"seafood", region:"intl", complexity:1, convenience:8},
+  "salad trứng":     {p:8.0, c:4.0, f:8.0, cal:120, fiber:1.5, form:"composite", cat:"egg_dairy", region:"intl", complexity:1, convenience:8},
+  "salad bò":        {p:10.0, c:5.0, f:6.0, cal:118, fiber:2.0, form:"composite", cat:"beef", region:"intl", complexity:1, convenience:7},
+  "poke bowl":       {p:12.0, c:25.0, f:5.0, cal:195, fiber:2.0, form:"composite", cat:"seafood", region:"intl", complexity:1, convenience:8},
+  "grain bowl":      {p:8.0, c:30.0, f:6.0, cal:208, fiber:4.0, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:8},
+
+  // ==================== BATCH 36 — MÓN ĐÚC/HẤP ====================
+  "chả trứng hấp":   {p:10.0, c:2.0, f:8.0, cal:122, fiber:0.3, form:"composite", cat:"egg_dairy", region:"vn", complexity:1, convenience:6},
+  "trứng đúc thịt":  {p:11.0, c:2.0, f:10.0, cal:145, fiber:0.3, form:"composite", cat:"egg_dairy", region:"vn", complexity:1, convenience:6},
+  "giò lụa hấp":     {p:14.0, c:3.0, f:8.0, cal:142, fiber:0, form:"cooked", cat:"processed"},
+  "patê hấp":        {p:12.0, c:2.0, f:20.0, cal:240, fiber:0, form:"cooked", cat:"processed"},
+
+  // ==================== BATCH 36 — HẠT + ĐẬU BỔ SUNG ====================
+  "đậu phộng luộc":  {p:26.0, c:16.0, f:45.0, cal:525, fiber:9.0, form:"cooked", cat:"nuts"},
+  "hạt mắc ca":      {p:7.9, c:13.8, f:75.8, cal:718, fiber:8.6, form:"raw", cat:"nuts"},
+  "hạt bí rang":     {p:30.2, c:10.7, f:49.1, cal:559, fiber:6.0, form:"cooked", cat:"nuts"},
+  "hạt lanh":        {p:18.3, c:28.9, f:42.2, cal:534, fiber:27.3, form:"raw", cat:"nuts"},
+  "bơ hạnh nhân":    {p:21.0, c:18.8, f:55.5, cal:614, fiber:10.5, form:"solid", cat:"nuts"},
 };
 
 // Keys sorted longest first for greedy matching
