@@ -9,8 +9,8 @@ const defaultStructure = {
     {id:"phu_sang",name:"Bữa phụ sáng",items:[]},
     {id:"trua",name:"Bữa trưa",items:[]},
     {id:"phu_chieu",name:"Bữa phụ chiều",items:[]},
-    {id:"pre",name:"Pre-workout",items:[]},
-    {id:"post",name:"Post-workout",items:[]},
+    {id:"pre",name:"Trước tập",items:[]},
+    {id:"post",name:"Sau tập",items:[]},
     {id:"toi",name:"Bữa tối",items:[]},
   ],
   rest: [
@@ -18,8 +18,8 @@ const defaultStructure = {
     {id:"phu_sang",name:"Bữa phụ sáng",items:[]},
     {id:"trua",name:"Bữa trưa",items:[]},
     {id:"phu_chieu",name:"Bữa phụ chiều",items:[]},
-    {id:"pre",name:"Pre-workout",items:[]},
-    {id:"post",name:"Post-workout",items:[]},
+    {id:"pre",name:"Trước tập",items:[]},
+    {id:"post",name:"Sau tập",items:[]},
     {id:"toi",name:"Bữa tối",items:[]},
   ],
 };
