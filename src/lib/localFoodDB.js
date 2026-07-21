@@ -1518,6 +1518,63 @@ export const LOCAL_FOODS = {
   "nho xanh":        {p:0.7, c:18.1, f:0.2, cal:69, fiber:0.9, form:"raw", cat:"fruit"},
   "nho đỏ":          {p:0.7, c:18.1, f:0.2, cal:69, fiber:0.9, form:"raw", cat:"fruit"},
   "dưa vàng":        {p:0.8, c:8.2, f:0.2, cal:34, fiber:0.9, form:"raw", cat:"fruit"},
+
+  // ==================== BATCH 41 — RAU XÀO/LUỘC CÒN THIẾU ====================
+  "rau muống xào bò": {p:6.0, c:4.0, f:5.0, cal:88, fiber:1.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "bí đỏ xào trứng": {p:3.0, c:6.0, f:5.0, cal:82, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "mướp xào tôm":    {p:5.0, c:3.5, f:4.0, cal:70, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "su su xào tỏi":   {p:1.0, c:5.0, f:4.0, cal:58, fiber:1.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "cải thảo xào thịt bò":{p:5.0, c:3.0, f:5.0, cal:78, fiber:1.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "đậu que xào tỏi": {p:2.0, c:7.0, f:4.0, cal:72, fiber:3.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "cải ngọt xào tỏi":{p:1.5, c:3.0, f:4.0, cal:52, fiber:1.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "bông cải xào tỏi":{p:2.5, c:6.0, f:4.0, cal:68, fiber:2.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "rau lang xào tỏi":{p:2.5, c:5.0, f:4.0, cal:65, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "nấm xào rau cải": {p:3.0, c:4.0, f:4.0, cal:62, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+
+  // ==================== BATCH 41 — CƠM/BÚN/PHỞ CÒN THIẾU ====================
+  "phở bò tái nạm":  {p:7.0, c:8.0, f:2.5, cal:82, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "phở bò tái gầu":  {p:6.0, c:8.0, f:3.5, cal:90, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "bún chả cá nha trang":{p:5.0, c:8.0, f:2.0, cal:72, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "hủ tiếu mực":     {p:5.5, c:9.0, f:1.5, cal:72, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "mì vịt tiềm":     {p:6.0, c:10.0, f:4.0, cal:100, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "cơm chiên tôm":   {p:7.0, c:24.0, f:6.0, cal:178, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "cơm chiên gà":    {p:7.0, c:24.0, f:6.0, cal:178, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+
+  // ==================== BATCH 41 — BAKERY/DESSERT THÊM ====================
+  "cookie":          {p:5.0, c:62.0, f:20.0, cal:450, fiber:2.0, form:"cooked", cat:"starch"},
+  "macaron":         {p:6.0, c:55.0, f:18.0, cal:400, fiber:1.0, form:"cooked", cat:"starch"},
+  "eclair":          {p:6.0, c:30.0, f:15.0, cal:280, fiber:0.5, form:"cooked", cat:"starch"},
+  "scone":           {p:7.0, c:45.0, f:14.0, cal:335, fiber:1.5, form:"cooked", cat:"starch"},
+  "crêpe":           {p:6.0, c:28.0, f:8.0, cal:210, fiber:0.5, form:"cooked", cat:"starch"},
+  "bánh bò":         {p:2.0, c:35.0, f:1.0, cal:158, fiber:0, form:"cooked", cat:"starch"},
+
+  // ==================== BATCH 42 — HẢI SẢN NƯỚNG/SỐT ====================
+  "cá hồi sốt teriyaki":{p:20.0, c:5.0, f:12.0, cal:210, fiber:0, form:"composite", cat:"seafood", region:"intl", complexity:2, convenience:7},
+  "tôm sốt trứng muối":{p:16.0, c:6.0, f:10.0, cal:180, fiber:0, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:6},
+  "cá sốt chanh dây":{p:16.0, c:5.0, f:4.0, cal:122, fiber:0.5, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:5},
+  "mực sốt me":      {p:14.0, c:6.0, f:4.0, cal:118, fiber:0.3, form:"composite", cat:"seafood", region:"vn", complexity:1, convenience:6},
+  "cua sốt trứng muối":{p:12.0, c:5.0, f:8.0, cal:142, fiber:0, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:5},
+
+  // ==================== BATCH 42 — THỊT HEO NƯỚNG/SỐT ====================
+  "sườn nướng BBQ":  {p:16.0, c:5.0, f:18.0, cal:250, fiber:0, form:"cooked", cat:"pork"},
+  "sườn non xào chua ngọt":{p:14.0, c:8.0, f:12.0, cal:200, fiber:0.5, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:5},
+  "thịt heo nướng riềng mẻ":{p:20.0, c:3.0, f:12.0, cal:205, fiber:0, form:"cooked", cat:"pork"},
+  "sườn ram":        {p:14.0, c:5.0, f:10.0, cal:170, fiber:0, form:"cooked", cat:"pork"},
+  "ba chỉ cuộn nấm nướng":{p:10.0, c:3.0, f:22.0, cal:255, fiber:0.5, form:"cooked", cat:"pork"},
+
+  // ==================== BATCH 42 — LẨU THÊM ====================
+  "lẩu kim chi":     {p:4.0, c:5.0, f:2.0, cal:55, fiber:1.0, form:"composite", cat:"veg", region:"intl", complexity:1, convenience:7},
+  "lẩu tomyum":      {p:4.0, c:5.0, f:2.0, cal:55, fiber:0.5, form:"composite", cat:"seafood", region:"intl", complexity:2, convenience:7},
+  "lẩu cá kèo":     {p:5.0, c:2.0, f:1.5, cal:42, fiber:0.5, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:5},
+  "lẩu bò nhúng dấm":{p:6.0, c:3.0, f:2.0, cal:55, fiber:0.5, form:"composite", cat:"beef", region:"vn", complexity:1, convenience:6},
+  "lẩu ếch":         {p:5.0, c:3.0, f:1.5, cal:45, fiber:0.5, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:5},
+
+  // ==================== BATCH 42 — THÊM ĐÔNG NAM Á ====================
+  "bún bò nam bộ":   {p:6.0, c:8.0, f:3.0, cal:85, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "cơm gà hải nam":  {p:8.0, c:25.0, f:5.0, cal:178, fiber:0.3, form:"composite", cat:"starch", region:"intl", complexity:2, convenience:8},
+  "cơm chiên thái":  {p:5.0, c:24.0, f:6.0, cal:172, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:8},
+  "gà satay":        {p:18.0, c:5.0, f:10.0, cal:185, fiber:0.5, form:"composite", cat:"poultry", region:"intl", complexity:2, convenience:7},
+  "nasi goreng":     {p:6.0, c:25.0, f:6.0, cal:180, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:8},
 };
 
 // Keys sorted longest first for greedy matching
