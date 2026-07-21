@@ -450,6 +450,9 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       }
 
       // Carb filler: bù calo khi P+F đã đủ target nhưng tổng cal còn thiếu >10%
+      // SKIP cho low_carb/keto — không bù thêm carb khi user hạn chế carb
+      const dietStrategy = profile?.dietStrategy || "balanced";
+      const skipCarbFiller = ["low_carb", "keto"].includes(dietStrategy);
       // Chạy dry-run tạm sau fat filler để đo cal gap
       const virtualTplMid = buildVirtualTemplate(normMeals, dayType);
       const templateMid = stripZeroGramItems(applyMealEngineToTemplate(virtualTplMid, target));
@@ -459,7 +462,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       const pOk = totalMid.p >= (target.p || 0) * 0.85;
       const fOk = totalMid.f >= (target.f || 0) * 0.85;
 
-      if (calGapPct > 0.10 && pOk && fOk) {
+      if (calGapPct > 0.10 && pOk && fOk && !skipCarbFiller) {
         // Carb bữa chính — thêm carb vào bữa thiếu calo nhất
         const CARB_FILLER_MAIN = {
           sang: { food: "chuối", display: "Chuối", role: "carb" },
