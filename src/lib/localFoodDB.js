@@ -1646,6 +1646,80 @@ export const LOCAL_FOODS = {
   "sữa chua việt quất":{p:3.5, c:14.0, f:2.5, cal:92, fiber:0.5, form:"solid", cat:"egg_dairy"},
   "phô mai que":     {p:8.0, c:15.0, f:12.0, cal:200, fiber:0.5, form:"cooked", cat:"egg_dairy"},
   "sữa tươi trân châu":{p:3.0, c:14.0, f:3.5, cal:98, fiber:0, form:"liquid", cat:"drink"},
+
+  // ==================== BATCH 45 — MÓN ĂN ĐƯỜNG PHỐ CUỐI ====================
+  "bánh tráng cuốn bò": {p:6.0, c:10.0, f:4.0, cal:102, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bánh tráng cuốn heo nướng":{p:6.0, c:10.0, f:5.0, cal:110, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "xiên bẩn":        {p:5.0, c:12.0, f:8.0, cal:142, fiber:0.5, form:"cooked", cat:"processed"},
+  "tokbokki phô mai":{p:5.0, c:45.0, f:3.0, cal:228, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:8},
+  "trứng cút chiên": {p:10.0, c:3.0, f:12.0, cal:162, fiber:0, form:"cooked", cat:"egg_dairy"},
+  "khoai tây lốc xoáy":{p:3.0, c:30.0, f:12.0, cal:240, fiber:2.0, form:"cooked", cat:"starch"},
+  "bánh rán doremon": {p:4.0, c:38.0, f:8.0, cal:240, fiber:0.5, form:"cooked", cat:"starch"},
+  "chả cốm":         {p:12.0, c:10.0, f:6.0, cal:145, fiber:0.5, form:"cooked", cat:"pork"},
+
+  // ==================== BATCH 45 — MÓN VN SÁNG TẠO ====================
+  "cơm chiên bò lúc lắc":{p:8.0, c:22.0, f:7.0, cal:188, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "phở sốt bò":      {p:6.0, c:8.0, f:3.0, cal:85, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bún bò xào sả":   {p:7.0, c:8.0, f:4.0, cal:98, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:6},
+  "mì xào hải sản":  {p:7.0, c:18.0, f:6.0, cal:155, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "mì xào bò":       {p:7.0, c:18.0, f:6.0, cal:155, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "mì xào giòn":     {p:5.0, c:22.0, f:8.0, cal:182, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "miến nấu cua":    {p:4.0, c:12.0, f:1.5, cal:78, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:5},
+  "miến gà trộn":    {p:5.0, c:14.0, f:2.0, cal:95, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bún trộn":        {p:5.0, c:10.0, f:3.0, cal:88, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "phở cuốn tôm":   {p:5.0, c:12.0, f:2.0, cal:88, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+
+  // ==================== BATCH 45 — CANH/SÚP CUỐI ====================
+  "canh mướp tôm":   {p:3.0, c:3.0, f:0.5, cal:28, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh bí đỏ tôm":  {p:3.0, c:5.0, f:0.5, cal:36, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh rau ngót tôm":{p:3.0, c:2.0, f:0.5, cal:25, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh đậu phụ":    {p:3.0, c:2.0, f:1.5, cal:32, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh rau củ":     {p:1.5, c:4.0, f:0.5, cal:26, fiber:1.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "sup cua":         {p:4.0, c:8.0, f:2.0, cal:65, fiber:0.5, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:7},
+  "sup măng cua":    {p:4.0, c:6.0, f:1.5, cal:55, fiber:1.0, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:7},
+
+  // ==================== BATCH 46 — MÓN XÀO CUỐI ====================
+  "thịt bò xào lúc lắc":{p:18.0, c:3.0, f:10.0, cal:178, fiber:0.3, form:"composite", cat:"beef", region:"vn", complexity:2, convenience:6},
+  "heo xào lăn":     {p:14.0, c:4.0, f:12.0, cal:182, fiber:0.5, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:5},
+  "gà xào nấm":      {p:16.0, c:3.0, f:7.0, cal:142, fiber:1.0, form:"composite", cat:"poultry", region:"vn", complexity:1, convenience:6},
+  "gà xào ớt hiểm":  {p:16.0, c:4.0, f:8.0, cal:155, fiber:0.5, form:"composite", cat:"poultry", region:"vn", complexity:1, convenience:6},
+  "tôm xào bông cải":{p:12.0, c:5.0, f:5.0, cal:115, fiber:2.0, form:"composite", cat:"seafood", region:"vn", complexity:1, convenience:6},
+  "mực xào ớt":      {p:14.0, c:4.0, f:5.0, cal:120, fiber:0.5, form:"composite", cat:"seafood", region:"vn", complexity:1, convenience:6},
+  "bò xào cần tỏi":  {p:16.0, c:4.0, f:8.0, cal:155, fiber:1.0, form:"composite", cat:"beef", region:"vn", complexity:1, convenience:6},
+  "bò xào đậu que":  {p:15.0, c:6.0, f:8.0, cal:158, fiber:2.0, form:"composite", cat:"beef", region:"vn", complexity:1, convenience:6},
+
+  // ==================== BATCH 46 — MÓN KHO/RIM CUỐI ====================
+  "cá basa kho":     {p:14.0, c:3.0, f:4.0, cal:108, fiber:0, form:"cooked", cat:"seafood"},
+  "cá chép kho riềng":{p:16.0, c:3.0, f:5.0, cal:125, fiber:0, form:"cooked", cat:"seafood"},
+  "cá nục kho":      {p:18.0, c:3.0, f:5.0, cal:132, fiber:0, form:"cooked", cat:"seafood"},
+  "thịt kho tàu trứng":{p:12.0, c:4.0, f:14.0, cal:195, fiber:0, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:6},
+  "thịt kho dưa":    {p:12.0, c:3.0, f:10.0, cal:155, fiber:0.5, form:"composite", cat:"pork", region:"vn", complexity:1, convenience:6},
+  "gà kho sả":       {p:18.0, c:3.0, f:8.0, cal:160, fiber:0.3, form:"composite", cat:"poultry", region:"vn", complexity:1, convenience:6},
+
+  // ==================== BATCH 46 — NƯỚC CHẤM + GIA VỊ CUỐI ====================
+  "sốt phô mai":     {p:5.0, c:4.0, f:18.0, cal:200, fiber:0, form:"liquid", cat:"sauce"},
+  "sốt bơ tỏi":      {p:1.0, c:2.0, f:30.0, cal:285, fiber:0, form:"liquid", cat:"sauce"},
+  "nước mắm tỏi ớt": {p:2.0, c:6.0, f:0, cal:32, fiber:0, form:"liquid", cat:"sauce"},
+  "nước sốt teriyaki":{p:3.0, c:20.0, f:0, cal:89, fiber:0, form:"liquid", cat:"sauce"},
+  "sốt bbq":         {p:1.0, c:25.0, f:0.5, cal:105, fiber:0.5, form:"liquid", cat:"sauce"},
+
+  // ==================== BATCH 46 — THÊM ĐỒ UỐNG CUỐI ====================
+  "espresso":        {p:0.1, c:0, f:0, cal:2, fiber:0, form:"liquid", cat:"drink"},
+  "cappuccino":      {p:2.5, c:5.0, f:2.0, cal:50, fiber:0, form:"liquid", cat:"drink"},
+  "latte":           {p:3.0, c:5.0, f:2.0, cal:50, fiber:0, form:"liquid", cat:"drink"},
+  "americano":       {p:0.1, c:0, f:0, cal:2, fiber:0, form:"liquid", cat:"drink"},
+  "mocha":           {p:3.0, c:12.0, f:4.0, cal:98, fiber:0.5, form:"liquid", cat:"drink"},
+  "trà oolong sữa":  {p:1.5, c:15.0, f:2.0, cal:85, fiber:0, form:"liquid", cat:"drink"},
+  "trà hoa cúc":     {p:0, c:0, f:0, cal:1, fiber:0, form:"liquid", cat:"drink"},
+  "nước dừa tươi":   {p:0.7, c:3.7, f:0.2, cal:19, fiber:1.1, form:"liquid", cat:"drink"},
+
+  // ==================== BATCH 46 — SUPPLEMENT CUỐI ====================
+  "thanh protein":   {p:20.0, c:30.0, f:8.0, cal:270, fiber:3.0, form:"solid", cat:"supp"},
+  "thanh granola":   {p:5.0, c:60.0, f:12.0, cal:370, fiber:4.0, form:"solid", cat:"supp"},
+  "protein shake sữa":{p:22.0, c:10.0, f:3.0, cal:155, fiber:1.0, form:"liquid", cat:"supp"},
+  "whey isolate":    {p:85.0, c:5.0, f:1.0, cal:370, fiber:0, form:"powder", cat:"supp"},
+  "casein bột":      {p:80.0, c:5.0, f:2.0, cal:360, fiber:0, form:"powder", cat:"supp"},
+  "glutamine":       {p:100, c:0, f:0, cal:400, fiber:0, form:"powder", cat:"supp"},
 };
 
 // Keys sorted longest first for greedy matching
