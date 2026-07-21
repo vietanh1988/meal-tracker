@@ -109,6 +109,12 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
         temperature: 0,
       });
 
+      if (res.quotaExceeded) {
+        setError(res.message || "📸 Bạn đã hết lượt sử dụng tính năng Chụp ảnh kiểm tra dinh dưỡng trong tháng này. Vui lòng quay lại vào tháng sau hoặc nâng cấp gói để có thêm lượt!");
+        setLoading(false);
+        setStep(1);
+        return;
+      }
       if (res.error) throw new Error(res.error);
       
       // Parse JSON từ AI response
