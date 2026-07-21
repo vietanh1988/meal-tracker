@@ -1826,6 +1826,54 @@ export const UNIT_MAP = {
 
   // Mì gói
   "mì gói":          [{name:"gói", gram:75}],
+
+  // Composite VN phổ biến
+  "bún chả":         [{name:"suất nhỏ", gram:300}, {name:"suất vừa", gram:400}],
+  "bún thịt nướng":  [{name:"suất nhỏ", gram:300}, {name:"suất vừa", gram:400}],
+  "bún riêu cua":    [{name:"tô nhỏ", gram:300}, {name:"tô vừa", gram:400}],
+  "bún ốc":          [{name:"tô nhỏ", gram:300}, {name:"tô vừa", gram:400}],
+  "bún bò":          [{name:"tô nhỏ", gram:350}, {name:"tô vừa", gram:450}],
+  "hủ tiếu":         [{name:"tô nhỏ", gram:300}, {name:"tô vừa", gram:400}],
+  "mì quảng":        [{name:"tô nhỏ", gram:300}, {name:"tô vừa", gram:400}],
+  "cao lầu":         [{name:"tô nhỏ", gram:250}, {name:"tô vừa", gram:350}],
+  "cháo gà":         [{name:"bát nhỏ", gram:250}, {name:"bát vừa", gram:350}],
+  "cháo lòng":       [{name:"bát nhỏ", gram:250}, {name:"bát vừa", gram:350}],
+
+  // Cơm phần thêm
+  "cơm chiên":       [{name:"đĩa nhỏ", gram:250}, {name:"đĩa vừa", gram:350}],
+  "cơm sườn nướng":  [{name:"đĩa", gram:400}],
+  "cơm gà nướng":    [{name:"đĩa", gram:400}],
+
+  // Protein cooked
+  "gà luộc":         [{name:"miếng nhỏ", gram:80}, {name:"miếng vừa", gram:120}, {name:"đùi", gram:150}],
+  "gà nướng":        [{name:"miếng", gram:100}, {name:"đùi", gram:150}],
+  "gà chiên":        [{name:"miếng", gram:100}, {name:"2 miếng", gram:200}],
+  "cá kho":          [{name:"khúc nhỏ", gram:80}, {name:"khúc vừa", gram:120}],
+  "cá chiên":        [{name:"khúc nhỏ", gram:100}, {name:"khúc vừa", gram:150}],
+  "cá hồi nướng":    [{name:"miếng", gram:120}, {name:"miếng lớn", gram:180}],
+  "tôm chiên":       [{name:"5 con", gram:80}, {name:"10 con", gram:160}],
+  "tôm hấp":         [{name:"5 con", gram:80}, {name:"10 con", gram:160}],
+  "bò lúc lắc":      [{name:"phần nhỏ", gram:100}, {name:"phần vừa", gram:150}],
+
+  // Rau/canh thêm
+  "canh chua":       [{name:"bát nhỏ", gram:150}, {name:"bát vừa", gram:200}],
+  "rau muống xào tỏi":[{name:"đĩa nhỏ", gram:100}, {name:"đĩa vừa", gram:150}],
+  "rau xào thập cẩm":[{name:"đĩa nhỏ", gram:100}, {name:"đĩa vừa", gram:150}],
+
+  // Bánh thêm
+  "bánh mì thịt nướng":[{name:"ổ", gram:200}],
+  "bánh mì trứng":   [{name:"ổ", gram:180}],
+  "bánh chưng":      [{name:"miếng", gram:100}, {name:"góc", gram:200}],
+  "nem rán":         [{name:"1 cuốn", gram:30}, {name:"3 cuốn", gram:90}, {name:"5 cuốn", gram:150}],
+  "chả giò":         [{name:"1 cuốn", gram:25}, {name:"3 cuốn", gram:75}, {name:"5 cuốn", gram:125}],
+
+  // Trái cây thêm
+  "xoài":            [{name:"quả nhỏ", gram:150}, {name:"quả vừa", gram:250}],
+  "dưa hấu":         [{name:"miếng", gram:150}, {name:"2 miếng", gram:300}],
+  "nho":             [{name:"chùm nhỏ", gram:100}, {name:"chùm vừa", gram:200}],
+  "thanh long":      [{name:"quả nhỏ", gram:200}, {name:"quả lớn", gram:350}],
+  "sầu riêng":       [{name:"1 múi", gram:40}, {name:"3 múi", gram:120}],
+  "măng cụt":        [{name:"3 quả", gram:80}, {name:"5 quả", gram:130}],
 };
 
 export function getUnits(foodKey) {

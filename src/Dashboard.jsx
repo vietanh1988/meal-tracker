@@ -115,6 +115,21 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const displayName=user?.user_metadata?.username||user?.email?.split("@")[0]||"bạn";
 
   return <div>
+    {/* Loading skeleton — hiện shimmer khi data chưa load */}
+    {!userDataLoaded&&mob&&<div style={{padding:16}}>
+      <style>{`@keyframes fpShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+      <div style={{height:80,borderRadius:14,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",marginBottom:12}}/>
+      <div style={{height:120,borderRadius:14,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"0.15s",marginBottom:12}}/>
+      <div style={{display:"flex",gap:8,marginBottom:12}}>
+        <div style={{flex:1,height:60,borderRadius:10,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"0.3s"}}/>
+        <div style={{flex:1,height:60,borderRadius:10,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"0.45s"}}/>
+        <div style={{flex:1,height:60,borderRadius:10,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"0.6s"}}/>
+        <div style={{flex:1,height:60,borderRadius:10,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"0.75s"}}/>
+      </div>
+      <div style={{height:16,width:"40%",borderRadius:6,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"0.9s",marginBottom:10}}/>
+      <div style={{height:80,borderRadius:14,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"1s",marginBottom:8}}/>
+      <div style={{height:80,borderRadius:14,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"1.1s"}}/>
+    </div>}
     {/* Greeting Header — mobile only. Gradient thương hiệu + bo góc dưới,
         đồng bộ với nút CTA (redBtn) và logo dùng cùng gradient này.
         2 hiệu ứng nhẹ, CHỈ chạy 1 lần khi mount — không lặp gây rối mắt. */}
