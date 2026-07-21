@@ -151,6 +151,30 @@ const NEVER_LIST = [
   "phô mai", "bơ lạt", "cream cheese", "kem whipping",
   // Thịt mỡ thô
   "ba chỉ", "ba rọi", "da gà", "mỡ heo", "tóp mỡ",
+  // RAW PROTEINS có cooked variant — AI chỉ nên thấy cooked (ức gà nướng, không ức gà raw)
+  "ức gà", "đùi gà", "cánh gà", "sườn bò", "thịt bò", "sườn heo", "thịt heo",
+  "cá hồi", "cá ngừ", "cá basa", "cá thu", "cá diêu hồng", "cá lóc", "cá tra",
+  "cá nục", "cá chép", "cá saba", "nghêu", "bạch tuộc", "cá rô", "cá trê",
+  "sò huyết", "tôm hùm", "tim heo", "dạ dày heo", "sườn bò",
+  // RAW PROTEINS còn lại (không có cooked variant riêng nhưng vẫn là nguyên liệu thô)
+  "gà nguyên con", "lòng gà", "thịt vịt", "thăn bò", "bắp bò", "nạm bò", "gân bò",
+  "thịt bò xay", "thịt heo nạc", "thịt lợn nạc", "sườn lợn", "thịt heo xay",
+  "thịt lợn xay", "nạc vai heo", "thịt lợn", "cá rô phi", "tôm tươi", "tôm sú",
+  "ngao", "thịt đùi heo", "chân giò heo", "thịt đùi gà", "gà ta", "ngan",
+  "cá bạc má", "cá cơm", "lươn", "gan heo", "gan gà", "lòng heo", "thịt dê",
+  "tôm đồng", "cá chẽm", "cá mú", "cá bống", "sò điệp", "ốc hương", "ốc bươu",
+  "cua đồng", "sashimi", "cá quả", "cá mòi", "cá đuối", "thịt vai heo",
+  "thịt mông heo", "thịt heo nạc xay", "thịt gà xay", "ba chỉ bò", "nạc dăm heo",
+  "lườn gà", "đùi tỏi gà", "vịt nguyên con", "cá hồi sashimi", "cá ngừ sashimi",
+  "ếch", "ghẹ",
+  // TẤT CẢ DRINKS — AI menu gợi ý thức ăn, KHÔNG gợi ý đồ uống
+  "nước dừa", "nước cam", "cà phê đen", "cà phê", "trà xanh", "trà đá", "trà chanh",
+  "sương sáo", "sữa hạnh nhân", "trà đào", "nước chanh muối", "nước rau má",
+  "nước sâm", "nước chanh đá", "sữa yến mạch", "trà đào cam sả", "trà vải",
+  "nước ép bưởi", "nước ép táo", "nước ép dưa hấu", "nước ép cần tây",
+  "nước đậu đen", "nước bí đao", "cappuccino", "latte", "nước dừa tươi",
+  // Processed ăn vặt (không phải bữa cơm)
+  "xiên bẩn", "nem chua rán", "xiên que nướng",
   // Đồ uống có đường (AI menu gợi ý thức ăn, không gợi ý đồ uống)
   "cà phê sữa đá", "cà phê sữa", "bạc xỉu", "cà phê trứng", "cà phê dừa", "cà phê muối",
   "sinh tố bơ", "sinh tố chuối", "sinh tố xoài", "sinh tố dâu", "sinh tố mãng cầu",
