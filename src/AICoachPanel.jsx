@@ -149,6 +149,19 @@ if(error)console.warn("AI Chat save error:",error);
 }catch(e){console.warn("AI Chat save failed:",e);}
 };
 const chatRef=useRef(null);
+// iOS keyboard fix — scroll chat xuống khi keyboard mở
+const inputRef=useRef(null);
+useEffect(()=>{
+  if(typeof window==='undefined'||!window.visualViewport)return;
+  const vv=window.visualViewport;
+  const onResize=()=>{
+    if(chatRef.current){
+      chatRef.current.scrollTop=chatRef.current.scrollHeight;
+    }
+  };
+  vv.addEventListener('resize',onResize);
+  return ()=>vv.removeEventListener('resize',onResize);
+},[]);
 const aiProvider=pickAiProvider(appSettings);
 const aiModel=pickAiModelFromSettings(appSettings,aiProvider);
 
