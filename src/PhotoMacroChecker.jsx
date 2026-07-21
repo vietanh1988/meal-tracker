@@ -88,6 +88,16 @@ export default function PhotoMacroChecker({ onClose, appSettings }) {
       const prompt = `Nhìn ảnh bữa ăn này. Liệt kê TẤT CẢ các món ăn/thức uống bạn nhìn thấy.
 Với mỗi món, ước lượng khối lượng (gram) dựa trên kích thước nhìn thấy.
 
+NGUYÊN TẮC TÊN MÓN — BẮT BUỘC GHI CỤ THỂ:
+- Trứng: "trứng gà luộc", "trứng vịt luộc", "trứng cút luộc" — KHÔNG "trứng luộc"
+- Thịt: "thịt heo kho", "thịt bò xào", "thịt heo luộc" — KHÔNG "thịt kho", "thịt xào", "thịt luộc"
+- Cá: "cá thu kho", "cá basa chiên", "cá hồi nướng" — KHÔNG "cá kho", "cá chiên", "cá nướng"
+- Gà: "ức gà nướng", "đùi gà chiên", "cánh gà nướng" — KHÔNG "gà nướng", "gà chiên"
+- Tôm: "tôm sú chiên", "tôm hấp sả" — KHÔNG "tôm chiên", "tôm hấp"
+- Rau: "rau muống xào tỏi", "cải ngọt xào", "bông cải luộc" — KHÔNG "rau xào", "rau luộc"
+- Canh: "canh bí đỏ", "canh chua cá lóc", "canh rau ngót tôm" — KHÔNG "canh", "canh chua"
+- Nếu không chắc loại cá/thịt cụ thể, vẫn phải ghi đủ: "cá trắng chiên", "thịt heo nạc kho"
+
 NGUYÊN TẮC TÁCH / GIỮ NGUYÊN:
 - Nếu các thành phần nằm RIÊNG BIỆT trên đĩa/khay (nhìn rõ từng loại): TÁCH ra từng nguyên liệu.
   VD: "bò xào hành tây ớt chuông" → "thịt bò" 120g, "hành tây" 40g, "ớt chuông" 20g
