@@ -2386,31 +2386,15 @@ export function getFoodDisplay(foodKey) {
 // bánh cuốn đã là 1 suất, không ai ăn kèm trứng luộc rời).
 // Dessert/trái cây vẫn ghép bình thường.
 // ------------------------------------------------------------
-export const STANDALONE_DISHES = new Set([
+// Auto-generate: tất cả composite items + starch sợi = standalone
+const _manualStandalone = [
   "bún", "miến", "bánh phở", "hủ tiếu", "bánh cuốn", "cháo", "mì ý",
-  // Composite dishes (đã có macro cả tô)
-  "phở bò", "phở gà", "bún bò huế", "bún riêu", "bún chả", "bún thịt nướng",
-  "hủ tiếu nam vang", "bánh canh", "mì quảng", "cháo gà", "cháo thịt bằm",
-  "xôi xéo", "xôi gà", "xôi lạc", "bánh cuốn nhân thịt", "bánh mì thịt",
-  "cơm tấm", "bún đậu mắm tôm",
-  // Batch 3 composite
-  "canh chua cá", "canh rau ngót", "canh bí đỏ", "canh mồng tơi", "canh cua", "canh bầu", "canh khổ qua",
-  "thịt kho", "cá kho tộ", "trứng kho", "gà kho gừng", "tôm rang", "cơm chiên",
-  // Batch 4 composite
-  "bánh xèo", "gỏi cuốn", "nem rán", "bánh khọt", "bánh tráng trộn", "gỏi ngó sen",
-  "hamburger", "pizza", "hotdog",
-  "chè đậu xanh", "chè đậu đỏ", "chè trôi nước", "bánh flan",
-  // Batch 5
-  "sushi", "kimbap", "tokbokki", "ramen", "pad thái", "cà ri gà",
-  "bún mọc", "bún cá", "hủ tiếu xào", "mì xào", "lẩu thái", "lẩu hải sản",
-  // Batch 6
-  "bún ốc", "cháo lòng", "cháo hải sản", "cơm gà", "cơm sườn",
-  "bánh chưng", "bánh tét", "bánh giò", "bò lúc lắc",
-  "rau xào thập cẩm", "đậu phụ sốt cà", "canh sườn",
-  // Batch 8
-  "bún bò xào", "phở xào", "cơm rang dưa bò", "miến xào",
-  "canh cải", "canh rau đay", "gà xào sả ớt", "bò xào rau cải",
-  "tôm xào", "mực xào", "thịt kho tàu",
+];
+export const STANDALONE_DISHES = new Set([
+  ..._manualStandalone,
+  ...Object.entries(LOCAL_FOODS)
+    .filter(([, v]) => v.form === "composite")
+    .map(([k]) => k),
 ]);
 
 export function isStandaloneDish(foodKey) {

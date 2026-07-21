@@ -64,6 +64,21 @@ const NEVER_LIST = [
   "chả giò rế", "khô gà lá chanh",
   // Đông lạnh
   "pizza đông lạnh",
+  // Gia vị/sốt mới
+  "sốt phô mai", "sốt bơ tỏi", "nước mắm tỏi ớt", "nước sốt teriyaki", "sốt bbq",
+  // Supplement mới
+  "plant protein", "thanh protein", "thanh granola", "protein shake",
+  "protein shake sữa", "whey isolate", "casein bột", "glutamine",
+  // Snack/candy mới
+  "rau câu dừa", "thạch rau câu",
+  // Nguyên liệu thô mới
+  "hạt kê", "ý dĩ", "hạt bo bo", "bột sắn dây", "gạo nếp",
+  "bơ hạnh nhân", "tiết lợn luộc", "tiết canh",
+  "lưỡi heo", "cật heo", "lưỡi bò", "tai heo",
+  "cá cơm khô", "tôm khô", "mực khô", "cá khô",
+  "tôm khô rang", "mực khô nướng", "cá khô chiên", "ruốc tôm",
+  // Đồ uống thêm
+  "espresso", "americano", "trà hoa cúc", "trà ô long", "trà sen", "trà gừng", "trà atiso",
 ];
 
 /**
