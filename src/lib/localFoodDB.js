@@ -523,6 +523,33 @@ export const LOCAL_FOODS = {
   "há cảo":          {p:7.0, c:20.0, f:5.0, cal:155, fiber:1.0, form:"cooked", cat:"starch"},
   "sủi cảo":         {p:8.0, c:22.0, f:4.0, cal:158, fiber:1.0, form:"cooked", cat:"starch"},
   "xíu mại":         {p:12.0, c:8.0, f:10.0, cal:175, fiber:0.5, form:"cooked", cat:"pork"},
+
+  // ==================== 36. BATCH 7 — BỔ SUNG CUỐI ====================
+  // Protein VN
+  "thịt kho tàu":   {p:12.0, c:5.0, f:18.0, cal:235, fiber:0, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:6},
+  "gà luộc":         {p:25.0, c:0, f:7.4, cal:170, fiber:0, form:"cooked", cat:"poultry"},
+  "heo quay":        {p:18.0, c:0, f:22.0, cal:275, fiber:0, form:"cooked", cat:"pork"},
+  "vịt quay":        {p:16.0, c:0, f:20.0, cal:250, fiber:0, form:"cooked", cat:"poultry"},
+  "cá kho":          {p:16.0, c:3.0, f:4.0, cal:115, fiber:0, form:"cooked", cat:"seafood"},
+  "tôm chiên":       {p:18.0, c:10.0, f:12.0, cal:225, fiber:0, form:"cooked", cat:"seafood"},
+  "cua rang muối":   {p:15.0, c:5.0, f:8.0, cal:155, fiber:0, form:"cooked", cat:"seafood"},
+
+  // Rau VN phổ biến còn thiếu
+  "rau mùng tơi":    {p:1.8, c:3.4, f:0.3, cal:19, fiber:1.6, form:"raw", cat:"veg"},
+  "rau lang":        {p:2.6, c:5.0, f:0.3, cal:30, fiber:2.2, form:"raw", cat:"veg"},
+  "lá lốt":          {p:2.2, c:5.0, f:0.5, cal:28, fiber:2.5, form:"raw", cat:"veg"},
+  "sả":              {p:1.8, c:25.3, f:0.5, cal:99, fiber:0, form:"raw", cat:"veg"},
+  "củ cải trắng":    {p:0.7, c:4.1, f:0.1, cal:18, fiber:1.6, form:"raw", cat:"veg"},
+
+  // Đồ uống VN
+  "trà đào":         {p:0, c:10.0, f:0, cal:40, fiber:0, form:"liquid", cat:"drink"},
+  "nước chanh muối": {p:0.1, c:5.0, f:0, cal:20, fiber:0, form:"liquid", cat:"drink"},
+  "sữa bắp":         {p:1.5, c:12.0, f:1.0, cal:62, fiber:0.5, form:"liquid", cat:"drink"},
+
+  // Trái cây sấy
+  "chuối sấy":       {p:3.3, c:68.4, f:0.9, cal:267, fiber:7.8, form:"dry", cat:"fruit"},
+  "mít sấy":         {p:5.1, c:69.6, f:1.8, cal:285, fiber:4.5, form:"dry", cat:"fruit"},
+  "xoài sấy":        {p:1.5, c:78.0, f:0.8, cal:319, fiber:2.4, form:"dry", cat:"fruit"},
 };
 
 // Keys sorted longest first for greedy matching
@@ -1091,6 +1118,14 @@ const DISPLAY_MAP = {
   "canh sườn": "Canh sườn", "croissant": "Croissant", "donut": "Donut",
   "bánh su kem": "Bánh su kem", "há cảo": "Há cảo", "sủi cảo": "Sủi cảo",
   "xíu mại": "Xíu mại",
+  // BATCH 7
+  "thịt kho tàu": "Thịt kho tàu", "gà luộc": "Gà luộc", "heo quay": "Heo quay",
+  "vịt quay": "Vịt quay", "cá kho": "Cá kho", "tôm chiên": "Tôm chiên",
+  "cua rang muối": "Cua rang muối", "rau mùng tơi": "Canh mùng tơi",
+  "rau lang": "Rau lang luộc", "lá lốt": "Lá lốt", "sả": "Sả",
+  "củ cải trắng": "Củ cải trắng", "trà đào": "Trà đào",
+  "nước chanh muối": "Nước chanh muối", "sữa bắp": "Sữa bắp",
+  "chuối sấy": "Chuối sấy", "mít sấy": "Mít sấy", "xoài sấy": "Xoài sấy",
 };
 
 export function getFoodDisplay(foodKey) {
