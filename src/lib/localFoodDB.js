@@ -550,6 +550,42 @@ export const LOCAL_FOODS = {
   "chuối sấy":       {p:3.3, c:68.4, f:0.9, cal:267, fiber:7.8, form:"dry", cat:"fruit"},
   "mít sấy":         {p:5.1, c:69.6, f:1.8, cal:285, fiber:4.5, form:"dry", cat:"fruit"},
   "xoài sấy":        {p:1.5, c:78.0, f:0.8, cal:319, fiber:2.4, form:"dry", cat:"fruit"},
+
+  // ==================== 37. BATCH 8 — TINH BỘT BỔ SUNG ====================
+  "nui":             {p:5.8, c:30.9, f:0.9, cal:158, fiber:1.8, form:"cooked", cat:"starch"},
+  "bánh canh bột lọc":{p:0.5, c:24.0, f:0.1, cal:98, fiber:0, form:"cooked", cat:"starch"},
+  "bột sắn dây":     {p:0.1, c:85.0, f:0, cal:340, fiber:0, form:"dry", cat:"starch"},
+  "khoai lang tím":  {p:1.6, c:20.1, f:0.1, cal:86, fiber:3.0, form:"raw", cat:"starch"},
+  "gạo nếp":         {p:6.8, c:77.0, f:1.0, cal:344, fiber:1.7, form:"dry", cat:"starch"},
+  "bánh đúc":        {p:1.5, c:18.0, f:0.5, cal:82, fiber:0.3, form:"cooked", cat:"starch"},
+
+  // ==================== 38. BATCH 8 — DAIRY BỔ SUNG ====================
+  "sữa chua uống":   {p:2.0, c:12.0, f:1.0, cal:65, fiber:0, form:"liquid", cat:"egg_dairy"},
+  "kem":             {p:3.5, c:24.0, f:11.0, cal:207, fiber:0, form:"solid", cat:"egg_dairy"},
+  "sữa bột":         {p:26.3, c:38.4, f:26.7, cal:496, fiber:0, form:"dry", cat:"egg_dairy"},
+  "sữa dừa":         {p:2.3, c:2.7, f:24.0, cal:230, fiber:0, form:"liquid", cat:"egg_dairy"},
+  "nước cốt dừa":    {p:2.3, c:2.7, f:24.0, cal:230, fiber:0, form:"liquid", cat:"egg_dairy"},
+  "kem tươi":        {p:2.5, c:16.0, f:20.0, cal:260, fiber:0, form:"liquid", cat:"egg_dairy"},
+
+  // ==================== 39. BATCH 8 — COMPOSITE VN BỔ SUNG ====================
+  "bún bò xào":      {p:6.0, c:12.0, f:5.0, cal:120, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "phở xào":         {p:5.5, c:15.0, f:5.5, cal:130, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "cơm rang dưa bò": {p:6.0, c:22.0, f:5.0, cal:160, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "miến xào":        {p:3.5, c:20.0, f:4.0, cal:130, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "canh cải":        {p:1.5, c:2.0, f:0.5, cal:18, fiber:1.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh rau đay":    {p:2.0, c:2.5, f:0.8, cal:24, fiber:1.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "gà xào sả ớt":   {p:18.0, c:3.0, f:8.0, cal:160, fiber:0.3, form:"composite", cat:"poultry", region:"vn", complexity:2, convenience:6},
+  "bò xào rau cải":  {p:15.0, c:4.0, f:8.0, cal:150, fiber:1.0, form:"composite", cat:"beef", region:"vn", complexity:1, convenience:6},
+  "tôm xào":         {p:18.0, c:3.0, f:6.0, cal:140, fiber:0.5, form:"composite", cat:"seafood", region:"vn", complexity:1, convenience:6},
+  "mực xào":         {p:14.0, c:4.0, f:5.0, cal:120, fiber:0.3, form:"composite", cat:"seafood", region:"vn", complexity:1, convenience:6},
+
+  // ==================== 40. BATCH 8 — STREET FOOD + ĐẬU + KHÁC ====================
+  "nem chua rán":    {p:8.0, c:15.0, f:10.0, cal:185, fiber:0.5, form:"cooked", cat:"processed"},
+  "bắp xào bơ":      {p:3.5, c:20.0, f:5.0, cal:140, fiber:2.5, form:"cooked", cat:"starch"},
+  "đậu gà":          {p:19.3, c:60.7, f:6.0, cal:364, fiber:17.4, form:"dry", cat:"nuts"},
+  "đậu trắng":       {p:23.4, c:60.3, f:0.9, cal:333, fiber:15.2, form:"dry", cat:"nuts"},
+  "hạt dẻ":          {p:2.4, c:44.2, f:2.3, cal:196, fiber:5.1, form:"raw", cat:"nuts"},
+  "rong biển khô":   {p:5.8, c:8.0, f:0.3, cal:45, fiber:0.5, form:"dry", cat:"veg"},
 };
 
 // Keys sorted longest first for greedy matching
@@ -1126,6 +1162,18 @@ const DISPLAY_MAP = {
   "củ cải trắng": "Củ cải trắng", "trà đào": "Trà đào",
   "nước chanh muối": "Nước chanh muối", "sữa bắp": "Sữa bắp",
   "chuối sấy": "Chuối sấy", "mít sấy": "Mít sấy", "xoài sấy": "Xoài sấy",
+  // BATCH 8
+  "nui": "Nui", "bánh canh bột lọc": "Bánh canh bột lọc", "bột sắn dây": "Bột sắn dây",
+  "khoai lang tím": "Khoai lang tím", "gạo nếp": "Gạo nếp", "bánh đúc": "Bánh đúc",
+  "sữa chua uống": "Sữa chua uống", "kem": "Kem", "sữa bột": "Sữa bột",
+  "sữa dừa": "Sữa dừa", "nước cốt dừa": "Nước cốt dừa", "kem tươi": "Kem tươi",
+  "bún bò xào": "Bún bò xào", "phở xào": "Phở xào", "cơm rang dưa bò": "Cơm rang dưa bò",
+  "miến xào": "Miến xào", "canh cải": "Canh cải", "canh rau đay": "Canh rau đay",
+  "gà xào sả ớt": "Gà xào sả ớt", "bò xào rau cải": "Bò xào rau cải",
+  "tôm xào": "Tôm xào", "mực xào": "Mực xào",
+  "nem chua rán": "Nem chua rán", "bắp xào bơ": "Bắp xào bơ",
+  "đậu gà": "Đậu gà", "đậu trắng": "Đậu trắng", "hạt dẻ": "Hạt dẻ",
+  "rong biển khô": "Rong biển khô",
 };
 
 export function getFoodDisplay(foodKey) {
@@ -1167,6 +1215,10 @@ export const STANDALONE_DISHES = new Set([
   "bún ốc", "cháo lòng", "cháo hải sản", "cơm gà", "cơm sườn",
   "bánh chưng", "bánh tét", "bánh giò", "bò lúc lắc",
   "rau xào thập cẩm", "đậu phụ sốt cà", "canh sườn",
+  // Batch 8
+  "bún bò xào", "phở xào", "cơm rang dưa bò", "miến xào",
+  "canh cải", "canh rau đay", "gà xào sả ớt", "bò xào rau cải",
+  "tôm xào", "mực xào", "thịt kho tàu",
 ]);
 
 export function isStandaloneDish(foodKey) {
