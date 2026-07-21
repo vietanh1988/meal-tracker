@@ -28,8 +28,43 @@ const DIET_BLOCK = {
 // Supplement HARD filter — dân VN phổ thông không dùng, mặc định loại
 const SUPPLEMENT_KEYS = ["whey", "bột whey", "whey isolate", "mass gainer", "casein", "protein bar", "bcaa", "creatine"];
 
-// Không đưa vào whitelist cho AI chọn (gia vị/dầu — hệ thống tự thêm)
-const NEVER_LIST = ["dầu ăn", "dầu ô liu", "dầu dừa", "dầu mè", "nước mắm", "xì dầu", "nước tương", "tương ớt", "tỏi", "gừng", "chanh", "đường", "creatine", "bcaa"];
+// Không đưa vào whitelist cho AI chọn (gia vị/dầu/sốt/snack/đồ uống có đường — hệ thống tự thêm hoặc không liên quan menu)
+const NEVER_LIST = [
+  // Dầu mỡ
+  "dầu ăn", "dầu ô liu", "dầu dừa", "dầu mè", "mỡ heo", "bơ thực vật", "margarine",
+  // Gia vị / nước chấm
+  "nước mắm", "xì dầu", "nước tương", "tương ớt", "tỏi", "gừng", "chanh", "đường",
+  "mắm tôm", "mắm nêm", "dầu hào", "muối", "bột nêm", "sa tế", "tiêu", "ớt bột",
+  "nghệ bột", "giấm", "tương bần", "nước chấm", "sốt mayonnaise", "sốt cà chua",
+  "sốt tương đen", "tương ớt sriracha", "nước mắm pha", "muối tiêu chanh",
+  "mỡ hành", "hành phi", "sả", "lá chanh", "lá lốt", "lá giang",
+  // Supplement
+  "creatine", "bcaa", "omega 3", "dầu cá", "pre workout", "collagen",
+  // Snack / bánh kẹo — không gợi ý trong menu
+  "bim bim", "kẹo", "kẹo dẻo", "chocolate đen", "chocolate sữa", "bánh quy",
+  "khoai tây chiên gói", "bánh gạo", "bánh trung thu", "bánh tráng mè",
+  // Đồ uống có đường cao
+  "coca cola", "nước ngọt", "nước tăng lực", "bia", "bia hơi", "rượu vang",
+  "rượu đế", "rượu nếp", "trà sữa", "trà sữa trân châu", "trà sữa matcha", "soda chanh",
+  // Nguyên liệu thô không phải món ăn
+  "da gà", "xương heo", "tiết canh", "tóp mỡ", "mỡ heo",
+  "gạo nếp", "bột sắn dây", "sữa bột", "sữa đặc", "sữa ông thọ",
+  "nước cốt dừa", "kem tươi", "kem whipping", "cream cheese",
+  // Phô mai / dairy đặc biệt — không phải món chính
+  "phô mai con bò cười", "phô mai mozzarella",
+  // Đồ khô / sấy — snack không phải món
+  "chuối sấy", "mít sấy", "xoài sấy", "nho khô", "táo đỏ khô",
+  "hạt dưa", "hạt hướng dương rang",
+  // Mì gói
+  "mì gói", "phở gói", "cháo gói", "bún gói",
+  // Processed không nên gợi ý menu (user tự thêm nếu muốn)
+  "xúc xích", "xúc xích nướng", "xúc xích chiên", "xúc xích xiên que",
+  "cá viên chiên", "cá viên", "cá viên curry", "tôm viên",
+  "bò viên chiên", "thịt hộp", "cá mòi hộp", "pate gan",
+  "chả giò rế", "khô gà lá chanh",
+  // Đông lạnh
+  "pizza đông lạnh",
+];
 
 /**
  * buildWhitelist({ style, diet, goal, usesSupplements, avoidFoods, mealIds })
