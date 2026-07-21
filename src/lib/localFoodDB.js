@@ -462,6 +462,41 @@ export const LOCAL_FOODS = {
   // ==================== 27. BATCH 4 — MÌ GÓI + TIỆN LỢI ====================
   "mì gói":          {p:8.0, c:55.0, f:17.0, cal:400, fiber:2.0, form:"dry", cat:"starch"},
   "phở gói":         {p:5.0, c:50.0, f:12.0, cal:330, fiber:1.0, form:"dry", cat:"starch"},
+
+  // ==================== 28. BATCH 5 — MÓN QUỐC TẾ PHỔ BIẾN VN ====================
+  "sushi":           {p:5.0, c:25.0, f:1.0, cal:130, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+  "kimbap":          {p:5.0, c:25.0, f:4.0, cal:150, fiber:1.0, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+  "tokbokki":        {p:3.8, c:48.8, f:0.7, cal:216, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:8},
+  "ramen":           {p:5.0, c:20.0, f:3.0, cal:130, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:8},
+  "pad thái":        {p:6.0, c:22.0, f:5.0, cal:160, fiber:1.0, form:"composite", cat:"starch", region:"intl", complexity:2, convenience:7},
+  "cà ri gà":        {p:8.0, c:6.0, f:10.0, cal:150, fiber:1.5, form:"composite", cat:"poultry", region:"intl", complexity:2, convenience:7},
+
+  // ==================== 29. BATCH 5 — BIA RƯỢU + NƯỚC NGỌT ====================
+  "bia":             {p:0.5, c:3.6, f:0, cal:43, fiber:0, form:"liquid", cat:"drink"},
+  "rượu vang":       {p:0.1, c:2.6, f:0, cal:83, fiber:0, form:"liquid", cat:"drink"},
+  "coca cola":       {p:0, c:10.6, f:0, cal:42, fiber:0, form:"liquid", cat:"drink"},
+  "nước ngọt":       {p:0, c:10.6, f:0, cal:42, fiber:0, form:"liquid", cat:"drink"},
+  "nước tăng lực":   {p:0, c:11.0, f:0, cal:45, fiber:0, form:"liquid", cat:"drink"},
+  "sữa hạnh nhân":   {p:0.4, c:0.3, f:1.1, cal:15, fiber:0.2, form:"liquid", cat:"drink"},
+
+  // ==================== 30. BATCH 5 — SNACK ====================
+  "bim bim":         {p:5.0, c:55.0, f:28.0, cal:500, fiber:3.0, form:"dry", cat:"starch"},
+  "bánh quy":        {p:6.0, c:68.0, f:18.0, cal:450, fiber:2.0, form:"dry", cat:"starch"},
+  "chocolate đen":   {p:5.0, c:46.0, f:31.0, cal:500, fiber:7.0, form:"solid", cat:"nuts"},
+  "kẹo":             {p:0, c:93.0, f:1.0, cal:380, fiber:0, form:"solid", cat:"starch"},
+  "bánh bông lan":   {p:5.0, c:52.0, f:15.0, cal:360, fiber:0.5, form:"cooked", cat:"starch"},
+
+  // ==================== 31. BATCH 5 — ĐỒ CHAY ====================
+  "mì căn":          {p:75.0, c:14.0, f:1.8, cal:370, fiber:0.6, form:"cooked", cat:"veg"},
+  "tempeh":          {p:19.0, c:9.4, f:11.0, cal:193, fiber:5.0, form:"cooked", cat:"veg"},
+
+  // ==================== 32. BATCH 5 — BỔ SUNG COMPOSITE VN ====================
+  "bún mọc":         {p:4.5, c:8.0, f:1.8, cal:68, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bún cá":          {p:5.0, c:7.5, f:1.5, cal:64, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "hủ tiếu xào":    {p:5.0, c:18.0, f:5.0, cal:140, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "mì xào":          {p:5.5, c:20.0, f:6.0, cal:158, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "lẩu thái":        {p:4.0, c:3.0, f:2.0, cal:48, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:2, convenience:7},
+  "lẩu hải sản":     {p:5.0, c:2.0, f:1.5, cal:42, fiber:0.3, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:6},
 };
 
 // Keys sorted longest first for greedy matching
@@ -1011,6 +1046,16 @@ const DISPLAY_MAP = {
   "chè trôi nước": "Chè trôi nước", "bánh flan": "Bánh flan",
   "rau câu": "Rau câu", "sương sáo": "Sương sáo",
   "mì gói": "Mì gói", "phở gói": "Phở gói",
+  // BATCH 5
+  "sushi": "Sushi", "kimbap": "Kimbap", "tokbokki": "Tokbokki",
+  "ramen": "Ramen", "pad thái": "Pad Thái", "cà ri gà": "Cà ri gà",
+  "bia": "Bia", "rượu vang": "Rượu vang", "coca cola": "Coca Cola",
+  "nước ngọt": "Nước ngọt", "nước tăng lực": "Nước tăng lực", "sữa hạnh nhân": "Sữa hạnh nhân",
+  "bim bim": "Bim bim", "bánh quy": "Bánh quy", "chocolate đen": "Chocolate đen",
+  "kẹo": "Kẹo", "bánh bông lan": "Bánh bông lan",
+  "mì căn": "Mì căn", "tempeh": "Tempeh",
+  "bún mọc": "Bún mọc", "bún cá": "Bún cá", "hủ tiếu xào": "Hủ tiếu xào",
+  "mì xào": "Mì xào", "lẩu thái": "Lẩu Thái", "lẩu hải sản": "Lẩu hải sản",
 };
 
 export function getFoodDisplay(foodKey) {
@@ -1045,6 +1090,9 @@ export const STANDALONE_DISHES = new Set([
   "bánh xèo", "gỏi cuốn", "nem rán", "bánh khọt", "bánh tráng trộn", "gỏi ngó sen",
   "hamburger", "pizza", "hotdog",
   "chè đậu xanh", "chè đậu đỏ", "chè trôi nước", "bánh flan",
+  // Batch 5
+  "sushi", "kimbap", "tokbokki", "ramen", "pad thái", "cà ri gà",
+  "bún mọc", "bún cá", "hủ tiếu xào", "mì xào", "lẩu thái", "lẩu hải sản",
 ]);
 
 export function isStandaloneDish(foodKey) {
