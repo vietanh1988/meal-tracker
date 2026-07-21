@@ -1455,6 +1455,69 @@ export const LOCAL_FOODS = {
   "dạ dày heo xào":  {p:14.0, c:3.0, f:4.0, cal:108, fiber:0.3, form:"cooked", cat:"pork"},
   "tim heo xào":     {p:16.0, c:2.0, f:5.0, cal:120, fiber:0.3, form:"cooked", cat:"pork"},
   "tiết lợn luộc":   {p:6.0, c:0.5, f:0.2, cal:28, fiber:0, form:"cooked", cat:"pork"},
+
+  // ==================== BATCH 39 — MÓN ĂN SÁNG THÊM ====================
+  "bánh mì không nhân":{p:9.0, c:50.0, f:3.3, cal:265, fiber:2.7, form:"cooked", cat:"starch"},
+  "xôi ruốc":        {p:7.0, c:28.0, f:4.0, cal:178, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "xôi trứng":       {p:7.0, c:28.0, f:6.0, cal:195, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "trứng luộc lòng đào":{p:12.0, c:0.7, f:9.5, cal:140, fiber:0, form:"cooked", cat:"egg_dairy"},
+  "bánh mì ốp la xúc xích":{p:12.0, c:24.0, f:12.0, cal:255, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "cháo đậu xanh":   {p:3.0, c:10.0, f:0.3, cal:55, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "cháo yến mạch":   {p:4.0, c:12.0, f:2.0, cal:82, fiber:2.0, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+
+  // ==================== BATCH 39 — MÓN LUỘC/HẤP THÊM ====================
+  "gà hấp lá chanh": {p:22.0, c:1.0, f:6.0, cal:150, fiber:0.3, form:"cooked", cat:"poultry"},
+  "cá hấp bia":      {p:18.0, c:1.0, f:3.0, cal:105, fiber:0, form:"cooked", cat:"seafood"},
+  "tôm hấp nước dừa":{p:20.0, c:2.0, f:2.0, cal:108, fiber:0, form:"cooked", cat:"seafood"},
+  "gà hấp muối":     {p:22.0, c:0, f:7.0, cal:155, fiber:0, form:"cooked", cat:"poultry"},
+  "cá hấp hành gừng":{p:18.0, c:2.0, f:3.0, cal:108, fiber:0.3, form:"cooked", cat:"seafood"},
+  "rau luộc chấm kho quẹt":{p:2.0, c:4.0, f:1.0, cal:32, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+
+  // ==================== BATCH 39 — MÓN TIM/CẬT/LƯỠI ====================
+  "lưỡi heo":        {p:16.0, c:0, f:16.0, cal:212, fiber:0, form:"raw", cat:"pork"},
+  "cật heo":         {p:16.5, c:0, f:3.0, cal:94, fiber:0, form:"raw", cat:"pork"},
+  "lưỡi bò":         {p:14.9, c:3.7, f:16.1, cal:224, fiber:0, form:"raw", cat:"beef"},
+  "tai heo":         {p:22.0, c:0, f:5.0, cal:138, fiber:0, form:"raw", cat:"pork"},
+  "chân gà rút xương":{p:17.0, c:0, f:8.0, cal:142, fiber:0, form:"cooked", cat:"poultry"},
+
+  // ==================== BATCH 40 — THỰC PHẨM VĂN PHÒNG ====================
+  "sandwich gà":     {p:12.0, c:24.0, f:6.0, cal:200, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:10},
+  "sandwich trứng":  {p:10.0, c:24.0, f:8.0, cal:212, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:10},
+  "sandwich cá ngừ": {p:11.0, c:24.0, f:6.0, cal:195, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:10},
+  "salad gà nướng":  {p:14.0, c:5.0, f:5.0, cal:122, fiber:2.0, form:"composite", cat:"poultry", region:"intl", complexity:1, convenience:8},
+  "wrap bò":         {p:12.0, c:20.0, f:8.0, cal:202, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+  "cơm nắm rong biển":{p:4.0, c:28.0, f:1.0, cal:138, fiber:1.0, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+  "onigiri":         {p:4.0, c:28.0, f:1.0, cal:138, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+
+  // ==================== BATCH 40 — FAST FOOD THÊM ====================
+  "gà rán cay":      {p:16.0, c:14.0, f:16.0, cal:270, fiber:0.5, form:"cooked", cat:"poultry"},
+  "gà sốt cay":      {p:16.0, c:10.0, f:12.0, cal:218, fiber:0.5, form:"composite", cat:"poultry", region:"intl", complexity:1, convenience:9},
+  "cheese stick":    {p:10.0, c:20.0, f:15.0, cal:258, fiber:1.0, form:"cooked", cat:"starch"},
+  "onion ring":      {p:4.0, c:28.0, f:12.0, cal:235, fiber:1.5, form:"cooked", cat:"starch"},
+  "chicken wrap":    {p:12.0, c:22.0, f:8.0, cal:210, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:10},
+
+  // ==================== BATCH 40 — DESSERT + CHÈ THÊM ====================
+  "chè bắp nếp":     {p:2.0, c:20.0, f:1.5, cal:100, fiber:1.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "chè hoa cau":     {p:1.0, c:18.0, f:0.5, cal:80, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "chè thạch":       {p:0.5, c:15.0, f:0, cal:62, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "kem bơ":          {p:2.0, c:20.0, f:14.0, cal:215, fiber:1.0, form:"solid", cat:"egg_dairy"},
+  "kem trà xanh":    {p:3.5, c:24.0, f:10.0, cal:200, fiber:0.5, form:"solid", cat:"egg_dairy"},
+  "bánh kem":        {p:4.0, c:40.0, f:18.0, cal:340, fiber:0.5, form:"cooked", cat:"starch"},
+  "tiramisu":        {p:6.0, c:30.0, f:18.0, cal:305, fiber:0.5, form:"cooked", cat:"starch"},
+  "cheesecake":      {p:6.0, c:26.0, f:22.0, cal:325, fiber:0.5, form:"cooked", cat:"starch"},
+
+  // ==================== BATCH 40 — TRÁI CÂY CUỐI ====================
+  "cam sành":        {p:0.9, c:11.8, f:0.1, cal:47, fiber:2.4, form:"raw", cat:"fruit"},
+  "bưởi da xanh":    {p:0.8, c:10.7, f:0.1, cal:42, fiber:1.0, form:"raw", cat:"fruit"},
+  "bưởi năm roi":    {p:0.8, c:10.7, f:0.1, cal:42, fiber:1.0, form:"raw", cat:"fruit"},
+  "dâu tây":         {p:0.7, c:7.7, f:0.3, cal:32, fiber:2.0, form:"raw", cat:"fruit"},
+  "việt quất":       {p:0.7, c:14.5, f:0.3, cal:57, fiber:2.4, form:"raw", cat:"fruit"},
+  "cherry":          {p:1.1, c:16.0, f:0.2, cal:63, fiber:2.1, form:"raw", cat:"fruit"},
+  "lê":              {p:0.4, c:15.2, f:0.1, cal:57, fiber:3.1, form:"raw", cat:"fruit"},
+  "hồng giòn":       {p:0.6, c:18.6, f:0.2, cal:70, fiber:3.6, form:"raw", cat:"fruit"},
+  "nho xanh":        {p:0.7, c:18.1, f:0.2, cal:69, fiber:0.9, form:"raw", cat:"fruit"},
+  "nho đỏ":          {p:0.7, c:18.1, f:0.2, cal:69, fiber:0.9, form:"raw", cat:"fruit"},
+  "dưa vàng":        {p:0.8, c:8.2, f:0.2, cal:34, fiber:0.9, form:"raw", cat:"fruit"},
 };
 
 // Keys sorted longest first for greedy matching
