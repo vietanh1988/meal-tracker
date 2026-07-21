@@ -330,6 +330,45 @@ export const LOCAL_FOODS = {
   "bánh mì thịt": {p:8.0, c:25.0,f:6.0, cal:188, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
   "cơm tấm":      {p:7.5, c:22.0,f:5.0, cal:165, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
   "bún đậu mắm tôm":{p:7.0, c:8.0, f:5.5, cal:110, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+
+  // ==================== 15. BATCH 1 — BỔ SUNG PROTEIN THIẾU ====================
+  // Nguồn: Viện Dinh dưỡng VN + USDA cross-check. Per 100g raw (trừ ghi chú khác).
+  "thịt đùi heo":  {p:20.5, c:0, f:14.0, cal:211, fiber:0, form:"raw", cat:"pork"},
+  "chân giò heo":  {p:18.0, c:0, f:18.5, cal:240, fiber:0, form:"raw", cat:"pork"},
+  "thịt đùi gà":   {p:17.3, c:0, f:15.3, cal:209, fiber:0, form:"raw", cat:"poultry"},
+  "gà ta":          {p:20.0, c:0, f:10.0, cal:172, fiber:0, form:"raw", cat:"poultry"},
+  "ngan":           {p:16.0, c:0, f:15.0, cal:201, fiber:0, form:"raw", cat:"poultry"},
+  "cá rô":          {p:18.0, c:0, f:2.5, cal:96, fiber:0, form:"raw", cat:"seafood"},
+  "cá trê":         {p:17.0, c:0, f:3.5, cal:100, fiber:0, form:"raw", cat:"seafood"},
+  "cá bạc má":      {p:19.0, c:0, f:6.0, cal:134, fiber:0, form:"raw", cat:"seafood"},
+  "cá cơm":         {p:17.0, c:0, f:4.5, cal:110, fiber:0, form:"raw", cat:"seafood"},
+  "tôm sú":         {p:21.0, c:0, f:0.6, cal:90, fiber:0, form:"raw", cat:"seafood"},
+  "lươn":           {p:18.4, c:0, f:11.7, cal:184, fiber:0, form:"raw", cat:"seafood"},
+  "ếch":            {p:16.4, c:0, f:0.3, cal:73, fiber:0, form:"raw", cat:"seafood"},
+  "gan heo":        {p:21.4, c:3.8, f:3.6, cal:136, fiber:0, form:"raw", cat:"pork"},
+  "gan gà":         {p:16.9, c:0.7, f:4.8, cal:119, fiber:0, form:"raw", cat:"poultry"},
+  "lòng heo":       {p:14.0, c:0, f:4.1, cal:100, fiber:0, form:"raw", cat:"pork"},
+  "trứng vịt lộn":  {p:13.6, c:1.0, f:10.0, cal:182, fiber:0, form:"cooked", cat:"egg_dairy"},
+
+  // ==================== 16. BATCH 1 — BỔ SUNG TINH BỘT + RAU THIẾU ====================
+  "khoai mì":       {p:1.4, c:38.1, f:0.3, cal:160, fiber:1.8, form:"raw", cat:"starch"},
+  "sắn":            {p:1.4, c:38.1, f:0.3, cal:160, fiber:1.8, form:"raw", cat:"starch"},
+  "bánh bao":       {p:7.0, c:30.0, f:5.0, cal:195, fiber:1.0, form:"cooked", cat:"starch"},
+  "cải bó xôi":     {p:2.9, c:3.6, f:0.4, cal:23, fiber:2.2, form:"raw", cat:"veg"},
+  "rau đay":        {p:3.5, c:5.3, f:0.3, cal:32, fiber:1.7, form:"raw", cat:"veg"},
+  "mướp":           {p:0.4, c:3.0, f:0.2, cal:15, fiber:0.5, form:"raw", cat:"veg"},
+  "khổ qua":        {p:1.0, c:3.7, f:0.2, cal:17, fiber:2.8, form:"raw", cat:"veg"},
+  "mướp đắng":      {p:1.0, c:3.7, f:0.2, cal:17, fiber:2.8, form:"raw", cat:"veg"},
+  "cà tím":         {p:1.0, c:5.9, f:0.2, cal:25, fiber:3.0, form:"raw", cat:"veg"},
+
+  // ==================== 17. BATCH 1 — BỔ SUNG ĐỒ UỐNG + CHẾ BIẾN SẴN ====================
+  "cà phê sữa đá":  {p:1.5, c:15.0, f:2.0, cal:85, fiber:0, form:"liquid", cat:"drink"},
+  "trà sữa":        {p:1.5, c:25.0, f:3.5, cal:130, fiber:0, form:"liquid", cat:"drink"},
+  "nước mía":        {p:0.1, c:18.0, f:0, cal:73, fiber:0, form:"liquid", cat:"drink"},
+  "sữa đặc":        {p:7.9, c:54.4, f:8.7, cal:321, fiber:0, form:"liquid", cat:"egg_dairy"},
+  "lạp xưởng":      {p:14.0, c:6.0, f:32.0, cal:370, fiber:0, form:"cooked", cat:"processed"},
+  "ruốc heo":       {p:34.0, c:8.0, f:12.0, cal:280, fiber:0, form:"cooked", cat:"processed"},
+  "chả giò":        {p:8.0, c:18.0, f:14.0, cal:230, fiber:1.0, form:"cooked", cat:"processed"},
 };
 
 // Keys sorted longest first for greedy matching
@@ -837,6 +876,18 @@ const DISPLAY_MAP = {
   // DRINK
   "nước dừa": "Nước dừa", "nước cam": "Nước cam", "cà phê đen": "Cà phê đen",
   "cà phê": "Cà phê", "trà xanh": "Trà xanh",
+  // BATCH 1
+  "thịt đùi heo": "Thịt đùi heo luộc", "chân giò heo": "Giò heo luộc",
+  "thịt đùi gà": "Đùi gà kho", "gà ta": "Gà ta luộc", "ngan": "Ngan luộc",
+  "cá rô": "Cá rô kho", "cá trê": "Cá trê kho", "cá bạc má": "Cá bạc má kho",
+  "cá cơm": "Cá cơm kho", "lươn": "Lươn xào", "ếch": "Ếch chiên",
+  "gan heo": "Gan heo xào", "gan gà": "Gan gà xào", "lòng heo": "Lòng heo luộc",
+  "trứng vịt lộn": "Trứng vịt lộn", "khoai mì": "Khoai mì luộc", "sắn": "Sắn luộc",
+  "bánh bao": "Bánh bao", "cải bó xôi": "Cải bó xôi luộc", "rau đay": "Canh rau đay",
+  "mướp": "Canh mướp", "khổ qua": "Khổ qua nhồi", "mướp đắng": "Mướp đắng xào",
+  "cà tím": "Cà tím nướng", "cà phê sữa đá": "Cà phê sữa đá", "trà sữa": "Trà sữa",
+  "nước mía": "Nước mía", "sữa đặc": "Sữa đặc", "lạp xưởng": "Lạp xưởng",
+  "ruốc heo": "Ruốc heo", "chả giò": "Chả giò",
 };
 
 export function getFoodDisplay(foodKey) {
