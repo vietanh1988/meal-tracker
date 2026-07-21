@@ -404,6 +404,36 @@ export const LOCAL_FOODS = {
   "tôm đồng":       {p:18.0, c:0, f:1.0, cal:82, fiber:0, form:"raw", cat:"seafood"},
   "ốc":             {p:14.0, c:4.0, f:0.4, cal:79, fiber:0, form:"raw", cat:"seafood"},
   "nghêu hấp":      {p:14.0, c:5.0, f:1.2, cal:86, fiber:0, form:"cooked", cat:"seafood"},
+
+  // ==================== 22. BATCH 3 — COMPOSITE VN (canh + món mặn) ====================
+  // Per 100g cả tô/bát — tính từ công thức (rau/nước dùng + thịt + gia vị)
+  "canh chua cá":   {p:4.0, c:3.5, f:1.0, cal:40, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "canh rau ngót":   {p:1.6, c:1.5, f:1.4, cal:23, fiber:0.6, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh bí đỏ":      {p:1.0, c:4.0, f:0.5, cal:25, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh mồng tơi":   {p:1.5, c:2.0, f:0.5, cal:18, fiber:0.8, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh cua":        {p:3.5, c:2.5, f:1.0, cal:35, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:2, convenience:5},
+  "canh bầu":        {p:0.8, c:2.5, f:0.3, cal:16, fiber:0.4, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh khổ qua":    {p:2.5, c:3.0, f:1.0, cal:30, fiber:1.0, form:"composite", cat:"veg", region:"vn", complexity:2, convenience:5},
+  "thịt kho":        {p:15.0, c:3.0, f:12.0, cal:185, fiber:0, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:6},
+  "cá kho tộ":       {p:14.0, c:4.0, f:5.0, cal:120, fiber:0, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:6},
+  "trứng kho":       {p:10.0, c:3.0, f:8.0, cal:128, fiber:0, form:"composite", cat:"egg_dairy", region:"vn", complexity:1, convenience:7},
+  "gà kho gừng":     {p:18.0, c:3.0, f:8.0, cal:158, fiber:0, form:"composite", cat:"poultry", region:"vn", complexity:2, convenience:6},
+  "tôm rang":        {p:20.0, c:2.0, f:5.0, cal:135, fiber:0, form:"composite", cat:"seafood", region:"vn", complexity:1, convenience:7},
+  "cơm chiên":       {p:5.0, c:25.0, f:6.0, cal:175, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+
+  // ==================== 23. BATCH 3 — NẤM CHI TIẾT + ĐẬU + RAU ====================
+  "nấm rơm":        {p:3.5, c:4.0, f:0.5, cal:30, fiber:1.5, form:"raw", cat:"veg"},
+  "nấm hương":      {p:2.2, c:6.8, f:0.5, cal:34, fiber:2.5, form:"raw", cat:"veg"},
+  "nấm kim châm":   {p:2.7, c:7.8, f:0.3, cal:37, fiber:2.7, form:"raw", cat:"veg"},
+  "nấm đùi gà":    {p:3.3, c:6.1, f:0.4, cal:33, fiber:1.8, form:"raw", cat:"veg"},
+  "mộc nhĩ":        {p:0.5, c:7.0, f:0.1, cal:25, fiber:5.0, form:"dry", cat:"veg"},
+  "nấm bào ngư":    {p:3.3, c:6.1, f:0.4, cal:33, fiber:2.3, form:"raw", cat:"veg"},
+  "bầu":            {p:0.6, c:3.4, f:0.1, cal:14, fiber:0.5, form:"raw", cat:"veg"},
+  "đậu đũa":        {p:2.8, c:8.4, f:0.4, cal:47, fiber:3.0, form:"raw", cat:"veg"},
+  "rau sống":        {p:1.5, c:3.0, f:0.2, cal:18, fiber:1.5, form:"raw", cat:"veg"},
+  "củ sen":          {p:1.6, c:16.0, f:0.1, cal:66, fiber:3.1, form:"raw", cat:"veg"},
+  "ngó sen":         {p:2.6, c:9.3, f:0.1, cal:46, fiber:4.9, form:"raw", cat:"veg"},
+  "hạt sen":         {p:4.1, c:17.3, f:0.1, cal:89, fiber:3.2, form:"raw", cat:"nuts"},
 };
 
 // Keys sorted longest first for greedy matching
@@ -934,6 +964,16 @@ const DISPLAY_MAP = {
   "bột nêm": "Bột nêm", "sa tế": "Sa tế",
   "thịt dê": "Thịt dê nướng", "cá diêu hồng kho": "Cá diêu hồng kho",
   "tôm đồng": "Tôm đồng rang", "ốc": "Ốc luộc", "nghêu hấp": "Nghêu hấp",
+  // BATCH 3
+  "canh chua cá": "Canh chua cá", "canh rau ngót": "Canh rau ngót", "canh bí đỏ": "Canh bí đỏ",
+  "canh mồng tơi": "Canh mồng tơi", "canh cua": "Canh cua", "canh bầu": "Canh bầu",
+  "canh khổ qua": "Canh khổ qua nhồi", "thịt kho": "Thịt kho", "cá kho tộ": "Cá kho tộ",
+  "trứng kho": "Trứng kho", "gà kho gừng": "Gà kho gừng", "tôm rang": "Tôm rang",
+  "cơm chiên": "Cơm chiên",
+  "nấm rơm": "Nấm rơm", "nấm hương": "Nấm hương", "nấm kim châm": "Nấm kim châm",
+  "nấm đùi gà": "Nấm đùi gà", "mộc nhĩ": "Mộc nhĩ", "nấm bào ngư": "Nấm bào ngư",
+  "bầu": "Bầu luộc", "đậu đũa": "Đậu đũa luộc", "rau sống": "Rau sống",
+  "củ sen": "Củ sen", "ngó sen": "Ngó sen", "hạt sen": "Hạt sen",
 };
 
 export function getFoodDisplay(foodKey) {
@@ -961,6 +1001,9 @@ export const STANDALONE_DISHES = new Set([
   "hủ tiếu nam vang", "bánh canh", "mì quảng", "cháo gà", "cháo thịt bằm",
   "xôi xéo", "xôi gà", "xôi lạc", "bánh cuốn nhân thịt", "bánh mì thịt",
   "cơm tấm", "bún đậu mắm tôm",
+  // Batch 3 composite
+  "canh chua cá", "canh rau ngót", "canh bí đỏ", "canh mồng tơi", "canh cua", "canh bầu", "canh khổ qua",
+  "thịt kho", "cá kho tộ", "trứng kho", "gà kho gừng", "tôm rang", "cơm chiên",
 ]);
 
 export function isStandaloneDish(foodKey) {
