@@ -137,9 +137,9 @@ export const LOCAL_FOODS = {
   "cá ngừ hộp": {p:26.5, c:0, f:0.8, cal:116, fiber:0, form:"cooked",cat:"seafood"},
 
   // ==================== 5. TRỨNG & SỮA ====================
-  "trứng gà": {p:12.6, c:0.7, f:9.5, cal:143, fiber:0, form:"raw", cat:"egg_dairy"},
-  "trứng gà luộc":{p:12.6, c:0.7, f:9.5, cal:143, fiber:0, form:"cooked",cat:"egg_dairy"},
-  "trứng luộc": {p:12.6, c:0.7, f:9.5, cal:143, fiber:0, form:"cooked",cat:"egg_dairy"},
+  "trứng gà": {p:12.6, c:1.1, f:10.6, cal:155, fiber:0, form:"raw", cat:"egg_dairy"},
+  "trứng gà luộc":{p:12.6, c:1.1, f:10.6, cal:155, fiber:0, form:"cooked",cat:"egg_dairy"},
+  "trứng luộc": {p:12.6, c:1.1, f:10.6, cal:155, fiber:0, form:"cooked",cat:"egg_dairy"},
   "trứng vịt": {p:12.8, c:1.4, f:13.8, cal:185, fiber:0, form:"raw", cat:"egg_dairy"},
   "trứng vịt luộc":{p:12.8, c:1.4, f:13.8, cal:185, fiber:0, form:"cooked",cat:"egg_dairy"},
   "trứng cút": {p:13.1, c:0.4, f:11.1, cal:158, fiber:0, form:"raw", cat:"egg_dairy"},
