@@ -749,6 +749,69 @@ export const LOCAL_FOODS = {
   "bánh da lợn":     {p:2.0, c:28.0, f:4.0, cal:158, fiber:0.5, form:"cooked", cat:"starch"},
   "kem dừa":         {p:3.0, c:22.0, f:12.0, cal:210, fiber:0.5, form:"solid", cat:"egg_dairy"},
   "yogurt đông lạnh":{p:4.0, c:18.0, f:3.0, cal:115, fiber:0, form:"solid", cat:"egg_dairy"},
+
+  // ==================== BATCH 13 — HẢI SẢN + PROTEIN CHI TIẾT ====================
+  "cá chẽm":         {p:18.0, c:0, f:2.0, cal:92, fiber:0, form:"raw", cat:"seafood"},
+  "cá mú":           {p:19.4, c:0, f:1.0, cal:87, fiber:0, form:"raw", cat:"seafood"},
+  "cá bống":         {p:16.5, c:0, f:2.0, cal:85, fiber:0, form:"raw", cat:"seafood"},
+  "cá cơm khô":      {p:40.0, c:0, f:5.0, cal:210, fiber:0, form:"dry", cat:"seafood"},
+  "tôm khô":         {p:48.0, c:2.0, f:2.5, cal:225, fiber:0, form:"dry", cat:"seafood"},
+  "mực khô":         {p:46.8, c:9.4, f:4.2, cal:275, fiber:0, form:"dry", cat:"seafood"},
+  "cá khô":          {p:42.0, c:0, f:8.0, cal:245, fiber:0, form:"dry", cat:"seafood"},
+  "sò huyết":        {p:14.0, c:5.5, f:1.0, cal:88, fiber:0, form:"raw", cat:"seafood"},
+  "sò điệp":        {p:15.0, c:3.0, f:0.5, cal:77, fiber:0, form:"raw", cat:"seafood"},
+  "ốc hương":        {p:16.0, c:3.5, f:0.5, cal:84, fiber:0, form:"raw", cat:"seafood"},
+  "ốc bươu":        {p:12.0, c:3.5, f:0.4, cal:68, fiber:0, form:"raw", cat:"seafood"},
+  "ghẹ":             {p:17.0, c:0, f:1.5, cal:82, fiber:0, form:"raw", cat:"seafood"},
+  "cua đồng":        {p:12.5, c:0, f:1.0, cal:60, fiber:0, form:"raw", cat:"seafood"},
+  "tôm hùm":        {p:20.5, c:0, f:0.6, cal:89, fiber:0, form:"raw", cat:"seafood"},
+
+  // Thịt bộ phận chi tiết
+  "nạm bò nấu chín": {p:24.0, c:0, f:12.0, cal:210, fiber:0, form:"cooked", cat:"beef"},
+  "bắp bò nấu chín": {p:28.0, c:0, f:6.0, cal:170, fiber:0, form:"cooked", cat:"beef"},
+  "da gà":           {p:13.0, c:0, f:32.0, cal:349, fiber:0, form:"raw", cat:"poultry"},
+  "mỡ heo":          {p:2.0, c:0, f:90.0, cal:810, fiber:0, form:"raw", cat:"pork"},
+  "xương heo":       {p:15.0, c:0, f:10.0, cal:155, fiber:0, form:"raw", cat:"pork"},
+  "tim heo":         {p:17.3, c:0.1, f:4.4, cal:118, fiber:0, form:"raw", cat:"pork"},
+  "dạ dày heo":      {p:16.0, c:0, f:2.5, cal:90, fiber:0, form:"raw", cat:"pork"},
+  "tiết canh":       {p:6.0, c:0.5, f:0.2, cal:28, fiber:0, form:"raw", cat:"pork"},
+
+  // ==================== BATCH 13 — COMPOSITE VN THÊM ====================
+  "cơm chiên dương châu":{p:6.0, c:22.0, f:7.0, cal:180, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "cơm chiên trứng": {p:6.5, c:24.0, f:6.0, cal:178, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "cơm chiên hải sản":{p:7.0, c:22.0, f:6.5, cal:176, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "xôi đậu đen":     {p:5.0, c:30.0, f:1.5, cal:155, fiber:2.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "xôi gấc":         {p:3.5, c:32.0, f:2.0, cal:162, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "bánh giày":       {p:2.0, c:30.0, f:0.5, cal:132, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "bún bò Nam Bộ":   {p:6.0, c:8.0, f:3.0, cal:85, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+
+  // ==================== BATCH 14 — ĐỒ UỐNG + DAIRY BỔ SUNG ====================
+  "cà phê trứng":    {p:3.0, c:10.0, f:5.0, cal:98, fiber:0, form:"liquid", cat:"drink"},
+  "cà phê dừa":      {p:1.5, c:12.0, f:5.0, cal:100, fiber:0, form:"liquid", cat:"drink"},
+  "cà phê muối":     {p:1.5, c:10.0, f:3.0, cal:75, fiber:0, form:"liquid", cat:"drink"},
+  "trà ô long":      {p:0, c:0, f:0, cal:1, fiber:0, form:"liquid", cat:"drink"},
+  "trà gừng":        {p:0.2, c:2.0, f:0, cal:9, fiber:0, form:"liquid", cat:"drink"},
+  "nước chanh đá":   {p:0.1, c:6.0, f:0, cal:24, fiber:0, form:"liquid", cat:"drink"},
+  "sinh tố xoài":    {p:1.0, c:16.0, f:0.5, cal:72, fiber:1.0, form:"liquid", cat:"drink"},
+  "sinh tố dâu":     {p:1.0, c:12.0, f:0.5, cal:55, fiber:1.5, form:"liquid", cat:"drink"},
+  "trà sen":         {p:0, c:0, f:0, cal:1, fiber:0, form:"liquid", cat:"drink"},
+  "rượu đế":         {p:0, c:0, f:0, cal:231, fiber:0, form:"liquid", cat:"drink"},
+  "sữa yến mạch":    {p:1.0, c:7.0, f:1.5, cal:46, fiber:0.8, form:"liquid", cat:"drink"},
+  "sữa óc chó":      {p:1.0, c:5.0, f:3.0, cal:52, fiber:0.3, form:"liquid", cat:"drink"},
+
+  // ==================== BATCH 14 — QUỐC TẾ BỔ SUNG ====================
+  "shawarma":        {p:14.0, c:20.0, f:10.0, cal:230, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+  "kebab":           {p:14.0, c:18.0, f:10.0, cal:220, fiber:1.0, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+  "burrito":         {p:10.0, c:25.0, f:8.0, cal:215, fiber:2.0, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+  "taco":            {p:8.0, c:15.0, f:10.0, cal:185, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:9},
+  "mì lạnh hàn":     {p:5.0, c:22.0, f:1.0, cal:118, fiber:1.0, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:7},
+  "canh kimchi":      {p:3.0, c:5.0, f:2.0, cal:50, fiber:1.0, form:"composite", cat:"veg", region:"intl", complexity:1, convenience:7},
+  "thịt nướng hàn":  {p:20.0, c:5.0, f:12.0, cal:215, fiber:0, form:"composite", cat:"beef", region:"intl", complexity:2, convenience:7},
+  "som tam":         {p:2.0, c:10.0, f:1.0, cal:55, fiber:2.5, form:"composite", cat:"veg", region:"intl", complexity:1, convenience:7},
+  "tom yum":         {p:4.0, c:5.0, f:2.0, cal:55, fiber:0.5, form:"composite", cat:"seafood", region:"intl", complexity:2, convenience:7},
+  "naan":            {p:9.0, c:50.0, f:3.5, cal:262, fiber:2.0, form:"cooked", cat:"starch"},
+  "hummus":          {p:7.9, c:14.3, f:9.6, cal:166, fiber:6.0, form:"cooked", cat:"nuts"},
+  "falafel":         {p:13.3, c:31.8, f:17.8, cal:333, fiber:0, form:"cooked", cat:"nuts"},
 };
 
 // Keys sorted longest first for greedy matching
