@@ -40,6 +40,32 @@ const DIET_BLOCK = {
   ],
 };
 
+// GOAL BLOCK — items không phù hợp theo mục tiêu
+const GOAL_BLOCK = {
+  cut: [
+    // Hạt/nuts cao calo (>500cal/100g) — giảm mỡ không nên ăn
+    "lạc", "đậu phộng", "hạt điều", "hạnh nhân", "hạt óc chó", "hạt chia",
+    "hạt lanh", "hạt bí", "hạt hướng dương", "mè", "vừng", "hạt mắc ca",
+    "bơ đậu phộng", "hạt dưa", "đậu phộng rang muối", "hạt hướng dương rang",
+    "đậu phộng luộc", "hạt bí rang", "bơ hạnh nhân", "đậu phộng rang tỏi ớt",
+    "hạt điều rang muối",
+    // Thịt mỡ nhiều
+    "ba chỉ", "ba rọi", "da gà", "tóp mỡ", "heo quay", "heo quay giòn bì",
+    "thịt ba chỉ nướng", "ba chỉ cuộn nấm nướng", "ba chỉ nướng mỡ hành",
+    // Đồ chiên ngập dầu
+    "khoai tây chiên", "khoai lang chiên", "gà rán", "gà rán cay",
+    "cá chiên xù", "tôm chiên xù", "mực chiên giòn",
+    // Dessert/ngọt
+    "kem", "kem dừa", "kem bơ", "kem trà xanh", "kem ốc quế", "kem que",
+    "bánh kem", "tiramisu", "cheesecake", "brownie", "donut", "croissant",
+    "bánh bông lan", "cookie", "macaron", "muffin", "waffle", "pancake",
+    // Sữa béo
+    "sữa đặc", "sữa ông thọ", "phô mai", "cream cheese", "kem tươi",
+    // Cơm chiên (dầu mỡ)
+    "cơm chiên", "cơm chiên dương châu", "cơm rang dưa bò",
+  ],
+};
+
 // Supplement HARD filter — dân VN phổ thông không dùng, mặc định loại
 const SUPPLEMENT_KEYS = ["whey", "bột whey", "whey isolate", "mass gainer", "casein", "protein bar", "bcaa", "creatine"];
 
@@ -97,6 +123,23 @@ const NEVER_LIST = [
   // Generic keys — chỉ cho photo scanner, không cho AI menu
   "canh chua", "rau xào", "nộm", "lẩu", "salad", "bò xào", "canh bí", "chè", "sinh tố",
   "steak", "gỏi", "canh", "xào",
+  // Short raw ingredient keys (≤3 chars) — AI phải trả tên đầy đủ, không key thô
+  "mực", "cua", "hàu", "ngô", "bắp", "táo", "cam", "ổi", "nho", "lê",
+  "mận", "vải", "mít", "dừa", "na", "nấm", "tỏi", "lạc", "mè", "nem",
+  "ếch", "sắn", "dứa", "roi", "đào", "ốc", "bầu", "bia", "kẹo", "sả",
+  "nui", "kem", "ghẹ", "hẹ", "me", "khế", "tré",
+  // ALL NUTS/SEEDS — không phải món ăn trong bữa cơm VN (đồ ăn vặt)
+  // Fat filler (lạc/mè) engine tự thêm riêng, không cần trong whitelist AI
+  "đậu phộng", "hạt điều", "hạnh nhân", "hạt óc chó", "hạt chia",
+  "hạt lanh", "hạt bí", "hạt hướng dương", "vừng", "hạt mắc ca",
+  "bơ đậu phộng", "hạt dưa", "đậu phộng rang muối", "hạt hướng dương rang",
+  "đậu phộng luộc", "hạt bí rang", "bơ hạnh nhân", "đậu phộng rang tỏi ớt",
+  "hạt điều rang muối", "hạt dẻ", "hạt sen", "edamame",
+  "hummus", "falafel",
+  // Đậu hạt khô (nguyên liệu, không phải món ăn trực tiếp)
+  "đậu nành", "đậu đen", "đậu xanh", "đậu đỏ", "đậu lăng", "đậu gà", "đậu trắng",
+  // Dầu mỡ (đã có ở trên nhưng double-check)
+  "dầu ô liu", "dầu dừa", "dầu ăn", "dầu mè",
 ];
 
 /**
@@ -106,6 +149,7 @@ const NEVER_LIST = [
  */
 export function buildWhitelist({ style = null, diet = "balanced", goal = null, usesSupplements = false, avoidFoods = [], mealIds = [] } = {}) {
   const dietBlock = new Set(DIET_BLOCK[diet] || []);
+  const goalBlock = new Set(GOAL_BLOCK[goal] || []);
   const avoid = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
   const never = new Set(NEVER_LIST);
   const suppBlock = usesSupplements ? new Set() : new Set(SUPPLEMENT_KEYS);
@@ -115,6 +159,7 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
   for (const [key, v] of Object.entries(LOCAL_FOODS)) {
     if (never.has(key)) continue;
     if (dietBlock.has(key)) continue;          // HARD
+    if (goalBlock.has(key)) continue;          // HARD — goal-based (cut: no nuts/fried/dessert)
     if (suppBlock.has(key)) continue;          // HARD
 
     // ---- STYLE HARD FILTERS ----
