@@ -1720,6 +1720,21 @@ export const LOCAL_FOODS = {
   "whey isolate":    {p:85.0, c:5.0, f:1.0, cal:370, fiber:0, form:"powder", cat:"supp"},
   "casein bột":      {p:80.0, c:5.0, f:2.0, cal:360, fiber:0, form:"powder", cat:"supp"},
   "glutamine":       {p:100, c:0, f:0, cal:400, fiber:0, form:"powder", cat:"supp"},
+
+  // ==================== GENERIC KEYS — cho Photo Scanner fallback ====================
+  "canh chua":       {p:4.0, c:3.5, f:1.0, cal:40, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:2, convenience:6},
+  "rau xào":         {p:2.5, c:5.0, f:4.0, cal:65, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "nộm":             {p:2.5, c:7.0, f:2.0, cal:55, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "lẩu":             {p:4.0, c:3.0, f:2.0, cal:45, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "salad":           {p:2.0, c:5.0, f:5.0, cal:72, fiber:2.0, form:"composite", cat:"veg", region:"intl", complexity:1, convenience:8},
+  "bò xào":          {p:16.0, c:4.0, f:8.0, cal:155, fiber:0.5, form:"composite", cat:"beef", region:"vn", complexity:1, convenience:6},
+  "canh bí":         {p:1.0, c:3.5, f:0.5, cal:22, fiber:0.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "chè":             {p:2.0, c:18.0, f:0.5, cal:85, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "sinh tố":         {p:1.5, c:16.0, f:1.0, cal:80, fiber:1.5, form:"liquid", cat:"drink"},
+  "steak":           {p:26.0, c:0, f:15.0, cal:247, fiber:0, form:"cooked", cat:"beef"},
+  "gỏi":             {p:3.0, c:6.0, f:2.0, cal:55, fiber:1.5, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh":            {p:1.5, c:2.5, f:0.5, cal:20, fiber:0.8, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "xào":             {p:3.0, c:4.0, f:4.5, cal:68, fiber:1.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
 };
 
 // Keys sorted longest first for greedy matching

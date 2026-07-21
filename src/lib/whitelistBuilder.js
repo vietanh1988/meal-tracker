@@ -94,6 +94,9 @@ const NEVER_LIST = [
   "tôm khô rang", "mực khô nướng", "cá khô chiên", "ruốc tôm",
   // Đồ uống thêm
   "espresso", "americano", "trà hoa cúc", "trà ô long", "trà sen", "trà gừng", "trà atiso",
+  // Generic keys — chỉ cho photo scanner, không cho AI menu
+  "canh chua", "rau xào", "nộm", "lẩu", "salad", "bò xào", "canh bí", "chè", "sinh tố",
+  "steak", "gỏi", "canh", "xào",
 ];
 
 /**
