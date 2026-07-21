@@ -812,6 +812,70 @@ export const LOCAL_FOODS = {
   "naan":            {p:9.0, c:50.0, f:3.5, cal:262, fiber:2.0, form:"cooked", cat:"starch"},
   "hummus":          {p:7.9, c:14.3, f:9.6, cal:166, fiber:6.0, form:"cooked", cat:"nuts"},
   "falafel":         {p:13.3, c:31.8, f:17.8, cal:333, fiber:0, form:"cooked", cat:"nuts"},
+
+  // ==================== BATCH 15 — RAU + CỦ + GIA VỊ TƯƠI CHI TIẾT ====================
+  "bí đao":          {p:0.4, c:2.0, f:0.2, cal:11, fiber:0.5, form:"raw", cat:"veg"},
+  "su hào tím":      {p:1.7, c:6.2, f:0.1, cal:27, fiber:3.6, form:"raw", cat:"veg"},
+  "rau răm":         {p:2.5, c:4.0, f:0.5, cal:25, fiber:2.5, form:"raw", cat:"veg"},
+  "ngò gai":         {p:2.1, c:3.7, f:0.5, cal:22, fiber:2.0, form:"raw", cat:"veg"},
+  "ngò rí":          {p:2.1, c:3.7, f:0.5, cal:23, fiber:2.8, form:"raw", cat:"veg"},
+  "lá chanh":        {p:1.5, c:4.0, f:0.5, cal:20, fiber:3.0, form:"raw", cat:"veg"},
+  "hẹ":              {p:1.5, c:4.4, f:0.3, cal:23, fiber:1.6, form:"raw", cat:"veg"},
+  "cần tây":         {p:0.7, c:3.0, f:0.2, cal:14, fiber:1.6, form:"raw", cat:"veg"},
+  "rau dền đỏ":      {p:2.5, c:4.0, f:0.3, cal:23, fiber:2.0, form:"raw", cat:"veg"},
+  "đọt bí":          {p:2.0, c:3.5, f:0.2, cal:20, fiber:1.5, form:"raw", cat:"veg"},
+  "bông bí":         {p:1.0, c:3.3, f:0.2, cal:15, fiber:0.5, form:"raw", cat:"veg"},
+  "dưa muối":        {p:0.9, c:2.5, f:0.1, cal:12, fiber:1.0, form:"raw", cat:"veg"},
+  "cà pháo muối":    {p:0.8, c:3.0, f:0.1, cal:14, fiber:1.5, form:"raw", cat:"veg"},
+  "kim chi":         {p:1.1, c:2.4, f:0.5, cal:15, fiber:1.6, form:"raw", cat:"veg"},
+  "dưa hành":        {p:1.0, c:6.0, f:0.1, cal:28, fiber:1.0, form:"raw", cat:"veg"},
+
+  // ==================== BATCH 15 — TRÁI CÂY VN BỔ SUNG ====================
+  "chôm chôm":       {p:0.7, c:16.0, f:0.2, cal:68, fiber:0.9, form:"raw", cat:"fruit"},
+  "bòn bon":         {p:0.5, c:14.0, f:0.2, cal:56, fiber:1.0, form:"raw", cat:"fruit"},
+  "me":              {p:2.8, c:62.5, f:0.6, cal:239, fiber:5.1, form:"raw", cat:"fruit"},
+  "khế":             {p:1.0, c:6.7, f:0.3, cal:31, fiber:2.8, form:"raw", cat:"fruit"},
+  "mận hậu":         {p:0.7, c:11.4, f:0.3, cal:46, fiber:1.4, form:"raw", cat:"fruit"},
+  "quả lựu":         {p:1.7, c:18.7, f:1.2, cal:83, fiber:4.0, form:"raw", cat:"fruit"},
+  "quả sung":        {p:0.8, c:19.2, f:0.3, cal:74, fiber:2.9, form:"raw", cat:"fruit"},
+  "dưa gang":        {p:0.8, c:5.5, f:0.2, cal:25, fiber:0.5, form:"raw", cat:"fruit"},
+
+  // ==================== BATCH 15 — NGŨ CỐC + HẠT BỔ SUNG ====================
+  "hạt kê":          {p:11.0, c:72.9, f:4.2, cal:378, fiber:8.5, form:"dry", cat:"starch"},
+  "quinoa":          {p:4.4, c:21.3, f:1.9, cal:120, fiber:2.8, form:"cooked", cat:"starch"},
+  "ý dĩ":           {p:14.0, c:65.0, f:4.0, cal:354, fiber:0, form:"dry", cat:"starch"},
+  "hạt bo bo":       {p:14.0, c:65.0, f:4.0, cal:354, fiber:0, form:"dry", cat:"starch"},
+  "đậu xanh nấu":   {p:7.0, c:19.2, f:0.4, cal:105, fiber:7.6, form:"cooked", cat:"nuts"},
+  "đậu đen nấu":    {p:8.9, c:23.7, f:0.5, cal:132, fiber:8.7, form:"cooked", cat:"nuts"},
+
+  // ==================== BATCH 16 — MÓN XÀO/CHIÊN/KHO CHI TIẾT ====================
+  "rau muống xào tỏi":{p:3.0, c:4.0, f:5.0, cal:72, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "bắp cải xào":     {p:1.5, c:6.0, f:4.0, cal:65, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "đậu phụ chiên":   {p:10.0, c:3.0, f:12.0, cal:165, fiber:0.5, form:"cooked", cat:"veg"},
+  "cải xào nấm":     {p:2.5, c:4.0, f:4.0, cal:60, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "bò xào hành tây": {p:16.0, c:5.0, f:8.0, cal:160, fiber:0.5, form:"composite", cat:"beef", region:"vn", complexity:1, convenience:6},
+  "gà xào lăn":      {p:16.0, c:4.0, f:10.0, cal:172, fiber:0.5, form:"composite", cat:"poultry", region:"vn", complexity:2, convenience:5},
+  "heo xào chua ngọt":{p:14.0, c:8.0, f:10.0, cal:180, fiber:0.5, form:"composite", cat:"pork", region:"vn", complexity:1, convenience:6},
+  "mực chiên giòn":  {p:12.0, c:18.0, f:12.0, cal:232, fiber:0.5, form:"cooked", cat:"seafood"},
+  "cá chiên sốt cà": {p:13.0, c:6.0, f:10.0, cal:170, fiber:0.5, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:5},
+  "tôm rim":         {p:18.0, c:5.0, f:4.0, cal:130, fiber:0, form:"cooked", cat:"seafood"},
+
+  // ==================== BATCH 16 — CANH + LẨU BỔ SUNG ====================
+  "canh cải chua":   {p:1.5, c:2.5, f:0.5, cal:20, fiber:1.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh bí xanh":    {p:1.0, c:2.5, f:0.3, cal:16, fiber:0.8, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh rau dền":    {p:1.5, c:2.5, f:0.5, cal:20, fiber:1.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh cá":         {p:4.0, c:2.0, f:1.5, cal:38, fiber:0.3, form:"composite", cat:"seafood", region:"vn", complexity:1, convenience:5},
+  "lẩu bò":          {p:5.0, c:3.0, f:2.5, cal:55, fiber:0.5, form:"composite", cat:"beef", region:"vn", complexity:2, convenience:6},
+  "lẩu gà":          {p:5.0, c:2.0, f:2.0, cal:48, fiber:0.3, form:"composite", cat:"poultry", region:"vn", complexity:2, convenience:6},
+  "lẩu mắm":         {p:4.5, c:3.0, f:2.0, cal:48, fiber:0.5, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:5},
+  "lẩu nấm":         {p:2.5, c:3.0, f:1.0, cal:30, fiber:1.5, form:"composite", cat:"veg", region:"vn", complexity:2, convenience:6},
+
+  // ==================== BATCH 16 — KHÁC ====================
+  "nước mắm pha":    {p:2.0, c:8.0, f:0, cal:40, fiber:0, form:"liquid", cat:"sauce"},
+  "muối tiêu chanh": {p:0, c:1.0, f:0, cal:5, fiber:0, form:"dry", cat:"sauce"},
+  "mỡ hành":         {p:0.5, c:2.0, f:10.0, cal:100, fiber:0.2, form:"liquid", cat:"sauce"},
+  "hành phi":        {p:4.0, c:35.0, f:25.0, cal:380, fiber:3.0, form:"cooked", cat:"sauce"},
+  "tóp mỡ":          {p:8.0, c:0, f:55.0, cal:530, fiber:0, form:"cooked", cat:"pork"},
 };
 
 // Keys sorted longest first for greedy matching
