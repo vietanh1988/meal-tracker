@@ -369,6 +369,41 @@ export const LOCAL_FOODS = {
   "lạp xưởng":      {p:14.0, c:6.0, f:32.0, cal:370, fiber:0, form:"cooked", cat:"processed"},
   "ruốc heo":       {p:34.0, c:8.0, f:12.0, cal:280, fiber:0, form:"cooked", cat:"processed"},
   "chả giò":        {p:8.0, c:18.0, f:14.0, cal:230, fiber:1.0, form:"cooked", cat:"processed"},
+
+  // ==================== 18. BATCH 2 — TRÁI CÂY VN THIẾU ====================
+  "dứa":            {p:0.5, c:13.1, f:0.1, cal:50, fiber:1.4, form:"raw", cat:"fruit"},
+  "thơm":           {p:0.5, c:13.1, f:0.1, cal:50, fiber:1.4, form:"raw", cat:"fruit"},
+  "nhãn":           {p:1.0, c:15.0, f:0, cal:48, fiber:1.1, form:"raw", cat:"fruit"},
+  "quýt":           {p:0.8, c:13.3, f:0.3, cal:53, fiber:1.8, form:"raw", cat:"fruit"},
+  "hồng xiêm":      {p:0.4, c:20.0, f:1.1, cal:83, fiber:5.3, form:"raw", cat:"fruit"},
+  "mãng cầu":       {p:1.0, c:22.8, f:0.3, cal:94, fiber:3.3, form:"raw", cat:"fruit"},
+  "dưa lưới":       {p:0.8, c:8.2, f:0.2, cal:34, fiber:0.9, form:"raw", cat:"fruit"},
+  "roi":            {p:0.6, c:12.4, f:0.3, cal:49, fiber:5.4, form:"raw", cat:"fruit"},
+  "đào":            {p:0.9, c:10.1, f:0.3, cal:39, fiber:1.5, form:"raw", cat:"fruit"},
+
+  // ==================== 19. BATCH 2 — ĐỒ UỐNG VN ====================
+  "bạc xỉu":        {p:2.0, c:12.0, f:3.0, cal:85, fiber:0, form:"liquid", cat:"drink"},
+  "cà phê sữa":     {p:1.5, c:15.0, f:2.0, cal:85, fiber:0, form:"liquid", cat:"drink"},
+  "trà đá":         {p:0, c:0, f:0, cal:1, fiber:0, form:"liquid", cat:"drink"},
+  "trà chanh":       {p:0, c:8.0, f:0, cal:32, fiber:0, form:"liquid", cat:"drink"},
+  "sinh tố bơ":      {p:2.5, c:18.0, f:8.0, cal:155, fiber:3.0, form:"liquid", cat:"drink"},
+  "sinh tố chuối":   {p:2.0, c:20.0, f:1.5, cal:95, fiber:1.5, form:"liquid", cat:"drink"},
+  "nước ép cà rốt":  {p:0.9, c:9.3, f:0.2, cal:40, fiber:0.8, form:"liquid", cat:"drink"},
+  "ca cao":          {p:3.5, c:12.0, f:3.0, cal:90, fiber:1.0, form:"liquid", cat:"drink"},
+
+  // ==================== 20. BATCH 2 — GIA VỊ + NƯỚC CHẤM THIẾU ====================
+  "mắm tôm":        {p:10.0, c:2.0, f:1.5, cal:62, fiber:0, form:"liquid", cat:"sauce"},
+  "dầu hào":        {p:1.0, c:11.0, f:0, cal:51, fiber:0, form:"liquid", cat:"sauce"},
+  "muối":           {p:0, c:0, f:0, cal:0, fiber:0, form:"dry", cat:"sauce"},
+  "bột nêm":        {p:5.0, c:18.0, f:0.5, cal:97, fiber:0, form:"dry", cat:"sauce"},
+  "sa tế":          {p:2.0, c:10.0, f:20.0, cal:230, fiber:2.0, form:"liquid", cat:"sauce"},
+
+  // ==================== 21. BATCH 2 — ĐẠM KHÁC ====================
+  "thịt dê":        {p:20.6, c:0, f:3.4, cal:109, fiber:0, form:"raw", cat:"beef"},
+  "cá diêu hồng kho":{p:22.0, c:2.0, f:3.5, cal:128, fiber:0, form:"cooked", cat:"seafood"},
+  "tôm đồng":       {p:18.0, c:0, f:1.0, cal:82, fiber:0, form:"raw", cat:"seafood"},
+  "ốc":             {p:14.0, c:4.0, f:0.4, cal:79, fiber:0, form:"raw", cat:"seafood"},
+  "nghêu hấp":      {p:14.0, c:5.0, f:1.2, cal:86, fiber:0, form:"cooked", cat:"seafood"},
 };
 
 // Keys sorted longest first for greedy matching
@@ -888,6 +923,17 @@ const DISPLAY_MAP = {
   "cà tím": "Cà tím nướng", "cà phê sữa đá": "Cà phê sữa đá", "trà sữa": "Trà sữa",
   "nước mía": "Nước mía", "sữa đặc": "Sữa đặc", "lạp xưởng": "Lạp xưởng",
   "ruốc heo": "Ruốc heo", "chả giò": "Chả giò",
+  // BATCH 2
+  "dứa": "Dứa", "thơm": "Thơm", "nhãn": "Nhãn", "quýt": "Quýt",
+  "hồng xiêm": "Hồng xiêm", "mãng cầu": "Mãng cầu", "dưa lưới": "Dưa lưới",
+  "roi": "Roi/Mận", "đào": "Đào",
+  "bạc xỉu": "Bạc xỉu", "cà phê sữa": "Cà phê sữa", "trà đá": "Trà đá",
+  "trà chanh": "Trà chanh", "sinh tố bơ": "Sinh tố bơ", "sinh tố chuối": "Sinh tố chuối",
+  "nước ép cà rốt": "Nước ép cà rốt", "ca cao": "Ca cao",
+  "mắm tôm": "Mắm tôm", "dầu hào": "Dầu hào", "muối": "Muối",
+  "bột nêm": "Bột nêm", "sa tế": "Sa tế",
+  "thịt dê": "Thịt dê nướng", "cá diêu hồng kho": "Cá diêu hồng kho",
+  "tôm đồng": "Tôm đồng rang", "ốc": "Ốc luộc", "nghêu hấp": "Nghêu hấp",
 };
 
 export function getFoodDisplay(foodKey) {
