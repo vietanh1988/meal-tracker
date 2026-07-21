@@ -43,12 +43,11 @@ const DIET_BLOCK = {
 // GOAL BLOCK — items không phù hợp theo mục tiêu
 const GOAL_BLOCK = {
   cut: [
-    // Hạt/nuts cao calo (>500cal/100g) — giảm mỡ không nên ăn
-    "lạc", "đậu phộng", "hạt điều", "hạnh nhân", "hạt óc chó", "hạt chia",
-    "hạt lanh", "hạt bí", "hạt hướng dương", "mè", "vừng", "hạt mắc ca",
-    "bơ đậu phộng", "hạt dưa", "đậu phộng rang muối", "hạt hướng dương rang",
-    "đậu phộng luộc", "hạt bí rang", "bơ hạnh nhân", "đậu phộng rang tỏi ớt",
-    "hạt điều rang muối",
+    // Hạt TÂY cao calo — GIỮU lạc/đậu phộng/mè VN truyền thống (bù fat cho bữa cơm)
+    "hạt điều", "hạnh nhân", "hạt óc chó", "hạt chia",
+    "hạt lanh", "hạt bí", "hạt hướng dương", "hạt mắc ca",
+    "bơ đậu phộng", "hạt hướng dương rang",
+    "hạt bí rang", "bơ hạnh nhân",
     // Thịt mỡ nhiều
     "ba chỉ", "ba rọi", "da gà", "tóp mỡ", "heo quay", "heo quay giòn bì",
     "thịt ba chỉ nướng", "ba chỉ cuộn nấm nướng", "ba chỉ nướng mỡ hành",
@@ -125,16 +124,15 @@ const NEVER_LIST = [
   "steak", "gỏi", "canh", "xào",
   // Short raw ingredient keys (≤3 chars) — AI phải trả tên đầy đủ, không key thô
   "mực", "cua", "hàu", "ngô", "bắp", "táo", "cam", "ổi", "nho", "lê",
-  "mận", "vải", "mít", "dừa", "na", "nấm", "tỏi", "lạc", "mè", "nem",
+  "mận", "vải", "mít", "dừa", "na", "nấm", "tỏi", "nem",
   "ếch", "sắn", "dứa", "roi", "đào", "ốc", "bầu", "bia", "kẹo", "sả",
   "nui", "kem", "ghẹ", "hẹ", "me", "khế", "tré",
-  // ALL NUTS/SEEDS — không phải món ăn trong bữa cơm VN (đồ ăn vặt)
-  // Fat filler (lạc/mè) engine tự thêm riêng, không cần trong whitelist AI
-  "đậu phộng", "hạt điều", "hạnh nhân", "hạt óc chó", "hạt chia",
-  "hạt lanh", "hạt bí", "hạt hướng dương", "vừng", "hạt mắc ca",
-  "bơ đậu phộng", "hạt dưa", "đậu phộng rang muối", "hạt hướng dương rang",
-  "đậu phộng luộc", "hạt bí rang", "bơ hạnh nhân", "đậu phộng rang tỏi ớt",
-  "hạt điều rang muối", "hạt dẻ", "hạt sen", "edamame",
+  // NUTS — block hạt TÂY (không phải bữa ăn VN), GIỮU lạc/mè/đậu phộng rang VN truyền thống
+  // Lạc rang, đậu phộng rang, mè rang = đồ ăn kèm cơm VN, bù fat hợp lệ
+  "hạt điều", "hạnh nhân", "hạt óc chó", "hạt chia",
+  "hạt lanh", "hạt bí", "hạt hướng dương", "hạt mắc ca",
+  "bơ đậu phộng", "hạt dưa", "hạt hướng dương rang",
+  "hạt bí rang", "bơ hạnh nhân", "hạt điều rang muối",
   "hummus", "falafel",
   // Đậu hạt khô (nguyên liệu, không phải món ăn trực tiếp)
   "đậu nành", "đậu đen", "đậu xanh", "đậu đỏ", "đậu lăng", "đậu gà", "đậu trắng",
