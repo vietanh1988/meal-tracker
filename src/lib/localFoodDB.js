@@ -497,6 +497,32 @@ export const LOCAL_FOODS = {
   "mì xào":          {p:5.5, c:20.0, f:6.0, cal:158, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
   "lẩu thái":        {p:4.0, c:3.0, f:2.0, cal:48, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:2, convenience:7},
   "lẩu hải sản":     {p:5.0, c:2.0, f:1.5, cal:42, fiber:0.3, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:6},
+
+  // ==================== 33. BATCH 6 — COMPOSITE VN BỔ SUNG ====================
+  "bún ốc":          {p:5.0, c:7.0, f:2.0, cal:68, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "cháo lòng":       {p:4.0, c:6.0, f:2.0, cal:58, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "cháo hải sản":    {p:4.5, c:6.5, f:1.5, cal:56, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "cơm gà":          {p:7.0, c:22.0, f:4.0, cal:155, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:8},
+  "cơm sườn":        {p:8.0, c:20.0, f:6.0, cal:168, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:8},
+  "bánh chưng":      {p:5.0, c:28.0, f:4.0, cal:170, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:3, convenience:8},
+  "bánh tét":        {p:4.5, c:30.0, f:3.5, cal:168, fiber:0.6, form:"composite", cat:"starch", region:"vn", complexity:3, convenience:7},
+  "bánh giò":        {p:5.0, c:20.0, f:3.0, cal:128, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:8},
+  "bò lúc lắc":      {p:18.0, c:3.0, f:10.0, cal:178, fiber:0.3, form:"composite", cat:"beef", region:"vn", complexity:2, convenience:6},
+  "gà nướng":        {p:25.0, c:0, f:8.0, cal:175, fiber:0, form:"cooked", cat:"poultry"},
+  "cá chiên":        {p:16.0, c:5.0, f:12.0, cal:195, fiber:0, form:"cooked", cat:"seafood"},
+  "rau xào thập cẩm":{p:2.5, c:5.0, f:4.0, cal:65, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "đậu phụ sốt cà":  {p:6.0, c:5.0, f:5.0, cal:90, fiber:0.8, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "canh sườn":       {p:3.5, c:2.0, f:2.0, cal:42, fiber:0.3, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:5},
+
+  // ==================== 34. BATCH 6 — BAKERY ====================
+  "croissant":       {p:8.2, c:45.8, f:21.0, cal:406, fiber:2.3, form:"cooked", cat:"starch"},
+  "donut":           {p:5.0, c:51.0, f:18.0, cal:380, fiber:1.5, form:"cooked", cat:"starch"},
+  "bánh su kem":     {p:5.5, c:26.0, f:18.0, cal:286, fiber:0.5, form:"cooked", cat:"starch"},
+
+  // ==================== 35. BATCH 6 — ĐÔNG LẠNH ====================
+  "há cảo":          {p:7.0, c:20.0, f:5.0, cal:155, fiber:1.0, form:"cooked", cat:"starch"},
+  "sủi cảo":         {p:8.0, c:22.0, f:4.0, cal:158, fiber:1.0, form:"cooked", cat:"starch"},
+  "xíu mại":         {p:12.0, c:8.0, f:10.0, cal:175, fiber:0.5, form:"cooked", cat:"pork"},
 };
 
 // Keys sorted longest first for greedy matching
@@ -1056,6 +1082,15 @@ const DISPLAY_MAP = {
   "mì căn": "Mì căn", "tempeh": "Tempeh",
   "bún mọc": "Bún mọc", "bún cá": "Bún cá", "hủ tiếu xào": "Hủ tiếu xào",
   "mì xào": "Mì xào", "lẩu thái": "Lẩu Thái", "lẩu hải sản": "Lẩu hải sản",
+  // BATCH 6
+  "bún ốc": "Bún ốc", "cháo lòng": "Cháo lòng", "cháo hải sản": "Cháo hải sản",
+  "cơm gà": "Cơm gà", "cơm sườn": "Cơm sườn",
+  "bánh chưng": "Bánh chưng", "bánh tét": "Bánh tét", "bánh giò": "Bánh giò",
+  "bò lúc lắc": "Bò lúc lắc", "gà nướng": "Gà nướng", "cá chiên": "Cá chiên",
+  "rau xào thập cẩm": "Rau xào thập cẩm", "đậu phụ sốt cà": "Đậu phụ sốt cà",
+  "canh sườn": "Canh sườn", "croissant": "Croissant", "donut": "Donut",
+  "bánh su kem": "Bánh su kem", "há cảo": "Há cảo", "sủi cảo": "Sủi cảo",
+  "xíu mại": "Xíu mại",
 };
 
 export function getFoodDisplay(foodKey) {
@@ -1093,6 +1128,10 @@ export const STANDALONE_DISHES = new Set([
   // Batch 5
   "sushi", "kimbap", "tokbokki", "ramen", "pad thái", "cà ri gà",
   "bún mọc", "bún cá", "hủ tiếu xào", "mì xào", "lẩu thái", "lẩu hải sản",
+  // Batch 6
+  "bún ốc", "cháo lòng", "cháo hải sản", "cơm gà", "cơm sườn",
+  "bánh chưng", "bánh tét", "bánh giò", "bò lúc lắc",
+  "rau xào thập cẩm", "đậu phụ sốt cà", "canh sườn",
 ]);
 
 export function isStandaloneDish(foodKey) {
