@@ -229,7 +229,8 @@ export default function App(){
   const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
   const handleApplyAIMenuPC=async(tpl)=>{
     try{
-      const tplDayType=tpl.day_type||"train";
+      const isNoneEx=(profile?.exerciseType||"gym")==="none";
+      const tplDayType=tpl.day_type||(isNoneEx?"rest":"train");
       const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[],composite:!!m.composite,pattern:m.pattern||null}));
       const tplCal=Math.round((tpl.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.cal||0),s),0));
       if(saveWeeklyTemplate)await saveWeeklyTemplate(dayKeyToday(),tplDayType,tplMeals,tplCal);
@@ -495,7 +496,7 @@ export default function App(){
     {flags.ai_chat&&showAICoach&&<AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{cal:pcAC,p:pcAP,c:pcACb,f:pcAF,dayType:pcDayType}} mob={false} onClose={()=>setShowAICoach(false)} appSettings={appSettings} isAdmin={isAdmin} getMeals={getMeals} getWeeklyTemplate={getWeeklyTemplate} foodCache={foodCache} userId={user?.id} applyTemplate={applyTemplate} saveWeeklyTemplate={saveWeeklyTemplate} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs}/>}
     {showAIMenuPC&&aiAccess.usable&&<div onClick={()=>setShowAIMenuPC(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:520,maxHeight:"88vh",overflowY:"auto",background:C.bg,borderRadius:16,padding:20}}>
-        <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} onApply={handleApplyAIMenuPC} onClose={()=>setShowAIMenuPC(false)}/>
+        <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} initialDayType={pcDayType} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} onApply={handleApplyAIMenuPC} onClose={()=>setShowAIMenuPC(false)}/>
       </div>
     </div>}
     {!isAdmin&&showFeedbackPrompt&&<div style={{position:"fixed",inset:0,zIndex:99999,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>{setShowFeedbackPrompt(false);localStorage.setItem("feedback_prompted","1");}}>

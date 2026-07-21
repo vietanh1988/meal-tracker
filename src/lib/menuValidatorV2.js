@@ -167,6 +167,24 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
       if (vegFoods.length > BASE_RULES.maxVegPerMeal) {
         errors.push(`Bữa "${id}" có ${vegFoods.length} món rau (${vegFoods.join(", ")}) — tối đa ${BASE_RULES.maxVegPerMeal}.`);
       }
+      // R6b: Không cho 2 rau cùng loại chế biến (2 xào hoặc 2 luộc = lặp)
+      if (vegFoods.length >= 2) {
+        const vegCookMethods = vegFoods.map(k => {
+          const lk = k.toLowerCase();
+          if (lk.includes("xào")) return "xào";
+          if (lk.includes("luộc")) return "luộc";
+          if (lk.includes("hấp")) return "hấp";
+          if (lk.includes("nướng")) return "nướng";
+          return "other";
+        });
+        const methodCount = {};
+        vegCookMethods.forEach(m => { methodCount[m] = (methodCount[m] || 0) + 1; });
+        for (const [method, count] of Object.entries(methodCount)) {
+          if (count >= 2 && method !== "other") {
+            errors.push(`Bữa "${id}" có ${count} rau cùng ${method} — đổi 1 món sang cách nấu khác (luộc/xào/hấp/canh).`);
+          }
+        }
+      }
     }
     // R7: Max protein (role=protein) per bữa — BASE_RULES.maxProteinPerMeal
     {

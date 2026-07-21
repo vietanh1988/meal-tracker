@@ -21,8 +21,23 @@ const DIET_BLOCK = {
     "phở bò", "phở gà", "bún bò huế", "bún riêu", "bún chả", "bún thịt nướng",
     "hủ tiếu nam vang", "bánh canh", "mì quảng", "cháo gà", "cháo thịt bằm",
     "xôi xéo", "xôi gà", "xôi lạc", "bánh cuốn nhân thịt", "bánh mì thịt", "cơm tấm", "bún đậu mắm tôm",
+    // Batch mới — composite tinh bột cao
+    "cơm chiên", "cơm gà", "cơm sườn", "cơm chiên dương châu", "cơm chiên trứng",
+    "cơm tấm sườn bì chả", "cơm bình dân", "cơm hộp", "cơm văn phòng",
+    "bún mọc", "bún cá", "bún ốc", "bún mắm", "bún chả cá", "bún ngan", "bún hải sản",
+    "phở xào", "hủ tiếu xào", "mì xào", "miến xào", "miến gà",
+    "bánh xèo", "bánh khọt", "bánh chưng", "bánh tét", "bánh giò", "bánh bao",
+    "cháo lòng", "cháo hải sản", "cháo sườn", "cháo vịt", "cháo cá",
+    "ramen", "pad thái", "tokbokki", "pasta carbonara", "pasta bolognese",
+    "sushi", "kimbap", "hamburger", "pizza",
   ],
-  low_carb: ["cơm trắng", "cơm", "bún", "bánh phở", "xôi", "mì", "hủ tiếu", "mì ý", "đường", "mass gainer"],
+  low_carb: ["cơm trắng", "cơm", "bún", "bánh phở", "xôi", "mì", "hủ tiếu", "mì ý", "đường", "mass gainer",
+    // Batch mới
+    "cơm chiên", "cơm gà", "cơm sườn", "cơm tấm", "cơm bình dân", "cơm hộp",
+    "bún mọc", "bún cá", "bún ốc", "phở xào", "mì xào", "miến xào",
+    "bánh xèo", "bánh chưng", "bánh tét", "cháo",
+    "ramen", "pad thái", "tokbokki", "pasta carbonara",
+  ],
 };
 
 // Supplement HARD filter — dân VN phổ thông không dùng, mặc định loại
