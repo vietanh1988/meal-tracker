@@ -173,6 +173,13 @@ const NEVER_LIST = [
   "nước đậu đen", "nước bí đao", "cappuccino", "latte", "nước dừa tươi",
   // Processed ăn vặt (không phải bữa cơm)
   "xiên bẩn", "nem chua rán", "xiên que nướng",
+  // Raw egg parts — nguyên liệu, không phải món ăn
+  "lòng trắng trứng", "lòng đỏ trứng", "trứng muối",
+  // Condiment/gia vị trá hình thành món
+  "vừng", "kim chi", "dưa muối", "cà pháo muối", "dưa hành",
+  // Sợi mì/bún khô — nguyên liệu, không phải món (AI phải ghi "mì xào" hoặc composite)
+  "mì trứng", "mì ý", "bánh phở", "bún", "miến", "hủ tiếu", "nui",
+  "bánh canh bột lọc", "bánh đa", "bánh ướt",
   // Đồ uống có đường (AI menu gợi ý thức ăn, không gợi ý đồ uống)
   "cà phê sữa đá", "cà phê sữa", "bạc xỉu", "cà phê trứng", "cà phê dừa", "cà phê muối",
   "sinh tố bơ", "sinh tố chuối", "sinh tố xoài", "sinh tố dâu", "sinh tố mãng cầu",

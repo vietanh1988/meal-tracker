@@ -72,10 +72,11 @@ ${slotLines}
 
 PRIORITY (vi phạm P1 = menu bị loại):
 P1. Chọn nguyên liệu từ WHITELIST, viết KÈM cách chế biến cụ thể (VD: "ức gà nướng", "đậu phụ chiên", "cá hồi áp chảo", "rau muống xào"). Nếu là món TRỌN SUẤT (phở bò, bún riêu, cháo gà...) thì viết nguyên tên. Đúng JSON schema. Tuân thủ quy tắc từng bữa. Món [TRỌN SUẤT] đã tự đủ tinh bột+đạm — KHÔNG ghép thêm carb/protein khác cùng bữa.
-P2. Tổng macro ước tính (theo khẩu phần thông thường) gần TARGET nhất.
-P3. Hợp phong cách${style ? ` "${STYLE_LABEL[style]}"` : ""}.
-P4. Không lặp nhóm đạm giữa các bữa (gà/bò/heo/cá/tôm/trứng — mỗi nhóm tối đa 1 bữa chính).
-P5. Bữa ăn tự nhiên kiểu Việt (món đi với nhau hợp lý).
+P2. BỮA CHÍNH (trưa/tối) PHẢI có cấu trúc: 1 tinh bột (cơm/bún/phở) + 1 đạm nấu chín (thịt/cá/tôm/trứng CHẾ BIẾN) + 1 rau (xào/luộc) + 1 canh. KHÔNG cho: nguyên liệu thô (lòng trắng trứng, mì sợi khô), gia vị (muối vừng). Tên đạm phải CỤ THỂ: "trứng gà luộc" (ko "trứng luộc"), "thịt heo kho" (ko "thịt kho"), "cá thu nướng" (ko "cá nướng").
+P3. Tổng macro ước tính (theo khẩu phần thông thường) gần TARGET nhất.
+P4. Hợp phong cách${style ? ` "${STYLE_LABEL[style]}"` : ""}.
+P5. Không lặp nhóm đạm giữa các bữa (gà/bò/heo/cá/tôm/trứng — mỗi nhóm tối đa 1 bữa chính).
+P6. Bữa ăn tự nhiên kiểu Việt (món đi với nhau hợp lý).
 
 BẢNG ĐIỂM (để bạn tự cân nhắc khi chọn món, KHÔNG viết ra):
 - Macro accuracy: 35đ · Style matching: 25đ · VN naturalness: 15đ
