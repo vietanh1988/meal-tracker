@@ -140,6 +140,23 @@ const NEVER_LIST = [
   "đậu nành", "đậu đen", "đậu xanh", "đậu đỏ", "đậu lăng", "đậu gà", "đậu trắng",
   // Dầu mỡ (đã có ở trên nhưng double-check)
   "dầu ô liu", "dầu dừa", "dầu ăn", "dầu mè",
+  // Bakery tây — không phải bữa ăn VN
+  "croissant", "donut", "muffin", "brownie", "waffle", "pancake",
+  "cookie", "macaron", "eclair", "scone", "crêpe", "tiramisu", "cheesecake",
+  "bánh kem", "bánh su kem",
+  // Fast food — không phải bữa ăn VN (user muốn thì tự nhập)
+  "hamburger", "pizza", "hotdog", "gà popcorn", "nugget gà",
+  "cheese stick", "onion ring", "chicken wrap", "nachos", "quesadilla",
+  // Dairy béo cao
+  "phô mai", "bơ lạt", "cream cheese", "kem whipping",
+  // Thịt mỡ thô
+  "ba chỉ", "ba rọi", "da gà", "mỡ heo", "tóp mỡ",
+  // Đồ uống có đường (AI menu gợi ý thức ăn, không gợi ý đồ uống)
+  "cà phê sữa đá", "cà phê sữa", "bạc xỉu", "cà phê trứng", "cà phê dừa", "cà phê muối",
+  "sinh tố bơ", "sinh tố chuối", "sinh tố xoài", "sinh tố dâu", "sinh tố mãng cầu",
+  "ca cao", "matcha latte", "mocha", "trà oolong sữa", "sữa tươi trân châu",
+  "nước mía", "sữa bắp", "sữa óc chó", "nước ép dứa", "nước ép lựu",
+  "sữa đậu nành nóng", "nước ép cà rốt",
 ];
 
 /**
