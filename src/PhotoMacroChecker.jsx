@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { C, redBtn } from "./theme";
 import { lookupLocalFood } from "./lib/localFoodDB";
+import { getUnits, UNIT_MAP as UNIT_MAP_RAW } from "./lib/localFoodDB";
 import { authFetch } from "./lib/authFetch";
 import { pickAiModel } from "./lib/aiProvider";
 
@@ -235,17 +236,34 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
 
   // Presets for common foods
   function getPresets(name) {
-    const n = (name || "").toLowerCase();
-    if (n.includes("cơm")) return [{ label: "Nửa chén (100g)", gram: 100 }, { label: "1 chén vừa (200g)", gram: 200 }, { label: "1 chén đầy (250g)", gram: 250 }];
-    if (n.includes("phở") || n.includes("bún") || n.includes("hủ tiếu") || n.includes("cháo")) return [{ label: "1 tô nhỏ (300g)", gram: 300 }, { label: "1 tô vừa (400g)", gram: 400 }, { label: "1 tô lớn (500g)", gram: 500 }];
+    const n = (name || "").toLowerCase().trim();
+
+    // 1. Exact match UNIT_MAP
+    const units = getUnits(n);
+    if (units && units.length > 0) {
+      return units.map(u => ({ label: `${u.name} (${u.gram}g)`, gram: u.gram }));
+    }
+
+    // 2. Partial match — tìm key dài nhất match
+    const unitKeys = Object.keys(UNIT_MAP_RAW).sort((a, b) => b.length - a.length);
+    for (const key of unitKeys) {
+      if (n.includes(key) || key.includes(n)) {
+        const u = UNIT_MAP_RAW[key];
+        if (u && u.length > 0) return u.map(x => ({ label: `${x.name} (${x.gram}g)`, gram: x.gram }));
+      }
+    }
+
+    // 3. Fallback theo category
+    if (n.includes("cơm")) return [{ label: "Chén nhỏ (100g)", gram: 100 }, { label: "Chén vừa (150g)", gram: 150 }, { label: "Chén đầy (200g)", gram: 200 }];
+    if (n.includes("phở") || n.includes("bún") || n.includes("hủ tiếu") || n.includes("cháo")) return [{ label: "Tô nhỏ (300g)", gram: 300 }, { label: "Tô vừa (400g)", gram: 400 }, { label: "Tô lớn (500g)", gram: 500 }];
     if (n.includes("trứng")) return [{ label: "1 quả (50g)", gram: 50 }, { label: "2 quả (100g)", gram: 100 }, { label: "3 quả (150g)", gram: 150 }];
-    if (n.includes("khoai")) return [{ label: "1 củ nhỏ (100g)", gram: 100 }, { label: "1 củ vừa (200g)", gram: 200 }, { label: "2 củ (350g)", gram: 350 }];
-    if (n.includes("gà") || n.includes("bò") || n.includes("heo") || n.includes("thịt") || n.includes("lợn")) return [{ label: "1 miếng (80g)", gram: 80 }, { label: "2 miếng vừa (150g)", gram: 150 }, { label: "3 miếng (220g)", gram: 220 }];
-    if (n.includes("cá") || n.includes("tôm") || n.includes("mực")) return [{ label: "1 khúc/nắm (80g)", gram: 80 }, { label: "Vừa (150g)", gram: 150 }, { label: "Nhiều (250g)", gram: 250 }];
-    if (n.includes("canh") || n.includes("rau")) return [{ label: "1 bát nhỏ (150g)", gram: 150 }, { label: "1 bát vừa (250g)", gram: 250 }, { label: "1 bát lớn (400g)", gram: 400 }];
-    if (n.includes("xôi")) return [{ label: "1 nắm (100g)", gram: 100 }, { label: "1 gói vừa (200g)", gram: 200 }];
-    if (n.includes("sữa")) return [{ label: "1 hộp nhỏ (180ml)", gram: 180 }, { label: "1 ly (250ml)", gram: 250 }];
-    if (n.includes("chuối")) return [{ label: "1 quả (100g)", gram: 100 }, { label: "2 quả (200g)", gram: 200 }];
+    if (n.includes("canh")) return [{ label: "Bát nhỏ (150g)", gram: 150 }, { label: "Bát vừa (200g)", gram: 200 }, { label: "Bát lớn (300g)", gram: 300 }];
+    if (n.includes("xôi")) return [{ label: "Nắm nhỏ (100g)", gram: 100 }, { label: "Nắm vừa (150g)", gram: 150 }];
+    if (n.includes("gà") || n.includes("bò") || n.includes("heo") || n.includes("thịt")) return [{ label: "Miếng nhỏ (80g)", gram: 80 }, { label: "Miếng vừa (150g)", gram: 150 }, { label: "Miếng lớn (200g)", gram: 200 }];
+    if (n.includes("cá") || n.includes("tôm") || n.includes("mực")) return [{ label: "Khúc nhỏ (80g)", gram: 80 }, { label: "Vừa (150g)", gram: 150 }, { label: "Nhiều (250g)", gram: 250 }];
+    if (n.includes("rau")) return [{ label: "Ít (100g)", gram: 100 }, { label: "Vừa (150g)", gram: 150 }, { label: "Nhiều (250g)", gram: 250 }];
+    if (n.includes("bánh")) return [{ label: "1 cái (100g)", gram: 100 }, { label: "2 cái (200g)", gram: 200 }];
+    if (n.includes("chè")) return [{ label: "Bát nhỏ (150g)", gram: 150 }, { label: "Bát vừa (250g)", gram: 250 }];
     return [{ label: "Ít (80g)", gram: 80 }, { label: "Vừa (150g)", gram: 150 }, { label: "Nhiều (250g)", gram: 250 }];
   }
 
