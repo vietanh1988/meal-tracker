@@ -434,6 +434,34 @@ export const LOCAL_FOODS = {
   "củ sen":          {p:1.6, c:16.0, f:0.1, cal:66, fiber:3.1, form:"raw", cat:"veg"},
   "ngó sen":         {p:2.6, c:9.3, f:0.1, cal:46, fiber:4.9, form:"raw", cat:"veg"},
   "hạt sen":         {p:4.1, c:17.3, f:0.1, cal:89, fiber:3.2, form:"raw", cat:"nuts"},
+
+  // ==================== 24. BATCH 4 — BÁNH VN + GỎI ====================
+  "bánh xèo":       {p:5.0, c:20.0, f:8.0, cal:170, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "gỏi cuốn":       {p:5.5, c:15.0, f:2.0, cal:100, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "nem rán":         {p:6.0, c:15.0, f:12.0, cal:195, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "bánh khọt":       {p:4.0, c:18.0, f:7.0, cal:155, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "bánh tráng trộn": {p:4.0, c:30.0, f:10.0, cal:310, fiber:1.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "bánh tráng nướng":{p:3.0, c:28.0, f:8.0, cal:290, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "gỏi ngó sen":     {p:3.0, c:8.0, f:1.5, cal:55, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:2, convenience:5},
+
+  // ==================== 25. BATCH 4 — FAST FOOD ====================
+  "gà rán":         {p:18.0, c:12.0, f:15.0, cal:260, fiber:0.5, form:"cooked", cat:"poultry"},
+  "hamburger":       {p:13.0, c:24.0, f:11.0, cal:250, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:10},
+  "pizza":           {p:11.0, c:33.0, f:10.0, cal:266, fiber:2.0, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:10},
+  "khoai tây chiên": {p:3.4, c:41.4, f:14.7, cal:312, fiber:3.8, form:"cooked", cat:"starch"},
+  "hotdog":          {p:10.0, c:18.0, f:15.0, cal:247, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:10},
+
+  // ==================== 26. BATCH 4 — CHÈ + TRÁNG MIỆNG ====================
+  "chè đậu xanh":   {p:2.5, c:18.0, f:0.5, cal:85, fiber:1.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "chè đậu đỏ":     {p:2.0, c:20.0, f:0.3, cal:90, fiber:2.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "chè trôi nước":   {p:1.5, c:22.0, f:1.0, cal:100, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "bánh flan":       {p:5.0, c:22.0, f:5.0, cal:150, fiber:0, form:"composite", cat:"egg_dairy", region:"vn", complexity:1, convenience:9},
+  "rau câu":         {p:0.5, c:15.0, f:0, cal:60, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:9},
+  "sương sáo":       {p:0.3, c:8.0, f:0, cal:32, fiber:0.5, form:"composite", cat:"drink", region:"vn", complexity:1, convenience:8},
+
+  // ==================== 27. BATCH 4 — MÌ GÓI + TIỆN LỢI ====================
+  "mì gói":          {p:8.0, c:55.0, f:17.0, cal:400, fiber:2.0, form:"dry", cat:"starch"},
+  "phở gói":         {p:5.0, c:50.0, f:12.0, cal:330, fiber:1.0, form:"dry", cat:"starch"},
 };
 
 // Keys sorted longest first for greedy matching
@@ -974,6 +1002,15 @@ const DISPLAY_MAP = {
   "nấm đùi gà": "Nấm đùi gà", "mộc nhĩ": "Mộc nhĩ", "nấm bào ngư": "Nấm bào ngư",
   "bầu": "Bầu luộc", "đậu đũa": "Đậu đũa luộc", "rau sống": "Rau sống",
   "củ sen": "Củ sen", "ngó sen": "Ngó sen", "hạt sen": "Hạt sen",
+  // BATCH 4
+  "bánh xèo": "Bánh xèo", "gỏi cuốn": "Gỏi cuốn", "nem rán": "Nem rán",
+  "bánh khọt": "Bánh khọt", "bánh tráng trộn": "Bánh tráng trộn", "bánh tráng nướng": "Bánh tráng nướng",
+  "gỏi ngó sen": "Gỏi ngó sen", "gà rán": "Gà rán", "hamburger": "Hamburger",
+  "pizza": "Pizza", "khoai tây chiên": "Khoai tây chiên", "hotdog": "Hotdog",
+  "chè đậu xanh": "Chè đậu xanh", "chè đậu đỏ": "Chè đậu đỏ",
+  "chè trôi nước": "Chè trôi nước", "bánh flan": "Bánh flan",
+  "rau câu": "Rau câu", "sương sáo": "Sương sáo",
+  "mì gói": "Mì gói", "phở gói": "Phở gói",
 };
 
 export function getFoodDisplay(foodKey) {
@@ -1004,6 +1041,10 @@ export const STANDALONE_DISHES = new Set([
   // Batch 3 composite
   "canh chua cá", "canh rau ngót", "canh bí đỏ", "canh mồng tơi", "canh cua", "canh bầu", "canh khổ qua",
   "thịt kho", "cá kho tộ", "trứng kho", "gà kho gừng", "tôm rang", "cơm chiên",
+  // Batch 4 composite
+  "bánh xèo", "gỏi cuốn", "nem rán", "bánh khọt", "bánh tráng trộn", "gỏi ngó sen",
+  "hamburger", "pizza", "hotdog",
+  "chè đậu xanh", "chè đậu đỏ", "chè trôi nước", "bánh flan",
 ]);
 
 export function isStandaloneDish(foodKey) {
