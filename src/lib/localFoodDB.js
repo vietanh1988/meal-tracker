@@ -693,6 +693,62 @@ export const LOCAL_FOODS = {
   "bò viên chiên":   {p:12.0, c:8.0, f:12.0, cal:195, fiber:0, form:"cooked", cat:"processed"},
   "nem chua":        {p:15.0, c:5.0, f:8.0, cal:155, fiber:0, form:"cooked", cat:"processed"},
   "chả lụa chiên":   {p:14.0, c:4.0, f:10.0, cal:165, fiber:0, form:"cooked", cat:"processed"},
+
+  // ==================== BATCH 11 — COMPOSITE VN ĐẶC SẢN VÙNG MIỀN ====================
+  "bún chả cá":      {p:5.0, c:8.0, f:2.0, cal:72, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "bún mắm nêm":     {p:5.0, c:8.0, f:3.0, cal:80, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "bún kèn":         {p:4.5, c:10.0, f:3.5, cal:90, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:5},
+  "bánh canh cua":   {p:5.0, c:10.0, f:2.0, cal:78, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "hủ tiếu xương":   {p:5.0, c:9.0, f:2.5, cal:78, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "phở cuốn":        {p:4.0, c:12.0, f:2.0, cal:82, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bánh xèo miền tây":{p:5.0, c:18.0, f:10.0, cal:185, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "cơm cháy kho quẹt":{p:4.0, c:28.0, f:5.0, cal:175, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "bánh tráng cuốn thịt heo":{p:6.0, c:10.0, f:4.0, cal:100, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "gỏi gà":          {p:10.0, c:5.0, f:3.0, cal:88, fiber:1.5, form:"composite", cat:"poultry", region:"vn", complexity:1, convenience:6},
+  "nộm đu đủ":       {p:2.0, c:8.0, f:2.0, cal:58, fiber:2.0, form:"composite", cat:"veg", region:"vn", complexity:1, convenience:6},
+  "bò bía":          {p:3.0, c:12.0, f:3.0, cal:88, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+
+  // ==================== BATCH 11 — MÓN MẶN VN BỔ SUNG ====================
+  "thịt luộc":       {p:26.0, c:0, f:8.0, cal:180, fiber:0, form:"cooked", cat:"pork"},
+  "thịt nướng":      {p:22.0, c:2.0, f:12.0, cal:208, fiber:0, form:"cooked", cat:"pork"},
+  "sườn xào chua ngọt":{p:12.0, c:10.0, f:10.0, cal:180, fiber:0.5, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:5},
+  "thịt rang cháy cạnh":{p:20.0, c:3.0, f:12.0, cal:205, fiber:0, form:"composite", cat:"pork", region:"vn", complexity:1, convenience:6},
+  "cá lóc kho":      {p:16.0, c:3.0, f:3.5, cal:110, fiber:0, form:"cooked", cat:"seafood"},
+  "cá hồi nướng":    {p:22.0, c:0, f:12.0, cal:200, fiber:0, form:"cooked", cat:"seafood"},
+  "cá thu kho":      {p:18.0, c:3.0, f:12.0, cal:195, fiber:0, form:"cooked", cat:"seafood"},
+  "gà hầm":          {p:18.0, c:2.0, f:8.0, cal:155, fiber:0.3, form:"cooked", cat:"poultry"},
+  "vịt om sấu":      {p:14.0, c:3.0, f:12.0, cal:180, fiber:0.5, form:"composite", cat:"poultry", region:"vn", complexity:2, convenience:5},
+  "bò hầm":          {p:18.0, c:4.0, f:10.0, cal:180, fiber:0.5, form:"cooked", cat:"beef"},
+  "bò sốt vang":     {p:16.0, c:5.0, f:8.0, cal:160, fiber:0.5, form:"composite", cat:"beef", region:"vn", complexity:3, convenience:5},
+
+  // ==================== BATCH 12 — RAU CỤ THỂ + NẤM + ĐẬU ====================
+  "nấm đông cô":     {p:2.2, c:6.8, f:0.5, cal:34, fiber:2.5, form:"raw", cat:"veg"},
+  "nấm mèo":         {p:0.5, c:7.0, f:0.1, cal:25, fiber:5.0, form:"dry", cat:"veg"},
+  "đậu rồng":        {p:2.0, c:6.0, f:0.2, cal:30, fiber:3.0, form:"raw", cat:"veg"},
+  "đậu hà lan":      {p:5.4, c:14.5, f:0.4, cal:81, fiber:5.1, form:"raw", cat:"veg"},
+  "bí ngô":          {p:1.0, c:6.5, f:0.1, cal:26, fiber:0.5, form:"raw", cat:"veg"},
+  "mướp hương":      {p:0.5, c:3.0, f:0.1, cal:14, fiber:0.8, form:"raw", cat:"veg"},
+  "thiên lý":        {p:2.5, c:5.0, f:0.3, cal:30, fiber:2.0, form:"raw", cat:"veg"},
+  "rau sam":          {p:2.0, c:3.4, f:0.4, cal:20, fiber:1.5, form:"raw", cat:"veg"},
+  "rau má":           {p:1.8, c:6.0, f:0.2, cal:30, fiber:2.0, form:"raw", cat:"veg"},
+  "lá giang":        {p:1.5, c:5.0, f:0.3, cal:25, fiber:2.5, form:"raw", cat:"veg"},
+
+  // ==================== BATCH 12 — THỰC PHẨM TIỆN LỢI ====================
+  "cháo gói":        {p:3.0, c:25.0, f:2.0, cal:130, fiber:0.5, form:"dry", cat:"starch"},
+  "bún gói":         {p:3.5, c:45.0, f:1.0, cal:200, fiber:0.5, form:"dry", cat:"starch"},
+  "pizza đông lạnh": {p:10.0, c:30.0, f:10.0, cal:250, fiber:2.0, form:"cooked", cat:"starch"},
+  "cơm hộp":         {p:7.0, c:25.0, f:5.0, cal:175, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:10},
+  "sandwich":        {p:10.0, c:25.0, f:8.0, cal:215, fiber:1.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:10},
+
+  // ==================== BATCH 12 — BAKERY + DESSERT BỔ SUNG ====================
+  "muffin":          {p:5.0, c:50.0, f:12.0, cal:330, fiber:1.5, form:"cooked", cat:"starch"},
+  "brownie":         {p:5.0, c:55.0, f:16.0, cal:380, fiber:2.5, form:"cooked", cat:"starch"},
+  "waffle":          {p:7.0, c:40.0, f:12.0, cal:295, fiber:1.0, form:"cooked", cat:"starch"},
+  "pancake":         {p:6.0, c:34.0, f:8.0, cal:230, fiber:1.0, form:"cooked", cat:"starch"},
+  "bánh chuối nướng":{p:2.5, c:30.0, f:5.0, cal:175, fiber:2.0, form:"cooked", cat:"starch"},
+  "bánh da lợn":     {p:2.0, c:28.0, f:4.0, cal:158, fiber:0.5, form:"cooked", cat:"starch"},
+  "kem dừa":         {p:3.0, c:22.0, f:12.0, cal:210, fiber:0.5, form:"solid", cat:"egg_dairy"},
+  "yogurt đông lạnh":{p:4.0, c:18.0, f:3.0, cal:115, fiber:0, form:"solid", cat:"egg_dairy"},
 };
 
 // Keys sorted longest first for greedy matching
@@ -1317,6 +1373,28 @@ const DISPLAY_MAP = {
   "thịt hộp": "Thịt hộp", "cá mòi hộp": "Cá mòi hộp",
   "xúc xích nướng": "Xúc xích nướng", "bò viên chiên": "Bò viên chiên",
   "nem chua": "Nem chua", "chả lụa chiên": "Chả lụa chiên",
+  // BATCH 11+12
+  "bún chả cá": "Bún chả cá", "bún mắm nêm": "Bún mắm nêm", "bún kèn": "Bún kèn",
+  "bánh canh cua": "Bánh canh cua", "hủ tiếu xương": "Hủ tiếu xương",
+  "phở cuốn": "Phở cuốn", "bánh xèo miền tây": "Bánh xèo miền Tây",
+  "cơm cháy kho quẹt": "Cơm cháy kho quẹt",
+  "bánh tráng cuốn thịt heo": "Bánh tráng cuốn thịt", "gỏi gà": "Gỏi gà",
+  "nộm đu đủ": "Nộm đu đủ", "bò bía": "Bò bía",
+  "thịt luộc": "Thịt luộc", "thịt nướng": "Thịt nướng",
+  "sườn xào chua ngọt": "Sườn xào chua ngọt",
+  "thịt rang cháy cạnh": "Thịt rang cháy cạnh",
+  "cá lóc kho": "Cá lóc kho", "cá hồi nướng": "Cá hồi nướng",
+  "cá thu kho": "Cá thu kho", "gà hầm": "Gà hầm",
+  "vịt om sấu": "Vịt om sấu", "bò hầm": "Bò hầm", "bò sốt vang": "Bò sốt vang",
+  "nấm đông cô": "Nấm đông cô", "nấm mèo": "Nấm mèo",
+  "đậu rồng": "Đậu rồng", "đậu hà lan": "Đậu Hà Lan", "bí ngô": "Bí ngô",
+  "mướp hương": "Mướp hương", "thiên lý": "Thiên lý", "rau sam": "Rau sam",
+  "rau má": "Rau má", "lá giang": "Lá giang",
+  "cháo gói": "Cháo gói", "bún gói": "Bún gói",
+  "pizza đông lạnh": "Pizza đông lạnh", "cơm hộp": "Cơm hộp", "sandwich": "Sandwich",
+  "muffin": "Muffin", "brownie": "Brownie", "waffle": "Waffle", "pancake": "Pancake",
+  "bánh chuối nướng": "Bánh chuối nướng", "bánh da lợn": "Bánh da lợn",
+  "kem dừa": "Kem dừa", "yogurt đông lạnh": "Yogurt đông lạnh",
 };
 
 export function getFoodDisplay(foodKey) {
