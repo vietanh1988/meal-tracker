@@ -180,6 +180,13 @@ const NEVER_LIST = [
   // Sợi mì/bún khô — nguyên liệu, không phải món (AI phải ghi "mì xào" hoặc composite)
   "mì trứng", "mì ý", "bánh phở", "bún", "miến", "hủ tiếu", "nui",
   "bánh canh bột lọc", "bánh đa", "bánh ướt",
+  // Short generic keys — AI phải ghi tên cụ thể
+  "mì", "cháo", "xôi", "măng", "mướp", "naan",
+  // Dessert/kem — không phải món ăn chính
+  "kem dừa", "kem bơ", "kem trà xanh", "kem ốc quế", "kem que",
+  "yogurt đông lạnh", "phô mai que",
+  // Nguyên liệu nấu — không phải món
+  "sữa dừa", "dừa tươi nạo",
   // Đồ uống có đường (AI menu gợi ý thức ăn, không gợi ý đồ uống)
   "cà phê sữa đá", "cà phê sữa", "bạc xỉu", "cà phê trứng", "cà phê dừa", "cà phê muối",
   "sinh tố bơ", "sinh tố chuối", "sinh tố xoài", "sinh tố dâu", "sinh tố mãng cầu",

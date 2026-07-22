@@ -2036,6 +2036,8 @@ const ROLE_OVERRIDE = {
   // Sữa/sữa chua — ít khi dùng làm nguồn đạm/carb chính trong 1 bữa, giữ cố định
   "sữa tươi": "fixed", "sữa tách béo": "fixed",
   "sữa đậu nành": "fixed", "sữa chua": "fixed", "sữa chua hy lạp": "fixed",
+  "sữa chua uống": "fixed", "sữa hộp": "fixed", "sữa chua nếp cẩm": "fixed", "sữa chua việt quất": "fixed",
+  "kem": "fixed",
   // Phô mai/bơ — chất béo thật, dù nằm chung nhóm egg_dairy với trứng
   "phô mai": "fat", "bơ lạt": "fat",
   // Đậu phụ — đạm là chính dù nằm ở nhóm rau củ
