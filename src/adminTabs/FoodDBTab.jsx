@@ -74,22 +74,35 @@ export default function FoodDBTab({ mob }) {
   const saveEdit = useCallback(async () => {
     if (!editKey) return;
     setSaving(true);
-    const { error } = await supabase.from("food_overrides").upsert({
-      key: editKey,
-      p: +editVals.p, c: +editVals.c, f: +editVals.f,
-      cal: +editVals.cal, fiber: +(editVals.fiber||0),
-      updated_at: new Date().toISOString(),
-    });
-    if (!error) {
-      setOverrides(prev => ({ ...prev, [editKey]: { key: editKey, ...editVals } }));
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id || null;
+      const payload = {
+        key: editKey,
+        p: +editVals.p || 0, c: +editVals.c || 0, f: +editVals.f || 0,
+        cal: +editVals.cal || 0, fiber: +(editVals.fiber || 0),
+        updated_by: userId,
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = await supabase.from("food_overrides").upsert(payload, { onConflict: "key" });
+      if (error) {
+        alert("Lỗi lưu: " + error.message);
+      } else {
+        setOverrides(prev => ({ ...prev, [editKey]: payload }));
+        setEditKey(null);
+      }
+    } catch (e) {
+      alert("Lỗi: " + e.message);
     }
-    setEditKey(null);
     setSaving(false);
   }, [editKey, editVals]);
 
   const revertOverride = useCallback(async (key) => {
+    if (!confirm("Hoàn tác macro về giá trị gốc?")) return;
     const { error } = await supabase.from("food_overrides").delete().eq("key", key);
-    if (!error) {
+    if (error) {
+      alert("Lỗi hoàn tác: " + error.message);
+    } else {
       setOverrides(prev => { const n = { ...prev }; delete n[key]; return n; });
     }
   }, []);
