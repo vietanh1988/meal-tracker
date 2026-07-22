@@ -509,6 +509,10 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
           </div>
         </div>
         <div style={pinnedBottom}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button onClick={()=>window.open("https://www.facebook.com/sharer/sharer.php?u=https://app.fipilotai.com&quote=Vừa check bữa ăn "+Math.round(results?.totalCal||0)+" cal bằng FipilotAI 🔥","_blank","width=600,height=400")} style={{ flex:1, padding:"8px 0", fontSize:11, fontWeight:700, border:"none", borderRadius:8, background:"#1877F2", color:"#fff", cursor:"pointer", fontFamily:"inherit" }}>Chia sẻ Facebook</button>
+            <button onClick={()=>window.open("https://zalo.me/share?url=https://app.fipilotai.com","_blank")} style={{ flex:1, padding:"8px 0", fontSize:11, fontWeight:700, border:"none", borderRadius:8, background:"#0068FF", color:"#fff", cursor:"pointer", fontFamily:"inherit" }}>Chia sẻ Zalo</button>
+          </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button style={{ ...mainBtn, flex: 1, fontSize: 14 }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
             <button style={{ flex: 1, padding: 16, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 800, cursor: "pointer", background: "#EF4444", color: "#fff", fontFamily: "inherit" }} onClick={onClose}>Đóng</button>

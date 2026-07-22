@@ -360,5 +360,15 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
     {/* Smart suggestions — outside chart card */}
     <WeightSuggestion weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} curKg={curKg} profile={profile} macro={macro} getMeals={getMeals} appSettings={appSettings}/>
+
+    {/* Share card */}
+    <div style={{...card,marginTop:12,padding:"14px 16px",background:"linear-gradient(135deg,rgba(0,122,255,0.04),rgba(124,58,237,0.04))",border:"1.5px solid rgba(0,122,255,0.12)"}}>
+      <div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:4}}>💜 Thấy hay? Chia sẻ cho bạn bè</div>
+      <div style={{fontSize:12,color:C.t2,marginBottom:10}}>Giúp bạn bè theo dõi dinh dưỡng cùng bạn</div>
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={()=>window.open("https://www.facebook.com/sharer/sharer.php?u=https://app.fipilotai.com","_blank","width=600,height=400")} style={{flex:1,padding:"8px 0",fontSize:12,fontWeight:700,border:"none",borderRadius:8,background:"#1877F2",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>Facebook</button>
+        <button onClick={()=>window.open("https://zalo.me/share?url=https://app.fipilotai.com","_blank")} style={{flex:1,padding:"8px 0",fontSize:12,fontWeight:700,border:"none",borderRadius:8,background:"#0068FF",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>Zalo</button>
+      </div>
+    </div>
   </div>;
 }
