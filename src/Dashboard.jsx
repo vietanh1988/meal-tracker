@@ -78,7 +78,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   };
 
   // Auto version check — force clear cache when admin updates app_version
-  const APP_VERSION="2.6";
+  const APP_VERSION="2.7";
   useEffect(()=>{
     const serverVersion=appSettings.app_version;
     if(serverVersion){
@@ -116,7 +116,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
   return <div>
     {/* Loading skeleton — hiện shimmer khi data chưa load */}
-    {!userDataLoaded&&mob&&<div style={{padding:16}}>
+    {!userDataLoaded&&!actualCal&&mob&&<div style={{padding:16}}>
       <style>{`@keyframes fpShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
       <div style={{height:80,borderRadius:14,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",marginBottom:12}}/>
       <div style={{height:120,borderRadius:14,background:"linear-gradient(90deg,#E2E8F0 25%,#F1F5F9 50%,#E2E8F0 75%)",backgroundSize:"200%",animation:"fpShimmer 1.5s infinite",animationDelay:"0.15s",marginBottom:12}}/>
@@ -282,7 +282,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       return <div style={{...card,padding:"14px 16px",marginTop:6,background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)"}}>
         <div style={{display:"flex",alignItems:"center",gap:14}}>
           <div><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:3}}><span style={{fontSize:12}}>🎯</span><span style={{fontSize:11,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:28,fontWeight:900,color:"#059669",lineHeight:1}}>{ms}<span style={{fontSize:13,color:"#64748B",fontWeight:600}}> /100</span></div></div>
-          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(cr>0?`Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`:cr<0?`Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:(isNoneExercise?"Cân đối dinh dưỡng, đủ năng lượng cho cả ngày.":"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả."))+(macroWarnings.length>0?" Ngoài ra đang "+macroWarnings.join(", ")+".":"")}</div></div>
+          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(cr>0?`Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 25g lạc rang (+142 cal).`:cr<0?`Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:(isNoneExercise?"Cân đối dinh dưỡng, đủ năng lượng cho cả ngày.":"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả."))+(macroWarnings.length>0?" Ngoài ra đang "+macroWarnings.join(", ")+".":"")}</div></div>
         </div>
       </div>;
     })()}
