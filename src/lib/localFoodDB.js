@@ -783,7 +783,7 @@ export const LOCAL_FOODS = {
   "xôi đậu đen":     {p:5.0, c:30.0, f:1.5, cal:155, fiber:2.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "xôi gấc":         {p:3.5, c:32.0, f:2.0, cal:162, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
   "bánh giày":       {p:2.0, c:30.0, f:0.5, cal:132, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
-  "bún bò Nam Bộ":   {p:6.0, c:8.0, f:3.0, cal:85, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "bún bò nam bộ":   {p:6.0, c:8.0, f:3.0, cal:85, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
 
   // ==================== BATCH 14 — ĐỒ UỐNG + DAIRY BỔ SUNG ====================
   "cà phê trứng":    {p:3.0, c:10.0, f:5.0, cal:98, fiber:0, form:"liquid", cat:"drink"},
@@ -1556,7 +1556,7 @@ export const LOCAL_FOODS = {
   "cua sốt trứng muối":{p:12.0, c:5.0, f:8.0, cal:142, fiber:0, form:"composite", cat:"seafood", region:"vn", complexity:2, convenience:5},
 
   // ==================== BATCH 42 — THỊT HEO NƯỚNG/SỐT ====================
-  "sườn nướng BBQ":  {p:16.0, c:5.0, f:18.0, cal:250, fiber:0, form:"cooked", cat:"pork"},
+  "sườn nướng bbq":  {p:16.0, c:5.0, f:18.0, cal:250, fiber:0, form:"cooked", cat:"pork"},
   "sườn non xào chua ngọt":{p:14.0, c:8.0, f:12.0, cal:200, fiber:0.5, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:5},
   "thịt heo nướng riềng mẻ":{p:20.0, c:3.0, f:12.0, cal:205, fiber:0, form:"cooked", cat:"pork"},
   "sườn ram":        {p:14.0, c:5.0, f:10.0, cal:170, fiber:0, form:"cooked", cat:"pork"},
@@ -2036,12 +2036,12 @@ const ROLE_OVERRIDE = {
   // Sữa/sữa chua — ít khi dùng làm nguồn đạm/carb chính trong 1 bữa, giữ cố định
   "sữa tươi": "fixed", "sữa tách béo": "fixed",
   "sữa đậu nành": "fixed", "sữa chua": "fixed", "sữa chua hy lạp": "fixed",
-  "sữa chua uống": "fixed", "sữa hộp": "fixed", "sữa chua nếp cẩm": "fixed", "sữa chua việt quất": "fixed",
-  "kem": "fixed",
   // Phô mai/bơ — chất béo thật, dù nằm chung nhóm egg_dairy với trứng
   "phô mai": "fat", "bơ lạt": "fat",
   // Đậu phụ — đạm là chính dù nằm ở nhóm rau củ
   "đậu phụ": "protein",
+  // Mì căn, tempeh — đạm thực vật chính
+  "mì căn": "protein", "tempeh": "protein", "mì căn xào sả ớt": "protein",
   // Đậu nành khô — đạm cao nhất bảng (36.5g/100g), không phải béo dù cùng nhóm hạt/dầu
   "đậu nành": "protein",
   // Các loại đậu hạt (trừ đậu nành, vốn đạm cao hơn cả carb) — carb chiếm ưu thế

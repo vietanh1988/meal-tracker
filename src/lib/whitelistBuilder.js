@@ -127,6 +127,10 @@ const NEVER_LIST = [
   "mận", "vải", "mít", "dừa", "na", "nấm", "tỏi", "nem",
   "ếch", "sắn", "dứa", "roi", "đào", "ốc", "bầu", "bia", "kẹo", "sả",
   "nui", "kem", "ghẹ", "hẹ", "me", "khế", "tré",
+  // Short generic keys — AI phải ghi tên cụ thể
+  "mì", "cháo", "xôi", "măng", "mướp", "naan",
+  // Nguyên liệu khô — không phải món ăn
+  "mộc nhĩ", "nấm mèo", "rong biển khô", "rong biển sấy",
   // NUTS — block hạt TÂY (không phải bữa ăn VN), GIỮU lạc/mè/đậu phộng rang VN truyền thống
   // Lạc rang, đậu phộng rang, mè rang = đồ ăn kèm cơm VN, bù fat hợp lệ
   "hạt điều", "hạnh nhân", "hạt óc chó", "hạt chia",
@@ -173,20 +177,6 @@ const NEVER_LIST = [
   "nước đậu đen", "nước bí đao", "cappuccino", "latte", "nước dừa tươi",
   // Processed ăn vặt (không phải bữa cơm)
   "xiên bẩn", "nem chua rán", "xiên que nướng",
-  // Raw egg parts — nguyên liệu, không phải món ăn
-  "lòng trắng trứng", "lòng đỏ trứng", "trứng muối",
-  // Condiment/gia vị trá hình thành món
-  "vừng", "kim chi", "dưa muối", "cà pháo muối", "dưa hành",
-  // Sợi mì/bún khô — nguyên liệu, không phải món (AI phải ghi "mì xào" hoặc composite)
-  "mì trứng", "mì ý", "bánh phở", "bún", "miến", "hủ tiếu", "nui",
-  "bánh canh bột lọc", "bánh đa", "bánh ướt",
-  // Short generic keys — AI phải ghi tên cụ thể
-  "mì", "cháo", "xôi", "măng", "mướp", "naan",
-  // Dessert/kem — không phải món ăn chính
-  "kem dừa", "kem bơ", "kem trà xanh", "kem ốc quế", "kem que",
-  "yogurt đông lạnh", "phô mai que",
-  // Nguyên liệu nấu — không phải món
-  "sữa dừa", "dừa tươi nạo",
   // Đồ uống có đường (AI menu gợi ý thức ăn, không gợi ý đồ uống)
   "cà phê sữa đá", "cà phê sữa", "bạc xỉu", "cà phê trứng", "cà phê dừa", "cà phê muối",
   "sinh tố bơ", "sinh tố chuối", "sinh tố xoài", "sinh tố dâu", "sinh tố mãng cầu",
