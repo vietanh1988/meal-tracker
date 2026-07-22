@@ -510,8 +510,11 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
         </div>
         <div style={pinnedBottom}>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <button onClick={()=>window.open("https://www.facebook.com/sharer/sharer.php?u=https://app.fipilotai.com&quote=Vừa check bữa ăn "+Math.round(results?.totalCal||0)+" cal bằng FipilotAI 🔥","_blank","width=600,height=400")} style={{ flex:1, padding:"8px 0", fontSize:11, fontWeight:700, border:"none", borderRadius:8, background:"#1877F2", color:"#fff", cursor:"pointer", fontFamily:"inherit" }}>Chia sẻ Facebook</button>
-            <button onClick={()=>window.open("https://zalo.me/share?url=https://app.fipilotai.com","_blank")} style={{ flex:1, padding:"8px 0", fontSize:11, fontWeight:700, border:"none", borderRadius:8, background:"#0068FF", color:"#fff", cursor:"pointer", fontFamily:"inherit" }}>Chia sẻ Zalo</button>
+            <button onClick={async()=>{
+              const shareData={title:"FipilotAI",text:"Vừa check bữa ăn "+Math.round(results?.totalCal||0)+" cal bằng FipilotAI! Chụp ảnh biết ngay calo 📸",url:"https://app.fipilotai.com"};
+              if(navigator.share){try{await navigator.share(shareData);}catch(e){}}
+              else{try{await navigator.clipboard.writeText("https://app.fipilotai.com");alert("Đã copy link!");}catch(e){}}
+            }} style={{ flex:1, padding:"10px 0", fontSize:12, fontWeight:700, border:"none", borderRadius:8, background:"linear-gradient(135deg,#007AFF,#5B21B6)", color:"#fff", cursor:"pointer", fontFamily:"inherit" }}>📤 Chia sẻ kết quả</button>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button style={{ ...mainBtn, flex: 1, fontSize: 14 }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>

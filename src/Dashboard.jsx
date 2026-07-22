@@ -366,8 +366,11 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       <div style={{fontSize:14,fontWeight:700,color:C.t1,marginBottom:4}}>💜 Thấy hay? Chia sẻ cho bạn bè</div>
       <div style={{fontSize:12,color:C.t2,marginBottom:10}}>Giúp bạn bè theo dõi dinh dưỡng cùng bạn</div>
       <div style={{display:"flex",gap:8}}>
-        <button onClick={()=>window.open("https://www.facebook.com/sharer/sharer.php?u=https://app.fipilotai.com","_blank","width=600,height=400")} style={{flex:1,padding:"8px 0",fontSize:12,fontWeight:700,border:"none",borderRadius:8,background:"#1877F2",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>Facebook</button>
-        <button onClick={()=>window.open("https://zalo.me/share?url=https://app.fipilotai.com","_blank")} style={{flex:1,padding:"8px 0",fontSize:12,fontWeight:700,border:"none",borderRadius:8,background:"#0068FF",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>Zalo</button>
+        <button onClick={async()=>{
+          const shareData={title:"FipilotAI — AI dinh dưỡng cho người Việt",text:"Tính calo chuẩn châu Á, AI tạo thực đơn cả ngày, chụp ảnh biết ngay calo. Miễn phí!",url:"https://app.fipilotai.com"};
+          if(navigator.share){try{await navigator.share(shareData);}catch(e){}}
+          else{try{await navigator.clipboard.writeText("https://app.fipilotai.com");alert("Đã copy link!");}catch(e){}}
+        }} style={{flex:1,padding:"10px 0",fontSize:13,fontWeight:700,border:"none",borderRadius:10,background:"linear-gradient(135deg,#007AFF,#5B21B6)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📤 Chia sẻ app</button>
       </div>
     </div>
   </div>;
