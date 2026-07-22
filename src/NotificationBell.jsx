@@ -154,26 +154,29 @@ export function NotificationBell({ appSettings, userId, dark }) {
   const startUpdate = () => {
     setUpdateStage("running");
     setUpdateProgress(0);
-    // Thanh tiến độ chỉ mang tính hình ảnh (xoá cache thực tế diễn ra rất
-    // nhanh, không có "phần trăm" thật để đo) — tăng dần ngẫu nhiên tới 90%,
-    // dừng lại chờ công việc thật xong rồi mới nhảy lên 100%.
+    // Progress bar chạy chậm 3-5 giây cho cảm giác "nâng cấp" thật
+    let p = 0;
     const tick = setInterval(() => {
-      setUpdateProgress((p) => (p >= 90 ? p : p + Math.random() * 18 + 6));
-    }, 180);
-    caches.keys()
+      p += Math.random() * 6 + 2; // tăng chậm ~2-8% mỗi 120ms → ~3-5s tới 90%
+      if (p >= 90) p = 90;
+      setUpdateProgress(p);
+    }, 120);
+    // Xóa cache + SW thật — chạy song song với progress bar
+    const cleanupDone = caches.keys()
       .then((names) => Promise.all(names.map((k) => caches.delete(k))))
       .then(() => {
         if (navigator.serviceWorker) {
           return navigator.serviceWorker.getRegistrations().then((regs) => Promise.all(regs.map((r) => r.unregister())));
         }
       })
-      .catch((e) => console.error("[NotificationBell] update error:", e))
-      .finally(() => {
-        clearInterval(tick);
-        setUpdateProgress(100);
-        setUpdateStage("done");
-        setTimeout(() => { window.location.reload(true); }, 1500);
-      });
+      .catch((e) => console.error("[NotificationBell] update error:", e));
+    // Đảm bảo progress chạy tối thiểu 3s trước khi done
+    const minWait = new Promise((r) => setTimeout(r, 3000));
+    Promise.all([cleanupDone, minWait]).then(() => {
+      clearInterval(tick);
+      setUpdateProgress(100);
+      setUpdateStage("done");
+    });
   };
 
   const fmtTime = (ts) => {
@@ -276,24 +279,43 @@ export function NotificationBell({ appSettings, userId, dark }) {
               <div style={{ fontSize: 11, color: C.t3, marginBottom: 16 }}>{selectedUpdate.date}</div>
 
               {updateStage === "confirm" && (
-                <div style={{ fontSize: 12, color: C.t2, lineHeight: 1.5 }}>Cập nhật sẽ xoá bộ nhớ đệm và tải lại ứng dụng để lấy phiên bản mới nhất.</div>
+                <div style={{ fontSize: 12, color: C.t2, lineHeight: 1.5 }}>Phiên bản mới đã sẵn sàng. Nhấn nâng cấp để cập nhật ứng dụng.</div>
               )}
 
-              {(updateStage === "running" || updateStage === "done") && (
+              {updateStage === "running" && (
                 <div>
-                  <div style={{ height: 8, borderRadius: 4, background: C.surface, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${Math.min(updateProgress, 100)}%`, background: updateStage === "done" ? "#16A34A" : C.primary, borderRadius: 4, transition: "width 0.2s ease" }} />
+                  <div style={{ textAlign: "center", marginBottom: 16 }}>
+                    <div style={{ fontSize: 36, marginBottom: 8 }}>⚙️</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: C.t1 }}>Đang nâng cấp...</div>
+                    <div style={{ fontSize: 11, color: C.t3, marginTop: 4 }}>Vui lòng không đóng ứng dụng</div>
                   </div>
-                  <div style={{ fontSize: 12, color: C.t2, marginTop: 8, textAlign: "center", fontWeight: 600 }}>
-                    {updateStage === "done" ? "✓ Đã cập nhật xong! Đang tải lại..." : `Đang cập nhật... ${Math.round(Math.min(updateProgress, 100))}%`}
+                  <div style={{ height: 10, borderRadius: 5, background: C.surface, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${Math.min(updateProgress, 100)}%`, background: "linear-gradient(90deg, #36A3FF, #007AFF)", borderRadius: 5, transition: "width 0.15s ease" }} />
                   </div>
+                  <div style={{ fontSize: 12, color: C.primary, marginTop: 8, textAlign: "center", fontWeight: 700 }}>
+                    {Math.round(Math.min(updateProgress, 100))}%
+                  </div>
+                </div>
+              )}
+
+              {updateStage === "done" && (
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>🎉</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#16A34A", marginBottom: 4 }}>Nâng cấp thành công!</div>
+                  <div style={{ fontSize: 13, color: C.t1, fontWeight: 600 }}>Phiên bản {selectedUpdate.version || selectedUpdate.text}</div>
+                  <div style={{ fontSize: 11, color: C.t3, marginTop: 6, lineHeight: 1.5 }}>Ứng dụng đã được cập nhật. Nhấn nút bên dưới để tải lại.</div>
                 </div>
               )}
             </div>
             {updateStage === "confirm" && (
               <div style={{ padding: "12px 20px", borderTop: `1.5px solid ${C.border}`, display: "flex", gap: 8, justifyContent: "flex-end" }}>
                 <button onClick={() => { setSelectedUpdate(null); setUpdateStage(null); }} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, border: `1.5px solid ${C.border}`, borderRadius: 8, background: "#fff", color: C.t1, cursor: "pointer", fontFamily: "inherit" }}>Để sau</button>
-                <button onClick={startUpdate} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, border: "none", borderRadius: 8, background: C.primary, color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>Update ngay</button>
+                <button onClick={startUpdate} style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, border: "none", borderRadius: 8, background: "linear-gradient(135deg, #36A3FF, #007AFF)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>🚀 Nâng cấp ngay</button>
+              </div>
+            )}
+            {updateStage === "done" && (
+              <div style={{ padding: "12px 20px", borderTop: `1.5px solid ${C.border}` }}>
+                <button onClick={() => { window.location.reload(true); }} style={{ width: "100%", padding: "12px", fontSize: 14, fontWeight: 800, border: "none", borderRadius: 10, background: "linear-gradient(135deg, #16A34A, #15803D)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>🔄 Tải lại ứng dụng</button>
               </div>
             )}
           </div>
