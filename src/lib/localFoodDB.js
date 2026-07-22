@@ -1744,16 +1744,16 @@ export const LOCAL_FOODS = {
 // ============================================================
 export const UNIT_MAP = {
   // Trứng
-  "trứng gà":       [{name:"quả", gram:50}, {name:"quả lớn", gram:65}],
-  "trứng vịt":      [{name:"quả", gram:60}, {name:"quả lớn", gram:75}],
-  "trứng cút":      [{name:"quả", gram:12}],
-  "trứng vịt lộn":  [{name:"quả", gram:70}],
-  "trứng gà luộc":  [{name:"quả", gram:50}],
-  "trứng chiên":    [{name:"quả", gram:55}],
-  "trứng ốp la":    [{name:"quả", gram:55}],
-  "trứng cút luộc": [{name:"quả", gram:12}],
-  "lòng trắng trứng":[{name:"quả", gram:33}],
-  "lòng đỏ trứng":  [{name:"quả", gram:17}],
+  "trứng gà":       [{name:"1 quả", gram:50}, {name:"2 quả", gram:100}, {name:"3 quả", gram:150}],
+  "trứng vịt":      [{name:"1 quả", gram:60}, {name:"2 quả", gram:120}],
+  "trứng cút":      [{name:"3 quả", gram:36}, {name:"5 quả", gram:60}, {name:"10 quả", gram:120}],
+  "trứng vịt lộn":  [{name:"1 quả", gram:70}, {name:"2 quả", gram:140}],
+  "trứng gà luộc":  [{name:"1 quả", gram:50}, {name:"2 quả", gram:100}, {name:"3 quả", gram:150}],
+  "trứng chiên":    [{name:"1 quả", gram:55}, {name:"2 quả", gram:110}],
+  "trứng ốp la":    [{name:"1 quả", gram:55}, {name:"2 quả", gram:110}],
+  "trứng cút luộc": [{name:"5 quả", gram:60}, {name:"10 quả", gram:120}],
+  "lòng trắng trứng":[{name:"1 quả", gram:33}, {name:"3 quả", gram:100}],
+  "lòng đỏ trứng":  [{name:"1 quả", gram:17}, {name:"3 quả", gram:51}],
 
   // Cơm/xôi
   "cơm trắng":      [{name:"chén nhỏ", gram:100}, {name:"chén vừa", gram:150}, {name:"chén đầy", gram:200}, {name:"bát", gram:250}],
