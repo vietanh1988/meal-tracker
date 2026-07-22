@@ -371,7 +371,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           if(navigator.share){try{await navigator.share(shareData);}catch(e){}}
           else{try{await navigator.clipboard.writeText("https://app.fipilotai.com");alert("Đã copy link!");}catch(e){}}
         }} style={{flex:1,padding:"10px 0",fontSize:13,fontWeight:700,border:"none",borderRadius:10,background:"linear-gradient(135deg,#007AFF,#5B21B6)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>📤 Chia sẻ app</button>
-        <button onClick={()=>setTab&&setTab("feedback")} style={{flex:1,padding:"10px 0",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>🐛 Báo lỗi & Góp ý</button>
+        <button onClick={()=>setTab&&setTab("settings")} style={{flex:1,padding:"10px 0",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>🐛 Báo lỗi & Góp ý</button>
       </div>
     </div>
   </div>;
