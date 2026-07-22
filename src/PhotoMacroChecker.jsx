@@ -88,15 +88,11 @@ export default function PhotoMacroChecker({ onClose, appSettings }) {
       const prompt = `Nhìn ảnh bữa ăn này. Liệt kê TẤT CẢ các món ăn/thức uống bạn nhìn thấy.
 Với mỗi món, ước lượng khối lượng (gram) dựa trên kích thước nhìn thấy.
 
-NGUYÊN TẮC TÊN MÓN — BẮT BUỘC GHI CỤ THỂ:
-- Trứng: "trứng gà luộc", "trứng vịt luộc", "trứng cút luộc" — KHÔNG "trứng luộc"
-- Thịt: "thịt heo kho", "thịt bò xào", "thịt heo luộc" — KHÔNG "thịt kho", "thịt xào", "thịt luộc"
-- Cá: "cá thu kho", "cá basa chiên", "cá hồi nướng" — KHÔNG "cá kho", "cá chiên", "cá nướng"
-- Gà: "ức gà nướng", "đùi gà chiên", "cánh gà nướng" — KHÔNG "gà nướng", "gà chiên"
-- Tôm: "tôm sú chiên", "tôm hấp sả" — KHÔNG "tôm chiên", "tôm hấp"
-- Rau: "rau muống xào tỏi", "cải ngọt xào", "bông cải luộc" — KHÔNG "rau xào", "rau luộc"
-- Canh: "canh bí đỏ", "canh chua cá lóc", "canh rau ngót tôm" — KHÔNG "canh", "canh chua"
-- Nếu không chắc loại cá/thịt cụ thể, vẫn phải ghi đủ: "cá trắng chiên", "thịt heo nạc kho"
+NGUYÊN TẮC TÊN MÓN:
+- LUÔN ghi CỤ THỂ loại: "trứng gà luộc" (không ghi "trứng luộc"), "thịt heo kho" (không ghi "thịt kho"), "cá thu nướng" (không ghi "cá nướng").
+- Ghi đầy đủ cách chế biến: nướng, luộc, chiên, kho, xào, hấp...
+- VD đúng: "trứng gà luộc", "ức gà nướng", "cá hồi áp chảo", "thịt bò xào", "canh bí đỏ tôm"
+- VD sai: "trứng luộc", "gà nướng", "cá chiên", "thịt xào", "canh"
 
 NGUYÊN TẮC TÁCH / GIỮ NGUYÊN:
 - Nếu các thành phần nằm RIÊNG BIỆT trên đĩa/khay (nhìn rõ từng loại): TÁCH ra từng nguyên liệu.
@@ -202,7 +198,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
 Danh sách:
 ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
 
-          const res = await authFetch({ provider, system: "Bạn là chuyên gia dinh dưỡng Việt Nam. Trả lời chính xác macro per khẩu phần được hỏi.", messages: [{ role: "user", content: estimatePrompt }], maxTokens: 500, feature: "photo_macro" });
+          const res = await authFetch("ai-proxy", { foodDesc: estimatePrompt, provider, model: pickAiModel(provider, { claudeModel: aiModel, geminiModel, gptModel }), feature: "photo_macro", temperature: 0 });
           const text = (res.text || "").replace(/```json|```/g, "").trim();
           const parsed = JSON.parse(text);
           aiEstimated = unknownItems.map((it, j) => {
