@@ -30,6 +30,7 @@ import { useUserData } from "./hooks/useUserData";
 import { useAppSettings } from "./hooks/useAppSettings";
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess } from "./lib/aiMenuService";
+import FeedbackTab from "./adminTabs/FeedbackTab";
 
 
 
@@ -490,8 +491,8 @@ export default function App(){
         {tab==="ai"&&<AdminPanel key="ai" {...adminP} forcedSection="settings" initialSection="ai" hidePills/>}
         {tab==="weight"&&<AdminPanel key="wt" {...adminP} forcedSection="settings" initialSection="weight" hidePills/>}
         {tab==="account"&&<AdminPanel key="acc" {...adminP} forcedSection="settings" initialSection="account" signOut={signOut} user={user} hidePills/>}
-        {tab==="feedback"&&<AdminPanel key="fb" {...adminP} forcedSection="settings" initialSection="feedback" signOut={signOut} user={user} hidePills/>}
-        {tab==="admin_feedback_s"&&<AdminPanel key="afb" {...adminP} forcedSection="settings" initialSection="feedback" signOut={signOut} user={user} hidePills/>}
+        {tab==="feedback"&&<div style={{maxWidth:800,margin:"0 auto",padding:mob?"10px":"20px"}}><FeedbackTab user={user} isAdmin={isAdmin}/></div>}
+        {tab==="admin_feedback_s"&&<div style={{maxWidth:800,margin:"0 auto",padding:mob?"10px":"20px"}}><FeedbackTab user={user} isAdmin={isAdmin}/></div>}
         {tab==="admin_s"&&<AdminPanel key="adm" {...adminP} forcedSection="settings" initialSection="admin" hidePills/>}
         {tab==="templates_s"&&<AdminPanel key="tpl" {...adminP} forcedSection="settings" initialSection="templates" hidePills/>}
         {tab==="weekly_bundles_s"&&<AdminPanel key="wb" {...adminP} forcedSection="settings" initialSection="weekly_bundles" hidePills/>}
