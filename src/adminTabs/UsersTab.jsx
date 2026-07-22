@@ -327,16 +327,30 @@ function UserDetail({ userId, currentUserId, onBack }) {
 
   const handleSaveTier = async () => {
     setSaving(true);
+    // Auto-fill end dates nếu admin bỏ trống
+    let trialEnd = tierForm.trial_end_date || null;
+    let subEnd = tierForm.subscription_end_date || null;
+    if (tierForm.tier === "trial" && !trialEnd) {
+      // Trial mặc định 7 ngày
+      const d = new Date(); d.setDate(d.getDate() + 7);
+      trialEnd = d.toISOString().split("T")[0];
+    }
+    if (tierForm.tier === "premium" && !subEnd) {
+      // Premium mặc định 30 ngày
+      const d = new Date(); d.setDate(d.getDate() + 30);
+      subEnd = d.toISOString().split("T")[0];
+    }
     const { error } = await supabase.from("profiles").update({
       tier: tierForm.tier,
-      subscription_end_date: tierForm.subscription_end_date || null,
-      trial_end_date: tierForm.trial_end_date || null,
+      subscription_end_date: subEnd,
+      trial_end_date: trialEnd,
     }).eq("id", userId);
     if (error) { console.error(error); appAlert("Lưu thất bại: " + error.message); setSaving(false); return; }
-    const relevantDate = tierForm.tier === "trial" ? tierForm.trial_end_date : tierForm.subscription_end_date;
+    const relevantDate = tierForm.tier === "trial" ? trialEnd : subEnd;
     await logAction("update_tier", `Đổi gói -> ${tierForm.tier}, hết hạn ${relevantDate || "-"}`);
     showFlash("✓ Đã lưu gói và thời hạn");
     setSaving(false);
+    setTierForm(f => ({ ...f, trial_end_date: trialEnd || "", subscription_end_date: subEnd || "" }));
     load();
   };
 
