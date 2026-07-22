@@ -1,6 +1,13 @@
 {
   "rewrites": [
-    { "source": "/((?!assets|og-image\\.png|icon-|favicon|apple-touch-icon|manifest|robots|sw|header-bg).*)", "destination": "/index.html" }
+    { "source": "/og-image.png", "destination": "/og-image.png" },
+    { "source": "/icon-192.png", "destination": "/icon-192.png" },
+    { "source": "/icon-512.png", "destination": "/icon-512.png" },
+    { "source": "/apple-touch-icon.png", "destination": "/apple-touch-icon.png" },
+    { "source": "/favicon.png", "destination": "/favicon.png" },
+    { "source": "/manifest.json", "destination": "/manifest.json" },
+    { "source": "/robots.txt", "destination": "/robots.txt" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
