@@ -488,9 +488,9 @@ const quickPrompts=(()=>{
 const t=todayData||{};const m=macro||{};
 const isR=t.dayType==="rest";
 const tgt=isR?(m.calRest||m.calTarget):m.calTarget;
-if((t.cal||0)===0)return["Gợi ý thực đơn hôm nay","Bữa sáng nên ăn gì?","Bài tập gym hôm nay","TDEE là gì?"];
-if((t.cal||0)<tgt*0.95)return["Hôm nay ăn gì thêm?","Gợi ý bữa phụ","Đánh giá thực đơn","Bài tập hôm nay"];
-return["Đánh giá thực đơn","Ngày mai ăn gì?","Lịch tập tuần này","Làm sao giảm mỡ nhanh?"];
+if((t.cal||0)===0)return["🍽️ AI tạo menu","Bữa sáng nên ăn gì?","Bài tập gym hôm nay","TDEE là gì?"];
+if((t.cal||0)<tgt*0.95)return["🍽️ AI tạo menu","Hôm nay ăn gì thêm?","Gợi ý bữa phụ","Đánh giá thực đơn"];
+return["🍽️ AI tạo menu","Đánh giá thực đơn","Ngày mai ăn gì?","Làm sao giảm mỡ nhanh?"];
 })();
 
 const C2={primary:"#007AFF",bg:"#F0F2F5",surface:"#fff",border:"#E2E8F0",t1:"#1a1a2e",t2:"#64748B",t3:"#94A3B8"};
@@ -625,7 +625,7 @@ Fipilot đang trả lời...
 
 {/* Quick prompts */}
 <div style={{display:"flex",gap:6,padding:"8px 18px",overflowX:"auto",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
-{quickPrompts.map((q,i)=><div key={i} onClick={()=>sendMessage(q)} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${C2.border}`,fontSize:11,fontWeight:600,color:C2.primary,background:"rgba(0,122,255,0.04)",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{q}</div>)}
+{quickPrompts.map((q,i)=><div key={i} onClick={()=>{if(q==="🍽️ AI tạo menu"){setShowAIMenuFromChat(true);}else{sendMessage(q);}}} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${q==="🍽️ AI tạo menu"?"#F97316":C2.border}`,fontSize:11,fontWeight:600,color:q==="🍽️ AI tạo menu"?"#F97316":C2.primary,background:q==="🍽️ AI tạo menu"?"rgba(249,115,22,0.08)":"rgba(0,122,255,0.04)",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{q}</div>)}
 </div>
 
 {/* Input */}
