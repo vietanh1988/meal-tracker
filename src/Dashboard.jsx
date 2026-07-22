@@ -78,7 +78,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   };
 
   // Auto version check — force clear cache when admin updates app_version
-  const APP_VERSION="2.7";
+  const APP_VERSION="3.2";
   useEffect(()=>{
     const serverVersion=appSettings.app_version;
     if(serverVersion){
