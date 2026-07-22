@@ -348,7 +348,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
   return <div>
     {!hidePills&&!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[{id:"meals",l:"🍽️ Bữa ăn"},...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"},{id:"admin",l:"🔧 Quản lý version"},{id:"templates",l:"📚 Mẫu"},{id:"food_cache_pending",l:`🗂️ Kho món${pendingCount>0?` (${pendingCount})`:""}`},{id:"food_db",l:"🗄️ Kho thực phẩm"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+      {[{id:"meals",l:"🍽️ Bữa ăn"},...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"},{id:"admin",l:"🔧 Quản lý version"},{id:"templates",l:"📚 Mẫu"},{id:"food_cache_pending",l:`🗂️ Kho món${pendingCount>0?` (${pendingCount})`:""}`}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
       )}
     </div>}
