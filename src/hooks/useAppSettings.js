@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
+import { applyOverrides } from "../lib/localFoodDB";
 
 export function useAppSettings(userId) {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const lastFetchRef = useRef(Date.now());
+  const overridesLoadedRef = useRef(false);
 
   const fetchSettings = useCallback(async (silent = false) => {
     try {
@@ -18,6 +20,18 @@ export function useAppSettings(userId) {
         // Chỉ log SỐ LƯỢNG key, không log toàn bộ object — tránh in nhầm
         // các giá trị nhạy cảm (API key...) ra Console cho ai cũng đọc được.
         if (!silent) console.log("✅ Loaded app settings:", Object.keys(s).length, "keys");
+      }
+
+      // Load food overrides — chỉ 1 lần, patch LOCAL_FOODS trong memory
+      if (!overridesLoadedRef.current) {
+        overridesLoadedRef.current = true;
+        try {
+          const { data: ov } = await supabase.from("food_overrides").select("*");
+          if (ov && ov.length > 0) {
+            const count = applyOverrides(ov);
+            if (!silent) console.log("✅ Food overrides:", count, "items patched");
+          }
+        } catch (e) { console.warn("Food overrides skip:", e.message); }
       }
 
       // Đọc quyền Admin từ database (thay vì hardcode ID)

@@ -2015,6 +2015,29 @@ export function getFoodCount() {
 }
 
 // ============================================================
+// OVERRIDE — admin sửa macro từ Supabase ghi đè lên DB tĩnh
+// Gọi 1 lần khi app start. Chỉ patch p/c/f/cal/fiber, giữ nguyên
+// cat/form/region/convenience → role + gramLimit + display không đổi.
+// Nếu fetch fail → dùng DB tĩnh bình thường, không crash.
+// ============================================================
+export function applyOverrides(overrides) {
+  if (!overrides || !Array.isArray(overrides)) return 0;
+  let count = 0;
+  overrides.forEach(ov => {
+    const key = (ov.key || "").toLowerCase().trim();
+    if (!key || !LOCAL_FOODS[key]) return;
+    // Chỉ patch macro, KHÔNG đổi cat/form/region
+    LOCAL_FOODS[key].p = +(ov.p ?? LOCAL_FOODS[key].p);
+    LOCAL_FOODS[key].c = +(ov.c ?? LOCAL_FOODS[key].c);
+    LOCAL_FOODS[key].f = +(ov.f ?? LOCAL_FOODS[key].f);
+    LOCAL_FOODS[key].cal = +(ov.cal ?? LOCAL_FOODS[key].cal);
+    LOCAL_FOODS[key].fiber = +(ov.fiber ?? LOCAL_FOODS[key].fiber ?? 0);
+    count++;
+  });
+  return count;
+}
+
+// ============================================================
 // VAI TRÒ DINH DƯỠNG — dùng cho Meal Engine (tự tính gram khớp target)
 // role: "protein" | "carb" | "fat" | "fixed" (rau/gia vị — giữ nguyên gram,
 // không scale). Mặc định suy theo `cat` sẵn có, chỉ liệt kê ngoại lệ lệch
