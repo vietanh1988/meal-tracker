@@ -183,6 +183,10 @@ const NEVER_LIST = [
   "ca cao", "matcha latte", "mocha", "trà oolong sữa", "sữa tươi trân châu",
   "nước mía", "sữa bắp", "sữa óc chó", "nước ép dứa", "nước ép lựu",
   "sữa đậu nành nóng", "nước ép cà rốt",
+  // Đồ hộp — không gợi ý menu (user tự thêm nếu muốn, giống thịt hộp/cá mòi hộp)
+  "cá ngừ hộp", "sữa hộp",
+  // Snack/dairy tây — không phải bữa ăn VN/clean
+  "yogurt đông lạnh",
 ];
 
 /**
@@ -217,6 +221,8 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     if (style === "clean") {
       const cleanExtra = new Set(["ba chỉ", "ba rọi", "mayonnaise", "đường", "sầu riêng", "bò viên", "mì ý"]);
       if (cleanExtra.has(key)) continue;
+      // Clean: block items có modifier chiên/rán/quay trong tên
+      if (styleCfg.cleanBlockedModifiers && styleCfg.cleanBlockedModifiers.some(mod => key.includes(mod))) continue;
     }
     // Easy: convenience < minConvenience → loại
     if (styleCfg.minConvenience && getConvenienceScore(key) < styleCfg.minConvenience) continue;

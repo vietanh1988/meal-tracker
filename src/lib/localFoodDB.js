@@ -2268,6 +2268,11 @@ const REGION_OVERRIDE = {
   // Supp
   "whey": "intl", "whey isolate": "intl", "casein": "intl",
   "mass gainer": "intl", "creatine": "intl", "bcaa": "intl",
+  // Protein/dairy tây — không phải bữa cơm VN
+  "steak bò": "intl", "tempeh": "intl",
+  "sữa chua hy lạp": "intl", "sữa chua việt quất": "intl",
+  "yogurt đông lạnh": "intl", "cá ngừ hộp": "intl", "sữa hộp": "intl",
+  "salad trứng": "intl",
 };
 
 export function getFoodRegion(foodKey) {
