@@ -1179,7 +1179,7 @@ export const LOCAL_FOODS = {
   // ==================== BATCH 28 — MÓN ĂN CHIỀU/TỐI ====================
   "lẩu cá":          {p:5.0, c:2.0, f:1.5, cal:42, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:5},
   "lẩu riêu cua":    {p:4.0, c:3.0, f:2.0, cal:46, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:5},
-  "lẩu dê":          {p:6.0, c:3.0, f:2.0, cal:55, fiber:0.5, form:"composite", cat:"beef", region:"vn", complexity:2, convenience:5},
+  "lẩu dê":          {p:6.0, c:3.0, f:2.0, cal:55, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:5},
   "nướng hải sản":   {p:16.0, c:2.0, f:3.0, cal:102, fiber:0, form:"cooked", cat:"seafood"},
   "hàu nướng phô mai":{p:10.0, c:5.0, f:8.0, cal:135, fiber:0, form:"cooked", cat:"seafood"},
   "nghêu xào":       {p:12.0, c:4.0, f:3.0, cal:92, fiber:0.3, form:"cooked", cat:"seafood"},
@@ -1566,7 +1566,7 @@ export const LOCAL_FOODS = {
   "lẩu kim chi":     {p:4.0, c:5.0, f:2.0, cal:55, fiber:1.0, form:"composite", cat:"veg", region:"intl", complexity:1, convenience:7},
   "lẩu tomyum":      {p:4.0, c:5.0, f:2.0, cal:55, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:2, convenience:7},
   "lẩu cá kèo":     {p:5.0, c:2.0, f:1.5, cal:42, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:5},
-  "lẩu bò nhúng dấm":{p:6.0, c:3.0, f:2.0, cal:55, fiber:0.5, form:"composite", cat:"beef", region:"vn", complexity:1, convenience:6},
+  "lẩu bò nhúng dấm":{p:6.0, c:3.0, f:2.0, cal:55, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:6},
   "lẩu ếch":         {p:5.0, c:3.0, f:1.5, cal:45, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:5},
 
   // ==================== BATCH 42 — THÊM ĐÔNG NAM Á ====================
