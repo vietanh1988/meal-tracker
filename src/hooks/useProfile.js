@@ -37,6 +37,7 @@ export function useProfile(userId, authLoading) {
         // mặc định chung do admin đặt trong appSettings.meal_config). Nếu user chưa
         // từng tự chỉnh thì cột này null, app sẽ dùng mặc định chung của admin.
         if(data.meal_config) p.mealConfig = data.meal_config;
+        if(data.banner_dismissed_date) p.bannerDismissedDate = data.banner_dismissed_date;
         // Chỉ ĐỌC — tier đổi qua admin (UsersTab) hoặc luồng thanh toán, không
         // qua setProfile() của user. Mặc định "free" nếu cột trống (an toàn:
         // chưa xác định được tier thì coi như free, không tự cấp quyền).
@@ -98,6 +99,7 @@ export function useProfile(userId, authLoading) {
         if(merged.calorieMode) payload.calorie_mode = merged.calorieMode;
         if(merged.usesSupplements !== undefined) payload.uses_supplements = merged.usesSupplements === true;
         if(merged.mealConfig) payload.meal_config = merged.mealConfig;
+        if(merged.bannerDismissedDate) payload.banner_dismissed_date = merged.bannerDismissedDate;
         // Legacy fields
         if(merged.gym) payload.gym = merged.gym;
         if(merged.activity) payload.activity = merged.activity;
