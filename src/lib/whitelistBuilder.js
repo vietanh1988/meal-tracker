@@ -270,8 +270,28 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
       : it.role;
     const byGroup = { protein: [], carb: [], veg: [], fixedOther: [], fat: [] };
     items.forEach(it => byGroup[group(it)]?.push(it));
-    const quota = { protein: 0.32, carb: 0.22, veg: 0.20, fixedOther: 0.16, fat: 0.10 };
-    const capped = [];
+
+    // Protein sub-quota: đảm bảo đa dạng nguồn đạm (thịt/cá + trứng/sữa + thực vật)
+    const proteinSlots = Math.ceil(AI_LIMITS.maxWhitelistItems * 0.32);
+    const pMeat = []; const pEggDairy = []; const pPlant = [];
+    byGroup.protein.forEach(it => {
+      const cat = LOCAL_FOODS[it.key]?.cat;
+      if (["beef", "pork", "poultry", "seafood"].includes(cat)) pMeat.push(it);
+      else if (cat === "egg_dairy") pEggDairy.push(it);
+      else pPlant.push(it);
+    });
+    // Meat/seafood gets ~50%, egg_dairy ~40%, plant ~10% of protein slots
+    const meatQ = Math.ceil(proteinSlots * 0.50);
+    const eggQ = Math.ceil(proteinSlots * 0.40);
+    const plantQ = Math.max(2, proteinSlots - meatQ - eggQ);
+    const cappedProtein = [
+      ...pMeat.slice(0, meatQ),
+      ...pEggDairy.slice(0, eggQ),
+      ...pPlant.slice(0, plantQ),
+    ].slice(0, proteinSlots);
+
+    const quota = { carb: 0.22, veg: 0.20, fixedOther: 0.16, fat: 0.10 };
+    const capped = [...cappedProtein];
     Object.entries(quota).forEach(([g, q]) => {
       capped.push(...byGroup[g].slice(0, Math.ceil(AI_LIMITS.maxWhitelistItems * q)));
     });
