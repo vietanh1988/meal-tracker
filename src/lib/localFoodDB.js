@@ -2226,6 +2226,26 @@ const CONVENIENCE_OVERRIDE = {
   "ức gà nướng": 8, "ức gà luộc": 7,
   "trứng gà luộc": 10, "trứng luộc": 10, "trứng vịt luộc": 10, "trứng cút luộc": 10,
   "cá ngừ hộp": 10, "đậu phụ": 7, "tôm tươi": 6,
+  // Cá nước mặn rẻ tiền phổ biến VN — chợ nào cũng có
+  "cá thu kho": 6, "cá thu nướng": 6, "cá nục kho": 7, "cá saba nướng": 5,
+  "cá trích nướng": 6, "mực kho": 5, "mực nướng": 5,
+  // Cá nước ngọt phổ biến
+  "cá lóc kho": 6, "cá rô kho tộ": 5, "cá diêu hồng kho": 6, "cá basa chiên": 6,
+  "cá chép kho": 5, "cá tra kho": 6, "cá kho tộ": 6,
+  // Tôm — phổ biến, mua dễ
+  "tôm hấp": 7, "tôm luộc": 7, "tôm rang": 6, "tôm kho": 6, "tôm rim": 6,
+  // Hải sản khác
+  "nghêu hấp": 5, "cua rang muối": 4,
+  // Heo — nấu cơm nhà phổ biến nhất VN
+  "thịt kho": 7, "thịt kho tàu": 7, "thịt heo luộc": 7, "thịt luộc": 7,
+  "sườn nướng": 5, "sườn xào chua ngọt": 6, "sườn ram": 6, "thịt nướng": 5,
+  "thịt heo rim": 6, "nem lụi": 5, "xá xíu": 6, "char siu": 6,
+  // Gà — phổ biến
+  "gà kho gừng": 6, "gà luộc": 7, "gà nướng": 6, "gà xào sả ớt": 6,
+  "gà chiên": 6, "vịt quay": 5,
+  // Bò — đắt hơn nhưng vẫn phổ biến
+  "bò lúc lắc": 5, "bò xào rau cải": 6, "bò xào hành tây": 6,
+  "thịt bò nướng": 5, "bò hầm": 5,
   // Tinh bột: mua sẵn vs nấu
   "bánh mì": 10, "bánh mì đen": 9, "xôi": 10, "bánh cuốn": 9,
   "cháo": 8, "bánh phở": 8, "bún": 8, "hủ tiếu": 8, "miến": 7,
