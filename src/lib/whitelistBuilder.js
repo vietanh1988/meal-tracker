@@ -219,7 +219,8 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     if (styleCfg.bannedCats && styleCfg.bannedCats.includes(v.cat)) continue;
     // Clean: thêm block list truyền thống (ba chỉ, đường, processed cụ thể)
     if (style === "clean") {
-      const cleanExtra = new Set(["ba chỉ", "ba rọi", "mayonnaise", "đường", "sầu riêng", "bò viên", "mì ý"]);
+      const cleanExtra = new Set(["ba chỉ", "ba rọi", "mayonnaise", "đường", "sầu riêng", "bò viên", "mì ý",
+        "salad trứng", "sữa chua việt quất", "yogurt đông lạnh", "sữa hộp", "cá ngừ hộp"]);
       if (cleanExtra.has(key)) continue;
       // Clean: block items có modifier chiên/rán/quay trong tên
       if (styleCfg.cleanBlockedModifiers && styleCfg.cleanBlockedModifiers.some(mod => key.includes(mod))) continue;

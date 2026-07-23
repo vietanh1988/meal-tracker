@@ -2232,6 +2232,8 @@ const CONVENIENCE_OVERRIDE = {
   "cơm trắng": 6, "cơm": 6, "cơm gạo lứt": 6,
   "khoai lang": 9, "khoai tây": 6, "ngô": 9, "bắp": 9,
   "yến mạch": 8, "bột yến mạch": 8,
+  // Khó mua ở VN — không tiện lợi
+  "tempeh": 3, "sữa chua hy lạp": 5, "salad trứng": 4, "sữa chua việt quất": 5,
 };
 
 export function getConvenienceScore(foodKey) {
