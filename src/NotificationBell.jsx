@@ -40,8 +40,27 @@ export function NotificationBell({ appSettings, userId, dark }) {
   const ref = useRef(null);
   const ringTimeoutRef = useRef(null);
 
+  const [userCreatedAt, setUserCreatedAt] = useState(null);
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      const { data } = await supabase.from("profiles").select("created_at").eq("id", userId).single();
+      if (data?.created_at) setUserCreatedAt(new Date(data.created_at));
+    })();
+  }, [userId]);
+
   const updateList = (() => {
-    try { return appSettings?.notifications ? JSON.parse(appSettings.notifications) : []; } catch (e) { return []; }
+    try {
+      const all = appSettings?.notifications ? JSON.parse(appSettings.notifications) : [];
+      if (!userCreatedAt) return all;
+      return all.filter(n => {
+        if (!n.date) return true;
+        const parts = n.date.split("/");
+        if (parts.length < 3) return true;
+        const notiDate = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+        return notiDate >= new Date(userCreatedAt.getFullYear(), userCreatedAt.getMonth(), userCreatedAt.getDate());
+      });
+    } catch (e) { return []; }
   })();
 
 
