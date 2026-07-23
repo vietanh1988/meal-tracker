@@ -7,7 +7,7 @@ import { getAIMenuAccess } from "./lib/aiMenuService";
 
 export function OnboardingWizard({profile,setProfile,onComplete,appSettings,user,saveWeeklyTemplate,applyTemplate}){
 const mob=useIsMobile();
-const [step,setStep]=useState(1);
+const [step,setStep]=useState(0);
 const [showAIMenu,setShowAIMenu]=useState(false);
 const p=profile||defaultProfile;
 const macro=calcMacro(p);
@@ -29,7 +29,7 @@ if(applyTemplate)await applyTemplate(tpl);
 finishOnboarding();
 };
 
-const stepDots=<div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:20}}>
+const stepDots=step===0?null:<div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:20}}>
 {[1,2,3,4].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#36A3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
 </div>;
 
@@ -51,6 +51,25 @@ return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-ser
 ) : (
 <div style={{...card,padding:mob?"20px 16px":"24px 28px"}}>
 {stepDots}
+
+{/* STEP 0: Popup chào */}
+{step===0&&<div style={{textAlign:"center"}}>
+<div style={{fontSize:40,marginBottom:8}}>🍽️</div>
+<div style={{fontSize:19,fontWeight:900,color:C.t1,lineHeight:1.3}}>Chào mừng bạn đến với<br/>FipilotAI! 🎉</div>
+<div style={{fontSize:13,color:C.t2,lineHeight:1.6,marginTop:12}}>Để app tính <b>chính xác</b> calo mục tiêu & gợi ý bữa ăn phù hợp, bạn cần điền đầy đủ thông tin ở các bước tiếp theo nhé!</div>
+<div style={{display:"flex",flexDirection:"column",gap:8,margin:"18px 0",textAlign:"left"}}>
+{[
+  {icon:"🎯",bg:"#EFF6FF",title:"Calo chính xác",desc:"tính theo cơ thể & mục tiêu của bạn"},
+  {icon:"🤖",bg:"#FEF3C7",title:"AI gợi ý bữa ăn",desc:"thực đơn phù hợp dinh dưỡng"},
+  {icon:"📊",bg:"#DCFCE7",title:"Theo dõi tiến trình",desc:"biết mình đang ở đâu"}
+].map((f,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:C.surface||"#F8FAFC",borderRadius:10,border:`1px solid ${C.border}`}}>
+  <div style={{width:36,height:36,borderRadius:10,background:f.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>{f.icon}</div>
+  <div style={{fontSize:12,color:C.t2,fontWeight:600,lineHeight:1.4}}><b style={{color:C.t1,fontWeight:800}}>{f.title}</b> — {f.desc}</div>
+</div>)}
+</div>
+<div style={{fontSize:11,color:"#F97316",fontWeight:700,marginBottom:14,display:"flex",alignItems:"center",gap:4,justifyContent:"center"}}>⚠️ Điền bừa = kết quả sai — hãy điền đúng nhé!</div>
+<button onClick={()=>setStep(1)} style={{...redBtn,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>Bắt đầu thiết lập →</button>
+</div>}
 
 {/* STEP 1: Thông tin cơ bản */}
 {step===1&&<div>
