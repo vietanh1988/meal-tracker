@@ -242,8 +242,11 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     // Món không hợp bữa nào đang cần (mọi slot < ngưỡng) → bỏ
     if (mealIds.length > 0 && maxSlotScore < MIN_SLOT_SCORE) continue;
 
-    // Tổng score để cap: hợp bữa + tiện lợi + goal hint + tránh món cũ
-    let score = maxSlotScore + getConvenienceScore(key) * (style === "easy" ? 1 : 0.3);
+    // Tổng score để cap: hợp bữa + goal hint + tránh món cũ
+    // VN (cơm nhà): lấy hết — conv KHÔNG ảnh hưởng sort
+    // Clean: lấy hết (trừ chiên/rán) — conv KHÔNG ảnh hưởng sort
+    // Easy: ưu tiên tiện lợi — conv ảnh hưởng mạnh
+    let score = maxSlotScore + getConvenienceScore(key) * (style === "easy" ? 1.5 : 0);
     if (avoid.has(key)) score -= 6; // soft — vừa ăn gần đây, hạ ưu tiên
     if (v.tier === "occasional") score -= 3; // món đắt — hạ ưu tiên, KHÔNG loại hẳn
     if (goal === "cut" && ["poultry", "seafood", "veg", "egg_dairy"].includes(v.cat)) score += 2;
@@ -271,8 +274,9 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     const byGroup = { protein: [], carb: [], veg: [], fixedOther: [], fat: [] };
     items.forEach(it => byGroup[group(it)]?.push(it));
 
-    // Protein sub-quota: đảm bảo đa dạng nguồn đạm (gà + bò + heo + cá/tôm + trứng + thực vật)
-    const proteinSlots = Math.ceil(AI_LIMITS.maxWhitelistItems * 0.32);
+    // Protein sub-quota: đa dạng theo thực tế bữa cơm VN
+    // Cá/tôm/hải sản đa dạng nhất (mặn+ngọt) → heo → gà → bò → trứng (phụ) → đậu phụ
+    const proteinSlots = Math.ceil(AI_LIMITS.maxWhitelistItems * 0.38); // ~42 slots
     const pPoultry = []; const pBeef = []; const pPork = []; const pSeafood = [];
     const pEggDairy = []; const pPlant = [];
     byGroup.protein.forEach(it => {
@@ -284,23 +288,23 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
       else if (cat === "egg_dairy") pEggDairy.push(it);
       else pPlant.push(it);
     });
-    // Quota: seafood 20%, poultry 12%, beef 8%, pork 8%, egg_dairy 40%, plant ~12%
-    const sfQ = Math.max(4, Math.ceil(proteinSlots * 0.20));  // cá/tôm/mực — đa dạng nhất
-    const plQ = Math.max(3, Math.ceil(proteinSlots * 0.12));  // gà/vịt
-    const bfQ = Math.max(2, Math.ceil(proteinSlots * 0.08));  // bò
-    const pkQ = Math.max(2, Math.ceil(proteinSlots * 0.08));  // heo
-    const edQ = Math.max(4, Math.ceil(proteinSlots * 0.40));  // trứng/sữa
-    const vpQ = Math.max(2, proteinSlots - sfQ - plQ - bfQ - pkQ - edQ); // thực vật
+    // Cá/tôm 28%, heo 22%, gà 18%, bò 10%, trứng 14%, TV 8%
+    const sfQ = Math.max(5, Math.ceil(proteinSlots * 0.28));  // cá/tôm — mặn+ngọt đa dạng
+    const pkQ = Math.max(4, Math.ceil(proteinSlots * 0.22));  // heo — ăn nhiều nhất VN
+    const plQ = Math.max(4, Math.ceil(proteinSlots * 0.18));  // gà — phổ biến thứ 2
+    const bfQ = Math.max(3, Math.ceil(proteinSlots * 0.10));  // bò — đắt hơn, ít hơn
+    const edQ = Math.max(3, Math.ceil(proteinSlots * 0.14));  // trứng/sữa — phụ
+    const vpQ = Math.max(2, proteinSlots - sfQ - pkQ - plQ - bfQ - edQ); // đậu phụ/TV
     const cappedProtein = [
-      ...pSeafood.slice(0, sfQ),
-      ...pPoultry.slice(0, plQ),
-      ...pBeef.slice(0, bfQ),
       ...pPork.slice(0, pkQ),
+      ...pPoultry.slice(0, plQ),
+      ...pSeafood.slice(0, sfQ),
+      ...pBeef.slice(0, bfQ),
       ...pEggDairy.slice(0, edQ),
       ...pPlant.slice(0, vpQ),
     ].slice(0, proteinSlots);
 
-    const quota = { carb: 0.22, veg: 0.20, fixedOther: 0.16, fat: 0.10 };
+    const quota = { carb: 0.20, veg: 0.18, fixedOther: 0.14, fat: 0.10 };
     const capped = [...cappedProtein];
     Object.entries(quota).forEach(([g, q]) => {
       capped.push(...byGroup[g].slice(0, Math.ceil(AI_LIMITS.maxWhitelistItems * q)));
