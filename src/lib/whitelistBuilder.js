@@ -271,23 +271,33 @@ export function buildWhitelist({ style = null, diet = "balanced", goal = null, u
     const byGroup = { protein: [], carb: [], veg: [], fixedOther: [], fat: [] };
     items.forEach(it => byGroup[group(it)]?.push(it));
 
-    // Protein sub-quota: đảm bảo đa dạng nguồn đạm (thịt/cá + trứng/sữa + thực vật)
+    // Protein sub-quota: đảm bảo đa dạng nguồn đạm (gà + bò + heo + cá/tôm + trứng + thực vật)
     const proteinSlots = Math.ceil(AI_LIMITS.maxWhitelistItems * 0.32);
-    const pMeat = []; const pEggDairy = []; const pPlant = [];
+    const pPoultry = []; const pBeef = []; const pPork = []; const pSeafood = [];
+    const pEggDairy = []; const pPlant = [];
     byGroup.protein.forEach(it => {
       const cat = LOCAL_FOODS[it.key]?.cat;
-      if (["beef", "pork", "poultry", "seafood"].includes(cat)) pMeat.push(it);
+      if (cat === "poultry") pPoultry.push(it);
+      else if (cat === "beef") pBeef.push(it);
+      else if (cat === "pork") pPork.push(it);
+      else if (cat === "seafood") pSeafood.push(it);
       else if (cat === "egg_dairy") pEggDairy.push(it);
       else pPlant.push(it);
     });
-    // Meat/seafood gets ~50%, egg_dairy ~40%, plant ~10% of protein slots
-    const meatQ = Math.ceil(proteinSlots * 0.50);
-    const eggQ = Math.ceil(proteinSlots * 0.40);
-    const plantQ = Math.max(2, proteinSlots - meatQ - eggQ);
+    // Quota: seafood 20%, poultry 12%, beef 8%, pork 8%, egg_dairy 40%, plant ~12%
+    const sfQ = Math.max(4, Math.ceil(proteinSlots * 0.20));  // cá/tôm/mực — đa dạng nhất
+    const plQ = Math.max(3, Math.ceil(proteinSlots * 0.12));  // gà/vịt
+    const bfQ = Math.max(2, Math.ceil(proteinSlots * 0.08));  // bò
+    const pkQ = Math.max(2, Math.ceil(proteinSlots * 0.08));  // heo
+    const edQ = Math.max(4, Math.ceil(proteinSlots * 0.40));  // trứng/sữa
+    const vpQ = Math.max(2, proteinSlots - sfQ - plQ - bfQ - pkQ - edQ); // thực vật
     const cappedProtein = [
-      ...pMeat.slice(0, meatQ),
-      ...pEggDairy.slice(0, eggQ),
-      ...pPlant.slice(0, plantQ),
+      ...pSeafood.slice(0, sfQ),
+      ...pPoultry.slice(0, plQ),
+      ...pBeef.slice(0, bfQ),
+      ...pPork.slice(0, pkQ),
+      ...pEggDairy.slice(0, edQ),
+      ...pPlant.slice(0, vpQ),
     ].slice(0, proteinSlots);
 
     const quota = { carb: 0.22, veg: 0.20, fixedOther: 0.16, fat: 0.10 };
