@@ -2330,9 +2330,9 @@ const DISPLAY_MAP = {
   "đùi gà": "Đùi gà kho", "cánh gà": "Cánh gà chiên", "gà nguyên con": "Gà luộc",
   "lòng gà": "Lòng gà xào", "thịt vịt": "Vịt luộc", "vịt": "Vịt luộc",
   // BEEF
-  "thăn bò": "Bò xào", "bắp bò": "Bắp bò luộc", "nạm bò": "Nạm bò kho",
-  "gân bò": "Gân bò hầm", "thịt bò xay": "Bò xay xào", "sườn bò": "Sườn bò nướng",
-  "thịt bò": "Bò xào", "bò viên": "Bò viên", "bò khô": "Bò khô",
+  "thăn bò": "Thăn bò (nguyên liệu)", "bắp bò": "Bắp bò (nguyên liệu)", "nạm bò": "Nạm bò (nguyên liệu)",
+  "gân bò": "Gân bò (nguyên liệu)", "thịt bò xay": "Thịt bò xay (nguyên liệu)", "sườn bò": "Sườn bò (nguyên liệu)",
+  "thịt bò": "Thịt bò (nguyên liệu)", "bò viên": "Bò viên", "bò khô": "Bò khô",
   // PORK
   "thịt heo nạc": "Thịt heo luộc", "thịt lợn nạc": "Thịt lợn luộc",
   "ba chỉ": "Ba chỉ luộc", "ba rọi": "Ba rọi luộc",
