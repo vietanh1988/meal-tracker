@@ -1,8 +1,9 @@
 import { C, card, inp } from "../theme";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 
-export function AdminTab({appSettings, saveSetting, mob}){
+export function AdminTab({appSettings, saveSetting, mob, isSuperAdmin}){
   return (
-<div style={card}>
+<div style={card}>      {!isSuperAdmin && <ReadOnlyBanner />}
       <div style={{fontSize:mob?19:17,fontWeight:800,color:C.t1,marginBottom:4,display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>🔧</span><span style={{fontWeight:800,color:C.t1}}>Quản trị</span></div>
       <div style={{fontSize:13,fontWeight:500,color:C.t2,marginBottom:20}}>Quản lý thông báo và cập nhật cho tất cả users</div>
 

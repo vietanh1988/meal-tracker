@@ -41,6 +41,7 @@ import FeedbackTab from "./adminTabs/FeedbackTab";
 // Nhật ký hoạt động, Gửi thông báo, Quản lý tính năng, Tổng quan hệ thống,
 // Quản lý version, Kho mẫu, Bữa ăn, Cân nặng...
 export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,deleteWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,initialSection,hidePills}){if(!profile||!macro)return null;
+  const isSuperAdmin = profile.adminRole === "super";
   const flags=parseFeatureFlags(appSettings);
   const {myPending,allPending,pendingCount,approvedCount,savePendingFoodCache,approvePendingFood,rejectPendingFood}=usePendingFoodCache(user?.id,isAdmin);
   const mob=useIsMobile();
@@ -431,24 +432,24 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
     {/* AI CONNECTION */}
     {section==="ai"&&<AiTab isAdmin={isAdmin} saveSetting={saveSetting} aiProvider={aiProvider} setAiProvider={setAiProvider} aiModel={aiModel} setAiModel={setAiModel} geminiModel={geminiModel} setGeminiModel={setGeminiModel} gptModel={gptModel} setGptModel={setGptModel} aiConnected={aiConnected} setAiConnected={setAiConnected} claudeKey={claudeKey} setClaudeKey={setClaudeKey} geminiKey={geminiKey} setGeminiKey={setGeminiKey} gptKey={gptKey} setGptKey={setGptKey} usdaKey={usdaKey} setUsdaKey={setUsdaKey}/>}
-    {section==="subscription_settings"&&isAdmin&&<SubscriptionSettingsTab isAdmin={isAdmin}/>}
-    {section==="users"&&isAdmin&&<UsersTab isAdmin={isAdmin} currentUserId={user?.id}/>}
-    {section==="orders"&&isAdmin&&<OrdersTab isAdmin={isAdmin} currentUserId={user?.id} appSettings={appSettings}/>}
+    {section==="subscription_settings"&&isAdmin&&<SubscriptionSettingsTab isAdmin={isAdmin} isSuperAdmin={isSuperAdmin}/>}
+    {section==="users"&&isAdmin&&<UsersTab isAdmin={isAdmin} currentUserId={user?.id} isSuperAdmin={isSuperAdmin}/>}
+    {section==="orders"&&isAdmin&&<OrdersTab isAdmin={isAdmin} currentUserId={user?.id} appSettings={appSettings} isSuperAdmin={isSuperAdmin}/>}
     {section==="report_biz"&&isAdmin&&<BusinessReportTab isAdmin={isAdmin}/>}
     {section==="error_logs"&&isAdmin&&<ErrorLogsTab isAdmin={isAdmin}/>}
     {section==="audit_log"&&isAdmin&&<AuditLogTab isAdmin={isAdmin}/>}
-    {section==="notify"&&isAdmin&&<NotifyTab isAdmin={isAdmin} currentUserId={user?.id} appSettings={appSettings}/>}
-    {section==="feature_flags"&&isAdmin&&<FeatureFlagsTab appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting}/>}
-    {section==="system_health"&&isAdmin&&<SystemHealthTab isAdmin={isAdmin} appSettings={appSettings}/>}
-    {section==="ai_cost"&&isAdmin&&<AiCostTab isAdmin={isAdmin}/>}
+    {section==="notify"&&isAdmin&&<NotifyTab isAdmin={isAdmin} currentUserId={user?.id} appSettings={appSettings} isSuperAdmin={isSuperAdmin}/>}
+    {section==="feature_flags"&&isAdmin&&<FeatureFlagsTab appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} isSuperAdmin={isSuperAdmin}/>}
+    {section==="system_health"&&isAdmin&&<SystemHealthTab isAdmin={isAdmin} appSettings={appSettings} isSuperAdmin={isSuperAdmin}/>}
+    {section==="ai_cost"&&isAdmin&&<AiCostTab isAdmin={isAdmin} isSuperAdmin={isSuperAdmin}/>}
     {/* ADMIN PANEL */}
-    {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob}/>}
+    {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob} isSuperAdmin={isSuperAdmin}/>}
 
     {/* TEMPLATES (admin only — separate pill) */}
     {section==="templates"&&isAdmin&&<TemplatesTab isAdmin={isAdmin} mob={mob} macro={macro} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} mealNames={mealNames} mealsData={mealsData} callAI={callAI} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} setDayType={setDayType} setFoodItems={setFoodItems} setUserHasEdited={setUserHasEdited} savePendingFoodCache={savePendingFoodCache} aiProvider={aiProvider}/>}
     {section==="weekly_bundles"&&isAdmin&&<WeeklyBundlesTab mob={mob} defaultTemplates={defaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle}/>}
     {section==="food_cache_pending"&&isAdmin&&<FoodCachePendingTab mob={mob} allPending={allPending} pendingCount={pendingCount} approvedCount={approvedCount} approvePendingFood={approvePendingFood} rejectPendingFood={rejectPendingFood}/>}
-    {section==="food_db"&&isAdmin&&<FoodDBTab mob={mob}/>}
+    {section==="food_db"&&isAdmin&&<FoodDBTab mob={mob} isSuperAdmin={isSuperAdmin}/>}
     {/* MEALS */}
     {section==="meals"&&<MealsTab mob={mob} profile={profile} setProfile={setProfile} macro={macro} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mealMode={mealMode} setMealMode={setMealMode} dayType={dayType} setDayType={setDayType} showMealSettings={showMealSettings} setShowMealSettings={setShowMealSettings} mealConfig={mealConfig} setMealConfig={setMealConfig} allFoodItems={allFoodItems} setAllFoodItems={setAllFoodItems} userHasEdited={userHasEdited} setUserHasEdited={setUserHasEdited} foodItems={foodItems} setFoodItems={setFoodItems} aiResult={aiResult} setAiResult={setAiResult} aiLoading={aiLoading} aiError={aiError} setAiError={setAiError} aiProvider={aiProvider} callAI={callAI} mealNames={mealNames} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} savePendingFoodCache={savePendingFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} refreshDefaultTemplates={refreshDefaultTemplates} applyTemplate={applyTemplate} showSaveTpl={showSaveTpl} setShowSaveTpl={setShowSaveTpl} expandedTpl={expandedTpl} setExpandedTpl={setExpandedTpl} tplFilter={tplFilter} setTplFilter={setTplFilter} showAssignDays={showAssignDays} setShowAssignDays={setShowAssignDays} assignSelectedDays={assignSelectedDays} setAssignSelectedDays={setAssignSelectedDays} weeklyBundles={weeklyBundles}/>}
 

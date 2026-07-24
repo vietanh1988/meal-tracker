@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { LOCAL_FOODS, getFoodRole, getFoodDisplay, isStandaloneDish } from "../lib/localFoodDB";
 import { supabase } from "../lib/supabase";
 
@@ -6,7 +7,7 @@ const C = { t1: "#1a1a2e", t2: "#64748B", t3: "#94A3B8", border: "#E2E8F0", surf
 const CAT_LABEL = { poultry:"Gia cầm", beef:"Bò", pork:"Heo", seafood:"Hải sản", egg_dairy:"Trứng/Sữa", starch:"Tinh bột", veg:"Rau củ", fruit:"Trái cây", nuts:"Hạt/Đậu", drink:"Đồ uống", sauce:"Gia vị", supp:"Bổ sung", processed:"Chế biến" };
 const ROLE_C = { protein:["#3B82F6","rgba(59,130,246,0.1)"], carb:["#EAB308","rgba(234,179,8,0.1)"], fat:["#EF4444","rgba(239,68,68,0.1)"], fixed:["#22C55E","rgba(34,197,94,0.1)"] };
 
-export default function FoodDBTab({ mob }) {
+export default function FoodDBTab({ mob, isSuperAdmin }) {
   const [search, setSearch] = useState("");
   const [catF, setCatF] = useState("all");
   const [roleF, setRoleF] = useState("all");
@@ -122,6 +123,7 @@ export default function FoodDBTab({ mob }) {
 
   return (
     <div style={{ maxWidth:960, margin:"0 auto" }}>
+      {!isSuperAdmin && <ReadOnlyBanner />}
       {/* Top bar */}
       <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 0", flexWrap:"wrap" }}>
         <span style={{ fontSize:16, fontWeight:700, color:C.t1, whiteSpace:"nowrap" }}>🗄️ Kho thực phẩm</span>
@@ -183,7 +185,7 @@ export default function FoodDBTab({ mob }) {
                       <button onClick={saveEdit} disabled={saving} style={{ fontSize:10, padding:"3px 6px", background:C.accent, color:"#fff", border:"none", borderRadius:4, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>✓</button>
                       <button onClick={() => setEditKey(null)} style={{ fontSize:10, padding:"3px 6px", marginLeft:3, cursor:"pointer", fontFamily:"inherit" }}>✕</button>
                     </> : <>
-                      <button onClick={() => startEdit(item)} style={{ fontSize:10, padding:"3px 7px", cursor:"pointer", fontFamily:"inherit" }}>Sửa</button>
+                      {isSuperAdmin&&<button onClick={() => startEdit(item)} style={{ fontSize:10, padding:"3px 7px", cursor:"pointer", fontFamily:"inherit" }}>Sửa</button>}
                       {item.hasOverride && <button onClick={() => revertOverride(item.key)} title="Hoàn tác" style={{ fontSize:10, padding:"3px 5px", marginLeft:3, cursor:"pointer", color:"#EF4444", borderColor:"#FECACA", fontFamily:"inherit" }}>↩</button>}
                     </>}
                   </td>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip } from "chart.js";
 import { supabase } from "../lib/supabase";
 import { C, card } from "../theme";
@@ -87,7 +88,7 @@ function DailyChart({ data }) {
   );
 }
 
-export function AiCostTab({ isAdmin }) {
+export function AiCostTab({ isAdmin, isSuperAdmin }) {
   const [summary, setSummary] = useState(null);
   const [daily, setDaily] = useState([]);
   const [byModel, setByModel] = useState([]);
@@ -138,7 +139,8 @@ export function AiCostTab({ isAdmin }) {
     setLoadingDetail(false);
   };
 
-  if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
+  if (!isAdmin) return <div style={card}>
+      {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
 
   return (
     <div style={{ ...card, maxWidth: 800, margin: "0 auto" }}>

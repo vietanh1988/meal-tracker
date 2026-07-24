@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { supabase } from "../lib/supabase";
 import { authFetch } from "../lib/authFetch";
 import { pickAiModelFromSettings } from "../lib/aiProvider";
@@ -14,7 +15,7 @@ function StatusDot({ ok }) {
   return <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: ok ? "#22C55E" : "#EF4444", marginRight: 6 }} />;
 }
 
-export function SystemHealthTab({ isAdmin, appSettings }) {
+export function SystemHealthTab({ isAdmin, appSettings, isSuperAdmin }) {
   const [activeUsers, setActiveUsers] = useState(null);
   const [errorSummary, setErrorSummary] = useState(null);
   const [pushSummary, setPushSummary] = useState(null);
@@ -59,7 +60,8 @@ export function SystemHealthTab({ isAdmin, appSettings }) {
     setPinging(false);
   };
 
-  if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
+  if (!isAdmin) return <div style={card}>
+      {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
 
   const pushRate = pushSummary && pushSummary.total_recipients > 0 ? Math.round((Number(pushSummary.total_sent) / Number(pushSummary.total_recipients)) * 100) : null;
 

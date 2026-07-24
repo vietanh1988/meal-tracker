@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, inp } from "../theme";
@@ -22,7 +23,7 @@ function fmtDT(iso) {
   try { return fmtDate(new Date(iso)); } catch (e) { return "-"; }
 }
 
-export function OrdersTab({ isAdmin, currentUserId, appSettings }) {
+export function OrdersTab({ isAdmin, currentUserId, appSettings, isSuperAdmin }) {
   const pushEnabled = parseFeatureFlags(appSettings).push;
   const mob = useIsMobile();
   const [stats, setStats] = useState(null);
@@ -103,7 +104,8 @@ export function OrdersTab({ isAdmin, currentUserId, appSettings }) {
     setBusyId(null);
   };
 
-  if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
+  if (!isAdmin) return <div style={card}>
+      {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
 
   const statusTabs = [["pending", "Chờ duyệt"], ["confirmed", "Đã duyệt"], ["rejected", "Đã từ chối"], ["", "Tất cả"]];
 
@@ -156,8 +158,8 @@ export function OrdersTab({ isAdmin, currentUserId, appSettings }) {
               <div style={{ fontSize: 11, color: C.t3, marginBottom: o.status === "pending" ? 10 : 0 }}>🕐 {fmtDT(o.created_at)}{o.confirmed_by_username ? ` · bởi ${o.confirmed_by_username}` : ""}</div>
               {o.status === "pending" && (
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => rejectOrder(o)} disabled={busyId === o.id} style={{ flex: 1, fontSize: 12, fontWeight: 700, padding: "8px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Từ chối</button>
-                  <button onClick={() => confirmOrder(o)} disabled={busyId === o.id} style={{ flex: 1, fontSize: 12, fontWeight: 700, padding: "8px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer" }}>{busyId === o.id ? "Đang xử lý..." : "✓ Xác nhận"}</button>
+                  <button onClick={() => isSuperAdmin && rejectOrder(o)} disabled={busyId === o.id || !isSuperAdmin} style={{ flex: 1, fontSize: 12, fontWeight: 700, padding: "8px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Từ chối</button>
+                  <button onClick={() => isSuperAdmin && confirmOrder(o)} disabled={busyId === o.id || !isSuperAdmin} style={{ flex: 1, fontSize: 12, fontWeight: 700, padding: "8px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer" }}>{busyId === o.id ? "Đang xử lý..." : "✓ Xác nhận"}</button>
                 </div>
               )}
             </div>
@@ -192,8 +194,8 @@ export function OrdersTab({ isAdmin, currentUserId, appSettings }) {
                   <td style={{ padding: "10px 12px", textAlign: "right" }}>
                     {o.status === "pending" ? (
                       <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                        <button onClick={() => rejectOrder(o)} disabled={busyId === o.id} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Từ chối</button>
-                        <button onClick={() => confirmOrder(o)} disabled={busyId === o.id} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer" }}>{busyId === o.id ? "Đang xử lý..." : "Xác nhận"}</button>
+                        <button onClick={() => isSuperAdmin && rejectOrder(o)} disabled={busyId === o.id || !isSuperAdmin} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#fff", color: C.t2, cursor: "pointer" }}>Từ chối</button>
+                        <button onClick={() => isSuperAdmin && confirmOrder(o)} disabled={busyId === o.id || !isSuperAdmin} style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803D,#166534)", color: "#fff", cursor: "pointer" }}>{busyId === o.id ? "Đang xử lý..." : "Xác nhận"}</button>
                       </div>
                     ) : (
                       <span style={{ fontSize: 12, color: C.t3 }}>{o.confirmed_by_username ? `bởi ${o.confirmed_by_username}` : ""}</span>

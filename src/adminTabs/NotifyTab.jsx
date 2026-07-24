@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, inp } from "../theme";
@@ -15,7 +16,7 @@ function fmtDT(iso) {
   try { return fmtDate(new Date(iso)); } catch (e) { return "-"; }
 }
 
-export function NotifyTab({ isAdmin, currentUserId, appSettings }) {
+export function NotifyTab({ isAdmin, currentUserId, appSettings, isSuperAdmin }) {
   const pushEnabled = parseFeatureFlags(appSettings).push;
   const [targetType, setTargetType] = useState("single");
   const [search, setSearch] = useState("");
@@ -95,7 +96,8 @@ export function NotifyTab({ isAdmin, currentUserId, appSettings }) {
     setSending(false);
   };
 
-  if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
+  if (!isAdmin) return <div style={card}>
+      {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
 
   return (
     <div style={{ ...card, maxWidth: 900, margin: "0 auto" }}>
@@ -142,7 +144,7 @@ export function NotifyTab({ isAdmin, currentUserId, appSettings }) {
         {flash && <div style={{ marginBottom: 12, padding: "8px 12px", background: C.greenBg, borderRadius: 8, fontSize: 12, fontWeight: 700, color: "#14532D" }}>{flash}</div>}
 
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={handleSend} disabled={sending||!pushEnabled} style={{ padding: "10px 22px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: pushEnabled?"linear-gradient(135deg,#36A3FF,#007AFF)":"#94A3B8", color: "#fff", cursor: (sending||!pushEnabled) ? "default" : "pointer", opacity: sending ? 0.6 : 1 }}>{sending ? "Đang gửi..." : "📨 Gửi thông báo"}</button>
+          <button onClick={handleSend} disabled={sending||!pushEnabled||!isSuperAdmin} style={{ padding: "10px 22px", fontSize: 13, fontWeight: 800, border: "none", borderRadius: 10, background: (pushEnabled&&isSuperAdmin)?"linear-gradient(135deg,#36A3FF,#007AFF)":"#94A3B8", color: "#fff", cursor: (sending||!pushEnabled||!isSuperAdmin) ? "default" : "pointer", opacity: sending ? 0.6 : 1 }}>{sending ? "Đang gửi..." : "📨 Gửi thông báo"}</button>
         </div>
       </div>
 

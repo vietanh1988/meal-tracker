@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, inp, redBtn, numFix } from "../theme";
 
-export function SubscriptionSettingsTab({ isAdmin }) {
+export function SubscriptionSettingsTab({ isAdmin, isSuperAdmin }) {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -64,7 +65,8 @@ export function SubscriptionSettingsTab({ isAdmin }) {
     setSaving(false);
   };
 
-  if (loading || !form) return <div style={card}>Đang tải...</div>;
+  if (loading || !form) return <div style={card}>
+      {!isSuperAdmin && <ReadOnlyBanner />}Đang tải...</div>;
 
   return (
     <div style={{ ...card, maxWidth: 1000, margin: "0 auto" }}>
@@ -176,7 +178,7 @@ export function SubscriptionSettingsTab({ isAdmin }) {
         </div>
       </div>
 
-      <button onClick={handleSave} disabled={saving} style={{ ...redBtn, marginTop: 20, background: "linear-gradient(135deg,#0EA5E9,#0284C7)", opacity: saving ? 0.6 : 1 }}>
+      <button onClick={handleSave} disabled={saving||!isSuperAdmin} style={{ ...redBtn, marginTop: 20, background: "linear-gradient(135deg,#0EA5E9,#0284C7)", opacity: saving ? 0.6 : 1 }}>
         {saving ? "Đang lưu..." : "💾 Lưu cài đặt"}
       </button>
       {saved && <div style={{ marginTop: 10, padding: "10px 14px", background: C.greenBg, borderRadius: 10, border: `1.5px solid ${C.green}`, fontSize: 13, fontWeight: 700, color: "#14532D" }}>✓ Đã lưu cài đặt gói cước</div>}

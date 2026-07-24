@@ -38,6 +38,7 @@ export function useProfile(userId, authLoading) {
         // từng tự chỉnh thì cột này null, app sẽ dùng mặc định chung của admin.
         if(data.meal_config) p.mealConfig = data.meal_config;
         if(data.banner_dismissed_date) p.bannerDismissedDate = data.banner_dismissed_date;
+        if(data.admin_role) p.adminRole = data.admin_role;
         // Chỉ ĐỌC — tier đổi qua admin (UsersTab) hoặc luồng thanh toán, không
         // qua setProfile() của user. Mặc định "free" nếu cột trống (an toàn:
         // chưa xác định được tier thì coi như free, không tự cấp quyền).

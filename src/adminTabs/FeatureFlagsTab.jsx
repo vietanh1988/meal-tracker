@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { C, card } from "../theme";
 
@@ -24,14 +25,15 @@ export function parseFeatureFlags(appSettings) {
   return flags;
 }
 
-export function FeatureFlagsTab({ appSettings, isAdmin, saveSetting }) {
+export function FeatureFlagsTab({ appSettings, isAdmin, saveSetting, isSuperAdmin }) {
   const [flags, setFlags] = useState(() => parseFeatureFlags(appSettings));
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState("");
 
   useEffect(() => { setFlags(parseFeatureFlags(appSettings)); }, [appSettings?.feature_flags]);
 
-  if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
+  if (!isAdmin) return <div style={card}>
+      {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
 
   const toggle = async (key) => {
     const next = { ...flags, [key]: !flags[key] };
@@ -68,7 +70,7 @@ export function FeatureFlagsTab({ appSettings, isAdmin, saveSetting }) {
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.t1 }}>{f.label}</div>
                 <div style={{ fontSize: 12, color: C.t2, marginTop: 2 }}>{f.desc}</div>
               </div>
-              <div onClick={() => !saving && toggle(f.key)} style={{ width: 44, height: 26, borderRadius: 13, background: on ? "#15803D" : "#CBD5E1", position: "relative", cursor: saving ? "default" : "pointer", flexShrink: 0, transition: "background 0.2s" }}>
+              <div onClick={() => isSuperAdmin && !saving && toggle(f.key)} style={{ width: 44, height: 26, borderRadius: 13, background: on ? "#15803D" : "#CBD5E1", position: "relative", cursor: saving ? "default" : "pointer", flexShrink: 0, transition: "background 0.2s" }}>
                 <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: on ? 21 : 3, transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
               </div>
             </div>

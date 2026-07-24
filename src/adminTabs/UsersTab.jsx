@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
 import { C, card, inp, redBtn } from "../theme";
@@ -35,9 +36,10 @@ async function logAudit(currentUserId, targetId, action, note) {
   try { await supabase.from("admin_audit_log").insert({ admin_id: currentUserId, target_user_id: targetId, action, note: note || null }); } catch (e) { console.error("audit log error:", e); }
 }
 
-export function UsersTab({ isAdmin, currentUserId }) {
+export function UsersTab({ isAdmin, currentUserId, isSuperAdmin }) {
   const [selectedId, setSelectedId] = useState(null);
-  if (!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
+  if (!isAdmin) return <div style={card}>
+      {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
   return selectedId
     ? <UserDetail userId={selectedId} currentUserId={currentUserId} onBack={() => setSelectedId(null)} />
     : <UsersList onSelect={setSelectedId} currentUserId={currentUserId} />;
@@ -263,7 +265,7 @@ function UsersList({ onSelect, currentUserId }) {
                 <td style={{ padding: "10px 12px", color: C.t2 }}>{(() => { const r = relTime(u.last_sign_in_at); return <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: r.dot, flexShrink: 0 }} />{r.text}</span>; })()}</td>
                 <td style={{ padding: "10px 12px", color: C.t2 }}>{fmtDT(u.created_at)}</td>
                 <td style={{ padding: "10px 12px" }}>
-                  <button onClick={(e) => quickLock(u, e)} disabled={lockingId === u.id} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 7, border: `1px solid ${u.is_locked ? C.border : C.red}`, background: "#fff", color: u.is_locked ? C.t2 : C.red, cursor: "pointer", whiteSpace: "nowrap" }}>{u.is_locked ? "Mở khóa" : "Khóa"}</button>
+                  <button onClick={(e) => isSuperAdmin && quickLock(u, e)} disabled={lockingId === u.id} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 7, border: `1px solid ${u.is_locked ? C.border : C.red}`, background: "#fff", color: u.is_locked ? C.t2 : C.red, cursor: "pointer", whiteSpace: "nowrap" }}>{u.is_locked ? "Mở khóa" : "Khóa"}</button>
                 </td>
                 <td style={{ padding: "10px 12px", textAlign: "right", color: C.t3 }}>›</td>
               </tr>
@@ -532,7 +534,7 @@ function UserDetail({ userId, currentUserId, onBack }) {
       <div style={{ border: `1.5px solid ${C.red}`, borderRadius: 14, padding: 16 }}>
         <div style={{ fontWeight: 800, color: C.red, marginBottom: 10 }}>Khu vực nguy hiểm</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button onClick={toggleLock} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>{detail.is_locked ? "Mở khóa tài khoản" : "Khóa tài khoản"}</button>
+          <button onClick={() => isSuperAdmin && toggleLock()} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>{detail.is_locked ? "Mở khóa tài khoản" : "Khóa tài khoản"}</button>
           <button onClick={() => { if (userId === currentUserId) { appAlert("Không thể tự xóa tài khoản của chính mình"); return; } setConfirmDelete(true); }} style={{ fontSize: 13, fontWeight: 700, padding: "8px 14px", borderRadius: 8, border: `1.5px solid ${C.red}`, background: "#fff", color: C.red, cursor: "pointer" }}>Xóa tài khoản</button>
         </div>
         {confirmDelete && (
