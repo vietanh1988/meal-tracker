@@ -645,7 +645,7 @@ export const LOCAL_FOODS = {
   "cơm trộn bibimbap":{p:8.0, c:30.0, f:5.0, cal:200, fiber:2.0, form:"composite", cat:"starch", region:"intl", complexity:2, convenience:8},
   "gà chiên hàn":    {p:16.0, c:15.0, f:12.0, cal:238, fiber:0.5, form:"composite", cat:"poultry", region:"intl", complexity:2, convenience:9},
   "mì udon":         {p:4.0, c:22.0, f:0.5, cal:108, fiber:1.0, form:"cooked", cat:"starch"},
-  "tempura":         {p:8.0, c:20.0, f:12.0, cal:220, fiber:1.0, form:"cooked", cat:"seafood"},
+  "tempura":         {p:8.0, c:20.0, f:12.0, cal:220, fiber:1.0, form:"cooked", cat:"seafood", region:"intl"},
   "gyoza":           {p:7.0, c:18.0, f:6.0, cal:155, fiber:1.0, form:"cooked", cat:"starch"},
   "takoyaki":        {p:5.0, c:20.0, f:5.0, cal:150, fiber:0.5, form:"cooked", cat:"starch"},
   "pasta carbonara": {p:10.0, c:25.0, f:12.0, cal:250, fiber:1.0, form:"composite", cat:"starch", region:"intl", complexity:2, convenience:7},
@@ -705,7 +705,6 @@ export const LOCAL_FOODS = {
   "bò bía":          {p:3.0, c:12.0, f:3.0, cal:88, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
 
   // ==================== BATCH 11 — MÓN MẶN VN BỔ SUNG ====================
-  "thịt luộc":       {p:26.0, c:0, f:8.0, cal:180, fiber:0, form:"cooked", cat:"pork"},
   "thịt nướng":      {p:22.0, c:2.0, f:12.0, cal:208, fiber:0, form:"cooked", cat:"pork"},
   "sườn xào chua ngọt":{p:12.0, c:10.0, f:10.0, cal:180, fiber:0.5, form:"composite", cat:"pork", region:"vn", complexity:2, convenience:5},
   "thịt rang cháy cạnh":{p:20.0, c:3.0, f:12.0, cal:205, fiber:0, form:"composite", cat:"pork", region:"vn", complexity:1, convenience:6},
@@ -1579,7 +1578,6 @@ export const LOCAL_FOODS = {
 
   // ==================== BATCH 44 — THÊM QUỐC TẾ CUỐI ====================
   "dim sum":         {p:7.0, c:15.0, f:5.0, cal:135, fiber:0.5, form:"cooked", cat:"starch"},
-  "char siu":        {p:20.0, c:8.0, f:8.0, cal:188, fiber:0, form:"cooked", cat:"pork"},
   "xá xíu":          {p:20.0, c:8.0, f:8.0, cal:188, fiber:0, form:"cooked", cat:"pork"},
   "mì xá xíu":       {p:6.0, c:12.0, f:3.0, cal:100, fiber:0.3, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:8},
   "cơm chiên singapore":{p:6.0, c:22.0, f:7.0, cal:178, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:1, convenience:8},
@@ -2205,9 +2203,9 @@ const CONVENIENCE_OVERRIDE = {
   // Hải sản khác
   "nghêu hấp": 5, "cua rang muối": 4,
   // Heo — nấu cơm nhà phổ biến nhất VN
-  "thịt kho": 7, "thịt kho tàu": 7, "thịt heo luộc": 7, "thịt luộc": 7,
+  "thịt kho": 7, "thịt kho tàu": 7, "thịt heo luộc": 7,
   "sườn nướng": 5, "sườn xào chua ngọt": 6, "sườn ram": 6, "thịt nướng": 5,
-  "thịt heo rim": 6, "nem lụi": 5, "xá xíu": 6, "char siu": 6,
+  "thịt heo rim": 6, "nem lụi": 5, "xá xíu": 6,
   // Gà — phổ biến
   "gà kho gừng": 6, "gà luộc": 7, "gà nướng": 6, "gà xào sả ớt": 6,
   "gà chiên": 6, "vịt quay": 5,
@@ -2263,6 +2261,12 @@ const REGION_OVERRIDE = {
   "sữa chua hy lạp": "intl", "sữa chua việt quất": "intl",
   "yogurt đông lạnh": "intl", "cá ngừ hộp": "intl", "sữa hộp": "intl",
   "salad trứng": "intl",
+  // Món Nhật/Hàn/Trung — không phải VN
+  "edamame": "intl", "mì udon": "intl", "gyoza": "intl", "takoyaki": "intl",
+  "sashimi": "intl", "cá hồi sashimi": "intl", "cá ngừ sashimi": "intl",
+  "dim sum": "intl", "nước sốt teriyaki": "intl", "tempura": "intl",
+  "granola bar": "intl", "pizza đông lạnh": "intl", "hummus": "intl",
+  "falafel": "intl", "thanh granola": "intl", "steak": "intl",
 };
 
 export function getFoodRegion(foodKey) {
@@ -2528,7 +2532,7 @@ const DISPLAY_MAP = {
   "cơm cháy kho quẹt": "Cơm cháy kho quẹt",
   "bánh tráng cuốn thịt heo": "Bánh tráng cuốn thịt", "gỏi gà": "Gỏi gà",
   "nộm đu đủ": "Nộm đu đủ", "bò bía": "Bò bía",
-  "thịt luộc": "Thịt luộc", "thịt nướng": "Thịt nướng",
+  "thịt nướng": "Thịt nướng",
   "sườn xào chua ngọt": "Sườn xào chua ngọt",
   "thịt rang cháy cạnh": "Thịt rang cháy cạnh",
   "cá lóc kho": "Cá lóc kho", "cá hồi nướng": "Cá hồi nướng",
