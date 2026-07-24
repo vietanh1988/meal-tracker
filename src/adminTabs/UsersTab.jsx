@@ -375,13 +375,26 @@ function UserDetail({ userId, currentUserId, onBack }) {
   };
 
   const toggleAdmin = async () => {
+    if (!isSuperAdmin) return;
     if (userId === currentUserId) { appAlert("Không thể tự bỏ quyền Admin của chính mình"); return; }
     const next = !detail.is_admin;
     if (!await appConfirm(next ? `Cấp quyền Admin cho "${detail.username}"?` : `Bỏ quyền Admin của "${detail.username}"?`)) return;
-    const { error } = await supabase.from("profiles").update({ is_admin: next }).eq("id", userId);
+    const update = next ? { is_admin: true, admin_role: "admin" } : { is_admin: false, admin_role: null };
+    const { error } = await supabase.from("profiles").update(update).eq("id", userId);
     if (error) { appAlert("Thất bại: " + error.message); return; }
     await logAction(next ? "grant_admin" : "revoke_admin");
-    showFlash(next ? "✓ Đã cấp quyền Admin" : "✓ Đã bỏ quyền Admin");
+    showFlash(next ? "✓ Đã cấp quyền Admin (thường)" : "✓ Đã bỏ quyền Admin");
+    load();
+  };
+
+  const changeAdminRole = async (newRole) => {
+    if (!isSuperAdmin) return;
+    if (userId === currentUserId) { appAlert("Không thể tự đổi role của chính mình"); return; }
+    if (!await appConfirm(`Đổi quyền "${detail.username}" thành ${newRole === "super" ? "Super Admin" : "Admin thường"}?`)) return;
+    const { error } = await supabase.from("profiles").update({ admin_role: newRole }).eq("id", userId);
+    if (error) { appAlert("Thất bại: " + error.message); return; }
+    await logAction("change_admin_role", `→ ${newRole}`);
+    showFlash(`✓ Đã đổi thành ${newRole === "super" ? "Super Admin" : "Admin thường"}`);
     load();
   };
 
@@ -497,12 +510,22 @@ function UserDetail({ userId, currentUserId, onBack }) {
         </div>
       </div>
 
-      <div style={{ background: C.surface, borderRadius: 14, border: `1px solid ${C.border}`, padding: 16, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <div style={{ fontWeight: 800, color: C.t1 }}>Quyền Admin</div>
-          <div style={{ fontSize: 12, color: C.t2 }}>Cho phép user này truy cập trang Quản trị</div>
+      <div style={{ background: C.surface, borderRadius: 14, border: `1px solid ${C.border}`, padding: 16, marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: detail.is_admin ? 12 : 0 }}>
+          <div>
+            <div style={{ fontWeight: 800, color: C.t1 }}>Quyền Admin</div>
+            <div style={{ fontSize: 12, color: C.t2 }}>Cho phép user này truy cập trang Quản trị</div>
+          </div>
+          <input type="checkbox" checked={!!detail.is_admin} onChange={toggleAdmin} disabled={!isSuperAdmin} style={{ width: 20, height: 20, cursor: isSuperAdmin ? "pointer" : "not-allowed" }} />
         </div>
-        <input type="checkbox" checked={!!detail.is_admin} onChange={toggleAdmin} style={{ width: 20, height: 20 }} />
+        {detail.is_admin && isSuperAdmin && <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: C.t2, marginBottom: 6 }}>Phân quyền</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => changeAdminRole("admin")} style={{ flex: 1, padding: "8px 12px", fontSize: 12, fontWeight: 700, borderRadius: 8, border: `1.5px solid ${detail.admin_role !== "super" ? "#007AFF" : C.border}`, background: detail.admin_role !== "super" ? "#EFF6FF" : "#fff", color: detail.admin_role !== "super" ? "#007AFF" : C.t2, cursor: "pointer" }}>👤 Admin thường<div style={{ fontSize: 10, fontWeight: 500, marginTop: 2, color: C.t3 }}>Xem hết, không sửa/xóa</div></button>
+            <button onClick={() => changeAdminRole("super")} style={{ flex: 1, padding: "8px 12px", fontSize: 12, fontWeight: 700, borderRadius: 8, border: `1.5px solid ${detail.admin_role === "super" ? "#EF4444" : C.border}`, background: detail.admin_role === "super" ? "#FEF2F2" : "#fff", color: detail.admin_role === "super" ? "#EF4444" : C.t2, cursor: "pointer" }}>👑 Super Admin<div style={{ fontSize: 10, fontWeight: 500, marginTop: 2, color: C.t3 }}>Toàn quyền quản trị</div></button>
+          </div>
+        </div>}
+        {detail.is_admin && !isSuperAdmin && <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12, fontSize: 12, color: C.t3 }}>Quyền: {detail.admin_role === "super" ? "👑 Super Admin" : "👤 Admin thường"}</div>}
       </div>
 
       <div style={{ background: C.surface, borderRadius: 14, border: `1px solid ${C.border}`, padding: 16, marginBottom: 14 }}>
