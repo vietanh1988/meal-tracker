@@ -431,7 +431,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     </div>}
 
     {/* AI CONNECTION */}
-    {section==="ai"&&<AiTab isAdmin={isAdmin} saveSetting={saveSetting} aiProvider={aiProvider} setAiProvider={setAiProvider} aiModel={aiModel} setAiModel={setAiModel} geminiModel={geminiModel} setGeminiModel={setGeminiModel} gptModel={gptModel} setGptModel={setGptModel} aiConnected={aiConnected} setAiConnected={setAiConnected} claudeKey={claudeKey} setClaudeKey={setClaudeKey} geminiKey={geminiKey} setGeminiKey={setGeminiKey} gptKey={gptKey} setGptKey={setGptKey} usdaKey={usdaKey} setUsdaKey={setUsdaKey}/>}
+    {section==="ai"&&<AiTab isAdmin={isAdmin} saveSetting={saveSetting} aiProvider={aiProvider} setAiProvider={setAiProvider} aiModel={aiModel} setAiModel={setAiModel} geminiModel={geminiModel} setGeminiModel={setGeminiModel} gptModel={gptModel} setGptModel={setGptModel} aiConnected={aiConnected} setAiConnected={setAiConnected} claudeKey={claudeKey} setClaudeKey={setClaudeKey} geminiKey={geminiKey} setGeminiKey={setGeminiKey} gptKey={gptKey} setGptKey={setGptKey} usdaKey={usdaKey} setUsdaKey={setUsdaKey} isSuperAdmin={isSuperAdmin}/>}
     {section==="subscription_settings"&&isAdmin&&<SubscriptionSettingsTab isAdmin={isAdmin} isSuperAdmin={isSuperAdmin}/>}
     {section==="users"&&isAdmin&&<UsersTab isAdmin={isAdmin} currentUserId={user?.id} isSuperAdmin={isSuperAdmin}/>}
     {section==="orders"&&isAdmin&&<OrdersTab isAdmin={isAdmin} currentUserId={user?.id} appSettings={appSettings} isSuperAdmin={isSuperAdmin}/>}

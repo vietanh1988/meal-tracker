@@ -2,10 +2,13 @@ import { C, card, redBtn } from "../theme";
 import { authFetch } from "../lib/authFetch";
 import { pickAiModel } from "../lib/aiProvider";
 
-export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel, setAiModel, geminiModel, setGeminiModel, gptModel, setGptModel, aiConnected, setAiConnected, claudeKey, setClaudeKey, geminiKey, setGeminiKey, gptKey, setGptKey, usdaKey, setUsdaKey, appSettings}){
+export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel, setAiModel, geminiModel, setGeminiModel, gptModel, setGptModel, aiConnected, setAiConnected, claudeKey, setClaudeKey, geminiKey, setGeminiKey, gptKey, setGptKey, usdaKey, setUsdaKey, appSettings, isSuperAdmin}){
   if(!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
+  const readOnly = !isSuperAdmin;
   return (
+    <div>
+    {readOnly && <div style={{padding:"8px 14px",background:"#FEF3C7",border:"1.5px solid #FDE68A",borderRadius:10,fontSize:12,fontWeight:700,color:"#92400E",marginBottom:14,display:"flex",alignItems:"center",gap:6}}>🔒 Chế độ chỉ xem — Liên hệ Super Admin để thay đổi</div>}
 <div style={{...card,maxWidth:720,margin:"0 auto"}}>
       {/* Status bar */}
       <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:16}}>
@@ -21,7 +24,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
           {id:"claude",name:"Claude",desc:"Anthropic",logo:"/icons/claude-logo.svg"},
           {id:"gemini",name:"Gemini",desc:"Google",logo:"/icons/gemini-logo.svg"},
           {id:"gpt",name:"GPT",desc:"OpenAI",logo:"/icons/gpt-logo.svg"},
-        ].map(p=><div key={p.id} onClick={()=>{setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-5");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
+        ].map(p=><div key={p.id} onClick={()=>{if(readOnly)return;setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-5");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
           flex:1,padding:"14px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",position:"relative",
           background:aiProvider===p.id?"rgba(0,122,255,0.04)":"#fff",border:aiProvider===p.id?`2px solid ${C.primary}`:`1px solid ${C.border}`,transition:"all 0.15s",
         }}>
@@ -52,7 +55,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
           const setModel=aiProvider==="claude"?setAiModel:aiProvider==="gemini"?setGeminiModel:setGptModel;
           const modelKey=aiProvider==="claude"?"ai_model":aiProvider==="gemini"?"gemini_model":"gpt_model";
           const isActive=curModel===m.id;
-          return <div key={m.id} onClick={()=>{setModel(m.id);if(isAdmin)saveSetting(modelKey,m.id);}} style={{
+          return <div key={m.id} onClick={()=>{if(readOnly)return;setModel(m.id);if(isAdmin)saveSetting(modelKey,m.id);}} style={{
             display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",borderRadius:10,cursor:"pointer",
             background:"#fff",border:isActive?`1.5px solid ${C.primary}`:`0.5px solid ${C.border}`,transition:"all 0.15s",
           }}>
@@ -81,17 +84,17 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         </div>}
         {aiProvider==="gemini"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Gemini</span>
-          <input type="password" value={geminiKey} onChange={e=>setGeminiKey(e.target.value)} placeholder="AIzaSy..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <input type="password" value={geminiKey} onChange={e=>!readOnly&&setGeminiKey(e.target.value)} disabled={readOnly} placeholder="AIzaSy..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
           <div style={{width:6,height:6,borderRadius:"50%",background:geminiKey?"#34C759":"#ddd",flexShrink:0}}/>
         </div>}
         {aiProvider==="gpt"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>OpenAI</span>
-          <input type="password" value={gptKey} onChange={e=>setGptKey(e.target.value)} placeholder="sk-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <input type="password" value={gptKey} onChange={e=>!readOnly&&setGptKey(e.target.value)} disabled={readOnly} placeholder="sk-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
           <div style={{width:6,height:6,borderRadius:"50%",background:gptKey?"#34C759":"#ddd",flexShrink:0}}/>
         </div>}
         <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>USDA</span>
-          <input type="password" value={usdaKey} onChange={e=>setUsdaKey(e.target.value)} placeholder="USDA key..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <input type="password" value={usdaKey} onChange={e=>!readOnly&&setUsdaKey(e.target.value)} disabled={readOnly} placeholder="USDA key..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
           <div style={{width:6,height:6,borderRadius:"50%",background:usdaKey?"#34C759":"#ddd",flexShrink:0}}/>
         </div>
       </>}
@@ -106,7 +109,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         }catch{setAiConnected(false);}
       }} style={{...redBtn,marginTop:0,flex:1}}>Test kết nối</button>
 
-      {isAdmin&&<button onClick={async()=>{
+      {isSuperAdmin&&<button onClick={async()=>{
         await saveSetting("ai_provider",aiProvider);
         await saveSetting("claude_key",claudeKey);
         await saveSetting("gemini_key",geminiKey);
@@ -132,7 +135,8 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         <div style={{marginTop:24,borderTop:`1px solid ${C.border}`,paddingTop:18}}>
         <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>📸 Photo Macro — AI Vision</div>
         <div style={{fontSize:12,color:C.t3,marginBottom:10}}>Chọn AI xử lý ảnh cho Photo Macro Checker. Mặc định dùng chung provider AI menu.</div>
-        <select value={appSettings?.photo_vision_provider||"auto"} onChange={async(e)=>{
+        <select value={appSettings?.photo_vision_provider||"auto"} disabled={readOnly} onChange={async(e)=>{
+          if(readOnly)return;
           await saveSetting("photo_vision_provider",e.target.value);
         }} style={{width:"100%",padding:"10px 14px",borderRadius:10,border:`1.5px solid ${C.border}`,fontSize:13,fontWeight:600,fontFamily:"inherit",background:"#fff",color:C.t1,cursor:"pointer"}}>
           <option value="auto">🔄 Theo AI menu ({providerName})</option>
@@ -142,6 +146,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         </select>
         </div>
       </>}
+    </div>
     </div>
   );
 }
