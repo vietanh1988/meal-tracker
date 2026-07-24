@@ -41,7 +41,7 @@ export function UsersTab({ isAdmin, currentUserId, isSuperAdmin }) {
   if (!isAdmin) return <div style={card}>
       {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
   return selectedId
-    ? <UserDetail userId={selectedId} currentUserId={currentUserId} onBack={() => setSelectedId(null)} />
+    ? <UserDetail userId={selectedId} currentUserId={currentUserId} onBack={() => setSelectedId(null)} isSuperAdmin={isSuperAdmin} />
     : <UsersList onSelect={setSelectedId} currentUserId={currentUserId} />;
 }
 
@@ -295,7 +295,7 @@ function UsersList({ onSelect, currentUserId }) {
   );
 }
 
-function UserDetail({ userId, currentUserId, onBack }) {
+function UserDetail({ userId, currentUserId, onBack, isSuperAdmin }) {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tierForm, setTierForm] = useState({ tier: "free", subscription_end_date: "", trial_end_date: "" });
