@@ -396,7 +396,8 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 <button onClick={()=>{setAutoMenuResult(null);runAutoMenu();}} style={{...redBtn,marginTop:6,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>🔄 Tạo lại menu khác</button>
 </div>}
 
-<button onClick={()=>setStep(4)} style={{...redBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>
+<button onClick={()=>finishOnboarding()} style={{...redBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>Bỏ qua — tôi tự nhập sau</button>
+<button onClick={()=>setStep(4)} style={{...redBtn,marginTop:4,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>
 </div>}
 </div>
 )}
