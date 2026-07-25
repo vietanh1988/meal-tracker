@@ -280,7 +280,34 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     {(() => {
       const mealsWithItems = meals.filter(m=>m.items&&m.items.length>0);
       const activeMealId = mealsWithItems.find(m => !(eatenMeals||[]).includes(m.id))?.id || null;
-      return mealsWithItems.map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten} isActive={m.id===activeMealId}/>);
+      const eatenCount = mealsWithItems.filter(m=>(eatenMeals||[]).includes(m.id)).length;
+      const allEaten = mealsWithItems.length > 0 && eatenCount === mealsWithItems.length;
+      const someEaten = eatenCount > 0 && !allEaten;
+      const remaining = mealsWithItems.length - eatenCount;
+      return <>
+        {/* Motivational banner */}
+        {someEaten && remaining === 1 && <div style={{padding:"7px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",background:"#EFF6FF",color:"#007AFF",border:"1px solid #BFDBFE",marginBottom:6}}>💪 Còn 1 bữa nữa là hoàn thành mục tiêu!</div>}
+        {someEaten && remaining > 1 && <div style={{padding:"7px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",background:"#FEF3C7",color:"#92400E",border:"1px solid #FDE68A",marginBottom:6}}>🍽️ Đã ăn {eatenCount}/{mealsWithItems.length} bữa — tiếp tục nhé!</div>}
+        {/* Congrats when all eaten */}
+        {allEaten && <div style={{textAlign:"center",padding:14,background:"linear-gradient(135deg,#F0FDF4,#DCFCE7)",borderRadius:14,border:"1.5px solid #86EFAC",marginBottom:6}}>
+          <div style={{fontSize:30}}>🎉</div>
+          <div style={{fontSize:15,fontWeight:900,color:"#166534",marginTop:4}}>Hoàn thành mục tiêu hôm nay!</div>
+          <div style={{fontSize:11,color:"#15803D",marginTop:2}}>Streak 🔥 ăn đúng calo</div>
+        </div>}
+        {/* Meal cards */}
+        {mealsWithItems.map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten} isActive={m.id===activeMealId}/>)}
+        {/* Links after all eaten */}
+        {allEaten && <>
+          <div onClick={()=>setTab&&setTab("report")} style={{...card,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
+            <span style={{fontSize:12,fontWeight:700,color:C.t1}}>📓 Xem nhật ký tuần này</span>
+            <span style={{fontSize:12,color:C.t3}}>→</span>
+          </div>
+          <div onClick={()=>setTab&&setTab("settings")} style={{...card,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
+            <span style={{fontSize:12,fontWeight:700,color:C.t1}}>📊 Xem báo cáo chi tiết</span>
+            <span style={{fontSize:12,color:C.t3}}>→</span>
+          </div>
+        </>}
+      </>;
     })()}
 
     {/* Empty state CTA — no meals logged */}
