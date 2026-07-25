@@ -8,10 +8,11 @@ import { getFoodRole, getFoodDisplay } from "./lib/localFoodDB";
 // nhưng VẪN tính trong tổng macro (t.p/c/f/cal ở trên đã gồm rồi).
 const isHiddenFiller = (item) => item.display === null && getFoodRole(item.food) === "fat";
 
-export function MealCard({meal, eatenMeals, toggleEaten}){
+export function MealCard({meal, eatenMeals, toggleEaten, isActive}){
   const mob=useIsMobile();
   const [open,setOpen]=useState(false);
   const isEaten = (eatenMeals || []).includes(meal.id);
+  const dimmed = toggleEaten && !isEaten && !isActive;
   const t=meal.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
   const borderColor={sang:"#D97706",phu_sang:"#F59E0B",trua:"#EA580C",phu_chieu:"#16A34A",pre:"#F59E0B",post:"#0EA5E9",toi:"#7C3AED"};
 
@@ -20,7 +21,7 @@ export function MealCard({meal, eatenMeals, toggleEaten}){
   const showCompact = !!meal.composite;
   const totalGram = Math.round(meal.items.reduce((s, it) => s + (it.gram || 0), 0));
 
-  return <div style={{...card,cursor:"pointer",borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`,borderRadius:"0 12px 12px 0",background:isEaten?"#F0FDF4":card.background,overflow:"hidden"}} onClick={()=>setOpen(!open)}>
+  return <div style={{...card,cursor:"pointer",borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`,borderRadius:"0 12px 12px 0",background:isEaten?"#F0FDF4":card.background,overflow:"hidden",opacity:dimmed?0.45:1,border:isActive?`1.5px solid #93C5FD`:card.border,borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",alignItems:"center"}}>
       <div style={{flex:"1 1 auto",minWidth:0}}>
         <div>
@@ -74,10 +75,10 @@ export function MealCard({meal, eatenMeals, toggleEaten}){
       )}
     </div>}
     {toggleEaten && (isEaten
-      ? <div style={{borderTop:`1px solid #BBF7D0`,padding:"9px 12px",textAlign:"center",fontSize:12,fontWeight:700,color:"#166534",background:"#F0FDF4",cursor:"pointer"}} onClick={e=>{e.stopPropagation();toggleEaten(meal.id,false);}}>✓ Đã ăn · {Math.round(t.cal)} cal</div>
-      : <div style={{display:"flex",flexDirection:mob?"row":"column",borderTop:`1px solid ${C.border}`}} onClick={e=>e.stopPropagation()}>
-          <button onClick={()=>toggleEaten(meal.id,false)} style={{flex:mob?1:"none",padding:"9px 12px",fontSize:12,fontWeight:700,border:"none",borderRight:mob?`1px solid ${C.border}`:"none",borderBottom:mob?"none":`1px solid ${C.border}`,cursor:"pointer",fontFamily:"inherit",background:"#FEF2F2",color:"#EF4444"}}>✗ Chưa ăn</button>
-          <button onClick={()=>toggleEaten(meal.id,true)} style={{flex:mob?1:"none",padding:"9px 12px",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",background:"#EFF6FF",color:"#007AFF"}}>✓ Đã ăn</button>
+      ? <div style={{margin:"10px -18px -16px",borderTop:`1px solid #BBF7D0`,padding:"9px 18px",textAlign:"center",fontSize:12,fontWeight:700,color:"#166534",background:"#F0FDF4",cursor:"pointer",borderRadius:"0 0 12px 0"}} onClick={e=>{e.stopPropagation();toggleEaten(meal.id,false);}}>✓ Đã ăn · {Math.round(t.cal)} cal</div>
+      : <div style={{display:"flex",margin:"10px -18px -16px",borderTop:`1px solid ${C.border}`}} onClick={e=>e.stopPropagation()}>
+          <button onClick={()=>toggleEaten(meal.id,false)} style={{width:"50%",padding:"9px 0",fontSize:12,fontWeight:700,border:"none",borderRight:`1px solid ${C.border}`,cursor:"pointer",fontFamily:"inherit",background:"#FEF2F2",color:"#EF4444"}}>✗ Chưa ăn</button>
+          <button onClick={()=>toggleEaten(meal.id,true)} style={{width:"50%",padding:"9px 0",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",background:"#EFF6FF",color:"#007AFF",borderRadius:"0 0 12px 0"}}>✓ Đã ăn</button>
         </div>
     )}
   </div>;

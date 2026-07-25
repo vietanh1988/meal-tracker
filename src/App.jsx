@@ -431,7 +431,11 @@ export default function App(){
           {/* 2 COLUMNS */}
           <div style={{display:"grid",gridTemplateColumns:"55fr 45fr",gap:24}}>
             <div style={{...card,padding:20}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:15,fontWeight:800,color:C.t1}}>Danh sách thực đơn</span><span onClick={()=>setTab("meals")} style={{fontSize:12,color:C.primary,fontWeight:700,cursor:"pointer"}}>Xem tất cả →</span></div>
-              {pcMeals.filter(m=>m.items&&m.items.length>0).map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten}/>)}
+              {(() => {
+                const pcWithItems = pcMeals.filter(m=>m.items&&m.items.length>0);
+                const pcActiveMealId = pcWithItems.find(m => !(eatenMeals||[]).includes(m.id))?.id || null;
+                return pcWithItems.map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten} isActive={m.id===pcActiveMealId}/>);
+              })()}
               {pcMeals.every(m=>!m.items||m.items.length===0)&&<div style={{textAlign:"center",padding:"28px 20px"}}>
                 <div style={{fontSize:28,marginBottom:8}}>🍽️</div>
                 <div style={{fontSize:14,fontWeight:700,color:C.t2,marginBottom:16}}>Chưa có bữa ăn nào hôm nay</div>

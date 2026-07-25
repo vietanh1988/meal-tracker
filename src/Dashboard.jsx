@@ -272,7 +272,11 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       <span style={{fontSize:13,fontWeight:700,color:C.secondary}}>{String(new Date().getDate()).padStart(2,"0")}/{String(new Date().getMonth()+1).padStart(2,"0")}/{new Date().getFullYear()}</span>
     </div>
 
-    {meals.filter(m=>m.items&&m.items.length>0).map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten}/>)}
+    {(() => {
+      const mealsWithItems = meals.filter(m=>m.items&&m.items.length>0);
+      const activeMealId = mealsWithItems.find(m => !(eatenMeals||[]).includes(m.id))?.id || null;
+      return mealsWithItems.map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten} isActive={m.id===activeMealId}/>);
+    })()}
 
     {/* Empty state CTA — no meals logged */}
     {meals.every(m=>!m.items||m.items.length===0)&&<div style={{...card,border:"2px dashed #CDCDCD",background:"transparent",textAlign:"center",padding:"24px 16px"}}>
