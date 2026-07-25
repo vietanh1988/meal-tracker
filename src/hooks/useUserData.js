@@ -446,11 +446,29 @@ export function useUserData(userId) {
       : eatenMeals.filter(id => id !== mealId);
     setEatenMeals(newEaten);
     try {
-      await supabase.from("daily_logs").upsert({
-        user_id: userId,
-        log_date: todayStr(),
-        eaten_meals: newEaten,
-      }, { onConflict: "user_id,log_date" });
+      const today = todayStr();
+      // Check if daily_log exists for today
+      const { data: existing } = await supabase.from("daily_logs")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("log_date", today)
+        .maybeSingle();
+      
+      if (existing) {
+        // Record exists — update only eaten_meals field
+        await supabase.from("daily_logs")
+          .update({ eaten_meals: newEaten })
+          .eq("user_id", userId)
+          .eq("log_date", today);
+      } else {
+        // No record yet — insert with eaten_meals
+        await supabase.from("daily_logs").insert({
+          user_id: userId,
+          log_date: today,
+          eaten_meals: newEaten,
+          day_type: "train",
+        });
+      }
     } catch (e) { console.error("Toggle eaten error:", e); }
   }, [userId, eatenMeals]);
 
