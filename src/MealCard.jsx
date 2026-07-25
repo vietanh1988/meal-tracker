@@ -20,7 +20,7 @@ export function MealCard({meal, eatenMeals, toggleEaten}){
   const showCompact = !!meal.composite;
   const totalGram = Math.round(meal.items.reduce((s, it) => s + (it.gram || 0), 0));
 
-  return <div style={{...card,cursor:"pointer",borderLeft:`3.5px solid ${isEaten?"#16A34A":(borderColor[meal.id]||C.primary)}`,borderRadius:"0 12px 12px 0",background:isEaten?"#F0FDF4":card.background,borderColor:isEaten?"#86EFAC":card.borderColor,overflow:"hidden"}} onClick={()=>setOpen(!open)}>
+  return <div style={{...card,cursor:"pointer",borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`,borderRadius:"0 12px 12px 0",background:isEaten?"#F0FDF4":card.background,overflow:"hidden"}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",alignItems:"center"}}>
       <div style={{flex:"1 1 auto",minWidth:0}}>
         <div>
@@ -73,9 +73,9 @@ export function MealCard({meal, eatenMeals, toggleEaten}){
         </div>)
       )}
     </div>}
-    {toggleEaten && <div style={{display:"flex",borderTop:`1px solid ${isEaten?"#BBF7D0":C.border}`,marginTop:open?0:0}} onClick={e=>e.stopPropagation()}>
-      <button onClick={()=>toggleEaten(meal.id,false)} style={{flex:1,padding:"8px 12px",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",borderRight:`1px solid ${isEaten?"#BBF7D0":C.border}`,background:!isEaten?"linear-gradient(135deg,#FEF2F2,#FEE2E2)":"#F8FAFC",color:!isEaten?"#EF4444":"#CBD5E1",transition:"all .15s"}}>✗ Chưa ăn</button>
-      <button onClick={()=>toggleEaten(meal.id,true)} style={{flex:1,padding:"8px 12px",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",background:isEaten?"linear-gradient(135deg,#F0FDF4,#DCFCE7)":"linear-gradient(135deg,#EFF6FF,#DBEAFE)",color:isEaten?"#166534":"#007AFF",transition:"all .15s"}}>{isEaten?"✓ Đã ăn · "+Math.round(t.cal)+" cal":"✓ Đã ăn"}</button>
+    {toggleEaten && <div style={{display:"flex",gap:6,padding:"8px 10px",borderTop:`1px solid ${C.border}`,background:isEaten?"#F0FDF4":"#FAFBFC"}} onClick={e=>e.stopPropagation()}>
+      <button onClick={()=>toggleEaten(meal.id,false)} style={{flex:1,padding:"7px 10px",fontSize:11,fontWeight:700,border:"none",borderRadius:8,cursor:"pointer",fontFamily:"inherit",background:!isEaten?"#FEE2E2":"#F1F5F9",color:!isEaten?"#EF4444":"#CBD5E1",transition:"all .15s"}}>✗ Chưa ăn</button>
+      <button onClick={()=>toggleEaten(meal.id,true)} style={{flex:1,padding:"7px 10px",fontSize:11,fontWeight:700,border:"none",borderRadius:8,cursor:"pointer",fontFamily:"inherit",background:isEaten?"#DCFCE7":"#DBEAFE",color:isEaten?"#166534":"#007AFF",transition:"all .15s"}}>{isEaten?"✓ Đã ăn · "+Math.round(t.cal)+" cal":"✓ Đã ăn"}</button>
     </div>}
   </div>;
 }
