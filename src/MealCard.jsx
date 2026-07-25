@@ -21,7 +21,9 @@ export function MealCard({meal, eatenMeals, toggleEaten, isActive}){
   const showCompact = !!meal.composite;
   const totalGram = Math.round(meal.items.reduce((s, it) => s + (it.gram || 0), 0));
 
-  return <div style={{...card,cursor:"pointer",borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`,borderRadius:"0 12px 12px 0",background:isEaten?"#F0FDF4":card.background,overflow:"hidden",opacity:dimmed?0.45:1,border:isActive?`1.5px solid #93C5FD`:card.border,borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`}} onClick={()=>setOpen(!open)}>
+  const cardBorder = isActive ? `1.5px solid #93C5FD` : isEaten ? `1.5px solid #86EFAC` : card.border;
+  
+  return <div style={{...card,cursor:"pointer",borderTop:cardBorder,borderRight:cardBorder,borderBottom:cardBorder,borderRadius:"0 12px 12px 0",background:isEaten?"#F0FDF4":card.background,overflow:"hidden",opacity:dimmed?0.4:1,borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",alignItems:"center"}}>
       <div style={{flex:"1 1 auto",minWidth:0}}>
         <div>
