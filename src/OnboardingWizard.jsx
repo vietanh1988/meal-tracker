@@ -3,15 +3,18 @@ import { C, card, inp, lbl, redBtn } from "./theme";
 import { calcMacro } from "./calcMacro";
 import { useIsMobile } from "./hooks/useIsMobile";
 import AIMenuGenerator from "./AIMenuGenerator";
-import { getAIMenuAccess } from "./lib/aiMenuService";
+import { getAIMenuAccess, generateMenuAI, resolveMealIds } from "./lib/aiMenuService";
 
 export function OnboardingWizard({profile,setProfile,onComplete,appSettings,user,saveWeeklyTemplate,applyTemplate}){
 const mob=useIsMobile();
 const [step,setStep]=useState(0);
 const [showAIMenu,setShowAIMenu]=useState(false);
+const [autoStyle,setAutoStyle]=useState("vn");
+const [autoMenuLoading,setAutoMenuLoading]=useState(false);
+const [autoMenuResult,setAutoMenuResult]=useState(null);
 const p=profile||defaultProfile;
 const macro=calcMacro(p);
-const totalSteps=4;
+const totalSteps=5;
 const aiAccess=getAIMenuAccess(p,appSettings);
 
 const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
@@ -29,8 +32,23 @@ if(applyTemplate)await applyTemplate(tpl);
 finishOnboarding();
 };
 
+const runAutoMenu=async()=>{
+  setAutoMenuLoading(true);
+  setAutoMenuResult(null);
+  try{
+    const dayType=(p.exerciseType||"gym")==="none"?"rest":"train";
+    const mealIds=resolveMealIds(dayType,p,appSettings);
+    const res=await generateMenuAI({macro,profile:p,dayType,mealIds,prefs:{style:autoStyle,avoid:""},avoidFoods:[],appSettings});
+    if(res&&res.meals){setAutoMenuResult(res);}
+    else{finishOnboarding();}
+  }catch(e){
+    console.error("Auto menu onboarding error:",e);
+    finishOnboarding();
+  }finally{setAutoMenuLoading(false);}
+};
+
 const stepDots=step===0?null:<div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:20}}>
-{[1,2,3,4].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#36A3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
+{[1,2,3,4,5].map(s=><div key={s} style={{width:s===step?24:8,height:8,borderRadius:4,background:s<step?"#007AFF":s===step?"#36A3FF":"#CDCDCD",transition:"all 0.3s"}}/>)}
 </div>;
 
 const nextBtn=(label,disabled,color)=><button onClick={()=>setStep(step+1)} disabled={disabled} style={{...redBtn,marginTop:16,opacity:disabled?0.5:1,background:color||"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>{label} →</button>;
@@ -301,24 +319,84 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 <span style={{fontSize:12,fontWeight:700,color:"#78350F"}}>💡 Bạn có thể thay đổi bất cứ lúc nào trong tab Hồ sơ</span>
 </div>
 
-<button onClick={()=>{
-setProfile({...p,onboardingDone:true});
-onComplete();
-}} style={{...redBtn,marginTop:16,background:"linear-gradient(135deg,#15803D,#166534)"}}>💾 Lưu & Vào Dashboard</button>
-{aiAccess.enabled&&<>
-<div style={{display:"flex",alignItems:"center",gap:10,margin:"14px 0"}}>
-<div style={{flex:1,height:1,background:C.border}}/>
-<span style={{fontSize:11,fontWeight:700,color:C.t3}}>HOẶC</span>
-<div style={{flex:1,height:1,background:C.border}}/>
-</div>
-{aiAccess.usable?<>
-<div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:8,textAlign:"center"}}>Chưa biết ăn gì hôm nay?</div>
-<button onClick={()=>setShowAIMenu(true)} style={{...redBtn,background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn cho tôi</button>
-</>:<div style={{padding:"10px 14px",borderRadius:10,background:C.surface,border:`1.5px solid ${C.border}`,textAlign:"center"}}>
-<span style={{fontSize:12,fontWeight:700,color:C.t2}}>🔒 AI tạo thực đơn — dành cho gói Trial/Premium</span>
-</div>}
-</>}
+<button onClick={()=>setStep(5)} style={{...redBtn,marginTop:16,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>Tiếp theo — AI tạo thực đơn →</button>
 {backBtn}
+</div>}
+
+{/* STEP 5: AI tạo menu ngày đầu tiên */}
+{step===5&&<div>
+<div style={{textAlign:"center",marginBottom:16}}>
+<div style={{fontSize:28}}>🍽️</div>
+<div style={{fontSize:17,fontWeight:900,color:C.t1,marginTop:4}}>Bước cuối — Chọn phong cách ăn</div>
+<div style={{fontSize:12,color:C.t3,marginTop:4}}>AI sẽ tạo thực đơn ngày đầu tiên cho bạn</div>
+</div>
+
+{!autoMenuLoading&&!autoMenuResult&&<>
+<div style={{display:"flex",flexDirection:"column",gap:8}}>
+{[
+  {id:"vn",icon:"🇻🇳",name:"Cơm nhà Việt Nam",desc:"Thịt kho, cá chiên, canh rau, cơm trắng..."},
+  {id:"clean",icon:"🥗",name:"Eat Clean",desc:"Ức gà, cá hấp, rau luộc, gạo lứt..."},
+  {id:"easy",icon:"⚡",name:"Tiện lợi",desc:"Mua nhanh, nấu nhanh, dân văn phòng"},
+].map(s=><div key={s.id} onClick={()=>setAutoStyle(s.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,border:autoStyle===s.id?"2px solid #007AFF":"1.5px solid "+C.border,background:autoStyle===s.id?"#EFF6FF":C.surface,cursor:"pointer"}}>
+  <span style={{fontSize:24}}>{s.icon}</span>
+  <div style={{flex:1}}>
+    <div style={{fontSize:14,fontWeight:800,color:C.t1}}>{s.name}</div>
+    <div style={{fontSize:11,color:C.t3,marginTop:1}}>{s.desc}</div>
+  </div>
+  <div style={{width:20,height:20,borderRadius:10,border:autoStyle===s.id?"none":"2px solid "+C.border,background:autoStyle===s.id?"#007AFF":"transparent",display:"flex",alignItems:"center",justifyContent:"center"}}>
+    {autoStyle===s.id&&<div style={{width:8,height:8,borderRadius:4,background:"#fff"}}/>}
+  </div>
+</div>)}
+</div>
+<button onClick={runAutoMenu} style={{...redBtn,marginTop:14,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>AI tạo thực đơn cho tôi →</button>
+<div style={{textAlign:"center",marginTop:6,fontSize:11,color:C.t3,fontWeight:600}}>Bạn có thể đổi phong cách bất kỳ lúc nào</div>
+</>}
+
+{autoMenuLoading&&<div style={{textAlign:"center",padding:"40px 0"}}>
+<div style={{width:48,height:48,border:"4px solid "+C.border,borderTopColor:"#007AFF",borderRadius:"50%",animation:"spin .8s linear infinite",margin:"0 auto 14px"}}/>
+<style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+<div style={{fontSize:15,fontWeight:800,color:C.t1}}>AI đang tạo thực đơn...</div>
+<div style={{fontSize:12,color:C.t3,marginTop:4}}>Chọn món từ kho 1,270+ món Việt</div>
+<div style={{display:"flex",gap:4,justifyContent:"center",marginTop:14}}>
+{[0,1,2].map(i=><div key={i} style={{width:6,height:6,borderRadius:3,background:"#007AFF",animation:"pulse 1.2s infinite "+i*0.2+"s"}}/>)}
+</div>
+<style>{`@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}`}</style>
+</div>}
+
+{autoMenuResult&&<div>
+<div style={{textAlign:"center",marginBottom:10}}>
+<span style={{fontSize:11,fontWeight:700,color:"#007AFF",padding:"3px 10px",background:"#EFF6FF",borderRadius:6}}>
+{{vn:"Cơm nhà VN",clean:"Eat Clean",easy:"Tiện lợi"}[autoStyle]} · {{cut:"Giảm mỡ",bulk:"Tăng cơ",maintain:"Duy trì"}[p.goalType||"cut"]}
+</span>
+</div>
+{(autoMenuResult.meals||[]).map((m,i)=>{
+  const mealCal=Math.round((m.items||[]).reduce((s,it)=>s+(it.cal||0),0));
+  const icons=["🌅","☀️","🌙","🍎"];
+  return <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<(autoMenuResult.meals||[]).length-1?"1px solid "+C.surface:"none"}}>
+    <span style={{fontSize:18}}>{icons[i]||"🍽️"}</span>
+    <div style={{flex:1}}>
+      <div style={{fontSize:13,fontWeight:700,color:C.t1}}>{m.meal_name||m.meal_id}</div>
+      <div style={{fontSize:11,color:C.t3,marginTop:1}}>{(m.items||[]).map(it=>it.display||it.food).join(" · ")}</div>
+    </div>
+    <div style={{fontSize:14,fontWeight:800,color:"#007AFF"}}>{mealCal} <span style={{fontSize:10,color:C.t3,fontWeight:600}}>cal</span></div>
+  </div>;
+})}
+<div style={{display:"flex",gap:6,marginTop:10,padding:10,background:"#F0F7FF",borderRadius:10}}>
+{[
+  {label:"kcal",val:Math.round((autoMenuResult.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.cal||0),s),0)),color:"#007AFF"},
+  {label:"Đạm",val:Math.round((autoMenuResult.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.p||0),s),0))+"g",color:"#007AFF"},
+  {label:"Tinh bột",val:Math.round((autoMenuResult.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.c||0),s),0))+"g",color:"#5AC8FA"},
+  {label:"Chất béo",val:Math.round((autoMenuResult.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.f||0),s),0))+"g",color:"#F59E0B"},
+].map((x,i)=><div key={i} style={{flex:1,textAlign:"center"}}>
+  <div style={{fontSize:15,fontWeight:800,color:x.color}}>{x.val}</div>
+  <div style={{fontSize:9,color:C.t3,fontWeight:600}}>{x.label}</div>
+</div>)}
+</div>
+<button onClick={()=>handleApplyAIMenu(autoMenuResult)} style={{...redBtn,marginTop:14,background:"linear-gradient(135deg,#00C896,#059669)"}}>Áp dụng thực đơn này ✓</button>
+<button onClick={()=>{setAutoMenuResult(null);runAutoMenu();}} style={{...redBtn,marginTop:6,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>🔄 Tạo lại menu khác</button>
+</div>}
+
+<button onClick={()=>setStep(4)} style={{...redBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>
 </div>}
 </div>
 )}
