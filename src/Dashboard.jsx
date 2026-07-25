@@ -122,7 +122,12 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const visibleIds=(()=>{let ids=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];if(isNoneExercise)ids=ids.filter(id=>id!=="pre"&&id!=="post");return ids;})();
   const allMeals=getTodayMeals(dayType);
   const meals=allMeals.filter(m=>visibleIds.includes(m.id));
-  const totals=meals.reduce((acc,m)=>{const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
+  const totals=meals.reduce((acc,m)=>{
+    // Nếu có tracking eaten: chỉ tính bữa đã đánh dấu "Đã ăn"
+    if(eatenMeals && eatenMeals.length > 0 && !(eatenMeals||[]).includes(m.id)) return acc;
+    const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
+    return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
+  },{p:0,c:0,f:0,fiber:0,cal:0});
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;

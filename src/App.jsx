@@ -189,7 +189,11 @@ export default function App(){
   const pcMC=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
   const pcVis=(()=>{let ids=pcMC[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];if(pcIsNoneExercise)ids=ids.filter(id=>id!=="pre"&&id!=="post");return ids;})();
   const pcMeals=getTodayMeals(pcDayType).filter(m=>pcVis.includes(m.id));
-  const pcTot=pcMeals.reduce((a,m)=>{const t=m.items.reduce((s,i)=>({p:s.p+(i.p||0),c:s.c+(i.c||0),f:s.f+(i.f||0),fiber:s.fiber+(i.fiber||0),cal:s.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});return{p:a.p+t.p,c:a.c+t.c,f:a.f+t.f,fiber:a.fiber+t.fiber,cal:a.cal+t.cal};},{p:0,c:0,f:0,fiber:0,cal:0});
+  const pcTot=pcMeals.reduce((a,m)=>{
+    if(eatenMeals && eatenMeals.length > 0 && !(eatenMeals||[]).includes(m.id)) return a;
+    const t=m.items.reduce((s,i)=>({p:s.p+(i.p||0),c:s.c+(i.c||0),f:s.f+(i.f||0),fiber:s.fiber+(i.fiber||0),cal:s.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
+    return{p:a.p+t.p,c:a.c+t.c,f:a.f+t.f,fiber:a.fiber+t.fiber,cal:a.cal+t.cal};
+  },{p:0,c:0,f:0,fiber:0,cal:0});
   const pcHP=macro.protein,pcHF=macro.fat,pcHFib=macro.fiber,pcHC=pcDayType==="train"?macro.carb:macro.carbRest,pcHCal=pcDayType==="train"?macro.calTarget:macro.calRest;
   const pcGK=profile.goalKg,pcSK=weightLog.length>0?weightLog[0].kg:profile.kg,pcCK=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg;
   const pcWP=pcGK!==pcSK?((pcCK-pcSK)/(pcGK-pcSK))*100:0;
@@ -226,7 +230,11 @@ export default function App(){
       const mc=(()=>{try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
       const ids=mc[mobDayType]||DEFAULT_MEAL_CONFIG[mobDayType];
       const ms=getTodayMeals(mobDayType).filter(m=>ids.includes(m.id));
-      const t=ms.reduce((a,m)=>{const mt=m.items.reduce((a2,i)=>({p:a2.p+(i.p||0),c:a2.c+(i.c||0),f:a2.f+(i.f||0),cal:a2.cal+(i.cal||0)}),{p:0,c:0,f:0,cal:0});return{p:a.p+mt.p,c:a.c+mt.c,f:a.f+mt.f,cal:a.cal+mt.cal};},{p:0,c:0,f:0,cal:0});
+      const t=ms.reduce((a,m)=>{
+        if(eatenMeals && eatenMeals.length > 0 && !(eatenMeals||[]).includes(m.id)) return a;
+        const mt=m.items.reduce((a2,i)=>({p:a2.p+(i.p||0),c:a2.c+(i.c||0),f:a2.f+(i.f||0),cal:a2.cal+(i.cal||0)}),{p:0,c:0,f:0,cal:0});
+        return{p:a.p+mt.p,c:a.c+mt.c,f:a.f+mt.f,cal:a.cal+mt.cal};
+      },{p:0,c:0,f:0,cal:0});
       return{cal:Math.round(t.cal),p:Math.round(t.p),c:Math.round(t.c),f:Math.round(t.f),dayType:mobDayType};
     }catch(e){return{cal:0,p:0,c:0,f:0,dayType:mobDayType};}
   })();
