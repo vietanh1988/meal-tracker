@@ -74,10 +74,10 @@ export function MealCard({meal, eatenMeals, toggleEaten}){
       )}
     </div>}
     {toggleEaten && (isEaten
-      ? <div style={{borderTop:`1px solid #BBF7D0`,padding:"9px 12px",textAlign:"center",fontSize:12,fontWeight:700,color:"#166534",background:"#F0FDF4"}} onClick={e=>{e.stopPropagation();toggleEaten(meal.id,false);}}>✓ Đã ăn · {Math.round(t.cal)} cal</div>
-      : <div style={{display:"flex",borderTop:`1px solid ${C.border}`}} onClick={e=>e.stopPropagation()}>
-          <button onClick={()=>toggleEaten(meal.id,false)} style={{flex:1,padding:"9px 12px",fontSize:12,fontWeight:700,border:"none",borderRight:`1px solid ${C.border}`,cursor:"pointer",fontFamily:"inherit",background:"#FEF2F2",color:"#EF4444"}}>✗ Chưa ăn</button>
-          <button onClick={()=>toggleEaten(meal.id,true)} style={{flex:1,padding:"9px 12px",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",background:"#EFF6FF",color:"#007AFF"}}>✓ Đã ăn</button>
+      ? <div style={{borderTop:`1px solid #BBF7D0`,padding:"9px 12px",textAlign:"center",fontSize:12,fontWeight:700,color:"#166534",background:"#F0FDF4",cursor:"pointer"}} onClick={e=>{e.stopPropagation();toggleEaten(meal.id,false);}}>✓ Đã ăn · {Math.round(t.cal)} cal</div>
+      : <div style={{display:"flex",flexDirection:mob?"row":"column",borderTop:`1px solid ${C.border}`}} onClick={e=>e.stopPropagation()}>
+          <button onClick={()=>toggleEaten(meal.id,false)} style={{flex:mob?1:"none",padding:"9px 12px",fontSize:12,fontWeight:700,border:"none",borderRight:mob?`1px solid ${C.border}`:"none",borderBottom:mob?"none":`1px solid ${C.border}`,cursor:"pointer",fontFamily:"inherit",background:"#FEF2F2",color:"#EF4444"}}>✗ Chưa ăn</button>
+          <button onClick={()=>toggleEaten(meal.id,true)} style={{flex:mob?1:"none",padding:"9px 12px",fontSize:12,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"inherit",background:"#EFF6FF",color:"#007AFF"}}>✓ Đã ăn</button>
         </div>
     )}
   </div>;
