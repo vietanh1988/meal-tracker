@@ -44,6 +44,7 @@ export function useUserData(userId) {
   // bữa ăn cũ theo loại ngày, không quan tâm có phải hôm nay không).
   const [mealLogDates, setMealLogDates] = useState({ train: {}, rest: {} });
   const mealLogDatesRef = useRef(mealLogDates);
+  const [eatenMeals, setEatenMeals] = useState([]); // array of meal_ids eaten today
   const todayStr = () => new Date().toISOString().slice(0, 10);
 
   // === Extracted fetch function — reusable ===
@@ -167,6 +168,19 @@ export function useUserData(userId) {
       if (bundleData) {
         setWeeklyBundles(bundleData);
         if (!silent) console.log(`✅ Loaded ${bundleData.length} weekly bundles`);
+      }
+
+      // Load eaten_meals from today's daily_log
+      const { data: dlToday } = await supabase.from("daily_logs")
+        .select("eaten_meals")
+        .eq("user_id", userId)
+        .eq("log_date", todayStr())
+        .maybeSingle();
+      if (dlToday && dlToday.eaten_meals) {
+        setEatenMeals(dlToday.eaten_meals);
+        if (!silent) console.log(`✅ Loaded eaten_meals:`, dlToday.eaten_meals);
+      } else {
+        setEatenMeals([]);
       }
 
       if (!silent) console.log("✅ All data synced from cloud");
@@ -424,6 +438,22 @@ export function useUserData(userId) {
   // ===== DAILY LOGS =====
 
   // Save daily log (upsert by user_id + date)
+  // Toggle eaten status for a meal
+  const toggleEaten = useCallback(async (mealId, isEaten) => {
+    if (!userId) return;
+    const newEaten = isEaten
+      ? [...eatenMeals.filter(id => id !== mealId), mealId]
+      : eatenMeals.filter(id => id !== mealId);
+    setEatenMeals(newEaten);
+    try {
+      await supabase.from("daily_logs").upsert({
+        user_id: userId,
+        log_date: todayStr(),
+        eaten_meals: newEaten,
+      }, { onConflict: "user_id,log_date" });
+    } catch (e) { console.error("Toggle eaten error:", e); }
+  }, [userId, eatenMeals]);
+
   const saveDailyLog = useCallback(async (date, dayType, mealsData, totalCal, isComplete) => {
     if (!userId) return;
     try {
@@ -634,5 +664,6 @@ export function useUserData(userId) {
     weeklyBundles, saveWeeklyBundle, deleteWeeklyBundle, refreshWeeklyBundles,
     applyTemplate,
     saveDailyLog, getDailyLogs, getDailyLog,
+    eatenMeals, toggleEaten,
   };
 }
