@@ -502,7 +502,7 @@ export default function App(){
               </div>}
             </div>
             <div>
-              <div style={{...card,padding:20,marginBottom:14}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:16,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span><div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:13,color:C.t2,fontWeight:600}}>🎯 {pcGK} kg</span><button onClick={()=>setPcShowWeightInput(!pcShowWeightInput)} style={{width:24,height:24,borderRadius:6,background:"transparent",color:C.secondary,border:`1px solid ${C.secondary}`,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>{pcShowWeightInput?"✕":"+"}</button></div></div>
+              <div style={{...card,padding:20,marginBottom:14}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:16,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span><span style={{fontSize:13,color:C.t2,fontWeight:600}}>🎯 {pcGK} kg</span></div>
                 {pcShowWeightInput&&<div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:14,border:`1.5px solid ${C.border}`}}>
                   <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -514,16 +514,15 @@ export default function App(){
                 <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>{[{l:"Xuất phát",v:pcSK,c:C.t1},{l:"Hiện tại",v:pcCK,c:C.primary},{l:"Mục tiêu",v:pcGK,c:C.t1},{l:"Tiến độ",v:Math.round(Math.max(0,Math.min(pcWP,100)))+"%",c:C.primary}].map((w,i)=><div key={i} style={{textAlign:"center",padding:"10px 6px",background:C.surface,borderRadius:10}}><div style={{fontSize:11,color:C.t2,fontWeight:600}}>{w.l}</div><div style={{fontSize:22,fontWeight:800,color:w.c}}>{w.v}</div>{typeof w.v==="number"&&<div style={{fontSize:11,color:C.t2}}>kg</div>}</div>)}</div>
                 <div style={{fontSize:13,fontWeight:700,display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{color:C.t1}}>Đã {pcCK>=pcSK?"tăng":"giảm"} {Math.abs(Math.round((pcCK-pcSK)*10)/10)} kg</span><span style={{color:C.primary,fontWeight:800}}>{Math.round(Math.max(0,Math.min(pcWP,100)))}%</span></div>
                 <div style={{height:8,background:C.surface,borderRadius:4}}><div style={{height:8,borderRadius:4,background:"linear-gradient(90deg,#36A3FF,#007AFF)",width:`${Math.max(0,Math.min(pcWP,100))}%`}}/></div>
-                {weightLog.length>=2&&<div style={{marginTop:12}}><WeightBarChart weightLog={weightLog} goalKg={pcGK} goalType={profile.goalType} startKg={pcSK} mob={false}/></div>}
-                {/* Weekly weight reminder PC */}
+                {/* Weekly weight reminder PC — before chart */}
                 {(()=>{
                   const now=new Date();
                   const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
                   const mondayStr=monday.toISOString().slice(0,10);
-                  const weighedThisWeek=weightLog.some(w=>{const d=w.date||w.created_at||"";return d.slice(0,10)>=mondayStr;});
+                  const weighedThisWeek=weightLog.some(w=>{const d=w.date?new Date(w.date):w.created_at?new Date(w.created_at):null;return d&&d.toISOString().slice(0,10)>=mondayStr;});
                   const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
-                  const lastDate=lastEntry?(lastEntry.date||lastEntry.created_at||"").slice(0,10):"";
-                  const lastDay=lastDate?new Date(lastDate+"T00:00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):"—";
+                  const lastDateRaw=lastEntry?(lastEntry.date||lastEntry.created_at):null;
+                  const lastDay=lastDateRaw?new Date(lastDateRaw).toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):"—";
                   if(!weighedThisWeek) return <div onClick={()=>setPcShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginTop:12,cursor:"pointer"}}>
                     <span style={{fontSize:20}}>⚖️</span>
                     <div style={{flex:1}}>
@@ -537,6 +536,7 @@ export default function App(){
                     <span onClick={()=>setPcShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
                   </div>;
                 })()}
+                {weightLog.length>=2&&<div style={{marginTop:12}}><WeightBarChart weightLog={weightLog} goalKg={pcGK} goalType={profile.goalType} startKg={pcSK} mob={false}/></div>}
               </div>
               <div style={{...card,padding:18,maxHeight:360,overflowY:"auto"}}><ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={false}/></div>
             </div>

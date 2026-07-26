@@ -396,10 +396,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     <div style={{...card,marginTop:8,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF) 1"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
-          <button onClick={()=>setShowWeightInput(!showWeightInput)} style={{width:24,height:24,borderRadius:6,background:"transparent",color:C.secondary,border:`1px solid ${C.secondary}`,fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>{showWeightInput?"✕":"+"}</button>
-        </div>
+        <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
       </div>
 
       {/* Quick weight input */}
@@ -438,19 +435,16 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </div>)}
       </div>
 
-      {/* Bar chart */}
-      {weightLog.length>=2&&<WeightBarChart weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} mob={mob}/>}
-
-      {/* Weekly weight reminder */}
+      {/* Weekly weight reminder — after stats, before chart */}
       {(()=>{
         const now=new Date();
         const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
         const mondayStr=monday.toISOString().slice(0,10);
-        const weighedThisWeek=weightLog.some(w=>{const d=w.date||w.created_at||"";return d.slice(0,10)>=mondayStr;});
+        const weighedThisWeek=weightLog.some(w=>{const d=w.date?new Date(w.date):w.created_at?new Date(w.created_at):null;return d&&d.toISOString().slice(0,10)>=mondayStr;});
         const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
-        const lastDate=lastEntry?(lastEntry.date||lastEntry.created_at||"").slice(0,10):"";
-        const lastDay=lastDate?new Date(lastDate+"T00:00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):"—";
-        if(!weighedThisWeek) return <div onClick={()=>setShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginTop:10,cursor:"pointer"}}>
+        const lastDateRaw=lastEntry?(lastEntry.date||lastEntry.created_at):null;
+        const lastDay=lastDateRaw?new Date(lastDateRaw).toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):"—";
+        if(!weighedThisWeek) return <div onClick={()=>setShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginBottom:14,cursor:"pointer"}}>
           <span style={{fontSize:20}}>⚖️</span>
           <div style={{flex:1}}>
             <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Tuần này chưa cập nhật cân nặng</div>
@@ -458,11 +452,14 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           </div>
           <div style={{padding:"7px 14px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700}}>Thêm ngay</div>
         </div>;
-        return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10}}>
+        return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
           <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật tuần này</span>
           <span onClick={()=>setShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
         </div>;
       })()}
+
+      {/* Bar chart */}
+      {weightLog.length>=2&&<WeightBarChart weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} mob={mob}/>}
     </div>
 
     {/* Smart suggestions — outside chart card */}
