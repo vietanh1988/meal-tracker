@@ -10,8 +10,8 @@ export function AdminTab({appSettings, saveSetting, mob, isSuperAdmin}){
       <div style={{marginBottom:20}}>
         <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:12}}>📢 Quản lý thông báo</div>
         <div style={{fontSize:12,fontWeight:600,color:C.t3,marginBottom:12}}>Thêm thông báo hiện trong chuông 🔔 cho tất cả users</div>
-        <div style={{display:"flex",gap:8,marginBottom:12}}>
-          <input id="noti-text" type="text" placeholder="VD: 🎉 Phiên bản 2.6 — Kho 192 thực phẩm" style={{...inp,flex:1}} disabled={!isSuperAdmin}/>
+        <div style={{display:"flex",gap:8,marginBottom:12,alignItems:"flex-end"}}>
+          <textarea id="noti-text" rows={3} placeholder={"VD:\n🎉 Bản cập nhật v3.5!\n✅ Đánh dấu Đã ăn từng bữa\n📓 Tab Nhật ký mới"} style={{...inp,flex:1,resize:"vertical",minHeight:60,lineHeight:1.5}} disabled={!isSuperAdmin}/>
           {isSuperAdmin&&<button onClick={async()=>{
             const text=document.getElementById("noti-text")?.value?.trim();
             if(!text)return;
