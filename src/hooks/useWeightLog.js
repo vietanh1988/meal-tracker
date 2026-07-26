@@ -16,6 +16,7 @@ export function useWeightLog(userId, authLoading) {
         id: d.id,
         week: d.week,
         date: new Date(d.logged_date).toLocaleDateString("vi-VN"),
+        logged_date: d.logged_date,
         kg: Number(d.kg),
         delta: d.delta != null ? Number(d.delta) : null,
       }));
