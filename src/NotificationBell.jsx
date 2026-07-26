@@ -252,7 +252,7 @@ export function NotificationBell({ appSettings, userId, dark }) {
               <div key={n.id} onClick={() => openUpdateConfirm(n)} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: `0.5px solid ${C.border}`, background: isUnseen ? "rgba(220,38,38,0.04)" : "transparent" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   {isUnseen && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", flexShrink: 0 }} />}
-                  <div style={{ fontSize: 12, fontWeight: isUnseen ? 700 : 600, color: C.t1, lineHeight: 1.4 }}>{n.text}</div>
+                  <div style={{ fontSize: 12, fontWeight: isUnseen ? 700 : 600, color: C.t1, lineHeight: 1.4, whiteSpace: "pre-wrap" }}>{n.text}</div>
                 </div>
                 <div style={{ fontSize: 10, color: C.t3, marginTop: 3 }}>{n.date} • Nhấn để xem</div>
               </div>
@@ -294,7 +294,7 @@ export function NotificationBell({ appSettings, userId, dark }) {
               {updateStage === "confirm" && <span onClick={() => { setSelectedUpdate(null); setUpdateStage(null); }} style={{ cursor: "pointer", fontSize: 18, color: C.t3 }}>✕</span>}
             </div>
             <div style={{ padding: "18px 20px" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, lineHeight: 1.4, marginBottom: 6 }}>{selectedUpdate.text}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.t1, lineHeight: 1.4, marginBottom: 6, whiteSpace: "pre-wrap" }}>{selectedUpdate.text}</div>
               <div style={{ fontSize: 11, color: C.t3, marginBottom: 16 }}>{selectedUpdate.date}</div>
 
               {updateStage === "confirm" && (
