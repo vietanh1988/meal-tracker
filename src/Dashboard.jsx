@@ -356,7 +356,17 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       return <div style={{...card,padding:"14px 16px",marginTop:6,background:"rgba(52,199,89,0.04)",border:"1.5px solid rgba(52,199,89,0.15)"}}>
         <div style={{display:"flex",alignItems:"center",gap:14}}>
           <div><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:3}}><span style={{fontSize:12}}>🎯</span><span style={{fontSize:11,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:28,fontWeight:900,color:"#059669",lineHeight:1}}>{ms}<span style={{fontSize:13,color:"#64748B",fontWeight:600}}> /100</span></div></div>
-          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(cr>0?`Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 25g lạc rang (+142 cal).`:cr<0?`Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`:(isNoneExercise?"Cân đối dinh dưỡng, đủ năng lượng cho cả ngày.":"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả."))+(macroWarnings.length>0?" Ngoài ra đang "+macroWarnings.join(", ")+".":"")}</div></div>
+          <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(()=>{
+            const mealsAll=meals.filter(m=>m.items&&m.items.length>0);
+            const uneatenMeals=eatenMeals&&eatenMeals.length>0?mealsAll.filter(m=>!eatenMeals.includes(m.id)):[];
+            if(cr>0&&uneatenMeals.length>0){
+              const names=uneatenMeals.map(m=>m.name).join(", ");
+              return `Còn thiếu ${cr} cal. Ăn nốt ${names} để đạt mục tiêu.`;
+            }
+            if(cr>0) return `Thiếu ${cr} cal. Thêm sữa tươi không đường (+120 cal) hoặc 30g hạt điều (+175 cal).`;
+            if(cr<0) return `Dư ${Math.abs(cr)} cal. Giảm bớt cơm hoặc tinh bột để cân bằng.`;
+            return isNoneExercise?"Cân đối dinh dưỡng, đủ năng lượng cho cả ngày.":"Cân đối dinh dưỡng, đủ năng lượng cho buổi tập hiệu quả.";
+          })()+(macroWarnings.length>0?" Ngoài ra đang "+macroWarnings.join(", ")+".":"")}</div></div>
         </div>
       </div>;
     })()}
