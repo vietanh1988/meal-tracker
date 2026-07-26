@@ -394,9 +394,20 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
     {/* Weight Chart */}
     <div style={{...card,marginTop:8,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF) 1"}}>
+      {(()=>{
+        const now=new Date();
+        const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
+        const mondayStr=monday.toISOString().slice(0,10);
+        const weighedThisWeek=weightLog.some(w=>{const ld=w.logged_date||"";return ld>=mondayStr;});
+        const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
+        const lastDay=lastEntry?lastEntry.date:"—";
+        return <>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
-        <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
+        {weighedThisWeek
+          ? <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật</span>
+          : <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
+        }
       </div>
 
       {weightSaved&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:10}}>
@@ -404,10 +415,10 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>}
 
       {/* Stat cards */}
-      <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:weighedThisWeek?6:14}}>
         {[
           {l:"Xuất phát",v:startKg,c:C.t1},
-          {l:"Hiện tại",v:curKg,c:"#4285F4"},
+          {l:"Hiện tại",v:curKg,c:weighedThisWeek?"#16A34A":"#4285F4"},
           {l:"Mục tiêu",v:goalKg,c:"#34A853"},
           {l:"Tiến độ",v:Math.max(0,Math.min(100,Math.round(wPct)))+"%",c:"#F4B400"},
         ].map((s,i)=><div key={i} style={{background:C.card,borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1px solid ${C.border}`}}>
@@ -417,46 +428,41 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </div>)}
       </div>
 
-      {/* Weekly weight reminder — inline, input opens here */}
-      {(()=>{
-        const now=new Date();
-        const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
-        const mondayStr=monday.toISOString().slice(0,10);
-        const weighedThisWeek=weightLog.some(w=>{const ld=w.logged_date||"";return ld>=mondayStr;});
-        const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
-        const lastDay=lastEntry?lastEntry.date:"—";
-        
-        if(showWeightInput) return <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:14,border:`1.5px solid ${C.border}`}}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
-              <input ref={weightInputRef} type="text" inputMode="decimal" placeholder={`VD: ${(curKg+0.3).toFixed(1)}`} style={{...inp,height:40,fontSize:15}}/>
-            </div>
-            <button onClick={async()=>{
-              const val=parseFloat((weightInputRef.current?.value||"").replace(",","."));
-              if(!val||val<30||val>200)return;
-              await addWeight(val);
-              setProfile({...profile,kg:val});
-              if(weightInputRef.current)weightInputRef.current.value="";
-              setShowWeightInput(false);
-              setWeightSaved(true);setTimeout(()=>setWeightSaved(false),3000);
-            }} style={{padding:"10px 16px",fontSize:13,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>💾 Lưu</button>
-            <button onClick={()=>setShowWeightInput(false)} style={{padding:"10px 12px",fontSize:13,border:"none",borderRadius:10,background:C.surface,color:C.t3,cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>✕</button>
-          </div>
-        </div>;
+      {/* Sửa link when already weighed */}
+      {weighedThisWeek&&<div style={{textAlign:"center",padding:"4px 0",marginBottom:10}}>
+        <span onClick={()=>setShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
+      </div>}
 
-        if(!weighedThisWeek) return <div onClick={()=>setShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginBottom:14,cursor:"pointer"}}>
-          <span style={{fontSize:20}}>⚖️</span>
+      {/* Input opens inline */}
+      {showWeightInput&&<div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:14,border:`1.5px solid ${C.border}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{flex:1}}>
-            <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Tuần này chưa cập nhật cân nặng</div>
-            <div style={{fontSize:10,color:"#C2410C",opacity:.7}}>Lần cuối: {lastDay} · {lastEntry?lastEntry.kg:"—"} kg</div>
+            <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
+            <input ref={weightInputRef} type="text" inputMode="decimal" placeholder={`VD: ${(curKg+0.3).toFixed(1)}`} style={{...inp,height:40,fontSize:15}}/>
           </div>
-          <div style={{padding:"7px 14px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700}}>Thêm ngay</div>
-        </div>;
-        return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-          <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật tuần này</span>
-          <span onClick={()=>setShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
-        </div>;
+          <button onClick={async()=>{
+            const val=parseFloat((weightInputRef.current?.value||"").replace(",","."));
+            if(!val||val<30||val>200)return;
+            await addWeight(val);
+            setProfile({...profile,kg:val});
+            if(weightInputRef.current)weightInputRef.current.value="";
+            setShowWeightInput(false);
+            setWeightSaved(true);setTimeout(()=>setWeightSaved(false),3000);
+          }} style={{padding:"10px 16px",fontSize:13,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>💾 Lưu</button>
+          <button onClick={()=>setShowWeightInput(false)} style={{padding:"10px 12px",fontSize:13,border:"none",borderRadius:10,background:C.surface,color:C.t3,cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>✕</button>
+        </div>
+      </div>}
+
+      {/* Banner chưa cân tuần này */}
+      {!weighedThisWeek&&!showWeightInput&&<div onClick={()=>setShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginBottom:14,cursor:"pointer"}}>
+        <span style={{fontSize:20}}>⚖️</span>
+        <div style={{flex:1}}>
+          <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Tuần này chưa cập nhật cân nặng</div>
+          <div style={{fontSize:10,color:"#C2410C",opacity:.7}}>Lần cuối: {lastDay} · {lastEntry?lastEntry.kg:"—"} kg</div>
+        </div>
+        <div style={{padding:"7px 14px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700}}>Thêm ngay</div>
+      </div>}
+        </>;
       })()}
 
       {/* Bar chart */}
