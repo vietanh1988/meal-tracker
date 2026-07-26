@@ -211,20 +211,20 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div style={{flex:1,paddingRight:8}}>
-          <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Tổng calo hôm nay":dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
+          <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Calo còn lại hôm nay":dayType==="train"?"Calo còn lại ngày tập":"Calo còn lại ngày nghỉ"}</div>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:4}}>
-            <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{actualCal.toLocaleString()}</div>
+            <div style={{fontSize:30,fontWeight:900,color:calRemain<=0?"#16A34A":calRemain<=heroCal*0.5?"#F59E0B":"#007AFF",letterSpacing:"-0.03em",lineHeight:1.1}}>{Math.max(0,calRemain).toLocaleString()}</div>
             <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
           </div>
-          {/* Trạng thái dynamic — chuyển lên đây thế chỗ dòng cũ */}
+          {/* Trạng thái dynamic */}
           <div style={{marginTop:8}}>
-            {(()=>{const pp=heroCal>0?Math.round(actualCal/heroCal*100):0;
-              if(pp<95)return <span style={{fontSize:11,fontWeight:700,color:"#B45309",padding:"4px 9px",background:"#FEF3C7",borderRadius:6}}>⚠️ Còn thiếu {calRemain} kcal</span>;
-              if(pp<=105)return <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#16A34A",padding:"4px 9px 4px 6px",background:"#F0FDF4",borderRadius:6}}>
+            {(()=>{
+              if(calRemain<=0)return <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#16A34A",padding:"4px 9px 4px 6px",background:"#F0FDF4",borderRadius:6}}>
                 <svg width={14} height={14} viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Ổn rồi, giữ nhé!
+                ✅ Đã ăn đủ {heroCal.toLocaleString()} kcal
               </span>;
-              return <span style={{fontSize:11,fontWeight:700,color:"#DC2626",padding:"4px 9px",background:"#FEE2E2",borderRadius:6}}>🔴 Dư {Math.abs(calRemain)} kcal</span>;
+              if(actualCal>heroCal*1.05)return <span style={{fontSize:11,fontWeight:700,color:"#DC2626",padding:"4px 9px",background:"#FEE2E2",borderRadius:6}}>🔴 Dư {Math.abs(calRemain)} kcal</span>;
+              return <span style={{fontSize:11,fontWeight:700,color:"#64748B",padding:"4px 9px",background:"#F1F5F9",borderRadius:6}}>đã ăn {actualCal.toLocaleString()} kcal</span>;
             })()}
           </div>
           {/* Badges VN + diet — gộp vào cột trái để không tạo khoảng trắng dưới ring */}
@@ -236,22 +236,22 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
             {profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:11,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 10px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:6,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}
           </div>
         </div>
-        {/* Vòng tròn % mục tiêu calo — thay illustration clipboard+lửa */}
-        {(()=>{const calPct=heroCal>0?Math.min(Math.round(actualCal/heroCal*100),150):0;
-          const r=38,circ=2*Math.PI*r,offset=circ-(calPct/100)*circ;
-          const ringColor=calPct>115?"#F59E0B":calPct>140?"#DC2626":"#007AFF";
+        {/* Vòng tròn % còn lại — chạy ngược: 100% khi chưa ăn → 0% khi ăn đủ */}
+        {(()=>{const remainPct=heroCal>0?Math.min(Math.round(Math.max(0,calRemain)/heroCal*100),100):0;
+          const r=38,circ=2*Math.PI*r,offset=circ-(remainPct/100)*circ;
+          const ringColor=remainPct<=0?"#16A34A":remainPct<=50?"#F59E0B":"#007AFF";
           return <div style={{width:130,height:130,position:"relative",flexShrink:0}}>
             <svg width={130} height={130} viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r={r} fill="none" stroke="#E8EDF2" strokeWidth="6"/>
-              <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="6"
+              <circle cx="50" cy="50" r={r} fill="none" stroke={remainPct<=0?"#DCFCE7":"#E8EDF2"} strokeWidth="6"/>
+              {remainPct>0&&<circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="6"
                 strokeDasharray={circ} strokeDashoffset={Math.max(offset,0)}
                 strokeLinecap="round" transform="rotate(-90 50 50)"
-                style={{transition:"stroke-dashoffset 0.6s ease, stroke 0.3s"}}/>
+                style={{transition:"stroke-dashoffset 0.6s ease, stroke 0.3s"}}/>}
             </svg>
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center"}}>
-              <span style={{fontSize:20,lineHeight:1}}>🔥</span>
-              <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>{calPct}%</span>
-              <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>mục tiêu</span>
+              <span style={{fontSize:20,lineHeight:1}}>{remainPct<=0?"🎉":"🔥"}</span>
+              <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>{remainPct}%</span>
+              <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>{remainPct<=0?"hoàn thành!":"còn lại"}</span>
             </div>
           </div>;
         })()}

@@ -399,24 +399,25 @@ export default function App(){
               <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>Macro đã cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff} cal)</span>
             </div>}
             <div style={{flex:"0 0 30%"}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcIsNoneExercise?"Tổng calo hôm nay":pcDayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
-              <div style={{fontSize:48,fontWeight:900,color:C.t1,letterSpacing:"-2px",lineHeight:1}}>{pcAC.toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>
+              <div style={{fontSize:12,fontWeight:700,color:"#64748B",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:8}}>{pcIsNoneExercise?"Calo còn lại hôm nay":pcDayType==="train"?"Calo còn lại ngày tập":"Calo còn lại ngày nghỉ"}</div>
+              <div style={{fontSize:48,fontWeight:900,color:pcCR<=0?"#16A34A":pcCR<=pcHCal*0.5?"#F59E0B":C.t1,letterSpacing:"-2px",lineHeight:1}}>{Math.max(0,pcCR).toLocaleString()} <span style={{fontSize:17,fontWeight:600,color:"#64748B"}}> / {pcHCal.toLocaleString()} kcal</span></div>
               <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10,alignItems:"center"}}>
                 {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"#2563EB",padding:"5px 12px 5px 8px",background:"#EFF6FF",borderRadius:8}}>
                   <svg width={18} height={12} viewBox="0 0 30 20"><rect width="30" height="20" fill="#DA251D"/><polygon points="15,4 16.76,9.35 22.39,9.35 17.82,12.65 19.58,18 15,14.7 10.42,18 12.18,12.65 7.61,9.35 13.24,9.35" fill="#FFCD00"/></svg>
                   Calo chuẩn Việt Nam
                 </span>}
                 {profile.goalType==="cut"&&(profile.dietStrategy||"balanced")!=="balanced"&&<span style={{fontSize:13,fontWeight:700,color:(profile.dietStrategy==="keto"?"#991B1B":"#92400E"),padding:"4px 12px",background:(profile.dietStrategy==="keto"?"rgba(248,113,113,0.12)":"rgba(251,191,36,0.12)"),borderRadius:8,display:"inline-flex",alignItems:"center",gap:4,lineHeight:1}}>🥗 {profile.dietStrategy==="keto"?"Keto":"Low-carb"}</span>}
-                {(()=>{const pp=pcHCal>0?Math.round(pcAC/pcHCal*100):0;
-                  if(pp<95)return <span style={{fontSize:13,fontWeight:700,color:"#B45309",padding:"5px 12px",background:"#FEF3C7",borderRadius:8}}>⚠️ Còn thiếu {pcCR} kcal</span>;
-                  if(pp<=105)return <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"#16A34A",padding:"5px 12px 5px 8px",background:"#F0FDF4",borderRadius:8}}>
+                {(()=>{
+                  if(pcCR<=0)return <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:"#16A34A",padding:"5px 12px 5px 8px",background:"#F0FDF4",borderRadius:8}}>
                     <svg width={16} height={16} viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    Ổn rồi, giữ nhé!
+                    ✅ Đã ăn đủ {pcHCal.toLocaleString()} kcal
                   </span>;
-                  return <span style={{fontSize:13,fontWeight:700,color:"#DC2626",padding:"5px 12px",background:"#FEE2E2",borderRadius:8}}>🔴 Dư {Math.abs(pcCR)} kcal</span>;
+                  if(pcAC>pcHCal*1.05)return <span style={{fontSize:13,fontWeight:700,color:"#DC2626",padding:"5px 12px",background:"#FEE2E2",borderRadius:8}}>🔴 Dư {Math.abs(pcCR)} kcal</span>;
+                  return <span style={{fontSize:13,fontWeight:700,color:"#64748B",padding:"5px 12px",background:"#F1F5F9",borderRadius:8}}>đã ăn {pcAC.toLocaleString()} kcal</span>;
                 })()}
               </div>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:10,background:C.border,borderRadius:5}}><div style={{height:10,background:"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcHCal>0?(pcAC/pcHCal)*100:0,120)}%`,transition:"width 0.4s"}}/></div></div>
+              {/* Thanh bar ngược — full khi chưa ăn, hết khi ăn đủ */}
+              <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14,maxWidth:320}}><div style={{flex:1,height:10,background:pcCR<=0?"#DCFCE7":C.border,borderRadius:5}}><div style={{height:10,background:pcCR<=0?"#16A34A":pcCR<=pcHCal*0.5?"linear-gradient(90deg,#F59E0B,#FBBF24)":"linear-gradient(90deg,#36A3FF,#007AFF)",borderRadius:5,width:`${Math.min(pcHCal>0?(Math.max(0,pcCR)/pcHCal)*100:0,100)}%`,transition:"width 0.4s"}}/></div></div>
             </div>
             <div style={{flex:1,display:"flex",justifyContent:"center",gap:64}}>
               <MacroBar label="Đạm" v={pcAP} max={pcHP} barColor="#2563EB" icon="🥩" size={1.2}/>
