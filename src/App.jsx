@@ -449,14 +449,39 @@ export default function App(){
                 const allEaten = pcWithItems.length > 0 && eatenCount === pcWithItems.length;
                 const someEaten = eatenCount > 0 && !allEaten;
                 const remaining = pcWithItems.length - eatenCount;
+                const pcCalOk = pcAC >= pcHCal * 0.9;
+                const pcCalShort = pcHCal - pcAC;
                 return <>
-                  {someEaten && remaining === 1 && <div style={{padding:"7px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",background:"#EFF6FF",color:"#007AFF",border:"1px solid #BFDBFE",marginBottom:6}}>💪 Còn 1 bữa nữa là hoàn thành mục tiêu!</div>}
+                  {someEaten && remaining === 1 && <div style={{padding:"7px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",background:"#EFF6FF",color:"#007AFF",border:"1px solid #BFDBFE",marginBottom:6}}>💪 Còn 1 bữa nữa là hoàn thành!</div>}
                   {someEaten && remaining > 1 && <div style={{padding:"7px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",background:"#FEF3C7",color:"#92400E",border:"1px solid #FDE68A",marginBottom:6}}>🍽️ Đã ăn {eatenCount}/{pcWithItems.length} bữa — tiếp tục nhé!</div>}
-                  {allEaten && <div style={{textAlign:"center",padding:14,background:"linear-gradient(135deg,#F0FDF4,#DCFCE7)",borderRadius:14,border:"1.5px solid #86EFAC",marginBottom:6}}>
-                    <div style={{fontSize:30}}>🎉</div>
-                    <div style={{fontSize:15,fontWeight:900,color:"#166534",marginTop:4}}>Hoàn thành mục tiêu hôm nay!</div>
-                    <div style={{fontSize:11,color:"#15803D",marginTop:2}}>Streak 🔥 ăn đúng calo</div>
+                  
+                  {allEaten && pcCalOk && <div style={{textAlign:"center",padding:"20px 16px",background:"linear-gradient(135deg,#FFF7ED,#FEF3C7,#FDE68A)",borderRadius:16,border:"1.5px solid #F59E0B",marginBottom:6,position:"relative",overflow:"hidden"}}>
+                    <div style={{position:"absolute",top:-10,left:-10,width:60,height:60,background:"rgba(245,158,11,.1)",borderRadius:"50%"}}/>
+                    <div style={{position:"absolute",bottom:-15,right:-15,width:80,height:80,background:"rgba(245,158,11,.08)",borderRadius:"50%"}}/>
+                    <div style={{fontSize:42,marginBottom:6,position:"relative"}}>🎉</div>
+                    <div style={{fontSize:16,fontWeight:900,color:"#92400E",position:"relative"}}>Tuyệt vời! Hoàn thành mục tiêu!</div>
+                    <div style={{fontSize:12,color:"#B45309",marginTop:4,fontWeight:600,position:"relative"}}>Đã ăn đủ {eatenCount}/{pcWithItems.length} bữa · {pcAC.toLocaleString()} / {pcHCal.toLocaleString()} kcal</div>
+                    <div style={{display:"inline-flex",alignItems:"center",gap:4,marginTop:8,padding:"4px 10px",background:"rgba(245,158,11,.15)",borderRadius:6,position:"relative"}}>
+                      <span style={{fontSize:12}}>🔥</span>
+                      <span style={{fontSize:11,fontWeight:800,color:"#92400E"}}>Streak ăn đúng calo</span>
+                    </div>
                   </div>}
+
+                  {allEaten && !pcCalOk && <>
+                    <div style={{textAlign:"center",padding:"16px",background:"linear-gradient(135deg,#EFF6FF,#DBEAFE)",borderRadius:16,border:"1.5px solid #93C5FD",marginBottom:6,position:"relative",overflow:"hidden"}}>
+                      <div style={{position:"absolute",top:-10,right:-10,width:50,height:50,background:"rgba(59,130,246,.08)",borderRadius:"50%"}}/>
+                      <div style={{fontSize:36,marginBottom:4,position:"relative"}}>✅</div>
+                      <div style={{fontSize:15,fontWeight:900,color:"#1E40AF",position:"relative"}}>Đã hoàn thành {eatenCount}/{pcWithItems.length} bữa ăn!</div>
+                      <div style={{fontSize:11,color:"#3B82F6",marginTop:3,fontWeight:600,position:"relative"}}>Bạn đã ăn hết các bữa trong thực đơn hôm nay</div>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:"#FEF3C7",borderRadius:10,border:"1px solid #FDE68A",marginBottom:6}}>
+                      <span style={{fontSize:16}}>⚠️</span>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:12,fontWeight:700,color:"#92400E"}}>Vẫn còn thiếu {pcCalShort > 0 ? pcCalShort : 0} kcal so với mục tiêu</div>
+                        <div style={{fontSize:10,color:"#B45309",marginTop:2}}>Cân nhắc bổ sung thêm snack hoặc bữa phụ</div>
+                      </div>
+                    </div>
+                  </>}
                   {pcWithItems.map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten} isActive={m.id===pcActiveMealId}/>)}
                   {allEaten && <>
                     <div onClick={()=>setTab&&setTab("diary_s")} style={{...card,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
