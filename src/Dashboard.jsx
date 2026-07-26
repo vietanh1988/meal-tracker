@@ -297,11 +297,11 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         {mealsWithItems.map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten} isActive={m.id===activeMealId}/>)}
         {/* Links after all eaten */}
         {allEaten && <>
-          <div onClick={()=>setTab&&setTab("report")} style={{...card,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
+          <div onClick={()=>setTab&&setTab("diary")} style={{...card,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
             <span style={{fontSize:12,fontWeight:700,color:C.t1}}>📓 Xem nhật ký tuần này</span>
             <span style={{fontSize:12,color:C.t3}}>→</span>
           </div>
-          <div onClick={()=>setTab&&setTab("settings")} style={{...card,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
+          <div onClick={()=>setTab&&setTab("report")} style={{...card,padding:"10px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
             <span style={{fontSize:12,fontWeight:700,color:C.t1}}>📊 Xem báo cáo chi tiết</span>
             <span style={{fontSize:12,color:C.t3}}>→</span>
           </div>
