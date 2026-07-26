@@ -358,7 +358,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           <div><div style={{display:"flex",alignItems:"center",gap:5,marginBottom:3}}><span style={{fontSize:12}}>🎯</span><span style={{fontSize:11,color:"#059669",fontWeight:600}}>Đánh giá dinh dưỡng</span></div><div style={{fontSize:28,fontWeight:900,color:"#059669",lineHeight:1}}>{ms}<span style={{fontSize:13,color:"#64748B",fontWeight:600}}> /100</span></div></div>
           <div style={{flex:1,borderLeft:"1.5px solid rgba(52,199,89,0.15)",paddingLeft:14}}><div style={{fontSize:13,fontWeight:700,color:C.t1}}>{msl}</div><div style={{fontSize:12,color:C.t2,marginTop:3,lineHeight:1.5}}>{(()=>{
             const mealsAll=meals.filter(m=>m.items&&m.items.length>0);
-            const uneatenMeals=eatenMeals&&eatenMeals.length>0?mealsAll.filter(m=>!eatenMeals.includes(m.id)):[];
+            const uneatenMeals=mealsAll.filter(m=>!(eatenMeals||[]).includes(m.id));
             if(cr>0&&uneatenMeals.length>0){
               const names=uneatenMeals.map(m=>m.name).join(", ");
               return `Còn thiếu ${cr} cal. Ăn nốt ${names} để đạt mục tiêu.`;
@@ -440,6 +440,29 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
       {/* Bar chart */}
       {weightLog.length>=2&&<WeightBarChart weightLog={weightLog} goalKg={goalKg} goalType={profile.goalType} startKg={startKg} mob={mob}/>}
+
+      {/* Weekly weight reminder */}
+      {(()=>{
+        const now=new Date();
+        const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
+        const mondayStr=monday.toISOString().slice(0,10);
+        const weighedThisWeek=weightLog.some(w=>{const d=w.date||w.created_at||"";return d.slice(0,10)>=mondayStr;});
+        const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
+        const lastDate=lastEntry?(lastEntry.date||lastEntry.created_at||"").slice(0,10):"";
+        const lastDay=lastDate?new Date(lastDate+"T00:00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):"—";
+        if(!weighedThisWeek) return <div onClick={()=>setShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginTop:10,cursor:"pointer"}}>
+          <span style={{fontSize:20}}>⚖️</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Tuần này chưa cập nhật cân nặng</div>
+            <div style={{fontSize:10,color:"#C2410C",opacity:.7}}>Lần cuối: {lastDay} · {lastEntry?lastEntry.kg:"—"} kg</div>
+          </div>
+          <div style={{padding:"7px 14px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700}}>Thêm ngay</div>
+        </div>;
+        return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:10}}>
+          <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật tuần này</span>
+          <span onClick={()=>setShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
+        </div>;
+      })()}
     </div>
 
     {/* Smart suggestions — outside chart card */}
