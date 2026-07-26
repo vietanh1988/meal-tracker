@@ -123,8 +123,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const allMeals=getTodayMeals(dayType);
   const meals=allMeals.filter(m=>visibleIds.includes(m.id));
   const totals=meals.reduce((acc,m)=>{
-    // Nếu có tracking eaten: chỉ tính bữa đã đánh dấu "Đã ăn"
-    if(eatenMeals && eatenMeals.length > 0 && !(eatenMeals||[]).includes(m.id)) return acc;
+    if(!(eatenMeals||[]).includes(m.id)) return acc;
     const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
     return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
   },{p:0,c:0,f:0,fiber:0,cal:0});
