@@ -399,24 +399,6 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
       </div>
 
-      {/* Quick weight input */}
-      {showWeightInput&&<div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:14,border:`1.5px solid ${C.border}`}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{flex:1}}>
-            <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
-            <input ref={weightInputRef} type="text" inputMode="decimal" placeholder={`VD: ${(curKg+0.3).toFixed(1)}`} style={{...inp,height:40,fontSize:15}}/>
-          </div>
-          <button onClick={async()=>{
-            const val=parseFloat((weightInputRef.current?.value||"").replace(",","."));
-            if(!val||val<30||val>200)return;
-            await addWeight(val);
-            setProfile({...profile,kg:val});
-            if(weightInputRef.current)weightInputRef.current.value="";
-            setShowWeightInput(false);
-            setWeightSaved(true);setTimeout(()=>setWeightSaved(false),3000);
-          }} style={{padding:"10px 16px",fontSize:13,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>💾 Lưu</button>
-        </div>
-      </div>}
       {weightSaved&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:10}}>
         <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Đã lưu cân nặng!</span>
       </div>}
@@ -435,7 +417,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </div>)}
       </div>
 
-      {/* Weekly weight reminder — after stats, before chart */}
+      {/* Weekly weight reminder — inline, input opens here */}
       {(()=>{
         const now=new Date();
         const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
@@ -444,6 +426,26 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
         const lastDateRaw=lastEntry?(lastEntry.date||lastEntry.created_at):null;
         let lastDay="—";try{if(lastDateRaw){const dd=new Date(lastDateRaw);if(!isNaN(dd))lastDay=dd.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"});}}catch(e){}
+        
+        if(showWeightInput) return <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginBottom:14,border:`1.5px solid ${C.border}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
+              <input ref={weightInputRef} type="text" inputMode="decimal" placeholder={`VD: ${(curKg+0.3).toFixed(1)}`} style={{...inp,height:40,fontSize:15}}/>
+            </div>
+            <button onClick={async()=>{
+              const val=parseFloat((weightInputRef.current?.value||"").replace(",","."));
+              if(!val||val<30||val>200)return;
+              await addWeight(val);
+              setProfile({...profile,kg:val});
+              if(weightInputRef.current)weightInputRef.current.value="";
+              setShowWeightInput(false);
+              setWeightSaved(true);setTimeout(()=>setWeightSaved(false),3000);
+            }} style={{padding:"10px 16px",fontSize:13,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>💾 Lưu</button>
+            <button onClick={()=>setShowWeightInput(false)} style={{padding:"10px 12px",fontSize:13,border:"none",borderRadius:10,background:C.surface,color:C.t3,cursor:"pointer",fontFamily:"inherit",height:40,marginTop:18}}>✕</button>
+          </div>
+        </div>;
+
         if(!weighedThisWeek) return <div onClick={()=>setShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginBottom:14,cursor:"pointer"}}>
           <span style={{fontSize:20}}>⚖️</span>
           <div style={{flex:1}}>
