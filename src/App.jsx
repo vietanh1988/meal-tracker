@@ -519,10 +519,10 @@ export default function App(){
                   const now=new Date();
                   const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
                   const mondayStr=monday.toISOString().slice(0,10);
-                  const weighedThisWeek=weightLog.some(w=>{const d=w.date?new Date(w.date):w.created_at?new Date(w.created_at):null;return d&&d.toISOString().slice(0,10)>=mondayStr;});
+                  const weighedThisWeek=weightLog.some(w=>{try{const d=new Date(w.date||w.created_at);return !isNaN(d)&&d.toISOString().slice(0,10)>=mondayStr;}catch(e){return false;}});
                   const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
                   const lastDateRaw=lastEntry?(lastEntry.date||lastEntry.created_at):null;
-                  const lastDay=lastDateRaw?new Date(lastDateRaw).toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):"—";
+                  let lastDay="—";try{if(lastDateRaw){const dd=new Date(lastDateRaw);if(!isNaN(dd))lastDay=dd.toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"});}}catch(e){}
                   if(!weighedThisWeek) return <div onClick={()=>setPcShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginTop:12,cursor:"pointer"}}>
                     <span style={{fontSize:20}}>⚖️</span>
                     <div style={{flex:1}}>
