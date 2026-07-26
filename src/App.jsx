@@ -31,6 +31,7 @@ import { useAppSettings } from "./hooks/useAppSettings";
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess } from "./lib/aiMenuService";
 import FeedbackTab from "./adminTabs/FeedbackTab";
+import DiaryTab from "./adminTabs/DiaryTab";
 
 
 
@@ -270,6 +271,7 @@ export default function App(){
     {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
     {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
     {tab==="feedback"&&<div style={{padding:10}}><div onClick={()=>setTab("settings")} style={{display:"flex",alignItems:"center",gap:4,marginBottom:14,cursor:"pointer",color:C.primary,fontSize:15,fontWeight:600}}><span style={{fontSize:20}}>‹</span> Cài đặt</div><FeedbackTab user={user} isAdmin={isAdmin}/></div>}
+    {tab==="diary"&&<div style={{padding:10}}><div onClick={()=>setTab("settings")} style={{display:"flex",alignItems:"center",gap:4,marginBottom:14,cursor:"pointer",color:C.primary,fontSize:15,fontWeight:600}}><span style={{fontSize:20}}>‹</span> Cài đặt</div><DiaryTab userId={user?.id} macro={macro}/></div>}
     <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
     {/* AI Coach FAB — only on dashboard */}
     <style>{`@keyframes fabPurpleGlow{0%,100%{box-shadow:0 4px 14px rgba(124,58,237,0.4),0 0 0 0 rgba(124,58,237,0.35);}50%{box-shadow:0 4px 14px rgba(124,58,237,0.4),0 0 0 8px rgba(124,58,237,0);}}`}</style>
