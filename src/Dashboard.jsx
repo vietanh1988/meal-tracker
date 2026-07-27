@@ -292,6 +292,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </div>
         {/* Vòng tròn % còn lại — chạy ngược: 100% khi chưa ăn → 0% khi ăn đủ */}
         {(()=>{const isComplete = hasStartedEating && calRemain <= 0;
+          const calRemainDisplay = hasStartedEating ? Math.max(0, calRemain) : heroCal;
           const remainPct = hasStartedEating ? (heroCal>0?Math.min(Math.round(Math.max(0,calRemain)/heroCal*100),100):0) : 100;
           const r=38,circ=2*Math.PI*r,offset=circ-(remainPct/100)*circ;
           const ringColor=isComplete?"#16A34A":remainPct<=50?"#F59E0B":"#007AFF";
@@ -307,14 +308,10 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
               {isComplete ? <>
                 <span style={{fontSize:32,lineHeight:1}}>🎉</span>
                 <span style={{fontSize:10,fontWeight:700,color:"#16A34A",marginTop:2}}>hoàn thành!</span>
-              </> : !hasStartedEating ? <>
-                <span style={{fontSize:20,lineHeight:1}}>🔥</span>
-                <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>100%</span>
-                <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>mục tiêu</span>
               </> : <>
                 <span style={{fontSize:20,lineHeight:1}}>🔥</span>
-                <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>{remainPct}%</span>
-                <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>còn lại</span>
+                <span style={{fontSize:calRemainDisplay>=1000?14:16,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>{calRemainDisplay.toLocaleString()}</span>
+                <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>kcal còn lại</span>
               </>}
             </div>
           </div>;
