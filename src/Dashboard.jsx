@@ -301,9 +301,14 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
                 style={{transition:"stroke-dashoffset 0.6s ease, stroke 0.3s"}}/>}
             </svg>
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center"}}>
-              <span style={{fontSize:20,lineHeight:1}}>{remainPct<=0?"🎉":"🔥"}</span>
-              <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>{remainPct}%</span>
-              <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>{remainPct<=0?"hoàn thành!":"còn lại"}</span>
+              {remainPct<=0 ? <>
+                <span style={{fontSize:32,lineHeight:1}}>🎉</span>
+                <span style={{fontSize:10,fontWeight:700,color:"#16A34A",marginTop:2}}>hoàn thành!</span>
+              </> : <>
+                <span style={{fontSize:20,lineHeight:1}}>🔥</span>
+                <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>{remainPct}%</span>
+                <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>còn lại</span>
+              </>}
             </div>
           </div>;
         })()}
