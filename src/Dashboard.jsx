@@ -521,7 +521,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
       {/* Sửa link when already weighed */}
       {weighedRecently&&<div style={{textAlign:"center",padding:"4px 0",marginBottom:10}}>
-        <span onClick={()=>setShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
+        <span onClick={()=>setTab&&setTab("weight")} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
       </div>}
 
       {/* Input opens inline */}
