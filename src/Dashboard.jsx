@@ -186,6 +186,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
   const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
   const calRemain=heroCal-actualCal;
+  const hasStartedEating = eatenMeals && eatenMeals.length > 0;
   // Exercise type helpers
   const exType=profile.exerciseType||"gym";
   const exLabel=exType==="gym"?"Gym":exType==="gym_cardio"?"Gym+Cardio":exType==="cardio"?"Cardio":exType==="none"?"Nghỉ ngơi":"Tập luyện";
@@ -265,12 +266,13 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         <div style={{flex:1,paddingRight:8}}>
           <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Calo còn lại hôm nay":dayType==="train"?"Calo còn lại ngày tập":"Calo còn lại ngày nghỉ"}</div>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:4}}>
-            <div style={{fontSize:30,fontWeight:900,color:calRemain<=0?"#16A34A":calRemain<=heroCal*0.5?"#F59E0B":"#007AFF",letterSpacing:"-0.03em",lineHeight:1.1}}>{Math.max(0,calRemain).toLocaleString()}</div>
+            <div style={{fontSize:30,fontWeight:900,color:(hasStartedEating&&calRemain<=0)?"#16A34A":calRemain<=heroCal*0.5?"#F59E0B":"#007AFF",letterSpacing:"-0.03em",lineHeight:1.1}}>{hasStartedEating?Math.max(0,calRemain).toLocaleString():heroCal.toLocaleString()}</div>
             <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
           </div>
           {/* Trạng thái dynamic */}
           <div style={{marginTop:8}}>
             {(()=>{
+              if(!hasStartedEating)return <span style={{fontSize:11,fontWeight:700,color:"#64748B",padding:"4px 9px",background:"#F1F5F9",borderRadius:6}}>chưa đánh dấu bữa nào</span>;
               if(calRemain<=0)return <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#16A34A",padding:"4px 9px 4px 6px",background:"#F0FDF4",borderRadius:6}}>
                 <svg width={14} height={14} viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 ✅ Đã ăn đủ {heroCal.toLocaleString()} kcal
@@ -289,21 +291,26 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           </div>
         </div>
         {/* Vòng tròn % còn lại — chạy ngược: 100% khi chưa ăn → 0% khi ăn đủ */}
-        {(()=>{const remainPct=heroCal>0?Math.min(Math.round(Math.max(0,calRemain)/heroCal*100),100):0;
+        {(()=>{const isComplete = hasStartedEating && calRemain <= 0;
+          const remainPct = hasStartedEating ? (heroCal>0?Math.min(Math.round(Math.max(0,calRemain)/heroCal*100),100):0) : 100;
           const r=38,circ=2*Math.PI*r,offset=circ-(remainPct/100)*circ;
-          const ringColor=remainPct<=0?"#16A34A":remainPct<=50?"#F59E0B":"#007AFF";
+          const ringColor=isComplete?"#16A34A":remainPct<=50?"#F59E0B":"#007AFF";
           return <div style={{width:130,height:130,position:"relative",flexShrink:0}}>
             <svg width={130} height={130} viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r={r} fill="none" stroke={remainPct<=0?"#DCFCE7":"#E8EDF2"} strokeWidth="6"/>
-              {remainPct>0&&<circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="6"
+              <circle cx="50" cy="50" r={r} fill="none" stroke={isComplete?"#DCFCE7":"#E8EDF2"} strokeWidth="6"/>
+              {remainPct>0&&!isComplete&&<circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="6"
                 strokeDasharray={circ} strokeDashoffset={Math.max(offset,0)}
                 strokeLinecap="round" transform="rotate(-90 50 50)"
                 style={{transition:"stroke-dashoffset 0.6s ease, stroke 0.3s"}}/>}
             </svg>
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center"}}>
-              {remainPct<=0 ? <>
+              {isComplete ? <>
                 <span style={{fontSize:32,lineHeight:1}}>🎉</span>
                 <span style={{fontSize:10,fontWeight:700,color:"#16A34A",marginTop:2}}>hoàn thành!</span>
+              </> : !hasStartedEating ? <>
+                <span style={{fontSize:20,lineHeight:1}}>🔥</span>
+                <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>100%</span>
+                <span style={{fontSize:10,fontWeight:600,color:C.t3,marginTop:1}}>mục tiêu</span>
               </> : <>
                 <span style={{fontSize:20,lineHeight:1}}>🔥</span>
                 <span style={{fontSize:18,fontWeight:600,color:ringColor,lineHeight:1,marginTop:2}}>{remainPct}%</span>
