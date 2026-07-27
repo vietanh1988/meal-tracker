@@ -519,9 +519,16 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </div>)}
       </div>
 
-      {/* Sửa link when already weighed */}
-      {weighedRecently&&<div style={{textAlign:"center",padding:"4px 0",marginBottom:10}}>
-        <span onClick={()=>setTab&&setTab("weight")} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
+      {/* Sửa row when already weighed — style B */}
+      {weighedRecently&&<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 10px",background:"#F0FDF4",borderRadius:8,border:"1px solid #BBF7D0",marginBottom:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:14}}>✅</span>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,color:"#166534"}}>Đã cập nhật · {lastDay}</div>
+            <div style={{fontSize:10,color:"#15803D"}}>{lastEntry?lastEntry.kg:"—"} kg</div>
+          </div>
+        </div>
+        <span onClick={()=>setTab&&setTab("weight")} style={{padding:"5px 12px",borderRadius:6,background:"#fff",border:"1px solid #BBF7D0",fontSize:11,fontWeight:700,color:"#007AFF",cursor:"pointer"}}>✏️ Sửa</span>
       </div>}
 
       {/* Input opens inline */}

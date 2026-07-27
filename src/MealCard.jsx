@@ -23,7 +23,7 @@ export function MealCard({meal, eatenMeals, toggleEaten, isActive}){
 
   const cardBorder = isActive ? `1.5px solid #93C5FD` : isEaten ? `1.5px solid #86EFAC` : card.border;
   
-  return <div style={{...card,cursor:"pointer",borderTop:cardBorder,borderRight:cardBorder,borderBottom:cardBorder,borderRadius:"4px 12px 12px 4px",background:isEaten?"#F0FDF4":card.background,overflow:"hidden",opacity:dimmed?0.4:1,borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`}} onClick={()=>setOpen(!open)}>
+  return <div style={{...card,cursor:"pointer",borderTop:cardBorder,borderRight:cardBorder,borderBottom:cardBorder,borderRadius:12,background:isEaten?"#F0FDF4":card.background,overflow:"hidden",opacity:dimmed?0.4:1,borderLeft:`3.5px solid ${borderColor[meal.id]||C.primary}`}} onClick={()=>setOpen(!open)}>
     <div style={{display:"flex",alignItems:"center"}}>
       <div style={{flex:"1 1 auto",minWidth:0}}>
         <div>
