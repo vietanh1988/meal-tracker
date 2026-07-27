@@ -487,15 +487,15 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     <div style={{...card,marginTop:8,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF) 1"}}>
       {(()=>{
         const now=new Date();
-        const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
-        const mondayStr=monday.toISOString().slice(0,10);
-        const weighedThisWeek=weightLog.some(w=>{const ld=w.logged_date||"";return ld>=mondayStr;});
         const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
-        const lastDay=lastEntry?lastEntry.date:"—";
+        const lastLogDate=lastEntry?.logged_date||"";
+        const daysSinceLast=lastLogDate?Math.floor((now.getTime()-new Date(lastLogDate+"T00:00:00").getTime())/(1000*60*60*24)):999;
+        const weighedRecently=daysSinceLast<7;
+        const lastDay=lastEntry&&lastEntry.logged_date?new Date(lastEntry.logged_date+"T00:00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):(lastEntry?lastEntry.date:"—");
         return <>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
-        {weighedThisWeek
+        {weighedRecently
           ? <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật</span>
           : <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
         }
@@ -506,10 +506,10 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>}
 
       {/* Stat cards */}
-      <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:weighedThisWeek?6:14}}>
+      <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:weighedRecently?6:14}}>
         {[
           {l:"Xuất phát",v:startKg,c:C.t1},
-          {l:"Hiện tại",v:curKg,c:weighedThisWeek?"#16A34A":"#4285F4"},
+          {l:"Hiện tại",v:curKg,c:weighedRecently?"#16A34A":"#4285F4"},
           {l:"Mục tiêu",v:goalKg,c:"#34A853"},
           {l:"Tiến độ",v:Math.max(0,Math.min(100,Math.round(wPct)))+"%",c:"#F4B400"},
         ].map((s,i)=><div key={i} style={{background:C.card,borderRadius:10,padding:"10px 8px",textAlign:"center",border:`1px solid ${C.border}`}}>
@@ -520,7 +520,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>
 
       {/* Sửa link when already weighed */}
-      {weighedThisWeek&&<div style={{textAlign:"center",padding:"4px 0",marginBottom:10}}>
+      {weighedRecently&&<div style={{textAlign:"center",padding:"4px 0",marginBottom:10}}>
         <span onClick={()=>setShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
       </div>}
 
@@ -545,10 +545,10 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>}
 
       {/* Banner chưa cân tuần này */}
-      {!weighedThisWeek&&!showWeightInput&&<div onClick={()=>setShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginBottom:14,cursor:"pointer"}}>
+      {!weighedRecently&&!showWeightInput&&<div onClick={()=>setShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginBottom:14,cursor:"pointer"}}>
         <span style={{fontSize:20}}>⚖️</span>
         <div style={{flex:1}}>
-          <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Tuần này chưa cập nhật cân nặng</div>
+          <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Chưa cập nhật cân nặng tuần này</div>
           <div style={{fontSize:10,color:"#C2410C",opacity:.7}}>Lần cuối: {lastDay} · {lastEntry?lastEntry.kg:"—"} kg</div>
         </div>
         <div style={{padding:"7px 14px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700}}>Thêm ngay</div>

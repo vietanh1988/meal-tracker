@@ -521,11 +521,11 @@ export default function App(){
                 {/* Weekly weight reminder PC — input opens inline */}
                 {(()=>{
                   const now=new Date();
-                  const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
-                  const mondayStr=monday.toISOString().slice(0,10);
-                  const weighedThisWeek=weightLog.some(w=>{const ld=w.logged_date||"";return ld>=mondayStr;});
                   const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
-                  const lastDay=lastEntry?lastEntry.date:"—";
+                  const lastLogDate=lastEntry?.logged_date||"";
+                  const daysSinceLast=lastLogDate?Math.floor((now.getTime()-new Date(lastLogDate+"T00:00:00").getTime())/(1000*60*60*24)):999;
+                  const weighedRecently=daysSinceLast<7;
+                  const lastDay=lastEntry&&lastEntry.logged_date?new Date(lastEntry.logged_date+"T00:00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):(lastEntry?lastEntry.date:"—");
                   
                   if(pcShowWeightInput) return <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginTop:12,border:`1.5px solid ${C.border}`}}>
                     <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
@@ -536,16 +536,16 @@ export default function App(){
                     </div>
                   </div>;
 
-                  if(!weighedThisWeek) return <div onClick={()=>setPcShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginTop:12,cursor:"pointer"}}>
+                  if(!weighedRecently) return <div onClick={()=>setPcShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginTop:12,cursor:"pointer"}}>
                     <span style={{fontSize:20}}>⚖️</span>
                     <div style={{flex:1}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Tuần này chưa cập nhật cân nặng</div>
+                      <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Chưa cập nhật cân nặng tuần này</div>
                       <div style={{fontSize:10,color:"#C2410C",opacity:.7}}>Lần cuối: {lastDay} · {lastEntry?lastEntry.kg:"—"} kg</div>
                     </div>
                     <div style={{padding:"7px 14px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700}}>Thêm ngay</div>
                   </div>;
                   return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:12}}>
-                    <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật tuần này</span>
+                    <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật</span>
                     <span onClick={()=>setPcShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
                   </div>;
                 })()}
