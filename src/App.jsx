@@ -513,44 +513,49 @@ export default function App(){
               </div>}
             </div>
             <div>
-              <div style={{...card,padding:20,marginBottom:14}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}><span style={{fontSize:16,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span><span style={{fontSize:13,color:C.t2,fontWeight:600}}>🎯 {pcGK} kg</span></div>
+              {(()=>{
+                const pcWeightNow=new Date();
+                const pcLastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
+                const pcLastLogDate=pcLastEntry?.logged_date||"";
+                const pcDaysSince=pcLastLogDate?Math.floor((pcWeightNow.getTime()-new Date(pcLastLogDate+"T00:00:00").getTime())/(1000*60*60*24)):999;
+                const pcWeighedRecently=pcDaysSince<7;
+                const pcLastDay=pcLastEntry&&pcLastEntry.logged_date?new Date(pcLastEntry.logged_date+"T00:00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):(pcLastEntry?pcLastEntry.date:"—");
+                return <div style={{...card,padding:20,marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                  <span style={{fontSize:16,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span>
+                  {pcWeighedRecently
+                    ? <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật</span>
+                    : <span style={{fontSize:13,color:C.t2,fontWeight:600}}>🎯 {pcGK} kg</span>
+                  }
+                </div>
                 {pcWeightSaved&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginBottom:10}}><span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Đã lưu cân nặng!</span></div>}
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>{[{l:"Xuất phát",v:pcSK,c:C.t1},{l:"Hiện tại",v:pcCK,c:C.primary},{l:"Mục tiêu",v:pcGK,c:C.t1},{l:"Tiến độ",v:Math.round(Math.max(0,Math.min(pcWP,100)))+"%",c:C.primary}].map((w,i)=><div key={i} style={{textAlign:"center",padding:"10px 6px",background:C.surface,borderRadius:10}}><div style={{fontSize:11,color:C.t2,fontWeight:600}}>{w.l}</div><div style={{fontSize:22,fontWeight:800,color:w.c}}>{w.v}</div>{typeof w.v==="number"&&<div style={{fontSize:11,color:C.t2}}>kg</div>}</div>)}</div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:pcWeighedRecently?6:12}}>{[{l:"Xuất phát",v:pcSK,c:C.t1},{l:"Hiện tại",v:pcCK,c:pcWeighedRecently?"#16A34A":C.primary},{l:"Mục tiêu",v:pcGK,c:C.t1},{l:"Tiến độ",v:Math.round(Math.max(0,Math.min(pcWP,100)))+"%",c:C.primary}].map((w,i)=><div key={i} style={{textAlign:"center",padding:"10px 6px",background:C.surface,borderRadius:10}}><div style={{fontSize:11,color:C.t2,fontWeight:600}}>{w.l}</div><div style={{fontSize:22,fontWeight:800,color:w.c}}>{w.v}</div>{typeof w.v==="number"&&<div style={{fontSize:11,color:C.t2}}>kg</div>}</div>)}</div>
+                {/* Sửa link when weighed recently */}
+                {pcWeighedRecently&&<div style={{textAlign:"center",padding:"4px 0",marginBottom:10}}>
+                  <span onClick={()=>setPcShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {pcLastDay} → {pcLastEntry?pcLastEntry.kg:"—"} kg</span>
+                </div>}
                 <div style={{fontSize:13,fontWeight:700,display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{color:C.t1}}>Đã {pcCK>=pcSK?"tăng":"giảm"} {Math.abs(Math.round((pcCK-pcSK)*10)/10)} kg</span><span style={{color:C.primary,fontWeight:800}}>{Math.round(Math.max(0,Math.min(pcWP,100)))}%</span></div>
                 <div style={{height:8,background:C.surface,borderRadius:4}}><div style={{height:8,borderRadius:4,background:"linear-gradient(90deg,#36A3FF,#007AFF)",width:`${Math.max(0,Math.min(pcWP,100))}%`}}/></div>
-                {/* Weekly weight reminder PC — input opens inline */}
-                {(()=>{
-                  const now=new Date();
-                  const lastEntry=weightLog.length>0?weightLog[weightLog.length-1]:null;
-                  const lastLogDate=lastEntry?.logged_date||"";
-                  const daysSinceLast=lastLogDate?Math.floor((now.getTime()-new Date(lastLogDate+"T00:00:00").getTime())/(1000*60*60*24)):999;
-                  const weighedRecently=daysSinceLast<7;
-                  const lastDay=lastEntry&&lastEntry.logged_date?new Date(lastEntry.logged_date+"T00:00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"2-digit",month:"2-digit"}):(lastEntry?lastEntry.date:"—");
-                  
-                  if(pcShowWeightInput) return <div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginTop:12,border:`1.5px solid ${C.border}`}}>
-                    <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <input ref={pcWeightInputRef} type="text" inputMode="decimal" placeholder={`VD: ${(pcCK+0.3).toFixed(1)}`} style={{flex:1,height:40,fontSize:15,padding:"8px 12px",border:`1.5px solid ${C.border}`,borderRadius:10,fontFamily:"inherit",outline:"none"}}/>
-                      <button onClick={async()=>{const val=parseFloat((pcWeightInputRef.current?.value||"").replace(",","."));if(!val||val<30||val>200)return;await addWeight(val);setProfile({...profile,kg:val});if(pcWeightInputRef.current)pcWeightInputRef.current.value="";setPcShowWeightInput(false);setPcWeightSaved(true);setTimeout(()=>setPcWeightSaved(false),3000);}} style={{padding:"10px 16px",fontSize:13,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit",height:40}}>💾 Lưu</button>
-                      <button onClick={()=>setPcShowWeightInput(false)} style={{padding:"10px 12px",fontSize:13,border:"none",borderRadius:10,background:C.surface,color:C.t3,cursor:"pointer",fontFamily:"inherit",height:40}}>✕</button>
-                    </div>
-                  </div>;
-
-                  if(!weighedRecently) return <div onClick={()=>setPcShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginTop:12,cursor:"pointer"}}>
-                    <span style={{fontSize:20}}>⚖️</span>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Chưa cập nhật cân nặng tuần này</div>
-                      <div style={{fontSize:10,color:"#C2410C",opacity:.7}}>Lần cuối: {lastDay} · {lastEntry?lastEntry.kg:"—"} kg</div>
-                    </div>
-                    <div style={{padding:"7px 14px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700}}>Thêm ngay</div>
-                  </div>;
-                  return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:12}}>
-                    <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật</span>
-                    <span onClick={()=>setPcShowWeightInput(true)} style={{fontSize:11,color:"#007AFF",fontWeight:600,cursor:"pointer"}}>✏️ Sửa · {lastDay} → {lastEntry?lastEntry.kg:"—"} kg</span>
-                  </div>;
-                })()}
+                {/* Input + banner chưa cân */}
+                {pcShowWeightInput&&<div style={{background:C.surface,borderRadius:10,padding:"12px 14px",marginTop:12,border:`1.5px solid ${C.border}`}}>
+                  <div style={{fontSize:11,fontWeight:700,color:C.t3,marginBottom:4}}>⚡ Nhập nhanh cân nặng</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <input ref={pcWeightInputRef} type="text" inputMode="decimal" placeholder={`VD: ${(pcCK+0.3).toFixed(1)}`} style={{flex:1,height:40,fontSize:15,padding:"8px 12px",border:`1.5px solid ${C.border}`,borderRadius:10,fontFamily:"inherit",outline:"none"}}/>
+                    <button onClick={async()=>{const val=parseFloat((pcWeightInputRef.current?.value||"").replace(",","."));if(!val||val<30||val>200)return;await addWeight(val);setProfile({...profile,kg:val});if(pcWeightInputRef.current)pcWeightInputRef.current.value="";setPcShowWeightInput(false);setPcWeightSaved(true);setTimeout(()=>setPcWeightSaved(false),3000);}} style={{padding:"10px 16px",fontSize:13,fontWeight:900,border:"none",borderRadius:10,background:"linear-gradient(135deg,#15803D,#166534)",color:"#fff",cursor:"pointer",fontFamily:"inherit",height:40}}>💾 Lưu</button>
+                    <button onClick={()=>setPcShowWeightInput(false)} style={{padding:"10px 12px",fontSize:13,border:"none",borderRadius:10,background:C.surface,color:C.t3,cursor:"pointer",fontFamily:"inherit",height:40}}>✕</button>
+                  </div>
+                </div>}
+                {!pcWeighedRecently&&!pcShowWeightInput&&<div onClick={()=>setPcShowWeightInput(true)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"#FFF7ED",borderRadius:10,border:"1.5px solid #FDBA74",marginTop:12,cursor:"pointer"}}>
+                  <span style={{fontSize:20}}>⚖️</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,fontWeight:700,color:"#9A3412"}}>Chưa cập nhật cân nặng tuần này</div>
+                    <div style={{fontSize:10,color:"#C2410C",opacity:.7}}>Lần cuối: {pcLastDay} · {pcLastEntry?pcLastEntry.kg:"—"} kg</div>
+                  </div>
+                  <div style={{padding:"7px 14px",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:12,fontWeight:700}}>Thêm ngay</div>
+                </div>}
                 {weightLog.length>=2&&<div style={{marginTop:12}}><WeightBarChart weightLog={weightLog} goalKg={pcGK} goalType={profile.goalType} startKg={pcSK} mob={false}/></div>}
-              </div>
+              </div>;
+              })()}
               <div style={{...card,padding:18,maxHeight:360,overflowY:"auto"}}><ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={false}/></div>
             </div>
           </div>
