@@ -10,6 +10,8 @@ import { NotificationBell } from "./NotificationBell";
 import { WeightSuggestion } from "./WeightSuggestion";
 import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess } from "./lib/aiMenuService";
+import { isPushSupported, getPushStatus, enablePushNotifications } from "./pushNotifications";
+import { supabase } from "./lib/supabase";
 
 export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,userDataLoaded,macroBanner,eatenMeals,toggleEaten}){if(!profile||!macro)return null;
   const mob=useIsMobile();
@@ -19,6 +21,56 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const weightInputRef=useRef(null);
   const [weightSaved,setWeightSaved]=useState(false);
   const [bannerDismissed,setBannerDismissed]=useState(false);
+
+  // Push notification prompt state
+  const [pushStatus,setPushStatus]=useState("loading");
+  const [showPushBanner,setShowPushBanner]=useState(false);
+  const [showPushPopup,setShowPushPopup]=useState(false);
+  const [pushJustEnabled,setPushJustEnabled]=useState(false);
+
+  useEffect(()=>{
+    if(!isPushSupported()){setPushStatus("unsupported");return;}
+    getPushStatus().then(s=>{
+      setPushStatus(s);
+      if(s!=="granted"){
+        // Check if dismissed recently
+        const dismissed=profile.push_dismissed_date;
+        if(dismissed){
+          const diff=(Date.now()-new Date(dismissed).getTime())/(1000*60*60*24);
+          if(diff<7){setShowPushBanner(false);return;}
+        }
+        setShowPushBanner(true);
+      }
+    });
+  },[]);
+
+  const handleEnablePush=async()=>{
+    try{
+      await enablePushNotifications();
+      setPushStatus("granted");
+      setShowPushBanner(false);
+      setShowPushPopup(false);
+      setPushJustEnabled(true);
+      setTimeout(()=>setPushJustEnabled(false),5000);
+    }catch(e){console.error("Push enable error:",e);}
+  };
+  const handleDismissPush=async()=>{
+    setShowPushBanner(false);
+    const now=new Date().toISOString().slice(0,10);
+    try{await supabase.from("profiles").update({push_dismissed_date:now}).eq("id",user?.id);}catch(e){}
+  };
+
+  // Popup C: sau tick Đã ăn lần đầu
+  const prevEatenRef=useRef(eatenMeals?.length||0);
+  useEffect(()=>{
+    const prevLen=prevEatenRef.current;
+    const curLen=(eatenMeals||[]).length;
+    prevEatenRef.current=curLen;
+    // Chỉ trigger khi 0→1 (lần đầu tick) + chưa bật push + chưa prompt trước
+    if(prevLen===0&&curLen===1&&pushStatus!=="granted"&&pushStatus!=="denied"&&pushStatus!=="unsupported"&&!profile.push_prompted_after_eaten){
+      setTimeout(()=>setShowPushPopup(true),800); // delay nhẹ cho UX smooth
+    }
+  },[eatenMeals]);
 
   // Profile completeness check — chỉ check trường ảnh hưởng calcMacro
   const profileChecks=[
@@ -268,6 +320,33 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     </div>
 
 
+    {/* Push notification banner — chưa bật */}
+    {showPushBanner&&pushStatus!=="granted"&&pushStatus!=="denied"&&pushStatus!=="unsupported"&&<div style={{padding:"14px 16px",background:"linear-gradient(135deg,#EFF6FF,#DBEAFE)",borderRadius:14,border:"1.5px solid #93C5FD",marginBottom:8,position:"relative"}}>
+      <div onClick={handleDismissPush} style={{position:"absolute",top:8,right:10,fontSize:14,color:"#94A3B8",cursor:"pointer"}}>✕</div>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+          <span style={{fontSize:22}}>🔔</span>
+        </div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#1E40AF"}}>Nhắc bữa ăn đúng giờ!</div>
+          <div style={{fontSize:11,color:"#3B82F6",marginTop:2,lineHeight:1.4}}>Bật thông báo để FipilotAI nhắc bạn trước mỗi bữa 5 phút</div>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:8,marginTop:10}}>
+        <button onClick={handleEnablePush} style={{flex:1,padding:"10px 0",borderRadius:10,border:"none",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",fontFamily:"inherit"}}>🔔 Bật ngay</button>
+        <button onClick={handleDismissPush} style={{padding:"10px 16px",borderRadius:10,border:"1.5px solid #CBD5E1",background:"#fff",color:"#94A3B8",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Để sau</button>
+      </div>
+    </div>}
+
+    {/* Push just enabled toast */}
+    {pushJustEnabled&&<div style={{padding:"10px 14px",background:"#F0FDF4",borderRadius:10,border:"1.5px solid #86EFAC",display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+      <span style={{fontSize:16}}>✅</span>
+      <div style={{flex:1}}>
+        <div style={{fontSize:12,fontWeight:700,color:"#166534"}}>Đã bật thông báo!</div>
+        <div style={{fontSize:10,color:"#15803D",marginTop:1}}>FipilotAI sẽ nhắc bạn trước mỗi bữa ăn 5 phút</div>
+      </div>
+    </div>}
+
     {/* Section label: Dynamic meal label + Date Nav */}
     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,marginTop:8}}>
       <span style={{fontSize:mob?18:24}}>{isNoneExercise?"🍽️":dayType==="train"?"💪":"😴"}</span>
@@ -497,5 +576,18 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         <button onClick={()=>setTab&&setTab("feedback")} style={{flex:1,padding:"10px 0",fontSize:13,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>🐛 Báo lỗi & Góp ý</button>
       </div>
     </div>
+
+    {/* Popup C: sau tick Đã ăn lần đầu */}
+    {showPushPopup&&<div onClick={()=>{setShowPushPopup(false);supabase.from("profiles").update({push_prompted_after_eaten:true}).eq("id",user?.id);}} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,zIndex:200}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,padding:"24px 20px",maxWidth:320,width:"100%",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,.2)"}}>
+        <div style={{width:64,height:64,borderRadius:16,background:"linear-gradient(135deg,#FEF3C7,#FDE68A)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}>
+          <span style={{fontSize:32}}>🔔</span>
+        </div>
+        <div style={{fontSize:17,fontWeight:900,color:"#0F172A",marginBottom:6}}>Tuyệt! Bữa đầu tiên ✅</div>
+        <div style={{fontSize:13,color:"#64748B",lineHeight:1.5,marginBottom:16}}>Muốn được nhắc trước bữa tiếp theo 5 phút?<br/>FipilotAI sẽ nhắc bạn ăn đúng giờ mỗi ngày</div>
+        <button onClick={async()=>{await handleEnablePush();await supabase.from("profiles").update({push_prompted_after_eaten:true}).eq("id",user?.id);}} style={{width:"100%",padding:"13px 0",borderRadius:12,border:"none",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:"inherit",marginBottom:8}}>🔔 Bật thông báo</button>
+        <div onClick={()=>{setShowPushPopup(false);supabase.from("profiles").update({push_prompted_after_eaten:true}).eq("id",user?.id);}} style={{fontSize:12,color:"#94A3B8",cursor:"pointer",padding:"6px 0"}}>Không, cảm ơn</div>
+      </div>
+    </div>}
   </div>;
 }
