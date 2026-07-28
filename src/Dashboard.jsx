@@ -275,24 +275,12 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div style={{flex:1,paddingRight:8}}>
-          <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Calo còn lại hôm nay":dayType==="train"?"Calo còn lại ngày tập":"Calo còn lại ngày nghỉ"}</div>
+          <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Tổng calo hôm nay":dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:4}}>
-            <div style={{fontSize:30,fontWeight:900,color:(hasStartedEating&&calRemain<=0)?"#16A34A":calRemain<=heroCal*0.5?"#F59E0B":"#007AFF",letterSpacing:"-0.03em",lineHeight:1.1}}>{hasStartedEating?Math.max(0,calRemain).toLocaleString():heroCal.toLocaleString()}</div>
-            <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
+            <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{heroCal.toLocaleString()}</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {actualCal.toLocaleString()} kcal thực đơn</div>
           </div>
-          {/* Trạng thái dynamic */}
-          <div style={{marginTop:8}}>
-            {(()=>{
-              if(!hasStartedEating)return <span style={{fontSize:11,fontWeight:700,color:"#64748B",padding:"4px 9px",background:"#F1F5F9",borderRadius:6}}>chưa đánh dấu bữa nào</span>;
-              if(calRemain<=0)return <span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#16A34A",padding:"4px 9px 4px 6px",background:"#F0FDF4",borderRadius:6}}>
-                <svg width={14} height={14} viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                ✅ Đã ăn đủ {heroCal.toLocaleString()} kcal
-              </span>;
-              if(actualCal>heroCal*1.05)return <span style={{fontSize:11,fontWeight:700,color:"#DC2626",padding:"4px 9px",background:"#FEE2E2",borderRadius:6}}>🔴 Dư {Math.abs(calRemain)} kcal</span>;
-              return <span style={{fontSize:11,fontWeight:700,color:"#64748B",padding:"4px 9px",background:"#F1F5F9",borderRadius:6}}>đã ăn {actualCal.toLocaleString()} kcal</span>;
-            })()}
-          </div>
-          {/* Badges VN + diet — gộp vào cột trái để không tạo khoảng trắng dưới ring */}
+          {/* Badges VN + diet */}
           <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10,alignItems:"center"}}>
             {((profile.calorieMode||"standard")==="asian")&&<span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:"#2563EB",padding:"4px 9px 4px 6px",background:"#EFF6FF",borderRadius:6}}>
               <svg width={16} height={11} viewBox="0 0 30 20"><rect width="30" height="20" fill="#DA251D"/><polygon points="15,4 16.76,9.35 22.39,9.35 17.82,12.65 19.58,18 15,14.7 10.42,18 12.18,12.65 7.61,9.35 13.24,9.35" fill="#FFCD00"/></svg>
