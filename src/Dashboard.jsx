@@ -504,7 +504,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:17}}>📈</span><span style={{fontSize:mob?19:17,fontWeight:800,color:C.t1}}>Theo dõi cân nặng</span></div>
         {weighedRecently
-          ? <span style={{fontSize:11,color:"#16A34A",fontWeight:700,padding:"4px 8px",background:"#F0FDF4",borderRadius:6}}>✅ Đã cập nhật</span>
+          ? <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
           : <div style={{fontSize:13,fontWeight:700,color:C.t2}}>🎯 <span style={{color:C.secondary,fontWeight:900}}>{goalKg} kg</span></div>
         }
       </div>
@@ -514,7 +514,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </div>}
 
       {/* Stat cards */}
-      <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:weighedRecently?6:14}}>
+      <div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:14}}>
         {[
           {l:"Xuất phát",v:startKg,c:C.t1},
           {l:"Hiện tại",v:curKg,c:weighedRecently?"#16A34A":"#4285F4"},
