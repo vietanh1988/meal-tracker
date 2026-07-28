@@ -220,7 +220,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         .fp-hdr{animation:hdrSlideFadeIn 0.5s ease-out}
         .fp-hdr-avt{animation:hdrAvatarPulse 1.2s ease-out 2}
       `}</style>
-      <div className="fp-hdr" style={{display:"flex",alignItems:"center",gap:12,marginLeft:-10,marginRight:-10,marginBottom:-40,padding:"calc(env(safe-area-inset-top, 20px) + 14px) 16px 50px",backgroundImage:"url('/header-bg.webp'), linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",backgroundSize:"cover, cover",backgroundPosition:"center, center",borderRadius:0,position:"sticky",top:0,zIndex:100}}>
+      <div className="fp-hdr" style={{display:"flex",alignItems:"center",gap:12,marginLeft:-10,marginRight:-10,marginBottom:-40,padding:"calc(env(safe-area-inset-top, 20px) + 14px) 16px 50px",backgroundImage:"url('/header-bg.webp'), linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",backgroundSize:"cover, cover",backgroundPosition:"center, center",borderRadius:0}}>
         <div className="fp-hdr-avt" style={{borderRadius:"50%"}}><UserAvatar gender={profile.gender} size={48} bg="rgba(255,255,255,0.3)" border="2px solid rgba(255,255,255,0.75)"/></div>
         <div style={{flex:1}}>
           <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>Chào {displayName}! 👋</div>
