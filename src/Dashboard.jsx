@@ -277,8 +277,8 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         <div style={{flex:1,paddingRight:8}}>
           <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Tổng calo hôm nay":dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:4}}>
-            <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{heroCal.toLocaleString()}</div>
-            <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {actualCal.toLocaleString()} kcal thực đơn</div>
+            <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{actualCal.toLocaleString()}</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
           </div>
           {/* Badges VN + diet */}
           <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10,alignItems:"center"}}>
