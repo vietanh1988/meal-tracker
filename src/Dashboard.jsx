@@ -28,6 +28,17 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const [showPushPopup,setShowPushPopup]=useState(false);
   const [pushJustEnabled,setPushJustEnabled]=useState(false);
 
+  // Pin guide popup — 5s delay on Dashboard if not standalone
+  const [showDashPinGuide,setShowDashPinGuide]=useState(false);
+  useEffect(()=>{
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator?.standalone;
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    if(!isStandalone && isIOS){
+      const t=setTimeout(()=>setShowDashPinGuide(true),5000);
+      return ()=>clearTimeout(t);
+    }
+  },[]);
+
   useEffect(()=>{
     if(!isPushSupported()){setPushStatus("unsupported");return;}
     getPushStatus().then(s=>{
@@ -603,6 +614,39 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         <div style={{fontSize:13,color:"#64748B",lineHeight:1.5,marginBottom:16}}>Muốn được nhắc trước bữa tiếp theo 5 phút?<br/>FipilotAI sẽ nhắc bạn ăn đúng giờ mỗi ngày</div>
         <button onClick={async()=>{await handleEnablePush();await supabase.from("profiles").update({push_prompted_after_eaten:true}).eq("id",user?.id);}} style={{width:"100%",padding:"13px 0",borderRadius:12,border:"none",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:15,fontWeight:800,cursor:"pointer",fontFamily:"inherit",marginBottom:8}}>🔔 Bật thông báo</button>
         <div onClick={()=>{setShowPushPopup(false);supabase.from("profiles").update({push_prompted_after_eaten:true}).eq("id",user?.id);}} style={{fontSize:12,color:"#94A3B8",cursor:"pointer",padding:"6px 0"}}>Không, cảm ơn</div>
+      </div>
+    </div>}
+
+    {/* Pin guide popup — 5s after load if iOS Safari */}
+    {showDashPinGuide&&<div onClick={()=>setShowDashPinGuide(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.6)",display:"flex",alignItems:"center",justifyContent:"center",padding:16,zIndex:200}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:24,padding:"24px 20px 20px",width:"100%",maxWidth:340,position:"relative",boxShadow:"0 20px 60px rgba(0,0,0,.3)"}}>
+        <div onClick={()=>setShowDashPinGuide(false)} style={{position:"absolute",top:12,right:14,fontSize:14,color:"#94A3B8",cursor:"pointer",width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:"#F1F5F9"}}>✕</div>
+        <div style={{textAlign:"center",marginBottom:16}}>
+          <div style={{width:56,height:56,borderRadius:14,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 10px"}}><span style={{fontSize:28}}>📲</span></div>
+          <div style={{fontSize:18,fontWeight:900,color:"#0F172A"}}>Cài Fipilot AI</div>
+          <div style={{fontSize:12,color:"#64748B",marginTop:4}}>Dùng như app — không cần App Store</div>
+        </div>
+        <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:14}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>1</div>
+          <div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"#0F172A"}}>Nhấn nút <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{verticalAlign:"middle",margin:"0 2px"}}><rect x="3" y="7" width="18" height="14" rx="2" stroke="#007AFF" strokeWidth="2"/><path d="M12 3v12M8 7l4-4 4 4" stroke="#007AFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> Chia sẻ ở thanh dưới</div><div style={{fontSize:12,color:"#64748B",marginTop:2}}>Vuốt lên nhẹ nếu không thấy thanh công cụ</div></div>
+        </div>
+        <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:14}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>2</div>
+          <div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"#0F172A"}}>Cuộn xuống, chọn "Thêm vào MH chính"</div>
+            <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:"#FEF3C7",borderRadius:8,border:"1.5px solid #F59E0B",marginTop:6}}><span style={{fontSize:16}}>➕</span><span style={{fontSize:13,fontWeight:700,color:"#0F172A"}}>Thêm vào Màn hình chính</span></div>
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:16}}>
+          <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>3</div>
+          <div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"#0F172A"}}>Nhấn "Thêm" — xong!</div><div style={{fontSize:12,color:"#64748B",marginTop:2}}>Icon Fipilot AI sẽ xuất hiện trên màn hình chính</div></div>
+        </div>
+        <div style={{textAlign:"center",fontSize:20,marginBottom:8}}>👇</div>
+        <div style={{background:"#F2F2F7",borderRadius:14,padding:"8px 4px",display:"flex",alignItems:"center",justifyContent:"space-around",border:"1.5px solid #D1D5DB"}}>
+          <span style={{fontSize:16,color:"#999"}}>◀</span><span style={{fontSize:16,color:"#999"}}>▶</span>
+          <div style={{position:"relative",padding:4}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="14" rx="2" stroke="#007AFF" strokeWidth="2"/><path d="M12 3v12M8 7l4-4 4 4" stroke="#007AFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg><div style={{position:"absolute",top:-6,left:-6,right:-6,bottom:-6,border:"2px solid #FF3B30",borderRadius:8}}/></div>
+          <span style={{fontSize:16,color:"#999"}}>📖</span><span style={{fontSize:16,color:"#999"}}>⧉</span>
+        </div>
+        <div onClick={()=>setShowDashPinGuide(false)} style={{textAlign:"center",marginTop:12,fontSize:12,color:"#007AFF",fontWeight:600,cursor:"pointer",padding:"6px 0"}}>Đã hiểu, đóng</div>
       </div>
     </div>}
   </div>;

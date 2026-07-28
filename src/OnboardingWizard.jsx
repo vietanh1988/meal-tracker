@@ -12,6 +12,11 @@ const [showAIMenu,setShowAIMenu]=useState(false);
 const [autoStyle,setAutoStyle]=useState("vn");
 const [autoMenuLoading,setAutoMenuLoading]=useState(false);
 const [autoMenuResult,setAutoMenuResult]=useState(null);
+
+// Pin popup — hiện trước step 0
+const isStandalone = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone);
+const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
+const [showPinGuide, setShowPinGuide] = useState(!isStandalone && isIOS);
 const p=profile||defaultProfile;
 const macro=calcMacro(p);
 const totalSteps=5;
@@ -63,6 +68,62 @@ return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-ser
 <div style={{fontSize:20,fontWeight:900,color:C.t1,marginTop:10,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
 <div style={{fontSize:12,fontWeight:700,color:C.secondary,marginTop:2}}>Thiết lập hồ sơ của bạn</div>
 </div>
+
+{/* PIN GUIDE POPUP — hiện trước step 0 cho iOS Safari */}
+{showPinGuide&&<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.6)",display:"flex",alignItems:"center",justifyContent:"center",padding:16,zIndex:200}}>
+  <div style={{background:"#fff",borderRadius:24,padding:"24px 20px 20px",width:"100%",maxWidth:340,position:"relative",boxShadow:"0 20px 60px rgba(0,0,0,.3)"}}>
+    <div onClick={()=>setShowPinGuide(false)} style={{position:"absolute",top:12,right:14,fontSize:14,color:"#94A3B8",cursor:"pointer",width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"50%",background:"#F1F5F9"}}>✕</div>
+    
+    <div style={{textAlign:"center",marginBottom:16}}>
+      <div style={{width:56,height:56,borderRadius:14,background:"linear-gradient(135deg,#36A3FF,#007AFF)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 10px"}}>
+        <span style={{fontSize:28}}>📲</span>
+      </div>
+      <div style={{fontSize:18,fontWeight:900,color:"#0F172A"}}>Cài Fipilot AI</div>
+      <div style={{fontSize:12,color:"#64748B",marginTop:4}}>Dùng như app — không cần App Store</div>
+    </div>
+
+    <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:14}}>
+      <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>1</div>
+      <div style={{flex:1}}>
+        <div style={{fontSize:14,fontWeight:700,color:"#0F172A"}}>Nhấn nút <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{verticalAlign:"middle",margin:"0 2px"}}><rect x="3" y="7" width="18" height="14" rx="2" stroke="#007AFF" strokeWidth="2"/><path d="M12 3v12M8 7l4-4 4 4" stroke="#007AFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg> Chia sẻ ở thanh dưới</div>
+        <div style={{fontSize:12,color:"#64748B",marginTop:2}}>Vuốt lên nhẹ nếu không thấy thanh công cụ</div>
+      </div>
+    </div>
+
+    <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:14}}>
+      <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>2</div>
+      <div style={{flex:1}}>
+        <div style={{fontSize:14,fontWeight:700,color:"#0F172A"}}>Cuộn xuống, chọn "Thêm vào MH chính"</div>
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:"#FEF3C7",borderRadius:8,border:"1.5px solid #F59E0B",marginTop:6}}>
+          <span style={{fontSize:16}}>➕</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#0F172A"}}>Thêm vào Màn hình chính</span>
+        </div>
+      </div>
+    </div>
+
+    <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:16}}>
+      <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#36A3FF,#007AFF)",color:"#fff",fontSize:13,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>3</div>
+      <div style={{flex:1}}>
+        <div style={{fontSize:14,fontWeight:700,color:"#0F172A"}}>Nhấn "Thêm" — xong!</div>
+        <div style={{fontSize:12,color:"#64748B",marginTop:2}}>Icon Fipilot AI sẽ xuất hiện trên màn hình chính</div>
+      </div>
+    </div>
+
+    <div style={{textAlign:"center",fontSize:20,marginBottom:8}}>👇</div>
+    <div style={{background:"#F2F2F7",borderRadius:14,padding:"8px 4px",display:"flex",alignItems:"center",justifyContent:"space-around",border:"1.5px solid #D1D5DB"}}>
+      <span style={{fontSize:16,color:"#999"}}>◀</span>
+      <span style={{fontSize:16,color:"#999"}}>▶</span>
+      <div style={{position:"relative",padding:4}}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="14" rx="2" stroke="#007AFF" strokeWidth="2"/><path d="M12 3v12M8 7l4-4 4 4" stroke="#007AFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <div style={{position:"absolute",top:-6,left:-6,right:-6,bottom:-6,border:"2px solid #FF3B30",borderRadius:8}}/>
+      </div>
+      <span style={{fontSize:16,color:"#999"}}>📖</span>
+      <span style={{fontSize:16,color:"#999"}}>⧉</span>
+    </div>
+
+    <div onClick={()=>setShowPinGuide(false)} style={{textAlign:"center",marginTop:12,fontSize:12,color:"#007AFF",fontWeight:600,cursor:"pointer",padding:"6px 0"}}>Đã hiểu, để sau</div>
+  </div>
+</div>}
 
 {showAIMenu ? (
 <AIMenuGenerator macro={macro} profile={p} user={user} appSettings={appSettings} onApply={handleApplyAIMenu} onClose={()=>setShowAIMenu(false)} />
