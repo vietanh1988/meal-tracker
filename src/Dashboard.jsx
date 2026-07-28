@@ -274,7 +274,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         <span style={{fontSize:12,fontWeight:700,color:"#14532D"}}>Macro cập nhật: {macroBanner.prev.toLocaleString()} → {macroBanner.now.toLocaleString()} cal ({macroBanner.diff>0?"+":""}{macroBanner.diff})</span>
       </div>}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div style={{flex:1,paddingRight:8}}>
+        <div style={{flex:1,paddingRight:8,marginTop:8}}>
           <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Tổng calo hôm nay":dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:4}}>
             <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{actualCal.toLocaleString()}</div>
@@ -378,7 +378,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         {someEaten && remaining > 1 && <div style={{padding:"7px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",background:"#FEF3C7",color:"#92400E",border:"1px solid #FDE68A",marginBottom:6}}>🍽️ Đã ăn {eatenCount}/{mealsWithItems.length} bữa — tiếp tục nhé!</div>}
         
         {/* Đủ bữa → card chúc mừng pháo hoa */}
-        {allEaten && <div style={{textAlign:"center",padding:"20px 16px",background:"linear-gradient(135deg,#FFF7ED,#FEF3C7,#FDE68A)",borderRadius:16,border:"1.5px solid #F59E0B",marginBottom:6,position:"relative",overflow:"hidden"}}>
+        {allEaten && <div style={{textAlign:"center",padding:"20px 16px",background:"linear-gradient(135deg,#FFF7ED,#FEF3C7,#FDE68A)",borderRadius:16,border:"1.5px solid #F59E0B",marginBottom:16,position:"relative",overflow:"hidden"}}>
           <div style={{position:"absolute",top:-10,left:-10,width:60,height:60,background:"rgba(245,158,11,.1)",borderRadius:"50%"}}/>
           <div style={{position:"absolute",bottom:-15,right:-15,width:80,height:80,background:"rgba(245,158,11,.08)",borderRadius:"50%"}}/>
           <div style={{position:"absolute",top:8,left:12,fontSize:24,opacity:.6}}>🎊</div>
