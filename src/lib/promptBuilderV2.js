@@ -37,6 +37,9 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
   // Whitelist — nhóm theo role, kèm macro + điểm hợp bữa cao nhất
   const byRole = { protein: [], carb: [], fixed: [], fat: [] };
   whitelist.items.forEach(it => byRole[it.role]?.push(it));
+  // Shuffle mỗi nhóm — AI bị ảnh hưởng bởi thứ tự list, shuffle đảm bảo đa dạng
+  const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+  Object.values(byRole).forEach(shuffle);
   const fmtItem = it => {
     const bestSlots = Object.entries(it.slots || {}).filter(([, s]) => s >= 8).map(([k]) => k);
     const tag = isStandaloneDish(it.key) ? " [TRỌN SUẤT]" : "";
