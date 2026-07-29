@@ -167,7 +167,7 @@ async function callAI(prompt, { provider, model } = {}, _retriesLeft = 1) {
     maxTokens: 1800, // đủ buffer JSON (whitelist gọn sau khi bỏ macro dư thừa)
                      // không quá cao để tránh cost lãng phí nếu model verbose
     feature: "menu_gen",
-    temperature: 1.0, // đa dạng menu mỗi lần tạo — tránh AI trả deterministic
+    temperature: 0.9, // đa dạng menu mỗi lần tạo — 0.9 an toàn hơn 1.0 cho JSON
     messages: [{ role: "user", content: prompt }],
   });
   if (d.error) {
@@ -386,7 +386,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
 
   let lastErrors = [];
   let bestCandidate = null; // best-of-2: giữ bản lệch target ít nhất
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const retryHint = attempt === 0 ? "" :
         `\n\nLẦN TRƯỚC BỊ LỖI — SỬA CHÍNH XÁC THEO TỪNG DÒNG SAU:\n- ${lastErrors.join("\n- ")}`;
