@@ -213,19 +213,25 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
       }
     }
 
-    // R8: Không trùng ĐẠM và RAU giữa các BỮA CHÍNH
-    // Carb (cơm trắng, bún) được phép lặp — cơm trưa + cơm tối là bình thường
-    // Auto-fix: bỏ món trùng ở bữa sau
+    // R8: Không trùng ĐẠM, RAU, và MÓN TRỌN SUẤT giữa các BỮA CHÍNH
+    // Carb thường (cơm trắng, bún) được phép lặp — cơm trưa + cơm tối OK
+    // Standalone trùng → error retry (AI cần chọn món khác, bỏ thì bữa trống)
+    // Đạm/rau trùng → auto-fix bỏ im lặng
     if (MAIN_MEALS.has(id)) {
       const dupsToRemove = [];
       for (const k of foods) {
         const bk = resolveBaseKey(k);
         const role = getFoodRole(bk);
-        // Chỉ check trùng protein và fixed (rau/canh) — bỏ qua carb và fat
-        if (role !== "protein" && role !== "fixed") continue;
+        const standalone = isStandaloneDish(bk);
+        // Bỏ qua carb thường và fat — được phép lặp
+        if (!standalone && role !== "protein" && role !== "fixed") continue;
         if (usedBaseDishes[bk] && usedBaseDishes[bk] !== id) {
-          console.warn(`[AI Menu V2] auto-fix bữa "${id}": bỏ "${k}" (trùng ${role} bữa "${usedBaseDishes[bk]}")`);
-          dupsToRemove.push(k);
+          if (standalone) {
+            errors.push(`Bữa "${id}": "${k}" đã có ở bữa "${usedBaseDishes[bk]}" — chọn món trọn suất khác.`);
+          } else {
+            console.warn(`[AI Menu V2] auto-fix bữa "${id}": bỏ "${k}" (trùng ${role} bữa "${usedBaseDishes[bk]}")`);
+            dupsToRemove.push(k);
+          }
         } else {
           usedBaseDishes[bk] = id;
         }
