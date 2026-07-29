@@ -63,7 +63,6 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
 
   const meals = [];
   const usedProteinGroups = {}; // group → meal_id đã dùng (bữa chính)
-  const usedBaseDishes = {}; // baseKey → meal_id đã dùng (tránh trùng món giữa bữa chính)
 
   // AI thật có thể trả foods là string HOẶC object {key}/{food}/{name} — normalize hết
   const toKey = (f) => {
@@ -124,7 +123,16 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
       const roles = new Set(foods.map(k => getFoodRole(resolveBaseKey(k))));
       if (hasStandalone) { roles.add("protein"); roles.add("carb"); }
       for (const r of Object.keys(rule.need)) {
-        if (!roles.has(r)) errors.push(`Bữa "${id}" thiếu món ${r === "protein" ? "đạm" : r === "carb" ? "tinh bột" : r}.`);
+        if (!roles.has(r)) {
+          // Auto-fix: bữa chính thiếu tinh bột → tự thêm cơm trắng
+          if (r === "carb" && MAIN_MEALS.has(id) && !hasStandalone) {
+            foods.unshift("cơm trắng");
+            roles.add("carb");
+            console.warn(`[AI Menu V2] auto-fix bữa "${id}": thêm cơm trắng (AI thiếu tinh bột)`);
+          } else {
+            errors.push(`Bữa "${id}" thiếu món ${r === "protein" ? "đạm" : r === "carb" ? "tinh bột" : r}.`);
+          }
+        }
       }
     }
     // mealScore ≥ ngưỡng — món lạc bữa (VD cơm bữa sáng)
@@ -206,18 +214,6 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
           errors.push(`Nhóm đạm "${g}" đã dùng ở bữa "${usedProteinGroups[g]}" — bữa "${id}" đổi sang nhóm khác (gà/bò/heo/cá/trứng).`);
         } else {
           usedProteinGroups[g] = id;
-        }
-      }
-    }
-
-    // R8: Không trùng base dish giữa các BỮA CHÍNH (cơm tấm trưa + cơm tấm tối = trùng)
-    if (MAIN_MEALS.has(id)) {
-      for (const k of foods) {
-        const bk = resolveBaseKey(k);
-        if (usedBaseDishes[bk] && usedBaseDishes[bk] !== id) {
-          errors.push(`Món "${k}" đã có ở bữa "${usedBaseDishes[bk]}" — bữa "${id}" đổi sang món khác, tránh lặp.`);
-        } else {
-          usedBaseDishes[bk] = id;
         }
       }
     }

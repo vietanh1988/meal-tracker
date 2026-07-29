@@ -57,7 +57,6 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
 
   const prefLines = [];
   if (style) prefLines.push(`- Phong cách: ${STYLE_LABEL[style] || style}`);
-  // Style-specific instructions cho AI hiểu rõ hơn
   if (style === "clean") prefLines.push(`- CLEAN BẮT BUỘC: chỉ luộc/hấp/nướng/áp chảo, KHÔNG chiên/rán/quay. Ưu tiên gạo lứt/khoai lang thay cơm trắng. Rau tươi luộc/hấp. Đạm nạc (ức gà, cá, tôm). KHÔNG dùng cơm tấm/phở/bún chả (món quán).`);
   if (style === "vn") prefLines.push(`- CƠM NHÀ VN: bữa trưa/tối = cơm trắng + 1 món mặn nấu chín (kho/xào/nướng) + rau + canh. Bữa sáng = phở/bún/xôi/bánh mì (mua nhanh). KHÔNG lặp món mặn giữa trưa và tối.`);
   if (DIET_LABEL[diet]) prefLines.push(`- Chế độ: ${DIET_LABEL[diet]} — whitelist đã lọc sẵn, cứ chọn thoải mái trong danh sách`);
@@ -82,8 +81,7 @@ P2. BỮA CHÍNH (trưa/tối) PHẢI có cấu trúc: 1 tinh bột (cơm/bún/p
 P3. Tổng macro ước tính (theo khẩu phần thông thường) gần TARGET nhất.
 P4. Hợp phong cách${style ? ` "${STYLE_LABEL[style]}"` : ""}.
 P5. Không lặp nhóm đạm giữa các bữa (gà/bò/heo/cá/tôm/trứng — mỗi nhóm tối đa 1 bữa chính).
-P6. KHÔNG lặp món giữa các bữa chính (VD: cơm tấm trưa + cơm tấm tối = SAI. Phải khác nhau).
-P7. Bữa ăn tự nhiên kiểu Việt (món đi với nhau hợp lý).
+P6. Bữa ăn tự nhiên kiểu Việt (món đi với nhau hợp lý).
 
 BẢNG ĐIỂM (để bạn tự cân nhắc khi chọn món, KHÔNG viết ra):
 - Macro accuracy: 35đ · Style matching: 25đ · VN naturalness: 15đ

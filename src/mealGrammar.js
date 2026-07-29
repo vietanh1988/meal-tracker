@@ -76,9 +76,9 @@ export const SLOT_RULES = {
   toi: {
     name: "Bữa tối",
     maxDishes: 5, minDishes: 3,
-    need: { protein: 1 },
+    need: { protein: 1, carb: 1 },
     complexity: 2,
-    hint: "Bữa chính nhẹ hơn trưa: đạm + rau + canh, tinh bột ít hơn hoặc bỏ nếu low-carb.",
+    hint: "Bữa chính nhẹ hơn trưa: tinh bột + đạm + rau + canh.",
   },
 };
 
