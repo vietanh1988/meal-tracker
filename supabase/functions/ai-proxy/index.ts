@@ -273,6 +273,7 @@ serve(async (req) => {
           model: usedModel,
           max_tokens: maxTokens || 1000,
           ...(system ? { system } : {}),
+          ...(temperature !== undefined ? { temperature } : {}),
           messages: msgs,
         }),
       })

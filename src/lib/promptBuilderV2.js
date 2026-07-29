@@ -78,6 +78,7 @@ P4. Hợp phong cách${style ? ` "${STYLE_LABEL[style]}"` : ""}.
 P5. Không lặp nhóm đạm giữa các bữa (gà/bò/heo/cá/tôm/trứng — mỗi nhóm tối đa 1 bữa chính).
 P6. KHÔNG lặp món giữa các bữa chính (VD: cơm tấm trưa + cơm tấm tối = SAI. Phải khác nhau).
 P7. Bữa ăn tự nhiên kiểu Việt (món đi với nhau hợp lý).
+P8. MỖI LẦN TẠO phải KHÁC — chọn ngẫu nhiên từ whitelist, KHÔNG mặc định combo quen. VD: nếu lần trước ra cơm tấm+phở, lần này PHẢI chọn món khác.
 
 BẢNG ĐIỂM (để bạn tự cân nhắc khi chọn món, KHÔNG viết ra):
 - Macro accuracy: 35đ · Style matching: 25đ · VN naturalness: 15đ
