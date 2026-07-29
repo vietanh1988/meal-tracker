@@ -185,16 +185,26 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const visibleIds=(()=>{let ids=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];if(isNoneExercise)ids=ids.filter(id=>id!=="pre"&&id!=="post");return ids;})();
   const allMeals=getTodayMeals(dayType);
   const meals=allMeals.filter(m=>visibleIds.includes(m.id));
-  const totals=meals.reduce((acc,m)=>{
-    if(eatenMeals && eatenMeals.length > 0 && !eatenMeals.includes(m.id)) return acc;
+  // menuTotals = tổng calo TOÀN BỘ thực đơn (cố định, cho header)
+  const menuTotals=meals.reduce((acc,m)=>{
     const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
     return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
   },{p:0,c:0,f:0,fiber:0,cal:0});
+  // eatenTotals = tổng calo BỮA ĐÃ TICK (cho ring bar "calo còn lại")
+  const totals=(eatenMeals && eatenMeals.length > 0)
+    ? meals.reduce((acc,m)=>{
+        if(!eatenMeals.includes(m.id)) return acc;
+        const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
+        return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
+      },{p:0,c:0,f:0,fiber:0,cal:0})
+    : menuTotals; // backward compat: chưa tick → totals = toàn bộ
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
   const target=macro.calTarget,calPct=Math.min((heroCal/target)*100,100),goalKg=profile.goalKg,startKg=weightLog.length>0?weightLog[0].kg:profile.kg,curKg=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg,wPct=goalKg!==startKg?((curKg-startKg)/(goalKg-startKg))*100:0;
   const actualCal=Math.round(totals.cal), actualP=Math.round(totals.p), actualC=Math.round(totals.c), actualF=Math.round(totals.f), actualFiber=Math.round(totals.fiber);
+  // menuCal = tổng thực đơn cố định (header), actualCal = tổng đã ăn (ring bar)
+  const menuCal=Math.round(menuTotals.cal), menuP=Math.round(menuTotals.p), menuC=Math.round(menuTotals.c), menuF=Math.round(menuTotals.f);
   const calDiff=actualCal-heroCal, calStatus=actualCal>=heroCal*0.95&&actualCal<=heroCal*1.1?"✅":actualCal<heroCal*0.95?"⚠️":"🔴";
   const calRemain=heroCal-actualCal;
   const hasStartedEating = eatenMeals && eatenMeals.length > 0;
@@ -277,7 +287,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         <div style={{flex:1,paddingRight:8,marginTop:8}}>
           <div style={{fontSize:15,fontWeight:600,color:C.t1}}>{isNoneExercise?"Tổng calo hôm nay":dayType==="train"?"Tổng calo ngày tập":"Tổng calo ngày nghỉ"}</div>
           <div style={{display:"flex",alignItems:"baseline",gap:6,marginTop:4}}>
-            <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{actualCal.toLocaleString()}</div>
+            <div style={{fontSize:30,fontWeight:900,color:C.primary,letterSpacing:"-0.03em",lineHeight:1.1}}>{menuCal.toLocaleString()}</div>
             <div style={{fontSize:12,fontWeight:700,color:C.t3}}>/ {heroCal.toLocaleString()} kcal</div>
           </div>
           {/* Badges VN + diet */}
