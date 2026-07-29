@@ -146,11 +146,14 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
         !isStandaloneDish(resolveBaseKey(k)) && ["carb", "protein"].includes(getFoodRole(resolveBaseKey(k)))
       );
       if (extras.length > 0) {
-        errors.push(`Bữa "${id}": "${standalone[0]}" là món trọn suất (đã có sẵn tinh bột+đạm) — không ghép thêm "${extras.join(", ")}". Bỏ bớt hoặc chỉ giữ 1 standalone dish.`);
+        // Auto-fix: bỏ protein/carb rời khi có standalone — KHÔNG retry
+        // (GPT hay ghép "cơm tấm + cá kho" — fix tự động thay vì reject)
+        console.warn(`[AI Menu V2] auto-fix bữa "${id}": bỏ ${extras.join(", ")} (standalone "${standalone[0]}" đã đủ)`);
         foods = foods.filter(k => isStandaloneDish(resolveBaseKey(k)) || !extras.includes(k));
       }
       if (standalone.length > 1) {
-        errors.push(`Bữa "${id}" có ${standalone.length} món trọn suất cùng lúc — chỉ chọn 1.`);
+        // Auto-fix: giữ standalone đầu tiên
+        console.warn(`[AI Menu V2] auto-fix bữa "${id}": ${standalone.length} standalone → giữ "${standalone[0]}"`);
         foods = foods.filter(k => k === standalone[0] || !isStandaloneDish(resolveBaseKey(k)));
       }
     }
@@ -210,15 +213,25 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
       }
     }
 
-    // R8: Không trùng base dish giữa các BỮA CHÍNH (cơm tấm trưa + cơm tấm tối = trùng)
+    // R8: Không trùng ĐẠM và RAU giữa các BỮA CHÍNH
+    // Carb (cơm trắng, bún) được phép lặp — cơm trưa + cơm tối là bình thường
+    // Auto-fix: bỏ món trùng ở bữa sau
     if (MAIN_MEALS.has(id)) {
+      const dupsToRemove = [];
       for (const k of foods) {
         const bk = resolveBaseKey(k);
+        const role = getFoodRole(bk);
+        // Chỉ check trùng protein và fixed (rau/canh) — bỏ qua carb và fat
+        if (role !== "protein" && role !== "fixed") continue;
         if (usedBaseDishes[bk] && usedBaseDishes[bk] !== id) {
-          errors.push(`Món "${k}" đã có ở bữa "${usedBaseDishes[bk]}" — bữa "${id}" đổi sang món khác, tránh lặp.`);
+          console.warn(`[AI Menu V2] auto-fix bữa "${id}": bỏ "${k}" (trùng ${role} bữa "${usedBaseDishes[bk]}")`);
+          dupsToRemove.push(k);
         } else {
           usedBaseDishes[bk] = id;
         }
+      }
+      if (dupsToRemove.length > 0) {
+        foods = foods.filter(k => !dupsToRemove.includes(k));
       }
     }
 
