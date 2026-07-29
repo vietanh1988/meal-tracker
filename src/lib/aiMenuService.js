@@ -17,6 +17,8 @@ import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay, isStandaloneDis
 import { buildWhitelist } from "./whitelistBuilder";
 import { buildPromptV2 } from "./promptBuilderV2";
 import { validateMenuV2, checkDryRun } from "./menuValidatorV2";
+import { buildSlotPlan, resolveSlotAnswers } from "./slotTemplates";
+import { buildPromptV3, parseSlotJSON } from "./promptBuilderV3";
 import { applyMealEngineToTemplate } from "../mealEngine";
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
@@ -346,6 +348,49 @@ function attachPatternAndDisplay(template, norm) {
 // 6. HÀM CHÍNH — generateMenuAI
 // ============================================================
 
+// SLOT MODE: code quyết cấu trúc bữa, AI chỉ chọn món điền slot.
+// KHÔNG BAO GIỜ FAIL — AI trả sai/lệch → resolver tự fallback món đầu pool.
+const USE_SLOT_MODE = true;
+
+async function generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, prov, mdl }) {
+  const style = prefs?.style || "vn";
+  const exclude = buildExclusionKeys(prefs?.avoid);
+  const avoidAll = [...(avoidFoods || []), ...exclude];
+
+  // 1. Build plan: slot + pool đã shuffle
+  const plan = buildSlotPlan(style, mealIds, { diet, avoidFoods: avoidAll, poolSize: 10 });
+  if (plan.length === 0) return null; // style/mealIds không có template → fallback V2
+
+  // 2. Prompt + gọi AI (1 lần duy nhất — sai thì resolver tự fix, không retry)
+  let answers = {};
+  try {
+    const prompt = buildPromptV3(plan, { style, dayType, avoidRecent: avoidFoods || [] });
+    const text = await callAI(prompt, { provider: prov, model: mdl });
+    answers = parseSlotJSON(text);
+  } catch (e) {
+    if (e.quotaExceeded) throw e; // quota — ném lên trên xử lý
+    console.warn("[Slot Mode] callAI lỗi, dùng fallback pool:", e.message);
+    // answers = {} → resolver lấy món đầu mỗi pool (đã shuffle → vẫn đa dạng)
+  }
+
+  // 3. Resolve: enforce rules (đạm khác nhóm, không trùng) + fallback an toàn
+  const mealFoods = resolveSlotAnswers(plan, answers);
+
+  // 4. Convert sang norm shape (giống V2)
+  const normMeals = Object.entries(mealFoods).map(([meal_id, foods]) => ({
+    meal_id,
+    foods: foods.map((k) => {
+      const lookup = lookupLocalFood(k, 100);
+      const baseKey = lookup?.key || k;
+      const display = getFoodDisplay(k) !== k ? getFoodDisplay(k) : k.charAt(0).toUpperCase() + k.slice(1);
+      return { key: baseKey, display, role: getFoodRole(baseKey), cookKey: lookup?.cookKey || null, fullName: k };
+    }),
+    dessert: null, pattern: null, composite: false,
+  }));
+
+  return normMeals;
+}
+
 export async function generateMenuAI({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, avoidPatternNames, appSettings, provider, model }) {
   const access = getAIMenuAccess(profile, appSettings);
   if (!access.usable) {
@@ -367,6 +412,52 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
   const target = dayTarget(macro, dayType);
   const goalType = macro?.goal || profile?.goalType || null;
   const diet = macro?.dietStrategy || profile?.dietStrategy || "balanced";
+
+  // ===== SLOT MODE (V3): code quyết cấu trúc, AI chỉ chọn món =====
+  if (USE_SLOT_MODE) {
+    try {
+      const normMeals = await generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, prov, mdl });
+      if (normMeals && normMeals.length > 0) {
+        const avoidSet = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
+        const styleId = prefs?.style || null;
+
+        // Engine dry-run lần 1 — đo fat gap
+        const virtualTpl1 = buildVirtualTemplate(normMeals, dayType);
+        const template1 = stripZeroGramItems(applyMealEngineToTemplate(virtualTpl1, target));
+        const total1 = sumTemplate(template1);
+
+        // Fat filler (giữ logic V2)
+        const fatGap = (target.f || 0) - (total1.f || 0);
+        const fillerSlots = fatGap >= 5 ? (fatGap > 30 ? 3 : fatGap > 15 ? 2 : 1) : 0;
+        if (fillerSlots > 0) {
+          let filled = 0;
+          for (const m of normMeals) {
+            if (filled >= fillerSlots) break;
+            if (!MAIN_MEALS.has(m.meal_id)) continue;
+            if (m.foods.some(f => isStandaloneDish(f.key))) continue;
+            const filler = AUTO_FAT_FILLER[m.meal_id];
+            if (!filler || avoidSet.has(filler.food) || styleId === "clean") continue;
+            if (m.foods.some(f => f.key === filler.food)) continue;
+            m.foods.push({ key: filler.food, display: filler.display, role: "fat" });
+            filled++;
+          }
+        }
+
+        // Engine dry-run cuối
+        const virtualTpl = buildVirtualTemplate(normMeals, dayType);
+        const template = attachPatternAndDisplay(
+          stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)),
+          { meals: normMeals }
+        );
+        return { ok: true, template, note: "" };
+      }
+    } catch (e) {
+      if (e.quotaExceeded) return { ok: false, error: e.message };
+      console.warn("[Slot Mode] lỗi, fallback V2:", e.message);
+      // rơi xuống flow V2 bên dưới
+    }
+  }
+
 
   // Whitelist: code lọc TRƯỚC — AI không thấy được nguyên liệu sai.
   // avoid dị ứng (prefs.avoid) cũng chặn cứng khỏi whitelist.
