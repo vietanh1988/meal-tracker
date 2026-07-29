@@ -167,7 +167,6 @@ async function callAI(prompt, { provider, model } = {}, _retriesLeft = 1) {
     maxTokens: 1800, // đủ buffer JSON (whitelist gọn sau khi bỏ macro dư thừa)
                      // không quá cao để tránh cost lãng phí nếu model verbose
     feature: "menu_gen",
-    temperature: 0.9, // đa dạng menu mỗi lần tạo — 0.9 an toàn hơn 1.0 cho JSON
     messages: [{ role: "user", content: prompt }],
   });
   if (d.error) {
@@ -386,7 +385,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
 
   let lastErrors = [];
   let bestCandidate = null; // best-of-2: giữ bản lệch target ít nhất
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const retryHint = attempt === 0 ? "" :
         `\n\nLẦN TRƯỚC BỊ LỖI — SỬA CHÍNH XÁC THEO TỪNG DÒNG SAU:\n- ${lastErrors.join("\n- ")}`;
@@ -395,13 +394,8 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
 
       // Lớp 1: key ∈ whitelist, slot rules, diversity — feedback cụ thể
       const val = validateMenuV2(raw, { mealIds, whitelist, style: prefs?.style || null });
-      if (!val.ok) {
-        const hasContent = val.meals.some(m => m.foods.length > 0);
-        // Retry nếu: (a) tất cả bữa rỗng, hoặc (b) trùng món giữa bữa chính (R8)
-        const hasCrossDup = val.errors.some(e => e.includes("đã có ở bữa"));
-        if (!hasContent || hasCrossDup) {
-          lastErrors = val.errors; continue;
-        }
+      if (!val.ok && val.meals.every(m => m.foods.length === 0)) {
+        lastErrors = val.errors; continue;
       }
 
       // Convert sang norm shape — display do CODE tra (AI không đặt tên)

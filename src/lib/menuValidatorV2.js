@@ -137,17 +137,6 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
       return true;
     });
 
-    // Style VN/Clean: bữa chính (trưa/tối) PHẢI dùng cấu trúc cơm+đạm+rau+canh
-    // KHÔNG cho standalone dishes (cơm tấm, phở, bún chả...) — đó là mua ngoài quán
-    // Standalone chỉ OK ở bữa sáng/phụ (phở sáng, xôi sáng = bình thường)
-    if ((style === "vn" || style === "clean") && MAIN_MEALS.has(id)) {
-      const standaloneMain = foods.filter(k => isStandaloneDish(resolveBaseKey(k)));
-      if (standaloneMain.length > 0) {
-        errors.push(`Bữa "${id}": "${standaloneMain[0]}" là món trọn suất (mua ngoài) — style "${style}" bữa chính cần cấu trúc: cơm/bún + đạm nấu chín + rau + canh. Thay bằng nguyên liệu rời.`);
-        foods = foods.filter(k => !isStandaloneDish(resolveBaseKey(k)));
-      }
-    }
-
     // Món trọn suất (bánh cuốn, phở, bún, cháo...) đã tự đủ tinh bột
     // + đạm bên trong công thức thực tế — KHÔNG ghép thêm carb/protein
     // rời khác cùng bữa (vô lý kiểu "bánh cuốn + trứng luộc rời")
@@ -157,14 +146,11 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
         !isStandaloneDish(resolveBaseKey(k)) && ["carb", "protein"].includes(getFoodRole(resolveBaseKey(k)))
       );
       if (extras.length > 0) {
-        // Auto-fix: bỏ protein/carb rời khi có standalone — KHÔNG retry
-        // (GPT hay ghép "cơm tấm + cá kho" — fix tự động thay vì reject)
-        console.warn(`[AI Menu V2] auto-fix bữa "${id}": bỏ ${extras.join(", ")} (standalone "${standalone[0]}" đã đủ)`);
+        errors.push(`Bữa "${id}": "${standalone[0]}" là món trọn suất (đã có sẵn tinh bột+đạm) — không ghép thêm "${extras.join(", ")}". Bỏ bớt hoặc chỉ giữ 1 standalone dish.`);
         foods = foods.filter(k => isStandaloneDish(resolveBaseKey(k)) || !extras.includes(k));
       }
       if (standalone.length > 1) {
-        // Auto-fix: giữ standalone đầu tiên
-        console.warn(`[AI Menu V2] auto-fix bữa "${id}": ${standalone.length} standalone → giữ "${standalone[0]}"`);
+        errors.push(`Bữa "${id}" có ${standalone.length} món trọn suất cùng lúc — chỉ chọn 1.`);
         foods = foods.filter(k => k === standalone[0] || !isStandaloneDish(resolveBaseKey(k)));
       }
     }
@@ -224,31 +210,15 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
       }
     }
 
-    // R8: Không trùng ĐẠM, RAU, và MÓN TRỌN SUẤT giữa các BỮA CHÍNH
-    // Carb thường (cơm trắng, bún) được phép lặp — cơm trưa + cơm tối OK
-    // Standalone trùng → error retry (AI cần chọn món khác, bỏ thì bữa trống)
-    // Đạm/rau trùng → auto-fix bỏ im lặng
+    // R8: Không trùng base dish giữa các BỮA CHÍNH (cơm tấm trưa + cơm tấm tối = trùng)
     if (MAIN_MEALS.has(id)) {
-      const dupsToRemove = [];
       for (const k of foods) {
         const bk = resolveBaseKey(k);
-        const role = getFoodRole(bk);
-        const standalone = isStandaloneDish(bk);
-        // Bỏ qua carb thường và fat — được phép lặp
-        if (!standalone && role !== "protein" && role !== "fixed") continue;
         if (usedBaseDishes[bk] && usedBaseDishes[bk] !== id) {
-          if (standalone) {
-            errors.push(`Bữa "${id}": "${k}" đã có ở bữa "${usedBaseDishes[bk]}" — chọn món trọn suất khác.`);
-          } else {
-            console.warn(`[AI Menu V2] auto-fix bữa "${id}": bỏ "${k}" (trùng ${role} bữa "${usedBaseDishes[bk]}")`);
-            dupsToRemove.push(k);
-          }
+          errors.push(`Món "${k}" đã có ở bữa "${usedBaseDishes[bk]}" — bữa "${id}" đổi sang món khác, tránh lặp.`);
         } else {
           usedBaseDishes[bk] = id;
         }
-      }
-      if (dupsToRemove.length > 0) {
-        foods = foods.filter(k => !dupsToRemove.includes(k));
       }
     }
 
