@@ -164,7 +164,7 @@ const UNIT_DEFAULTS = {
   "quả": 100, "trái": 100,
   "hộp": 200, "lon": 330,
   "lát": 30, "miếng": 50,
-  "bát": 250, "chén": 250, "tô": 350,
+  "bát": 250, "chén": 250, "tô": 400,
   "ly": 200, "cốc": 200,
   "muỗng": 30, "scoop": 30, // scoop whey ~30g
   "muỗng canh": 15, "muỗng cà phê": 5,
@@ -254,6 +254,17 @@ export function estimateGram(nameVN, unit, qty) {
   for (const key of UNIT_GRAM_ANY_KEYS) {
     if (lower.includes(key)) {
       return Math.round(UNIT_GRAM_ANY_UNIT[key] * qty);
+    }
+  }
+
+  // 2b. Món nước (phở/bún/hủ tiếu/cháo/mì...) — 1 bát/tô thực tế 350-500g,
+  //     KHÔNG dùng default bát=250g (đó là bát cơm/canh)
+  if (unit === "bát" || unit === "tô" || unit === "chén") {
+    const NOODLE_SOUP = ["phở", "bún", "hủ tiếu", "hủ tíu", "bánh canh", "mì quảng", "miến", "mì ", "cháo", "súp", "sup ", "lẩu"];
+    if (NOODLE_SOUP.some(p => lower.startsWith(p) || lower.includes(" " + p))) {
+      // cháo đặc hơn: bát 300g; món nước sợi: tô 400g
+      const isChao = lower.startsWith("cháo");
+      return Math.round((isChao ? 300 : 400) * qty);
     }
   }
 
