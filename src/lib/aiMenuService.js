@@ -166,6 +166,7 @@ async function callAI(prompt, { provider, model } = {}, _retriesLeft = 1) {
     model: model || "claude-sonnet-5",
     maxTokens: 1800, // đủ buffer JSON (whitelist gọn sau khi bỏ macro dư thừa)
                      // không quá cao để tránh cost lãng phí nếu model verbose
+    temperature: 0.8, // đa dạng menu mỗi lần tạo — 0.8 đủ random mà JSON vẫn valid
     feature: "menu_gen",
     messages: [{ role: "user", content: prompt }],
   });

@@ -57,6 +57,9 @@ export function buildPromptV2({ profile = {}, target, dayType, mealIds, whitelis
 
   const prefLines = [];
   if (style) prefLines.push(`- Phong cách: ${STYLE_LABEL[style] || style}`);
+  // Style-specific instructions cho AI hiểu rõ hơn
+  if (style === "clean") prefLines.push(`- CLEAN BẮT BUỘC: chỉ luộc/hấp/nướng/áp chảo, KHÔNG chiên/rán/quay. Ưu tiên gạo lứt/khoai lang thay cơm trắng. Rau tươi luộc/hấp. Đạm nạc (ức gà, cá, tôm). KHÔNG dùng cơm tấm/phở/bún chả (món quán).`);
+  if (style === "vn") prefLines.push(`- CƠM NHÀ VN: bữa trưa/tối = cơm trắng + 1 món mặn nấu chín (kho/xào/nướng) + rau + canh. Bữa sáng = phở/bún/xôi/bánh mì (mua nhanh). KHÔNG lặp món mặn giữa trưa và tối.`);
   if (DIET_LABEL[diet]) prefLines.push(`- Chế độ: ${DIET_LABEL[diet]} — whitelist đã lọc sẵn, cứ chọn thoải mái trong danh sách`);
   if (goal === "bulk") prefLines.push(`- TĂNG CƠ: ưu tiên carb năng lượng cao (cơm trắng, mì, bánh mì), TRÁNH gạo lứt/bánh mì đen (ít calo, no lâu — khó ăn đủ surplus)`);
   if (goal === "cut") prefLines.push(`- GIẢM MỠ: ưu tiên carb no lâu low GI (gạo lứt, khoai lang), protein nạc (ức gà, cá), rau xơ cao`);

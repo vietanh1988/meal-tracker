@@ -349,6 +349,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: usedModel,
           ...tokenParam,
+          ...(temperature !== undefined ? { temperature } : {}),
           messages: gptMsgs,
         }),
       })
