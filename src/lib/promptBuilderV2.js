@@ -76,7 +76,8 @@ P2. BỮA CHÍNH (trưa/tối) PHẢI có cấu trúc: 1 tinh bột (cơm/bún/p
 P3. Tổng macro ước tính (theo khẩu phần thông thường) gần TARGET nhất.
 P4. Hợp phong cách${style ? ` "${STYLE_LABEL[style]}"` : ""}.
 P5. Không lặp nhóm đạm giữa các bữa (gà/bò/heo/cá/tôm/trứng — mỗi nhóm tối đa 1 bữa chính).
-P6. Bữa ăn tự nhiên kiểu Việt (món đi với nhau hợp lý).
+P6. KHÔNG lặp món giữa các bữa chính (VD: cơm tấm trưa + cơm tấm tối = SAI. Phải khác nhau).
+P7. Bữa ăn tự nhiên kiểu Việt (món đi với nhau hợp lý).
 
 BẢNG ĐIỂM (để bạn tự cân nhắc khi chọn món, KHÔNG viết ra):
 - Macro accuracy: 35đ · Style matching: 25đ · VN naturalness: 15đ

@@ -63,6 +63,7 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
 
   const meals = [];
   const usedProteinGroups = {}; // group → meal_id đã dùng (bữa chính)
+  const usedBaseDishes = {}; // baseKey → meal_id đã dùng (tránh trùng món giữa bữa chính)
 
   // AI thật có thể trả foods là string HOẶC object {key}/{food}/{name} — normalize hết
   const toKey = (f) => {
@@ -205,6 +206,18 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
           errors.push(`Nhóm đạm "${g}" đã dùng ở bữa "${usedProteinGroups[g]}" — bữa "${id}" đổi sang nhóm khác (gà/bò/heo/cá/trứng).`);
         } else {
           usedProteinGroups[g] = id;
+        }
+      }
+    }
+
+    // R8: Không trùng base dish giữa các BỮA CHÍNH (cơm tấm trưa + cơm tấm tối = trùng)
+    if (MAIN_MEALS.has(id)) {
+      for (const k of foods) {
+        const bk = resolveBaseKey(k);
+        if (usedBaseDishes[bk] && usedBaseDishes[bk] !== id) {
+          errors.push(`Món "${k}" đã có ở bữa "${usedBaseDishes[bk]}" — bữa "${id}" đổi sang món khác, tránh lặp.`);
+        } else {
+          usedBaseDishes[bk] = id;
         }
       }
     }
