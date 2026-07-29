@@ -430,8 +430,8 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     {/* AI Menu Generator — bottom sheet trên mobile, modal căn giữa trên PC.
         Chỉ render khi thật sự usable — chốt chặn UI thứ 2 dù nút locked
         phía trên không mở được overlay này. */}
-    {showAIMenu&&aiAccess.usable&&<div onClick={()=>setShowAIMenu(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20}}>
-      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":520,maxHeight:mob?"92vh":"88vh",overflowY:"auto",background:C.bg,borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
+    {showAIMenu&&aiAccess.usable&&<div onClick={()=>setShowAIMenu(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center",padding:mob?0:20,overscrollBehavior:"contain",touchAction:"none"}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:mob?"100%":520,maxHeight:mob?"92vh":"88vh",overflowY:"auto",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",touchAction:"pan-y",background:C.bg,borderRadius:mob?"16px 16px 0 0":16,padding:mob?"16px 12px":20}}>
         <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} initialDayType={dayType} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} onApply={handleApplyAIMenu} onClose={()=>setShowAIMenu(false)}/>
       </div>
     </div>}
