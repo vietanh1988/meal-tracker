@@ -137,6 +137,17 @@ export function validateMenuV2(raw, { mealIds, whitelist, style = null }) {
       return true;
     });
 
+    // Style VN/Clean: bữa chính (trưa/tối) PHẢI dùng cấu trúc cơm+đạm+rau+canh
+    // KHÔNG cho standalone dishes (cơm tấm, phở, bún chả...) — đó là mua ngoài quán
+    // Standalone chỉ OK ở bữa sáng/phụ (phở sáng, xôi sáng = bình thường)
+    if ((style === "vn" || style === "clean") && MAIN_MEALS.has(id)) {
+      const standaloneMain = foods.filter(k => isStandaloneDish(resolveBaseKey(k)));
+      if (standaloneMain.length > 0) {
+        errors.push(`Bữa "${id}": "${standaloneMain[0]}" là món trọn suất (mua ngoài) — style "${style}" bữa chính cần cấu trúc: cơm/bún + đạm nấu chín + rau + canh. Thay bằng nguyên liệu rời.`);
+        foods = foods.filter(k => !isStandaloneDish(resolveBaseKey(k)));
+      }
+    }
+
     // Món trọn suất (bánh cuốn, phở, bún, cháo...) đã tự đủ tinh bột
     // + đạm bên trong công thức thực tế — KHÔNG ghép thêm carb/protein
     // rời khác cùng bữa (vô lý kiểu "bánh cuốn + trứng luộc rời")
