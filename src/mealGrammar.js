@@ -43,7 +43,7 @@ export const SLOT_RULES = {
     maxDishes: 2, minDishes: 1,
     need: {},
     complexity: 1,
-    hint: "Ăn nhẹ giữa buổi: sữa chua, trái cây, khoai, ngô, trứng luộc. 1-2 món gọn.",
+    hint: "Ăn nhẹ giữa buổi: trái cây (chuối/đu đủ/cam/xoài), sữa chua, khoai lang luộc, ngô luộc, trứng luộc, hạt điều, bánh mì sandwich. Chọn KHÁC bữa phụ chiều.",
   },
   trua: {
     name: "Bữa trưa",
@@ -57,7 +57,7 @@ export const SLOT_RULES = {
     maxDishes: 2, minDishes: 1,
     need: {},
     complexity: 1,
-    hint: "Ăn nhẹ buổi chiều: sữa chua, trái cây, khoai, ngô. 1-2 món gọn.",
+    hint: "Ăn nhẹ buổi chiều: trái cây (thanh long/dưa hấu/bưởi/táo), sữa chua, khoai lang luộc, ngô luộc, đậu phộng, quả bơ, bánh chuối. Chọn KHÁC bữa phụ sáng — KHÔNG lặp món.",
   },
   pre: {
     name: "Trước tập",
