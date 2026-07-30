@@ -352,13 +352,13 @@ function attachPatternAndDisplay(template, norm) {
 // KHÔNG BAO GIỜ FAIL — AI trả sai/lệch → resolver tự fallback món đầu pool.
 const USE_SLOT_MODE = true;
 
-async function generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, prov, mdl }) {
+async function generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, goal, prov, mdl }) {
   const style = prefs?.style || "vn";
   const exclude = buildExclusionKeys(prefs?.avoid);
   const avoidAll = [...(avoidFoods || []), ...exclude];
 
-  // 1. Build plan: slot + pool đã shuffle
-  const plan = buildSlotPlan(style, mealIds, { diet, avoidFoods: avoidAll, poolSize: 10 });
+  // 1. Build plan: slot + pool đã shuffle (goal: bulk=cơm trắng, cut=gạo lứt/khoai)
+  const plan = buildSlotPlan(style, mealIds, { diet, avoidFoods: avoidAll, poolSize: 10, goal });
   if (plan.length === 0) return null; // style/mealIds không có template → fallback V2
 
   // 2. Prompt + gọi AI (1 lần duy nhất — sai thì resolver tự fix, không retry)
@@ -416,7 +416,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
   // ===== SLOT MODE (V3): code quyết cấu trúc, AI chỉ chọn món =====
   if (USE_SLOT_MODE) {
     try {
-      const normMeals = await generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, prov, mdl });
+      const normMeals = await generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, goal: goalType, prov, mdl });
       if (normMeals && normMeals.length > 0) {
         const avoidSet = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
         const styleId = prefs?.style || null;

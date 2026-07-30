@@ -217,11 +217,17 @@ const DIET_NO_CARB = new Set(["keto", "low_carb"]);
  * @returns {Array<{ mealId, slots: Array<{id, pool: string[], label, excludeGroupOf?, excludeChosen?}> }>}
  */
 export function buildSlotPlan(style, mealIds, opts = {}) {
-  const { diet = "balanced", avoidFoods = [], poolSize = 10 } = opts;
+  const { diet = "balanced", avoidFoods = [], poolSize = 10, goal = null } = opts;
   const tpl = SLOT_TEMPLATES[style] || SLOT_TEMPLATES.vn;
   const pools = buildSlotPools();
   const avoid = new Set((avoidFoods || []).map((s) => (s || "").toLowerCase().trim()));
   const noCarb = DIET_NO_CARB.has(diet);
+
+  // Goal-based carb filter:
+  // - bulk: carb năng lượng cao dễ ăn (cơm trắng) — LOẠI gạo lứt/yến mạch (no lâu, khó đủ surplus)
+  // - cut: ưu tiên carb no lâu low-GI (gạo lứt/khoai) — LOẠI cơm trắng nếu pool còn đủ
+  const BULK_BLOCK_CARB = new Set(["cơm gạo lứt", "yến mạch", "bánh mì đen", "khoai lang luộc", "khoai lang", "khoai tây luộc", "bí đỏ hấp"]);
+  const CUT_BLOCK_CARB = new Set(["cơm trắng", "xôi trắng"]);
 
   const plan = [];
   for (const mealId of mealIds) {
@@ -232,6 +238,16 @@ export function buildSlotPlan(style, mealIds, opts = {}) {
       // keto/low_carb: bỏ slot carb
       if (noCarb && slot.pool.startsWith("carb")) continue;
       let items = (pools[slot.pool] || []).filter((k) => !avoid.has(k));
+      // Goal filter cho slot carb
+      if (slot.pool.startsWith("carb")) {
+        if (goal === "bulk") {
+          const f = items.filter((k) => !BULK_BLOCK_CARB.has(k));
+          if (f.length > 0) items = f;
+        } else if (goal === "cut") {
+          const f = items.filter((k) => !CUT_BLOCK_CARB.has(k));
+          if (f.length > 0) items = f;
+        }
+      }
       if (items.length === 0) items = pools[slot.pool] || []; // pool cạn do avoid → nới
       items = shuffleArr(items).slice(0, Math.max(poolSize, 4));
       outSlots.push({ ...slot, items });
