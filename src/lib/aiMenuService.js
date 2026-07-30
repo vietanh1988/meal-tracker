@@ -344,6 +344,31 @@ function attachPatternAndDisplay(template, norm) {
   };
 }
 
+// Sàn gram đạm bữa chính — bulk/ăn thật cần thịt/cá đủ chất, engine chia mỏng
+// (VD cá hấp 80g = 16g đạm quá ít). Nâng thịt/cá < 120g lên 140g, scale macro.
+// Trứng/đậu phụ bỏ qua (đạm phụ, có snapWholeUnit riêng).
+function enforceProteinFloor(template) {
+  const meals = (template.meals || []).map(m => {
+    if (!MAIN_MEALS.has(m.meal_id)) return m;
+    const items = (m.items || []).map(it => {
+      const name = (it.food || "").toLowerCase();
+      if (it.role !== "protein" || !it.gram || it.gram >= 120) return it;
+      if (name.includes("trứng") || name.includes("đậu phụ") || name.includes("đậu hũ")) return it;
+      const r = 140 / it.gram;
+      return {
+        ...it, gram: 140,
+        p: Math.round((it.p || 0) * r * 10) / 10,
+        c: Math.round((it.c || 0) * r * 10) / 10,
+        f: Math.round((it.f || 0) * r * 10) / 10,
+        fiber: Math.round((it.fiber || 0) * r * 10) / 10,
+        cal: Math.round((it.cal || 0) * r),
+      };
+    });
+    return { ...m, items };
+  });
+  return { ...template, meals };
+}
+
 // ============================================================
 // 6. HÀM CHÍNH — generateMenuAI
 // ============================================================
@@ -445,7 +470,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
 
         // Engine dry-run lần 2 — đo CALO gap (slot mode ít món, gram cap dễ thiếu calo)
         const virtualTpl2 = buildVirtualTemplate(normMeals, dayType);
-        const total2 = sumTemplate(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl2, target)));
+        const total2 = sumTemplate(enforceProteinFloor(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl2, target))));
         const calGap = (target.cal || 0) - (total2.cal || 0);
         if (calGap > (target.cal || 0) * 0.12) {
           // Món bù calo theo bữa — dày calo, hợp văn hoá, không phá style
@@ -459,10 +484,10 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
           const cleanBlock = new Set(["đậu phụ chiên", "đậu phộng"]);
           let added = 0;
           for (const m of normMeals) {
-            if (added >= 4) break;
+            if (added >= 6) break;
             const fillers = CAL_FILLERS[m.meal_id] || [];
             for (const f of fillers) {
-              if (added >= 4) break;
+              if (added >= 6) break;
               if (avoidSet.has(f.key)) continue;
               if (styleId === "clean" && cleanBlock.has(f.key)) continue;
               if (m.foods.some(x => x.key === f.key || (x.fullName || "").includes(f.key))) continue;
@@ -476,7 +501,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         // Engine dry-run cuối
         const virtualTpl = buildVirtualTemplate(normMeals, dayType);
         const template = attachPatternAndDisplay(
-          stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)),
+          enforceProteinFloor(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target))),
           { meals: normMeals }
         );
         return { ok: true, template, note: "" };
