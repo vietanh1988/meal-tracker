@@ -72,6 +72,16 @@ const PROTEIN_CLEAN_SANG = new Set(["trứng gà luộc", "trứng luộc", "tr�
 
 const VEG_BLOCK = ["lẩu", "salad", "gỏi", "nộm", "som tam", "kim chi", "dưa", "chả giò", "cà ri", "cuốn diếp", "mì căn", "tempeh", "nhồi thịt", "kho quẹt", "cua đồng", "tẩm hành"];
 
+// Alias trùng nghĩa — chỉ giữ 1 bản trong pool (tránh AI thấy 2 dòng cùng món)
+const ALIAS_DROP = new Set([
+  "thịt lợn nạc", "thịt lợn", "sườn lợn", "thịt lợn xay", // giữ bản "heo"
+  "mướp đắng", // giữ "khổ qua"
+  "rau mùng tơi", // giữ "mồng tơi"
+  "cải bó xôi", // giữ "rau bina"
+  "bí ngô", // giữ "bí đỏ"
+  "dưa leo", // giữ "dưa chuột"
+]);
+
 // ---------- Build pools từ LOCAL_FOODS ----------
 // overrides: food_overrides từ Supabase đã apply vào LOCAL_FOODS trước đó (applyOverrides)
 export function buildSlotPools() {
@@ -83,7 +93,7 @@ export function buildSlotPools() {
   };
 
   for (const [k, v] of Object.entries(LOCAL_FOODS)) {
-    if (JUNK_KEYS.has(k)) continue;
+    if (JUNK_KEYS.has(k) || ALIAS_DROP.has(k)) continue;
 
     // Sáng
     if (isSangDish(k) && !SANG_BLOCK.has(k)) {
@@ -129,13 +139,22 @@ export function buildSlotPools() {
 }
 
 // ---------- Nhóm đạm (để enforce đạm trưa ≠ đạm tối) ----------
+// KHÔNG dùng regex \b — word boundary fail với ký tự tiếng Việt (ò, ê, ứ...)
+const GROUP_KEYWORDS = {
+  seafood: ["cá", "tôm", "mực", "cua", "ghẹ", "nghêu", "ngao", "hến", "sò", "ốc", "hải sản", "chả cá", "bề bề", "ruốc"],
+  poultry: ["gà", "vịt", "ngan", "chim", "cút"],
+  beef: ["bò", "beef", "steak"],
+  pork: ["heo", "lợn", "sườn", "ba chỉ", "ba rọi", "chả lụa", "giò lụa", "giò", "chả quế", "nem", "xíu mại", "thịt kho", "thịt luộc", "thịt nướng", "thịt xào", "thịt rang", "thịt hầm", "lạp xưởng", "chân giò"],
+  egg: ["trứng"],
+};
+// Thứ tự ưu tiên khi tên chứa nhiều keyword (VD "tôm rim thịt" → seafood vì tôm là chính)
+const GROUP_ORDER = ["seafood", "egg", "poultry", "beef", "pork"];
+
 export function getProteinGroup(key) {
   const k = (key || "").toLowerCase();
-  if (/\b(gà|vịt|ngan|chim)\b|^gà|^vịt|cánh gà|đùi gà|ức gà/.test(k)) return "poultry";
-  if (/\b(bò|beef)\b|^bò|thịt bò|sườn bò|nạm bò|bắp bò/.test(k)) return "beef";
-  if (/\b(heo|lợn|sườn|ba chỉ|thịt kho|xíu mại)\b|^heo|^thịt(?! bò)/.test(k)) return "pork";
-  if (/cá|tôm|mực|cua|ghẹ|nghêu|ngao|hến|sò|ốc|hải sản/.test(k)) return "seafood";
-  if (/trứng/.test(k)) return "egg";
+  for (const group of GROUP_ORDER) {
+    if (GROUP_KEYWORDS[group].some((kw) => k.includes(kw))) return group;
+  }
   return "other";
 }
 

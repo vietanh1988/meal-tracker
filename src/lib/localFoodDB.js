@@ -35,6 +35,10 @@ export const COOK_MODIFIERS = {
   "kho": {p:0, c:3, f:2, cal:30},
   "rim": {p:0, c:4, f:2, cal:35},
 
+  // Xào — dầu ăn ~4-5g/100g (khớp su su xào 58cal vs luộc 19cal trong DB)
+  "xào": {p:0, c:1, f:4.5, cal:45},
+  "xào tỏi": {p:0, c:1.5, f:5, cal:50},
+
   // Hầm — mềm, mất ít dinh dưỡng
   "hầm": {p:0, c:1, f:1, cal:12},
   "om": {p:0, c:1, f:1, cal:12},
