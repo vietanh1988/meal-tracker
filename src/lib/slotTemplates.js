@@ -61,9 +61,9 @@ const MAIN_STANDALONE = new Set([
 ]);
 
 // Snack pools (cố định, món phổ biến dễ mua)
-const SNACK_A_KEYS = new Set(["trứng gà luộc", "trứng luộc", "sữa tươi", "chuối", "táo", "khoai lang luộc", "khoai tây luộc", "ngô luộc", "đậu phộng luộc", "hạt sen luộc", "bánh mì sandwich"]);
-const SNACK_B_FRUIT = new Set(["đu đủ", "cam", "bưởi", "thanh long", "dưa hấu", "xoài", "ổi", "quả bơ", "nho", "lê", "kiwi", "dâu tây", "dứa", "chôm chôm", "măng cụt"]);
-const SNACK_B_OTHER = new Set(["sữa chua", "sữa chua hy lạp", "đậu phộng", "hạt điều", "hạnh nhân", "óc chó"]);
+const SNACK_A_KEYS = new Set(["trứng gà luộc", "trứng luộc", "sữa tươi", "chuối", "khoai lang luộc", "khoai tây luộc", "ngô luộc", "đậu phộng luộc", "hạt sen luộc", "bánh mì sandwich"]);
+const SNACK_B_FRUIT = new Set(["đu đủ", "cam", "bưởi", "thanh long", "dưa hấu", "xoài", "ổi", "quả bơ", "dứa", "chôm chôm", "táo", "măng cụt", "lê"]);
+const SNACK_B_OTHER = new Set(["sữa chua", "sữa chua hy lạp", "đậu phộng", "hạt điều"]);
 
 const CARB_VN = new Set(["cơm trắng", "cơm gạo lứt"]);
 const CARB_CLEAN = new Set(["cơm gạo lứt", "khoai lang", "yến mạch", "bánh mì đen", "khoai lang luộc", "khoai tây luộc", "bí đỏ hấp"]);
