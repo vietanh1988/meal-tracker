@@ -315,16 +315,16 @@ export const LOCAL_FOODS = {
   // Macro tính theo công thức thật (nước dùng + bánh/bún + thịt + rau), per 100g tổng.
   // form:"composite" — engine dùng trực tiếp, KHÔNG áp cooking modifier.
   // Standalone → validator chặn không ghép thêm carb/protein rời.
-  "phở bò":       {p:5.5, c:8.2, f:1.8, cal:72, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
-  "phở gà":       {p:5.8, c:8.0, f:1.5, cal:68, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
-  "bún bò huế":   {p:5.0, c:7.5, f:2.5, cal:73, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
-  "bún riêu":     {p:4.5, c:7.0, f:2.0, cal:65, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
-  "bún chả":      {p:6.0, c:7.8, f:3.5, cal:88, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
-  "bún thịt nướng":{p:5.5, c:8.0, f:3.0, cal:82, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
-  "hủ tiếu nam vang":{p:5.2, c:8.5, f:2.0, cal:73, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
-  "bánh canh":    {p:4.8, c:9.0, f:1.5, cal:69, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
-  "mì quảng":     {p:5.0, c:8.5, f:2.5, cal:77, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
-  "cháo gà":      {p:3.5, c:6.5, f:1.0, cal:50, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "phở bò":       {p:6.5, c:9.7, f:2.1, cal:85, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "phở gà":       {p:6.8, c:9.4, f:1.8, cal:80, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "bún bò huế":   {p:6.8, c:10.3, f:3.4, cal:100, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bún riêu":     {p:5.9, c:9.2, f:2.6, cal:85, fiber:0.7, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bún chả":      {p:7.5, c:9.8, f:4.4, cal:110, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "bún thịt nướng":{p:7.0, c:10.2, f:3.8, cal:105, fiber:0.6, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "hủ tiếu nam vang":{p:6.8, c:11.1, f:2.6, cal:95, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bánh canh":    {p:5.9, c:11.1, f:1.8, cal:85, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "mì quảng":     {p:8.4, c:14.4, f:4.2, cal:130, fiber:0.7, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "cháo gà":      {p:4.9, c:9.1, f:1.4, cal:70, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "cháo thịt bằm":{p:3.0, c:6.5, f:1.5, cal:52, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
   "xôi xéo":      {p:4.0, c:30.0,f:5.0, cal:182, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "xôi gà":       {p:6.0, c:28.0,f:4.5, cal:178, fiber:0.6, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
@@ -492,16 +492,16 @@ export const LOCAL_FOODS = {
   "tempeh":          {p:19.0, c:9.4, f:11.0, cal:193, fiber:5.0, form:"cooked", cat:"veg"},
 
   // ==================== 32. BATCH 5 — BỔ SUNG COMPOSITE VN ====================
-  "bún mọc":         {p:4.5, c:8.0, f:1.8, cal:68, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
-  "bún cá":          {p:5.0, c:7.5, f:1.5, cal:64, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "bún mọc":         {p:5.6, c:10.0, f:2.2, cal:85, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
+  "bún cá":          {p:6.2, c:9.4, f:1.9, cal:80, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "hủ tiếu xào":    {p:5.0, c:18.0, f:5.0, cal:140, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
   "mì xào":          {p:5.5, c:20.0, f:6.0, cal:158, fiber:0.8, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
   "lẩu thái":        {p:4.0, c:3.0, f:2.0, cal:48, fiber:0.5, form:"composite", cat:"starch", region:"intl", complexity:2, convenience:7},
   "lẩu hải sản":     {p:5.0, c:2.0, f:1.5, cal:42, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
 
   // ==================== 33. BATCH 6 — COMPOSITE VN BỔ SUNG ====================
-  "bún ốc":          {p:5.0, c:7.0, f:2.0, cal:68, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
-  "cháo lòng":       {p:4.0, c:6.0, f:2.0, cal:58, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "bún ốc":          {p:5.9, c:8.2, f:2.4, cal:80, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "cháo lòng":       {p:5.5, c:8.3, f:2.8, cal:80, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "cháo hải sản":    {p:4.5, c:6.5, f:1.5, cal:56, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
   "cơm gà":          {p:7.0, c:22.0, f:4.0, cal:155, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:8},
   "cơm sườn":        {p:8.0, c:20.0, f:6.0, cal:168, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:8},
@@ -624,7 +624,7 @@ export const LOCAL_FOODS = {
   "táo đỏ khô":      {p:3.7, c:73.6, f:0.4, cal:287, fiber:6.7, form:"dry", cat:"fruit"},
 
   // Composite VN bổ sung
-  "bún mắm":         {p:5.5, c:7.5, f:2.5, cal:75, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "bún mắm":         {p:7.0, c:9.5, f:3.2, cal:95, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "bún cá sứa":      {p:4.0, c:8.0, f:1.5, cal:62, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "cao lầu":         {p:5.5, c:12.0, f:3.0, cal:98, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "bánh đa cua":     {p:4.0, c:10.0, f:2.0, cal:75, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
@@ -698,7 +698,7 @@ export const LOCAL_FOODS = {
   "bún chả cá":      {p:5.0, c:8.0, f:2.0, cal:72, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "bún mắm nêm":     {p:5.0, c:8.0, f:3.0, cal:80, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "bún kèn":         {p:4.5, c:10.0, f:3.5, cal:90, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:5},
-  "bánh canh cua":   {p:5.0, c:10.0, f:2.0, cal:78, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "bánh canh cua":   {p:6.1, c:12.2, f:2.4, cal:95, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "hủ tiếu xương":   {p:5.0, c:9.0, f:2.5, cal:78, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
   "phở cuốn":        {p:4.0, c:12.0, f:2.0, cal:82, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
   "bánh xèo miền tây":{p:5.0, c:18.0, f:10.0, cal:185, fiber:1.0, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
@@ -1081,7 +1081,7 @@ export const LOCAL_FOODS = {
   "mì quảng tôm thịt":{p:6.0, c:10.0, f:3.0, cal:92, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "cháo vịt":        {p:4.0, c:6.0, f:2.0, cal:58, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
   "cháo cá":         {p:4.5, c:6.5, f:1.0, cal:54, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
-  "cháo sườn":       {p:3.5, c:6.5, f:2.0, cal:58, fiber:0.2, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
+  "cháo sườn":       {p:4.5, c:8.4, f:2.6, cal:75, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:7},
 
   // ==================== BATCH 25 — MÓN NƯỚNG CHI TIẾT ====================
   "thịt ba chỉ nướng":{p:12.0, c:2.0, f:30.0, cal:330, fiber:0, form:"cooked", cat:"pork"},
@@ -1243,7 +1243,7 @@ export const LOCAL_FOODS = {
   "bún sườn":        {p:5.0, c:8.0, f:2.5, cal:75, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
 
   // ==================== BATCH 31 — PHỞ CHI TIẾT ====================
-  "phở tái":         {p:6.0, c:8.0, f:2.0, cal:75, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
+  "phở tái":         {p:6.8, c:9.1, f:2.3, cal:85, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "phở tái lăn":     {p:6.5, c:8.0, f:2.5, cal:82, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "phở tái chín":    {p:6.5, c:8.0, f:2.0, cal:78, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "phở gà trộn lá chanh":{p:6.0, c:12.0, f:3.0, cal:100, fiber:0.5, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:7},
@@ -1508,7 +1508,7 @@ export const LOCAL_FOODS = {
   "phở bò tái nạm":  {p:7.0, c:8.0, f:2.5, cal:82, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "phở bò tái gầu":  {p:6.0, c:8.0, f:3.5, cal:90, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "bún chả cá nha trang":{p:5.0, c:8.0, f:2.0, cal:72, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
-  "hủ tiếu mực":     {p:5.5, c:9.0, f:1.5, cal:72, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
+  "hủ tiếu mực":     {p:6.9, c:11.2, f:1.9, cal:90, fiber:0.4, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "mì vịt tiềm":     {p:6.0, c:10.0, f:4.0, cal:100, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:2, convenience:6},
   "cơm chiên tôm":   {p:7.0, c:24.0, f:6.0, cal:178, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
   "cơm chiên gà":    {p:7.0, c:24.0, f:6.0, cal:178, fiber:0.3, form:"composite", cat:"starch", region:"vn", complexity:1, convenience:8},
