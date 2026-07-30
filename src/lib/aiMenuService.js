@@ -472,30 +472,32 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         const virtualTpl2 = buildVirtualTemplate(normMeals, dayType);
         const total2 = sumTemplate(enforceProteinFloor(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl2, target))));
         const calGap = (target.cal || 0) - (total2.cal || 0);
-        if (calGap > (target.cal || 0) * 0.12) {
-          // Món bù calo theo bữa — dày calo, hợp văn hoá, không phá style
-          const CAL_FILLERS = {
-            sang:      [{ key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" }, { key: "sữa tươi", display: "Sữa tươi", role: "fixed" }],
-            phu_sang:  [{ key: "chuối", display: "Chuối", role: "fixed" }, { key: "khoai lang luộc", display: "Khoai lang luộc", role: "carb" }],
-            trua:      [{ key: "trứng luộc", display: "Trứng luộc", role: "protein" }],
-            phu_chieu: [{ key: "đậu phộng", display: "Đậu phộng", role: "fat" }, { key: "sữa chua", display: "Sữa chua", role: "fixed" }],
-            toi:       [{ key: "đậu phụ chiên", display: "Đậu phụ chiên", role: "protein" }],
-          };
-          const cleanBlock = new Set(["đậu phụ chiên", "đậu phộng"]);
+        const fatGap2 = (target.f || 0) - (total2.f || 0);
+        // Bù khi thiếu calo >12% HOẶC thiếu fat >10g
+        if (calGap > (target.cal || 0) * 0.12 || fatGap2 > 10) {
+          // CHỈ bù vào BỮA PHỤ (cấm bữa chính — tránh quá tải)
+          // 3 món bù duy nhất: lạc rang (đậu phộng), bơ đậu phộng, trứng gà luộc
+          const SNACK_FILLERS = [
+            { key: "đậu phộng", display: "Lạc rang", role: "fat" },        // 567cal/49f/100g
+            { key: "bơ đậu phộng", display: "Bơ đậu phộng", role: "fat" }, // 588cal/50f/100g
+            { key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" },
+          ];
+          const SNACK_MEALS = ["phu_chieu", "phu_sang", "post", "pre"];
           let added = 0;
-          for (const m of normMeals) {
-            if (added >= 6) break;
-            const fillers = CAL_FILLERS[m.meal_id] || [];
-            for (const f of fillers) {
-              if (added >= 6) break;
+          for (const mealId of SNACK_MEALS) {
+            if (added >= 3) break;
+            const m = normMeals.find(x => x.meal_id === mealId);
+            if (!m) continue;
+            for (const f of SNACK_FILLERS) {
+              if (added >= 3) break;
               if (avoidSet.has(f.key)) continue;
-              if (styleId === "clean" && cleanBlock.has(f.key)) continue;
               if (m.foods.some(x => x.key === f.key || (x.fullName || "").includes(f.key))) continue;
               m.foods.push({ ...f });
               added++;
+              break; // mỗi bữa phụ chỉ nhét 1 món bù
             }
           }
-          if (added > 0) console.warn(`[Slot Mode] calo thiếu ${Math.round(calGap)} — thêm ${added} món bù`);
+          if (added > 0) console.warn(`[Slot Mode] thiếu ${Math.round(calGap)}cal/${Math.round(fatGap2)}f — bù ${added} món vào bữa phụ`);
         }
 
         // Engine dry-run cuối
