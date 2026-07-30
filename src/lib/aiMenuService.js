@@ -443,6 +443,36 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
           }
         }
 
+        // Engine dry-run lần 2 — đo CALO gap (slot mode ít món, gram cap dễ thiếu calo)
+        const virtualTpl2 = buildVirtualTemplate(normMeals, dayType);
+        const total2 = sumTemplate(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl2, target)));
+        const calGap = (target.cal || 0) - (total2.cal || 0);
+        if (calGap > (target.cal || 0) * 0.12) {
+          // Món bù calo theo bữa — dày calo, hợp văn hoá, không phá style
+          const CAL_FILLERS = {
+            sang:      [{ key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" }, { key: "sữa tươi", display: "Sữa tươi", role: "fixed" }],
+            phu_sang:  [{ key: "chuối", display: "Chuối", role: "fixed" }, { key: "khoai lang luộc", display: "Khoai lang luộc", role: "carb" }],
+            trua:      [{ key: "trứng luộc", display: "Trứng luộc", role: "protein" }],
+            phu_chieu: [{ key: "đậu phộng", display: "Đậu phộng", role: "fat" }, { key: "sữa chua", display: "Sữa chua", role: "fixed" }],
+            toi:       [{ key: "đậu phụ chiên", display: "Đậu phụ chiên", role: "protein" }],
+          };
+          const cleanBlock = new Set(["đậu phụ chiên", "đậu phộng"]);
+          let added = 0;
+          for (const m of normMeals) {
+            if (added >= 4) break;
+            const fillers = CAL_FILLERS[m.meal_id] || [];
+            for (const f of fillers) {
+              if (added >= 4) break;
+              if (avoidSet.has(f.key)) continue;
+              if (styleId === "clean" && cleanBlock.has(f.key)) continue;
+              if (m.foods.some(x => x.key === f.key || (x.fullName || "").includes(f.key))) continue;
+              m.foods.push({ ...f });
+              added++;
+            }
+          }
+          if (added > 0) console.warn(`[Slot Mode] calo thiếu ${Math.round(calGap)} — thêm ${added} món bù`);
+        }
+
         // Engine dry-run cuối
         const virtualTpl = buildVirtualTemplate(normMeals, dayType);
         const template = attachPatternAndDisplay(
