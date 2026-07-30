@@ -103,7 +103,7 @@ export function buildSlotPools() {
     // Trọn suất trưa/tối (easy)
     if (MAIN_STANDALONE.has(k)) pools.standalone_main_easy.push(k);
     // Canh
-    if (isCanh(k)) {
+    if (isCanh(k) && k !== "canh kimchi") {
       pools.soup_vn.push(k);
       if (!k.includes("sườn") && !k.includes("giò") && !k.includes("xương")) pools.soup_clean.push(k);
     }
@@ -113,9 +113,13 @@ export function buildSlotPools() {
       (v.cat === "egg_dairy" && k.startsWith("trứng") && v.form === "cooked");
     if (isProtein && !isCanh(k) && !isSangDish(k) && !MAIN_STANDALONE.has(k) && !EXCLUDED_PROTEIN.has(k) &&
         !k.includes("gỏi") && !k.includes("nộm") && !k.includes("salad") && !k.includes("poke") && !k.includes("cơm")) {
-      pools.protein_vn.push(k);
+      // Pool VN: loại món Tây/fusion + nguyên liệu không phải cơm nhà thường ngày
+      const isWestern = v.region === "intl" ||
+        /bít tết|steak|beef|bbq|sốt bơ|sốt kem|sốt cay|teriyaki|sốt tiêu|cá hồi|cá ngừ|broccoli|cuốn khoai tây|ba chỉ cuộn/.test(k) ||
+        k === "nướng hải sản";
+      if (!isWestern) pools.protein_vn.push(k);
       if (hasCleanCook(k) && !hasDirtyCook(k) && !k.includes("kho") && !k.includes("rim") && !k.includes("ba chỉ") && !k.includes("mỡ hành")) {
-        pools.protein_clean.push(k);
+        pools.protein_clean.push(k); // Clean giữ cá hồi/steak áp chảo — dân eat clean chuộng
       }
     }
     // Rau
