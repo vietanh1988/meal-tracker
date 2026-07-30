@@ -476,12 +476,28 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         // Bù khi thiếu calo >12% HOẶC thiếu fat >10g
         if (calGap > (target.cal || 0) * 0.12 || fatGap2 > 10) {
           // CHỈ bù vào BỮA PHỤ (cấm bữa chính — tránh quá tải)
-          // 3 món bù duy nhất: lạc rang (đậu phộng), bơ đậu phộng, trứng gà luộc
-          const SNACK_FILLERS = [
-            { key: "đậu phộng", display: "Lạc rang", role: "fat" },        // 567cal/49f/100g
-            { key: "bơ đậu phộng", display: "Bơ đậu phộng", role: "fat" }, // 588cal/50f/100g
-            { key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" },
-          ];
+          // Danh sách + thứ tự ưu tiên theo style; hạt điều = dự phòng khi dị ứng đậu phộng
+          const FILLERS_BY_STYLE = {
+            vn: [ // lạc rang chuẩn cơm nhà
+              { key: "đậu phộng", display: "Lạc rang", role: "fat" },        // 567cal/49f
+              { key: "bơ đậu phộng", display: "Bơ đậu phộng", role: "fat" }, // 588cal/50f
+              { key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" },
+              { key: "hạt điều", display: "Hạt điều", role: "fat" },
+            ],
+            clean: [ // đạm trước (clean luộc/hấp thiếu cả đạm lẫn fat), quả bơ = fat sạch
+              { key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" },
+              { key: "quả bơ", display: "Quả bơ", role: "fat" },             // 160cal/14.7f
+              { key: "bơ đậu phộng", display: "Bơ đậu phộng", role: "fat" },
+              { key: "hạt điều", display: "Hạt điều", role: "fat" },
+            ],
+            easy: [ // mua tạp hoá, không nấu
+              { key: "bơ đậu phộng", display: "Bơ đậu phộng", role: "fat" },
+              { key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" },
+              { key: "sữa tươi", display: "Sữa tươi", role: "fixed" },
+              { key: "hạt điều", display: "Hạt điều", role: "fat" },
+            ],
+          };
+          const SNACK_FILLERS = FILLERS_BY_STYLE[styleId] || FILLERS_BY_STYLE.vn;
           const SNACK_MEALS = ["phu_chieu", "phu_sang", "post", "pre"];
           let added = 0;
           for (const mealId of SNACK_MEALS) {
@@ -491,13 +507,14 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
             for (const f of SNACK_FILLERS) {
               if (added >= 3) break;
               if (avoidSet.has(f.key)) continue;
-              if (m.foods.some(x => x.key === f.key || (x.fullName || "").includes(f.key))) continue;
+              // Đã bù món này ở bữa phụ khác → thử món tiếp theo (đa dạng giữa các bữa)
+              if (normMeals.some(mm => mm.foods.some(x => x.key === f.key || (x.fullName || "").includes(f.key)))) continue;
               m.foods.push({ ...f });
               added++;
               break; // mỗi bữa phụ chỉ nhét 1 món bù
             }
           }
-          if (added > 0) console.warn(`[Slot Mode] thiếu ${Math.round(calGap)}cal/${Math.round(fatGap2)}f — bù ${added} món vào bữa phụ`);
+          if (added > 0) console.warn(`[Slot Mode] thiếu ${Math.round(calGap)}cal/${Math.round(fatGap2)}f — bù ${added} món vào bữa phụ (style ${styleId || "vn"})`);
         }
 
         // Engine dry-run cuối
