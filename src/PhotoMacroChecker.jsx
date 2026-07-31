@@ -461,7 +461,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
           <div style={title}>Kết quả</div>
           <div style={{ marginTop: 12 }}>{stepBar(4)}</div>
         </div>
-        <div style={{ ...body, gap: 16, marginTop: 12, paddingBottom: 100 }}>
+        <div style={{ ...body, gap: 16, marginTop: 12, paddingBottom: 190 }}>
           {/* Total card */}
           <div style={{ padding: "24px 20px", background: "linear-gradient(135deg, #0A1628, #162544)", borderRadius: 18, border: "2px solid #007AFF", textAlign: "center" }}>
             <div style={{ fontSize: 42, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{results.total.cal}</div>
@@ -540,6 +540,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
               </div>
             ))}
           </div>
+          <div style={{ height: 190, flexShrink: 0 }} aria-hidden="true" />
         </div>
         <div style={pinnedBottom}>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
