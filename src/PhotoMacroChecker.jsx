@@ -20,7 +20,7 @@ function getVisionProvider(appSettings, fallbackProvider) {
   return (override && override !== "auto") ? override : fallbackProvider;
 }
 
-export default function PhotoMacroChecker({ onClose, appSettings, photoCtx }) {
+export default function PhotoMacroChecker({ onClose, appSettings, photoCtx, hasMealsToday, saveMealToCloud, toggleEaten }) {
   // Đọc AI provider/model từ appSettings
   const aiProvider = appSettings?.ai_provider || "claude";
   const aiModel = appSettings?.ai_model || "claude-sonnet-5";
@@ -511,6 +511,49 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
                 <div style={{ fontSize: 15, fontWeight: 800, color, display: "flex", alignItems: "center", gap: 8 }}>{icon} {label} so với mục tiêu {photoCtx.target.toLocaleString()} kcal/ngày</div>
                 <div style={{ fontSize: 13, color: "#374151", marginTop: 6, lineHeight: 1.5 }}>{msg}</div>
                 <div style={{ fontSize: 13, color: "#374151", marginTop: 4, fontWeight: 600 }}>{pMsg}</div>
+              </div>
+            );
+          })()}
+
+          {/* Nút "Ghi vào bữa" — CHỈ hiện khi user chưa có bữa ăn hôm nay */}
+          {(() => {
+            const hasAny = hasMealsToday && (hasMealsToday("train") || hasMealsToday("rest"));
+            if (hasAny) return null;
+            // Auto chọn bữa theo giờ hiện tại
+            const h = new Date().getHours();
+            const autoMeal = h < 10 ? "sang" : h < 14 ? "trua" : h < 17 ? "phu_chieu" : "toi";
+            const MEAL_NAMES = { sang: "Bữa sáng", trua: "Bữa trưa", phu_chieu: "Bữa phụ chiều", toi: "Bữa tối", phu_sang: "Bữa phụ sáng" };
+            const mealLabel = MEAL_NAMES[autoMeal] || "Bữa ăn";
+            return (
+              <div style={{ padding: "14px 16px", background: "#EFF6FF", borderRadius: 14, border: "1.5px solid #BFDBFE" }}>
+                <div style={{ fontSize: 13, color: "#1E40AF", lineHeight: 1.5, marginBottom: 10 }}>
+                  Bạn chưa có thực đơn hôm nay. Bấm để ghi bữa này vào theo dõi — calo và macro sẽ tính vào tổng ngày.
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!saveMealToCloud || !results?.items) return;
+                    try {
+                      // Convert items sang meal_logs format
+                      const mealItems = results.items.map(it => ({
+                        food: it.name, gram: it.gram || 100,
+                        cal: Math.round(it.cal || 0), p: Math.round((it.p || 0) * 10) / 10,
+                        c: Math.round((it.c || 0) * 10) / 10, f: Math.round((it.f || 0) * 10) / 10,
+                        fiber: Math.round((it.fiber || 0) * 10) / 10,
+                      }));
+                      // Ghi vào meal_logs (dayType mặc định "rest" — engine sẽ nhận)
+                      await saveMealToCloud(autoMeal, "rest", mealItems);
+                      // Tự tick Đã ăn
+                      if (toggleEaten) await toggleEaten(autoMeal, true);
+                      alert(`✅ Đã ghi ${mealLabel} (${Math.round(results.total.cal)} kcal) vào theo dõi!`);
+                    } catch (e) {
+                      console.error("Ghi bữa lỗi:", e);
+                      alert("Có lỗi khi ghi bữa ăn. Thử lại sau.");
+                    }
+                  }}
+                  style={{ width: "100%", padding: "12px 0", fontSize: 14, fontWeight: 800, border: "none", borderRadius: 12, background: "linear-gradient(135deg, #3B82F6, #1D4ED8)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  📷 Ghi vào {mealLabel} ({Math.round(results.total.cal)} kcal)
+                </button>
               </div>
             );
           })()}

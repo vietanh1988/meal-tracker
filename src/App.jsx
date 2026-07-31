@@ -292,7 +292,7 @@ export default function App(){
     </div>
     </div>
     <PWAInstallPrompt />
-    {showPhotoMacro&&<PhotoMacroChecker onClose={()=>setShowPhotoMacro(false)} appSettings={appSettings} photoCtx={(()=>{try{const t=getTodayMeals("train"),r=getTodayMeals("rest");const tHas=t.some(m=>m.items&&m.items.length>0);const meals=tHas?t:r;const eatenCal=meals.filter(m=>eatenMeals.includes(m.id)).reduce((a,m)=>a+m.items.reduce((x,i)=>x+(i.cal||0),0),0);return{target:tHas?macro.calTarget:macro.calRest,eatenCal:Math.round(eatenCal),goal:macro.goal,proteinTarget:macro.protein};}catch(e){return null;}})()}/>}
+    {showPhotoMacro&&<PhotoMacroChecker onClose={()=>setShowPhotoMacro(false)} appSettings={appSettings} hasMealsToday={hasMealsToday} saveMealToCloud={saveMealToCloud} toggleEaten={toggleEaten} photoCtx={(()=>{try{const t=getTodayMeals("train"),r=getTodayMeals("rest");const tHas=t.some(m=>m.items&&m.items.length>0);const meals=tHas?t:r;const eatenCal=meals.filter(m=>eatenMeals.includes(m.id)).reduce((a,m)=>a+m.items.reduce((x,i)=>x+(i.cal||0),0),0);return{target:tHas?macro.calTarget:macro.calRest,eatenCal:Math.round(eatenCal),goal:macro.goal,proteinTarget:macro.protein};}catch(e){return null;}})()}/>}
     {!isAdmin&&showFeedbackPrompt&&<div style={{position:"fixed",inset:0,zIndex:99999,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>{setShowFeedbackPrompt(false);localStorage.setItem("feedback_prompted","1");}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,padding:"28px 24px",maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,0.2)"}}>
         <div style={{fontSize:40,marginBottom:12}}>💬</div>
