@@ -347,11 +347,11 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
           {error && <div style={{ padding: "10px 14px", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, fontSize: 13, color: "#991B1B", width: "100%" }}>⚠️ {error}</div>}
           {imageData ? (
-            <img src={imageData} alt="preview" style={{ width: 240, height: 240, borderRadius: 20, objectFit: "cover", border: `2px solid ${C.border}` }} />
+            <img src={imageData} alt="preview" onClick={() => cameraRef.current?.click()} style={{ width: 240, height: 240, borderRadius: 20, objectFit: "cover", border: `2px solid ${C.border}`, cursor: "pointer" }} />
           ) : (
-            <div style={{ width: 240, height: 240, borderRadius: 24, border: `2px dashed ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, color: C.t3, background: "#fff" }}>
+            <div onClick={() => cameraRef.current?.click()} style={{ width: 240, height: 240, borderRadius: 24, border: `2px dashed ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, color: C.t3, background: "#fff", cursor: "pointer" }}>
               <span style={{ fontSize: 64 }}>📷</span>
-              <span style={{ fontSize: 14, fontWeight: 600 }}>Chưa có ảnh</span>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>Bấm để chụp ảnh</span>
             </div>
           )}
           <div style={{ display: "flex", gap: 12, width: "100%" }}>
