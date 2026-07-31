@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import BackPill from "../components/BackPill";
 import { ReadOnlyBanner } from "./ReadOnlyBanner";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { supabase } from "../lib/supabase";
@@ -463,7 +464,7 @@ function UserDetail({ userId, currentUserId, onBack, isSuperAdmin }) {
 
   return (
     <div style={{ ...card, maxWidth: 900, margin: "0 auto" }}>
-      <div onClick={onBack} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 14, cursor: "pointer", color: C.primary, fontSize: 14, fontWeight: 700 }}>← Quay lại danh sách</div>
+      <div style={{ marginBottom: 14 }}><BackPill label="Danh sách user" onClick={onBack}/></div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
         <div style={{ width: 52, height: 52, borderRadius: "50%", background: C.blueBg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, color: C.primary }}>{initials(detail.username)}</div>

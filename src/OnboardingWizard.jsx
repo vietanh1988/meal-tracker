@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BackPill from "./components/BackPill";
 import { C, card, inp, lbl, redBtn } from "./theme";
 import { calcMacro } from "./calcMacro";
 import { useIsMobile } from "./hooks/useIsMobile";
@@ -57,7 +58,7 @@ const stepDots=step===0?null:<div style={{display:"flex",gap:6,justifyContent:"c
 </div>;
 
 const nextBtn=(label,disabled,color)=><button onClick={()=>setStep(step+1)} disabled={disabled} style={{...redBtn,marginTop:16,opacity:disabled?0.5:1,background:color||"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)"}}>{label} →</button>;
-const backBtn=<button onClick={()=>setStep(step-1)} style={{...redBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>;
+const backBtn=<div style={{marginTop:8,display:"flex",justifyContent:"center"}}><BackPill label="Quay lại" onClick={()=>setStep(step-1)}/></div>;
 
 const fieldBox=(children)=><div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:mob?14:20,marginBottom:16}}>{children}</div>;
 
@@ -458,7 +459,7 @@ border:(p.dietStrategy||"balanced")===d.id?`2px solid #60A5FA`:`1.5px solid ${C.
 </div>}
 
 <button onClick={()=>finishOnboarding()} style={{...redBtn,marginTop:8,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>Bỏ qua — tôi tự nhập sau</button>
-<button onClick={()=>setStep(4)} style={{...redBtn,marginTop:4,background:"transparent",color:C.t3,fontWeight:700,fontSize:13}}>← Quay lại</button>
+<div style={{marginTop:4,display:"flex",justifyContent:"center"}}><BackPill label="Quay lại" onClick={()=>setStep(4)}/></div>
 </div>}
 </div>
 )}

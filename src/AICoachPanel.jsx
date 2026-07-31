@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import BackPill from "./components/BackPill";
 import { appConfirm } from "./lib/dialog";
 import { pickAiModelFromSettings, pickAiProvider } from "./lib/aiProvider";
 import { supabase } from "./lib/supabase";
@@ -507,7 +508,7 @@ return <div>
 <div style={panelStyle}>
 {/* Header */}
 <div style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`,display:"flex",alignItems:"center",gap:10}}>
-{mob&&<span onClick={onClose} style={{fontSize:20,color:C2.primary,cursor:"pointer"}}>←</span>}
+{mob&&<BackPill onClick={onClose}/>}
 <span style={{fontSize:18}}>✨</span>
 <span style={{fontSize:17,fontWeight:800,color:C2.t1,flex:1}}>Fipilot AI <span style={{fontSize:12,fontWeight:500,color:C2.t3}}>(Dinh dưỡng & tập luyện)</span></span>
 <span style={{fontSize:11,color:"#22C55E",display:"flex",alignItems:"center",gap:4}}>● Online</span>

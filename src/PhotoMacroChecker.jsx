@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import BackPill from "./components/BackPill";
 import { createPortal } from "react-dom";
 import { C, redBtn } from "./theme";
 import { lookupLocalFood } from "./lib/localFoodDB";
@@ -382,7 +383,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
       {step === 3 && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
           <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
-          <button style={backBtn} onClick={() => { setStep(1); setError(null); }}>← Chụp lại</button>
+          <BackPill label="Chụp lại" onClick={() => { setStep(1); setError(null); }} style={{ marginBottom: 8 }} />
           <div style={title}>Đây có đúng không?</div>
           <div style={desc}>AI nhận diện được {dishes.length} món. Kiểm tra lại tên, sửa nếu sai hoặc thêm món bị thiếu.</div>
           <div style={{ marginTop: 12 }}>{stepBar(2)}</div>
@@ -421,7 +422,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
       {step === 4 && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
           <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
-          <button style={backBtn} onClick={() => setStep(3)}>← Quay lại</button>
+          <BackPill label="Quay lại" onClick={() => setStep(3)} style={{ marginBottom: 8 }} />
           <div style={title}>Chỉnh khẩu phần</div>
           <div style={desc}>AI đã ước lượng sẵn. Bạn sửa lại nếu thấy chưa đúng.</div>
           <div style={{ marginTop: 12 }}>{stepBar(3)}</div>
@@ -457,7 +458,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
       {step === 5 && results && <>
         <div style={{ padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0, position: "relative" }}>
           <button onClick={onClose} style={{ position: "absolute", top: "max(16px, env(safe-area-inset-top, 16px))", right: 16, width: 40, height: 40, borderRadius: "50%", background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 20, color: "#EF4444", zIndex: 2 }}>✕</button>
-          <button style={backBtn} onClick={() => setStep(4)}>← Sửa khẩu phần</button>
+          <BackPill label="Sửa khẩu phần" onClick={() => setStep(4)} style={{ marginBottom: 8 }} />
           <div style={title}>Kết quả</div>
           <div style={{ marginTop: 12 }}>{stepBar(4)}</div>
         </div>

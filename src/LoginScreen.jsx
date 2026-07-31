@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import BackPill from "./components/BackPill";
 import { useAuth } from "./hooks/useAuth";
 import { supabase } from "./lib/supabase";
 import { C, card, inp, lbl, redBtn } from "./theme";
@@ -101,7 +102,7 @@ export function LoginScreen({onLogin,appSettings}){
               <div style={{fontSize:36,marginBottom:12}}>📧</div>
               <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:8}}>Đã gửi email</div>
               <div style={{fontSize:13,color:C.t2,marginBottom:16,lineHeight:1.5}}>Kiểm tra hộp thư <b>{forgotEmail}</b>, bấm vào link trong email để đặt mật khẩu mới.</div>
-              <div onClick={()=>{setMode("login");setForgotSent(false);setForgotEmail("");}} style={{color:C.primary,fontWeight:700,cursor:"pointer",fontSize:13}}>← Quay lại đăng nhập</div>
+              <div style={{display:"flex",justifyContent:"center"}}><BackPill label="Quay lại đăng nhập" onClick={()=>{setMode("login");setForgotSent(false);setForgotEmail("");}}/></div>
             </div>
           ) : (
             <>
@@ -112,7 +113,7 @@ export function LoginScreen({onLogin,appSettings}){
               </div>
               {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {err}</div>}
               <button onClick={handleForgotSubmit} disabled={saving} style={{...redBtn,opacity:saving?0.6:1}}>{saving?"Đang gửi...":"Gửi email đặt lại mật khẩu"}</button>
-              <div onClick={()=>{setMode("login");setErr("");}} style={{textAlign:"center",marginTop:14,color:C.primary,fontWeight:700,cursor:"pointer",fontSize:13}}>← Quay lại đăng nhập</div>
+              <div style={{display:"flex",justifyContent:"center",marginTop:14}}><BackPill label="Quay lại đăng nhập" onClick={()=>{setMode("login");setErr("");}}/></div>
             </>
           )}
         </div>
