@@ -112,7 +112,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
         model,
         feature: "photo_macro",
         image: base64.split(",")[1], // bỏ prefix data:image/...;base64,
-        temperature: 0,
+
       });
 
       if (res.quotaExceeded) {
@@ -198,7 +198,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
 Danh sách:
 ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
 
-          const res = await authFetch("ai-proxy", { foodDesc: estimatePrompt, provider, model: pickAiModel(provider, { claudeModel: aiModel, geminiModel, gptModel }), feature: "photo_macro", temperature: 0 });
+          const res = await authFetch("ai-proxy", { foodDesc: estimatePrompt, provider, model: pickAiModel(provider, { claudeModel: aiModel, geminiModel, gptModel }), feature: "photo_macro" });
           const text = (res.text || "").replace(/```json|```/g, "").trim();
           const parsed = JSON.parse(text);
           aiEstimated = unknownItems.map((it, j) => {
