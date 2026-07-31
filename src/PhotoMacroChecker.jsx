@@ -19,7 +19,7 @@ function getVisionProvider(appSettings, fallbackProvider) {
   return (override && override !== "auto") ? override : fallbackProvider;
 }
 
-export default function PhotoMacroChecker({ onClose, appSettings }) {
+export default function PhotoMacroChecker({ onClose, appSettings, photoCtx }) {
   // Đọc AI provider/model từ appSettings
   const aiProvider = appSettings?.ai_provider || "claude";
   const aiModel = appSettings?.ai_model || "claude-sonnet-5";
@@ -480,6 +480,39 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
               ))}
             </div>
           </div>
+
+          {/* Card đánh giá so với mục tiêu ngày */}
+          {photoCtx && photoCtx.target > 0 && (() => {
+            const mealCal = results.total.cal;
+            const budget = photoCtx.target * 0.33; // cỡ 1 bữa chính ~33% ngày
+            const afterEat = photoCtx.eatenCal + mealCal;
+            const remaining = Math.round(photoCtx.target - afterEat);
+            const over = afterEat > photoCtx.target;
+            let icon, label, color, bg, msg;
+            if (over || mealCal > budget * 1.4) {
+              icon = "⚠️"; label = "Hơi nhiều"; color = "#B45309"; bg = "#FEF3C7";
+              msg = over
+                ? `Ăn bữa này xong bạn vượt mục tiêu ${Math.abs(remaining)} kcal. Cân nhắc giảm khẩu phần hoặc vận động thêm.`
+                : `Bữa này khá lớn so với cỡ bữa hợp lý (~${Math.round(budget)} kcal). Còn ${remaining} kcal cho các bữa sau.`;
+            } else if (mealCal < budget * 0.5) {
+              icon = "🔻"; label = "Hơi ít"; color = "#1D4ED8"; bg = "#DBEAFE";
+              msg = photoCtx.goal === "bulk"
+                ? `Bữa này nhẹ so với mục tiêu tăng cân. Cân nhắc thêm cơm hoặc đạm. Còn ${remaining} kcal cho hôm nay.`
+                : `Bữa này khá nhẹ. Bạn còn ${remaining} kcal cho các bữa sau.`;
+            } else {
+              icon = "✅"; label = "Hợp lý"; color = "#15803D"; bg = "#DCFCE7";
+              msg = `Vừa vặn với mục tiêu! Sau bữa này bạn còn ${remaining} kcal cho hôm nay.`;
+            }
+            const p = results.total.p;
+            const pMsg = p >= 25 ? `Đạm ${p}g — đạt chuẩn 1 bữa chính 💪` : `Đạm ${p}g — hơi thấp cho 1 bữa chính (nên ≥25g)`;
+            return (
+              <div style={{ padding: "14px 16px", background: bg, borderRadius: 14, border: `1.5px solid ${color}33` }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color, display: "flex", alignItems: "center", gap: 8 }}>{icon} {label} so với mục tiêu {photoCtx.target.toLocaleString()} kcal/ngày</div>
+                <div style={{ fontSize: 13, color: "#374151", marginTop: 6, lineHeight: 1.5 }}>{msg}</div>
+                <div style={{ fontSize: 13, color: "#374151", marginTop: 4, fontWeight: 600 }}>{pMsg}</div>
+              </div>
+            );
+          })()}
 
           {/* Detail rows */}
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
