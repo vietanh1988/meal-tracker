@@ -280,12 +280,12 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
   }
 
   // ========== STYLES ==========
-  const overlay = { position: "fixed", inset: 0, zIndex: 99998, background: "#F8FAFC", display: "flex", flexDirection: "column", overflowY: "auto", paddingBottom: 90, WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", touchAction: "pan-y" };
+  const overlay = { position: "fixed", inset: 0, zIndex: 99998, background: "#F8FAFC", display: "flex", flexDirection: "column", overflow: "hidden", height: "100dvh" };
   const header = { padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0 };
   const backBtn = { display: "inline-flex", alignItems: "center", gap: 4, color: "#F97316", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "none", border: "none", padding: "6px 0", marginBottom: 8, fontFamily: "inherit" };
   const title = { fontSize: 20, fontWeight: 800, color: C.t1, lineHeight: 1.3 };
   const desc = { fontSize: 14, color: C.t3, marginTop: 6, lineHeight: 1.5 };
-  const body = { flex: 1, padding: "0 20px 20px", display: "flex", flexDirection: "column" };
+  const body = { flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", padding: "0 20px 110px", display: "flex", flexDirection: "column" };
   const pinnedBottom = { position: "fixed", bottom: 0, left: 0, right: 0, padding: "14px 20px", paddingBottom: "max(20px, env(safe-area-inset-bottom, 20px))", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,0,0,0.06)", zIndex: 99999 };
   const mainBtn = { width: "100%", padding: 16, borderRadius: 14, border: "none", fontSize: 16, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", color: "#fff", background: "linear-gradient(135deg, #F97316, #EA580C)", boxShadow: "0 4px 12px rgba(249,115,22,0.3)" };
   const outlineBtn = { ...mainBtn, background: "transparent", color: C.t3, border: `1.5px solid ${C.border}`, marginTop: 8, boxShadow: "none" };
