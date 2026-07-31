@@ -280,7 +280,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
   }
 
   // ========== STYLES ==========
-  const overlay = { position: "fixed", inset: 0, zIndex: 99998, background: "#F8FAFC", display: "flex", flexDirection: "column", overflowY: "auto", paddingBottom: 90 };
+  const overlay = { position: "fixed", inset: 0, zIndex: 99998, background: "#F8FAFC", display: "flex", flexDirection: "column", overflowY: "auto", paddingBottom: 90, WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", touchAction: "pan-y" };
   const header = { padding: "max(20px, env(safe-area-inset-top, 20px)) 20px 12px", background: "#fff", borderBottom: `1px solid ${C.border}`, flexShrink: 0 };
   const backBtn = { display: "inline-flex", alignItems: "center", gap: 4, color: "#F97316", fontSize: 14, fontWeight: 700, cursor: "pointer", background: "none", border: "none", padding: "6px 0", marginBottom: 8, fontFamily: "inherit" };
   const title = { fontSize: 20, fontWeight: 800, color: C.t1, lineHeight: 1.3 };
