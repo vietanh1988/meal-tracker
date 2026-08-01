@@ -515,42 +515,43 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
             );
           })()}
 
-          {/* Nút "Ghi vào bữa" — CHỈ hiện khi user chưa có bữa ăn hôm nay */}
+          {/* Nút "Ghi vào bữa" — luôn hiện, có bữa rồi thì hỏi confirm thay thế */}
           {(() => {
             const hasAny = hasMealsToday && (hasMealsToday("train") || hasMealsToday("rest"));
-            if (hasAny) return null;
-            // Auto chọn bữa theo giờ hiện tại
             const h = new Date().getHours();
             const autoMeal = h < 10 ? "sang" : h < 14 ? "trua" : h < 17 ? "phu_chieu" : "toi";
             const MEAL_NAMES = { sang: "Bữa sáng", trua: "Bữa trưa", phu_chieu: "Bữa phụ chiều", toi: "Bữa tối", phu_sang: "Bữa phụ sáng" };
             const mealLabel = MEAL_NAMES[autoMeal] || "Bữa ăn";
+            const doSave = async () => {
+              if (!saveMealToCloud || !results?.items) return;
+              if (hasAny && !confirm(`${mealLabel} đã có thực đơn. Thay thế bằng bữa vừa chụp?`)) return;
+              const useDayType = photoCtx?.dayType || "rest";
+              try {
+                const mealItems = results.items.map(it => ({
+                  food: it.name, gram: it.gram || 100,
+                  cal: Math.round(it.cal || 0), p: Math.round((it.p || 0) * 10) / 10,
+                  c: Math.round((it.c || 0) * 10) / 10, f: Math.round((it.f || 0) * 10) / 10,
+                  fiber: Math.round((it.fiber || 0) * 10) / 10,
+                  source: "photo",
+                }));
+                await saveMealToCloud(autoMeal, useDayType, mealItems);
+                if (toggleEaten) await toggleEaten(autoMeal, true);
+                alert(`✅ Đã ghi ${mealLabel} (${Math.round(results.total.cal)} kcal) vào theo dõi!`);
+              } catch (e) {
+                console.error("Ghi bữa lỗi:", e);
+                alert("Có lỗi khi ghi bữa ăn. Thử lại sau.");
+              }
+            };
             return (
-              <div style={{ padding: "14px 16px", background: "#EFF6FF", borderRadius: 14, border: "1.5px solid #BFDBFE" }}>
-                <div style={{ fontSize: 13, color: "#1E40AF", lineHeight: 1.5, marginBottom: 10 }}>
-                  Bạn chưa có thực đơn hôm nay. Bấm để ghi bữa này vào theo dõi — calo và macro sẽ tính vào tổng ngày.
+              <div style={{ padding: "14px 16px", background: hasAny ? "#FFF7ED" : "#EFF6FF", borderRadius: 14, border: `1.5px solid ${hasAny ? "#FED7AA" : "#BFDBFE"}` }}>
+                <div style={{ fontSize: 13, color: hasAny ? "#92400E" : "#1E40AF", lineHeight: 1.5, marginBottom: 10 }}>
+                  {hasAny
+                    ? `Ghi bữa vừa chụp vào ${mealLabel} — thay thế thực đơn hiện tại. Calo và macro sẽ tính lại theo bữa thật.`
+                    : `Bạn chưa có thực đơn hôm nay. Bấm để ghi bữa này vào theo dõi — calo và macro sẽ tính vào tổng ngày.`
+                  }
                 </div>
-                <button
-                  onClick={async () => {
-                    if (!saveMealToCloud || !results?.items) return;
-                    try {
-                      // Convert items sang meal_logs format
-                      const mealItems = results.items.map(it => ({
-                        food: it.name, gram: it.gram || 100,
-                        cal: Math.round(it.cal || 0), p: Math.round((it.p || 0) * 10) / 10,
-                        c: Math.round((it.c || 0) * 10) / 10, f: Math.round((it.f || 0) * 10) / 10,
-                        fiber: Math.round((it.fiber || 0) * 10) / 10,
-                      }));
-                      // Ghi vào meal_logs (dayType mặc định "rest" — engine sẽ nhận)
-                      await saveMealToCloud(autoMeal, "rest", mealItems);
-                      // Tự tick Đã ăn
-                      if (toggleEaten) await toggleEaten(autoMeal, true);
-                      alert(`✅ Đã ghi ${mealLabel} (${Math.round(results.total.cal)} kcal) vào theo dõi!`);
-                    } catch (e) {
-                      console.error("Ghi bữa lỗi:", e);
-                      alert("Có lỗi khi ghi bữa ăn. Thử lại sau.");
-                    }
-                  }}
-                  style={{ width: "100%", padding: "12px 0", fontSize: 14, fontWeight: 800, border: "none", borderRadius: 12, background: "linear-gradient(135deg, #3B82F6, #1D4ED8)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
+                <button onClick={doSave}
+                  style={{ width: "100%", padding: "12px 0", fontSize: 14, fontWeight: 800, border: "none", borderRadius: 12, background: hasAny ? "linear-gradient(135deg, #F97316, #EA580C)" : "linear-gradient(135deg, #3B82F6, #1D4ED8)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
                 >
                   📷 Ghi vào {mealLabel} ({Math.round(results.total.cal)} kcal)
                 </button>
