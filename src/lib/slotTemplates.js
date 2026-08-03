@@ -113,9 +113,9 @@ export function buildSlotPools() {
       (v.cat === "egg_dairy" && k.startsWith("trứng") && v.form === "cooked");
     if (isProtein && !isCanh(k) && !isSangDish(k) && !MAIN_STANDALONE.has(k) && !EXCLUDED_PROTEIN.has(k) &&
         !k.includes("gỏi") && !k.includes("nộm") && !k.includes("salad") && !k.includes("poke") && !k.includes("cơm")) {
-      // Pool VN: loại món Tây/fusion + nguyên liệu không phải cơm nhà thường ngày
+      // Pool VN: loại món Tây/fusion + hải sản đắt tiền không phải cơm nhà thường ngày
       const isWestern = v.region === "intl" ||
-        /bít tết|steak|beef|bbq|sốt bơ|sốt kem|sốt cay|teriyaki|sốt tiêu|cá hồi|cá ngừ|broccoli|cuốn khoai tây|ba chỉ cuộn/.test(k) ||
+        /bít tết|steak|beef|bbq|sốt bơ|sốt kem|sốt cay|teriyaki|sốt tiêu|cá hồi|cá ngừ|broccoli|cuốn khoai tây|ba chỉ cuộn|ghẹ|cua biển|cua hấp|tôm hùm|tôm sú|bào ngư|hàu|sò điệp|cá mú|cá chẽm|cá tầm|cá lăng|cá chình/.test(k) ||
         k === "nướng hải sản";
       if (!isWestern) pools.protein_vn.push(k);
       if (hasCleanCook(k) && !hasDirtyCook(k) && !k.includes("kho") && !k.includes("rim") && !k.includes("ba chỉ") && !k.includes("mỡ hành")) {
