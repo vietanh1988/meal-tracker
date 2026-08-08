@@ -516,7 +516,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
             );
           })()}
 
-          {/* Chọn bữa + Lưu — hiện TẤT CẢ bữa user bật */}
+          {/* Chọn bữa + Lưu — hiện TẤT CẢ 7 bữa, bypass config */}
           {(() => {
             const MEAL_INFO = {
               sang: { em: "🌅", nm: "Bữa sáng", tm: "07:00" },
@@ -527,7 +527,8 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
               post: { em: "💪", nm: "Sau tập", tm: "18:30" },
               toi: { em: "🌙", nm: "Bữa tối", tm: "19:00" },
             };
-            const visIds = photoCtx?.visibleMealIds || ["sang", "trua", "toi"];
+            const ALL_MEAL_IDS = ["sang", "phu_sang", "trua", "phu_chieu", "pre", "post", "toi"];
+            const visIds = ALL_MEAL_IDS;
             const dayType = photoCtx?.dayType || "rest";
             // Check bữa nào đã có data
             const todayMeals = getTodayMeals ? getTodayMeals(dayType) : [];
