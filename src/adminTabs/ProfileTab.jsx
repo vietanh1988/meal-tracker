@@ -106,7 +106,7 @@ export function ProfileTab({profile, setProfile, macro, appSettings, saveSetting
           <div style={{borderTop:`1.5px solid #F3F4F6`,paddingTop:20,marginTop:4}}>
             <div style={{fontSize:mob?13:14,fontWeight:800,color:C.t2,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>📅 Lịch tập hàng tuần</div>
             {(()=>{
-              const days=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+              const days=profile?.gymDays||[0,2,4,5];
               const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
               const dayMap=[0,1,2,3,4,5,6];
               return <div>

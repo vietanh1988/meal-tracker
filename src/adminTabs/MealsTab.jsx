@@ -34,7 +34,7 @@ const MODE_DESC={tu_nhap:"Nhập thức ăn → nhấn \"Tính macro\" → trả
 const isNoneExercise=(profile?.exerciseType||"gym")==="none";
 const todayRealDayType=()=>{
 if(isNoneExercise)return "rest";
-try{const s=appSettings.gymDays;const gd=s?JSON.parse(s):profile.gymDays||[0,2,4,5];const idx=new Date().getDay();const mapped=idx===0?6:idx-1;return gd.includes(mapped)?"train":"rest";}catch(e){return "train";}
+try{const gd=profile?.gymDays||[0,2,4,5];const idx=new Date().getDay();const mapped=idx===0?6:idx-1;return gd.includes(mapped)?"train":"rest";}catch(e){return "train";}
 };
 const flags=parseFeatureFlags(appSettings);
 const mealTabs=[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].filter(t=>t.id!=="kho_mau"||flags.template_library);
@@ -83,7 +83,7 @@ return (
 // "Dùng cho hôm nay") vào Lịch tuần — không tính lại lần nữa.
 const dayKeys3=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
 const dayLabels3=["T2","T3","T4","T5","T6","T7","CN"];
-const gd3=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+const gd3=profile?.gymDays||[0,2,4,5];
 return <div style={{marginTop:10,paddingTop:10,borderTop:"1.5px solid #BFDBFE"}}>
 <div style={{fontSize:12,fontWeight:700,color:"#1D4ED8",marginBottom:8}}>Gán vào ngày nào? (chỉ chọn được ngày cùng loại {dayType==="train"?"Ngày tập":"Ngày nghỉ"})</div>
 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:10}}>
@@ -319,7 +319,7 @@ setTimeout(()=>{setShowSaveTpl(true);},500);
 const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
 const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
 const todayIdx2=new Date().getDay();
-const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+const gd=profile?.gymDays||[0,2,4,5];
 const totalCal2=(aiResult.items||[]).reduce((s,it)=>s+(it.cal||0),0);
 const todayMi=todayIdx2===0?6:todayIdx2-1;
 const todayMatchesType=(gd.includes(todayMi)?"train":"rest")===dayType;
@@ -391,7 +391,7 @@ return <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRad
 const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
 const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
 const todayIdx2=new Date().getDay();
-const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+const gd=profile?.gymDays||[0,2,4,5];
 const todayMi=todayIdx2===0?6:todayIdx2-1;
 const todayMatchesType=(gd.includes(todayMi)?"train":"rest")===dayType;
 const defaultDayKey=todayMatchesType?dayKeys2[todayIdx2]:(dayKeys2.find((_,i2)=>{const mi2=i2===0?6:i2-1;return (gd.includes(mi2)?"train":"rest")===dayType;})||dayKeys2[todayIdx2]);
@@ -423,7 +423,7 @@ const el2=document.getElementById("tpl-week-saved-pc");if(el2){el2.style.display
 {mealMode==="lich_tuan"&&(()=>{
 const dayLabels=["T2","T3","T4","T5","T6","T7","CN"];
 const dayKeys=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
-const gymDays=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+const gymDays=profile?.gymDays||[0,2,4,5];
 const mealNameMap={"sang":"Sáng","phu_sang":"Phụ sáng","trua":"Trưa","phu_chieu":"Phụ chiều","pre":"Trước tập","post":"Sau tập","toi":"Tối"};
 const savedCount=dayKeys.filter(dk=>{const t=getWeeklyTemplate?getWeeklyTemplate(dk):null;return t&&t.meals&&t.meals.length>0;}).length;
 return <div>
@@ -709,7 +709,7 @@ if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
 {showAssignDays===t.id&&(()=>{
 const dayKeys2=["thu_2","thu_3","thu_4","thu_5","thu_6","thu_7","cn"];
 const dayLabels2=["T2","T3","T4","T5","T6","T7","CN"];
-const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+const gd=profile?.gymDays||[0,2,4,5];
 return <div style={{marginTop:10,padding:12,background:"#EEF2FF",borderRadius:10,border:"1.5px solid #818CF8"}} onClick={e=>e.stopPropagation()}>
 {/* dùng lại đúng engineTpl đã tính sẵn, KHÔNG tính lại lần nữa */}
 <div style={{fontSize:13,fontWeight:700,color:"#3730A3",marginBottom:8}}>Gán vào ngày nào?</div>

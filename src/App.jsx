@@ -130,7 +130,7 @@ export default function App(){
   const pcDayAuto=(()=>{
     if(pcIsNoneExercise)return"rest";
     if(!appSettings||!profile)return"train";
-    const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+    const gd=profile?.gymDays||[0,2,4,5];
     const todayIdx=new Date().getDay();
     const mappedIdx=todayIdx===0?6:todayIdx-1;
     return gd.includes(mappedIdx)?"train":"rest";

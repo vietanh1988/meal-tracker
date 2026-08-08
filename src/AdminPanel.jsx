@@ -62,7 +62,7 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
     // Luôn auto-detect theo gymDays hôm nay — KHÔNG đọc localStorage nữa
     // (localStorage giữ dayType từ phiên trước, dễ kẹt sai khi hôm nay đổi
     // loại ngày, VD hôm qua Tập → hôm nay Nghỉ mà toggle vẫn hiện Tập).
-    const gd=(()=>{try{const s=appSettings.gymDays;return s?JSON.parse(s):profile.gymDays||[0,2,4,5];}catch(e){return profile.gymDays||[0,2,4,5];}})();
+    const gd=profile?.gymDays||[0,2,4,5];
     const todayIdx=new Date().getDay();// 0=CN,1=T2...
     const mappedIdx=todayIdx===0?6:todayIdx-1;// gymDays: 0=T2...6=CN
     return gd.includes(mappedIdx)?"train":"rest";
