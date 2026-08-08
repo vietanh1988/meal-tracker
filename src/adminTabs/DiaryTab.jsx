@@ -67,10 +67,9 @@ export default function DiaryTab({ userId, macro }) {
       const ds = d.toISOString().slice(0, 10);
       const log = logs.find(l => l.log_date === ds);
       const eaten = log?.eaten_meals || [];
-      const hasMeals = log?.meals && (Array.isArray(log.meals) ? log.meals.length > 0 : Object.keys(log.meals).length > 0);
-      if (eaten.length > 0 || (hasMeals && log.total_cal > 0)) {
+      if (eaten.length > 0) {
         streak++;
-      } else if (i > 0) { // skip today if not yet eaten
+      } else if (i > 0) {
         break;
       }
       d.setDate(d.getDate() - 1);
@@ -84,8 +83,7 @@ export default function DiaryTab({ userId, macro }) {
     const log = logs.find(l => l.log_date === dateStr);
     if (!log) return false;
     const eaten = log.eaten_meals || [];
-    if (eaten.length > 0) return true;
-    return log.total_cal > 0;
+    return eaten.length > 0;
   };
 
   // Get log for a date
