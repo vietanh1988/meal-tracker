@@ -404,6 +404,13 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
 
         {/* Meal cards */}
         {mealsWithItems.map(m=><MealCard key={m.id} meal={m} eatenMeals={eatenMeals} toggleEaten={toggleEaten} isActive={m.id===activeMealId}/>)}
+
+        {/* Nút Thêm bữa từ ảnh — LUÔN HIỆN, trước nhật ký/báo cáo */}
+        {onOpenPhotoMacro&&<div onClick={onOpenPhotoMacro} style={{...card,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,cursor:"pointer",background:"linear-gradient(135deg,#FFF7ED,#FFEDD5)",border:"1.5px solid #FED7AA"}}>
+          <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#F97316,#EA580C)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>📷</div>
+          <div><div style={{fontSize:14,fontWeight:800,color:"#9A3412"}}>Thêm bữa từ ảnh</div><div style={{fontSize:12,color:"#B45309",marginTop:2}}>Chụp hoặc chọn ảnh → AI quét calo → lưu vào bữa</div></div>
+        </div>}
+
         {/* Links after all eaten */}
         {allEaten && <>
           <div onClick={()=>setTab&&setTab("diary")} style={{...card,padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
@@ -417,11 +424,6 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </>}
       </>;
     })()}
-
-    {/* Nút Thêm bữa từ ảnh — LUÔN HIỆN */}
-    {onOpenPhotoMacro&&<div style={{padding:"0 16px",marginBottom:12}}>
-      <button onClick={onOpenPhotoMacro} style={{width:"100%",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"center",gap:10,fontSize:14,borderRadius:14,border:`2px dashed ${C.border}`,background:C.surface,color:C.t1,fontWeight:800,cursor:"pointer",fontFamily:"inherit",minHeight:48}}>📷 Thêm bữa từ ảnh</button>
-    </div>}
 
     {/* Empty state CTA — no meals logged */}
     {meals.every(m=>!m.items||m.items.length===0)&&<div style={{...card,border:"2px dashed #CDCDCD",background:"transparent",textAlign:"center",padding:"24px 16px"}}>
