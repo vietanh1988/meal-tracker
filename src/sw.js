@@ -2,8 +2,8 @@ import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from
 import { registerRoute, NavigationRoute } from "workbox-routing";
 import { clientsClaim } from "workbox-core";
 
-self.skipWaiting();
-clientsClaim();
+// Không dùng skipWaiting/clientsClaim — để popup update hiện trước
+// SW mới sẽ activate khi user bấm "Nâng cấp" (xoá cache + reload)
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html")));
