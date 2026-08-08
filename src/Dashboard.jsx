@@ -418,6 +418,11 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
       </>;
     })()}
 
+    {/* Nút Thêm bữa từ ảnh — LUÔN HIỆN */}
+    {onOpenPhotoMacro&&<div style={{padding:"0 16px",marginBottom:12}}>
+      <button onClick={onOpenPhotoMacro} style={{width:"100%",padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"center",gap:10,fontSize:14,borderRadius:14,border:`2px dashed ${C.border}`,background:C.surface,color:C.t1,fontWeight:800,cursor:"pointer",fontFamily:"inherit",minHeight:48}}>📷 Thêm bữa từ ảnh</button>
+    </div>}
+
     {/* Empty state CTA — no meals logged */}
     {meals.every(m=>!m.items||m.items.length===0)&&<div style={{...card,border:"2px dashed #CDCDCD",background:"transparent",textAlign:"center",padding:"24px 16px"}}>
       <div style={{fontSize:28,marginBottom:6}}>🍽️</div>
