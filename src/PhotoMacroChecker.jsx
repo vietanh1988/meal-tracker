@@ -20,7 +20,7 @@ function getVisionProvider(appSettings, fallbackProvider) {
   return (override && override !== "auto") ? override : fallbackProvider;
 }
 
-export default function PhotoMacroChecker({ onClose, appSettings, photoCtx, hasMealsToday, saveMealToCloud, toggleEaten }) {
+export default function PhotoMacroChecker({ onClose, appSettings, photoCtx, hasMealsToday, saveMealToCloud, toggleEaten, getTodayMeals }) {
   // Đọc AI provider/model từ appSettings
   const aiProvider = appSettings?.ai_provider || "claude";
   const aiModel = appSettings?.ai_model || "claude-sonnet-5";
@@ -35,6 +35,7 @@ export default function PhotoMacroChecker({ onClose, appSettings, photoCtx, hasM
   const [servings, setServings] = useState([]); // [{name, gram, presets}]
   const [results, setResults] = useState(null); // {total, items}
   const [error, setError] = useState(null);
+  const [selectedMeal, setSelectedMeal] = useState(null); // chọn bữa để lưu (step 5)
   const fileRef = useRef(null);
   const cameraRef = useRef(null);
 
@@ -515,17 +516,37 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
             );
           })()}
 
-          {/* Nút "Ghi vào bữa" — luôn hiện, có bữa rồi thì hỏi confirm thay thế */}
+          {/* Chọn bữa + Lưu — hiện TẤT CẢ bữa user bật */}
           {(() => {
-            const hasAny = hasMealsToday && (hasMealsToday("train") || hasMealsToday("rest"));
-            const h = new Date().getHours();
-            const autoMeal = h < 10 ? "sang" : h < 14 ? "trua" : h < 17 ? "phu_chieu" : "toi";
-            const MEAL_NAMES = { sang: "Bữa sáng", trua: "Bữa trưa", phu_chieu: "Bữa phụ chiều", toi: "Bữa tối", phu_sang: "Bữa phụ sáng" };
-            const mealLabel = MEAL_NAMES[autoMeal] || "Bữa ăn";
+            const MEAL_INFO = {
+              sang: { em: "🌅", nm: "Bữa sáng", tm: "07:00" },
+              phu_sang: { em: "🥛", nm: "Phụ sáng", tm: "09:30" },
+              trua: { em: "☀️", nm: "Bữa trưa", tm: "12:00" },
+              phu_chieu: { em: "🍌", nm: "Phụ chiều", tm: "15:30" },
+              pre: { em: "⚡", nm: "Trước tập", tm: "17:00" },
+              post: { em: "💪", nm: "Sau tập", tm: "18:30" },
+              toi: { em: "🌙", nm: "Bữa tối", tm: "19:00" },
+            };
+            const visIds = photoCtx?.visibleMealIds || ["sang", "trua", "toi"];
+            const dayType = photoCtx?.dayType || "rest";
+            // Check bữa nào đã có data
+            const todayMeals = getTodayMeals ? getTodayMeals(dayType) : [];
+            const mealsWithData = new Set(todayMeals.filter(m => m.items && m.items.length > 0).map(m => m.id));
+            // Auto chọn bữa theo giờ (chỉ lần đầu)
+            if (!selectedMeal) {
+              const h = new Date().getHours();
+              const auto = h < 10 ? "sang" : h < 14 ? "trua" : h < 17 ? "phu_chieu" : "toi";
+              const pick = visIds.includes(auto) ? auto : visIds.find(id => !mealsWithData.has(id)) || visIds[0];
+              setSelectedMeal(pick);
+              return null; // re-render sẽ hiện
+            }
+            const allHaveData = visIds.every(id => mealsWithData.has(id));
+            const selInfo = MEAL_INFO[selectedMeal] || { em: "🍽", nm: "Bữa ăn" };
+            const selHasData = mealsWithData.has(selectedMeal);
+
             const doSave = async () => {
-              if (!saveMealToCloud || !results?.items) return;
-              if (hasAny && !confirm(`${mealLabel} đã có thực đơn. Thay thế bằng bữa vừa chụp?`)) return;
-              const useDayType = photoCtx?.dayType || "rest";
+              if (!saveMealToCloud || !results?.items || !selectedMeal) return;
+              if (selHasData && !confirm(`${selInfo.nm} đã có thực đơn. Thay thế bằng bữa vừa chụp?`)) return;
               try {
                 const mealItems = results.items.map(it => ({
                   food: it.name, gram: it.gram || 100,
@@ -534,27 +555,50 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
                   fiber: Math.round((it.fiber || 0) * 10) / 10,
                   source: "photo",
                 }));
-                await saveMealToCloud(autoMeal, useDayType, mealItems);
-                if (toggleEaten) await toggleEaten(autoMeal, true);
-                alert(`✅ Đã ghi ${mealLabel} (${Math.round(results.total.cal)} kcal) vào theo dõi!`);
+                await saveMealToCloud(selectedMeal, dayType, mealItems);
+                if (toggleEaten) await toggleEaten(selectedMeal, true);
+                alert(`✅ Đã ghi ${selInfo.nm} (${Math.round(results.total.cal)} kcal) vào theo dõi!`);
               } catch (e) {
                 console.error("Ghi bữa lỗi:", e);
                 alert("Có lỗi khi ghi bữa ăn. Thử lại sau.");
               }
             };
+
             return (
-              <div style={{ padding: "14px 16px", background: hasAny ? "#FFF7ED" : "#EFF6FF", borderRadius: 14, border: `1.5px solid ${hasAny ? "#FED7AA" : "#BFDBFE"}` }}>
-                <div style={{ fontSize: 13, color: hasAny ? "#92400E" : "#1E40AF", lineHeight: 1.5, marginBottom: 10 }}>
-                  {hasAny
-                    ? `Ghi bữa vừa chụp vào ${mealLabel} — thay thế thực đơn hiện tại. Calo và macro sẽ tính lại theo bữa thật.`
-                    : `Bạn chưa có thực đơn hôm nay. Bấm để ghi bữa này vào theo dõi — calo và macro sẽ tính vào tổng ngày.`
-                  }
+              <div style={{ padding: "14px 16px", background: "#EFF6FF", borderRadius: 14, border: "1.5px solid #BFDBFE" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#1E40AF", marginBottom: 8 }}>Lưu vào bữa nào?</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+                  {visIds.map(id => {
+                    const m = MEAL_INFO[id] || { em: "🍽", nm: id };
+                    const hasData = mealsWithData.has(id);
+                    const isSel = id === selectedMeal;
+                    return (
+                      <div key={id} onClick={() => !hasData && setSelectedMeal(id)}
+                        style={{
+                          flex: "1 1 70px", minWidth: 68, padding: "8px 4px", borderRadius: 12, textAlign: "center",
+                          cursor: hasData ? "default" : "pointer", transition: "all .12s",
+                          border: `2px solid ${hasData ? "#BBF7D0" : isSel ? "#F97316" : "#E2E8F0"}`,
+                          background: hasData ? "#F0FDF4" : isSel ? "#FFF7ED" : "#fff",
+                          opacity: hasData ? 0.6 : 1,
+                        }}
+                      >
+                        <div style={{ fontSize: 18 }}>{m.em}</div>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: hasData ? "#15803D" : isSel ? "#EA580C" : "#334155" }}>{m.nm}</div>
+                        {hasData && <div style={{ fontSize: 8, color: "#15803D", marginTop: 2 }}>✅ Đã ghi</div>}
+                      </div>
+                    );
+                  })}
                 </div>
-                <button onClick={doSave}
-                  style={{ width: "100%", padding: "12px 0", fontSize: 14, fontWeight: 800, border: "none", borderRadius: 12, background: hasAny ? "linear-gradient(135deg, #F97316, #EA580C)" : "linear-gradient(135deg, #3B82F6, #1D4ED8)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
-                >
-                  📷 Ghi vào {mealLabel} ({Math.round(results.total.cal)} kcal)
-                </button>
+                {!allHaveData && (
+                  <button onClick={doSave}
+                    style={{ width: "100%", padding: "12px 0", fontSize: 14, fontWeight: 800, border: "none", borderRadius: 12, background: selHasData ? "linear-gradient(135deg, #F97316, #EA580C)" : "linear-gradient(135deg, #16A34A, #15803D)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    {selHasData ? "🔄" : "✅"} Lưu vào {selInfo.nm} ({Math.round(results.total.cal)} kcal)
+                  </button>
+                )}
+                {allHaveData && (
+                  <div style={{ fontSize: 12, color: "#15803D", textAlign: "center", fontWeight: 700 }}>✅ Tất cả bữa đã được ghi!</div>
+                )}
               </div>
             );
           })()}
