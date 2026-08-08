@@ -163,23 +163,35 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     setShowAIMenu(false);
   };
 
-  // Auto version check — force clear cache when admin updates app_version
+  // Auto version check — popup thông báo cập nhật
   const APP_VERSION="3.2";
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false);
+  const [pendingVersion, setPendingVersion] = useState(null);
   useEffect(()=>{
     const serverVersion=appSettings.app_version;
     if(serverVersion){
       const localVersion=localStorage.getItem("fipilot_version");
       if(localVersion&&localVersion!==serverVersion){
-        localStorage.setItem("fipilot_version",serverVersion);
-        caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
-          if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
-          window.location.reload(true);
-        });
+        const dismissed=sessionStorage.getItem("fipilot_update_dismissed");
+        if(dismissed===serverVersion) return;
+        setPendingVersion(serverVersion);
+        setShowUpdatePopup(true);
       }else if(!localVersion){
         localStorage.setItem("fipilot_version",serverVersion);
       }
     }
   },[appSettings.app_version]);
+  const doUpdate=()=>{
+    if(pendingVersion) localStorage.setItem("fipilot_version",pendingVersion);
+    caches.keys().then(names=>Promise.all(names.map(k=>caches.delete(k)))).then(()=>{
+      if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));}
+      window.location.reload(true);
+    });
+  };
+  const dismissUpdate=()=>{
+    if(pendingVersion) sessionStorage.setItem("fipilot_update_dismissed",pendingVersion);
+    setShowUpdatePopup(false);
+  };
   // Parse meal config
   const mealConfig=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
   const visibleIds=(()=>{let ids=mealConfig[dayType]||DEFAULT_MEAL_CONFIG[dayType];if(isNoneExercise)ids=ids.filter(id=>id!=="pre"&&id!=="post");return ids;})();
@@ -216,6 +228,16 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const displayName=user?.user_metadata?.username||user?.email?.split("@")[0]||"bạn";
 
   return <div>
+    {/* Popup cập nhật phiên bản mới */}
+    {showUpdatePopup&&<div style={{position:"fixed",inset:0,zIndex:99999,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{background:"#fff",borderRadius:20,padding:"28px 24px",maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
+        <div style={{fontSize:48,marginBottom:12}}>🚀</div>
+        <div style={{fontSize:18,fontWeight:900,color:"#0F172A",marginBottom:8}}>Có bản cập nhật mới!</div>
+        <div style={{fontSize:13,color:"#64748B",lineHeight:1.6,marginBottom:20}}>Phiên bản <b>{pendingVersion}</b> đã sẵn sàng với nhiều cải tiến và sửa lỗi. Cập nhật ngay để trải nghiệm tốt nhất.</div>
+        <button onClick={doUpdate} style={{width:"100%",padding:"14px",fontSize:15,fontWeight:800,border:"none",borderRadius:14,background:"linear-gradient(135deg,#16A34A,#15803D)",color:"#fff",cursor:"pointer",fontFamily:"inherit",marginBottom:10}}>✅ Cập nhật ngay</button>
+        <button onClick={dismissUpdate} style={{width:"100%",padding:"10px",fontSize:13,fontWeight:600,border:"none",borderRadius:10,background:"transparent",color:"#94A3B8",cursor:"pointer",fontFamily:"inherit"}}>Để sau</button>
+      </div>
+    </div>}
     {/* Loading skeleton — hiện shimmer khi data chưa load */}
     {!userDataLoaded&&!actualCal&&mob&&<div style={{padding:16}}>
       <style>{`@keyframes fpShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
