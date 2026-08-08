@@ -144,6 +144,14 @@ export default function DiaryTab({ userId, macro }) {
           const meals = parseMeals(log);
           const isToday = ds === today;
           const eaten = log.eaten_meals || [];
+          // Chỉ tính calo/macro từ bữa ĐÃ ĂN
+          const eatenMeals = meals.filter(m => eaten.includes(m.meal_id || m.id || ""));
+          const eatenCal = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.cal || 0), 0), 0));
+          const eatenP = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.p || it.protein || 0), 0), 0));
+          const eatenC = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.c || it.carb || 0), 0), 0));
+          const eatenF = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.f || it.fat || 0), 0), 0));
+          const eatenFb = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.fiber || 0), 0), 0));
+          if (eatenCal === 0 && eaten.length === 0) return null; // không có bữa đã ăn → ẩn ngày này
           const calColor = eaten.length > 0 ? "#16A34A" : "#007AFF";
 
           return <div key={ds} style={{ ...card, padding: 12, marginBottom: 8 }}>
@@ -153,12 +161,15 @@ export default function DiaryTab({ userId, macro }) {
                 {log.day_type && <span style={{ fontSize: 10, color: C.t3, marginLeft: 4 }}>· {log.day_type === "train" ? "Ngày tập" : "Ngày nghỉ"}</span>}
               </div>
               <div style={{ fontSize: 14, fontWeight: 800, color: calColor }}>
-                {Math.round(log.total_cal)} cal {eaten.length > 0 ? "✅" : ""}
+                {eatenCal} cal {eaten.length > 0 ? "✅" : ""}
               </div>
             </div>
 
-            {/* Meal list */}
-            {meals.map((m, i) => {
+            {/* Meal list — CHỈ hiện bữa đã tick Đã ăn */}
+            {meals.filter(m => {
+              const mealId = m.meal_id || m.id || "";
+              return eaten.includes(mealId);
+            }).map((m, i) => {
               const mealId = m.meal_id || m.id || "";
               const icon = MEAL_ICONS[mealId] || "🍽️";
               const name = MEAL_NAMES[mealId] || m.meal_name || mealId;
@@ -178,10 +189,10 @@ export default function DiaryTab({ userId, macro }) {
             {/* Macro summary */}
             <div style={{ display: "flex", gap: 6, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.surface}` }}>
               {[
-                { label: "Đạm", val: Math.round(log.total_protein || 0), color: "#007AFF" },
-                { label: "T.bột", val: Math.round(log.total_carb || 0), color: "#5AC8FA" },
-                { label: "C.béo", val: Math.round(log.total_fat || 0), color: "#F59E0B" },
-                { label: "Xơ", val: Math.round(log.total_fiber || 0), color: "#22C55E" },
+                { label: "Đạm", val: eatenP, color: "#007AFF" },
+                { label: "T.bột", val: eatenC, color: "#5AC8FA" },
+                { label: "C.béo", val: eatenF, color: "#F59E0B" },
+                { label: "Xơ", val: eatenFb, color: "#22C55E" },
               ].map((x, i) => <div key={i} style={{ flex: 1, textAlign: "center" }}>
                 <div style={{ fontSize: 12, fontWeight: 800, color: x.color }}>{x.val}g</div>
                 <div style={{ fontSize: 8, color: C.t3, fontWeight: 600 }}>{x.label}</div>
