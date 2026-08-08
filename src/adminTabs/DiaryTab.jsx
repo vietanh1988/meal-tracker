@@ -31,6 +31,7 @@ export default function DiaryTab({ userId, macro }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(null); // bấm ngày trên lịch → lọc
 
   const today = todayStr();
   const refDate = new Date();
@@ -127,7 +128,8 @@ export default function DiaryTab({ userId, macro }) {
             const d = new Date(ds + "T00:00:00");
             const isToday = ds === today;
             const done = isDayDone(ds);
-            return <div key={ds} style={{ flex: 1, textAlign: "center", padding: "6px 2px", borderRadius: 10, background: done ? "#F0FDF4" : "#fff", border: `1.5px solid ${isToday ? "#007AFF" : done ? "#86EFAC" : C.border}`, cursor: "pointer" }}>
+            const isSel = ds === selectedDate;
+            return <div key={ds} onClick={() => setSelectedDate(isSel ? null : ds)} style={{ flex: 1, textAlign: "center", padding: "6px 2px", borderRadius: 10, background: isSel ? "#DBEAFE" : done ? "#F0FDF4" : "#fff", border: `1.5px solid ${isSel ? "#2563EB" : isToday ? "#007AFF" : done ? "#86EFAC" : C.border}`, cursor: "pointer", transition: "all .12s" }}>
               <div style={{ fontSize: 8, fontWeight: 700, color: C.t3 }}>{DAY_NAMES[d.getDay()]}</div>
               <div style={{ fontSize: 13, fontWeight: 800, color: C.t1, marginTop: 1 }}>{d.getDate()}</div>
               <div style={{ width: 6, height: 6, borderRadius: 3, margin: "3px auto 0", background: done ? "#16A34A" : C.border }} />
@@ -135,8 +137,8 @@ export default function DiaryTab({ userId, macro }) {
           })}
         </div>
 
-        {/* Daily logs for this week */}
-        {weekDates.slice().reverse().map(ds => {
+        {/* Daily logs — lọc theo ngày đã chọn hoặc hiện tất cả */}
+        {(selectedDate ? [selectedDate] : weekDates.slice().reverse()).map(ds => {
           const log = getLog(ds);
           if (!log || log.total_cal === 0) return null;
           const meals = parseMeals(log);
@@ -188,8 +190,20 @@ export default function DiaryTab({ userId, macro }) {
           </div>;
         })}
 
+        {/* Selected date info */}
+        {selectedDate && <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "#DBEAFE", borderRadius: 10, marginBottom: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#1D4ED8" }}>📅 {formatDate(selectedDate)}</span>
+          <button onClick={() => setSelectedDate(null)} style={{ background: "none", border: "none", color: "#1D4ED8", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Xem tất cả ✕</button>
+        </div>}
+
+        {/* Selected date no data */}
+        {selectedDate && (!getLog(selectedDate) || getLog(selectedDate).total_cal === 0) && <div style={{ textAlign: "center", padding: 24, color: C.t3 }}>
+          <div style={{ fontSize: 24, marginBottom: 6 }}>📭</div>
+          <div style={{ fontSize: 13, fontWeight: 700 }}>Chưa có dữ liệu ngày {formatDate(selectedDate)}</div>
+        </div>}
+
         {/* Empty state */}
-        {weekDates.every(ds => !getLog(ds) || getLog(ds).total_cal === 0) && <div style={{ textAlign: "center", padding: 30, color: C.t3 }}>
+        {!selectedDate && weekDates.every(ds => !getLog(ds) || getLog(ds).total_cal === 0) && <div style={{ textAlign: "center", padding: 30, color: C.t3 }}>
           <div style={{ fontSize: 28, marginBottom: 6 }}>📓</div>
           <div style={{ fontSize: 13, fontWeight: 700 }}>Chưa có dữ liệu tuần này</div>
           <div style={{ fontSize: 11, marginTop: 4 }}>Hãy tạo thực đơn và đánh dấu "Đã ăn" để ghi nhật ký</div>
