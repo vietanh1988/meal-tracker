@@ -35,6 +35,7 @@ import { FoodCachePendingTab } from "./adminTabs/FoodCachePendingTab";
 import FoodDBTab from "./adminTabs/FoodDBTab";
 import FeedbackTab from "./adminTabs/FeedbackTab";
 import DiaryTab from "./adminTabs/DiaryTab";
+import BackupTab from "./adminTabs/BackupTab";
 import { ReportView } from "./ReportView";
 
 // AdminPanel — tách riêng khỏi App.jsx (component độc lập, xử lý toàn bộ
@@ -352,7 +353,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
 
   return <div>
     {!hidePills&&!forcedSection&&<div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
-      {[{id:"meals",l:"🍽️ Bữa ăn"},...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"},{id:"admin",l:"🔧 Quản lý version"},{id:"templates",l:"📚 Mẫu"},{id:"food_cache_pending",l:`🗂️ Kho món${pendingCount>0?` (${pendingCount})`:""}`}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
+      {[{id:"meals",l:"🍽️ Bữa ăn"},...(isAdmin?[{id:"ai",l:"🤖 Kết nối AI"},{id:"admin",l:"🔧 Quản lý version"},{id:"templates",l:"📚 Mẫu"},{id:"food_cache_pending",l:`🗂️ Kho món${pendingCount>0?` (${pendingCount})`:""}`}]:[]),...(isSuperAdmin?[{id:"backup",l:"💾 Sao lưu"}]:[]),{id:"profile",l:"👤 Hồ sơ"},{id:"weight",l:"⚖️ Cân nặng"}].map(s=>
         <Pill key={s.id} active={section===s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}}>{s.l}</Pill>
       )}
     </div>}
@@ -413,6 +414,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
           {id:"report_biz",t:"Báo cáo kinh doanh",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lq6" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><rect x="10" y="10" width="76" height="76" rx="12" fill="url(#lq6)"/><rect x="24" y="52" width="10" height="24" rx="3" fill="white"/><rect x="43" y="38" width="10" height="38" rx="3" fill="white" opacity="0.85"/><rect x="62" y="26" width="10" height="50" rx="3" fill="white" opacity="0.7"/></svg>},
           {id:"feature_flags",t:"Quản lý tính năng",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lq7" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><rect x="14" y="14" width="68" height="20" rx="10" fill="url(#lq7)"/><circle cx="66" cy="24" r="7" fill="white"/><rect x="14" y="42" width="68" height="20" rx="10" fill="url(#lq7)" opacity="0.6"/><circle cx="30" cy="52" r="7" fill="white"/><rect x="14" y="70" width="68" height="20" rx="10" fill="url(#lq7)"/><circle cx="66" cy="80" r="7" fill="white"/></svg>},
           {id:"ai_cost",t:"Chi phí AI",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lq8" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><circle cx="48" cy="48" r="40" fill="url(#lq8)"/><path d="M62 34 C62 26 55 22 46 22 C37 22 30 27 30 33 C30 40 36 43 46 48 C56 53 62 56 62 63 C62 70 55 74 46 74 C37 74 30 70 30 62" fill="none" stroke="white" strokeWidth="8" strokeLinecap="round" opacity="0.9"/><line x1="46" y1="10" x2="46" y2="24" stroke="white" strokeWidth="7" strokeLinecap="round" opacity="0.9"/><line x1="46" y1="72" x2="46" y2="86" stroke="white" strokeWidth="7" strokeLinecap="round" opacity="0.9"/></svg>},
+          ...(isSuperAdmin?[{id:"backup",t:"Sao lưu",svg:<svg viewBox="0 0 96 96" width={18} height={18}><rect x="8" y="20" width="80" height="56" rx="12" fill="#3B82F6"/><path d="M36 48 L48 60 L60 44" fill="none" stroke="white" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/><rect x="30" y="8" width="36" height="18" rx="6" fill="#60A5FA"/></svg>}]:[]),
           {id:"food_db",t:"Kho thực phẩm",svg:<svg viewBox="0 0 96 96" width={18} height={18}><defs><linearGradient id="lfd1" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#40C8FF"/><stop offset="55%" stopColor="#0050FF"/><stop offset="100%" stopColor="#DC2626"/></linearGradient></defs><rect x="10" y="10" width="76" height="76" rx="14" fill="url(#lfd1)"/><ellipse cx="48" cy="30" rx="24" ry="8" fill="white" opacity="0.9"/><path d="M24 30 v12 c0 5 10 8 24 8 s24-3 24-8 v-12" fill="white" opacity="0.5"/><path d="M24 42 v12 c0 5 10 8 24 8 s24-3 24-8 v-12" fill="white" opacity="0.3"/></svg>},
         ].map((s,i,arr)=>
           <div key={s.id} onClick={()=>{setSection(s.id);if(s.id==="templates"){const init={};(mealConfig[dayType]||[]).forEach(mid=>{init[mid]=[{name:"",gram:"",unit:"g",qty:1}];});setAllFoodItems(init);setAiResult(null);}}} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",borderBottom:i<arr.length-1?`1.5px solid ${C.border}`:"none",cursor:"pointer"}}>
@@ -446,6 +448,7 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="feature_flags"&&isAdmin&&<FeatureFlagsTab appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} isSuperAdmin={isSuperAdmin}/>}
     {section==="system_health"&&isAdmin&&<SystemHealthTab isAdmin={isAdmin} appSettings={appSettings} isSuperAdmin={isSuperAdmin}/>}
     {section==="ai_cost"&&isAdmin&&<AiCostTab isAdmin={isAdmin} isSuperAdmin={isSuperAdmin}/>}
+    {section==="backup"&&isSuperAdmin&&<BackupTab authFetch={authFetch}/>}
     {/* ADMIN PANEL */}
     {section==="admin"&&isAdmin&&<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={mob} isSuperAdmin={isSuperAdmin}/>}
 
