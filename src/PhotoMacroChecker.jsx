@@ -559,6 +559,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
                 await saveMealToCloud(selectedMeal, dayType, mealItems);
                 if (toggleEaten) await toggleEaten(selectedMeal, true);
                 alert(`✅ Đã ghi ${selInfo.nm} (${Math.round(results.total.cal)} kcal) vào theo dõi!`);
+                if (onClose) onClose(); // đóng overlay → Dashboard re-render với data mới
               } catch (e) {
                 console.error("Ghi bữa lỗi:", e);
                 alert("Có lỗi khi ghi bữa ăn. Thử lại sau.");
