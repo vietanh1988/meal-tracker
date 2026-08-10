@@ -59,11 +59,14 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     try{
       await enablePushNotifications();
       setPushStatus("granted");
-      setShowPushBanner(false);
-      setShowPushPopup(false);
-      setPushJustEnabled(true);
-      setTimeout(()=>setPushJustEnabled(false),5000);
     }catch(e){console.error("Push enable error:",e);}
+    // Ẩn banner bất kể thành công hay fail — user đã tương tác rồi
+    setShowPushBanner(false);
+    setShowPushPopup(false);
+    setPushJustEnabled(true);
+    setTimeout(()=>setPushJustEnabled(false),5000);
+    // Lưu dismiss để reload không hiện lại
+    try{const now=new Date().toISOString().slice(0,10);await supabase.from("profiles").update({push_dismissed_date:now}).eq("id",user?.id);}catch(e){}
   };
   const handleDismissPush=async()=>{
     setShowPushBanner(false);
