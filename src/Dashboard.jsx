@@ -477,17 +477,17 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
           <div><div style={{fontSize:14,fontWeight:800,color:"#9A3412"}}>Thêm bữa từ ảnh</div><div style={{fontSize:12,color:"#B45309",marginTop:2}}>Chụp hoặc chọn ảnh → AI quét calo → lưu vào bữa</div></div>
         </div>}
 
-        {/* Links after all eaten */}
-        {allEaten && <>
-          <div onClick={()=>setTab&&setTab("diary")} style={{...card,padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
-            <span style={{fontSize:15,fontWeight:700,color:C.t1}}>📓 Xem nhật ký tuần này</span>
-            <span style={{fontSize:18,color:C.t3}}>→</span>
+        {/* Links after all eaten — compact row */}
+        {allEaten && <div style={{display:"flex",gap:8}}>
+          <div onClick={()=>setTab&&setTab("diary")} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"11px 12px",background:C.surface,borderRadius:12,border:`1px solid ${C.border}`,cursor:"pointer"}}>
+            <span style={{display:"flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:C.t1}}>📓 Nhật ký</span>
+            <span style={{fontSize:16,color:C.t3}}>›</span>
           </div>
-          <div onClick={()=>setTab&&setTab("report")} style={{...card,padding:"14px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}}>
-            <span style={{fontSize:15,fontWeight:700,color:C.t1}}>📊 Xem báo cáo chi tiết</span>
-            <span style={{fontSize:18,color:C.t3}}>→</span>
+          <div onClick={()=>setTab&&setTab("report")} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"11px 12px",background:C.surface,borderRadius:12,border:`1px solid ${C.border}`,cursor:"pointer"}}>
+            <span style={{display:"flex",alignItems:"center",gap:6,fontSize:13,fontWeight:700,color:C.t1}}>📊 Báo cáo</span>
+            <span style={{fontSize:16,color:C.t3}}>›</span>
           </div>
-        </>}
+        </div>}
       </>;
     })()}
 
