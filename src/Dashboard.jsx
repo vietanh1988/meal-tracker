@@ -114,7 +114,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const todayDayIdx=new Date().getDay();// 0=CN,1=T2...
   const todayIsGym=gymDays.includes(todayDayIdx===0?6:todayDayIdx-1);// gymDays: 0=T2,1=T3...6=CN
   const [dayType,setDayType]=useState(isNoneExercise?"rest":(todayIsGym?"train":"rest"));
-  // Sync dayType when appSettings.gymDays loads (may load after initial render)
+  // Sync dayType when profile.gymDays loads
   useEffect(()=>{
     if(isNoneExercise){setDayType("rest");return;}
     const gd=profile?.gymDays;
@@ -122,8 +122,14 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     const idx=new Date().getDay();
     const mapped=idx===0?6:idx-1;
     const isGym=gd.includes(mapped);
-    setDayType(isGym?"train":"rest");
-  },[profile?.gymDays,isNoneExercise]);
+    const preferred=isGym?"train":"rest";
+    const other=preferred==="train"?"rest":"train";
+    // Nếu bucket gymDays trống mà bucket kia có data → hiện bucket có data
+    const prefHas=hasMealsToday&&hasMealsToday(preferred);
+    const otherHas=hasMealsToday&&hasMealsToday(other);
+    if(prefHas||!otherHas){setDayType(preferred);}
+    else{setDayType(other);}
+  },[profile?.gymDays,isNoneExercise,hasMealsToday]);
   // Auto-apply weekly template only if NO meals saved for today — không
   // dùng cờ localStorage "1 lần/ngày" nữa (từng gây kẹt), luôn check tươi
   // mỗi lần tải trang; `hasMeals` bên dưới đã tự đủ để không ghi đè dữ

@@ -159,7 +159,7 @@ export default function App(){
     if(tpl&&tpl.meals&&tpl.meals.length>0){
       applyTemplate(tpl);
       setPcDayManual(tpl.day_type||"train");
-      console.log("✅ Auto-applied weekly template (PC):",todayKey,tpl.day_type);
+      console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
     }
   },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded]);
 
