@@ -219,13 +219,12 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
   },{p:0,c:0,f:0,fiber:0,cal:0});
   // eatenTotals = tổng calo BỮA ĐÃ TICK (cho ring bar "calo còn lại")
-  const totals=(eatenMeals && eatenMeals.length > 0)
-    ? meals.reduce((acc,m)=>{
-        if(!eatenMeals.includes(m.id)) return acc;
-        const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
-        return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
-      },{p:0,c:0,f:0,fiber:0,cal:0})
-    : menuTotals; // backward compat: chưa tick → totals = toàn bộ
+  // Chưa tick bữa nào = chưa ăn = 0 kcal
+  const totals=meals.reduce((acc,m)=>{
+    if(!eatenMeals||!eatenMeals.includes(m.id)) return acc;
+    const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
+    return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
+  },{p:0,c:0,f:0,fiber:0,cal:0});
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
