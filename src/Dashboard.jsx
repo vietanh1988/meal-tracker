@@ -505,7 +505,6 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </div>
         {aiAccess.usable?<>
           <div style={{fontSize:14,fontWeight:600,color:C.t3,marginBottom:8}}>Chưa biết ăn gì hôm nay?</div>
-          {onOpenPhotoMacro&&<button onClick={onOpenPhotoMacro} style={{width:"100%",maxWidth:300,margin:"0 auto 10px",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"14px 16px",fontSize:14,borderRadius:14,border:`2px dashed ${C.border}`,background:C.surface,color:C.t1,fontWeight:800,cursor:"pointer",fontFamily:"inherit",minHeight:48}}>📷 Thêm bữa từ ảnh</button>}
           <button onClick={()=>setShowAIMenu(true)} style={{...redBtn,width:"100%",maxWidth:300,margin:"0 auto",display:"block",background:"linear-gradient(135deg,#7C3AED,#5B21B6)"}}>✨ Để AI tạo thực đơn cho tôi</button>
         </>:<button onClick={()=>setTab&&setTab("settings")} title="Nâng cấp Trial/Premium để mở khoá" style={{width:"100%",maxWidth:300,margin:"0 auto",display:"block",padding:"14px 16px",fontSize:15,borderRadius:14,border:`1.5px solid ${C.border}`,background:C.surface,color:C.t2,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:48}}>🔒 AI tạo thực đơn — Nâng cấp để mở khoá</button>}
       </>}
