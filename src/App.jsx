@@ -157,9 +157,16 @@ export default function App(){
     const todayKey=dayKeys[new Date().getDay()];
     const tpl=getWeeklyTemplate(todayKey);
     if(tpl&&tpl.meals&&tpl.meals.length>0){
-      applyTemplate(tpl);
-      setPcDayManual(tpl.day_type||"train");
-      console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
+      // dayType theo gymDays thực tế — template T2 train nhưng hôm nay nghỉ → ghi rest
+      const gd=profile?.gymDays||[0,2,4,5];
+      const isNone=profile?.exerciseType==="none";
+      const rawDow=new Date().getDay();
+      const mappedDow=rawDow===0?6:rawDow-1;
+      const actualDayType=isNone?"rest":(gd.includes(mappedDow)?"train":"rest");
+      const fixedTpl={...tpl,day_type:actualDayType};
+      applyTemplate(fixedTpl);
+      setPcDayManual(actualDayType);
+      console.log("✅ Auto-applied weekly template:",todayKey,"→",actualDayType);
     }
   },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded]);
 
