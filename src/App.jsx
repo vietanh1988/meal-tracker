@@ -198,7 +198,7 @@ export default function App(){
   const pcVis=(()=>{let ids=pcMC[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];if(pcIsNoneExercise)ids=ids.filter(id=>id!=="pre"&&id!=="post");return ids;})();
   const pcMeals=getTodayMeals(pcDayType).filter(m=>pcVis.includes(m.id));
   const pcTot=pcMeals.reduce((a,m)=>{
-    if(eatenMeals && eatenMeals.length > 0 && !eatenMeals.includes(m.id)) return a;
+    if(!eatenMeals||!eatenMeals.includes(m.id)) return a;
     const t=m.items.reduce((s,i)=>({p:s.p+(i.p||0),c:s.c+(i.c||0),f:s.f+(i.f||0),fiber:s.fiber+(i.fiber||0),cal:s.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
     return{p:a.p+t.p,c:a.c+t.c,f:a.f+t.f,fiber:a.fiber+t.fiber,cal:a.cal+t.cal};
   },{p:0,c:0,f:0,fiber:0,cal:0});
