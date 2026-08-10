@@ -44,7 +44,9 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     getPushStatus().then(s=>{
       setPushStatus(s);
       if(s!=="granted"){
-        // Check if dismissed recently
+        // Đã bấm "Bật ngay" trước đó → ẩn vĩnh viễn
+        if(profile.push_enabled_clicked) return;
+        // Đã bấm "Để sau" → ẩn 7 ngày
         const dismissed=profile.push_dismissed_date;
         if(dismissed){
           const diff=(Date.now()-new Date(dismissed).getTime())/(1000*60*60*24);
@@ -65,8 +67,8 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     setShowPushPopup(false);
     setPushJustEnabled(true);
     setTimeout(()=>setPushJustEnabled(false),5000);
-    // Lưu dismiss để reload không hiện lại
-    try{const now=new Date().toISOString().slice(0,10);await supabase.from("profiles").update({push_dismissed_date:now}).eq("id",user?.id);}catch(e){}
+    // Lưu dismiss + enabled_clicked để reload không hiện lại (vĩnh viễn)
+    try{const now=new Date().toISOString().slice(0,10);await supabase.from("profiles").update({push_dismissed_date:now,push_enabled_clicked:true}).eq("id",user?.id);}catch(e){}
   };
   const handleDismissPush=async()=>{
     setShowPushBanner(false);
