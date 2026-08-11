@@ -187,10 +187,19 @@ export default function DiaryTab({ userId, macro }) {
                   <span style={{ fontSize: 12, fontWeight: 700, color: C.t2 }}>{mealCal}</span>
                   <span style={{ fontSize: 10, color: C.t3, marginLeft: 4, transition: "transform .2s", transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}>▼</span>
                 </div>
-                {isExpanded && <div style={{ padding: "6px 0 6px 26px", background: "#FAFAFA", borderRadius: 8, marginBottom: 4 }}>
-                  {items.map((it, j) => <div key={j} style={{ display: "flex", justifyContent: "space-between", padding: "4px 8px", fontSize: 11, color: C.t2, borderBottom: j < items.length - 1 ? `1px solid ${C.border}` : "none" }}>
-                    <span>{it.display || it.food} · {it.gram || "?"}g</span>
-                    <span style={{ fontWeight: 700 }}>{Math.round(it.cal || 0)} kcal</span>
+                {isExpanded && <div style={{ padding: "4px 0 4px 26px", marginBottom: 4 }}>
+                  {items.map((it, j) => <div key={j} style={{ padding: "6px 0", borderBottom: j < items.length - 1 ? `1px solid ${C.border}` : "none" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: C.t1 }}>{it.display || it.food}</span>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: C.t3 }}>{it.gram || "?"}g</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, marginTop: 3 }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: C.t2 }}>P {Math.round((it.p || it.protein || 0) * 10) / 10}</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: C.t2 }}>C {Math.round((it.c || it.carb || 0) * 10) / 10}</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: C.t2 }}>F {Math.round((it.f || it.fat || 0) * 10) / 10}</span>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: C.t2 }}>Xơ {Math.round((it.fiber || 0) * 10) / 10}</span>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: C.t2, marginLeft: "auto" }}>{Math.round(it.cal || 0)} cal</span>
+                    </div>
                   </div>)}
                 </div>}
               </div>;
