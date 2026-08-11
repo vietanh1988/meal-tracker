@@ -268,8 +268,9 @@ export function useUserData(userId) {
   // (VD hôm nay Nghỉ nhưng bật pill Ngày tập để chuẩn bị cho mai) — vẫn lưu
   // bucket meal_logs bình thường, nhưng KHÔNG auto-ghi daily_logs của hôm
   // nay với day_type/món sai loại, tránh làm bẩn số liệu Báo cáo.
-  const saveMealToCloud = useCallback(async (mealId, dayType, items, skipDailyLog = false) => {
+  const saveMealToCloud = useCallback(async (mealId, dayType, items, skipDailyLog = false, date = null) => {
     if (!userId) return;
+    const logDate = date || new Date().toISOString().slice(0, 10);
     // Update local state immediately
     updateMealsState(mealId, dayType, items);
     markMealDateToday(dayType, mealId);
@@ -279,7 +280,7 @@ export function useUserData(userId) {
       const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
       const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
 
-      const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: new Date().toISOString().slice(0, 10), items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
+      const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: logDate, items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
 
       const { error } = await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
       if (error) console.error("Meal save error:", error);
@@ -287,7 +288,7 @@ export function useUserData(userId) {
 
       // === Auto-save to daily_logs ===
       if (!skipDailyLog) {
-      const today = new Date().toISOString().slice(0, 10);
+      const today = logDate;
       // Đọc từ mealsRef.current (đã đồng bộ NGAY qua updateMealsState ở trên) thay vì
       // biến `meals` (closure) — tránh bị "cũ" khi hàm này được gọi liên tiếp nhiều
       // lần trong cùng 1 lượt (VD "Lưu tất cả bữa" gọi 1 lần/bữa).
@@ -439,32 +440,29 @@ export function useUserData(userId) {
 
   // Save daily log (upsert by user_id + date)
   // Toggle eaten status for a meal
-  const toggleEaten = useCallback(async (mealId, isEaten) => {
+  const toggleEaten = useCallback(async (mealId, isEaten, date = null) => {
     if (!userId) return;
     const newEaten = isEaten
       ? [...eatenMeals.filter(id => id !== mealId), mealId]
       : eatenMeals.filter(id => id !== mealId);
     setEatenMeals(newEaten);
     try {
-      const today = todayStr();
-      // Check if daily_log exists for today
+      const logDate = date || todayStr();
       const { data: existing } = await supabase.from("daily_logs")
         .select("id")
         .eq("user_id", userId)
-        .eq("log_date", today)
+        .eq("log_date", logDate)
         .maybeSingle();
       
       if (existing) {
-        // Record exists — update only eaten_meals field
         await supabase.from("daily_logs")
           .update({ eaten_meals: newEaten })
           .eq("user_id", userId)
-          .eq("log_date", today);
+          .eq("log_date", logDate);
       } else {
-        // No record yet — insert with eaten_meals
         await supabase.from("daily_logs").insert({
           user_id: userId,
-          log_date: today,
+          log_date: logDate,
           eaten_meals: newEaten,
           day_type: "train",
         });

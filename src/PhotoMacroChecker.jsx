@@ -35,7 +35,8 @@ export default function PhotoMacroChecker({ onClose, appSettings, photoCtx, hasM
   const [servings, setServings] = useState([]); // [{name, gram, presets}]
   const [results, setResults] = useState(null); // {total, items}
   const [error, setError] = useState(null);
-  const [selectedMeal, setSelectedMeal] = useState(null); // chọn bữa để lưu (step 5)
+  const [selectedMeal, setSelectedMeal] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
   const fileRef = useRef(null);
   const cameraRef = useRef(null);
 
@@ -539,6 +540,11 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
               const auto = h < 10 ? "sang" : h < 14 ? "trua" : h < 17 ? "phu_chieu" : "toi";
               const pick = visIds.includes(auto) ? auto : visIds.find(id => !mealsWithData.has(id)) || visIds[0];
               setSelectedMeal(pick);
+              if (!selectedDate) {
+                const now = new Date();
+                if (now.getHours() < 4) { const y = new Date(now); y.setDate(y.getDate() - 1); setSelectedDate(y.toISOString().slice(0, 10)); }
+                else { setSelectedDate(now.toISOString().slice(0, 10)); }
+              }
               return null; // re-render sẽ hiện
             }
             const allHaveData = visIds.every(id => mealsWithData.has(id));
@@ -556,10 +562,12 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
                   fiber: Math.round((it.fiber || 0) * 10) / 10,
                   source: "photo",
                 }));
-                await saveMealToCloud(selectedMeal, dayType, mealItems);
-                if (toggleEaten) await toggleEaten(selectedMeal, true);
-                alert(`✅ Đã ghi ${selInfo.nm} (${Math.round(results.total.cal)} kcal) vào theo dõi!`);
-                if (onClose) onClose(); // đóng overlay → Dashboard re-render với data mới
+                await saveMealToCloud(selectedMeal, dayType, mealItems, false, selectedDate || undefined);
+                if (toggleEaten) await toggleEaten(selectedMeal, true, selectedDate || undefined);
+                const todayStr = new Date().toISOString().slice(0, 10);
+                const dateLabel = (!selectedDate || selectedDate === todayStr) ? "hôm nay" : selectedDate;
+                alert(`✅ Đã ghi ${selInfo.nm} (${Math.round(results.total.cal)} kcal) vào ${dateLabel}!`);
+                if (onClose) onClose();
               } catch (e) {
                 console.error("Ghi bữa lỗi:", e);
                 alert("Có lỗi khi ghi bữa ăn. Thử lại sau.");
@@ -591,6 +599,15 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
                     );
                   })}
                 </div>
+                {/* Chọn ngày */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1E40AF" }}>📅 Ngày:</span>
+                  <input type="date" value={selectedDate || ""} max={new Date().toISOString().slice(0, 10)} min={(() => { const d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().slice(0, 10); })()}
+                    onChange={e => setSelectedDate(e.target.value)}
+                    style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: "1.5px solid #93C5FD", background: "#EFF6FF", fontSize: 14, fontWeight: 700, color: "#1D4ED8", fontFamily: "inherit", cursor: "pointer", textAlign: "center" }}
+                  />
+                </div>
+
                 {!allHaveData && (
                   <button onClick={doSave}
                     style={{ width: "100%", padding: "12px 0", fontSize: 14, fontWeight: 800, border: "none", borderRadius: 12, background: selHasData ? "linear-gradient(135deg, #F97316, #EA580C)" : "linear-gradient(135deg, #16A34A, #15803D)", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
@@ -634,13 +651,6 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
           <div style={{ height: 190, flexShrink: 0 }} aria-hidden="true" />
         </div>
         <div style={pinnedBottom}>
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <button onClick={async()=>{
-              const shareData={title:"FipilotAI",text:"Vừa check bữa ăn "+Math.round(results?.totalCal||0)+" cal bằng FipilotAI! Chụp ảnh biết ngay calo 📸",url:"https://app.fipilotai.com"};
-              if(navigator.share){try{await navigator.share(shareData);}catch(e){}}
-              else{try{await navigator.clipboard.writeText("https://app.fipilotai.com");alert("Đã copy link!");}catch(e){}}
-            }} style={{ flex:1, padding:"10px 0", fontSize:12, fontWeight:700, border:"none", borderRadius:8, background:"linear-gradient(135deg,#007AFF,#5B21B6)", color:"#fff", cursor:"pointer", fontFamily:"inherit" }}>📤 Chia sẻ kết quả</button>
-          </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button style={{ ...mainBtn, flex: 1, fontSize: 14 }} onClick={() => { setImageData(null); setDishes([]); setServings([]); setResults(null); setStep(1); }}>📸 Chụp ảnh khác</button>
             <button style={{ flex: 1, padding: 16, borderRadius: 14, border: "none", fontSize: 14, fontWeight: 800, cursor: "pointer", background: "#EF4444", color: "#fff", fontFamily: "inherit" }} onClick={onClose}>Đóng</button>
