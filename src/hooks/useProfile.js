@@ -44,6 +44,8 @@ export function useProfile(userId, authLoading) {
         // chưa xác định được tier thì coi như free, không tự cấp quyền).
         p.tier = data.tier || "free";
         p.isLocked = !!data.is_locked;
+        p.push_dismissed_date = data.push_dismissed_date || null;
+        p.push_enabled_clicked = !!data.push_enabled_clicked;
         setProfileState(p);
         if (!silent) console.log("✅ Profile loaded from cloud");
       } else {
