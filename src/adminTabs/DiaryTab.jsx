@@ -31,7 +31,8 @@ export default function DiaryTab({ userId, macro }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [weekOffset, setWeekOffset] = useState(0);
-  const [selectedDate, setSelectedDate] = useState(null); // bấm ngày trên lịch → lọc
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [expandedMeal, setExpandedMeal] = useState(null); // bấm ngày trên lịch → lọc
 
   const today = todayStr();
   const refDate = new Date();
@@ -174,13 +175,24 @@ export default function DiaryTab({ userId, macro }) {
               const items = (m.items || []).filter(it => it && it.food);
               const mealCal = Math.round(items.reduce((s, it) => s + (it.cal || 0), 0));
               if (mealCal === 0 && items.length === 0) return null;
-              return <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: i < meals.length - 1 ? `1px solid ${C.surface}` : "none" }}>
-                <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{name}</div>
-                  <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{items.map(it => it.display || it.food).join(" · ")}</div>
+              const expandKey = ds + "_" + mealId;
+              const isExpanded = expandedMeal === expandKey;
+              return <div key={i}>
+                <div onClick={() => setExpandedMeal(isExpanded ? null : expandKey)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: `1px solid ${C.surface}`, cursor: "pointer" }}>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.t1 }}>{name}</div>
+                    <div style={{ fontSize: 10, color: C.t3, marginTop: 1 }}>{items.map(it => it.display || it.food).join(" · ")}</div>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: C.t2 }}>{mealCal}</span>
+                  <span style={{ fontSize: 10, color: C.t3, marginLeft: 4, transition: "transform .2s", transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}>▼</span>
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: C.t2 }}>{mealCal}</span>
+                {isExpanded && <div style={{ padding: "6px 0 6px 26px", background: "#FAFAFA", borderRadius: 8, marginBottom: 4 }}>
+                  {items.map((it, j) => <div key={j} style={{ display: "flex", justifyContent: "space-between", padding: "4px 8px", fontSize: 11, color: C.t2, borderBottom: j < items.length - 1 ? `1px solid ${C.border}` : "none" }}>
+                    <span>{it.display || it.food} · {it.gram || "?"}g</span>
+                    <span style={{ fontWeight: 700 }}>{Math.round(it.cal || 0)} kcal</span>
+                  </div>)}
+                </div>}
               </div>;
             })}
 
