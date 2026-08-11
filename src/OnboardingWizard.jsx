@@ -19,6 +19,7 @@ const isStandalone = typeof window !== "undefined" && (window.matchMedia("(displ
 const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
 const [showPinGuide, setShowPinGuide] = useState(!isStandalone && isIOS);
 const p=profile||defaultProfile;
+if(!p.gender) p.gender="male"; // default male — UI hiện checked, state cũng match
 const macro=calcMacro(p);
 const totalSteps=5;
 const aiAccess=getAIMenuAccess(p,appSettings);
