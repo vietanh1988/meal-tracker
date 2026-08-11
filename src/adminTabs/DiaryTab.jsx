@@ -32,7 +32,9 @@ export default function DiaryTab({ userId, macro }) {
   const [loading, setLoading] = useState(true);
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [expandedMeal, setExpandedMeal] = useState(null); // bấm ngày trên lịch → lọc
+  const [expandedMeal, setExpandedMeal] = useState(null);
+  const [dateMovePopup, setDateMovePopup] = useState(null); // {ds, mealId, mealName, mealCal, items}
+  const [moveToDate, setMoveToDate] = useState(""); // bấm ngày trên lịch → lọc
 
   const today = todayStr();
   const refDate = new Date();
@@ -201,6 +203,21 @@ export default function DiaryTab({ userId, macro }) {
                       <span style={{ fontSize: 10, fontWeight: 800, color: C.t2, marginLeft: "auto" }}>{Math.round(it.cal || 0)} cal</span>
                     </div>
                   </div>)}
+                  {/* Action buttons */}
+                  <div style={{ display: "flex", gap: 6, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+                    <button onClick={(e) => { e.stopPropagation(); setDateMovePopup({ ds, mealId, mealName: name, mealCal, items, dayType: log.day_type }); setMoveToDate(""); }}
+                      style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #BFDBFE", background: "#EFF6FF", color: "#1D4ED8", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>📅 Đổi ngày</button>
+                    <button onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm(`Xoá ${name} (${mealCal} cal) khỏi nhật ký?`)) return;
+                      try {
+                        await supabase.from("meal_logs").update({ items: [], total_cal: 0 }).eq("user_id", userId).eq("meal_id", mealId).eq("day_type", log.day_type);
+                        const newEaten = (log.eaten_meals || []).filter(id => id !== mealId);
+                        await supabase.from("daily_logs").update({ eaten_meals: newEaten }).eq("user_id", userId).eq("log_date", ds);
+                        loadLogs();
+                      } catch (err) { alert("Lỗi xoá: " + err.message); }
+                    }} style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #FECACA", background: "#FEF2F2", color: "#EF4444", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>🗑 Xoá bữa</button>
+                  </div>
                 </div>}
               </div>;
             })}
@@ -239,6 +256,60 @@ export default function DiaryTab({ userId, macro }) {
           <div style={{ fontSize: 11, marginTop: 4 }}>Hãy tạo thực đơn và đánh dấu "Đã ăn" để ghi nhật ký</div>
         </div>}
       </>}
+
+      {/* Popup đổi ngày */}
+      {dateMovePopup && <div onClick={() => setDateMovePopup(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 20 }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, padding: 20, width: "100%", maxWidth: 320, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#0F172A" }}>📅 Đổi ngày bữa ăn</div>
+            <span onClick={() => setDateMovePopup(null)} style={{ cursor: "pointer", fontSize: 18, color: "#94A3B8" }}>✕</span>
+          </div>
+          <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5, marginBottom: 14 }}>
+            Chuyển <b>{dateMovePopup.mealName} ({dateMovePopup.mealCal} cal)</b> từ ngày {dateMovePopup.ds} sang ngày mới.
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 4 }}>Chọn ngày mới:</div>
+            <input type="date" value={moveToDate} max={new Date().toISOString().slice(0, 10)}
+              min={(() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10); })()}
+              onChange={e => setMoveToDate(e.target.value)}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #93C5FD", background: "#EFF6FF", fontSize: 14, fontWeight: 700, color: "#1D4ED8", fontFamily: "inherit", textAlign: "center" }}
+            />
+          </div>
+          <button disabled={!moveToDate || moveToDate === dateMovePopup.ds} onClick={async () => {
+            try {
+              const { ds, mealId, items, dayType } = dateMovePopup;
+              const totalCal = items.reduce((s, it) => s + (it.cal || 0), 0);
+              // Ghi items vào ngày mới
+              await supabase.from("meal_logs").upsert({
+                user_id: userId, meal_id: mealId, day_type: dayType,
+                log_date: moveToDate, items, total_cal: totalCal,
+              }, { onConflict: "user_id,meal_id,day_type" });
+              // Xoá items ngày cũ
+              await supabase.from("meal_logs").update({ items: [], total_cal: 0 })
+                .eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType).eq("log_date", ds);
+              // Update eaten_meals ngày cũ (bỏ mealId) + ngày mới (thêm mealId)
+              const { data: oldLog } = await supabase.from("daily_logs").select("eaten_meals").eq("user_id", userId).eq("log_date", ds).maybeSingle();
+              if (oldLog) {
+                const oldEaten = (oldLog.eaten_meals || []).filter(id => id !== mealId);
+                await supabase.from("daily_logs").update({ eaten_meals: oldEaten }).eq("user_id", userId).eq("log_date", ds);
+              }
+              const { data: newLog } = await supabase.from("daily_logs").select("eaten_meals").eq("user_id", userId).eq("log_date", moveToDate).maybeSingle();
+              if (newLog) {
+                const newEaten = [...new Set([...(newLog.eaten_meals || []), mealId])];
+                await supabase.from("daily_logs").update({ eaten_meals: newEaten }).eq("user_id", userId).eq("log_date", moveToDate);
+              } else {
+                await supabase.from("daily_logs").insert({ user_id: userId, log_date: moveToDate, day_type: dayType, eaten_meals: [mealId], total_cal: totalCal });
+              }
+              setDateMovePopup(null);
+              setExpandedMeal(null);
+              loadLogs();
+              alert(`✅ Đã chuyển sang ngày ${moveToDate}`);
+            } catch (err) { alert("Lỗi: " + err.message); }
+          }} style={{ width: "100%", padding: "12px", border: "none", borderRadius: 12, fontSize: 14, fontWeight: 800, color: "#fff", background: (!moveToDate || moveToDate === dateMovePopup.ds) ? "#CBD5E1" : "linear-gradient(135deg,#3B82F6,#1D4ED8)", cursor: moveToDate && moveToDate !== dateMovePopup.ds ? "pointer" : "default", fontFamily: "inherit" }}>
+            {moveToDate && moveToDate !== dateMovePopup.ds ? `✅ Chuyển sang ${moveToDate}` : "Chọn ngày mới"}
+          </button>
+        </div>
+      </div>}
     </div>
   );
 }
