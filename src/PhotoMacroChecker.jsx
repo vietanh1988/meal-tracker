@@ -531,8 +531,10 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
             const ALL_MEAL_IDS = ["sang", "phu_sang", "trua", "phu_chieu", "pre", "post", "toi"];
             const visIds = ALL_MEAL_IDS;
             const dayType = photoCtx?.dayType || "rest";
-            // Check bữa nào đã có data
-            const todayMeals = getTodayMeals ? getTodayMeals(dayType) : [];
+            // Check bữa nào đã có data — chỉ check hôm nay, ngày khác cho chọn tự do
+            const todayStr2 = new Date().toISOString().slice(0, 10);
+            const isToday = !selectedDate || selectedDate === todayStr2;
+            const todayMeals = (isToday && getTodayMeals) ? getTodayMeals(dayType) : [];
             const mealsWithData = new Set(todayMeals.filter(m => m.items && m.items.length > 0).map(m => m.id));
             // Auto chọn bữa theo giờ (chỉ lần đầu)
             if (!selectedMeal) {
