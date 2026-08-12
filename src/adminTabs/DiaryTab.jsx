@@ -205,7 +205,7 @@ export default function DiaryTab({ userId, macro }) {
                   </div>)}
                   {/* Action buttons */}
                   <div style={{ display: "flex", gap: 6, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                    <button onClick={(e) => { e.stopPropagation(); setDateMovePopup({ ds, mealId, mealName: name, mealCal, items, dayType: log.day_type }); setMoveToDate(""); }}
+                    <button onClick={(e) => { e.stopPropagation(); const defaultDate = new Date().toISOString().slice(0, 10); setDateMovePopup({ ds, mealId, mealName: name, mealCal, items, dayType: log.day_type }); setMoveToDate(ds === defaultDate ? "" : defaultDate); }}
                       style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #BFDBFE", background: "#EFF6FF", color: "#1D4ED8", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>📅 Đổi ngày</button>
                     <button onClick={async (e) => {
                       e.stopPropagation();
@@ -306,7 +306,7 @@ export default function DiaryTab({ userId, macro }) {
               alert(`✅ Đã chuyển sang ngày ${moveToDate}`);
             } catch (err) { alert("Lỗi: " + err.message); }
           }} style={{ width: "100%", padding: "12px", border: "none", borderRadius: 12, fontSize: 14, fontWeight: 800, color: "#fff", background: (!moveToDate || moveToDate === dateMovePopup.ds) ? "#CBD5E1" : "linear-gradient(135deg,#3B82F6,#1D4ED8)", cursor: moveToDate && moveToDate !== dateMovePopup.ds ? "pointer" : "default", fontFamily: "inherit" }}>
-            {moveToDate && moveToDate !== dateMovePopup.ds ? `✅ Chuyển sang ${moveToDate}` : "Chọn ngày mới"}
+            {moveToDate && moveToDate !== dateMovePopup.ds ? `✅ Chuyển sang ${new Date(moveToDate+"T00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"numeric",month:"numeric"})}` : "Chọn ngày mới"}
           </button>
         </div>
       </div>}
