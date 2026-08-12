@@ -442,17 +442,20 @@ export function useUserData(userId) {
   // Toggle eaten status for a meal
   const toggleEaten = useCallback(async (mealId, isEaten, date = null) => {
     if (!userId) return;
-    const newEaten = isEaten
-      ? [...eatenMeals.filter(id => id !== mealId), mealId]
-      : eatenMeals.filter(id => id !== mealId);
-    setEatenMeals(newEaten);
     try {
       const logDate = date || todayStr();
+      // Đọc eaten_meals hiện tại TỪ DB — tránh race condition local state cũ
       const { data: existing } = await supabase.from("daily_logs")
-        .select("id")
+        .select("id, eaten_meals")
         .eq("user_id", userId)
         .eq("log_date", logDate)
         .maybeSingle();
+      
+      const currentEaten = existing?.eaten_meals || [];
+      const newEaten = isEaten
+        ? [...currentEaten.filter(id => id !== mealId), mealId]
+        : currentEaten.filter(id => id !== mealId);
+      setEatenMeals(newEaten);
       
       if (existing) {
         await supabase.from("daily_logs")
