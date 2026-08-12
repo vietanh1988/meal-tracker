@@ -259,7 +259,7 @@ export default function DiaryTab({ userId, macro }) {
 
       {/* Popup đổi ngày */}
       {dateMovePopup && <div onClick={() => setDateMovePopup(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 20 }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, padding: 20, width: "calc(100% - 40px)", maxWidth: 320, boxShadow: "0 10px 30px rgba(0,0,0,0.2)", overflow: "hidden" }}>
+        <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, padding: 16, width: "calc(100% - 48px)", maxWidth: 300, boxShadow: "0 10px 30px rgba(0,0,0,0.2)", overflow: "hidden" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <div style={{ fontSize: 15, fontWeight: 800, color: "#0F172A" }}>📅 Đổi ngày bữa ăn</div>
             <span onClick={() => setDateMovePopup(null)} style={{ cursor: "pointer", fontSize: 18, color: "#94A3B8" }}>✕</span>
@@ -272,7 +272,7 @@ export default function DiaryTab({ userId, macro }) {
             <input type="date" value={moveToDate} max={new Date().toISOString().slice(0, 10)}
               min={(() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10); })()}
               onChange={e => setMoveToDate(e.target.value)}
-              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #93C5FD", background: "#EFF6FF", fontSize: 14, fontWeight: 700, color: "#1D4ED8", fontFamily: "inherit", textAlign: "center", boxSizing: "border-box" }}
+              style={{ width: "100%", maxWidth: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #93C5FD", background: "#EFF6FF", fontSize: 14, fontWeight: 700, color: "#1D4ED8", fontFamily: "inherit", textAlign: "center", boxSizing: "border-box", WebkitAppearance: "none", margin: 0 }}
             />
           </div>
           <button disabled={!moveToDate || moveToDate === dateMovePopup.ds} onClick={async () => {
