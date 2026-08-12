@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import BackPill from "./components/BackPill";
 import { createPortal } from "react-dom";
 import { C, redBtn } from "./theme";
-import { lookupLocalFood } from "./lib/localFoodDB";
+// lookupLocalFood không dùng trong PhotoMacroChecker nữa — AI tính trực tiếp
 import { getUnits, UNIT_MAP as UNIT_MAP_RAW } from "./lib/localFoodDB";
 import { authFetch } from "./lib/authFetch";
 import { pickAiModel } from "./lib/aiProvider";
@@ -89,24 +89,23 @@ export default function PhotoMacroChecker({ onClose, appSettings, photoCtx, hasM
       const provider = getVisionProvider(appSettings, aiProvider);
       const model = pickAiModel(provider, { claudeModel: aiModel, geminiModel, gptModel });
       const prompt = `Nhìn ảnh bữa ăn này. Liệt kê TẤT CẢ các món ăn/thức uống bạn nhìn thấy.
-Với mỗi món, ước lượng khối lượng (gram) dựa trên kích thước nhìn thấy.
+Với mỗi món, ước lượng khối lượng (gram) và TÍNH LUÔN dinh dưỡng (cal, protein, carb, fat, fiber).
+
+QUAN TRỌNG: Đây là món ĐÃ CHẾ BIẾN / ĂN LIỀN — KHÔNG phải nguyên liệu thô/khô.
+VD: "miến ngan nước 400g" = cả tô miến nấu chín + thịt ngan + nước dùng (~500-600 cal), KHÔNG phải 400g miến khô.
+VD: "phở bò 500g" = cả tô phở (~550-650 cal), KHÔNG phải 500g bánh phở khô.
 
 NGUYÊN TẮC TÊN MÓN:
-- LUÔN ghi CỤ THỂ loại: "trứng gà luộc" (không ghi "trứng luộc"), "thịt heo kho" (không ghi "thịt kho"), "cá thu nướng" (không ghi "cá nướng").
+- LUÔN ghi CỤ THỂ loại: "trứng gà luộc" (không ghi "trứng luộc"), "thịt heo kho" (không ghi "thịt kho").
 - Ghi đầy đủ cách chế biến: nướng, luộc, chiên, kho, xào, hấp...
-- VD đúng: "trứng gà luộc", "ức gà nướng", "cá hồi áp chảo", "thịt bò xào", "canh bí đỏ tôm"
-- VD sai: "trứng luộc", "gà nướng", "cá chiên", "thịt xào", "canh"
 
 NGUYÊN TẮC TÁCH / GIỮ NGUYÊN:
-- Nếu các thành phần nằm RIÊNG BIỆT trên đĩa/khay (nhìn rõ từng loại): TÁCH ra từng nguyên liệu.
-  VD: "bò xào hành tây ớt chuông" → "thịt bò" 120g, "hành tây" 40g, "ớt chuông" 20g
-  VD: "cơm với thịt kho rau luộc" → "cơm trắng" 200g, "thịt heo kho" 100g, "rau muống luộc" 80g
-- Nếu là món TRỘN LẪN / có nước (phở, bún bò, cháo, canh, lẩu, bánh mì kẹp, xôi, bánh cuốn): GIỮ NGUYÊN tên cả món.
-  VD: phở bò → "phở bò" 500g (không tách bánh phở, thịt, nước dùng)
+- Thành phần RIÊNG BIỆT trên đĩa: TÁCH ra từng loại. VD: cơm + thịt kho + rau luộc → 3 items.
+- Món TRỘN LẪN / có nước (phở, bún, cháo, miến nước, canh, lẩu, xôi): GIỮ NGUYÊN 1 item. VD: phở bò → 1 item "phở bò" 500g.
 
 Tên món viết bằng tiếng Việt.
 Trả lời ĐÚNG JSON, không có text trước/sau:
-[{"name":"tên tiếng Việt","gram":số}]`;
+[{"name":"tên tiếng Việt","gram":số,"cal":số,"p":số,"c":số,"f":số,"fiber":số}]`;
 
       // Gửi qua authFetch — server sẽ route tới provider phù hợp
       const res = await authFetch("ai-proxy", {
@@ -139,6 +138,11 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
       const dishList = parsed.map(d => ({
         name: (d.name || "").trim(),
         gram: Math.round(d.gram || 100),
+        cal: Math.round(d.cal || 0),
+        p: Math.round((d.p || 0) * 10) / 10,
+        c: Math.round((d.c || 0) * 10) / 10,
+        f: Math.round((d.f || 0) * 10) / 10,
+        fiber: Math.round((d.fiber || 0) * 10) / 10,
         checked: true,
       }));
       
@@ -164,75 +168,23 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
     setStep(4);
   };
 
-  // Step 4 → Step 5: calculate macro
+  // Step 4 → Step 5: macro đã có từ bước 1, chỉ tính lại theo gram user sửa
   const handleCalcMacro = async () => {
-    setStep(2); // show loading while calculating
     setLoading(true);
     try {
-      const dbItems = [];
-      const unknownItems = [];
-
-      servings.forEach((s, i) => {
-        const lookup = lookupLocalFood(s.name, s.gram);
-        if (lookup && lookup.cal > 0) {
-          dbItems.push({
-            idx: i, name: s.name, gram: s.gram,
-            cal: Math.round(lookup.cal), p: Math.round(lookup.protein || 0),
-            c: Math.round(lookup.carb || 0), f: Math.round(lookup.fat || 0),
-            fiber: Math.round(lookup.fiber || 0),
-            estimated: false,
-          });
-        } else {
-          unknownItems.push({ idx: i, name: s.name, gram: s.gram });
-        }
+      const items = servings.map(s => {
+        // Tìm dish gốc để lấy macro per gram
+        const orig = dishes.find(d => d.name === s.name);
+        const ratio = orig && orig.gram > 0 ? s.gram / orig.gram : 1;
+        return {
+          name: s.name, gram: s.gram,
+          cal: Math.round((orig?.cal || 0) * ratio),
+          p: Math.round(((orig?.p || 0) * ratio) * 10) / 10,
+          c: Math.round(((orig?.c || 0) * ratio) * 10) / 10,
+          f: Math.round(((orig?.f || 0) * ratio) * 10) / 10,
+          fiber: Math.round(((orig?.fiber || 0) * ratio) * 10) / 10,
+        };
       });
-
-      // AI estimate cho các món không có trong DB
-      let aiEstimated = [];
-      if (unknownItems.length > 0) {
-        try {
-          const photoProvider = appSettings?.photo_vision_provider || appSettings?.ai_provider || "gemini";
-          const providerMap = { "Theo AI menu": appSettings?.ai_provider || "gemini" };
-          const provider = providerMap[photoProvider] || photoProvider;
-
-          const estimatePrompt = `Ước lượng macro dinh dưỡng cho các món ăn sau. Trả lời ĐÚNG JSON, không text trước/sau:
-[{"name":"tên","cal":số,"p":số,"c":số,"f":số,"fiber":số}]
-
-Danh sách:
-${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
-
-          const res = await authFetch("ai-proxy", { foodDesc: estimatePrompt, provider, model: pickAiModel(provider, { claudeModel: aiModel, geminiModel, gptModel }), feature: "photo_macro" });
-          const text = (res.text || "").replace(/```json|```/g, "").trim();
-          const parsed = JSON.parse(text);
-          aiEstimated = unknownItems.map((it, j) => {
-            const ai = parsed[j] || {};
-            return {
-              idx: it.idx, name: it.name, gram: it.gram,
-              cal: Math.round(ai.cal || 0), p: Math.round(ai.p || 0),
-              c: Math.round(ai.c || 0), f: Math.round(ai.f || 0),
-              fiber: Math.round(ai.fiber || 0),
-              estimated: true,
-            };
-          });
-        } catch (aiErr) {
-          console.error("AI estimate fallback error:", aiErr);
-          // Fallback thô nếu AI cũng fail
-          aiEstimated = unknownItems.map(it => {
-            const r = it.gram / 100;
-            return {
-              idx: it.idx, name: it.name, gram: it.gram,
-              cal: Math.round(145 * r), p: Math.round(10 * r),
-              c: Math.round(15 * r), f: Math.round(5 * r),
-              fiber: Math.round(2 * r),
-              estimated: true,
-            };
-          });
-        }
-      }
-
-      // Gộp lại theo thứ tự gốc
-      const allItems = [...dbItems, ...aiEstimated].sort((a, b) => a.idx - b.idx);
-      const items = allItems.map(({ idx, ...rest }) => rest);
 
       const total = items.reduce((acc, it) => ({
         cal: acc.cal + it.cal, p: acc.p + it.p, c: acc.c + it.c, f: acc.f + it.f, fiber: acc.fiber + (it.fiber || 0),
@@ -242,7 +194,7 @@ ${unknownItems.map(it => `- ${it.name}: ${it.gram}g`).join("\n")}`;
       setStep(5);
     } catch (e) {
       console.error("CalcMacro error:", e);
-      setError("Lỗi tính dinh dưỡng");
+      setError("Lỗi tính dinh dưỡng: " + e.message);
       setStep(4);
     } finally {
       setLoading(false);
