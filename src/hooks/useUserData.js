@@ -471,7 +471,7 @@ export function useUserData(userId) {
         });
       }
     } catch (e) { console.error("Toggle eaten error:", e); }
-  }, [userId, eatenMeals]);
+  }, [userId]);
 
   const saveDailyLog = useCallback(async (date, dayType, mealsData, totalCal, isComplete) => {
     if (!userId) return;
