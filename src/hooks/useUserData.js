@@ -45,7 +45,7 @@ export function useUserData(userId) {
   const [mealLogDates, setMealLogDates] = useState({ train: {}, rest: {} });
   const mealLogDatesRef = useRef(mealLogDates);
   const [eatenMeals, setEatenMeals] = useState([]); // array of meal_ids eaten today
-  const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  const todayStr = () => new Date().toISOString().slice(0, 10);
 
   // === Extracted fetch function — reusable ===
   const inFlightRef = useRef(false);
