@@ -45,7 +45,7 @@ export function useUserData(userId) {
   const [mealLogDates, setMealLogDates] = useState({ train: {}, rest: {} });
   const mealLogDatesRef = useRef(mealLogDates);
   const [eatenMeals, setEatenMeals] = useState([]); // array of meal_ids eaten today
-  const todayStr = () => new Date().toISOString().slice(0, 10);
+  const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 
   // === Extracted fetch function — reusable ===
   const inFlightRef = useRef(false);
@@ -271,10 +271,7 @@ export function useUserData(userId) {
   const saveMealToCloud = useCallback(async (mealId, dayType, items, skipDailyLog = false, date = null) => {
     if (!userId) return;
     const logDate = date || new Date().toISOString().slice(0, 10);
-    const now = new Date();
-    const utcToday = now.toISOString().slice(0, 10);
-    const localToday = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    const isToday = !date || logDate === utcToday || logDate === localToday;
+    const isToday = !date || logDate === todayStr();
     // Chỉ update local state nếu ghi hôm nay — ngày khác ghi DB thầm
     if (isToday) {
       updateMealsState(mealId, dayType, items);
