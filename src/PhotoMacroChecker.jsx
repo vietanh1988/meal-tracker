@@ -189,6 +189,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
       const total = items.reduce((acc, it) => ({
         cal: acc.cal + it.cal, p: acc.p + it.p, c: acc.c + it.c, f: acc.f + it.f, fiber: acc.fiber + (it.fiber || 0),
       }), { cal: 0, p: 0, c: 0, f: 0, fiber: 0 });
+      total.cal = Math.round(total.cal); total.p = parseFloat(total.p.toFixed(1)); total.c = parseFloat(total.c.toFixed(1)); total.f = parseFloat(total.f.toFixed(1)); total.fiber = parseFloat(total.fiber.toFixed(1));
 
       setResults({ total, items });
       setStep(5);
