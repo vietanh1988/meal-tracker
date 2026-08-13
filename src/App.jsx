@@ -197,11 +197,12 @@ export default function App(){
   const pcMC=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):DEFAULT_MEAL_CONFIG;}catch(e){return DEFAULT_MEAL_CONFIG;}})();
   const pcVis=(()=>{let ids=pcMC[pcDayType]||DEFAULT_MEAL_CONFIG[pcDayType];if(pcIsNoneExercise)ids=ids.filter(id=>id!=="pre"&&id!=="post");return ids;})();
   const pcMeals=getTodayMeals(pcDayType).filter(m=>pcVis.includes(m.id));
-  const pcTot=pcMeals.reduce((a,m)=>{
+  const pcTotRaw=pcMeals.reduce((a,m)=>{
     if(!eatenMeals||!eatenMeals.includes(m.id)) return a;
     const t=m.items.reduce((s,i)=>({p:s.p+(i.p||0),c:s.c+(i.c||0),f:s.f+(i.f||0),fiber:s.fiber+(i.fiber||0),cal:s.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
     return{p:a.p+t.p,c:a.c+t.c,f:a.f+t.f,fiber:a.fiber+t.fiber,cal:a.cal+t.cal};
   },{p:0,c:0,f:0,fiber:0,cal:0});
+  const pcTot={cal:Math.round(pcTotRaw.cal),p:parseFloat(pcTotRaw.p.toFixed(1)),c:parseFloat(pcTotRaw.c.toFixed(1)),f:parseFloat(pcTotRaw.f.toFixed(1)),fiber:parseFloat(pcTotRaw.fiber.toFixed(1))};
   const pcHP=macro.protein,pcHF=macro.fat,pcHFib=macro.fiber,pcHC=pcDayType==="train"?macro.carb:macro.carbRest,pcHCal=pcDayType==="train"?macro.calTarget:macro.calRest;
   const pcGK=profile.goalKg,pcSK=weightLog.length>0?weightLog[0].kg:profile.kg,pcCK=weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg;
   const pcWP=pcGK!==pcSK?((pcCK-pcSK)/(pcGK-pcSK))*100:0;

@@ -219,17 +219,19 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const allMeals=getTodayMeals(dayType);
   const meals=allMeals.filter(m=>visibleIds.includes(m.id));
   // menuTotals = tổng calo TOÀN BỘ thực đơn (cố định, cho header)
-  const menuTotals=meals.reduce((acc,m)=>{
+  const menuTotalsRaw=meals.reduce((acc,m)=>{
     const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
     return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
   },{p:0,c:0,f:0,fiber:0,cal:0});
+  const menuTotals={cal:Math.round(menuTotalsRaw.cal),p:parseFloat(menuTotalsRaw.p.toFixed(1)),c:parseFloat(menuTotalsRaw.c.toFixed(1)),f:parseFloat(menuTotalsRaw.f.toFixed(1)),fiber:parseFloat(menuTotalsRaw.fiber.toFixed(1))};
   // eatenTotals = tổng calo BỮA ĐÃ TICK (cho ring bar "calo còn lại")
   // Chưa tick bữa nào = chưa ăn = 0 kcal
-  const totals=meals.reduce((acc,m)=>{
+  const totalsRaw=meals.reduce((acc,m)=>{
     if(!eatenMeals||!eatenMeals.includes(m.id)) return acc;
     const mt=m.items.reduce((a,i)=>({p:a.p+(i.p||0),c:a.c+(i.c||0),f:a.f+(i.f||0),fiber:a.fiber+(i.fiber||0),cal:a.cal+(i.cal||0)}),{p:0,c:0,f:0,fiber:0,cal:0});
     return{p:acc.p+mt.p,c:acc.c+mt.c,f:acc.f+mt.f,fiber:acc.fiber+mt.fiber,cal:acc.cal+mt.cal};
   },{p:0,c:0,f:0,fiber:0,cal:0});
+  const totals={cal:Math.round(totalsRaw.cal),p:parseFloat(totalsRaw.p.toFixed(1)),c:parseFloat(totalsRaw.c.toFixed(1)),f:parseFloat(totalsRaw.f.toFixed(1)),fiber:parseFloat(totalsRaw.fiber.toFixed(1))};
   const heroP=macro.protein, heroF=macro.fat, heroFiber=macro.fiber;
   const heroC=dayType==="train"?macro.carb:macro.carbRest;
   const heroCal=dayType==="train"?macro.calTarget:macro.calRest;
