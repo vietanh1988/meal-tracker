@@ -271,9 +271,12 @@ export function useUserData(userId) {
   const saveMealToCloud = useCallback(async (mealId, dayType, items, skipDailyLog = false, date = null) => {
     if (!userId) return;
     const logDate = date || new Date().toISOString().slice(0, 10);
-    // Update local state immediately
-    updateMealsState(mealId, dayType, items);
-    markMealDateToday(dayType, mealId);
+    const isToday = logDate === new Date().toISOString().slice(0, 10);
+    // Chỉ update local state nếu ghi hôm nay — ngày khác ghi DB thầm
+    if (isToday) {
+      updateMealsState(mealId, dayType, items);
+      markMealDateToday(dayType, mealId);
+    }
     try {
       const totalCal = items.reduce((s, i) => s + (i.cal || 0), 0);
       const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
