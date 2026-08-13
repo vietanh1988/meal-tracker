@@ -272,56 +272,77 @@ export function useUserData(userId) {
     if (!userId) return;
     const logDate = date || new Date().toISOString().slice(0, 10);
     const isToday = !date || logDate === todayStr();
-    // Chỉ update local state nếu ghi hôm nay — ngày khác ghi DB thầm
+
+    // === HÔM NAY: update local state ngay ===
     if (isToday) {
       updateMealsState(mealId, dayType, items);
       markMealDateToday(dayType, mealId);
     }
+
     try {
       const totalCal = items.reduce((s, i) => s + (i.cal || 0), 0);
       const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
       const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
       const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
+      const totalFiber = items.reduce((s, i) => s + (i.fiber || 0), 0);
 
-      const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: logDate, items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
+      if (isToday) {
+        // === HÔM NAY: ghi meal_logs (upsert row duy nhất) ===
+        const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: logDate, items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
+        const { error } = await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
+        if (error) console.error("Meal save error:", error);
 
-      const { error } = await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
-      if (error) console.error("Meal save error:", error);
-      else console.log("✅ Meal saved:", mealId, dayType);
+        // === HÔM NAY: daily_logs tính từ tất cả bữa hôm nay (mealsRef) ===
+        if (!skipDailyLog) {
+          const currentMeals = mealsRef.current[dayType] || defaultStructure[dayType];
+          const mealsWithItems = currentMeals
+            .filter(m => m.items && m.items.length > 0)
+            .map(m => ({ meal_id: m.id, meal_name: m.name, items: m.items }));
+          if (mealsWithItems.length > 0) {
+            const dayCal = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.cal || 0), 0), 0);
+            const dayP = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
+            const dayC = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
+            const dayF = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
+            const dayFiber = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
+            await supabase.from("daily_logs").upsert({
+              user_id: userId, log_date: logDate, day_type: dayType,
+              meals: mealsWithItems, total_cal: Math.round(dayCal),
+              total_protein: Math.round(dayP * 10) / 10, total_carb: Math.round(dayC * 10) / 10,
+              total_fat: Math.round(dayF * 10) / 10, total_fiber: Math.round(dayFiber * 10) / 10,
+              is_complete: false,
+            }, { onConflict: "user_id,log_date" });
+          }
+        }
+      } else {
+        // === NGÀY KHÁC: KHÔNG đụng meal_logs — chỉ ghi daily_logs.meals (snapshot) ===
+        if (!skipDailyLog) {
+          const mealEntry = { meal_id: mealId, meal_name: mealId, items };
+          // Đọc daily_logs ngày đó (nếu có) → append/replace bữa
+          const { data: existing } = await supabase.from("daily_logs")
+            .select("meals, eaten_meals, day_type, total_cal, total_protein, total_carb, total_fat, total_fiber")
+            .eq("user_id", userId).eq("log_date", logDate).maybeSingle();
 
-      // === Auto-save to daily_logs ===
-      if (!skipDailyLog) {
-      const today = logDate;
-      // Đọc từ mealsRef.current (đã đồng bộ NGAY qua updateMealsState ở trên) thay vì
-      // biến `meals` (closure) — tránh bị "cũ" khi hàm này được gọi liên tiếp nhiều
-      // lần trong cùng 1 lượt (VD "Lưu tất cả bữa" gọi 1 lần/bữa).
-      const currentMeals = mealsRef.current[dayType] || defaultStructure[dayType];
-      const mealsWithItems = currentMeals
-        .filter(m => m.items && m.items.length > 0)
-        .map(m => ({ meal_id: m.id, meal_name: m.name, items: m.items }));
+          let updatedMeals = [mealEntry];
+          if (existing && Array.isArray(existing.meals)) {
+            // Bỏ bữa cùng meal_id (nếu có) → thêm bữa mới
+            updatedMeals = [...existing.meals.filter(m => (m.meal_id || m.id) !== mealId), mealEntry];
+          }
+          const updCal = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.cal || 0), 0), 0);
+          const updP = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
+          const updC = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
+          const updF = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
+          const updFb = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
 
-      if (mealsWithItems.length > 0) {
-        const dayCal = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.cal || 0), 0), 0);
-        const dayP = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
-        const dayC = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
-        const dayF = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
-        const dayFiber = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
-
-        const { error: dlErr } = await supabase.from("daily_logs").upsert({
-          user_id: userId, log_date: today, day_type: dayType,
-          meals: mealsWithItems, total_cal: Math.round(dayCal),
-          total_protein: Math.round(dayP * 10) / 10,
-          total_carb: Math.round(dayC * 10) / 10,
-          total_fat: Math.round(dayF * 10) / 10,
-          total_fiber: Math.round(dayFiber * 10) / 10,
-          is_complete: false,
-        }, { onConflict: "user_id,log_date" });
-        if (dlErr) console.error("Daily log auto-save error:", dlErr);
-        else console.log("✅ Daily log auto-saved:", today, mealsWithItems.length, "bữa");
-      }
+          await supabase.from("daily_logs").upsert({
+            user_id: userId, log_date: logDate, day_type: existing?.day_type || dayType,
+            meals: updatedMeals, total_cal: Math.round(updCal),
+            total_protein: Math.round(updP * 10) / 10, total_carb: Math.round(updC * 10) / 10,
+            total_fat: Math.round(updF * 10) / 10, total_fiber: Math.round(updFb * 10) / 10,
+          }, { onConflict: "user_id,log_date" });
+          console.log("✅ Daily log saved (other day):", logDate, mealId);
+        }
       }
     } catch (e) { console.error("Meal save error:", e); }
-    // Block re-sync for 30s after save to prevent overwrite
     lastFetchRef.current = Date.now();
   }, [userId, updateMealsState]);
 
