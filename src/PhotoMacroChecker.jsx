@@ -517,8 +517,10 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
                   fiber: Math.round((it.fiber || 0) * 10) / 10,
                   source: "photo",
                 }));
-                await saveMealToCloud(selectedMeal, dayType, mealItems, false, selectedDate || undefined);
-                if (toggleEaten) await toggleEaten(selectedMeal, true, selectedDate || undefined);
+                const todayCheck = new Date().toISOString().slice(0, 10);
+                const useDate = (selectedDate && selectedDate !== todayCheck) ? selectedDate : undefined;
+                await saveMealToCloud(selectedMeal, dayType, mealItems, false, useDate);
+                if (toggleEaten) await toggleEaten(selectedMeal, true, useDate);
                 const todayStr = new Date().toISOString().slice(0, 10);
                 const dateLabel = (!selectedDate || selectedDate === todayStr) ? "hôm nay" : selectedDate;
                 alert(`✅ Đã ghi ${selInfo.nm} (${Math.round(results.total.cal)} kcal) vào ${dateLabel}!`);
