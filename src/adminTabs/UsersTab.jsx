@@ -43,7 +43,7 @@ export function UsersTab({ isAdmin, currentUserId, isSuperAdmin }) {
       {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
   return selectedId
     ? <UserDetail userId={selectedId} currentUserId={currentUserId} onBack={() => setSelectedId(null)} isSuperAdmin={isSuperAdmin} />
-    : <UsersList onSelect={setSelectedId} currentUserId={currentUserId} />;
+    : <UsersList onSelect={setSelectedId} currentUserId={currentUserId} isSuperAdmin={isSuperAdmin} />;
 }
 
 function SortIcon({ active, dir }) {
@@ -51,7 +51,7 @@ function SortIcon({ active, dir }) {
   return <span style={{ color: C.primary, marginLeft: 4, fontSize: 10 }}>{dir === "asc" ? "↑" : "↓"}</span>;
 }
 
-function UsersList({ onSelect, currentUserId }) {
+function UsersList({ onSelect, currentUserId, isSuperAdmin }) {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);

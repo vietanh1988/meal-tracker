@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { todayVN, templateKeyOf } from "./lib/dateVN";
 import BackPill from "./components/BackPill";
 import { C, card, inp, lbl, redBtn } from "./theme";
 import { calcMacro } from "./calcMacro";
@@ -18,13 +19,13 @@ const [autoMenuResult,setAutoMenuResult]=useState(null);
 const isStandalone = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone);
 const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
 const [showPinGuide, setShowPinGuide] = useState(!isStandalone && isIOS);
-const p=profile||defaultProfile;
+const p=profile||{};
 if(!p.gender) p.gender="male"; // default male — UI hiện checked, state cũng match
 const macro=calcMacro(p);
 const totalSteps=5;
 const aiAccess=getAIMenuAccess(p,appSettings);
 
-const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
+const dayKeyToday=()=>templateKeyOf(todayVN());
 
 const finishOnboarding=()=>{setProfile({...p,onboardingDone:true});onComplete();};
 

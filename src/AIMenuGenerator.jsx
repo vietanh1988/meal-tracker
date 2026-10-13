@@ -13,6 +13,7 @@
 //   onFallbackToLibrary : () => void — mở Kho mẫu khi AI fail hẳn
 // ============================================================
 import { useState, useRef, useEffect, useMemo } from "react";
+import { todayVN, addDays } from "./lib/dateVN";
 import { C, card, redBtn, fs, fw, sp, radius } from "./theme";
 
 // AI mất 8–21 giây — xoay vòng câu trạng thái mỗi 3.5s để user thấy tiến triển
@@ -105,8 +106,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
     const avoidFoodSet = new Set(shownPatternsRef.current);
     if (getDailyLogs) {
       try {
-        const start = new Date(); start.setDate(start.getDate() - 3);
-        const dailyRows = await getDailyLogs(start.toISOString().slice(0, 10), new Date().toISOString().slice(0, 10));
+        const dailyRows = await getDailyLogs(addDays(todayVN(), -3), todayVN());
         // daily_logs lưu nested (1 ngày → nhiều bữa → mỗi bữa có items
         // riêng trong .meals[]), khác meal_logs (1 row = 1 bữa, items
         // phẳng ở top-level). Flatten về đúng shape getRecentFoodKeys
@@ -120,8 +120,7 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
       // Fallback cho nơi chưa truyền getDailyLogs (VD OnboardingWizard,
       // user mới chưa có lịch sử gì đáng kể nên không ảnh hưởng nhiều).
       try {
-        const start = new Date(); start.setDate(start.getDate() - 3);
-        const history = await getMealHistory(start.toISOString().slice(0, 10), new Date().toISOString().slice(0, 10));
+        const history = await getMealHistory(addDays(todayVN(), -3), todayVN());
         getRecentFoodKeys(history, 3).forEach(k => avoidFoodSet.add(k));
       } catch (e) { console.error("Variety history fetch error:", e); }
     }

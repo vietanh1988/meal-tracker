@@ -12,8 +12,9 @@ import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess } from "./lib/aiMenuService";
 import { isPushSupported, getPushStatus, enablePushNotifications } from "./pushNotifications";
 import { supabase } from "./lib/supabase";
+import { todayVN, isGymDate, templateKeyOf } from "./lib/dateVN";
 
-export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,userDataLoaded,macroBanner,eatenMeals,toggleEaten,onOpenPhotoMacro}){if(!profile||!macro)return null;
+export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,userDataLoaded,macroBanner,eatenMeals,toggleEaten,onOpenPhotoMacro,todayLog}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [showAIMenu,setShowAIMenu]=useState(false);
   const aiAccess=getAIMenuAccess(profile,appSettings);
@@ -68,11 +69,11 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
     setPushJustEnabled(true);
     setTimeout(()=>setPushJustEnabled(false),5000);
     // Lưu dismiss + enabled_clicked để reload không hiện lại (vĩnh viễn)
-    try{const now=new Date().toISOString().slice(0,10);await supabase.from("profiles").update({push_dismissed_date:now,push_enabled_clicked:true}).eq("id",user?.id);}catch(e){}
+    try{const now=todayVN();await supabase.from("profiles").update({push_dismissed_date:now,push_enabled_clicked:true}).eq("id",user?.id);}catch(e){}
   };
   const handleDismissPush=async()=>{
     setShowPushBanner(false);
-    const now=new Date().toISOString().slice(0,10);
+    const now=todayVN();
     try{await supabase.from("profiles").update({push_dismissed_date:now}).eq("id",user?.id);}catch(e){}
   };
 
@@ -102,52 +103,32 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   const profileTotal=profileChecks.length;
   const profilePct=Math.round((profileDone/profileTotal)*100);
   const profileComplete=profilePct>=100;
-  const todayStr=new Date().toISOString().slice(0,10);
+  const todayStr=todayVN();
   const bannerHidden=profileComplete||bannerDismissed||(profile.bannerDismissedDate===todayStr);
 
   const dismissBanner=()=>{
     setBannerDismissed(true);
     setProfile({...profile,bannerDismissedDate:todayStr});
   };
-  // Dashboard date nav
-  const [dashDate,setDashDate]=useState(new Date());
-  const isToday=dashDate.toDateString()===new Date().toDateString();
   // exerciseType=none → 1 dayType cố định, không phân biệt train/rest
   const isNoneExercise=(profile.exerciseType||"gym")==="none";
   // Auto-detect dayType from gymDays + today
   const gymDays=profile?.gymDays||[0,2,4,5];
-  const todayDayIdx=new Date().getDay();// 0=CN,1=T2...
-  const todayIsGym=gymDays.includes(todayDayIdx===0?6:todayDayIdx-1);// gymDays: 0=T2,1=T3...6=CN
+  const todayIsGym=isGymDate(gymDays,todayVN());// gymDays: 0=T2…6=CN, theo ngày VN
   const [dayType,setDayType]=useState(isNoneExercise?"rest":(todayIsGym?"train":"rest"));
   // Sync dayType — gymDays quyết định, không nhảy bucket theo data
   useEffect(()=>{
     if(isNoneExercise){setDayType("rest");return;}
     const gd=profile?.gymDays;
     if(!gd||!gd.length)return;
-    const idx=new Date().getDay();
-    const mapped=idx===0?6:idx-1;
-    const isGym=gd.includes(mapped);
-    setDayType(isGym?"train":"rest");
+    setDayType(isGymDate(gd,todayVN())?"train":"rest");
   },[profile?.gymDays,isNoneExercise]);
-  // Auto-apply weekly template only if NO meals saved for today — không
-  // dùng cờ localStorage "1 lần/ngày" nữa (từng gây kẹt), luôn check tươi
-  // mỗi lần tải trang; `hasMeals` bên dưới đã tự đủ để không ghi đè dữ
-  // liệu user đã có.
+  // Auto-apply Lịch tuần: do App.jsx đảm nhiệm (1 chỗ duy nhất cho cả mobile + PC).
+  // Theo loại ngày của nhật ký hôm nay nếu đã có (VD vừa áp thực đơn ngày nghỉ).
   useEffect(()=>{
-    if(!getWeeklyTemplate||!applyTemplate||!hasMealsToday||!userDataLoaded)return;
-    // Check CẢ HAI bucket train + rest: nếu BẤT KỲ bucket nào đã có bữa
-    // hôm nay thì KHÔNG auto-apply (tránh ghi đè khi user vừa tạo menu AI
-    // cho loại ngày KHÁC với auto-detect từ gymDays).
-    if(hasMealsToday("train")||hasMealsToday("rest"))return;
-    const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
-    const todayKey=dayKeys[new Date().getDay()];
-    const tpl=getWeeklyTemplate(todayKey);
-    if(tpl&&tpl.meals&&tpl.meals.length>0){
-      applyTemplate(tpl);
-      setDayType(tpl.day_type||"train");
-      console.log("✅ Auto-applied weekly template:",todayKey,tpl.day_type);
-    }
-  },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded]);
+    if(isNoneExercise)return;
+    if(todayLog&&todayLog.log_date===todayVN()&&(todayLog.meals||[]).length>0&&todayLog.day_type)setDayType(todayLog.day_type);
+  },[todayLog?.log_date,todayLog?.day_type,(todayLog?.meals||[]).length]);
 
   // Áp dụng thực đơn AI vừa tạo: lưu thành Lịch tuần cho hôm nay (để mai
   // vẫn còn), apply vào meal_logs/daily_logs hôm nay, rồi đồng bộ dayType
@@ -156,8 +137,7 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
   // nhưng không ai nhìn thấy ngay).
   const handleApplyAIMenu=async(tpl)=>{
     try{
-      const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
-      const todayKey=dayKeys[new Date().getDay()];
+      const todayKey=templateKeyOf(todayVN());
       const tplDayType=tpl.day_type||"train";
       const tplMeals=(tpl.meals||[]).map(m=>({meal_id:m.meal_id,meal_name:m.meal_name||m.meal_id,items:m.items||[],composite:!!m.composite,pattern:m.pattern||null}));
       const tplCal=Math.round((tpl.meals||[]).reduce((s,m)=>(m.items||[]).reduce((a,i)=>a+(i.cal||0),s),0));

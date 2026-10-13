@@ -32,6 +32,7 @@ import AIMenuGenerator from "./AIMenuGenerator";
 import { getAIMenuAccess } from "./lib/aiMenuService";
 import FeedbackTab from "./adminTabs/FeedbackTab";
 import DiaryTab from "./adminTabs/DiaryTab";
+import { todayVN, isGymDate, templateKeyOf, weekdayShort, fmtVN } from "./lib/dateVN";
 
 
 
@@ -94,8 +95,8 @@ export default function App(){
     return()=>{window.removeEventListener("scroll",handleScroll);if(scrollHideTimerRef.current)clearTimeout(scrollHideTimerRef.current);};
   },[]);
   const {profile,setProfile,loading:profileLoading}=useProfile(user?.id,loading);
-  const {weightLog,addWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id,loading);
-  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getTodayMeals,hasMealsToday,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,applyTemplate,saveDailyLog,getDailyLogs,getDailyLog,eatenMeals,toggleEaten}=useUserData(user?.id);
+  const {weightLog,addWeight,updateWeight,deleteWeight,resetWeights,setWeightLog,loading:weightLoading}=useWeightLog(user?.id,loading);
+  const {loaded:userDataLoaded,meals:cloudMeals,getMeals,getTodayMeals,hasMealsToday,getMealHistory,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,applyTemplate,getDailyLogs,getDailyLog,todayLog,eatenMeals,toggleEaten,removeDayMeal,moveDayMeal}=useUserData(user?.id);
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
   useEffect(()=>{
     if (isAdmin) return;
@@ -130,10 +131,7 @@ export default function App(){
   const pcDayAuto=(()=>{
     if(pcIsNoneExercise)return"rest";
     if(!appSettings||!profile)return"train";
-    const gd=profile?.gymDays||[0,2,4,5];
-    const todayIdx=new Date().getDay();
-    const mappedIdx=todayIdx===0?6:todayIdx-1;
-    return gd.includes(mappedIdx)?"train":"rest";
+    return isGymDate(profile?.gymDays||[0,2,4,5],todayVN())?"train":"rest";
   })();
   const pcDayType=pcIsNoneExercise?"rest":(pcDayManual||pcDayAuto);
 
@@ -147,28 +145,26 @@ export default function App(){
   // đã có) không bao giờ check lại. `hasMeals` bên dưới đã tự đủ để tránh
   // ghi đè dữ liệu user đã có — không cần thêm lớp cache nào khác, luôn
   // check tươi mỗi lần tải trang cho chắc ăn.
+  // Auto-apply Lịch tuần — DUY NHẤT ở đây (Dashboard không tự làm nữa), tối đa
+  // 1 lần / ngày / phiên, chỉ khi nhật ký hôm nay (giờ VN) chưa có bữa nào.
+  const autoAppliedRef=useRef(null);
   useEffect(()=>{
     if(!getWeeklyTemplate||!applyTemplate||!hasMealsToday||!userDataLoaded)return;
-    // hasMealsToday() (không phải getMeals().some(...)) — bucket train/rest
-    // trong DB có thể đang chứa dữ liệu SÓT từ vài ngày trước (chưa bị ghi
-    // đè), khiến check kiểu cũ nhầm "đã có bữa hôm nay" rồi bỏ qua auto-apply.
-    if(hasMealsToday("train")||hasMealsToday("rest"))return;
-    const dayKeys=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
-    const todayKey=dayKeys[new Date().getDay()];
+    const today=todayVN();
+    if(autoAppliedRef.current===today)return;
+    if(!todayLog||todayLog.log_date!==today)return;
+    if(hasMealsToday())return;
+    const todayKey=templateKeyOf(today);
     const tpl=getWeeklyTemplate(todayKey);
     if(tpl&&tpl.meals&&tpl.meals.length>0){
-      // dayType theo gymDays thực tế — template T2 train nhưng hôm nay nghỉ → ghi rest
-      const gd=profile?.gymDays||[0,2,4,5];
+      autoAppliedRef.current=today;
       const isNone=profile?.exerciseType==="none";
-      const rawDow=new Date().getDay();
-      const mappedDow=rawDow===0?6:rawDow-1;
-      const actualDayType=isNone?"rest":(gd.includes(mappedDow)?"train":"rest");
-      const fixedTpl={...tpl,day_type:actualDayType};
-      applyTemplate(fixedTpl);
+      const actualDayType=isNone?"rest":(isGymDate(profile?.gymDays||[0,2,4,5],today)?"train":"rest");
+      applyTemplate({...tpl,day_type:actualDayType});
       setPcDayManual(actualDayType);
       console.log("✅ Auto-applied weekly template:",todayKey,"→",actualDayType);
     }
-  },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded]);
+  },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded,todayLog]);
 
   if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
   if(isPasswordRecovery) return <ResetPasswordScreen/>;
@@ -226,13 +222,11 @@ export default function App(){
     return w;
   })();
   const pcNavI=(id,a,sz)=>{const c=a?"#007AFF":"#64748B";const size=sz||20;return{dashboard:<svg viewBox="0 0 96 96" width={size} height={size}><rect x="6" y="6" width="38" height="38" rx="10" fill={c}/><rect x="52" y="6" width="38" height="38" rx="10" fill={c}/><rect x="6" y="50" width="38" height="32" rx="10" fill={c}/><rect x="52" y="50" width="38" height="32" rx="10" fill={c}/><rect x="6" y="86" width="84" height="8" rx="4" fill={c}/></svg>,profile:<svg viewBox="0 0 96 96" width={size} height={size}><circle cx="48" cy="30" r="24" fill={c}/><path d="M4 96 C4 60 92 60 92 96 Z" fill={c}/></svg>,meals:<svg viewBox="0 0 96 96" width={size} height={size}><rect x="6" y="6" width="84" height="84" rx="14" fill={c}/><circle cx="22" cy="30" r="6" fill="white" opacity="0.9"/><rect x="36" y="25" width="46" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="52" r="6" fill="white" opacity="0.9"/><rect x="36" y="47" width="36" height="10" rx="5" fill="white" opacity="0.9"/><circle cx="22" cy="74" r="6" fill="white" opacity="0.9"/><rect x="36" y="69" width="40" height="10" rx="5" fill="white" opacity="0.9"/></svg>,report:<svg viewBox="0 0 96 96" width={size} height={size}><rect x="8" y="56" width="22" height="32" rx="5" fill={c}/><rect x="37" y="36" width="22" height="52" rx="5" fill={c}/><rect x="66" y="16" width="22" height="72" rx="5" fill={c}/><rect x="4" y="90" width="88" height="6" rx="3" fill={c}/></svg>,weight:<svg viewBox="0 0 96 96" width={size} height={size}><rect x="8" y="78" width="80" height="10" rx="5" fill={c}/><rect x="44" y="28" width="8" height="52" rx="4" fill={c}/><rect x="12" y="24" width="72" height="8" rx="4" fill={c}/><rect x="22" y="24" width="4" height="18" rx="2" fill={c}/><rect x="70" y="24" width="4" height="18" rx="2" fill={c}/><rect x="10" y="40" width="28" height="8" rx="4" fill={c}/><rect x="58" y="40" width="28" height="8" rx="4" fill={c}/><circle cx="48" cy="16" r="8" fill={c}/></svg>,settings:<svg viewBox="0 0 96 96" width={size} height={size}><path d="M44 4 L52 4 L54 14 C57 15 60 17 63 19 L72 14 L78 20 L73 29 C75 32 77 35 78 38 L88 40 L88 48 L78 50 C77 53 75 56 73 59 L78 68 L72 74 L63 69 C60 71 57 73 54 74 L52 84 L44 84 L42 74 C39 73 36 71 33 69 L24 74 L18 68 L23 59 C21 56 19 53 18 50 L8 48 L8 40 L18 38 C19 35 21 32 23 29 L18 20 L24 14 L33 19 C36 17 39 15 42 14 Z" fill={c}/><circle cx="48" cy="44" r="15" fill="white" opacity="0.92"/><circle cx="48" cy="44" r="8" fill={c}/></svg>,diary:<svg viewBox="0 0 96 96" width={size} height={size}><rect x="14" y="6" width="68" height="84" rx="8" fill={c}/><rect x="8" y="20" width="10" height="4" rx="2" fill={c}/><rect x="8" y="32" width="10" height="4" rx="2" fill={c}/><rect x="8" y="44" width="10" height="4" rx="2" fill={c}/><rect x="8" y="56" width="10" height="4" rx="2" fill={c}/><rect x="8" y="68" width="10" height="4" rx="2" fill={c}/><rect x="28" y="22" width="42" height="5" rx="2.5" fill="white" opacity="0.8"/><rect x="28" y="34" width="32" height="5" rx="2.5" fill="white" opacity="0.5"/><rect x="28" y="46" width="36" height="5" rx="2.5" fill="white" opacity="0.5"/><rect x="28" y="58" width="26" height="5" rx="2.5" fill="white" opacity="0.35"/><polyline points="58,68 62,73 72,62" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>}[id]||null;};
-  const pcDt=new Date(),pcDS=`${["CN","T2","T3","T4","T5","T6","T7"][pcDt.getDay()]}, ${String(pcDt.getDate()).padStart(2,"0")}/${String(pcDt.getMonth()+1).padStart(2,"0")}/${pcDt.getFullYear()}`;
-  const adminP={weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile:wrappedSetProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,deleteWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,user};
+  const pcToday=todayVN(),pcDS=`${weekdayShort(pcToday)}, ${fmtVN(pcToday,true)}`;
+  const adminP={updateWeight,removeDayMeal,moveDayMeal,weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile:wrappedSetProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,deleteWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,user};
 
   // Mobile today data for AI Coach (same logic as Dashboard)
-  const mobTodayDayIdx=new Date().getDay();
-  const mobGymDayIdx=mobTodayDayIdx===0?6:mobTodayDayIdx-1;
-  const mobDayType=pcIsNoneExercise?"rest":((profile?.gymDays||[]).includes(mobGymDayIdx)?"train":"rest");
+  const mobDayType=pcIsNoneExercise?"rest":(isGymDate(profile?.gymDays||[],todayVN())?"train":"rest");
   const mobTodayData=(()=>{
     if(!getTodayMeals)return{cal:0,p:0,c:0,f:0,dayType:mobDayType};
     try{
@@ -240,7 +234,7 @@ export default function App(){
       const ids=mc[mobDayType]||DEFAULT_MEAL_CONFIG[mobDayType];
       const ms=getTodayMeals(mobDayType).filter(m=>ids.includes(m.id));
       const t=ms.reduce((a,m)=>{
-        if(eatenMeals && eatenMeals.length > 0 && !eatenMeals.includes(m.id)) return a;
+        if(!eatenMeals || !eatenMeals.includes(m.id)) return a; // chỉ tính bữa ĐÃ ĂN
         const mt=m.items.reduce((a2,i)=>({p:a2.p+(i.p||0),c:a2.c+(i.c||0),f:a2.f+(i.f||0),cal:a2.cal+(i.cal||0)}),{p:0,c:0,f:0,cal:0});
         return{p:a.p+mt.p,c:a.c+mt.c,f:a.f+mt.f,cal:a.cal+mt.cal};
       },{p:0,c:0,f:0,cal:0});
@@ -252,7 +246,7 @@ export default function App(){
   // Lịch tuần hôm nay, apply vào meal_logs/daily_logs, rồi đồng bộ pcDayManual
   // theo đúng dayType của template vừa tạo (tránh tạo "Ngày nghỉ" nhưng PC
   // đang đứng ở toggle "Ngày tập" nên không thấy ngay).
-  const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
+  const dayKeyToday=()=>templateKeyOf(todayVN());
   const handleApplyAIMenuPC=async(tpl)=>{
     try{
       const isNoneEx=(profile?.exerciseType||"gym")==="none";
@@ -273,13 +267,13 @@ export default function App(){
     {isOffline&&<div style={{background:"#FEF3C7",padding:"8px 16px",display:"flex",alignItems:"center",gap:8,fontSize:12,fontWeight:600,color:"#92400E"}}>
       <span>📡</span> Không có kết nối mạng — dữ liệu có thể chưa cập nhật
     </div>}
-    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={wrappedSetProfile} macro={macro} getMeals={getMeals} getTodayMeals={getTodayMeals} hasMealsToday={hasMealsToday} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} saveWeeklyTemplate={saveWeeklyTemplate} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner} eatenMeals={eatenMeals} toggleEaten={toggleEaten} onOpenPhotoMacro={()=>setShowPhotoMacro(true)}/>}
-    {tab==="weight"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" initialSection="weight" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
-    {tab==="meals"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
+    {tab==="dashboard"&&<Dashboard weightLog={weightLog} addWeight={addWeight} profile={profile} setProfile={wrappedSetProfile} macro={macro} getMeals={getMeals} getTodayMeals={getTodayMeals} hasMealsToday={hasMealsToday} appSettings={appSettings} setTab={setTab} user={user} getWeeklyTemplate={getWeeklyTemplate} applyTemplate={applyTemplate} saveWeeklyTemplate={saveWeeklyTemplate} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} refreshDefaultTemplates={refreshDefaultTemplates} userDataLoaded={userDataLoaded} macroBanner={macroBanner} eatenMeals={eatenMeals} todayLog={todayLog} toggleEaten={toggleEaten} onOpenPhotoMacro={()=>setShowPhotoMacro(true)}/>}
+    {tab==="weight"&&<AdminPanel updateWeight={updateWeight} removeDayMeal={removeDayMeal} moveDayMeal={moveDayMeal} weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" initialSection="weight" weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
+    {tab==="meals"&&<AdminPanel updateWeight={updateWeight} removeDayMeal={removeDayMeal} moveDayMeal={moveDayMeal} weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="meals" user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} deleteWeeklyTemplate={deleteWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles}/>}
     {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
-    {tab==="settings"&&<AdminPanel weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs}/>}
+    {tab==="settings"&&<AdminPanel updateWeight={updateWeight} removeDayMeal={removeDayMeal} moveDayMeal={moveDayMeal} weightLog={weightLog} setWeightLog={setWeightLog} addWeight={addWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} profile={profile} setProfile={wrappedSetProfile} macro={macro} saveMealToCloud={saveMealToCloud} saveFoodCache={saveFoodCache} deleteFoodCache={deleteFoodCache} getMeals={getMeals} foodCache={foodCache} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} forcedSection="settings" signOut={signOut} user={user} weeklyTemplates={weeklyTemplates} saveWeeklyTemplate={saveWeeklyTemplate} getWeeklyTemplate={getWeeklyTemplate} defaultTemplates={defaultTemplates} saveDefaultTemplate={saveDefaultTemplate} deleteDefaultTemplate={deleteDefaultTemplate} applyTemplate={applyTemplate} refreshDefaultTemplates={refreshDefaultTemplates} weeklyBundles={weeklyBundles} saveWeeklyBundle={saveWeeklyBundle} deleteWeeklyBundle={deleteWeeklyBundle} refreshWeeklyBundles={refreshWeeklyBundles} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs}/>}
     {tab==="feedback"&&<div style={{padding:10}}><div onClick={()=>setTab("settings")} style={{display:"flex",alignItems:"center",gap:4,marginBottom:14,cursor:"pointer",color:C.primary,fontSize:15,fontWeight:600}}><span style={{fontSize:20}}>‹</span> Cài đặt</div><FeedbackTab user={user} isAdmin={isAdmin}/></div>}
-    {tab==="diary"&&<div style={{padding:10}}><DiaryTab userId={user?.id} macro={macro}/></div>}
+    {tab==="diary"&&<div style={{padding:10}}><DiaryTab userId={user?.id} macro={macro} removeDayMeal={removeDayMeal} moveDayMeal={moveDayMeal} profile={profile}/></div>}
     <svg width="0" height="0" style={{position:"absolute"}}><defs><linearGradient id="navG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#40C8FF"/><stop offset="100%" stopColor="#0050FF"/></linearGradient></defs></svg>
     {/* AI Coach FAB — only on dashboard */}
     <style>{`@keyframes fabPurpleGlow{0%,100%{box-shadow:0 4px 14px rgba(124,58,237,0.4),0 0 0 0 rgba(124,58,237,0.35);}50%{box-shadow:0 4px 14px rgba(124,58,237,0.4),0 0 0 8px rgba(124,58,237,0);}}`}</style>
@@ -300,7 +294,7 @@ export default function App(){
     </div>
     </div>
     <PWAInstallPrompt />
-    {showPhotoMacro&&<PhotoMacroChecker onClose={()=>setShowPhotoMacro(false)} appSettings={appSettings} hasMealsToday={hasMealsToday} saveMealToCloud={saveMealToCloud} toggleEaten={toggleEaten} getTodayMeals={getTodayMeals} photoCtx={(()=>{try{const gd=profile?.gymDays||[0,2,4,5];const isNone=profile?.exerciseType==="none";const rawDow=new Date().getDay();const todayDow=rawDow===0?6:rawDow-1;const todayIsGym=!isNone&&gd.includes(todayDow);const activeDayType=todayIsGym?"train":"rest";const mc=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):null;}catch(e){return null;}})();const ids=(mc&&mc[activeDayType])||["sang","trua","toi"];const visIds=isNone?ids.filter(id=>id!=="pre"&&id!=="post"):ids;const meals=getTodayMeals(activeDayType);const eatenCal=meals.filter(m=>eatenMeals.includes(m.id)).reduce((a,m)=>a+m.items.reduce((x,i)=>x+(i.cal||0),0),0);return{target:activeDayType==="train"?macro.calTarget:macro.calRest,eatenCal:Math.round(eatenCal),goal:macro.goal,proteinTarget:macro.protein,dayType:activeDayType,visibleMealIds:visIds};}catch(e){return null;}})()}/>}
+    {showPhotoMacro&&<PhotoMacroChecker onClose={()=>setShowPhotoMacro(false)} appSettings={appSettings} hasMealsToday={hasMealsToday} saveMealToCloud={saveMealToCloud} toggleEaten={toggleEaten} getTodayMeals={getTodayMeals} photoCtx={(()=>{try{const gd=profile?.gymDays||[0,2,4,5];const isNone=profile?.exerciseType==="none";const todayIsGym=!isNone&&isGymDate(gd,todayVN());const activeDayType=todayIsGym?"train":"rest";const mc=(()=>{if(profile.mealConfig)return profile.mealConfig;try{return appSettings.meal_config?JSON.parse(appSettings.meal_config):null;}catch(e){return null;}})();const ids=(mc&&mc[activeDayType])||["sang","trua","toi"];const visIds=isNone?ids.filter(id=>id!=="pre"&&id!=="post"):ids;const meals=getTodayMeals(activeDayType);const eatenCal=meals.filter(m=>eatenMeals.includes(m.id)).reduce((a,m)=>a+m.items.reduce((x,i)=>x+(i.cal||0),0),0);return{target:activeDayType==="train"?macro.calTarget:macro.calRest,eatenCal:Math.round(eatenCal),goal:macro.goal,proteinTarget:macro.protein,dayType:activeDayType,visibleMealIds:visIds};}catch(e){return null;}})()}/>}
     {!isAdmin&&showFeedbackPrompt&&<div style={{position:"fixed",inset:0,zIndex:99999,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>{setShowFeedbackPrompt(false);localStorage.setItem("feedback_prompted","1");}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,padding:"28px 24px",maxWidth:340,width:"100%",textAlign:"center",boxShadow:"0 20px 60px rgba(0,0,0,0.2)"}}>
         <div style={{fontSize:40,marginBottom:12}}>💬</div>
@@ -590,7 +584,7 @@ export default function App(){
             </div>;
           })()}
         </div>}
-        {tab==="diary_s"&&<div style={{maxWidth:800,margin:"0 auto",padding:"20px"}}><DiaryTab userId={user?.id} macro={macro}/></div>}
+        {tab==="diary_s"&&<div style={{maxWidth:800,margin:"0 auto",padding:"20px"}}><DiaryTab userId={user?.id} macro={macro} removeDayMeal={removeDayMeal} moveDayMeal={moveDayMeal} profile={profile}/></div>}
         {tab==="profile_s"&&<AdminPanel {...adminP} forcedSection="profile" hidePills/>}
         {tab==="meals"&&<AdminPanel {...adminP} forcedSection="meals" hidePills/>}
         {tab==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={false}/>}

@@ -6,6 +6,7 @@ import { C, redBtn } from "./theme";
 import { getUnits, UNIT_MAP as UNIT_MAP_RAW } from "./lib/localFoodDB";
 import { authFetch } from "./lib/authFetch";
 import { pickAiModel } from "./lib/aiProvider";
+import { todayVN, addDays, nowVNParts, friendlyDate } from "./lib/dateVN";
 
 // ============================================================
 // PhotoMacroChecker — Chụp ảnh bữa ăn → AI nhận diện → xem macro nhanh
@@ -278,7 +279,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
           {[
             { icon: "📸", bg: "rgba(124,58,237,0.1)", t: "Chụp ảnh bữa ăn", d: "Chụp ngay hoặc chọn ảnh từ thư viện. Chụp rõ, đủ sáng để AI nhận diện chính xác." },
             { icon: "🤖", bg: "rgba(5,150,105,0.1)", t: "AI nhận diện tự động", d: "AI sẽ liệt kê tên món + ước lượng khẩu phần. Bạn kiểm tra và sửa nếu cần." },
-            { icon: "📊", bg: "rgba(245,158,11,0.1)", t: "Xem kết quả dinh dưỡng", d: "Calo, Đạm, Tinh bột, Chất béo, Chất xơ — hiển thị ngay. Không lưu vào nhật ký, chỉ kiểm tra nhanh." },
+            { icon: "📊", bg: "rgba(245,158,11,0.1)", t: "Xem kết quả dinh dưỡng", d: "Calo, Đạm, Tinh bột, Chất béo, Chất xơ — hiển thị ngay. Lưu thẳng vào nhật ký, tự đánh dấu đã ăn." },
           ].map((c, i) => (
             <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: 16, background: "#fff", borderRadius: 14, border: `1px solid ${C.border}` }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: c.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{c.icon}</div>
@@ -485,20 +486,19 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
             const visIds = ALL_MEAL_IDS;
             const dayType = photoCtx?.dayType || "rest";
             // Check bữa nào đã có data — chỉ check hôm nay, ngày khác cho chọn tự do
-            const todayStr2 = new Date().toISOString().slice(0, 10);
+            const todayStr2 = todayVN();
             const isToday = !selectedDate || selectedDate === todayStr2;
             const todayMeals = (isToday && getTodayMeals) ? getTodayMeals(dayType) : [];
             const mealsWithData = new Set(todayMeals.filter(m => m.items && m.items.length > 0).map(m => m.id));
             // Auto chọn bữa theo giờ (chỉ lần đầu)
             if (!selectedMeal) {
-              const h = new Date().getHours();
-              const auto = h < 10 ? "sang" : h < 14 ? "trua" : h < 17 ? "phu_chieu" : "toi";
+              const mins = nowVNParts().minutes;
+              const auto = mins < 9 * 60 ? "sang" : mins < 10 * 60 + 30 ? "phu_sang" : mins < 14 * 60 ? "trua" : mins < 17 * 60 ? "phu_chieu" : "toi";
               const pick = visIds.includes(auto) ? auto : visIds.find(id => !mealsWithData.has(id)) || visIds[0];
               setSelectedMeal(pick);
               if (!selectedDate) {
-                const now = new Date();
-                if (now.getHours() < 4) { const y = new Date(now); y.setDate(y.getDate() - 1); setSelectedDate(y.toISOString().slice(0, 10)); }
-                else { setSelectedDate(now.toISOString().slice(0, 10)); }
+                // Ăn khuya trước 4h sáng (giờ VN) → tính vào hôm qua
+                setSelectedDate(nowVNParts().hour < 4 ? addDays(todayVN(), -1) : todayVN());
               }
               return null; // re-render sẽ hiện
             }
@@ -517,12 +517,10 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
                   fiber: Math.round((it.fiber || 0) * 10) / 10,
                   source: "photo",
                 }));
-                const todayCheck = new Date().toISOString().slice(0, 10);
-                const useDate = (selectedDate && selectedDate !== todayCheck) ? selectedDate : undefined;
-                await saveMealToCloud(selectedMeal, dayType, mealItems, false, useDate);
-                if (toggleEaten) await toggleEaten(selectedMeal, true, useDate);
-                const todayStr = new Date().toISOString().slice(0, 10);
-                const dateLabel = (!selectedDate || selectedDate === todayStr) ? "hôm nay" : selectedDate;
+                const useDate = selectedDate || todayVN();
+                const res = await saveMealToCloud(selectedMeal, dayType, mealItems, false, useDate, { markEaten: true, name: selInfo.nm, extra: { source: "photo" } });
+                if (res && res.ok === false) throw new Error(res.error || "save failed");
+                const dateLabel = friendlyDate(useDate).toLowerCase();
                 alert(`✅ Đã ghi ${selInfo.nm} (${Math.round(results.total.cal)} kcal) vào ${dateLabel}!`);
                 if (onClose) onClose();
               } catch (e) {
@@ -559,7 +557,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
                 {/* Chọn ngày */}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#1E40AF" }}>📅 Ngày:</span>
-                  <input type="date" value={selectedDate || ""} max={new Date().toISOString().slice(0, 10)} min={(() => { const d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString().slice(0, 10); })()}
+                  <input type="date" value={selectedDate || ""} max={todayVN()} min={addDays(todayVN(), -7)}
                     onChange={e => setSelectedDate(e.target.value)}
                     style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: "1.5px solid #93C5FD", background: "#EFF6FF", fontSize: 14, fontWeight: 700, color: "#1D4ED8", fontFamily: "inherit", cursor: "pointer", textAlign: "center" }}
                   />

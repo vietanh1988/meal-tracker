@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { inferPatternFromItems } from "../lib/aiMenuService";
 import { MEAL_PATTERNS } from "../mealPatterns";
+import { todayVN } from "../lib/dateVN";
+import { setMeal, toggleEatenIn, applyMenu, dayRowPayload, toSlots, hasItems, mealKey, MEAL_NAMES } from "../lib/mealMath";
 
 const defaultStructure = {
   train: [
@@ -24,34 +26,47 @@ const defaultStructure = {
   ],
 };
 
+// Khôi phục tên hiển thị món (display) từ pattern nếu item thiếu
+function restoreDisplay(mealId, items, pattern) {
+  if (!pattern || !Array.isArray(items)) return items;
+  const found = (MEAL_PATTERNS[mealId] || []).find(p => p.name === pattern);
+  if (!found || !found.dishes) return items;
+  const dishMap = {};
+  found.dishes.forEach(d => { if (d.food && d.display) dishMap[d.food] = d.display; });
+  return items.map(it => (!it.display && it.food && dishMap[it.food]) ? { ...it, display: dishMap[it.food] } : it);
+}
+
+const DAY_COLS = "log_date, day_type, meals, eaten_meals";
+
+// ============================================================
+// NGUỒN SỰ THẬT:
+//  - daily_logs (1 dòng / user / ngày VN) = những gì user ăn/định ăn NGÀY ĐÓ.
+//    Tổng quan "hôm nay", nhật ký, báo cáo đều đọc từ đây.
+//  - meal_logs (2 "ô" train/rest / user) = thực đơn mẫu gần nhất theo loại
+//    ngày — chỉ dùng làm mẫu/ví dụ (WeightSuggestion, AI coach, soạn trước),
+//    KHÔNG dùng để biết hôm nay ăn gì.
+// Mọi ghi vào daily_logs đi qua hàng đợi (dayQueueRef) → đọc-sửa-ghi tuần tự,
+// không còn 2 thao tác liên tiếp ghi đè nhau.
+// ============================================================
 export function useUserData(userId) {
   const [loaded, setLoaded] = useState(false);
   const [meals, setMeals] = useState({ train: defaultStructure.train, rest: defaultStructure.rest });
-  const mealsRef = useRef(meals); // luôn đồng bộ NGAY LẬP TỨC (không đợi React render lại)
-  // để tránh race condition khi saveMealToCloud được gọi liên tiếp nhiều lần
-  // (VD: "Lưu tất cả bữa" gọi 1 lần/bữa) — nếu đọc `meals` qua closure thì mỗi
-  // lần gọi đều thấy snapshot CŨ, làm bảng daily_logs chỉ lưu đúng bữa cuối cùng.
+  const mealsRef = useRef(meals);
   const [foodCache, setFoodCache] = useState({});
   const [weeklyTemplates, setWeeklyTemplates] = useState([]);
   const [defaultTemplates, setDefaultTemplates] = useState([]);
   const [weeklyBundles, setWeeklyBundles] = useState([]);
   const lastFetchRef = useRef(Date.now());
-  // log_date thật của từng bữa trong `meals` — DB chỉ có đúng 2 "ô" (train/rest)
-  // mỗi user, KHÔNG theo ngày thật, nên `meals[type]` có thể đang chứa dữ liệu
-  // sót lại từ vài ngày trước (chưa bị ghi đè). Theo dõi riêng log_date để biết
-  // đâu là dữ liệu THẬT của hôm nay — dùng cho hasMealsToday() bên dưới, KHÔNG
-  // đổi hành vi getMeals() (nhiều nơi như WeightSuggestion cố tình lấy ví dụ
-  // bữa ăn cũ theo loại ngày, không quan tâm có phải hôm nay không).
-  const [mealLogDates, setMealLogDates] = useState({ train: {}, rest: {} });
-  const mealLogDatesRef = useRef(mealLogDates);
-  const [eatenMeals, setEatenMeals] = useState([]); // array of meal_ids eaten today
-  const todayStr = () => new Date().toISOString().slice(0, 10);
+  // Nhật ký HÔM NAY (daily_logs của todayVN())
+  const [todayLog, setTodayLogState] = useState({ log_date: todayVN(), day_type: "train", meals: [], eaten_meals: [] });
+  const todayLogRef = useRef(todayLog);
+  const setTodayLog = useCallback((d) => { todayLogRef.current = d; setTodayLogState(d); }, []);
+  const dayQueueRef = useRef(Promise.resolve());
+  const todayStr = todayVN;
 
   // === Extracted fetch function — reusable ===
   const inFlightRef = useRef(false);
   const fetchAllData = useCallback(async (silent = false) => {
-    // Guard chống gọi trùng: focus tab + mount + auth refresh có thể bắn
-    // cùng lúc — request sau bị bỏ qua khi request trước chưa xong.
     if (inFlightRef.current) return;
     inFlightRef.current = true;
     try {
@@ -59,23 +74,34 @@ export function useUserData(userId) {
     } finally {
       inFlightRef.current = false;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
+
+  const loadTodayLog = useCallback(async () => {
+    if (!userId) return;
+    const t = todayStr();
+    const { data, error } = await supabase.from("daily_logs").select(DAY_COLS)
+      .eq("user_id", userId).eq("log_date", t).maybeSingle();
+    if (error) { console.error("Load today log error:", error); return; }
+    setTodayLog({
+      log_date: t,
+      day_type: data?.day_type || "train",
+      meals: Array.isArray(data?.meals) ? data.meals : [],
+      eaten_meals: Array.isArray(data?.eaten_meals) ? data.eaten_meals : [],
+    });
+  }, [userId, setTodayLog]);
+
   const _fetchAllDataInner = useCallback(async (silent = false) => {
     if (!userId) { setLoaded(true); return; }
     try {
-      // Load meals
+      // Load meal_logs buckets (thực đơn mẫu theo loại ngày)
       const { data, error } = await supabase.from("meal_logs").select("*").eq("user_id", userId);
       if (error) console.error("Load meals error:", error);
       if (data && data.length > 0) {
         const trainMeals = {}, restMeals = {};
-        const newDates = { train: {}, rest: {} };
         let metaByKey = {};
         data.forEach(d => {
           const target = d.day_type === "train" ? trainMeals : restMeals;
           target[d.meal_id] = d.items;
-          newDates[d.day_type === "train" ? "train" : "rest"][d.meal_id] = d.log_date;
-          // Lưu pattern + composite từ DB (nếu có)
           const mk = `${d.day_type}_${d.meal_id}`;
           if (d.pattern || d.composite) metaByKey[mk] = { pattern: d.pattern, composite: !!d.composite };
         });
@@ -86,47 +112,25 @@ export function useUserData(userId) {
           base.forEach(m => {
             if (bucket[m.id]) {
               m.items = bucket[m.id];
-              const mk = `${dt}_${m.id}`;
-              const dbMeta = metaByKey[mk];
+              const dbMeta = metaByKey[`${dt}_${m.id}`];
               if (dbMeta && dbMeta.pattern) {
-                // Đọc thẳng từ DB — chính xác 100%
                 m.pattern = dbMeta.pattern;
                 m.composite = !!dbMeta.composite;
               } else {
-                // Fallback: suy đoán từ items (data cũ chưa có cột pattern)
                 const patternName = inferPatternFromItems(m.id, m.items);
                 if (patternName) {
                   m.pattern = patternName;
-                  const patterns = MEAL_PATTERNS[m.id] || [];
-                  const found = patterns.find(p => p.name === patternName);
+                  const found = (MEAL_PATTERNS[m.id] || []).find(p => p.name === patternName);
                   m.composite = !!(found && found.composite);
                 }
               }
-              // Khôi phục display name nếu thiếu
-              if (m.pattern) {
-                const patterns = MEAL_PATTERNS[m.id] || [];
-                const found = patterns.find(p => p.name === m.pattern);
-                if (found && found.dishes) {
-                  const dishMap = {};
-                  found.dishes.forEach(d => { if (d.food && d.display) dishMap[d.food] = d.display; });
-                  m.items = m.items.map(it => {
-                    if (!it.display && it.food && dishMap[it.food]) {
-                      return { ...it, display: dishMap[it.food] };
-                    }
-                    return it;
-                  });
-                }
-              }
+              m.items = restoreDisplay(m.id, m.items, m.pattern);
             }
           });
           newMeals[dt] = base;
-          if (!silent && Object.keys(bucket).length > 0)
-            console.log(`✅ Synced ${Object.keys(bucket).length} meals for ${dt} from cloud`);
         });
         setMeals(newMeals);
         mealsRef.current = newMeals;
-        setMealLogDates(newDates);
-        mealLogDatesRef.current = newDates;
       }
 
       // Load food cache
@@ -139,7 +143,6 @@ export function useUserData(userId) {
           fc[k] = { p: Number(d.protein), c: Number(d.carb), f: Number(d.fat), fiber: Number(d.fiber), cal: Number(d.cal), gram: d.gram };
         });
         setFoodCache(fc);
-        if (!silent) console.log(`✅ Loaded ${cacheData.length} food cache entries from cloud`);
       }
 
       // Load user's weekly templates (NOT default)
@@ -147,95 +150,67 @@ export function useUserData(userId) {
         .select("*").eq("user_id", userId).or("is_default.is.null,is_default.eq.false")
         .order("created_at");
       if (tplErr) console.error("Load weekly templates error:", tplErr);
-      if (tplData) {
-        setWeeklyTemplates(tplData);
-        if (!silent) console.log(`✅ Loaded ${tplData.length} user weekly templates`);
-      }
+      if (tplData) setWeeklyTemplates(tplData);
 
       // Load default templates (admin-created, visible to all)
       const { data: defData, error: defErr } = await supabase.from("weekly_templates")
         .select("*").eq("is_default", true).order("created_at");
       if (defErr) console.error("Load default templates error:", defErr);
-      if (defData) {
-        setDefaultTemplates(defData);
-        if (!silent) console.log(`✅ Loaded ${defData.length} default templates from admin`);
-      }
+      if (defData) setDefaultTemplates(defData);
 
-      // Load weekly bundles (Gói tuần — admin ghép sẵn 7 mẫu/tuần, visible to all)
+      // Load weekly bundles
       const { data: bundleData, error: bundleErr } = await supabase.from("weekly_bundles")
         .select("*").order("created_at");
       if (bundleErr) console.error("Load weekly bundles error:", bundleErr);
-      if (bundleData) {
-        setWeeklyBundles(bundleData);
-        if (!silent) console.log(`✅ Loaded ${bundleData.length} weekly bundles`);
-      }
+      if (bundleData) setWeeklyBundles(bundleData);
 
-      // Load eaten_meals from today's daily_log
-      const { data: dlToday } = await supabase.from("daily_logs")
-        .select("eaten_meals")
-        .eq("user_id", userId)
-        .eq("log_date", todayStr())
-        .maybeSingle();
-      if (dlToday && dlToday.eaten_meals) {
-        setEatenMeals(dlToday.eaten_meals);
-        if (!silent) console.log(`✅ Loaded eaten_meals:`, dlToday.eaten_meals);
-      } else {
-        setEatenMeals([]);
-      }
+      // Nhật ký hôm nay (giờ VN)
+      await loadTodayLog();
 
       if (!silent) console.log("✅ All data synced from cloud");
       lastFetchRef.current = Date.now();
     } catch (e) { console.error("UserData load error:", e); }
     setLoaded(true);
-  }, [userId]);
+  }, [userId, loadTodayLog]);
 
   // Load on mount
   useEffect(() => {
     fetchAllData(false);
   }, [fetchAllData]);
 
-  // Re-sync on visibility change (30s debounce, visibilitychange only)
+  // Re-sync khi quay lại app (30s debounce) — hoặc ngay lập tức nếu đã sang ngày mới
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === "visible" && userId) {
-        if (Date.now() - lastFetchRef.current > 30000) {
-          console.log("🔄 Re-syncing meals data...");
-          fetchAllData(true);
-        }
+        const dayChanged = todayLogRef.current.log_date !== todayStr();
+        if (dayChanged || Date.now() - lastFetchRef.current > 30000) fetchAllData(true);
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [fetchAllData, userId]);
 
-  // Get meals for a day type
+  // Thực đơn mẫu theo loại ngày (meal_logs bucket) — KHÔNG phải hôm nay
   const getMeals = useCallback((type) => {
     return meals[type] || defaultStructure[type];
   }, [meals]);
 
-  // Có bữa THẬT của hôm nay trong bucket `type` không (khác getMeals() —
-  // hàm đó trả cả dữ liệu sót từ ngày cũ, cố tình giữ nguyên cho các chỗ
-  // như WeightSuggestion lấy ví dụ theo loại ngày, không quan tâm ngày nào).
-  // Dùng hàm này riêng cho những chỗ cần biết chính xác "hôm nay đã có gì
-  // chưa" — VD gate auto-apply Lịch tuần, tránh bị dữ liệu sót đánh lừa.
-  const hasMealsToday = useCallback((type) => {
-    const list = meals[type] || defaultStructure[type];
-    const dates = mealLogDates[type] || {};
-    const t = todayStr();
-    return list.some(m => m.items && m.items.length > 0 && dates[m.id] === t);
-  }, [meals, mealLogDates]);
+  const todayLogCurrent = () => (todayLog.log_date === todayStr() ? todayLog : { log_date: todayStr(), meals: [], eaten_meals: [] });
 
-  // Lấy bữa ăn CHỈ CỦA HÔM NAY — dùng cho Dashboard/Tổng quan.
-  // Bữa nào log_date !== today → trả items rỗng (không hiện data cũ).
-  // getMeals() vẫn giữ nguyên cho WeightSuggestion, AI Coach... cần data mẫu.
+  // Hôm nay đã có bữa nào chưa (bất kể loại ngày — 1 ngày chỉ có 1 nhật ký)
+  const hasMealsToday = useCallback(() => {
+    return todayLogCurrent().meals.some(hasItems);
+  }, [todayLog]);
+
+  // Bữa ăn HÔM NAY điền vào 7 khung chuẩn — dùng cho Tổng quan
   const getTodayMeals = useCallback((type) => {
-    const list = meals[type] || defaultStructure[type];
-    const dates = mealLogDates[type] || {};
-    const t = todayStr();
-    return list.map(m => (dates[m.id] === t) ? m : { ...m, items: [] });
-  }, [meals, mealLogDates]);
+    const base = defaultStructure[type] || defaultStructure.train;
+    return toSlots(todayLogCurrent(), base).map(m => ({ ...m, items: restoreDisplay(m.id, m.items, m.pattern) }));
+  }, [todayLog]);
 
-  // Update meals in state after save
+  const eatenMeals = todayLog.log_date === todayStr() ? (todayLog.eaten_meals || []) : [];
+
+  // Update meals bucket state
   const updateMealsState = useCallback((mealId, dayType, items, extra) => {
     setMeals(prev => {
       const updated = { ...prev };
@@ -243,7 +218,6 @@ export function useUserData(userId) {
       const idx = list.findIndex(m => m.id === mealId);
       if (idx >= 0) {
         list[idx] = { ...list[idx], items };
-        // Truyền thêm composite + pattern cho MealCard hiển thị đúng
         if (extra?.composite !== undefined) list[idx].composite = extra.composite;
         if (extra?.pattern !== undefined) list[idx].pattern = extra.pattern;
       }
@@ -253,98 +227,128 @@ export function useUserData(userId) {
     });
   }, []);
 
-  // Đánh dấu log_date=hôm nay cho 1 bữa NGAY trong session (không đợi
-  // fetchAllData load lại) — gọi song song mỗi khi ghi meal_logs thật.
-  const markMealDateToday = useCallback((dayType, mealId) => {
-    setMealLogDates(prev => {
-      const updated = { ...prev, [dayType]: { ...(prev[dayType] || {}), [mealId]: todayStr() } };
-      mealLogDatesRef.current = updated;
-      return updated;
-    });
-  }, []);
+  // ===== GHI NHẬT KÝ NGÀY (tuần tự) =====
+  // fn: (day) => newDay. Đọc dòng mới nhất từ DB trong hàng đợi rồi ghi lại.
+  // Hôm nay: cập nhật UI NGAY (lạc quan), rồi đồng bộ lại theo DB.
+  const mutateDay = useCallback((date, fn, dayTypeHint = "train") => {
+    if (!userId) return Promise.resolve({ ok: false, error: "no user" });
+    const logDate = date || todayStr();
+    const isToday = logDate === todayStr();
+    if (isToday && todayLogRef.current.log_date === logDate) {
+      try { setTodayLog({ ...fn(todayLogRef.current), log_date: logDate }); } catch (e) { /* ignore */ }
+    }
+    const job = async () => {
+      try {
+        const { data: row, error: rErr } = await supabase.from("daily_logs").select(DAY_COLS)
+          .eq("user_id", userId).eq("log_date", logDate).maybeSingle();
+        if (rErr) throw rErr;
+        const base = {
+          day_type: row?.day_type || dayTypeHint || "train",
+          meals: Array.isArray(row?.meals) ? row.meals : [],
+          eaten_meals: Array.isArray(row?.eaten_meals) ? row.eaten_meals : [],
+        };
+        const next = fn(base);
+        const { error } = await supabase.from("daily_logs")
+          .upsert(dayRowPayload(userId, logDate, next), { onConflict: "user_id,log_date" });
+        if (error) throw error;
+        if (isToday) setTodayLog({ log_date: logDate, day_type: next.day_type, meals: next.meals, eaten_meals: next.eaten_meals });
+        lastFetchRef.current = Date.now();
+        return { ok: true, day: next };
+      } catch (e) {
+        console.error("Daily log write error:", logDate, e);
+        if (isToday) loadTodayLog(); // trả UI về đúng DB
+        return { ok: false, error: e?.message || String(e) };
+      }
+    };
+    const p = dayQueueRef.current.then(job, job);
+    dayQueueRef.current = p;
+    return p;
+  }, [userId, setTodayLog, loadTodayLog]);
 
-  // Save meal to Supabase
-  // skipDailyLog=true khi user đang SOẠN TRƯỚC cho loại ngày KHÁC hôm nay
-  // (VD hôm nay Nghỉ nhưng bật pill Ngày tập để chuẩn bị cho mai) — vẫn lưu
-  // bucket meal_logs bình thường, nhưng KHÔNG auto-ghi daily_logs của hôm
-  // nay với day_type/món sai loại, tránh làm bẩn số liệu Báo cáo.
-  const saveMealToCloud = useCallback(async (mealId, dayType, items, skipDailyLog = false, date = null) => {
-    if (!userId) return;
-    const logDate = date || new Date().toISOString().slice(0, 10);
-    const isToday = !date || logDate === todayStr();
+  // Lưu 1 bữa.
+  //  - date: "YYYY-MM-DD" (mặc định hôm nay, giờ VN)
+  //  - skipDailyLog=true: chỉ cập nhật thực đơn mẫu (meal_logs), không ghi nhật ký ngày
+  //  - opts.markEaten: đánh dấu đã ăn luôn (ghi từ ảnh / nhập tay)
+  //  - opts.name / opts.extra: tên bữa + field phụ (pattern, composite, source…)
+  // Trả về { ok, error }.
+  const saveMealToCloud = useCallback(async (mealId, dayType, items, skipDailyLog = false, date = null, opts = {}) => {
+    if (!userId) return { ok: false, error: "no user" };
+    const logDate = date || todayStr();
+    const isToday = logDate === todayStr();
+    const safeItems = Array.isArray(items) ? items : [];
+    const extra = { ...(opts.extra || {}) };
+    let bucketRes = { error: null };
 
-    // === HÔM NAY: update local state ngay ===
-    if (isToday) {
-      updateMealsState(mealId, dayType, items);
-      markMealDateToday(dayType, mealId);
+    // Thực đơn mẫu theo loại ngày: chỉ cập nhật khi ghi cho HÔM NAY hoặc đang soạn trước
+    if (isToday || skipDailyLog) {
+      updateMealsState(mealId, dayType, safeItems, extra);
+      const tot = safeItems.reduce((s, i) => ({ cal: s.cal + (Number(i.cal) || 0), p: s.p + (Number(i.p ?? i.protein) || 0), c: s.c + (Number(i.c ?? i.carb) || 0), f: s.f + (Number(i.f ?? i.fat) || 0) }), { cal: 0, p: 0, c: 0, f: 0 });
+      const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: logDate, items: safeItems, total_cal: tot.cal, total_protein: tot.p, total_carb: tot.c, total_fat: tot.f };
+      if (extra.pattern !== undefined) payload.pattern = extra.pattern;
+      if (extra.composite !== undefined) payload.composite = !!extra.composite;
+      bucketRes = await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
+      if (bucketRes.error) console.error("Meal bucket save error:", bucketRes.error);
+    }
+    if (skipDailyLog) return { ok: !bucketRes.error, error: bucketRes.error?.message || null };
+
+    const name = opts.name || MEAL_NAMES[mealId] || mealId;
+    return mutateDay(logDate, (day) => setMeal(day, mealId, safeItems, { name, extra, markEaten: !!opts.markEaten }), dayType);
+  }, [userId, updateMealsState, mutateDay]);
+
+  // Xoá 1 bữa khỏi 1 ngày
+  const removeDayMeal = useCallback((date, mealId) => {
+    return mutateDay(date, (day) => setMeal(day, mealId, []));
+  }, [mutateDay]);
+
+  // Chuyển 1 bữa sang ngày khác (ghi ngày đích trước, xoá ngày nguồn sau)
+  const moveDayMeal = useCallback(async (fromDate, toDate, mealId, toDayType = null) => {
+    if (!userId || !fromDate || !toDate || fromDate === toDate) return { ok: false, error: "invalid" };
+    const { data: src, error } = await supabase.from("daily_logs").select(DAY_COLS)
+      .eq("user_id", userId).eq("log_date", fromDate).maybeSingle();
+    if (error || !src) return { ok: false, error: error?.message || "not found" };
+    const meal = (src.meals || []).find(m => mealKey(m) === mealId);
+    if (!meal) return { ok: false, error: "meal not found" };
+    const wasEaten = (src.eaten_meals || []).includes(mealId);
+    const { items, meal_id, meal_name, id, ...rest } = meal;
+    const r1 = await mutateDay(toDate, (day) => setMeal(day, mealId, items || [], { name: meal_name, extra: rest, markEaten: wasEaten }), toDayType || src.day_type);
+    if (!r1.ok) return r1;
+    return mutateDay(fromDate, (day) => setMeal(day, mealId, []));
+  }, [userId, mutateDay]);
+
+  // Tick / bỏ tick "đã ăn"
+  const toggleEaten = useCallback((mealId, isEaten, date = null) => {
+    return mutateDay(date || todayStr(), (day) => toggleEatenIn(day, mealId, isEaten));
+  }, [mutateDay]);
+
+  // Áp thực đơn (template / AI) cho 1 ngày (mặc định hôm nay).
+  // Bữa đã ăn được giữ nguyên. Thực đơn mẫu theo loại ngày cũng được cập nhật.
+  const applyTemplate = useCallback(async (template, date = null) => {
+    if (!userId || !template || !template.meals) return { ok: false, error: "no template" };
+    const logDate = date || todayStr();
+    const dayType = template.day_type === "rest" ? "rest" : "train";
+    const tplMeals = (template.meals || []).filter(m => m && m.meal_id && Array.isArray(m.items) && m.items.length > 0);
+
+    if (logDate === todayStr()) {
+      tplMeals.forEach(m => updateMealsState(m.meal_id, dayType, m.items, { composite: !!m.composite, pattern: m.pattern || null }));
+      await Promise.all(tplMeals.map(m => {
+        const items = m.items;
+        const tot = items.reduce((s, i) => ({ cal: s.cal + (Number(i.cal) || 0), p: s.p + (Number(i.p ?? i.protein) || 0), c: s.c + (Number(i.c ?? i.carb) || 0), f: s.f + (Number(i.f ?? i.fat) || 0) }), { cal: 0, p: 0, c: 0, f: 0 });
+        return supabase.from("meal_logs").upsert({ user_id: userId, meal_id: m.meal_id, day_type: dayType, log_date: logDate, items, total_cal: tot.cal, total_protein: tot.p, total_carb: tot.c, total_fat: tot.f, pattern: m.pattern || null, composite: !!m.composite }, { onConflict: "user_id,meal_id,day_type" })
+          .then(({ error }) => { if (error) console.error("Apply meal_logs error:", error); });
+      }));
     }
 
-    try {
-      const totalCal = items.reduce((s, i) => s + (i.cal || 0), 0);
-      const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
-      const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
-      const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
-      const totalFiber = items.reduce((s, i) => s + (i.fiber || 0), 0);
-
-      if (isToday) {
-        // === HÔM NAY: ghi meal_logs (upsert row duy nhất) ===
-        const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: logDate, items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF };
-        const { error } = await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
-        if (error) console.error("Meal save error:", error);
-
-        // === HÔM NAY: daily_logs tính từ tất cả bữa hôm nay (mealsRef) ===
-        if (!skipDailyLog) {
-          const currentMeals = mealsRef.current[dayType] || defaultStructure[dayType];
-          const mealsWithItems = currentMeals
-            .filter(m => m.items && m.items.length > 0)
-            .map(m => ({ meal_id: m.id, meal_name: m.name, items: m.items }));
-          if (mealsWithItems.length > 0) {
-            const dayCal = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.cal || 0), 0), 0);
-            const dayP = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
-            const dayC = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
-            const dayF = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
-            const dayFiber = mealsWithItems.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
-            await supabase.from("daily_logs").upsert({
-              user_id: userId, log_date: logDate, day_type: dayType,
-              meals: mealsWithItems, total_cal: Math.round(dayCal),
-              total_protein: Math.round(dayP * 10) / 10, total_carb: Math.round(dayC * 10) / 10,
-              total_fat: Math.round(dayF * 10) / 10, total_fiber: Math.round(dayFiber * 10) / 10,
-              is_complete: false,
-            }, { onConflict: "user_id,log_date" });
-          }
-        }
-      } else {
-        // === NGÀY KHÁC: KHÔNG đụng meal_logs — chỉ ghi daily_logs.meals (snapshot) ===
-        if (!skipDailyLog) {
-          const mealEntry = { meal_id: mealId, meal_name: mealId, items };
-          // Đọc daily_logs ngày đó (nếu có) → append/replace bữa
-          const { data: existing } = await supabase.from("daily_logs")
-            .select("meals, eaten_meals, day_type, total_cal, total_protein, total_carb, total_fat, total_fiber")
-            .eq("user_id", userId).eq("log_date", logDate).maybeSingle();
-
-          let updatedMeals = [mealEntry];
-          if (existing && Array.isArray(existing.meals)) {
-            // Bỏ bữa cùng meal_id (nếu có) → thêm bữa mới
-            updatedMeals = [...existing.meals.filter(m => (m.meal_id || m.id) !== mealId), mealEntry];
-          }
-          const updCal = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.cal || 0), 0), 0);
-          const updP = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
-          const updC = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
-          const updF = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
-          const updFb = updatedMeals.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
-
-          await supabase.from("daily_logs").upsert({
-            user_id: userId, log_date: logDate, day_type: existing?.day_type || dayType,
-            meals: updatedMeals, total_cal: Math.round(updCal),
-            total_protein: Math.round(updP * 10) / 10, total_carb: Math.round(updC * 10) / 10,
-            total_fat: Math.round(updF * 10) / 10, total_fiber: Math.round(updFb * 10) / 10,
-          }, { onConflict: "user_id,log_date" });
-          console.log("✅ Daily log saved (other day):", logDate, mealId);
-        }
-      }
-    } catch (e) { console.error("Meal save error:", e); }
-    lastFetchRef.current = Date.now();
-  }, [userId, updateMealsState]);
+    const menu = tplMeals.map(m => ({
+      meal_id: m.meal_id,
+      meal_name: m.meal_name || MEAL_NAMES[m.meal_id] || m.meal_id,
+      items: m.items,
+      ...(m.pattern ? { pattern: m.pattern } : {}),
+      ...(m.composite !== undefined ? { composite: !!m.composite } : {}),
+    }));
+    const res = await mutateDay(logDate, (day) => applyMenu(day, menu, dayType), dayType);
+    if (res.ok) console.log("✅ Template applied:", template.name || "unnamed", "→", menu.length, "bữa", logDate);
+    return res;
+  }, [userId, updateMealsState, mutateDay]);
 
   // Update food cache in state with pre-normalized entries
   const updateFoodCacheState = useCallback((normalizedEntries) => {
@@ -460,69 +464,6 @@ export function useUserData(userId) {
     return weeklyTemplates.find(t => t.day_name === dayName) || null;
   }, [weeklyTemplates]);
 
-  // ===== DAILY LOGS =====
-
-  // Save daily log (upsert by user_id + date)
-  // Toggle eaten status for a meal
-  const toggleEaten = useCallback(async (mealId, isEaten, date = null) => {
-    if (!userId) return;
-    try {
-      const logDate = date || todayStr();
-      // Đọc eaten_meals hiện tại TỪ DB — tránh race condition local state cũ
-      const { data: existing } = await supabase.from("daily_logs")
-        .select("id, eaten_meals")
-        .eq("user_id", userId)
-        .eq("log_date", logDate)
-        .maybeSingle();
-      
-      const currentEaten = existing?.eaten_meals || [];
-      const newEaten = isEaten
-        ? [...currentEaten.filter(id => id !== mealId), mealId]
-        : currentEaten.filter(id => id !== mealId);
-      setEatenMeals(newEaten);
-      
-      if (existing) {
-        await supabase.from("daily_logs")
-          .update({ eaten_meals: newEaten })
-          .eq("user_id", userId)
-          .eq("log_date", logDate);
-      } else {
-        await supabase.from("daily_logs").insert({
-          user_id: userId,
-          log_date: logDate,
-          eaten_meals: newEaten,
-          day_type: "train",
-        });
-      }
-    } catch (e) { console.error("Toggle eaten error:", e); }
-  }, [userId]);
-
-  const saveDailyLog = useCallback(async (date, dayType, mealsData, totalCal, isComplete) => {
-    if (!userId) return;
-    try {
-      const totalP = (mealsData || []).reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
-      const totalC = (mealsData || []).reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
-      const totalF = (mealsData || []).reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
-      const totalFiber = (mealsData || []).reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
-
-      const { error } = await supabase.from("daily_logs").upsert({
-        user_id: userId,
-        log_date: date,
-        day_type: dayType,
-        meals: mealsData,
-        total_cal: totalCal || 0,
-        total_protein: Math.round(totalP * 10) / 10,
-        total_carb: Math.round(totalC * 10) / 10,
-        total_fat: Math.round(totalF * 10) / 10,
-        total_fiber: Math.round(totalFiber * 10) / 10,
-        is_complete: isComplete || false,
-      }, { onConflict: "user_id,log_date" });
-
-      if (error) console.error("Daily log save error:", error);
-      else console.log("✅ Daily log saved:", date, isComplete ? "(complete)" : "(partial)");
-    } catch (e) { console.error("Daily log error:", e); }
-  }, [userId]);
-
   // Get daily logs for date range (for reports)
   const getDailyLogs = useCallback(async (startDate, endDate) => {
     if (!userId) return [];
@@ -601,52 +542,6 @@ export function useUserData(userId) {
     } catch (e) { console.error("Delete default template error:", e); }
   }, [userId]);
 
-  // Apply template
-  const applyTemplate = useCallback(async (template) => {
-    if (!userId || !template || !template.meals) return;
-    const today = new Date().toISOString().slice(0, 10);
-    const dayType = template.day_type || "train";
-    const tplMeals = template.meals || [];
-
-    for (const m of tplMeals) {
-      const mealId = m.meal_id;
-      const items = m.items || [];
-      if (mealId && items.length > 0) {
-        updateMealsState(mealId, dayType, items, { composite: !!m.composite, pattern: m.pattern || null });
-        markMealDateToday(dayType, mealId);
-        try {
-          const totalCal = items.reduce((s, i) => s + (i.cal || 0), 0);
-          const totalP = items.reduce((s, i) => s + (i.p || i.protein || 0), 0);
-          const totalC = items.reduce((s, i) => s + (i.c || i.carb || 0), 0);
-          const totalF = items.reduce((s, i) => s + (i.f || i.fat || 0), 0);
-          const payload = { user_id: userId, meal_id: mealId, day_type: dayType, log_date: today, items, total_cal: totalCal, total_protein: totalP, total_carb: totalC, total_fat: totalF, pattern: m.pattern || null, composite: !!m.composite };
-          await supabase.from("meal_logs").upsert(payload, { onConflict: "user_id,meal_id,day_type" });
-        } catch (e) { console.error("Apply meal_logs error:", e); }
-      }
-    }
-
-    try {
-      const mealsForLog = tplMeals.filter(m => m.items && m.items.length > 0);
-      const dayCal = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.cal || 0), 0), 0);
-      const dayP = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.p || i.protein || 0), 0), 0);
-      const dayC = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.c || i.carb || 0), 0), 0);
-      const dayF = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.f || i.fat || 0), 0), 0);
-      const dayFiber = mealsForLog.reduce((s, m) => s + (m.items || []).reduce((a, i) => a + (i.fiber || 0), 0), 0);
-
-      const { error } = await supabase.from("daily_logs").upsert({
-        user_id: userId, log_date: today, day_type: dayType,
-        meals: mealsForLog, total_cal: Math.round(dayCal),
-        total_protein: Math.round(dayP * 10) / 10,
-        total_carb: Math.round(dayC * 10) / 10,
-        total_fat: Math.round(dayF * 10) / 10,
-        total_fiber: Math.round(dayFiber * 10) / 10,
-        is_complete: mealsForLog.length >= 3,
-      }, { onConflict: "user_id,log_date" });
-      if (error) console.error("Apply daily_logs error:", error);
-      else console.log("✅ Template applied:", template.name || "unnamed", "→", mealsForLog.length, "bữa →", Math.round(dayCal), "cal");
-    } catch (e) { console.error("Apply daily_logs error:", e); }
-  }, [userId, updateMealsState]);
-
   // Refresh default templates
   const refreshDefaultTemplates = useCallback(async () => {
     try {
@@ -706,7 +601,7 @@ export function useUserData(userId) {
     defaultTemplates, saveDefaultTemplate, deleteDefaultTemplate, refreshDefaultTemplates,
     weeklyBundles, saveWeeklyBundle, deleteWeeklyBundle, refreshWeeklyBundles,
     applyTemplate,
-    saveDailyLog, getDailyLogs, getDailyLog,
-    eatenMeals, toggleEaten,
+    getDailyLogs, getDailyLog,
+    todayLog, eatenMeals, toggleEaten, removeDayMeal, moveDayMeal, reloadToday: loadTodayLog,
   };
 }

@@ -1,33 +1,22 @@
 import { useState, useEffect, useCallback } from "react";
 import { C, card } from "../theme";
 import { supabase } from "../lib/supabase";
+import { todayVN, addDays, weekRange, dateList, weekdayShort, fmtVN, friendlyDate } from "../lib/dateVN";
+import { eatenTotals, mealKey } from "../lib/mealMath";
 
 const MEAL_ICONS = { sang: "🌅", phu_sang: "🥐", trua: "☀️", phu_chieu: "🍎", pre: "💪", post: "🏋️", toi: "🌙" };
 const MEAL_NAMES = { sang: "Bữa sáng", phu_sang: "Bữa phụ sáng", trua: "Bữa trưa", phu_chieu: "Bữa phụ chiều", pre: "Trước tập", post: "Sau tập", toi: "Bữa tối" };
-const DAY_NAMES = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
-function todayStr() { return new Date().toISOString().slice(0, 10); }
-
-function getWeekDates(refDate) {
-  const d = new Date(refDate);
-  const day = d.getDay(); // 0=CN
-  const monday = new Date(d);
-  monday.setDate(d.getDate() - ((day + 6) % 7)); // Monday
-  const dates = [];
-  for (let i = 0; i < 7; i++) {
-    const dd = new Date(monday);
-    dd.setDate(monday.getDate() + i);
-    dates.push(dd.toISOString().slice(0, 10));
-  }
-  return dates;
+function getWeekDates(refDateStr) {
+  const { start, end } = weekRange(refDateStr);
+  return dateList(start, end);
 }
 
 function formatDate(dateStr) {
-  const d = new Date(dateStr + "T00:00:00");
-  return `${DAY_NAMES[d.getDay()]}, ${d.getDate()}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+  return `${weekdayShort(dateStr)}, ${fmtVN(dateStr)}`;
 }
 
-export default function DiaryTab({ userId, macro }) {
+export default function DiaryTab({ userId, macro, removeDayMeal, moveDayMeal }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [weekOffset, setWeekOffset] = useState(0);
@@ -36,23 +25,20 @@ export default function DiaryTab({ userId, macro }) {
   const [dateMovePopup, setDateMovePopup] = useState(null); // {ds, mealId, mealName, mealCal, items}
   const [moveToDate, setMoveToDate] = useState(""); // bấm ngày trên lịch → lọc
 
-  const today = todayStr();
-  const refDate = new Date();
-  refDate.setDate(refDate.getDate() + weekOffset * 7);
-  const weekDates = getWeekDates(refDate);
+  const today = todayVN();
+  const weekDates = getWeekDates(addDays(today, weekOffset * 7));
 
   const loadLogs = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
-      // Load last 30 days of daily_logs
-      const since = new Date();
-      since.setDate(since.getDate() - 30);
+      // 70 ngày gần nhất (đủ cho streak + lùi vài tuần)
+      const since = addDays(todayVN(), -70);
       const { data, error } = await supabase
         .from("daily_logs")
         .select("log_date, day_type, meals, total_cal, total_protein, total_carb, total_fat, total_fiber, eaten_meals")
         .eq("user_id", userId)
-        .gte("log_date", since.toISOString().slice(0, 10))
+        .gte("log_date", since)
         .order("log_date", { ascending: false });
       if (error) console.error("Diary load error:", error);
       setLogs(data || []);
@@ -65,9 +51,8 @@ export default function DiaryTab({ userId, macro }) {
   // Streak calculation — consecutive days with eaten_meals.length > 0 ending at today
   const calcStreak = () => {
     let streak = 0;
-    const d = new Date();
-    for (let i = 0; i < 60; i++) {
-      const ds = d.toISOString().slice(0, 10);
+    let ds = todayVN();
+    for (let i = 0; i < 60; i++, ds = addDays(ds, -1)) {
       const log = logs.find(l => l.log_date === ds);
       const eaten = log?.eaten_meals || [];
       if (eaten.length > 0) {
@@ -75,7 +60,6 @@ export default function DiaryTab({ userId, macro }) {
       } else if (i > 0) {
         break;
       }
-      d.setDate(d.getDate() - 1);
     }
     return streak;
   };
@@ -112,7 +96,7 @@ export default function DiaryTab({ userId, macro }) {
           <span style={{ fontSize: 28 }}>🔥</span>
           <div>
             <div style={{ fontSize: 20, fontWeight: 900, color: "#92400E" }}>{streak} ngày</div>
-            <div style={{ fontSize: 10, color: "#92400E", fontWeight: 600 }}>liên tiếp ăn đúng calo mục tiêu</div>
+            <div style={{ fontSize: 10, color: "#92400E", fontWeight: 600 }}>liên tiếp có ghi bữa đã ăn</div>
           </div>
         </div>}
 
@@ -126,13 +110,12 @@ export default function DiaryTab({ userId, macro }) {
         {/* Week calendar */}
         <div style={{ display: "flex", gap: 3, marginBottom: 12 }}>
           {weekDates.map(ds => {
-            const d = new Date(ds + "T00:00:00");
             const isToday = ds === today;
             const done = isDayDone(ds);
             const isSel = ds === selectedDate;
             return <div key={ds} onClick={() => setSelectedDate(isSel ? null : ds)} style={{ flex: 1, textAlign: "center", padding: "6px 2px", borderRadius: 10, background: isSel ? "#DBEAFE" : done ? "#F0FDF4" : "#fff", border: `1.5px solid ${isSel ? "#2563EB" : isToday ? "#007AFF" : done ? "#86EFAC" : C.border}`, cursor: "pointer", transition: "all .12s" }}>
-              <div style={{ fontSize: 8, fontWeight: 700, color: C.t3 }}>{DAY_NAMES[d.getDay()]}</div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: C.t1, marginTop: 1 }}>{d.getDate()}</div>
+              <div style={{ fontSize: 8, fontWeight: 700, color: C.t3 }}>{weekdayShort(ds)}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: C.t1, marginTop: 1 }}>{Number(ds.slice(8))}</div>
               <div style={{ width: 6, height: 6, borderRadius: 3, margin: "3px auto 0", background: done ? "#16A34A" : C.border }} />
             </div>;
           })}
@@ -141,17 +124,13 @@ export default function DiaryTab({ userId, macro }) {
         {/* Daily logs — lọc theo ngày đã chọn hoặc hiện tất cả */}
         {(selectedDate ? [selectedDate] : weekDates.slice().reverse()).map(ds => {
           const log = getLog(ds);
-          if (!log || log.total_cal === 0) return null;
+          if (!log) return null;
           const meals = parseMeals(log);
           const isToday = ds === today;
           const eaten = log.eaten_meals || [];
           // Chỉ tính calo/macro từ bữa ĐÃ ĂN
-          const eatenMeals = meals.filter(m => eaten.includes(m.meal_id || m.id || ""));
-          const eatenCal = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.cal || 0), 0), 0));
-          const eatenP = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.p || it.protein || 0), 0), 0));
-          const eatenC = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.c || it.carb || 0), 0), 0));
-          const eatenF = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.f || it.fat || 0), 0), 0));
-          const eatenFb = Math.round(eatenMeals.reduce((s, m) => s + (m.items || []).reduce((a, it) => a + (it.fiber || 0), 0), 0));
+          const et = eatenTotals(meals, eaten);
+          const eatenCal = Math.round(et.cal), eatenP = Math.round(et.p), eatenC = Math.round(et.c), eatenF = Math.round(et.f), eatenFb = Math.round(et.fiber);
           if (eatenCal === 0 && eaten.length === 0) return null; // không có bữa đã ăn → ẩn ngày này
           const calColor = eaten.length > 0 ? "#16A34A" : "#007AFF";
 
@@ -205,17 +184,15 @@ export default function DiaryTab({ userId, macro }) {
                   </div>)}
                   {/* Action buttons */}
                   <div style={{ display: "flex", gap: 6, marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                    <button onClick={(e) => { e.stopPropagation(); const defaultDate = new Date().toISOString().slice(0, 10); setDateMovePopup({ ds, mealId, mealName: name, mealCal, items, dayType: log.day_type }); setMoveToDate(ds === defaultDate ? "" : defaultDate); }}
+                    <button onClick={(e) => { e.stopPropagation(); const defaultDate = todayVN(); setDateMovePopup({ ds, mealId, mealName: name, mealCal, items, dayType: log.day_type }); setMoveToDate(ds === defaultDate ? "" : defaultDate); }}
                       style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #BFDBFE", background: "#EFF6FF", color: "#1D4ED8", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>📅 Đổi ngày</button>
                     <button onClick={async (e) => {
                       e.stopPropagation();
-                      if (!confirm(`Xoá ${name} (${mealCal} cal) khỏi nhật ký?`)) return;
-                      try {
-                        await supabase.from("meal_logs").update({ items: [], total_cal: 0 }).eq("user_id", userId).eq("meal_id", mealId).eq("day_type", log.day_type);
-                        const newEaten = (log.eaten_meals || []).filter(id => id !== mealId);
-                        await supabase.from("daily_logs").update({ eaten_meals: newEaten }).eq("user_id", userId).eq("log_date", ds);
-                        loadLogs();
-                      } catch (err) { alert("Lỗi xoá: " + err.message); }
+                      if (!confirm(`Xoá ${name} (${mealCal} cal) khỏi nhật ký ${formatDate(ds)}?`)) return;
+                      const res = removeDayMeal ? await removeDayMeal(ds, mealId) : { ok: false, error: "unavailable" };
+                      if (!res.ok) { alert("Lỗi xoá: " + res.error); return; }
+                      setExpandedMeal(null);
+                      loadLogs();
                     }} style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #FECACA", background: "#FEF2F2", color: "#EF4444", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>🗑 Xoá bữa</button>
                   </div>
                 </div>}
@@ -244,13 +221,13 @@ export default function DiaryTab({ userId, macro }) {
         </div>}
 
         {/* Selected date no data */}
-        {selectedDate && (!getLog(selectedDate) || getLog(selectedDate).total_cal === 0) && <div style={{ textAlign: "center", padding: 24, color: C.t3 }}>
+        {selectedDate && (!getLog(selectedDate) || (getLog(selectedDate).eaten_meals || []).length === 0) && <div style={{ textAlign: "center", padding: 24, color: C.t3 }}>
           <div style={{ fontSize: 24, marginBottom: 6 }}>📭</div>
           <div style={{ fontSize: 13, fontWeight: 700 }}>Chưa có dữ liệu ngày {formatDate(selectedDate)}</div>
         </div>}
 
         {/* Empty state */}
-        {!selectedDate && weekDates.every(ds => !getLog(ds) || getLog(ds).total_cal === 0) && <div style={{ textAlign: "center", padding: 30, color: C.t3 }}>
+        {!selectedDate && weekDates.every(ds => !getLog(ds) || (getLog(ds).eaten_meals || []).length === 0) && <div style={{ textAlign: "center", padding: 30, color: C.t3 }}>
           <div style={{ fontSize: 28, marginBottom: 6 }}>📓</div>
           <div style={{ fontSize: 13, fontWeight: 700 }}>Chưa có dữ liệu tuần này</div>
           <div style={{ fontSize: 11, marginTop: 4 }}>Hãy tạo thực đơn và đánh dấu "Đã ăn" để ghi nhật ký</div>
@@ -265,48 +242,31 @@ export default function DiaryTab({ userId, macro }) {
             <span onClick={() => setDateMovePopup(null)} style={{ cursor: "pointer", fontSize: 18, color: "#94A3B8" }}>✕</span>
           </div>
           <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5, marginBottom: 14 }}>
-            Chuyển <b>{dateMovePopup.mealName} ({dateMovePopup.mealCal} cal)</b> từ ngày {dateMovePopup.ds} sang ngày mới.
+            Chuyển <b>{dateMovePopup.mealName} ({dateMovePopup.mealCal} cal)</b> từ {formatDate(dateMovePopup.ds)} sang ngày mới.
           </div>
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#334155", marginBottom: 4 }}>Chọn ngày mới:</div>
-            <input type="date" value={moveToDate} max={new Date().toISOString().slice(0, 10)}
-              min={(() => { const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString().slice(0, 10); })()}
+            <input type="date" value={moveToDate} max={todayVN()}
+              min={addDays(todayVN(), -30)}
               onChange={e => setMoveToDate(e.target.value)}
               style={{ width: "100%", maxWidth: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #93C5FD", background: "#EFF6FF", fontSize: 14, fontWeight: 700, color: "#1D4ED8", fontFamily: "inherit", textAlign: "center", boxSizing: "border-box", WebkitAppearance: "none", margin: 0 }}
             />
           </div>
           <button disabled={!moveToDate || moveToDate === dateMovePopup.ds} onClick={async () => {
             try {
-              const { ds, mealId, items, dayType } = dateMovePopup;
-              const totalCal = items.reduce((s, it) => s + (it.cal || 0), 0);
-              // Ghi items vào ngày mới
-              await supabase.from("meal_logs").upsert({
-                user_id: userId, meal_id: mealId, day_type: dayType,
-                log_date: moveToDate, items, total_cal: totalCal,
-              }, { onConflict: "user_id,meal_id,day_type" });
-              // Xoá items ngày cũ
-              await supabase.from("meal_logs").update({ items: [], total_cal: 0 })
-                .eq("user_id", userId).eq("meal_id", mealId).eq("day_type", dayType).eq("log_date", ds);
-              // Update eaten_meals ngày cũ (bỏ mealId) + ngày mới (thêm mealId)
-              const { data: oldLog } = await supabase.from("daily_logs").select("eaten_meals").eq("user_id", userId).eq("log_date", ds).maybeSingle();
-              if (oldLog) {
-                const oldEaten = (oldLog.eaten_meals || []).filter(id => id !== mealId);
-                await supabase.from("daily_logs").update({ eaten_meals: oldEaten }).eq("user_id", userId).eq("log_date", ds);
-              }
-              const { data: newLog } = await supabase.from("daily_logs").select("eaten_meals").eq("user_id", userId).eq("log_date", moveToDate).maybeSingle();
-              if (newLog) {
-                const newEaten = [...new Set([...(newLog.eaten_meals || []), mealId])];
-                await supabase.from("daily_logs").update({ eaten_meals: newEaten }).eq("user_id", userId).eq("log_date", moveToDate);
-              } else {
-                await supabase.from("daily_logs").insert({ user_id: userId, log_date: moveToDate, day_type: dayType, eaten_meals: [mealId], total_cal: totalCal });
-              }
+              const { ds, mealId } = dateMovePopup;
+              const target = getLog(moveToDate);
+              const clash = (target?.meals || []).some(m => mealKey(m) === mealId && (m.items || []).length > 0);
+              if (clash && !confirm(`Ngày ${formatDate(moveToDate)} đã có ${dateMovePopup.mealName}. Thay bằng bữa này?`)) return;
+              const res = moveDayMeal ? await moveDayMeal(ds, moveToDate, mealId) : { ok: false, error: "unavailable" };
+              if (!res.ok) throw new Error(res.error);
               setDateMovePopup(null);
               setExpandedMeal(null);
               loadLogs();
-              alert(`✅ Đã chuyển sang ngày ${moveToDate}`);
+              alert(`✅ Đã chuyển sang ${friendlyDate(moveToDate).toLowerCase()}`);
             } catch (err) { alert("Lỗi: " + err.message); }
           }} style={{ width: "100%", padding: "12px", border: "none", borderRadius: 12, fontSize: 14, fontWeight: 800, color: "#fff", background: (!moveToDate || moveToDate === dateMovePopup.ds) ? "#CBD5E1" : "linear-gradient(135deg,#3B82F6,#1D4ED8)", cursor: moveToDate && moveToDate !== dateMovePopup.ds ? "pointer" : "default", fontFamily: "inherit" }}>
-            {moveToDate && moveToDate !== dateMovePopup.ds ? `✅ Chuyển sang ${new Date(moveToDate+"T00:00").toLocaleDateString("vi-VN",{weekday:"short",day:"numeric",month:"numeric"})}` : "Chọn ngày mới"}
+            {moveToDate && moveToDate !== dateMovePopup.ds ? `✅ Chuyển sang ${formatDate(moveToDate)}` : "Chọn ngày mới"}
           </button>
         </div>
       </div>}

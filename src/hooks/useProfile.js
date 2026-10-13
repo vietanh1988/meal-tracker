@@ -48,7 +48,14 @@ export function useProfile(userId, authLoading) {
         p.push_enabled_clicked = !!data.push_enabled_clicked;
         setProfileState(p);
         if (!silent) console.log("✅ Profile loaded from cloud");
+      } else if (error && error.code !== "PGRST116") {
+        // Lỗi mạng / lỗi tạm thời: KHÔNG ghi đè hồ sơ thật bằng mặc định.
+        // Giữ hồ sơ đang có (nếu đã tải trước đó), thử lại ở lần focus sau.
+        console.error("Profile load error (giữ nguyên dữ liệu, thử lại sau 3s):", error);
+        setTimeout(() => fetchProfile(true), 3000);
+        return; // giữ loading/profile như cũ — không hiện hồ sơ mặc định giả
       } else {
+        // Chưa có dòng profile (user mới) → tạo với giá trị mặc định
         setProfileState(DEFAULT);
         await supabase.from("profiles").upsert({
           id: userId, cm: DEFAULT.cm, kg: DEFAULT.kg,
@@ -61,8 +68,9 @@ export function useProfile(userId, authLoading) {
         });
       }
     } catch (e) {
-      console.error("Profile load error:", e);
-      setProfileState(DEFAULT);
+      console.error("Profile load error (thử lại sau 3s):", e);
+      setTimeout(() => fetchProfile(true), 3000);
+      return;
     }
     setLoading(false);
     lastFetchRef.current = Date.now();

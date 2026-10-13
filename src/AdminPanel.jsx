@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { todayVN, isGymDate } from "./lib/dateVN";
 import { supabase } from "./lib/supabase";
 import { authFetch } from "./lib/authFetch";
 import { pickAiModel } from "./lib/aiProvider";
@@ -43,7 +44,7 @@ import { ReportView } from "./ReportView";
 // Quản lý User, Duyệt đơn hàng, Gói cước, Báo cáo kinh doanh, Lỗi hệ thống,
 // Nhật ký hoạt động, Gửi thông báo, Quản lý tính năng, Tổng quan hệ thống,
 // Quản lý version, Kho mẫu, Bữa ăn, Cân nặng...
-export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,deleteWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,initialSection,hidePills,getMealHistory,getDailyLogs}){if(!profile||!macro)return null;
+export function AdminPanel({updateWeight,removeDayMeal,moveDayMeal,weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,forcedSection,signOut,user,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,deleteWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,initialSection,hidePills,getMealHistory,getDailyLogs}){if(!profile||!macro)return null;
   const isSuperAdmin = profile.adminRole === "super";
   const flags=parseFeatureFlags(appSettings);
   const {myPending,allPending,pendingCount,approvedCount,savePendingFoodCache,approvePendingFood,rejectPendingFood}=usePendingFoodCache(user?.id,isAdmin);
@@ -63,10 +64,7 @@ export function AdminPanel({weightLog,setWeightLog,addWeight,deleteWeight,resetW
     // Luôn auto-detect theo gymDays hôm nay — KHÔNG đọc localStorage nữa
     // (localStorage giữ dayType từ phiên trước, dễ kẹt sai khi hôm nay đổi
     // loại ngày, VD hôm qua Tập → hôm nay Nghỉ mà toggle vẫn hiện Tập).
-    const gd=profile?.gymDays||[0,2,4,5];
-    const todayIdx=new Date().getDay();// 0=CN,1=T2...
-    const mappedIdx=todayIdx===0?6:todayIdx-1;// gymDays: 0=T2...6=CN
-    return gd.includes(mappedIdx)?"train":"rest";
+    return isGymDate(profile?.gymDays||[0,2,4,5],todayVN())?"train":"rest";
   });
   useEffect(()=>{try{localStorage.setItem("fitpilot_dayType",dayType);}catch(e){}},[dayType]);
   const [selectedMeal,setSelectedMeal]=useState("sang");
@@ -464,13 +462,13 @@ Trả lời CHÍNH XÁC bằng JSON, không markdown, không giải thích:
     {section==="profile"&&<ProfileTab profile={profile} setProfile={setProfile} macro={macro} appSettings={appSettings} saveSetting={saveSetting} weightLog={weightLog} mob={mob}/>}
 
     {/* WEIGHT */}
-    {section==="weight"&&<WeightTab weightLog={weightLog} addWeight={addWeight} deleteWeight={deleteWeight} setWeightLog={setWeightLog} profile={profile} setProfile={setProfile} mob={mob}/>}
+    {section==="weight"&&<WeightTab weightLog={weightLog} addWeight={addWeight} updateWeight={updateWeight} resetWeights={resetWeights} deleteWeight={deleteWeight} setWeightLog={setWeightLog} profile={profile} setProfile={setProfile} mob={mob}/>}
     {/* ABOUT */}
     {section==="about"&&<AboutPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>}
     {section==="terms"&&<TermsPage appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} mob={mob}/>}
     {section==="feedback_inline"&&<FeedbackTab user={user} isAdmin={isAdmin}/>}
 
-    {section==="diary"&&<DiaryTab userId={user?.id} macro={macro}/>}
+    {section==="diary"&&<DiaryTab userId={user?.id} macro={macro} removeDayMeal={removeDayMeal} moveDayMeal={moveDayMeal}/>}
 
     {section==="report"&&<ReportView weightLog={weightLog} profile={profile} macro={macro} getMealHistory={getMealHistory} getDailyLogs={getDailyLogs} appSettings={appSettings} mob={mob}/>}
 

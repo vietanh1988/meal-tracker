@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { todayVN, addDays, weekdayOf, gymIdxOf, templateKeyOf } from "./lib/dateVN";
 import BackPill from "./components/BackPill";
 import { appConfirm } from "./lib/dialog";
 import { pickAiModelFromSettings, pickAiProvider } from "./lib/aiProvider";
@@ -214,9 +215,9 @@ if(details.length>0) mealDetails="\n- Chi tiết:\n"+details.join("\n");
 // chết 100%. Kèm 3 lỗi nữa: day key sai (t2/t3... trong khi DB lưu
 // thu_2/thu_3...), tpl.meals là ARRAY nhưng xử lý như object map, và
 // đọc i.name trong khi meal_logs lưu key `food`.
-const tmr=new Date();tmr.setDate(tmr.getDate()+1);
-const tmrIdx=tmr.getDay();
-const tmrMapped=tmrIdx===0?6:tmrIdx-1;
+const tmrStr=addDays(todayVN(),1);
+const tmrIdx=weekdayOf(tmrStr);
+const tmrMapped=gymIdxOf(tmrStr);
 let tmrPlan="";
 if(getWeeklyTemplate){
 try{
@@ -431,7 +432,7 @@ useEffect(()=>{if(chatRef.current)chatRef.current.scrollTop=chatRef.current.scro
 // Áp dụng thực đơn AI vừa tạo (mở từ nút trong chat) — lưu thành Lịch
 // tuần hôm nay + apply vào meal_logs/daily_logs, rồi báo lại NGAY trong
 // chính cuộc chat để user không phải rời panel mà vẫn biết đã xong.
-const dayKeyToday=()=>["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][new Date().getDay()];
+const dayKeyToday=()=>templateKeyOf(todayVN());
 const clearChatHistory=async()=>{
 if(!(await appConfirm("Xoá toàn bộ lịch sử chat với Fipilot AI? Không thể hoàn tác.",{danger:true,confirmText:"Xoá"})))return;
 try{

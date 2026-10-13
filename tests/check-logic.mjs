@@ -117,15 +117,16 @@ for (const [name, src] of Object.entries({
 }
 
 // ============================================================
-console.log("\n🔍 3. Auto-apply — CHECK CẢ train + rest");
+console.log("\n🔍 3. Auto-apply — 1 chỗ duy nhất (App), chỉ khi hôm nay chưa có bữa");
 console.log("================================================");
 
-for (const [name, src] of [["Dashboard", SRC.dashboard], ["App", SRC.app]]) {
-  test(`${name}: auto-apply check cả train + rest`, () => {
-    assert(src.includes('hasMealsToday("train")||hasMealsToday("rest")'),
-      "Chỉ check 1 loại ngày → ghi đè menu AI");
-  });
-}
+test("App: auto-apply chỉ khi nhật ký hôm nay trống, 1 lần/ngày", () => {
+  assert(SRC.app.includes("if(hasMealsToday())return;"), "Thiếu check hôm nay đã có bữa");
+  assert(SRC.app.includes("autoAppliedRef"), "Thiếu chặn apply lặp");
+});
+test("Dashboard: KHÔNG tự auto-apply nữa (tránh apply 2 lần)", () => {
+  assert(!SRC.dashboard.includes("getWeeklyTemplate(todayKey)"), "Dashboard vẫn còn auto-apply");
+});
 
 // ============================================================
 console.log("\n🔍 4. AppDialogHost — MOBILE + PC");
@@ -286,13 +287,20 @@ test("applyTemplate nhận template gốc (tpl), không phải tplMeals", () => 
 console.log("\n🔍 14. DATA INTEGRITY");
 console.log("================================================");
 
-test("useUserData: markMealDateToday cập nhật cả state + ref", () => {
-  assert(SRC.useUserData.includes("setMealLogDates"), "Thiếu setMealLogDates");
-  assert(SRC.useUserData.includes("mealLogDatesRef.current"), "Thiếu ref update");
+test("useUserData: getTodayMeals đọc từ nhật ký hôm nay (daily_logs, giờ VN)", () => {
+  assert(SRC.useUserData.match(/getTodayMeals[\s\S]*?toSlots\(todayLogCurrent\(\)/), "getTodayMeals phải đọc todayLog");
+  assert(SRC.useUserData.includes("todayVN"), "Phải dùng ngày VN");
 });
 
-test("useUserData: getTodayMeals lọc theo ngày", () => {
-  assert(SRC.useUserData.match(/getTodayMeals[\s\S]*?dates\[m\.id\]\s*===\s*t/), "Không lọc theo ngày");
+test("useUserData: ghi daily_logs qua hàng đợi tuần tự", () => {
+  assert(SRC.useUserData.includes("dayQueueRef"), "Thiếu hàng đợi ghi");
+});
+
+test("Không dùng ngày UTC cho 'hôm nay' ở các màn chính", () => {
+  for (const k of ["app", "dashboard", "useUserData"]) {
+    assert(!/new Date\(\)\.toISOString\(\)\.slice\(0, ?10\)/.test(SRC[k]), `${k} còn dùng ngày UTC`);
+    assert(!/new Date\(\)\.getDay\(\)/.test(SRC[k]), `${k} còn dùng getDay() máy`);
+  }
 });
 
 test("aiMenuService: buildVirtualTemplate set day_type", () => {

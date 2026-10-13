@@ -1,3 +1,4 @@
+import { todayVN, weekdayOf } from "./dateVN";
 // ============================================================
 // promptBuilderV3.js — Prompt SLOT MODE
 //
@@ -25,9 +26,9 @@ const DAY_NAMES = ["chủ nhật", "thứ 2", "thứ 3", "thứ 4", "thứ 5", "
  * @param {object} opts { style, dayType, avoidRecent: string[] }
  */
 export function buildPromptV3(plan, { style = "vn", dayType = "train", avoidRecent = [] } = {}) {
-  const now = new Date();
-  const dayName = DAY_NAMES[now.getDay()];
-  const dateStr = `${now.getDate()}/${now.getMonth() + 1}`;
+  const today = todayVN();
+  const dayName = DAY_NAMES[weekdayOf(today)];
+  const dateStr = `${Number(today.slice(8))}/${Number(today.slice(5, 7))}`;
 
   const lines = [];
   lines.push(`Bạn là đầu bếp Việt. Chọn ĐÚNG 1 món cho MỖI slot bên dưới, chỉ chọn từ danh sách của slot đó. Trả về DUY NHẤT JSON, không giải thích.`);

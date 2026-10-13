@@ -14,6 +14,7 @@
 // ============================================================
 
 import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay, isStandaloneDish, lookupLocalFood } from "./localFoodDB";
+import { todayVN, addDays } from "./dateVN";
 import { buildWhitelist } from "./whitelistBuilder";
 import { buildPromptV2 } from "./promptBuilderV2";
 import { validateMenuV2, checkDryRun } from "./menuValidatorV2";
@@ -117,9 +118,7 @@ export function inferPatternFromItems(mealId, items) {
 }
 
 export function getRecentPatternNames(historyRows, days = 3) {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const cutoffStr = addDays(todayVN(), -days);
   const names = new Set();
   (historyRows || []).forEach(row => {
     if (!row.log_date || row.log_date < cutoffStr) return;
@@ -133,9 +132,7 @@ export function getRecentPatternNames(historyRows, days = 3) {
 // whitelist builder hạ ưu tiên các key này để menu mới khác menu cũ.
 // Chỉ lấy nguồn chính (protein/carb) — rau/gia vị lặp lại là bình thường.
 export function getRecentFoodKeys(historyRows, days = 3) {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const cutoffStr = addDays(todayVN(), -days);
   const keys = new Set();
   (historyRows || []).forEach(row => {
     if (!row.log_date || row.log_date < cutoffStr) return;
@@ -824,7 +821,7 @@ export function sumTemplate(template) {
 export async function saveAIMenu(template, userId) {
   if (!userId || !template) { console.warn("saveAIMenu: missing userId or template"); return; }
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayVN();
     const { error } = await supabase.from("ai_menu_cache").upsert({
       user_id: userId,
       menu_date: today,
@@ -838,7 +835,7 @@ export async function saveAIMenu(template, userId) {
 export async function loadAIMenu(userId) {
   if (!userId) return null;
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayVN();
     const { data, error } = await supabase
       .from("ai_menu_cache")
       .select("template")
@@ -854,7 +851,7 @@ export async function loadAIMenu(userId) {
 export async function clearAIMenu(userId) {
   if (!userId) return;
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayVN();
     await supabase.from("ai_menu_cache").delete().eq("user_id", userId).eq("menu_date", today);
   } catch (e) {}
 }

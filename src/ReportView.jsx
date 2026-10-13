@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { C, card } from "./theme";
+import { todayVN, addDays, weekRange, monthRange, dateList, weekdayShort, fmtVN, diffDays } from "./lib/dateVN";
+import { eatenTotals } from "./lib/mealMath";
 
 export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,appSettings,mob}){
   const [period,setPeriod]=useState("month"); // "week" or "month"
@@ -9,17 +11,16 @@ export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,
 
   // Calculate date range
   const getDateRange=useCallback(()=>{
-    const now=new Date();
+    const today=todayVN();
     if(period==="week"){
-      const d=new Date(now);d.setDate(d.getDate()+offset*7);
-      const day=d.getDay();const mon=new Date(d);mon.setDate(d.getDate()-(day===0?6:day-1));
-      const sun=new Date(mon);sun.setDate(mon.getDate()+6);
-      return{start:mon.toISOString().slice(0,10),end:sun.toISOString().slice(0,10),label:`${mon.getDate()}/${mon.getMonth()+1} - ${sun.getDate()}/${sun.getMonth()+1}`};
+      const {start,end}=weekRange(addDays(today,offset*7));
+      return{start,end,label:`${fmtVN(start)} - ${fmtVN(end)}`};
     }else{
-      const d=new Date(now.getFullYear(),now.getMonth()+offset,1);
-      const last=new Date(d.getFullYear(),d.getMonth()+1,0);
-      const months=["Tháng 1","Tháng 2","Tháng 3","Tháng 4","Tháng 5","Tháng 6","Tháng 7","Tháng 8","Tháng 9","Tháng 10","Tháng 11","Tháng 12"];
-      return{start:d.toISOString().slice(0,10),end:last.toISOString().slice(0,10),label:`${months[d.getMonth()]}, ${d.getFullYear()}`};
+      const [y,m]=today.split("-").map(Number);
+      const dt=new Date(Date.UTC(y,m-1+offset,1));
+      const ref=dt.toISOString().slice(0,10);
+      const {start,end}=monthRange(ref);
+      return{start,end,label:`Tháng ${dt.getUTCMonth()+1}, ${dt.getUTCFullYear()}`};
     }
   },[period,offset]);
 
@@ -35,58 +36,45 @@ export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,
   const macroCalTarget=macro?.calTarget;
   const macroProtein=macro?.protein;
 
-  // Load data — try daily_logs first, fallback to meal_logs
+  const macroCalRest=macro?.calRest;
+  // Báo cáo CHỈ tính các bữa ĐÃ ĂN (đã tick / ghi từ ảnh) — không cộng thực đơn chưa ăn.
+  // Ngày được tính là "có ghi" khi có ít nhất 1 bữa đã ăn.
   useEffect(()=>{
+    let cancelled=false;
     (async()=>{
       setLoading(true);
       const range=getDateRange();
       const byDate={};
-
-      // === Source 1: daily_logs (new, preferred) ===
-      if(getDailyLogs){
-        const dailyLogs=await getDailyLogs(range.start,range.end);
-        if(dailyLogs&&dailyLogs.length>0){
-          dailyLogs.forEach(d=>{
-            byDate[d.log_date]={
-              cal:d.total_cal||0,
-              p:Number(d.total_protein)||0,
-              c:Number(d.total_carb)||0,
-              f:Number(d.total_fat)||0,
-              fiber:Number(d.total_fiber)||0,
-              items:(d.meals||[]).flatMap(m=>(m.items||[])),
-              meals:(d.meals||[]).map(m=>m.meal_id),
-            };
-          });
-        }
-      }
-
-      // === Source 2: meal_logs fallback (old data) ===
-      if(Object.keys(byDate).length===0&&getMealHistory){
-        const logs=await getMealHistory(range.start,range.end);
-        logs.forEach(l=>{
-          if(!byDate[l.log_date])byDate[l.log_date]={cal:0,p:0,c:0,f:0,fiber:0,items:[],meals:[]};
-          byDate[l.log_date].cal+=(l.total_cal||0);
-          byDate[l.log_date].p+=(l.total_protein||0);
-          byDate[l.log_date].c+=(l.total_carb||0);
-          byDate[l.log_date].f+=(l.total_fat||0);
-          byDate[l.log_date].meals.push(l.meal_id);
-          (l.items||[]).forEach(it=>byDate[l.log_date].items.push(it));
-        });
-      }
+      const dailyLogs=getDailyLogs?await getDailyLogs(range.start,range.end):[];
+      if(cancelled)return;
+      (dailyLogs||[]).forEach(d=>{
+        const meals=Array.isArray(d.meals)?d.meals:[];
+        const eaten=Array.isArray(d.eaten_meals)?d.eaten_meals:[];
+        const eatenMealsArr=meals.filter(m=>eaten.includes(m.meal_id||m.id));
+        if(eatenMealsArr.length===0)return;
+        const t=eatenTotals(meals,eaten);
+        byDate[d.log_date]={
+          cal:Math.round(t.cal),p:t.p,c:t.c,f:t.f,fiber:t.fiber,
+          dayType:d.day_type==="rest"?"rest":"train",
+          items:eatenMealsArr.flatMap(m=>(m.items||[])),
+          meals:eatenMealsArr.map(m=>m.meal_id||m.id),
+        };
+      });
+      const today=todayVN();
       const dates=Object.keys(byDate).sort();
       const daysLogged=dates.length;
-      const totalDays=Math.ceil((new Date(range.end)-new Date(range.start))/(86400000))+1;
-      const avgCal=daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d].cal,0)/daysLogged):0;
-      const avgP=daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d].p,0)/daysLogged*10)/10:0;
-      const avgC=daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d].c,0)/daysLogged*10)/10:0;
-      const avgF=daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d].f,0)/daysLogged*10)/10:0;
-      // Adherence: days within ±10% of target
-      const target=macro.calTarget||2000;
-      const adhereDays=dates.filter(d=>byDate[d].cal>=target*0.9&&byDate[d].cal<=target*1.1).length;
-      // Streak
-      const today=new Date().toISOString().slice(0,10);
-      let streak=0;const checkDate=new Date();
-      for(let i=0;i<60;i++){const ds=checkDate.toISOString().slice(0,10);if(byDate[ds])streak++;else if(i>0)break;checkDate.setDate(checkDate.getDate()-1);}
+      // Số ngày tính đến hôm nay (tuần/tháng hiện tại chưa hết)
+      const lastDay=range.end>today?today:range.end;
+      const totalDays=Math.max(0,diffDays(range.start,lastDay)+1);
+      const avg=(k,dp=1)=>daysLogged>0?Math.round(dates.reduce((s,d)=>s+byDate[d][k],0)/daysLogged*dp)/dp:0;
+      const avgCal=avg("cal",1),avgP=avg("p",10),avgC=avg("c",10),avgF=avg("f",10);
+      // Mục tiêu theo loại ngày
+      const targetOf=(d)=>(byDate[d].dayType==="rest"?(macroCalRest||macroCalTarget):macroCalTarget)||2000;
+      const target=macroCalTarget||2000;
+      const adhereDays=dates.filter(d=>{const tg=targetOf(d);return byDate[d].cal>=tg*0.9&&byDate[d].cal<=tg*1.1;}).length;
+      // Streak tính tới hôm nay
+      let streak=0;
+      for(let i=0,ds=today;i<60;i++,ds=addDays(ds,-1)){if(byDate[ds])streak++;else if(i>0)break;}
       // Top foods
       const foodCount={};const foodProtein={};
       dates.forEach(d=>byDate[d].items.forEach(it=>{
@@ -99,24 +87,15 @@ export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,
       // Chart aggregation: WEEK → 7 daily bars, MONTH → weekly bars
       const weeks=[];
       if(period==="week"){
-        // 7 bars = 7 ngày trong tuần
-        const dayNames=["CN","T2","T3","T4","T5","T6","T7"];
-        const startD=new Date(range.start);
-        for(let i=0;i<7;i++){
-          const d=new Date(startD);d.setDate(startD.getDate()+i);
-          const ds=d.toISOString().slice(0,10);
-          const dayIdx=d.getDay(); // 0=CN,1=T2...
-          weeks.push({label:dayNames[dayIdx],cal:byDate[ds]?byDate[ds].cal:0,days:byDate[ds]?1:0,date:ds});
-        }
+        dateList(range.start,range.end).forEach(ds=>{
+          weeks.push({label:weekdayShort(ds),cal:byDate[ds]?byDate[ds].cal:0,days:byDate[ds]?1:0,date:ds});
+        });
       }else{
-        // Gộp theo tuần khi xem tháng
-        let weekStart=new Date(range.start);
-        while(weekStart<=new Date(range.end)){
-          const we=new Date(weekStart);we.setDate(we.getDate()+6);
-          const wDates=dates.filter(d=>d>=weekStart.toISOString().slice(0,10)&&d<=we.toISOString().slice(0,10));
+        for(let ws=range.start;ws<=range.end;ws=addDays(ws,7)){
+          const we=addDays(ws,6);
+          const wDates=dates.filter(d=>d>=ws&&d<=we);
           const wCal=wDates.length>0?Math.round(wDates.reduce((s,d)=>s+byDate[d].cal,0)/wDates.length):0;
           weeks.push({label:`T${weeks.length+1}`,cal:wCal,days:wDates.length});
-          weekStart.setDate(weekStart.getDate()+7);
         }
       }
       // Weight data
@@ -125,10 +104,12 @@ export function ReportView({weightLog,profile,macro,getMealHistory,getDailyLogs,
       const goalKg=profileGoalKg||startKg;
       const wPct=goalKg!==startKg?Math.round(((curKg-startKg)/(goalKg-startKg))*100):0;
 
+      if(cancelled)return;
       setData({range,byDate,dates,daysLogged,totalDays,avgCal,avgP,avgC,avgF,adhereDays,streak,topFoods,topProtein,weeks,target,startKg,curKg,goalKg,wPct});
       setLoading(false);
     })();
-  },[getMealHistory,getDailyLogs,getDateRange,weightLen,firstKg,lastKg,profileKg,profileGoalKg,macroCalTarget,macroProtein]);
+    return()=>{cancelled=true;};
+  },[getDailyLogs,getDateRange,weightLen,firstKg,lastKg,profileKg,profileGoalKg,macroCalTarget,macroCalRest,macroProtein]);
 
   const range=getDateRange();
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { todayVN, isGymDate, weekdayOf } from "../lib/dateVN";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { C, card, inp, redBtn, numFix } from "../theme";
 import { ALL_MEALS } from "../mealConstants";
@@ -34,7 +35,7 @@ const MODE_DESC={tu_nhap:"Nhập thức ăn → nhấn \"Tính macro\" → trả
 const isNoneExercise=(profile?.exerciseType||"gym")==="none";
 const todayRealDayType=()=>{
 if(isNoneExercise)return "rest";
-try{const gd=profile?.gymDays||[0,2,4,5];const idx=new Date().getDay();const mapped=idx===0?6:idx-1;return gd.includes(mapped)?"train":"rest";}catch(e){return "train";}
+try{const gd=profile?.gymDays||[0,2,4,5];return isGymDate(gd,todayVN())?"train":"rest";}catch(e){return "train";}
 };
 const flags=parseFeatureFlags(appSettings);
 const mealTabs=[{id:"tu_nhap",icon:"✏️",label:"Tự nhập"},{id:"lich_tuan",icon:"📅",label:"Lịch tuần"},{id:"kho_mau",icon:"📚",label:"Kho mẫu"}].filter(t=>t.id!=="kho_mau"||flags.template_library);
@@ -318,7 +319,7 @@ setTimeout(()=>{setShowSaveTpl(true);},500);
 {showSaveTpl&&(()=>{
 const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
 const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
-const todayIdx2=new Date().getDay();
+const todayIdx2=weekdayOf(todayVN());
 const gd=profile?.gymDays||[0,2,4,5];
 const totalCal2=(aiResult.items||[]).reduce((s,it)=>s+(it.cal||0),0);
 const todayMi=todayIdx2===0?6:todayIdx2-1;
@@ -390,7 +391,7 @@ return <div style={{background:C.card,border:`1.5px solid ${C.border}`,borderRad
 {showSaveTpl&&(()=>{
 const dayKeys2=["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"];
 const dayLabels2=["Chủ nhật","Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7"];
-const todayIdx2=new Date().getDay();
+const todayIdx2=weekdayOf(todayVN());
 const gd=profile?.gymDays||[0,2,4,5];
 const todayMi=todayIdx2===0?6:todayIdx2-1;
 const todayMatchesType=(gd.includes(todayMi)?"train":"rest")===dayType;

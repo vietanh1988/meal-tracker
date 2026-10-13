@@ -1,12 +1,14 @@
 import { C, card, inp, lbl, redBtn } from "../theme";
 import { appAlert, appConfirm } from "../lib/dialog";
-import { fmtDate } from "../fmtDate";
+import { todayVN, fmtVN } from "../lib/dateVN";
+import { parseKg } from "../lib/weightMath";
 import { WeightRow } from "../WeightRow";
 import { WeightBarChart } from "../WeightBarChart";
 
-export function WeightTab({weightLog, addWeight, deleteWeight, setWeightLog, profile, setProfile, mob}){
-      const nextWeek=weightLog.length+1;
-      const today=fmtDate(new Date());
+export function WeightTab({weightLog, addWeight, updateWeight, resetWeights, deleteWeight, setWeightLog, profile, setProfile, mob}){
+      const todayEntry=weightLog.find(w=>w.logged_date===todayVN());
+      const nextWeek=todayEntry?todayEntry.week:weightLog.length+1;
+      const today=fmtVN(todayVN(),true);
       return <div style={card}>
         {mob&&<div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
           <div>
@@ -23,16 +25,17 @@ export function WeightTab({weightLog, addWeight, deleteWeight, setWeightLog, pro
             <span style={{fontSize:13,fontWeight:700,color:C.t1}}>Tuần {nextWeek}</span>
             <span style={{fontSize:13,fontWeight:700,color:C.t2}}>{today}</span>
           </div>
-          <div style={{fontSize:11,fontWeight:600,color:C.t3}}>Ngày tự động lấy từ hệ thống</div>
+          <div style={{fontSize:11,fontWeight:600,color:C.t3}}>{todayEntry?`Hôm nay đã cân ${todayEntry.kg} kg — lưu lại sẽ cập nhật số này`:"Mỗi ngày 1 lần cân"}</div>
         </div>
         <div>
           <div style={{...lbl,marginBottom:6}}>Cân nặng (kg)</div>
           <input id="weightInput" type="text" inputMode="decimal" placeholder="VD: 64.3" style={inp}/>
         </div>
         <button onClick={async()=>{
-          const val=parseFloat(document.getElementById("weightInput").value.replace(",","."));
-          if(!val||val<30||val>200)return;
-          await addWeight(val);
+          const val=parseKg(document.getElementById("weightInput").value);
+          if(!val){await appAlert("Nhập cân nặng hợp lệ (30–250 kg), VD 64.3");return;}
+          const ok=await addWeight(val);
+          if(!ok){await appAlert("Lưu không được, thử lại sau.");return;}
           setProfile({...profile,kg:val});
           document.getElementById("weightInput").value="";
           const el=document.getElementById("weight-saved");
@@ -52,7 +55,7 @@ export function WeightTab({weightLog, addWeight, deleteWeight, setWeightLog, pro
             <div style={{...lbl,fontSize:14,fontWeight:800}}>📋 Lịch sử theo dõi cân nặng</div>
             <button onClick={async()=>{
               if(await appConfirm("Xóa toàn bộ lịch sử cân nặng?", { danger: true, confirmText: "Xoá" })){
-                resetWeights();
+                if(resetWeights)await resetWeights();
               }
             }} style={{fontSize:11,fontWeight:700,padding:"4px 10px",background:C.redBg,color:C.secondary,border:`1px solid ${C.secondary}`,borderRadius:6,cursor:"pointer",fontFamily:"inherit"}}>
               Reset hết
@@ -62,7 +65,7 @@ export function WeightTab({weightLog, addWeight, deleteWeight, setWeightLog, pro
             <span>Tuần</span><span>Ngày</span><span style={{textAlign:"right"}}>Kg</span><span style={{textAlign:"right"}}>Δ</span><span style={{textAlign:"right"}}>Thao tác</span>
           </div>
           {weightLog.map((w,i)=>(
-            <WeightRow key={w.id||i} w={w} i={i} weightLog={weightLog} setWeightLog={setWeightLog} setProfile={setProfile} profile={profile} deleteWeight={deleteWeight}/>
+            <WeightRow key={w.id||i} w={w} i={i} weightLog={weightLog} setWeightLog={setWeightLog} setProfile={setProfile} profile={profile} deleteWeight={deleteWeight} updateWeight={updateWeight}/>
           ))}
         </div>
         {weightLog.length>=2&&(()=>{
