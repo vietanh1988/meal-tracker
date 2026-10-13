@@ -14,6 +14,7 @@ import { GoalsScreen } from "./GoalsScreen";
 import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen } from "./PlanScreen";
 import { FeedbackScreen } from "./FeedbackScreen";
+import { AboutScreen } from "./AboutScreen";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
@@ -31,7 +32,7 @@ import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekR
 import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName } from "../lib/mobileView";
 
 const TAB_KEY = "fp_mtab";
-const SECTION_TITLE = { profile: "Mục tiêu & hồ sơ", account: "Tài khoản & gói cước", feedback_inline: "Góp ý & báo lỗi", about: "Giới thiệu", terms: "Điều khoản", admin_home: "Quản trị" };
+const SECTION_TITLE = { profile: "Mục tiêu & hồ sơ", account: "Tài khoản & gói cước", feedback_inline: "Góp ý & báo lỗi", about: "Giới thiệu", about_edit: "Sửa giới thiệu", terms: "Điều khoản", admin_home: "Quản trị" };
 
 export function MobileApp(props) {
   const { user, profile, setProfile, macro, appSettings, isAdmin, saveSetting, signOut, isOffline, macroBanner,
@@ -302,6 +303,11 @@ export function MobileApp(props) {
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} />
       </SubPage>
     );
+    if (sec === "about") return (
+      <SubPage title="Giới thiệu" onBack={closeLayer}>
+        <AboutScreen appSettings={appSettings} openTerms={() => openLayer({ type: "page", sec: "terms" })} openEdit={isAdmin ? () => openLayer({ type: "page", sec: "about_edit" }) : null} />
+      </SubPage>
+    );
     if (sec === "feedback") return (
       <SubPage title="Góp ý & báo lỗi" onBack={closeLayer}>
         <FeedbackScreen user={user} showToast={showToast} />
@@ -327,12 +333,11 @@ export function MobileApp(props) {
     );
     const inner = sec === "admin_home"
       ? <AdminPanel {...panelProps} forcedSection="settings" />
-      : <AdminPanel {...panelProps} forcedSection="settings" initialSection={sec} hidePills />;
+      : <AdminPanel {...panelProps} forcedSection="settings" initialSection={sec === "about_edit" ? "about" : sec} hidePills />;
     return (
       <SubPage title={SECTION_TITLE[sec] || "Cài đặt"} onBack={closeLayer}>
         <div style={{ padding: 10 }}>
           {inner}
-          {sec === "about" && <button onClick={() => openLayer({ type: "page", sec: "terms" })} style={{ display: "block", margin: "12px auto", height: 44, padding: "0 16px", border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#007AFF" }}>Điều khoản sử dụng ›</button>}
         </div>
       </SubPage>
     );

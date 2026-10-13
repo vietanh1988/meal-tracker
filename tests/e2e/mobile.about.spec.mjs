@@ -1,0 +1,20 @@
+import { test, expect } from "@playwright/test";
+import { login } from "./helpers.mjs";
+
+// Tôi › Giới thiệu: số món đếm từ kho món thật, mở được Điều khoản
+test("Giới thiệu: số món thật và điều khoản", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
+  const page = await ctx.newPage();
+  page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
+  const nav = (name) => page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name });
+
+  await login(page);
+  await nav("Tôi").click();
+  await page.getByRole("button", { name: /Giới thiệu/ }).click();
+  await expect(page.getByTestId("about-foods")).toHaveText(/^[\d.]+ món · \d+ món Việt$/);
+  await expect(page.getByTestId("about-edit")).toHaveCount(0); // user thường không thấy nút sửa
+  await page.screenshot({ path: "shots/gioi-thieu.png", fullPage: true });
+  await page.getByTestId("about-terms").click();
+  await expect(page.getByText("Điều khoản", { exact: true }).first()).toBeVisible();
+  await ctx.close();
+});

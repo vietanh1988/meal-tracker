@@ -1983,6 +1983,12 @@ export function getFoodCount() {
   return Object.keys(LOCAL_FOODS).length;
 }
 
+// Số món trong kho: tổng và món Việt (region "vn") — dùng cho màn Giới thiệu
+export function getFoodStats() {
+  const all = Object.values(LOCAL_FOODS);
+  return { total: all.length, vn: all.filter((f) => f && f.region === "vn").length };
+}
+
 // ============================================================
 // OVERRIDE — admin sửa macro từ Supabase ghi đè lên DB tĩnh
 // Gọi 1 lần khi app start. Chỉ patch p/c/f/cal/fiber, giữ nguyên
