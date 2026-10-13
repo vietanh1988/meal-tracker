@@ -34,7 +34,13 @@ jobs:
           version: latest
 
       - name: Dựng Supabase local (schema prod + dữ liệu giả)
-        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector
+        run: |
+          # thỉnh thoảng tải image Docker lỗi mạng → thử lại tối đa 3 lần
+          for i in 1 2 3; do
+            supabase start -x studio,imgproxy,edge-runtime,logflare,vector && exit 0
+            echo "supabase start lỗi lần $i, thử lại"; supabase stop --no-backup || true; sleep 15
+          done
+          exit 1
 
       - name: Biến môi trường trỏ Supabase local
         run: |
