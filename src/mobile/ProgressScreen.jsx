@@ -20,7 +20,7 @@ export function ProgressScreen(p) {
       <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 12px 10px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
         <span style={{ fontSize: 20, fontWeight: 900, padding: "0 4px" }}>Tiến độ</span>
         <div role="tablist" style={seg}>
-          <button role="tab" aria-selected={segId === "food"} onClick={() => setSegId("food")} style={segBtn(segId === "food")}>Ăn uống</button>
+          <button role="tab" aria-selected={segId === "food"} onClick={() => setSegId("food")} data-testid="seg-diary" style={segBtn(segId === "food")}>Nhật ký ăn uống</button>
           <button role="tab" aria-selected={segId === "weight"} onClick={() => setSegId("weight")} style={segBtn(segId === "weight")}>Cân nặng</button>
         </div>
         {segId === "food" && <FoodHeader {...p} />}

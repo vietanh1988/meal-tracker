@@ -21,6 +21,8 @@ const ICONS = {
   share: ["#2563EB", "rgba(37,99,235,0.1)", svg(<><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6" /></>)],
   account: ["#475569", "rgba(71,85,105,0.1)", svg(<><circle cx="12" cy="8" r="4" /><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" /></>)],
   about: ["#64748B", "rgba(100,116,139,0.12)", svg(<><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5v.5" /></>)],
+  diary: ["#4F46E5", "rgba(79,70,229,0.1)", svg(<><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z" /><path d="M6 18a2 2 0 0 1 2-2h11M10 8h6M10 11h4" /></>)],
+  logout: ["#DC2626", "rgba(220,38,38,0.1)", svg(<><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="M14 8l4 4-4 4M18 12H9" /></>)],
   admin: ["#DC2626", "rgba(220,38,38,0.1)", svg(<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />)],
 };
 export function RowIcon({ name }) {
@@ -39,7 +41,7 @@ function Row({ icon, label, value, onClick, last, testid }) {
   );
 }
 
-export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, signOut }) {
+export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, signOut }) {
   const tier = profile?.tier || "free";
   const initials = (name || "?").replace(/[^A-Za-zÀ-ỹ0-9]/g, "").slice(0, 2).toUpperCase() || "?";
   const gym = (profile?.exerciseType || "gym") === "none" ? "Không tập" : (profile?.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
@@ -78,6 +80,10 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
       </button>
 
       <div style={group}>
+        <Row icon="diary" testid="me-diary" label="Nhật ký ăn uống" value="Calo từng ngày" onClick={openDiary} last />
+      </div>
+
+      <div style={group}>
         <Row icon="goals" testid="me-goals" label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
         <Row icon="schedule" testid="me-schedule" label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
         <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
@@ -88,7 +94,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
         <Row icon="feedback" testid="me-feedback" label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "feedback_inline" : "feedback")} />
         <Row icon="share" label="Chia sẻ app" onClick={share} />
         <Row icon="account" testid="me-account" label="Tài khoản" value="Email · xoá tài khoản" onClick={() => open("account")} />
-        <Row icon="about" testid="me-about" label="Giới thiệu · Điều khoản" value={appVersion ? `v${appVersion}` : null} onClick={() => open("about")} last />
+        <Row icon="about" testid="me-about" label="Giới thiệu & điều khoản" value={appVersion ? `v${appVersion}` : null} onClick={() => open("about")} last />
       </div>
 
       {isAdmin && (
@@ -100,7 +106,10 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
         </button>
       )}
 
-      <button onClick={logout} style={{ display: "block", margin: "10px auto 0 auto", height: 44, padding: "0 20px", border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 700, color: "#DC2626" }}>Đăng xuất</button>
+      <button data-testid="me-logout" onClick={logout} className="tap" style={{ margin: "12px 12px 0 12px", width: "calc(100% - 24px)", height: 56, background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 14px", display: "flex", alignItems: "center", gap: 12, color: "#DC2626", fontFamily: "inherit", boxSizing: "border-box" }}>
+        <RowIcon name="logout" />
+        <span style={{ flex: 1, fontSize: 15, fontWeight: 700, textAlign: "left" }}>Đăng xuất</span>
+      </button>
       <div style={{ height: 24 }} />
     </div>
   );

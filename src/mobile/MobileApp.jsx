@@ -441,6 +441,7 @@ export function MobileApp(props) {
         )}
         {tab === "me" && (
           <MeScreen name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
+            openDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             open={(sec) => openLayer({ type: "page", sec })} />
         )}
       </main>

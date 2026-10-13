@@ -9,6 +9,11 @@ test("Giới thiệu: số món thật và điều khoản", async ({ browser })
   const nav = (name) => page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name });
 
   await login(page);
+  // Tôi › Nhật ký ăn uống → mở Tiến độ đúng tab Nhật ký; Đăng xuất nằm trong ô riêng
+  await nav("Tôi").click();
+  await expect(page.getByTestId("me-logout")).toBeVisible();
+  await page.getByTestId("me-diary").click();
+  await expect(page.getByTestId("seg-diary")).toHaveAttribute("aria-selected", "true");
   await nav("Tôi").click();
   await page.getByRole("button", { name: /Giới thiệu/ }).click();
   await expect(page.getByTestId("about-foods")).toHaveText(/^[\d.]+ món · \d+ món Việt$/);
