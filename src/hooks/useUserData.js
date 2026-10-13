@@ -60,6 +60,7 @@ export function useUserData(userId) {
   // Nhật ký HÔM NAY (daily_logs của todayVN())
   const [todayLog, setTodayLogState] = useState({ log_date: todayVN(), day_type: "train", meals: [], eaten_meals: [], water_ml: 0 });
   const todayLogRef = useRef(todayLog);
+  const todayVerRef = useRef(0); // tăng mỗi lần ghi hôm nay — để bản tải cũ về muộn không đè dữ liệu mới
   const setTodayLog = useCallback((d) => { todayLogRef.current = d; setTodayLogState(d); }, []);
   const dayQueueRef = useRef(Promise.resolve());
   const todayStr = todayVN;
@@ -79,9 +80,11 @@ export function useUserData(userId) {
   const loadTodayLog = useCallback(async () => {
     if (!userId) return;
     const t = todayStr();
+    const ver = todayVerRef.current;
     const { data, error } = await supabase.from("daily_logs").select(DAY_COLS)
       .eq("user_id", userId).eq("log_date", t).maybeSingle();
     if (error) { console.error("Load today log error:", error); return; }
+    if (ver !== todayVerRef.current) return; // trong lúc tải đã có thao tác ghi mới → bỏ bản cũ
     setTodayLog({
       log_date: t,
       day_type: data?.day_type || "train",
@@ -235,6 +238,7 @@ export function useUserData(userId) {
     if (!userId) return Promise.resolve({ ok: false, error: "no user" });
     const logDate = date || todayStr();
     const isToday = logDate === todayStr();
+    if (isToday) todayVerRef.current++;
     if (isToday && todayLogRef.current.log_date === logDate) {
       try { setTodayLog({ ...fn(todayLogRef.current), log_date: logDate }); } catch (e) { /* ignore */ }
     }
@@ -253,6 +257,7 @@ export function useUserData(userId) {
         const { error } = await supabase.from("daily_logs")
           .upsert(dayRowPayload(userId, logDate, next), { onConflict: "user_id,log_date" });
         if (error) throw error;
+        if (isToday) todayVerRef.current++;
         if (isToday) setTodayLog({ log_date: logDate, day_type: next.day_type, meals: next.meals, eaten_meals: next.eaten_meals, water_ml: Number(next.water_ml) || 0 });
         lastFetchRef.current = Date.now();
         return { ok: true, day: next };

@@ -110,3 +110,12 @@ test("nước: cộng dồn dập không mất, không âm, không đụng bữa
   await hook().saveMealToCloud("toi", "train", [{ cal: 1 }]);
   expect(db.daily_logs.find(r => r.log_date === todayVN()).water_ml).toBe(300);
 });
+
+test("bản tải hôm nay về muộn không đè thao tác ghi mới", async () => {
+  const h = hook();
+  const slowLoad = h.reloadToday();          // bắt đầu tải (đọc DB cũ)
+  await hook().addWater(100);               // ghi trong lúc đang tải
+  await slowLoad;
+  const w = hook().waterToday;
+  expect(w).toBe(db.daily_logs.find(r => r.log_date === todayVN()).water_ml);
+});
