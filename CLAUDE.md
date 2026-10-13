@@ -16,6 +16,7 @@ React 18 + Vite PWA · Supabase `veodsvojxjmjhtrlaieq` · Vercel `app.fipilotai.
 ## Kiểm tra trước khi push
 ```
 npm test                      # node --test tests/*.test.mjs + tests/check-logic.mjs
+bun test tests/integration    # chạy hook useUserData với React/Supabase giả
 bun build src/main.jsx --outdir /tmp/out --packages external   # bắt lỗi cú pháp nếu không có node_modules
 ```
 Sau push: xem log build trên Vercel, mở app kiểm tra màn đã sửa.
