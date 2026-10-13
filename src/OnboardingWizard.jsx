@@ -197,7 +197,7 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
       <div style={{ margin: "8px 16px 0 16px", display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 8 }}>{m3("Đạm", fmt(macro.protein), "#4DA3FF")}{m3("Tinh bột", fmt(macro.carb), "#34D399")}{m3("Béo", fmt(macro.fat), "#FBBF24")}</div>
       <div style={{ ...dkCard, margin: "12px 16px 0 16px", padding: "0 14px" }}>
         {kv("calc", "BMR", `${fmt(macro.bmr)} kcal`, "#007AFF")}
-        {kv("chart", `TDEE (×${macro.actMul})`, `${fmt(macro.tdee)} kcal`, "#0891B2")}
+        {kv("chart", `TDEE (×${String(macro.actMul).replace(".", ",")})`, `${fmt(macro.tdee)} kcal`, "#0891B2")}
         {!noEx && kv("target", "Ngày nghỉ", `${fmt(macro.calRest)} kcal`, "#00A67E")}
         {kv("doc", "Cách tính", (p.calorieMode || "standard") === "asian" ? "Việt Nam (BMR ×0,9)" : "Chuẩn quốc tế", "#64748B", true)}
       </div>
