@@ -11,6 +11,7 @@ import { ProgressScreen } from "./ProgressScreen";
 import { MeScreen } from "./MeScreen";
 import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
+import { RemindersScreen } from "./RemindersScreen";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
@@ -299,6 +300,14 @@ export function MobileApp(props) {
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} />
       </SubPage>
     );
+    if (sec === "reminders") {
+      const vis = ["train", "rest"].flatMap((dt) => visibleMealIds(mealConfig, dt, profile.exerciseType, DEFAULT_MEAL_CONFIG));
+      return (
+        <SubPage title="Nhắc nhở" onBack={closeLayer}>
+          <RemindersScreen profile={profile} setProfile={setProfile} pushFeature={flags.push} weightLog={weightLog} curKg={weight.curKg} visibleMeals={[...new Set(vis)]} />
+        </SubPage>
+      );
+    }
     if (sec === "schedule") return (
       <SubPage title="Lịch tập & bữa" onBack={closeLayer}>
         <ScheduleScreen profile={profile} setProfile={setProfile} mealConfig={profile.mealConfig || null} defaultConfig={mealConfig} curKg={weight.curKg} />

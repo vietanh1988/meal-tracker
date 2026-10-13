@@ -185,7 +185,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
           </button>
         )}
         {goal === "cut" && <ChoiceRow id="diet" k="Kiểu ăn" value={nameOf(DIET, p.dietStrategy || "balanced")} options={DIET} selected={p.dietStrategy || "balanced"} onPick={(v) => save({ dietStrategy: v })} open={open} setOpen={setOpen} />}
-        <div style={{ ...rowBase, minHeight: 52 }}>
+        <div style={{ ...rowBase, minHeight: 52, borderWidth: 0 }}>
           <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>Dùng whey / TPBS</span>
             <span style={{ fontSize: 12, color: "#64748B" }}>AI tính cả whey khi lên thực đơn</span>
@@ -199,7 +199,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
         <ChoiceRow id="mode" k="Công thức" value={nameOf(MODE, p.calorieMode || "standard")} options={MODE} selected={p.calorieMode || "standard"} onPick={(v) => save({ calorieMode: v })} open={open} setOpen={setOpen} last />
       </div>
       <p style={{ margin: "8px 16px 0 16px", fontSize: 12, color: "#64748B", lineHeight: 1.45 }}>
-        BMR theo Mifflin-St Jeor × hệ số vận động = TDEE. Tăng cơ +250 kcal, giảm mỡ −350 kcal. Đạm {m.pRatio || "—"}, béo tối thiểu 0,7 g/kg, tinh bột là phần còn lại (ngày nghỉ giảm 25%).
+        BMR theo Mifflin-St Jeor × hệ số vận động = TDEE. Tăng cơ +250 kcal, giảm mỡ −350 kcal. Đạm {m.pRatio ? `${fmtDec(parseFloat(m.pRatio))} g/kg` : "—"}, béo tối thiểu 0,7 g/kg, tinh bột là phần còn lại (ngày nghỉ giảm 25%).
       </p>
     </div>
   );

@@ -3,6 +3,7 @@
 import { Icon } from "./ui";
 import { fmtInt, fmtDec } from "../lib/mobileView";
 import { appConfirm, appAlert } from "../lib/dialog";
+import { normalizeReminders } from "../lib/reminders";
 
 const GYM_NAMES = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
 const GOAL = { bulk: "Tăng cơ", cut: "Giảm mỡ", maintain: "Giữ cân", recomp: "Recomp" };
@@ -27,6 +28,9 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
   const weeks = (Number(profile?.months) || 0) * 4.33;
   const gPerWeek = weeks > 0 ? Math.round(((Number(weight.goalKg) - Number(weight.curKg)) / weeks) * 1000) : 0;
   const goalVal = gPerWeek ? `≈ ${gPerWeek > 0 ? "+" : "−"}${Math.abs(gPerWeek)} g/tuần` : `${fmtInt(macro?.calTarget)} kcal`;
+
+  const rem = normalizeReminders(profile?.reminderSettings);
+  const remVal = [rem.meal.on && rem.meal.slots.length && "Bữa", rem.weigh.on && "Cân", rem.water.on && "Nước"].filter(Boolean).join(" · ") || "Đang tắt";
 
   const share = async () => {
     const data = { title: "Fipilot AI", text: "Ghi bữa ăn, tính macro và lên thực đơn với Fipilot AI", url: "https://app.fipilotai.com" };
@@ -57,7 +61,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
       <div style={group}>
         <Row label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
         <Row label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
-        <Row label="Nhắc nhở" value="Thông báo đẩy" onClick={() => open("account")} />
+        <Row label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
         <Row label="Gói cước" value={TIER[tier] || tier} onClick={() => open("account")} last />
       </div>
 
