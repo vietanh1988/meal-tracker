@@ -34,7 +34,7 @@ export async function login(page) {
   await page.getByPlaceholder("email@example.com").first().fill(s.email);
   await page.getByPlaceholder("••••••").fill(s.password);
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).last().click();
-  await expect(page.getByText(/CALO CÒN LẠI/i).first()).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 });
 }
 
 // Chờ tới khi điều kiện trên DB đúng (app ghi bất đồng bộ)
@@ -47,4 +47,10 @@ export async function waitDb(fn, msg, timeout = 10_000) {
     await new Promise((r) => setTimeout(r, 300));
   }
   throw new Error(`Hết giờ chờ DB: ${msg}`);
+}
+
+// Số kcal còn lại trên vòng tròn (mobile)
+export async function kcalRemainMobile(page) {
+  const t = await page.getByText("kcal còn lại", { exact: true }).first().locator("xpath=preceding-sibling::span[1]").innerText();
+  return Number(t.replace(/[^0-9]/g, ""));
 }
