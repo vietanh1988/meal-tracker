@@ -15,6 +15,7 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:4173",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
+    actionTimeout: 15_000, // 1 thao tác treo thì báo lỗi ngay ở bước đó
     serviceWorkers: "block",
     locale: "vi-VN",
     timezoneId: "Asia/Ho_Chi_Minh",

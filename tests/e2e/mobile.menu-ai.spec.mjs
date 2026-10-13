@@ -33,14 +33,16 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
     // Lên thực đơn: hiện màn đang tạo, Huỷ thì về lại tab (AI bị chặn trong E2E, không tốn tiền)
     await tap(page.getByTestId("menu-generate"));
     await expect(page.getByTestId("ai-loading")).toBeVisible();
-    await page.getByTestId("ai-loading").getByRole("button", { name: "Huỷ" }).click();
+    await tap(page.getByTestId("ai-loading").getByRole("button", { name: "Huỷ" }));
     await expect(page.getByTestId("menu-ai-card")).toBeVisible();
 
+    console.log("BƯỚC: Mở thực đơn AI đã lưu");
     // Mở thực đơn AI đã lưu
     await tap(page.getByTestId("menu-latest-ai"));
     await expect(page.getByTestId("ai-meal-trua")).toBeVisible();
     await page.screenshot({ path: "shots/thuc-don-ai.png", fullPage: true });
 
+    console.log("BƯỚC: Đổi Cá kho tộ");
     // Đổi Cá kho tộ: sheet hiện ứng viên kèm kcal, chọn món đầu → bữa trưa không còn Cá kho tộ
     await tap(page.getByTestId("swap-trua-cá kho tộ"));
     await expect(page.getByTestId("swap-sheet")).toBeVisible();
@@ -50,12 +52,14 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
     await expect(page.getByTestId("swap-sheet")).toHaveCount(0);
     await expect(page.getByTestId("ai-meal-trua")).not.toContainText("Cá kho tộ");
 
+    console.log("BƯỚC: Lưu mẫu vào 1 ngày khác");
     // Lưu mẫu vào 1 ngày khác (cùng loại: user test tập cả tuần)
     await tap(page.getByTestId("ai-save-week"));
     await tap(page.getByTestId(`save-week-${other}`));
     await tap(page.getByTestId("save-week-confirm"));
     await waitDb(async () => ((await wk(KEYS[other]))?.meals || []).length === 3, "lưu Lịch tuần");
 
+    console.log("BƯỚC: Áp dụng hôm nay");
     // Áp dụng hôm nay → nhật ký hôm nay có 3 bữa, trưa không còn Cá kho tộ
     await tap(page.getByTestId("ai-apply"));
     await waitDb(async () => {

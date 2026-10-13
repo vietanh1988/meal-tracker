@@ -57,7 +57,7 @@ export async function kcalRemainMobile(page) {
 
 // Bấm 1 nút sau khi cuộn nó ra GIỮA màn (tránh bị thanh điều hướng dưới cố định che)
 export async function tap(locator) {
-  await locator.waitFor({ state: "visible" });
+  await locator.waitFor({ state: "visible", timeout: 15_000 }); // không chờ tới hết giờ cả bài → báo đúng bước lỗi
   await locator.evaluate((e) => e.scrollIntoView({ block: "center" }));
   await locator.click();
 }
