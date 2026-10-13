@@ -77,7 +77,7 @@ const hasCreate = ["tạo","lên","gợi ý","soạn","làm","giúp","cho"].some
 return hasMenu && hasCreate;
 }
 
-export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,onOpenAIMenu}){
+export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,onOpenAIMenu,initialInput}){
 // Mobile mới: mở màn Thực đơn AI riêng thay vì AIMenuGenerator lồng trong chat
 const openAIMenu=()=>{if(onOpenAIMenu)onOpenAIMenu();else setShowAIMenuFromChat(true);};
 const [messages,setMessages]=useState([]);
@@ -89,7 +89,7 @@ const [showAIMenuFromChat,setShowAIMenuFromChat]=useState(false);
 // lại y hệt (bug thật: "Bún thịt" lặp lại nhiều lần trong 1 phiên test).
 // useRef (không phải useState) vì chỉ cần đọc/ghi, không cần re-render.
 const shownPatternsRef=useRef(new Set());
-const [input,setInput]=useState("");
+const [input,setInput]=useState(initialInput||""); // gợi sẵn câu hỏi (VD từ thẻ bữa ở Hôm nay), không tự gửi
 const [loading,setLoading]=useState(false);
 // Mobile: bàn phím ảo đã chiếm nửa màn hình, disclaimer 2 dòng ăn thêm chỗ
 // hiển thị chat — ẩn tạm khi user đang focus ô nhập, rời ô thì hiện lại.

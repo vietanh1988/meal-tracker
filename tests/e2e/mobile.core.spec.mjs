@@ -51,12 +51,29 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     remainAfterTick = before - 450;
   });
 
-  test("Nước: +1 ly rồi Hoàn tác", async () => {
-    const plus = page.getByRole("button", { name: "Thêm 1 ly nước 250 ml" });
-    await tap(plus);
+  test("header: dải 4 macro có Đạm/Tinh bột/Béo/Xơ", async () => {
+    for (const k of ["p", "c", "f", "fiber"]) await expect(page.getByTestId(`macro-${k}`)).toBeVisible();
+    await expect(page.getByTestId("macro-strip")).toContainText("Tinh bột");
+    await expect(page.getByTestId("macro-strip")).toContainText("Xơ");
+  });
+
+  test("Nước theo cốc: chạm cốc trống +250, chạm cốc xanh thì bỏ; đổi cỡ cốc 500", async () => {
+    await tap(page.getByTestId("water-cup-next"));
     await waitDb(async () => (await todayRow())?.water_ml === 250, "water 250");
-    await plus.locator("..").getByRole("button", { name: "Hoàn tác" }).click();
+    await expect(page.getByTestId("water-count")).toHaveAttribute("data-ml", "250");
+    await tap(page.getByTestId("water-cup-1"));
     await waitDb(async () => (await todayRow())?.water_ml === 0, "water 0");
+    await page.getByTestId("water-cup-size").selectOption("500");
+    await tap(page.getByTestId("water-cup-next"));
+    await waitDb(async () => (await todayRow())?.water_ml === 500, "water 500 (cốc 500)");
+    await tap(page.getByTestId("water-cup-1"));
+    await waitDb(async () => (await todayRow())?.water_ml === 0, "water 0 lần 2");
+    await page.getByTestId("water-cup-size").selectOption("250");
+  });
+
+  test("thẻ Tuần này có mặt", async () => {
+    await expect(page.getByTestId("week-card")).toBeVisible();
+    await expect(page.getByTestId("week-ok")).toContainText("ngày");
   });
 
   test("tải lại trang: dữ liệu còn, không áp Lịch tuần lần 2", async () => {
@@ -89,7 +106,7 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     await tap(page.getByTestId("eat-sang"));
     await waitDb(async () => (await todayRow())?.eaten_meals?.length === 0, "eaten rỗng");
     // Cân nặng vừa đổi → mục tiêu kcal đổi theo, nên kiểm "đã ăn 0 / mục tiêu" thay vì số cũ
-    await expect(page.getByText(/Ngày (tập|nghỉ) · 0 \//)).toBeVisible();
+    await expect(page.getByTestId("kcal-eaten")).toHaveAttribute("data-value", "0");
   });
 
   test("Thực đơn: user thường bấm Xoá hết bữa hôm nay → Hôm nay trống, mở lại app KHÔNG tự áp lại Lịch tuần", async () => {

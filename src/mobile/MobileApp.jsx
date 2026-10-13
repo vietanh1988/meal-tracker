@@ -32,7 +32,7 @@ import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, mealKey, hasItems, mealLabel } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
-import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName } from "../lib/mobileView";
+import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekCard, weekDates } from "../lib/mobileView";
 
 const TAB_KEY = "fp_mtab";
 const SECTION_TITLE = { profile: "Mục tiêu & hồ sơ", account: "Tài khoản & gói cước", feedback_inline: "Góp ý & báo lỗi", about: "Giới thiệu", about_edit: "Sửa giới thiệu", terms: "Điều khoản", admin_home: "Quản trị" };
@@ -132,6 +132,10 @@ export function MobileApp(props) {
     if ((ud.todayLog?.eaten_meals || []).length) m[today] = true;
     return m;
   }, [weekRows, ud.todayLog, today]);
+
+  // Thẻ "Tuần này" ở Hôm nay (tuần của ngày đang xem)
+  const week = useMemo(() => weekCard(weekRows, ud.todayLog, weekDates(date), today, (d) => targetsOf(macro, dayTypeOf(profile, d)).cal),
+    [weekRows, ud.todayLog, date, today, macro, profile]);
 
   // ---------- thông báo nhỏ ----------
   const [toast, setToast] = useState(null);
@@ -420,7 +424,8 @@ export function MobileApp(props) {
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
             nowMinutes={now.minutes} name={name} dayLoaded={!!day} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
             waterMl={Number(day?.water_ml) || 0} addWater={(ml) => ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; })} waterGoalOverride={profile.waterGoalMl}
-            onCoach={flags.ai_chat ? () => openLayer({ type: "coach" }) : null}
+            onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
+            week={week} onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={() => openPhoto()} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             repeatFor={(id) => recentMeals.find((r) => r.meal_id === id && !(r.log_date === date))} onRepeat={(rec, id) => repeatMeal(rec, id)}
@@ -441,6 +446,7 @@ export function MobileApp(props) {
         )}
         {tab === "me" && (
           <MeScreen name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
+            openCoach={flags.ai_chat ? () => openLayer({ type: "coach" }) : null}
             openDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             open={(sec) => openLayer({ type: "page", sec })} />
         )}
@@ -454,7 +460,7 @@ export function MobileApp(props) {
           {l.type === "edit" && renderEdit(l)}
           {l.type === "page" && renderPage(l)}
           {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs}
-            onOpenAIMenu={aiAccess.usable ? () => replaceTop(quickAILayer()) : null} />}
+            onOpenAIMenu={aiAccess.usable ? () => replaceTop(quickAILayer()) : null} initialInput={l.input || ""} />}
           {l.type === "ai" && (
             <AIMenuScreen macro={macro} profile={profile} user={user} appSettings={appSettings} todayType={dayTypeOf(profile, today)} getDailyLogs={ud.getDailyLogs}
               initialPrefs={l.prefs} autoStart={!!l.auto} initialTemplate={l.template || null}

@@ -96,3 +96,18 @@ export function recentEatenMeals(dailyRows, limit = 8) {
   }
   return out.slice(0, limit);
 }
+
+// Nước theo cốc cho Hôm nay. cupMl: cỡ 1 cốc (mặc định 250).
+// Trả { cupMl, total, filled, cups:[{i, full}], left } — total = số cốc để đủ mục tiêu,
+// luôn có ít nhất 1 cốc trống để bấm uống thêm (khi đã vượt mục tiêu thì thêm cốc).
+export const CUP_SIZES = [200, 250, 330, 500];
+export function cupsView(waterMl, goalMl, cupMl = 250) {
+  const cup = CUP_SIZES.includes(Number(cupMl)) ? Number(cupMl) : 250;
+  const ml = Math.max(0, Math.round(Number(waterMl) || 0));
+  const goal = Math.max(cup, Math.round(Number(goalMl) || 0));
+  const need = Math.ceil(goal / cup);
+  const filled = Math.floor(ml / cup);
+  const total = Math.min(30, Math.max(need, filled + 1));
+  const cups = Array.from({ length: total }, (_, k) => ({ i: k + 1, full: k < filled }));
+  return { cupMl: cup, need, total, filled, cups, left: Math.max(0, need - filled), pct: Math.min(100, Math.round((ml / goal) * 100)), done: ml >= goal };
+}

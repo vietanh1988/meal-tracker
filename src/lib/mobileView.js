@@ -261,3 +261,21 @@ export function deltaGood(delta, goalKg, startKg) {
 export const fmtInt = (n) => Math.round(Number(n) || 0).toLocaleString("vi-VN");
 export const fmtDec = (n, d = 1) => (Number(n) || 0).toLocaleString("vi-VN", { maximumFractionDigits: d, minimumFractionDigits: 0 });
 export const fmtKg = (n) => (Number(n) || 0).toLocaleString("vi-VN", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+// Thẻ "Tuần này" ở Hôm nay: 7 cột kcal đã ăn so với mục tiêu từng ngày.
+// rows: daily_logs của tuần (T2→CN); todayLog thay cho dòng hôm nay (mới nhất).
+// Ngày "đạt" = đã ăn trong ±10% mục tiêu. Chỉ tính các ngày đã qua + hôm nay có ăn.
+export function weekCard(rows, todayLog, dates, today, targetOf) {
+  const byDate = {};
+  (rows || []).forEach((r) => { byDate[String(r.log_date).slice(0, 10)] = r; });
+  if (todayLog && todayLog.log_date === today) byDate[today] = todayLog;
+  const days = dates.map((d) => {
+    const target = targetOf(d);
+    const s = dayStatus(byDate[d], target);
+    const kind = d > today ? "future" : d === today ? "today" : "past";
+    return { date: d, target, cal: s.cal, ratio: target > 0 ? s.cal / target : 0, ok: s.status === "ok", kind, has: s.eatenCount > 0 };
+  });
+  const counted = days.filter((x) => x.has && x.kind !== "future");
+  const avg = counted.length ? Math.round(counted.reduce((a, x) => a + x.cal, 0) / counted.length) : 0;
+  return { days, okDays: counted.filter((x) => x.ok).length, countedDays: counted.length, avg };
+}

@@ -1,4 +1,4 @@
-// Màn 6 · Tôi (đã chốt): thẻ hồ sơ, nhóm Mục tiêu/Lịch tập/Nhắc nhở/Gói cước,
+// Màn 6 · Tôi (đã chốt): thẻ hồ sơ, Nhật ký + Hỏi Fipilot AI (chat chuyển từ header Hôm nay sang đây 13/10), nhóm Mục tiêu/Lịch tập/Nhắc nhở/Gói cước,
 // nhóm Góp ý/Chia sẻ/Giới thiệu, Quản trị (chỉ admin), Đăng xuất.
 import { Icon } from "./ui";
 import { fmtInt, fmtDec } from "../lib/mobileView";
@@ -23,6 +23,7 @@ const ICONS = {
   about: ["#64748B", "rgba(100,116,139,0.12)", svg(<><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5v.5" /></>)],
   diary: ["#4F46E5", "rgba(79,70,229,0.1)", svg(<><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z" /><path d="M6 18a2 2 0 0 1 2-2h11M10 8h6M10 11h4" /></>)],
   logout: ["#DC2626", "rgba(220,38,38,0.1)", svg(<><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="M14 8l4 4-4 4M18 12H9" /></>)],
+  coach: ["#7C3AED", "rgba(124,58,237,0.1)", svg(<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />)],
   admin: ["#DC2626", "rgba(220,38,38,0.1)", svg(<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />)],
 };
 export function RowIcon({ name }) {
@@ -41,7 +42,7 @@ function Row({ icon, label, value, onClick, last, testid }) {
   );
 }
 
-export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, signOut }) {
+export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, signOut }) {
   const tier = profile?.tier || "free";
   const initials = (name || "?").replace(/[^A-Za-zÀ-ỹ0-9]/g, "").slice(0, 2).toUpperCase() || "?";
   const gym = (profile?.exerciseType || "gym") === "none" ? "Không tập" : (profile?.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
@@ -80,7 +81,8 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
       </button>
 
       <div style={group}>
-        <Row icon="diary" testid="me-diary" label="Nhật ký ăn uống" value="Calo từng ngày" onClick={openDiary} last />
+        <Row icon="diary" testid="me-diary" label="Nhật ký ăn uống" value="Calo từng ngày" onClick={openDiary} last={!openCoach} />
+        {openCoach && <Row icon="coach" testid="me-coach" label="Hỏi Fipilot AI" value="Chat hỏi về ăn uống, tập" onClick={openCoach} last />}
       </div>
 
       <div style={group}>
