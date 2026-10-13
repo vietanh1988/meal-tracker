@@ -439,6 +439,7 @@ export function MobileApp(props) {
             nowMinutes={now.minutes} name={name} dayLoaded={!!day} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
             waterMl={Number(day?.water_ml) || 0} addWater={(ml) => ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; })} waterGoalOverride={profile.waterGoalMl}
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
+            planLine={(profile.exerciseType || "gym") === "none" ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`}
             week={week} onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}

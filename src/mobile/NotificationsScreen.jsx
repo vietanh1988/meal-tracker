@@ -11,8 +11,8 @@ const bellSvg = (s, color) => <svg aria-hidden="true" width={s} height={s} viewB
 
 export function BellButton({ count, ringing, onClick }) {
   return (
-    <button data-testid="bell" onClick={onClick} aria-label={count ? `Thông báo, ${count} chưa đọc` : "Thông báo"}
-      style={{ position: "relative", width: 36, height: 36, borderRadius: 18, border: "none", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, animation: ringing ? "fpmBell .6s ease-in-out 0s 2" : "none" }}>
+    <button data-testid="bell" className="fp-glass" onClick={onClick} aria-label={count ? `Thông báo, ${count} chưa đọc` : "Thông báo"}
+      style={{ position: "relative", width: 42, height: 42, borderRadius: 21, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, animation: ringing ? "fpmBell .6s ease-in-out 0s 2" : "none" }}>
       <style>{"@keyframes fpmBell{0%,100%{transform:rotate(0)}20%{transform:rotate(18deg)}40%{transform:rotate(-16deg)}60%{transform:rotate(10deg)}80%{transform:rotate(-6deg)}}"}</style>
       {bellSvg(19, "#FFFFFF")}
       {count > 0 && <span data-testid="bell-count" style={{ position: "absolute", top: -2, right: -2, minWidth: 16, height: 16, borderRadius: 8, background: "#EF4444", border: "2px solid #FFFFFF", color: "#FFFFFF", fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", boxSizing: "content-box" }}>{count > 9 ? "9+" : count}</span>}
