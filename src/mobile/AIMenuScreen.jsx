@@ -3,7 +3,7 @@
 //  - Kết quả: tổng kcal / mục tiêu, thanh tiến, macro, cảnh báo lệch; từng bữa + nút Đổi từng món
 //  - Sheet Đổi món: tính trước kết quả cho từng ứng viên (swapOptions) — gram, kcal, "bữa sẽ thành", gần calo bữa cũ nhất lên đầu
 //  - Hết lượt: gợi ý dùng thực đơn đã lưu / tự ghi bằng Tìm món
-// Áp dụng / lưu Lịch tuần do MobileApp xử lý (onApply / onSaveWeek). Không gọi AI khi mở thực đơn đã lưu.
+// Áp dụng / lặp lại hằng tuần (weekly_templates) do MobileApp xử lý (onApply / onSaveWeek). Không gọi AI khi mở thực đơn đã lưu.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { todayVN, addDays } from "../lib/dateVN";
 import { fmtInt, MEAL_ICON } from "../lib/mobileView";
@@ -51,7 +51,7 @@ function OutOfQuota({ message, onSaved, onSearch, onClose }) {
       <span style={{ fontSize: 19, fontWeight: 900, textAlign: "center" }}>Hết lượt AI tạo thực đơn hôm nay</span>
       <span style={{ fontSize: 13, color: "#475569", textAlign: "center", lineHeight: 1.5 }}>{message || "Bạn đã dùng hết lượt hôm nay."} Lượt mới có lúc 7:00 sáng.</span>
       <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em", marginTop: 8 }}>VẪN GHI ĐƯỢC BỮA, KHÔNG CẦN AI</span>
-      <button onClick={onSaved} style={row}><span style={{ display: "flex", flexDirection: "column", flex: 1 }}><span style={{ fontSize: 15, fontWeight: 800 }}>Dùng thực đơn đã lưu</span><span style={{ fontSize: 12, color: "#64748B" }}>Lịch tuần, thực đơn AI gần nhất</span></span>{Icon.chev(16)}</button>
+      <button onClick={onSaved} style={row}><span style={{ display: "flex", flexDirection: "column", flex: 1 }}><span style={{ fontSize: 15, fontWeight: 800 }}>Dùng thực đơn đã lưu</span><span style={{ fontSize: 12, color: "#64748B" }}>Thực đơn AI đã tạo, ngày ăn trước</span></span>{Icon.chev(16)}</button>
       <button onClick={onSearch} style={row}><span style={{ display: "flex", flexDirection: "column", flex: 1 }}><span style={{ fontSize: 15, fontWeight: 800 }}>Tự ghi bằng Tìm món</span><span style={{ fontSize: 12, color: "#64748B" }}>Món hay ăn, ăn lại bữa cũ</span></span>{Icon.chev(16)}</button>
       <button onClick={onClose} style={{ ...btn("ghost"), marginTop: 8 }}>Đóng</button>
     </div>
@@ -115,15 +115,15 @@ function SwapSheet({ ctx, opts, onPick, onClose }) {
   );
 }
 
-function SaveWeekSheet({ dayType, gymDays, noEx, onSave, onClose }) {
+export function SaveWeekSheet({ dayType, gymDays, noEx, onSave, onClose }) {
   useLockScroll(true);
   const ok = (i) => (noEx ? "rest" : (gymDays || []).includes(i) ? "train" : "rest") === dayType;
   const [days, setDays] = useState([]);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div data-testid="save-week-sheet" onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: "#FFFFFF", borderRadius: "20px 20px 0 0", padding: "12px 14px calc(env(safe-area-inset-bottom, 0px) + 16px) 14px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12 }}>
-        <span style={{ fontSize: 18, fontWeight: 900 }}>Lưu vào Lịch tuần</span>
-        <span style={{ fontSize: 13, color: "#475569" }}>Chọn các {DT[dayType].toLowerCase()} muốn dùng thực đơn này. Ngày đã có sẽ được thay.</span>
+        <span style={{ fontSize: 18, fontWeight: 900 }}>Lặp lại hằng tuần</span>
+        <span style={{ fontSize: 13, color: "#475569" }}>Chọn thứ muốn ăn lại thực đơn này. Sáng hôm đó, nếu Hôm nay chưa ghi gì, app tự chép thực đơn vào (chỉ {DT[dayType].toLowerCase()}).</span>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0,1fr))", gap: 6 }}>
           {WEEK_SHORT.map((d, i) => {
             const on = days.includes(i);
@@ -131,7 +131,7 @@ function SaveWeekSheet({ dayType, gymDays, noEx, onSave, onClose }) {
               style={{ height: 44, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: 800, background: on ? "#007AFF" : ok(i) ? "#F1F5F9" : "#F8FAFC", color: on ? "#FFFFFF" : ok(i) ? "#475569" : "#CBD5E1" }}>{d}</button>;
           })}
         </div>
-        <button data-testid="save-week-confirm" disabled={!days.length} onClick={() => onSave(days)} style={btn("blue", !days.length)}>{days.length ? `Lưu cho ${days.length} ngày` : "Chọn ngày"}</button>
+        <button data-testid="save-week-confirm" disabled={!days.length} onClick={() => onSave(days)} style={btn("blue", !days.length)}>{days.length ? `Lặp lại ${days.length} thứ mỗi tuần` : "Chọn ngày"}</button>
       </div>
     </div>
   );
@@ -198,7 +198,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
     <div style={{ flexShrink: 0, background: "#FFFFFF", borderTop: "1px solid #E2E8F0", padding: "10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px) 12px" }}>
       <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", gap: 8 }}>
         <button data-testid="ai-regenerate" onClick={generate} disabled={busy} style={btn("ghost")}>{Icon.redo(16)} Tạo lại</button>
-        <button data-testid="ai-save-week" onClick={() => setSaveWeek(true)} disabled={busy} style={btn("ghost")}>Lưu mẫu</button>
+        <button data-testid="ai-save-week" onClick={() => setSaveWeek(true)} disabled={busy} style={btn("ghost")}>Lặp lại hằng tuần</button>
         {canApplyToday
           ? <button data-testid="ai-apply" onClick={apply} disabled={busy} style={{ ...btn("blue", busy), flex: 1, boxShadow: "0 4px 12px rgba(0,0,0,0.18)" }}>Áp dụng hôm nay</button>
           : <button onClick={() => setSaveWeek(true)} disabled={busy} style={{ ...btn("blue", busy), flex: 1 }}>Lưu vào {DT[dayType].toLowerCase()}</button>}
@@ -256,7 +256,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
               </div>
             );
           })}
-          {!canApplyToday && <p style={{ margin: "12px 16px 0 16px", fontSize: 12, color: "#64748B", textAlign: "center" }}>Hôm nay là {DT[todayType].toLowerCase()} nên thực đơn {DT[dayType].toLowerCase()} chỉ lưu vào Lịch tuần.</p>}
+          {!canApplyToday && <p style={{ margin: "12px 16px 0 16px", fontSize: 12, color: "#64748B", textAlign: "center" }}>Hôm nay là {DT[todayType].toLowerCase()} nên thực đơn {DT[dayType].toLowerCase()} chỉ đặt lặp lại hằng tuần được.</p>}
         </div>
       )}
       {swap && <SwapSheet ctx={swap.ctx} opts={swap.opts} onPick={pick} onClose={() => setSwap(null)} />}

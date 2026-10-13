@@ -1,8 +1,6 @@
-// Tab Thực đơn (bản vẽ ThucDon) — thay MealsTab cũ trên mobile:
-//  - Thẻ "AI lên thực đơn cả ngày": phong cách ăn, món không ăn, ngày tập/nghỉ → mở AIMenuGenerator tạo luôn
-//  - "Đã lưu" (dùng lại không tốn lượt AI): thực đơn AI gần nhất, Lịch tuần 7 ngày, Kho mẫu + Gói tuần (khi admin bật)
-//  - Xoá hết bữa hôm nay
-// Các màn chi tiết (1 ngày Lịch tuần, 1 mẫu, 1 gói tuần) là lớp "page" của MobileApp: MenuDayPage / MenuTplPage / MenuBundlePage.
+// Tab Thực đơn (chốt 13/10): thẻ Hôm nay, AI lên thực đơn, Thực đơn của tôi (AI đã tạo + ngày đã ăn),
+// Thực đơn mẫu, Lặp lại hằng tuần (chỉ khi đã đặt). Bỏ Gói tuần khỏi giao diện.
+// Màn chi tiết là lớp "page" của MobileApp: MenuPastPage / MenuDayPage / MenuTplPage.
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { todayVN, fmtVN } from "../lib/dateVN";
@@ -10,8 +8,9 @@ import { appConfirm } from "../lib/dialog";
 import { fmtInt, dayTypeOf } from "../lib/mobileView";
 import { mealLabel, MEAL_ORDER } from "../lib/mealMath";
 import { aiQuota } from "../lib/aiQuota";
-import { loadLatestAIMenu } from "../lib/aiMenuService";
-import { weekRows, libraryFor, bundlesFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT, WEEK_LONG } from "../lib/menuView";
+import { loadAIMenus } from "../lib/aiMenuService";
+import { SaveWeekSheet } from "./AIMenuScreen";
+import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT, WEEK_LONG } from "../lib/menuView";
 import { applyMealEngineToTemplate } from "../mealEngine";
 import { Icon, GRAD_BLUE } from "./ui";
 
@@ -63,8 +62,11 @@ function Summary({ title, sub, cal, target }) {
 }
 
 // ---------------- Tab Thực đơn ----------------
+// Bố cục (chốt 13/10, gọn lại cho dễ hiểu): Hôm nay ăn gì → 1) AI lên thực đơn, 2) Thực đơn của tôi
+// (thực đơn AI đã tạo + ngày đã ăn trước, dùng lại không tốn lượt), 3) Thực đơn mẫu (admin soạn).
+// "Lặp lại hằng tuần" (weekly_templates, tự chép vào Hôm nay mỗi sáng) chỉ hiện khi user đã đặt.
 export function MenuScreen(p) {
-  const { profile, macro, aiAccess, userId, todayLog, getWeeklyTemplate, weeklyTemplates, defaultTemplates, refreshDefaultTemplates, weeklyBundles, flags, openGenerate, openSaved, openPage, clearToday } = p;
+  const { profile, macro, aiAccess, userId, todayLog, getWeeklyTemplate, weeklyTemplates, defaultTemplates, refreshDefaultTemplates, flags, openGenerate, openSaved, openPage, openToday, clearToday, recentDays } = p;
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
   const noEx = (profile?.exerciseType || "gym") === "none";
@@ -72,14 +74,14 @@ export function MenuScreen(p) {
   const [style, setStyle] = useState(saved.style || "vn");
   const [avoid, setAvoid] = useState(saved.avoid || "");
   const [dayType, setDayType] = useState(todayType);
-  const [latest, setLatest] = useState(null);
+  const [aiMenus, setAiMenus] = useState([]);
   const [quota, setQuota] = useState(null);
   const [libType, setLibType] = useState(todayType);
 
   useEffect(() => {
     let alive = true;
     if (!userId) return;
-    loadLatestAIMenu(userId).then((r) => alive && setLatest(r));
+    loadAIMenus(userId, 5).then((r) => alive && setAiMenus(r || []));
     if (aiAccess?.usable) {
       Promise.all([
         supabase.from("profiles").select("tier,ai_menu_count_today,ai_menu_count_reset_at").eq("id", userId).maybeSingle(),
@@ -92,11 +94,13 @@ export function MenuScreen(p) {
 
   const rows = useMemo(() => weekRows({ getTemplate: getWeeklyTemplate, gymDays: profile?.gymDays, exerciseType: profile?.exerciseType, macro, today }),
     [weeklyTemplates, profile?.gymDays, profile?.exerciseType, macro?.calTarget, macro?.calRest, today]); // eslint-disable-line react-hooks/exhaustive-deps
+  const repeatRows = rows.filter((r) => r.tpl);
   const lib = flags?.template_library ? libraryFor(defaultTemplates, { goal: macro?.goal, dietStrategy: macro?.dietStrategy, dayType: libType }) : [];
-  const bundles = flags?.template_library ? bundlesFor(weeklyBundles, macro?.goal) : [];
   const target = dailyTargetOf(macro, dayType).cal;
-  const todayHasMeals = ((todayLog && todayLog.log_date === today && todayLog.meals) || []).some((m) => (m.items || []).length > 0);
-  const savedDays = rows.filter((r) => r.tpl).length;
+  const todayTarget = dailyTargetOf(macro, todayType).cal;
+  const todayMeals = todayLog && todayLog.log_date === today ? dayToTemplateMeals(todayLog) : [];
+  const todayHasMeals = todayMeals.length > 0;
+  const past = useMemo(() => pastDaysFor(recentDays, today, 5), [recentDays, today]);
 
   const generate = () => { writePrefs({ style, avoid }); openGenerate({ style, avoid: avoid.trim(), dayType: noEx ? "rest" : dayType }); };
 
@@ -107,12 +111,22 @@ export function MenuScreen(p) {
         {quota && <span data-testid="menu-quota" style={{ height: 28, padding: "0 10px", borderRadius: 999, background: quota.out ? "rgba(239,68,68,0.1)" : "rgba(124,58,237,0.1)", color: quota.out ? "#B91C1C" : "#6D28D9", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center" }}>{quota.out ? "Hết lượt AI hôm nay" : `Còn ${fmtInt(quota.limit - quota.used)}/${fmtInt(quota.limit)} lượt`}</span>}
       </div>
 
+      {/* Hôm nay đã có thực đơn chưa */}
+      <button data-testid="menu-today" onClick={openToday} className="tap" style={{ margin: "0 12px 12px 12px", width: "calc(100% - 24px)", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 16, border: todayHasMeals ? "1.5px solid rgba(0,200,150,0.35)" : "1.5px solid rgba(245,158,11,0.35)", background: todayHasMeals ? "rgba(0,200,150,0.08)" : "rgba(245,158,11,0.08)", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
+        <span style={{ width: 40, height: 40, borderRadius: 12, background: "#FFFFFF", color: todayHasMeals ? "#047857" : "#B45309", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{todayHasMeals ? Icon.check(20, 2.6) : Icon.plus(20)}</span>
+        <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 800 }}>{todayHasMeals ? `Hôm nay đã có ${todayMeals.length} bữa · ${fmtInt(mealsCal(todayMeals))} kcal` : "Hôm nay chưa có thực đơn"}</span>
+          <span style={{ fontSize: 12, color: "#475569" }}>{todayHasMeals ? `Mục tiêu ${fmtInt(todayTarget)} kcal · bấm để xem ở Hôm nay` : "Chọn 1 trong các cách bên dưới để có thực đơn"}</span>
+        </span>
+        {Icon.chev(16)}
+      </button>
+
       {aiAccess?.enabled && (
         <div data-testid="menu-ai-card" style={{ margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 20, padding: 16, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 6px 20px rgba(124,58,237,0.08)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ width: 44, height: 44, borderRadius: 14, background: PURPLE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.sparkle(22)}</span>
             <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 17, fontWeight: 900 }}>AI lên thực đơn cả ngày</span>
+              <span style={{ fontSize: 17, fontWeight: 900 }}>AI lên thực đơn</span>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#475569" }}>Món Việt, vừa đúng {fmtInt(target)} kcal · {DT[noEx ? "rest" : dayType]}</span>
             </span>
           </div>
@@ -153,60 +167,48 @@ export function MenuScreen(p) {
             </>
           ) : (
             <>
-              <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>AI lên thực đơn dành cho tài khoản Dùng thử / Premium. Bạn vẫn dùng được Lịch tuần{flags?.template_library ? " và Kho mẫu" : ""} bên dưới, hoặc ghi món bằng Tìm món.</span>
+              <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>AI lên thực đơn dành cho tài khoản Dùng thử / Premium. Bạn vẫn dùng lại được thực đơn của mình{flags?.template_library ? " và thực đơn mẫu" : ""} bên dưới, hoặc ghi món bằng Tìm món.</span>
               <button data-testid="menu-upgrade" onClick={() => openPage("plan")} style={btn("ghost")}>Xem gói cước</button>
             </>
           )}
         </div>
       )}
 
+
       <div style={secHead}>
-        <span style={{ fontSize: 15, fontWeight: 800 }}>Đã lưu</span>
+        <span style={{ fontSize: 15, fontWeight: 800 }}>Thực đơn của tôi</span>
         <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Dùng lại không tốn lượt AI</span>
       </div>
-      {latest && (
-        <div style={{ ...box, marginBottom: 10 }}>
-          <button data-testid="menu-latest-ai" onClick={() => openSaved(latest.template)} style={rowBtn(true)}>
+      <div style={box}>
+        {aiMenus.map((m, i) => (
+          <button key={`ai-${m.date}`} data-testid={i === 0 ? "menu-latest-ai" : `menu-ai-${i}`} onClick={() => openSaved(m.template)} style={rowBtn(i === aiMenus.length - 1 && past.length === 0)}>
             <span style={iconBox("rgba(124,58,237,0.08)", "#7C3AED")}>{Icon.sparkle(18)}</span>
             <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 14, fontWeight: 700 }}>Thực đơn AI gần nhất</span>
-              <span style={{ fontSize: 12, color: "#64748B" }}>{latest.date === today ? "Hôm nay" : fmtVN(latest.date)} · {DT[latest.template.day_type] || "—"} · {(latest.template.meals || []).length} bữa · {fmtInt(mealsCal(latest.template.meals))} kcal</span>
-            </span>
-            {Icon.chev(16)}
-          </button>
-        </div>
-      )}
-
-      <div style={{ ...box }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "12px 0 4px 0" }}>
-          <span style={{ fontSize: 14, fontWeight: 800 }}>Lịch tuần</span>
-          <span style={{ fontSize: 12, color: "#64748B" }}>{savedDays}/7 ngày · tự áp mỗi sáng</span>
-        </div>
-        {rows.map((r, i) => (
-          <button key={r.key} data-testid={`week-day-${i}`} onClick={() => openPage("menu_day", { key: r.key })} style={{ ...rowBtn(i === rows.length - 1), minHeight: 56 }}>
-            <span style={{ ...iconBox(r.isToday ? "#007AFF" : "#F1F5F9", r.isToday ? "#FFFFFF" : "#475569"), flexDirection: "column", lineHeight: 1.1 }}>
-              <span style={{ fontSize: 13, fontWeight: 900 }}>{r.short}</span>
-              {!noEx && <span style={{ fontSize: 9, fontWeight: 700, opacity: 0.85 }}>{r.dayType === "train" ? "Tập" : "Nghỉ"}</span>}
-            </span>
-            <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-              {r.tpl ? (
-                <>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>{fmtInt(r.cal)} kcal <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>· {r.meals.length} bữa{r.isToday ? " · hôm nay" : ""}</span></span>
-                  <span style={{ fontSize: 12, color: r.low || r.mismatch ? "#B45309" : "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {r.mismatch ? `Lưu cho ${DT[r.tpl.day_type].toLowerCase()} — nay là ${DT[r.dayType].toLowerCase()}` : r.low ? "Thiếu nhiều so với mục tiêu" : r.names.join(", ")}
-                  </span>
-                </>
-              ) : <span style={{ fontSize: 13, fontWeight: 600, color: "#94A3B8" }}>Chưa có thực đơn{r.isToday ? " · hôm nay" : ""}</span>}
+              <span style={{ fontSize: 14, fontWeight: 700 }}>Thực đơn AI · {m.date === today ? "hôm nay" : fmtVN(m.date)}</span>
+              <span style={{ fontSize: 12, color: "#64748B" }}>{DT[m.template.day_type] || "—"} · {(m.template.meals || []).length} bữa · {fmtInt(mealsCal(m.template.meals))} kcal</span>
             </span>
             {Icon.chev(16)}
           </button>
         ))}
+        {past.map((d, i) => (
+          <button key={`d-${d.date}`} data-testid={`menu-past-${d.date}`} onClick={() => openPage("menu_past", { day: d })} style={rowBtn(i === past.length - 1)}>
+            <span style={iconBox("rgba(0,122,255,0.08)", "#007AFF")}>{Icon.redo(18)}</span>
+            <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: 14, fontWeight: 700 }}>Ngày đã ăn · {fmtVN(d.date)}</span>
+              <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.meals.length} bữa · {fmtInt(d.cal)} kcal · {d.meals.flatMap((m) => m.items.map((it) => it.display || it.food || it.name)).slice(0, 4).join(", ")}</span>
+            </span>
+            {Icon.chev(16)}
+          </button>
+        ))}
+        {aiMenus.length === 0 && past.length === 0 && (
+          <div style={{ padding: "14px 0", fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>Thực đơn AI bạn tạo và những ngày bạn đã ghi đủ bữa sẽ hiện ở đây để dùng lại.</div>
+        )}
       </div>
 
       {flags?.template_library && (
         <>
           <div style={secHead}>
-            <span style={{ fontSize: 15, fontWeight: 800 }}>Kho mẫu</span>
+            <span style={{ fontSize: 15, fontWeight: 800 }}>Thực đơn mẫu</span>
             {!noEx && (
               <div role="group" aria-label="Loại ngày" style={{ display: "flex", padding: 3, background: "#F1F5F9", borderRadius: 10 }}>
                 {["train", "rest"].map((d) => (
@@ -216,11 +218,11 @@ export function MenuScreen(p) {
             )}
           </div>
           <div style={box}>
-            {lib.length === 0 && bundles.length === 0 && <div style={{ padding: "16px 0", fontSize: 13, color: "#64748B", textAlign: "center" }}>Chưa có mẫu cho mục tiêu này.</div>}
+            {lib.length === 0 && <div style={{ padding: "16px 0", fontSize: 13, color: "#64748B", textAlign: "center" }}>Chưa có mẫu cho mục tiêu này.</div>}
             {lib.map((t, i) => {
               const cal = mealsCal(applyMealEngineToTemplate(t, dailyTargetOf(macro, t.day_type)).meals);
               return (
-                <button key={t.id} data-testid={`lib-tpl-${t.id}`} onClick={() => openPage("menu_tpl", { id: t.id })} style={rowBtn(i === lib.length - 1 && bundles.length === 0)}>
+                <button key={t.id} data-testid={`lib-tpl-${t.id}`} onClick={() => openPage("menu_tpl", { id: t.id })} style={rowBtn(i === lib.length - 1)}>
                   <span style={iconBox("rgba(0,122,255,0.08)", "#007AFF")}>{(t.meals || []).length}</span>
                   <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.name || "Mẫu"}</span>
@@ -230,12 +232,28 @@ export function MenuScreen(p) {
                 </button>
               );
             })}
-            {bundles.map((b, i) => (
-              <button key={b.id} data-testid={`lib-bundle-${b.id}`} onClick={() => openPage("menu_bundle", { id: b.id })} style={rowBtn(i === bundles.length - 1)}>
-                <span style={iconBox("rgba(99,102,241,0.1)", "#4F46E5")}>7</span>
+          </div>
+        </>
+      )}
+
+      {repeatRows.length > 0 && (
+        <>
+          <div style={secHead}>
+            <span style={{ fontSize: 15, fontWeight: 800 }}>Lặp lại hằng tuần</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Tự chép vào Hôm nay mỗi sáng</span>
+          </div>
+          <div style={box}>
+            {repeatRows.map((r, i) => (
+              <button key={r.key} data-testid={`week-day-${r.idx}`} onClick={() => openPage("menu_day", { key: r.key })} style={{ ...rowBtn(i === repeatRows.length - 1), minHeight: 56 }}>
+                <span style={{ ...iconBox(r.isToday ? "#007AFF" : "#F1F5F9", r.isToday ? "#FFFFFF" : "#475569"), flexDirection: "column", lineHeight: 1.1 }}>
+                  <span style={{ fontSize: 13, fontWeight: 900 }}>{r.short}</span>
+                  {!noEx && <span style={{ fontSize: 9, fontWeight: 700, opacity: 0.85 }}>{r.dayType === "train" ? "Tập" : "Nghỉ"}</span>}
+                </span>
                 <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>Gói tuần · {b.name}</span>
-                  <span style={{ fontSize: 12, color: "#64748B" }}>{WEEK_KEYS.filter((k) => b.days && b.days[k]).length}/7 ngày · áp một lần cho cả tuần</span>
+                  <span style={{ fontSize: 14, fontWeight: 700 }}>Mỗi {r.long} · {fmtInt(r.cal)} kcal <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>· {r.meals.length} bữa</span></span>
+                  <span style={{ fontSize: 12, color: r.low || r.mismatch ? "#B45309" : "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {r.mismatch ? `Lưu cho ${DT[r.tpl.day_type].toLowerCase()} — nay là ${DT[r.dayType].toLowerCase()}` : r.low ? "Thiếu nhiều so với mục tiêu" : r.names.join(", ")}
+                  </span>
                 </span>
                 {Icon.chev(16)}
               </button>
@@ -248,6 +266,44 @@ export function MenuScreen(p) {
         <button data-testid="clear-today" onClick={clearToday} style={{ display: "block", margin: "16px auto 0 auto", height: 44, padding: "0 16px", border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 700, color: "#DC2626" }}>Xoá hết bữa hôm nay</button>
       )}
       <div style={{ height: 24 }} />
+    </div>
+  );
+}
+
+// ---------------- 1 ngày đã ăn (dùng lại) ----------------
+export function MenuPastPage({ day, profile, macro, applyTemplate, saveWeeklyTemplate, todayLog, refresh, showToast, close }) {
+  const today = todayVN();
+  const todayType = dayTypeOf(profile, today);
+  const [busy, setBusy] = useState(false);
+  const [repeat, setRepeat] = useState(false);
+  if (!day) return null;
+  const todayHas = todayLog && todayLog.log_date === today && dayToTemplateMeals(todayLog).length > 0;
+  const useToday = async () => {
+    if (busy) return;
+    if (todayHas && !(await appConfirm("Hôm nay đã có món. Bữa trùng tên sẽ được thay bằng thực đơn này. Tiếp tục?"))) return;
+    setBusy(true);
+    const res = await applyTemplate({ name: `Ngày ${fmtVN(day.date)}`, day_type: todayType, meals: day.meals });
+    await refresh?.();
+    setBusy(false);
+    if (res && res.ok === false) { showToast({ text: "Chưa áp được, thử lại nhé." }); return; }
+    showToast({ text: `Đã dùng thực đơn ngày ${fmtVN(day.date)} cho hôm nay.` });
+    close();
+  };
+  const saveRepeat = async (idxs) => {
+    setBusy(true);
+    for (const i of idxs) await saveWeeklyTemplate(WEEK_KEYS[i], day.day_type, day.meals, day.cal);
+    setBusy(false); setRepeat(false);
+    showToast({ text: `Sẽ lặp lại mỗi ${idxs.map((i) => WEEK_SHORT[i]).join(", ")}.` });
+  };
+  return (
+    <div style={{ paddingBottom: 32 }}>
+      <Summary title={`Ngày ${fmtVN(day.date)} · ${DT[day.day_type]}`} cal={day.cal} target={dailyTargetOf(macro, todayType).cal} sub={`${day.meals.length} bữa đã ăn · so với mục tiêu hôm nay`} />
+      <MealsPreview meals={day.meals} />
+      <div style={{ margin: "14px 12px 0 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+        <button data-testid="past-use-today" disabled={busy} onClick={useToday} style={btn("blue", busy)}>Dùng cho hôm nay</button>
+        <button data-testid="past-repeat" disabled={busy} onClick={() => setRepeat(true)} style={btn("ghost")}>Lặp lại hằng tuần…</button>
+      </div>
+      {repeat && <SaveWeekSheet dayType={day.day_type} gymDays={profile?.gymDays} noEx={(profile?.exerciseType || "gym") === "none"} onSave={saveRepeat} onClose={() => setRepeat(false)} />}
     </div>
   );
 }
@@ -277,7 +333,7 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
     showToast({ text: "Đã tính lại khẩu phần theo mục tiêu hiện tại." });
   });
   const remove = () => run(async () => {
-    if (!(await appConfirm(`Xoá thực đơn ${row.long} khỏi Lịch tuần?`, { danger: true }))) return;
+    if (!(await appConfirm(`Bỏ lặp lại thực đơn mỗi ${row.long}?`, { danger: true }))) return;
     await deleteWeeklyTemplate(row.key);
     if (row.isToday && todayLog && todayLog.log_date === today) {
       const eaten = todayLog.eaten_meals || [];
@@ -287,7 +343,7 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
         await refresh?.();
       }
     }
-    showToast({ text: `Đã xoá thực đơn ${row.long}.` });
+    showToast({ text: `Đã bỏ lặp lại mỗi ${row.long}.` });
     close();
   });
   const saveFromToday = () => run(async () => {
@@ -299,14 +355,14 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
     <div style={{ paddingBottom: 32 }}>
       {row.tpl ? (
         <>
-          <Summary title={`${row.long} · ${DT[row.dayType]}`} cal={row.cal} target={target} sub={row.mismatch ? `Lưu cho ${DT[row.tpl.day_type].toLowerCase()} — bấm Tính lại để khớp mục tiêu ${DT[row.dayType].toLowerCase()}` : `${row.meals.length} bữa · tự áp vào Hôm nay mỗi ${row.long} nếu ngày đó chưa ghi gì`} />
+          <Summary title={`${row.long} · ${DT[row.dayType]}`} cal={row.cal} target={target} sub={row.mismatch ? `Lưu cho ${DT[row.tpl.day_type].toLowerCase()} — bấm Tính lại để khớp mục tiêu ${DT[row.dayType].toLowerCase()}` : `${row.meals.length} bữa · tự chép vào Hôm nay mỗi ${row.long} nếu sáng đó chưa ghi gì`} />
           <MealsPreview meals={row.meals} />
           <div style={{ margin: "14px 12px 0 12px", display: "flex", flexDirection: "column", gap: 8 }}>
             {row.dayType === todayType
               ? <button data-testid="day-use-today" disabled={busy} onClick={useToday} style={btn("blue", busy)}>Dùng cho hôm nay</button>
               : <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Hôm nay là {DT[todayType].toLowerCase()} nên không áp mẫu {DT[row.dayType].toLowerCase()} được.</span>}
             <button data-testid="day-recalc" disabled={busy} onClick={recalc} style={btn("ghost")}>Tính lại theo mục tiêu hiện tại</button>
-            <button data-testid="day-delete" disabled={busy} onClick={remove} style={btn("danger")}>Xoá ngày này</button>
+            <button data-testid="day-delete" disabled={busy} onClick={remove} style={btn("danger")}>Bỏ lặp lại {row.long}</button>
           </div>
         </>
       ) : (
@@ -350,7 +406,7 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
     setBusy(true);
     for (const i of days) await saveWeeklyTemplate(WEEK_KEYS[i], t.day_type, eng.meals || [], cal);
     setBusy(false);
-    showToast({ text: `Đã gán vào ${days.map((i) => WEEK_SHORT[i]).join(", ")}.` });
+    showToast({ text: `Sẽ lặp lại mỗi ${days.map((i) => WEEK_SHORT[i]).join(", ")}.` });
     setDays([]);
   };
 
@@ -361,8 +417,8 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
       <div style={{ margin: "14px 12px 0 12px", display: "flex", flexDirection: "column", gap: 10 }}>
         {t.day_type === todayType
           ? <button data-testid="tpl-use-today" disabled={busy} onClick={useToday} style={btn("blue", busy)}>Dùng cho hôm nay</button>
-          : <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Mẫu {DT[t.day_type].toLowerCase()} — hôm nay là {DT[todayType].toLowerCase()}, chỉ gán được vào Lịch tuần.</span>}
-        <span style={lbl}>GÁN VÀO LỊCH TUẦN</span>
+          : <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Mẫu {DT[t.day_type].toLowerCase()} — hôm nay là {DT[todayType].toLowerCase()}, chỉ đặt lặp lại hằng tuần được.</span>}
+        <span style={lbl}>LẶP LẠI HẰNG TUẦN VÀO</span>
         <div role="group" aria-label="Gán vào ngày" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0,1fr))", gap: 6 }}>
           {WEEK_SHORT.map((d, i) => {
             const ok = sameTypeIdx.includes(i);
@@ -371,7 +427,7 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
               style={{ height: 44, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: 800, background: on ? "#007AFF" : ok ? "#F1F5F9" : "#F8FAFC", color: on ? "#FFFFFF" : ok ? "#475569" : "#CBD5E1" }}>{d}</button>;
           })}
         </div>
-        <button data-testid="tpl-assign" disabled={busy || !days.length} onClick={assign} style={btn("ghost")}>{days.length ? `Gán cho ${days.length} ngày` : "Chọn ngày cùng loại để gán"}</button>
+        <button data-testid="tpl-assign" disabled={busy || !days.length} onClick={assign} style={btn("ghost")}>{days.length ? `Lặp lại ${days.length} thứ mỗi tuần` : "Chọn thứ cùng loại ngày"}</button>
       </div>
     </div>
   );

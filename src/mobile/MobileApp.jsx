@@ -15,7 +15,7 @@ import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen } from "./PlanScreen";
 import { FeedbackScreen } from "./FeedbackScreen";
 import { AboutScreen } from "./AboutScreen";
-import { MenuScreen, MenuDayPage, MenuTplPage, MenuBundlePage } from "./MenuScreen";
+import { MenuScreen, MenuDayPage, MenuTplPage, MenuBundlePage, MenuPastPage } from "./MenuScreen";
 import { AIMenuScreen } from "./AIMenuScreen";
 import { WEEK_KEYS, WEEK_SHORT, mealsCal } from "../lib/menuView";
 import { UpdatePopup } from "./UpdatePopup";
@@ -216,22 +216,20 @@ export function MobileApp(props) {
   const applyAIMenu = async (tpl) => {
     try {
       const tplDayType = tpl.day_type || dayTypeOf(profile, today);
-      const tplMeals = (tpl.meals || []).map((m) => ({ meal_id: m.meal_id, meal_name: mealLabel(m.meal_name, m.meal_id), items: m.items || [], composite: !!m.composite, pattern: m.pattern || null }));
-      const tplCal = Math.round((tpl.meals || []).reduce((s, m) => (m.items || []).reduce((a, i) => a + (i.cal || 0), s), 0));
-      await ud.saveWeeklyTemplate(templateKeyOf(today), tplDayType, tplMeals, tplCal);
-      await ud.applyTemplate(tpl);
+      // Không còn tự lưu ngầm vào Lịch tuần (chốt 13/10) — muốn lặp lại thì bấm "Lặp lại hằng tuần"
+      await ud.applyTemplate({ ...tpl, day_type: tplDayType });
       await refresh(today);
       showToast({ text: "Đã áp thực đơn AI cho hôm nay." });
     } catch (e) { console.error("Apply AI menu error:", e); fail(); }
     closeLayer();
   };
 
-  // Lưu thực đơn AI vào các ngày trong Lịch tuần (chỉ số 0 = T2)
+  // Lặp lại hằng tuần: lưu thực đơn AI vào weekly_templates các thứ đã chọn (chỉ số 0 = T2)
   const saveAIMenuToWeek = async (tpl, days) => {
     try {
       const meals = (tpl.meals || []).filter((m) => (m.items || []).length > 0).map((m) => ({ meal_id: m.meal_id, meal_name: mealLabel(m.meal_name, m.meal_id), items: m.items, composite: !!m.composite, pattern: m.pattern || null }));
       for (const i of days) await ud.saveWeeklyTemplate(WEEK_KEYS[i], tpl.day_type || "train", meals, mealsCal(meals));
-      showToast({ text: `Đã lưu vào Lịch tuần: ${days.map((i) => WEEK_SHORT[i]).join(", ")}.` });
+      showToast({ text: `Sẽ lặp lại mỗi ${days.map((i) => WEEK_SHORT[i]).join(", ")}.` });
     } catch (e) { console.error("saveAIMenuToWeek error:", e); fail(); }
   };
 
@@ -346,15 +344,16 @@ export function MobileApp(props) {
     removeDayMeal: ud.removeDayMeal, defaultTemplates: ud.defaultTemplates, refreshDefaultTemplates: ud.refreshDefaultTemplates,
     weeklyBundles: ud.weeklyBundles, refresh: () => refresh(today), showToast, close: closeLayer,
   };
-  const MENU_PAGE_TITLE = { menu_day: "Lịch tuần", menu_tpl: "Mẫu thực đơn", menu_bundle: "Gói tuần" };
+  const MENU_PAGE_TITLE = { menu_day: "Lặp lại hằng tuần", menu_tpl: "Thực đơn mẫu", menu_bundle: "Gói tuần", menu_past: "Ngày đã ăn" };
 
   const renderPage = (l) => {
     const sec = l.sec;
     if (MENU_PAGE_TITLE[sec]) return (
-      <SubPage title={sec === "menu_day" ? `Lịch tuần · ${({ thu_2: "Thứ Hai", thu_3: "Thứ Ba", thu_4: "Thứ Tư", thu_5: "Thứ Năm", thu_6: "Thứ Sáu", thu_7: "Thứ Bảy", cn: "Chủ nhật" })[l.key] || ""}` : MENU_PAGE_TITLE[sec]} onBack={closeLayer}>
+      <SubPage title={sec === "menu_day" ? `Lặp lại · ${({ thu_2: "Thứ Hai", thu_3: "Thứ Ba", thu_4: "Thứ Tư", thu_5: "Thứ Năm", thu_6: "Thứ Sáu", thu_7: "Thứ Bảy", cn: "Chủ nhật" })[l.key] || ""}` : MENU_PAGE_TITLE[sec]} onBack={closeLayer}>
         {sec === "menu_day" && <MenuDayPage dayKey={l.key} {...menuProps} />}
         {sec === "menu_tpl" && <MenuTplPage tplId={l.id} {...menuProps} />}
         {sec === "menu_bundle" && <MenuBundlePage bundleId={l.id} {...menuProps} />}
+        {sec === "menu_past" && <MenuPastPage day={l.day} {...menuProps} />}
       </SubPage>
     );
     if (sec === "goals") return (
@@ -439,7 +438,7 @@ export function MobileApp(props) {
         )}
         {tab === "menu" && (
           <div>
-            <MenuScreen {...menuProps} aiAccess={aiAccess} userId={user?.id} flags={flags}
+            <MenuScreen {...menuProps} aiAccess={aiAccess} userId={user?.id} flags={flags} recentDays={recentRows} openToday={() => { setSelDate(null); setTab("today"); }}
               openGenerate={(prefs) => openLayer({ type: "ai", prefs, auto: true })} openSaved={(template) => openLayer({ type: "ai", template })}
               openPage={(sec, extra) => openLayer({ type: "page", sec, ...(extra || {}) })} clearToday={clearToday} />
           </div>

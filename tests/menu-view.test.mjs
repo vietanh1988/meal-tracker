@@ -51,3 +51,20 @@ test("dayToTemplateMeals: bỏ bữa rỗng, tên có dấu", () => {
   const out = M.dayToTemplateMeals({ meals: [{ meal_id: "trua", meal_name: "trua", items: [it(400)] }, { meal_id: "toi", items: [] }] });
   assert.deepEqual(out, [{ meal_id: "trua", meal_name: "Bữa trưa", items: [it(400)] }]);
 });
+
+import { pastDaysFor } from "../src/lib/menuView.js";
+test("pastDaysFor: bỏ hôm nay, cần ≥2 bữa đã ăn, bỏ ngày trùng món, mới nhất trước", () => {
+  const it = (food, cal) => ({ food, cal });
+  const day = (d, eaten, foods) => ({ log_date: d, day_type: "train", meals: [{ meal_id: "sang", items: [it(foods[0], 300)] }, { meal_id: "trua", items: [it(foods[1], 600)] }], eaten_meals: eaten });
+  const rows = [
+    day("2026-10-13", ["sang", "trua"], ["a", "b"]),
+    day("2026-10-12", ["sang", "trua"], ["a", "b"]),
+    day("2026-10-11", ["sang", "trua"], ["a", "b"]),
+    day("2026-10-10", ["sang"], ["c", "d"]),
+    day("2026-10-09", ["sang", "trua"], ["c", "d"]),
+  ];
+  const out = pastDaysFor(rows, "2026-10-13");
+  assert.deepEqual(out.map((x) => x.date), ["2026-10-12", "2026-10-09"]);
+  assert.equal(out[0].cal, 900);
+  assert.equal(out[0].meals[0].meal_id, "sang");
+});

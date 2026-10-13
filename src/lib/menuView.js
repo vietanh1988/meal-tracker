@@ -59,3 +59,25 @@ export function dayToTemplateMeals(day) {
     ...(m.pattern ? { pattern: m.pattern } : {}), ...(m.composite !== undefined ? { composite: !!m.composite } : {}),
   }));
 }
+
+// Ngày đã ăn trước đây để dùng lại ("Thực đơn của tôi"): bỏ hôm nay, cần ≥2 bữa đã ăn,
+// mới nhất trước, bỏ ngày trùng y hệt món (cùng danh sách tên món). Trả {date, meals, cal, eatenCount}.
+export function pastDaysFor(rows, today, n = 5) {
+  const out = [];
+  const seen = new Set();
+  const sorted = [...(rows || [])].sort((a, b) => String(b.log_date).localeCompare(String(a.log_date)));
+  for (const r of sorted) {
+    const d = String(r.log_date).slice(0, 10);
+    if (d >= today) continue;
+    const eaten = new Set(r.eaten_meals || []);
+    const meals = dayToTemplateMeals({ meals: (r.meals || []).filter((m) => eaten.has(m.meal_id || m.id)) })
+      .sort((a, b) => MEAL_ORDER.indexOf(a.meal_id) - MEAL_ORDER.indexOf(b.meal_id));
+    if (meals.length < 2) continue;
+    const sig = meals.map((m) => m.items.map((i) => i.food || i.name).join("+")).join("|");
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    out.push({ date: d, day_type: r.day_type === "rest" ? "rest" : "train", meals, cal: mealsCal(meals), eatenCount: meals.length });
+    if (out.length >= n) break;
+  }
+  return out;
+}

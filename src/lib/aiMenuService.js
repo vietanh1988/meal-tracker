@@ -839,6 +839,17 @@ export async function loadLatestAIMenu(userId) {
   } catch (e) { console.error("loadLatestAIMenu error:", e); return null; }
 }
 
+// N thực đơn AI gần nhất (mỗi ngày 1 bản) — mục "Thực đơn của tôi" ở tab Thực đơn
+export async function loadAIMenus(userId, n = 5) {
+  if (!userId) return [];
+  try {
+    const { data, error } = await supabase.from("ai_menu_cache").select("template,menu_date").eq("user_id", userId)
+      .order("menu_date", { ascending: false }).limit(n);
+    if (error) { console.error("loadAIMenus DB error:", error); return []; }
+    return (data || []).filter((r) => r.template && (r.template.meals || []).length).map((r) => ({ template: r.template, date: r.menu_date }));
+  } catch (e) { console.error("loadAIMenus error:", e); return []; }
+}
+
 export async function clearAIMenu(userId) {
   if (!userId) return;
   try {

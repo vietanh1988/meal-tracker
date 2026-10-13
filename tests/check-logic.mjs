@@ -34,6 +34,7 @@ function assert(cond, msg) { if (!cond) throw new Error(msg); }
 const SRC = {
   app:           read("src/App.jsx"),
   mobile:        read("src/mobile/MobileApp.jsx"),
+  menuScreen:    read("src/mobile/MenuScreen.jsx"),
   mobileView:    read("src/lib/mobileView.js"),
   aiCoach:       read("src/AICoachPanel.jsx"),
   onboarding:    read("src/OnboardingWizard.jsx"),
@@ -85,6 +86,7 @@ const FILES_TO_CHECK = {
   "AICoachPanel":  SRC.aiCoach,
   "OnboardingWizard": SRC.onboarding,
   "MealsTab":      SRC.mealsTab,
+  "MenuScreen":    SRC.menuScreen,
 };
 
 for (const [name, src] of Object.entries(FILES_TO_CHECK)) {
@@ -101,6 +103,12 @@ for (const [name, src] of Object.entries(FILES_TO_CHECK)) {
     });
   }
 }
+
+test("MobileApp: áp thực đơn AI KHÔNG tự lưu ngầm vào Lịch tuần (chốt 13/10)", () => {
+  const i = SRC.mobile.indexOf("const applyAIMenu");
+  const body = SRC.mobile.slice(i, SRC.mobile.indexOf("closeLayer();", i));
+  assert(i > 0 && !body.includes("saveWeeklyTemplate"), "applyAIMenu vẫn gọi saveWeeklyTemplate");
+});
 
 // ============================================================
 console.log("\n🔍 2. tplMeals — GIỮ composite + pattern");
