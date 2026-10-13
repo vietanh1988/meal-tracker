@@ -9,6 +9,7 @@ import { LogMealSheet } from "./LogMealSheet";
 import { EditMealScreen } from "./EditMealScreen";
 import { ProgressScreen } from "./ProgressScreen";
 import { MeScreen } from "./MeScreen";
+import { ScheduleScreen } from "./ScheduleScreen";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
@@ -292,6 +293,11 @@ export function MobileApp(props) {
   };
   const renderPage = (l) => {
     const sec = l.sec;
+    if (sec === "schedule") return (
+      <SubPage title="Lịch tập & bữa" onBack={closeLayer}>
+        <ScheduleScreen profile={profile} setProfile={setProfile} mealConfig={profile.mealConfig || null} defaultConfig={mealConfig} curKg={weight.curKg} />
+      </SubPage>
+    );
     const inner = sec === "admin_home"
       ? <AdminPanel {...panelProps} forcedSection="settings" />
       : <AdminPanel {...panelProps} forcedSection="settings" initialSection={sec} hidePills />;

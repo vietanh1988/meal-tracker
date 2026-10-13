@@ -82,6 +82,16 @@ jobs:
           set -o pipefail
           npx playwright test 2>&1 | tee /tmp/e2e.txt
 
+      - name: Lưu ảnh chụp màn hình lên nhánh shots/<nhánh> (để so với bản vẽ)
+        if: always()
+        run: |
+          [ -d shots ] || exit 0
+          B="shots/${GITHUB_REF_NAME//\//-}"
+          mkdir -p /tmp/sh && cp -r shots /tmp/sh/
+          cd /tmp/sh && git init -q && git checkout -q -b tmp && git add shots
+          git -c user.name=ci -c user.email=ci@local commit -q -m "ảnh chụp E2E $GITHUB_SHA"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "HEAD:refs/heads/$B"
+
       - name: Đưa lỗi lên annotation (đọc được qua API)
         if: failure()
         run: |

@@ -56,7 +56,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
 
       <div style={group}>
         <Row label="Mục tiêu & macro" value={goalVal} onClick={() => open("profile")} />
-        <Row label="Lịch tập" value={gym} onClick={() => open("profile")} />
+        <Row label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
         <Row label="Nhắc nhở" value="Thông báo đẩy" onClick={() => open("account")} />
         <Row label="Gói cước" value={TIER[tier] || tier} onClick={() => open("account")} last />
       </div>
