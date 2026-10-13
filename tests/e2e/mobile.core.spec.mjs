@@ -63,10 +63,11 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     expect(w[0].week).toBe(1);
   });
 
-  test("về Hôm nay, bỏ tick bữa sáng → eaten rỗng, kcal còn lại trở về", async () => {
+  test("về Hôm nay, bỏ tick bữa sáng → eaten rỗng, đã ăn về 0", async () => {
     await nav("Hôm nay").click();
     await page.getByTestId("eat-sang").click();
     await waitDb(async () => (await todayRow())?.eaten_meals?.length === 0, "eaten rỗng");
-    await expect.poll(() => kcalRemainMobile(page)).toBe(remainAfterTick + 450);
+    // Cân nặng vừa đổi → mục tiêu kcal đổi theo, nên kiểm "đã ăn 0 / mục tiêu" thay vì số cũ
+    await expect(page.getByText(/Ngày (tập|nghỉ) · 0 \//)).toBeVisible();
   });
 });
