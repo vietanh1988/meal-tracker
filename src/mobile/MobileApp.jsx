@@ -13,6 +13,7 @@ import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
 import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen, PayScreen } from "./PlanScreen";
+import { AccountScreen } from "./AccountScreen";
 import { FeedbackScreen } from "./FeedbackScreen";
 import { AboutScreen } from "./AboutScreen";
 import { MenuScreen, MenuDayPage, MenuTplPage, MenuPastPage } from "./MenuScreen";
@@ -383,6 +384,12 @@ export function MobileApp(props) {
     if (sec === "plan") return (
       <SubPage title={isAdmin || flags.sales_enabled ? "Gói cước" : "Lượt AI"} onBack={closeLayer}>
         <PlanScreen key={planNonce} userId={user?.id} isAdmin={isAdmin} salesEnabled={!!flags.sales_enabled} aiMenuLockedFree openPay={(pkg) => openLayer({ type: "page", sec: "pay", pkg })} />
+      </SubPage>
+    );
+    if (sec === "account") return (
+      <SubPage title="Tài khoản" onBack={closeLayer}>
+        <AccountScreen user={user} profile={profile} isAdmin={isAdmin} appVersion={appSettings.app_version} salesEnabled={!!flags.sales_enabled} pushFeature={flags.push} signOut={signOut} showToast={showToast}
+          openPlan={() => openLayer({ type: "page", sec: "plan" })} />
       </SubPage>
     );
     if (sec === "pay") return (
