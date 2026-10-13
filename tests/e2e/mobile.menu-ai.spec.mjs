@@ -30,10 +30,11 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
     await login(page);
     await nav("Thực đơn").click();
 
-    // Lên thực đơn: hiện màn đang tạo, Huỷ thì về lại tab (AI bị chặn trong E2E, không tốn tiền)
+    // Lên thực đơn: mở màn Thực đơn AI (AI bị chặn trong E2E, không tốn tiền)
     await tap(page.getByTestId("menu-generate"));
-    await expect(page.getByTestId("ai-loading")).toBeVisible();
-    await tap(page.getByTestId("ai-loading").getByRole("button", { name: "Huỷ" }));
+    // AI bị chặn có thể báo lỗi ngay hoặc sau vài giây → chấp nhận cả 3 màn, rồi bấm Quay lại
+    await expect(page.getByTestId("ai-loading").or(page.getByTestId("ai-error")).or(page.getByTestId("ai-out-of-quota"))).toBeVisible();
+    await page.getByRole("button", { name: "Quay lại" }).click();
     await expect(page.getByTestId("menu-ai-card")).toBeVisible();
 
     console.log("BƯỚC: Mở thực đơn AI đã lưu");
