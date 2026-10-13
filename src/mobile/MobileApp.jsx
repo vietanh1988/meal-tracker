@@ -428,6 +428,14 @@ export function MobileApp(props) {
     );
   };
 
+  // Tab Tôi nền tối: đổi cả màu nền trang để iPhone kéo quá đầu/cuối không lộ vệt trắng
+  useEffect(() => {
+    const b = document.body;
+    const prev = b.style.backgroundColor;
+    if (tab === "me") b.style.backgroundColor = DK.base;
+    return () => { b.style.backgroundColor = prev; };
+  }, [tab]);
+
   // ---------- Tiến độ ----------
   const [rangeMode, setRangeMode] = useState("week");
   const [rangeAnchor, setRangeAnchor] = useState(today);
@@ -440,7 +448,7 @@ export function MobileApp(props) {
   ) : null;
 
   return (
-    <div className="fpm" style={{ fontFamily: FONT, background: "#F8FAFC", color: "#0F172A", minHeight: "100vh" }}>
+    <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : "#F8FAFC", color: "#0F172A", minHeight: "100vh" }}>
       <style>{MOBILE_CSS + DK_CSS}</style>
       {/* Tab Tôi: nền Blue Dark phủ cả màn (bản vẽ 48) */}
       {tab === "me" && <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 0, background: DK.bg, backgroundColor: DK.base }} />}

@@ -49,14 +49,15 @@ const NAV = [
   { id: "me", label: "Tôi", icon: "/icons/nav_profile.png" },
 ];
 // Thanh nổi kiểu kính (bản vẽ 46/48, chốt 14/10): cách mép 12 px, cao 64, bo 32; mục đang chọn = bong bóng trắng 44 px (không nhãn),
-// mục khác icon mờ 75% + nhãn 10 px. Đáy = vùng an toàn iPhone − 14 px (tối thiểu 10 px).
+// mục khác icon mờ 75% + nhãn 10 px. 14/10 sau soát ảnh: nền thanh trắng 94% (82% còn lộ chữ phía sau),
+// bong bóng xanh rất nhạt #EAF2FF để vẫn thấy trên trang nền sáng. Đáy = vùng an toàn iPhone − 14 px (tối thiểu 10 px).
 export const NAV_BOTTOM = "max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))";
 export const NAV_SPACE = `calc(64px + ${NAV_BOTTOM} + 14px)`; // chừa chỗ cuối nội dung để không bị thanh che
 export function BottomNav({ tab, onTab, onAdd, hidden, dark }) {
   return (
     <nav data-testid="bottom-nav" aria-label="Điều hướng chính" aria-hidden={hidden ? true : undefined} style={{ position: "fixed", left: 0, right: 0, bottom: NAV_BOTTOM, zIndex: 90, padding: "0 12px", pointerEvents: "none" }}>
       <div style={{ maxWidth: 536, margin: "0 auto", height: 64, borderRadius: 32, display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", alignItems: "center", boxSizing: "border-box", pointerEvents: "auto",
-        background: dark ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.78)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: dark ? "0 12px 30px rgba(0,10,40,0.35)" : "0 12px 30px rgba(30,64,175,0.18), 0 0 0 1px rgba(15,23,42,0.04)",
+        background: "rgba(255,255,255,0.94)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: dark ? "0 12px 30px rgba(0,10,40,0.35)" : "0 12px 30px rgba(30,64,175,0.18), 0 0 0 1px rgba(15,23,42,0.04)",
         WebkitBackdropFilter: "blur(20px)", backdropFilter: "blur(20px)" }}>
         {NAV.map((n) => {
           if (n.id === "add") return (
@@ -68,7 +69,7 @@ export function BottomNav({ tab, onTab, onAdd, hidden, dark }) {
           return (
             <button key={n.id} onClick={() => onTab(n.id)} aria-current={a ? "page" : undefined} aria-label={n.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, border: "none", background: "transparent", padding: 0, minHeight: 56, color: "#475569", fontFamily: "inherit" }}>
               {a
-                ? <span style={{ width: 44, height: 44, borderRadius: 22, background: "#FFFFFF", boxShadow: "0 4px 12px rgba(0,60,200,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}><img src={n.icon} alt="" style={{ width: 24, height: 24, objectFit: "contain" }} /></span>
+                ? <span style={{ width: 44, height: 44, borderRadius: 22, background: "#EAF2FF", border: "1px solid rgba(0,122,255,0.18)", boxSizing: "border-box", boxShadow: "0 4px 12px rgba(0,60,200,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}><img src={n.icon} alt="" style={{ width: 24, height: 24, objectFit: "contain" }} /></span>
                 : <><img src={n.icon} alt="" style={{ width: 24, height: 24, objectFit: "contain", opacity: 0.75 }} /><span style={{ fontSize: 10, fontWeight: 600 }}>{n.label}</span></>}
             </button>
           );
