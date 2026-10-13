@@ -2,7 +2,7 @@
 // nút "Đã ăn", menu ⋯ (chuyển ngày, xoá bữa), thanh dưới tổng kcal + macro + Lưu.
 import { useState, useEffect, useRef } from "react";
 import { SubPage, Icon, GRAD_BLUE, SR } from "./ui";
-import { scaleItem, itemName, fmtInt, weekdayFull } from "../lib/mobileView";
+import { scaleItem, itemName, fmtInt, fmtDec, weekdayFull } from "../lib/mobileView";
 import { sumItems } from "../lib/mealMath";
 import { fmtVN, addDays, friendlyDate } from "../lib/dateVN";
 import { appConfirm } from "../lib/dialog";
@@ -97,7 +97,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 56, borderBottom: "1px solid #F1F5F9" }}>
               <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
                 <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nm}</span>
-                <span style={{ fontSize: 12, color: "#64748B" }}>{fmtInt(it.cal)} kcal</span>
+                <span data-testid={`edit-item-macro-${i}`} style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fmtInt(it.cal)} kcal · Đ {fmtDec(it.p ?? it.protein)} · TB {fmtDec(it.c ?? it.carb)} · B {fmtDec(it.f ?? it.fat)} g</span>
               </span>
               <label style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 <span style={SR}>Gram {nm.toLowerCase()}</span>

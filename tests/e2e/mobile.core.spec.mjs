@@ -34,6 +34,12 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     for (const n of ["phụ chiều", "trước tập", "bữa tối"]) await expect(page.getByRole("button", { name: `Ghi ${n}` }), `nút Ghi ${n}`).toHaveCount(1);
     const body = await page.locator("main").innerText();
     expect(body).not.toMatch(/\b(trua|phu_chieu|sang|toi)\b/);
+    // Dòng bữa hiện luôn tên món; bấm vào → màn Sửa bữa có macro từng món
+    await expect(page.getByTestId("meal-foods-trua")).toHaveText("Cơm trắng, Gà luộc");
+    await tap(page.getByTestId("meal-foods-trua"));
+    await expect(page.getByTestId("edit-item-macro-1")).toContainText("Đ 38 · TB 0 · B 10 g");
+    await page.getByRole("button", { name: "Quay lại" }).click();
+    await expect(page.getByTestId("kcal-remain")).toBeVisible();
   });
 
   let remainAfterTick;

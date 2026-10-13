@@ -159,9 +159,12 @@ function TimelineRow({ r, onLog, onEdit, onToggleEaten, busy }) {
         {timeEl}
         <button onClick={() => onEdit(r.id)} className="tap" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 10, minHeight: 48, border: "none", background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
           {icon}
-          <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", lineHeight: 1.25 }}>
-            <span style={{ fontSize: 14, fontWeight: 700 }}>{r.name}</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: eaten ? "#047857" : "#B45309", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fmtInt(r.cal)} kcal · {eaten ? "đã ăn" : "chưa ăn"}</span>
+          <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", lineHeight: 1.3 }}>
+            <span style={{ display: "flex", alignItems: "baseline", gap: 6, minWidth: 0 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: "nowrap" }}>{r.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: eaten ? "#047857" : "#B45309", whiteSpace: "nowrap" }}>{fmtInt(r.cal)} kcal · {eaten ? "đã ăn" : "chưa ăn"}</span>
+            </span>
+            <span data-testid={`meal-foods-${r.id}`} style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.items.map(itemName).join(", ")}</span>
           </span>
         </button>
         <button data-testid={`eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, !eaten)} aria-label={eaten ? `Bỏ đánh dấu đã ăn ${r.name}` : `Đánh dấu đã ăn ${r.name}`} aria-pressed={eaten}
