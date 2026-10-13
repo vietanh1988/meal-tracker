@@ -78,10 +78,13 @@ test("ghi ngày khác không đụng hôm nay, ảnh tự tick", async () => {
   expect(old.day_type).toBe("rest");
 });
 
-test("áp thực đơn giữ bữa đã ăn", async () => {
+test("áp thực đơn giữ bữa đã ăn + bữa chưa ăn mà thực đơn không có", async () => {
+  const before = db.daily_logs.find(r => r.log_date === todayVN()).meals.filter(m => (m.items || []).length).map(m => m.meal_id);
   await hook().applyTemplate({ day_type: "rest", meals: [{ meal_id: "sang", items: [{ cal: 999 }] }, { meal_id: "pre", items: [{ cal: 200 }] }] });
   const row = db.daily_logs.find(r => r.log_date === todayVN());
-  expect(row.meals.map(m => m.meal_id)).toEqual(["sang", "trua", "pre"]);
+  const ids = row.meals.map(m => m.meal_id);
+  for (const id of ["sang", "trua", "pre", ...before]) expect(ids).toContain(id);
+  expect(new Set(ids).size).toBe(ids.length);
   expect(row.meals.find(m => m.meal_id === "sang").items[0].cal).toBe(450);
   expect(row.day_type).toBe("rest");
 });
