@@ -1,7 +1,6 @@
 // src/lib/authFetch.js — Helper gọi Edge Function kèm JWT token
-import { supabase } from "./supabase";
-
-const BASE = "https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1";
+import { supabase, SUPABASE_URL } from "./supabase";
+const BASE = `${SUPABASE_URL}/functions/v1`;
 
 /**
  * Gọi edge function kèm JWT token tự động.
