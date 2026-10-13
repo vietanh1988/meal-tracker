@@ -12,10 +12,10 @@ export const QUOTA_DEFAULTS = {
 };
 
 export const QUOTA_ROWS = [
-  { key: "chat", label: "Chat với Fipilot AI", period: "day" },
-  { key: "menu", label: "AI tạo thực đơn", period: "day" },
-  { key: "photo", label: "Chụp ảnh món ăn", period: "month" },
-  { key: "macro", label: "AI tính macro món", period: "month" },
+  { key: "chat", label: "Chat AI", period: "day" },
+  { key: "menu", label: "AI thực đơn", period: "day" },
+  { key: "photo", label: "Chụp ảnh món", period: "month" },
+  { key: "macro", label: "AI tính calo", period: "month" },
 ];
 
 // sub: dòng profiles (tier + các cột ai_*_count_*), settings: subscription_settings (có thể null)
