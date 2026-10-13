@@ -848,6 +848,17 @@ export async function loadAIMenu(userId) {
   } catch (e) { console.error("loadAIMenu error:", e); return null; }
 }
 
+// Thực đơn AI gần nhất (mọi ngày) — cho mục "Đã lưu" ở tab Thực đơn
+export async function loadLatestAIMenu(userId) {
+  if (!userId) return null;
+  try {
+    const { data, error } = await supabase.from("ai_menu_cache").select("template,menu_date").eq("user_id", userId)
+      .order("menu_date", { ascending: false }).limit(1).maybeSingle();
+    if (error) { console.error("loadLatestAIMenu DB error:", error); return null; }
+    return data?.template ? { template: data.template, date: data.menu_date } : null;
+  } catch (e) { console.error("loadLatestAIMenu error:", e); return null; }
+}
+
 export async function clearAIMenu(userId) {
   if (!userId) return;
   try {

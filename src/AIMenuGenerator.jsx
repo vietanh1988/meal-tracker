@@ -54,14 +54,17 @@ const STYLES = [
   { id: "easy", label: "⚡ Tiện lợi", desc: "Ít nấu nướng, đồ nhanh gọn" },
 ];
 
-export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, getMealHistory, getDailyLogs, onApply, onClose, onFallbackToLibrary }) {
+// initialPrefs {style, avoid, dayType} + autoStart: mở là tạo luôn (tab Thực đơn mobile đã hỏi sẵn).
+// initialTemplate: mở thẳng màn xem lại một thực đơn đã lưu (không tốn lượt AI).
+export default function AIMenuGenerator({ macro, profile, user, appSettings, initialDayType, getMealHistory, getDailyLogs, onApply, onClose, onFallbackToLibrary, initialPrefs, autoStart, initialTemplate }) {
   const mob = useIsMobile();
-  const [step, setStep] = useState("prefs"); // prefs | loading | preview | error
-  const [style, setStyle] = useState("vn");
-  const [avoid, setAvoid] = useState("");
+  const [step, setStep] = useState(initialTemplate ? "preview" : autoStart ? "loading" : "prefs"); // prefs | loading | preview | error
+  const [style, setStyle] = useState(initialPrefs?.style || "vn");
+  const [avoid, setAvoid] = useState(initialPrefs?.avoid || "");
   const isNoneExercise = (profile?.exerciseType || "gym") === "none";
-  const [dayType, setDayType] = useState(isNoneExercise ? "rest" : (initialDayType === "rest" ? "rest" : "train"));
-  const [template, setTemplate] = useState(null);
+  const startDayType = initialTemplate?.day_type || initialPrefs?.dayType || initialDayType;
+  const [dayType, setDayType] = useState(isNoneExercise ? "rest" : (startDayType === "rest" ? "rest" : "train"));
+  const [template, setTemplate] = useState(initialTemplate || null);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
   const [swapping, setSwapping] = useState(null); // {mealId, food} — đổi 1 nguyên liệu
@@ -136,6 +139,10 @@ export default function AIMenuGenerator({ macro, profile, user, appSettings, ini
     }
     else { setError(res.error); setStep("error"); }
   };
+
+  // Tự tạo ngay khi mở từ tab Thực đơn (chỉ 1 lần)
+  const autoRef = useRef(false);
+  useEffect(() => { if (autoStart && !initialTemplate && !autoRef.current) { autoRef.current = true; generate(); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const doSwap = (newKey) => {
     if (!swapping) return;

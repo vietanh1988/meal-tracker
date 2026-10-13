@@ -15,6 +15,7 @@ import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen } from "./PlanScreen";
 import { FeedbackScreen } from "./FeedbackScreen";
 import { AboutScreen } from "./AboutScreen";
+import { MenuScreen, MenuDayPage, MenuTplPage, MenuBundlePage } from "./MenuScreen";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
@@ -296,8 +297,38 @@ export function MobileApp(props) {
     applyTemplate: ud.applyTemplate, refreshDefaultTemplates: ud.refreshDefaultTemplates, weeklyBundles: ud.weeklyBundles, saveWeeklyBundle: ud.saveWeeklyBundle,
     deleteWeeklyBundle: ud.deleteWeeklyBundle, refreshWeeklyBundles: ud.refreshWeeklyBundles, getMealHistory: ud.getMealHistory, getDailyLogs: ud.getDailyLogs,
   };
+  // ---------- Thực đơn ----------
+  // Xoá hết bữa hôm nay: nhật ký hôm nay (daily_logs) + thực đơn mẫu của loại ngày hôm nay (meal_logs)
+  const clearToday = async () => {
+    const dt = dayTypeOf(profile, today);
+    const logIds = ((ud.todayLog && ud.todayLog.log_date === today && ud.todayLog.meals) || []).filter((m) => (m.items || []).length > 0).map((m) => m.meal_id || m.id);
+    const bucketIds = (ud.getMeals ? ud.getMeals(dt) : []).filter((m) => (m.items || []).length > 0).map((m) => m.id);
+    if (!logIds.length && !bucketIds.length) return;
+    if (!(await appConfirm(`Xoá toàn bộ ${logIds.length || bucketIds.length} bữa hôm nay (kể cả bữa đã đánh dấu đã ăn)? Không hoàn tác được.`, { danger: true }))) return;
+    try {
+      for (const id of logIds) await ud.removeDayMeal(today, id);
+      for (const id of bucketIds) await ud.saveMealToCloud(id, dt, [], true);
+      await refresh(today);
+      showToast({ text: "Đã xoá hết bữa hôm nay." });
+    } catch (e) { console.error("clearToday error:", e); fail(); }
+  };
+  const menuProps = {
+    profile, macro, todayLog: ud.todayLog, getWeeklyTemplate: ud.getWeeklyTemplate, weeklyTemplates: ud.weeklyTemplates,
+    saveWeeklyTemplate: ud.saveWeeklyTemplate, deleteWeeklyTemplate: ud.deleteWeeklyTemplate, applyTemplate: ud.applyTemplate,
+    removeDayMeal: ud.removeDayMeal, defaultTemplates: ud.defaultTemplates, refreshDefaultTemplates: ud.refreshDefaultTemplates,
+    weeklyBundles: ud.weeklyBundles, refresh: () => refresh(today), showToast, close: closeLayer,
+  };
+  const MENU_PAGE_TITLE = { menu_day: "Lịch tuần", menu_tpl: "Mẫu thực đơn", menu_bundle: "Gói tuần" };
+
   const renderPage = (l) => {
     const sec = l.sec;
+    if (MENU_PAGE_TITLE[sec]) return (
+      <SubPage title={sec === "menu_day" ? `Lịch tuần · ${({ thu_2: "Thứ Hai", thu_3: "Thứ Ba", thu_4: "Thứ Tư", thu_5: "Thứ Năm", thu_6: "Thứ Sáu", thu_7: "Thứ Bảy", cn: "Chủ nhật" })[l.key] || ""}` : MENU_PAGE_TITLE[sec]} onBack={closeLayer}>
+        {sec === "menu_day" && <MenuDayPage dayKey={l.key} {...menuProps} />}
+        {sec === "menu_tpl" && <MenuTplPage tplId={l.id} {...menuProps} />}
+        {sec === "menu_bundle" && <MenuBundlePage bundleId={l.id} {...menuProps} />}
+      </SubPage>
+    );
     if (sec === "goals") return (
       <SubPage title="Mục tiêu & macro" onBack={closeLayer} right={<span style={{ fontSize: 12, fontWeight: 700, color: "#00A67E", paddingRight: 8 }}>Tự động lưu</span>}>
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} />
@@ -374,8 +405,9 @@ export function MobileApp(props) {
         )}
         {tab === "menu" && (
           <div>
-            <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 10px 16px" }}><span style={{ fontSize: 20, fontWeight: 900 }}>Thực đơn</span></div>
-            <div style={{ padding: "0 10px" }}><AdminPanel {...panelProps} forcedSection="meals" /></div>
+            <MenuScreen {...menuProps} aiAccess={aiAccess} userId={user?.id} flags={flags}
+              openGenerate={(prefs) => openLayer({ type: "ai", prefs, auto: true })} openSaved={(template) => openLayer({ type: "ai", template })}
+              openPage={(sec, extra) => openLayer({ type: "page", sec, ...(extra || {}) })} clearToday={clearToday} />
           </div>
         )}
         {tab === "progress" && (
@@ -401,7 +433,7 @@ export function MobileApp(props) {
           {l.type === "ai" && (
             <div onClick={closeLayer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
               <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "92vh", overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", background: "#F8FAFC", borderRadius: "16px 16px 0 0", padding: "16px 12px" }}>
-                <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} initialDayType={dayTypeOf(profile, today)} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs} onApply={applyAIMenu} onClose={closeLayer} />
+                <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} initialDayType={dayTypeOf(profile, today)} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs} onApply={applyAIMenu} onClose={closeLayer} initialPrefs={l.prefs} autoStart={!!l.auto} initialTemplate={l.template || null} />
               </div>
             </div>
           )}
