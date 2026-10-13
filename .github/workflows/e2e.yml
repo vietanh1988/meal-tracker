@@ -62,7 +62,18 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: E2E
-        run: npx playwright test
+        run: |
+          set -o pipefail
+          npx playwright test 2>&1 | tee /tmp/e2e.txt
+
+      - name: Đưa lỗi lên annotation (đọc được qua API)
+        if: failure()
+        run: |
+          for f in /tmp/e2e.txt; do
+            [ -f "$f" ] || continue
+            body=$(tail -n 120 "$f" | sed 's/\x1b\[[0-9;]*m//g' | sed -e 's/%/%25/g' | awk 'BEGIN{ORS="%0A"}{print}')
+            echo "::error title=E2E log tail::$body"
+          done
 
       - name: Lưu báo cáo khi lỗi
         if: failure()
