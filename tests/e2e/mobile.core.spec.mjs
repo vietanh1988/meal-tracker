@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, todayRow, rest, S, waitDb, kcalRemainMobile } from "./helpers.mjs";
+import { login, todayRow, rest, S, waitDb, kcalRemainMobile, tap } from "./helpers.mjs";
 
 test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", () => {
   let page;
@@ -24,7 +24,7 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
   let remainAfterTick;
   test("tick Đã ăn bữa sáng → lưu DB, kcal còn lại giảm đúng 450", async () => {
     const before = await kcalRemainMobile(page);
-    await page.getByTestId("eat-sang").click();
+    await tap(page.getByTestId("eat-sang"));
     await waitDb(async () => (await todayRow())?.eaten_meals?.includes("sang"), "eaten_meals có sang");
     await expect.poll(() => kcalRemainMobile(page)).toBe(before - 450);
     remainAfterTick = before - 450;
@@ -32,7 +32,7 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
 
   test("Nước: +1 ly rồi Hoàn tác", async () => {
     const plus = page.getByRole("button", { name: "Thêm 1 ly nước 250 ml" });
-    await plus.click();
+    await tap(plus);
     await waitDb(async () => (await todayRow())?.water_ml === 250, "water 250");
     await plus.locator("..").getByRole("button", { name: "Hoàn tác" }).click();
     await waitDb(async () => (await todayRow())?.water_ml === 0, "water 0");
@@ -50,7 +50,7 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
 
   test("Cân nặng: lưu 64,8 rồi cân lại 64,9 cùng ngày → vẫn 1 dòng", async () => {
     const s = S();
-    await page.getByTestId("weight-tile").click();
+    await tap(page.getByTestId("weight-tile"));
     await page.getByTestId("weight-input").fill("64,8");
     await page.getByTestId("weight-save").click();
     await waitDb(async () => { const w = await rest(`weight_logs?user_id=eq.${s.uid}&select=kg,logged_date,week`); return w.length === 1 && Number(w[0].kg) === 64.8; }, "weight 64.8");
@@ -65,7 +65,7 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
 
   test("về Hôm nay, bỏ tick bữa sáng → eaten rỗng, đã ăn về 0", async () => {
     await nav("Hôm nay").click();
-    await page.getByTestId("eat-sang").click();
+    await tap(page.getByTestId("eat-sang"));
     await waitDb(async () => (await todayRow())?.eaten_meals?.length === 0, "eaten rỗng");
     // Cân nặng vừa đổi → mục tiêu kcal đổi theo, nên kiểm "đã ăn 0 / mục tiêu" thay vì số cũ
     await expect(page.getByText(/Ngày (tập|nghỉ) · 0 \//)).toBeVisible();

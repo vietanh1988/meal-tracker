@@ -54,3 +54,10 @@ export async function waitDb(fn, msg, timeout = 10_000) {
 export async function kcalRemainMobile(page) {
   return Number(await page.getByTestId("kcal-remain").getAttribute("data-value"));
 }
+
+// Bấm 1 nút sau khi cuộn nó ra GIỮA màn (tránh bị thanh điều hướng dưới cố định che)
+export async function tap(locator) {
+  await locator.waitFor({ state: "visible" });
+  await locator.evaluate((e) => e.scrollIntoView({ block: "center" }));
+  await locator.click();
+}
