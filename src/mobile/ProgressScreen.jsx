@@ -1,8 +1,8 @@
 // Màn 4 · Tiến độ – Ăn uống và Màn 5 · Tiến độ – Cân nặng (đã chốt).
 import { useState, useEffect } from "react";
 import { GRAD_BLUE, Icon, SR } from "./ui";
-import { rangeSummary, weekDates, weekdayStrip, fmtInt, fmtDec, fmtKg, deltaGood } from "../lib/mobileView";
-import { addDays, monthRange, dateList, fmtVN, weekRange } from "../lib/dateVN";
+import { rangeSummary, weekDates, weekdayStrip, fmtInt, fmtDec, fmtKg, deltaGood, weightChart } from "../lib/mobileView";
+import { addDays, monthRange, dateList, fmtVN, weekRange, todayVN } from "../lib/dateVN";
 import { parseKg } from "../lib/weightMath";
 import { appAlert, appConfirm } from "../lib/dialog";
 
@@ -201,6 +201,8 @@ function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, update
         {w.weighedToday && <span style={{ fontSize: 12, color: "#64748B", marginTop: -4 }}>Hôm nay đã cân — lưu lần nữa sẽ sửa số hôm nay.</span>}
       </div>
 
+      <WeightChart weightLog={weightLog} weight={w} />
+
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "14px 16px 6px 16px" }}>
         <span style={{ fontSize: 15, fontWeight: 800 }}>Lịch sử</span>
         {list.length > 0 && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Chạm một dòng để sửa</span>}
@@ -239,5 +241,58 @@ function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, update
       </div>
       {list.length > 4 && <button onClick={() => setShowAll(!showAll)} style={{ display: "block", margin: "6px auto 0 auto", height: 40, padding: "0 16px", border: "none", background: "transparent", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#007AFF" }}>{showAll ? "Thu gọn" : `Xem tất cả ${list.length} lần cân`}</button>}
     </>
+  );
+}
+
+// Biểu đồ cân nặng (bản vẽ 40): đường + vùng mờ, vạch mục tiêu nét đứt, chọn 4 tuần / 8 tuần / tất cả
+function WeightChart({ weightLog, weight }) {
+  const [range, setRange] = useState("8w");
+  const t = todayVN();
+  const c = weightChart(weightLog, weight.goalKg, range, t, weight.perWeek, weight.curKg);
+  const W = 326, H = 160, x0 = 34, x1 = W - 8, y0 = 10, y1 = H - 24;
+  const X = (x) => x0 + x * (x1 - x0), Y = (y) => y0 + y * (y1 - y0);
+  const line = c.points.map((p) => `${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ");
+  const area = c.points.length ? `${X(c.points[0].x).toFixed(1)},${y1} ${line} ${X(c.points[c.points.length - 1].x).toFixed(1)},${y1}` : "";
+  const left = Math.round((weight.goalKg - weight.curKg) * 10) / 10;
+  return (
+    <div data-testid="weight-chart" style={{ margin: "12px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "12px 10px 8px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 4px" }}>
+        <span style={{ fontSize: 15, fontWeight: 800 }}>Biểu đồ</span>
+        <div role="group" aria-label="Khoảng thời gian" style={{ display: "flex", padding: 3, background: "#F1F5F9", borderRadius: 10 }}>
+          {[["4w", "4 tuần"], ["8w", "8 tuần"], ["all", "Tất cả"]].map(([id, l]) => (
+            <button key={id} data-testid={`wchart-${id}`} aria-pressed={range === id} onClick={() => setRange(id)} style={{ height: 30, padding: "0 10px", borderRadius: 8, border: "none", background: range === id ? "#FFFFFF" : "transparent", fontFamily: "inherit", fontSize: 12, fontWeight: range === id ? 800 : 600, color: range === id ? "#0F172A" : "#475569", boxShadow: range === id ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>{l}</button>
+          ))}
+        </div>
+      </div>
+      {c.points.length < 2 ? (
+        <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#64748B", textAlign: "center", padding: "0 16px" }}>
+          {c.points.length ? "Cân thêm vài lần để thấy đường biểu đồ." : "Chưa có lần cân nào trong khoảng này."}
+        </div>
+      ) : (
+        <svg width="100%" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Cân nặng từ ${fmtKg(c.points[0].kg)} đến ${fmtKg(c.points[c.points.length - 1].kg)}`}>
+          <defs><linearGradient id="fpwa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#007AFF" stopOpacity="0.18" /><stop offset="1" stopColor="#007AFF" stopOpacity="0" /></linearGradient></defs>
+          {c.ticks.map((tk) => (
+            <g key={tk.v}>
+              <line x1={x0} x2={x1} y1={Y(tk.y)} y2={Y(tk.y)} stroke="#F1F5F9" />
+              <text x={x0 - 6} y={Y(tk.y) + 4} fontSize="10" fill="#94A3B8" textAnchor="end">{String(tk.v).replace(".", ",")}</text>
+            </g>
+          ))}
+          {c.goalY != null && c.goalY >= 0 && c.goalY <= 1 && (
+            <g>
+              <line x1={x0} x2={x1} y1={Y(c.goalY)} y2={Y(c.goalY)} stroke="#00A67E" strokeDasharray="5 4" strokeWidth="1.5" />
+              <text x={x1 - 2} y={Y(c.goalY) - 5} fontSize="10" fontWeight="700" fill="#00A67E" textAnchor="end">Mục tiêu {fmtDec(weight.goalKg)}</text>
+            </g>
+          )}
+          <polygon points={area} fill="url(#fpwa)" />
+          <polyline points={line} fill="none" stroke="#007AFF" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+          {c.points.map((p, i) => <circle key={p.date} cx={X(p.x)} cy={Y(p.y)} r={i === c.points.length - 1 ? 4 : 3} fill={i === c.points.length - 1 ? "#007AFF" : "#FFFFFF"} stroke="#007AFF" strokeWidth="2" />)}
+          <text x={x0} y={H - 6} fontSize="10" fill="#94A3B8">{fmtVN(c.first)}</text>
+          <text x={x1} y={H - 6} fontSize="10" fill="#94A3B8" textAnchor="end">{fmtVN(c.last)}</text>
+        </svg>
+      )}
+      <span data-testid="wchart-note" style={{ fontSize: 12, color: "#64748B", padding: "0 4px 4px 4px" }}>
+        {Math.abs(left) < 0.1 ? "Đã đạt mục tiêu 🎉" : `Còn ${fmtDec(Math.abs(left))} kg tới mục tiêu`}{c.eta ? ` · theo tốc độ này ≈ ${c.eta} tuần nữa` : ""}
+      </span>
+    </div>
   );
 }

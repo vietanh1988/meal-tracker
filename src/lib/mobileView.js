@@ -279,3 +279,26 @@ export function weekCard(rows, todayLog, dates, today, targetOf) {
   const avg = counted.length ? Math.round(counted.reduce((a, x) => a + x.cal, 0) / counted.length) : 0;
   return { days, okDays: counted.filter((x) => x.ok).length, countedDays: counted.length, avg };
 }
+
+// Biểu đồ cân nặng (Tiến độ › Cân nặng): lọc theo khoảng (4 tuần / 8 tuần / tất cả), chuẩn hoá toạ độ 0..1,
+// trục y có khoảng đệm và luôn chứa vạch mục tiêu. eta = số tuần còn lại theo tốc độ hiện tại (null nếu sai hướng/chưa đủ dữ liệu).
+export function weightChart(log, goalKg, range, today, perWeek = null, curKg = null) {
+  const days = range === "4w" ? 28 : range === "8w" ? 56 : null;
+  const from = days ? addDays(today, -days) : null;
+  const pts = (log || []).filter((r) => r && r.logged_date && (!from || r.logged_date >= from)).map((r) => ({ date: r.logged_date, kg: Number(r.kg) }));
+  if (!pts.length) return { points: [], goalY: null, ticks: [], eta: null };
+  const first = from && pts[0].date > from ? from : pts[0].date;
+  const last = today > pts[pts.length - 1].date ? today : pts[pts.length - 1].date;
+  const span = Math.max(1, diffDays(first, last));
+  const vals = pts.map((p) => p.kg).concat(Number(goalKg) || []);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = Math.max(0.3, (hi - lo) * 0.15);
+  lo = Math.floor((lo - pad) * 2) / 2; hi = Math.ceil((hi + pad) * 2) / 2;
+  const y = (kg) => (hi - kg) / (hi - lo || 1);
+  const points = pts.map((p) => ({ ...p, x: diffDays(first, p.date) / span, y: y(p.kg) }));
+  const step = (hi - lo) / 3;
+  const ticks = [0, 1, 2, 3].map((i) => Math.round((lo + step * i) * 10) / 10);
+  const left = goalKg != null && curKg != null ? goalKg - curKg : null;
+  const eta = left != null && perWeek && Math.sign(perWeek) === Math.sign(left) && Math.abs(left) >= 0.1 ? Math.ceil(Math.round(Math.abs(left / perWeek) * 100) / 100) : null;
+  return { points, goalY: goalKg ? y(Number(goalKg)) : null, lo, hi, ticks: ticks.map((v) => ({ v, y: y(v) })), first, last, eta };
+}

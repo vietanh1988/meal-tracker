@@ -99,6 +99,8 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     const w = await rest(`weight_logs?user_id=eq.${s.uid}&select=kg,logged_date,week`);
     expect(w[0].logged_date).toBe(s.today);
     expect(w[0].week).toBe(1);
+    await expect(page.getByTestId("weight-chart")).toBeVisible();
+    await expect(page.getByTestId("wchart-note")).toContainText("kg");
   });
 
   test("về Hôm nay, bỏ tick bữa sáng → eaten rỗng, đã ăn về 0", async () => {
