@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { login, rest, S, waitDb, tap, todayRow } from "./helpers.mjs";
 
 // Thực đơn AI (không gọi AI thật): mở thực đơn AI đã lưu → Đổi món (tính trước kcal) → Lưu mẫu vào Lịch tuần → Áp dụng hôm nay.
-// Nút "Lên thực đơn ngay" bị chặn AI trong E2E → phải hiện màn lỗi, không treo.
+// Nút "Lên thực đơn ngay": chỉ kiểm màn đang tạo + Huỷ (AI bị chặn trong E2E).
 const it = (food, gram, cal, role, p = 0, c = 0, f = 0) => ({ food, gram, cal, role, unit: "g", qty: 1, p, c, f, fiber: 0 });
 const TEMPLATE = {
   day_type: "train",
@@ -30,10 +30,11 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
     await login(page);
     await nav("Thực đơn").click();
 
-    // AI bị chặn trong E2E → màn lỗi / hết lượt, không treo
+    // Lên thực đơn: hiện màn đang tạo, Huỷ thì về lại tab (AI bị chặn trong E2E, không tốn tiền)
     await tap(page.getByTestId("menu-generate"));
-    await expect(page.getByTestId("ai-error").or(page.getByTestId("ai-out-of-quota"))).toBeVisible({ timeout: 30_000 });
-    await page.getByRole("button", { name: "Quay lại" }).click();
+    await expect(page.getByTestId("ai-loading")).toBeVisible();
+    await page.getByTestId("ai-loading").getByRole("button", { name: "Huỷ" }).click();
+    await expect(page.getByTestId("menu-ai-card")).toBeVisible();
 
     // Mở thực đơn AI đã lưu
     await tap(page.getByTestId("menu-latest-ai"));
