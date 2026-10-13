@@ -30,13 +30,6 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
     await login(page);
     await nav("Thực đơn").click();
 
-    // Lên thực đơn: mở màn Thực đơn AI (AI bị chặn trong E2E, không tốn tiền)
-    await tap(page.getByTestId("menu-generate"));
-    // AI bị chặn có thể báo lỗi ngay hoặc sau vài giây → chấp nhận cả 3 màn, rồi bấm Quay lại
-    await expect(page.getByTestId("ai-loading").or(page.getByTestId("ai-error")).or(page.getByTestId("ai-out-of-quota"))).toBeVisible();
-    await page.getByRole("button", { name: "Quay lại" }).click();
-    await expect(page.getByTestId("menu-ai-card")).toBeVisible();
-
     console.log("BƯỚC: Mở thực đơn AI đã lưu");
     // Mở thực đơn AI đã lưu
     await tap(page.getByTestId("menu-latest-ai"));
@@ -68,6 +61,16 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
       const trua = ms.find((m) => m.meal_id === "trua");
       return ms.length >= 3 && trua && !trua.items.some((i) => i.food === "cá kho tộ");
     }, "áp thực đơn AI hôm nay");
+
+    // Lên thực đơn mới: mở màn Thực đơn AI (AI bị chặn trong E2E, không tốn tiền). Để CUỐI bài vì quay lại
+    // tab Thực đơn sẽ tải lại "Thực đơn của tôi" (lần tạo có thể ghi đè thực đơn AI hôm nay).
+    await nav("Thực đơn").click();
+    await tap(page.getByTestId("menu-generate"));
+    // AI bị chặn có thể báo lỗi ngay hoặc sau vài giây → chấp nhận cả 3 màn, rồi bấm Quay lại
+    await expect(page.getByTestId("ai-loading").or(page.getByTestId("ai-error")).or(page.getByTestId("ai-out-of-quota"))).toBeVisible();
+    await page.getByRole("button", { name: "Quay lại" }).click();
+    await expect(page.getByTestId("menu-ai-card")).toBeVisible();
+
   } finally {
     await rest(`weekly_templates?user_id=eq.${s.uid}&day_name=eq.${KEYS[other]}`, { method: "DELETE" });
     await ctx.close();
