@@ -5,7 +5,9 @@
 //   weigh: { on: true,  weekday: 0, time: "07:00" },                       // weekday 0 = T2 … 6 = CN (như gymDays)
 //   water: { on: false, every: 2, from: "08:00", to: "20:00" }             // mỗi `every` giờ trong khung
 // }
-import { MEAL_ORDER } from "./mealMath.js";
+// Server: edge function push-meal-reminder (type "tick", cron mỗi phút) gọi dueReminders theo giờ VN.
+// Không import file khác: file này được chép nguyên sang supabase/functions/push-meal-reminder/ (test kiểm tra 2 bản giống nhau)
+const MEAL_ORDER = ["sang", "phu_sang", "trua", "phu_chieu", "pre", "post", "toi"];
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 export const WEEKDAY_NAMES = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật"];

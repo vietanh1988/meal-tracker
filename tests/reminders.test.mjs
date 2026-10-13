@@ -39,3 +39,11 @@ test("dueReminders: bữa đã ghi thì không nhắc", () => {
   assert.deepEqual(R.dueReminders(s, { hhmm: "10:00", weekday: 1 }), [{ type: "water" }]);
   assert.deepEqual(R.dueReminders({ ...s, meal: { on: false, slots: s.meal.slots } }, { hhmm: "11:45", weekday: 2 }), []);
 });
+
+test("reminders.js: cùng danh sách bữa với mealMath, bản chép cho edge function giống hệt", async () => {
+  const { MEAL_ORDER } = await import("../src/lib/mealMath.js");
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../src/lib/reminders.js", import.meta.url), "utf8");
+  assert.ok(src.includes(`const MEAL_ORDER = ${JSON.stringify(MEAL_ORDER).replace(/,/g, ", ")};`));
+  assert.equal(readFileSync(new URL("../supabase/functions/push-meal-reminder/reminders.js", import.meta.url), "utf8"), src);
+});
