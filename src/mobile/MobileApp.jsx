@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
 import { DK, DK_CSS } from "../theme";
+import { readUser } from "../lib/userStore";
 import { TodayScreen } from "./TodayScreen";
 import { LogMealSheet } from "./LogMealSheet";
 import { EditMealScreen } from "./EditMealScreen";
@@ -212,7 +213,7 @@ export function MobileApp(props) {
   // Nút AI ở Hôm nay: tạo luôn với lựa chọn đã dùng lần trước ở tab Thực đơn
   const quickAILayer = () => {
     let prefs = {};
-    try { prefs = JSON.parse(localStorage.getItem("fp_menu_prefs") || "{}") || {}; } catch (e) { /* */ }
+    prefs = readUser("fp_menu_prefs", user?.id, {}) || {};
     return { type: "ai", auto: true, prefs: { style: prefs.style, avoid: prefs.avoid, dayType: dayTypeOf(profile, today) } };
   };
   const aiMenuAction = aiAccess.usable ? () => openLayer(quickAILayer()) : aiAccess.enabled ? () => setTab("menu") : null;
@@ -427,6 +428,13 @@ export function MobileApp(props) {
       </SubPage>
     );
   };
+
+  // Lưu hồ sơ lỗi (mất mạng, hết phiên…) → báo ngay kèm nút Thử lại (trước đây lỗi bị nuốt, mở lại app thấy số cũ)
+  useEffect(() => {
+    const onErr = (e) => showToast({ text: "Chưa lưu được thay đổi — kiểm tra mạng rồi thử lại.", action: { label: "Thử lại", onClick: () => e.detail?.retry?.() } }, 8000);
+    window.addEventListener("fp:profile-save-error", onErr);
+    return () => window.removeEventListener("fp:profile-save-error", onErr);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Tab Tôi nền tối: đổi cả màu nền trang để iPhone kéo quá đầu/cuối không lộ vệt trắng
   useEffect(() => {

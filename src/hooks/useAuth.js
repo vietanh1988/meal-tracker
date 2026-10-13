@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { clearUserStore } from "../lib/userStore";
 import { supabase } from "../lib/supabase";
 
 export function useAuth() {
@@ -33,7 +34,8 @@ export function useAuth() {
     return data.user;
   };
 
-  const signOut = async () => { await supabase.auth.signOut(); };
+  // Đăng xuất: xoá dữ liệu lưu trên máy của tài khoản (lựa chọn thực đơn, chat dự phòng) để người sau không thấy
+  const signOut = async () => { clearUserStore(); await supabase.auth.signOut(); };
 
   // Gửi email chứa link đặt lại mật khẩu. Supabase sẽ đưa user quay lại app
   // (redirectTo) kèm 1 session tạm — onAuthStateChange bắt sự kiện

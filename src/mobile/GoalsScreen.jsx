@@ -100,10 +100,18 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
   const [open, setOpen] = useState(null);
   const p = profile || {};
   const m = macro || {};
-  const save = (patch) => setProfile({ ...p, ...patch });
+  // Sửa số đo nào thì bỏ dấu "đang dùng số mặc định" của số đó
+  const save = (patch) => {
+    const d = (p._defaulted || []).filter((f) => !(f in patch));
+    setProfile({ ...p, ...patch, _defaulted: d.length ? d : undefined });
+  };
   const goal = p.goalType || "bulk";
   const noEx = (p.exerciseType || "gym") === "none";
   const lastW = (weightLog || [])[weightLog?.length - 1];
+  const BODY_NAME = { cm: "chiều cao", kg: "cân nặng", birthYear: "năm sinh", goalKg: "cân mục tiêu" };
+  const missing = (p._defaulted || []).filter((f) => !(f === "kg" && lastW));
+  // 4 số đúng bằng mặc định của app (172 cm · 63 kg · 1987 · 68 kg) → nhiều khả năng chưa từng nhập thật
+  const looksDefault = !missing.length && Number(p.cm) === 172 && (lastW ? true : Number(p.kg) === 63) && Number(p.birthYear) === 1987 && Number(p.goalKg) === 68;
   const year = Number(todayVN().slice(0, 4));
   const age = p.birthYear ? year - Number(p.birthYear) : null;
   const speed = speedText(m, m.goal || goal, p.months);
@@ -134,6 +142,14 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
         </div>
         {m.floorApplied && <div data-testid="goals-floor" style={{ gridColumn: "1 / -1", fontSize: 12, fontWeight: 600, background: "rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 10px" }}>Đã nâng lên mức tối thiểu an toàn {fmtInt(m.calFloor)} kcal/ngày khi giảm mỡ.</div>}
       </div>
+
+      {(missing.length > 0 || looksDefault) && (
+        <div data-testid="goals-missing" role="status" style={{ margin: "12px 12px 0 12px", padding: "10px 12px", borderRadius: 12, background: "rgba(245,158,11,0.18)", border: "1px solid rgba(252,211,77,0.4)", color: DK.amber, fontSize: 13, fontWeight: 600, lineHeight: 1.45 }}>
+          {missing.length > 0
+            ? `Hồ sơ chưa có ${missing.map((f) => BODY_NAME[f]).join(", ")} — đang tạm dùng số mặc định. Nhập lại bên dưới để calo tính đúng.`
+            : "Số đo đang giống hệt số mặc định của app (172 cm · 63 kg · 1987). Kiểm tra lại cho đúng với bạn."}
+        </div>
+      )}
 
       <span style={sec}>MỤC TIÊU</span>
       <div style={{ ...box, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 12 }}>

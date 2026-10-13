@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { readUser, writeUser } from "./lib/userStore";
 import { todayVN, addDays, weekdayOf, gymIdxOf, templateKeyOf } from "./lib/dateVN";
 import { appConfirm } from "./lib/dialog";
 import { pickAiModelFromSettings, pickAiProvider } from "./lib/aiProvider";
@@ -129,12 +130,12 @@ const {data,error}=await supabase.from("ai_chat_history").select("id,role,conten
 if(error){console.warn("AI Chat load error:",error);throw error;}
 if(data&&data.length>0){
 setMessages(data.map(d=>({role:d.role,content:d.content})));
-localStorage.setItem("aicoach_backup",JSON.stringify(data.map(d=>({role:d.role,content:d.content}))));
+writeUser("aicoach_backup",userId,data.map(d=>({role:d.role,content:d.content})));
 }
 setHistoryLoaded(true);
 }catch(e){
 // Fallback: load from localStorage
-try{const backup=JSON.parse(localStorage.getItem("aicoach_backup")||"[]");if(backup.length>0)setMessages(backup);}catch(e2){}
+try{const backup=readUser("aicoach_backup",userId,[])||[];if(backup.length>0)setMessages(backup);}catch(e2){}
 setHistoryLoaded(true);
 }
 })();
@@ -144,7 +145,7 @@ setHistoryLoaded(true);
 const saveMsg=async(role,content)=>{
 // Always backup to localStorage
 const updated=[...messages,{role,content}].slice(-20);
-localStorage.setItem("aicoach_backup",JSON.stringify(updated));
+writeUser("aicoach_backup",userId,updated);
 if(!userId)return;
 try{
 const {error}=await supabase.from("ai_chat_history").insert({user_id:userId,role,content});

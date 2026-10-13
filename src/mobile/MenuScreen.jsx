@@ -13,10 +13,11 @@ import { SaveWeekSheet } from "./AIMenuScreen";
 import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT } from "../lib/menuView";
 import { applyMealEngineToTemplate } from "../mealEngine";
 import { Icon, GRAD_BLUE } from "./ui";
+import { readUser, writeUser } from "../lib/userStore";
 
 const PURPLE = "linear-gradient(135deg,#7C3AED,#5B21B6)";
 const STYLES = [["vn", "Cơm nhà VN", "Cơm, canh, món mặn quen thuộc"], ["clean", "Eat clean", "Ức gà, khoai lang, yến mạch"], ["easy", "Tiện lợi", "Ít nấu nướng, đồ nhanh gọn"]];
-const PREFS_KEY = "fp_menu_prefs";
+const PREFS_KEY = "fp_menu_prefs"; // lưu theo từng tài khoản (lib/userStore)
 const lbl = { fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
 const box = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 12px" };
 const secHead = { padding: "18px 16px 8px 16px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
@@ -25,8 +26,8 @@ const iconBox = (bg, color) => ({ width: 36, height: 36, borderRadius: 10, backg
 const btn = (kind, disabled) => ({ height: 50, borderRadius: 14, border: kind === "ghost" ? "1.5px solid #E2E8F0" : kind === "danger" ? "1.5px solid #FCA5A5" : "none", background: disabled ? "#CBD5E1" : kind === "ghost" ? "#FFFFFF" : kind === "danger" ? "#FEF2F2" : kind === "purple" ? PURPLE : GRAD_BLUE, color: kind === "ghost" ? "#0F172A" : kind === "danger" ? "#DC2626" : "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900, width: "100%" });
 const DT = { train: "Ngày tập", rest: "Ngày nghỉ" };
 
-function readPrefs() { try { return JSON.parse(localStorage.getItem(PREFS_KEY) || "{}") || {}; } catch (e) { return {}; } }
-function writePrefs(p) { try { localStorage.setItem(PREFS_KEY, JSON.stringify(p)); } catch (e) { /* */ } }
+function readPrefs(uid) { return readUser(PREFS_KEY, uid, {}) || {}; }
+function writePrefs(uid, p) { writeUser(PREFS_KEY, uid, p); }
 
 // Danh sách bữa + món (dùng chung cho các màn chi tiết)
 export function MealsPreview({ meals }) {
@@ -70,7 +71,7 @@ export function MenuScreen(p) {
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
   const noEx = (profile?.exerciseType || "gym") === "none";
-  const saved = readPrefs();
+  const saved = readPrefs(p.userId);
   const [style, setStyle] = useState(saved.style || "vn");
   const [avoid, setAvoid] = useState(saved.avoid || "");
   const [dayType, setDayType] = useState(todayType);
@@ -102,7 +103,7 @@ export function MenuScreen(p) {
   const todayHasMeals = todayMeals.length > 0;
   const past = useMemo(() => pastDaysFor(recentDays, today, 5), [recentDays, today]);
 
-  const generate = () => { writePrefs({ style, avoid }); openGenerate({ style, avoid: avoid.trim(), dayType: noEx ? "rest" : dayType }); };
+  const generate = () => { writePrefs(p.userId, { style, avoid }); openGenerate({ style, avoid: avoid.trim(), dayType: noEx ? "rest" : dayType }); };
 
   return (
     <div>
