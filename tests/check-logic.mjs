@@ -104,6 +104,10 @@ for (const [name, src] of Object.entries(FILES_TO_CHECK)) {
   }
 }
 
+test("Onboarding: thực đơn đầu tiên chỉ áp hôm nay, KHÔNG lưu ngầm vào Lặp lại hằng tuần (14/10)", () => {
+  assert(!SRC.onboarding.includes("saveWeeklyTemplate("), "OnboardingWizard vẫn gọi saveWeeklyTemplate");
+});
+
 test("MobileApp: áp thực đơn AI KHÔNG tự lưu ngầm vào Lịch tuần (chốt 13/10)", () => {
   const i = SRC.mobile.indexOf("const applyAIMenu");
   const body = SRC.mobile.slice(i, SRC.mobile.indexOf("closeLayer();", i));
