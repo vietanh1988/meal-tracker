@@ -11,6 +11,7 @@ import { LogMealSheet } from "./LogMealSheet";
 import { EditMealScreen } from "./EditMealScreen";
 import { ProgressScreen } from "./ProgressScreen";
 import { MeScreen } from "./MeScreen";
+import { AdminHomeScreen, AdminFeedbackScreen, ADMIN_TITLES } from "./AdminHomeScreen";
 import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
 import { RemindersScreen } from "./RemindersScreen";
@@ -417,11 +418,20 @@ export function MobileApp(props) {
         <ScheduleScreen profile={profile} setProfile={setProfile} mealConfig={profile.mealConfig || null} defaultConfig={mealConfig} curKg={weight.curKg} />
       </SubPage>
     );
-    const inner = sec === "admin_home"
-      ? <AdminPanel {...panelProps} forcedSection="settings" />
-      : <AdminPanel {...panelProps} forcedSection="settings" initialSection={sec === "about_edit" ? "about" : sec} hidePills />;
+    // Quản trị (bản vẽ 52) + Góp ý admin (53): nền tối; các màn con admin còn lại vẫn là AdminPanel cũ (nền sáng)
+    if (sec === "admin_home") return (
+      <SubPage title="Quản trị" onBack={closeLayer} dark>
+        <AdminHomeScreen isSuperAdmin={profile.adminRole === "super"} appVersion={appSettings.app_version} open={(id) => openLayer({ type: "page", sec: id })} />
+      </SubPage>
+    );
+    if (sec === "admin_feedback") return (
+      <SubPage title="Góp ý & báo lỗi" subtitle="Quản lý phản hồi · admin" onBack={closeLayer} dark>
+        <AdminFeedbackScreen showToast={showToast} />
+      </SubPage>
+    );
+    const inner = <AdminPanel {...panelProps} forcedSection="settings" initialSection={sec === "about_edit" ? "about" : sec} hidePills />;
     return (
-      <SubPage title={SECTION_TITLE[sec] || "Cài đặt"} onBack={closeLayer}>
+      <SubPage title={ADMIN_TITLES[sec] || SECTION_TITLE[sec] || "Cài đặt"} onBack={closeLayer}>
         <div style={{ padding: 10 }}>
           {inner}
         </div>

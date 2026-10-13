@@ -102,7 +102,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
       <Sec>AI & hỗ trợ</Sec>
       <div style={group}>
         {openCoach && <Row icon="coach" testid="me-coach" label="Hỏi Fipilot AI" value="Chat về ăn uống, tập" onClick={openCoach} />}
-        <Row icon="feedback" testid="me-feedback" label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "feedback_inline" : "feedback")} last />
+        <Row icon="feedback" testid="me-feedback" label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "admin_feedback" : "feedback")} last />
       </div>
 
       <Sec>Tài khoản & ứng dụng</Sec>
