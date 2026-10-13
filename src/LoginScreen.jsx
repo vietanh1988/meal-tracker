@@ -3,6 +3,7 @@ import { useAuth } from "./hooks/useAuth";
 import { supabase } from "./lib/supabase";
 import { C } from "./theme";
 import { AuthShell, Field, PasswordInput, Notice, field, primaryBtn, linkBtn } from "./AuthShell";
+import { DK } from "./theme";
 import { parseContent, stripEmptyParagraphs } from "./TermsPage";
 import { parseFeatureFlags } from "./adminTabs/FeatureFlagsTab";
 
@@ -108,8 +109,8 @@ export function LoginScreen({onLogin,appSettings}){
 
   if(mode==="forgot"){
     return <AuthShell compact title="Quên mật khẩu" onBack={()=>{setMode("login");setErr("");setForgotSent(false);}}>
-      <span style={{fontSize:11,fontWeight:700,color:"#64748B",letterSpacing:"0.08em"}}>BƯỚC 1 · GỬI EMAIL</span>
-      <span style={{fontSize:14,color:"#475569",lineHeight:1.5}}>Nhập email đã đăng ký, Fipilot sẽ gửi đường link đặt lại mật khẩu.</span>
+      <span style={{fontSize:11,fontWeight:700,color:DK.t3,letterSpacing:"0.08em"}}>BƯỚC 1 · GỬI EMAIL</span>
+      <span style={{fontSize:14,color:DK.t2,lineHeight:1.5}}>Nhập email đã đăng ký, Fipilot sẽ gửi đường link đặt lại mật khẩu.</span>
       <Field label="Email"><input data-testid="forgot-email" type="email" autoComplete="email" value={forgotEmail} onChange={e=>setForgotEmail(e.target.value)} placeholder="ban@email.com" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleForgotSubmit()}/></Field>
       {err&&<Notice tone="bad">{err}</Notice>}
       {forgotSent
@@ -132,25 +133,25 @@ export function LoginScreen({onLogin,appSettings}){
   const emailHint=!reg?null:emailStatus==="checking"?"Đang kiểm tra…":emailStatus==="taken"?"Email đã có tài khoản — đăng nhập hoặc Quên mật khẩu":emailStatus==="ok"?"Có thể dùng":null;
 
   return <><AuthShell title={reg?"Tạo tài khoản":"Fipilot AI"} subtitle={reg?null:"Trợ lý dinh dưỡng cho người Việt"}
-    footer={!reg&&<p style={{margin:"18px 24px 0 24px",textAlign:"center",fontSize:12,color:"#64748B",lineHeight:1.6}}>Tiếp tục nghĩa là bạn đồng ý với {termsLinks} của Fipilot AI.</p>}>
+    footer={!reg&&<p style={{margin:"18px 24px 0 24px",textAlign:"center",fontSize:12,color:DK.t3,lineHeight:1.6}}>Tiếp tục nghĩa là bạn đồng ý với {termsLinks} của Fipilot AI.</p>}>
       {isInApp&&<Notice tone="bad">Bạn đang mở trong ứng dụng khác. Để đăng nhập và cài app, hãy mở bằng {browserName}. <button type="button" onClick={handleOpenBrowser} style={{...linkBtn,padding:0}}>Mở bằng {browserName}</button></Notice>}
-      <div role="tablist" style={{display:"grid",gridTemplateColumns:"repeat(2, minmax(0, 1fr))",gap:4,padding:3,background:"#F1F5F9",borderRadius:12}}>
+      <div role="tablist" style={{display:"grid",gridTemplateColumns:"repeat(2, minmax(0, 1fr))",gap:4,padding:3,background:DK.chip,border:`1px solid ${DK.chipLine}`,borderRadius:12}}>
         {["login","register"].map(m=><button key={m} role="tab" aria-selected={mode===m} data-testid={`auth-tab-${m}`} onClick={()=>{setMode(m);setErr("");setSuccess("");}}
-          style={{height:38,borderRadius:9,border:"none",fontFamily:"inherit",fontSize:14,fontWeight:mode===m?800:600,background:mode===m?"#FFFFFF":"transparent",color:mode===m?"#007AFF":"#475569",boxShadow:mode===m?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{m==="login"?"Đăng nhập":"Đăng ký"}</button>)}
+          style={{height:38,borderRadius:9,border:"none",fontFamily:"inherit",fontSize:14,fontWeight:mode===m?800:600,background:mode===m?"#FFFFFF":"transparent",color:mode===m?"#0040E0":DK.t2,boxShadow:mode===m?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{m==="login"?"Đăng nhập":"Đăng ký"}</button>)}
       </div>
       {reg&&!registrationEnabled&&<Notice tone="bad">Hiện chưa nhận đăng ký tài khoản mới. Bạn quay lại sau nhé!</Notice>}
       {canReg&&<Field label="Tên hiển thị" hint={userHint} hintTone={tone(usernameStatus)}><input data-testid="reg-username" autoComplete="nickname" value={user} onChange={e=>setUser(e.target.value)} placeholder="VD: gymboy63" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
       {(!reg||registrationEnabled)&&<Field label="Email" hint={emailHint} hintTone={tone(emailStatus)}><input data-testid="login-email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="ban@email.com" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
       {(!reg||registrationEnabled)&&<Field label="Mật khẩu"><PasswordInput testid="login-pass" value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete={reg?"new-password":"current-password"}/></Field>}
       {!reg&&<button data-testid="forgot-open" onClick={()=>{setMode("forgot");setErr("");setForgotEmail(email);}} style={{...linkBtn,alignSelf:"flex-end"}}>Quên mật khẩu?</button>}
-      {canReg&&<label style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,color:"#475569",lineHeight:1.5}}>
-        <input data-testid="reg-terms" type="checkbox" checked={agreedTerms} onChange={e=>{setAgreedTerms(e.target.checked);if(e.target.checked)setErr("");}} style={{width:20,height:20,marginTop:1,flexShrink:0,accentColor:"#007AFF"}}/>
+      {canReg&&<label style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,color:DK.t2,lineHeight:1.5}}>
+        <input data-testid="reg-terms" type="checkbox" checked={agreedTerms} onChange={e=>{setAgreedTerms(e.target.checked);if(e.target.checked)setErr("");}} style={{width:20,height:20,marginTop:1,flexShrink:0,accentColor:"#4DA3FF"}}/>
         <span>Tôi đồng ý với {termsLinks}</span>
       </label>}
       {err&&<Notice tone="bad">{err}</Notice>}
       {success&&<Notice>{success}</Notice>}
       {(!reg||registrationEnabled)&&<button data-testid="login-submit" onClick={handleSubmit} disabled={!!success} style={primaryBtn(!!success)}>{reg?"Đăng ký":"Đăng nhập"}</button>}
-      {canReg&&<span style={{fontSize:12,color:"#64748B",textAlign:"center"}}>Tài khoản dùng được ngay sau khi đăng ký</span>}
+      {canReg&&<span style={{fontSize:12,color:DK.t3,textAlign:"center"}}>Tài khoản dùng được ngay sau khi đăng ký</span>}
     </AuthShell>
     {termsModal&&(()=>{
       const pages=parseContent(appSettings);

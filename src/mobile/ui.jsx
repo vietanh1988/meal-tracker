@@ -1,7 +1,7 @@
 // Thành phần dùng chung cho giao diện mobile (theo canvas "Fipilot mobile – bản sửa").
 // Số đo chép từ bản vẽ: nền #F8FAFC, card viền 1,5px #E2E8F0, bo 14–20, Inter.
 import { useEffect } from "react";
-import { C } from "../theme";
+import { C, DK } from "../theme";
 
 export const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
 export const GRAD_BLUE = "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)";
@@ -33,7 +33,7 @@ export const Icon = {
   close: (s = 18) => <svg {...svgP} width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.4"><path d="M6 6l12 12M18 6L6 18" /></svg>,
   back: (s = 22) => <svg {...svgP} width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.4"><path d="M15 6l-6 6 6 6" /></svg>,
   next: (s = 18) => <svg {...svgP} width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.4"><path d="M9 6l6 6-6 6" /></svg>,
-  chev: (s = 16) => <svg {...svgP} stroke="#94A3B8" width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.2"><path d="M9 6l6 6-6 6" /></svg>,
+  chev: (s = 16, color = "#94A3B8") => <svg {...svgP} stroke={color} width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.2"><path d="M9 6l6 6-6 6" /></svg>,
   down: (s = 14) => <svg {...svgP} width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.4"><path d="M6 9l6 6 6-6" /></svg>,
   check: (s = 14, w = 2.8) => <svg {...svgP} width={s} height={s} viewBox="0 0 24 24" strokeWidth={w}><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>,
   more: (s = 20) => <svg aria-hidden="true" width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>,
@@ -48,22 +48,28 @@ const NAV = [
   { id: "progress", label: "Tiến độ", icon: "/icons/nav_progress.png" },
   { id: "me", label: "Tôi", icon: "/icons/nav_profile.png" },
 ];
-export function BottomNav({ tab, onTab, onAdd, hidden }) {
+// Thanh nổi kiểu kính (bản vẽ 46/48, chốt 14/10): cách mép 12 px, cao 64, bo 32; mục đang chọn = bong bóng trắng 44 px (không nhãn),
+// mục khác icon mờ 75% + nhãn 10 px. Đáy = vùng an toàn iPhone − 14 px (tối thiểu 10 px).
+export const NAV_BOTTOM = "max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))";
+export const NAV_SPACE = `calc(64px + ${NAV_BOTTOM} + 14px)`; // chừa chỗ cuối nội dung để không bị thanh che
+export function BottomNav({ tab, onTab, onAdd, hidden, dark }) {
   return (
-    <nav aria-label="Điều hướng chính" aria-hidden={hidden ? true : undefined} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 90, background: "#FFFFFF", borderTop: "1px solid #E2E8F0", paddingBottom: "max(6px, calc(env(safe-area-inset-bottom, 0px) - 12px))" }}>
-      {/* Gọn hơn trên iPhone PWA (14/10): thanh 58 px canh giữa + vùng an toàn bớt 12 px (trước 74 px canh trên + đủ 34 px → thừa trắng) */}
-      <div style={{ maxWidth: 560, margin: "0 auto", height: 58, display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", alignItems: "center", boxSizing: "border-box" }}>
+    <nav data-testid="bottom-nav" aria-label="Điều hướng chính" aria-hidden={hidden ? true : undefined} style={{ position: "fixed", left: 0, right: 0, bottom: NAV_BOTTOM, zIndex: 90, padding: "0 12px", pointerEvents: "none" }}>
+      <div style={{ maxWidth: 536, margin: "0 auto", height: 64, borderRadius: 32, display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", alignItems: "center", boxSizing: "border-box", pointerEvents: "auto",
+        background: dark ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.78)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: dark ? "0 12px 30px rgba(0,10,40,0.35)" : "0 12px 30px rgba(30,64,175,0.18), 0 0 0 1px rgba(15,23,42,0.04)",
+        WebkitBackdropFilter: "blur(20px)", backdropFilter: "blur(20px)" }}>
         {NAV.map((n) => {
           if (n.id === "add") return (
-            <button key="add" onClick={onAdd} aria-label="Ghi bữa" style={{ display: "flex", flexDirection: "column", alignItems: "center", border: "none", background: "transparent", padding: 0, marginTop: -22 }}>
-              <span style={{ width: 52, height: 52, borderRadius: 26, background: GRAD_ORANGE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(234,88,12,0.35)", border: "3px solid #FFFFFF" }}>{Icon.plus(24)}</span>
+            <button key="add" onClick={onAdd} aria-label="Ghi bữa" style={{ display: "flex", justifyContent: "center", border: "none", background: "transparent", padding: 0, marginTop: -22 }}>
+              <span style={{ width: 54, height: 54, borderRadius: 27, background: "linear-gradient(135deg,#FB923C,#EA580C)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 18px rgba(234,88,12,0.4)", border: "4px solid #FFFFFF", boxSizing: "border-box" }}>{Icon.plus(24, 2.8)}</span>
             </button>
           );
           const a = tab === n.id;
           return (
-            <button key={n.id} onClick={() => onTab(n.id)} aria-current={a ? "page" : undefined} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, border: "none", background: "transparent", padding: 0, minHeight: 44, color: a ? "#007AFF" : "#64748B", fontFamily: "inherit" }}>
-              <img src={n.icon} alt="" style={{ width: 24, height: 24, objectFit: "contain", opacity: a ? 1 : 0.55 }} />
-              <span style={{ fontSize: 11, fontWeight: a ? 800 : 600 }}>{n.label}</span>
+            <button key={n.id} onClick={() => onTab(n.id)} aria-current={a ? "page" : undefined} aria-label={n.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, border: "none", background: "transparent", padding: 0, minHeight: 56, color: "#475569", fontFamily: "inherit" }}>
+              {a
+                ? <span style={{ width: 44, height: 44, borderRadius: 22, background: "#FFFFFF", boxShadow: "0 4px 12px rgba(0,60,200,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}><img src={n.icon} alt="" style={{ width: 24, height: 24, objectFit: "contain" }} /></span>
+                : <><img src={n.icon} alt="" style={{ width: 24, height: 24, objectFit: "contain", opacity: 0.75 }} /><span style={{ fontSize: 10, fontWeight: 600 }}>{n.label}</span></>}
             </button>
           );
         })}
@@ -83,16 +89,16 @@ export function useLockScroll(on = true) {
 }
 
 // Màn phụ toàn màn hình có thanh tiêu đề (nút quay lại 44×44)
-export function SubPage({ title, subtitle, onBack, right, children, footer, bg = "#F8FAFC" }) {
+export function SubPage({ title, subtitle, onBack, right, children, footer, bg = "#F8FAFC", dark }) {
   useLockScroll(true);
   return (
-    <div className="fpm" style={{ position: "fixed", inset: 0, zIndex: 120, background: bg, display: "flex", flexDirection: "column", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
-      <div style={{ flexShrink: 0, background: "#FFFFFF", borderBottom: "1px solid #E2E8F0", paddingTop: "env(safe-area-inset-top, 0px)" }}>
+    <div className={dark ? "fpm fpd" : "fpm"} data-dark={dark ? "1" : undefined} style={{ position: "fixed", inset: 0, zIndex: 120, background: dark ? DK.bg : bg, backgroundColor: dark ? DK.base : undefined, display: "flex", flexDirection: "column", fontFamily: FONT, color: dark ? DK.t1 : "#0F172A", animation: "fpmFade .15s ease" }}>
+      <div style={{ flexShrink: 0, background: dark ? "transparent" : "#FFFFFF", borderBottom: dark ? `1px solid ${DK.line}` : "1px solid #E2E8F0", paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", gap: 6, padding: "10px 8px 10px 4px" }}>
-          <button onClick={onBack} aria-label="Quay lại" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: "#007AFF", border: "none", background: "transparent", padding: 0 }}>{Icon.back(22)}</button>
+          <button onClick={onBack} aria-label="Quay lại" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: dark ? "#FFFFFF" : "#007AFF", border: "none", background: "transparent", padding: 0 }}>{Icon.back(22)}</button>
           <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 17, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
-            {subtitle && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{subtitle}</span>}
+            {subtitle && <span style={{ fontSize: 12, fontWeight: 600, color: dark ? DK.t2 : "#64748B" }}>{subtitle}</span>}
           </span>
           {right}
         </div>
@@ -118,12 +124,17 @@ export function Toast({ toast, bottom = 90 }) {
 
 export const cardBox = { background: C.card, border: `1.5px solid ${C.border}`, borderRadius: 14 };
 
-// Công tắc bật/tắt 52×32 (xanh #00C896 khi bật)
+// Công tắc bật/tắt 52×32 (xanh #00C896 khi bật). Chỉ dùng ở các trang nền tối (Mục tiêu, Lịch tập, Nhắc nhở) → tắt = nền trắng mờ.
 export function Toggle({ on, onClick, label, testid }) {
   return (
     <button data-testid={testid} onClick={onClick} aria-label={label} aria-pressed={on}
-      style={{ width: 52, height: 32, borderRadius: 16, border: "none", background: on ? "#00C896" : "#CBD5E1", position: "relative", padding: 0, flexShrink: 0, cursor: "pointer", transition: "background .15s" }}>
+      style={{ width: 52, height: 32, borderRadius: 16, border: "none", background: on ? "#00C896" : DK.track, boxShadow: on ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.18)", position: "relative", padding: 0, flexShrink: 0, cursor: "pointer", transition: "background .15s" }}>
       <span style={{ position: "absolute", top: 3, left: on ? 23 : 3, width: 26, height: 26, borderRadius: 13, background: "#FFFFFF", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
     </button>
   );
+}
+
+// Ô icon đặc màu + icon trắng (kiểu Cài đặt iPhone, bản vẽ 48) — dùng trên nền tối
+export function DkIcon({ color, children, size = 32 }) {
+  return <span aria-hidden="true" className="dkic" style={{ width: size, height: size, borderRadius: 9, background: color, color: "#FFFFFF", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 8px rgba(0,0,0,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{children}</span>;
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { AuthShell, Field, PasswordInput, Notice, primaryBtn } from "./AuthShell";
+import { DK } from "./theme";
 
 export function ResetPasswordScreen(){
   const [pass,setPass]=useState("");
@@ -27,7 +28,7 @@ export function ResetPasswordScreen(){
       <Notice>Đã đặt mật khẩu mới thành công. Bạn dùng app tiếp được ngay.</Notice>
       <button onClick={()=>window.location.href="/"} style={primaryBtn(false)}>Vào app</button>
     </> : <>
-      <span style={{fontSize:11,fontWeight:700,color:"#64748B",letterSpacing:"0.08em"}}>BƯỚC 2 · SAU KHI BẤM LINK TRONG EMAIL</span>
+      <span style={{fontSize:11,fontWeight:700,color:DK.t3,letterSpacing:"0.08em"}}>BƯỚC 2 · SAU KHI BẤM LINK TRONG EMAIL</span>
       <Field label="Mật khẩu mới"><PasswordInput value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete="new-password"/></Field>
       <Field label="Nhập lại mật khẩu mới"><PasswordInput value={pass2} onChange={setPass2} onEnter={handleSubmit} autoComplete="new-password" placeholder="Nhập lại"/></Field>
       {err&&<Notice tone="bad">{err}</Notice>}

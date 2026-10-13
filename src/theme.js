@@ -46,3 +46,54 @@ export const radius = { xs:3, sm:4, md:5, lg:6, xl:8, "2xl":10, "3xl":12, "4xl":
 // spacing — dùng cho gap, và ghép cặp để tạo padding (VD: `${sp.lg}px ${sp.xl}px` = "10px 14px")
 export const sp = { xxs:1, xs:4, sm:5, md:6, lg:8, xl:10, "2xl":12, "3xl":14, "4xl":16, "5xl":20, "6xl":24 };
 export const numFix={onFocus:e=>e.target.select(),onBlur:e=>{const el=e.target;if(el.value!==""&&!isNaN(Number(el.value)))el.value=String(Number(el.value));}};
+
+// ============================================================
+// NỀN TỐI "BLUE DARK" (bản vẽ 48, chốt 14/10) — dùng cho màn Tôi + các trang con của Tôi
+// (Tài khoản, Gói cước/Lượt AI, Chuyển khoản, Nhắc nhở, Lịch tập & bữa, Mục tiêu & macro,
+//  Giới thiệu, Điều khoản, Thông báo, Góp ý) và Đăng nhập/Đăng ký/Quên MK.
+// KHÔNG dùng cho Hôm nay, Thực đơn, Tiến độ, Ghi bữa, Kiểm tra calo, Chat AI (giữ header xanh + thân sáng).
+// Sheet / hộp thoại bật lên trên các màn này vẫn nền trắng (dễ đọc, dễ nhập).
+// ============================================================
+export const DK = {
+  bg: "radial-gradient(circle at 85% 4%, rgba(60,140,255,0.35) 0%, rgba(60,140,255,0) 40%), radial-gradient(circle at 10% 60%, rgba(0,200,255,0.10) 0%, rgba(0,200,255,0) 45%), linear-gradient(180deg,#0F4585 0%,#03386F 18%,#022B57 45%,#012244 75%,#011B37 100%)",
+  base: "#022B57",          // màu nền đặc (thanh trạng thái iPhone, vùng kéo quá)
+  t1: "#FFFFFF",            // chữ chính
+  t2: "rgba(255,255,255,0.78)", // chữ phụ
+  t3: "rgba(255,255,255,0.62)", // chữ mờ / nhãn nhóm
+  line: "rgba(255,255,255,0.12)", // kẻ giữa các dòng
+  chev: "rgba(255,255,255,0.6)",
+  link: "#7CC2FF",          // chữ link / nhấn trên nền tối
+  green: "#4ADE9B", red: "#FFB4B4", amber: "#FCD34D",
+  field: "rgba(255,255,255,0.08)",   // ô nhập
+  fieldLine: "rgba(255,255,255,0.22)",
+  chip: "rgba(255,255,255,0.10)",    // nút chọn chưa chọn
+  chipLine: "rgba(255,255,255,0.20)",
+  track: "rgba(255,255,255,0.14)",   // nền thanh % / công tắc tắt
+};
+// Thẻ kính mờ trên nền tối
+export const dkGlass = {
+  background: "linear-gradient(180deg,rgba(255,255,255,0.16) 0%,rgba(255,255,255,0.07) 100%)",
+  border: "1px solid rgba(255,255,255,0.2)",
+  boxShadow: "0 10px 26px rgba(0,16,70,0.22), inset 0 1px 0 rgba(255,255,255,0.22)",
+};
+export const dkCard = { ...dkGlass, borderRadius: 18 };
+// Nhãn nhóm "THEO DÕI & DINH DƯỠNG"
+export const dkSec = { display: "block", padding: "18px 18px 8px 18px", fontSize: 13, fontWeight: 800, color: DK.t3 };
+// Ô nhập trên nền tối
+export const dkInp = { height: 48, padding: "0 14px", borderRadius: 12, border: `1.5px solid ${DK.fieldLine}`, background: DK.field, fontFamily: "inherit", fontSize: 16, color: "#FFFFFF", boxSizing: "border-box", width: "100%", outline: "none" };
+// CSS phụ cho khối có class "fpd" (nền tối): placeholder, focus, hover, ô chọn ngày giờ
+export const DK_CSS = `
+.fpm .fpd input::placeholder,.fpm .fpd textarea::placeholder{color:rgba(255,255,255,0.45)}
+.fpm .fpd input:focus,.fpm .fpd textarea:focus,.fpm .fpd select:focus{border-color:#7CC2FF !important;background:rgba(255,255,255,0.14) !important}
+.fpm .fpd :focus-visible{outline-color:#7CC2FF}
+.fpm .fpd input.pw-inner:focus{background:transparent !important;border-color:transparent !important}
+.fpm .fpd .pw-box:focus-within{border-color:#7CC2FF !important;background:rgba(255,255,255,0.14) !important}
+.fpm .fpd input[type=time],.fpm .fpd input[type=date]{color-scheme:dark}
+.fpm .fpd select{color-scheme:dark}
+.fpm .fpd select option{color:#0F172A;background:#FFFFFF}
+/* kính mờ trên nền màu (chuông, nút tròn) — giống header Hôm nay */
+.fp-glass{background:linear-gradient(180deg,rgba(255,255,255,0.19) 0%,rgba(255,255,255,0.07) 100%);border:1px solid rgba(255,255,255,0.24);box-shadow:0 8px 18px rgba(0,20,90,0.22),inset 0 1px 0 rgba(255,255,255,0.26);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+/* ô icon đặc màu: nét dày 2,2 cho rõ trên nền tối */
+.fpm .dkic svg{stroke-width:2.2}
+@media (hover:hover){.fpm .fpd .row-hover:hover{background:rgba(255,255,255,0.06)}.fpm .fpd .chip-hover:hover{border-color:rgba(255,255,255,0.4)}}
+`;

@@ -6,11 +6,13 @@ import { useState } from "react";
 import { getFoodStats } from "../lib/localFoodDB";
 import { fmtInt } from "../lib/mobileView";
 import { parseContent, stripEmptyParagraphs } from "../TermsPage";
-import { Icon, GRAD_BLUE } from "./ui";
+import { Icon, GRAD_BLUE, DkIcon } from "./ui";
+import { DK, dkCard } from "../theme";
 
-const sec = { display: "block", padding: "18px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
-const group = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 14px" };
-const rowSt = (last) => ({ display: "flex", alignItems: "center", gap: 12, minHeight: 54, width: "100%", padding: 0, border: "none", borderBottom: last ? "none" : "1px solid #F1F5F9", background: "transparent", textDecoration: "none", color: "#0F172A", fontFamily: "inherit", textAlign: "left" });
+// Nền tối (bản vẽ 48): thẻ kính mờ, ô icon đặc màu. Nội dung điều khoản vẫn là "trang giấy" trắng cho dễ đọc văn bản dài.
+const sec = { display: "block", padding: "18px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: DK.t3, letterSpacing: "0.08em" };
+const group = { ...dkCard, margin: "0 12px", borderRadius: 16, padding: "0 14px" };
+const rowSt = (last) => ({ display: "flex", alignItems: "center", gap: 12, minHeight: 54, width: "100%", padding: 0, border: "none", borderBottom: last ? "none" : `1px solid ${DK.line}`, background: "transparent", textDecoration: "none", color: DK.t1, fontFamily: "inherit", textAlign: "left" });
 const svg = (d, s = 18) => <svg aria-hidden="true" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
 const P = {
   db: <><ellipse cx="12" cy="6" rx="7" ry="3" /><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3" /></>,
@@ -28,7 +30,7 @@ const P = {
   alert: <><path d="M12 4l9 16H3z" /><path d="M12 10v4M12 17v.5" /></>,
   edit: <><path d="M4 20h4L19 9l-4-4L4 16z" /></>,
 };
-const ico = (d, c, bg, size = 32, s = 18) => <span aria-hidden="true" style={{ width: size, height: size, borderRadius: size >= 36 ? 11 : 9, background: bg, color: c, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{svg(d, s)}</span>;
+const ico = (d, c, bg, size = 32, s = 18) => <DkIcon color={c} size={size}>{svg(d, s)}</DkIcon>;
 
 // Nhãn trang pháp lý: sửa "Ai" → "AI"; icon theo nội dung nhãn
 export const termLabel = (l) => String(l || "").replace(/\bAi\b/g, "AI");
@@ -70,22 +72,22 @@ export function AboutScreen({ appSettings, openTerms, openEdit }) {
       <span style={sec}>CÓ GÌ TRONG APP</span>
       <div style={{ margin: "0 12px", display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
         {feats.map(([d, c, bg, t, s, tid]) => (
-          <div key={t} data-testid={tid} style={{ background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div key={t} data-testid={tid} style={{ ...dkCard, borderRadius: 16, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             {ico(d, c, bg, 36, 20)}
-            <span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 14, fontWeight: 800 }}>{t}</span><span style={{ fontSize: 12, color: "#64748B" }}>{s}</span></span>
+            <span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 14, fontWeight: 800 }}>{t}</span><span style={{ fontSize: 12, color: DK.t3 }}>{s}</span></span>
           </div>
         ))}
       </div>
 
       <span style={sec}>NGƯỜI LÀM</span>
-      <div style={{ margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: 14, display: "flex", gap: 12 }}>
+      <div style={{ ...dkCard, margin: "0 12px", borderRadius: 16, padding: 14, display: "flex", gap: 12 }}>
         {a.devAvatar && safeHttp(a.devAvatar)
           ? <img src={a.devAvatar} alt="" style={{ width: 48, height: 48, borderRadius: 24, objectFit: "cover", flexShrink: 0 }} />
           : <span style={{ width: 48, height: 48, borderRadius: 24, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials}</span>}
         <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
           <span style={{ fontSize: 15, fontWeight: 800 }}>{devName}</span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#007AFF" }}>{a.devRole || "Founder & Developer"}</span>
-          {a.devBio && <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5, marginTop: 4 }}>{a.devBio}</span>}
+          <span style={{ fontSize: 12, fontWeight: 700, color: DK.link }}>{a.devRole || "Founder & Developer"}</span>
+          {a.devBio && <span style={{ fontSize: 13, color: DK.t2, lineHeight: 1.5, marginTop: 4 }}>{a.devBio}</span>}
         </span>
       </div>
 
@@ -96,7 +98,7 @@ export function AboutScreen({ appSettings, openTerms, openEdit }) {
             <a key={k} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" style={rowSt(i === contacts.length - 1)}>
               {ico(d, c, bg)}
               <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{k}</span>
-              <span style={{ fontSize: 13, color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "55%" }}>{v}</span>
+              <span style={{ fontSize: 13, color: DK.t2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "55%" }}>{v}</span>
             </a>
           ))}
         </div>
@@ -106,20 +108,20 @@ export function AboutScreen({ appSettings, openTerms, openEdit }) {
       <div style={group}>
         {pages.map((pg, i) => (
           <button key={pg.id} data-testid={i === 0 ? "about-terms" : `about-term-${pg.id}`} onClick={() => openTerms(pg.id)} style={rowSt(i === pages.length - 1 && !openEdit)}>
-            {ico(termIcon(pg.label), "#475569", "rgba(71,85,105,0.1)")}
-            <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{termLabel(pg.label)}</span>{Icon.chev(16)}
+            {ico(termIcon(pg.label), "#64748B", "rgba(71,85,105,0.1)")}
+            <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{termLabel(pg.label)}</span>{Icon.chev(16, DK.chev)}
           </button>
         ))}
         {openEdit && (
           <button data-testid="about-edit" onClick={openEdit} style={rowSt(true)}>
             {ico(P.edit, "#DC2626", "rgba(220,38,38,0.1)")}
             <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>Sửa nội dung giới thiệu</span>
-            <span style={{ fontSize: 11, fontWeight: 800, color: "#475569", background: "#F1F5F9", padding: "3px 8px", borderRadius: 6 }}>Admin</span>
-            {Icon.chev(16)}
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#FFFFFF", background: "rgba(255,255,255,0.16)", padding: "3px 8px", borderRadius: 6 }}>Admin</span>
+            {Icon.chev(16, DK.chev)}
           </button>
         )}
       </div>
-      <p style={{ margin: "16px 16px 0 16px", fontSize: 12, color: "#94A3B8", textAlign: "center" }}>© {new Date().getFullYear()} Fipilot AI · app.fipilotai.com</p>
+      <p style={{ margin: "16px 16px 0 16px", fontSize: 12, color: DK.t3, textAlign: "center" }}>© {new Date().getFullYear()} Fipilot AI · app.fipilotai.com</p>
     </div>
   );
 }
@@ -145,7 +147,7 @@ export function TermsScreen({ appSettings, initialId }) {
           const on = page && p.id === page.id;
           return (
             <button key={p.id} role="tab" aria-selected={on} data-testid={`terms-tab-${p.id}`} onClick={() => setId(p.id)}
-              style={{ flexShrink: 0, height: 36, padding: "0 14px", borderRadius: 999, border: on ? "none" : "1.5px solid #E2E8F0", background: on ? "#007AFF" : "#FFFFFF", color: on ? "#FFFFFF" : "#0F172A", fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, whiteSpace: "nowrap" }}>{termLabel(p.label)}</button>
+              style={{ flexShrink: 0, height: 36, padding: "0 14px", borderRadius: 999, border: on ? "none" : `1px solid ${DK.chipLine}`, background: on ? "#FFFFFF" : DK.chip, color: on ? "#0040E0" : DK.t1, fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, whiteSpace: "nowrap" }}>{termLabel(p.label)}</button>
           );
         })}
       </div>

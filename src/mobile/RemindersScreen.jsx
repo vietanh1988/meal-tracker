@@ -4,6 +4,7 @@
 // Lưu vào profile.reminderSettings (cột reminder_settings) qua setProfile, dạng chuẩn trong src/lib/reminders.js.
 import { useEffect, useState } from "react";
 import { Toggle } from "./ui";
+import { DK, dkCard } from "../theme";
 import { fmtVN } from "../lib/dateVN";
 import { normalizeReminders, defaultSlotTime, WEEKDAY_NAMES, WATER_EVERY, toMin } from "../lib/reminders";
 import { MEAL_ORDER } from "../lib/mealMath";
@@ -11,10 +12,11 @@ import { mealTimesOf, waterGoalMl } from "../lib/dayPlan";
 import { isPushSupported, getPushStatus, enablePushNotifications } from "../pushNotifications";
 
 const SHORT = { sang: "Sáng", phu_sang: "Phụ sáng", trua: "Trưa", phu_chieu: "Phụ chiều", pre: "Trước tập", post: "Sau tập", toi: "Tối" };
-const box = { margin: "12px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 14px" };
-const blk = (last) => ({ padding: "14px 0", borderBottom: last ? "none" : "1px solid #F1F5F9", display: "flex", flexDirection: "column", gap: 10 });
-const chip = (dim, blue) => ({ height: 34, padding: "0 12px", borderRadius: 10, border: "1.5px solid #E2E8F0", background: "#FFFFFF", fontFamily: "inherit", fontSize: 13, fontWeight: 700, color: dim ? "#94A3B8" : blue ? "#007AFF" : "#0F172A", display: "inline-flex", alignItems: "center", gap: 6 });
-const timeInput = { height: 34, padding: "0 8px", borderRadius: 10, border: "1.5px solid #007AFF", fontFamily: "inherit", fontSize: 13, fontWeight: 700, color: "#0F172A", background: "#FFFFFF", WebkitAppearance: "none" };
+// Nền tối (bản vẽ 48): thẻ kính mờ, nút giờ kiểu kính, chữ trắng
+const box = { ...dkCard, margin: "12px 12px 0 12px", borderRadius: 16, padding: "0 14px" };
+const blk = (last) => ({ padding: "14px 0", borderBottom: last ? "none" : `1px solid ${DK.line}`, display: "flex", flexDirection: "column", gap: 10 });
+const chip = (dim, blue) => ({ height: 34, padding: "0 12px", borderRadius: 10, border: `1px solid ${DK.chipLine}`, background: DK.chip, fontFamily: "inherit", fontSize: 13, fontWeight: 700, color: dim ? "rgba(255,255,255,0.45)" : blue ? DK.link : DK.t1, display: "inline-flex", alignItems: "center", gap: 6 });
+const timeInput = { height: 34, padding: "0 8px", borderRadius: 10, border: `1.5px solid ${DK.link}`, fontFamily: "inherit", fontSize: 13, fontWeight: 700, color: DK.t1, background: "rgba(255,255,255,0.14)", WebkitAppearance: "none" };
 const fmtL = (ml) => (Math.round(ml / 10) / 100).toLocaleString("vi-VN", { maximumFractionDigits: 2 });
 const isIOS = () => typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent || "");
 const isStandalone = () => { try { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch (e) { return false; } };
@@ -24,7 +26,7 @@ function Head({ title, sub, on, onToggle, testid }) {
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: 15, fontWeight: 700 }}>{title}</span>
-        <span style={{ fontSize: 12, color: "#64748B" }}>{sub}</span>
+        <span style={{ fontSize: 12, color: DK.t3 }}>{sub}</span>
       </span>
       <Toggle testid={testid} on={on} label={title} onClick={onToggle} />
     </div>
@@ -80,21 +82,21 @@ export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, c
   return (
     <div style={{ paddingBottom: 32 }}>
       {pushFeature === false && (
-        <p style={{ margin: "12px 16px 0 16px", padding: "10px 12px", borderRadius: 12, background: "rgba(245,158,11,0.12)", color: "#92400E", fontSize: 13, fontWeight: 600 }}>Thông báo đẩy đang tạm tắt trên hệ thống. Cài đặt vẫn được lưu để dùng khi bật lại.</p>
+        <p style={{ margin: "12px 16px 0 16px", padding: "10px 12px", borderRadius: 12, background: "rgba(245,158,11,0.16)", color: DK.amber, fontSize: 13, fontWeight: 600 }}>Thông báo đẩy đang tạm tắt trên hệ thống. Cài đặt vẫn được lưu để dùng khi bật lại.</p>
       )}
       {pushFeature !== false && needPush && (
-        <div data-testid="push-banner" style={{ margin: "12px 12px 0 12px", borderRadius: 16, padding: 14, background: "rgba(0,122,255,0.06)", border: "1.5px solid rgba(0,122,255,0.2)", display: "flex", alignItems: "center", gap: 12 }}>
+        <div data-testid="push-banner" style={{ margin: "12px 12px 0 12px", borderRadius: 16, padding: 14, background: "rgba(0,122,255,0.22)", border: "1px solid rgba(124,194,255,0.4)", display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ width: 40, height: 40, borderRadius: 12, background: "#007AFF", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
           </span>
           <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 14, fontWeight: 800 }}>{push === "denied" ? "Thông báo đang bị chặn" : "Thông báo chưa bật trên máy này"}</span>
-            <span style={{ fontSize: 12, color: "#334155" }}>
+            <span style={{ fontSize: 12, color: DK.t2 }}>
               {push === "denied" ? "Mở cài đặt trình duyệt / máy để cho phép Fipilot." : push === "unsupported" ? (iosNeedsHome ? "Thêm Fipilot vào Màn hình chính trước." : "Trình duyệt này không hỗ trợ thông báo.") : "Cần bật để nhận nhắc nhở"}
             </span>
-            {pushErr && <span style={{ fontSize: 12, color: "#DC2626", marginTop: 2 }}>{pushErr}</span>}
+            {pushErr && <span style={{ fontSize: 12, color: DK.red, marginTop: 2 }}>{pushErr}</span>}
           </span>
-          {push === "default" && <button data-testid="push-enable" disabled={pushBusy} onClick={enable} style={{ height: 38, padding: "0 14px", borderRadius: 10, border: "none", background: "#007AFF", color: "#FFFFFF", fontFamily: "inherit", fontSize: 13, fontWeight: 800 }}>{pushBusy ? "…" : "Bật"}</button>}
+          {push === "default" && <button data-testid="push-enable" disabled={pushBusy} onClick={enable} style={{ height: 38, padding: "0 14px", borderRadius: 10, border: "none", background: "#FFFFFF", color: "#0040E0", fontFamily: "inherit", fontSize: 13, fontWeight: 800 }}>{pushBusy ? "…" : "Bật"}</button>}
         </div>
       )}
 
@@ -106,14 +108,14 @@ export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, c
               <span key={s.meal} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>
                 <TimeChip testid={`rem-slot-${s.meal}`} label={SHORT[s.meal]} value={s.time} dim={!r.meal.on} onSave={(v) => setSlot(s.meal, v)} />
                 <button data-testid={`rem-slot-del-${s.meal}`} aria-label={`Bỏ nhắc ${SHORT[s.meal].toLowerCase()}`} onClick={() => dropSlot(s.meal)}
-                  style={{ width: 28, height: 34, border: "none", background: "transparent", color: "#94A3B8", fontSize: 18, fontWeight: 700, fontFamily: "inherit", padding: 0 }}>×</button>
+                  style={{ width: 28, height: 34, border: "none", background: "transparent", color: DK.t3, fontSize: 18, fontWeight: 700, fontFamily: "inherit", padding: 0 }}>×</button>
               </span>
             ))}
             {addable.length > 0 && !picking && <button data-testid="rem-slot-add" onClick={() => setPicking(true)} style={chip(false, true)}>+ Thêm giờ</button>}
           </div>
           {picking && (
             <div role="group" aria-label="Chọn bữa để nhắc" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {addable.map((id) => <button key={id} data-testid={`rem-slot-add-${id}`} onClick={() => addSlot(id)} style={{ ...chip(false, true), background: "rgba(0,122,255,0.06)" }}>{SHORT[id]} · {defaultSlotTime(times[id])}</button>)}
+              {addable.map((id) => <button key={id} data-testid={`rem-slot-add-${id}`} onClick={() => addSlot(id)} style={{ ...chip(false, true), background: "rgba(0,122,255,0.22)" }}>{SHORT[id]} · {defaultSlotTime(times[id])}</button>)}
               <button onClick={() => setPicking(false)} style={{ ...chip(true), border: "none" }}>Huỷ</button>
             </div>
           )}
@@ -135,13 +137,13 @@ export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, c
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <button data-testid="rem-water-every" onClick={() => set("water", { every: nextEvery })} style={chip(!r.water.on)}>Mỗi {r.water.every} giờ</button>
             <TimeChip testid="rem-water-from" label="" value={r.water.from} dim={!r.water.on} onSave={(v) => setWaterRange("from", v)} />
-            <span style={{ color: "#94A3B8", fontWeight: 700 }}>–</span>
+            <span style={{ color: DK.t3, fontWeight: 700 }}>–</span>
             <TimeChip testid="rem-water-to" label="" value={r.water.to} dim={!r.water.on} onSave={(v) => setWaterRange("to", v)} />
           </div>
         </div>
       </div>
 
-      <p style={{ margin: "12px 20px 0 20px", fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>
+      <p style={{ margin: "12px 20px 0 20px", fontSize: 12, color: DK.t3, lineHeight: 1.5 }}>
         {iosNeedsHome ? "Trên iPhone cần thêm Fipilot vào Màn hình chính rồi mới bật được thông báo." : "Nhắc gửi theo giờ Việt Nam. Bấm vào giờ để đổi."}
       </p>
     </div>

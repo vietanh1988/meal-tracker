@@ -5,9 +5,11 @@
 import { useEffect, useState } from "react";
 import { fmtVN, toVNDate } from "../lib/dateVN";
 import { UpdateFlow } from "./UpdatePopup";
+import { DK, dkCard } from "../theme";
 
-const lbl = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
-const box = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 14px" };
+// Nền tối (bản vẽ 48)
+const lbl = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: DK.t3, letterSpacing: "0.08em" };
+const box = { ...dkCard, margin: "0 12px", borderRadius: 16, padding: "0 14px" };
 const bellSvg = (s, color) => <svg aria-hidden="true" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>;
 
 export function BellButton({ count, ringing, onClick }) {
@@ -37,11 +39,11 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
           <span style={lbl}>CẬP NHẬT ỨNG DỤNG</span>
           <div style={{ margin: "0 12px", display: "flex", flexDirection: "column", gap: 8 }}>
             {updates.map((n, idx) => (
-              <div key={n.id} data-testid="notif-update" style={{ background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: 14, display: "flex", gap: 12 }}>
-                <span style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(0,122,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{bellSvg(20, "#007AFF")}</span>
+              <div key={n.id} data-testid="notif-update" style={{ ...dkCard, borderRadius: 16, padding: 14, display: "flex", gap: 12 }}>
+                <span style={{ width: 40, height: 40, borderRadius: 12, background: "#007AFF", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{bellSvg(20, "#FFFFFF")}</span>
                 <span style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, minWidth: 0 }}>
                   <span style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.45, whiteSpace: "pre-wrap" }}>{n.text || n.title || n.message}</span>
-                  {n.date && <span style={{ fontSize: 12, color: "#94A3B8" }}>{n.date}</span>}
+                  {n.date && <span style={{ fontSize: 12, color: DK.t3 }}>{n.date}</span>}
                   {idx === 0 && (
                     <button data-testid="notif-do-update" onClick={() => setUpdating(true)}
                       style={{ alignSelf: "flex-start", marginTop: 4, height: 36, padding: "0 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 13, fontWeight: 800 }}>
@@ -59,19 +61,19 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
       {items.length === 0 ? (
         <div data-testid="notif-empty" style={{ ...box, padding: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
           <span style={{ fontSize: 15, fontWeight: 800 }}>Chưa có hoạt động nào</span>
-          <span style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>Bật nhắc nhở để Fipilot báo bạn khi đến giờ ghi bữa hoặc đến ngày cân.</span>
-          <button onClick={openReminders} style={{ marginTop: 6, height: 40, padding: "0 16px", borderRadius: 12, border: "1.5px solid #E2E8F0", background: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#007AFF" }}>Cài nhắc nhở</button>
+          <span style={{ fontSize: 13, color: DK.t2, lineHeight: 1.5 }}>Bật nhắc nhở để Fipilot báo bạn khi đến giờ ghi bữa hoặc đến ngày cân.</span>
+          <button onClick={openReminders} style={{ marginTop: 6, height: 40, padding: "0 16px", borderRadius: 12, border: "none", background: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#0040E0" }}>Cài nhắc nhở</button>
         </div>
       ) : (
         <div style={box}>
           {items.map((n, i) => (
             <button key={n.id} data-testid="notif-item" onClick={() => setOpen(open === n.id ? null : n.id)}
-              style={{ display: "flex", flexDirection: "column", gap: 2, width: "100%", padding: "12px 0", border: "none", borderBottom: i < items.length - 1 ? "1px solid #F1F5F9" : "none", background: "transparent", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
+              style={{ display: "flex", flexDirection: "column", gap: 2, width: "100%", padding: "12px 0", border: "none", borderBottom: i < items.length - 1 ? `1px solid ${DK.line}` : "none", background: "transparent", fontFamily: "inherit", textAlign: "left", color: DK.t1 }}>
               <span style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
                 <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{n.title}</span>
-                <span style={{ fontSize: 11, color: "#94A3B8", whiteSpace: "nowrap" }}>{dateOf(n.created_at)}</span>
+                <span style={{ fontSize: 11, color: DK.t3, whiteSpace: "nowrap" }}>{dateOf(n.created_at)}</span>
               </span>
-              {n.body && <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.45, ...(open === n.id ? { whiteSpace: "pre-wrap" } : { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }) }}>{n.body}</span>}
+              {n.body && <span style={{ fontSize: 13, color: DK.t2, lineHeight: 1.45, ...(open === n.id ? { whiteSpace: "pre-wrap" } : { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }) }}>{n.body}</span>}
             </button>
           ))}
         </div>

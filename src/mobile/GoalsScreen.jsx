@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Icon, Toggle, GRAD_BLUE } from "./ui";
 import { fmtInt, fmtDec } from "../lib/mobileView";
 import { todayVN } from "../lib/dateVN";
+import { DK, dkCard } from "../theme";
 
 const GOALS = [["bulk", "Tăng cơ"], ["cut", "Giảm mỡ"], ["maintain", "Duy trì"]];
 const GOAL_NAME = { bulk: "Tăng cơ", cut: "Giảm mỡ", maintain: "Duy trì" };
@@ -21,21 +22,22 @@ const MODE = [["asian", "Việt Nam (BMR ×0,9)"], ["standard", "Chuẩn quốc 
 const GYM_NAMES = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 const nameOf = (list, id) => (list.find((x) => x[0] === id) || [])[1] || "—";
 
-const sec = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
-const box = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 14px" };
-const rowBase = { display: "flex", alignItems: "center", gap: 10, minHeight: 48, width: "100%", boxSizing: "border-box", borderStyle: "solid", borderColor: "#F1F5F9", background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" };
+// Nền tối (bản vẽ 48): thẻ kính mờ, ô nhập tối, nút chọn kiểu kính
+const sec = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: DK.t3, letterSpacing: "0.08em" };
+const box = { ...dkCard, margin: "0 12px", borderRadius: 16, padding: "0 14px" };
+const rowBase = { display: "flex", alignItems: "center", gap: 10, minHeight: 48, width: "100%", boxSizing: "border-box", borderStyle: "solid", borderColor: DK.line, background: "transparent", padding: 0, fontFamily: "inherit", color: DK.t1, textAlign: "left" };
 const kStyle = { flex: 1, fontSize: 14, fontWeight: 600 };
-const vStyle = { fontSize: 14, fontWeight: 700, color: "#475569" };
+const vStyle = { fontSize: 14, fontWeight: 700, color: DK.t2 };
 
 // Dòng chọn 1 trong nhiều: bấm để mở các lựa chọn ngay bên dưới
 function ChoiceRow({ k, value, options, selected, onPick, open, setOpen, id, last }) {
   const isOpen = open === id;
   return (
-    <div style={{ borderBottom: last ? "none" : "1px solid #F1F5F9" }}>
+    <div style={{ borderBottom: last ? "none" : `1px solid ${DK.line}` }}>
       <button data-testid={`goals-${id}`} aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : id)} style={{ ...rowBase, borderWidth: 0 }}>
         <span style={kStyle}>{k}</span>
         <span style={vStyle}>{value}</span>
-        <span style={{ display: "flex", color: "#94A3B8", transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }}>{Icon.down(14)}</span>
+        <span style={{ display: "flex", color: DK.chev, transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }}>{Icon.down(14)}</span>
       </button>
       {isOpen && (
         <div role="group" aria-label={k} style={{ display: "flex", flexWrap: "wrap", gap: 6, paddingBottom: 12 }}>
@@ -44,7 +46,7 @@ function ChoiceRow({ k, value, options, selected, onPick, open, setOpen, id, las
             return (
               <button key={oid} data-testid={`goals-${id}-${oid}`} aria-pressed={on} disabled={!!disabled}
                 onClick={() => { onPick(oid); setOpen(null); }}
-                style={{ height: 36, padding: "0 12px", borderRadius: 10, fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, border: `1.5px solid ${on ? "#007AFF" : "#E2E8F0"}`, background: on ? "rgba(0,122,255,0.08)" : "#FFFFFF", color: on ? "#007AFF" : "#475569" }}>{text}</button>
+                style={{ height: 36, padding: "0 12px", borderRadius: 10, fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, border: `1.5px solid ${on ? "#FFFFFF" : DK.chipLine}`, background: on ? "#FFFFFF" : DK.chip, color: on ? "#0040E0" : DK.t2 }}>{text}</button>
             );
           })}
         </div>
@@ -68,7 +70,7 @@ function NumField({ value, min, max, decimal, onSave, testid, width = 64, ariaLa
   return (
     <input data-testid={testid} aria-label={ariaLabel} type="text" inputMode={decimal ? "decimal" : "numeric"} value={shown}
       onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
-      style={{ width, height: 36, padding: "0 8px", borderRadius: 10, border: "1.5px solid #E2E8F0", background: "#F1F5F9", fontFamily: "inherit", fontSize: 16, fontWeight: 700, color: "#0F172A", textAlign: "right", boxSizing: "border-box" }} />
+      style={{ width, height: 36, padding: "0 8px", borderRadius: 10, border: `1.5px solid ${DK.fieldLine}`, background: DK.field, fontFamily: "inherit", fontSize: 16, fontWeight: 700, color: DK.t1, textAlign: "right", boxSizing: "border-box" }} />
   );
 }
 
@@ -135,28 +137,28 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
 
       <span style={sec}>MỤC TIÊU</span>
       <div style={{ ...box, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
-        <div role="group" aria-label="Mục tiêu" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", padding: 3, background: "#F1F5F9", borderRadius: 12 }}>
+        <div role="group" aria-label="Mục tiêu" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", padding: 3, background: DK.chip, border: `1px solid ${DK.chipLine}`, borderRadius: 12 }}>
           {GOALS.map(([g, t]) => {
             const on = goal === g;
             const dis = noEx && g === "bulk";
             return (
               <button key={g} data-testid={`goals-goal-${g}`} aria-pressed={on} disabled={dis} onClick={() => pickGoal(g)}
-                style={{ height: 38, borderRadius: 9, border: "none", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, background: on ? "#FFFFFF" : "transparent", color: on ? "#007AFF" : "#475569", boxShadow: on ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>{t}</button>
+                style={{ height: 38, borderRadius: 9, border: "none", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, background: on ? "#FFFFFF" : "transparent", color: on ? "#0040E0" : DK.t2, boxShadow: on ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>{t}</button>
             );
           })}
         </div>
-        {noEx && <span style={{ fontSize: 12, color: "#64748B", marginTop: -4 }}>Không tập thì không đặt Tăng cơ được — chọn Giảm mỡ hoặc Duy trì.</span>}
+        {noEx && <span style={{ fontSize: 12, color: DK.t3, marginTop: -4 }}>Không tập thì không đặt Tăng cơ được — chọn Giảm mỡ hoặc Duy trì.</span>}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>Cân mục tiêu (kg)</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Cân mục tiêu (kg)</span>
             <NumField testid="goals-goalkg" ariaLabel="Cân mục tiêu" value={p.goalKg} min={30} max={250} decimal width="100%" onSave={(v) => save({ goalKg: v })} />
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>Trong vòng (tháng)</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Trong vòng (tháng)</span>
             <NumField testid="goals-months" ariaLabel="Số tháng" value={p.months} min={1} max={36} width="100%" onSave={(v) => save({ months: v })} />
           </label>
         </div>
-        <span data-testid="goals-speed" style={{ padding: "10px 12px", borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.4, background: speed.bad ? "rgba(245,158,11,0.12)" : "rgba(0,200,150,0.1)", color: speed.bad ? "#92400E" : "#065F46" }}>{speed.text}</span>
+        <span data-testid="goals-speed" style={{ padding: "10px 12px", borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.4, background: speed.bad ? "rgba(245,158,11,0.18)" : "rgba(0,200,150,0.18)", color: speed.bad ? DK.amber : DK.green }}>{speed.text}</span>
       </div>
 
       <span style={sec}>CƠ THỂ</span>
@@ -182,14 +184,14 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
           <button data-testid="goals-schedule" onClick={openSchedule} style={{ ...rowBase, borderWidth: "0 0 1px 0" }}>
             <span style={kStyle}>Lịch tập</span>
             <span style={{ ...vStyle, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "55%" }}>{gym}</span>
-            {Icon.chev(16)}
+            {Icon.chev(16, DK.chev)}
           </button>
         )}
         {goal === "cut" && <ChoiceRow id="diet" k="Kiểu ăn" value={nameOf(DIET, p.dietStrategy || "balanced")} options={DIET} selected={p.dietStrategy || "balanced"} onPick={(v) => save({ dietStrategy: v })} open={open} setOpen={setOpen} />}
         <div style={{ ...rowBase, minHeight: 52, borderWidth: 0 }}>
           <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>Dùng whey / TPBS</span>
-            <span style={{ fontSize: 12, color: "#64748B" }}>AI tính cả whey khi lên thực đơn</span>
+            <span style={{ fontSize: 12, color: DK.t3 }}>AI tính cả whey khi lên thực đơn</span>
           </span>
           <Toggle testid="goals-whey" on={p.usesSupplements === true} label="Dùng whey / TPBS" onClick={() => save({ usesSupplements: !(p.usesSupplements === true) })} />
         </div>
@@ -199,7 +201,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
       <div style={box}>
         <ChoiceRow id="mode" k="Công thức" value={nameOf(MODE, p.calorieMode || "standard")} options={MODE} selected={p.calorieMode || "standard"} onPick={(v) => save({ calorieMode: v })} open={open} setOpen={setOpen} last />
       </div>
-      <p style={{ margin: "8px 16px 0 16px", fontSize: 12, color: "#64748B", lineHeight: 1.45 }}>
+      <p style={{ margin: "8px 16px 0 16px", fontSize: 12, color: DK.t3, lineHeight: 1.45 }}>
         BMR theo Mifflin-St Jeor × hệ số vận động = TDEE. Tăng cơ +250 kcal, giảm mỡ −350 kcal. Đạm {m.pRatio ? `${fmtDec(parseFloat(m.pRatio))} g/kg` : "—"}, béo tối thiểu 0,7 g/kg, tinh bột là phần còn lại (ngày nghỉ giảm 25%).
       </p>
     </div>

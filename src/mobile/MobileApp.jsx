@@ -3,7 +3,8 @@
 // (Ghi bữa, Sửa bữa, Chụp ảnh, Fipilot AI, Thực đơn AI, màn phụ của Tôi).
 // Mọi ghi daily_logs đi qua useUserData (saveMealToCloud/toggleEaten/removeDayMeal/moveDayMeal/addWater/applyTemplate).
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast } from "./ui";
+import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
+import { DK, DK_CSS } from "../theme";
 import { TodayScreen } from "./TodayScreen";
 import { LogMealSheet } from "./LogMealSheet";
 import { EditMealScreen } from "./EditMealScreen";
@@ -362,56 +363,56 @@ export function MobileApp(props) {
       </SubPage>
     );
     if (sec === "goals") return (
-      <SubPage title="Mục tiêu & macro" onBack={closeLayer} right={<span style={{ fontSize: 12, fontWeight: 700, color: "#00A67E", paddingRight: 8 }}>Tự động lưu</span>}>
+      <SubPage title="Mục tiêu & macro" onBack={closeLayer} dark right={<span style={{ fontSize: 12, fontWeight: 700, color: DK.green, paddingRight: 8 }}>Tự động lưu</span>}>
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} />
       </SubPage>
     );
     if (sec === "notifications") return (
-      <SubPage title="Thông báo" onBack={closeLayer}>
+      <SubPage title="Thông báo" onBack={closeLayer} dark>
         <NotificationsScreen notif={notif} appVersion={appSettings.app_version} openReminders={() => replaceTop({ type: "page", sec: "reminders" })} />
       </SubPage>
     );
     if (sec === "about") return (
-      <SubPage title="Giới thiệu" onBack={closeLayer}>
+      <SubPage title="Giới thiệu" onBack={closeLayer} dark>
         <AboutScreen appSettings={appSettings} openTerms={(id) => openLayer({ type: "page", sec: "terms", id })} openEdit={isAdmin ? () => openLayer({ type: "page", sec: "about_edit" }) : null} />
       </SubPage>
     );
     if (sec === "terms") return (
-      <SubPage title="Điều khoản & chính sách" onBack={closeLayer}>
+      <SubPage title="Điều khoản & chính sách" onBack={closeLayer} dark>
         <TermsScreen appSettings={appSettings} initialId={l.id} />
       </SubPage>
     );
     if (sec === "feedback") return (
-      <SubPage title="Góp ý & báo lỗi" onBack={closeLayer}>
+      <SubPage title="Góp ý & báo lỗi" onBack={closeLayer} dark>
         <FeedbackScreen user={user} showToast={showToast} />
       </SubPage>
     );
     if (sec === "plan") return (
-      <SubPage title={isAdmin || flags.sales_enabled ? "Gói cước" : "Lượt AI"} onBack={closeLayer}>
+      <SubPage title={isAdmin || flags.sales_enabled ? "Gói cước" : "Lượt AI"} onBack={closeLayer} dark>
         <PlanScreen key={planNonce} userId={user?.id} isAdmin={isAdmin} salesEnabled={!!flags.sales_enabled} aiMenuLockedFree openPay={(pkg) => openLayer({ type: "page", sec: "pay", pkg })} />
       </SubPage>
     );
     if (sec === "account") return (
-      <SubPage title="Tài khoản" onBack={closeLayer}>
+      <SubPage title="Tài khoản" onBack={closeLayer} dark>
         <AccountScreen user={user} profile={profile} isAdmin={isAdmin} appVersion={appSettings.app_version} salesEnabled={!!flags.sales_enabled} pushFeature={flags.push} signOut={signOut} showToast={showToast}
           openPlan={() => openLayer({ type: "page", sec: "plan" })} />
       </SubPage>
     );
     if (sec === "pay") return (
-      <SubPage title="Chuyển khoản" subtitle="Premium" onBack={closeLayer}>
+      <SubPage title="Chuyển khoản" subtitle="Premium" onBack={closeLayer} dark>
         <PayScreen userId={user?.id} pkgId={l.pkg} onDone={() => { setPlanNonce((n) => n + 1); closeLayer(); showToast({ text: "Đã gửi. Premium bật khi admin xác nhận chuyển khoản." }); }} />
       </SubPage>
     );
     if (sec === "reminders") {
       const vis = ["train", "rest"].flatMap((dt) => visibleMealIds(mealConfig, dt, profile.exerciseType, DEFAULT_MEAL_CONFIG));
       return (
-        <SubPage title="Nhắc nhở" onBack={closeLayer}>
+        <SubPage title="Nhắc nhở" onBack={closeLayer} dark>
           <RemindersScreen profile={profile} setProfile={setProfile} pushFeature={flags.push} weightLog={weightLog} curKg={weight.curKg} visibleMeals={[...new Set(vis)]} />
         </SubPage>
       );
     }
     if (sec === "schedule") return (
-      <SubPage title="Lịch tập & bữa" onBack={closeLayer}>
+      <SubPage title="Lịch tập & bữa" onBack={closeLayer} dark>
         <ScheduleScreen profile={profile} setProfile={setProfile} mealConfig={profile.mealConfig || null} defaultConfig={mealConfig} curKg={weight.curKg} />
       </SubPage>
     );
@@ -440,12 +441,14 @@ export function MobileApp(props) {
 
   return (
     <div className="fpm" style={{ fontFamily: FONT, background: "#F8FAFC", color: "#0F172A", minHeight: "100vh" }}>
-      <style>{MOBILE_CSS}</style>
+      <style>{MOBILE_CSS + DK_CSS}</style>
+      {/* Tab Tôi: nền Blue Dark phủ cả màn (bản vẽ 48) */}
+      {tab === "me" && <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 0, background: DK.bg, backgroundColor: DK.base }} />}
       <AppDialogHost />
       <UpdatePopup appSettings={appSettings} />
       {isOffline && <div style={{ position: "sticky", top: 0, zIndex: 95, background: "#FEF3C7", padding: "8px 16px", fontSize: 12, fontWeight: 600, color: "#92400E", textAlign: "center" }}>Không có kết nối mạng — dữ liệu có thể chưa cập nhật</div>}
 
-      <main aria-hidden={top ? true : undefined} style={{ maxWidth: 560, margin: "0 auto", paddingBottom: "calc(66px + max(6px, calc(env(safe-area-inset-bottom, 0px) - 12px)))" }}>
+      <main aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd" : undefined} style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
             nowMinutes={now.minutes} name={name} dayLoaded={!!day} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
@@ -472,14 +475,14 @@ export function MobileApp(props) {
             weightLog={weightLog} weight={weight} profile={profile} setProfile={setProfile} addWeight={addWeight} updateWeight={updateWeight} deleteWeight={deleteWeight} />
         )}
         {tab === "me" && (
-          <MeScreen name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
+          <MeScreen bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />} name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
             openCoach={flags.ai_chat ? () => openLayer({ type: "coach" }) : null} salesEnabled={!!flags.sales_enabled}
             openDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             open={(sec) => openLayer({ type: "page", sec })} />
         )}
       </main>
 
-      <BottomNav hidden={!!top} tab={tab} onTab={(t) => { if (t === "today") setSelDate(null); setTab(t); }} onAdd={() => openLog(null, tab === "today" ? date : today)} />
+      <BottomNav dark={tab === "me"} hidden={!!top} tab={tab} onTab={(t) => { if (t === "today") setSelDate(null); setTab(t); }} onAdd={() => openLog(null, tab === "today" ? date : today)} />
 
       {layers.map((l, i) => (
         <div key={i} style={{ display: i === layers.length - 1 || l.type === "page" || l.type === "edit" ? "block" : "none" }}>

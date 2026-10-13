@@ -7,12 +7,14 @@ import { useEffect, useState } from "react";
 import { supabase, SUPABASE_URL } from "../lib/supabase";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { isPushSupported, getPushStatus, enablePushNotifications, disablePushNotifications } from "../pushNotifications";
-import { Icon, useLockScroll, GRAD_BLUE } from "./ui";
+import { Icon, useLockScroll, DkIcon } from "./ui";
+import { DK, dkCard } from "../theme";
 import { UpdateFlow } from "./UpdatePopup";
 
 const TIER = { free: "Miễn phí", trial: "Dùng thử", premium: "Premium" };
-const sec = { display: "block", padding: "18px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
-const group = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 14px" };
+// Nền tối (bản vẽ 48): thẻ kính mờ, chữ trắng, ô icon đặc màu. Sheet Xoá tài khoản vẫn nền trắng.
+const sec = { display: "block", padding: "18px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: DK.t3, letterSpacing: "0.08em" };
+const group = { ...dkCard, margin: "0 12px", borderRadius: 16, padding: "0 14px" };
 const svg = (d) => <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
 const IC = {
   user: ["#007AFF", "rgba(0,122,255,0.1)", svg(<><circle cx="12" cy="8" r="4" /><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" /></>)],
@@ -24,20 +26,20 @@ const IC = {
   out: ["#DC2626", "rgba(220,38,38,0.1)", svg(<><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="M14 8l4 4-4 4M18 12H9" /></>)],
   trash: ["#DC2626", "#FFFFFF", svg(<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />)],
 };
-const icon = (k) => { const [c, bg, s] = IC[k]; return <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 9, background: bg, color: c, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s}</span>; };
+const icon = (k) => { const [c, , s] = IC[k]; return <DkIcon color={c}>{s}</DkIcon>; };
 
-function Row({ ic, label, sub, value, onClick, last, right, testid, color = "#0F172A", disabled }) {
+function Row({ ic, label, sub, value, onClick, last, right, testid, color = DK.t1, disabled }) {
   const Tag = onClick ? "button" : "div";
   return (
     <Tag data-testid={testid} onClick={onClick} disabled={disabled} className={onClick ? "tap" : undefined}
-      style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", minHeight: 56, padding: 0, border: "none", borderBottom: last ? "none" : "1px solid #F1F5F9", background: "transparent", fontFamily: "inherit", color, textAlign: "left" }}>
+      style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", minHeight: 56, padding: 0, border: "none", borderBottom: last ? "none" : `1px solid ${DK.line}`, background: "transparent", fontFamily: "inherit", color, textAlign: "left" }}>
       {icon(ic)}
       <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
         <span style={{ fontSize: 15, fontWeight: 600, color }}>{label}</span>
-        {sub && <span style={{ fontSize: 12, color: "#64748B" }}>{sub}</span>}
+        {sub && <span style={{ fontSize: 12, color: DK.t3 }}>{sub}</span>}
       </span>
-      {value && <span style={{ fontSize: 13, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "55%" }}>{value}</span>}
-      {right !== undefined ? right : onClick ? Icon.chev(16) : null}
+      {value && <span style={{ fontSize: 13, color: DK.t2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "55%" }}>{value}</span>}
+      {right !== undefined ? right : onClick ? Icon.chev(16, DK.chev) : null}
     </Tag>
   );
 }
@@ -45,7 +47,7 @@ function Row({ ic, label, sub, value, onClick, last, right, testid, color = "#0F
 function Toggle({ on, busy, onChange, testid }) {
   return (
     <button data-testid={testid} role="switch" aria-checked={on} disabled={busy} onClick={(e) => { e.stopPropagation(); onChange(!on); }}
-      style={{ width: 48, height: 28, borderRadius: 14, border: "none", padding: 0, background: on ? "#00C896" : "#CBD5E1", position: "relative", flexShrink: 0, transition: "background .2s", opacity: busy ? 0.6 : 1 }}>
+      style={{ width: 48, height: 28, borderRadius: 14, border: "none", padding: 0, background: on ? "#00C896" : DK.track, boxShadow: on ? "none" : "inset 0 0 0 1px rgba(255,255,255,0.18)", position: "relative", flexShrink: 0, transition: "background .2s", opacity: busy ? 0.6 : 1 }}>
       <span style={{ position: "absolute", top: 3, left: on ? 23 : 3, width: 22, height: 22, borderRadius: 11, background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left .2s" }} />
     </button>
   );
@@ -147,12 +149,12 @@ export function AccountScreen({ user, profile, isAdmin, appVersion, salesEnabled
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <div data-testid="account-card" style={{ margin: "12px 12px 0 12px", padding: 16, borderRadius: 20, background: GRAD_BLUE, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 20px rgba(0,87,255,0.22)" }}>
-        <span style={{ width: 56, height: 56, borderRadius: 28, background: "rgba(255,255,255,0.22)", border: "2px solid rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 900, flexShrink: 0 }}>{initials}</span>
+      <div data-testid="account-card" style={{ ...dkCard, margin: "12px 12px 0 12px", padding: 16, borderRadius: 20, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 14 }}>
+        <span style={{ width: 56, height: 56, borderRadius: 28, background: "linear-gradient(160deg,#2C8DFF,#0040E0)", boxShadow: "0 0 0 3px #FFFFFF, 0 6px 14px rgba(0,64,224,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 900, flexShrink: 0 }}>{initials}</span>
         <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 18, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</span>
-          <span style={{ fontSize: 13, opacity: 0.9, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{email}</span>
-          <span style={{ alignSelf: "flex-start", marginTop: 4, fontSize: 11, fontWeight: 800, background: "rgba(255,255,255,0.2)", padding: "3px 8px", borderRadius: 999 }}>{tierLabel}</span>
+          <span style={{ fontSize: 13, color: DK.t2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{email}</span>
+          <span style={{ alignSelf: "flex-start", marginTop: 4, fontSize: 11, fontWeight: 800, background: "#FFFFFF", color: "#6D28D9", padding: "3px 8px", borderRadius: 999 }}>{tierLabel}</span>
         </span>
       </div>
 
@@ -171,17 +173,17 @@ export function AccountScreen({ user, profile, isAdmin, appVersion, salesEnabled
       </div>
 
       <div style={{ ...group, marginTop: 12 }}>
-        <Row ic="out" label="Đăng xuất" color="#DC2626" onClick={logout} right={null} testid="account-logout" last />
+        <Row ic="out" label="Đăng xuất" color={DK.red} onClick={logout} right={null} testid="account-logout" last />
       </div>
 
       <span style={sec}>VÙNG NGUY HIỂM</span>
-      <button data-testid="account-delete" onClick={() => setDel(true)} className="tap" style={{ margin: "0 12px", width: "calc(100% - 24px)", boxSizing: "border-box", padding: 14, borderRadius: 16, border: "1.5px solid #FECACA", background: "#FEF2F2", display: "flex", alignItems: "center", gap: 12, fontFamily: "inherit", textAlign: "left" }}>
+      <button data-testid="account-delete" onClick={() => setDel(true)} className="tap" style={{ margin: "0 12px", width: "calc(100% - 24px)", boxSizing: "border-box", padding: 14, borderRadius: 16, border: "1px solid rgba(252,165,165,0.35)", background: "rgba(220,38,38,0.16)", display: "flex", alignItems: "center", gap: 12, fontFamily: "inherit", textAlign: "left" }}>
         {icon("trash")}
         <span style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-          <span style={{ fontSize: 15, fontWeight: 800, color: "#DC2626" }}>Xoá tài khoản vĩnh viễn</span>
-          <span style={{ fontSize: 12, color: "#991B1B" }}>Xoá hết nhật ký, cân nặng, thực đơn. Không khôi phục được.</span>
+          <span style={{ fontSize: 15, fontWeight: 800, color: DK.red }}>Xoá tài khoản vĩnh viễn</span>
+          <span style={{ fontSize: 12, color: "rgba(255,200,200,0.8)" }}>Xoá hết nhật ký, cân nặng, thực đơn. Không khôi phục được.</span>
         </span>
-        {Icon.chev(16)}
+        {Icon.chev(16, DK.chev)}
       </button>
       {upd && <UpdateFlow manual toVersion={appVersion} onLater={() => setUpd(false)} />}
       {del && <DeleteSheet email={email} signOut={signOut} onClose={() => setDel(false)} />}

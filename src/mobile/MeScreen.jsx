@@ -1,6 +1,8 @@
-// Màn 6 · Tôi (đã chốt): thẻ hồ sơ, Nhật ký + Hỏi Fipilot AI (chat chuyển từ header Hôm nay sang đây 13/10), nhóm Mục tiêu/Lịch tập/Nhắc nhở/Gói cước,
+// Màn 6 · Tôi — bản vẽ 48 (chốt 14/10): nền Blue Dark phủ cả màn, thẻ kính mờ chữ trắng, ô icon đặc màu + icon trắng.
+// Nội dung: thẻ hồ sơ, Nhật ký + Hỏi Fipilot AI (chat chuyển từ header Hôm nay sang đây 13/10), nhóm Mục tiêu/Lịch tập/Nhắc nhở/Gói cước,
 // nhóm Góp ý/Chia sẻ/Giới thiệu, Quản trị (chỉ admin), Đăng xuất.
-import { Icon } from "./ui";
+import { Icon, DkIcon } from "./ui";
+import { DK, dkCard, dkSec } from "../theme";
 import { fmtInt, fmtDec } from "../lib/mobileView";
 import { appConfirm, appAlert } from "../lib/dialog";
 import { normalizeReminders } from "../lib/reminders";
@@ -9,8 +11,7 @@ const GYM_NAMES = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
 const GOAL = { bulk: "Tăng cơ", cut: "Giảm mỡ", maintain: "Giữ cân", recomp: "Recomp" };
 const TIER = { free: "Miễn phí", trial: "Dùng thử", premium: "Premium" };
 
-const group = { margin: "12px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 14px" };
-// Ô icon 32×32 bo 9, nền màu nhạt, nét icon cùng màu (kiểu danh sách cài đặt của app)
+// Ô icon 32×32 bo 9, nền đặc theo màu mục, icon trắng (kiểu Cài đặt iPhone) — màu thứ 2 (nền nhạt) giữ lại cho chỗ nền sáng
 const svg = (d) => <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
 const ICONS = {
   goals: ["#007AFF", "rgba(0,122,255,0.1)", svg(<><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></>)],
@@ -27,22 +28,24 @@ const ICONS = {
   admin: ["#DC2626", "rgba(220,38,38,0.1)", svg(<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />)],
 };
 export function RowIcon({ name }) {
-  const [color, bg, icon] = ICONS[name];
-  return <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 9, background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{icon}</span>;
+  const [color, , icon] = ICONS[name];
+  return <DkIcon color={color}>{icon}</DkIcon>;
 }
 
+const group = { ...dkCard, margin: "0 12px", padding: "0 14px" };
 function Row({ icon, label, value, onClick, last, testid }) {
   return (
-    <button data-testid={testid} onClick={onClick} className="tap" style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", height: 52, boxSizing: "content-box", borderStyle: "solid", borderColor: "#F1F5F9", borderWidth: last ? 0 : "0 0 1px 0", background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
+    <button data-testid={testid} onClick={onClick} className="tap row-hover" style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", height: 54, boxSizing: "content-box", borderStyle: "solid", borderColor: DK.line, borderWidth: last ? 0 : "0 0 1px 0", background: "transparent", padding: 0, fontFamily: "inherit", color: DK.t1, textAlign: "left" }}>
       {icon && <RowIcon name={icon} />}
       <span style={{ flexShrink: 0, fontSize: 15, fontWeight: 600, whiteSpace: "nowrap" }}>{label}</span>
-      <span style={{ flex: 1, minWidth: 0, textAlign: "right", fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{value || ""}</span>
-      {Icon.chev(16)}
+      <span style={{ flex: 1, minWidth: 0, textAlign: "right", fontSize: 12, color: DK.t3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{value || ""}</span>
+      {Icon.chev(16, DK.chev)}
     </button>
   );
 }
+const Sec = ({ children }) => <span style={dkSec}>{children}</span>;
 
-export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, salesEnabled, signOut }) {
+export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, salesEnabled, signOut, bell }) {
   const tier = profile?.tier || "free";
   const initials = (name || "?").replace(/[^A-Za-zÀ-ỹ0-9]/g, "").slice(0, 2).toUpperCase() || "?";
   const gym = (profile?.exerciseType || "gym") === "none" ? "Không tập" : (profile?.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
@@ -53,6 +56,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
 
   const rem = normalizeReminders(profile?.reminderSettings);
   const remVal = [rem.meal.on && rem.meal.slots.length && "Bữa", rem.weigh.on && "Cân", rem.water.on && "Nước"].filter(Boolean).join(" · ") || "Đang tắt";
+  const planLabel = salesEnabled || isAdmin ? "Gói cước" : "Lượt AI";
 
   const share = async () => {
     const data = { title: "Fipilot AI", text: "Ghi bữa ăn, tính macro và lên thực đơn với Fipilot AI", url: "https://app.fipilotai.com" };
@@ -65,50 +69,60 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
   const logout = async () => { if (await appConfirm("Đăng xuất khỏi Fipilot AI?")) signOut(); };
 
   return (
-    <div>
-      <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 10px 16px" }}><span style={{ fontSize: 20, fontWeight: 900 }}>Tôi</span></div>
-
-      <button data-testid="me-profile-card" onClick={() => open("goals")} className="tap" style={{ margin: "0 12px", width: "calc(100% - 24px)", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, color: "#0F172A", fontFamily: "inherit", textAlign: "left", boxSizing: "border-box" }}>
-        <span style={{ width: 44, height: 44, borderRadius: 22, background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#FFFFFF", fontSize: 16, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials}</span>
+    <div data-testid="me-screen" style={{ color: DK.t1 }}>
+      <div style={{ display: "flex", alignItems: "center", padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 16px 18px" }}>
         <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 15, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}>
-            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</span>
-            {tier !== "free" && <span style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", background: "rgba(124,58,237,0.1)", padding: "2px 8px", borderRadius: 999, marginLeft: 4, flexShrink: 0 }}>{TIER[tier] || tier}</span>}
-          </span>
-          <span style={{ fontSize: 12, color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{GOAL[profile?.goalType] || "Mục tiêu"} · {fmtDec(weight.curKg)} → {fmtDec(weight.goalKg)} kg · {fmtInt(macro?.calTarget)} kcal ngày tập</span>
+          <span style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.5px", lineHeight: 1.15 }}>Tôi</span>
+          <span style={{ fontSize: 13, color: DK.t2 }}>Quản lý tài khoản và cài đặt</span>
         </span>
-        {Icon.chev(16)}
+        {bell}
+      </div>
+
+      <button data-testid="me-profile-card" onClick={() => open("goals")} className="tap" style={{ ...dkCard, borderRadius: 20, margin: "0 12px", width: "calc(100% - 24px)", padding: 14, display: "flex", alignItems: "center", gap: 12, color: DK.t1, fontFamily: "inherit", textAlign: "left", boxSizing: "border-box" }}>
+        <span style={{ width: 54, height: 54, borderRadius: 27, background: "linear-gradient(160deg,#2C8DFF,#0040E0)", color: "#FFFFFF", fontSize: 18, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 0 3px #FFFFFF, 0 6px 14px rgba(0,64,224,0.3)" }}>{initials}</span>
+        <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+            <span style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</span>
+            {tier !== "free" && <span style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", background: "#FFFFFF", padding: "2px 8px", borderRadius: 999, flexShrink: 0 }}>{TIER[tier] || tier}</span>}
+          </span>
+          <span style={{ fontSize: 13, color: DK.t2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{GOAL[profile?.goalType] || "Mục tiêu"} · {fmtDec(weight.curKg)} → {fmtDec(weight.goalKg)} kg</span>
+          <span style={{ fontSize: 13, color: DK.t2 }}>{fmtInt(macro?.calTarget)} kcal/ngày tập</span>
+        </span>
+        {Icon.chev(16, DK.chev)}
       </button>
 
+      <Sec>Theo dõi & dinh dưỡng</Sec>
       <div style={group}>
-        <Row icon="diary" testid="me-diary" label="Nhật ký ăn uống" value="Calo từng ngày" onClick={openDiary} last={!openCoach} />
-        {openCoach && <Row icon="coach" testid="me-coach" label="Hỏi Fipilot AI" value="Chat hỏi về ăn uống, tập" onClick={openCoach} last />}
-      </div>
-
-      <div style={group}>
+        <Row icon="diary" testid="me-diary" label="Nhật ký ăn uống" value="Calo từng ngày" onClick={openDiary} />
         <Row icon="goals" testid="me-goals" label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
         <Row icon="schedule" testid="me-schedule" label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
-        <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
-        <Row icon="plan" testid="me-plan" label={salesEnabled || isAdmin ? "Gói cước" : "Lượt AI"} value={salesEnabled || isAdmin ? TIER[tier] || tier : "Đang miễn phí"} onClick={() => open("plan")} last />
+        <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} last />
       </div>
 
+      <Sec>AI & hỗ trợ</Sec>
       <div style={group}>
-        <Row icon="feedback" testid="me-feedback" label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "feedback_inline" : "feedback")} />
+        {openCoach && <Row icon="coach" testid="me-coach" label="Hỏi Fipilot AI" value="Chat về ăn uống, tập" onClick={openCoach} />}
+        <Row icon="feedback" testid="me-feedback" label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "feedback_inline" : "feedback")} last />
+      </div>
+
+      <Sec>Tài khoản & ứng dụng</Sec>
+      <div style={group}>
+        <Row icon="plan" testid="me-plan" label={planLabel} value={salesEnabled || isAdmin ? TIER[tier] || tier : "Đang miễn phí"} onClick={() => open("plan")} />
+        <Row icon="account" testid="me-account" label="Tài khoản" value="Email · mật khẩu" onClick={() => open("account")} />
         <Row icon="share" label="Chia sẻ app" onClick={share} />
-        <Row icon="account" testid="me-account" label="Tài khoản" value="Email · xoá tài khoản" onClick={() => open("account")} />
         <Row icon="about" testid="me-about" label="Giới thiệu & điều khoản" value={appVersion ? `v${appVersion}` : null} onClick={() => open("about")} last />
       </div>
 
       {isAdmin && (
-        <button data-testid="me-admin" onClick={() => open("admin_home")} className="tap" style={{ margin: "12px 12px 0 12px", width: "calc(100% - 24px)", height: 56, background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 14px", display: "flex", alignItems: "center", gap: 12, color: "#0F172A", fontFamily: "inherit", boxSizing: "border-box" }}>
+        <button data-testid="me-admin" onClick={() => open("admin_home")} className="tap" style={{ ...group, marginTop: 12, width: "calc(100% - 24px)", height: 56, display: "flex", alignItems: "center", gap: 12, color: DK.t1, fontFamily: "inherit", boxSizing: "border-box" }}>
           <RowIcon name="admin" />
           <span style={{ flex: 1, fontSize: 15, fontWeight: 700, textAlign: "left" }}>Quản trị</span>
-          <span style={{ fontSize: 11, fontWeight: 800, color: "#475569", background: "#F1F5F9", padding: "3px 8px", borderRadius: 6 }}>Chỉ admin</span>
-          {Icon.chev(16)}
+          <span style={{ fontSize: 11, fontWeight: 800, color: "#FFFFFF", background: "rgba(255,255,255,0.16)", padding: "3px 8px", borderRadius: 6 }}>Chỉ admin</span>
+          {Icon.chev(16, DK.chev)}
         </button>
       )}
 
-      <button data-testid="me-logout" onClick={logout} className="tap" style={{ margin: "12px 12px 0 12px", width: "calc(100% - 24px)", height: 56, background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 14px", display: "flex", alignItems: "center", gap: 12, color: "#DC2626", fontFamily: "inherit", boxSizing: "border-box" }}>
+      <button data-testid="me-logout" onClick={logout} className="tap" style={{ ...group, marginTop: 12, width: "calc(100% - 24px)", height: 56, display: "flex", alignItems: "center", gap: 12, color: DK.red, fontFamily: "inherit", boxSizing: "border-box" }}>
         <RowIcon name="logout" />
         <span style={{ flex: 1, fontSize: 15, fontWeight: 700, textAlign: "left" }}>Đăng xuất</span>
       </button>
