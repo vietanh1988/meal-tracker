@@ -62,12 +62,13 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
         <Row label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
         <Row label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
         <Row label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
-        <Row label="Gói cước" value={TIER[tier] || tier} onClick={() => open("account")} last />
+        <Row label="Gói cước" value={TIER[tier] || tier} onClick={() => open("plan")} last />
       </div>
 
       <div style={group}>
-        <Row label="Góp ý & báo lỗi" onClick={() => open("feedback_inline")} />
+        <Row label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "feedback_inline" : "feedback")} />
         <Row label="Chia sẻ app" onClick={share} />
+        <Row label="Tài khoản" value="Email · xoá tài khoản" onClick={() => open("account")} />
         <Row label="Giới thiệu · Điều khoản" value={appVersion ? `v${appVersion}` : null} onClick={() => open("about")} last />
       </div>
 

@@ -385,6 +385,7 @@ export default function FeedbackTab({ user, isAdmin }) {
               <span style={{ fontSize: 10, color: C.t3 }}>{new Date(fb.created_at).toLocaleDateString("vi-VN")}</span>
             </div>
             <div style={{ fontSize: 12, color: "#334155", marginTop: 6, lineHeight: 1.5 }}>{fb.content}</div>
+            {fb.image_url && /^data:image\/(jpeg|png|webp);base64,/.test(fb.image_url) && <a href={fb.image_url} download={`gopy-${fb.id}.jpg`}><img src={fb.image_url} alt="Ảnh đính kèm" style={{ display: "block", marginTop: 8, maxWidth: 220, maxHeight: 220, borderRadius: 8, border: `1px solid ${C.border}`, objectFit: "contain" }} /></a>}
             <div style={{ fontSize: 10, fontWeight: 700, marginTop: 6, color: fb.status === "replied" ? "#10B981" : "#F59E0B" }}>
               {fb.status === "replied" ? "✅ Đã trả lời" : "⏳ Chưa trả lời"}
             </div>

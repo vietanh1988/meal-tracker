@@ -12,6 +12,8 @@ import { MeScreen } from "./MeScreen";
 import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
 import { RemindersScreen } from "./RemindersScreen";
+import { PlanScreen } from "./PlanScreen";
+import { FeedbackScreen } from "./FeedbackScreen";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
@@ -298,6 +300,16 @@ export function MobileApp(props) {
     if (sec === "goals") return (
       <SubPage title="Mục tiêu & macro" onBack={closeLayer} right={<span style={{ fontSize: 12, fontWeight: 700, color: "#00A67E", paddingRight: 8 }}>Tự động lưu</span>}>
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} />
+      </SubPage>
+    );
+    if (sec === "feedback") return (
+      <SubPage title="Góp ý & báo lỗi" onBack={closeLayer}>
+        <FeedbackScreen user={user} showToast={showToast} />
+      </SubPage>
+    );
+    if (sec === "plan") return (
+      <SubPage title="Gói cước" onBack={closeLayer}>
+        <PlanScreen userId={user?.id} isAdmin={isAdmin} salesEnabled={!!flags.sales_enabled} openPayment={() => openLayer({ type: "page", sec: "account" })} />
       </SubPage>
     );
     if (sec === "reminders") {
