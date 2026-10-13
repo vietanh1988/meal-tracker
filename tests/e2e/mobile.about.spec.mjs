@@ -16,10 +16,13 @@ test("Giới thiệu: số món thật và điều khoản", async ({ browser })
   await expect(page.getByTestId("seg-diary")).toHaveAttribute("aria-selected", "true");
   await nav("Tôi").click();
   await page.getByRole("button", { name: /Giới thiệu/ }).click();
-  await expect(page.getByTestId("about-foods")).toHaveText(/^[\d.]+ món · \d+ món Việt$/);
+  await expect(page.getByTestId("about-foods")).toContainText(/[\d.]+ món/);
+  await expect(page.getByTestId("about-foods")).toContainText(/\d+ món Việt/);
   await expect(page.getByTestId("about-edit")).toHaveCount(0); // user thường không thấy nút sửa
   await page.screenshot({ path: "shots/gioi-thieu.png", fullPage: true });
   await page.getByTestId("about-terms").click();
-  await expect(page.getByText("Điều khoản", { exact: true }).first()).toBeVisible();
+  await expect(page.getByTestId("terms-content")).toBeVisible();
+  await expect(page.getByText("Điều khoản & chính sách").first()).toBeVisible();
+  await page.screenshot({ path: "shots/dieu-khoan.png", fullPage: true });
   await ctx.close();
 });

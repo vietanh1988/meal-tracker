@@ -91,6 +91,17 @@ export function PlanScreen({ userId, isAdmin, salesEnabled, aiMenuLockedFree = t
       <span style={sec}>LƯỢT AI ĐÃ DÙNG</span>
       <QuotaList quota={quota} />
       {note}
+      <span style={sec}>MẸO TIẾT KIỆM LƯỢT</span>
+      <div data-testid="plan-tips" style={box}>
+        {[["#00A67E", "rgba(0,200,150,0.12)", <><ellipse key="a" cx="12" cy="6" rx="7" ry="3" /><path key="b" d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3" /></>, "Tìm món trong kho", "Hơn 1.000 món có sẵn macro, không tốn lượt"],
+          ["#007AFF", "rgba(0,122,255,0.1)", <><path key="a" d="M4 12a8 8 0 0 1 14-5.3L20 9" /><path key="b" d="M20 4v5h-5" /></>, "Dùng lại thực đơn của tôi", "Thực đơn AI đã tạo, ngày đã ăn — ở tab Thực đơn"],
+          ["#7C3AED", "rgba(124,58,237,0.1)", <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />, "Món AI đã tính được lưu", "Gõ lại món đó lần sau không tốn lượt"]].map(([c, bg, d, t, sub], i, arr) => (
+          <div key={t} style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 56, borderBottom: i < arr.length - 1 ? "1px solid #F1F5F9" : "none" }}>
+            <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 9, background: bg, color: c, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg></span>
+            <span style={{ display: "flex", flexDirection: "column", flex: 1 }}><span style={{ fontSize: 14, fontWeight: 700 }}>{t}</span><span style={{ fontSize: 12, color: "#64748B" }}>{sub}</span></span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 

@@ -15,7 +15,7 @@ import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen, PayScreen } from "./PlanScreen";
 import { AccountScreen } from "./AccountScreen";
 import { FeedbackScreen } from "./FeedbackScreen";
-import { AboutScreen } from "./AboutScreen";
+import { AboutScreen, TermsScreen } from "./AboutScreen";
 import { MenuScreen, MenuDayPage, MenuTplPage, MenuPastPage } from "./MenuScreen";
 import { AIMenuScreen } from "./AIMenuScreen";
 import { WEEK_KEYS, WEEK_SHORT, mealsCal } from "../lib/menuView";
@@ -373,7 +373,12 @@ export function MobileApp(props) {
     );
     if (sec === "about") return (
       <SubPage title="Giới thiệu" onBack={closeLayer}>
-        <AboutScreen appSettings={appSettings} openTerms={() => openLayer({ type: "page", sec: "terms" })} openEdit={isAdmin ? () => openLayer({ type: "page", sec: "about_edit" }) : null} />
+        <AboutScreen appSettings={appSettings} openTerms={(id) => openLayer({ type: "page", sec: "terms", id })} openEdit={isAdmin ? () => openLayer({ type: "page", sec: "about_edit" }) : null} />
+      </SubPage>
+    );
+    if (sec === "terms") return (
+      <SubPage title="Điều khoản & chính sách" onBack={closeLayer}>
+        <TermsScreen appSettings={appSettings} initialId={l.id} />
       </SubPage>
     );
     if (sec === "feedback") return (
