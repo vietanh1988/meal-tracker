@@ -10,11 +10,30 @@ const GOAL = { bulk: "Tăng cơ", cut: "Giảm mỡ", maintain: "Giữ cân", re
 const TIER = { free: "Miễn phí", trial: "Dùng thử", premium: "Premium" };
 
 const group = { margin: "12px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 14px" };
-function Row({ label, value, onClick, last }) {
+// Ô icon 32×32 bo 9, nền màu nhạt, nét icon cùng màu (kiểu danh sách cài đặt của app)
+const svg = (d) => <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
+const ICONS = {
+  goals: ["#007AFF", "rgba(0,122,255,0.1)", svg(<><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></>)],
+  schedule: ["#00A67E", "rgba(0,200,150,0.12)", svg(<><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M8 3v4M16 3v4M4 10h16" /></>)],
+  reminders: ["#EA580C", "rgba(249,115,22,0.12)", svg(<><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></>)],
+  plan: ["#7C3AED", "rgba(124,58,237,0.1)", svg(<path d="M4 8l4 4 4-7 4 7 4-4-2 11H6z" />)],
+  feedback: ["#0891B2", "rgba(8,145,178,0.1)", svg(<path d="M5 5h14v10H9l-4 4z" />)],
+  share: ["#2563EB", "rgba(37,99,235,0.1)", svg(<><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6" /></>)],
+  account: ["#475569", "rgba(71,85,105,0.1)", svg(<><circle cx="12" cy="8" r="4" /><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" /></>)],
+  about: ["#64748B", "rgba(100,116,139,0.12)", svg(<><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5v.5" /></>)],
+  admin: ["#DC2626", "rgba(220,38,38,0.1)", svg(<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />)],
+};
+export function RowIcon({ name }) {
+  const [color, bg, icon] = ICONS[name];
+  return <span aria-hidden="true" style={{ width: 32, height: 32, borderRadius: 9, background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{icon}</span>;
+}
+
+function Row({ icon, label, value, onClick, last, testid }) {
   return (
-    <button onClick={onClick} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 48, boxSizing: "content-box", borderStyle: "solid", borderColor: "#F1F5F9", borderWidth: last ? 0 : "0 0 1px 0", background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
-      <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{label}</span>
-      {value && <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "55%" }}>{value}</span>}
+    <button data-testid={testid} onClick={onClick} className="tap" style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", height: 52, boxSizing: "content-box", borderStyle: "solid", borderColor: "#F1F5F9", borderWidth: last ? 0 : "0 0 1px 0", background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
+      {icon && <RowIcon name={icon} />}
+      <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{label}</span>
+      {value && <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "50%" }}>{value}</span>}
       {Icon.chev(16)}
     </button>
   );
@@ -59,23 +78,23 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
       </button>
 
       <div style={group}>
-        <Row label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
-        <Row label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
-        <Row label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
-        <Row label="Gói cước" value={TIER[tier] || tier} onClick={() => open("plan")} last />
+        <Row icon="goals" testid="me-goals" label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
+        <Row icon="schedule" testid="me-schedule" label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
+        <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
+        <Row icon="plan" testid="me-plan" label="Gói cước" value={TIER[tier] || tier} onClick={() => open("plan")} last />
       </div>
 
       <div style={group}>
-        <Row label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "feedback_inline" : "feedback")} />
-        <Row label="Chia sẻ app" onClick={share} />
-        <Row label="Tài khoản" value="Email · xoá tài khoản" onClick={() => open("account")} />
-        <Row label="Giới thiệu · Điều khoản" value={appVersion ? `v${appVersion}` : null} onClick={() => open("about")} last />
+        <Row icon="feedback" testid="me-feedback" label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "feedback_inline" : "feedback")} />
+        <Row icon="share" label="Chia sẻ app" onClick={share} />
+        <Row icon="account" testid="me-account" label="Tài khoản" value="Email · xoá tài khoản" onClick={() => open("account")} />
+        <Row icon="about" testid="me-about" label="Giới thiệu · Điều khoản" value={appVersion ? `v${appVersion}` : null} onClick={() => open("about")} last />
       </div>
 
       {isAdmin && (
-        <button onClick={() => open("admin_home")} className="tap" style={{ margin: "12px 12px 0 12px", width: "calc(100% - 24px)", height: 48, background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 14px", display: "flex", alignItems: "center", gap: 10, color: "#0F172A", fontFamily: "inherit", boxSizing: "border-box" }}>
-          <img src="/icons/nav_settings.png" alt="" style={{ width: 20, height: 20, objectFit: "contain" }} />
-          <span style={{ flex: 1, fontSize: 14, fontWeight: 700, textAlign: "left" }}>Quản trị</span>
+        <button data-testid="me-admin" onClick={() => open("admin_home")} className="tap" style={{ margin: "12px 12px 0 12px", width: "calc(100% - 24px)", height: 56, background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 14px", display: "flex", alignItems: "center", gap: 12, color: "#0F172A", fontFamily: "inherit", boxSizing: "border-box" }}>
+          <RowIcon name="admin" />
+          <span style={{ flex: 1, fontSize: 15, fontWeight: 700, textAlign: "left" }}>Quản trị</span>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#475569", background: "#F1F5F9", padding: "3px 8px", borderRadius: 6 }}>Chỉ admin</span>
           {Icon.chev(16)}
         </button>

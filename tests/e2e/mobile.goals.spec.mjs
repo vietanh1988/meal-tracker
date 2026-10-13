@@ -15,6 +15,8 @@ test("Mục tiêu & macro: lưu hồ sơ và tính lại kcal", async ({ browser
   try {
     await login(page);
     await nav("Tôi").click();
+    await expect(page.getByTestId("me-goals")).toBeVisible();
+    await page.screenshot({ path: "shots/toi.png" });
     await page.getByTestId("me-profile-card").click();
     await expect(page.getByText("MỤC TIÊU", { exact: true })).toBeVisible();
     await expect(page.getByText("Tự động lưu")).toBeVisible();
