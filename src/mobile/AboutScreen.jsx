@@ -62,11 +62,13 @@ export function AboutScreen({ appSettings, openTerms, openEdit }) {
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <div style={{ margin: "12px 12px 0 12px", borderRadius: 24, padding: "22px 18px", background: GRAD_BLUE, color: "#FFFFFF", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center", boxShadow: "0 8px 22px rgba(0,87,255,0.22)" }}>
-        <img src="/icon-192.png" alt="Fipilot AI" style={{ width: 72, height: 72, borderRadius: 20, objectFit: "cover", boxShadow: "0 6px 16px rgba(0,0,0,0.18)", background: "#FFFFFF" }} />
-        <span style={{ fontSize: 22, fontWeight: 900 }}>{a.appName || "Fipilot AI"}</span>
-        <span style={{ fontSize: 13, opacity: 0.92, lineHeight: 1.5 }}>{(a.tagline || "Trợ lý bữa ăn thông minh cho người Việt").replace(/^AI Nutrition Coach\s*[│|·]\s*/i, "")}</span>
-        {version && <span data-testid="about-version" style={{ fontSize: 11, fontWeight: 800, background: "rgba(255,255,255,0.2)", padding: "4px 10px", borderRadius: 999 }}>Phiên bản {version}</span>}
+      {/* Bản vẽ 49: thẻ kính + quầng sáng xanh sau logo (thay khối xanh sáng, cho đồng bộ nền tối) */}
+      <div data-testid="about-hero" style={{ ...dkCard, borderRadius: 24, margin: "12px 12px 0 12px", padding: "22px 18px", color: "#FFFFFF", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <span aria-hidden="true" style={{ position: "absolute", left: "50%", top: -60, width: 220, height: 160, marginLeft: -110, background: "radial-gradient(closest-side, rgba(77,163,255,0.45), rgba(77,163,255,0))", pointerEvents: "none" }} />
+        <img src="/icon-192.png" alt="Fipilot AI" style={{ position: "relative", width: 72, height: 72, borderRadius: 20, objectFit: "cover", boxShadow: "0 0 0 1px rgba(255,255,255,0.3), 0 10px 24px rgba(0,30,120,0.45)", background: "#FFFFFF" }} />
+        <span style={{ position: "relative", fontSize: 22, fontWeight: 900 }}>{a.appName || "Fipilot AI"}</span>
+        <span style={{ position: "relative", fontSize: 13, color: DK.t2, lineHeight: 1.5 }}>{(a.tagline || "Trợ lý bữa ăn thông minh cho người Việt").replace(/^AI Nutrition Coach\s*[│|·]\s*/i, "")}</span>
+        {version && <span data-testid="about-version" style={{ position: "relative", fontSize: 11, fontWeight: 800, color: "#0040E0", background: "#FFFFFF", padding: "4px 10px", borderRadius: 999 }}>Phiên bản {version}</span>}
       </div>
 
       <span style={sec}>CÓ GÌ TRONG APP</span>

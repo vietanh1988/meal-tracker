@@ -131,6 +131,7 @@ export function SaveWeekSheet({ dayType, gymDays, noEx, onSave, onClose }) {
               style={{ height: 44, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: 800, background: on ? "#007AFF" : ok(i) ? "#F1F5F9" : "#F8FAFC", color: on ? "#FFFFFF" : ok(i) ? "#475569" : "#CBD5E1" }}>{d}</button>;
           })}
         </div>
+        <span style={{ fontSize: 12, color: "#64748B" }}>Ô mờ = {dayType === "train" ? "ngày nghỉ" : "ngày tập"}, không đặt được thực đơn {DT[dayType].toLowerCase()}.</span>
         <button data-testid="save-week-confirm" disabled={!days.length} onClick={() => onSave(days)} style={btn("blue", !days.length)}>{days.length ? `Lặp lại ${days.length} thứ mỗi tuần` : "Chọn ngày"}</button>
       </div>
     </div>

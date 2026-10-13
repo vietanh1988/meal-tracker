@@ -71,22 +71,23 @@ export function AppDialogHost() {
     <div onClick={() => close(isConfirm ? false : undefined)}
       style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true"
-        style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 380, padding: "22px 20px 16px", boxShadow: "0 20px 50px rgba(0,0,0,0.25)", fontFamily: "inherit" }}>
-        <div style={{ fontSize: 16, fontWeight: 800, color: C.t1, marginBottom: 8 }}>
+        style={{ background: "#fff", borderRadius: 18, width: "100%", maxWidth: 360, padding: "20px 18px 14px", boxShadow: "0 20px 50px rgba(0,0,0,0.25)", fontFamily: "inherit", textAlign: "center" }}>
+        {/* Bản vẽ 65: tiêu đề + nội dung canh giữa, 2 nút chia đều cao 46 (cũ 36, khó bấm), nút nguy hiểm màu đỏ */}
+        <div style={{ fontSize: 17, fontWeight: 900, color: C.t1, marginBottom: 8 }}>
           {current.title}
         </div>
-        <div style={{ fontSize: 13.5, color: C.t2, lineHeight: 1.6, whiteSpace: "pre-wrap", marginBottom: 18 }}>
+        <div style={{ fontSize: 14, color: C.t2, lineHeight: 1.5, whiteSpace: "pre-wrap", marginBottom: 16 }}>
           {current.message}
         </div>
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", gap: 8 }}>
           {isConfirm && (
             <button autoFocus onClick={() => close(false)}
-              style={{ padding: "9px 16px", borderRadius: 10, border: `1.5px solid ${C.border}`, background: "#fff", color: C.t2, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+              style={{ flex: 1, height: 46, borderRadius: 12, border: "none", background: "#F1F5F9", color: C.t1, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
               {current.cancelText}
             </button>
           )}
           <button autoFocus={!isConfirm} onClick={() => close(isConfirm ? true : undefined)}
-            style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: isConfirm && current.danger ? dangerColor : C.primary, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+            style={{ flex: 1, height: 46, borderRadius: 12, border: "none", background: isConfirm && current.danger ? dangerColor : C.primary, color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
             {isConfirm ? current.confirmText : "OK"}
           </button>
         </div>

@@ -118,10 +118,15 @@ export function PlanScreen({ userId, isAdmin, salesEnabled, aiMenuLockedFree = t
   return (
     <div style={{ paddingBottom: 32 }}>
       {error && <p style={{ margin: "12px 16px 0 16px", color: DK.red, fontSize: 13 }}>{error}</p>}
-      <div data-testid="plan-tier" style={{ margin: "12px 12px 0 12px", borderRadius: 20, padding: 18, background: "linear-gradient(135deg,#7C3AED,#5B21B6)", color: "#FFFFFF", display: "flex", flexDirection: "column", gap: 6, boxShadow: "0 6px 20px rgba(124,58,237,0.25)" }}>
-        <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.85, letterSpacing: "0.08em" }}>HẠNG CỦA BẠN</span>
-        <span style={{ fontSize: 26, fontWeight: 900 }}>{tier === "trial" ? "Dùng thử Premium" : TIER[tier] || tier}</span>
-        <span style={{ fontSize: 13, fontWeight: 600, opacity: 0.9 }}>{tierLine(sub, isAdmin, today)}</span>
+      {/* Bản vẽ 50: thẻ kính viền tím nhạt + ô vương miện (thay khối tím đặc) */}
+      <div data-testid="plan-tier" style={{ ...dkCard, border: "1px solid rgba(196,181,253,0.45)", borderRadius: 20, margin: "12px 12px 0 12px", padding: 16, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 14, position: "relative", overflow: "hidden" }}>
+        <span aria-hidden="true" style={{ position: "absolute", right: -40, top: -40, width: 160, height: 160, background: "radial-gradient(closest-side, rgba(167,139,250,0.45), rgba(167,139,250,0))", pointerEvents: "none" }} />
+        <DkIcon color="#7C3AED" size={48}><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8l4 4 4-7 4 7 4-4-2 11H6z" /></svg></DkIcon>
+        <span style={{ position: "relative", display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: VIOLET, letterSpacing: "0.08em" }}>HẠNG CỦA BẠN</span>
+          <span style={{ fontSize: 24, fontWeight: 900 }}>{tier === "trial" ? "Dùng thử Premium" : TIER[tier] || tier}</span>
+          <span style={{ fontSize: 13, color: DK.t2 }}>{tierLine(sub, isAdmin, today)}</span>
+        </span>
       </div>
 
       <span style={sec}>LƯỢT AI ĐÃ DÙNG</span>

@@ -6,7 +6,7 @@
 //  - Cách tính: Việt Nam (BMR ×0,9) / Chuẩn quốc tế
 // Ô số lưu khi rời ô (blur/Enter); lựa chọn lưu ngay qua setProfile.
 import { useState } from "react";
-import { Icon, Toggle, GRAD_BLUE } from "./ui";
+import { Icon, Toggle } from "./ui";
 import { fmtInt, fmtDec } from "../lib/mobileView";
 import { todayVN } from "../lib/dateVN";
 import { DK, dkCard } from "../theme";
@@ -127,17 +127,19 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
 
   const tile = (t, cal, c) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-      <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.9 }}>{t}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: DK.t2 }}>{t}</span>
       <span style={{ fontSize: 24, fontWeight: 900, lineHeight: 1.15 }}>{fmtInt(cal)} <span style={{ fontSize: 13, fontWeight: 700 }}>kcal</span></span>
-      <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.92 }}>Đ {fmtInt(m.protein)} · TB {fmtInt(c)} · B {fmtInt(m.fat)} g</span>
+      <span style={{ fontSize: 11, fontWeight: 600, color: DK.t3 }}>Đ {fmtInt(m.protein)} · TB {fmtInt(c)} · B {fmtInt(m.fat)} g</span>
     </div>
   );
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <div data-testid="goals-macro" data-cal={Math.round(m.calTarget) || 0} style={{ margin: "12px 12px 0 12px", borderRadius: 18, padding: 16, background: GRAD_BLUE, color: "#FFFFFF", display: "grid", gridTemplateColumns: noEx ? "1fr" : "1fr 1fr", gap: 12 }}>
+      {/* Bản vẽ 51: khối macro kính + vạch nhấn xanh (thay nền xanh đặc) */}
+      <div data-testid="goals-macro" data-cal={Math.round(m.calTarget) || 0} style={{ ...dkCard, margin: "12px 12px 0 12px", borderRadius: 18, padding: 16, color: "#FFFFFF", display: "grid", gridTemplateColumns: noEx ? "1fr" : "1fr 1fr", gap: 12, position: "relative" }}>
+        <span aria-hidden="true" style={{ position: "absolute", left: 16, top: 0, width: 44, height: 3, borderRadius: "0 0 3px 3px", background: "#4DA3FF" }} />
         {noEx ? tile("Mỗi ngày", m.calTarget, m.carb) : <>{tile("Ngày tập", m.calTarget, m.carb)}{tile("Ngày nghỉ", m.calRest, m.carbRest)}</>}
-        <div style={{ gridColumn: "1 / -1", borderTop: "1px solid rgba(255,255,255,0.25)", paddingTop: 10, fontSize: 12, fontWeight: 600 }}>
+        <div style={{ gridColumn: "1 / -1", borderTop: `1px solid ${DK.line}`, paddingTop: 10, fontSize: 12, fontWeight: 600, color: DK.t2 }}>
           TDEE {fmtInt(m.tdee)} kcal · BMI {fmtDec(m.bmi)} · {GOAL_NAME[m.goal || goal]} {ADJUST[m.goal || goal]}
         </div>
         {m.floorApplied && <div data-testid="goals-floor" style={{ gridColumn: "1 / -1", fontSize: 12, fontWeight: 600, background: "rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 10px" }}>Đã nâng lên mức tối thiểu an toàn {fmtInt(m.calFloor)} kcal/ngày khi giảm mỡ.</div>}

@@ -303,6 +303,7 @@ export function MenuPastPage({ day, profile, macro, applyTemplate, saveWeeklyTem
       <div style={{ margin: "14px 12px 0 12px", display: "flex", flexDirection: "column", gap: 8 }}>
         <button data-testid="past-use-today" disabled={busy} onClick={useToday} style={btn("blue", busy)}>Dùng cho hôm nay</button>
         <button data-testid="past-repeat" disabled={busy} onClick={() => setRepeat(true)} style={btn("ghost")}>Lặp lại hằng tuần…</button>
+        <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>Dùng cho hôm nay: bữa trùng tên được thay bằng món của ngày này (hỏi trước nếu hôm nay đã có món).</span>
       </div>
       {repeat && <SaveWeekSheet dayType={day.day_type} gymDays={profile?.gymDays} noEx={(profile?.exerciseType || "gym") === "none"} onSave={saveRepeat} onClose={() => setRepeat(false)} />}
     </div>
@@ -419,7 +420,7 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
         {t.day_type === todayType
           ? <button data-testid="tpl-use-today" disabled={busy} onClick={useToday} style={btn("blue", busy)}>Dùng cho hôm nay</button>
           : <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Mẫu {DT[t.day_type].toLowerCase()} — hôm nay là {DT[todayType].toLowerCase()}, chỉ đặt lặp lại hằng tuần được.</span>}
-        <span style={lbl}>LẶP LẠI HẰNG TUẦN VÀO</span>
+        <span style={lbl}>LẶP LẠI HẰNG TUẦN VÀO · CHỈ {DT[t.day_type].toUpperCase()}</span>
         <div role="group" aria-label="Gán vào ngày" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0,1fr))", gap: 6 }}>
           {WEEK_SHORT.map((d, i) => {
             const ok = sameTypeIdx.includes(i);
@@ -428,7 +429,8 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
               style={{ height: 44, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: 800, background: on ? "#007AFF" : ok ? "#F1F5F9" : "#F8FAFC", color: on ? "#FFFFFF" : ok ? "#475569" : "#CBD5E1" }}>{d}</button>;
           })}
         </div>
-        <button data-testid="tpl-assign" disabled={busy || !days.length} onClick={assign} style={btn("ghost")}>{days.length ? `Lặp lại ${days.length} thứ mỗi tuần` : "Chọn thứ cùng loại ngày"}</button>
+        <button data-testid="tpl-assign" disabled={busy || !days.length} onClick={assign} style={btn("ghost")}>{days.length === 1 ? `Lặp lại mỗi ${WEEK_SHORT[days[0]]}` : days.length ? `Lặp lại ${days.length} thứ mỗi tuần` : "Chọn thứ cùng loại ngày"}</button>
+        <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>Ô mờ là {t.day_type === "train" ? "ngày nghỉ" : "ngày tập"} — mẫu {DT[t.day_type].toLowerCase()} chỉ lặp lại vào {DT[t.day_type].toLowerCase()}.</span>
       </div>
     </div>
   );

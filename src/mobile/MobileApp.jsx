@@ -462,7 +462,9 @@ export function MobileApp(props) {
       {tab === "me" && <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 0, background: DK.bg }} />}
       <AppDialogHost />
       <UpdatePopup appSettings={appSettings} />
-      {isOffline && <div style={{ position: "sticky", top: 0, zIndex: 95, background: "#FEF3C7", padding: "8px 16px", fontSize: 12, fontWeight: 600, color: "#92400E", textAlign: "center" }}>Không có kết nối mạng — dữ liệu có thể chưa cập nhật</div>}
+      {isOffline && <div role="status" data-testid="offline-bar" style={{ position: "sticky", top: 0, zIndex: 95, background: "#FEF3C7", padding: "calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px 16px", fontSize: 13, fontWeight: 600, color: "#92400E", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0" /><path d="M3 3l18 18" /></svg>
+        Mất kết nối — dữ liệu có thể chưa cập nhật</div>}
 
       <main aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd" : undefined} style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
         {tab === "today" && (
