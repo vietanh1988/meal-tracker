@@ -123,3 +123,37 @@ test("parseKg", () => {
   assert.equal(W.parseKg("abc"), null);
   assert.equal(W.parseKg("12"), null);
 });
+
+import * as P from "../src/lib/dayPlan.js";
+test("waterGoalMl + clampWater", () => {
+  assert.equal(P.waterGoalMl(64.4, false), 2250);
+  assert.equal(P.waterGoalMl(64.4, true), 2750);
+  assert.equal(P.waterGoalMl(30, false), 1500);
+  assert.equal(P.waterGoalMl(64, true, 3000), 3000);
+  assert.equal(P.clampWater(-5), 0);
+  assert.equal(P.clampWater(20000), 10000);
+});
+test("currentMealId / nextMealId theo giờ", () => {
+  const vis = ["sang", "trua", "phu_chieu", "toi"];
+  assert.equal(P.currentMealId(5 * 60, vis), "sang");
+  assert.equal(P.currentMealId(11 * 60 + 10, vis), "trua");
+  assert.equal(P.currentMealId(21 * 60, vis), "toi");
+  assert.equal(P.currentMealId(8 * 60, vis, { sang: "09:30" }), "sang");
+  assert.equal(P.nextMealId(13 * 60, vis, ["sang", "trua"]), "phu_chieu");
+  assert.equal(P.nextMealId(16 * 60 + 30, vis, ["sang"]), "phu_chieu");
+  assert.equal(P.nextMealId(23 * 60, vis, ["sang"]), "toi");
+});
+test("frequentItems + recentEatenMeals chỉ tính bữa đã ăn", () => {
+  const rows = [
+    { log_date: "2026-10-12", eaten_meals: ["trua"], meals: [{ meal_id: "trua", items: [{ food: "Cơm", cal: 300 }, { food: "Gà luộc", cal: 200 }] }, { meal_id: "toi", items: [{ food: "Phở", cal: 500 }] }] },
+    { log_date: "2026-10-13", eaten_meals: ["sang"], meals: [{ meal_id: "sang", items: [{ food: "cơm", cal: 250 }] }] },
+  ];
+  const f = P.frequentItems(rows);
+  assert.equal(f[0].key, "cơm");
+  assert.equal(f[0].count, 2);
+  assert.equal(f[0].item.cal, 250);
+  assert.ok(!f.some(x => x.key === "phở"));
+  const r = P.recentEatenMeals(rows);
+  assert.deepEqual(r.map(x => x.meal_id), ["sang", "trua"]);
+  assert.equal(r[1].cal, 500);
+});

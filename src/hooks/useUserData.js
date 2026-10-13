@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { inferPatternFromItems } from "../lib/aiMenuService";
 import { MEAL_PATTERNS } from "../mealPatterns";
-import { todayVN } from "../lib/dateVN";
+import { todayVN, addDays } from "../lib/dateVN";
 import { setMeal, toggleEatenIn, applyMenu, dayRowPayload, toSlots, hasItems, mealKey, MEAL_NAMES } from "../lib/mealMath";
 
 const defaultStructure = {
@@ -36,7 +36,7 @@ function restoreDisplay(mealId, items, pattern) {
   return items.map(it => (!it.display && it.food && dishMap[it.food]) ? { ...it, display: dishMap[it.food] } : it);
 }
 
-const DAY_COLS = "log_date, day_type, meals, eaten_meals";
+const DAY_COLS = "log_date, day_type, meals, eaten_meals, water_ml";
 
 // ============================================================
 // NGUỒN SỰ THẬT:
@@ -58,7 +58,7 @@ export function useUserData(userId) {
   const [weeklyBundles, setWeeklyBundles] = useState([]);
   const lastFetchRef = useRef(Date.now());
   // Nhật ký HÔM NAY (daily_logs của todayVN())
-  const [todayLog, setTodayLogState] = useState({ log_date: todayVN(), day_type: "train", meals: [], eaten_meals: [] });
+  const [todayLog, setTodayLogState] = useState({ log_date: todayVN(), day_type: "train", meals: [], eaten_meals: [], water_ml: 0 });
   const todayLogRef = useRef(todayLog);
   const setTodayLog = useCallback((d) => { todayLogRef.current = d; setTodayLogState(d); }, []);
   const dayQueueRef = useRef(Promise.resolve());
@@ -87,6 +87,7 @@ export function useUserData(userId) {
       day_type: data?.day_type || "train",
       meals: Array.isArray(data?.meals) ? data.meals : [],
       eaten_meals: Array.isArray(data?.eaten_meals) ? data.eaten_meals : [],
+      water_ml: Number(data?.water_ml) || 0,
     });
   }, [userId, setTodayLog]);
 
@@ -195,7 +196,7 @@ export function useUserData(userId) {
     return meals[type] || defaultStructure[type];
   }, [meals]);
 
-  const todayLogCurrent = () => (todayLog.log_date === todayStr() ? todayLog : { log_date: todayStr(), meals: [], eaten_meals: [] });
+  const todayLogCurrent = () => (todayLog.log_date === todayStr() ? todayLog : { log_date: todayStr(), meals: [], eaten_meals: [], water_ml: 0 });
 
   // Hôm nay đã có bữa nào chưa (bất kể loại ngày — 1 ngày chỉ có 1 nhật ký)
   const hasMealsToday = useCallback(() => {
@@ -246,12 +247,13 @@ export function useUserData(userId) {
           day_type: row?.day_type || dayTypeHint || "train",
           meals: Array.isArray(row?.meals) ? row.meals : [],
           eaten_meals: Array.isArray(row?.eaten_meals) ? row.eaten_meals : [],
+          water_ml: Number(row?.water_ml) || 0,
         };
         const next = fn(base);
         const { error } = await supabase.from("daily_logs")
           .upsert(dayRowPayload(userId, logDate, next), { onConflict: "user_id,log_date" });
         if (error) throw error;
-        if (isToday) setTodayLog({ log_date: logDate, day_type: next.day_type, meals: next.meals, eaten_meals: next.eaten_meals });
+        if (isToday) setTodayLog({ log_date: logDate, day_type: next.day_type, meals: next.meals, eaten_meals: next.eaten_meals, water_ml: Number(next.water_ml) || 0 });
         lastFetchRef.current = Date.now();
         return { ok: true, day: next };
       } catch (e) {
@@ -314,6 +316,21 @@ export function useUserData(userId) {
     if (!r1.ok) return r1;
     return mutateDay(fromDate, (day) => setMeal(day, mealId, []));
   }, [userId, mutateDay]);
+
+  // Nước uống: cộng/trừ ml cho 1 ngày (mặc định hôm nay)
+  const addWater = useCallback((deltaMl, date = null) => {
+    return mutateDay(date || todayStr(), (day) => ({ ...day, water_ml: Math.min(10000, Math.max(0, Math.round((Number(day.water_ml) || 0) + Number(deltaMl || 0)))) }));
+  }, [mutateDay]);
+  const waterToday = todayLog.log_date === todayStr() ? (Number(todayLog.water_ml) || 0) : 0;
+
+  // Đọc nhật ký N ngày gần nhất (món hay ăn, ăn lại…)
+  const getRecentDays = useCallback(async (days = 30) => {
+    if (!userId) return [];
+    const { data, error } = await supabase.from("daily_logs").select(DAY_COLS)
+      .eq("user_id", userId).gte("log_date", addDays(todayStr(), -(days - 1))).order("log_date", { ascending: false });
+    if (error) { console.error("Recent days error:", error); return []; }
+    return data || [];
+  }, [userId]);
 
   // Tick / bỏ tick "đã ăn"
   const toggleEaten = useCallback((mealId, isEaten, date = null) => {
@@ -603,5 +620,6 @@ export function useUserData(userId) {
     applyTemplate,
     getDailyLogs, getDailyLog,
     todayLog, eatenMeals, toggleEaten, removeDayMeal, moveDayMeal, reloadToday: loadTodayLog,
+    addWater, waterToday, getRecentDays,
   };
 }

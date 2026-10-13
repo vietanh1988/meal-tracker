@@ -94,3 +94,19 @@ test("chuyển bữa sang ngày khác + xoá bữa", async () => {
   await hook().removeDayMeal("2026-01-02", "trua");
   expect(db.daily_logs.find(x => x.log_date === "2026-01-02").meals.length).toBe(0);
 });
+
+test("nước: cộng dồn dập không mất, không âm, không đụng bữa", async () => {
+  const before = db.daily_logs.find(r => r.log_date === todayVN()).meals.length;
+  const h = hook();
+  await Promise.all([h.addWater(250), h.addWater(250), h.addWater(500), h.addWater(-100)]);
+  const row = db.daily_logs.find(r => r.log_date === todayVN());
+  expect(row.water_ml).toBe(900);
+  expect(row.meals.length).toBe(before);
+  expect(hook().waterToday).toBe(900);
+  await hook().addWater(-5000);
+  expect(db.daily_logs.find(r => r.log_date === todayVN()).water_ml).toBe(0);
+  // ghi bữa sau đó vẫn giữ nước
+  await hook().addWater(300);
+  await hook().saveMealToCloud("toi", "train", [{ cal: 1 }]);
+  expect(db.daily_logs.find(r => r.log_date === todayVN()).water_ml).toBe(300);
+});

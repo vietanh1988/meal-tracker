@@ -37,6 +37,9 @@ export function useProfile(userId, authLoading) {
         // mặc định chung do admin đặt trong appSettings.meal_config). Nếu user chưa
         // từng tự chỉnh thì cột này null, app sẽ dùng mặc định chung của admin.
         if(data.meal_config) p.mealConfig = data.meal_config;
+        if(data.meal_times) p.mealTimes = data.meal_times;
+        if(data.water_goal_ml) p.waterGoalMl = data.water_goal_ml;
+        if(data.reminder_settings) p.reminderSettings = data.reminder_settings;
         if(data.banner_dismissed_date) p.bannerDismissedDate = data.banner_dismissed_date;
         if(data.admin_role) p.adminRole = data.admin_role;
         // Chỉ ĐỌC — tier đổi qua admin (UsersTab) hoặc luồng thanh toán, không
@@ -110,6 +113,9 @@ export function useProfile(userId, authLoading) {
         if(merged.calorieMode) payload.calorie_mode = merged.calorieMode;
         if(merged.usesSupplements !== undefined) payload.uses_supplements = merged.usesSupplements === true;
         if(merged.mealConfig) payload.meal_config = merged.mealConfig;
+        if(merged.mealTimes !== undefined) payload.meal_times = merged.mealTimes || null;
+        if(merged.waterGoalMl !== undefined) payload.water_goal_ml = merged.waterGoalMl || null;
+        if(merged.reminderSettings !== undefined) payload.reminder_settings = merged.reminderSettings || {};
         if(merged.bannerDismissedDate) payload.banner_dismissed_date = merged.bannerDismissedDate;
         // Legacy fields
         if(merged.gym) payload.gym = merged.gym;

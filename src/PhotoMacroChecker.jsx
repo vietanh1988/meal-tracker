@@ -7,6 +7,7 @@ import { getUnits, UNIT_MAP as UNIT_MAP_RAW } from "./lib/localFoodDB";
 import { authFetch } from "./lib/authFetch";
 import { pickAiModel } from "./lib/aiProvider";
 import { todayVN, addDays, nowVNParts, friendlyDate } from "./lib/dateVN";
+import { currentMealId } from "./lib/dayPlan";
 
 // ============================================================
 // PhotoMacroChecker — Chụp ảnh bữa ăn → AI nhận diện → xem macro nhanh
@@ -492,8 +493,8 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
             const mealsWithData = new Set(todayMeals.filter(m => m.items && m.items.length > 0).map(m => m.id));
             // Auto chọn bữa theo giờ (chỉ lần đầu)
             if (!selectedMeal) {
-              const mins = nowVNParts().minutes;
-              const auto = mins < 9 * 60 ? "sang" : mins < 10 * 60 + 30 ? "phu_sang" : mins < 14 * 60 ? "trua" : mins < 17 * 60 ? "phu_chieu" : "toi";
+              // Bữa đang đến giờ theo giờ bữa của user (mặc định 07:00/09:30/12:00/15:30/17:00/18:30/19:30)
+              const auto = currentMealId(nowVNParts().minutes, photoCtx?.visibleMealIds || visIds, photoCtx?.mealTimes) || "trua";
               const pick = visIds.includes(auto) ? auto : visIds.find(id => !mealsWithData.has(id)) || visIds[0];
               setSelectedMeal(pick);
               if (!selectedDate) {

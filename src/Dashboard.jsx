@@ -4,6 +4,7 @@ import { DEFAULT_MEAL_CONFIG } from "./mealConstants";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { MacroBar } from "./MacroBar";
 import { MealCard } from "./MealCard";
+import { WaterTile } from "./WaterTile";
 import { WeightBarChart } from "./WeightBarChart";
 import { UserAvatar } from "./UserAvatar";
 import { NotificationBell } from "./NotificationBell";
@@ -14,7 +15,7 @@ import { isPushSupported, getPushStatus, enablePushNotifications } from "./pushN
 import { supabase } from "./lib/supabase";
 import { todayVN, isGymDate, templateKeyOf } from "./lib/dateVN";
 
-export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,userDataLoaded,macroBanner,eatenMeals,toggleEaten,onOpenPhotoMacro,todayLog}){if(!profile||!macro)return null;
+export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals,getTodayMeals,hasMealsToday,appSettings,setTab,user,getWeeklyTemplate,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,userDataLoaded,macroBanner,eatenMeals,toggleEaten,onOpenPhotoMacro,todayLog,addWater,waterToday}){if(!profile||!macro)return null;
   const mob=useIsMobile();
   const [showAIMenu,setShowAIMenu]=useState(false);
   const aiAccess=getAIMenuAccess(profile,appSettings);
@@ -559,6 +560,8 @@ export function Dashboard({weightLog,addWeight,profile,setProfile,macro,getMeals
         </div>
       ))}
     </div>
+
+    {addWater&&<WaterTile waterMl={waterToday||0} addWater={addWater} kg={weightLog.length>0?weightLog[weightLog.length-1].kg:profile.kg} isTrainDay={dayType==="train"} goalOverride={profile.waterGoalMl} style={{marginTop:8}}/>}
 
     {/* Weight Chart */}
     <div style={{...card,marginTop:8,borderTop:"3px solid",borderImage:"linear-gradient(90deg,#36A3FF,#007AFF,#0057FF) 1"}}>

@@ -116,6 +116,7 @@ export function dayRowPayload(userId, logDate, day) {
     eaten_meals: day.eaten_meals || [],
     total_cal: t.cal, total_protein: t.p, total_carb: t.c, total_fat: t.f, total_fiber: t.fiber,
     is_complete: (day.eaten_meals || []).length >= 3,
+    water_ml: Math.min(10000, Math.max(0, Math.round(Number(day.water_ml) || 0))),
   };
 }
 
