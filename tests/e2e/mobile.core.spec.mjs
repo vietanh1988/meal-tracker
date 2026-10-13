@@ -85,4 +85,18 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     // Cân nặng vừa đổi → mục tiêu kcal đổi theo, nên kiểm "đã ăn 0 / mục tiêu" thay vì số cũ
     await expect(page.getByText(/Ngày (tập|nghỉ) · 0 \//)).toBeVisible();
   });
+
+  test("Thực đơn: user thường bấm Xoá hết bữa hôm nay → Hôm nay trống, mở lại app KHÔNG tự áp lại Lịch tuần", async () => {
+    await nav("Thực đơn").click();
+    await tap(page.getByTestId("clear-today"));
+    await page.getByRole("button", { name: "Đồng ý" }).click();
+    await waitDb(async () => (await todayRow())?.meals?.length === 0, "nhật ký hôm nay trống");
+    await nav("Hôm nay").click();
+    await expect(page.getByTestId("eat-sang")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId("kcal-remain")).toBeVisible({ timeout: 20_000 });
+    await page.waitForTimeout(2500);
+    expect((await todayRow()).meals.length).toBe(0);
+    await expect(page.getByTestId("eat-sang")).toHaveCount(0);
+  });
 });

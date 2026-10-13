@@ -9,6 +9,7 @@ import { estimateGram } from "../lib/usdaService";
 import { applyMealEngineToTemplate } from "../mealEngine";
 
 export function MealsTab({
+todayLog, removeDayMeal,
 mob, profile, setProfile, macro, appSettings, isAdmin, saveSetting,
 mealMode, setMealMode, dayType, setDayType,
 showMealSettings, setShowMealSettings, mealConfig, setMealConfig,
@@ -234,14 +235,22 @@ callAI(false,combined);
     bước Lưu). Đây là lối riêng cho đúng 1 việc: xoá sạch dữ liệu cloud của
     NGÀY ĐANG XEM (dayType hiện tại), dùng khi form trống nhưng cloud vẫn
     còn data cũ (VD: test lại từ đầu, hoặc nhập nhầm cả ngày muốn làm lại). */}
-{isAdmin&&getMeals(dayType).some(m=>m.items&&m.items.length>0)&&<button onClick={async()=>{
-if(!await appConfirm(`Xoá TOÀN BỘ bữa ăn của "${dayType==="train"?"Ngày tập":"Ngày nghỉ"}" hôm nay? Không thể hoàn tác.`, { danger: true }))return;
-const skipDaily=dayType!==todayRealDayType();
-const targets=getMeals(dayType).filter(m=>m.items&&m.items.length>0);
-for(const m of targets){await saveMealToCloud(m.id,dayType,[],skipDaily);}
+{(()=>{
+// Xoá hết bữa HÔM NAY — cho MỌI user (trước chỉ admin, user xoá trên form xong
+// không lưu được nên Hôm nay vẫn còn món). Xoá cả nhật ký hôm nay (daily_logs)
+// lẫn thực đơn mẫu của loại ngày đang xem (meal_logs).
+const todayMealIds=(todayLog&&todayLog.log_date===todayVN()?(todayLog.meals||[]):[]).filter(m=>m.items&&m.items.length>0).map(m=>m.meal_id||m.id);
+const bucketIds=getMeals(dayType).filter(m=>m.items&&m.items.length>0).map(m=>m.id);
+if(todayMealIds.length===0&&bucketIds.length===0)return null;
+return <button data-testid="clear-today" onClick={async()=>{
+if(!await appConfirm(`Xoá TOÀN BỘ ${todayMealIds.length||bucketIds.length} bữa ăn hôm nay (kể cả bữa đã đánh dấu đã ăn)? Không thể hoàn tác.`, { danger: true }))return;
+for(const id of todayMealIds){if(removeDayMeal)await removeDayMeal(todayVN(),id);}
+for(const id of bucketIds){await saveMealToCloud(id,dayType,[],true);}
+setAiResult(null);
 const el=document.getElementById("meals-cleared");
 if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-}} style={{width:"100%",marginTop:8,padding:"10px",fontSize:12,fontWeight:700,background:"none",border:`1.5px solid ${C.red}`,borderRadius:10,color:C.red,cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xoá hết bữa hôm nay</button>}
+}} style={{width:"100%",marginTop:8,padding:"10px",fontSize:12,fontWeight:700,background:"none",border:`1.5px solid ${C.red}`,borderRadius:10,color:C.red,cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xoá hết bữa hôm nay</button>;
+})()}
 <div id="meals-cleared" style={{display:"none",alignItems:"center",gap:8,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
 <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✓ Đã xoá sạch bữa ăn hôm nay!</span>
 </div>
@@ -532,7 +541,13 @@ setUserHasEdited(true);
 setMealMode("tu_nhap");
 setExpandedTpl(null);
 }} style={{flex:1,padding:"10px",fontSize:12,fontWeight:800,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t2,cursor:"pointer",fontFamily:"inherit"}}>✏️ Sửa</button>
-<button onClick={async(e)=>{e.stopPropagation();if(await appConfirm(`Xóa lịch tuần ${dayLabels[i]}?`, { danger: true })){if(deleteWeeklyTemplate)await deleteWeeklyTemplate(dayKeys[i]);setExpandedTpl(null);}}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:"1.5px solid #FCA5A5",borderRadius:10,background:"#FEF2F2",color:"#DC2626",cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xóa</button>
+<button onClick={async(e)=>{e.stopPropagation();if(await appConfirm(`Xóa lịch tuần ${dayLabels[i]}?`, { danger: true })){if(deleteWeeklyTemplate)await deleteWeeklyTemplate(dayKeys[i]);setExpandedTpl(null);
+// Lịch của HÔM NAY đã được áp vào nhật ký → hỏi xoá luôn các bữa CHƯA ĂN hôm nay
+if(dayKeys[i]===["cn","thu_2","thu_3","thu_4","thu_5","thu_6","thu_7"][weekdayOf(todayVN())]&&todayLog&&todayLog.log_date===todayVN()){
+const eaten=todayLog.eaten_meals||[];
+const uneaten=(todayLog.meals||[]).filter(m=>m.items&&m.items.length>0&&!eaten.includes(m.meal_id||m.id)).map(m=>m.meal_id||m.id);
+if(uneaten.length>0&&await appConfirm(`Hôm nay đã có ${uneaten.length} bữa chưa ăn lấy từ lịch này. Xoá luôn khỏi Hôm nay?`)){for(const id of uneaten){if(removeDayMeal)await removeDayMeal(todayVN(),id);}}
+}}}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:"1.5px solid #FCA5A5",borderRadius:10,background:"#FEF2F2",color:"#DC2626",cursor:"pointer",fontFamily:"inherit"}}>🗑️ Xóa</button>
 <button onClick={(e)=>{e.stopPropagation();setExpandedTpl(null);}} style={{padding:"10px 16px",fontSize:12,fontWeight:700,border:`1.5px solid ${C.border}`,borderRadius:10,background:C.card,color:C.t3,cursor:"pointer",fontFamily:"inherit"}}>Đóng</button>
 </div>
 </div>}

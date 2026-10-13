@@ -283,7 +283,7 @@ export function MobileApp(props) {
 
   // ---------- màn phụ của Tôi (dùng lại các màn cũ chưa vẽ lại) ----------
   const panelProps = {
-    updateWeight, removeDayMeal: ud.removeDayMeal, moveDayMeal: ud.moveDayMeal, weightLog, setWeightLog: props.setWeightLog, addWeight, deleteWeight, resetWeights: props.resetWeights,
+    updateWeight, todayLog: ud.todayLog, removeDayMeal: ud.removeDayMeal, moveDayMeal: ud.moveDayMeal, weightLog, setWeightLog: props.setWeightLog, addWeight, deleteWeight, resetWeights: props.resetWeights,
     profile, setProfile, macro, saveMealToCloud: ud.saveMealToCloud, saveFoodCache: ud.saveFoodCache, deleteFoodCache: ud.deleteFoodCache, getMeals: ud.getMeals, foodCache: ud.foodCache,
     appSettings, isAdmin, saveSetting, user, signOut, weeklyTemplates: ud.weeklyTemplates, saveWeeklyTemplate: ud.saveWeeklyTemplate, getWeeklyTemplate: ud.getWeeklyTemplate,
     deleteWeeklyTemplate: ud.deleteWeeklyTemplate, defaultTemplates: ud.defaultTemplates, saveDefaultTemplate: ud.saveDefaultTemplate, deleteDefaultTemplate: ud.deleteDefaultTemplate,

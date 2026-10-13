@@ -1,9 +1,16 @@
 import { test, expect } from "@playwright/test";
-import { login, todayRow, waitDb } from "./helpers.mjs";
+import { login, todayRow, waitDb, rest, S } from "./helpers.mjs";
 
 // Chạy sau mobile (workers=1, project pc chạy sau) — dữ liệu hôm nay đã có 2 bữa.
 test("PC: tick bữa trưa → Nhật ký hiện bữa → Xoá bữa khỏi nhật ký", async ({ page }) => {
   page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
+  // Tự chuẩn bị dữ liệu: hôm nay có 2 bữa chưa ăn (không phụ thuộc bài mobile chạy trước)
+  const s = S();
+  await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "PATCH", body: JSON.stringify({
+    meals: [
+      { meal_id: "sang", meal_name: "Bữa sáng", items: [{ food: "Phở bò", gram: 400, cal: 450, p: 25, c: 55, f: 12 }] },
+      { meal_id: "trua", meal_name: "Bữa trưa", items: [{ food: "Cơm trắng", gram: 200, cal: 260, p: 5, c: 57, f: 1 }] },
+    ], eaten_meals: [] }) });
   await login(page);
   await page.getByRole("button", { name: "✓ Đã ăn" }).first().click();
   await waitDb(async () => (await todayRow())?.eaten_meals?.length === 1, "tick 1 bữa");

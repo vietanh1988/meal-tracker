@@ -91,6 +91,7 @@ export function useUserData(userId) {
       meals: Array.isArray(data?.meals) ? data.meals : [],
       eaten_meals: Array.isArray(data?.eaten_meals) ? data.eaten_meals : [],
       water_ml: Number(data?.water_ml) || 0,
+      exists: !!data, // đã có dòng nhật ký hôm nay chưa (kể cả đã xoá hết bữa)
     });
   }, [userId, setTodayLog]);
 
@@ -240,7 +241,7 @@ export function useUserData(userId) {
     const isToday = logDate === todayStr();
     if (isToday) todayVerRef.current++;
     if (isToday && todayLogRef.current.log_date === logDate) {
-      try { setTodayLog({ ...fn(todayLogRef.current), log_date: logDate }); } catch (e) { /* ignore */ }
+      try { setTodayLog({ ...fn(todayLogRef.current), log_date: logDate, exists: true }); } catch (e) { /* ignore */ }
     }
     const job = async () => {
       try {
@@ -258,7 +259,7 @@ export function useUserData(userId) {
           .upsert(dayRowPayload(userId, logDate, next), { onConflict: "user_id,log_date" });
         if (error) throw error;
         if (isToday) todayVerRef.current++;
-        if (isToday) setTodayLog({ log_date: logDate, day_type: next.day_type, meals: next.meals, eaten_meals: next.eaten_meals, water_ml: Number(next.water_ml) || 0 });
+        if (isToday) setTodayLog({ log_date: logDate, day_type: next.day_type, meals: next.meals, eaten_meals: next.eaten_meals, water_ml: Number(next.water_ml) || 0, exists: true });
         lastFetchRef.current = Date.now();
         return { ok: true, day: next };
       } catch (e) {
