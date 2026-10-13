@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, todayRow, rest, S, waitDb, blockAI } from "./helpers.mjs";
+import { login, todayRow, rest, S, waitDb, kcalRemainMobile } from "./helpers.mjs";
 
 test.describe.serial("Mobile — luồng hằng ngày", () => {
   let page;
@@ -18,10 +18,13 @@ test.describe.serial("Mobile — luồng hằng ngày", () => {
     expect(row.eaten_meals).toEqual([]);
   });
 
-  test("tick Đã ăn bữa sáng → lưu DB, calo đã ăn = 450", async () => {
+  let remainAfterTick;
+  test("tick Đã ăn bữa sáng → lưu DB, kcal còn lại giảm đúng 450", async () => {
+    const before = await kcalRemainMobile(page);
     await page.getByRole("button", { name: "✓ Đã ăn" }).first().click();
     await waitDb(async () => (await todayRow())?.eaten_meals?.includes("sang"), "eaten_meals có sang");
-    await expect(page.getByText(/đã ăn 450/i).first()).toBeVisible();
+    await expect.poll(() => kcalRemainMobile(page)).toBe(before - 450);
+    remainAfterTick = before - 450;
   });
 
   test("Nước: +1 ly rồi Hoàn tác", async () => {
@@ -33,8 +36,8 @@ test.describe.serial("Mobile — luồng hằng ngày", () => {
 
   test("tải lại trang: dữ liệu còn, không áp Lịch tuần lần 2", async () => {
     await page.reload();
-    await expect(page.getByText(/CALO CÒN LẠI/i).first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(/đã ăn 450/i).first()).toBeVisible();
+    await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 });
+    await expect.poll(() => kcalRemainMobile(page)).toBe(remainAfterTick);
     await page.waitForTimeout(1500);
     const row = await todayRow();
     expect(row.meals.length).toBe(2);
