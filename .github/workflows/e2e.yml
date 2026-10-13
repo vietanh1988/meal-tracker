@@ -69,7 +69,8 @@ jobs:
         run: |
           node --test tests/*.test.mjs
           node tests/check-logic.mjs
-          bun test tests/integration
+          # mỗi file 1 tiến trình riêng: mock.module của bun dùng chung trong 1 tiến trình
+          for f in tests/integration/*.bun.test.js; do bun test "./$f" || exit 1; done
 
       - name: Build (trỏ Supabase local)
         run: npx vite build
