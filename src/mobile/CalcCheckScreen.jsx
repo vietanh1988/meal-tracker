@@ -53,14 +53,10 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
     try {
       const entries = unknown.map((u) => u.entry);
       const { items: got, provider } = await aiCalc(entries, appSettings);
-      let k = 0;
+      // Tính sẵn ngoài setRows (hàm cập nhật state chạy sau, không dùng để gom dữ liệu được)
       const pending = {};
-      setRows((arr) => arr.map((r) => {
-        if (!r.unknown) return r;
-        const g = got[k++];
-        if (g && !g.unknown) { const ce = cacheEntryOf(g); if (ce) pending[g.food] = ce; }
-        return g || r;
-      }));
+      got.forEach((g) => { if (g && !g.unknown) { const ce = cacheEntryOf(g); if (ce) pending[g.food] = ce; } });
+      setRows((arr) => { let k = 0; return arr.map((r) => (r.unknown ? (got[k++] || r) : r)); });
       if (savePending && Object.keys(pending).length) savePending(pending, provider);
       loadQuota();
     } catch (e) {
