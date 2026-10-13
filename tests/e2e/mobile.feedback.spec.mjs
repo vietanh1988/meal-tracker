@@ -17,6 +17,9 @@ test("Góp ý & báo lỗi: gửi và xem lại", async ({ browser }) => {
   await nav("Tôi").click();
   await page.getByRole("button", { name: /Góp ý & báo lỗi/ }).click();
   await expect(page.getByText("LỖI Ở ĐÂU?")).toBeVisible();
+  // Màn phụ nền tối phải có nền gradient (không trong suốt)
+  const bg = await page.getByTestId("subpage").last().evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(bg).toContain("gradient");
   await expect(page.getByTestId("fb-send")).toBeDisabled();
 
   // Báo lỗi Chụp ảnh + ảnh

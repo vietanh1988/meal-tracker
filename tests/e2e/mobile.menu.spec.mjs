@@ -37,6 +37,9 @@ test("Thực đơn: ngày đã ăn → dùng hôm nay, lặp lại hằng tuần
     // Lặp lại có sẵn của thứ hôm nay → dùng cho hôm nay
     await tap(page.getByTestId(`week-day-${ti}`));
     await expect(page.getByText("Bữa sáng").first()).toBeVisible();
+    // Màn phụ phải có nền đặc, không lộ màn bên dưới (lỗi 14/10)
+    const bg = await page.getByTestId("subpage").last().evaluate((el) => { const s = getComputedStyle(el); return { c: s.backgroundColor, i: s.backgroundImage }; });
+    expect(bg.c !== "rgba(0, 0, 0, 0)" || bg.i !== "none", `nền màn phụ trong suốt: ${JSON.stringify(bg)}`).toBe(true);
     await page.screenshot({ path: "shots/lich-tuan-ngay.png", fullPage: true });
     await tap(page.getByTestId("day-use-today"));
     await waitDb(async () => {

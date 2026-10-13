@@ -90,10 +90,12 @@ export function useLockScroll(on = true) {
 }
 
 // Màn phụ toàn màn hình có thanh tiêu đề (nút quay lại 44×44)
+// LƯU Ý: chỉ dùng "background" (không kèm backgroundColor: undefined) — React 18 gán chuỗi rỗng cho giá trị undefined
+// và xoá màu nền của shorthand → màn phụ trong suốt, lộ màn bên dưới (lỗi 14/10 ở Quản trị, Góp ý admin, trang Thực đơn).
 export function SubPage({ title, subtitle, onBack, right, children, footer, bg = "#F8FAFC", dark }) {
   useLockScroll(true);
   return (
-    <div className={dark ? "fpm fpd" : "fpm"} data-dark={dark ? "1" : undefined} style={{ position: "fixed", inset: 0, zIndex: 120, background: dark ? DK.bg : bg, backgroundColor: dark ? DK.base : undefined, display: "flex", flexDirection: "column", fontFamily: FONT, color: dark ? DK.t1 : "#0F172A", animation: "fpmFade .15s ease" }}>
+    <div data-testid="subpage" className={dark ? "fpm fpd" : "fpm"} data-dark={dark ? "1" : undefined} style={{ position: "fixed", inset: 0, zIndex: 120, background: dark ? DK.bg : bg, display: "flex", flexDirection: "column", fontFamily: FONT, color: dark ? DK.t1 : "#0F172A", animation: "fpmFade .15s ease" }}>
       <div style={{ flexShrink: 0, background: dark ? "transparent" : "#FFFFFF", borderBottom: dark ? `1px solid ${DK.line}` : "1px solid #E2E8F0", paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", gap: 6, padding: "10px 8px 10px 4px" }}>
           <button onClick={onBack} aria-label="Quay lại" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: dark ? "#FFFFFF" : "#007AFF", border: "none", background: "transparent", padding: 0 }}>{Icon.back(22)}</button>

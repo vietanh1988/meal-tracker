@@ -10,7 +10,7 @@ export const linkBtn = { border: "none", background: "transparent", padding: "4p
 
 export function AuthShell({ title, subtitle, onBack, children, footer, compact }) {
   return (
-    <div className="fpm" style={{ fontFamily: FONT, background: DK.bg, backgroundColor: DK.base, backgroundAttachment: "scroll", minHeight: "100dvh", color: DK.t1 }}>
+    <div className="fpm" style={{ fontFamily: FONT, background: DK.bg, backgroundAttachment: "scroll", minHeight: "100dvh", color: DK.t1 }}>
       <style>{DK_CSS}</style>
       <div className="fpd" data-testid="auth-shell" style={{ maxWidth: 480, margin: "0 auto", paddingBottom: 32 }}>
         <div style={{ position: "relative", height: compact ? 200 : 260, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, color: "#FFFFFF", paddingTop: "env(safe-area-inset-top, 0px)" }}>

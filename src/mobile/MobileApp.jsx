@@ -451,7 +451,7 @@ export function MobileApp(props) {
     <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : "#F8FAFC", color: "#0F172A", minHeight: "100vh" }}>
       <style>{MOBILE_CSS + DK_CSS}</style>
       {/* Tab Tôi: nền Blue Dark phủ cả màn (bản vẽ 48) */}
-      {tab === "me" && <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 0, background: DK.bg, backgroundColor: DK.base }} />}
+      {tab === "me" && <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 0, background: DK.bg }} />}
       <AppDialogHost />
       <UpdatePopup appSettings={appSettings} />
       {isOffline && <div style={{ position: "sticky", top: 0, zIndex: 95, background: "#FEF3C7", padding: "8px 16px", fontSize: 12, fontWeight: 600, color: "#92400E", textAlign: "center" }}>Không có kết nối mạng — dữ liệu có thể chưa cập nhật</div>}
