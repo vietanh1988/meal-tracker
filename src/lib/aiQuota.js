@@ -49,7 +49,7 @@ export function limitsTable(settings, { menuLockedFree = true } = {}) {
 }
 
 // Các gói Premium có giá (bỏ gói chưa đặt giá), kèm giá/tháng; "best" = rẻ nhất mỗi tháng
-export const PACKAGES = [{ id: "3m", months: 3, short: "3T" }, { id: "6m", months: 6, short: "6T" }, { id: "12m", months: 12, short: "12T" }];
+export const PACKAGES = [{ id: "1m", months: 1, short: "1T" }, { id: "3m", months: 3, short: "3T" }, { id: "6m", months: 6, short: "6T" }, { id: "12m", months: 12, short: "12T" }];
 export function packagesOf(settings) {
   const list = PACKAGES.map((p) => ({ ...p, price: Number(settings?.[`price_${p.id}`]) || 0 })).filter((p) => p.price > 0)
     .map((p) => ({ ...p, perMonth: Math.round(p.price / p.months) }));

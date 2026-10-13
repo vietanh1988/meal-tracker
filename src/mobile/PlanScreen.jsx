@@ -6,12 +6,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { todayVN, diffDays, fmtVN, toVNDate } from "../lib/dateVN";
-import { aiQuota, limitsTable, packagesOf, transferContent, PACKAGES } from "../lib/aiQuota";
+import { aiQuota, limitsTable, packagesOf, transferContent } from "../lib/aiQuota";
 import { fmtInt } from "../lib/mobileView";
 import { Icon, GRAD_BLUE } from "./ui";
 
 const TIER = { free: "Miễn phí", trial: "Dùng thử", premium: "Premium" };
-const PKG = { "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
+const PKG = { "1m": "1 tháng", "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
 const STATUS = { pending: ["Chờ duyệt", "#92400E", "rgba(245,158,11,0.14)"], confirmed: ["Đã duyệt", "#065F46", "rgba(0,200,150,0.12)"], rejected: ["Từ chối", "#991B1B", "rgba(239,68,68,0.1)"] };
 const todayFrom = (ts) => toVNDate(new Date(ts));
 const sec = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
@@ -139,7 +139,7 @@ export function PlanScreen({ userId, isAdmin, salesEnabled, aiMenuLockedFree = t
       ) : pkgs.length > 0 ? (
         <>
           <span style={sec}>{tier === "premium" ? "GIA HẠN PREMIUM" : "NÂNG CẤP PREMIUM"}</span>
-          <div role="radiogroup" aria-label="Chọn gói" style={{ margin: "0 12px", display: "grid", gridTemplateColumns: `repeat(${pkgs.length}, minmax(0, 1fr))`, gap: 8 }}>
+          <div role="radiogroup" aria-label="Chọn gói" style={{ margin: "0 12px", display: "grid", gridTemplateColumns: `repeat(${pkgs.length > 3 ? 2 : pkgs.length}, minmax(0, 1fr))`, gap: 8, rowGap: 14 }}>
             {pkgs.map((p) => {
               const on = chosen && chosen.id === p.id;
               return (
@@ -243,4 +243,3 @@ export function PayScreen({ userId, pkgId, onDone }) {
   );
 }
 
-export { PACKAGES };

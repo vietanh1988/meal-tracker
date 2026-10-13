@@ -53,10 +53,14 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
     try {
       const entries = unknown.map((u) => u.entry);
       const { items: got, provider } = await aiCalc(entries, appSettings);
-      // Tính sẵn ngoài setRows (hàm cập nhật state chạy sau, không dùng để gom dữ liệu được)
+      // Ghép kết quả theo ĐÚNG dòng đã gửi (không theo vị trí — user có thể bỏ dòng khi AI đang tính)
+      const byEntry = new Map(entries.map((e, i) => [e, got[i]]));
       const pending = {};
-      got.forEach((g) => { if (g && !g.unknown) { const ce = cacheEntryOf(g); if (ce) pending[g.food] = ce; } });
-      setRows((arr) => { let k = 0; return arr.map((r) => (r.unknown ? (got[k++] || r) : r)); });
+      entries.forEach((e, i) => {
+        const g = got[i];
+        if (g && !g.unknown) { const ce = cacheEntryOf(g, e.unit && e.unit !== "g" && e.unit !== "ml" ? e.qty || 1 : 1); if (ce) pending[g.food] = ce; }
+      });
+      setRows((arr) => arr.map((r) => (r.unknown && byEntry.has(r.entry) ? byEntry.get(r.entry) || r : r)));
       if (savePending && Object.keys(pending).length) savePending(pending, provider);
       loadQuota();
     } catch (e) {
@@ -149,9 +153,9 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
             <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ flex: 1, fontSize: 15, fontWeight: 700 }}>{r.entry.raw}</span>
               <span style={{ fontSize: 11, fontWeight: 800, color: "#B45309", background: "rgba(245,158,11,0.12)", padding: "2px 6px", borderRadius: 6 }}>{r.failed ? "AI chưa tính được" : "Chưa có trong kho"}</span>
-              <button aria-label={`Bỏ ${r.entry.raw}`} onClick={() => removeRow(i)} style={{ ...stepBtn, border: "none", color: "#94A3B8" }}>{Icon.close(14)}</button>
+              <button aria-label={`Bỏ ${r.entry.raw}`} disabled={aiBusy} onClick={() => removeRow(i)} style={{ ...stepBtn, border: "none", color: "#94A3B8" }}>{Icon.close(14)}</button>
             </span>
-            {r.near && <button data-testid={`calc-near-${i}`} onClick={() => setRow(i, r.near)} style={{ alignSelf: "flex-start", height: 32, padding: "0 10px", borderRadius: 10, border: "1.5px solid #E2E8F0", background: "#FFFFFF", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "#007AFF" }}>Dùng món gần đúng: {itemName(r.near)} · {fmtInt(r.near.cal)} kcal</button>}
+            {r.near && <button data-testid={`calc-near-${i}`} disabled={aiBusy} onClick={() => setRow(i, r.near)} style={{ alignSelf: "flex-start", height: 32, padding: "0 10px", borderRadius: 10, border: "1.5px solid #E2E8F0", background: "#FFFFFF", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "#007AFF" }}>Dùng món gần đúng: {itemName(r.near)} · {fmtInt(r.near.cal)} kcal</button>}
           </div>
         ) : (
           <div key={i} data-testid={`calc-item-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 72, borderBottom: i < rows.length - 1 ? "1px solid #F1F5F9" : "none" }}>

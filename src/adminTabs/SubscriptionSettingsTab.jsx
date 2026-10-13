@@ -20,7 +20,7 @@ export function SubscriptionSettingsTab({ isAdmin, isSuperAdmin }) {
           trial_ai_macro_limit: 500, trial_ai_chat_limit: 100, trial_ai_menu_limit: 30, trial_ai_photo_limit: 100,
           premium_ai_macro_limit: 1000, premium_ai_chat_limit: 150, premium_ai_menu_limit: 50, premium_ai_photo_limit: 300,
           trial_days: 90, grace_period_days: 3,
-          price_3m: null, price_6m: null, price_12m: null,
+          price_1m: null, price_3m: null, price_6m: null, price_12m: null,
           bank_name: "", bank_account: "", bank_account_name: "",
         });
       } catch (e) { console.error("Load subscription_settings error:", e); }
@@ -50,6 +50,7 @@ export function SubscriptionSettingsTab({ isAdmin, isSuperAdmin }) {
         premium_ai_photo_limit: Number(form.premium_ai_photo_limit) || 0,
         trial_days: Number(form.trial_days) || 0,
         grace_period_days: Number(form.grace_period_days) || 0,
+        price_1m: form.price_1m ? Number(form.price_1m) : null,
         price_3m: form.price_3m ? Number(form.price_3m) : null,
         price_6m: form.price_6m ? Number(form.price_6m) : null,
         price_12m: form.price_12m ? Number(form.price_12m) : null,
@@ -152,7 +153,12 @@ export function SubscriptionSettingsTab({ isAdmin, isSuperAdmin }) {
         <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 4 }}>⭐ Giá gói Premium</div>
         <div style={{ fontSize: 12, color: C.t3, marginBottom: 14 }}>User tự chọn khi nâng cấp / gia hạn</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12, marginBottom: 16 }}>
+          <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 8 }}>Gói 1 tháng</div>
+            <div style={lbl_style(C)}>Tổng tiền (VNĐ)</div>
+            <input type="number" {...numFix} placeholder="VD: 69000" value={form.price_1m ?? ""} onChange={e => set("price_1m", e.target.value)} style={{ ...inp, marginTop: 4 }} />
+          </div>
           <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 8 }}>Gói 3 tháng</div>
             <div style={lbl_style(C)}>Tổng tiền (VNĐ)</div>

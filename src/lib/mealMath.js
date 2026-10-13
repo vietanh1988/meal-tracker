@@ -101,10 +101,12 @@ export function toggleEatenIn(day, mealId, isEaten) {
 // Áp thực đơn cả ngày (template / AI): bữa ĐÃ ĂN giữ nguyên, bữa khác thay mới.
 export function applyMenu(day, menuMeals, dayType) {
   const eaten = (day && Array.isArray(day.eaten_meals) ? day.eaten_meals : []);
-  const keep = (day?.meals || []).filter((m) => eaten.includes(mealKey(m)));
   const fresh = (menuMeals || [])
     .filter((m) => mealKey(m) && hasItems(m) && !eaten.includes(mealKey(m)))
     .map((m) => ({ ...m, meal_id: mealKey(m), meal_name: mealLabel(m.meal_name || m.name, mealKey(m)) }));
+  const freshIds = new Set(fresh.map(mealKey));
+  // Giữ: bữa đã ăn + bữa đã có món mà thực đơn mới KHÔNG có (không xoá ngầm bữa user tự ghi)
+  const keep = (day?.meals || []).filter((m) => eaten.includes(mealKey(m)) || (hasItems(m) && !freshIds.has(mealKey(m))));
   return {
     ...(day || {}),
     day_type: dayType === "train" || dayType === "rest" ? dayType : (day?.day_type || "train"),

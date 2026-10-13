@@ -10,7 +10,7 @@ import { mealLabel, MEAL_ORDER } from "../lib/mealMath";
 import { aiQuota } from "../lib/aiQuota";
 import { loadAIMenus } from "../lib/aiMenuService";
 import { SaveWeekSheet } from "./AIMenuScreen";
-import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT, WEEK_LONG } from "../lib/menuView";
+import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT } from "../lib/menuView";
 import { applyMealEngineToTemplate } from "../mealEngine";
 import { Icon, GRAD_BLUE } from "./ui";
 
@@ -66,7 +66,7 @@ function Summary({ title, sub, cal, target }) {
 // (thực đơn AI đã tạo + ngày đã ăn trước, dùng lại không tốn lượt), 3) Thực đơn mẫu (admin soạn).
 // "Lặp lại hằng tuần" (weekly_templates, tự chép vào Hôm nay mỗi sáng) chỉ hiện khi user đã đặt.
 export function MenuScreen(p) {
-  const { profile, macro, aiAccess, userId, todayLog, getWeeklyTemplate, weeklyTemplates, defaultTemplates, refreshDefaultTemplates, flags, openGenerate, openSaved, openPage, openToday, clearToday, recentDays } = p;
+  const { profile, macro, aiAccess, userId, todayLog, getWeeklyTemplate, weeklyTemplates, defaultTemplates, refreshDefaultTemplates, flags, openGenerate, openSaved, openPage, openToday, clearToday, recentDays, active } = p;
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
   const noEx = (profile?.exerciseType || "gym") === "none";
@@ -90,7 +90,7 @@ export function MenuScreen(p) {
     }
     if (flags?.template_library && refreshDefaultTemplates) refreshDefaultTemplates();
     return () => { alive = false; };
-  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userId, active]); // eslint-disable-line react-hooks/exhaustive-deps — tải lại khi đóng màn AI (lượt + thực đơn mới)
 
   const rows = useMemo(() => weekRows({ getTemplate: getWeeklyTemplate, gymDays: profile?.gymDays, exerciseType: profile?.exerciseType, macro, today }),
     [weeklyTemplates, profile?.gymDays, profile?.exerciseType, macro?.calTarget, macro?.calRest, today]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -338,7 +338,7 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
     if (row.isToday && todayLog && todayLog.log_date === today) {
       const eaten = todayLog.eaten_meals || [];
       const uneaten = (todayLog.meals || []).filter((m) => (m.items || []).length > 0 && !eaten.includes(m.meal_id || m.id)).map((m) => m.meal_id || m.id);
-      if (uneaten.length && (await appConfirm(`Hôm nay có ${uneaten.length} bữa chưa ăn lấy từ lịch này. Xoá luôn khỏi Hôm nay?`))) {
+      if (uneaten.length && (await appConfirm(`Hôm nay còn ${uneaten.length} bữa chưa ăn. Xoá luôn các bữa chưa ăn khỏi Hôm nay?`))) {
         for (const id of uneaten) await removeDayMeal(today, id);
         await refresh?.();
       }
@@ -428,45 +428,6 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
           })}
         </div>
         <button data-testid="tpl-assign" disabled={busy || !days.length} onClick={assign} style={btn("ghost")}>{days.length ? `Lặp lại ${days.length} thứ mỗi tuần` : "Chọn thứ cùng loại ngày"}</button>
-      </div>
-    </div>
-  );
-}
-
-// ---------------- 1 gói tuần ----------------
-export function MenuBundlePage({ bundleId, macro, weeklyBundles, defaultTemplates, saveWeeklyTemplate, showToast, close }) {
-  const b = (weeklyBundles || []).find((x) => String(x.id) === String(bundleId));
-  const [busy, setBusy] = useState(false);
-  if (!b) return <p style={{ margin: 24, textAlign: "center", color: "#64748B" }}>Gói tuần không còn.</p>;
-  const tplOf = (k) => (defaultTemplates || []).find((t) => t.id === (b.days || {})[k]);
-  const apply = async () => {
-    if (!(await appConfirm(`Áp "${b.name}" cho cả tuần? Ngày nào đã có trong Lịch tuần sẽ bị thay.`))) return;
-    setBusy(true);
-    for (const k of WEEK_KEYS) {
-      const t = tplOf(k);
-      if (!t) continue;
-      const eng = applyMealEngineToTemplate(t, dailyTargetOf(macro, t.day_type));
-      await saveWeeklyTemplate(k, t.day_type, eng.meals || [], mealsCal(eng.meals));
-    }
-    setBusy(false);
-    showToast({ text: "Đã áp gói cho cả tuần." });
-    close();
-  };
-  return (
-    <div style={{ paddingBottom: 32 }}>
-      <div style={{ ...box, marginTop: 12 }}>
-        {WEEK_KEYS.map((k, i) => {
-          const t = tplOf(k);
-          return (
-            <div key={k} style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 48, borderBottom: i < 6 ? "1px solid #F1F5F9" : "none" }}>
-              <span style={{ width: 70, fontSize: 14, fontWeight: 700 }}>{WEEK_LONG[i]}</span>
-              <span style={{ flex: 1, fontSize: 13, color: t ? "#334155" : "#94A3B8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t ? `${t.name} · ${DT[t.day_type]}` : "Chưa gán"}</span>
-            </div>
-          );
-        })}
-      </div>
-      <div style={{ margin: "14px 12px 0 12px" }}>
-        <button data-testid="bundle-apply" disabled={busy} onClick={apply} style={btn("blue", busy)}>Áp dụng cả tuần</button>
       </div>
     </div>
   );

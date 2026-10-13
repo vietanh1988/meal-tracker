@@ -324,7 +324,7 @@ function WaterCups({ waterMl = 0, addWater, kg, isTrainDay, goalOverride }) {
           {v.cups.map((c) => {
             const next = !c.full && c.i === v.filled + 1;
             if (c.full) return (
-              <button key={c.i} data-testid={`water-cup-${c.i}`} aria-pressed="true" aria-label={`Cốc ${c.i} đã uống, chạm để bỏ`} disabled={busy} onClick={() => change(-v.cupMl)}
+              <button key={c.i} data-testid={`water-cup-${c.i}`} aria-pressed="true" aria-label={`Cốc ${c.i} đã uống, chạm để bỏ`} disabled={busy} onClick={() => change(-(waterMl - (v.filled - 1) * v.cupMl))}
                 style={{ height: 58, borderRadius: 12, border: "none", background: "rgba(90,200,250,0.12)", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <svg aria-hidden="true" width="30" height="38" viewBox="0 0 30 38"><path d="M3 3h24l-3 32H6z" fill="#FFFFFF" stroke="#0891B2" strokeWidth="2.2" strokeLinejoin="round" /><path d="M4.6 12h20.8l-2.2 23H6.8z" fill="#38BDF8" /><path d="M8 17c2-1 4 1 6 0" stroke="#FFFFFF" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity="0.7" /></svg>
               </button>

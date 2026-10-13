@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 import { C } from "../theme";
 import { parseFeatureFlags } from "./FeatureFlagsTab";
 
-const PKG_LABEL = { "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
+const PKG_LABEL = { "1m": "1 tháng", "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
 
 function fmtVND(n) {
   if (n === null || n === undefined) return "-";
@@ -45,7 +45,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
     try {
       const [{ data: p }, { data: s }, { data: orders }] = await Promise.all([
         supabase.from("profiles").select("username,tier,trial_end_date,subscription_end_date,ai_macro_count_this_month,ai_macro_count_reset_at,ai_chat_count_today,ai_chat_count_reset_at,ai_menu_count_today,ai_menu_count_reset_at,ai_photo_count_this_month,ai_photo_count_reset_at").eq("id", userId).single(),
-        supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,free_ai_menu_limit,trial_ai_macro_limit,trial_ai_chat_limit,trial_ai_menu_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
+        supabase.from("subscription_settings").select("free_ai_macro_limit,free_ai_chat_limit,free_ai_menu_limit,trial_ai_macro_limit,trial_ai_chat_limit,trial_ai_menu_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit,price_1m,price_3m,price_6m,price_12m,bank_name,bank_account,bank_account_name").eq("id", 1).single(),
         supabase.from("orders").select("id,package,amount,status,created_at,confirmed_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
       ]);
       setSub(p || null);
@@ -73,7 +73,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
   const handleConfirmPaid = async () => {
     if (!userId || !settings) return;
     setSubmitting(true);
-    const priceKey = { "3m": "price_3m", "6m": "price_6m", "12m": "price_12m" }[selectedPkg];
+    const priceKey = { "1m": "price_1m", "3m": "price_3m", "6m": "price_6m", "12m": "price_12m" }[selectedPkg];
     const amount = settings[priceKey];
     try {
       const { data, error } = await supabase.from("orders").insert({
@@ -142,7 +142,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
     ? { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#EF4444,#DC2626)", color: "#fff", cursor: "pointer" }
     : { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#fff", cursor: "pointer" };
 
-  const PKG_SHORT = { "3m": "3T", "6m": "6T", "12m": "12T" };
+  const PKG_SHORT = { "1m": "1T", "3m": "3T", "6m": "6T", "12m": "12T" };
   const transferContent = `FIPILOT ${(sub.username || userId || "").toString().replace(/[^a-zA-Z0-9]/g, "").slice(0, 12).toUpperCase()} ${PKG_SHORT[selectedPkg] || ""}`.trim();
 
   const copyContent = () => {
@@ -257,10 +257,10 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
         <div style={{ marginTop: 14, background: "#fff", borderRadius: 12, padding: 14, border: `1px solid ${C.border}` }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: C.t1, marginBottom: 10 }}>Chọn gói Premium</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 14 }}>
-            {["3m", "6m", "12m"].map(k => (
+            {["1m", "3m", "6m", "12m"].filter(k => k !== "1m" || settings?.price_1m).map(k => (
               <div key={k} onClick={() => setSelectedPkg(k)} style={{ border: selectedPkg === k ? `2px solid ${C.primary}` : `1px solid ${C.border}`, borderRadius: 10, padding: "10px 6px", textAlign: "center", cursor: "pointer", background: selectedPkg === k ? C.blueBg : "#fff" }}>
                 <div style={{ fontSize: 12, color: C.t2, fontWeight: 600 }}>{PKG_LABEL[k]}</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: C.t1, marginTop: 2 }}>{fmtVND(settings?.[{ "3m": "price_3m", "6m": "price_6m", "12m": "price_12m" }[k]])}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: C.t1, marginTop: 2 }}>{fmtVND(settings?.[{ "1m": "price_1m", "3m": "price_3m", "6m": "price_6m", "12m": "price_12m" }[k]])}</div>
               </div>
             ))}
           </div>

@@ -7,8 +7,8 @@ import { fmtDate } from "../fmtDate";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { parseFeatureFlags } from "./FeatureFlagsTab";
 
-const PKG_LABEL = { "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
-const PKG_MONTHS = { "3m": 3, "6m": 6, "12m": 12 };
+const PKG_LABEL = { "1m": "1 tháng", "3m": "3 tháng", "6m": "6 tháng", "12m": "12 tháng" };
+const PKG_MONTHS = { "1m": 1, "3m": 3, "6m": 6, "12m": 12 };
 const STATUS_LABEL = { pending: "Chờ duyệt", confirmed: "Đã duyệt", rejected: "Đã từ chối" };
 const STATUS_ICON = { pending: "⏳", confirmed: "✅", rejected: "❌" };
 const STATUS_BG = { pending: "#FEF3C7", confirmed: "#DCFCE7", rejected: "#FEE2E2" };

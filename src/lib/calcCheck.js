@@ -7,7 +7,7 @@ import { estimateGram } from "./usdaService.js";
 import { stripVN, defaultPortion, scaleItem } from "./mobileView.js";
 
 const NUM_WORDS = { "một": 1, "hai": 2, "ba": 3, "bốn": 4, "năm": 5, "sáu": 6, "nửa": 0.5, "rưỡi": 1.5 };
-const UNITS = ["tô", "bát", "chén", "quả", "trái", "ly", "cốc", "cái", "chiếc", "miếng", "lát", "đĩa", "dĩa", "phần", "suất", "hộp", "gói", "chai", "lon", "xiên", "cuốn", "củ", "nắm", "muỗng", "thìa", "kg", "gram", "gr", "g", "ml", "lít", "l"];
+const UNITS = ["ổ", "tô", "bát", "chén", "quả", "trái", "ly", "cốc", "cái", "chiếc", "miếng", "lát", "đĩa", "dĩa", "phần", "suất", "hộp", "gói", "chai", "lon", "xiên", "cuốn", "củ", "nắm", "muỗng", "thìa", "kg", "gram", "gr", "g", "ml", "lít", "l"];
 const UNIT_RE = UNITS.map((u) => u.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
 const r1 = (x) => Math.round((Number(x) || 0) * 10) / 10;
 
@@ -30,6 +30,8 @@ export function parseFoodLine(raw) {
   const num = "(\\d+(?:[.,]\\d+)?|" + Object.keys(NUM_WORDS).join("|") + ")";
   // đầu câu: "2 quả trứng", "200g ức gà", "nửa ổ bánh mì", "1 tô"
   let m = s.match(new RegExp(`^${num}\\s*(${UNIT_RE})?(?=\\s|$)\\s*(.*)$`, "i"));
+  // Chữ số lượng ("ba", "năm", "nửa"…) chỉ tính khi có đơn vị theo sau — tránh "ba chỉ nướng" → 3 × "chỉ nướng"
+  if (m && !/^\d/.test(m[1]) && !m[2]) m = null;
   if (m && m[3]) {
     qty = NUM_WORDS[m[1].toLowerCase()] ?? Number(m[1].replace(",", "."));
     unit = m[2] ? normUnit(m[2]) : null;
@@ -37,6 +39,7 @@ export function parseFoodLine(raw) {
   } else {
     // cuối câu: "ức gà 200g", "cơm 1 chén"
     m = s.match(new RegExp(`^(.*?)\\s+${num}\\s*(${UNIT_RE})?$`, "i"));
+    if (m && !/^\d/.test(m[2]) && !m[3]) m = null;
     if (m && m[1]) {
       qty = NUM_WORDS[m[2].toLowerCase()] ?? Number(m[2].replace(",", "."));
       unit = m[3] ? normUnit(m[3]) : null;
@@ -110,7 +113,12 @@ export function resolveEntry(entry0, foodCache) {
   if (cacheKey) {
     const v = foodCache[cacheKey];
     const base = Number(v.gram) || 100;
-    const gram = entry.unit === "g" || entry.unit === "ml" ? Math.round(entry.qty || base) : Math.round(base * (entry.qty || 1));
+    // Bản ghi lưu theo 1 khẩu phần thật (gram ≠ 100, VD món AI vừa tính) → nhân số phần.
+    // Bản ghi theo 100 g → đổi đơn vị (tô, cái…) ra gram trước, không có thì 1 khẩu phần = 100 g.
+    const isW = entry.unit === "g" || entry.unit === "ml";
+    const gram = isW ? Math.round(entry.qty || base)
+      : base !== 100 ? Math.round(base * (entry.qty || 1))
+      : Math.round((entry.unit && estimateGram(cacheKey, entry.unit, entry.qty || 1)) || 100 * (entry.qty || 1));
     const k = gram / base;
     return { food: cacheKey, display: getFoodDisplay(cacheKey), gram, unit: "g", ...(portionLabel(entry) ? { qty_display: portionLabel(entry) } : {}), p: r1(v.p * k), c: r1(v.c * k), f: r1(v.f * k), fiber: r1((v.fiber || 0) * k), cal: Math.round((v.cal || 0) * k), source: "cache", _raw: entry.raw };
   }
@@ -181,10 +189,10 @@ export function parseCalcAI(text, entries) {
   });
 }
 
-// Macro / 100 g để lưu food_cache (lần sau tính không tốn lượt)
-export function cacheEntryOf(item) {
+// Lưu theo ĐÚNG khẩu phần AI đã tính cho 1 đơn vị (VD 1 tô = 500 g), để lần sau gõ "2 tô" nhân đúng.
+export function cacheEntryOf(item, qty = 1) {
   const g = Number(item.gram) || 0;
   if (!g) return null;
-  const k = 100 / g;
-  return { p: r1(item.p * k), c: r1(item.c * k), f: r1(item.f * k), fiber: r1((item.fiber || 0) * k), cal: Math.round(item.cal * k), gram: 100 };
+  const q = Number(qty) > 0 ? Number(qty) : 1;
+  return { p: r1(item.p / q), c: r1(item.c / q), f: r1(item.f / q), fiber: r1((item.fiber || 0) / q), cal: Math.round(item.cal / q), gram: Math.round(g / q) };
 }

@@ -93,6 +93,13 @@ test("applyMenu giữ bữa đã ăn, thay bữa còn lại", () => {
   assert.deepEqual(out.eaten_meals, ["sang"]);
 });
 
+test("applyMenu không xoá bữa chưa ăn mà thực đơn mới không có", () => {
+  const day = { day_type: "train", meals: [{ meal_id: "toi", items: [{ cal: 400 }] }, { meal_id: "trua", items: [{ cal: 700 }] }], eaten_meals: [] };
+  const out = M.applyMenu(day, [{ meal_id: "sang", items: [{ cal: 300 }] }, { meal_id: "trua", items: [{ cal: 500 }] }], "train");
+  assert.deepEqual(out.meals.map(M.mealKey), ["sang", "trua", "toi"]);
+  assert.equal(M.sumMeals(out.meals).cal, 300 + 500 + 400);
+});
+
 test("dayRowPayload làm tròn + is_complete theo bữa đã ăn", () => {
   const p = M.dayRowPayload("u", "2026-10-13", { day_type: "x", meals: [{ meal_id: "sang", items: [{ cal: 100.6, p: 1.25 }] }], eaten_meals: [] });
   assert.equal(p.total_cal, 101);

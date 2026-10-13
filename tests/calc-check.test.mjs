@@ -47,5 +47,22 @@ test("đọc trả lời AI theo thứ tự, bỏ số vô lý", () => {
   const out = parseCalcAI('[{"name":"bánh bao xá xíu","gram":150,"cal":330,"p":10,"c":50,"f":10,"fiber":2},{"name":"x","gram":0,"cal":1}]', entries);
   assert.equal(out[0].cal, 330); assert.equal(out[0].source, "ai"); assert.equal(out[0].qty_display, "1 cái");
   assert.equal(out[1].unknown, true);
-  assert.deepEqual(cacheEntryOf(out[0]), { p: 6.7, c: 33.3, f: 6.7, fiber: 1.3, cal: 220, gram: 100 });
+  assert.deepEqual(cacheEntryOf(out[0], 1), { p: 10, c: 50, f: 10, fiber: 2, cal: 330, gram: 150 });
+});
+
+test("món AI đã lưu: gõ lại '2 tô' nhân đúng khẩu phần đã tính, không về 100 g", () => {
+  const entries = parseFoodText("1 tô bún mắm nêm đặc biệt");
+  const [ai] = parseCalcAI('[{"name":"bún mắm nêm đặc biệt","gram":500,"cal":600,"p":30,"c":70,"f":20,"fiber":3}]', entries);
+  const cache = { "bún mắm nêm đặc biệt": cacheEntryOf(ai, entries[0].qty) };
+  const [again] = resolveAll("1 tô bún mắm nêm đặc biệt", cache);
+  assert.equal(again.source, "cache"); assert.equal(again.gram, 500); assert.equal(again.cal, 600);
+  const [two] = resolveAll("2 tô bún mắm nêm đặc biệt", cache);
+  assert.equal(two.gram, 1000); assert.equal(two.cal, 1200);
+});
+test("chữ số lượng chỉ tính khi có đơn vị; có 'ổ'", () => {
+  assert.equal(parseFoodLine("ba chỉ nướng").name, "ba chỉ nướng");
+  assert.equal(parseFoodLine("ba chỉ nướng").qty, null);
+  const b = parseFoodLine("nửa ổ bánh mì");
+  assert.equal(b.qty, 0.5); assert.equal(b.unit, "ổ"); assert.equal(b.name, "bánh mì");
+  assert.equal(parseFoodLine("hai quả trứng gà luộc").qty, 2);
 });

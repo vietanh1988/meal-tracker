@@ -107,7 +107,7 @@ export function cupsView(waterMl, goalMl, cupMl = 250) {
   const goal = Math.max(cup, Math.round(Number(goalMl) || 0));
   const need = Math.ceil(goal / cup);
   const filled = Math.floor(ml / cup);
-  const total = Math.min(30, Math.max(need, filled + 1));
+  const total = Math.max(need, Math.min(40, filled + 1));
   const cups = Array.from({ length: total }, (_, k) => ({ i: k + 1, full: k < filled }));
   return { cupMl: cup, need, total, filled, cups, left: Math.max(0, need - filled), pct: Math.min(100, Math.round((ml / goal) * 100)), done: ml >= goal };
 }

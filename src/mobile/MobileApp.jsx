@@ -15,7 +15,7 @@ import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen, PayScreen } from "./PlanScreen";
 import { FeedbackScreen } from "./FeedbackScreen";
 import { AboutScreen } from "./AboutScreen";
-import { MenuScreen, MenuDayPage, MenuTplPage, MenuBundlePage, MenuPastPage } from "./MenuScreen";
+import { MenuScreen, MenuDayPage, MenuTplPage, MenuPastPage } from "./MenuScreen";
 import { AIMenuScreen } from "./AIMenuScreen";
 import { WEEK_KEYS, WEEK_SHORT, mealsCal } from "../lib/menuView";
 import { UpdatePopup } from "./UpdatePopup";
@@ -114,7 +114,10 @@ export function MobileApp(props) {
     return () => { alive = false; };
   }, [wk.start, version]);
 
-  const dayOf = (d) => (d === today ? ud.todayLog : dayCache[d]);
+  // Hôm nay: chỉ dùng todayLog khi đúng ngày (qua 0h mà app vẫn mở thì todayLog còn là hôm qua cho tới khi tải lại)
+  const emptyDay = (d) => ({ log_date: d, meals: [], eaten_meals: [], water_ml: 0 });
+  const dayOf = (d) => (d === today ? (ud.todayLog && ud.todayLog.log_date === today ? ud.todayLog : emptyDay(today)) : dayCache[d]);
+  useEffect(() => { if (ud.todayLog && ud.todayLog.log_date !== today && ud.reloadToday) ud.reloadToday(); }, [today]); // eslint-disable-line react-hooks/exhaustive-deps
   const refresh = async (d) => { if (d && d !== todayVN()) await loadDay(d); setVersion((v) => v + 1); };
 
   // ---------- tính cho Hôm nay ----------
@@ -134,7 +137,7 @@ export function MobileApp(props) {
   const weekDots = useMemo(() => {
     const m = {};
     (weekRows || []).forEach((r) => { if ((r.eaten_meals || []).length) m[String(r.log_date).slice(0, 10)] = true; });
-    if ((ud.todayLog?.eaten_meals || []).length) m[today] = true;
+    if (ud.todayLog?.log_date === today && (ud.todayLog.eaten_meals || []).length) m[today] = true;
     return m;
   }, [weekRows, ud.todayLog, today]);
 
@@ -153,7 +156,7 @@ export function MobileApp(props) {
   // ---------- thao tác ghi (tuần tự) ----------
   const queue = useRef(Promise.resolve());
   const serial = (fn) => { const p = queue.current.then(fn, fn); queue.current = p.catch(() => {}); return p; };
-  const freshDay = async (d) => (d === todayVN() ? ud.todayLog : (await ud.getDailyLog(d)) || { meals: [], eaten_meals: [] });
+  const freshDay = async (d) => (d === todayVN() ? dayOf(d) : (await ud.getDailyLog(d)) || { meals: [], eaten_meals: [] });
   const mealOf = (dy, id) => (dy?.meals || []).find((m) => mealKey(m) === id);
   const fail = () => showToast({ text: "Lưu không được, kiểm tra mạng rồi thử lại." });
 
@@ -218,9 +221,10 @@ export function MobileApp(props) {
     try {
       const tplDayType = tpl.day_type || dayTypeOf(profile, today);
       // Không còn tự lưu ngầm vào Lịch tuần (chốt 13/10) — muốn lặp lại thì bấm "Lặp lại hằng tuần"
-      await ud.applyTemplate({ ...tpl, day_type: tplDayType });
+      const res = await ud.applyTemplate({ ...tpl, day_type: tplDayType });
       await refresh(today);
-      showToast({ text: "Đã áp thực đơn AI cho hôm nay." });
+      if (res && res.ok === false) fail();
+      else showToast({ text: "Đã áp thực đơn AI cho hôm nay." });
     } catch (e) { console.error("Apply AI menu error:", e); fail(); }
     closeLayer();
   };
@@ -343,9 +347,9 @@ export function MobileApp(props) {
     profile, macro, todayLog: ud.todayLog, getWeeklyTemplate: ud.getWeeklyTemplate, weeklyTemplates: ud.weeklyTemplates,
     saveWeeklyTemplate: ud.saveWeeklyTemplate, deleteWeeklyTemplate: ud.deleteWeeklyTemplate, applyTemplate: ud.applyTemplate,
     removeDayMeal: ud.removeDayMeal, defaultTemplates: ud.defaultTemplates, refreshDefaultTemplates: ud.refreshDefaultTemplates,
-    weeklyBundles: ud.weeklyBundles, refresh: () => refresh(today), showToast, close: closeLayer,
+    refresh: () => refresh(today), showToast, close: closeLayer,
   };
-  const MENU_PAGE_TITLE = { menu_day: "Lặp lại hằng tuần", menu_tpl: "Thực đơn mẫu", menu_bundle: "Gói tuần", menu_past: "Ngày đã ăn" };
+  const MENU_PAGE_TITLE = { menu_day: "Lặp lại hằng tuần", menu_tpl: "Thực đơn mẫu", menu_past: "Ngày đã ăn" };
 
   const renderPage = (l) => {
     const sec = l.sec;
@@ -353,7 +357,6 @@ export function MobileApp(props) {
       <SubPage title={sec === "menu_day" ? `Lặp lại · ${({ thu_2: "Thứ Hai", thu_3: "Thứ Ba", thu_4: "Thứ Tư", thu_5: "Thứ Năm", thu_6: "Thứ Sáu", thu_7: "Thứ Bảy", cn: "Chủ nhật" })[l.key] || ""}` : MENU_PAGE_TITLE[sec]} onBack={closeLayer}>
         {sec === "menu_day" && <MenuDayPage dayKey={l.key} {...menuProps} />}
         {sec === "menu_tpl" && <MenuTplPage tplId={l.id} {...menuProps} />}
-        {sec === "menu_bundle" && <MenuBundlePage bundleId={l.id} {...menuProps} />}
         {sec === "menu_past" && <MenuPastPage day={l.day} {...menuProps} />}
       </SubPage>
     );
@@ -438,13 +441,13 @@ export function MobileApp(props) {
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             week={week} onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
-            onLog={(id) => openLog(id)} onPhoto={() => openPhoto()} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
+            onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             repeatFor={(id) => recentMeals.find((r) => r.meal_id === id && !(r.log_date === date))} onRepeat={(rec, id) => repeatMeal(rec, id)}
             onAIMenu={aiMenuAction} onWeight={() => { setProgressSeg((s) => ({ seg: "weight", n: s.n + 1 })); setTab("progress"); }} />
         )}
         {tab === "menu" && (
           <div>
-            <MenuScreen {...menuProps} aiAccess={aiAccess} userId={user?.id} flags={flags} recentDays={recentRows} openToday={() => { setSelDate(null); setTab("today"); }}
+            <MenuScreen {...menuProps} active={!top} aiAccess={aiAccess} userId={user?.id} flags={flags} recentDays={recentRows} openToday={() => { setSelDate(null); setTab("today"); }}
               openGenerate={(prefs) => openLayer({ type: "ai", prefs, auto: true })} openSaved={(template) => openLayer({ type: "ai", template })}
               openPage={(sec, extra) => openLayer({ type: "page", sec, ...(extra || {}) })} clearToday={clearToday} />
           </div>
@@ -481,7 +484,7 @@ export function MobileApp(props) {
           {l.type === "calc" && (
             <CalcCheckScreen initialText={l.text} autoRun={l.auto} foodCache={calcFoodCache} frequent={frequent} aiEnabled={!!flags.ai_macro} userId={user?.id} appSettings={appSettings}
               dayInfo={{ target: targetsOf(macro, dayTypeOf(profile, l.date)).cal, eaten: eatenOfDay(dayOf(l.date)).cal }}
-              mealIds={idsFor(l.date).length ? idsFor(l.date) : ["sang", "trua", "toi"]} initialMeal={l.mealId} date={l.date} dateOptions={dateOptions}
+              mealIds={idsFor(l.date).length ? idsFor(l.date) : ["sang", "trua", "toi"]} initialMeal={l.mealId} date={l.date} dateOptions={dateOptions.some((o) => o.value === l.date) ? dateOptions : [{ value: l.date, label: fmtVN(l.date) }, ...dateOptions]}
               savePending={savePendingFoodCache} onClose={closeLayer}
               onSave={(d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
           )}

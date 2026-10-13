@@ -34,7 +34,7 @@ test("Gói cước: tắt bán = Lượt AI; bật bán = chọn gói → chuy�
 
     // ---- Bật bán hàng ----
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: FLAGS_OFF.replace('"sales_enabled":false', '"sales_enabled":true') }) });
-    await rest("subscription_settings", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify({ id: 1, price_3m: 150000, price_6m: 270000, price_12m: 480000, bank_name: "NH TEST", bank_account: "0001112223", bank_account_name: "E2E TEST" }) });
+    await rest("subscription_settings", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify({ id: 1, price_1m: 69000, price_3m: 150000, price_6m: 270000, price_12m: 480000, bank_name: "NH TEST", bank_account: "0001112223", bank_account_name: "E2E TEST" }) });
     await page.reload();
     await expect(page.getByTestId("kcal-remain").or(page.getByTestId("me-plan"))).toBeVisible({ timeout: 20_000 });
     await nav("Tôi").click();
@@ -42,6 +42,7 @@ test("Gói cước: tắt bán = Lượt AI; bật bán = chọn gói → chuy�
     await tap(page.getByTestId("me-plan"));
     await expect(page.getByTestId("plan-compare")).toBeVisible();
     await expect(page.getByTestId("plan-pkg-12m")).toContainText("480.000đ");
+    await expect(page.getByTestId("plan-pkg-1m")).toContainText("69.000đ");
     await tap(page.getByTestId("plan-pkg-12m"));
     await page.screenshot({ path: "shots/goi-cuoc-ban.png", fullPage: true });
     await tap(page.getByTestId("plan-buy"));

@@ -43,3 +43,11 @@ test("packagesOf: giá/tháng + gói rẻ nhất mỗi tháng; bỏ gói chưa c
 test("transferContent: viết hoa, bỏ ký tự lạ, tối đa 12", () => {
   assert.equal(transferContent("viet_anh.88", "x", "12m"), "FIPILOT VIETANH88 12T");
 });
+
+test("packagesOf: có gói 1 tháng khi đặt giá, đứng đầu danh sách", () => {
+  const p = packagesOf({ price_1m: 69000, price_3m: 150000, price_6m: 270000, price_12m: 480000 });
+  assert.deepEqual(p.map((x) => x.id), ["1m", "3m", "6m", "12m"]);
+  assert.equal(p[0].perMonth, 69000);
+  assert.deepEqual(p.filter((x) => x.best).map((x) => x.id), ["12m"]);
+  assert.equal(transferContent("an", "x", "1m"), "FIPILOT AN 1T");
+});
