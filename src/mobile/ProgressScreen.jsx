@@ -192,11 +192,11 @@ function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, update
         <div style={{ display: "flex", gap: 8, paddingTop: 2 }}>
           <label style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6, height: 44, padding: "0 12px", background: "#F1F5F9", border: "1.5px solid #E2E8F0", borderRadius: 10, boxSizing: "border-box" }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B", whiteSpace: "nowrap" }}>Hôm nay</span>
-            <input type="text" inputMode="decimal" value={val} onChange={(e) => setVal(e.target.value.replace(",", ".").replace(/[^0-9.]/g, "").slice(0, 5))} onKeyDown={(e) => e.key === "Enter" && saveToday()} placeholder={String(w.curKg || "")}
+            <input data-testid="weight-input" type="text" inputMode="decimal" value={val} onChange={(e) => setVal(e.target.value.replace(",", ".").replace(/[^0-9.]/g, "").slice(0, 5))} onKeyDown={(e) => e.key === "Enter" && saveToday()} placeholder={String(w.curKg || "")}
               style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", textAlign: "right", fontFamily: "inherit", fontSize: 16, fontWeight: 700, color: "#0F172A", outline: "none" }} />
             <span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>kg</span>
           </label>
-          <button onClick={saveToday} disabled={busy || !val} style={{ height: 44, padding: "0 18px", borderRadius: 10, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 900 }}>Lưu</button>
+          <button data-testid="weight-save" onClick={saveToday} disabled={busy || !val} style={{ height: 44, padding: "0 18px", borderRadius: 10, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 900 }}>Lưu</button>
         </div>
         {w.weighedToday && <span style={{ fontSize: 12, color: "#64748B", marginTop: -4 }}>Hôm nay đã cân — lưu lần nữa sẽ sửa số hôm nay.</span>}
       </div>

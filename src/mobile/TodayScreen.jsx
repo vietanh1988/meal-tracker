@@ -54,7 +54,7 @@ export function TodayScreen(p) {
         <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 4px" }}>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8 }}>
             <span style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-              <span style={{ fontSize: 34, fontWeight: 900, lineHeight: 1 }}>{fmtInt(Math.abs(remain))}</span>
+              <span data-testid="kcal-remain" data-value={remain} style={{ fontSize: 34, fontWeight: 900, lineHeight: 1 }}>{fmtInt(Math.abs(remain))}</span>
               <span style={{ fontSize: 13, fontWeight: 600, opacity: 0.9 }}>{remain >= 0 ? "kcal còn lại" : "kcal vượt"}</span>
             </span>
             <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.9, whiteSpace: "nowrap" }}>{dayType === "rest" ? "Ngày nghỉ" : "Ngày tập"} · {fmtInt(eaten.cal)} / {fmtInt(targets.cal)}</span>
@@ -94,7 +94,7 @@ export function TodayScreen(p) {
       {/* ===== Nước + Cân nặng ===== */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8, margin: "10px 12px 0 12px" }}>
         <WaterTile waterMl={p.waterMl} addWater={p.addWater} kg={w.curKg} isTrainDay={dayType !== "rest"} goalOverride={p.waterGoalOverride} />
-        <button onClick={p.onWeight} className="tap" style={{ height: 56, borderRadius: 16, background: "linear-gradient(135deg,rgba(250,204,21,0.2),rgba(250,204,21,0.06))", padding: "0 12px", display: "flex", alignItems: "center", gap: 8, border: "none", color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
+        <button data-testid="weight-tile" onClick={p.onWeight} className="tap" style={{ height: 56, borderRadius: 16, background: "linear-gradient(135deg,rgba(250,204,21,0.2),rgba(250,204,21,0.06))", padding: "0 12px", display: "flex", alignItems: "center", gap: 8, border: "none", color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
           <img src="/icons/stat_weight.png" alt="" style={{ width: 22, height: 22, objectFit: "contain" }} />
           <span style={{ flex: 1, display: "flex", flexDirection: "column", lineHeight: 1.2, minWidth: 0 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#92400E" }}>{w.weighedToday ? "Đã cân hôm nay" : w.sinceLast == null ? "Chưa cân lần nào" : `${w.sinceLast} ngày chưa cân`}</span>
@@ -128,7 +128,7 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepe
       )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
         {planned ? <>
-          <button disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(0,87,255,0.22)", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
+          <button data-testid={`eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(0,87,255,0.22)", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
           <button onClick={() => onEdit(r.id)} style={{ height: 48, borderRadius: 14, background: "#F1F5F9", color: "#0F172A", fontSize: 14, fontWeight: 800, border: "none", fontFamily: "inherit" }}>Sửa món</button>
         </> : <>
           <button onClick={() => onPhoto(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_ORANGE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(234,88,12,0.25)", fontFamily: "inherit" }}>{Icon.camera(18)}Chụp món</button>
@@ -162,7 +162,7 @@ function TimelineRow({ r, onLog, onEdit, onToggleEaten, busy }) {
             <span style={{ fontSize: 12, fontWeight: 600, color: eaten ? "#047857" : "#B45309", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fmtInt(r.cal)} kcal · {eaten ? "đã ăn" : "chưa ăn"}</span>
           </span>
         </button>
-        <button disabled={busy} onClick={() => onToggleEaten(r.id, !eaten)} aria-label={eaten ? `Bỏ đánh dấu đã ăn ${r.name}` : `Đánh dấu đã ăn ${r.name}`} aria-pressed={eaten}
+        <button data-testid={`eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, !eaten)} aria-label={eaten ? `Bỏ đánh dấu đã ăn ${r.name}` : `Đánh dấu đã ăn ${r.name}`} aria-pressed={eaten}
           style={{ ...plusBtn, background: eaten ? "#00C896" : "#FFFFFF", borderColor: eaten ? "#00C896" : "#E2E8F0", color: eaten ? "#FFFFFF" : "#94A3B8" }}>{Icon.check(16, 2.8)}</button>
       </div>
     );
