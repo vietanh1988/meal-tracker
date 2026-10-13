@@ -42,7 +42,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
     <div>
       <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 10px 16px" }}><span style={{ fontSize: 20, fontWeight: 900 }}>Tôi</span></div>
 
-      <button onClick={() => open("profile")} className="tap" style={{ margin: "0 12px", width: "calc(100% - 24px)", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, color: "#0F172A", fontFamily: "inherit", textAlign: "left", boxSizing: "border-box" }}>
+      <button data-testid="me-profile-card" onClick={() => open("goals")} className="tap" style={{ margin: "0 12px", width: "calc(100% - 24px)", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, color: "#0F172A", fontFamily: "inherit", textAlign: "left", boxSizing: "border-box" }}>
         <span style={{ width: 44, height: 44, borderRadius: 22, background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#FFFFFF", fontSize: 16, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{initials}</span>
         <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 15, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}>
@@ -55,7 +55,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
       </button>
 
       <div style={group}>
-        <Row label="Mục tiêu & macro" value={goalVal} onClick={() => open("profile")} />
+        <Row label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
         <Row label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
         <Row label="Nhắc nhở" value="Thông báo đẩy" onClick={() => open("account")} />
         <Row label="Gói cước" value={TIER[tier] || tier} onClick={() => open("account")} last />

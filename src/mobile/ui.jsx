@@ -116,3 +116,13 @@ export function Toast({ toast, bottom = 90 }) {
 }
 
 export const cardBox = { background: C.card, border: `1.5px solid ${C.border}`, borderRadius: 14 };
+
+// Công tắc bật/tắt 52×32 (xanh #00C896 khi bật)
+export function Toggle({ on, onClick, label, testid }) {
+  return (
+    <button data-testid={testid} onClick={onClick} aria-label={label} aria-pressed={on}
+      style={{ width: 52, height: 32, borderRadius: 16, border: "none", background: on ? "#00C896" : "#CBD5E1", position: "relative", padding: 0, flexShrink: 0, cursor: "pointer", transition: "background .15s" }}>
+      <span style={{ position: "absolute", top: 3, left: on ? 23 : 3, width: 26, height: 26, borderRadius: 13, background: "#FFFFFF", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
+    </button>
+  );
+}

@@ -10,6 +10,7 @@ import { EditMealScreen } from "./EditMealScreen";
 import { ProgressScreen } from "./ProgressScreen";
 import { MeScreen } from "./MeScreen";
 import { ScheduleScreen } from "./ScheduleScreen";
+import { GoalsScreen } from "./GoalsScreen";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
@@ -293,6 +294,11 @@ export function MobileApp(props) {
   };
   const renderPage = (l) => {
     const sec = l.sec;
+    if (sec === "goals") return (
+      <SubPage title="Mục tiêu & macro" onBack={closeLayer} right={<span style={{ fontSize: 12, fontWeight: 700, color: "#00A67E", paddingRight: 8 }}>Tự động lưu</span>}>
+        <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} />
+      </SubPage>
+    );
     if (sec === "schedule") return (
       <SubPage title="Lịch tập & bữa" onBack={closeLayer}>
         <ScheduleScreen profile={profile} setProfile={setProfile} mealConfig={profile.mealConfig || null} defaultConfig={mealConfig} curKg={weight.curKg} />

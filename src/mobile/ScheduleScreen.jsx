@@ -5,6 +5,7 @@
 // Mỗi thay đổi lưu ngay qua setProfile.
 import { useState } from "react";
 import { MEAL_ICON, fmtDec } from "../lib/mobileView";
+import { Toggle } from "./ui";
 import { MEAL_ORDER } from "../lib/mealMath";
 import { mealTimesOf, waterGoalMl, DEFAULT_MEAL_TIMES } from "../lib/dayPlan";
 
@@ -14,15 +15,6 @@ const label = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, f
 const note = { margin: "8px 16px 0 16px", fontSize: 12, color: "#64748B", lineHeight: 1.45 };
 const card = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 14px" };
 const fmtL = (ml) => (Math.round(ml / 10) / 100).toLocaleString("vi-VN", { maximumFractionDigits: 2 });
-
-function Toggle({ on, onClick, label: aria, testid }) {
-  return (
-    <button data-testid={testid} onClick={onClick} aria-label={aria} aria-pressed={on}
-      style={{ width: 52, height: 32, borderRadius: 16, border: "none", background: on ? "#00C896" : "#CBD5E1", position: "relative", padding: 0, flexShrink: 0, cursor: "pointer", transition: "background .15s" }}>
-      <span style={{ position: "absolute", top: 3, left: on ? 23 : 3, width: 26, height: 26, borderRadius: 13, background: "#FFFFFF", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
-    </button>
-  );
-}
 
 export function ScheduleScreen({ profile, setProfile, mealConfig, defaultConfig, curKg }) {
   const noExercise = (profile?.exerciseType || "gym") === "none";
