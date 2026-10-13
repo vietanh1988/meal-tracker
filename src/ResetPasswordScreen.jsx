@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "./hooks/useAuth";
-import { C, card, inp, lbl, redBtn } from "./theme";
+import { AuthShell, Field, PasswordInput, Notice, primaryBtn } from "./AuthShell";
 
 export function ResetPasswordScreen(){
   const [pass,setPass]=useState("");
@@ -22,37 +22,16 @@ export function ResetPasswordScreen(){
     setSaving(false);
   };
 
-  return <div style={{fontFamily:"'Inter',Roboto,-apple-system,'Segoe UI',sans-serif",background:C.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-    <div style={{width:"100%",maxWidth:400}}>
-      <div style={{textAlign:"center",marginBottom:32}}>
-        <img src="/logo.png" alt="Fipilot AI" style={{width:80,height:80,borderRadius:17,objectFit:"cover"}}/>
-        <div style={{fontSize:24,fontWeight:900,color:C.t1,marginTop:12,letterSpacing:"-0.02em"}}>FIPILOT AI</div>
-        <div style={{fontSize:13,fontWeight:700,color:C.secondary,marginTop:2}}>Đặt mật khẩu mới</div>
-      </div>
-      <div style={{...card,padding:"24px 28px"}}>
-        {success ? (
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:36,marginBottom:12}}>✅</div>
-            <div style={{fontSize:15,fontWeight:800,color:C.t1,marginBottom:8}}>Đã đặt mật khẩu mới thành công</div>
-            <div style={{fontSize:13,color:C.t2,marginBottom:16}}>Bạn có thể tiếp tục sử dụng app ngay bây giờ.</div>
-            <button onClick={()=>window.location.href="/"} style={redBtn}>Vào app</button>
-          </div>
-        ) : (
-          <>
-            <div style={{fontSize:13,color:C.t2,marginBottom:16,lineHeight:1.5}}>Nhập mật khẩu mới cho tài khoản của bạn.</div>
-            <div style={{marginBottom:12}}>
-              <div style={{...lbl,marginBottom:6}}>Mật khẩu mới</div>
-              <input type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="••••••" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
-            </div>
-            <div style={{marginBottom:16}}>
-              <div style={{...lbl,marginBottom:6}}>Nhập lại mật khẩu mới</div>
-              <input type="password" value={pass2} onChange={e=>setPass2(e.target.value)} placeholder="••••••" style={inp} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/>
-            </div>
-            {err&&<div style={{marginBottom:12,padding:"8px 12px",background:C.redBg,borderRadius:8,border:`1.5px solid ${C.red}`,fontSize:12,fontWeight:700,color:"#7F1D1D"}}>❌ {err}</div>}
-            <button onClick={handleSubmit} disabled={saving} style={{...redBtn,opacity:saving?0.6:1}}>{saving?"Đang lưu...":"Đặt mật khẩu mới"}</button>
-          </>
-        )}
-      </div>
-    </div>
-  </div>;
+  return <AuthShell compact title="Đặt mật khẩu mới">
+    {success ? <>
+      <Notice>Đã đặt mật khẩu mới thành công. Bạn dùng app tiếp được ngay.</Notice>
+      <button onClick={()=>window.location.href="/"} style={primaryBtn(false)}>Vào app</button>
+    </> : <>
+      <span style={{fontSize:11,fontWeight:700,color:"#64748B",letterSpacing:"0.08em"}}>BƯỚC 2 · SAU KHI BẤM LINK TRONG EMAIL</span>
+      <Field label="Mật khẩu mới"><PasswordInput value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete="new-password"/></Field>
+      <Field label="Nhập lại mật khẩu mới"><PasswordInput value={pass2} onChange={setPass2} onEnter={handleSubmit} autoComplete="new-password" placeholder="Nhập lại"/></Field>
+      {err&&<Notice tone="bad">{err}</Notice>}
+      <button onClick={handleSubmit} disabled={saving} style={primaryBtn(saving)}>{saving?"Đang lưu…":"Lưu và vào app"}</button>
+    </>}
+  </AuthShell>;
 }

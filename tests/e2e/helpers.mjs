@@ -31,9 +31,9 @@ export async function login(page) {
   await blockAI(page);
   await page.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); } catch (e) {} });
   await page.goto("/");
-  await page.getByPlaceholder("email@example.com").first().fill(s.email);
-  await page.getByPlaceholder("••••••").fill(s.password);
-  await page.getByRole("button", { name: "Đăng nhập", exact: true }).last().click();
+  await page.getByTestId("login-email").fill(s.email);
+  await page.getByTestId("login-pass").fill(s.password);
+  await page.getByTestId("login-submit").click();
   await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 });
   await page.waitForTimeout(800);
 }
