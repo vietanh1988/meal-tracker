@@ -83,6 +83,7 @@ function SwapSheet({ ctx, opts, onPick, onClose }) {
         ) : (
           <>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" }}>GẦN CALO NHẤT · {ctx.mealName.toUpperCase()} SẼ THÀNH</span>
+            {opts.options[0]?.wide && <span style={{ fontSize: 12, color: "#A16207" }}>Không có món nào giữ sát calo bữa này — đây là các món gần nhất.</span>}
             <div style={{ display: "flex", flexDirection: "column", gap: 8, overflowY: "auto", minHeight: 0 }}>
               {list.map((o) => {
                 const on = o.key === sel;

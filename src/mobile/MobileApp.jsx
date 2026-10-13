@@ -21,9 +21,10 @@ import { WEEK_KEYS, WEEK_SHORT, mealsCal } from "../lib/menuView";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
-import PhotoMacroChecker from "../PhotoMacroChecker";
+import { PhotoScreen } from "./PhotoScreen";
 import PWAInstallPrompt from "../PWAInstallPrompt";
-import { NotificationBell } from "../NotificationBell";
+import { useNotifications } from "../hooks/useNotifications";
+import { NotificationsScreen, BellButton } from "./NotificationsScreen";
 import { AppDialogHost, appConfirm } from "../lib/dialog";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { getAIMenuAccess } from "../lib/aiMenuService";
@@ -41,6 +42,7 @@ export function MobileApp(props) {
     weightLog, addWeight, updateWeight, deleteWeight, ud } = props;
   const flags = parseFeatureFlags(appSettings);
   const aiAccess = getAIMenuAccess(profile, appSettings);
+  const notif = useNotifications(appSettings, user?.id);
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "bạn";
 
   // ---------- điều hướng ----------
@@ -188,16 +190,17 @@ export function MobileApp(props) {
   };
   const openLog = (mealId, d = date) => openLayer({ type: "log", date: d, mealId: mealId || defaultMealFor(d) });
   const openEdit = (mealId, d = date) => { setPendingPick(null); openLayer({ type: "edit", date: d, mealId }); };
-  const openPhoto = () => {
+  const openPhoto = (mealId) => {
     if (!flags.photo_macro) { showToast({ text: "Chụp ảnh món ăn đang tạm tắt." }); return; }
-    openLayer({ type: "photo" });
+    openLayer({ type: "photo", mealId: typeof mealId === "string" ? mealId : null });
   };
   // Nút AI ở Hôm nay: tạo luôn với lựa chọn đã dùng lần trước ở tab Thực đơn
-  const aiMenuAction = aiAccess.usable ? () => {
+  const quickAILayer = () => {
     let prefs = {};
     try { prefs = JSON.parse(localStorage.getItem("fp_menu_prefs") || "{}") || {}; } catch (e) { /* */ }
-    openLayer({ type: "ai", auto: true, prefs: { style: prefs.style, avoid: prefs.avoid, dayType: dayTypeOf(profile, today) } });
-  } : aiAccess.enabled ? () => setTab("menu") : null;
+    return { type: "ai", auto: true, prefs: { style: prefs.style, avoid: prefs.avoid, dayType: dayTypeOf(profile, today) } };
+  };
+  const aiMenuAction = aiAccess.usable ? () => openLayer(quickAILayer()) : aiAccess.enabled ? () => setTab("menu") : null;
   const openDay = (d) => { setSelDate(d === today ? null : d); setTab("today"); };
 
   // ---------- Thực đơn AI ----------
@@ -257,7 +260,7 @@ export function MobileApp(props) {
     return <LogMealSheet date={l.date} onDate={(d) => { updateLog({ date: d }); if (d !== today && !dayCache[d]) loadDay(d); }} mealId={mealId} onMeal={(id) => updateLog({ mealId: id })}
       mealIds={ids} dateOptions={dateOptions} recentMeals={recentMeals} frequent={frequent} foodCache={ud.foodCache}
       onClose={closeLayer}
-      onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo" }) : null}
+      onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
       onAI={aiAccess.usable && l.date === today ? () => replaceTop({ type: "ai" }) : null}
       weekly={weeklyFor(l.date, mealId)}
       onAddItem={(it) => putItems(l.date, mealId, [it], false, itemName(it).toLowerCase())}
@@ -277,7 +280,7 @@ export function MobileApp(props) {
     return <EditMealScreen key={`${l.date}:${l.mealId}`} date={l.date} today={today} mealId={l.mealId} mealName={nm} items={(m && m.items) || []} eaten={wasEaten} dayType={dt}
       pendingPick={pendingPick}
       onAddPick={() => openLayer({ type: "log", pick: true, date: l.date, mealId: l.mealId })}
-      onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo" }) : null}
+      onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
       onClose={closeLayer}
       onSave={(items, eatenNow) => serial(async () => {
         const res = await ud.saveMealToCloud(l.mealId, dt, items, false, l.date, { markEaten: eatenNow, name: nm });
@@ -349,6 +352,11 @@ export function MobileApp(props) {
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} />
       </SubPage>
     );
+    if (sec === "notifications") return (
+      <SubPage title="Thông báo" onBack={closeLayer}>
+        <NotificationsScreen notif={notif} appVersion={appSettings.app_version} openReminders={() => replaceTop({ type: "page", sec: "reminders" })} />
+      </SubPage>
+    );
     if (sec === "about") return (
       <SubPage title="Giới thiệu" onBack={closeLayer}>
         <AboutScreen appSettings={appSettings} openTerms={() => openLayer({ type: "page", sec: "terms" })} openEdit={isAdmin ? () => openLayer({ type: "page", sec: "about_edit" }) : null} />
@@ -413,7 +421,7 @@ export function MobileApp(props) {
             nowMinutes={now.minutes} name={name} dayLoaded={!!day} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
             waterMl={Number(day?.water_ml) || 0} addWater={(ml) => ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; })} waterGoalOverride={profile.waterGoalMl}
             onCoach={flags.ai_chat ? () => openLayer({ type: "coach" }) : null}
-            bell={<NotificationBell appSettings={appSettings} userId={user?.id} dark compact />}
+            bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={() => openPhoto()} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             repeatFor={(id) => recentMeals.find((r) => r.meal_id === id && !(r.log_date === date))} onRepeat={(rec, id) => repeatMeal(rec, id)}
             onAIMenu={aiMenuAction} onWeight={() => { setProgressSeg((s) => ({ seg: "weight", n: s.n + 1 })); setTab("progress"); }} />
@@ -444,14 +452,15 @@ export function MobileApp(props) {
           {l.type === "log" && renderLog(l)}
           {l.type === "edit" && renderEdit(l)}
           {l.type === "page" && renderPage(l)}
-          {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs} />}
+          {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs}
+            onOpenAIMenu={aiAccess.usable ? () => replaceTop(quickAILayer()) : null} />}
           {l.type === "ai" && (
             <AIMenuScreen macro={macro} profile={profile} user={user} appSettings={appSettings} todayType={dayTypeOf(profile, today)} getDailyLogs={ud.getDailyLogs}
               initialPrefs={l.prefs} autoStart={!!l.auto} initialTemplate={l.template || null}
               onApply={applyAIMenu} onSaveWeek={saveAIMenuToWeek} onClose={closeLayer}
               openSaved={() => { closeLayer(); setTab("menu"); }} openSearch={() => replaceTop({ type: "log", date: today, mealId: defaultMealFor(today) })} />
           )}
-          {l.type === "photo" && <PhotoMacroChecker onClose={() => { closeLayer(); refresh(date); }} appSettings={appSettings} hasMealsToday={ud.hasMealsToday} saveMealToCloud={ud.saveMealToCloud} toggleEaten={ud.toggleEaten} getTodayMeals={ud.getTodayMeals} photoCtx={photoCtx} />}
+          {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`)} />}
         </div>
       ))}
 

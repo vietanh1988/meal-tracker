@@ -23,13 +23,20 @@ test("swapOptions: sắp gần calo bữa cũ, không trùng tên, không lệch
   console.log(r.options.slice(0, 6).map((o) => `${o.name} ${o.gram}g ${o.cal}kcal → bữa ${o.mealCal} (${o.diff}) cơm ${o.carb?.gram}`).join("\n"));
   expect(r.current.name.length).toBeGreaterThan(0);
   expect(r.options.length).toBeGreaterThan(3);
-  const diffs = r.options.map((o) => Math.abs(o.diff));
-  expect(diffs).toEqual([...diffs].sort((a, b) => a - b));
+  const devs = r.options.map((o) => o.dev);
+  expect(devs).toEqual([...devs].sort((a, b) => a - b));
   expect(new Set(r.options.map((o) => o.name.toLowerCase())).size).toBe(r.options.length);
   for (const o of r.options) {
-    expect(Math.abs(o.diff)).toBeLessThanOrEqual(Math.ceil(r.current.mealCal * 0.2));
+    expect(o.dev).toBeLessThanOrEqual(0.2);
     expect(o.template.meals.find((m) => m.meal_id === "trua").items.some((i) => i.food === o.key)).toBe(true);
   }
+});
+
+test("swapOptions: số cũ lệch cách tính engine (thực đơn lưu từ trước) vẫn ra món để đổi", () => {
+  const odd = JSON.parse(JSON.stringify(base));
+  odd.meals.find((m) => m.meal_id === "trua").items.forEach((i) => { i.cal = Math.round(i.cal * 0.3); });
+  const r = swapOptions(odd, "trua", "cá kho tộ", macro, "rest");
+  expect(r.options.length).toBeGreaterThan(0);
 });
 
 test("swapOptions: bữa không có → rỗng", () => {

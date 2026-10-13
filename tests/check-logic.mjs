@@ -214,7 +214,7 @@ test("App: MobileApp nhận toàn bộ useUserData (ud)", () => {
 
 test("MobileApp: ghi daily_logs chỉ qua hàm của useUserData", () => {
   assert(!/supabase\.from\(["']daily_logs/.test(SRC.mobile), "MobileApp ghi thẳng daily_logs");
-  for (const fn of ["saveMealToCloud", "toggleEaten", "removeDayMeal", "moveDayMeal", "addWater", "applyTemplate", "saveWeeklyTemplate", "hasMealsToday"]) {
+  for (const fn of ["saveMealToCloud", "toggleEaten", "removeDayMeal", "moveDayMeal", "addWater", "applyTemplate", "saveWeeklyTemplate"]) {
     assert(SRC.mobile.includes("ud." + fn), `Thiếu ud.${fn}`);
   }
 });

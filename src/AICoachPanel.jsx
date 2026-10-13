@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { todayVN, addDays, weekdayOf, gymIdxOf, templateKeyOf } from "./lib/dateVN";
-import BackPill from "./components/BackPill";
 import { appConfirm } from "./lib/dialog";
 import { pickAiModelFromSettings, pickAiProvider } from "./lib/aiProvider";
 import { supabase } from "./lib/supabase";
@@ -78,7 +77,9 @@ const hasCreate = ["tạo","lên","gợi ý","soạn","làm","giúp","cho"].some
 return hasMenu && hasCreate;
 }
 
-export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs}){
+export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,onOpenAIMenu}){
+// Mobile mới: mở màn Thực đơn AI riêng thay vì AIMenuGenerator lồng trong chat
+const openAIMenu=()=>{if(onOpenAIMenu)onOpenAIMenu();else setShowAIMenuFromChat(true);};
 const [messages,setMessages]=useState([]);
 const [showAIMenuFromChat,setShowAIMenuFromChat]=useState(false);
 // Variety tầng SESSION — nhớ pattern đã hiện ra trong CHÍNH phiên chat này
@@ -508,14 +509,18 @@ return <div>
 
 <div style={panelStyle}>
 {/* Header */}
-<div style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`,display:"flex",alignItems:"center",gap:10}}>
-{mob&&<BackPill onClick={onClose}/>}
+{mob?<div style={{padding:"10px 8px 10px 4px",background:"#FFFFFF",borderBottom:"1px solid #E2E8F0",display:"flex",alignItems:"center",gap:6}}>
+<button onClick={onClose} aria-label="Quay lại" style={{width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center",color:"#007AFF",border:"none",background:"transparent",padding:0}}><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+<span style={{width:36,height:36,borderRadius:12,background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg></span>
+<span style={{display:"flex",flexDirection:"column",flex:1,minWidth:0}}><span style={{fontSize:17,fontWeight:900,color:"#0F172A"}}>Fipilot AI</span><span style={{fontSize:12,fontWeight:600,color:"#64748B"}}>Dinh dưỡng & tập luyện</span></span>
+<button data-testid="coach-clear" onClick={clearChatHistory} aria-label="Xoá lịch sử chat" style={{width:44,height:44,border:"none",background:"transparent",color:"#94A3B8",display:"flex",alignItems:"center",justifyContent:"center",padding:0}}><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+</div>:<div style={{padding:"14px 18px",borderBottom:`1px solid ${C2.border}`,display:"flex",alignItems:"center",gap:10}}>
 <span style={{fontSize:18}}>✨</span>
 <span style={{fontSize:17,fontWeight:800,color:C2.t1,flex:1}}>Fipilot AI <span style={{fontSize:12,fontWeight:500,color:C2.t3}}>(Dinh dưỡng & tập luyện)</span></span>
 <span style={{fontSize:11,color:"#22C55E",display:"flex",alignItems:"center",gap:4}}>● Online</span>
 <span onClick={clearChatHistory} title="Xoá lịch sử chat" style={{fontSize:15,color:C2.t3,cursor:"pointer",marginRight:mob?0:2}}>🗑️</span>
 {!mob&&<span onClick={onClose} style={{fontSize:18,color:C2.t3,cursor:"pointer"}}>✕</span>}
-</div>
+</div>}
 
 {/* Context bar */}
 <div style={{padding:"8px 18px",background:"rgba(0,122,255,0.04)",display:"flex",flexWrap:"wrap",gap:4,alignItems:"center",borderBottom:`1px solid ${C2.border}`}}>
@@ -548,7 +553,7 @@ maxWidth:m.action==="menu_preview"?"100%":"85%",padding:m.action==="menu_preview
 {m.content}
 </span>
 :(m.role==="assistant"?renderMarkdownLite(m.content):m.content)}
-{m.action==="open_ai_menu"&&<button onClick={()=>setShowAIMenuFromChat(true)} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Chọn khẩu vị & lên món</button>}
+{m.action==="open_ai_menu"&&<button onClick={openAIMenu} style={{marginTop:8,width:"100%",padding:"10px",borderRadius:10,border:"none",background:"linear-gradient(135deg,#7C3AED,#5B21B6)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>✨ Chọn khẩu vị & lên món</button>}
 {m.action==="menu_preview"&&m.template&&(()=>{
 const total=sumTemplate(m.template);
 const target=dayTarget(macro,m.template.day_type||"train");
@@ -612,7 +617,7 @@ return <div key={it.food+dn} style={{display:"flex",justifyContent:"space-betwee
 
 {/* 3 buttons: Đổi | Tính lại | Thêm */}
 <div style={{display:"flex",gap:0}}>
-<button onClick={()=>setShowAIMenuFromChat(true)} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
+<button onClick={openAIMenu} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:C2.t2,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ Tuỳ chỉnh</button>
 <button onClick={()=>sendMessage("Gợi ý thực đơn hôm nay")} style={{flex:1,padding:"12px",border:"none",borderRight:`1px solid ${C2.border}`,background:"#fff",color:"#F59E0B",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>🔄 Tạo lại menu</button>
 <button onClick={()=>handleApplyAIMenuChat(m.template)} style={{flex:1.2,padding:"12px",border:"none",background:"#3B82F6",color:"#fff",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",borderRadius:"0 0 12px 0"}}>Thêm vào hôm nay</button>
 </div>
@@ -627,7 +632,7 @@ Fipilot đang trả lời...
 
 {/* Quick prompts */}
 <div style={{display:"flex",gap:6,padding:"8px 18px",overflowX:"auto",borderTop:`1px solid ${C2.border}`,flexShrink:0}}>
-{quickPrompts.map((q,i)=><div key={i} onClick={()=>{if(q==="🍽️ AI tạo menu"){setShowAIMenuFromChat(true);}else{sendMessage(q);}}} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${q==="🍽️ AI tạo menu"?"#F97316":C2.border}`,fontSize:11,fontWeight:600,color:q==="🍽️ AI tạo menu"?"#F97316":C2.primary,background:q==="🍽️ AI tạo menu"?"rgba(249,115,22,0.08)":"rgba(0,122,255,0.04)",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{q}</div>)}
+{quickPrompts.map((q,i)=><div key={i} onClick={()=>{if(q==="🍽️ AI tạo menu"){openAIMenu();}else{sendMessage(q);}}} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${q==="🍽️ AI tạo menu"?"#F97316":C2.border}`,fontSize:11,fontWeight:600,color:q==="🍽️ AI tạo menu"?"#F97316":C2.primary,background:q==="🍽️ AI tạo menu"?"rgba(249,115,22,0.08)":"rgba(0,122,255,0.04)",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{q}</div>)}
 </div>
 
 {/* Input */}
@@ -643,7 +648,9 @@ placeholder={listening?"Đang nghe... nói đi bạn 🎤":"Hỏi Fipilot AI..."
 </div>
 
 {/* Disclaimer — mobile ẩn khi đang gõ để nhường chỗ cho khung chat */}
-{!(mob&&inputFocused)&&<div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI chỉ tư vấn dinh dưỡng & cách tập luyện. Không thay thế bác sĩ hoặc HLV cá nhân.</div>}
+{!(mob&&inputFocused)&&(mob
+?<div style={{padding:"4px 18px calc(env(safe-area-inset-bottom, 0px) + 10px)",fontSize:11,color:"#94A3B8",textAlign:"center",flexShrink:0,background:"#FFFFFF"}}>Fipilot AI chỉ tư vấn dinh dưỡng & tập luyện, không thay thế bác sĩ hay HLV.</div>
+:<div style={{padding:"8px 18px 12px",fontSize:12,color:"#B45309",textAlign:"center",flexShrink:0,background:"#FFFBEB",borderTop:`1px solid #FDE68A`,fontWeight:600}}>⚠️ Fipilot AI chỉ tư vấn dinh dưỡng & cách tập luyện. Không thay thế bác sĩ hoặc HLV cá nhân.</div>)}
 </div>
 {/* AI Menu Generator — mở từ nút trong chat, đè lên trên toàn bộ panel.
 Tái dùng nguyên component đã test (39 test case), không viết logic

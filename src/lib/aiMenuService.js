@@ -878,6 +878,9 @@ export function swapOptions(template, mealId, oldFood, macro, dayType, allowedKe
   if (!meal) return { current: null, options: [], hidden: 0 };
   const mealCalOf = (m) => Math.round((m?.items || []).reduce((s, i) => s + (Number(i.cal) || 0), 0));
   const oldMealCal = mealCalOf(meal);
+  // Mốc so sánh: chạy lại engine với chính món cũ (cùng cách tính với các ứng viên) — tránh lệch do số cũ tính kiểu khác
+  let baseCal = oldMealCal;
+  try { baseCal = mealCalOf((swapFoodInTemplate(template, mealId, oldFood, oldFood, macro, dayType).meals || []).find(m => m.meal_id === mealId)) || oldMealCal; } catch (e) { /* giữ số cũ */ }
   const oldItem = (meal.items || []).find(i => i.food === oldFood) || null;
   const carbOf = (m) => (m?.items || []).find(i => (i.role || getFoodRole(i.food)) === "carb" && i.food !== oldFood) || null;
   const seen = new Set();
@@ -895,12 +898,16 @@ export function swapOptions(template, mealId, oldFood, macro, dayType, allowedKe
     const mealCal = mealCalOf(nm);
     const limit = getGramLimit(k);
     const tooBig = !!(limit && limit.max && it.gram > limit.max);
-    const dev = oldMealCal ? Math.abs(mealCal - oldMealCal) / oldMealCal : 0;
-    if (tooBig || dev > maxDev) { hidden++; continue; }
+    if (tooBig) { hidden++; continue; }
+    const dev = baseCal ? Math.abs(mealCal - baseCal) / baseCal : 0;
     const carb = carbOf(nm);
-    all.push({ key: k, name: getFoodDisplay(k) || capitalizeFirst(k), gram: Math.round(it.gram), cal: Math.round(it.cal || 0), mealCal, diff: mealCal - oldMealCal, carb: carb ? { name: getFoodDisplay(carb.food) || carb.food, gram: Math.round(carb.gram) } : null, template: next });
+    all.push({ key: k, name: getFoodDisplay(k) || capitalizeFirst(k), gram: Math.round(it.gram), cal: Math.round(it.cal || 0), mealCal, diff: mealCal - oldMealCal, dev, carb: carb ? { name: getFoodDisplay(carb.food) || carb.food, gram: Math.round(carb.gram) } : null, template: next });
   }
-  all.sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff) || a.name.localeCompare(b.name, "vi"));
+  all.sort((a, b) => a.dev - b.dev || a.name.localeCompare(b.name, "vi"));
+  // Bỏ món làm bữa lệch quá maxDev; nếu không còn món nào thì vẫn đưa 5 món gần nhất (đánh dấu wide)
+  const near = all.filter(o => o.dev <= maxDev);
+  if (near.length) { hidden += all.length - near.length; all.length = 0; all.push(...near); }
+  else if (all.length) { hidden += Math.max(0, all.length - 5); all.splice(5); all.forEach(o => { o.wide = true; }); }
   return {
     current: oldItem ? { name: oldItem.display || getFoodDisplay(oldFood) || oldFood, gram: Math.round(oldItem.gram || 0), cal: Math.round(oldItem.cal || 0), mealCal: oldMealCal, carb: carbOf(meal) ? Math.round(carbOf(meal).gram) : null } : null,
     options: all, hidden,
