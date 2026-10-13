@@ -54,6 +54,7 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     await page.getByTestId("weight-input").fill("64,8");
     await page.getByTestId("weight-save").click();
     await waitDb(async () => { const w = await rest(`weight_logs?user_id=eq.${s.uid}&select=kg,logged_date,week`); return w.length === 1 && Number(w[0].kg) === 64.8; }, "weight 64.8");
+    await expect(page.getByTestId("weight-input")).toHaveValue("");   // app xoá ô sau khi lưu xong
     await page.getByTestId("weight-input").fill("64,9");
     await page.getByTestId("weight-save").click();
     await waitDb(async () => { const w = await rest(`weight_logs?user_id=eq.${s.uid}&select=kg,logged_date,week`); return w.length === 1 && Number(w[0].kg) === 64.9; }, "weight 64.9, vẫn 1 dòng");
