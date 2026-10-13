@@ -11,7 +11,7 @@
 // 5. AdminPanel đọc localStorage thay vì gymDays
 // 6. MealsTab không hiện pattern name
 // 7. AdminPanel load food dùng key thô
-// 8. Dashboard thiếu props cho AIMenuGenerator
+// 8. Màn mobile (MobileApp) thiếu props cho AIMenuGenerator
 // ============================================================
 
 import { readFileSync } from "fs";
@@ -33,7 +33,8 @@ function assert(cond, msg) { if (!cond) throw new Error(msg); }
 
 const SRC = {
   app:           read("src/App.jsx"),
-  dashboard:     read("src/Dashboard.jsx"),
+  mobile:        read("src/mobile/MobileApp.jsx"),
+  mobileView:    read("src/lib/mobileView.js"),
   aiCoach:       read("src/AICoachPanel.jsx"),
   onboarding:    read("src/OnboardingWizard.jsx"),
   adminPanel:    read("src/AdminPanel.jsx"),
@@ -79,7 +80,7 @@ test("useUserData: signature có 4 params", () => {
 
 // Tìm tất cả dòng gọi saveWeeklyTemplate(...) và đếm args
 const FILES_TO_CHECK = {
-  "Dashboard":     SRC.dashboard,
+  "MobileApp":     SRC.mobile,
   "App":           SRC.app,
   "AICoachPanel":  SRC.aiCoach,
   "OnboardingWizard": SRC.onboarding,
@@ -106,13 +107,14 @@ console.log("\n🔍 2. tplMeals — GIỮ composite + pattern");
 console.log("================================================");
 
 for (const [name, src] of Object.entries({
-  Dashboard: SRC.dashboard, App: SRC.app,
+  MobileApp: SRC.mobile, App: SRC.app,
   AICoachPanel: SRC.aiCoach, OnboardingWizard: SRC.onboarding,
 })) {
   if (!src.includes("tplMeals")) continue;
   test(`${name}: tplMeals giữ composite + pattern`, () => {
-    assert(src.includes("composite:!!m.composite"), `${name} thiếu composite`);
-    assert(src.includes("pattern:m.pattern"), `${name} thiếu pattern`);
+    const flat = src.replace(/\s+/g, "");
+    assert(flat.includes("composite:!!m.composite"), `${name} thiếu composite`);
+    assert(flat.includes("pattern:m.pattern"), `${name} thiếu pattern`);
   });
 }
 
@@ -124,8 +126,8 @@ test("App: auto-apply chỉ khi nhật ký hôm nay trống, 1 lần/ngày", () 
   assert(SRC.app.includes("if(hasMealsToday())return;"), "Thiếu check hôm nay đã có bữa");
   assert(SRC.app.includes("autoAppliedRef"), "Thiếu chặn apply lặp");
 });
-test("Dashboard: KHÔNG tự auto-apply nữa (tránh apply 2 lần)", () => {
-  assert(!SRC.dashboard.includes("getWeeklyTemplate(todayKey)"), "Dashboard vẫn còn auto-apply");
+test("MobileApp: KHÔNG tự auto-apply (tránh apply 2 lần)", () => {
+  assert(!/useEffect\([^]*?applyTemplate\(/.test(SRC.mobile.split("applyAIMenu")[0]), "MobileApp tự gọi applyTemplate trong useEffect");
 });
 
 // ============================================================
@@ -137,8 +139,8 @@ test("App: import AppDialogHost", () => {
 });
 
 test("App: AppDialogHost trong mobile layout", () => {
-  const mobile = SRC.app.split("PC LAYOUT")[0];
-  assert(mobile.includes("<AppDialogHost"), "Mobile thiếu → confirm/alert treo");
+  // Mobile render <MobileApp>, AppDialogHost nằm trong MobileApp
+  assert(SRC.app.split("PC LAYOUT")[0].includes("<MobileApp") && SRC.mobile.includes("<AppDialogHost"), "Mobile thiếu → confirm/alert treo");
 });
 
 test("App: AppDialogHost trong PC layout", () => {
@@ -186,38 +188,35 @@ test("AdminPanel: dùng it.display khi load items", () => {
 });
 
 // ============================================================
-console.log("\n🔍 8. Dashboard — AIMenuGenerator PROPS");
+console.log("\n🔍 8. MobileApp — AIMenuGenerator PROPS");
 console.log("================================================");
 
-test("Dashboard: nhận getMealHistory từ props", () => {
-  const m = SRC.dashboard.match(/Dashboard\(\{([^}]+)\}/);
-  assert(m && m[1].includes("getMealHistory"), "Thiếu getMealHistory trong props");
+test("MobileApp: lấy getMealHistory từ useUserData (ud)", () => {
+  assert(SRC.mobile.includes("getMealHistory={ud.getMealHistory}"), "Thiếu getMealHistory");
 });
 
-test("Dashboard: truyền initialDayType + getMealHistory cho AIMenuGenerator", () => {
-  const gen = SRC.dashboard.match(/<AIMenuGenerator[^>]+>/);
+test("MobileApp: truyền initialDayType + getMealHistory cho AIMenuGenerator", () => {
+  const gen = SRC.mobile.match(/<AIMenuGenerator[^>]+>/);
   assert(gen, "Không tìm thấy AIMenuGenerator");
   assert(gen[0].includes("initialDayType"), "Thiếu initialDayType");
   assert(gen[0].includes("getMealHistory"), "Thiếu getMealHistory");
 });
 
 // ============================================================
-console.log("\n🔍 9. App.jsx — TRUYỀN PROPS CHO Dashboard");
+console.log("\n🔍 9. App.jsx — TRUYỀN DỮ LIỆU CHO MobileApp");
 console.log("================================================");
 
-test("App: Dashboard nhận getMealHistory", () => {
-  const dashLine = lines(SRC.app, "<Dashboard ").join(" ");
-  assert(dashLine.includes("getMealHistory"), "Thiếu getMealHistory");
+test("App: MobileApp nhận toàn bộ useUserData (ud)", () => {
+  assert(SRC.app.includes("const ud=useUserData(user?.id)"), "App phải giữ object useUserData");
+  const block = SRC.app.slice(SRC.app.indexOf("<MobileApp "), SRC.app.indexOf("<MobileApp ") + 600);
+  assert(block.includes("ud={ud}"), "Thiếu ud={ud}");
 });
 
-test("App: Dashboard nhận saveWeeklyTemplate", () => {
-  const dashLine = lines(SRC.app, "<Dashboard ").join(" ");
-  assert(dashLine.includes("saveWeeklyTemplate"), "Thiếu saveWeeklyTemplate");
-});
-
-test("App: Dashboard nhận hasMealsToday", () => {
-  const dashLine = lines(SRC.app, "<Dashboard ").join(" ");
-  assert(dashLine.includes("hasMealsToday"), "Thiếu hasMealsToday");
+test("MobileApp: ghi daily_logs chỉ qua hàm của useUserData", () => {
+  assert(!/supabase\.from\(["']daily_logs/.test(SRC.mobile), "MobileApp ghi thẳng daily_logs");
+  for (const fn of ["saveMealToCloud", "toggleEaten", "removeDayMeal", "moveDayMeal", "addWater", "applyTemplate", "saveWeeklyTemplate", "hasMealsToday"]) {
+    assert(SRC.mobile.includes("ud." + fn), `Thiếu ud.${fn}`);
+  }
 });
 
 // ============================================================
@@ -251,9 +250,9 @@ test("MealCard: hiện pattern + compact view", () => {
 console.log("\n🔍 12. SYNC dayType SAU APPLY");
 console.log("================================================");
 
-test("Dashboard: setDayType sau applyTemplate", () => {
-  const h = SRC.dashboard.match(/handleApplyAIMenu[\s\S]*?setShowAIMenu/);
-  assert(h && h[0].includes("setDayType"), "Không đồng bộ dayType");
+test("MobileApp: loại ngày tính theo lịch tập (dayTypeOf), không chọn tay", () => {
+  assert(SRC.mobile.includes("dayTypeOf(profile, date)"), "Không dùng dayTypeOf");
+  assert(SRC.mobileView.includes("isGymDate("), "dayTypeOf phải dùng isGymDate");
 });
 
 test("App: setPcDayManual sau applyTemplate", () => {
@@ -269,13 +268,13 @@ test("useUserData: applyTemplate guard !userId || !template", () => {
   assert(SRC.useUserData.includes("!userId || !template"), "Thiếu guard");
 });
 
-test("Dashboard: handleApplyAIMenu có try/catch", () => {
-  const h = SRC.dashboard.match(/handleApplyAIMenu[\s\S]*?setShowAIMenu/);
+test("MobileApp: applyAIMenu có try/catch", () => {
+  const h = SRC.mobile.match(/const applyAIMenu[\s\S]*?closeLayer\(\);/);
   assert(h && h[0].includes("catch"), "Thiếu error handling");
 });
 
 test("applyTemplate nhận template gốc (tpl), không phải tplMeals", () => {
-  for (const [name, src] of Object.entries({Dashboard: SRC.dashboard, App: SRC.app, AICoachPanel: SRC.aiCoach})) {
+  for (const [name, src] of Object.entries({MobileApp: SRC.mobile, App: SRC.app, AICoachPanel: SRC.aiCoach})) {
     const calls = lines(src, "applyTemplate(").filter(l => !l.includes("const ") && !l.includes("useCallback") && !l.includes("import"));
     for (const l of calls) {
       assert(!l.includes("applyTemplate(tplMeals"), `${name}: applyTemplate nhận tplMeals thay vì tpl`);
@@ -297,7 +296,7 @@ test("useUserData: ghi daily_logs qua hàng đợi tuần tự", () => {
 });
 
 test("Không dùng ngày UTC cho 'hôm nay' ở các màn chính", () => {
-  for (const k of ["app", "dashboard", "useUserData"]) {
+  for (const k of ["app", "mobile", "mobileView", "useUserData"]) {
     assert(!/new Date\(\)\.toISOString\(\)\.slice\(0, ?10\)/.test(SRC[k]), `${k} còn dùng ngày UTC`);
     assert(!/new Date\(\)\.getDay\(\)/.test(SRC[k]), `${k} còn dùng getDay() máy`);
   }

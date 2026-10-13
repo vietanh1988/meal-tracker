@@ -26,7 +26,7 @@ function playDing() {
 // - Mục "Cập nhật ứng dụng": thông báo phiên bản mới (giữ nguyên hành vi cũ — bấm để xoá cache & reload)
 const ACK_KEY = "fipilot_seen_update_ids";
 
-export function NotificationBell({ appSettings, userId, dark }) {
+export function NotificationBell({ appSettings, userId, dark, compact }) {
   const [pushItems, setPushItems] = useState([]);
   const [show, setShow] = useState(false);
   const [ringing, setRinging] = useState(false);
@@ -208,12 +208,12 @@ export function NotificationBell({ appSettings, userId, dark }) {
       <div
         onClick={openList}
         style={{
-          width: dark ? 40 : 40, height: dark ? 40 : 40, borderRadius: "50%",
-          background: dark ? "rgba(255,255,255,0.32)" : C.card,
-          border: dark ? "1.5px solid rgba(255,255,255,0.65)" : `1.5px solid ${C.border}`,
+          width: compact ? 36 : 40, height: compact ? 36 : 40, borderRadius: "50%",
+          background: compact ? "rgba(255,255,255,0.22)" : dark ? "rgba(255,255,255,0.32)" : C.card,
+          border: compact ? "none" : dark ? "1.5px solid rgba(255,255,255,0.65)" : `1.5px solid ${C.border}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: dark ? 16 : 18, cursor: "pointer",
-          boxShadow: dark ? "0 2px 6px rgba(0,0,0,0.15)" : "0 1px 4px rgba(0,0,0,0.06)",
+          boxShadow: compact ? "none" : dark ? "0 2px 6px rgba(0,0,0,0.15)" : "0 1px 4px rgba(0,0,0,0.06)",
           animation: ringing ? "notifBellRing 0.6s ease-in-out 0s 2, notifBellGlow 2s ease-in-out" : "none",
         }}
       >
