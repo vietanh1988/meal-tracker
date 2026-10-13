@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { appAlert, appConfirm } from "../lib/dialog";
-import { supabase } from "../lib/supabase";
+import { supabase, SUPABASE_URL } from "../lib/supabase";
 import { C, card, redBtn } from "../theme";
 import { UserAvatar } from "../UserAvatar";
 import { MySubscription } from "./MySubscription";
@@ -57,7 +57,7 @@ export function AccountTab({user, signOut, isAdmin, profile, mob, appSettings}){
       const token=sessionData?.session?.access_token;
       if(!token){setDeleteError("Không lấy được phiên đăng nhập, vui lòng tải lại trang");setDeleting(false);return;}
 
-      const res=await fetch("https://veodsvojxjmjhtrlaieq.supabase.co/functions/v1/delete-account",{
+      const res=await fetch(`${SUPABASE_URL}/functions/v1/delete-account`,{
         method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
       });
       const result=await res.json();

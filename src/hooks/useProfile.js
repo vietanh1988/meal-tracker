@@ -49,6 +49,7 @@ export function useProfile(userId, authLoading) {
         p.isLocked = !!data.is_locked;
         p.push_dismissed_date = data.push_dismissed_date || null;
         p.push_enabled_clicked = !!data.push_enabled_clicked;
+        p.push_prompted_after_eaten = !!data.push_prompted_after_eaten;
         setProfileState(p);
         if (!silent) console.log("✅ Profile loaded from cloud");
       } else if (error && error.code !== "PGRST116") {

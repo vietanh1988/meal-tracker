@@ -5,3 +5,6 @@ dist/
 .DS_Store
 *.log
 .env
+tests/e2e/.state.json
+playwright-report/
+test-results/
