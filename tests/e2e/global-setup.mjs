@@ -50,5 +50,5 @@ export default async function globalSetup() {
   });
   if (!y.ok) throw new Error("Tạo nhật ký hôm qua lỗi: " + (await y.text()));
 
-  writeFileSync(new URL("./.state.json", import.meta.url), JSON.stringify({ url, service, email, password, uid, today }));
+  writeFileSync(new URL("./.state.json", import.meta.url), JSON.stringify({ url, service, anon: process.env.E2E_ANON_KEY, email, password, uid, today }));
 }
