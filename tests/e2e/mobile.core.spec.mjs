@@ -10,6 +10,13 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     page.on("dialog", (d) => d.accept());
   });
 
+  test.afterEach(async ({}, info) => {
+    if (info.status !== info.expectedStatus && page) {
+      const txt = await page.locator("body").innerText().catch(() => "");
+      console.log("=== MÀN HÌNH LÚC LỖI ===\n" + txt.slice(0, 1500));
+    }
+  });
+
   const nav = (name) => page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name });
 
   test("đăng nhập → Hôm nay tự áp Lịch tuần (đúng 1 lần)", async () => {
