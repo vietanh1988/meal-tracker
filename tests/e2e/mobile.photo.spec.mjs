@@ -31,6 +31,8 @@ test("Chụp ảnh: nhận diện → sửa → lưu vào bữa", async ({ brows
   await expect(page.getByTestId("photo-item")).toHaveCount(2);
   await page.screenshot({ path: "shots/chup-anh.png", fullPage: true });
 
+  // Trước 4h sáng app mặc định ghi vào hôm qua (ăn khuya) → chọn rõ hôm nay để bài không phụ thuộc giờ chạy CI
+  await page.getByTestId("photo-date").selectOption(S().today);
   await page.getByTestId("photo-meal").selectOption("phu_chieu");
   await tap(page.getByTestId("photo-save"));
   await waitDb(async () => {
