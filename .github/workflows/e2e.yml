@@ -29,7 +29,16 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
-      - uses: supabase/setup-cli@v1
+      - name: Cài Supabase CLI
+        id: sbcli
+        continue-on-error: true
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Cài Supabase CLI (thử lại khi lỗi mạng)
+        if: steps.sbcli.outcome == 'failure'
+        uses: supabase/setup-cli@v1
         with:
           version: latest
 
