@@ -130,6 +130,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
         <div style={{ gridColumn: "1 / -1", borderTop: "1px solid rgba(255,255,255,0.25)", paddingTop: 10, fontSize: 12, fontWeight: 600 }}>
           TDEE {fmtInt(m.tdee)} kcal · BMI {fmtDec(m.bmi)} · {GOAL_NAME[m.goal || goal]} {ADJUST[m.goal || goal]}
         </div>
+        {m.floorApplied && <div data-testid="goals-floor" style={{ gridColumn: "1 / -1", fontSize: 12, fontWeight: 600, background: "rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 10px" }}>Đã nâng lên mức tối thiểu an toàn {fmtInt(m.calFloor)} kcal/ngày khi giảm mỡ.</div>}
       </div>
 
       <span style={sec}>MỤC TIÊU</span>

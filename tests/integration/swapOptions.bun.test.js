@@ -7,7 +7,7 @@ mock.module("react", () => ({ useState: () => [null, () => {}], useEffect: () =>
 mock.module("react/jsx-dev-runtime", () => ({ jsxDEV: () => null, Fragment: "f" }));
 mock.module("react/jsx-runtime", () => ({ jsx: () => null, jsxs: () => null, Fragment: "f" }));
 
-const { swapOptions, dayTarget, foodToItem } = await import("../../src/lib/aiMenuService.js");
+const { swapOptions, dayTarget, foodToItem, sanitizeAIMenu } = await import("../../src/lib/aiMenuService.js");
 const { applyMealEngineToTemplate } = await import("../../src/mealEngine.js");
 
 const macro = { calTarget: 2400, calRest: 2083, protein: 130, carb: 300, carbRest: 225, fat: 70, goal: "bulk" };
@@ -41,4 +41,19 @@ test("swapOptions: số cũ lệch cách tính engine (thực đơn lưu từ tr
 
 test("swapOptions: bữa không có → rỗng", () => {
   expect(swapOptions(base, "post", "x", macro, "rest").options).toEqual([]);
+});
+
+test("sanitizeAIMenu: bỏ món kiêng (kể cả món độn), bỏ số vô lý, lệch calo quá xa thì báo hỏng", () => {
+  const target = dayTarget(macro, "rest");
+  const tpl = JSON.parse(JSON.stringify(base));
+  tpl.meals.find((m) => m.meal_id === "toi").items.push({ ...foodToItem("lạc"), gram: 20, cal: 115 });
+  tpl.meals.find((m) => m.meal_id === "sang").items.push({ food: "x lạ", gram: -5, cal: 10 });
+  const r = sanitizeAIMenu(tpl, { avoidText: "dị ứng đậu phộng, không ăn bò", target });
+  const all = r.template.meals.flatMap((m) => m.items.map((i) => i.food));
+  expect(all).not.toContain("lạc");
+  expect(all.some((f) => /bò/.test(f))).toBe(false);
+  expect(all).not.toContain("x lạ");
+  expect(r.removed.length).toBeGreaterThan(1);
+  const empty = sanitizeAIMenu({ meals: [{ meal_id: "sang", items: [{ food: "phở bò", gram: 400, cal: 450 }] }] }, { avoidText: "bò", target });
+  expect(empty.broken).toBe(true);
 });

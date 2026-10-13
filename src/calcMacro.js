@@ -56,7 +56,22 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
   // Ngày nghỉ: carb giảm 25%, fat giữ nguyên (option A)
   // Khi exerciseType=none: chỉ 1 set macro duy nhất (không phân biệt train/rest)
-  const carbRest=exerciseType==="none"?carb:(dietStrategy==="keto"?carb:Math.round(carb*0.75));
+  let carbRest=exerciseType==="none"?carb:(dietStrategy==="keto"?carb:Math.round(carb*0.75));
+  // Sàn calo an toàn khi giảm mỡ: nữ 1.200, nam 1.500 kcal/ngày (cả ngày tập lẫn ngày nghỉ).
+  // Thiếu thì bù tinh bột; low-carb/keto bù chất béo để giữ đúng kiểu ăn.
+  const calFloor=gender==="female"?1200:1500;
+  let floorApplied=false;
+  if(effectiveGoal==="cut"){
+    const lack=(c)=>calFloor-(protein*4+c*4+fat*9);
+    if(dietStrategy==="balanced"){
+      if(lack(carb)>0){carb+=Math.ceil(lack(carb)/4);floorApplied=true;}
+      if(lack(carbRest)>0){carbRest+=Math.ceil(lack(carbRest)/4);floorApplied=true;}
+    }else{
+      const need=Math.max(lack(carb),lack(carbRest));
+      if(need>0){fat+=Math.ceil(need/9);floorApplied=true;}
+    }
+    if(exerciseType==="none")carbRest=carb;
+  }
   const calFinal=protein*4+carb*4+fat*9;
   const calRest=exerciseType==="none"?calFinal:(protein*4+carbRest*4+fat*9);
   const fiber=Math.round(calFinal/1000*14);
@@ -65,7 +80,7 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const pRatio=pRatioVal+"g/kg";
   const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
   const fRatio=fRatioVal+"g/kg";
-  return{tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,directionMismatch,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
+  return{floorApplied,calFloor,tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,directionMismatch,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
 }
 
 export const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};

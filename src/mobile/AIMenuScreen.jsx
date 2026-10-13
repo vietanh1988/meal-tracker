@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { todayVN, addDays } from "../lib/dateVN";
 import { fmtInt, MEAL_ICON } from "../lib/mobileView";
 import { mealLabel, MEAL_ORDER } from "../lib/mealMath";
-import { generateMenuAI, swapOptions, sumTemplate, dayTarget, resolveMealIds, getRecentFoodKeys, saveAIMenu, formatFoodPortion } from "../lib/aiMenuService";
+import { generateMenuAI, buildExclusionKeys, swapOptions, sumTemplate, dayTarget, resolveMealIds, getRecentFoodKeys, saveAIMenu, formatFoodPortion } from "../lib/aiMenuService";
 import { buildWhitelist } from "../lib/whitelistBuilder";
 import { getFoodDisplay } from "../lib/localFoodDB";
 import { WEEK_SHORT } from "../lib/menuView";
@@ -147,14 +147,16 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
   const [swap, setSwap] = useState(null);
   const [saveWeek, setSaveWeek] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
   const shown = useRef(new Set());
   const runId = useRef(0);
   const mealIds = resolveMealIds(dayType, profile, appSettings);
   const target = dayTarget(macro, dayType);
   const allowed = useMemo(() => {
     const wl = buildWhitelist({ style: prefs.style, diet: macro?.dietStrategy || profile?.dietStrategy || "balanced", goal: macro?.goal || profile?.goalType || null, usesSupplements: profile?.usesSupplements === true, mealIds });
-    return new Set(wl.items.map((i) => i.key));
-  }, [prefs.style, dayType, macro?.dietStrategy, macro?.goal]); // eslint-disable-line react-hooks/exhaustive-deps
+    const banned = buildExclusionKeys(prefs.avoid); // Đổi món cũng không gợi ý món đang kiêng
+    return new Set(wl.items.map((i) => i.key).filter((k) => !banned.has(k)));
+  }, [prefs.avoid, prefs.style, dayType, macro?.dietStrategy, macro?.goal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generate = async () => {
     const id = ++runId.current;
@@ -169,7 +171,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
     if (id !== runId.current) return; // đã huỷ / tạo lần khác
     if (res.ok) {
       const t = { ...res.template, day_type: dayType };
-      setTpl(t); setStep("result");
+      setTpl(t); setNote(res.note || ""); setStep("result");
       saveAIMenu(t, user?.id);
       t.meals.forEach((m) => (m.items || []).forEach((it) => { if (it.role === "protein" || it.role === "carb") shown.current.add(it.food); }));
     } else { setErr({ text: res.error || "Chưa tạo được thực đơn.", quota: !!res.quota || /hết lượt|quota|giới hạn/i.test(res.error || "") }); setStep("error"); }
@@ -219,6 +221,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
         ))}
       {step === "result" && tpl && (
         <div style={{ paddingBottom: 16 }}>
+          {note && <p data-testid="ai-note" style={{ margin: "12px 16px 0 16px", fontSize: 13, color: "#475569", lineHeight: 1.45 }}>{note}</p>}
           <div data-testid="ai-total" data-cal={total.cal} style={{ ...card, marginTop: 12, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}><span style={{ fontSize: 26, fontWeight: 900, color: "#7C3AED" }}>{fmtInt(total.cal)}</span><span style={{ fontSize: 14, fontWeight: 600, color: "#475569" }}>/ {fmtInt(target.cal)} kcal</span></div>
             <div style={{ height: 8, borderRadius: 4, background: "#E2E8F0", overflow: "hidden" }}><div style={{ width: `${Math.min(100, pct)}%`, height: 8, background: PURPLE }} /></div>

@@ -16,6 +16,7 @@
 import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay, isStandaloneDish, lookupLocalFood } from "./localFoodDB";
 import { todayVN, addDays } from "./dateVN";
 import { buildWhitelist } from "./whitelistBuilder";
+import { exclusionKeys } from "./allergy.js";
 import { buildPromptV2 } from "./promptBuilderV2";
 import { validateMenuV2, checkDryRun } from "./menuValidatorV2";
 import { buildSlotPlan, resolveSlotAnswers } from "./slotTemplates";
@@ -68,30 +69,9 @@ const EXCLUDE_FROM_CATALOG = new Set(["creatine", "bcaa", "nước", "trà xanh"
 // ============================================================
 // LỌC DỊ ỨNG
 // ============================================================
-const ALLERGY_KEYWORD_TO_CAT = {
-  "hải sản": ["seafood"], "tôm cá": ["seafood"], "seafood": ["seafood"],
-  "tôm": ["seafood"], "cá": ["seafood"], "mực": ["seafood"], "cua": ["seafood"], "sò": ["seafood"],
-  "sữa": ["egg_dairy"], "trứng": ["egg_dairy"], "trứng sữa": ["egg_dairy"], "dairy": ["egg_dairy"],
-  "đậu phộng": ["nuts"], "hạt": ["nuts"], "nuts": ["nuts"],
-  "thịt bò": ["beef"], "bò": ["beef"], "thịt heo": ["pork"], "heo": ["pork"], "thịt lợn": ["pork"],
-  "gà": ["poultry"], "thịt gà": ["poultry"], "vịt": ["poultry"],
-  "thịt đỏ": ["beef", "pork"],
-  "chay": ["seafood", "beef", "pork", "poultry"],
-};
-
+// Khớp theo từ + nhóm món — xem src/lib/allergy.js (có test)
 export function buildExclusionKeys(avoidText) {
-  const excluded = new Set();
-  const lower = (avoidText || "").toLowerCase();
-  if (!lower.trim()) return excluded;
-  const cats = new Set();
-  Object.entries(ALLERGY_KEYWORD_TO_CAT).forEach(([kw, catList]) => {
-    if (lower.includes(kw)) catList.forEach(c => cats.add(c));
-  });
-  Object.entries(LOCAL_FOODS).forEach(([key, item]) => {
-    if (cats.has(item.cat)) excluded.add(key);
-    else if (key.length >= 3 && lower.includes(key)) excluded.add(key);
-  });
-  return excluded;
+  return exclusionKeys(avoidText, LOCAL_FOODS);
 }
 
 // ============================================================
@@ -413,7 +393,7 @@ async function generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFood
   return normMeals;
 }
 
-export async function generateMenuAI({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, avoidPatternNames, appSettings, provider, model }) {
+async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, avoidPatternNames, appSettings, provider, model }) {
   const access = getAIMenuAccess(profile, appSettings);
   if (!access.usable) {
     return {
@@ -440,7 +420,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
     try {
       const normMeals = await generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, goal: goalType, prov, mdl });
       if (normMeals && normMeals.length > 0) {
-        const avoidSet = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
+        const avoidSet = new Set([...(avoidFoods || []).map(s => (s || "").toLowerCase().trim()), ...buildExclusionKeys(prefs?.avoid)]); // món vừa ăn + món dị ứng/kiêng (cả món độn thêm)
         const styleId = prefs?.style || null;
 
         // Engine dry-run lần 1 — đo fat gap
@@ -561,7 +541,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       }
 
       // Convert sang norm shape — display do CODE tra (AI không đặt tên)
-      const avoidSet = new Set((avoidFoods || []).map(s => (s || "").toLowerCase().trim()));
+      const avoidSet = new Set([...(avoidFoods || []).map(s => (s || "").toLowerCase().trim()), ...buildExclusionKeys(prefs?.avoid)]); // món vừa ăn + món dị ứng/kiêng (cả món độn thêm)
       const styleId = prefs?.style || null;
       const normMeals = val.meals.map(m => {
         const foods = m.foods.map(k => {
@@ -912,4 +892,39 @@ export function swapOptions(template, mealId, oldFood, macro, dayType, allowedKe
     current: oldItem ? { name: oldItem.display || getFoodDisplay(oldFood) || oldFood, gram: Math.round(oldItem.gram || 0), cal: Math.round(oldItem.cal || 0), mealCal: oldMealCal, carb: carbOf(meal) ? Math.round(carbOf(meal).gram) : null } : null,
     options: all, hidden,
   };
+}
+
+// ============================================================
+// LỚP AN TOÀN CUỐI cho thực đơn AI (Đợt 3):
+//  - bỏ mọi món dính kiêng/dị ứng (kể cả món độn code tự thêm), bữa rỗng thì bỏ bữa
+//  - bỏ món số liệu vô lý (gram ≤ 0 / > 3000, kcal âm / không phải số)
+//  - tổng kcal lệch > 40% mục tiêu → coi là hỏng, báo lỗi để tạo lại thay vì đưa thực đơn sai
+// ============================================================
+export function sanitizeAIMenu(template, { avoidText, target } = {}) {
+  const banned = buildExclusionKeys(avoidText);
+  const removed = [];
+  const okNum = (it) => Number.isFinite(Number(it.cal)) && Number(it.cal) >= 0 && Number(it.gram) > 0 && Number(it.gram) <= 3000;
+  const meals = (template?.meals || []).map((m) => {
+    const items = (m.items || []).filter((it) => {
+      const k = String(it.food || "").toLowerCase().trim();
+      if (banned.has(k) || !okNum(it)) { removed.push(it.display || getFoodDisplay(k) || k); return false; }
+      return true;
+    });
+    return { ...m, items };
+  }).filter((m) => m.items.some((i) => i.gram > 0));
+  const out = { ...template, meals };
+  const cal = sumTemplate(out).cal;
+  const t = Number(target?.cal) || 0;
+  const broken = !meals.length || (t > 0 && (cal < t * 0.6 || cal > t * 1.4));
+  return { template: out, removed, broken, cal };
+}
+
+export async function generateMenuAI(args) {
+  const res = await generateMenuAIRaw(args);
+  if (!res?.ok || !res.template) return res;
+  const target = dayTarget(args.macro, args.dayType || "train");
+  const s = sanitizeAIMenu(res.template, { avoidText: args.prefs?.avoid, target });
+  if (s.broken) return { ok: false, error: "Thực đơn AI trả về lệch quá xa mục tiêu calo. Bấm Thử lại nhé." };
+  const note = s.removed.length ? `Đã bỏ ${s.removed.slice(0, 3).join(", ")}${s.removed.length > 3 ? "…" : ""} vì bạn kiêng/dị ứng.` : res.note;
+  return { ...res, template: s.template, note };
 }
