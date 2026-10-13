@@ -235,7 +235,7 @@ const AUTO_FAT_FILLER = {
   post: { food: "lạc", display: "Lạc rang" },
 };
 
-function foodToItem(key, refGram, display, role) {
+export function foodToItem(key, refGram, display, role) {
   const base = LOCAL_FOODS[key];
   if (!base) return null;
   const effRole = role || getFoodRole(key);
@@ -523,7 +523,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
         return { ok: true, template, note: "" };
       }
     } catch (e) {
-      if (e.quotaExceeded) return { ok: false, error: e.message };
+      if (e.quotaExceeded) return { ok: false, error: e.message, quota: true };
       console.warn("[Slot Mode] lỗi, fallback V2:", e.message);
       // rơi xuống flow V2 bên dưới
     }
@@ -685,7 +685,7 @@ export async function generateMenuAI({ macro, profile, dayType = "train", mealId
       if (val.ok && dry.ok) return { ok: true, template, note: raw.note || "" };
       lastErrors = [...val.errors, ...dry.errors];
     } catch (e) {
-      if (e.quotaExceeded) return { ok: false, error: e.message }; // vĩnh viễn — dừng ngay, không thử lại
+      if (e.quotaExceeded) return { ok: false, error: e.message, quota: true }; // vĩnh viễn — dừng ngay, không thử lại
       lastErrors = [e.message || "Lỗi không xác định"];
     }
   }
@@ -865,4 +865,44 @@ export async function clearAIMenu(userId) {
     const today = todayVN();
     await supabase.from("ai_menu_cache").delete().eq("user_id", userId).eq("menu_date", today);
   } catch (e) {}
+}
+
+// ============================================================
+// ĐỔI MÓN — tính trước kết quả cho từng ứng viên (sheet Đổi món mobile)
+// Mỗi ứng viên: chạy thật swapFoodInTemplate rồi đọc gram/kcal món mới + kcal bữa sau khi đổi.
+// Bỏ: món trùng tên hiển thị, gram vượt trần của món, bữa lệch > maxDev so với bữa cũ.
+// Sắp theo |kcal bữa mới − kcal bữa cũ| (gần calo bữa cũ nhất lên trước).
+// ============================================================
+export function swapOptions(template, mealId, oldFood, macro, dayType, allowedKeys = null, { maxDev = 0.2 } = {}) {
+  const meal = (template?.meals || []).find(m => m.meal_id === mealId);
+  if (!meal) return { current: null, options: [], hidden: 0 };
+  const mealCalOf = (m) => Math.round((m?.items || []).reduce((s, i) => s + (Number(i.cal) || 0), 0));
+  const oldMealCal = mealCalOf(meal);
+  const oldItem = (meal.items || []).find(i => i.food === oldFood) || null;
+  const carbOf = (m) => (m?.items || []).find(i => (i.role || getFoodRole(i.food)) === "carb" && i.food !== oldFood) || null;
+  const seen = new Set();
+  const all = [];
+  let hidden = 0;
+  for (const k of getSwapCandidates(oldFood, (meal.items || []).map(i => i.food), allowedKeys)) {
+    const name = String(getFoodDisplay(k) || k).toLowerCase().trim();
+    if (seen.has(name)) continue;
+    seen.add(name);
+    let next;
+    try { next = swapFoodInTemplate(template, mealId, oldFood, k, macro, dayType); } catch (e) { hidden++; continue; }
+    const nm = (next.meals || []).find(m => m.meal_id === mealId);
+    const it = (nm?.items || []).find(i => i.food === k);
+    if (!it || !(it.gram > 0)) { hidden++; continue; }
+    const mealCal = mealCalOf(nm);
+    const limit = getGramLimit(k);
+    const tooBig = !!(limit && limit.max && it.gram > limit.max);
+    const dev = oldMealCal ? Math.abs(mealCal - oldMealCal) / oldMealCal : 0;
+    if (tooBig || dev > maxDev) { hidden++; continue; }
+    const carb = carbOf(nm);
+    all.push({ key: k, name: getFoodDisplay(k) || capitalizeFirst(k), gram: Math.round(it.gram), cal: Math.round(it.cal || 0), mealCal, diff: mealCal - oldMealCal, carb: carb ? { name: getFoodDisplay(carb.food) || carb.food, gram: Math.round(carb.gram) } : null, template: next });
+  }
+  all.sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff) || a.name.localeCompare(b.name, "vi"));
+  return {
+    current: oldItem ? { name: oldItem.display || getFoodDisplay(oldFood) || oldFood, gram: Math.round(oldItem.gram || 0), cal: Math.round(oldItem.cal || 0), mealCal: oldMealCal, carb: carbOf(meal) ? Math.round(carbOf(meal).gram) : null } : null,
+    options: all, hidden,
+  };
 }

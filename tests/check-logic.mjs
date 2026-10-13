@@ -195,11 +195,11 @@ test("MobileApp: lấy getMealHistory từ useUserData (ud)", () => {
   assert(SRC.mobile.includes("getMealHistory={ud.getMealHistory}"), "Thiếu getMealHistory");
 });
 
-test("MobileApp: truyền initialDayType + getMealHistory cho AIMenuGenerator", () => {
-  const gen = SRC.mobile.match(/<AIMenuGenerator[^>]+>/);
-  assert(gen, "Không tìm thấy AIMenuGenerator");
-  assert(gen[0].includes("initialDayType"), "Thiếu initialDayType");
-  assert(gen[0].includes("getMealHistory"), "Thiếu getMealHistory");
+test("MobileApp: màn Thực đơn AI nhận loại ngày hôm nay + lịch sử ăn (tránh lặp món)", () => {
+  const gen = SRC.mobile.match(/<AIMenuScreen[^>]+>/);
+  assert(gen, "Không tìm thấy AIMenuScreen");
+  assert(gen[0].includes("todayType"), "Thiếu todayType");
+  assert(gen[0].includes("getDailyLogs"), "Thiếu getDailyLogs");
 });
 
 // ============================================================

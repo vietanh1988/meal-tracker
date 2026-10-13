@@ -16,10 +16,11 @@ import { PlanScreen } from "./PlanScreen";
 import { FeedbackScreen } from "./FeedbackScreen";
 import { AboutScreen } from "./AboutScreen";
 import { MenuScreen, MenuDayPage, MenuTplPage, MenuBundlePage } from "./MenuScreen";
+import { AIMenuScreen } from "./AIMenuScreen";
+import { WEEK_KEYS, WEEK_SHORT, mealsCal } from "../lib/menuView";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
-import AIMenuGenerator from "../AIMenuGenerator";
 import PhotoMacroChecker from "../PhotoMacroChecker";
 import PWAInstallPrompt from "../PWAInstallPrompt";
 import { NotificationBell } from "../NotificationBell";
@@ -191,7 +192,12 @@ export function MobileApp(props) {
     if (!flags.photo_macro) { showToast({ text: "Chụp ảnh món ăn đang tạm tắt." }); return; }
     openLayer({ type: "photo" });
   };
-  const aiMenuAction = aiAccess.usable ? () => openLayer({ type: "ai" }) : aiAccess.enabled ? () => setTab("menu") : null;
+  // Nút AI ở Hôm nay: tạo luôn với lựa chọn đã dùng lần trước ở tab Thực đơn
+  const aiMenuAction = aiAccess.usable ? () => {
+    let prefs = {};
+    try { prefs = JSON.parse(localStorage.getItem("fp_menu_prefs") || "{}") || {}; } catch (e) { /* */ }
+    openLayer({ type: "ai", auto: true, prefs: { style: prefs.style, avoid: prefs.avoid, dayType: dayTypeOf(profile, today) } });
+  } : aiAccess.enabled ? () => setTab("menu") : null;
   const openDay = (d) => { setSelDate(d === today ? null : d); setTab("today"); };
 
   // ---------- Thực đơn AI ----------
@@ -206,6 +212,15 @@ export function MobileApp(props) {
       showToast({ text: "Đã áp thực đơn AI cho hôm nay." });
     } catch (e) { console.error("Apply AI menu error:", e); fail(); }
     closeLayer();
+  };
+
+  // Lưu thực đơn AI vào các ngày trong Lịch tuần (chỉ số 0 = T2)
+  const saveAIMenuToWeek = async (tpl, days) => {
+    try {
+      const meals = (tpl.meals || []).filter((m) => (m.items || []).length > 0).map((m) => ({ meal_id: m.meal_id, meal_name: mealLabel(m.meal_name, m.meal_id), items: m.items, composite: !!m.composite, pattern: m.pattern || null }));
+      for (const i of days) await ud.saveWeeklyTemplate(WEEK_KEYS[i], tpl.day_type || "train", meals, mealsCal(meals));
+      showToast({ text: `Đã lưu vào Lịch tuần: ${days.map((i) => WEEK_SHORT[i]).join(", ")}.` });
+    } catch (e) { console.error("saveAIMenuToWeek error:", e); fail(); }
   };
 
   // ---------- photoCtx cho Chụp ảnh (giữ như cũ) ----------
@@ -431,11 +446,10 @@ export function MobileApp(props) {
           {l.type === "page" && renderPage(l)}
           {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs} />}
           {l.type === "ai" && (
-            <div onClick={closeLayer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-              <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: "92vh", overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", background: "#F8FAFC", borderRadius: "16px 16px 0 0", padding: "16px 12px" }}>
-                <AIMenuGenerator macro={macro} profile={profile} user={user} appSettings={appSettings} initialDayType={dayTypeOf(profile, today)} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs} onApply={applyAIMenu} onClose={closeLayer} initialPrefs={l.prefs} autoStart={!!l.auto} initialTemplate={l.template || null} />
-              </div>
-            </div>
+            <AIMenuScreen macro={macro} profile={profile} user={user} appSettings={appSettings} todayType={dayTypeOf(profile, today)} getDailyLogs={ud.getDailyLogs}
+              initialPrefs={l.prefs} autoStart={!!l.auto} initialTemplate={l.template || null}
+              onApply={applyAIMenu} onSaveWeek={saveAIMenuToWeek} onClose={closeLayer}
+              openSaved={() => { closeLayer(); setTab("menu"); }} openSearch={() => replaceTop({ type: "log", date: today, mealId: defaultMealFor(today) })} />
           )}
           {l.type === "photo" && <PhotoMacroChecker onClose={() => { closeLayer(); refresh(date); }} appSettings={appSettings} hasMealsToday={ud.hasMealsToday} saveMealToCloud={ud.saveMealToCloud} toggleEaten={ud.toggleEaten} getTodayMeals={ud.getTodayMeals} photoCtx={photoCtx} />}
         </div>
