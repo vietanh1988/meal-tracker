@@ -1,6 +1,6 @@
 // Tính toán cho giao diện mobile mới (Hôm nay / Ghi bữa / Sửa bữa / Tiến độ).
 // Hàm THUẦN, không gọi DB — có test ở tests/mobile-view.test.mjs.
-import { MEAL_ORDER, MEAL_NAMES, mealKey, sumItems, eatenTotals, hasItems } from "./mealMath.js";
+import { MEAL_ORDER, MEAL_NAMES, mealKey, sumItems, eatenTotals, hasItems, mealLabel } from "./mealMath.js";
 import { mealTimesOf } from "./dayPlan.js";
 import { addDays, weekRange, weekdayOf, isGymDate, diffDays, fmtVN } from "./dateVN.js";
 import { LOCAL_FOODS, UNIT_MAP, lookupLocalFood, getFoodDisplay } from "./localFoodDB.js";
@@ -84,7 +84,7 @@ export function mealRows(day, ids, profileTimes, nowMinutes, isToday, isPast) {
       if (has) state = eaten.has(id) ? "eaten" : "planned";
       else if (isPast || (isToday && t != null && nowMinutes > t + 60)) state = "missed";
       return {
-        id, name: (m && m.meal_name && m.meal_name !== MEAL_NAMES[id] ? m.meal_name : MEAL_TL_NAME[id]) || id, time: times[id], minutes: t,
+        id, name: (() => { const l = m ? mealLabel(m.meal_name, id) : ""; return (l && l !== MEAL_NAMES[id] ? l : MEAL_TL_NAME[id]) || id; })(), time: times[id], minutes: t,
         items, cal: Math.round(tot.cal), state,
       };
     })

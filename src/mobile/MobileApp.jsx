@@ -20,7 +20,7 @@ import { AppDialogHost, appConfirm } from "../lib/dialog";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { getAIMenuAccess } from "../lib/aiMenuService";
 import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
-import { MEAL_NAMES, mealKey, hasItems } from "../lib/mealMath";
+import { MEAL_NAMES, mealKey, hasItems, mealLabel } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
 import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName } from "../lib/mobileView";
@@ -144,7 +144,7 @@ export function MobileApp(props) {
     const prev = (prevMeal && prevMeal.items) || [];
     const prevEaten = (dy?.eaten_meals || []).includes(mealId);
     const next = replace ? newItems : [...prev, ...newItems];
-    const mealName = (prevMeal && prevMeal.meal_name) || MEAL_NAMES[mealId] || mealId;
+    const mealName = mealLabel(prevMeal && prevMeal.meal_name, mealId);
     const res = await ud.saveMealToCloud(mealId, dayTypeOf(profile, d), next, false, d, { markEaten: true, name: mealName });
     if (res && res.ok === false) { fail(); return false; }
     await refresh(d);
@@ -191,7 +191,7 @@ export function MobileApp(props) {
   const applyAIMenu = async (tpl) => {
     try {
       const tplDayType = tpl.day_type || dayTypeOf(profile, today);
-      const tplMeals = (tpl.meals || []).map((m) => ({ meal_id: m.meal_id, meal_name: m.meal_name || m.meal_id, items: m.items || [], composite: !!m.composite, pattern: m.pattern || null }));
+      const tplMeals = (tpl.meals || []).map((m) => ({ meal_id: m.meal_id, meal_name: mealLabel(m.meal_name, m.meal_id), items: m.items || [], composite: !!m.composite, pattern: m.pattern || null }));
       const tplCal = Math.round((tpl.meals || []).reduce((s, m) => (m.items || []).reduce((a, i) => a + (i.cal || 0), s), 0));
       await ud.saveWeeklyTemplate(templateKeyOf(today), tplDayType, tplMeals, tplCal);
       await ud.applyTemplate(tpl);
@@ -240,7 +240,7 @@ export function MobileApp(props) {
       weekly={weeklyFor(l.date, mealId)}
       onAddItem={(it) => putItems(l.date, mealId, [it], false, itemName(it).toLowerCase())}
       onAddMeal={async (rec) => {
-        if (target && hasItems(target) && !(await appConfirm(`${target.meal_name || MEAL_NAMES[mealId]} đã có món. Thay bằng ${rec.meal_name.toLowerCase()} ${fmtVN(rec.log_date)}?`))) return false;
+        if (target && hasItems(target) && !(await appConfirm(`${mealLabel(target.meal_name, mealId)} đã có món. Thay bằng ${rec.meal_name.toLowerCase()} ${fmtVN(rec.log_date)}?`))) return false;
         return repeatMeal(rec, mealId, l.date);
       }} />;
   };
@@ -250,7 +250,7 @@ export function MobileApp(props) {
     const m = mealOf(dy, l.mealId);
     if (!dy) return null;
     const wasEaten = (dy.eaten_meals || []).includes(l.mealId);
-    const nm = (m && m.meal_name) || MEAL_NAMES[l.mealId] || l.mealId;
+    const nm = mealLabel(m && m.meal_name, l.mealId);
     const dt = dayTypeOf(profile, l.date);
     return <EditMealScreen key={`${l.date}:${l.mealId}`} date={l.date} today={today} mealId={l.mealId} mealName={nm} items={(m && m.items) || []} eaten={wasEaten} dayType={dt}
       pendingPick={pendingPick}

@@ -1,5 +1,5 @@
 // Giờ bữa + nước uống — hàm thuần, có test.
-import { MEAL_ORDER } from "./mealMath.js";
+import { MEAL_ORDER, mealLabel } from "./mealMath.js";
 
 export const DEFAULT_MEAL_TIMES = {
   sang: "07:00", phu_sang: "09:30", trua: "12:00", phu_chieu: "15:30",
@@ -90,7 +90,7 @@ export function recentEatenMeals(dailyRows, limit = 8) {
     for (const m of Array.isArray(row.meals) ? row.meals : []) {
       const id = m.meal_id || m.id;
       if (!eaten.includes(id) || !(m.items || []).length) continue;
-      out.push({ log_date: row.log_date, meal_id: id, meal_name: m.meal_name, items: m.items,
+      out.push({ log_date: row.log_date, meal_id: id, meal_name: mealLabel(m.meal_name, id), items: m.items,
         cal: Math.round((m.items || []).reduce((s, i) => s + (Number(i.cal) || 0), 0)) });
     }
   }

@@ -42,5 +42,13 @@ export default async function globalSetup() {
   });
   if (!t.ok) throw new Error("Tạo Lịch tuần test lỗi: " + (await t.text()));
 
+  // Hôm qua: bữa trưa đã ăn, lưu kiểu dữ liệu cũ (meal_name = "trua") — kiểm hiển thị tên có dấu + Ăn lại
+  const { addDays } = await import("../../src/lib/dateVN.js");
+  const y = await fetch(`${url}/rest/v1/daily_logs`, {
+    method: "POST", headers: h,
+    body: JSON.stringify({ user_id: uid, log_date: addDays(today, -1), day_type: "train", meals: [{ meal_id: "trua", meal_name: "trua", items: [{ food: "Bún chả", gram: 350, cal: 520, p: 28, c: 60, f: 18 }] }], eaten_meals: ["trua"], total_cal: 520 }),
+  });
+  if (!y.ok) throw new Error("Tạo nhật ký hôm qua lỗi: " + (await y.text()));
+
   writeFileSync(new URL("./.state.json", import.meta.url), JSON.stringify({ url, service, email, password, uid, today }));
 }

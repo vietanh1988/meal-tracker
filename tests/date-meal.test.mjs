@@ -157,3 +157,13 @@ test("frequentItems + recentEatenMeals chỉ tính bữa đã ăn", () => {
   assert.deepEqual(r.map(x => x.meal_id), ["sang", "trua"]);
   assert.equal(r[1].cal, 500);
 });
+
+test("mealLabel: dữ liệu cũ 'trua' / emoji → tên có dấu", () => {
+  assert.equal(M.mealLabel("trua", "trua"), "Bữa trưa");
+  assert.equal(M.mealLabel("phu_chieu", "phu_chieu"), "Bữa phụ chiều");
+  assert.equal(M.mealLabel("🌙 Bữa tối", "toi"), "Bữa tối");
+  assert.equal(M.mealLabel(null, "pre"), "Trước tập");
+  assert.equal(M.mealLabel("Cơm nhà", "trua"), "Cơm nhà");
+  const d = M.setMeal({}, "toi", [{ cal: 1 }], { name: "toi" });
+  assert.equal(d.meals[0].meal_name, "Bữa tối");
+});

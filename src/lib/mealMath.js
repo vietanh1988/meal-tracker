@@ -18,6 +18,14 @@ const num = (v) => {
 
 export const mealKey = (m) => (m && (m.meal_id || m.id)) || "";
 
+// Tên bữa chuẩn để hiển thị/lưu. Dữ liệu cũ có meal_name = mã bữa ("trua", "phu_chieu")
+// hoặc kèm emoji ("🌙 Bữa tối") → đổi về tên tiếng Việt có dấu.
+export function mealLabel(rawName, id) {
+  const name = String(rawName || "").replace(/^[^\p{L}]+/u, "").trim();
+  if (!name || name === id || /^[a-z_]+$/.test(name) || MEAL_ORDER.includes(name)) return MEAL_NAMES[id] || name || id;
+  return name;
+}
+
 // Macro của 1 món — chấp nhận cả p/c/f và protein/carb/fat
 export function itemMacros(i) {
   if (!i) return { cal: 0, p: 0, c: 0, f: 0, fiber: 0 };
@@ -75,7 +83,7 @@ export function setMeal(day, mealId, items, opts = {}) {
     meals.push({
       ...(opts.extra || {}),
       meal_id: mealId,
-      meal_name: opts.name || MEAL_NAMES[mealId] || mealId,
+      meal_name: mealLabel(opts.name, mealId),
       items,
     });
     if (opts.markEaten || wasEaten) eaten.push(mealId);
@@ -96,7 +104,7 @@ export function applyMenu(day, menuMeals, dayType) {
   const keep = (day?.meals || []).filter((m) => eaten.includes(mealKey(m)));
   const fresh = (menuMeals || [])
     .filter((m) => mealKey(m) && hasItems(m) && !eaten.includes(mealKey(m)))
-    .map((m) => ({ ...m, meal_id: mealKey(m), meal_name: m.meal_name || m.name || MEAL_NAMES[mealKey(m)] || mealKey(m) }));
+    .map((m) => ({ ...m, meal_id: mealKey(m), meal_name: mealLabel(m.meal_name || m.name, mealKey(m)) }));
   return {
     ...(day || {}),
     day_type: dayType === "train" || dayType === "rest" ? dayType : (day?.day_type || "train"),

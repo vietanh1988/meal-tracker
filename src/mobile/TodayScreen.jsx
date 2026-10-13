@@ -17,7 +17,9 @@ export function TodayScreen(p) {
   const remain = targets.cal - eaten.cal;
   const pct = targets.cal > 0 ? Math.min(100, Math.max(1, Math.round((eaten.cal / targets.cal) * 100))) : 0;
   const focus = isToday ? focusMeal(rows, nowMinutes) : null;
-  const timeline = rows.filter((r) => !focus || r.id !== focus.id);
+  // Dòng thời gian luôn hiện ĐỦ các bữa (kể cả bữa đang ở thẻ "đến giờ ăn") —
+  // trước đây bỏ bữa đó ra khỏi danh sách nên user tưởng mất bữa (VD bữa tối).
+  const timeline = rows;
   const allEaten = isToday && rows.length > 0 && rows.every((r) => r.state === "eaten");
   const w = p.weight;
 
@@ -128,7 +130,7 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepe
       )}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
         {planned ? <>
-          <button data-testid={`eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(0,87,255,0.22)", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
+          <button data-testid={`focus-eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(0,87,255,0.22)", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
           <button onClick={() => onEdit(r.id)} style={{ height: 48, borderRadius: 14, background: "#F1F5F9", color: "#0F172A", fontSize: 14, fontWeight: 800, border: "none", fontFamily: "inherit" }}>Sửa món</button>
         </> : <>
           <button onClick={() => onPhoto(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_ORANGE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(234,88,12,0.25)", fontFamily: "inherit" }}>{Icon.camera(18)}Chụp món</button>
