@@ -8,6 +8,7 @@ import { supabase, SUPABASE_URL } from "../lib/supabase";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { isPushSupported, getPushStatus, enablePushNotifications, disablePushNotifications } from "../pushNotifications";
 import { Icon, useLockScroll, GRAD_BLUE } from "./ui";
+import { UpdateFlow } from "./UpdatePopup";
 
 const TIER = { free: "Miễn phí", trial: "Dùng thử", premium: "Premium" };
 const sec = { display: "block", padding: "18px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
@@ -48,15 +49,6 @@ function Toggle({ on, busy, onChange, testid }) {
       <span style={{ position: "absolute", top: 3, left: on ? 23 : 3, width: 22, height: 22, borderRadius: 11, background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left .2s" }} />
     </button>
   );
-}
-
-async function hardUpdate() {
-  try {
-    const names = await caches.keys();
-    await Promise.all(names.map((k) => caches.delete(k)));
-    if (navigator.serviceWorker) { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map((r) => r.unregister())); }
-  } catch (e) { console.error("[update] error:", e); }
-  window.location.reload();
 }
 
 function DeleteSheet({ email, signOut, onClose }) {
@@ -124,6 +116,7 @@ export function AccountScreen({ user, profile, isAdmin, appVersion, salesEnabled
   const [pushBusy, setPushBusy] = useState(false);
   const [del, setDel] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+  const [upd, setUpd] = useState(false);
 
   useEffect(() => {
     if (!isPushSupported()) { setPush("unsupported"); return; }
@@ -174,7 +167,7 @@ export function AccountScreen({ user, profile, isAdmin, appVersion, salesEnabled
       <div style={group}>
         {pushFeature !== false && <Row ic="bell" label="Thông báo đẩy" sub={pushSub} right={push === "default" || push === "granted" ? <Toggle testid="account-push" on={push === "granted"} busy={pushBusy} onChange={togglePush} /> : null} />}
         <Row ic="crown" label={salesEnabled || isAdmin ? "Gói cước & lượt AI" : "Lượt AI"} value={salesEnabled || isAdmin ? TIER[tier] || tier : "Đang miễn phí"} onClick={openPlan} testid="account-plan" />
-        <Row ic="refresh" label="Cập nhật ứng dụng" sub="Xoá bộ nhớ tạm, tải bản mới nhất" value={appVersion ? `v${appVersion}` : null} onClick={async () => { if (await appConfirm("Tải lại app với bản mới nhất?")) hardUpdate(); }} testid="account-update" last />
+        <Row ic="refresh" label="Cập nhật ứng dụng" sub="Xoá bộ nhớ tạm, tải bản mới nhất" value={appVersion ? `v${appVersion}` : null} onClick={() => setUpd(true)} testid="account-update" last />
       </div>
 
       <div style={{ ...group, marginTop: 12 }}>
@@ -190,6 +183,7 @@ export function AccountScreen({ user, profile, isAdmin, appVersion, salesEnabled
         </span>
         {Icon.chev(16)}
       </button>
+      {upd && <UpdateFlow manual toVersion={appVersion} onLater={() => setUpd(false)} />}
       {del && <DeleteSheet email={email} signOut={signOut} onClose={() => setDel(false)} />}
     </div>
   );

@@ -52,10 +52,13 @@ export function AdminTab({appSettings, saveSetting, mob, isSuperAdmin}){
             const ver=document.getElementById("new-version")?.value?.trim();
             if(!ver)return;
             await saveSetting("app_version",ver);
+            const notes=document.getElementById("new-version-notes")?.value??"";
+            await saveSetting("update_notes",notes.trim());
             const el=document.getElementById("version-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
           }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>🚀 Deploy</button>}
         </div>
+        {isSuperAdmin&&<textarea id="new-version-notes" placeholder={"Có gì mới (mỗi dòng 1 ý, hiện trong popup cập nhật)\nVD: Giao diện Hôm nay mới\nBiểu đồ cân nặng"} defaultValue={appSettings.update_notes||""} rows={3} style={{...inp,width:"100%",marginTop:8,boxSizing:"border-box",fontFamily:"inherit",resize:"vertical"}}/>}
         <div id="version-saved" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>
           <span style={{fontSize:12,fontWeight:800,color:"#14532D"}}>✓ Version updated! Users sẽ tự reload.</span>
         </div>

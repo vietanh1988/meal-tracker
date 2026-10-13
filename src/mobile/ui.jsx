@@ -50,11 +50,12 @@ const NAV = [
 ];
 export function BottomNav({ tab, onTab, onAdd, hidden }) {
   return (
-    <nav aria-label="Điều hướng chính" aria-hidden={hidden ? true : undefined} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 90, background: "#FFFFFF", borderTop: "1px solid #E2E8F0", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-      <div style={{ maxWidth: 560, margin: "0 auto", height: 74, display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", alignItems: "start", paddingTop: 8, boxSizing: "border-box" }}>
+    <nav aria-label="Điều hướng chính" aria-hidden={hidden ? true : undefined} style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 90, background: "#FFFFFF", borderTop: "1px solid #E2E8F0", paddingBottom: "max(6px, calc(env(safe-area-inset-bottom, 0px) - 12px))" }}>
+      {/* Gọn hơn trên iPhone PWA (14/10): thanh 58 px canh giữa + vùng an toàn bớt 12 px (trước 74 px canh trên + đủ 34 px → thừa trắng) */}
+      <div style={{ maxWidth: 560, margin: "0 auto", height: 58, display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", alignItems: "center", boxSizing: "border-box" }}>
         {NAV.map((n) => {
           if (n.id === "add") return (
-            <button key="add" onClick={onAdd} aria-label="Ghi bữa" style={{ display: "flex", flexDirection: "column", alignItems: "center", border: "none", background: "transparent", padding: 0, marginTop: -20 }}>
+            <button key="add" onClick={onAdd} aria-label="Ghi bữa" style={{ display: "flex", flexDirection: "column", alignItems: "center", border: "none", background: "transparent", padding: 0, marginTop: -22 }}>
               <span style={{ width: 52, height: 52, borderRadius: 26, background: GRAD_ORANGE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(234,88,12,0.35)", border: "3px solid #FFFFFF" }}>{Icon.plus(24)}</span>
             </button>
           );

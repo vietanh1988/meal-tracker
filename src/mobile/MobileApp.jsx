@@ -445,7 +445,7 @@ export function MobileApp(props) {
       <UpdatePopup appSettings={appSettings} />
       {isOffline && <div style={{ position: "sticky", top: 0, zIndex: 95, background: "#FEF3C7", padding: "8px 16px", fontSize: 12, fontWeight: 600, color: "#92400E", textAlign: "center" }}>Không có kết nối mạng — dữ liệu có thể chưa cập nhật</div>}
 
-      <main aria-hidden={top ? true : undefined} style={{ maxWidth: 560, margin: "0 auto", paddingBottom: "calc(74px + env(safe-area-inset-bottom, 0px))" }}>
+      <main aria-hidden={top ? true : undefined} style={{ maxWidth: 560, margin: "0 auto", paddingBottom: "calc(66px + max(6px, calc(env(safe-area-inset-bottom, 0px) - 12px)))" }}>
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
             nowMinutes={now.minutes} name={name} dayLoaded={!!day} weekDots={weekDots} weight={weight} banner={banner} busy={busy}

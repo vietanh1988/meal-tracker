@@ -150,13 +150,13 @@ export function PlanScreen({ userId, isAdmin, salesEnabled, aiMenuLockedFree = t
       ) : pkgs.length > 0 ? (
         <>
           <span style={sec}>{tier === "premium" ? "GIA HẠN PREMIUM" : "NÂNG CẤP PREMIUM"}</span>
-          <div role="radiogroup" aria-label="Chọn gói" style={{ margin: "0 12px", display: "grid", gridTemplateColumns: `repeat(${pkgs.length > 3 ? 2 : pkgs.length}, minmax(0, 1fr))`, gap: 8, rowGap: 14 }}>
+          <div role="radiogroup" aria-label="Chọn gói" style={{ margin: "14px 12px 0 12px", display: "grid", gridTemplateColumns: `repeat(${pkgs.length > 3 ? 2 : pkgs.length}, minmax(0, 1fr))`, gap: 8, rowGap: 14 }}>
             {pkgs.map((p) => {
               const on = chosen && chosen.id === p.id;
               return (
                 <button key={p.id} role="radio" aria-checked={on} data-testid={`plan-pkg-${p.id}`} onClick={() => setPkg(p.id)}
                   style={{ position: "relative", minHeight: 96, borderRadius: 16, border: on ? "2px solid #7C3AED" : "1.5px solid #E2E8F0", background: on ? "rgba(124,58,237,0.05)" : "#FFFFFF", fontFamily: "inherit", color: "#0F172A", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: "12px 4px" }}>
-                  {p.best && <span style={{ position: "absolute", top: -9, fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#00A67E", padding: "2px 8px", borderRadius: 999 }}>Rẻ nhất/tháng</span>}
+                  {p.best && <span style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#00A67E", padding: "2px 8px", borderRadius: 999, boxShadow: "0 2px 6px rgba(0,166,126,0.3)" }}>Rẻ nhất/tháng</span>}
                   <span style={{ fontSize: 14, fontWeight: 800 }}>{PKG[p.id]}</span>
                   <span style={{ fontSize: 16, fontWeight: 900, color: on ? "#6D28D9" : "#0F172A" }}>{vnd(p.price)}</span>
                   <span style={{ fontSize: 11, color: "#64748B" }}>≈ {vnd(p.perMonth)}/tháng</span>

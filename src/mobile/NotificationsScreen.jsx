@@ -4,6 +4,7 @@
 // Mở màn là đánh dấu đã đọc. Chuông trên Hôm nay: BellButton (số chưa đọc).
 import { useEffect, useState } from "react";
 import { fmtVN, toVNDate } from "../lib/dateVN";
+import { UpdateFlow } from "./UpdatePopup";
 
 const lbl = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
 const box = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 14px" };
@@ -20,17 +21,6 @@ export function BellButton({ count, ringing, onClick }) {
   );
 }
 
-// Xoá cache + service worker rồi tải lại (giống popup Nâng cấp)
-async function hardUpdate(version) {
-  try {
-    const names = await caches.keys();
-    await Promise.all(names.map((k) => caches.delete(k)));
-    if (navigator.serviceWorker) { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map((r) => r.unregister())); }
-  } catch (e) { console.error("[update] error:", e); }
-  try { if (version) localStorage.setItem("fipilot_version", version); } catch (e) { /* */ }
-  window.location.reload();
-}
-
 export function NotificationsScreen({ notif, appVersion, openReminders }) {
   const [updating, setUpdating] = useState(false);
   const [open, setOpen] = useState(null);
@@ -41,6 +31,7 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
 
   return (
     <div style={{ paddingBottom: 32 }}>
+      {updating && <UpdateFlow toVersion={appVersion} fromVersion={(() => { try { return localStorage.getItem("fipilot_version"); } catch (e) { return null; } })()} onLater={() => setUpdating(false)} />}
       {updates.length > 0 && (
         <>
           <span style={lbl}>CẬP NHẬT ỨNG DỤNG</span>
@@ -52,9 +43,9 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
                   <span style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.45, whiteSpace: "pre-wrap" }}>{n.text || n.title || n.message}</span>
                   {n.date && <span style={{ fontSize: 12, color: "#94A3B8" }}>{n.date}</span>}
                   {idx === 0 && (
-                    <button data-testid="notif-do-update" disabled={updating} onClick={() => { setUpdating(true); hardUpdate(appVersion); }}
+                    <button data-testid="notif-do-update" onClick={() => setUpdating(true)}
                       style={{ alignSelf: "flex-start", marginTop: 4, height: 36, padding: "0 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 13, fontWeight: 800 }}>
-                      {updating ? "Đang cập nhật…" : "Cập nhật ngay"}
+                      Cập nhật ngay
                     </button>
                   )}
                 </span>

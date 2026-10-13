@@ -13,6 +13,13 @@ test("Tài khoản: thông tin, đổi mật khẩu, xoá tài khoản cần đ�
   await expect(page.getByTestId("account-card")).toContainText(s.email);
   await page.screenshot({ path: "shots/tai-khoan.png", fullPage: true });
 
+  // Cập nhật ứng dụng: mở hộp cập nhật kiểu app (bản vẽ 42), Huỷ thì đóng
+  await tap(page.getByTestId("account-update"));
+  await expect(page.getByTestId("update-flow")).toBeVisible();
+  await page.screenshot({ path: "shots/cap-nhat.png" });
+  await page.getByTestId("update-later").click();
+  await expect(page.getByTestId("update-flow")).toHaveCount(0);
+
   await tap(page.getByTestId("account-password"));
   await page.getByRole("button", { name: "Đồng ý" }).click();
   await expect(page.getByText(/Đã gửi link đổi mật khẩu|Gửi chưa được/)).toBeVisible();
