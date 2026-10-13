@@ -22,6 +22,8 @@ import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
 import { PhotoScreen } from "./PhotoScreen";
+import { CalcCheckScreen } from "./CalcCheckScreen";
+import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
 import PWAInstallPrompt from "../PWAInstallPrompt";
 import { useNotifications } from "../hooks/useNotifications";
 import { NotificationsScreen, BellButton } from "./NotificationsScreen";
@@ -43,6 +45,9 @@ export function MobileApp(props) {
   const flags = parseFeatureFlags(appSettings);
   const aiAccess = getAIMenuAccess(profile, appSettings);
   const notif = useNotifications(appSettings, user?.id);
+  // Món lạ AI đã tính (chờ admin duyệt) — chính user dùng lại được ngay, không tốn lượt
+  const { myPending, savePendingFoodCache } = usePendingFoodCache(user?.id, false);
+  const calcFoodCache = useMemo(() => ({ ...(myPending || {}), ...(ud.foodCache || {}) }), [myPending, ud.foodCache]);
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "bạn";
 
   // ---------- điều hướng ----------
@@ -267,6 +272,7 @@ export function MobileApp(props) {
       onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
       onAI={aiAccess.usable && l.date === today ? () => replaceTop({ type: "ai" }) : null}
       weekly={weeklyFor(l.date, mealId)}
+      onCalc={(text, auto) => replaceTop({ type: "calc", text: text || "", auto: !!auto, date: l.date, mealId })}
       onAddItem={(it) => putItems(l.date, mealId, [it], false, itemName(it).toLowerCase())}
       onAddMeal={async (rec) => {
         if (target && hasItems(target) && !(await appConfirm(`${mealLabel(target.meal_name, mealId)} đã có món. Thay bằng ${rec.meal_name.toLowerCase()} ${fmtVN(rec.log_date)}?`))) return false;
@@ -466,6 +472,13 @@ export function MobileApp(props) {
               initialPrefs={l.prefs} autoStart={!!l.auto} initialTemplate={l.template || null}
               onApply={applyAIMenu} onSaveWeek={saveAIMenuToWeek} onClose={closeLayer}
               openSaved={() => { closeLayer(); setTab("menu"); }} openSearch={() => replaceTop({ type: "log", date: today, mealId: defaultMealFor(today) })} />
+          )}
+          {l.type === "calc" && (
+            <CalcCheckScreen initialText={l.text} autoRun={l.auto} foodCache={calcFoodCache} frequent={frequent} aiEnabled={!!flags.ai_macro} userId={user?.id} appSettings={appSettings}
+              dayInfo={{ target: targetsOf(macro, dayTypeOf(profile, l.date)).cal, eaten: eatenOfDay(dayOf(l.date)).cal }}
+              mealIds={idsFor(l.date).length ? idsFor(l.date) : ["sang", "trua", "toi"]} initialMeal={l.mealId} date={l.date} dateOptions={dateOptions}
+              savePending={savePendingFoodCache} onClose={closeLayer}
+              onSave={(d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
           )}
           {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`)} />}
         </div>

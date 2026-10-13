@@ -1,5 +1,5 @@
 // Màn 2 · Ghi bữa (đã chốt) — sheet trượt lên: chọn ngày, chip bữa, ô tìm + nút chụp,
-// AI gợi ý / Từ thực đơn tuần, danh sách GẦN ĐÂY (ăn lại cả bữa + món hay ăn).
+// tab Tìm món | Kiểm tra calo (mở màn CalcCheckScreen), AI gợi ý / Từ thực đơn tuần, danh sách GẦN ĐÂY (ăn lại cả bữa + món hay ăn).
 // pickMode: dùng từ Sửa bữa để chọn 1 món đưa về bản nháp (không lưu ngay).
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Icon, GRAD_ORANGE, SR, useLockScroll, FONT } from "./ui";
@@ -68,6 +68,13 @@ export function LogMealSheet(p) {
             </div>
           ))}
 
+        {!pickMode && p.onCalc && (
+          <div role="tablist" aria-label="Cách ghi" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 4, padding: 3, background: "#F1F5F9", borderRadius: 12, flexShrink: 0 }}>
+            <button role="tab" aria-selected="true" style={{ height: 36, borderRadius: 9, border: "none", background: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#007AFF", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>Tìm món</button>
+            <button role="tab" aria-selected="false" data-testid="log-tab-calc" onClick={() => p.onCalc(q, false)} style={{ height: 36, borderRadius: 9, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 600, color: "#475569" }}>Kiểm tra calo</button>
+          </div>
+        )}
+
         <div style={{ display: "flex", alignItems: "center", gap: 8, height: 52, padding: "0 6px 0 14px", background: "#F1F5F9", border: "1.5px solid #E2E8F0", borderRadius: 14, flexShrink: 0, boxSizing: "border-box" }}>
           <span style={{ color: "#64748B", display: "flex" }}>{Icon.search(18)}</span>
           <label style={{ flex: 1, display: "flex", minWidth: 0 }}>
@@ -116,9 +123,16 @@ export function LogMealSheet(p) {
             );
           })}
 
-          {results && results.length === 0 && (
+          {results && results.length === 0 && !p.onCalc && (
             <div style={{ padding: "16px 4px", fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
               Không thấy "{q}" trong kho món.{p.onPhoto ? " Thử chụp ảnh món để AI nhận diện." : ""}
+            </div>
+          )}
+          {results && q.trim().length >= 2 && p.onCalc && (
+            <div style={{ marginTop: 12, padding: 14, borderRadius: 16, border: "1.5px dashed rgba(124,58,237,0.45)", background: "rgba(124,58,237,0.04)", display: "flex", flexDirection: "column", gap: 10 }}>
+              <span style={{ fontSize: 14, lineHeight: 1.45 }}>{results.length ? "Không đúng món bạn ăn?" : `Không thấy "${q}" trong kho món.`} Tính calo cho <b>"{q.trim()}"</b> theo đúng chữ bạn gõ.</span>
+              <button data-testid="log-calc-q" onClick={() => p.onCalc(q, true)} style={{ height: 44, borderRadius: 12, border: "none", background: "linear-gradient(135deg,#7C3AED,#5B21B6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{Icon.sparkle(16)}Kiểm tra calo món này</button>
+              <span style={{ fontSize: 12, color: "#64748B" }}>Món có trong kho tính ngay; món lạ thì AI tính (1 lượt).</span>
             </div>
           )}
           {!results && list.length === 0 && otherMeals.length === 0 && (
