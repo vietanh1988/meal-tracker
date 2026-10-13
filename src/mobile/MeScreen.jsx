@@ -32,8 +32,8 @@ function Row({ icon, label, value, onClick, last, testid }) {
   return (
     <button data-testid={testid} onClick={onClick} className="tap" style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", height: 52, boxSizing: "content-box", borderStyle: "solid", borderColor: "#F1F5F9", borderWidth: last ? 0 : "0 0 1px 0", background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
       {icon && <RowIcon name={icon} />}
-      <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{label}</span>
-      {value && <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "50%" }}>{value}</span>}
+      <span style={{ flexShrink: 0, fontSize: 15, fontWeight: 600, whiteSpace: "nowrap" }}>{label}</span>
+      <span style={{ flex: 1, minWidth: 0, textAlign: "right", fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{value || ""}</span>
       {Icon.chev(16)}
     </button>
   );
