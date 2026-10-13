@@ -156,8 +156,10 @@ export default function App(){
     if(autoAppliedRef.current===today)return;
     if(!todayLog||todayLog.log_date!==today)return;
     if(hasMealsToday())return;
-    // Đã có nhật ký hôm nay (VD user tự xoá hết bữa) → KHÔNG tự áp lại Lịch tuần khi mở app lần sau
-    if(todayLog.exists)return;
+    // Chỉ áp khi ĐÃ TẢI XONG nhật ký hôm nay từ DB và CHƯA có dòng nào (exists===false).
+    // exists===undefined = chưa tải xong (trước đây Lịch tuần về trước nhật ký → áp nhầm
+    // đè lên dữ liệu thật); exists===true = đã có nhật ký (kể cả user tự xoá hết bữa) → không áp lại.
+    if(todayLog.exists!==false)return;
     const todayKey=templateKeyOf(today);
     const tpl=getWeeklyTemplate(todayKey);
     if(tpl&&tpl.meals&&tpl.meals.length>0){
