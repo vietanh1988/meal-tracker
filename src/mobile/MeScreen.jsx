@@ -42,7 +42,7 @@ function Row({ icon, label, value, onClick, last, testid }) {
   );
 }
 
-export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, signOut }) {
+export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, salesEnabled, signOut }) {
   const tier = profile?.tier || "free";
   const initials = (name || "?").replace(/[^A-Za-zÀ-ỹ0-9]/g, "").slice(0, 2).toUpperCase() || "?";
   const gym = (profile?.exerciseType || "gym") === "none" ? "Không tập" : (profile?.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
@@ -89,7 +89,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
         <Row icon="goals" testid="me-goals" label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
         <Row icon="schedule" testid="me-schedule" label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
         <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
-        <Row icon="plan" testid="me-plan" label="Gói cước" value={TIER[tier] || tier} onClick={() => open("plan")} last />
+        <Row icon="plan" testid="me-plan" label={salesEnabled || isAdmin ? "Gói cước" : "Lượt AI"} value={salesEnabled || isAdmin ? TIER[tier] || tier : "Đang miễn phí"} onClick={() => open("plan")} last />
       </div>
 
       <div style={group}>

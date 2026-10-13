@@ -12,7 +12,7 @@ import { MeScreen } from "./MeScreen";
 import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
 import { RemindersScreen } from "./RemindersScreen";
-import { PlanScreen } from "./PlanScreen";
+import { PlanScreen, PayScreen } from "./PlanScreen";
 import { FeedbackScreen } from "./FeedbackScreen";
 import { AboutScreen } from "./AboutScreen";
 import { MenuScreen, MenuDayPage, MenuTplPage, MenuBundlePage, MenuPastPage } from "./MenuScreen";
@@ -148,6 +148,7 @@ export function MobileApp(props) {
   const showToast = (t, ms = 4500) => { clearTimeout(toastTimer.current); setToast(t); toastTimer.current = setTimeout(() => setToast(null), ms); };
   useEffect(() => () => clearTimeout(toastTimer.current), []);
   const [busy, setBusy] = useState(false);
+  const [planNonce, setPlanNonce] = useState(0);
 
   // ---------- thao tác ghi (tuần tự) ----------
   const queue = useRef(Promise.resolve());
@@ -377,8 +378,13 @@ export function MobileApp(props) {
       </SubPage>
     );
     if (sec === "plan") return (
-      <SubPage title="Gói cước" onBack={closeLayer}>
-        <PlanScreen userId={user?.id} isAdmin={isAdmin} salesEnabled={!!flags.sales_enabled} openPayment={() => openLayer({ type: "page", sec: "account" })} />
+      <SubPage title={isAdmin || flags.sales_enabled ? "Gói cước" : "Lượt AI"} onBack={closeLayer}>
+        <PlanScreen key={planNonce} userId={user?.id} isAdmin={isAdmin} salesEnabled={!!flags.sales_enabled} aiMenuLockedFree openPay={(pkg) => openLayer({ type: "page", sec: "pay", pkg })} />
+      </SubPage>
+    );
+    if (sec === "pay") return (
+      <SubPage title="Chuyển khoản" subtitle="Premium" onBack={closeLayer}>
+        <PayScreen userId={user?.id} pkgId={l.pkg} onDone={() => { setPlanNonce((n) => n + 1); closeLayer(); showToast({ text: "Đã gửi. Premium bật khi admin xác nhận chuyển khoản." }); }} />
       </SubPage>
     );
     if (sec === "reminders") {
@@ -451,7 +457,7 @@ export function MobileApp(props) {
         )}
         {tab === "me" && (
           <MeScreen name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
-            openCoach={flags.ai_chat ? () => openLayer({ type: "coach" }) : null}
+            openCoach={flags.ai_chat ? () => openLayer({ type: "coach" }) : null} salesEnabled={!!flags.sales_enabled}
             openDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             open={(sec) => openLayer({ type: "page", sec })} />
         )}
