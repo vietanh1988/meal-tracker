@@ -13,6 +13,13 @@ React 18 + Vite PWA · Supabase `veodsvojxjmjhtrlaieq` · Vercel `app.fipilotai.
 - **Cân nặng**: `useWeightLog` — 1 lần cân/ngày, tuần + delta tự tính lại (`src/lib/weightMath.js`).
 - **Theme**: token trong `src/theme.js`, icon PNG `public/icons`. UI mobile là app, không phải web. PC chỉ cần đủ chức năng admin.
 
+## Quy trình đưa code lên prod (BẮT BUỘC)
+- KHÔNG push thẳng `main`. Làm trên nhánh `ci/<tên-việc>` (hoặc `feat/**`, `fix/**`) dựng từ `origin/main` mới nhất rồi push.
+- GitHub Actions `.github/workflows/e2e.yml` tự: dựng Supabase LOCAL (supabase/migrations + seed.sql, dữ liệu giả) → unit test → build → E2E Playwright (tests/e2e, chặn mọi gọi AI) → ĐẠT thì fast-forward vào `main` → Vercel deploy.
+- Xem kết quả: `gh api repos/vietanh1988/meal-tracker/actions/runs?branch=<nhánh>`; log lỗi đọc qua annotation `gh api repos/vietanh1988/meal-tracker/check-runs/<job_id>/annotations` (tải log thô bị chặn).
+- Đổi schema DB: thêm file `supabase/migrations/<14 số>_ten.sql` (CI dùng để dựng local) + đưa SQL cho chủ dự án chạy trên prod.
+- Màn/nút mới: gắn `data-testid` cho nút chính và thêm/sửa bài E2E tương ứng.
+
 ## Kiểm tra trước khi push
 ```
 npm test                      # node --test tests/*.test.mjs + tests/check-logic.mjs
