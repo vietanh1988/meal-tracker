@@ -162,7 +162,7 @@ export default function BackupTab({ authFetch }) {
               );
             })}
           </div>
-          <button onClick={doRestore} disabled={loading || selectedTables.size === 0} style={{ ...redBtn, width: "100%", marginTop: 14, background: loading ? "#94A3B8" : selectedTables.size === 0 ? "#CBD5E1" : "linear-gradient(135deg,#F97316,#EA580C)", opacity: loading ? 0.7 : 1 }}>
+          <button onClick={doRestore} disabled={loading || selectedTables.size === 0} style={{ ...redBtn, width: "100%", marginTop: 14, background: loading ? "#94A3B8" : selectedTables.size === 0 ? "#CBD5E1" : "linear-gradient(135deg,#EA580C,#C2410C)", opacity: loading ? 0.7 : 1 }}>
             {progress === "restore" ? "⏳ Đang khôi phục..." : `🔄 Khôi phục ${selectedTables.size} bảng (merge)`}
           </button>
         </>}

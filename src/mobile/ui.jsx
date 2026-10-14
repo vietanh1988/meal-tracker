@@ -5,8 +5,8 @@ import { C, DK } from "../theme";
 import { Glyph, chipBg, IC_COLOR } from "./icons";
 
 export const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
-export const GRAD_BLUE = "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)";
-export const GRAD_ORANGE = "linear-gradient(135deg,#F97316,#EA580C)";
+export const GRAD_BLUE = "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)";
+export const GRAD_ORANGE = "linear-gradient(135deg,#EA580C,#C2410C)";
 export const SR = { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" };
 
 // CSS chung: trạng thái nhấn / focus / hover cho mọi nút trong khung mobile
@@ -63,7 +63,7 @@ export function BottomNav({ tab, onTab, onAdd, hidden, dark }) {
         {NAV.map((n) => {
           if (n.id === "add") return (
             <button key="add" onClick={onAdd} aria-label="Ghi bữa" style={{ display: "flex", justifyContent: "center", border: "none", background: "transparent", padding: 0, marginTop: -22 }}>
-              <span style={{ width: 54, height: 54, borderRadius: 27, background: "linear-gradient(135deg,#FB923C,#EA580C)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 18px rgba(234,88,12,0.4)", border: "4px solid #FFFFFF", boxSizing: "border-box" }}>{Icon.plus(24, 2.8)}</span>
+              <span style={{ width: 54, height: 54, borderRadius: 27, background: "linear-gradient(135deg,#EA580C,#C2410C)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 18px rgba(234,88,12,0.4)", border: "4px solid #FFFFFF", boxSizing: "border-box" }}>{Icon.plus(24, 2.8)}</span>
             </button>
           );
           const a = tab === n.id;

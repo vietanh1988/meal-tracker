@@ -25,7 +25,7 @@ const box = { margin: "0 12px", ...ltCard, padding: "0 14px" };
 const secHead = { padding: "20px 18px 10px 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
 const rowBtn = (last) => ({ display: "flex", alignItems: "center", gap: 12, minHeight: 60, width: "100%", padding: 0, border: "none", borderBottom: last ? "none" : `1px solid ${LT.line}`, background: "transparent", fontFamily: "inherit", color: "#0F172A", textAlign: "left" });
 const iconBox = (bg, color) => ({ width: 36, height: 36, borderRadius: 10, background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 13, fontWeight: 900 });
-const btn = (kind, disabled) => ({ height: 50, borderRadius: 14, border: kind === "ghost" ? "1.5px solid #E2E8F0" : kind === "danger" ? "1.5px solid #FCA5A5" : "none", background: disabled ? "#CBD5E1" : kind === "ghost" ? "#FFFFFF" : kind === "danger" ? "#FEF2F2" : kind === "purple" ? PURPLE : GRAD_BLUE, color: kind === "ghost" ? "#0F172A" : kind === "danger" ? "#DC2626" : "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900, width: "100%" });
+const btn = (kind, disabled) => ({ height: 50, borderRadius: 14, border: kind === "ghost" ? "1.5px solid #E2E8F0" : kind === "danger" ? "1.5px solid #FCA5A5" : "none", background: disabled ? "#E2E8F0" : kind === "ghost" ? "#FFFFFF" : kind === "danger" ? "#FEF2F2" : kind === "purple" ? PURPLE : GRAD_BLUE, color: disabled ? "#64748B" : kind === "ghost" ? "#0F172A" : kind === "danger" ? "#DC2626" : "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900, width: "100%" });
 const DT = { train: "Ngày tập", rest: "Ngày nghỉ" };
 
 function readPrefs(uid) { return readUser(PREFS_KEY, uid, {}) || {}; }

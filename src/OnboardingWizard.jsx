@@ -8,7 +8,7 @@ import { generateMenuAI, resolveMealIds } from "./lib/aiMenuService";
 import { DK, DK_CSS, dkCard, dkGlass } from "./theme";
 
 const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
-const GRAD_BLUE = "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)";
+const GRAD_BLUE = "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)";
 const svg = (d, s = 22, w = 2.2) => <svg aria-hidden="true" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
 const P = {
   back: <path d="M15 6l-6 6 6 6" />,

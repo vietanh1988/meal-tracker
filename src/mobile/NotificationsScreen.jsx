@@ -46,7 +46,7 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
                   {n.date && <span style={{ fontSize: 12, color: DK.t3 }}>{n.date}</span>}
                   {idx === 0 && (
                     <button data-testid="notif-do-update" onClick={() => setUpdating(true)}
-                      style={{ alignSelf: "flex-start", marginTop: 4, height: 36, padding: "0 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 13, fontWeight: 800 }}>
+                      style={{ alignSelf: "flex-start", marginTop: 4, height: 36, padding: "0 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 13, fontWeight: 800 }}>
                       Cập nhật ngay
                     </button>
                   )}

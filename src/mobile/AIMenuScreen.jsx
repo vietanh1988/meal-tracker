@@ -20,7 +20,7 @@ const STYLE_NAME = { vn: "Cơm nhà VN", clean: "Eat clean", easy: "Tiện lợi
 const DT = { train: "Ngày tập", rest: "Ngày nghỉ" };
 const STEPS = ["Chọn món hợp khẩu vị bạn", "Cân khẩu phần theo mục tiêu", "Xếp mâm cho từng bữa", "Kiểm tra calo và đạm"];
 const card = { margin: "10px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16 };
-const btn = (kind, disabled) => ({ height: 50, borderRadius: 14, border: kind === "ghost" ? "1.5px solid #E2E8F0" : "none", background: disabled ? "#CBD5E1" : kind === "ghost" ? "#FFFFFF" : kind === "purple" ? PURPLE : GRAD_BLUE, color: kind === "ghost" ? "#0F172A" : "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: kind === "ghost" ? 800 : 900, padding: "0 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 });
+const btn = (kind, disabled) => ({ height: 50, borderRadius: 14, border: kind === "ghost" ? "1.5px solid #E2E8F0" : "none", background: disabled ? "#E2E8F0" : kind === "ghost" ? "#FFFFFF" : kind === "purple" ? PURPLE : GRAD_BLUE, color: disabled ? "#64748B" : kind === "ghost" ? "#0F172A" : "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: kind === "ghost" ? 800 : 900, padding: "0 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 });
 const itemName = (it) => it.display || getFoodDisplay(it.food) || it.food;
 
 function Loading({ sub, onCancel }) {

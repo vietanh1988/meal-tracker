@@ -56,7 +56,7 @@ export function AdminTab({appSettings, saveSetting, mob, isSuperAdmin}){
             await saveSetting("update_notes",notes.trim());
             const el=document.getElementById("version-saved");
             if(el){el.style.display="flex";setTimeout(()=>{el.style.display="none";},3000);}
-          }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>🚀 Deploy</button>}
+          }} style={{padding:"8px 16px",fontSize:13,fontWeight:700,border:"none",borderRadius:8,background:"linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>🚀 Deploy</button>}
         </div>
         {isSuperAdmin&&<textarea id="new-version-notes" placeholder={"Có gì mới (mỗi dòng 1 ý, hiện trong popup cập nhật)\nVD: Giao diện Hôm nay mới\nBiểu đồ cân nặng"} defaultValue={appSettings.update_notes||""} rows={3} style={{...inp,width:"100%",marginTop:8,boxSizing:"border-box",fontFamily:"inherit",resize:"vertical"}}/>}
         <div id="version-saved" style={{display:"none",alignItems:"center",gap:8,padding:"8px 14px",background:C.greenBg,borderRadius:10,border:`1.5px solid ${C.green}`,marginTop:8}}>

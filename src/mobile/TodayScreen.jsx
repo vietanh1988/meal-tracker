@@ -147,7 +147,7 @@ function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
   const eaten = r.state === "eaten";
   const hasFood = eaten || r.state === "planned";
   const line = last ? null : (
-    <span aria-hidden="true" style={{ position: "absolute", left: 21, top: 50, bottom: -14, width: 2, background: eaten ? "#00C896" : now ? "linear-gradient(180deg,#007AFF,#CFE0FB)" : "#C9D8F2" }} />
+    <span aria-hidden="true" style={{ position: "absolute", left: 21, top: 50, bottom: -14, width: 2, background: eaten ? "#059669" : now ? "linear-gradient(180deg,#007AFF,#CFE0FB)" : "#C9D8F2" }} />
   );
   const pill = { flex: 1, minWidth: 0, minHeight: 64, borderRadius: 18, background: now ? "#FFFFFF" : "rgba(255,255,255,0.75)", padding: "0 10px 0 14px", display: "flex", alignItems: "center", gap: 10, boxSizing: "border-box" };
   const timeTag = <span style={{ fontSize: 12, fontWeight: 800, color: now ? "#007AFF" : "#64748B", background: now ? "rgba(0,122,255,0.10)" : "#F1F5FB", padding: "4px 8px", borderRadius: 8, whiteSpace: "nowrap" }}>{r.time}</span>;
@@ -164,25 +164,25 @@ function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
             <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
                 <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>{r.name}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", whiteSpace: "nowrap" }}>{r.time}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", whiteSpace: "nowrap" }}>{r.time}</span>
                 {tag}
               </span>
               <span data-testid={`meal-foods-${r.id}`} style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.items.map(itemName).join(", ")}</span>
             </span>
             <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
               <span style={{ fontSize: 15, fontWeight: 900, whiteSpace: "nowrap" }}>{fmtInt(r.cal)}</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>kcal</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#64748B" }}>kcal</span>
             </span>
           </button>
           <button data-testid={`eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, !eaten)} aria-label={eaten ? `Bỏ đánh dấu đã ăn ${r.name}` : `Đánh dấu đã ăn ${r.name}`} aria-pressed={eaten}
-            style={{ ...plusBtn, background: eaten ? "#00C896" : "#FFFFFF", borderColor: eaten ? "#00C896" : "#DCE6F5", color: eaten ? "#FFFFFF" : "#94A3B8" }}>{Icon.check(18, 2.8)}</button>
+            style={{ ...plusBtn, background: eaten ? "#059669" : "#FFFFFF", borderColor: eaten ? "#059669" : "#94A3B8", color: eaten ? "#FFFFFF" : "#64748B" }}>{Icon.check(18, 2.8)}</button>
         </div>
       ) : (
         <div style={pill}>
           <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>{r.name}</span>
             {now ? <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF" }}>Đến giờ ăn</span>
-              : <span style={{ fontSize: 12, color: "#94A3B8" }}>{r.state === "missed" ? "Đã qua giờ · chưa ghi" : "Chưa ghi"}</span>}
+              : <span style={{ fontSize: 12, color: "#64748B" }}>{r.state === "missed" ? "Đã qua giờ · chưa ghi" : "Chưa ghi"}</span>}
           </span>
           {timeTag}
           <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={now ? { ...plusBtn, background: "#007AFF", borderColor: "#007AFF", color: "#FFFFFF", fontSize: 22 } : { ...plusBtn, fontSize: 22 }}>+</button>

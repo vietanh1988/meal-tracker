@@ -113,7 +113,7 @@ export function AboutPage({ appSettings, isAdmin, saveSetting, mob }) {
         <div style={{ position: "relative", flexShrink: 0 }}>
           {form.devAvatar
             ? <img src={form.devAvatar} alt={form.devName} style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover", border: `2px solid ${C.primary}` }} />
-            : <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: "2px solid #fff", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", color: "#fff" }}>{form.devName ? form.devName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "VA"}</div>}
+            : <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, border: "2px solid #fff", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", color: "#fff" }}>{form.devName ? form.devName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "VA"}</div>}
           {editing && <>
             <input ref={fileRef} type="file" accept="image/*" onChange={uploadAvatar} style={{ display: "none" }} />
             <div onClick={() => fileRef.current?.click()} style={{ position: "absolute", bottom: -2, right: -2, width: 22, height: 22, borderRadius: "50%", background: C.primary, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "2px solid #fff" }}>

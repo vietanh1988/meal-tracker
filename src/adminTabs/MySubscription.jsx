@@ -140,7 +140,7 @@ export function MySubscription({ userId, mob, isAdmin, appSettings }) {
 
   const btnStyle = isPremium
     ? { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#EF4444,#DC2626)", color: "#fff", cursor: "pointer" }
-    : { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)", color: "#fff", cursor: "pointer" };
+    : { width: "100%", padding: "12px", fontSize: 14, fontWeight: 900, border: "none", borderRadius: 10, background: "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)", color: "#fff", cursor: "pointer" };
 
   const PKG_SHORT = { "1m": "1T", "3m": "3T", "6m": "6T", "12m": "12T" };
   const transferContent = `FIPILOT ${(sub.username || userId || "").toString().replace(/[^a-zA-Z0-9]/g, "").slice(0, 12).toUpperCase()} ${PKG_SHORT[selectedPkg] || ""}`.trim();

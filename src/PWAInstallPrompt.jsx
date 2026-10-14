@@ -132,7 +132,7 @@ export default function PWAInstallPrompt() {
   const sub = { fontSize: 13, color: "#64748B", marginTop: 2, lineHeight: 1.4 };
   const primaryBtn = {
     width: "100%", height: 50, border: "none", borderRadius: 14,
-    background: "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)",
+    background: "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)",
     color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit",
   };
   const laterBtn = {
