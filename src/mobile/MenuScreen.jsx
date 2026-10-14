@@ -294,8 +294,11 @@ export function MenuPastPage({ day, profile, macro, applyTemplate, saveWeeklyTem
   };
   const saveRepeat = async (idxs) => {
     setBusy(true);
-    for (const i of idxs) await saveWeeklyTemplate(WEEK_KEYS[i], day.day_type, day.meals, day.cal);
-    setBusy(false); setRepeat(false);
+    let ok = true;
+    for (const i of idxs) ok = (await saveWeeklyTemplate(WEEK_KEYS[i], day.day_type, day.meals, day.cal)) && ok;
+    setBusy(false);
+    if (!ok) { showToast({ text: "Chưa lưu được — kiểm tra mạng rồi thử lại." }); return; }
+    setRepeat(false);
     showToast({ text: `Sẽ lặp lại mỗi ${idxs.map((i) => WEEK_SHORT[i]).join(", ")}.` });
   };
   return (
@@ -333,7 +336,7 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
   });
   const recalc = () => run(async () => {
     const eng = applyMealEngineToTemplate({ ...row.tpl, meals: row.meals }, dailyTargetOf(macro, row.dayType));
-    await saveWeeklyTemplate(row.key, row.dayType, eng.meals || [], mealsCal(eng.meals));
+    if (!(await saveWeeklyTemplate(row.key, row.dayType, eng.meals || [], mealsCal(eng.meals)))) { showToast({ text: "Chưa lưu được — kiểm tra mạng rồi thử lại." }); return; }
     showToast({ text: "Đã tính lại khẩu phần theo mục tiêu hiện tại." });
   });
   const remove = () => run(async () => {
@@ -351,7 +354,7 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
     close();
   });
   const saveFromToday = () => run(async () => {
-    await saveWeeklyTemplate(row.key, row.dayType, todayMeals, mealsCal(todayMeals));
+    if (!(await saveWeeklyTemplate(row.key, row.dayType, todayMeals, mealsCal(todayMeals)))) { showToast({ text: "Chưa lưu được — kiểm tra mạng rồi thử lại." }); return; }
     showToast({ text: `Đã lưu thực đơn hôm nay vào ${row.long}.` });
   });
 
@@ -408,8 +411,10 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
   };
   const assign = async () => {
     setBusy(true);
-    for (const i of days) await saveWeeklyTemplate(WEEK_KEYS[i], t.day_type, eng.meals || [], cal);
+    let ok = true;
+    for (const i of days) ok = (await saveWeeklyTemplate(WEEK_KEYS[i], t.day_type, eng.meals || [], cal)) && ok;
     setBusy(false);
+    if (!ok) { showToast({ text: "Chưa lưu được — kiểm tra mạng rồi thử lại." }); return; }
     showToast({ text: `Sẽ lặp lại mỗi ${days.map((i) => WEEK_SHORT[i]).join(", ")}.` });
     setDays([]);
   };

@@ -442,12 +442,14 @@ export function useUserData(userId) {
   // ===== WEEKLY TEMPLATES =====
 
   // Save or update a weekly template
+  // Trả true khi lưu được, false khi lỗi (trước đây nuốt lỗi → màn luôn báo "đã lưu").
   const saveWeeklyTemplate = useCallback(async (dayName, dayType, mealsData, totalCal) => {
-    if (!userId) return;
+    if (!userId) return false;
     try {
-      const { data: existing } = await supabase.from("weekly_templates")
+      const { data: existing, error: selErr } = await supabase.from("weekly_templates")
         .select("id").eq("user_id", userId).eq("day_name", dayName)
         .maybeSingle();
+      if (selErr) { console.error("Template read error:", selErr); return false; }
 
       const payload = {
         day_type: dayType,
@@ -457,14 +459,14 @@ export function useUserData(userId) {
 
       if (existing) {
         const { error } = await supabase.from("weekly_templates").update(payload).eq("id", existing.id);
-        if (error) { console.error("Update template error:", error); return; }
+        if (error) { console.error("Update template error:", error); return false; }
         console.log("✅ Template updated:", dayName);
       } else {
         const dayLabel = {"thu_2":"Thứ 2","thu_3":"Thứ 3","thu_4":"Thứ 4","thu_5":"Thứ 5","thu_6":"Thứ 6","thu_7":"Thứ 7","cn":"Chủ nhật"}[dayName] || dayName;
         const { error } = await supabase.from("weekly_templates").insert({
           user_id: userId, day_name: dayName, name: dayLabel, is_default: false, ...payload,
         });
-        if (error) { console.error("Insert template error:", error); return; }
+        if (error) { console.error("Insert template error:", error); return false; }
         console.log("✅ Template saved:", dayName);
       }
       // Reload templates (user's own only, not default)
@@ -472,7 +474,8 @@ export function useUserData(userId) {
         .select("*").eq("user_id", userId).or("is_default.is.null,is_default.eq.false")
         .order("created_at");
       if (refreshed) setWeeklyTemplates(refreshed);
-    } catch (e) { console.error("Template save error:", e); }
+      return true;
+    } catch (e) { console.error("Template save error:", e); return false; }
   }, [userId]);
 
   // Delete a weekly template

@@ -238,7 +238,9 @@ export function MobileApp(props) {
   const saveAIMenuToWeek = async (tpl, days) => {
     try {
       const meals = (tpl.meals || []).filter((m) => (m.items || []).length > 0).map((m) => ({ meal_id: m.meal_id, meal_name: mealLabel(m.meal_name, m.meal_id), items: m.items, composite: !!m.composite, pattern: m.pattern || null }));
-      for (const i of days) await ud.saveWeeklyTemplate(WEEK_KEYS[i], tpl.day_type || "train", meals, mealsCal(meals));
+      let ok = true;
+      for (const i of days) ok = (await ud.saveWeeklyTemplate(WEEK_KEYS[i], tpl.day_type || "train", meals, mealsCal(meals))) && ok;
+      if (!ok) { fail(); return; }
       showToast({ text: `Sẽ lặp lại mỗi ${days.map((i) => WEEK_SHORT[i]).join(", ")}.` });
     } catch (e) { console.error("saveAIMenuToWeek error:", e); fail(); }
   };
