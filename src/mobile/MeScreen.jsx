@@ -17,7 +17,7 @@ const ICONS = {
   goals: ["#007AFF", "rgba(0,122,255,0.1)", svg(<><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="0.8" fill="currentColor" /></>)],
   schedule: ["#00A67E", "rgba(0,200,150,0.12)", svg(<><rect x="4" y="5" width="16" height="15" rx="3" /><path d="M8 3v4M16 3v4M4 10h16" /></>)],
   reminders: ["#EA580C", "rgba(249,115,22,0.12)", svg(<><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></>)],
-  plan: ["#7C3AED", "rgba(124,58,237,0.1)", svg(<path d="M4 8l4 4 4-7 4 7 4-4-2 11H6z" />)],
+  plan: ["#DB2777", "rgba(219,39,119,0.1)", svg(<path d="M4 8l4 4 4-7 4 7 4-4-2 11H6z" />)],
   feedback: ["#0891B2", "rgba(8,145,178,0.1)", svg(<path d="M5 5h14v10H9l-4 4z" />)],
   share: ["#2563EB", "rgba(37,99,235,0.1)", svg(<><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6" /></>)],
   account: ["#475569", "rgba(71,85,105,0.1)", svg(<><circle cx="12" cy="8" r="4" /><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" /></>)],

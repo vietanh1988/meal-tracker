@@ -21,7 +21,7 @@ const IC = {
   mail: ["#0891B2", "rgba(8,145,178,0.1)", svg(<><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M4 7l8 6 8-6" /></>)],
   lock: ["#7C3AED", "rgba(124,58,237,0.1)", svg(<><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>)],
   bell: ["#EA580C", "rgba(249,115,22,0.12)", svg(<><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></>)],
-  crown: ["#7C3AED", "rgba(124,58,237,0.1)", svg(<path d="M4 8l4 4 4-7 4 7 4-4-2 11H6z" />)],
+  crown: ["#DB2777", "rgba(219,39,119,0.1)", svg(<path d="M4 8l4 4 4-7 4 7 4-4-2 11H6z" />)],
   refresh: ["#00A67E", "rgba(0,200,150,0.12)", svg(<><path d="M4 12a8 8 0 0 1 14-5.3L20 9" /><path d="M20 4v5h-5" /><path d="M20 12a8 8 0 0 1-14 5.3L4 15" /><path d="M4 20v-5h5" /></>)],
   out: ["#DC2626", "rgba(220,38,38,0.1)", svg(<><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="M14 8l4 4-4 4M18 12H9" /></>)],
   trash: ["#DC2626", "#FFFFFF", svg(<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />)],
