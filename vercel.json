@@ -1,4 +1,10 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "ci/**": false,
+      "shots/**": false
+    }
+  },
   "rewrites": [
     { "source": "/og-image.png", "destination": "/og-image.png" },
     { "source": "/icon-192.png", "destination": "/icon-192.png" },

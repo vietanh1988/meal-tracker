@@ -28,14 +28,17 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     await expect(page.getByText("Bữa trưa").first()).toBeVisible();
   });
 
-  test("thân Hôm nay theo bản vẽ 69: nền xanh nhạt, thẻ trắng không viền có bóng", async () => {
+  test("thân Hôm nay theo bản vẽ 77: nền xanh nhạt, thẻ trắng phẳng, bữa dạng dòng thời gian", async () => {
     const bg = await page.getByTestId("page-bg").evaluate((el) => getComputedStyle(el).backgroundImage);
     expect(bg).toContain("linear-gradient");
-    expect(bg).toMatch(/230, 239, 255|E6EFFF/i);
+    expect(bg).toMatch(/211, 226, 255|D3E2FF/i);
     const st = await page.getByTestId("week-card").evaluate((el) => { const s = getComputedStyle(el); return { c: s.backgroundColor, b: s.borderTopWidth, sh: s.boxShadow }; });
     expect(st.c).toBe("rgb(255, 255, 255)");
     expect(st.b).toBe("0px");
-    expect(st.sh).not.toBe("none");
+    expect(st.sh).toBe("none");
+    await expect(page.getByTestId("meal-timeline")).toBeVisible();
+    const fc = page.getByTestId("focus-card");
+    if (await fc.count()) expect(await fc.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe("none");
   });
 
   test("dòng thời gian có ĐỦ bữa (kể cả bữa ở thẻ đến giờ), tên có dấu", async () => {

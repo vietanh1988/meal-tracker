@@ -31,7 +31,7 @@ export const IC_COLOR = {
 export const MEAL_ICON_KEY = { sang: "sunrise", phu_sang: "cup", trua: "sun", phu_chieu: "apple", pre: "bolt", post: "dumbbell", toi: "moon" };
 
 // Pha màu hex (an toàn cho Safari cũ, không dùng color-mix)
-function mix(hex, to, t) {
+export function mix(hex, to, t) {
   const h = (x) => parseInt(x, 16);
   const a = hex.replace("#", ""), b = to.replace("#", "");
   const c = [0, 2, 4].map((i) => Math.round(h(a.slice(i, i + 2)) * (1 - t) + h(b.slice(i, i + 2)) * t));

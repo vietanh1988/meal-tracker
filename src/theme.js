@@ -55,18 +55,23 @@ export const numFix={onFocus:e=>e.target.select(),onBlur:e=>{const el=e.target;i
 // Sheet / hộp thoại bật lên trên các màn này vẫn nền trắng (dễ đọc, dễ nhập).
 // ============================================================
 // ============================================================
-// Nền sáng các tab Hôm nay / Thực đơn / Tiến độ (bản vẽ 69 "Tổng quan – A", chốt 14/10):
-// nền xanh rất nhạt nối tiếp header xanh; thẻ trắng KHÔNG viền, bóng xanh mềm, bo 20.
+// Nền sáng các tab Hôm nay / Thực đơn / Tiến độ (bản vẽ 69 → 77, chốt 14/10):
+// nền xanh nhạt nối tiếp header xanh; thẻ trắng PHẲNG (không viền, không bóng), bo 20.
+// Riêng thẻ "bữa đến giờ" ở Hôm nay dùng kiểu nổi mềm cùng màu nền (LT.raise / LT.inset).
 // ============================================================
 export const LT = {
-  bg: "linear-gradient(180deg,#E6EFFF 0%,#EEF4FF 30%,#F3F7FF 100%)",
-  top: "#E6EFFF",           // màu đầu trang (thanh giờ iPhone ở tab Thực đơn / Tiến độ)
-  base: "#EEF4FF",          // màu nền đặc (vùng kéo quá)
+  bg: "linear-gradient(180deg,#D3E2FF 0%,#E0EBFF 35%,#EAF1FF 100%)",
+  top: "#D3E2FF",           // màu đầu trang (thanh giờ iPhone ở tab Thực đơn / Tiến độ)
+  base: "#E0EBFF",          // màu nền đặc (vùng kéo quá)
+  tone: "#DCE7FF",          // màu nền ở vùng thẻ bữa đến giờ (thẻ nổi mềm cùng màu nền)
+  raise: "8px 8px 20px rgba(30,64,175,0.16), -6px -6px 16px rgba(255,255,255,0.9)",
+  raiseSm: "4px 4px 10px rgba(30,64,175,0.14), -4px -4px 10px rgba(255,255,255,0.9)",
+  inset: "inset 3px 3px 6px rgba(30,64,175,0.12), inset -3px -3px 6px rgba(255,255,255,0.85)",
   line: "#EEF2FA",          // kẻ giữa các dòng trong thẻ
   soft: "#EEF4FF",          // nền nút phụ / ô phụ trong thẻ
   shadow: "0 8px 24px rgba(30,64,175,0.08), 0 1px 2px rgba(30,64,175,0.06)",
 };
-export const ltCard = { background: "#FFFFFF", border: "none", borderRadius: 20, boxShadow: LT.shadow };
+export const ltCard = { background: "#FFFFFF", border: "none", borderRadius: 20, boxShadow: "none" };
 
 export const DK = {
   bg: "radial-gradient(circle at 85% 4%, rgba(60,140,255,0.35) 0%, rgba(60,140,255,0) 40%), radial-gradient(circle at 10% 60%, rgba(0,200,255,0.10) 0%, rgba(0,200,255,0) 45%), linear-gradient(180deg,#0F4585 0%,#03386F 18%,#022B57 45%,#012244 75%,#011B37 100%)",

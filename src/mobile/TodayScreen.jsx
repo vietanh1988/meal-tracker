@@ -1,12 +1,13 @@
 // Màn 1 · Hôm nay (bản vẽ 32 "Hôm nay – bản đầy đủ", chốt 13/10).
 // Header: TodayHeader.jsx (bản vẽ 41, Blue ↔ Blue Dark).
-// Thân (bản vẽ 69, chốt 14/10): nền xanh nhạt từ vỏ app, thẻ trắng không viền bóng mềm.
+// Thân (bản vẽ 77, chốt 14/10): nền xanh nhạt từ vỏ app, thẻ trắng phẳng; thẻ bữa đến giờ nổi mềm cùng màu nền;
+// danh sách bữa dạng dòng thời gian.
 // Thân: thẻ bữa đến giờ, danh sách bữa, nước theo cốc, cân nặng, tuần này.
 import { useState, useEffect, useRef } from "react";
 import { Icon, GRAD_ORANGE, GRAD_BLUE } from "./ui";
 import { TodayHeader } from "./TodayHeader";
 import { weekdayFull, mealWindowLabel, itemName, fmtInt, fmtDec, focusMeal } from "../lib/mobileView";
-import { AppIcon, MealIcon, IC_COLOR } from "./icons";
+import { AppIcon, MealIcon, IC_COLOR, mix } from "./icons";
 import { waterGoalMl, cupsView, CUP_SIZES } from "../lib/dayPlan";
 import { fmtVN } from "../lib/dateVN";
 import { LT, ltCard } from "../theme";
@@ -52,9 +53,9 @@ export function TodayScreen(p) {
         <span style={secTitle}>{isToday ? "Bữa ăn hôm nay" : `${weekdayFull(date)} ${fmtVN(date)}`}</span>
         {rows.length > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>{eatenCount} / {rows.length} bữa</span>}
       </div>
-      <div style={{ ...card, padding: "0 14px", overflow: "hidden", opacity: dayLoaded ? 1 : 0.5 }}>
-        {rows.map((r, i) => <MealRow key={r.id} r={r} last={i === rows.length - 1} now={focus && focus.id === r.id && r.state !== "planned"} {...p} />)}
-        {rows.length === 0 && <div style={{ minHeight: 56, display: "flex", alignItems: "center", fontSize: 13, color: "#64748B" }}>Chưa bật bữa nào — vào Tôi › Lịch tập & bữa để bật.</div>}
+      <div data-testid="meal-timeline" style={{ margin: "0 12px", display: "flex", flexDirection: "column", gap: 14, opacity: dayLoaded ? 1 : 0.5 }}>
+        {rows.map((r, i) => <MealRow key={r.id} r={r} last={i === rows.length - 1} now={!!focus && focus.id === r.id} {...p} />)}
+        {rows.length === 0 && <div style={{ ...card, margin: 0, minHeight: 56, padding: "0 14px", display: "flex", alignItems: "center", fontSize: 13, color: "#64748B" }}>Chưa bật bữa nào — vào Tôi › Lịch tập & bữa để bật.</div>}
       </div>
       {p.onAIMenu && date >= today && (
         <button onClick={p.onAIMenu} data-testid="today-ai-menu" style={{ margin: "10px 12px 0 12px", width: "calc(100% - 24px)", height: 48, borderRadius: 16, border: "none", background: "linear-gradient(135deg, rgba(124,58,237,0.10), rgba(0,122,255,0.08))", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14, fontWeight: 800, color: "#6D28D9", fontFamily: "inherit" }}>
@@ -92,88 +93,101 @@ export function TodayScreen(p) {
   );
 }
 
+// Thẻ bữa đến giờ (bản vẽ 77): cùng màu nền, nổi mềm; dải màu của bữa ở mép trên; dòng món lõm vào.
 function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepeat, busy, nowMinutes, onAskAI }) {
   const planned = r.state === "planned";
   const rep = !planned ? repeatFor(r.id) : null;
   const label = r.state === "missed" ? "CHƯA GHI" : (r.minutes ?? 0) > nowMinutes + 60 ? "BỮA TIẾP THEO" : "ĐẾN GIỜ ĂN";
+  const c = IC_COLOR[r.id] || "#007AFF";
+  const soft = { background: LT.tone, border: "none", fontFamily: "inherit" };
   return (
-    <div data-testid="focus-card" style={{ margin: "14px 12px 0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <MealIcon id={r.id} size={48} />
-        <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF" }}>{label} · {mealWindowLabel(r.id, r.time)}</span>
-          <span style={{ fontSize: 18, fontWeight: 900 }}>{planned ? `${r.name} · ${fmtInt(r.cal)} kcal` : `${r.name} hôm nay ăn gì?`}</span>
-        </span>
+    <div data-testid="focus-card" style={{ margin: "14px 12px 0 12px", background: LT.tone, borderRadius: 22, boxShadow: LT.raise, overflow: "hidden" }}>
+      <span aria-hidden="true" style={{ display: "block", height: 4, background: `linear-gradient(90deg, ${c}, ${mix(c, "#FFFFFF", 0.45)})` }} />
+      <div style={{ padding: "20px 16px 14px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <MealIcon id={r.id} size={48} />
+          <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: mix(c, "#000000", 0.2) }}>{label} · {mealWindowLabel(r.id, r.time)}</span>
+            <span style={{ fontSize: 19, fontWeight: 900 }}>{planned ? `${r.name} · ${fmtInt(r.cal)} kcal` : `${r.name} hôm nay ăn gì?`}</span>
+          </span>
+        </div>
+        {planned && (
+          <button data-testid="focus-foods" onClick={() => onEdit(r.id)} className="tap" style={{ ...soft, boxShadow: LT.inset, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, color: "#475569", textAlign: "left" }}>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.items.map(itemName).join(", ")}</span>
+            {Icon.chev(16)}
+          </button>
+        )}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+          {planned ? <>
+            <button data-testid={`focus-eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
+            <button data-testid="focus-edit" onClick={() => onEdit(r.id)} style={{ ...soft, height: 48, borderRadius: 14, boxShadow: LT.raiseSm, border: "1.5px solid rgba(0,122,255,0.35)", color: "#0057FF", fontSize: 15, fontWeight: 800, boxSizing: "border-box" }}>Sửa món</button>
+          </> : <>
+            <button onClick={() => onPhoto(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_ORANGE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.camera(18)}Chụp món</button>
+            <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Tìm món</button>
+          </>}
+        </div>
+        {rep && (
+          <button disabled={busy} onClick={() => onRepeat(rep, r.id)} className="tap" style={{ ...soft, boxShadow: LT.inset, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, color: "#0F172A", textAlign: "left" }}>
+            <span style={{ color: "#007AFF", display: "flex" }}>{Icon.redo(16)}</span>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Ăn lại {rep.meal_name ? rep.meal_name.toLowerCase() : "bữa"} {fmtVN(rep.log_date)} · {rep.items.map((i) => itemName(i).toLowerCase()).join(", ")}</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: "#007AFF" }}>{fmtInt(rep.cal)}</span>
+          </button>
+        )}
+        {onAskAI && (
+          <button data-testid="focus-ask-ai" onClick={() => onAskAI(r)} style={{ alignSelf: "center", height: 32, padding: "0 8px", border: "none", background: "transparent", color: "#7C3AED", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>{Icon.sparkle(16)}Hỏi AI về {r.name.toLowerCase()}</button>
+        )}
       </div>
-      {planned && (
-        <button onClick={() => onEdit(r.id)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: LT.soft, border: "none", color: "#475569", fontFamily: "inherit", textAlign: "left" }}>
-          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.items.map(itemName).join(", ")}</span>
-          {Icon.chev(16)}
-        </button>
-      )}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
-        {planned ? <>
-          <button data-testid={`focus-eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(0,87,255,0.22)", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
-          <button onClick={() => onEdit(r.id)} style={{ height: 48, borderRadius: 14, background: LT.soft, color: "#0F172A", fontSize: 14, fontWeight: 800, border: "none", fontFamily: "inherit" }}>Sửa món</button>
-        </> : <>
-          <button onClick={() => onPhoto(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_ORANGE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 6px 14px rgba(234,88,12,0.28)", fontFamily: "inherit" }}>{Icon.camera(18)}Chụp món</button>
-          <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 6px 14px rgba(0,87,255,0.25)", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Tìm món</button>
-        </>}
-      </div>
-      {rep && (
-        <button disabled={busy} onClick={() => onRepeat(rep, r.id)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: LT.soft, border: "none", color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
-          <span style={{ color: "#007AFF", display: "flex" }}>{Icon.redo(16)}</span>
-          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Ăn lại {rep.meal_name ? rep.meal_name.toLowerCase() : "bữa"} {fmtVN(rep.log_date)} · {rep.items.map((i) => itemName(i).toLowerCase()).join(", ")}</span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: "#007AFF" }}>{fmtInt(rep.cal)}</span>
-        </button>
-      )}
-      {onAskAI && (
-        <button data-testid="focus-ask-ai" onClick={() => onAskAI(r)} style={{ alignSelf: "center", height: 36, padding: "0 8px", border: "none", background: "transparent", color: "#7C3AED", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>{Icon.sparkle(16)}Hỏi AI về {r.name.toLowerCase()}</button>
-      )}
     </div>
   );
 }
 
+// Danh sách bữa dạng dòng thời gian (bản vẽ 72b / 77): icon bữa nối bằng đường dọc, mỗi bữa 1 viên bo tròn phẳng.
+// Đường nối dưới bữa đã ăn màu xanh lá; dưới bữa đến giờ xanh dương nhạt dần.
 function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
-  const border = last ? "none" : `1px solid ${LT.line}`;
-  const iconBox = (
-    <MealIcon id={r.id} size={44} dim={r.state === "missed"} />
+  const eaten = r.state === "eaten";
+  const hasFood = eaten || r.state === "planned";
+  const line = last ? null : (
+    <span aria-hidden="true" style={{ position: "absolute", left: 21, top: 50, bottom: -14, width: 2, background: eaten ? "#00C896" : now ? "linear-gradient(180deg,#007AFF,#CFE0FB)" : "#C9D8F2" }} />
   );
-  const title = (tag) => (
-    <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-      <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>{r.name}</span>
-      <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", whiteSpace: "nowrap" }}>{r.time}</span>
-      {tag}
-    </span>
-  );
-  if (r.state === "eaten" || r.state === "planned") {
-    const eaten = r.state === "eaten";
-    const tag = eaten
-      ? <span style={{ fontSize: 10, fontWeight: 800, color: "#047857", background: "rgba(0,200,150,0.12)", padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>Đã ăn</span>
-      : <span style={{ fontSize: 10, fontWeight: 800, color: "#B45309", background: "rgba(245,158,11,0.12)", padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>Chưa ăn</span>;
-    return (
-      <div style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 66, borderBottom: border }}>
-        <button onClick={() => onEdit(r.id)} className="tap" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 12, minHeight: 66, border: "none", background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
-          {iconBox}
-          <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-            {title(tag)}
-            <span data-testid={`meal-foods-${r.id}`} style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.items.map(itemName).join(", ")}</span>
-          </span>
-          <span style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>{fmtInt(r.cal)}</span>
-        </button>
-        <button data-testid={`eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, !eaten)} aria-label={eaten ? `Bỏ đánh dấu đã ăn ${r.name}` : `Đánh dấu đã ăn ${r.name}`} aria-pressed={eaten}
-          style={{ ...plusBtn, background: eaten ? "#00C896" : "#FFFFFF", borderColor: eaten ? "#00C896" : "#DCE6F5", color: eaten ? "#FFFFFF" : "#94A3B8" }}>{Icon.check(16, 2.8)}</button>
-      </div>
-    );
-  }
-  const sub = now ? <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF" }}>Đến giờ ăn</span>
-    : <span style={{ fontSize: 12, color: "#94A3B8" }}>{r.state === "missed" ? "Đã qua giờ · chưa ghi" : "Chưa ghi"}</span>;
+  const pill = { flex: 1, minWidth: 0, minHeight: 64, borderRadius: 18, background: now ? "#FFFFFF" : "rgba(255,255,255,0.75)", padding: "0 10px 0 14px", display: "flex", alignItems: "center", gap: 10, boxSizing: "border-box" };
+  const timeTag = <span style={{ fontSize: 12, fontWeight: 800, color: now ? "#007AFF" : "#64748B", background: now ? "rgba(0,122,255,0.10)" : "#F1F5FB", padding: "4px 8px", borderRadius: 8, whiteSpace: "nowrap" }}>{r.time}</span>;
+  const tag = eaten
+    ? <span style={{ fontSize: 10, fontWeight: 800, color: "#047857", background: "rgba(0,200,150,0.12)", padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>Đã ăn</span>
+    : <span style={{ fontSize: 10, fontWeight: 800, color: "#B45309", background: "rgba(245,158,11,0.14)", padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>Chưa ăn</span>;
   return (
-    <div data-testid={now ? "meal-row-now" : undefined} style={{ position: "relative", display: "flex", alignItems: "center", gap: 12, minHeight: 66, borderBottom: border, ...(now ? { background: "linear-gradient(90deg, rgba(0,122,255,0.09), rgba(0,122,255,0.02))", margin: "0 -14px", padding: "0 14px" } : {}) }}>
-      {now && <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 10, bottom: 10, width: 4, borderRadius: "0 4px 4px 0", background: "#007AFF" }} />}
-      {iconBox}
-      <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>{title(null)}{sub}</span>
-      <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={now ? { ...plusBtn, background: "#007AFF", borderColor: "#007AFF", color: "#FFFFFF", fontSize: 22, boxShadow: "0 4px 10px rgba(0,122,255,0.35)" } : { ...plusBtn, fontSize: 22 }}>+</button>
+    <div data-testid={now ? "meal-row-now" : undefined} style={{ position: "relative", display: "flex", gap: 12, alignItems: "center" }}>
+      {line}
+      <span style={{ position: "relative", zIndex: 1, display: "flex" }}><MealIcon id={r.id} size={44} dim={r.state === "missed"} /></span>
+      {hasFood ? (
+        <div style={pill}>
+          <button onClick={() => onEdit(r.id)} className="tap" style={{ flex: 1, minWidth: 0, minHeight: 64, display: "flex", alignItems: "center", gap: 10, border: "none", background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
+            <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>{r.name}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", whiteSpace: "nowrap" }}>{r.time}</span>
+                {tag}
+              </span>
+              <span data-testid={`meal-foods-${r.id}`} style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.items.map(itemName).join(", ")}</span>
+            </span>
+            <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+              <span style={{ fontSize: 15, fontWeight: 900, whiteSpace: "nowrap" }}>{fmtInt(r.cal)}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>kcal</span>
+            </span>
+          </button>
+          <button data-testid={`eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, !eaten)} aria-label={eaten ? `Bỏ đánh dấu đã ăn ${r.name}` : `Đánh dấu đã ăn ${r.name}`} aria-pressed={eaten}
+            style={{ ...plusBtn, background: eaten ? "#00C896" : "#FFFFFF", borderColor: eaten ? "#00C896" : "#DCE6F5", color: eaten ? "#FFFFFF" : "#94A3B8" }}>{Icon.check(18, 2.8)}</button>
+        </div>
+      ) : (
+        <div style={pill}>
+          <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>{r.name}</span>
+            {now ? <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF" }}>Đến giờ ăn</span>
+              : <span style={{ fontSize: 12, color: "#94A3B8" }}>{r.state === "missed" ? "Đã qua giờ · chưa ghi" : "Chưa ghi"}</span>}
+          </span>
+          {timeTag}
+          <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={now ? { ...plusBtn, background: "#007AFF", borderColor: "#007AFF", color: "#FFFFFF", fontSize: 22 } : { ...plusBtn, fontSize: 22 }}>+</button>
+        </div>
+      )}
     </div>
   );
 }
