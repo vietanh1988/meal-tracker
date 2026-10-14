@@ -13,6 +13,7 @@ import { SaveWeekSheet } from "./AIMenuScreen";
 import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT } from "../lib/menuView";
 import { applyMealEngineToTemplate } from "../mealEngine";
 import { Icon, GRAD_BLUE } from "./ui";
+import { LT, ltCard } from "../theme";
 import { readUser, writeUser } from "../lib/userStore";
 import { AppIcon } from "./icons";
 
@@ -20,9 +21,9 @@ const PURPLE = "linear-gradient(135deg,#7C3AED,#5B21B6)";
 const STYLES = [["vn", "Cơm nhà VN", "Cơm, canh, món mặn quen thuộc"], ["clean", "Eat clean", "Ức gà, khoai lang, yến mạch"], ["easy", "Tiện lợi", "Ít nấu nướng, đồ nhanh gọn"]];
 const PREFS_KEY = "fp_menu_prefs"; // lưu theo từng tài khoản (lib/userStore)
 const lbl = { fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
-const box = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 12px" };
-const secHead = { padding: "18px 16px 8px 16px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
-const rowBtn = (last) => ({ display: "flex", alignItems: "center", gap: 12, minHeight: 60, width: "100%", padding: 0, border: "none", borderBottom: last ? "none" : "1px solid #F1F5F9", background: "transparent", fontFamily: "inherit", color: "#0F172A", textAlign: "left" });
+const box = { margin: "0 12px", ...ltCard, padding: "0 14px" };
+const secHead = { padding: "20px 18px 10px 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
+const rowBtn = (last) => ({ display: "flex", alignItems: "center", gap: 12, minHeight: 60, width: "100%", padding: 0, border: "none", borderBottom: last ? "none" : `1px solid ${LT.line}`, background: "transparent", fontFamily: "inherit", color: "#0F172A", textAlign: "left" });
 const iconBox = (bg, color) => ({ width: 36, height: 36, borderRadius: 10, background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 13, fontWeight: 900 });
 const btn = (kind, disabled) => ({ height: 50, borderRadius: 14, border: kind === "ghost" ? "1.5px solid #E2E8F0" : kind === "danger" ? "1.5px solid #FCA5A5" : "none", background: disabled ? "#CBD5E1" : kind === "ghost" ? "#FFFFFF" : kind === "danger" ? "#FEF2F2" : kind === "purple" ? PURPLE : GRAD_BLUE, color: kind === "ghost" ? "#0F172A" : kind === "danger" ? "#DC2626" : "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900, width: "100%" });
 const DT = { train: "Ngày tập", rest: "Ngày nghỉ" };
@@ -114,8 +115,8 @@ export function MenuScreen(p) {
       </div>
 
       {/* Hôm nay đã có thực đơn chưa */}
-      <button data-testid="menu-today" onClick={openToday} className="tap" style={{ margin: "0 12px 12px 12px", width: "calc(100% - 24px)", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 16, border: todayHasMeals ? "1.5px solid rgba(0,200,150,0.35)" : "1.5px solid rgba(245,158,11,0.35)", background: todayHasMeals ? "rgba(0,200,150,0.08)" : "rgba(245,158,11,0.08)", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
-        <span style={{ width: 40, height: 40, borderRadius: 12, background: "#FFFFFF", color: todayHasMeals ? "#047857" : "#B45309", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{todayHasMeals ? Icon.check(20, 2.6) : Icon.plus(20)}</span>
+      <button data-testid="menu-today" onClick={openToday} className="tap" style={{ margin: "0 12px 12px 12px", width: "calc(100% - 24px)", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: 14, ...ltCard, borderLeft: `4px solid ${todayHasMeals ? "#00C896" : "#F59E0B"}`, fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
+        <span style={{ width: 40, height: 40, borderRadius: 12, background: todayHasMeals ? "rgba(0,200,150,0.12)" : "rgba(245,158,11,0.14)", color: todayHasMeals ? "#047857" : "#B45309", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{todayHasMeals ? Icon.check(20, 2.6) : Icon.plus(20)}</span>
         <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 15, fontWeight: 800 }}>{todayHasMeals ? `Hôm nay đã có ${todayMeals.length} bữa · ${fmtInt(mealsCal(todayMeals))} kcal` : "Hôm nay chưa có thực đơn"}</span>
           <span style={{ fontSize: 12, color: "#475569" }}>{todayHasMeals ? `Mục tiêu ${fmtInt(todayTarget)} kcal · bấm để xem ở Hôm nay` : "Chọn 1 trong các cách bên dưới để có thực đơn"}</span>
@@ -124,7 +125,7 @@ export function MenuScreen(p) {
       </button>
 
       {aiAccess?.enabled && (
-        <div data-testid="menu-ai-card" style={{ margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 20, padding: 16, display: "flex", flexDirection: "column", gap: 14, boxShadow: "0 6px 20px rgba(124,58,237,0.08)" }}>
+        <div data-testid="menu-ai-card" style={{ margin: "0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ width: 44, height: 44, borderRadius: 14, background: PURPLE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.sparkle(22)}</span>
             <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
@@ -178,7 +179,7 @@ export function MenuScreen(p) {
 
 
       <div style={secHead}>
-        <span style={{ fontSize: 15, fontWeight: 800 }}>Thực đơn của tôi</span>
+        <span style={{ fontSize: 17, fontWeight: 900 }}>Thực đơn của tôi</span>
         <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Dùng lại không tốn lượt AI</span>
       </div>
       <div style={box}>
@@ -210,9 +211,9 @@ export function MenuScreen(p) {
       {flags?.template_library && (
         <>
           <div style={secHead}>
-            <span style={{ fontSize: 15, fontWeight: 800 }}>Thực đơn mẫu</span>
+            <span style={{ fontSize: 17, fontWeight: 900 }}>Thực đơn mẫu</span>
             {!noEx && (
-              <div role="group" aria-label="Loại ngày" style={{ display: "flex", padding: 3, background: "#F1F5F9", borderRadius: 10 }}>
+              <div role="group" aria-label="Loại ngày" style={{ display: "flex", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 10 }}>
                 {["train", "rest"].map((d) => (
                   <button key={d} data-testid={`lib-day-${d}`} aria-pressed={libType === d} onClick={() => setLibType(d)} style={{ height: 30, padding: "0 10px", borderRadius: 8, border: "none", fontFamily: "inherit", fontSize: 12, fontWeight: libType === d ? 800 : 600, background: libType === d ? "#FFFFFF" : "transparent", color: libType === d ? "#007AFF" : "#475569" }}>{d === "train" ? "Tập" : "Nghỉ"}</button>
                 ))}
@@ -241,13 +242,13 @@ export function MenuScreen(p) {
       {repeatRows.length > 0 && (
         <>
           <div style={secHead}>
-            <span style={{ fontSize: 15, fontWeight: 800 }}>Lặp lại hằng tuần</span>
+            <span style={{ fontSize: 17, fontWeight: 900 }}>Lặp lại hằng tuần</span>
             <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Tự chép vào Hôm nay mỗi sáng</span>
           </div>
           <div style={box}>
             {repeatRows.map((r, i) => (
               <button key={r.key} data-testid={`week-day-${r.idx}`} onClick={() => openPage("menu_day", { key: r.key })} style={{ ...rowBtn(i === repeatRows.length - 1), minHeight: 56 }}>
-                <span style={{ ...iconBox(r.isToday ? "#007AFF" : "#F1F5F9", r.isToday ? "#FFFFFF" : "#475569"), flexDirection: "column", lineHeight: 1.1 }}>
+                <span style={{ ...iconBox(r.isToday ? "#007AFF" : LT.soft, r.isToday ? "#FFFFFF" : "#475569"), flexDirection: "column", lineHeight: 1.1 }}>
                   <span style={{ fontSize: 13, fontWeight: 900 }}>{r.short}</span>
                   {!noEx && <span style={{ fontSize: 9, fontWeight: 700, opacity: 0.85 }}>{r.dayType === "train" ? "Tập" : "Nghỉ"}</span>}
                 </span>

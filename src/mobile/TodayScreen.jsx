@@ -1,5 +1,6 @@
 // Màn 1 · Hôm nay (bản vẽ 32 "Hôm nay – bản đầy đủ", chốt 13/10).
 // Header: TodayHeader.jsx (bản vẽ 41, Blue ↔ Blue Dark).
+// Thân (bản vẽ 69, chốt 14/10): nền xanh nhạt từ vỏ app, thẻ trắng không viền bóng mềm.
 // Thân: thẻ bữa đến giờ, danh sách bữa, nước theo cốc, cân nặng, tuần này.
 import { useState, useEffect, useRef } from "react";
 import { Icon, GRAD_ORANGE, GRAD_BLUE } from "./ui";
@@ -8,14 +9,15 @@ import { weekdayFull, mealWindowLabel, itemName, fmtInt, fmtDec, focusMeal } fro
 import { AppIcon, MealIcon, IC_COLOR } from "./icons";
 import { waterGoalMl, cupsView, CUP_SIZES } from "../lib/dayPlan";
 import { fmtVN } from "../lib/dateVN";
+import { LT, ltCard } from "../theme";
 
 const WEEK_LBL = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 const CUP_KEY = "fp_cup_ml";
 
-const plusBtn = { width: 36, height: 36, borderRadius: 18, border: "1.5px solid #E2E8F0", background: "#FFFFFF", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, padding: 0, flexShrink: 0, fontFamily: "inherit" };
-const card = { margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 20 };
-const secHead = { padding: "20px 16px 8px 16px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
-const secTitle = { fontSize: 16, fontWeight: 900 };
+const plusBtn = { width: 40, height: 40, borderRadius: 20, border: "1.5px solid transparent", background: LT.soft, color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, padding: 0, flexShrink: 0, fontFamily: "inherit" };
+const card = { margin: "0 12px", ...ltCard };
+const secHead = { padding: "20px 18px 10px 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
+const secTitle = { fontSize: 17, fontWeight: 900, letterSpacing: -0.2 };
 const fmtL = (ml) => (Math.round(ml / 10) / 100).toLocaleString("vi-VN", { maximumFractionDigits: 2 });
 
 export function TodayScreen(p) {
@@ -28,7 +30,7 @@ export function TodayScreen(p) {
   const w = p.weight;
 
   return (
-    <div style={{ background: "#F1F5F9", minHeight: "100%" }}>
+    <div data-testid="today-body" style={{ minHeight: "100%" }}>
       <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} />
 
       {p.banner}
@@ -36,7 +38,7 @@ export function TodayScreen(p) {
       {/* ===== Thẻ bữa đang đến giờ ===== */}
       {focus && <FocusCard r={focus} {...p} />}
       {allEaten && (
-        <div style={{ margin: "14px 12px 0 12px", background: "#FFFFFF", borderRadius: 20, padding: 16, boxShadow: "0 6px 20px rgba(0,87,255,0.08)", border: "1.5px solid #E2E8F0", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ margin: "14px 12px 0 12px", ...ltCard, padding: 16, display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ width: 48, height: 48, borderRadius: 16, background: "rgba(0,200,150,0.12)", color: "#047857", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.check(24, 2.6)}</span>
           <span style={{ display: "flex", flexDirection: "column", flex: 1 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#047857" }}>ĐÃ GHI ĐỦ BỮA</span>
@@ -50,13 +52,13 @@ export function TodayScreen(p) {
         <span style={secTitle}>{isToday ? "Bữa ăn hôm nay" : `${weekdayFull(date)} ${fmtVN(date)}`}</span>
         {rows.length > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>{eatenCount} / {rows.length} bữa</span>}
       </div>
-      <div style={{ ...card, padding: "4px 12px", overflow: "hidden", opacity: dayLoaded ? 1 : 0.5 }}>
+      <div style={{ ...card, padding: "0 14px", overflow: "hidden", opacity: dayLoaded ? 1 : 0.5 }}>
         {rows.map((r, i) => <MealRow key={r.id} r={r} last={i === rows.length - 1} now={focus && focus.id === r.id && r.state !== "planned"} {...p} />)}
         {rows.length === 0 && <div style={{ minHeight: 56, display: "flex", alignItems: "center", fontSize: 13, color: "#64748B" }}>Chưa bật bữa nào — vào Tôi › Lịch tập & bữa để bật.</div>}
       </div>
       {p.onAIMenu && date >= today && (
-        <button onClick={p.onAIMenu} style={{ margin: "8px 12px 0 12px", width: "calc(100% - 24px)", height: 44, borderRadius: 14, border: "1.5px dashed rgba(124,58,237,0.45)", background: "rgba(124,58,237,0.04)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13, fontWeight: 800, color: "#7C3AED", fontFamily: "inherit" }}>
-          {Icon.sparkle(16)}{eatenCount > 0 ? "AI lên thực đơn các bữa còn lại" : "AI lên thực đơn cả ngày"}
+        <button onClick={p.onAIMenu} data-testid="today-ai-menu" style={{ margin: "10px 12px 0 12px", width: "calc(100% - 24px)", height: 48, borderRadius: 16, border: "none", background: "linear-gradient(135deg, rgba(124,58,237,0.10), rgba(0,122,255,0.08))", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14, fontWeight: 800, color: "#6D28D9", fontFamily: "inherit" }}>
+          {Icon.sparkle(18)}{eatenCount > 0 ? "AI lên thực đơn các bữa còn lại" : "AI lên thực đơn cả ngày"}
         </button>
       )}
 
@@ -72,10 +74,10 @@ export function TodayScreen(p) {
             <span style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.1, whiteSpace: "nowrap" }}>{fmtDec(w.curKg)} kg <span style={{ fontSize: 13, fontWeight: 700, color: "#64748B" }}>→ {fmtDec(w.goalKg)} kg</span></span>
             <span style={{ fontSize: 12, fontWeight: 700, color: w.weighedToday ? "#047857" : "#B45309" }}>{w.weighedToday ? "Đã cân hôm nay" : w.sinceLast == null ? "Chưa cân lần nào" : `${w.sinceLast} ngày chưa cân`}</span>
           </span>
-          <span style={{ height: 36, padding: "0 12px", borderRadius: 12, background: w.weighedToday ? "#F1F5F9" : "#FACC15", color: "#0F172A", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", flexShrink: 0 }}>{w.weighedToday ? "Xem" : "Cân hôm nay"}</span>
+          <span style={{ height: 36, padding: "0 12px", borderRadius: 12, background: w.weighedToday ? LT.soft : "#FACC15", color: "#0F172A", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", flexShrink: 0 }}>{w.weighedToday ? "Xem" : "Cân hôm nay"}</span>
         </span>
         <span style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
-          <span style={{ height: 8, borderRadius: 4, background: "#F1F5F9", overflow: "hidden", display: "block" }}><span style={{ display: "block", width: `${Math.max(2, w.pct)}%`, height: 8, borderRadius: 4, background: "linear-gradient(90deg,#FACC15,#F59E0B)" }} /></span>
+          <span style={{ height: 8, borderRadius: 4, background: LT.soft, overflow: "hidden", display: "block" }}><span style={{ display: "block", width: `${Math.max(2, w.pct)}%`, height: 8, borderRadius: 4, background: "linear-gradient(90deg,#FACC15,#F59E0B)" }} /></span>
           <span style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 700, color: "#94A3B8" }}>
             <span>{w.goalKg > w.startKg ? "Mục tiêu tăng cân" : w.goalKg < w.startKg ? "Mục tiêu giảm cân" : "Giữ cân"}</span>
             <span>{Math.abs(w.goalKg - w.curKg) < 0.05 ? "Đã đạt mục tiêu" : `Còn ${fmtDec(Math.abs(Math.round((w.goalKg - w.curKg) * 10) / 10))} kg`}</span>
@@ -95,16 +97,16 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepe
   const rep = !planned ? repeatFor(r.id) : null;
   const label = r.state === "missed" ? "CHƯA GHI" : (r.minutes ?? 0) > nowMinutes + 60 ? "BỮA TIẾP THEO" : "ĐẾN GIỜ ĂN";
   return (
-    <div style={{ margin: "14px 12px 0 12px", background: "#FFFFFF", borderRadius: 20, padding: 16, boxShadow: "0 6px 20px rgba(0,87,255,0.08)", border: "1.5px solid #E2E8F0", display: "flex", flexDirection: "column", gap: 12 }}>
+    <div data-testid="focus-card" style={{ margin: "14px 12px 0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <MealIcon id={r.id} size={48} />
         <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#007AFF" }}>{label} · {mealWindowLabel(r.id, r.time)}</span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF" }}>{label} · {mealWindowLabel(r.id, r.time)}</span>
           <span style={{ fontSize: 18, fontWeight: 900 }}>{planned ? `${r.name} · ${fmtInt(r.cal)} kcal` : `${r.name} hôm nay ăn gì?`}</span>
         </span>
       </div>
       {planned && (
-        <button onClick={() => onEdit(r.id)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: "#F8FAFC", border: "none", color: "#475569", fontFamily: "inherit", textAlign: "left" }}>
+        <button onClick={() => onEdit(r.id)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: LT.soft, border: "none", color: "#475569", fontFamily: "inherit", textAlign: "left" }}>
           <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.items.map(itemName).join(", ")}</span>
           {Icon.chev(16)}
         </button>
@@ -112,34 +114,34 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepe
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8 }}>
         {planned ? <>
           <button data-testid={`focus-eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(0,87,255,0.22)", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
-          <button onClick={() => onEdit(r.id)} style={{ height: 48, borderRadius: 14, background: "#F1F5F9", color: "#0F172A", fontSize: 14, fontWeight: 800, border: "none", fontFamily: "inherit" }}>Sửa món</button>
+          <button onClick={() => onEdit(r.id)} style={{ height: 48, borderRadius: 14, background: LT.soft, color: "#0F172A", fontSize: 14, fontWeight: 800, border: "none", fontFamily: "inherit" }}>Sửa món</button>
         </> : <>
-          <button onClick={() => onPhoto(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_ORANGE, color: "#FFFFFF", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 4px 12px rgba(234,88,12,0.25)", fontFamily: "inherit" }}>{Icon.camera(18)}Chụp món</button>
-          <button onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: "#F1F5F9", color: "#0F172A", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.search(18, "#007AFF")}Tìm món</button>
+          <button onClick={() => onPhoto(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_ORANGE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 6px 14px rgba(234,88,12,0.28)", fontFamily: "inherit" }}>{Icon.camera(18)}Chụp món</button>
+          <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", boxShadow: "0 6px 14px rgba(0,87,255,0.25)", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Tìm món</button>
         </>}
       </div>
       {rep && (
-        <button disabled={busy} onClick={() => onRepeat(rep, r.id)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: "rgba(0,122,255,0.05)", border: "none", color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
+        <button disabled={busy} onClick={() => onRepeat(rep, r.id)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: LT.soft, border: "none", color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
           <span style={{ color: "#007AFF", display: "flex" }}>{Icon.redo(16)}</span>
           <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Ăn lại {rep.meal_name ? rep.meal_name.toLowerCase() : "bữa"} {fmtVN(rep.log_date)} · {rep.items.map((i) => itemName(i).toLowerCase()).join(", ")}</span>
           <span style={{ fontSize: 13, fontWeight: 800, color: "#007AFF" }}>{fmtInt(rep.cal)}</span>
         </button>
       )}
       {onAskAI && (
-        <button data-testid="focus-ask-ai" onClick={() => onAskAI(r)} style={{ alignSelf: "center", height: 36, padding: "0 8px", border: "none", background: "transparent", color: "#7C3AED", fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>{Icon.sparkle(14)}Hỏi AI về {r.name.toLowerCase()}</button>
+        <button data-testid="focus-ask-ai" onClick={() => onAskAI(r)} style={{ alignSelf: "center", height: 36, padding: "0 8px", border: "none", background: "transparent", color: "#7C3AED", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>{Icon.sparkle(16)}Hỏi AI về {r.name.toLowerCase()}</button>
       )}
     </div>
   );
 }
 
 function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
-  const border = last ? "none" : "1px solid #F1F5F9";
+  const border = last ? "none" : `1px solid ${LT.line}`;
   const iconBox = (
     <MealIcon id={r.id} size={44} dim={r.state === "missed"} />
   );
   const title = (tag) => (
     <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
-      <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap" }}>{r.name}</span>
+      <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>{r.name}</span>
       <span style={{ fontSize: 11, fontWeight: 700, color: "#94A3B8", whiteSpace: "nowrap" }}>{r.time}</span>
       {tag}
     </span>
@@ -160,17 +162,18 @@ function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
           <span style={{ fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>{fmtInt(r.cal)}</span>
         </button>
         <button data-testid={`eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, !eaten)} aria-label={eaten ? `Bỏ đánh dấu đã ăn ${r.name}` : `Đánh dấu đã ăn ${r.name}`} aria-pressed={eaten}
-          style={{ ...plusBtn, background: eaten ? "#00C896" : "#FFFFFF", borderColor: eaten ? "#00C896" : "#E2E8F0", color: eaten ? "#FFFFFF" : "#94A3B8" }}>{Icon.check(16, 2.8)}</button>
+          style={{ ...plusBtn, background: eaten ? "#00C896" : "#FFFFFF", borderColor: eaten ? "#00C896" : "#DCE6F5", color: eaten ? "#FFFFFF" : "#94A3B8" }}>{Icon.check(16, 2.8)}</button>
       </div>
     );
   }
-  const sub = now ? <span style={{ fontSize: 12, fontWeight: 700, color: "#007AFF" }}>Đến giờ ăn</span>
+  const sub = now ? <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF" }}>Đến giờ ăn</span>
     : <span style={{ fontSize: 12, color: "#94A3B8" }}>{r.state === "missed" ? "Đã qua giờ · chưa ghi" : "Chưa ghi"}</span>;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 66, borderBottom: border, ...(now ? { background: "rgba(0,122,255,0.04)", margin: "0 -12px", padding: "0 12px" } : {}) }}>
+    <div data-testid={now ? "meal-row-now" : undefined} style={{ position: "relative", display: "flex", alignItems: "center", gap: 12, minHeight: 66, borderBottom: border, ...(now ? { background: "linear-gradient(90deg, rgba(0,122,255,0.09), rgba(0,122,255,0.02))", margin: "0 -14px", padding: "0 14px" } : {}) }}>
+      {now && <span aria-hidden="true" style={{ position: "absolute", left: 0, top: 10, bottom: 10, width: 4, borderRadius: "0 4px 4px 0", background: "#007AFF" }} />}
       {iconBox}
       <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>{title(null)}{sub}</span>
-      <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={now ? { ...plusBtn, background: "#007AFF", borderColor: "#007AFF", color: "#FFFFFF", fontSize: 20 } : plusBtn}>+</button>
+      <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={now ? { ...plusBtn, background: "#007AFF", borderColor: "#007AFF", color: "#FFFFFF", fontSize: 22, boxShadow: "0 4px 10px rgba(0,122,255,0.35)" } : { ...plusBtn, fontSize: 22 }}>+</button>
     </div>
   );
 }
@@ -194,7 +197,7 @@ function WaterCups({ waterMl = 0, addWater, kg, isTrainDay, goalOverride }) {
     <>
       <div style={secHead}>
         <span style={secTitle}>Nước uống</span>
-        <label style={{ position: "relative", height: 30, padding: "0 10px", borderRadius: 10, border: "1.5px solid #E2E8F0", background: "#FFFFFF", fontSize: 12, fontWeight: 800, color: "#0891B2", display: "flex", alignItems: "center", gap: 4 }}>
+        <label style={{ position: "relative", height: 30, padding: "0 10px", borderRadius: 10, border: "none", background: "#FFFFFF", boxShadow: "0 2px 8px rgba(30,64,175,0.08)", fontSize: 12, fontWeight: 800, color: "#0891B2", display: "flex", alignItems: "center", gap: 4 }}>
           1 cốc = {v.cupMl} ml{Icon.down ? Icon.down(12) : "▾"}
           <select data-testid="water-cup-size" aria-label="Cỡ cốc" value={v.cupMl} onChange={(e) => pickCup(Number(e.target.value))} style={{ position: "absolute", inset: 0, opacity: 0, fontSize: 16, cursor: "pointer" }}>
             {CUP_SIZES.map((s) => <option key={s} value={s}>1 cốc = {s} ml</option>)}
@@ -223,7 +226,7 @@ function WaterCups({ waterMl = 0, addWater, kg, isTrainDay, goalOverride }) {
             );
             return (
               <button key={c.i} data-testid={next ? "water-cup-next" : `water-cup-${c.i}`} aria-label={`Uống thêm 1 cốc (${v.cupMl} ml)`} disabled={busy} onClick={() => change(v.cupMl)}
-                style={{ height: 58, borderRadius: 12, border: next ? "2px dashed #0891B2" : "none", background: next ? "#FFFFFF" : "#F8FAFC", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box" }}>
+                style={{ height: 58, borderRadius: 12, border: next ? "2px dashed #0891B2" : "none", background: next ? "#FFFFFF" : LT.soft, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxSizing: "border-box" }}>
                 <svg aria-hidden="true" width="30" height="38" viewBox="0 0 30 38"><path d="M3 3h24l-3 32H6z" fill={next ? "#F0F9FF" : "#FFFFFF"} stroke={next ? "#0891B2" : "#BAE6FD"} strokeWidth="2.2" strokeLinejoin="round" />{next && <path d="M15 14v12M9 20h12" stroke="#0891B2" strokeWidth="2.6" strokeLinecap="round" />}</svg>
               </button>
             );
@@ -255,7 +258,7 @@ function WeekCard({ week, onOpen }) {
             return (
               <div key={d.date} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                 <div style={{ height: 74, width: 22, display: "flex", alignItems: "flex-end" }}>
-                  {d.has ? <span style={{ width: "100%", height: h, borderRadius: 6, background: col }} /> : <span style={{ width: "100%", height: 4, borderRadius: 2, background: "#E2E8F0" }} />}
+                  {d.has ? <span style={{ width: "100%", height: h, borderRadius: 6, background: col }} /> : <span style={{ width: "100%", height: 4, borderRadius: 2, background: "#DCE6F5" }} />}
                 </div>
                 <span style={{ fontSize: 11, fontWeight: d.kind === "today" ? 900 : 700, color: d.kind === "today" ? "#007AFF" : "#64748B" }}>{WEEK_LBL[i]}</span>
               </div>

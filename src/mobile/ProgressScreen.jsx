@@ -1,14 +1,15 @@
 // Màn 4 · Tiến độ – Ăn uống và Màn 5 · Tiến độ – Cân nặng (đã chốt).
 import { useState, useEffect } from "react";
 import { GRAD_BLUE, Icon, SR } from "./ui";
+import { LT, ltCard } from "../theme";
 import { rangeSummary, weekDates, weekdayStrip, fmtInt, fmtDec, fmtKg, deltaGood, weightChart } from "../lib/mobileView";
 import { addDays, monthRange, dateList, fmtVN, weekRange, todayVN } from "../lib/dateVN";
 import { parseKg } from "../lib/weightMath";
 import { appAlert, appConfirm } from "../lib/dialog";
 
-const seg = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 4, padding: 3, background: "#F1F5F9", border: "1.5px solid #E2E8F0", borderRadius: 12 };
-const segBtn = (on) => ({ height: 36, borderRadius: 9, border: "none", background: on ? "#FFFFFF" : "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, color: on ? "#007AFF" : "#475569", boxShadow: on ? "0 1px 3px rgba(0,0,0,0.08)" : "none" });
-const navBtn = { width: 40, height: 40, borderRadius: 10, border: "1.5px solid #E2E8F0", background: "#FFFFFF", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 };
+const seg = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 4, padding: 3, background: "rgba(30,64,175,0.07)", border: "none", borderRadius: 12 };
+const segBtn = (on) => ({ height: 36, borderRadius: 9, border: "none", background: on ? "#FFFFFF" : "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, color: on ? "#007AFF" : "#475569", boxShadow: on ? "0 2px 8px rgba(30,64,175,0.12)" : "none" });
+const navBtn = { width: 40, height: 40, borderRadius: 12, border: "none", boxShadow: "0 2px 8px rgba(30,64,175,0.10)", background: "#FFFFFF", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 };
 const BAR_COLOR = { ok: "#00C896", low: "#FACC15", high: "#EF4444" };
 const PCT_COLOR = { ok: "#047857", low: "#A16207", high: "#DC2626" };
 
@@ -18,7 +19,7 @@ export function ProgressScreen(p) {
   return (
     <div>
       <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 12px 10px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
-        <span style={{ fontSize: 20, fontWeight: 900, padding: "0 4px" }}>Tiến độ</span>
+        <span style={{ fontSize: 26, fontWeight: 900, padding: "0 4px" }}>Tiến độ</span>
         <div role="tablist" style={seg}>
           <button role="tab" aria-selected={segId === "food"} onClick={() => setSegId("food")} data-testid="seg-diary" style={segBtn(segId === "food")}>Nhật ký ăn uống</button>
           <button role="tab" aria-selected={segId === "weight"} onClick={() => setSegId("weight")} style={segBtn(segId === "weight")}>Cân nặng</button>
@@ -49,7 +50,7 @@ function FoodHeader(p) {
       <button onClick={() => step(-1)} aria-label={mode === "week" ? "Tuần trước" : "Tháng trước"} style={navBtn}>{Icon.back(18)}</button>
       <span style={{ flex: 1, textAlign: "center", fontSize: 14, fontWeight: 800 }}>{label}</span>
       <button onClick={() => step(1)} disabled={atNow} aria-label={mode === "week" ? "Tuần sau" : "Tháng sau"} style={navBtn}>{Icon.next(18)}</button>
-      <div style={{ display: "flex", padding: 3, background: "#F1F5F9", borderRadius: 10, marginLeft: 4 }}>
+      <div style={{ display: "flex", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 10, marginLeft: 4 }}>
         {[["week", "Tuần"], ["month", "Tháng"]].map(([id, l]) => (
           <button key={id} aria-pressed={mode === id} onClick={() => { setMode(id); setAnchor(today); }} style={{ height: 34, padding: "0 10px", borderRadius: 8, border: "none", background: mode === id ? "#FFFFFF" : "transparent", fontFamily: "inherit", fontSize: 12, fontWeight: mode === id ? 800 : 600, color: mode === id ? "#0F172A" : "#475569" }}>{l}</button>
         ))}
@@ -82,7 +83,7 @@ function FoodPanel(p) {
 
   return (
     <>
-      <div style={{ margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: 14, display: "flex", flexDirection: "column", gap: 12, opacity: rows ? 1 : 0.6 }}>
+      <div style={{ margin: "0 12px", ...ltCard, padding: 14, display: "flex", flexDirection: "column", gap: 12, opacity: rows ? 1 : 0.6 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: 22, fontWeight: 900, color: "#007AFF" }}>{fmtInt(sum.avg)}</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>kcal TB/ngày · đạt {sum.okCount}/{sum.loggedCount} · ghi {sum.loggedCount}/{passed} ngày</span>
@@ -113,9 +114,9 @@ function FoodPanel(p) {
       </div>
 
       {listed.length > 0 && (
-        <div style={{ margin: "10px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 12px" }}>
+        <div style={{ margin: "10px 12px 0 12px", ...ltCard, padding: "0 14px" }}>
           {listed.map((d, i) => (
-            <button key={d.date} onClick={() => p.openDay(d.date)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 56, boxSizing: "content-box", borderStyle: "solid", borderColor: "#F1F5F9", borderWidth: i < listed.length - 1 ? "0 0 1px 0" : 0, borderRadius: 0, background: "transparent", padding: 0, color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
+            <button key={d.date} onClick={() => p.openDay(d.date)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 56, boxSizing: "content-box", borderStyle: "solid", borderColor: LT.line, borderWidth: i < listed.length - 1 ? "0 0 1px 0" : 0, borderRadius: 0, background: "transparent", padding: 0, color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
               <span style={{ width: 44, fontSize: 12, fontWeight: 700, color: "#475569", lineHeight: 1.3 }}>{weekdayStrip(d.date)}<br />{fmtVN(d.date)}</span>
               <span style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
                 {d.eatenCount > 0 ? <>
@@ -181,16 +182,16 @@ function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, update
 
   return (
     <>
-      <div style={{ margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ margin: "0 12px", ...ltCard, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
           <span style={{ fontSize: 26, fontWeight: 900 }}>{fmtDec(w.curKg)} kg</span>
           <span style={{ fontSize: 13, fontWeight: 700, color: "#475569", flex: 1 }}>→ {fmtDec(w.goalKg)} kg</span>
           <span style={{ fontSize: 13, fontWeight: 800, color: "#007AFF" }}>{w.pct}%</span>
         </div>
-        <div style={{ height: 6, borderRadius: 3, background: "#E2E8F0", overflow: "hidden" }}><div style={{ width: `${w.pct}%`, height: 6, background: "linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)" }} /></div>
+        <div style={{ height: 6, borderRadius: 3, background: LT.soft, overflow: "hidden" }}><div style={{ width: `${w.pct}%`, height: 6, background: "linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)" }} /></div>
         {w.startDate && <span style={{ fontSize: 12, color: "#475569" }}>Từ {fmtDec(w.startKg)} kg ({w.startDate}) · {w.change > 0 ? "+" : ""}{fmtDec(w.change)} kg / {fmtDec(w.weeks)} tuần{per}</span>}
         <div style={{ display: "flex", gap: 8, paddingTop: 2 }}>
-          <label style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6, height: 44, padding: "0 12px", background: "#F1F5F9", border: "1.5px solid #E2E8F0", borderRadius: 10, boxSizing: "border-box" }}>
+          <label style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6, height: 44, padding: "0 12px", background: LT.soft, border: "1.5px solid #DCE6F5", borderRadius: 10, boxSizing: "border-box" }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B", whiteSpace: "nowrap" }}>Hôm nay</span>
             <input data-testid="weight-input" type="text" inputMode="decimal" value={val} onChange={(e) => setVal(e.target.value.replace(",", ".").replace(/[^0-9.]/g, "").slice(0, 5))} onKeyDown={(e) => e.key === "Enter" && saveToday()} placeholder={String(w.curKg || "")}
               style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", textAlign: "right", fontFamily: "inherit", fontSize: 16, fontWeight: 700, color: "#0F172A", outline: "none" }} />
@@ -207,10 +208,10 @@ function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, update
         <span style={{ fontSize: 15, fontWeight: 800 }}>Lịch sử</span>
         {list.length > 0 && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Chạm một dòng để sửa</span>}
       </div>
-      <div style={{ margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 12px" }}>
+      <div style={{ margin: "0 12px", ...ltCard, padding: "0 14px", overflow: "hidden" }}>
         {list.length === 0 && <div style={{ height: 52, display: "flex", alignItems: "center", fontSize: 13, color: "#64748B" }}>Chưa có lần cân nào.</div>}
         {shown.map((r, i) => editId === r.id ? (
-          <div key={r.id} style={{ margin: "0 -12px", padding: "10px 12px 12px 12px", background: "rgba(0,122,255,0.05)", borderTop: "1.5px solid #007AFF", borderBottom: "1.5px solid #007AFF", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div key={r.id} style={{ margin: "0 -14px", padding: "10px 14px 12px 14px", background: "rgba(0,122,255,0.05)", borderTop: "1.5px solid #007AFF", borderBottom: "1.5px solid #007AFF", display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF", flex: 1 }}>Đang sửa · Tuần {r.week}</span>
               <button onClick={() => del(r)} disabled={busy} style={{ height: 32, padding: "0 10px", border: "none", background: "transparent", fontFamily: "inherit", fontSize: 12, fontWeight: 700, color: "#DC2626" }}>Xoá</button>
@@ -229,7 +230,7 @@ function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, update
             </div>
           </div>
         ) : (
-          <button key={r.id} onClick={() => { setEditId(r.id); setEditVal(String(r.kg)); }} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 52, boxSizing: "content-box", borderStyle: "solid", borderColor: "#F1F5F9", borderWidth: i < shown.length - 1 ? "0 0 1px 0" : 0, background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
+          <button key={r.id} onClick={() => { setEditId(r.id); setEditVal(String(r.kg)); }} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 52, boxSizing: "content-box", borderStyle: "solid", borderColor: LT.line, borderWidth: i < shown.length - 1 ? "0 0 1px 0" : 0, background: "transparent", padding: 0, fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
             <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <span style={{ fontSize: 13, fontWeight: 700 }}>Tuần {r.week}</span>
               <span style={{ fontSize: 12, color: "#64748B" }}>{weekdayStrip(r.logged_date)} {fmtVN(r.logged_date)}</span>
@@ -255,10 +256,10 @@ function WeightChart({ weightLog, weight }) {
   const area = c.points.length ? `${X(c.points[0].x).toFixed(1)},${y1} ${line} ${X(c.points[c.points.length - 1].x).toFixed(1)},${y1}` : "";
   const left = Math.round((weight.goalKg - weight.curKg) * 10) / 10;
   return (
-    <div data-testid="weight-chart" style={{ margin: "12px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "12px 10px 8px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
+    <div data-testid="weight-chart" style={{ margin: "12px 12px 0 12px", ...ltCard, padding: "12px 10px 8px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 4px" }}>
         <span style={{ fontSize: 15, fontWeight: 800 }}>Biểu đồ</span>
-        <div role="group" aria-label="Khoảng thời gian" style={{ display: "flex", padding: 3, background: "#F1F5F9", borderRadius: 10 }}>
+        <div role="group" aria-label="Khoảng thời gian" style={{ display: "flex", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 10 }}>
           {[["4w", "4 tuần"], ["8w", "8 tuần"], ["all", "Tất cả"]].map(([id, l]) => (
             <button key={id} data-testid={`wchart-${id}`} aria-pressed={range === id} onClick={() => setRange(id)} style={{ height: 30, padding: "0 10px", borderRadius: 8, border: "none", background: range === id ? "#FFFFFF" : "transparent", fontFamily: "inherit", fontSize: 12, fontWeight: range === id ? 800 : 600, color: range === id ? "#0F172A" : "#475569", boxShadow: range === id ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>{l}</button>
           ))}

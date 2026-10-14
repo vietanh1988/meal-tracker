@@ -4,7 +4,7 @@
 // Mọi ghi daily_logs đi qua useUserData (saveMealToCloud/toggleEaten/removeDayMeal/moveDayMeal/addWater/applyTemplate).
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
-import { DK, DK_CSS } from "../theme";
+import { DK, DK_CSS, LT } from "../theme";
 import { readUser } from "../lib/userStore";
 import { TodayScreen } from "./TodayScreen";
 import { HEADER_CSS, hdrDelay, HDR_TOP } from "./TodayHeader";
@@ -457,14 +457,14 @@ export function MobileApp(props) {
   // Màu thanh trạng thái / thanh trình duyệt theo tab (iOS, Android)
   useEffect(() => {
     const m = document.querySelector('meta[name="theme-color"]');
-    if (m) m.setAttribute("content", tab === "today" ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : "#F8FAFC");
+    if (m) m.setAttribute("content", tab === "today" ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : LT.top);
   }, [tab]);
 
   // Tab Tôi nền tối: đổi cả màu nền trang để iPhone kéo quá đầu/cuối không lộ vệt trắng
   useEffect(() => {
     const b = document.body;
     const prev = b.style.backgroundColor;
-    if (tab === "me") b.style.backgroundColor = DK.base;
+    b.style.backgroundColor = tab === "me" ? DK.base : LT.base;
     return () => { b.style.backgroundColor = prev; };
   }, [tab]);
 
@@ -480,16 +480,17 @@ export function MobileApp(props) {
   ) : null;
 
   return (
-    <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : "#F8FAFC", color: "#0F172A", minHeight: "100vh" }}>
+    <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : LT.base, color: "#0F172A", minHeight: "100vh" }}>
       <style>{MOBILE_CSS + DK_CSS}</style>
       {/* Dải che vùng thanh giờ iPhone (14/10): iOS phủ lớp kính mờ khi nội dung cuộn dưới thanh giờ → chữ nhoè, vệt sáng.
           Dải cố định cùng màu đầu trang che nội dung lại, iOS chỉ còn làm mờ 1 màu đặc. Màn phụ (z 120+) tự có header riêng. */}
       <style>{HEADER_CSS}</style>
-      <div aria-hidden="true" data-testid="ios-top-cover" style={{ position: "fixed", left: 0, right: 0, top: 0, height: "env(safe-area-inset-top, 0px)", zIndex: 94, pointerEvents: "none", background: tab === "today" ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : "#F8FAFC" }}>
+      <div aria-hidden="true" data-testid="ios-top-cover" style={{ position: "fixed", left: 0, right: 0, top: 0, height: "env(safe-area-inset-top, 0px)", zIndex: 94, pointerEvents: "none", background: tab === "today" ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : LT.top }}>
         {tab === "today" && <span className="fp-hdr-dark" style={{ position: "absolute", inset: 0, background: HDR_TOP.dark, animationDelay: hdrDelay() }} />}
       </div>
       {/* Tab Tôi: nền Blue Dark phủ cả màn (bản vẽ 48) */}
-      {tab === "me" && <div aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 0, background: DK.bg }} />}
+      {/* Tab sáng: nền xanh rất nhạt nối tiếp header (bản vẽ 69) */}
+      <div aria-hidden="true" data-testid="page-bg" style={{ position: "fixed", inset: 0, zIndex: 0, background: tab === "me" ? DK.bg : LT.bg }} />
       <AppDialogHost />
       <UpdatePopup appSettings={appSettings} />
       {isOffline && <div role="status" data-testid="offline-bar" style={{ position: "sticky", top: 0, zIndex: 95, background: "#FEF3C7", padding: "calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px 16px", fontSize: 13, fontWeight: 600, color: "#92400E", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>

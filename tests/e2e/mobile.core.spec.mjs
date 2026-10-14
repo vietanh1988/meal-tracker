@@ -28,6 +28,16 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     await expect(page.getByText("Bữa trưa").first()).toBeVisible();
   });
 
+  test("thân Hôm nay theo bản vẽ 69: nền xanh nhạt, thẻ trắng không viền có bóng", async () => {
+    const bg = await page.getByTestId("page-bg").evaluate((el) => getComputedStyle(el).backgroundImage);
+    expect(bg).toContain("linear-gradient");
+    expect(bg).toMatch(/230, 239, 255|E6EFFF/i);
+    const st = await page.getByTestId("week-card").evaluate((el) => { const s = getComputedStyle(el); return { c: s.backgroundColor, b: s.borderTopWidth, sh: s.boxShadow }; });
+    expect(st.c).toBe("rgb(255, 255, 255)");
+    expect(st.b).toBe("0px");
+    expect(st.sh).not.toBe("none");
+  });
+
   test("dòng thời gian có ĐỦ bữa (kể cả bữa ở thẻ đến giờ), tên có dấu", async () => {
     // meal_config train: sang, trua, phu_chieu, pre, toi → 2 bữa có món + 3 bữa trống có nút Ghi
     for (const id of ["sang", "trua"]) await expect(page.getByTestId(`eat-${id}`), `nút tick ${id}`).toHaveCount(1);

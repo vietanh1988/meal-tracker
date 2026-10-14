@@ -54,6 +54,20 @@ export const numFix={onFocus:e=>e.target.select(),onBlur:e=>{const el=e.target;i
 // KHÔNG dùng cho Hôm nay, Thực đơn, Tiến độ, Ghi bữa, Kiểm tra calo, Chat AI (giữ header xanh + thân sáng).
 // Sheet / hộp thoại bật lên trên các màn này vẫn nền trắng (dễ đọc, dễ nhập).
 // ============================================================
+// ============================================================
+// Nền sáng các tab Hôm nay / Thực đơn / Tiến độ (bản vẽ 69 "Tổng quan – A", chốt 14/10):
+// nền xanh rất nhạt nối tiếp header xanh; thẻ trắng KHÔNG viền, bóng xanh mềm, bo 20.
+// ============================================================
+export const LT = {
+  bg: "linear-gradient(180deg,#E6EFFF 0%,#EEF4FF 30%,#F3F7FF 100%)",
+  top: "#E6EFFF",           // màu đầu trang (thanh giờ iPhone ở tab Thực đơn / Tiến độ)
+  base: "#EEF4FF",          // màu nền đặc (vùng kéo quá)
+  line: "#EEF2FA",          // kẻ giữa các dòng trong thẻ
+  soft: "#EEF4FF",          // nền nút phụ / ô phụ trong thẻ
+  shadow: "0 8px 24px rgba(30,64,175,0.08), 0 1px 2px rgba(30,64,175,0.06)",
+};
+export const ltCard = { background: "#FFFFFF", border: "none", borderRadius: 20, boxShadow: LT.shadow };
+
 export const DK = {
   bg: "radial-gradient(circle at 85% 4%, rgba(60,140,255,0.35) 0%, rgba(60,140,255,0) 40%), radial-gradient(circle at 10% 60%, rgba(0,200,255,0.10) 0%, rgba(0,200,255,0) 45%), linear-gradient(180deg,#0F4585 0%,#03386F 18%,#022B57 45%,#012244 75%,#011B37 100%)",
   base: "#022B57",          // màu nền đặc (thanh trạng thái iPhone, vùng kéo quá)
