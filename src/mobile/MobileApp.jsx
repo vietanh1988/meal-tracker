@@ -35,7 +35,7 @@ import { AppDialogHost, appConfirm } from "../lib/dialog";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { getAIMenuAccess } from "../lib/aiMenuService";
 import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
-import { MEAL_NAMES, mealKey, hasItems, mealLabel } from "../lib/mealMath";
+import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
 import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekCard, weekDates } from "../lib/mobileView";
@@ -314,11 +314,18 @@ export function MobileApp(props) {
         showToast({ text: `Đã xoá ${nm.toLowerCase()}` }, 2500);
         return true;
       })}
-      onMove={(to) => serial(async () => {
-        const res = await ud.moveDayMeal(l.date, to, l.mealId, dayTypeOf(profile, to));
+      mealOptions={MEAL_ORDER.filter((id) => !((profile.exerciseType || "gym") === "none" && (id === "pre" || id === "post"))).map((id) => ({ id, name: MEAL_NAMES[id] }))}
+      onMove={(to, toMeal = l.mealId) => serial(async () => {
+        // Bữa đích đã có món → hỏi trước, đồng ý thì GỘP (không ghi đè như trước 14/10)
+        const dst = mealOf(await freshDay(to), toMeal);
+        const n = (dst?.items || []).length;
+        const toName = MEAL_NAMES[toMeal] || toMeal;
+        const where = `${toName.toLowerCase()}${to === l.date ? "" : " " + friendlyDate(to).toLowerCase()}`;
+        if (n > 0 && !(await appConfirm(`${toName} ${to === l.date ? "" : friendlyDate(to).toLowerCase() + " "}đã có ${n} món. Gộp thêm các món của ${nm.toLowerCase()} vào?`))) return false;
+        const res = await ud.moveDayMeal(l.date, to, l.mealId, dayTypeOf(profile, to), toMeal);
         if (res && res.ok === false) { fail(); return false; }
-        await refresh(l.date); await refresh(to);
-        showToast({ text: `Đã chuyển ${nm.toLowerCase()} sang ${friendlyDate(to).toLowerCase()}` }, 3000);
+        await refresh(l.date); if (to !== l.date) await refresh(to);
+        showToast({ text: `Đã chuyển ${nm.toLowerCase()} sang ${where}` }, 3000);
         return true;
       })} />;
   };

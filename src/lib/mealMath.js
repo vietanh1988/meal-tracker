@@ -91,6 +91,20 @@ export function setMeal(day, mealId, items, opts = {}) {
   return { ...(day || {}), meals: sortMeals(meals), eaten_meals: uniq(eaten) };
 }
 
+// Gộp món vào 1 bữa (14/10 — sửa lỗi chuyển ngày GHI ĐÈ bữa đích):
+//  - bữa đích đã có món → giữ món cũ, cộng thêm món mới, giữ tên/thuộc tính của bữa đích
+//  - trạng thái "đã ăn" theo opts.eaten (bữa được chuyển)
+export function mergeIntoMeal(day, mealId, items, opts = {}) {
+  const prev = (day?.meals || []).find((m) => mealKey(m) === mealId);
+  const prevItems = (prev && Array.isArray(prev.items)) ? prev.items : [];
+  let name = opts.name, extra = opts.extra;
+  if (prevItems.length) { const { items: _i, meal_id: _m, meal_name, id: _id, ...rest } = prev; name = meal_name; extra = rest; }
+  const next = setMeal(day, mealId, [...prevItems, ...(items || [])], { name, extra });
+  const eaten = (next.eaten_meals || []).filter((e) => e !== mealId);
+  if (opts.eaten && [...prevItems, ...(items || [])].length) eaten.push(mealId);
+  return { ...next, eaten_meals: eaten };
+}
+
 // Tick / bỏ tick — chỉ tick được bữa đang có món
 export function toggleEatenIn(day, mealId, isEaten) {
   const prev = (day && Array.isArray(day.eaten_meals) ? day.eaten_meals : []).filter((e) => e !== mealId);

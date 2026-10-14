@@ -122,3 +122,25 @@ test("bản tải hôm nay về muộn không đè thao tác ghi mới", async (
   const w = hook().waterToday;
   expect(w).toBe(db.daily_logs.find(r => r.log_date === todayVN()).water_ml);
 });
+
+test("chuyển bữa sang ngày đã có cùng bữa → GỘP, không ghi đè (14/10)", async () => {
+  const h = hook();
+  await h.saveMealToCloud("toi", "train", [{ food: "Canh", cal: 90 }], false, "2026-01-05", { markEaten: false });
+  await h.saveMealToCloud("toi", "train", [{ food: "Cơm", cal: 260 }], false, "2026-01-06", { markEaten: true });
+  const r = await hook().moveDayMeal("2026-01-06", "2026-01-05", "toi");
+  expect(r.ok).toBe(true);
+  const dst = db.daily_logs.find(x => x.log_date === "2026-01-05");
+  expect(dst.meals.find(m => m.meal_id === "toi").items.map(i => i.food)).toEqual(["Canh", "Cơm"]);
+  expect(dst.eaten_meals).toEqual(["toi"]);
+  expect((db.daily_logs.find(x => x.log_date === "2026-01-06").meals || []).some(m => m.meal_id === "toi")).toBe(false);
+});
+
+test("chuyển sang bữa khác cùng ngày", async () => {
+  const h = hook();
+  await h.saveMealToCloud("trua", "train", [{ food: "Bún", cal: 400 }], false, "2026-01-07", { markEaten: false });
+  const r = await hook().moveDayMeal("2026-01-07", "2026-01-07", "trua", null, "toi");
+  expect(r.ok).toBe(true);
+  const d = db.daily_logs.find(x => x.log_date === "2026-01-07");
+  expect(d.meals.map(m => m.meal_id)).toEqual(["toi"]);
+  expect(d.meals[0].meal_name).toBe("Bữa tối");
+});

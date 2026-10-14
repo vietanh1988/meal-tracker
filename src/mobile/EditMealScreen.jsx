@@ -1,5 +1,6 @@
 // Màn 3 · Sửa bữa đã tick (đã chốt): danh sách món + ô gram, xoá món, + Thêm món / chụp,
-// nút "Đã ăn", menu ⋯ (chuyển ngày, xoá bữa), thanh dưới tổng kcal + macro + Lưu.
+// nút "Đã ăn", menu ⋯ (chuyển sang ngày/bữa khác, xoá bữa), thanh dưới tổng kcal + macro + Lưu.
+// 14/10: "Chuyển sang ngày / bữa khác" mở bảng chọn ngày (lùi 7 ngày + ngày mai) và bữa; bữa đích có món thì GỘP (hỏi trước ở MobileApp).
 import { useState, useEffect, useRef } from "react";
 import { SubPage, Icon, GRAD_BLUE, SR } from "./ui";
 import { scaleItem, itemName, fmtInt, fmtDec, weekdayFull } from "../lib/mobileView";
@@ -10,11 +11,13 @@ import { appConfirm } from "../lib/dialog";
 const toRow = (it) => ({ base: it, gram: String(Math.round(Number(it.gram) || 0)) });
 const rowItem = (r) => scaleItem(r.base, parseFloat(String(r.gram).replace(",", ".")) || 0);
 
-export function EditMealScreen({ date, today, mealId, mealName, items, eaten, dayType, onSave, onDelete, onMove, onAddPick, pendingPick, onPhoto, onClose }) {
+export function EditMealScreen({ date, today, mealId, mealName, items, eaten, dayType, onSave, onDelete, onMove, onAddPick, pendingPick, onPhoto, onClose, mealOptions = [] }) {
   const [rows, setRows] = useState(() => (items || []).map(toRow));
   const [isEaten, setIsEaten] = useState(!!eaten);
   const [menu, setMenu] = useState(false);
   const [moving, setMoving] = useState(false);
+  const [toDate, setToDate] = useState(date);
+  const [toMeal, setToMeal] = useState(mealId);
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
 
@@ -52,23 +55,47 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
     if (!(await appConfirm(`Xoá ${mealName.toLowerCase()} ${friendlyDate(date).toLowerCase()}?`))) return;
     setBusy(true); const ok = await onDelete(); setBusy(false); if (ok) onClose();
   };
-  const move = async (to) => {
-    setMoving(false); setMenu(false);
-    setBusy(true); const ok = await onMove(to); setBusy(false); if (ok) onClose();
+  const move = async () => {
+    if (dirty && !(await appConfirm("Bữa đang có thay đổi chưa lưu. Chuyển bữa sẽ bỏ các thay đổi đó, tiếp tục?"))) return;
+    setBusy(true); const ok = await onMove(toDate, toMeal); setBusy(false);
+    if (ok) { setMoving(false); onClose(); }
   };
-  const moveTargets = [-3, -2, -1, 1].map((n) => addDays(date, n)).filter((d) => d <= addDays(today, 1) && d !== date);
+  // Ngày chọn được: 7 ngày gần nhất + ngày mai (khớp với lúc ghi bữa)
+  const moveDates = [1, 0, -1, -2, -3, -4, -5, -6].map((n) => addDays(today, n));
+  const same = toDate === date && toMeal === mealId;
+
+
+  const chip = (on, extra = {}) => ({ height: 40, padding: "0 12px", borderRadius: 10, border: on ? "none" : "1.5px solid #E2E8F0", background: on ? "#007AFF" : "#FFFFFF", color: on ? "#FFFFFF" : "#0F172A", fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, whiteSpace: "nowrap", ...extra });
+  const moveSheet = moving && (
+    <div onClick={() => setMoving(false)} style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div data-testid="move-sheet" role="dialog" aria-modal="true" aria-label="Chuyển bữa" onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: "#FFFFFF", borderRadius: "20px 20px 0 0", padding: "10px 14px calc(env(safe-area-inset-bottom, 0px) + 18px) 14px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease" }}>
+        <span style={{ width: 36, height: 4, borderRadius: 2, background: "#CBD5E1", alignSelf: "center" }} />
+        <span style={{ fontSize: 18, fontWeight: 900 }}>Chuyển {mealName.toLowerCase()}</span>
+        <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.45 }}>Ghi nhầm ngày hoặc nhầm bữa thì chọn lại bên dưới. Nếu bữa đích đã có món, các món sẽ được gộp thêm vào.</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" }}>SANG NGÀY</span>
+        <div role="group" aria-label="Chọn ngày" style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
+          {moveDates.map((d) => <button key={d} data-testid={`move-date-${d}`} aria-pressed={toDate === d} onClick={() => setToDate(d)} style={chip(toDate === d, { display: "flex", flexDirection: "column", justifyContent: "center", height: 48 })}><span>{friendlyDate(d, today)}</span><span style={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>{fmtVN(d)}</span></button>)}
+        </div>
+        <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" }}>SANG BỮA</span>
+        <div role="group" aria-label="Chọn bữa" style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {mealOptions.map((m) => <button key={m.id} data-testid={`move-meal-${m.id}`} aria-pressed={toMeal === m.id} onClick={() => setToMeal(m.id)} style={chip(toMeal === m.id)}>{m.name}</button>)}
+        </div>
+        <button data-testid="move-go" disabled={same || busy} onClick={move} style={{ height: 50, borderRadius: 14, border: "none", background: same ? "#CBD5E1" : GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900 }}>
+          {busy ? "Đang chuyển…" : same ? "Chọn ngày hoặc bữa khác" : `Chuyển sang ${(mealOptions.find((m) => m.id === toMeal)?.name || "").toLowerCase()} · ${friendlyDate(toDate, today).toLowerCase()}`}
+        </button>
+      </div>
+    </div>
+  );
 
   const header = (
     <>
       <button aria-pressed={isEaten} onClick={() => { setIsEaten(!isEaten); setDirty(true); }} style={{ height: 34, padding: "0 12px", borderRadius: 999, border: isEaten ? "none" : "1.5px solid #E2E8F0", background: isEaten ? "rgba(0,200,150,0.12)" : "#FFFFFF", color: isEaten ? "#047857" : "#64748B", fontFamily: "inherit", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>{Icon.check(14, 2.8)}{isEaten ? "Đã ăn" : "Chưa ăn"}</button>
       <div style={{ position: "relative" }}>
-        <button onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Thêm tuỳ chọn: chuyển ngày, xoá bữa" style={{ width: 44, height: 44, borderRadius: 22, border: "none", background: "transparent", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.more(20)}</button>
+        <button onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Thêm tuỳ chọn: chuyển ngày hoặc bữa, xoá bữa" style={{ width: 44, height: 44, borderRadius: 22, border: "none", background: "transparent", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.more(20)}</button>
         {menu && (
           <div role="menu" style={{ position: "absolute", right: 4, top: 46, zIndex: 5, width: 220, background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, boxShadow: "0 12px 32px rgba(15,23,42,0.16)", padding: 6 }}>
-            {!moving ? <>
-              <button role="menuitem" onClick={() => setMoving(true)} className="row-hover" style={menuItem}>Chuyển sang ngày khác</button>
-              <button role="menuitem" onClick={del} className="row-hover" style={{ ...menuItem, color: "#DC2626" }}>Xoá bữa</button>
-            </> : moveTargets.map((d) => <button key={d} role="menuitem" onClick={() => move(d)} className="row-hover" style={menuItem}>{friendlyDate(d, today)} · {fmtVN(d)}</button>)}
+            <button role="menuitem" data-testid="edit-move-open" onClick={() => { setMenu(false); setToDate(date); setToMeal(mealId); setMoving(true); }} className="row-hover" style={menuItem}>Chuyển sang ngày / bữa khác</button>
+            <button role="menuitem" data-testid="edit-delete" onClick={del} className="row-hover" style={{ ...menuItem, color: "#DC2626" }}>Xoá bữa</button>
           </div>
         )}
       </div>
@@ -115,6 +142,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
           {onPhoto && <button onClick={onPhoto} aria-label="Chụp thêm món" style={{ width: 40, height: 40, borderRadius: 10, border: "none", background: "rgba(249,115,22,0.1)", color: "#EA580C", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.camera(18)}</button>}
         </div>
       </div>
+      {moveSheet}
     </SubPage>
   );
 }

@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { inferPatternFromItems } from "../lib/aiMenuService";
 import { MEAL_PATTERNS } from "../mealPatterns";
 import { todayVN, addDays } from "../lib/dateVN";
-import { setMeal, toggleEatenIn, applyMenu, dayRowPayload, toSlots, hasItems, mealKey, MEAL_NAMES } from "../lib/mealMath";
+import { setMeal, mergeIntoMeal, toggleEatenIn, applyMenu, dayRowPayload, toSlots, hasItems, mealKey, MEAL_NAMES } from "../lib/mealMath";
 
 const defaultStructure = {
   train: [
@@ -309,8 +309,10 @@ export function useUserData(userId) {
   }, [mutateDay]);
 
   // Chuyển 1 bữa sang ngày khác (ghi ngày đích trước, xoá ngày nguồn sau)
-  const moveDayMeal = useCallback(async (fromDate, toDate, mealId, toDayType = null) => {
-    if (!userId || !fromDate || !toDate || fromDate === toDate) return { ok: false, error: "invalid" };
+  // Chuyển 1 bữa sang ngày khác và/hoặc bữa khác (toMealId). Bữa đích đã có món → GỘP (không ghi đè).
+  const moveDayMeal = useCallback(async (fromDate, toDate, mealId, toDayType = null, toMealId = null) => {
+    const target = toMealId || mealId;
+    if (!userId || !fromDate || !toDate || (fromDate === toDate && target === mealId)) return { ok: false, error: "invalid" };
     const { data: src, error } = await supabase.from("daily_logs").select(DAY_COLS)
       .eq("user_id", userId).eq("log_date", fromDate).maybeSingle();
     if (error || !src) return { ok: false, error: error?.message || "not found" };
@@ -318,7 +320,9 @@ export function useUserData(userId) {
     if (!meal) return { ok: false, error: "meal not found" };
     const wasEaten = (src.eaten_meals || []).includes(mealId);
     const { items, meal_id, meal_name, id, ...rest } = meal;
-    const r1 = await mutateDay(toDate, (day) => setMeal(day, mealId, items || [], { name: meal_name, extra: rest, markEaten: wasEaten }), toDayType || src.day_type);
+    const opts = { name: target === mealId ? meal_name : null, extra: rest, eaten: wasEaten };
+    if (fromDate === toDate) return mutateDay(fromDate, (day) => mergeIntoMeal(setMeal(day, mealId, []), target, items || [], opts));
+    const r1 = await mutateDay(toDate, (day) => mergeIntoMeal(day, target, items || [], opts), toDayType || src.day_type);
     if (!r1.ok) return r1;
     return mutateDay(fromDate, (day) => setMeal(day, mealId, []));
   }, [userId, mutateDay]);
