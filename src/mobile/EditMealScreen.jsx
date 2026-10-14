@@ -74,13 +74,13 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
         <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.45 }}>Ghi nhầm ngày hoặc nhầm bữa thì chọn lại bên dưới. Nếu bữa đích đã có món, các món sẽ được gộp thêm vào.</span>
         <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" }}>SANG NGÀY</span>
         <div role="group" aria-label="Chọn ngày" style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
-          {moveDates.map((d) => <button key={d} data-testid={`move-date-${d}`} aria-pressed={toDate === d} onClick={() => setToDate(d)} style={chip(toDate === d, { display: "flex", flexDirection: "column", justifyContent: "center", height: 48 })}><span>{friendlyDate(d, today)}</span><span style={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>{fmtVN(d)}</span></button>)}
+          {moveDates.map((d) => <button key={d} data-testid={`move-date-${d}`} aria-pressed={toDate === d} onClick={() => setToDate(d)} style={chip(toDate === d, { display: "flex", flexDirection: "column", justifyContent: "center", height: 48 })}>{(() => { const f = friendlyDate(d, today); const rel = !/\d{2}\/\d{2}/.test(f); return <><span>{rel ? f : f.split(" ")[0]}</span><span style={{ fontSize: 11, fontWeight: 600, opacity: 0.8 }}>{fmtVN(d)}</span></>; })()}</button>)}
         </div>
         <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" }}>SANG BỮA</span>
         <div role="group" aria-label="Chọn bữa" style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {mealOptions.map((m) => <button key={m.id} data-testid={`move-meal-${m.id}`} aria-pressed={toMeal === m.id} onClick={() => setToMeal(m.id)} style={chip(toMeal === m.id)}>{m.name}</button>)}
         </div>
-        <button data-testid="move-go" disabled={same || busy} onClick={move} style={{ height: 50, borderRadius: 14, border: "none", background: same ? "#CBD5E1" : GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900 }}>
+        <button data-testid="move-go" disabled={same || busy} onClick={move} style={{ height: 50, borderRadius: 14, border: "none", background: same ? "#E2E8F0" : GRAD_BLUE, color: same ? "#64748B" : "#FFFFFF", opacity: 1, fontFamily: "inherit", fontSize: 15, fontWeight: 900 }}>
           {busy ? "Đang chuyển…" : same ? "Chọn ngày hoặc bữa khác" : `Chuyển sang ${(mealOptions.find((m) => m.id === toMeal)?.name || "").toLowerCase()} · ${friendlyDate(toDate, today).toLowerCase()}`}
         </button>
       </div>
