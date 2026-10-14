@@ -2,6 +2,7 @@
 // Số đo chép từ bản vẽ: nền #F8FAFC, card viền 1,5px #E2E8F0, bo 14–20, Inter.
 import { useEffect } from "react";
 import { C, DK } from "../theme";
+import { Glyph, chipBg, IC_COLOR } from "./icons";
 
 export const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
 export const GRAD_BLUE = "linear-gradient(135deg,#36A3FF,#007AFF,#0057FF)";
@@ -42,14 +43,14 @@ export const Icon = {
 
 // Thanh điều hướng dưới: Hôm nay · Thực đơn · (+) Ghi bữa · Tiến độ · Tôi
 const NAV = [
-  { id: "today", label: "Hôm nay", icon: "/icons/nav_dashboard.png" },
-  { id: "menu", label: "Thực đơn", icon: "/icons/nav_meal.png" },
+  { id: "today", label: "Hôm nay", icon: "home" },
+  { id: "menu", label: "Thực đơn", icon: "plate" },
   { id: "add" },
-  { id: "progress", label: "Tiến độ", icon: "/icons/nav_progress.png" },
-  { id: "me", label: "Tôi", icon: "/icons/nav_profile.png" },
+  { id: "progress", label: "Tiến độ", icon: "progress" },
+  { id: "me", label: "Tôi", icon: "me" },
 ];
 // Thanh nổi kiểu kính (bản vẽ 46/48, chốt 14/10): cách mép 12 px, cao 64, bo 32; mục đang chọn = bong bóng trắng 44 px (không nhãn),
-// mục khác icon mờ 75% + nhãn 10 px. 14/10 sau soát ảnh: nền thanh trắng 94% (82% còn lộ chữ phía sau),
+// mục khác icon nét xám + nhãn 10 px. Bộ icon 14/10: mục đang chọn = ô tròn màu riêng của mục (Hôm nay xanh, Thực đơn xanh lá, Tiến độ tím, Tôi xanh ngọc). 14/10 sau soát ảnh: nền thanh trắng 94% (82% còn lộ chữ phía sau),
 // bong bóng xanh rất nhạt #EAF2FF để vẫn thấy trên trang nền sáng. Đáy = vùng an toàn iPhone − 14 px (tối thiểu 10 px).
 export const NAV_BOTTOM = "max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))";
 export const NAV_SPACE = `calc(64px + ${NAV_BOTTOM} + 14px)`; // chừa chỗ cuối nội dung để không bị thanh che
@@ -69,8 +70,8 @@ export function BottomNav({ tab, onTab, onAdd, hidden, dark }) {
           return (
             <button key={n.id} onClick={() => onTab(n.id)} aria-current={a ? "page" : undefined} aria-label={n.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, border: "none", background: "transparent", padding: 0, minHeight: 56, color: "#475569", fontFamily: "inherit" }}>
               {a
-                ? <span style={{ width: 44, height: 44, borderRadius: 22, background: "#EAF2FF", border: "1px solid rgba(0,122,255,0.18)", boxSizing: "border-box", boxShadow: "0 4px 12px rgba(0,60,200,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}><img src={n.icon} alt="" style={{ width: 24, height: 24, objectFit: "contain" }} /></span>
-                : <><img src={n.icon} alt="" style={{ width: 24, height: 24, objectFit: "contain", opacity: 0.75 }} /><span style={{ fontSize: 10, fontWeight: 600 }}>{n.label}</span></>}
+                ? <span style={{ width: 44, height: 44, borderRadius: 22, background: chipBg(IC_COLOR[n.icon]), color: "#FFFFFF", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35), 0 4px 12px rgba(0,60,200,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}><Glyph name={n.icon} size={22} stroke={2.2} /></span>
+                : <><Glyph name={n.icon} size={22} /><span style={{ fontSize: 10, fontWeight: 600 }}>{n.label}</span></>}
             </button>
           );
         })}
@@ -139,6 +140,7 @@ export function Toggle({ on, onClick, label, testid }) {
 }
 
 // Ô icon đặc màu + icon trắng (kiểu Cài đặt iPhone, bản vẽ 48) — dùng trên nền tối
+// 14/10 bộ icon 1 style: ô gradient cùng màu + viền sáng trên + bóng mềm (xem mobile/icons.jsx)
 export function DkIcon({ color, children, size = 32 }) {
-  return <span aria-hidden="true" className="dkic" style={{ width: size, height: size, borderRadius: 9, background: color, color: "#FFFFFF", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 8px rgba(0,0,0,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{children}</span>;
+  return <span aria-hidden="true" className="dkic" style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), background: chipBg(color), color: "#FFFFFF", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35), 0 3px 8px rgba(0,0,0,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{children}</span>;
 }

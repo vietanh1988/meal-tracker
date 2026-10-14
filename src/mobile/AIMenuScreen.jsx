@@ -6,7 +6,8 @@
 // Áp dụng / lặp lại hằng tuần (weekly_templates) do MobileApp xử lý (onApply / onSaveWeek). Không gọi AI khi mở thực đơn đã lưu.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { todayVN, addDays } from "../lib/dateVN";
-import { fmtInt, MEAL_ICON } from "../lib/mobileView";
+import { fmtInt } from "../lib/mobileView";
+import { MealIcon } from "./icons";
 import { mealLabel, MEAL_ORDER } from "../lib/mealMath";
 import { generateMenuAI, buildExclusionKeys, swapOptions, sumTemplate, dayTarget, resolveMealIds, getRecentFoodKeys, saveAIMenu, formatFoodPortion } from "../lib/aiMenuService";
 import { buildWhitelist } from "../lib/whitelistBuilder";
@@ -239,7 +240,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
             return (
               <div key={m.meal_id} data-testid={`ai-meal-${m.meal_id}`} style={{ ...card, padding: "4px 12px 8px 12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, height: 48 }}>
-                  {MEAL_ICON[m.meal_id] && <img src={MEAL_ICON[m.meal_id]} alt="" style={{ width: 26, height: 26, objectFit: "contain" }} />}
+                  <MealIcon id={m.meal_id} size={30} />
                   <span style={{ flex: 1, fontSize: 15, fontWeight: 800 }}>{mealLabel(m.meal_name, m.meal_id)}</span>
                   <span style={{ fontSize: 13, fontWeight: 800, color: "#475569" }}>{fmtInt((m.items || []).reduce((s, i) => s + (i.cal || 0), 0))} kcal</span>
                 </div>

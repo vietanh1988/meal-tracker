@@ -4,7 +4,8 @@
 //  - Mục tiêu nước mỗi ngày (profile.waterGoalMl; trống = tự tính)
 // Mỗi thay đổi lưu ngay qua setProfile.
 import { useState } from "react";
-import { MEAL_ICON, fmtDec } from "../lib/mobileView";
+import { fmtDec } from "../lib/mobileView";
+import { MealIcon } from "./icons";
 import { Toggle } from "./ui";
 import { DK, dkCard } from "../theme";
 import { MEAL_ORDER } from "../lib/mealMath";
@@ -91,7 +92,7 @@ export function ScheduleScreen({ profile, setProfile, mealConfig, defaultConfig,
           const on = ids.includes(id);
           return (
             <div key={id} style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 52, borderBottom: i < arr.length - 1 ? `1px solid ${DK.line}` : "none" }}>
-              <img src={MEAL_ICON[id]} alt="" style={{ width: 26, height: 26, objectFit: "contain", opacity: on ? 1 : 0.5 }} />
+              <MealIcon id={id} size={32} dim={!on} />
               <span style={{ flex: 1, fontSize: 15, fontWeight: 700, color: on ? DK.t1 : DK.t3 }}>{NAME[id]}</span>
               {editTime === id ? (
                 <input data-testid={`sched-time-input-${id}`} type="time" autoFocus defaultValue={times[id]}

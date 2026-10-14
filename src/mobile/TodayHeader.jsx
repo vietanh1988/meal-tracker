@@ -3,6 +3,7 @@
 // điện thoại bật "Giảm chuyển động" thì đứng yên ở Blue. Ô kính mờ, vòng kcal dày có ánh xanh ngọc,
 // 3 thẻ Mục tiêu / Đã ăn / Hôm nay xếp dọc cao đúng bằng vòng, 4 thẻ macro icon bi 3D.
 import { weekdayStrip, weekDates, fmtInt } from "../lib/mobileView";
+import { AppIcon, IC_COLOR } from "./icons";
 import { fmtVN } from "../lib/dateVN";
 
 const MONTHS = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
@@ -25,16 +26,13 @@ const ICON = {
   eaten: svg(<><path d="M3 11h18a9 9 0 0 1-18 0z" /><path d="M12 7V3M8 7l-1-3M16 7l1-3" /></>),
   train: svg(<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11" />),
   rest: svg(<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" />),
-  p: svg(<path d="M14.5 4.5a5 5 0 0 1 4.9 6.1c-.5 2.2-2.6 3.4-4.8 3.4h-1.1l-3.6 3.6a2 2 0 1 1-2.6 2.6 2 2 0 1 1 2.6-2.6L13.5 14v-1.1c0-2.2 1.2-4.3 3.4-4.8" />, 12, 2.6),
-  c: svg(<><path d="M3 11h18a9 9 0 0 1-18 0z" /><path d="M7 11c0-2.5 2.2-4.5 5-4.5s5 2 5 4.5" /></>, 12, 2.6),
-  f: svg(<path d="M12 3s6.5 7.2 6.5 11.5a6.5 6.5 0 0 1-13 0C5.5 10.2 12 3 12 3z" />, 12, 2.6),
-  fiber: svg(<><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15" /><path d="M5 19l8-8" /></>, 12, 2.6),
 };
 const MACROS = [
-  { k: "p", label: "Đạm", c1: "#FF5A6E", c2: "#C81E3A", bar: "#FFB3BF" },
-  { k: "c", label: "Tinh bột", c1: "#FFC24A", c2: "#E07B00", bar: "#FFE08A" },
-  { k: "f", label: "Béo", c1: "#B07BFF", c2: "#6A2BD9", bar: "#DCC6FF" },
-  { k: "fiber", label: "Xơ", c1: "#4CD98A", c2: "#13924F", bar: "#B5F5D0" },
+  // Bộ icon 14/10: màu macro thống nhất toàn app (Đạm xanh dương, Tinh bột xanh ngọc, Béo vàng cam, Xơ xanh lá)
+  { k: "p", ic: "protein", label: "Đạm", c: IC_COLOR.protein, bar: "#9CC2FF" },
+  { k: "c", ic: "carb", label: "Tinh bột", c: IC_COLOR.carb, bar: "#8EF0E2" },
+  { k: "f", ic: "fat", label: "Béo", c: IC_COLOR.fat, bar: "#FFE08A" },
+  { k: "fiber", ic: "fiber", label: "Xơ", c: IC_COLOR.fiber, bar: "#B5F5D0" },
 ];
 
 function Waves() {
@@ -153,7 +151,7 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
           return (
             <div key={mc.k} data-testid={`macro-${mc.k}`} className="fp-glass" style={{ borderRadius: 14, padding: "8px 8px 9px 8px", display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ width: 24, height: 24, borderRadius: 12, background: `radial-gradient(circle at 32% 26%, #FFFFFF 0%, ${mc.c1} 28%, ${mc.c2} 100%)`, boxShadow: "0 3px 8px rgba(0,0,0,0.25), inset 0 -2px 3px rgba(0,0,0,0.18)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{ICON[mc.k]}</span>
+                <AppIcon name={mc.ic} color={mc.c} size={24} />
                 <span style={{ fontSize: 11, fontWeight: 700, whiteSpace: "nowrap" }}>{mc.label}</span>
               </span>
               <span style={{ fontSize: 14, fontWeight: 800, lineHeight: 1, whiteSpace: "nowrap" }}>{fmtInt(e)}<span style={{ fontSize: 10, fontWeight: 600, opacity: 0.72 }}>/{fmtInt(t)}g</span></span>

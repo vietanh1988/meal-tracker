@@ -4,7 +4,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Icon, GRAD_ORANGE, GRAD_BLUE } from "./ui";
 import { TodayHeader } from "./TodayHeader";
-import { MEAL_ICON, weekdayFull, mealWindowLabel, itemName, fmtInt, fmtDec, focusMeal } from "../lib/mobileView";
+import { weekdayFull, mealWindowLabel, itemName, fmtInt, fmtDec, focusMeal } from "../lib/mobileView";
+import { AppIcon, MealIcon, IC_COLOR } from "./icons";
 import { waterGoalMl, cupsView, CUP_SIZES } from "../lib/dayPlan";
 import { fmtVN } from "../lib/dateVN";
 
@@ -66,7 +67,7 @@ export function TodayScreen(p) {
       <div style={secHead}><span style={secTitle}>Cân nặng</span></div>
       <button data-testid="weight-tile" onClick={p.onWeight} className="tap" style={{ ...card, width: "calc(100% - 24px)", padding: 14, display: "flex", flexDirection: "column", gap: 12, color: "#0F172A", fontFamily: "inherit", textAlign: "left", boxSizing: "border-box" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}>
-          <span style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(250,204,21,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><img src="/icons/stat_weight.png" alt="" style={{ width: 26, height: 26, objectFit: "contain" }} /></span>
+          <AppIcon name="scale" color={IC_COLOR.weight} size={44} />
           <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 20, fontWeight: 900, lineHeight: 1.1, whiteSpace: "nowrap" }}>{fmtDec(w.curKg)} kg <span style={{ fontSize: 13, fontWeight: 700, color: "#64748B" }}>→ {fmtDec(w.goalKg)} kg</span></span>
             <span style={{ fontSize: 12, fontWeight: 700, color: w.weighedToday ? "#047857" : "#B45309" }}>{w.weighedToday ? "Đã cân hôm nay" : w.sinceLast == null ? "Chưa cân lần nào" : `${w.sinceLast} ngày chưa cân`}</span>
@@ -96,7 +97,7 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepe
   return (
     <div style={{ margin: "14px 12px 0 12px", background: "#FFFFFF", borderRadius: 20, padding: 16, boxShadow: "0 6px 20px rgba(0,87,255,0.08)", border: "1.5px solid #E2E8F0", display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ width: 48, height: 48, borderRadius: 16, background: "rgba(0,122,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><img src={MEAL_ICON[r.id]} alt="" style={{ width: 34, height: 34, objectFit: "contain" }} /></span>
+        <MealIcon id={r.id} size={48} />
         <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: "#007AFF" }}>{label} · {mealWindowLabel(r.id, r.time)}</span>
           <span style={{ fontSize: 18, fontWeight: 900 }}>{planned ? `${r.name} · ${fmtInt(r.cal)} kcal` : `${r.name} hôm nay ăn gì?`}</span>
@@ -134,9 +135,7 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepe
 function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
   const border = last ? "none" : "1px solid #F1F5F9";
   const iconBox = (
-    <span style={{ width: 44, height: 44, borderRadius: 14, background: now ? "rgba(0,122,255,0.08)" : "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      <img src={MEAL_ICON[r.id]} alt="" style={{ width: 30, height: 30, objectFit: "contain", opacity: r.state === "missed" ? 0.7 : 1 }} />
-    </span>
+    <MealIcon id={r.id} size={44} dim={r.state === "missed"} />
   );
   const title = (tag) => (
     <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>

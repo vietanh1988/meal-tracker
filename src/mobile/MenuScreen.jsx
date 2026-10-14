@@ -14,6 +14,7 @@ import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTempla
 import { applyMealEngineToTemplate } from "../mealEngine";
 import { Icon, GRAD_BLUE } from "./ui";
 import { readUser, writeUser } from "../lib/userStore";
+import { AppIcon } from "./icons";
 
 const PURPLE = "linear-gradient(135deg,#7C3AED,#5B21B6)";
 const STYLES = [["vn", "Cơm nhà VN", "Cơm, canh, món mặn quen thuộc"], ["clean", "Eat clean", "Ức gà, khoai lang, yến mạch"], ["easy", "Tiện lợi", "Ít nấu nướng, đồ nhanh gọn"]];
@@ -183,7 +184,7 @@ export function MenuScreen(p) {
       <div style={box}>
         {aiMenus.map((m, i) => (
           <button key={`ai-${m.date}`} data-testid={i === 0 ? "menu-latest-ai" : `menu-ai-${i}`} onClick={() => openSaved(m.template)} style={rowBtn(i === aiMenus.length - 1 && past.length === 0)}>
-            <span style={iconBox("rgba(124,58,237,0.08)", "#7C3AED")}>{Icon.sparkle(18)}</span>
+            <AppIcon color="#7C3AED" size={36}>{Icon.sparkle(18)}</AppIcon>
             <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
               <span style={{ fontSize: 14, fontWeight: 700 }}>Thực đơn AI · {m.date === today ? "hôm nay" : fmtVN(m.date)}</span>
               <span style={{ fontSize: 12, color: "#64748B" }}>{DT[m.template.day_type] || "—"} · {(m.template.meals || []).length} bữa · {fmtInt(mealsCal(m.template.meals))} kcal</span>
@@ -193,7 +194,7 @@ export function MenuScreen(p) {
         ))}
         {past.map((d, i) => (
           <button key={`d-${d.date}`} data-testid={`menu-past-${d.date}`} onClick={() => openPage("menu_past", { day: d })} style={rowBtn(i === past.length - 1)}>
-            <span style={iconBox("rgba(0,122,255,0.08)", "#007AFF")}>{Icon.redo(18)}</span>
+            <AppIcon color="#00A67E" size={36}>{Icon.redo(18)}</AppIcon>
             <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
               <span style={{ fontSize: 14, fontWeight: 700 }}>Ngày đã ăn · {fmtVN(d.date)}</span>
               <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.meals.length} bữa · {fmtInt(d.cal)} kcal · {d.meals.flatMap((m) => m.items.map((it) => it.display || it.food || it.name)).slice(0, 4).join(", ")}</span>
@@ -224,7 +225,7 @@ export function MenuScreen(p) {
               const cal = mealsCal(applyMealEngineToTemplate(t, dailyTargetOf(macro, t.day_type)).meals);
               return (
                 <button key={t.id} data-testid={`lib-tpl-${t.id}`} onClick={() => openPage("menu_tpl", { id: t.id })} style={rowBtn(i === lib.length - 1)}>
-                  <span style={iconBox("rgba(0,122,255,0.08)", "#007AFF")}>{(t.meals || []).length}</span>
+                  <AppIcon color="#007AFF" size={36}><span style={{ fontSize: 13, fontWeight: 900 }}>{(t.meals || []).length}</span></AppIcon>
                   <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.name || "Mẫu"}</span>
                     <span style={{ fontSize: 12, color: "#64748B" }}>{DT[t.day_type]} · {fmtInt(cal)} kcal · tính riêng cho bạn</span>
