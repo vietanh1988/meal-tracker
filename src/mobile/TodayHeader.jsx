@@ -8,6 +8,10 @@ import { fmtVN } from "../lib/dateVN";
 
 const MONTHS = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
 
+// Đồng bộ nhịp đổi màu Blue ↔ Blue Dark giữa header và dải che vùng thanh giờ iPhone (cùng mốc thời gian)
+export const hdrDelay = () => `-${Date.now() % 18000}ms`;
+export const HDR_TOP = { blue: "#2C8DFF", dark: "#0F4585" };
+
 export const HEADER_CSS = `
 @keyframes fpHdrSwap{0%,40%{opacity:0}50%,90%{opacity:1}100%{opacity:0}}
 .fp-hdr-dark{opacity:0;animation:fpHdrSwap 18s ease-in-out infinite}
@@ -99,7 +103,7 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
   return (
     <div data-testid="today-header" style={{ position: "relative", overflow: "hidden", padding: "calc(env(safe-area-inset-top, 0px) + 12px) 12px 16px 12px", borderRadius: "0 0 18px 18px", display: "flex", flexDirection: "column", gap: 14, color: "#FFFFFF", background: BG_BLUE, boxShadow: "0 12px 30px rgba(0,52,214,0.28)" }}>
       <style>{HEADER_CSS}</style>
-      <span aria-hidden="true" className="fp-hdr-dark" style={{ position: "absolute", inset: 0, background: BG_DARK }} />
+      <span aria-hidden="true" className="fp-hdr-dark" style={{ position: "absolute", inset: 0, background: BG_DARK, animationDelay: hdrDelay() }} />
       <span aria-hidden="true" style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 35%)" }} />
       <span aria-hidden="true" style={{ position: "absolute", width: 300, height: 300, right: -120, top: -150, borderRadius: 150, background: "radial-gradient(circle, rgba(90,190,255,0.5), rgba(90,190,255,0) 68%)" }} />
       <span aria-hidden="true" style={{ position: "absolute", width: 260, height: 260, left: -110, top: 120, borderRadius: 130, background: "radial-gradient(circle, rgba(0,30,170,0.4), rgba(0,30,170,0) 70%)" }} />
