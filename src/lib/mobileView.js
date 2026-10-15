@@ -302,3 +302,12 @@ export function weightChart(log, goalKg, range, today, perWeek = null, curKg = n
   const eta = left != null && perWeek && Math.sign(perWeek) === Math.sign(left) && Math.abs(left) >= 0.1 ? Math.ceil(Math.round(Math.abs(left / perWeek) * 100) / 100) : null;
   return { points, goalY: goalKg ? y(Number(goalKg)) : null, lo, hi, ticks: ticks.map((v) => ({ v, y: y(v) })), first, last, eta };
 }
+
+// Trạng thái thanh macro ở header Hôm nay (16/10): "over" khi vượt >110% mục tiêu; "under" khi thiếu <90%
+// nhưng CHỈ khi ngày đã xong (ngày cũ hoặc đã ăn hết các bữa) — trong ngày đang ăn dở không báo thiếu.
+export function macroState(eaten, target, dayDone) {
+  if (!(target > 0)) return "ok";
+  if (eaten > target * 1.1) return "over";
+  if (dayDone && eaten < target * 0.9) return "under";
+  return "ok";
+}

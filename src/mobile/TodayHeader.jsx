@@ -1,8 +1,10 @@
 // Header màn Hôm nay (bản vẽ 41 "Header – Blue / Blue Dark", chốt 14/10):
 // nền xanh nhiều lớp + quầng sáng + dải lụa, tự đổi chậm Blue ↔ Blue Dark (mờ dần, 9 s mỗi màu);
 // điện thoại bật "Giảm chuyển động" thì đứng yên ở Blue. Ô kính mờ, vòng kcal dày có ánh xanh ngọc,
-// 3 thẻ Mục tiêu / Đã ăn / Hôm nay xếp dọc cao đúng bằng vòng, 4 thẻ macro icon bi 3D.
-import { weekdayStrip, weekDates, fmtInt } from "../lib/mobileView";
+// 3 dòng Mục tiêu / Đã ăn / Hôm nay xếp dọc cao đúng bằng vòng (bản vẽ 78, 16/10: KHÔNG đóng khung), 4 thẻ macro.
+// 16/10: dải lịch giảm nổi khối (kính nhạt, không bóng); thanh macro: bình thường trắng, vượt >110% đỏ,
+// thiếu <90% vàng (chỉ khi ngày đã xong: ngày cũ hoặc đã ăn hết các bữa).
+import { weekdayStrip, weekDates, fmtInt, macroState } from "../lib/mobileView";
 import { AppIcon, IC_COLOR } from "./icons";
 import { fmtVN } from "../lib/dateVN";
 
@@ -38,6 +40,9 @@ const MACROS = [
   { k: "f", ic: "fat", label: "Béo", c: IC_COLOR.fat, bar: "#FFE08A" },
   { k: "fiber", ic: "fiber", label: "Xơ", c: IC_COLOR.fiber, bar: "#B5F5D0" },
 ];
+
+// Màu thanh macro ở header: trắng = bình thường, đỏ = vượt >110% mục tiêu, vàng = thiếu <90% khi ngày đã xong
+export const MACRO_BAR = { ok: "rgba(255,255,255,0.92)", over: "#FF6B6B", under: "#FACC15" };
 
 function Waves() {
   return (
@@ -82,8 +87,8 @@ function Ring({ remain, eaten, target }) {
 
 function StatCard({ icon, label, value, children }) {
   return (
-    <div className="fp-glass" style={{ flex: 1, borderRadius: 14, display: "flex", alignItems: "center", gap: 10, padding: "0 10px", minHeight: 0 }}>
-      <span style={{ width: 30, height: 30, borderRadius: 10, background: "rgba(255,255,255,0.92)", color: "#0A5BFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)" }}>{icon}</span>
+    <div data-testid="hdr-stat" style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, padding: "0 2px 0 4px", minHeight: 0 }}>
+      <span style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,255,255,0.92)", color: "#0A5BFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)" }}>{icon}</span>
       <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 3 }}>
         <span style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 6 }}>
           <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.82, whiteSpace: "nowrap" }}>{label}</span>
@@ -95,7 +100,7 @@ function StatCard({ icon, label, value, children }) {
   );
 }
 
-export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine }) {
+export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine, dayDone }) {
   const [y, m] = date.split("-");
   const remain = targets.cal - eaten.cal;
   const pct = targets.cal > 0 ? Math.min(100, Math.round((eaten.cal / targets.cal) * 100)) : 0;
@@ -122,9 +127,9 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
           const sel = d === date, future = d > today;
           const has = (weekDots || {})[d];
           return (
-            <button key={d} role="tab" aria-selected={sel} disabled={future} onClick={() => onDate(d)} aria-label={`${weekdayStrip(d)} ${fmtVN(d)}`} className={sel ? undefined : "fp-glass"}
+            <button key={d} role="tab" aria-selected={sel} disabled={future} onClick={() => onDate(d)} aria-label={`${weekdayStrip(d)} ${fmtVN(d)}`} data-testid={sel ? "day-sel" : undefined}
               style={{ height: 56, borderRadius: 14, padding: 0, fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
-                ...(sel ? { background: "#FFFFFF", color: "#0052F0", border: "none", boxShadow: "0 8px 18px rgba(0,15,70,0.35)" } : { color: "#FFFFFF", opacity: future ? 0.6 : 1 }) }}>
+                ...(sel ? { background: "#FFFFFF", color: "#0052F0", border: "none", boxShadow: "0 3px 8px rgba(0,15,70,0.18)" } : { color: "#FFFFFF", background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "none", opacity: future ? 0.6 : 1 }) }}>
               <span style={{ fontSize: 11, fontWeight: sel ? 700 : 600, opacity: sel ? 1 : 0.85 }}>{weekdayStrip(d)}</span>
               <span style={{ fontSize: 17, fontWeight: sel ? 900 : 800 }}>{Number(d.slice(8))}</span>
               <span style={{ width: 5, height: 5, borderRadius: 3, background: sel ? (has ? "#2F8CFF" : "#CBD5E1") : has ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)" }} />
@@ -135,7 +140,7 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
 
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 12 }}>
         <Ring remain={remain} eaten={eaten.cal} target={targets.cal} />
-        <div style={{ flex: 1, height: 136, display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+        <div style={{ flex: 1, height: 136, display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
           <StatCard icon={ICON.goal} label="Mục tiêu" value={`${fmtInt(targets.cal)} kcal`} />
           <StatCard icon={ICON.eaten} label="Đã ăn" value={<span data-testid="kcal-eaten" data-value={eaten.cal}>{fmtInt(eaten.cal)} kcal</span>}>
             <span style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.18)", overflow: "hidden", display: "block" }}>
@@ -152,6 +157,7 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
         {MACROS.map((mc) => {
           const e = eaten[mc.k] || 0, t = targets[mc.k] || 0;
           const w = t > 0 ? Math.max(3, Math.min(100, Math.round((e / t) * 100))) : 0;
+          const st = macroState(e, t, dayDone);
           return (
             <div key={mc.k} data-testid={`macro-${mc.k}`} className="fp-glass" style={{ borderRadius: 14, padding: "8px 8px 9px 8px", display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -160,7 +166,7 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
               </span>
               <span style={{ fontSize: 14, fontWeight: 800, lineHeight: 1, whiteSpace: "nowrap" }}>{fmtInt(e)}<span style={{ fontSize: 10, fontWeight: 600, opacity: 0.72 }}>/{fmtInt(t)}g</span></span>
               <span role="progressbar" aria-label={mc.label} aria-valuenow={e} aria-valuemax={t} style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.18)", overflow: "hidden", display: "block" }}>
-                <span style={{ display: "block", width: `${w}%`, height: 4, borderRadius: 2, background: e > t * 1.1 ? "#FACC15" : mc.bar, transition: "width .3s" }} />
+                <span data-state={st} style={{ display: "block", width: `${w}%`, height: 4, borderRadius: 2, background: MACRO_BAR[st], transition: "width .3s" }} />
               </span>
             </div>
           );
