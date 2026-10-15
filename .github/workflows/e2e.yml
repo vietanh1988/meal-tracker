@@ -89,7 +89,9 @@ jobs:
           [ -d shots ] || exit 0
           B="shots/${GITHUB_REF_NAME//\//-}"
           mkdir -p /tmp/sh && cp -r shots /tmp/sh/
-          cd /tmp/sh && git init -q && git checkout -q -b tmp && git add shots
+          # Nhánh ảnh không có vercel.json của app → Vercel vẫn build xem thử, tốn lượt deploy. Tắt hẳn cho nhánh này.
+          echo '{"git":{"deploymentEnabled":false}}' > /tmp/sh/vercel.json
+          cd /tmp/sh && git init -q && git checkout -q -b tmp && git add shots vercel.json
           git -c user.name=ci -c user.email=ci@local commit -q -m "ảnh chụp E2E $GITHUB_SHA"
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "HEAD:refs/heads/$B"
 
