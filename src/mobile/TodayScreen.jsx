@@ -103,6 +103,14 @@ export function TodayScreen(p) {
 // Thẻ bữa đến giờ (bản vẽ 77): cùng màu nền, nổi mềm; dải màu của bữa ở mép trên; dòng món lõm vào.
 // Gợi ý hợp nhất ghi 1 chạm (16/10): bữa chưa có món + có gợi ý → hiện ngay 1 dòng gợi ý + nút "Ghi · X kcal";
 // các lựa chọn khác vẫn mở sheet Gợi ý món (focus-suggest).
+function IconTile({ testid, bg, icon, label, onClick }) {
+  return (
+    <button data-testid={testid} onClick={onClick} aria-label={label} className="tap" style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, border: "none", background: "transparent", padding: 0, fontFamily: "inherit" }}>
+      <span style={{ width: 52, height: 52, borderRadius: 16, background: bg, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(15,23,42,0.14)" }}>{icon}</span>
+      <span style={{ fontSize: 12, fontWeight: 800, color: "#334155" }}>{label}</span>
+    </button>
+  );
+}
 const SUG_SRC = { history: ["Đã ăn", "#047857", "rgba(5,150,105,0.12)"], template: ["Mẫu", "#0062F0", "#EEF4FF"], ai: ["AI", "#6D28D9", "#F3EEFF"] };
 function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, onAskAI }) {
   const planned = r.state === "planned";
@@ -160,16 +168,20 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSu
             </button>
           </div>
         )}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
-          {planned ? <>
+        {planned ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
             <button data-testid={`focus-eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
             <button data-testid="focus-edit" onClick={() => onEdit(r.id)} style={{ ...soft, height: 48, borderRadius: 14, boxShadow: LT.raiseSm, border: "1.5px solid rgba(0,122,255,0.35)", color: "#0057FF", fontSize: 15, fontWeight: 800, boxSizing: "border-box" }}>Sửa món</button>
-          </> : <>
-            <button onClick={() => onPhoto(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_ORANGE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.camera(18)}Chụp món</button>
-            <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Tìm món</button>
-          </>}
-        </div>
-        {onAskAI && (
+          </div>
+        ) : (
+          /* Bản vẽ 121c: 3 ô icon có chữ — Chụp món · Tìm món · Hỏi AI (gộp link Hỏi AI) */
+          <div data-testid="focus-actions" style={{ display: "flex", justifyContent: "space-around", gap: 8, paddingTop: 2 }}>
+            <IconTile testid="focus-photo" bg={GRAD_ORANGE} icon={Icon.camera(22)} label="Chụp món" onClick={() => onPhoto(r.id)} />
+            <IconTile testid="focus-search" bg={GRAD_BLUE} icon={Icon.search(22, "#FFFFFF")} label="Tìm món" onClick={() => onLog(r.id)} />
+            {onAskAI && <IconTile testid="focus-ask-ai" bg="linear-gradient(135deg,#A855F7,#7C3AED)" icon={Icon.sparkle(22, "#FFFFFF")} label="Hỏi AI" onClick={() => onAskAI(r)} />}
+          </div>
+        )}
+        {planned && onAskAI && (
           <button data-testid="focus-ask-ai" onClick={() => onAskAI(r)} style={{ alignSelf: "center", height: 32, padding: "0 8px", border: "none", background: "transparent", color: "#7C3AED", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>{Icon.sparkle(16)}Hỏi AI về {r.name.toLowerCase()}</button>
         )}
       </div>

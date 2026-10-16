@@ -39,6 +39,13 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     await expect(page.getByTestId("meal-timeline")).toBeVisible();
     const fc = page.getByTestId("focus-card");
     if (await fc.count()) expect(await fc.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe("none");
+    // Bản vẽ 121c: bữa chưa ghi → 3 ô icon có chữ (Chụp món · Tìm món · Hỏi AI)
+    const acts = fc.getByTestId("focus-actions");
+    if (await acts.count()) {
+      await expect(acts.getByTestId("focus-photo")).toContainText("Chụp món");
+      await expect(acts.getByTestId("focus-search")).toContainText("Tìm món");
+      await expect(acts.getByTestId("focus-ask-ai")).toContainText("Hỏi AI");
+    }
   });
 
   test("dòng thời gian có ĐỦ bữa (kể cả bữa ở thẻ đến giờ), tên có dấu", async () => {
