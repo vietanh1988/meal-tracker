@@ -36,7 +36,7 @@ for (const [name, prof, dayType] of CASES) {
         devs.push(dev);
         if (macro.dietStrategy === "keto") expect(t.c, `keto tinh bột ${style}`).toBeLessThan(target.c * 1.5);
       }
-      expect(devs.length, `${style}: số lần tạo được`).toBeGreaterThanOrEqual(4);
+      expect(devs.length, `${style}: số lần tạo được`).toBe(5);
       const avg = devs.reduce((a, b) => a + b, 0) / devs.length;
       expect(Math.abs(avg), `${style}: lệch TB ${Math.round(avg * 100)}%`).toBeLessThan(macro.dietStrategy === "keto" ? 0.2 : 0.12);
     }
