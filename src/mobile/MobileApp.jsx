@@ -534,7 +534,7 @@ export function MobileApp(props) {
       <main aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd" : undefined} style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
-            nowMinutes={now.minutes} name={name} dayLoaded={!!day} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
+            nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
             waterMl={Number(day?.water_ml) || 0} addWater={(ml) => ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; })} waterGoalOverride={profile.waterGoalMl}
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={(profile.exerciseType || "gym") === "none" ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`}
@@ -554,7 +554,7 @@ export function MobileApp(props) {
         {tab === "progress" && (
           <ProgressScreen initialSeg={progressSeg.seg} segNonce={progressSeg.n}
             range={{ mode: rangeMode, setMode: setRangeMode, anchor: rangeAnchor, setAnchor: setRangeAnchor, today }}
-            getDailyLogs={ud.getDailyLogs} dataVersion={version} targetOf={(d) => targetsOf(macro, dayTypeOf(profile, d)).cal} lineCal={Math.round(macro.calTarget)} openDay={openDay}
+            getDailyLogs={ud.getDailyLogs} dataVersion={version} targetOf={(d) => targetsOf(macro, dayTypeOf(profile, d)).cal} lineCal={Math.round(macro.calTarget)} openDay={openDay} onLog={() => openLog(null, today)}
             weightLog={weightLog} weight={weight} profile={profile} setProfile={setProfile} addWeight={addWeight} updateWeight={updateWeight} deleteWeight={deleteWeight} />
         )}
         {tab === "me" && (

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { calcMacro } from "./calcMacro";
 import { generateMenuAI, resolveMealIds } from "./lib/aiMenuService";
 import { DK, DK_CSS, dkCard, dkGlass } from "./theme";
+import { Seg } from "./mobile/ui";
 
 const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
 const GRAD_BLUE = "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)";
@@ -81,12 +82,7 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     </div>
   );
   const seg = (opts, cur, onPick, disabledId) => (
-    <div style={{ display: "grid", gridTemplateColumns: `repeat(${opts.length}, minmax(0,1fr))`, padding: 3, borderRadius: 12, background: DK.chip, border: `1px solid ${DK.chipLine}` }}>
-      {opts.map(([id, t]) => {
-        const on = id === cur; const dis = id === disabledId;
-        return <button key={id} data-testid={`onb-seg-${id}`} disabled={dis} aria-pressed={on} onClick={() => onPick(id)} style={{ height: 38, borderRadius: 9, border: "none", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, background: on ? "#FFFFFF" : "transparent", color: on ? "#0040E0" : DK.t2, opacity: dis ? 0.35 : 1, boxShadow: on ? "0 1px 3px rgba(0,0,0,0.12)" : "none" }}>{t}</button>;
-      })}
-    </div>
+    <Seg dark value={cur} onChange={onPick} opts={opts.map(([id, t]) => ({ value: id, label: t, testid: `onb-seg-${id}`, disabled: id === disabledId }))} />
   );
   const field = (key, label, unit, mode, value, onChange, onBlur) => (
     <label style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>

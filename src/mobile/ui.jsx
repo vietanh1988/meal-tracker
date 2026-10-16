@@ -22,6 +22,9 @@ export const MOBILE_CSS = `
 @keyframes fpmFade{from{opacity:0}to{opacity:1}}
 @keyframes fpmToast{from{transform:translate(-50%,12px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 .fpm .hatch{background:repeating-linear-gradient(45deg,#E2E8F0 0,#E2E8F0 4px,#FFFFFF 4px,#FFFFFF 8px)}
+@keyframes fpmShimmer{0%{background-position:100% 0}100%{background-position:0 0}}
+.fpm .skel{background:linear-gradient(90deg,#E8EEF9 0%,#F4F7FD 40%,#E8EEF9 80%);background-size:250% 100%;animation:fpmShimmer 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.fpm .skel{animation:none}}
 `;
 
 const svgP = { "aria-hidden": "true", fill: "none", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" };
@@ -183,24 +186,41 @@ export const SheetHandle = () => <span aria-hidden="true" style={{ alignSelf: "c
 // Nút phân đoạn thanh thoát (16/10, chủ dự án: "làm thanh thoát lên"): rãnh bo tròn rất nhạt, 1 viên trắng
 // trượt mượt sang mục đang chọn, chữ 13 nét vừa; không đổi màu chữ sặc sỡ. opts: [{ value, label, testid }]
 // mode "tab" → role tab + aria-selected; mặc định nút bật/tắt aria-pressed. size "sm" cho chỗ hẹp (tiêu đề nhóm).
-export function Seg({ opts, value, onChange, size = "md", mode = "group", ariaLabel, accent = "#0F172A", style }) {
+// dark: dùng trên nền Blue Dark (Tôi, trang con, đăng nhập, onboarding) — rãnh trắng 8%, viên trắng, chữ xanh đậm.
+// opts[i].disabled: mục không chọn được (mờ).
+export function Seg({ opts, value, onChange, size = "md", mode = "group", ariaLabel, accent, dark = false, style }) {
+  const acc = accent || (dark ? "#0040E0" : "#0F172A");
   const n = opts.length || 1;
   const i = Math.max(0, opts.findIndex((o) => o.value === value));
   const h = size === "sm" ? 30 : 36;
   return (
     <div role={mode === "tab" ? "tablist" : "group"} aria-label={ariaLabel}
-      style={{ position: "relative", display: "grid", gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, padding: 3, borderRadius: 999, background: "rgba(15,23,42,0.05)", flexShrink: 0, ...style }}>
-      <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 999, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(15,23,42,0.06), 0 2px 8px rgba(30,64,175,0.08)", transform: `translateX(${i * 100}%)`, transition: "transform .24s cubic-bezier(.2,.8,.2,1)" }} />
+      style={{ position: "relative", display: "grid", gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, padding: 3, borderRadius: 999, background: dark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.05)", flexShrink: 0, ...style }}>
+      <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 999, background: "#FFFFFF", boxShadow: dark ? "0 2px 10px rgba(0,0,0,0.18)" : "0 1px 2px rgba(15,23,42,0.06), 0 2px 8px rgba(30,64,175,0.08)", transform: `translateX(${i * 100}%)`, transition: "transform .24s cubic-bezier(.2,.8,.2,1)" }} />
       {opts.map((o) => {
         const on = o.value === value;
         const a11y = mode === "tab" ? { role: "tab", "aria-selected": on } : { "aria-pressed": on };
         return (
-          <button key={String(o.value)} type="button" data-testid={o.testid} {...a11y} onClick={() => !on && onChange(o.value)}
-            style={{ position: "relative", zIndex: 1, height: h, padding: "0 10px", border: "none", borderRadius: 999, background: "transparent", fontFamily: "inherit", fontSize: size === "sm" ? 12 : 13, fontWeight: on ? 700 : 500, color: on ? accent : "#64748B", whiteSpace: "nowrap", transition: "color .2s ease" }}>
+          <button key={String(o.value)} type="button" data-testid={o.testid} {...a11y} disabled={!!o.disabled} onClick={() => !on && !o.disabled && onChange(o.value)}
+            style={{ position: "relative", zIndex: 1, height: h, padding: "0 10px", border: "none", borderRadius: 999, background: "transparent", fontFamily: "inherit", fontSize: size === "sm" ? 12 : 13, fontWeight: on ? 700 : 500, color: on ? acc : dark ? "rgba(255,255,255,0.72)" : "#64748B", opacity: o.disabled ? 0.4 : 1, whiteSpace: "nowrap", transition: "color .2s ease" }}>
             {o.label}
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// Khung xương lúc đang tải (16/10, bản vẽ 65 – trạng thái chung): khối bo tròn, ánh sáng chạy nhẹ
+export const Skel = ({ w = "100%", h = 12, r = 6, style }) => <span aria-hidden="true" className="skel" style={{ display: "block", width: w, height: h, borderRadius: r, flexShrink: 0, ...style }} />;
+// Thẻ trống (chưa có dữ liệu): ô icon nhạt + tiêu đề + mô tả + nút hành động (tuỳ chọn)
+export function EmptyCard({ icon, title, sub, action, onAction, testid, style }) {
+  return (
+    <div data-testid={testid} style={{ background: "#FFFFFF", borderRadius: 20, padding: "20px 16px", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center", ...style }}>
+      {icon && <span style={{ width: 48, height: 48, borderRadius: 16, background: LT.soft, color: "#0062F0", display: "flex", alignItems: "center", justifyContent: "center" }}>{icon}</span>}
+      <span style={{ fontSize: 15, fontWeight: 900, color: "#0F172A" }}>{title}</span>
+      {sub && <span style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, maxWidth: 300 }}>{sub}</span>}
+      {action && <button onClick={onAction} style={{ marginTop: 4, height: 40, padding: "0 16px", borderRadius: 20, border: "none", background: LT.soft, color: "#0062F0", fontFamily: "inherit", fontSize: 14, fontWeight: 800 }}>{action}</button>}
     </div>
   );
 }

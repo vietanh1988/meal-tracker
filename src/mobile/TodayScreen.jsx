@@ -4,7 +4,7 @@
 // danh sách bữa dạng dòng thời gian.
 // Thân: thẻ bữa đến giờ, danh sách bữa, nước theo cốc, cân nặng, tuần này.
 import { useState, useEffect, useRef } from "react";
-import { Icon, GRAD_ORANGE, GRAD_BLUE } from "./ui";
+import { Icon, GRAD_ORANGE, GRAD_BLUE, Skel } from "./ui";
 import { TodayHeader } from "./TodayHeader";
 import { weekdayFull, mealWindowLabel, itemName, fmtInt, fmtDec, focusMeal } from "../lib/mobileView";
 import { AppIcon, MealIcon, IC_COLOR, mix } from "./icons";
@@ -25,8 +25,8 @@ export function TodayScreen(p) {
   const { date, today, onDate, rows, eaten, targets, dayType, nowMinutes, name, dayLoaded } = p;
   const isToday = date === today;
   const remain = targets.cal - eaten.cal;
-  const focus = isToday ? focusMeal(rows, nowMinutes) : null;
-  const allEaten = isToday && rows.length > 0 && rows.every((r) => r.state === "eaten");
+  const focus = isToday && dayLoaded ? focusMeal(rows, nowMinutes) : null;
+  const allEaten = isToday && dayLoaded && rows.length > 0 && rows.every((r) => r.state === "eaten");
   const eatenCount = rows.filter((r) => r.state === "eaten").length;
   const w = p.weight;
 
@@ -53,9 +53,16 @@ export function TodayScreen(p) {
         <span style={secTitle}>{isToday ? "Bữa ăn hôm nay" : `${weekdayFull(date)} ${fmtVN(date)}`}</span>
         {rows.length > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>{eatenCount} / {rows.length} bữa</span>}
       </div>
-      <div data-testid="meal-timeline" style={{ margin: "0 12px", display: "flex", flexDirection: "column", gap: 14, opacity: dayLoaded ? 1 : 0.5 }}>
-        {rows.map((r, i) => <MealRow key={r.id} r={r} last={i === rows.length - 1} now={!!focus && focus.id === r.id} {...p} />)}
-        {rows.length === 0 && <div style={{ ...card, margin: 0, minHeight: 56, padding: "0 14px", display: "flex", alignItems: "center", fontSize: 13, color: "#64748B" }}>Chưa bật bữa nào — vào Tôi › Lịch tập & bữa để bật.</div>}
+      <div data-testid="meal-timeline" style={{ margin: "0 12px", display: "flex", flexDirection: "column", gap: 14 }}>
+        {!dayLoaded && [0, 1, 2, 3].map((k) => (
+          // Khung xương khi ngày đang tải (chọn ngày cũ) — thay cho danh sách mờ 50% dễ bấm nhầm
+          <div key={`sk${k}`} data-testid="meal-skeleton" style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <Skel w={44} h={44} r={14} />
+            <div style={{ flex: 1, minHeight: 64, borderRadius: 18, background: "rgba(255,255,255,0.75)", padding: "0 14px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}><Skel w="40%" h={12} /><Skel w="65%" h={10} /></div>
+          </div>
+        ))}
+        {dayLoaded && rows.map((r, i) => <MealRow key={r.id} r={r} last={i === rows.length - 1} now={!!focus && focus.id === r.id} {...p} />)}
+        {dayLoaded && rows.length === 0 && <div style={{ ...card, margin: 0, minHeight: 56, padding: "0 14px", display: "flex", alignItems: "center", fontSize: 13, color: "#64748B" }}>Chưa bật bữa nào — vào Tôi › Lịch tập & bữa để bật.</div>}
       </div>
       {p.onAIMenu && date >= today && (
         <button onClick={p.onAIMenu} data-testid="today-ai-menu" style={{ margin: "10px 12px 0 12px", width: "calc(100% - 24px)", height: 48, borderRadius: 16, border: "none", background: "linear-gradient(135deg, rgba(124,58,237,0.10), rgba(0,122,255,0.08))", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14, fontWeight: 800, color: "#6D28D9", fontFamily: "inherit" }}>

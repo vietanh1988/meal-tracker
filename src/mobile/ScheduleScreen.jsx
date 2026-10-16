@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { fmtDec } from "../lib/mobileView";
 import { MealIcon } from "./icons";
-import { Toggle } from "./ui";
+import { Toggle, Seg } from "./ui";
 import { DK, dkCard } from "../theme";
 import { MEAL_ORDER } from "../lib/mealMath";
 import { mealTimesOf, waterGoalMl, DEFAULT_MEAL_TIMES } from "../lib/dayPlan";
@@ -79,12 +79,7 @@ export function ScheduleScreen({ profile, setProfile, mealConfig, defaultConfig,
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 16px 8px 16px" }}>
         <span style={{ fontSize: 11, fontWeight: 700, color: DK.t3, letterSpacing: "0.08em" }}>CÁC BỮA TRONG NGÀY</span>
         {!noExercise && (
-          <div role="tablist" style={{ display: "flex", padding: 3, background: DK.chip, border: `1px solid ${DK.chipLine}`, borderRadius: 10 }}>
-            {[["train", "Ngày tập"], ["rest", "Ngày nghỉ"]].map(([k, t]) => (
-              <button key={k} role="tab" aria-selected={seg === k} data-testid={`sched-seg-${k}`} onClick={() => { setSeg(k); setEditTime(null); }}
-                style={{ height: 32, padding: "0 12px", borderRadius: 8, border: "none", fontFamily: "inherit", fontSize: 12, cursor: "pointer", background: seg === k ? "#FFFFFF" : "transparent", fontWeight: seg === k ? 800 : 600, color: seg === k ? "#0040E0" : DK.t2, boxShadow: seg === k ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>{t}</button>
-            ))}
-          </div>
+          <Seg dark mode="tab" size="sm" value={seg} onChange={(k) => { setSeg(k); setEditTime(null); }} opts={[["train", "Ngày tập"], ["rest", "Ngày nghỉ"]].map(([k, t]) => ({ value: k, label: t, testid: `sched-seg-${k}` }))} />
         )}
       </div>
       <div style={card}>

@@ -1,6 +1,6 @@
 // Màn 4 · Tiến độ – Ăn uống và Màn 5 · Tiến độ – Cân nặng (đã chốt).
 import { useState, useEffect } from "react";
-import { GRAD_BLUE, Icon, SR, Seg } from "./ui";
+import { GRAD_BLUE, Icon, SR, Seg, Skel, EmptyCard } from "./ui";
 import { LT, ltCard } from "../theme";
 import { rangeSummary, weekDates, weekdayStrip, fmtInt, fmtDec, fmtKg, deltaGood, weightChart } from "../lib/mobileView";
 import { addDays, monthRange, dateList, fmtVN, weekRange, todayVN } from "../lib/dateVN";
@@ -116,6 +116,17 @@ function FoodPanel(p) {
         </div>
       </div>
 
+      {rows && listed.length === 0 && (
+        <EmptyCard testid="diary-empty" style={{ margin: "10px 12px 0 12px" }} icon={Icon.plus(22)}
+          title={mode === "week" ? "Tuần này chưa ghi bữa nào" : "Tháng này chưa ghi bữa nào"}
+          sub="Ghi bữa ở Hôm nay hoặc bấm nút + ở giữa thanh dưới. Ngày đã ghi sẽ hiện ở đây kèm biểu đồ."
+          action={p.onLog ? "Ghi bữa ngay" : null} onAction={p.onLog} />
+      )}
+      {!rows && (
+        <div aria-hidden="true" style={{ margin: "10px 12px 0 12px", ...ltCard, padding: "6px 14px" }}>
+          {[0, 1, 2].map((k) => <div key={k} style={{ display: "flex", alignItems: "center", gap: 10, height: 58 }}><Skel w={36} h={36} r={10} /><div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}><Skel w="45%" /><Skel w="30%" h={10} /></div></div>)}
+        </div>
+      )}
       {listed.length > 0 && (
         <div style={{ margin: "10px 12px 0 12px", ...ltCard, padding: "0 14px" }}>
           {listed.map((d, i) => (

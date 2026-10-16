@@ -172,7 +172,13 @@ export default function App(){
     }
   },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded,todayLog]);
 
-  if(loading||profileLoading||!profile) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",fontSize:16,color:"#666"}}>⏳ Đang tải...</div>;
+  // Màn chờ khi mở app (16/10): nền Blue Dark như header, logo + vòng quay mảnh — thay "⏳ Đang tải..." trên nền trắng
+  if(loading||profileLoading||!profile) return <div data-testid="app-splash" role="status" aria-label="Đang tải" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:18,minHeight:"100vh",background:"linear-gradient(180deg,#0050E6 0%,#01346A 60%,#001C38 100%)",fontFamily:"Inter,Roboto,-apple-system,sans-serif",color:"#FFFFFF"}}>
+    <style>{"@keyframes fpSpin{to{transform:rotate(360deg)}}"}</style>
+    <img src="/logo.png" alt="" style={{width:72,height:72,borderRadius:20,objectFit:"cover",boxShadow:"0 12px 30px rgba(0,0,0,0.3)"}}/>
+    <span style={{fontSize:18,fontWeight:900,letterSpacing:"0.02em"}}>Fipilot AI</span>
+    <span aria-hidden="true" style={{width:26,height:26,borderRadius:13,border:"3px solid rgba(255,255,255,0.25)",borderTopColor:"#FFFFFF",animation:"fpSpin 0.9s linear infinite"}}/>
+  </div>;
   if(isPasswordRecovery) return <ResetPasswordScreen/>;
   if(!user) return <LoginScreen onLogin={()=>window.location.reload()} appSettings={appSettings}/>;
   if(profile.isLocked) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",padding:20}}>

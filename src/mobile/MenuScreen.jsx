@@ -11,7 +11,7 @@ import { loadAIMenus } from "../lib/aiMenuService";
 import { SaveWeekSheet } from "./AIMenuScreen";
 import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT } from "../lib/menuView";
 import { applyMealEngineToTemplate } from "../mealEngine";
-import { Icon, Seg } from "./ui";
+import { Icon, Seg, Skel } from "./ui";
 import { PURPLE, GREEN, DT, MI, Chip, pill, fbtn, SumCard, totalsOf, Warn, MealCard, sortedMeals, DayPicker, Sheet, CloseX, Lbl, OptRow, StickyFoot, foodName, portionText } from "./menuUI";
 import { LT, ltCard } from "../theme";
 import { readUser, writeUser } from "../lib/userStore";
@@ -79,7 +79,7 @@ export function MenuScreen(p) {
   const [style, setStyle] = useState(saved.style || "vn");
   const [avoid, setAvoid] = useState(saved.avoid || "");
   const [dayType, setDayType] = useState(todayType);
-  const [aiMenus, setAiMenus] = useState([]);
+  const [aiMenus, setAiMenus] = useState(null); // null = đang tải
   const [quota, setQuota] = useState(null);
   const [libType, setLibType] = useState(todayType);
   const [opts, setOpts] = useState(false);
@@ -88,7 +88,7 @@ export function MenuScreen(p) {
   useEffect(() => {
     let alive = true;
     if (!userId) return;
-    loadAIMenus(userId, 5).then((r) => alive && setAiMenus(r || []));
+    loadAIMenus(userId, 5).then((r) => alive && setAiMenus(r || [])).catch(() => alive && setAiMenus([]));
     if (aiAccess?.usable) {
       Promise.all([
         supabase.from("profiles").select("tier,ai_menu_count_today,ai_menu_count_reset_at").eq("id", userId).maybeSingle(),
@@ -207,8 +207,9 @@ export function MenuScreen(p) {
         <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Dùng lại không tốn lượt AI</span>
       </div>
       <div style={box}>
-        {aiMenus.map((m, i) => (
-          <button key={`ai-${m.date}`} data-testid={i === 0 ? "menu-latest-ai" : `menu-ai-${i}`} onClick={() => openSaved(m.template)} style={listRow(i === aiMenus.length - 1 && past.length === 0)}>
+        {aiMenus === null && [0, 1].map((k) => <div key={k} aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 62 }}><Skel w={36} h={36} r={11} /><div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}><Skel w="50%" /><Skel w="70%" h={10} /></div></div>)}
+        {(aiMenus || []).map((m, i) => (
+          <button key={`ai-${m.date}`} data-testid={i === 0 ? "menu-latest-ai" : `menu-ai-${i}`} onClick={() => openSaved(m.template)} style={listRow(i === (aiMenus || []).length - 1 && past.length === 0)}>
             <AppIcon color="#7C3AED" size={36}>{Icon.sparkle(18)}</AppIcon>
             {rowText(`Thực đơn AI · ${m.date === today ? "hôm nay" : fmtVN(m.date)}`, `${DT[m.template.day_type] || "—"} · ${(m.template.meals || []).length} bữa · ${fmtInt(mealsCal(m.template.meals))} kcal`)}
             {Icon.chev(16)}
@@ -221,7 +222,7 @@ export function MenuScreen(p) {
             {Icon.chev(16)}
           </button>
         ))}
-        {aiMenus.length === 0 && past.length === 0 && (
+        {aiMenus && aiMenus.length === 0 && past.length === 0 && (
           <div style={{ padding: "14px 0", fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>Thực đơn AI bạn tạo và những ngày bạn đã ghi đủ bữa sẽ hiện ở đây để dùng lại.</div>
         )}
       </div>

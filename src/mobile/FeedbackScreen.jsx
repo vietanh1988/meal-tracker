@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { fmtVN, toVNDate } from "../lib/dateVN";
-import { GRAD_BLUE } from "./ui";
+import { GRAD_BLUE, Seg } from "./ui";
 import { DK, dkCard } from "../theme";
 
 const BUG_CATS = [["ai_menu", "AI thực đơn"], ["photo", "Chụp ảnh"], ["ai_chat", "AI Chat"], ["ui", "Giao diện"], ["other", "Khác"]];
@@ -75,16 +75,12 @@ export function FeedbackScreen({ user, showToast }) {
     load();
   };
 
-  const seg = (on) => ({ height: 38, borderRadius: 9, border: "none", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, background: on ? "#FFFFFF" : "transparent", color: on ? "#0040E0" : DK.t2, boxShadow: on ? "0 1px 3px rgba(0,0,0,0.08)" : "none" });
   const chip = (on) => ({ height: 36, padding: "0 12px", borderRadius: 10, fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, border: `1.5px solid ${on ? "#FFFFFF" : DK.chipLine}`, background: on ? "#FFFFFF" : DK.chip, color: on ? "#0040E0" : DK.t2 });
   const can = !!text.trim() && !busy;
 
   return (
     <div style={{ paddingBottom: 32 }}>
-      <div role="tablist" style={{ margin: "12px 12px 0 12px", display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 4, padding: 3, background: DK.chip, border: `1px solid ${DK.chipLine}`, borderRadius: 12 }}>
-        <button role="tab" data-testid="fb-mode-suggestion" aria-selected={mode === "suggestion"} onClick={() => setMode("suggestion")} style={seg(mode === "suggestion")}>Góp ý</button>
-        <button role="tab" data-testid="fb-mode-bug" aria-selected={mode === "bug"} onClick={() => setMode("bug")} style={seg(mode === "bug")}>Báo lỗi</button>
-      </div>
+      <Seg dark mode="tab" style={{ margin: "12px 12px 0 12px" }} value={mode} onChange={setMode} opts={[{ value: "suggestion", label: "Góp ý", testid: "fb-mode-suggestion" }, { value: "bug", label: "Báo lỗi", testid: "fb-mode-bug" }]} />
 
       <div style={{ ...dkCard, margin: "12px 12px 0 12px", borderRadius: 20, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
         {mode === "bug" && (

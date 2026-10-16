@@ -6,7 +6,7 @@
 //  - Cách tính: Việt Nam (BMR ×0,9) / Chuẩn quốc tế
 // Ô số lưu khi rời ô (blur/Enter); lựa chọn lưu ngay qua setProfile.
 import { useState } from "react";
-import { Icon, Toggle } from "./ui";
+import { Icon, Toggle, Seg } from "./ui";
 import { fmtInt, fmtDec } from "../lib/mobileView";
 import { todayVN } from "../lib/dateVN";
 import { DK, dkCard } from "../theme";
@@ -155,16 +155,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
 
       <span style={sec}>MỤC TIÊU</span>
       <div style={{ ...box, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
-        <div role="group" aria-label="Mục tiêu" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", padding: 3, background: DK.chip, border: `1px solid ${DK.chipLine}`, borderRadius: 12 }}>
-          {GOALS.map(([g, t]) => {
-            const on = goal === g;
-            const dis = noEx && g === "bulk";
-            return (
-              <button key={g} data-testid={`goals-goal-${g}`} aria-pressed={on} disabled={dis} onClick={() => pickGoal(g)}
-                style={{ height: 38, borderRadius: 9, border: "none", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, background: on ? "#FFFFFF" : "transparent", color: on ? "#0040E0" : DK.t2, boxShadow: on ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>{t}</button>
-            );
-          })}
-        </div>
+        <Seg dark ariaLabel="Mục tiêu" value={goal} onChange={pickGoal} opts={GOALS.map(([g, t]) => ({ value: g, label: t, testid: `goals-goal-${g}`, disabled: noEx && g === "bulk" }))} />
         {noEx && <span style={{ fontSize: 12, color: DK.t3, marginTop: -4 }}>Không tập thì không đặt Tăng cơ được — chọn Giảm mỡ hoặc Duy trì.</span>}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>

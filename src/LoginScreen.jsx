@@ -4,6 +4,7 @@ import { supabase } from "./lib/supabase";
 import { C } from "./theme";
 import { AuthShell, Field, PasswordInput, Notice, field, primaryBtn, linkBtn } from "./AuthShell";
 import { DK } from "./theme";
+import { Seg } from "./mobile/ui";
 import { parseContent, stripEmptyParagraphs } from "./TermsPage";
 import { parseFeatureFlags } from "./adminTabs/FeatureFlagsTab";
 
@@ -135,10 +136,7 @@ export function LoginScreen({onLogin,appSettings}){
   return <><AuthShell title={reg?"Tạo tài khoản":"Fipilot AI"} subtitle={reg?null:"Trợ lý dinh dưỡng cho người Việt"}
     footer={!reg&&<p style={{margin:"18px 24px 0 24px",textAlign:"center",fontSize:12,color:DK.t3,lineHeight:1.6}}>Tiếp tục nghĩa là bạn đồng ý với {termsLinks} của Fipilot AI.</p>}>
       {isInApp&&<Notice tone="bad">Bạn đang mở trong ứng dụng khác. Để đăng nhập và cài app, hãy mở bằng {browserName}. <button type="button" onClick={handleOpenBrowser} style={{...linkBtn,padding:0}}>Mở bằng {browserName}</button></Notice>}
-      <div role="tablist" style={{display:"grid",gridTemplateColumns:"repeat(2, minmax(0, 1fr))",gap:4,padding:3,background:DK.chip,border:`1px solid ${DK.chipLine}`,borderRadius:12}}>
-        {["login","register"].map(m=><button key={m} role="tab" aria-selected={mode===m} data-testid={`auth-tab-${m}`} onClick={()=>{setMode(m);setErr("");setSuccess("");}}
-          style={{height:38,borderRadius:9,border:"none",fontFamily:"inherit",fontSize:14,fontWeight:mode===m?800:600,background:mode===m?"#FFFFFF":"transparent",color:mode===m?"#0040E0":DK.t2,boxShadow:mode===m?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{m==="login"?"Đăng nhập":"Đăng ký"}</button>)}
-      </div>
+      <Seg dark mode="tab" value={mode} onChange={(m)=>{setMode(m);setErr("");setSuccess("");}} opts={[{value:"login",label:"Đăng nhập",testid:"auth-tab-login"},{value:"register",label:"Đăng ký",testid:"auth-tab-register"}]} />
       {reg&&!registrationEnabled&&<Notice tone="bad">Hiện chưa nhận đăng ký tài khoản mới. Bạn quay lại sau nhé!</Notice>}
       {canReg&&<Field label="Tên hiển thị" hint={userHint} hintTone={tone(usernameStatus)}><input data-testid="reg-username" autoComplete="nickname" value={user} onChange={e=>setUser(e.target.value)} placeholder="VD: gymboy63" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
       {(!reg||registrationEnabled)&&<Field label="Email" hint={emailHint} hintTone={tone(emailStatus)}><input data-testid="login-email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="ban@email.com" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
