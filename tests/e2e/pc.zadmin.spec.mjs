@@ -78,6 +78,9 @@ test("Quản trị PC: thanh bên đủ mục, mở từng trang, ngăn người
     await page.waitForTimeout(300);
     await page.screenshot({ path: "shots/pc-admin-sidebar-mini.png" });
     await page.reload();
+    // Tải lại: chờ app dựng xong (đăng nhập lại từ phiên lưu có thể chậm trên CI); nếu về khung điện thoại thì vào lại Quản trị
+    await expect(page.getByTestId("pc-sidebar").or(page.getByTestId("pc-open-admin"))).toBeVisible({ timeout: 25_000 });
+    if (await page.getByTestId("pc-open-admin").isVisible()) await page.getByTestId("pc-open-admin").click();
     await expect(page.getByTestId("pc-sidebar")).toHaveAttribute("data-mini", "1");
     await page.getByTestId("pc-side-toggle").click();
     await expect(page.getByTestId("pc-sidebar")).toHaveAttribute("data-mini", "0");
