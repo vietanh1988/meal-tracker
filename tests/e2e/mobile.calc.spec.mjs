@@ -54,3 +54,46 @@ test("Kiểm tra calo: kho món + AI tính món lạ → ghi vào bữa tối", 
   await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${day}`, { method: "DELETE" });
   await ctx.close();
 });
+
+// Tự nhập calo (16/10): món lạ không cần AI — nhập kcal (+ macro tuỳ chọn) → ghi được; lần sau tìm món là ra
+test("Kiểm tra calo: tự nhập calo món lạ → ghi, lần sau tìm thấy", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
+  const page = await ctx.newPage();
+  page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
+  const s = S();
+  const day = addDays(s.today, -3);
+  const dayRow = async () => (await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${day}&select=*`))[0] || null;
+  await login(page);
+  let aiCalls = 0;
+  await page.route("**/functions/v1/ai-proxy", (route) => { aiCalls++; route.fulfill({ status: 200, contentType: "application/json", body: "{}" }); });
+  try {
+    await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Ghi bữa" }).click();
+    await tap(page.getByTestId("log-tab-calc"));
+    await page.getByTestId("calc-text").fill("2 cái bánh khọt cô ba qwz");
+    await tap(page.getByTestId("calc-run"));
+    await expect(page.getByTestId("calc-save")).toBeDisabled();
+    await tap(page.getByTestId("calc-manual-0"));
+    await expect(page.getByTestId("calc-manual-use")).toBeDisabled();
+    await page.getByTestId("calc-manual-cal").fill("260");
+    await page.getByTestId("calc-manual-p").fill("6,5");
+    await page.screenshot({ path: "shots/tu-nhap-calo.png", fullPage: true });
+    await tap(page.getByTestId("calc-manual-use"));
+    await expect(page.getByTestId("calc-manual-tag")).toBeVisible();
+    await expect(page.getByTestId("calc-total")).toHaveAttribute("data-value", "260");
+    expect(aiCalls).toBe(0);
+    await page.getByTestId("calc-date").selectOption(day);
+    await page.getByTestId("calc-meal").selectOption("toi");
+    await tap(page.getByTestId("calc-save"));
+    await waitDb(async () => {
+      const m = ((await dayRow())?.meals || []).find((x) => x.meal_id === "toi");
+      return m && m.items.some((i) => i.source === "manual" && i.cal === 260 && i.p === 6.5);
+    }, "ghi món tự nhập");
+    // Lần sau: tìm món ra ngay món tự nhập
+    await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Ghi bữa" }).click();
+    await page.getByPlaceholder(/Tìm món/).fill("bánh khọt cô ba qwz");
+    await expect(page.getByRole("button", { name: /^Thêm bánh khọt cô ba qwz/i })).toBeVisible();
+  } finally {
+    await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${day}`, { method: "DELETE" });
+    await ctx.close();
+  }
+});

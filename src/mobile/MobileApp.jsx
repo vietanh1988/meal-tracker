@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
 import { DK, DK_CSS, LT } from "../theme";
-import { readUser } from "../lib/userStore";
+import { readUser, writeUser } from "../lib/userStore";
 import { TodayScreen } from "./TodayScreen";
 import { HEADER_CSS, HDR_TOP } from "./TodayHeader";
 import { LogMealSheet } from "./LogMealSheet";
@@ -55,7 +55,11 @@ export function MobileApp(props) {
   const notif = useNotifications(appSettings, user?.id);
   // Món lạ AI đã tính (chờ admin duyệt) — chính user dùng lại được ngay, không tốn lượt
   const { myPending, savePendingFoodCache } = usePendingFoodCache(user?.id, false);
-  const calcFoodCache = useMemo(() => ({ ...(myPending || {}), ...(ud.foodCache || {}) }), [myPending, ud.foodCache]);
+  // Món tự nhập calo (16/10): lưu trên máy theo tài khoản, chỉ người đó thấy — không vào kho chung / hàng chờ duyệt
+  const [myFoods, setMyFoods] = useState(() => readUser("fp_my_foods", user?.id, {}) || {});
+  useEffect(() => { setMyFoods(readUser("fp_my_foods", user?.id, {}) || {}); }, [user?.id]);
+  const saveMyFoods = (entries) => setMyFoods((prev) => { const next = { ...prev, ...entries }; writeUser("fp_my_foods", user?.id, next); return next; });
+  const calcFoodCache = useMemo(() => ({ ...(myFoods || {}), ...(myPending || {}), ...(ud.foodCache || {}) }), [myFoods, myPending, ud.foodCache]);
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "bạn";
 
   // ---------- điều hướng ----------
@@ -309,7 +313,7 @@ export function MobileApp(props) {
   const renderLog = (l) => {
     if (l.pick) {
       return <LogMealSheet pickMode pickTitle={MEAL_NAMES[l.mealId]} date={l.date} mealId={l.mealId} mealIds={[]} dateOptions={dateOptions}
-        recentMeals={[]} frequent={frequent} foodCache={ud.foodCache} onClose={closeLayer}
+        recentMeals={[]} frequent={frequent} foodCache={calcFoodCache} onClose={closeLayer}
         onCalc={(text, auto) => replaceTop({ type: "calc", pick: true, text: text || "", auto: !!auto, date: l.date, mealId: l.mealId })}
         onPickMany={(items) => { setPendingPick({ items, n: Date.now() }); closeLayer(); return true; }} />;
     }
@@ -318,7 +322,7 @@ export function MobileApp(props) {
     const target = mealOf(dayOf(l.date), mealId);
     const sg = suggestFor(mealId, l.date);
     return <LogMealSheet date={l.date} onDate={(d) => { updateLog({ date: d }); if (d !== today && !dayCache[d]) loadDay(d); }} mealId={mealId} onMeal={(id) => updateLog({ mealId: id })}
-      mealIds={ids} dateOptions={dateOptions} recentMeals={recentMeals} frequent={frequent} foodCache={ud.foodCache}
+      mealIds={ids} dateOptions={dateOptions} recentMeals={recentMeals} frequent={frequent} foodCache={calcFoodCache}
       onClose={closeLayer}
       onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
       onAI={aiAccess.usable && l.date === today ? () => replaceTop({ type: "ai" }) : null}
@@ -610,7 +614,7 @@ export function MobileApp(props) {
             <CalcCheckScreen initialText={l.text} autoRun={l.auto} foodCache={calcFoodCache} frequent={frequent} aiEnabled={!!flags.ai_macro} userId={user?.id} appSettings={appSettings}
               dayInfo={{ target: targetsOf(macro, dayTypeOf(profile, l.date)).cal, eaten: eatenOfDay(dayOf(l.date)).cal }}
               mealIds={idsFor(l.date).length ? idsFor(l.date) : ["sang", "trua", "toi"]} initialMeal={l.mealId} date={l.date} dateOptions={dateOptions.some((o) => o.value === l.date) ? dateOptions : [{ value: l.date, label: fmtVN(l.date) }, ...dateOptions]}
-              savePending={savePendingFoodCache} onClose={closeLayer}
+              savePending={savePendingFoodCache} saveMine={saveMyFoods} onClose={closeLayer}
               pickTitle={l.pick ? MEAL_NAMES[l.mealId] : null}
               onSave={l.pick
                 // Từ Sửa bữa › Thêm món: món AI tính đưa về bản nháp Sửa bữa (chưa lưu), như chọn món trong kho

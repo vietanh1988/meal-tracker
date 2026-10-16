@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { aiQuota } from "../lib/aiQuota";
 import { SubPage, Icon } from "./ui";
-import { resolveAll, sumCheck, stepItem, cacheEntryOf } from "../lib/calcCheck.js";
+import { resolveAll, sumCheck, stepItem, cacheEntryOf, manualItem, gramOf } from "../lib/calcCheck.js";
 import { aiCalc } from "../lib/calcAI";
 import { fmtInt, fmtDec, itemName } from "../lib/mobileView";
 import { MEAL_NAMES } from "../lib/mealMath";
@@ -17,7 +17,7 @@ const sel = { height: 42, padding: "0 12px", borderRadius: 12, border: "none", b
 const stepBtn = { width: 32, height: 32, borderRadius: 10, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 18, fontWeight: 800, padding: 0, flexShrink: 0, fontFamily: "inherit" };
 const tag = (ai) => ({ fontSize: 11, fontWeight: 800, color: ai ? "#6D28D9" : "#00A67E", background: ai ? "rgba(124,58,237,0.1)" : "rgba(0,200,150,0.1)", padding: "2px 6px", borderRadius: 6, marginLeft: 4, whiteSpace: "nowrap" });
 
-export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, frequent, aiEnabled, userId, appSettings, dayInfo, mealIds, initialMeal, date, dateOptions, onSave, savePending, onClose, pickTitle }) {
+export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, frequent, aiEnabled, userId, appSettings, dayInfo, mealIds, initialMeal, date, dateOptions, onSave, savePending, saveMine, onClose, pickTitle }) {
   const [text, setText] = useState(initialText);
   const [rows, setRows] = useState(() => (autoRun && initialText.trim() ? resolveAll(initialText, foodCache) : null));
   const [aiBusy, setAiBusy] = useState(false);
@@ -47,6 +47,15 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
   const addChip = (name) => setText((t) => (t.trim() ? `${t.replace(/[,\s]+$/, "")}, ${name}` : name));
 
   const setRow = (i, next) => setRows((arr) => arr.map((r, k) => (k === i ? next : r)));
+  // Tự nhập calo (16/10): mở ô nhập ngay dưới món lạ
+  const [manual, setManual] = useState(null); // { i, gram, cal, p, c, f }
+  const openManual = (i, r) => setManual({ i, gram: String(gramOf(r.entry, null)), cal: "", p: "", c: "", f: "" });
+  const manualPreview = manual ? manualItem(rows?.[manual.i]?.entry, manual) : null;
+  const useManual = () => {
+    if (!manual || !manualPreview) return;
+    setRow(manual.i, manualPreview);
+    setManual(null);
+  };
   const removeRow = (i) => setRows((arr) => arr.filter((_, k) => k !== i));
 
   const runAI = async () => {
@@ -66,13 +75,16 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
       if (savePending && Object.keys(pending).length) savePending(pending, provider);
       loadQuota();
     } catch (e) {
-      setErr(e?.quota ? (e.message || "Bạn đã hết lượt AI tính macro tháng này.") : `AI chưa tính được: ${e?.message || "lỗi mạng"}. Thử lại hoặc chọn món gần đúng.`);
+      setErr(e?.quota ? `${e.message || "Bạn đã hết lượt AI tính macro tháng này."} Bấm "Tự nhập calo" ở món đó để ghi.` : `AI chưa tính được: ${e?.message || "lỗi mạng"}. Thử lại, tự nhập calo hoặc chọn món gần đúng.`);
     } finally { setAiBusy(false); }
   };
 
   const save = async () => {
     if (!items.length || unknown.length || busy) return;
     setBusy(true);
+    const mine = {};
+    (rows || []).forEach((r) => { if (r.source === "manual") { const e = parseQty(r); const ce = cacheEntryOf(r, e); if (ce) mine[r.food] = ce; } });
+    if (saveMine && Object.keys(mine).length) saveMine(mine); // món tự nhập: lưu riêng cho tài khoản này, lần sau tìm/gõ là ra
     const ok = await onSave(day, meal, items.map(({ _raw, ...it }) => ({ ...it, gram: Math.round(it.gram), cal: Math.round(it.cal) })));
     setBusy(false);
     if (ok !== false) onClose();
@@ -126,7 +138,7 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
         <button data-testid="calc-close" onClick={onClose} style={{ flex: 1, height: 52, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0F172A", fontFamily: "inherit", fontSize: 15, fontWeight: 800 }}>{pickTitle ? "Huỷ" : "Chỉ xem"}</button>
         <button data-testid="calc-save" disabled={!items.length || unknown.length > 0 || busy} onClick={save} style={{ flex: 2, height: 52, borderRadius: 14, border: "none", ...((!items.length || unknown.length > 0) ? { background: "#E2E8F0", color: "#64748B" } : { background: CY, color: "#FFFFFF" }), fontFamily: "inherit", fontSize: 15, fontWeight: 900 }}>{busy ? "Đang lưu…" : pickTitle ? `Thêm vào ${String(pickTitle).toLowerCase()}` : `Ghi vào ${(MEAL_NAMES[meal] || "bữa").toLowerCase()}`}</button>
       </div>
-      {unknown.length > 0 && <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Còn {unknown.length} món chưa có calo — AI tính hoặc chọn món gần đúng trước khi ghi.</span>}
+      {unknown.length > 0 && <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Còn {unknown.length} món chưa có calo — AI tính, tự nhập calo hoặc chọn món gần đúng trước khi ghi.</span>}
     </div>
   );
   const nAI = items.filter((x) => x.source === "ai").length;
@@ -158,13 +170,35 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
               <button aria-label={`Bỏ ${r.entry.raw}`} disabled={aiBusy} onClick={() => removeRow(i)} style={{ ...stepBtn, border: "none", color: "#94A3B8" }}>{Icon.close(14)}</button>
             </span>
             {r.near && <button data-testid={`calc-near-${i}`} disabled={aiBusy} onClick={() => setRow(i, r.near)} style={{ alignSelf: "flex-start", height: 32, padding: "0 10px", borderRadius: 10, border: "none", background: "#EEF4FF", fontFamily: "inherit", fontSize: 12, fontWeight: 800, color: "#0062F0" }}>Dùng món gần đúng: {itemName(r.near)} · {fmtInt(r.near.cal)} kcal</button>}
+            {manual?.i !== i
+              ? <button data-testid={`calc-manual-${i}`} disabled={aiBusy} onClick={() => openManual(i, r)} style={{ alignSelf: "flex-start", height: 32, padding: "0 10px", borderRadius: 10, border: "none", background: "#F1F5F9", fontFamily: "inherit", fontSize: 12, fontWeight: 800, color: "#334155", display: "flex", alignItems: "center", gap: 6 }}>{Icon.plus(13)}Tự nhập calo</button>
+              : (
+                <div data-testid="calc-manual-form" style={{ display: "flex", flexDirection: "column", gap: 10, padding: 12, borderRadius: 14, background: "#F8FAFF", border: "1px solid #E3EBFA" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <NumField label="Khẩu phần" unit="g" value={manual.gram} onChange={(v) => setManual((m) => ({ ...m, gram: v }))} testid="calc-manual-gram" />
+                    <NumField label="Calo *" unit="kcal" value={manual.cal} onChange={(v) => setManual((m) => ({ ...m, cal: v }))} testid="calc-manual-cal" autoFocus strong />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+                    <NumField label="Đạm" unit="g" value={manual.p} onChange={(v) => setManual((m) => ({ ...m, p: v }))} testid="calc-manual-p" dec />
+                    <NumField label="Tinh bột" unit="g" value={manual.c} onChange={(v) => setManual((m) => ({ ...m, c: v }))} testid="calc-manual-c" dec />
+                    <NumField label="Béo" unit="g" value={manual.f} onChange={(v) => setManual((m) => ({ ...m, f: v }))} testid="calc-manual-f" dec />
+                  </div>
+                  <span style={{ fontSize: 11, color: "#64748B", lineHeight: 1.4 }}>Xem trên bao bì / thực đơn quán. Đạm, tinh bột, béo không bắt buộc. Món tự nhập chỉ lưu cho bạn.</span>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => setManual(null)} style={{ flex: 1, height: 42, borderRadius: 12, border: "none", background: "#EEF4FF", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#0F172A" }}>Huỷ</button>
+                    <button data-testid="calc-manual-use" disabled={!manualPreview} onClick={useManual} style={{ flex: 2, height: 42, borderRadius: 12, border: "none", background: manualPreview ? CY : "#E2E8F0", color: manualPreview ? "#FFFFFF" : "#64748B", fontFamily: "inherit", fontSize: 14, fontWeight: 900 }}>{manualPreview ? `Dùng · ${fmtInt(manualPreview.cal)} kcal` : "Nhập calo"}</button>
+                  </div>
+                </div>
+              )}
           </div>
         ) : (
           <div key={i} data-testid={`calc-item-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 72, borderBottom: i < rows.length - 1 ? "1px solid #EEF2FA" : "none" }}>
             <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
               <span style={{ fontSize: 15, fontWeight: 700 }}>{itemName(r)}{r.source === "estimate"
                 ? <span data-testid="calc-estimate" style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, color: "#B45309", background: "rgba(245,158,11,0.12)", padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>Ước tính</span>
-                : <span style={tag(r.source === "ai")}>{r.source === "ai" ? "AI tính" : r.source === "cache" ? "Đã lưu" : "Kho món"}</span>}</span>
+                : r.source === "manual"
+                ? <span data-testid="calc-manual-tag" style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, color: "#334155", background: "#EEF2F7", padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>Tự nhập</span>
+                : <span style={tag(r.source === "ai")}>{r.source === "ai" ? "AI tính" : r.source === "cache" ? "Đã lưu" : r.source === "mine" ? "Của bạn" : "Kho món"}</span>}</span>
               {r.source === "estimate" && r.base && <span style={{ fontSize: 11, color: "#B45309" }}>Chưa có đúng món này — tính từ {r.base.toLowerCase()}{r.cook ? ` + ${r.cook}` : ""}</span>}
               <span style={{ fontSize: 12, color: "#475569" }}>{fmtInt(r.cal)} kcal · Đ {fmtDec(r.p)} · TB {fmtDec(r.c)} · B {fmtDec(r.f)} g</span>
             </span>
@@ -185,12 +219,32 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
             <span style={{ fontSize: 14, lineHeight: 1.45 }}>Để AI tính calo cho <b>{unknown.length} món</b> chưa có trong kho.</span>
             <button data-testid="calc-ai" disabled={aiBusy || (macroQuota && macroQuota.left <= 0)} onClick={runAI} style={{ height: 44, borderRadius: 12, border: "none", background: "linear-gradient(135deg,#7C3AED,#5B21B6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{Icon.sparkle(16)}{aiBusy ? "AI đang tính…" : "AI tính calo · 1 lượt"}</button>
             {macroQuota && <span style={{ fontSize: 12, color: "#64748B" }}>Còn {fmtInt(macroQuota.left)} / {fmtInt(macroQuota.limit)} lượt tháng này. Món đã tính được lưu lại, lần sau không tốn lượt.</span>}
-          </> : <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.45 }}>AI tính macro đang tạm tắt. Chọn món gần đúng hoặc bỏ món đó.</span>}
+          </> : <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.45 }}>AI tính macro đang tạm tắt. Bấm "Tự nhập calo", chọn món gần đúng hoặc bỏ món đó.</span>}
         </div>
       )}
       {err && <p role="alert" style={{ margin: "10px 16px 0 16px", fontSize: 13, color: "#DC2626" }}>{err}</p>}
       {nAI > 0 && <p style={{ margin: "10px 16px 0 16px", fontSize: 12, color: "#64748B", lineHeight: 1.45 }}>Món "AI tính" là ước lượng, có thể chỉnh khẩu phần bằng nút − / +.</p>}
       <div style={{ height: 16 }} />
     </SubPage>
+  );
+}
+
+// Số lượng gõ kèm (2 cái, 1 tô) → lưu theo 1 đơn vị để lần sau gõ "3 cái" nhân đúng
+function parseQty(r) {
+  const m = String(r.qty_display || "").match(/^([\d,]+)\s/);
+  return m ? Number(m[1].replace(",", ".")) || 1 : 1;
+}
+
+function NumField({ label, unit, value, onChange, testid, autoFocus, strong, dec }) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+      <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B" }}>{label}</span>
+      <span style={{ height: 44, borderRadius: 12, background: "#FFFFFF", border: strong ? "1.5px solid #0E9FC0" : "1px solid #E2E8F0", display: "flex", alignItems: "center", gap: 4, padding: "0 10px", boxSizing: "border-box" }}>
+        <input data-testid={testid} type="text" inputMode={dec ? "decimal" : "numeric"} autoFocus={autoFocus} value={value} placeholder={dec ? "—" : "0"}
+          onChange={(e) => onChange(e.target.value.replace(dec ? /[^\d.,]/g : /[^\d]/g, "").slice(0, 6))}
+          style={{ flex: 1, minWidth: 0, width: "100%", border: "none", background: "transparent", fontFamily: "inherit", fontSize: 16, fontWeight: 800, color: "#0F172A", outline: "none", padding: 0 }} />
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#0062F0" }}>{unit}</span>
+      </span>
+    </label>
   );
 }

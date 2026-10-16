@@ -216,3 +216,14 @@ export function cacheEntryOf(item, qty = 1) {
   const q = Number(qty) > 0 ? Number(qty) : 1;
   return { p: r1(item.p / q), c: r1(item.c / q), f: r1(item.f / q), fiber: r1((item.fiber || 0) / q), cal: Math.round(item.cal / q), gram: Math.round(g / q) };
 }
+
+// Tự nhập calo cho món lạ (16/10): khi AI tắt / hết lượt / không có món gần đúng. Trả item hoặc null nếu số vô lý.
+export function manualItem(entry, { gram, cal, p, c, f } = {}) {
+  const g = Math.round(Number(gram) || 0), k = Math.round(Number(cal) || 0);
+  if (g <= 0 || g > 3000 || k <= 0 || k > 5000) return null;
+  const n = (x) => Math.max(0, r1(String(x ?? "").replace(",", ".")));
+  const nm = String(entry?.name || "").trim();
+  if (!nm) return null;
+  const lbl = entry.unit && entry.unit !== "g" && entry.unit !== "ml" ? `${fmtQty(entry.qty || 1)} ${entry.unit}` : null;
+  return { food: nm, display: nm.charAt(0).toUpperCase() + nm.slice(1), gram: g, unit: "g", ...(lbl ? { qty_display: lbl } : {}), p: n(p), c: n(c), f: n(f), fiber: 0, cal: k, source: "manual", _raw: entry.raw };
+}

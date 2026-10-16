@@ -75,3 +75,16 @@ test("món không có trong kho (gốc + cách chế biến) giữ tên gõ, đ�
   const [b] = resolveAll("trứng rán", {});
   assert.ok(!/luộc/i.test(b.display), b.display);
 });
+
+test("tự nhập calo món lạ (16/10)", async () => {
+  const { manualItem } = await import("../src/lib/calcCheck.js");
+  const e = parseFoodLine("2 cái bánh khọt");
+  const it = manualItem(e, { gram: 120, cal: 260, p: "6,5", c: 30, f: "" });
+  assert.equal(it.display, "Bánh khọt");
+  assert.equal(it.source, "manual");
+  assert.equal(it.p, 6.5);
+  assert.equal(it.f, 0);
+  assert.equal(it.qty_display, "2 cái");
+  assert.equal(manualItem(e, { gram: 100, cal: 0 }), null);
+  assert.equal(manualItem(e, { gram: 0, cal: 200 }), null);
+});
