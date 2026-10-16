@@ -227,3 +227,25 @@ export function manualItem(entry, { gram, cal, p, c, f } = {}) {
   const lbl = entry.unit && entry.unit !== "g" && entry.unit !== "ml" ? `${fmtQty(entry.qty || 1)} ${entry.unit}` : null;
   return { food: nm, display: nm.charAt(0).toUpperCase() + nm.slice(1), gram: g, unit: "g", ...(lbl ? { qty_display: lbl } : {}), p: n(p), c: n(c), f: n(f), fiber: 0, cal: k, source: "manual", _raw: entry.raw };
 }
+
+// Ô tìm Ghi bữa (17/10, bản vẽ 113b): chữ gõ trông như CẢ BỮA (≥ 2 món, hoặc 1 món kèm số + đơn vị "1 tô", "200g")
+// → hiện thẻ "≈ X kcal cho N món · Xem & ghi". Trả danh sách dòng đã tách, hoặc null nếu chỉ là tên 1 món để tìm.
+export function mealEntries(text) {
+  const e = parseFoodText(text);
+  if (e.length >= 2) return e;
+  if (e.length === 1 && e[0].qty && e[0].unit) return e;
+  return null;
+}
+
+// Món tự nhập (source "manual") → bản ghi lưu riêng cho tài khoản (fp_my_foods), theo 1 đơn vị
+// ("2 cái" → lưu 1 cái) để lần sau gõ "3 cái" nhân đúng. Dùng chung Kiểm tra calo + giỏ Ghi bữa.
+export function mineEntries(rows) {
+  const out = {};
+  (rows || []).forEach((r) => {
+    if (!r || r.source !== "manual") return;
+    const m = String(r.qty_display || "").match(/^([\d,]+)\s/);
+    const ce = cacheEntryOf(r, m ? Number(m[1].replace(",", ".")) || 1 : 1);
+    if (ce) out[r.food] = ce;
+  });
+  return out;
+}

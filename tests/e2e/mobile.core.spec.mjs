@@ -107,19 +107,41 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     expect(row.eaten_meals).toEqual(["sang"]);
   });
 
-  test("Cân nặng: lưu 64,8 rồi cân lại 64,9 cùng ngày → vẫn 1 dòng", async () => {
+  // 17/10 (bản vẽ 115): thẻ Cân nặng mở sheet "Cân hôm nay" ngay ở Hôm nay; số điền sẵn, −/+ 0,1 kg; toast + Hoàn tác
+  test("Cân nặng: lưu 64,8 rồi cân lại 64,9 cùng ngày → vẫn 1 dòng; Hoàn tác trả số cũ", async () => {
     const s = S();
+    const rows = () => rest(`weight_logs?user_id=eq.${s.uid}&select=kg,logged_date,week`);
     await tap(page.getByTestId("weight-tile"));
+    await expect(page.getByTestId("weight-sheet")).toBeVisible();
+    await expect(page.getByTestId("weight-sub")).toContainText("lần cân đầu tiên");
     await page.getByTestId("weight-input").fill("64,8");
-    await page.getByTestId("weight-save").click();
-    await waitDb(async () => { const w = await rest(`weight_logs?user_id=eq.${s.uid}&select=kg,logged_date,week`); return w.length === 1 && Number(w[0].kg) === 64.8; }, "weight 64.8");
-    await expect(page.getByTestId("weight-input")).toHaveValue("");   // app xoá ô sau khi lưu xong
-    await page.getByTestId("weight-input").fill("64,9");
-    await page.getByTestId("weight-save").click();
-    await waitDb(async () => { const w = await rest(`weight_logs?user_id=eq.${s.uid}&select=kg,logged_date,week`); return w.length === 1 && Number(w[0].kg) === 64.9; }, "weight 64.9, vẫn 1 dòng");
-    const w = await rest(`weight_logs?user_id=eq.${s.uid}&select=kg,logged_date,week`);
+    await expect(page.getByTestId("weight-save")).toContainText("Lưu 64,8 kg");
+    await tap(page.getByTestId("weight-save"));
+    await waitDb(async () => { const w = await rows(); return w.length === 1 && Number(w[0].kg) === 64.8; }, "weight 64.8");
+    await expect(page.getByTestId("weight-sheet")).toHaveCount(0);   // vẫn ở Hôm nay
+    await expect(page.getByTestId("weight-tile")).toBeVisible();
+    await expect(page.getByTestId("toast")).toContainText("Đã lưu 64,8 kg");
+    // Cân lại: số điền sẵn = số hôm nay, + 0,1 kg
+    await tap(page.getByTestId("weight-tile"));
+    await expect(page.getByTestId("weight-input")).toHaveValue("64,8");
+    await tap(page.getByTestId("weight-plus"));
+    await expect(page.getByTestId("weight-input")).toHaveValue("64,9");
+    await tap(page.getByTestId("weight-save"));
+    await waitDb(async () => { const w = await rows(); return w.length === 1 && Number(w[0].kg) === 64.9; }, "weight 64.9, vẫn 1 dòng");
+    const w = await rows();
     expect(w[0].logged_date).toBe(s.today);
     expect(w[0].week).toBe(1);
+    // Lưu 65,3 rồi Hoàn tác → về 64,9 (vẫn 1 dòng)
+    await tap(page.getByTestId("weight-tile"));
+    await page.getByTestId("weight-input").fill("65,3");
+    await tap(page.getByTestId("weight-save"));
+    await waitDb(async () => { const w = await rows(); return w.length === 1 && Number(w[0].kg) === 65.3; }, "weight 65.3");
+    await expect(page.getByTestId("toast")).toContainText("Đã lưu 65,3 kg");
+    await tap(page.getByTestId("toast-action"));
+    await waitDb(async () => { const w = await rows(); return w.length === 1 && Number(w[0].kg) === 64.9; }, "Hoàn tác → 64.9");
+    // "Xem biểu đồ ›" trong sheet → Tiến độ › Cân nặng (đường cũ)
+    await tap(page.getByTestId("weight-tile"));
+    await tap(page.getByTestId("weight-chart-link"));
     await expect(page.getByTestId("weight-chart")).toBeVisible();
     await expect(page.getByTestId("wchart-note")).toContainText("kg");
     await page.screenshot({ path: "shots/tien-do-can-nang.png", fullPage: true });

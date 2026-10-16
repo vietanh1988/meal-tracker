@@ -87,6 +87,13 @@ export async function openLogFor(page, mealId) {
   return tap(page.getByRole("button", { name: `Ghi ${ROW_LABEL[mealId]}` }));
 }
 
+// Nút + giữa thanh dưới (17/10, bản vẽ 116) mở menu 3 lựa chọn → bấm 1 lựa chọn: "log" | "photo" | "calc"
+export async function openPlus(page, which = "log") {
+  await page.getByTestId("nav-add").click();
+  await expect(page.getByTestId("plus-menu")).toBeVisible();
+  await tap(page.getByTestId(`plus-${which}`));
+}
+
 // Hộp hỏi trong app (lib/dialog): bấm Đồng ý nếu có hiện trong `ms` (VD áp thực đơn chỉ hỏi khi thay bữa chưa ăn có món)
 export async function confirmIfAsked(page, ms = 2500) {
   const ok = page.getByTestId("confirm-ok");

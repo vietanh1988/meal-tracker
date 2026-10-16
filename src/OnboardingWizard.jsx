@@ -1,5 +1,7 @@
 // Thiết lập lần đầu (bản vẽ 54–59, chốt 14/10) — nền Blue Dark nối tiếp màn đăng nhập.
-//  0 Chào → 1 Cơ thể → 2 Tập luyện → 3 Mục tiêu → 4 Xong (vòng macro) → 5 Phong cách ăn + AI lên thực đơn ngày đầu.
+//  0 Chào → 1 Cơ thể → 2 Tập luyện → 3 Mục tiêu → 4 Phong cách ăn (dòng macro mỗi ngày ở đầu) + AI lên thực đơn ngày đầu.
+// Bản vẽ 110–112 (16/10): ô cơ thể để trống + báo số vô lý; chọn thẳng ngày tập T2…CN (tần suất tự suy ra);
+// chặn mục tiêu ngược hướng; bỏ màn "Xong" riêng (BMR/TDEE) → 1 dòng macro ở đầu màn Phong cách ăn.
 // Logic giữ nguyên bản cũ: lưu từng thay đổi qua setProfile, tính macro bằng calcMacro, AI qua generateMenuAI.
 // Khác bản cũ: áp thực đơn đầu tiên chỉ áp cho HÔM NAY, không tự lưu ngầm vào "Lặp lại hằng tuần" (thống nhất chốt 13/10).
 import { useState } from "react";
@@ -7,6 +9,8 @@ import { calcMacro } from "./calcMacro";
 import { generateMenuAI, resolveMealIds } from "./lib/aiMenuService";
 import { DK, DK_CSS, dkCard, dkGlass } from "./theme";
 import { Seg } from "./mobile/ui";
+import { todayVN } from "./lib/dateVN";
+import { bodyErrors, bodyValid, daysToFrequency, goalDirectionError, isPlaceholderBody, BODY_LIMITS } from "./lib/onboardingCheck";
 
 const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
 const GRAD_BLUE = "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)";
@@ -26,6 +30,9 @@ const P = {
 };
 const ic = (k, color, size = 40, s = 22) => <span aria-hidden="true" className="dkic" style={{ width: size, height: size, borderRadius: size >= 36 ? 11 : 9, background: color, color: "#FFFFFF", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 8px rgba(0,0,0,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{svg(P[k], s)}</span>;
 const fmt = (n) => Math.round(Number(n) || 0).toLocaleString("vi-VN");
+const numOf = (v) => (v === "" || v === null || v === undefined ? NaN : Number(String(v).replace(",", ".")));
+const BODY = ["cm", "kg", "birthYear", "goalKg"];
+const DAY_NAMES = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]; // profile.gymDays: 0 = T2 … 6 = CN
 
 export function OnboardingWizard({ profile, setProfile, onComplete, appSettings, applyTemplate }) {
   const [step, setStep] = useState(0);
@@ -36,12 +43,27 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
   const isStandalone = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone);
   const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
   const [showPin, setShowPin] = useState(!isStandalone && isIOS);
+  // Số đo nhập ở màn này giữ tạm trong draft (chuỗi đang gõ), chỉ ghi vào hồ sơ khi bấm Tiếp tục / Tính macro —
+  // không ghi số mặc định hay ô trống vào DB. Hồ sơ đã có số thật (chạy lại onboarding) thì điền sẵn số thật.
+  const [draft, setDraft] = useState(() => {
+    const pr = profile || {};
+    const blank = new Set(pr._defaulted || []);
+    if (isPlaceholderBody(pr)) BODY.forEach((f) => blank.add(f)); // số mặc định app / mặc định cột DB → để trống
+    const d = {};
+    BODY.forEach((f) => { d[f] = blank.has(f) || pr[f] === undefined || pr[f] === null || pr[f] === "" ? "" : String(pr[f]).replace(".", ","); });
+    return d;
+  });
+  const [touched, setTouched] = useState({});
   const p = { ...(profile || {}) };
   if (!p.gender) p.gender = "male";
-  const macro = calcMacro(p);
+  const pm = { ...p };
+  BODY.forEach((f) => { const n = numOf(draft[f]); if (!Number.isNaN(n)) pm[f] = n; });
+  const macro = calcMacro(pm);
   const noEx = (p.exerciseType || "gym") === "none";
-  const year = new Date().getFullYear();
+  const year = Number(todayVN().slice(0, 4));
   const set = (patch) => setProfile({ ...p, ...patch });
+  const keepDefaulted = (fields) => { const d = (p._defaulted || []).filter((f) => !fields.includes(f)); return d.length ? d : undefined; };
+  const gymDays = Array.isArray(p.gymDays) ? p.gymDays : [];
 
   const finish = () => { setProfile({ ...p, onboardingDone: true }); onComplete(); };
   const applyMenu = async (tpl) => {
@@ -52,8 +74,8 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     setLoading(true); setResult(null); setAiErr("");
     try {
       const dayType = noEx ? "rest" : "train";
-      const mealIds = resolveMealIds(dayType, p, appSettings);
-      const res = await generateMenuAI({ macro, profile: p, dayType, mealIds, prefs: { style: autoStyle, avoid: "" }, avoidFoods: [], appSettings });
+      const mealIds = resolveMealIds(dayType, pm, appSettings);
+      const res = await generateMenuAI({ macro, profile: pm, dayType, mealIds, prefs: { style: autoStyle, avoid: "" }, avoidFoods: [], appSettings });
       // generateMenuAI trả {ok, template:{meals}} (16/10: trước đây kiểm res.meals → luôn thoát im lặng, vẫn tốn 1 lượt AI)
       if (res?.ok && res.template?.meals?.length) setResult({ ...res.template, day_type: dayType });
       else setAiErr(res?.error || "Chưa tạo được thực đơn. Thử lại hoặc bỏ qua để tự ghi.");
@@ -87,17 +109,27 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
   const seg = (opts, cur, onPick, disabledId) => (
     <Seg dark value={cur} onChange={onPick} opts={opts.map(([id, t]) => ({ value: id, label: t, testid: `onb-seg-${id}`, disabled: id === disabledId }))} />
   );
-  const field = (key, label, unit, mode, value, onChange, onBlur) => (
+  // Ô số (bản vẽ 110): cao 52, bo 14, viền đỏ DK.red khi sai, câu lỗi đỏ 12px ngay dưới ô
+  const field = (key, label, unit, mode, value, onChange, onBlur, placeholder, err, testid) => (
     <label style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
       <span style={{ fontSize: 12, fontWeight: 700, color: DK.t2 }}>{label}</span>
-      <span className="pw-box" style={{ height: 48, padding: "0 14px", borderRadius: 12, border: `1.5px solid ${DK.fieldLine}`, background: DK.field, display: "flex", alignItems: "center", gap: 8, boxSizing: "border-box" }}>
-        <input className="pw-inner" data-testid={`onb-${key}`} type="text" inputMode={mode} value={value ?? ""} onChange={onChange} onBlur={onBlur}
+      <span className="pw-box" style={{ height: 52, padding: "0 14px", borderRadius: 14, border: `1.5px solid ${err ? DK.red : DK.fieldLine}`, background: DK.field, display: "flex", alignItems: "center", gap: 8, boxSizing: "border-box" }}>
+        <input className="pw-inner" data-testid={testid || `onb-${key}`} type="text" inputMode={mode} pattern={mode === "numeric" ? "[0-9]*" : undefined} autoComplete="off" placeholder={placeholder} aria-invalid={err ? true : undefined}
+          value={value ?? ""} onChange={onChange} onBlur={onBlur}
           style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", color: "#FFFFFF", fontFamily: "inherit", fontSize: 16, fontWeight: 600, outline: "none" }} />
         <span style={{ fontSize: 13, color: DK.t3, whiteSpace: "nowrap" }}>{unit}</span>
       </span>
+      {err && typeof err === "string" && <span data-testid={`${testid || `onb-${key}`}-err`} role="alert" style={{ fontSize: 12, fontWeight: 600, color: DK.red, lineHeight: 1.4 }}>{err}</span>}
     </label>
   );
   const num = (key, decimal) => (e) => { const v = decimal ? e.target.value.replace(",", ".") : e.target.value; set({ [key]: v === "" ? "" : Number(v) }); };
+  // Ô số giữ trong draft: chỉ nhận chữ số (và 1 dấu , . nếu có thập phân)
+  const dnum = (key, decimal) => (e) => {
+    let v = e.target.value.replace(decimal ? /[^0-9.,]/g : /[^0-9]/g, "");
+    if (decimal) { v = v.replace(".", ","); const i = v.indexOf(","); if (i >= 0) v = v.slice(0, i + 1) + v.slice(i + 1).replace(/,/g, "").slice(0, 1); }
+    setDraft((d) => ({ ...d, [key]: v.slice(0, decimal ? 5 : 4) }));
+  };
+  const blur = (key) => () => setTouched((t) => ({ ...t, [key]: true }));
   const opt = (id, on, k, color, title, sub, onClick) => (
     <button key={id} data-testid={`onb-opt-${id}`} aria-pressed={on} onClick={onClick} style={{ ...dkGlass, ...(on ? { border: "2px solid #FFFFFF", background: "rgba(255,255,255,0.2)" } : {}), display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 16, width: "100%", fontFamily: "inherit", color: "#FFFFFF", textAlign: "left", boxSizing: "border-box" }}>
       {ic(k, color)}
@@ -125,45 +157,77 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     {footer(<>{btn("Bắt đầu thiết lập", () => setStep(1), false, "onb-start")}<p style={{ margin: "10px 0 0 0", textAlign: "center", fontSize: 12, color: DK.t3 }}>Đổi lại được bất cứ lúc nào ở Tôi › Mục tiêu &amp; macro</p></>)}
   </>;
 
-  if (step === 1) body = <>
-    {top(1)}{head(1, "Cơ thể bạn", "Chiều cao, cân nặng và tuổi để tính năng lượng nền.")}
-    <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}><span style={{ fontSize: 12, fontWeight: 700, color: DK.t2 }}>Giới tính</span>{seg([["male", "Nam"], ["female", "Nữ"]], p.gender, (g) => set({ gender: g }))}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {field("cm", "Chiều cao", "cm", "numeric", p.cm, num("cm"))}
-        {field("kg", "Cân nặng", "kg", "decimal", p.kg, num("kg", true))}
+  if (step === 1) {
+    const vals = { cm: draft.cm, kg: draft.kg, birthYear: draft.birthYear };
+    const errs = bodyErrors(vals, year);
+    // Báo đỏ khi đã rời ô, hoặc đã gõ đủ số chữ số (cao 3, nặng 3, năm 4) — không báo khi đang gõ dở "1", "16"
+    const shown = (k, len) => (errs[k] && (touched[k] || String(vals[k]).replace(",", "").length >= len) ? errs[k] : null);
+    const ok = bodyValid(vals, year);
+    const by = numOf(draft.birthYear);
+    const ageUnit = String(draft.birthYear).length === 4 && !errs.birthYear ? `${year - by} tuổi` : "";
+    const next = () => {
+      if (!ok) return;
+      set({ cm: Math.round(numOf(draft.cm)), kg: Math.round(numOf(draft.kg) * 10) / 10, birthYear: numOf(draft.birthYear), _defaulted: keepDefaulted(["cm", "kg", "birthYear"]) });
+      setStep(2);
+    };
+    body = <>
+      {top(1)}{head(1, "Cơ thể bạn", "Chiều cao, cân nặng và tuổi để tính năng lượng nền.")}
+      <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}><span style={{ fontSize: 12, fontWeight: 700, color: DK.t2 }}>Giới tính</span>{seg([["male", "Nam"], ["female", "Nữ"]], p.gender, (g) => set({ gender: g }))}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, alignItems: "start" }}>
+          {field("cm", "Chiều cao", "cm", "numeric", draft.cm, dnum("cm"), blur("cm"), "VD 165", shown("cm", 3), "onb-height")}
+          {field("kg", "Cân nặng", "kg", "decimal", draft.kg, dnum("kg", true), blur("kg"), "VD 60", shown("kg", 3), "onb-weight")}
+        </div>
+        {field("birthYear", "Năm sinh", ageUnit, "numeric", draft.birthYear, dnum("birthYear"), blur("birthYear"), "VD 1995", shown("birthYear", 4), "onb-year")}
       </div>
-      {field("birthYear", "Năm sinh", p.birthYear ? `${year - p.birthYear} tuổi` : "", "numeric", p.birthYear, num("birthYear"))}
-    </div>
-    {note("Dùng để tính BMR (Mifflin-St Jeor). Không chia sẻ cho ai.")}
-    {footer(btn("Tiếp tục", () => setStep(2), !p.cm || !p.kg || !p.birthYear, "onb-next"))}
-  </>;
+      {note(`Dùng để tính BMR (Mifflin-St Jeor). Không chia sẻ cho ai. Cao ${BODY_LIMITS.cm[0]}–${BODY_LIMITS.cm[1]} cm · nặng ${BODY_LIMITS.kg[0]}–${BODY_LIMITS.kg[1]} kg · ${BODY_LIMITS.age[0]}–${BODY_LIMITS.age[1]} tuổi.`)}
+      {footer(btn("Tiếp tục", next, !ok, "onb-next"))}
+    </>;
+  }
 
   if (step === 2) body = <>
-    {top(2)}{head(2, "Bạn tập thế nào?", "Mức vận động quyết định lượng calo cần ăn.")}
+    {top(2)}{head(2, "Tập luyện", "Để chia calo ngày tập / ngày nghỉ.")}
     <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 8 }}>
       <span style={{ fontSize: 12, fontWeight: 700, color: DK.t2 }}>Bạn thường tập gì?</span>
       {[["gym", "bolt", "#EA580C", "Gym", "Tập tạ, máy"], ["gym_cardio", "bolt", "#7C3AED", "Gym + Cardio", "Tạ kèm chạy, đạp xe"], ["cardio", "bolt", "#0891B2", "Cardio", "Chạy, bơi, đạp xe"], ["none", "user", "#64748B", "Không tập", "App tự tính cho người không tập lực"]].map(([id, k, c, t, s]) =>
-        opt(id, (p.exerciseType || "gym") === id, k, c, t, s, () => { const up = { exerciseType: id }; if (id === "none") { up.goalType = p.goalType === "bulk" ? "maintain" : p.goalType; up.frequency = undefined; } else if (!p.frequency) up.frequency = "regular"; set(up); }))}
+        opt(id, (p.exerciseType || "gym") === id, k, c, t, s, () => { const up = { exerciseType: id }; if (id === "none") { up.goalType = p.goalType === "bulk" ? "maintain" : p.goalType; up.frequency = undefined; } else up.frequency = gymDays.length ? daysToFrequency(gymDays.length) : (p.frequency || "regular"); set(up); }))}
       {!noEx && <>
-        <span style={{ fontSize: 12, fontWeight: 700, color: DK.t2, marginTop: 8 }}>Tần suất</span>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {[["occasional", "Thỉnh thoảng · 1–2"], ["regular", "Đều đặn · 3–4"], ["frequent", "Rất thường xuyên · 5–6"], ["daily", "Gần như mỗi ngày"]].map(([id, t]) => chip(id, t, (p.frequency || "regular") === id, () => set({ frequency: id })))}
+        <span style={{ fontSize: 12, fontWeight: 700, color: DK.t2, marginTop: 8 }}>Ngày tập trong tuần · {gymDays.length} buổi</span>
+        <div style={{ display: "flex", gap: 6 }}>
+          {DAY_NAMES.map((t, i) => { const on = gymDays.includes(i); return (
+            <button key={i} data-testid={`onb-day-${i}`} aria-pressed={on} aria-label={`Tập ${t}`} onClick={() => { const nx = on ? gymDays.filter((d) => d !== i) : [...gymDays, i].sort((a, b) => a - b); set({ gymDays: nx, frequency: daysToFrequency(nx.length) }); }}
+              style={{ flex: 1, minWidth: 0, height: 44, padding: 0, borderRadius: 12, fontFamily: "inherit", fontSize: 14, fontWeight: 800, boxSizing: "border-box", border: on ? "1px solid #FFFFFF" : `1px solid ${DK.chipLine}`, background: on ? "#FFFFFF" : DK.chip, color: on ? "#0040E0" : "#FFFFFF", cursor: "pointer" }}>{t}</button>
+          ); })}
         </div>
+        <span style={{ fontSize: 12, color: gymDays.length ? DK.t3 : DK.red }}>{gymDays.length ? "Ngày tập ăn nhiều tinh bột hơn ngày nghỉ." : "Chọn ít nhất 1 ngày tập (hoặc chọn Không tập)."}</span>
       </>}
     </div>
-    {footer(btn("Tiếp tục", () => setStep(3), false, "onb-next"))}
+    {footer(btn("Tiếp tục", () => { if (!noEx) set({ frequency: daysToFrequency(gymDays.length) }); setStep(3); }, !noEx && gymDays.length === 0, "onb-next"))}
   </>;
 
-  if (step === 3) body = <>
+  if (step === 3) {
+    const goal = p.goalType || "bulk";
+    const showGoal = goal !== "maintain" && !(noEx && goal === "bulk");
+    const gk = numOf(draft.goalKg);
+    const rangeErr = showGoal && !Number.isNaN(gk) && (gk < BODY_LIMITS.kg[0] || gk > BODY_LIMITS.kg[1]) && (touched.goalKg || String(draft.goalKg).replace(",", "").length >= 3) ? `Cân mục tiêu từ ${BODY_LIMITS.kg[0]} đến ${BODY_LIMITS.kg[1]} kg` : null;
+    const dirErr = showGoal ? goalDirectionError({ goalType: goal, kg: p.kg, goalKg: draft.goalKg, exerciseType: p.exerciseType }) : null;
+    const goalErr = rangeErr || dirErr;
+    const goalOk = !showGoal || (!Number.isNaN(gk) && gk >= BODY_LIMITS.kg[0] && gk <= BODY_LIMITS.kg[1] && !dirErr && Number(p.months) >= 1);
+    const next = () => {
+      if (!goalOk) return;
+      if (showGoal) set({ goalKg: Math.round(gk * 10) / 10, _defaulted: keepDefaulted(["goalKg"]) });
+      setStep(4);
+    };
+    body = <>
     {top(3)}{head(3, "Mục tiêu của bạn", "Fipilot tính lượng calo thêm/bớt mỗi ngày theo mục tiêu.")}
     <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 14 }}>
       {seg([["bulk", "Tăng cơ"], ["cut", "Giảm mỡ"], ["maintain", "Duy trì"]], p.goalType || "bulk", (g) => { const up = { goalType: g }; if (g !== "cut") up.dietStrategy = "balanced"; set(up); }, noEx ? "bulk" : null)}
-      {p.goalType !== "maintain" && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {field("goalKg", "Cân mục tiêu", "kg", "decimal", p.goalKg, num("goalKg", true))}
+      {showGoal && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, alignItems: "start" }}>
+        {field("goalKg", "Cân mục tiêu", "kg", "decimal", draft.goalKg, dnum("goalKg", true), blur("goalKg"), goal === "cut" ? `VD ${Math.max(BODY_LIMITS.kg[0], Math.round((Number(p.kg) || 65) - 5))}` : `VD ${Math.round((Number(p.kg) || 60) + 5)}`, !!goalErr)}
         {field("months", "Trong vòng", "tháng", "numeric", p.months, num("months"), () => { if (!p.months || p.months < 1) set({ months: 1 }); })}
       </div>}
-      {p.goalType !== "maintain" && macro.perWeek > 0 && (
+      {showGoal && goalErr && <div data-testid="onb-goal-err" role="alert" style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(255,120,120,0.16)", color: DK.red, fontSize: 13, fontWeight: 700, lineHeight: 1.5 }}>{goalErr}</div>}
+      {showGoal && !goalErr && !Number.isNaN(gk) && macro.perWeek > 0 && (
         <div data-testid="onb-speed" style={{ padding: "10px 12px", borderRadius: 12, background: macro.safe ? "rgba(0,200,150,0.18)" : "rgba(245,158,11,0.18)", color: macro.safe ? DK.green : DK.amber, fontSize: 13, fontWeight: 600 }}>
           {macro.safe ? `Tốc độ ${String(macro.perWeek).replace(".", ",")} kg/tuần · An toàn` : `Tốc độ ${String(macro.perWeek).replace(".", ",")} kg/tuần · Hơi nhanh, nên kéo dài thời gian`}
         </div>
@@ -174,42 +238,23 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
       </div>}
     </div>
     {note("Tốc độ quá nhanh sẽ báo vàng. Kiểu ăn chỉ hiện khi chọn Giảm mỡ.")}
-    {footer(btn("Tính macro", () => setStep(4), false, "onb-next"))}
+    {footer(btn("Tính macro", next, !goalOk, "onb-next"))}
   </>;
-
-  if (step === 4) {
-    const pc = macro.protein * 4, cc = macro.carb * 4, fc = macro.fat * 9, tot = pc + cc + fc || 1;
-    const a = (pc / tot) * 100, b = a + (cc / tot) * 100;
-    const m3 = (t, v, c) => <div style={{ ...dkCard, borderRadius: 14, padding: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}><span style={{ width: 8, height: 8, borderRadius: 4, background: c }} /><span style={{ fontSize: 18, fontWeight: 900 }}>{v} g</span><span style={{ fontSize: 11, color: DK.t3 }}>{t}</span></div>;
-    const kv = (k, t, v, c, last) => <div style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 48, borderBottom: last ? "none" : `1px solid ${DK.line}` }}>{ic(k, c, 32, 18)}<span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>{t}</span><span style={{ fontSize: 13, color: DK.t2 }}>{v}</span></div>;
-    body = <>
-      {top(null)}
-      <div style={{ padding: "4px 20px 0 20px", textAlign: "center", display: "flex", flexDirection: "column", gap: 6 }}><span style={{ fontSize: 26, fontWeight: 900 }}>Xong rồi! 🎉</span><span style={{ fontSize: 14, color: DK.t2 }}>Mục tiêu mỗi ngày của bạn</span></div>
-      <div style={{ display: "flex", justifyContent: "center", padding: "20px 0 6px 0" }}>
-        <span style={{ width: 168, height: 168, borderRadius: 84, background: `conic-gradient(#4DA3FF 0 ${a}%, #34D399 ${a}% ${b}%, #FBBF24 ${b}% 100%)`, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 40px rgba(77,163,255,0.35)" }}>
-          <span style={{ width: 136, height: 136, borderRadius: 68, background: DK.base, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span data-testid="onb-kcal" style={{ fontSize: 34, fontWeight: 900 }}>{fmt(macro.calTarget)}</span>
-            <span style={{ fontSize: 12, color: DK.t2 }}>{noEx ? "kcal mỗi ngày" : "kcal ngày tập"}</span>
-          </span>
-        </span>
-      </div>
-      <div style={{ margin: "8px 16px 0 16px", display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 8 }}>{m3("Đạm", fmt(macro.protein), "#4DA3FF")}{m3("Tinh bột", fmt(macro.carb), "#34D399")}{m3("Béo", fmt(macro.fat), "#FBBF24")}</div>
-      <div style={{ ...dkCard, margin: "12px 16px 0 16px", padding: "0 14px" }}>
-        {kv("calc", "BMR", `${fmt(macro.bmr)} kcal`, "#007AFF")}
-        {kv("chart", `TDEE (×${String(macro.actMul).replace(".", ",")})`, `${fmt(macro.tdee)} kcal`, "#0891B2")}
-        {!noEx && kv("target", "Ngày nghỉ", `${fmt(macro.calRest)} kcal`, "#00A67E")}
-        {kv("doc", "Cách tính", (p.calorieMode || "standard") === "asian" ? "Việt Nam (BMR ×0,9)" : "Chuẩn quốc tế", "#64748B", true)}
-      </div>
-      {footer(<>{btn("Tiếp — AI lên thực đơn đầu tiên", () => setStep(5), false, "onb-next")}<p style={{ margin: "10px 0 0 0", textAlign: "center", fontSize: 12, color: DK.t3 }}>Đổi lại được ở Tôi › Mục tiêu &amp; macro</p></>)}
-    </>;
   }
 
-  if (step === 5) {
+  if (step === 4) {
     const meals = result?.meals || [];
     const sum = (k) => Math.round(meals.reduce((s, m) => (m.items || []).reduce((a, i) => a + (Number(i[k]) || 0), s), 0));
     body = <>
       {top(null)}
-      <div style={{ padding: "4px 20px 10px 20px", display: "flex", flexDirection: "column", gap: 6 }}><span style={{ fontSize: 26, fontWeight: 900 }}>Bạn thích ăn kiểu nào?</span><span style={{ fontSize: 14, color: DK.t2 }}>AI lên thực đơn ngày đầu tiên theo kiểu này.</span></div>
+      {/* Bản vẽ 112: thay màn "Xong – macro mỗi ngày" bằng 1 dòng tóm tắt ở đầu màn này */}
+      <div data-testid="onb-macro" style={{ ...dkGlass, margin: "4px 16px 0 16px", padding: "10px 14px", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", fontSize: 14, fontWeight: 700, color: DK.t2, lineHeight: 1.4, textAlign: "center" }}>
+        <span><b data-testid="onb-kcal" style={{ color: "#FFFFFF", fontWeight: 900 }}>{fmt(macro.calTarget)}</b> kcal</span>
+        <span>· Đạm <b style={{ color: "#FFFFFF" }}>{fmt(macro.protein)}</b></span>
+        <span>· TB <b style={{ color: "#FFFFFF" }}>{fmt(macro.carb)}</b></span>
+        <span>· Béo <b style={{ color: "#FFFFFF" }}>{fmt(macro.fat)}</b></span>
+      </div>
+      <div style={{ padding: "14px 20px 10px 20px", display: "flex", flexDirection: "column", gap: 6 }}><span style={{ fontSize: 26, fontWeight: 900 }}>Bạn thích ăn kiểu nào?</span><span style={{ fontSize: 14, color: DK.t2 }}>AI lên thực đơn ngày đầu tiên theo kiểu này. Đổi macro được ở Tôi › Mục tiêu &amp; macro.</span></div>
       {!loading && !result && <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 8 }}>
         {opt("vn", autoStyle === "vn", "food", "#EA580C", "Cơm nhà VN", "Thịt kho, cá chiên, canh rau, cơm trắng…", () => setAutoStyle("vn"))}
         {opt("clean", autoStyle === "clean", "target", "#00A67E", "Eat clean", "Ức gà, cá hấp, rau luộc, gạo lứt…", () => setAutoStyle("clean"))}

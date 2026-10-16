@@ -7,6 +7,7 @@ import { DK } from "./theme";
 import { Seg } from "./mobile/ui";
 import { parseContent, stripEmptyParagraphs } from "./TermsPage";
 import { parseFeatureFlags } from "./adminTabs/FeatureFlagsTab";
+import { usernameFromEmail, usernameCandidate } from "./lib/onboardingCheck";
 
 // Lỗi Supabase Auth (tiếng Anh) → câu tiếng Việt dễ hiểu
 export function viAuthError(msg){
@@ -21,9 +22,22 @@ export function viAuthError(msg){
   return m||"Có lỗi, thử lại nhé.";
 }
 
+// Bản vẽ 109: không còn ô Tên hiển thị — lấy phần trước @ của email, trùng thì thêm số (tên2, tên3…)
+async function pickUsername(email){
+  const base=usernameFromEmail(email);
+  for(let n=1;n<=30;n++){
+    const cand=usernameCandidate(base,n);
+    try{
+      const {data,error}=await supabase.rpc("check_username_available",{p_username:cand});
+      if(error)return cand; // không kiểm được → dùng tên đang thử (như trước: chỉ kiểm để báo, không chặn)
+      if(data)return cand;
+    }catch(e){return cand;}
+  }
+  return usernameCandidate(base,1000+Math.floor(Math.random()*9000));
+}
+
 export function LoginScreen({onLogin,appSettings}){
   const registrationEnabled=parseFeatureFlags(appSettings).registration_enabled;
-  const [user,setUser]=useState("");
   const [pass,setPass]=useState("");
   const [email,setEmail]=useState("");
   const [showPass,setShowPass]=useState(false);
@@ -34,24 +48,8 @@ export function LoginScreen({onLogin,appSettings}){
   const [success,setSuccess]=useState("");
   const [saving,setSaving]=useState(false);
   const [termsModal,setTermsModal]=useState(null); // "tos" | "privacy" | null
-  const [agreedTerms,setAgreedTerms]=useState(false);
-  const [usernameStatus,setUsernameStatus]=useState(null); // null | "checking" | "taken" | "ok"
   const [emailStatus,setEmailStatus]=useState(null); // null | "checking" | "taken" | "ok"
   const {signIn,signUp,sendPasswordReset}=useAuth();
-
-  // Check username realtime (chỉ khi đăng ký)
-  useEffect(()=>{
-    if(mode!=="register"||!user.trim()){setUsernameStatus(null);return;}
-    setUsernameStatus("checking");
-    const t=setTimeout(async()=>{
-      try{
-        const {data,error}=await supabase.rpc("check_username_available",{p_username:user.trim()});
-        if(error){setUsernameStatus(null);return;}
-        setUsernameStatus(data?"ok":"taken");
-      }catch(e){setUsernameStatus(null);}
-    },500);
-    return()=>clearTimeout(t);
-  },[user,mode]);
 
   // Check email realtime (chỉ khi đăng ký)
   useEffect(()=>{
@@ -73,23 +71,27 @@ export function LoginScreen({onLogin,appSettings}){
     if(mode==="login"){
       if(!email.trim()||!pass.trim()){setErr("Vui lòng nhập đầy đủ");return;}
     }else{
-      if(!user.trim()||!email.trim()||!pass.trim()){setErr("Vui lòng nhập đầy đủ");return;}
+      if(!email.trim()||!pass.trim()){setErr("Vui lòng nhập đầy đủ");return;}
       if(!email.includes("@")){setErr("Vui lòng nhập email hợp lệ");return;}
-      if(usernameStatus==="taken"){setErr("Tên hiển thị đã được sử dụng");return;}
       if(emailStatus==="taken"){setErr("Email đã tồn tại");return;}
-      if(!agreedTerms){setErr("Bạn cần đồng ý với điều khoản dịch vụ và chính sách bảo mật để đăng ký");return;}
     }
     if(pass.length<6){setErr("Mật khẩu tối thiểu 6 ký tự");return;}
     try{
       if(mode==="register"){
-        await signUp(email,pass,user.trim());
-        setSuccess(`Đăng ký thành công! Tài khoản "${user.trim()}" dùng được ngay.`);
-        setTimeout(()=>onLogin(user.trim()),1500);
+        setSaving(true);
+        const uname=await pickUsername(email.trim());
+        await signUp(email.trim(),pass,uname);
+        setSuccess("Đăng ký thành công! Đang vào app…");
+        // Có phiên ngay (không cần xác nhận email) → App tự chuyển sang màn Chào qua onAuthStateChange, không tải lại trang.
+        // Không có phiên (bật xác nhận email) → giữ cách cũ: tải lại để màn đăng nhập về trạng thái đầu.
+        const {data:{session}}=await supabase.auth.getSession();
+        if(!session)setTimeout(()=>onLogin(uname),1500);
       }else{
         await signIn(email,pass);
         onLogin(email);
       }
     }catch(e){setErr(viAuthError(e.message));}
+    setSaving(false);
   };
 
   const handleForgotSubmit=async()=>{
@@ -106,6 +108,11 @@ export function LoginScreen({onLogin,appSettings}){
   const inputStyle=field;
   const termsLinks=(<>
     <button type="button" onClick={()=>setTermsModal("tos")} style={{...linkBtn,fontSize:"inherit",padding:0}}>Điều khoản dịch vụ</button> và <button type="button" onClick={()=>setTermsModal("privacy")} style={{...linkBtn,fontSize:"inherit",padding:0}}>Chính sách bảo mật</button>
+  </>);
+  // Bản vẽ 109: dòng chữ thay ô tích — link đậm màu DK.link
+  const regLink={...linkBtn,fontSize:"inherit",padding:0,color:DK.link,fontWeight:700};
+  const regTermsLinks=(<>
+    <button type="button" onClick={()=>setTermsModal("tos")} style={regLink}>Điều khoản</button> và <button type="button" onClick={()=>setTermsModal("privacy")} style={regLink}>Chính sách bảo mật</button>
   </>);
 
   if(mode==="forgot"){
@@ -130,26 +137,20 @@ export function LoginScreen({onLogin,appSettings}){
   const reg=mode==="register";
   const canReg=reg&&registrationEnabled;
   const tone=(st)=>st==="taken"?"bad":st==="ok"?"ok":null;
-  const userHint=usernameStatus==="checking"?"Đang kiểm tra…":usernameStatus==="taken"?"Tên này đã có người dùng":usernameStatus==="ok"?"Có thể dùng tên này":null;
   const emailHint=!reg?null:emailStatus==="checking"?"Đang kiểm tra…":emailStatus==="taken"?"Email đã có tài khoản — đăng nhập hoặc Quên mật khẩu":emailStatus==="ok"?"Có thể dùng":null;
 
-  return <><AuthShell title={reg?"Tạo tài khoản":"Fipilot AI"} subtitle={reg?null:"Trợ lý dinh dưỡng cho người Việt"}
+  return <><AuthShell title={reg?"Tạo tài khoản":"Fipilot AI"} subtitle={reg?"Miễn phí · mất 30 giây":"Trợ lý dinh dưỡng cho người Việt"}
     footer={!reg&&<p style={{margin:"18px 24px 0 24px",textAlign:"center",fontSize:12,color:DK.t3,lineHeight:1.6}}>Tiếp tục nghĩa là bạn đồng ý với {termsLinks} của Fipilot AI.</p>}>
       {isInApp&&<Notice tone="bad">Bạn đang mở trong ứng dụng khác. Để đăng nhập và cài app, hãy mở bằng {browserName}. <button type="button" onClick={handleOpenBrowser} style={{...linkBtn,padding:0}}>Mở bằng {browserName}</button></Notice>}
       <Seg dark mode="tab" value={mode} onChange={(m)=>{setMode(m);setErr("");setSuccess("");}} opts={[{value:"login",label:"Đăng nhập",testid:"auth-tab-login"},{value:"register",label:"Đăng ký",testid:"auth-tab-register"}]} />
       {reg&&!registrationEnabled&&<Notice tone="bad">Hiện chưa nhận đăng ký tài khoản mới. Bạn quay lại sau nhé!</Notice>}
-      {canReg&&<Field label="Tên hiển thị" hint={userHint} hintTone={tone(usernameStatus)}><input data-testid="reg-username" autoComplete="nickname" value={user} onChange={e=>setUser(e.target.value)} placeholder="VD: gymboy63" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
-      {(!reg||registrationEnabled)&&<Field label="Email" hint={emailHint} hintTone={tone(emailStatus)}><input data-testid="login-email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="ban@email.com" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
-      {(!reg||registrationEnabled)&&<Field label="Mật khẩu"><PasswordInput testid="login-pass" value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete={reg?"new-password":"current-password"}/></Field>}
+      {(!reg||registrationEnabled)&&<Field label="Email" hint={emailHint} hintTone={tone(emailStatus)}><input data-testid={reg?"auth-reg-email":"login-email"} type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={reg?"ban@gmail.com":"ban@email.com"} style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
+      {(!reg||registrationEnabled)&&<Field label="Mật khẩu"><PasswordInput testid={reg?"auth-reg-pass":"login-pass"} value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete={reg?"new-password":"current-password"}/></Field>}
       {!reg&&<button data-testid="forgot-open" onClick={()=>{setMode("forgot");setErr("");setForgotEmail(email);}} style={{...linkBtn,alignSelf:"flex-end"}}>Quên mật khẩu?</button>}
-      {canReg&&<label style={{display:"flex",alignItems:"flex-start",gap:10,fontSize:13,color:DK.t2,lineHeight:1.5}}>
-        <input data-testid="reg-terms" type="checkbox" checked={agreedTerms} onChange={e=>{setAgreedTerms(e.target.checked);if(e.target.checked)setErr("");}} style={{width:20,height:20,marginTop:1,flexShrink:0,accentColor:"#4DA3FF"}}/>
-        <span>Tôi đồng ý với {termsLinks}</span>
-      </label>}
+      {canReg&&<p data-testid="reg-terms-note" style={{margin:"0 4px",fontSize:12,color:DK.t3,lineHeight:1.5}}>Bấm Đăng ký là bạn đồng ý {regTermsLinks}.</p>}
       {err&&<Notice tone="bad">{err}</Notice>}
       {success&&<Notice>{success}</Notice>}
-      {(!reg||registrationEnabled)&&<button data-testid="login-submit" onClick={handleSubmit} disabled={!!success} style={primaryBtn(!!success)}>{reg?"Đăng ký":"Đăng nhập"}</button>}
-      {canReg&&<span style={{fontSize:12,color:DK.t3,textAlign:"center"}}>Tài khoản dùng được ngay sau khi đăng ký</span>}
+      {(!reg||registrationEnabled)&&<button data-testid={reg?"auth-reg-submit":"login-submit"} onClick={handleSubmit} disabled={!!success||(reg&&saving)} style={primaryBtn(!!success||(reg&&saving))}>{reg?(saving?"Đang tạo tài khoản…":"Đăng ký"):"Đăng nhập"}</button>}
     </AuthShell>
     {termsModal&&(()=>{
       const pages=parseContent(appSettings);

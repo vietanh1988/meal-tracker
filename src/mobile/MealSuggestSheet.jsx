@@ -2,7 +2,7 @@
 // Hiện tối đa 5 lựa chọn (lib/mealSuggest: bữa đã ăn, thực đơn mẫu, thực đơn AI) theo calo bữa + món không ăn;
 // người dùng chọn 1 rồi mới ghi vào bữa. Cùng kiểu sheet Đổi món (bản vẽ 94).
 import { useState } from "react";
-import { fmtInt } from "../lib/mobileView";
+import { fmtInt, capFirst } from "../lib/mobileView";
 import { fmtVN } from "../lib/dateVN";
 import { Icon, Seg } from "./ui";
 import { GREEN, DT, fbtn, pill, Sheet, CloseX, OptRow, foodName, portionText } from "./menuUI";
@@ -49,7 +49,7 @@ export function MealSuggestSheet({ mealId, mealName, list, target, rt, goal, day
         const src = s.kind === "history" ? `${t} ${fmtVN(s.date)}` : s.kind === "ai" ? `${t}${s.date ? ` ${fmtVN(s.date)}` : ""}` : `${t} · ${s.title}`;
         return (
           <OptRow key={s.id} testid="suggest-opt" on={s.id === sel} onClick={() => { setSel(s.id); setK(1); }}
-            title={<span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.items.map(foodName).join(", ")}</span>}
+            title={<span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.items.map((x) => capFirst(foodName(x))).join(", ")}</span>}
             sub={<span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
                 {s.best && <span data-testid="suggest-best" style={{ fontSize: 10, fontWeight: 800, color: "#FFFFFF", background: "#0062F0", padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap", flexShrink: 0 }}>Hợp nhất</span>}

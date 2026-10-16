@@ -79,24 +79,21 @@ test("J1 · ghi 1 bữa bằng Tìm món: 2 món, chỉnh gram 1 món", async ({
   j.done();
 }));
 
+// 17/10 (bản vẽ 114): món lạ → ô Tự nhập calo ngay trong sheet Ghi bữa (không phải sang màn Kiểm tra calo)
 test("J2 · ghi món lạ không có trong kho (tự nhập calo)", async ({ browser }) => run(browser, async (page) => {
   const s = S();
   await putDay(s.today, []);
   await login(page);
   const j = journey(2, "J2 món lạ tự nhập calo", page);
   await j.act("Hôm nay: bấm + ở dòng Bữa tối (hoặc Tìm món ở thẻ đến giờ nếu đang là bữa tối)", () => openLogFor(page, "toi"));
-  await j.act("gõ tên món lạ", () => page.getByPlaceholder(/Tìm món/).fill("2 cái bánh khọt cô ba qwz"));
+  await j.act("gõ tên món lạ", () => page.getByPlaceholder(/Tìm món/).fill("bánh khọt cô ba qwz"));
+  await expect(page.getByTestId("log-manual")).toBeVisible();
   await j.shot("khong-thay");
-  await j.act("bấm 'Kiểm tra calo món này'", () => tap(page.getByTestId("log-calc-q")));
-  await expect(page.getByTestId("calc-unknown-0")).toBeVisible();
-  await j.shot("chua-co-trong-kho");
-  await j.act("bấm 'Tự nhập calo'", () => tap(page.getByTestId("calc-manual-0")));
-  await j.act("gõ calo 260", () => page.getByTestId("calc-manual-cal").fill("260"));
+  await j.act("gõ calo 260", () => page.getByTestId("log-manual-cal").fill("260"));
   await j.shot("tu-nhap");
-  await j.act("bấm Dùng", () => tap(page.getByTestId("calc-manual-use")));
-  await expect(page.getByTestId("calc-total")).toHaveAttribute("data-value", "260");
-  j.look(`bữa mặc định: ${await page.getByTestId("calc-meal").inputValue()}`);
-  await j.act("bấm 'Ghi vào bữa tối'", () => tap(page.getByTestId("calc-save")));
+  await j.act("bấm 'Thêm vào giỏ'", () => tap(page.getByTestId("log-manual-add")));
+  await expect(page.getByTestId("log-tray-row")).toHaveCount(1);
+  await j.act("bấm 'Ghi 1 món vào bữa tối'", () => tap(page.getByTestId("log-tray-save")));
   await waitDb(async () => (meal(await todayRow(), "toi")?.items || []).some((i) => i.source === "manual" && i.cal === 260), "J2: món tự nhập vào bữa tối");
   await j.shot("da-ghi");
   j.done();
@@ -158,13 +155,19 @@ test("J5 · cân nặng hôm nay rồi xem Tiến độ", async ({ browser }) =>
   const s = S();
   await login(page);
   const j = journey(5, "J5 cân nặng hôm nay + Tiến độ", page);
+  // 17/10 (bản vẽ 115): sheet "Cân hôm nay" ngay ở Hôm nay
   await j.act("Hôm nay: bấm thẻ Cân nặng ('Cân hôm nay' / 'Xem')", () => tap(page.getByTestId("weight-tile")));
-  await expect(page.getByTestId("weight-input")).toBeVisible();
-  await j.shot("tien-do-can-nang");
+  await expect(page.getByTestId("weight-sheet")).toBeVisible();
+  j.look(`số điền sẵn: ${await page.getByTestId("weight-input").inputValue()}`);
+  await j.shot("sheet-can");
   await j.act("gõ 64,6", () => page.getByTestId("weight-input").fill("64,6"));
   await j.act("bấm Lưu", () => tap(page.getByTestId("weight-save")));
   await waitDb(async () => (await rest(`weight_logs?user_id=eq.${s.uid}&logged_date=eq.${s.today}&select=kg`)).some((w) => Number(w.kg) === 64.6), "J5: lưu cân hôm nay");
-  await expect(page.getByTestId("weight-input")).toHaveValue("");
+  await expect(page.getByTestId("weight-sheet")).toHaveCount(0);
+  await expect(page.getByTestId("toast")).toContainText("64,6 kg");
+  j.look(`toast: ${await page.getByTestId("toast").innerText()}`);
+  await j.act("bấm thẻ Cân nặng lại", () => tap(page.getByTestId("weight-tile")));
+  await j.act("bấm 'Xem biểu đồ ›'", () => tap(page.getByTestId("weight-chart-link")));
   j.look(`ghi chú biểu đồ: ${await page.getByTestId("wchart-note").innerText()}`);
   await j.shot("da-luu");
   await j.act("bấm tab 'Nhật ký ăn uống'", () => tap(page.getByTestId("seg-diary")));

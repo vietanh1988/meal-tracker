@@ -42,6 +42,7 @@ export const Icon = {
   check: (s = 14, w = 2.8) => <svg {...svgP} width={s} height={s} viewBox="0 0 24 24" strokeWidth={w}><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>,
   more: (s = 20) => <svg aria-hidden="true" width={s} height={s} viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>,
   calendar: (s = 18) => <svg {...svgP} width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.2"><rect x="4" y="5" width="16" height="15" rx="2.5" /><path d="M4 10h16M9 3v4M15 3v4" /></svg>,
+  calc: (s = 18) => <svg {...svgP} width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.2"><rect x="5" y="3" width="14" height="18" rx="2" /><path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h2" /></svg>,
   drop: (s = 20) => <svg {...svgP} stroke="#0891B2" width={s} height={s} viewBox="0 0 24 24" strokeWidth="2.2"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" /></svg>,
 };
 
@@ -58,7 +59,8 @@ const NAV = [
 // bong bóng xanh rất nhạt #EAF2FF để vẫn thấy trên trang nền sáng. Đáy = vùng an toàn iPhone − 14 px (tối thiểu 10 px).
 export const NAV_BOTTOM = "max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))";
 export const NAV_SPACE = `calc(64px + ${NAV_BOTTOM} + 14px)`; // chừa chỗ cuối nội dung để không bị thanh che
-export function BottomNav({ tab, onTab, onAdd, hidden, dark }) {
+// 17/10 (bản vẽ 116): nút + giữa mở menu 3 lựa chọn (addOpen = đang mở → nút thành × nền tối).
+export function BottomNav({ tab, onTab, onAdd, hidden, dark, addOpen = false }) {
   return (
     <nav data-testid="bottom-nav" aria-label="Điều hướng chính" aria-hidden={hidden ? true : undefined} style={{ position: "fixed", left: 0, right: 0, bottom: NAV_BOTTOM, zIndex: 90, padding: "0 12px", pointerEvents: "none" }}>
       <div style={{ maxWidth: 536, margin: "0 auto", height: 64, borderRadius: 32, display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", alignItems: "center", boxSizing: "border-box", pointerEvents: "auto",
@@ -66,8 +68,8 @@ export function BottomNav({ tab, onTab, onAdd, hidden, dark }) {
         WebkitBackdropFilter: "blur(20px)", backdropFilter: "blur(20px)" }}>
         {NAV.map((n) => {
           if (n.id === "add") return (
-            <button key="add" onClick={onAdd} aria-label="Ghi bữa" style={{ display: "flex", justifyContent: "center", border: "none", background: "transparent", padding: 0, marginTop: -22 }}>
-              <span style={{ width: 54, height: 54, borderRadius: 27, background: "linear-gradient(135deg,#EA580C,#C2410C)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 18px rgba(234,88,12,0.4)", border: "4px solid #FFFFFF", boxSizing: "border-box" }}>{Icon.plus(24, 2.8)}</span>
+            <button key="add" data-testid="nav-add" onClick={onAdd} aria-label={addOpen ? "Đóng menu" : "Ghi bữa"} aria-expanded={addOpen} aria-haspopup="menu" style={{ display: "flex", justifyContent: "center", border: "none", background: "transparent", padding: 0, marginTop: -22 }}>
+              <span style={{ width: 54, height: 54, borderRadius: 27, background: addOpen ? "#0F172A" : "linear-gradient(135deg,#EA580C,#C2410C)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: addOpen ? "0 8px 18px rgba(15,23,42,0.35)" : "0 8px 18px rgba(234,88,12,0.4)", border: "4px solid #FFFFFF", boxSizing: "border-box", transition: "background .15s ease" }}>{addOpen ? Icon.close(22) : Icon.plus(24, 2.8)}</span>
             </button>
           );
           const a = tab === n.id;

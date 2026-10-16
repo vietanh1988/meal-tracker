@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, S, waitDb, tap, rest } from "./helpers.mjs";
+import { login, S, waitDb, tap, rest, openPlus } from "./helpers.mjs";
 import { addDays } from "../../src/lib/dateVN.js";
 
 // Kiểm tra calo: gõ món → kho món tính ngay; món lạ → AI giả (không tốn tiền) → ghi vào Bữa tối của 2 ngày trước
@@ -17,7 +17,7 @@ test("Kiểm tra calo: kho món + AI tính món lạ → ghi vào bữa tối", 
   let aiCalls = 0;
   await page.route("**/functions/v1/ai-proxy", (route) => { aiCalls++; route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ text: AI_TEXT }) }); });
 
-  await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Ghi bữa" }).click();
+  await openPlus(page, "log");
   await page.waitForTimeout(400);
   await page.screenshot({ path: "shots/ghi-bua.png" });
   await tap(page.getByTestId("log-tab-calc"));
@@ -67,7 +67,7 @@ test("Kiểm tra calo: tự nhập calo món lạ → ghi, lần sau tìm thấy
   let aiCalls = 0;
   await page.route("**/functions/v1/ai-proxy", (route) => { aiCalls++; route.fulfill({ status: 200, contentType: "application/json", body: "{}" }); });
   try {
-    await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Ghi bữa" }).click();
+    await openPlus(page, "log");
     await tap(page.getByTestId("log-tab-calc"));
     await page.getByTestId("calc-text").fill("2 cái bánh khọt cô ba qwz");
     await tap(page.getByTestId("calc-run"));
@@ -89,11 +89,73 @@ test("Kiểm tra calo: tự nhập calo món lạ → ghi, lần sau tìm thấy
       return m && m.items.some((i) => i.source === "manual" && i.cal === 260 && i.p === 6.5);
     }, "ghi món tự nhập");
     // Lần sau: tìm món ra ngay món tự nhập
-    await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Ghi bữa" }).click();
+    await openPlus(page, "log");
     await page.getByPlaceholder(/Tìm món/).fill("bánh khọt cô ba qwz");
     await expect(page.getByRole("button", { name: /^Thêm bánh khọt cô ba qwz/i })).toBeVisible();
   } finally {
     await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${day}`, { method: "DELETE" });
+    await ctx.close();
+  }
+});
+
+// 17/10 (bản vẽ 113 / 113b / 116): nút + giữa → menu 3 lựa chọn; ô tìm Ghi bữa gõ cả bữa → thẻ "≈ X kcal cho N món" → Tính calo cả bữa;
+// + › Kiểm tra calo: nút chính "Chỉ xem". Không ghi dữ liệu nào.
+test("Nút + giữa: menu 3 lựa chọn, gõ cả bữa ở ô tìm ra thẻ tính calo, Kiểm tra calo nút chính Chỉ xem", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
+  const page = await ctx.newPage();
+  page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
+  await login(page);
+  let aiCalls = 0;
+  await page.route("**/functions/v1/ai-proxy", (route) => { aiCalls++; route.fulfill({ status: 200, contentType: "application/json", body: "{}" }); });
+  try {
+    // Menu: 3 thẻ, nút + thành ×, thanh dưới vẫn hiện; bấm × hoặc chạm ngoài để đóng
+    await page.getByTestId("nav-add").click();
+    await expect(page.getByTestId("plus-menu")).toBeVisible();
+    await expect(page.getByTestId("plus-menu").getByRole("menuitem")).toHaveCount(3);
+    await expect(page.getByTestId("plus-photo")).toBeVisible();
+    await expect(page.getByTestId("bottom-nav")).toBeVisible();
+    await expect(page.getByTestId("nav-add")).toHaveAttribute("aria-label", "Đóng menu");
+    await page.screenshot({ path: "shots/nut-cong-menu.png" });
+    await page.getByTestId("nav-add").click();
+    await expect(page.getByTestId("plus-menu")).toHaveCount(0);
+    await page.getByTestId("nav-add").click();
+    await page.mouse.click(195, 120); // chạm vùng mờ phía trên
+    await expect(page.getByTestId("plus-menu")).toHaveCount(0);
+
+    // Ghi bữa: con trỏ ở ô tìm, tab đổi tên + dòng mô tả; gõ cả bữa → thẻ tính calo (kho món, không gọi AI)
+    await openPlus(page, "log");
+    const search = page.getByPlaceholder(/Tìm món/);
+    await expect(search).toBeFocused();
+    await expect(page.getByTestId("log-tab-calc")).toHaveText("Tính calo cả bữa");
+    await expect(page.getByTestId("log-tab-hint")).toBeVisible();
+    await search.fill("1 tô phở bò, 2 quả trứng gà luộc");
+    await expect(page.getByTestId("log-smart")).toBeVisible();
+    await expect(page.getByTestId("log-smart-title")).toHaveAttribute("data-cal", "495");
+    await expect(page.getByTestId("log-smart-title")).toContainText("495 kcal cho 2 món");
+    await expect(page.getByTestId("log-manual")).toHaveCount(0);
+    await page.screenshot({ path: "shots/ghi-bua-the-tinh-calo.png" });
+    await tap(page.getByTestId("log-smart"));
+    await expect(page.getByTestId("calc-total")).toHaveAttribute("data-value", "495");
+    expect(aiCalls).toBe(0);
+    await expect(page.getByTestId("calc-save")).toHaveAttribute("data-primary", "1");
+    await page.getByTestId("calc-close").click();
+    await expect(page.getByTestId("calc-total")).toHaveCount(0);
+
+    // + › Kiểm tra calo: màn trống, kết quả có "Chỉ xem" là nút chính, "Ghi vào …" là nút phụ
+    await openPlus(page, "calc");
+    await expect(page.getByTestId("calc-text")).toHaveValue("");
+    await page.getByTestId("calc-text").fill("1 tô phở bò");
+    await tap(page.getByTestId("calc-run"));
+    await expect(page.getByTestId("calc-total")).toHaveAttribute("data-value", "340");
+    await expect(page.getByTestId("calc-close")).toHaveText("Chỉ xem");
+    await expect(page.getByTestId("calc-close")).toHaveAttribute("data-primary", "1");
+    await expect(page.getByTestId("calc-save")).not.toHaveAttribute("data-primary", "1");
+    await expect(page.getByTestId("calc-save")).toContainText("Ghi vào");
+    await page.screenshot({ path: "shots/kiem-tra-calo-chi-xem.png" });
+    await page.getByTestId("calc-close").click();
+    await expect(page.getByTestId("bottom-nav")).toBeVisible();
+    expect(aiCalls).toBe(0);
+  } finally {
     await ctx.close();
   }
 });

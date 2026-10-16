@@ -96,7 +96,7 @@ function speedText(m, goal, months) {
   return { bad: !ok, text: `${sign}${fmtDec(Math.abs(m.diff))} kg · ≈ ${sign}${fmtInt(g)} g/tuần · ${note}` };
 }
 
-export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedule }) {
+export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedule, openWeigh }) {
   const [open, setOpen] = useState(null);
   const p = profile || {};
   const m = macro || {};
@@ -174,7 +174,14 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
       <div style={box}>
         <ChoiceRow id="gender" k="Giới tính" value={nameOf(GENDER, p.gender || "male")} options={GENDER} selected={p.gender || "male"} onPick={(v) => save({ gender: v })} open={open} setOpen={setOpen} />
         <NumRow k="Chiều cao" unit="cm" testid="goals-cm" value={p.cm} min={120} max={230} onSave={(v) => save({ cm: v })} />
-        {lastW ? (
+        {/* 17/10 (bản vẽ 115): bỏ ô nhập cân nặng riêng — chỉ 1 nguồn là lần cân; nút "Cân hôm nay" mở sheet Cân hôm nay */}
+        {openWeigh ? (
+          <div style={{ ...rowBase, borderWidth: "0 0 1px 0" }}>
+            <span style={kStyle}>Cân nặng</span>
+            <span data-testid="goals-kg" style={vStyle}>{lastW ? `${fmtDec(lastW.kg)} kg · theo lần cân` : `${fmtDec(p.kg)} kg`}</span>
+            <button data-testid="goals-weigh" onClick={openWeigh} style={{ height: 32, padding: "0 10px", borderRadius: 10, border: `1.5px solid ${DK.chipLine}`, background: DK.chip, fontFamily: "inherit", fontSize: 12, fontWeight: 800, color: DK.t1, flexShrink: 0 }}>Cân hôm nay</button>
+          </div>
+        ) : lastW ? (
           <div style={{ ...rowBase, borderWidth: "0 0 1px 0" }}>
             <span style={kStyle}>Cân nặng</span>
             <span data-testid="goals-kg" style={vStyle}>{fmtDec(lastW.kg)} kg · theo lần cân</span>

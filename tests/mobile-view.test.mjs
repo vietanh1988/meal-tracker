@@ -152,3 +152,10 @@ test("tìm món không hiện 2 dòng trùng tên (16/10)", async () => {
     assert.equal(new Set(n).size, n.length, `${q}: ${n.join(" | ")}`);
   }
 });
+
+test("capFirst: viết hoa chữ đầu tên món", () => {
+  assert.equal(V.capFirst("sữa chua"), "Sữa chua");
+  assert.equal(V.capFirst("ức gà"), "Ức gà");
+  assert.equal(V.capFirst(""), "");
+  assert.equal(V.capFirst(null), "");
+});

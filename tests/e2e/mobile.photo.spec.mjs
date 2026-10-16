@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, S, waitDb, tap, todayRow } from "./helpers.mjs";
+import { login, S, waitDb, tap, todayRow, openPlus } from "./helpers.mjs";
 
 // Chụp ảnh: AI giả (không tốn tiền) trả 2 món → sửa gram, bỏ 1 món, thêm món bằng Tìm món → Lưu vào Phụ chiều (đánh dấu đã ăn)
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEklEQVR4nGP4z8CAFWEXHbQSACj/P8Fu7N9hAAAAAElFTkSuQmCC", "base64");
@@ -14,8 +14,7 @@ test("Chụp ảnh: nhận diện → sửa → lưu vào bữa", async ({ brows
   // Đăng ký SAU blockAI để ưu tiên: ai-proxy trả kết quả giả
   await page.route("**/functions/v1/ai-proxy", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ text: AI_TEXT }) }));
 
-  await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Ghi bữa" }).click();
-  await tap(page.getByRole("button", { name: "Chụp ảnh món ăn" }));
+  await openPlus(page, "photo"); // nút + giữa → Chụp món (bản vẽ 116)
   await page.getByTestId("photo-file").setInputFiles({ name: "bua.png", mimeType: "image/png", buffer: PNG });
   await expect(page.getByTestId("photo-item")).toHaveCount(2);
   await expect(page.getByTestId("photo-total")).toHaveAttribute("data-cal", "560");

@@ -63,6 +63,10 @@ test("Hôm nay: Gợi ý món → sheet chọn → ghi vào bữa", async ({ bro
     expect(await page.getByTestId("log-suggest-add").count()).toBeLessThanOrEqual(3);
     await page.screenshot({ path: "shots/ghi-bua-goi-y.png" });
     await tap(page.getByTestId("log-suggest-add").first());
+    // 17/10 (bản vẽ 113): + của Gợi ý cho bữa đưa món vào giỏ, ghi bằng nút Ghi của giỏ
+    await expect(page.getByTestId("log-tray-row").first()).toBeVisible();
+    expect(((await todayRow())?.meals || []).some((m) => m.meal_id === other && (m.items || []).length > 0)).toBe(false);
+    await tap(page.getByTestId("log-tray-save"));
     await waitDb(async () => ((await todayRow())?.meals || []).some((m) => m.meal_id === other && (m.items || []).length > 0), "ghi gợi ý từ sheet Ghi bữa");
   } finally {
     if (saved) await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "PATCH", body: JSON.stringify({ meals: saved.meals, eaten_meals: saved.eaten_meals, total_cal: saved.total_cal, total_protein: saved.total_protein, total_carb: saved.total_carb, total_fat: saved.total_fat }) });

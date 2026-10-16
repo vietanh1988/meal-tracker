@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Icon, GRAD_ORANGE, GRAD_BLUE, Skel } from "./ui";
 import { TodayHeader } from "./TodayHeader";
-import { weekdayFull, mealWindowLabel, itemName, fmtInt, fmtDec, focusMeal } from "../lib/mobileView";
+import { weekdayFull, mealWindowLabel, itemName, fmtInt, fmtDec, focusMeal, capFirst } from "../lib/mobileView";
 import { AppIcon, MealIcon, IC_COLOR, mix } from "./icons";
 import { waterGoalMl, cupsView, CUP_SIZES } from "../lib/dayPlan";
 import { fmtVN } from "../lib/dateVN";
@@ -142,7 +142,7 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSu
             <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: "#007AFF", letterSpacing: "0.06em" }}>{Icon.sparkle(13)}GỢI Ý CHO {r.name.toUpperCase()}</span>
             <span style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
               <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 3 }}>
-                <span data-testid="focus-suggest-foods" style={{ fontSize: 14, fontWeight: 800, color: "#0F172A", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{best.items.map(itemName).join(", ")}</span>
+                <span data-testid="focus-suggest-foods" style={{ fontSize: 14, fontWeight: 800, color: "#0F172A", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{best.items.map((x) => capFirst(itemName(x))).join(", ")}</span>
                 <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
                   <span style={{ fontSize: 10, fontWeight: 800, color: srcC, background: srcBg, padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap", flexShrink: 0 }}>{srcLabel}</span>
                   <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{best.items.length} món</span>

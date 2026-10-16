@@ -1,10 +1,14 @@
 // Màn 2 · Ghi bữa (đã chốt) — sheet trượt lên: chọn ngày, chip bữa, ô tìm + nút chụp,
-// tab Tìm món | Kiểm tra calo (mở màn CalcCheckScreen), AI gợi ý / Từ thực đơn tuần, danh sách GẦN ĐÂY (ăn lại cả bữa + món hay ăn).
-// pickMode: dùng từ Sửa bữa để chọn 1 món đưa về bản nháp (không lưu ngay).
+// tab Tìm từng món | Tính calo cả bữa (mở màn CalcCheckScreen), AI gợi ý / Từ thực đơn tuần, danh sách GẦN ĐÂY (món hay ăn).
+// 17/10 (bản vẽ 113 / 113b / 114): mở sheet là con trỏ ở ô tìm; + món → vào giỏ, ô tìm tự xoá chữ và giữ con trỏ;
+// Gợi ý cho bữa + Từ thực đơn tuần cũng vào giỏ (1 nút Ghi duy nhất); gõ cả bữa ("1 tô phở, 2 trứng") → thẻ "≈ X kcal cho N món";
+// món không có trong kho → ô Tự nhập calo ngay dưới kết quả (Thêm vào giỏ) hoặc "Để AI tính".
+// pickMode: dùng từ Sửa bữa để chọn món đưa về bản nháp (không lưu ngay).
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Icon, GRAD_ORANGE, SR, useLockScroll, FONT, useSwipeClose, SheetHandle, Seg } from "./ui";
-import { MEAL_SHORT, searchFoods, itemName, itemPortion, fmtInt, scaleItem } from "../lib/mobileView";
-import { stepItem } from "../lib/calcCheck";
+import { MEAL_SHORT, searchFoods, itemName, itemPortion, fmtInt, scaleItem, stripVN, capFirst } from "../lib/mobileView";
+import { stepItem, mealEntries, resolveAll, sumCheck, parseFoodLine, gramOf, manualItem, mineEntries } from "../lib/calcCheck";
+import { NumField } from "./CalcCheckScreen";
 import { fmtVN } from "../lib/dateVN";
 import { MEAL_NAMES } from "../lib/mealMath";
 
@@ -17,15 +21,31 @@ export function LogMealSheet(p) {
   useLockScroll(true);
   const [q, setQ] = useState("");
   const [done, setDone] = useState({});
-  const [busyKey, setBusyKey] = useState(null);
   const inputRef = useRef(null);
   const timers = useRef([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  useEffect(() => { if (pickMode) setTimeout(() => inputRef.current?.focus(), 150); }, [pickMode]);
+  // Mở sheet là con trỏ ở ô tìm (cả 2 chế độ) — bản vẽ 113
+  useEffect(() => { const t = setTimeout(() => inputRef.current?.focus(), 150); return () => clearTimeout(t); }, []);
 
-  const results = useMemo(() => (q.trim() ? searchFoods(q, foodCache, 30) : null), [q, foodCache]);
-  // Gợi ý cho bữa (16/10): ≤3 lựa chọn cùng thuật toán thẻ Hôm nay (lib/mealSuggest — calo bữa + món không ăn),
-  // thay khối "Ăn lại" chép y nguyên 1 bữa cũ. Bấm + là ghi luôn (có Hoàn tác), bữa đã có món thì hỏi trước.
+  // Gõ cả bữa (113b): tính tại chỗ bằng kho món (không tốn lượt), danh sách kết quả tìm theo món cuối đang gõ
+  const meal = useMemo(() => (p.onCalc ? mealEntries(q) : null), [q, p.onCalc]);
+  const smart = useMemo(() => {
+    if (!meal) return null;
+    const rows = resolveAll(q, foodCache);
+    const known = rows.filter((r) => !r.unknown);
+    return { n: rows.length, unknown: rows.length - known.length, cal: sumCheck(known).cal, sub: meal.map((e) => e.raw).join(" · ") };
+  }, [meal, q, foodCache]);
+  const term = meal ? meal[meal.length - 1].name : q;
+  const results = useMemo(() => (term.trim() ? searchFoods(term, foodCache, 30) : null), [term, foodCache]);
+  // Ô tự nhập calo (114): gõ ≥ 2 ký tự, không phải cả bữa, không có món trùng đúng tên trong kết quả
+  const qPlain = stripVN(q.trim());
+  const showManual = !!results && !meal && q.trim().length >= 2 && !results.some((r) => stripVN(itemName(r)) === qPlain || stripVN(String(r.food || "")) === qPlain);
+  const entry = useMemo(() => (showManual ? parseFoodLine(q) : null), [showManual, q]);
+  const [man, setMan] = useState({ cal: "", gram: null, p: "", c: "", f: "", more: false });
+  const manGram = man.gram ?? (entry ? String(gramOf(entry, null) || 100) : "100");
+  const manPreview = entry ? manualItem(entry, { gram: manGram, cal: man.cal, p: man.p, c: man.c, f: man.f }) : null;
+  // Gợi ý cho bữa (16/10): ≤3 lựa chọn cùng thuật toán thẻ Hôm nay (lib/mealSuggest — calo bữa + món không ăn).
+  // 17/10 (bản vẽ 113): bấm + là đưa các món vào giỏ (không ghi ngay / không ghi đè), ghi bằng nút Ghi của giỏ.
   void recentMeals;
   const sugg = pickMode ? [] : (p.suggestions || []).slice(0, 3);
   const SRC = { history: ["Đã ăn", "#047857", "rgba(5,150,105,0.12)"], template: ["Mẫu", "#0062F0", "#FFFFFF"], ai: ["AI", "#6D28D9", "#F3EEFF"] };
@@ -34,25 +54,41 @@ export function LogMealSheet(p) {
     setDone((d) => ({ ...d, [key]: true }));
     timers.current.push(setTimeout(() => setDone((d) => { const n = { ...d }; delete n[key]; return n; }), 1800));
   };
-  const add = async (key, fn) => {
-    if (busyKey) return;
-    setBusyKey(key);
-    try { const ok = await fn(); if (ok !== false) flash(key); } finally { setBusyKey(null); }
-  };
 
   // Giỏ món (16/10): bấm + nhiều món, chỉnh gram từng món rồi ghi 1 lần (trước đây mỗi món ghi 1 lần / Sửa bữa phải mở lại sheet từng món)
   const [tray, setTray] = useState([]);
   const [saving, setSaving] = useState(false);
   const keyOf = (it) => `${it.food}|${itemName(it)}`;
   const inTray = (it) => tray.some((t) => t.k === keyOf(it));
-  const toggleTray = (it) => setTray((t) => (t.some((x) => x.k === keyOf(it)) ? t.filter((x) => x.k !== keyOf(it)) : [...t, { k: keyOf(it), it }]));
+  // Thêm xong: ô tìm tự xoá chữ, giữ con trỏ để gõ món tiếp (bản vẽ 113)
+  const clearSearch = () => { setQ(""); inputRef.current?.focus(); };
+  const toggleTray = (it) => {
+    const had = inTray(it);
+    setTray((t) => (t.some((x) => x.k === keyOf(it)) ? t.filter((x) => x.k !== keyOf(it)) : [...t, { k: keyOf(it), it }]));
+    if (!had && q) clearSearch();
+  };
+  // Nhiều món 1 lần (Gợi ý cho bữa / Từ thực đơn tuần): nối vào giỏ, món đã có trong giỏ thì bỏ qua
+  const addManyToTray = (items) => setTray((t) => {
+    const next = [...t];
+    (items || []).forEach((it) => { if (!next.some((x) => x.k === keyOf(it))) next.push({ k: keyOf(it), it }); });
+    return next;
+  });
+  const addManual = () => {
+    if (!manPreview) return;
+    setTray((t) => [...t.filter((x) => x.k !== keyOf(manPreview)), { k: keyOf(manPreview), it: manPreview }]);
+    setMan({ cal: "", gram: null, p: "", c: "", f: "", more: false });
+    clearSearch();
+  };
   const setTrayItem = (k, fn) => setTray((t) => t.map((x) => (x.k === k ? { ...x, it: fn(x.it) } : x)));
   const trayCal = tray.reduce((a, x) => a + (Number(x.it.cal) || 0), 0);
   const saveTray = async () => {
     if (!tray.length || saving) return;
     setSaving(true);
     try {
-      const items = tray.map((x) => x.it);
+      const items = tray.map((x) => { const { _raw, ...it } = x.it; void _raw; return it; });
+      // Món tự nhập: lưu riêng cho tài khoản này (như màn Kiểm tra calo), lần sau tìm/gõ là ra
+      const mine = mineEntries(items);
+      if (p.saveMine && Object.keys(mine).length) p.saveMine(mine);
       const ok = pickMode ? await p.onPickMany(items) : await p.onAddItems(items);
       if (ok !== false) setTray([]);
     } finally { setSaving(false); }
@@ -93,30 +129,41 @@ export function LogMealSheet(p) {
             </div>
           ))}
 
-        {!pickMode && p.onCalc && (
-          <Seg mode="tab" ariaLabel="Cách ghi" value="search" onChange={() => p.onCalc(q, false)} opts={[{ value: "search", label: "Tìm món" }, { value: "calc", label: "Kiểm tra calo", testid: "log-tab-calc" }]} />
-        )}
+        {!pickMode && p.onCalc && (<>
+          <Seg mode="tab" ariaLabel="Cách ghi" value="search" onChange={() => p.onCalc(q, false)} opts={[{ value: "search", label: "Tìm từng món" }, { value: "calc", label: "Tính calo cả bữa", testid: "log-tab-calc" }]} />
+          <span data-testid="log-tab-hint" style={{ display: "block", margin: "-6px 0 0 0", padding: "0 4px", fontSize: 12, color: "#64748B", flexShrink: 0 }}>Chọn món trong kho, chỉnh gram — hoặc gõ cả bữa ở tab bên cạnh.</span>
+        </>)}
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, height: 52, padding: "0 6px 0 14px", background: "#F1F5F9", border: "none", borderRadius: 16, flexShrink: 0, boxSizing: "border-box" }}>
           <span style={{ color: "#64748B", display: "flex" }}>{Icon.search(18)}</span>
           <label style={{ flex: 1, display: "flex", minWidth: 0 }}>
             <span style={SR}>Tìm món</span>
-            <input ref={inputRef} type="search" enterKeyHint="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm món: phở, cơm tấm, ức gà…"
+            <input ref={inputRef} type="search" enterKeyHint="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={tray.length ? "Tìm món tiếp theo…" : "Tìm món: phở, cơm tấm, ức gà…"}
               style={{ flex: 1, minWidth: 0, height: 40, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 16, color: "#0F172A", outline: "none" }} />
           </label>
-          {q && <button onClick={() => setQ("")} aria-label="Xoá ô tìm" style={{ width: 32, height: 32, border: "none", background: "transparent", color: "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.close(16)}</button>}
+          {q && <button onClick={clearSearch} aria-label="Xoá ô tìm" style={{ width: 32, height: 32, border: "none", background: "transparent", color: "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.close(16)}</button>}
           {p.onPhoto && <button onClick={p.onPhoto} aria-label="Chụp ảnh món ăn" style={{ width: 40, height: 40, borderRadius: 12, border: "none", background: GRAD_ORANGE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>{Icon.camera(20)}</button>}
         </div>
 
         {!pickMode && !results && (p.onAI || p.weekly) && (
           <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
             {p.onAI && <button onClick={p.onAI} style={{ height: 36, padding: "0 12px", borderRadius: 999, border: "none", background: "rgba(124,58,237,0.10)", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#6D28D9", display: "flex", alignItems: "center", gap: 6 }}>{Icon.sparkle(14)}AI gợi ý</button>}
-            {p.weekly && <button disabled={!!busyKey} onClick={() => add("weekly", p.weekly.onClick)} className="chip-hover" style={{ height: 36, padding: "0 12px", borderRadius: 999, border: "none", background: done.weekly ? "rgba(5,150,105,0.14)" : "rgba(0,166,126,0.10)", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#047857" }}>{done.weekly ? "Đã thêm" : `Từ thực đơn tuần · ${fmtInt(p.weekly.cal)}`}</button>}
+            {p.weekly && <button data-testid="log-weekly" onClick={() => { addManyToTray(p.weekly.items); flash("weekly"); }} className="chip-hover" style={{ height: 36, padding: "0 12px", borderRadius: 999, border: "none", background: done.weekly ? "rgba(5,150,105,0.14)" : "rgba(0,166,126,0.10)", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#047857" }}>{done.weekly ? "Đã thêm vào giỏ" : `Từ thực đơn tuần · ${fmtInt(p.weekly.cal)}`}</button>}
           </div>
         )}
 
         <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", margin: "0 -12px", padding: tray.length ? "0 12px 12px 12px" : "0 12px calc(20px + env(safe-area-inset-bottom, 0px)) 12px" }}>
-          {results && <span style={secLbl}>KẾT QUẢ ({results.length})</span>}
+          {smart && (
+            <button data-testid="log-smart" onClick={() => p.onCalc(q, true)} style={{ width: "100%", margin: "0 0 4px 0", padding: 12, borderRadius: 16, border: "none", background: "linear-gradient(135deg,rgba(14,159,192,0.12),rgba(3,105,161,0.08))", display: "flex", alignItems: "center", gap: 10, fontFamily: "inherit", color: "#0F172A", textAlign: "left", boxSizing: "border-box" }}>
+              <span style={{ width: 40, height: 40, borderRadius: 12, background: CY, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.calc(18)}</span>
+              <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+                <span data-testid="log-smart-title" data-cal={smart.cal} style={{ fontSize: 14, fontWeight: 800 }}>{smart.unknown ? `${smart.n} món · ${smart.unknown} món chưa có calo` : `≈ ${fmtInt(smart.cal)} kcal cho ${smart.n} món`}</span>
+                <span style={{ fontSize: 12, color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{smart.sub}</span>
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "#0369A1", whiteSpace: "nowrap", flexShrink: 0 }}>Xem &amp; ghi ›</span>
+            </button>
+          )}
+          {results && <span style={smart ? { ...secLbl, padding: "14px 4px 6px 4px" } : secLbl}>{meal ? `KẾT QUẢ CHO “${term.toUpperCase()}” (${results.length})` : `KẾT QUẢ (${results.length})`}</span>}
 
           {!results && sugg.length > 0 && (
             <div data-testid="log-suggest" style={{ margin: "0 0 12px 0", borderRadius: 16, background: "#EEF4FF", padding: "10px 12px 4px 12px" }}>
@@ -127,14 +174,14 @@ export function LogMealSheet(p) {
                 return (
                   <div key={key} style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 58, borderBottom: i < sugg.length - 1 ? "1px solid rgba(0,98,240,0.10)" : "none" }}>
                     <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 3 }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sg.items.map(itemName).join(", ")}</span>
+                      <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sg.items.map((x) => capFirst(itemName(x))).join(", ")}</span>
                       <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
                         <span style={{ fontSize: 10, fontWeight: 800, color: c, background: bg, padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>{sg.kind === "template" ? `${t} · ${sg.title}` : `${t}${sg.date ? ` ${fmtVN(sg.date)}` : ""}`}</span>
                         <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sg.items.length} món</span>
                       </span>
                     </span>
                     <span style={{ fontSize: 14, fontWeight: 900, color: "#0062F0" }}>{fmtInt(sg.cal)}</span>
-                    <button data-testid="log-suggest-add" disabled={!!busyKey} onClick={() => add(key, () => p.onAddSuggest(sg))} aria-label={`Ghi ${sg.items.map(itemName).join(", ")}`} style={{ ...addBtn(done[key]), background: done[key] ? "#059669" : "#0062F0", color: "#FFFFFF" }}>{done[key] ? Icon.check(18) : "+"}</button>
+                    <button data-testid="log-suggest-add" onClick={() => { addManyToTray(sg.items); flash(key); }} aria-label={`Thêm vào giỏ ${sg.items.map(itemName).join(", ")}`} style={{ ...addBtn(done[key]), background: done[key] ? "#059669" : "#0062F0", color: "#FFFFFF" }}>{done[key] ? Icon.check(18) : "+"}</button>
                   </div>
                 );
               })}
@@ -154,16 +201,28 @@ export function LogMealSheet(p) {
             );
           })}
 
-          {results && results.length === 0 && !p.onCalc && (
-            <div style={{ padding: "16px 4px", fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
-              Không thấy "{q}" trong kho món.{p.onPhoto ? " Thử chụp ảnh món để AI nhận diện." : ""}
-            </div>
-          )}
-          {results && q.trim().length >= 2 && p.onCalc && (
-            <div style={{ marginTop: 12, padding: 12, borderRadius: 16, border: "none", background: "rgba(124,58,237,0.06)", display: "flex", flexDirection: "column", gap: 8 }}>
-              <span style={{ fontSize: 13, lineHeight: 1.45, color: "#334155" }}>{results.length ? "Không đúng món bạn ăn?" : `Không thấy "${q}" trong kho món.`} Tính calo cho <b>"{q.trim()}"</b> theo đúng chữ bạn gõ.</span>
-              <button data-testid="log-calc-q" onClick={() => p.onCalc(q, true)} style={{ height: 44, borderRadius: 12, border: "none", background: "linear-gradient(135deg,#7C3AED,#5B21B6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{Icon.sparkle(16)}Kiểm tra calo món này</button>
-              <span style={{ fontSize: 12, color: "#64748B" }}>Món có trong kho tính ngay; món lạ thì AI tính (1 lượt).</span>
+          {showManual && (
+            <div data-testid="log-manual" style={{ marginTop: 12, padding: 14, borderRadius: 16, background: "#F8FAFF", border: "1px solid #E3EBFA", display: "flex", flexDirection: "column", gap: 10 }}>
+              <span style={{ fontSize: 14, lineHeight: 1.45, color: "#334155" }}>Không thấy <b>"{q.trim()}"</b> trong kho món.</span>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <NumField label="Calo *" unit="kcal" value={man.cal} onChange={(v) => setMan((m) => ({ ...m, cal: v }))} testid="log-manual-cal" strong h={46} />
+                <NumField label="Khẩu phần" unit="g" value={manGram} onChange={(v) => setMan((m) => ({ ...m, gram: v }))} testid="log-manual-gram" h={46} />
+              </div>
+              {!man.more
+                ? <button data-testid="log-manual-more" onClick={() => setMan((m) => ({ ...m, more: true }))} style={{ alignSelf: "flex-start", height: 28, padding: 0, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 12, fontWeight: 800, color: "#0062F0" }}>+ Thêm đạm / tinh bột / béo (không bắt buộc)</button>
+                : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+                    <NumField label="Đạm" unit="g" value={man.p} onChange={(v) => setMan((m) => ({ ...m, p: v }))} testid="log-manual-p" dec h={46} />
+                    <NumField label="Tinh bột" unit="g" value={man.c} onChange={(v) => setMan((m) => ({ ...m, c: v }))} testid="log-manual-c" dec h={46} />
+                    <NumField label="Béo" unit="g" value={man.f} onChange={(v) => setMan((m) => ({ ...m, f: v }))} testid="log-manual-f" dec h={46} />
+                  </div>
+                )}
+              <button data-testid="log-manual-add" disabled={!manPreview} onClick={addManual} style={{ height: 46, borderRadius: 14, border: "none", ...(manPreview ? { background: CY, color: "#FFFFFF" } : { background: "#E2E8F0", color: "#64748B" }), fontFamily: "inherit", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{Icon.plus(16, 2.6)}{manPreview ? `Thêm vào giỏ · ${fmtInt(manPreview.cal)} kcal` : "Nhập calo để thêm vào giỏ"}</button>
+              {p.onCalc && p.aiOn && <>
+                <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 8, color: "#94A3B8", fontSize: 12 }}><span style={{ flex: 1, height: 1, background: "#E2E8F0" }} />hoặc<span style={{ flex: 1, height: 1, background: "#E2E8F0" }} /></div>
+                <button data-testid="log-calc-q" onClick={() => p.onCalc(q, true)} style={{ height: 44, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#5B21B6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{Icon.sparkle(16)}Để AI tính · 1 lượt</button>
+              </>}
+              <span style={{ fontSize: 11, color: "#64748B", textAlign: "center" }}>Món tự nhập chỉ lưu cho bạn.{p.onPhoto && !(p.onCalc && p.aiOn) ? " Hoặc chụp ảnh món để AI nhận diện." : ""}</span>
             </div>
           )}
           {!results && list.length === 0 && sugg.length === 0 && (
@@ -177,7 +236,7 @@ export function LogMealSheet(p) {
               {tray.map(({ k, it }) => (
                 <div key={k} data-testid="log-tray-row" style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 48 }}>
                   <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{itemName(it)}</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{capFirst(itemName(it))}</span>
                     <span style={{ fontSize: 12, color: "#64748B" }}>{fmtInt(it.cal)} kcal{it.qty_display ? ` · ${it.qty_display}` : ""}</span>
                   </span>
                   <button onClick={() => setTrayItem(k, (x) => stepItem(x, -1))} aria-label={`Bớt ${itemName(it)}`} style={stepBtn}>−</button>
@@ -203,5 +262,6 @@ export function LogMealSheet(p) {
   );
 }
 
+const CY = "linear-gradient(135deg,#0E9FC0,#0369A1)";
 const secLbl = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em", padding: "4px 4px 6px 4px" };
 const stepBtn = { width: 34, height: 36, borderRadius: 10, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 18, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0, fontFamily: "inherit" };

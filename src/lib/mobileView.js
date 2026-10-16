@@ -255,6 +255,8 @@ export function scaleItem(item, newGram) {
 }
 
 export const itemName = (it) => String(it?.display || it?.food || it?.name || "Món").trim();
+// Viết hoa chữ đầu tên món ("sữa chua" → "Sữa chua") — thẻ gợi ý Hôm nay, sheet Gợi ý món, Ghi bữa (17/10)
+export const capFirst = (s) => { const t = String(s ?? "").trim(); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; };
 export function itemPortion(it) {
   if (it?.qty_display) return it.qty_display;
   const g = Math.round(Number(it?.gram) || 0);

@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { aiQuota } from "../lib/aiQuota";
 import { SubPage, Icon } from "./ui";
-import { resolveAll, sumCheck, stepItem, cacheEntryOf, manualItem, gramOf } from "../lib/calcCheck.js";
+import { resolveAll, sumCheck, stepItem, cacheEntryOf, manualItem, gramOf, mineEntries } from "../lib/calcCheck.js";
 import { aiCalc } from "../lib/calcAI";
 import { fmtInt, fmtDec, itemName } from "../lib/mobileView";
 import { MEAL_NAMES } from "../lib/mealMath";
@@ -17,7 +17,7 @@ const sel = { height: 42, padding: "0 12px", borderRadius: 12, border: "none", b
 const stepBtn = { width: 32, height: 32, borderRadius: 10, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 18, fontWeight: 800, padding: 0, flexShrink: 0, fontFamily: "inherit" };
 const tag = (ai) => ({ fontSize: 11, fontWeight: 800, color: ai ? "#6D28D9" : "#00A67E", background: ai ? "rgba(124,58,237,0.1)" : "rgba(0,200,150,0.1)", padding: "2px 6px", borderRadius: 6, marginLeft: 4, whiteSpace: "nowrap" });
 
-export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, frequent, aiEnabled, userId, appSettings, dayInfo, mealIds, initialMeal, date, dateOptions, onSave, savePending, saveMine, onClose, pickTitle }) {
+export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, frequent, aiEnabled, userId, appSettings, dayInfo, mealIds, initialMeal, date, dateOptions, onSave, savePending, saveMine, onClose, pickTitle, viewFirst = false }) {
   const [text, setText] = useState(initialText);
   const [rows, setRows] = useState(() => (autoRun && initialText.trim() ? resolveAll(initialText, foodCache) : null));
   const [aiBusy, setAiBusy] = useState(false);
@@ -82,8 +82,7 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
   const save = async () => {
     if (!items.length || unknown.length || busy) return;
     setBusy(true);
-    const mine = {};
-    (rows || []).forEach((r) => { if (r.source === "manual") { const e = parseQty(r); const ce = cacheEntryOf(r, e); if (ce) mine[r.food] = ce; } });
+    const mine = mineEntries(rows);
     if (saveMine && Object.keys(mine).length) saveMine(mine); // món tự nhập: lưu riêng cho tài khoản này, lần sau tìm/gõ là ra
     const ok = await onSave(day, meal, items.map(({ _raw, ...it }) => ({ ...it, gram: Math.round(it.gram), cal: Math.round(it.cal) })));
     setBusy(false);
@@ -124,6 +123,8 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
   );
 
   // ===== Bước 2: kết quả =====
+  const vf = viewFirst && !pickTitle;
+  const canSave = items.length > 0 && unknown.length === 0;
   const footer = (
     <div style={{ flexShrink: 0, background: "rgba(255,255,255,0.94)", borderTop: "1px solid rgba(30,64,175,0.08)", padding: "10px 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px", display: "flex", flexDirection: "column", gap: 8 }}>
       {!pickTitle && <div style={{ display: "flex", gap: 8 }}>
@@ -135,8 +136,9 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
         </select>
       </div>}
       <div style={{ display: "flex", gap: 8 }}>
-        <button data-testid="calc-close" onClick={onClose} style={{ flex: 1, height: 52, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0F172A", fontFamily: "inherit", fontSize: 15, fontWeight: 800 }}>{pickTitle ? "Huỷ" : "Chỉ xem"}</button>
-        <button data-testid="calc-save" disabled={!items.length || unknown.length > 0 || busy} onClick={save} style={{ flex: 2, height: 52, borderRadius: 14, border: "none", ...((!items.length || unknown.length > 0) ? { background: "#E2E8F0", color: "#64748B" } : { background: CY, color: "#FFFFFF" }), fontFamily: "inherit", fontSize: 15, fontWeight: 900 }}>{busy ? "Đang lưu…" : pickTitle ? `Thêm vào ${String(pickTitle).toLowerCase()}` : `Ghi vào ${(MEAL_NAMES[meal] || "bữa").toLowerCase()}`}</button>
+        {/* Mở từ nút + › Kiểm tra calo (bản vẽ 116): "Chỉ xem" là nút chính, "Ghi vào …" là nút phụ */}
+        <button data-testid="calc-close" data-primary={vf ? "1" : undefined} onClick={onClose} style={{ flex: vf ? 1.4 : 1, height: 52, borderRadius: 14, border: "none", ...(vf ? { background: CY, color: "#FFFFFF", fontWeight: 900 } : { background: "#EEF4FF", color: "#0F172A", fontWeight: 800 }), fontFamily: "inherit", fontSize: 15 }}>{pickTitle ? "Huỷ" : "Chỉ xem"}</button>
+        <button data-testid="calc-save" data-primary={vf ? undefined : "1"} disabled={!canSave || busy} onClick={save} style={{ flex: vf ? 1 : 2, height: 52, borderRadius: 14, border: "none", ...(!canSave ? { background: "#E2E8F0", color: "#64748B" } : vf ? { background: "#EEF4FF", color: "#0062F0" } : { background: CY, color: "#FFFFFF" }), fontFamily: "inherit", fontSize: 15, fontWeight: vf ? 800 : 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: "0 10px" }}>{busy ? "Đang lưu…" : pickTitle ? `Thêm vào ${String(pickTitle).toLowerCase()}` : `Ghi vào ${(MEAL_NAMES[meal] || "bữa").toLowerCase()}`}</button>
       </div>
       {unknown.length > 0 && <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Còn {unknown.length} món chưa có calo — AI tính, tự nhập calo hoặc chọn món gần đúng trước khi ghi.</span>}
     </div>
@@ -229,17 +231,12 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
   );
 }
 
-// Số lượng gõ kèm (2 cái, 1 tô) → lưu theo 1 đơn vị để lần sau gõ "3 cái" nhân đúng
-function parseQty(r) {
-  const m = String(r.qty_display || "").match(/^([\d,]+)\s/);
-  return m ? Number(m[1].replace(",", ".")) || 1 : 1;
-}
-
-function NumField({ label, unit, value, onChange, testid, autoFocus, strong, dec }) {
+// Ô số có nhãn + đơn vị (dùng chung: ô tự nhập calo ở đây và trong sheet Ghi bữa — bản vẽ 114)
+export function NumField({ label, unit, value, onChange, testid, autoFocus, strong, dec, h = 44 }) {
   return (
     <label style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
       <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B" }}>{label}</span>
-      <span style={{ height: 44, borderRadius: 12, background: "#FFFFFF", border: strong ? "1.5px solid #0E9FC0" : "1px solid #E2E8F0", display: "flex", alignItems: "center", gap: 4, padding: "0 10px", boxSizing: "border-box" }}>
+      <span style={{ height: h, borderRadius: 12, background: "#FFFFFF", border: strong ? "1.5px solid #0E9FC0" : "1px solid #E2E8F0", display: "flex", alignItems: "center", gap: 4, padding: "0 10px", boxSizing: "border-box" }}>
         <input data-testid={testid} type="text" inputMode={dec ? "decimal" : "numeric"} autoFocus={autoFocus} value={value} placeholder={dec ? "—" : "0"}
           onChange={(e) => onChange(e.target.value.replace(dec ? /[^\d.,]/g : /[^\d]/g, "").slice(0, 6))}
           style={{ flex: 1, minWidth: 0, width: "100%", border: "none", background: "transparent", fontFamily: "inherit", fontSize: 16, fontWeight: 800, color: "#0F172A", outline: "none", padding: 0 }} />

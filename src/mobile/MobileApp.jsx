@@ -41,6 +41,9 @@ import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
 import { PhotoScreen } from "./PhotoScreen";
 import { CalcCheckScreen } from "./CalcCheckScreen";
+import { WeightSheet } from "./WeightSheet";
+import { PlusMenu } from "./PlusMenu";
+import { calcMacro } from "../calcMacro";
 import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
 import PWAInstallPrompt from "../PWAInstallPrompt";
 import { useNotifications } from "../hooks/useNotifications";
@@ -52,7 +55,7 @@ import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel, menuReplaces, menuWrites } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
-import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekCard, weekDates, MEAL_SHORT } from "../lib/mobileView";
+import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekCard, weekDates, MEAL_SHORT, fmtKg, fmtDec, fmtInt } from "../lib/mobileView";
 
 const TAB_KEY = "fp_mtab";
 const SECTION_TITLE = { profile: "Mục tiêu & hồ sơ", account: "Tài khoản & gói cước", feedback_inline: "Góp ý & báo lỗi", about: "Giới thiệu", about_edit: "Sửa giới thiệu", terms: "Điều khoản", admin_home: "Quản trị" };
@@ -345,12 +348,8 @@ export function MobileApp(props) {
     const tpl = ud.getWeeklyTemplate ? ud.getWeeklyTemplate(templateKeyOf(d)) : null;
     const m = tpl && (tpl.meals || []).find((x) => x.meal_id === mealId && (x.items || []).length);
     if (!m) return null;
-    return { cal: Math.round(m.items.reduce((s, i) => s + (Number(i.cal) || 0), 0)), onClick: async () => {
-      // Bữa đã có món → hỏi trước khi thay bằng thực đơn tuần (16/10)
-      const cur = mealOf(dayOf(d), mealId);
-      if (cur && hasItems(cur) && !(await appConfirm(`${mealLabel(cur.meal_name, mealId)} đã có món. Thay bằng thực đơn tuần?`))) return false;
-      return putItems(d, mealId, m.items, true, "thực đơn tuần");
-    } };
+    // 17/10 (bản vẽ 113): chip "Từ thực đơn tuần" đưa các món vào giỏ của sheet Ghi bữa (ghi bằng nút Ghi, nối thêm — không ghi đè)
+    return { cal: Math.round(m.items.reduce((s, i) => s + (Number(i.cal) || 0), 0)), items: m.items };
   };
   const updateLog = (patch) => setLayers((ls) => ls.map((l) => (l.type === "log" ? { ...l, ...patch } : l)));
 
@@ -367,28 +366,22 @@ export function MobileApp(props) {
   const renderLog = (l) => {
     if (l.pick) {
       return <LogMealSheet pickMode pickTitle={MEAL_NAMES[l.mealId]} date={l.date} mealId={l.mealId} mealIds={[]} dateOptions={dateOptions}
-        recentMeals={[]} frequent={frequent} foodCache={calcFoodCache} onClose={closeLayer}
+        recentMeals={[]} frequent={frequent} foodCache={calcFoodCache} onClose={closeLayer} aiOn={!!flags.ai_macro} saveMine={saveMyFoods}
         onCalc={(text, auto) => replaceTop({ type: "calc", pick: true, text: text || "", auto: !!auto, date: l.date, mealId: l.mealId })}
         onPickMany={(items) => { setPendingPick({ items, n: Date.now() }); closeLayer(); return true; }} />;
     }
     const ids = idsFor(l.date);
     const mealId = ids.includes(l.mealId) ? l.mealId : ids[0];
-    const target = mealOf(dayOf(l.date), mealId);
     const sg = suggestFor(mealId, l.date);
     return <LogMealSheet date={l.date} onDate={(d) => { updateLog({ date: d }); if (d !== today && !dayCache[d]) loadDay(d); }} mealId={mealId} onMeal={(id) => updateLog({ mealId: id })}
       mealIds={ids} dateOptions={dateOptions} recentMeals={recentMeals} frequent={frequent} foodCache={calcFoodCache}
-      onClose={closeLayer}
+      onClose={closeLayer} aiOn={!!flags.ai_macro} saveMine={saveMyFoods}
       onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
       onAI={aiAccess.usable && l.date === today ? () => replaceTop(quickAILayer()) : null}
       weekly={weeklyFor(l.date, mealId)}
       onCalc={(text, auto) => replaceTop({ type: "calc", text: text || "", auto: !!auto, date: l.date, mealId })}
       onAddItems={async (items) => { const ok = await putItems(l.date, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`); if (ok !== false) closeLayer(); return ok; }}
-      suggestions={sg.list} suggestTarget={sg.target}
-      onAddSuggest={async (opt) => {
-        const nm = mealLabel(target && target.meal_name, mealId);
-        if (target && hasItems(target) && !(await appConfirm(`${nm} đã có món. Thay bằng món gợi ý?`))) return false;
-        return putItems(l.date, mealId, opt.items, true, opt.kind === "history" ? `${nm.toLowerCase()} ${fmtVN(opt.date)}` : `gợi ý ${opt.title.toLowerCase()}`);
-      }} />;
+      suggestions={sg.list} suggestTarget={sg.target} />;
   };
 
   const renderEdit = (l) => {
@@ -447,6 +440,46 @@ export function MobileApp(props) {
       })} />;
   };
 
+  // ---------- Cân hôm nay (bản vẽ 115) ----------
+  // Lưu = cùng hàm Tiến độ dùng (addWeight: 1 lần cân / ngày, cân lại = sửa số hôm đó) + cập nhật kg hồ sơ (macro tính theo kg).
+  // Toast "Đã lưu 64,6 kg · −0,3 kg (· mục tiêu mới X kcal)" + Hoàn tác (trả số hôm nay cũ / xoá lần cân hôm nay).
+  const weightRef = useRef(weightLog);
+  weightRef.current = weightLog;
+  const profileRef = useRef(profile);
+  profileRef.current = profile;
+  const openWeigh = (fromGoals) => openLayer({ type: "weight", fromGoals: fromGoals === true });
+  const saveWeightToday = async (kg, prev) => {
+    const d = todayVN();
+    const before = (weightRef.current || []).find((w) => w.logged_date === d) || null;
+    const prevKg = profileRef.current.kg;
+    const r = await addWeight(kg);
+    if (!r) { fail(); return false; }
+    const oldCal = targetsOf(macro, dayTypeOf(profile, d)).cal;
+    const np = { ...profileRef.current, kg };
+    setProfile(np);
+    let newCal = oldCal;
+    try { newCal = targetsOf(calcMacro(np), dayTypeOf(np, d)).cal; } catch (e) { /* giữ số cũ */ }
+    const dl = prev ? Math.round((kg - prev.kg) * 10) / 10 : null;
+    const dText = dl == null ? "" : ` · ${dl > 0 ? "+" : dl < 0 ? "−" : "±"}${fmtDec(Math.abs(dl))} kg`;
+    const calText = Math.round(newCal) !== Math.round(oldCal) ? ` · mục tiêu mới ${fmtInt(newCal)} kcal` : "";
+    const undo = async () => {
+      setToast(null);
+      if (before) await addWeight(before.kg, d);
+      else { const row = (weightRef.current || []).find((w) => w.logged_date === d); if (row) await deleteWeight(row.id); }
+      setProfile({ ...profileRef.current, kg: prevKg });
+      showToast({ text: "Đã hoàn tác lần cân hôm nay." }, 2500);
+    };
+    showToast({ text: `Đã lưu ${fmtKg(kg)} kg${dText}${calText}`, action: { label: "Hoàn tác", onClick: undo } }, 6000);
+    return true;
+  };
+  // "Xem biểu đồ ›" trong sheet: đường cũ — sang Tiến độ › Cân nặng
+  const openWeightChart = () => { closeLayer(); setProgressSeg((s) => ({ seg: "weight", n: s.n + 1 })); setTab("progress"); };
+
+  // ---------- Nút + giữa thanh dưới (bản vẽ 116) ----------
+  const [plusOpen, setPlusOpen] = useState(false);
+  useEffect(() => { if (layers.length) setPlusOpen(false); }, [layers.length]);
+  const plusDate = tab === "today" ? date : today;
+
   // ---------- màn phụ của Tôi (dùng lại các màn cũ chưa vẽ lại) ----------
   const panelProps = {
     updateWeight, todayLog: ud.todayLog, removeDayMeal: ud.removeDayMeal, moveDayMeal: ud.moveDayMeal, weightLog, setWeightLog: props.setWeightLog, addWeight, deleteWeight, resetWeights: props.resetWeights,
@@ -490,7 +523,7 @@ export function MobileApp(props) {
     );
     if (sec === "goals") return (
       <SubPage title="Mục tiêu & macro" onBack={closeLayer} dark right={<span style={{ fontSize: 12, fontWeight: 700, color: DK.green, paddingRight: 8 }}>Tự động lưu</span>}>
-        <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} />
+        <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} openWeigh={() => openWeigh(true)} />
       </SubPage>
     );
     if (sec === "notifications") return (
@@ -633,7 +666,7 @@ export function MobileApp(props) {
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}
-            onAIMenu={aiMenuAction} onWeight={() => { setProgressSeg((s) => ({ seg: "weight", n: s.n + 1 })); setTab("progress"); }} />
+            onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} />
         )}
         {tab === "menu" && (
           <div>
@@ -656,7 +689,13 @@ export function MobileApp(props) {
         )}
       </main>
 
-      <BottomNav dark={tab === "me"} hidden={!!top} tab={tab} onTab={(t) => { if (t === "today") setSelDate(null); setTab(t); }} onAdd={() => openLog(null, tab === "today" ? date : today)} />
+      {plusOpen && !top && (
+        <PlusMenu onClose={() => setPlusOpen(false)}
+          onLog={() => { setPlusOpen(false); openLog(null, plusDate); }}
+          onPhoto={flags.photo_macro ? () => { setPlusOpen(false); openPhoto(defaultMealFor(today)); } : null}
+          onCalc={() => { setPlusOpen(false); openLayer({ type: "calc", text: "", auto: false, date: today, mealId: defaultMealFor(today), viewFirst: true }); }} />
+      )}
+      <BottomNav dark={tab === "me"} hidden={!!top} tab={tab} addOpen={plusOpen && !top} onTab={(t) => { setPlusOpen(false); if (t === "today") setSelDate(null); setTab(t); }} onAdd={() => setPlusOpen((v) => !v)} />
 
       {layers.map((l, i) => (
         <div key={i} style={{ display: i === layers.length - 1 || l.type === "page" || l.type === "edit" ? "block" : "none" }}>
@@ -683,12 +722,14 @@ export function MobileApp(props) {
               dayInfo={{ target: targetsOf(macro, dayTypeOf(profile, l.date)).cal, eaten: eatenOfDay(dayOf(l.date)).cal }}
               mealIds={idsFor(l.date).length ? idsFor(l.date) : ["sang", "trua", "toi"]} initialMeal={l.mealId} date={l.date} dateOptions={dateOptions.some((o) => o.value === l.date) ? dateOptions : [{ value: l.date, label: fmtVN(l.date) }, ...dateOptions]}
               savePending={savePendingFoodCache} saveMine={saveMyFoods} onClose={closeLayer}
-              pickTitle={l.pick ? MEAL_NAMES[l.mealId] : null}
+              pickTitle={l.pick ? MEAL_NAMES[l.mealId] : null} viewFirst={!!l.viewFirst}
               onSave={l.pick
                 // Từ Sửa bữa › Thêm món: món AI tính đưa về bản nháp Sửa bữa (chưa lưu), như chọn món trong kho
                 ? (d, mealId, items) => { setPendingPick({ items, n: Date.now() }); return true; }
                 : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
           )}
+          {l.type === "weight" && <WeightSheet today={today} weightLog={weightLog} profileKg={profile.kg} goalKg={weight.goalKg} startKg={weight.startKg}
+            onSave={saveWeightToday} onClose={closeLayer} onChart={l.fromGoals ? null : openWeightChart} />}
           {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} mealIds={idsFor(today)} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`)} />}
         </div>
       ))}

@@ -88,3 +88,21 @@ test("tự nhập calo món lạ (16/10)", async () => {
   assert.equal(manualItem(e, { gram: 100, cal: 0 }), null);
   assert.equal(manualItem(e, { gram: 0, cal: 200 }), null);
 });
+
+test("ô tìm Ghi bữa: nhận ra gõ cả bữa (113b)", async () => {
+  const { mealEntries, mineEntries, manualItem } = await import("../src/lib/calcCheck.js");
+  assert.equal(mealEntries("phở bò"), null);
+  assert.equal(mealEntries("cơm trắng"), null);
+  assert.equal(mealEntries("thịt heo"), null);
+  assert.equal(mealEntries("1 tô phở bò, 2 quả trứng gà luộc").length, 2);
+  assert.equal(mealEntries("200g ức gà").length, 1);
+  { const m = mealEntries("1 tô"); assert.ok(m === null || m.length === 1); }
+  assert.equal(mealEntries("cơm và gà luộc").length, 2);
+  assert.equal(mealEntries("phở bò\ntrà đá").length, 2);
+  // món tự nhập "2 cái" → lưu theo 1 cái
+  const it = manualItem(parseFoodLine("2 cái bánh khọt"), { gram: 200, cal: 260 });
+  const mine = mineEntries([it, { source: "localDB", food: "x", gram: 1, cal: 1 }]);
+  assert.deepEqual(Object.keys(mine), ["bánh khọt"]);
+  assert.equal(mine["bánh khọt"].cal, 130);
+  assert.equal(mine["bánh khọt"].gram, 100);
+});
