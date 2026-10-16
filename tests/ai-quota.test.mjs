@@ -1,12 +1,13 @@
 // node --test tests/ — lượt AI theo hạng
 import test from "node:test";
 import assert from "node:assert/strict";
-import { aiQuota, utcDay } from "../src/lib/aiQuota.js";
+import { aiQuota, vnDay } from "../src/lib/aiQuota.js";
 
 const now = new Date("2026-10-13T03:00:00Z"); // 10:00 giờ VN
 
-test("utcDay", () => {
-  assert.equal(utcDay(new Date("2026-10-13T23:30:00Z")), "2026-10-13");
+test("vnDay: lượt ngày làm mới lúc 0:00 giờ VN (không phải 7:00 sáng như khi tính UTC)", () => {
+  assert.equal(vnDay(new Date("2026-10-13T23:30:00Z")), "2026-10-14"); // 6:30 sáng 14/10 VN
+  assert.equal(vnDay(new Date("2026-10-13T16:59:00Z")), "2026-10-13"); // 23:59 13/10 VN
 });
 
 test("aiQuota: số kỳ cũ không tính, giới hạn theo hạng", () => {

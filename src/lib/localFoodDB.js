@@ -2071,19 +2071,19 @@ const GRAM_LIMIT_OVERRIDE = {
   "thịt heo": { min: 80, max: 250 }, "thịt lợn": { min: 80, max: 250 },
   "cá hồi": { min: 80, max: 250 }, "cá ngừ": { min: 80, max: 250 },
   "tôm tươi": { min: 60, max: 200 }, "mực": { min: 60, max: 200 },
-  "trứng gà": { min: 50, max: 200 }, "trứng gà luộc": { min: 50, max: 200 },
+  "trứng gà": { min: 50, max: 200 }, "trứng gà luộc": { min: 50, max: 200 }, "trứng vịt": { min: 70, max: 210 }, "trứng vịt luộc": { min: 70, max: 210 }, "trứng luộc": { min: 50, max: 200 }, "trứng cút": { min: 30, max: 120 }, "trứng cút luộc": { min: 30, max: 120 },
   "đậu phụ": { min: 100, max: 300 },
   "cơm trắng": { min: 80, max: 450 }, "cơm gạo lứt": { min: 80, max: 450 },
   "khoai lang": { min: 100, max: 400 }, "khoai tây": { min: 100, max: 400 },
   "bánh mì": { min: 30, max: 200 }, "bún": { min: 100, max: 350 }, "mì": { min: 100, max: 300 }, "hủ tiếu": { min: 100, max: 350 }, "bánh cuốn": { min: 150, max: 400 }, "miến": { min: 50, max: 250 }, "bánh phở": { min: 100, max: 350 },
   "cháo": { min: 200, max: 500 }, // 1 tô cháo thường 300-400g, nhiều nước hơn cơm/bún nên sàn/trần cao hơn
   // Composite dishes — 1 tô/đĩa thật
-  "phở bò": { min: 300, max: 500 }, "phở gà": { min: 300, max: 500 },
-  "bún bò huế": { min: 300, max: 500 }, "bún riêu": { min: 300, max: 500 },
+  "phở bò": { min: 300, max: 650 }, "phở gà": { min: 300, max: 650 },
+  "bún bò huế": { min: 300, max: 650 }, "bún riêu": { min: 300, max: 650 },
   "bún chả": { min: 250, max: 450 }, "bún thịt nướng": { min: 250, max: 450 },
-  "hủ tiếu nam vang": { min: 300, max: 500 }, "bánh canh": { min: 300, max: 500 },
-  "mì quảng": { min: 300, max: 450 }, "cháo gà": { min: 250, max: 500 },
-  "cháo thịt bằm": { min: 250, max: 500 },
+  "hủ tiếu nam vang": { min: 300, max: 650 }, "bánh canh": { min: 300, max: 650 },
+  "mì quảng": { min: 300, max: 550 }, "cháo gà": { min: 250, max: 650 },
+  "cháo thịt bằm": { min: 250, max: 650 },
   "xôi xéo": { min: 100, max: 250 }, "xôi gà": { min: 100, max: 250 }, "xôi lạc": { min: 100, max: 250 },
   "bánh cuốn nhân thịt": { min: 150, max: 400 }, "bánh mì thịt": { min: 100, max: 250 },
   "cơm tấm": { min: 250, max: 450 }, "bún đậu mắm tôm": { min: 250, max: 450 },
@@ -2111,10 +2111,16 @@ const DEFAULT_LIMIT_BY_ROLE = {
   fixed: { min: 0, max: 1000 }, // gần như không giới hạn, Meal Engine không scale nhóm này
 };
 
+// Món ăn liền 1 tô/đĩa (form composite) chưa có trong bảng: 1 tô thật 250–550 g; món nước (phở, bún, cháo,
+// hủ tiếu, mì, miến, bánh canh) tô lớn tới 650 g — trước đây rơi về trần 350 g của nhóm carb nên bữa sáng
+// 1 tô phở hải sản chỉ ~260 kcal (rà thuật toán 16/10).
+const SOUP_RE = /^(phở|bún|cháo|hủ tiếu|hủ tíu|mì|miến|bánh canh|bánh đa|cao lầu|súp)(\s|$)/;
 export function getGramLimit(foodKey) {
   const key = (foodKey || "").toLowerCase().trim();
   if (GRAM_LIMIT_OVERRIDE[key]) return GRAM_LIMIT_OVERRIDE[key];
   const role = getFoodRole(key);
+  // Chỉ món ăn liền vai trò tinh bột (phở, bún chả, bánh mì thịt…); món mặn / rau / canh composite giữ giới hạn cũ
+  if (role === "carb" && LOCAL_FOODS[key]?.form === "composite") return SOUP_RE.test(key) ? { min: 300, max: 650 } : { min: 150, max: 550 };
   return DEFAULT_LIMIT_BY_ROLE[role] || DEFAULT_LIMIT_BY_ROLE.fixed;
 }
 

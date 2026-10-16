@@ -1,8 +1,8 @@
 // Lượt AI đã dùng / giới hạn theo hạng — hàm thuần, có test.
-// LƯU Ý: bộ đếm do edge function ai-proxy ghi, kỳ "ngày"/"tháng" của nó tính theo ngày UTC
-// (reset lúc 7:00 sáng giờ VN). Ở đây phải so cùng mốc UTC để hiện đúng số server đang đếm,
-// nên CỐ Ý dùng ngày UTC (không dùng dateVN). Khi ai-proxy chuyển sang giờ VN thì đổi utcDay → todayVN.
-export const utcDay = (now = new Date()) => now.toISOString().slice(0, 10);
+// Bộ đếm do edge function ai-proxy ghi; từ 16/10 kỳ "ngày"/"tháng" tính theo GIỜ VIỆT NAM (làm mới 0:00 VN),
+// ở đây so cùng mốc (UTC+7) để hiện đúng số server đang đếm.
+export const vnDay = (now = new Date()) => new Date(now.getTime() + 7 * 3600 * 1000).toISOString().slice(0, 10);
+export const utcDay = vnDay; // tên cũ, giữ cho nơi khác còn import
 
 export const QUOTA_DEFAULTS = {
   chat: { free: 20, trial: 100, premium: 150 },
@@ -21,7 +21,7 @@ export const QUOTA_ROWS = [
 // sub: dòng profiles (tier + các cột ai_*_count_*), settings: subscription_settings (có thể null)
 export function aiQuota(sub, settings, now = new Date()) {
   const tier = ["free", "trial", "premium"].includes(sub?.tier) ? sub.tier : "free";
-  const day = utcDay(now), month = day.slice(0, 7);
+  const day = vnDay(now), month = day.slice(0, 7);
   const used = {
     chat: sub?.ai_chat_count_reset_at === day ? Number(sub.ai_chat_count_today) || 0 : 0,
     menu: sub?.ai_menu_count_reset_at === day ? Number(sub.ai_menu_count_today) || 0 : 0,

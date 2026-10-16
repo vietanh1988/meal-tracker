@@ -5,7 +5,7 @@
 const CAT_WORDS = {
   seafood: ["hải sản", "cá", "tôm", "mực", "cua", "ghẹ", "sò", "hến", "ốc", "hàu", "nghêu", "ngao", "bạch tuộc", "chả cá", "cá hồi", "cá ngừ", "lươn", "tép"],
   beef: ["bò"],
-  pork: ["heo", "lợn", "ba chỉ", "sườn", "giò", "chả lụa", "xá xíu", "lạp xưởng", "dăm bông", "thịt nạc", "ba rọi", "thịt kho", "thịt rang", "nem"],
+  pork: ["heo", "lợn", "ba chỉ", "sườn", "giò", "chả lụa", "xá xíu", "lạp xưởng", "dăm bông", "giăm bông", "jambon", "xúc xích", "thịt nguội", "patê", "pate", "bacon", "thịt xông khói", "thịt nạc", "ba rọi", "thịt kho", "thịt rang", "nem"],
   poultry: ["gà", "vịt", "ngan", "ngỗng", "chim", "cút"],
   egg: ["trứng"],
   dairy: ["sữa", "phô mai", "whey", "casein", "yaourt", "sữa chua", "kem"],
@@ -49,6 +49,8 @@ function parse(avoidText) {
     gs.forEach((g) => { groups.add(g); if (viaCat) { catGroups.add(g); (CAT_WORDS[g] || []).forEach((w) => words.add(w)); } });
     if (!viaCat) (SPECIFIC_WORDS[kw] || [kw]).forEach((w) => words.add(w));
   }
+  // Ăn chay: mọi món tên có "thịt" (thịt bằm, thịt nguội…), chả, ruốc đều là đồ mặn (rà 16/10: "cháo thịt bằm" lọt)
+  if (hasWord(t, "chay") || hasWord(t, "vegan")) ["thịt", "chả", "ruốc", "mắm"].forEach((w) => words.add(w));
   return { groups, catGroups, words };
 }
 export const avoidGroups = (avoidText) => parse(avoidText).groups;

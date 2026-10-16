@@ -61,7 +61,7 @@ function OutOfQuota({ message, onSaved, onSearch, onClose }) {
       <div style={{ borderRadius: 22, padding: "22px 18px", background: "linear-gradient(135deg,#F59E0B,#B45309)", color: "#FFFFFF", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center" }}>
         <span style={{ width: 64, height: 64, borderRadius: 32, background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>{MI.alert(28)}</span>
         <span style={{ fontSize: 19, fontWeight: 900 }}>Hết lượt AI tạo thực đơn hôm nay</span>
-        <span style={{ fontSize: 13, opacity: 0.92, lineHeight: 1.5 }}>{message || "Bạn đã dùng hết lượt hôm nay."} Lượt mới có lúc 7:00 sáng.</span>
+        <span style={{ fontSize: 13, opacity: 0.92, lineHeight: 1.5 }}>{message || "Bạn đã dùng hết lượt hôm nay."} Lượt mới có lúc 0:00 (nửa đêm).</span>
       </div>
       <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B", letterSpacing: "0.06em", padding: "6px 4px 0 4px" }}>VẪN GHI ĐƯỢC BỮA, KHÔNG CẦN AI</span>
       {row("Dùng thực đơn đã lưu", "Thực đơn AI đã tạo, ngày ăn trước", onSaved, Icon.redo(18), GREEN)}
@@ -200,7 +200,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
   const balanced = useMemo(() => {
     if (!tpl || !target.cal || Math.abs(dev) <= 5) return null;
     try {
-      const t = rebalanceTemplate(tpl, macro, dayType);
+      const t = rebalanceTemplate(tpl, macro, dayType, { avoidText: prefs.avoid });
       const d = Math.round(((sumTemplate(t).cal - target.cal) / target.cal) * 100);
       return Math.abs(d) <= Math.abs(dev) - 3 ? { tpl: t, dev: d } : null;
     } catch (e) { return null; }

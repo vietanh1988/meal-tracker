@@ -172,7 +172,8 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
   const lim = (LIMITS[tier] || LIMITS.free)[kind];
   const upgradeHint = tier === "free" ? " Nâng cấp Premium để có hạn mức cao hơn." : "";
 
-  const today = new Date().toISOString().slice(0, 10);
+  // Ngày / tháng theo GIỜ VIỆT NAM (UTC+7) — lượt ngày làm mới lúc 0:00 VN (trước 16/10: theo UTC = 7:00 sáng VN)
+  const today = new Date(now.getTime() + 7 * 3600 * 1000).toISOString().slice(0, 10);
   const thisMonth = today.slice(0, 7);
 
   if (kind === "macro") {
@@ -183,7 +184,7 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
       ai_macro_count_this_month: count + 1,
       ai_macro_count_reset_at: sameMonth ? profile.ai_macro_count_reset_at : today,
     }).eq("id", userId);
-    return { allowed: true };
+    return { allowed: true, refund: { ai_macro_count_this_month: count } };
   }
   if (kind === "photo") {
     const sameMonth = (profile.ai_photo_count_reset_at || "").slice(0, 7) === thisMonth;
@@ -193,7 +194,7 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
       ai_photo_count_this_month: count + 1,
       ai_photo_count_reset_at: sameMonth ? profile.ai_photo_count_reset_at : today,
     }).eq("id", userId);
-    return { allowed: true };
+    return { allowed: true, refund: { ai_photo_count_this_month: count } };
   }
   if (kind === "menu") {
     const sameDay = profile.ai_menu_count_reset_at === today;
@@ -204,7 +205,7 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
       ai_menu_count_reset_at: sameDay ? profile.ai_menu_count_reset_at : today,
       ai_menu_last_call_at: now.toISOString(),
     }).eq("id", userId);
-    return { allowed: true };
+    return { allowed: true, refund: { ai_menu_count_today: count, ai_menu_last_call_at: profile.ai_menu_last_call_at || null } };
   }
   // chat
   const sameDay = profile.ai_chat_count_reset_at === today;
@@ -215,7 +216,7 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
     ai_chat_count_reset_at: sameDay ? profile.ai_chat_count_reset_at : today,
     ai_chat_last_call_at: now.toISOString(),
   }).eq("id", userId);
-  return { allowed: true };
+  return { allowed: true, refund: { ai_chat_count_today: count } };
 }
 
 serve(async (req) => {
@@ -224,6 +225,13 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  // Lượt đã trừ cho request này — AI lỗi / trả rỗng thì hoàn lại (16/10: trước đây lỗi phía nhà cung cấp vẫn mất lượt)
+  let refund: { admin: any; userId: string; values: Record<string, unknown> } | null = null;
+  const doRefund = async () => {
+    if (!refund) return;
+    try { await refund.admin.from("profiles").update(refund.values).eq("id", refund.userId); } catch (_e) { /* bỏ qua */ }
+    refund = null;
+  };
   try {
     const user = await verifyUser(req);
     if (!user) {
@@ -242,6 +250,7 @@ serve(async (req) => {
     if (!quota.allowed) {
       return new Response(JSON.stringify({ error: quota.message, quotaExceeded: true }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
+    if ((quota as any).refund) refund = { admin, userId: user.id, values: (quota as any).refund };
 
     // Build messages — nếu có image thì gửi multimodal (text + image)
     let msgs: any[];
@@ -361,11 +370,13 @@ serve(async (req) => {
     }
 
     await logUsage(admin, user.id, provider, usedModel, inputTok, outputTok, feature || null);
+    if (!String(text || "").trim()) await doRefund(); // trả rỗng = không dùng được → không tính lượt
 
     return new Response(JSON.stringify({ text, usage: { input_tokens: inputTok, output_tokens: outputTok } }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (e) {
+    await doRefund();
     return new Response(JSON.stringify({ error: e.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

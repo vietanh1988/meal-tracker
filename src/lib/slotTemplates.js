@@ -257,10 +257,21 @@ export function buildSlotPlan(style, mealIds, opts = {}) {
     const slots = tpl[mealId];
     if (!slots) continue;
     const outSlots = [];
-    for (const slot of slots) {
+    // keto/low_carb (rà 16/10): món trọn suất (phở, bún, xôi, cơm tấm…) toàn tinh bột → đổi thành món đạm + rau;
+    // mọi slot chỉ giữ món ít tinh bột (keto ≤ 10 g, low-carb ≤ 20 g tinh bột / 100 g)
+    const carbCap = diet === "keto" ? 10 : 20;
+    const lowCarbOk = (k) => (LOCAL_FOODS[k]?.c ?? 0) <= carbCap;
+    let mealSlots = slots;
+    if (noCarb && slots.some((sl) => sl.pool.startsWith("standalone"))) {
+      mealSlots = mealId === "sang"
+        ? [{ id: `${mealId}_p`, pool: "protein_clean_sang", label: "Món đạm sáng" }, { id: `${mealId}_v`, pool: "veg_clean", label: "Rau" }]
+        : [{ id: `${mealId}_p`, pool: "protein_vn", label: "Món mặn", ...(mealId === "toi" ? { excludeChosen: ["trua_p"] } : {}) }, { id: `${mealId}_v`, pool: "veg_vn", label: "Rau" }];
+    }
+    for (const slot of mealSlots) {
       // keto/low_carb: bỏ slot carb
       if (noCarb && slot.pool.startsWith("carb")) continue;
       let items = (pools[slot.pool] || []).filter((k) => !avoid.has(k));
+      if (noCarb) { const f = items.filter(lowCarbOk); if (f.length) items = f; }
       // Goal filter cho slot carb
       if (slot.pool.startsWith("carb")) {
         if (goal === "bulk") {

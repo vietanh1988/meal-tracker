@@ -78,7 +78,7 @@ export function PlanScreen({ userId, isAdmin, salesEnabled, aiMenuLockedFree = t
   const tier = sub?.tier || "free";
   const selling = isAdmin || salesEnabled;
   const quota = aiQuota(sub, settings);
-  const note = <p style={{ margin: "8px 16px 0 16px", fontSize: 12, color: DK.t3, lineHeight: 1.45 }}>Lượt theo ngày làm mới lúc 7:00 sáng, lượt theo tháng làm mới đầu tháng.</p>;
+  const note = <p style={{ margin: "8px 16px 0 16px", fontSize: 12, color: DK.t3, lineHeight: 1.45 }}>Lượt theo ngày làm mới lúc 0:00 (nửa đêm), lượt theo tháng làm mới đầu tháng.</p>;
 
   // ===== Đang tắt bán hàng: chỉ là màn Lượt AI =====
   if (!selling) return (

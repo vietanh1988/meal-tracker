@@ -16,12 +16,12 @@
 import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay, isStandaloneDish, lookupLocalFood } from "./localFoodDB";
 import { todayVN, addDays } from "./dateVN";
 import { buildWhitelist } from "./whitelistBuilder";
-import { exclusionKeys } from "./allergy.js";
+import { exclusionKeys, avoidMatcher } from "./allergy.js";
 import { buildPromptV2 } from "./promptBuilderV2";
 import { validateMenuV2, checkDryRun } from "./menuValidatorV2";
 import { buildSlotPlan, resolveSlotAnswers } from "./slotTemplates";
 import { buildPromptV3, parseSlotJSON } from "./promptBuilderV3";
-import { applyMealEngineToTemplate } from "../mealEngine";
+import { applyMealEngineToTemplate, splitDayIntoMeals } from "../mealEngine";
 import { ALL_MEALS, DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { MEAL_PATTERNS, MEAL_TIMES } from "../mealPatterns";
@@ -324,7 +324,9 @@ function attachPatternAndDisplay(template, norm) {
 // Sàn gram đạm bữa chính — bulk/ăn thật cần thịt/cá đủ chất, engine chia mỏng
 // (VD cá hấp 80g = 16g đạm quá ít). Nâng thịt/cá < 120g lên 140g, scale macro.
 // Trứng/đậu phụ bỏ qua (đạm phụ, có snapWholeUnit riêng).
-function enforceProteinFloor(template) {
+function enforceProteinFloor(template, target = null) {
+  // (16/10) Mục tiêu ngày thấp (< 1.800 kcal, VD nữ giảm mỡ) không ép 140 g thịt/cá mỗi bữa — làm bữa tối dư 30%+
+  if (target && (target.cal || 0) < 1800) return template;
   const meals = (template.meals || []).map(m => {
     if (!MAIN_MEALS.has(m.meal_id)) return m;
     const items = (m.items || []).map(it => {
@@ -344,6 +346,191 @@ function enforceProteinFloor(template) {
     return { ...m, items };
   });
   return { ...template, meals };
+}
+
+// ============================================================
+// BÙ CALO TỪNG BỮA (rà thuật toán 16/10)
+// Mô phỏng 8 kiểu hồ sơ × 3 phong cách: thực đơn thiếu TB 14–25% calo (phong cách Tiện lợi 25–39%), vì
+//  - bữa 1 món (1 tô phở/cháo) chạm trần gram, bữa phụ chỉ có món béo nhỏ (lạc 10 g), mealEngine không có
+//    món tinh bột để bù; ngày nghỉ 3 bữa không có bữa phụ để nhét món bù cũ.
+// Cách bù (sau mealEngine, trước khi trả về):
+//  1) bữa thiếu > max(60 kcal, 10%) → tăng khẩu phần món sẵn có tới trần gram: tinh bột trước (bỏ qua khi
+//     low-carb/keto), rồi món đạm;
+//  2) vẫn thiếu → thêm tối đa 2 món kèm hợp bữa (trứng, sữa, chuối, khoai, bánh mì…), lọc theo kiêng/dị ứng,
+//     kiểu ăn (low-carb/keto chỉ món ít tinh bột) và món đã có; gram theo phần còn thiếu, trong khoảng hợp lý.
+// ============================================================
+const SIDES = {
+  sang: [["trứng gà luộc", 50, 100], ["sữa tươi", 200, 300], ["bánh mì", 50, 100], ["chuối", 100, 200], ["sữa chua hy lạp", 100, 200], ["quả bơ", 80, 150]],
+  phu_sang: [["sữa chua", 100, 200], ["chuối", 100, 200], ["hạt điều", 15, 30], ["sữa chua hy lạp", 100, 200], ["quả bơ", 80, 150]],
+  phu_chieu: [["sữa chua", 100, 200], ["chuối", 100, 200], ["hạt điều", 15, 30], ["sữa chua hy lạp", 100, 200], ["quả bơ", 80, 150]],
+  pre: [["chuối", 100, 250], ["khoai lang luộc", 150, 300], ["bánh mì", 50, 100], ["sữa chua", 100, 200], ["sữa chua hy lạp", 100, 200], ["hạt điều", 15, 30]],
+  post: [["sữa tươi", 200, 400], ["chuối", 100, 200], ["trứng gà luộc", 50, 100], ["sữa chua hy lạp", 100, 200], ["hạt điều", 15, 30]],
+  trua: [["trứng gà luộc", 50, 100], ["đậu phụ", 100, 200], ["khoai lang luộc", 100, 250], ["chuối", 100, 150], ["quả bơ", 80, 150]],
+  toi: [["trứng gà luộc", 50, 100], ["đậu phụ", 100, 200], ["khoai lang luộc", 100, 250], ["sữa chua", 100, 200], ["quả bơ", 80, 150]],
+};
+const scaleTo = (it, g) => {
+  const r = g / (it.gram || 1);
+  const r1 = (x) => Math.round((Number(x) || 0) * r * 10) / 10;
+  return { ...it, gram: g, p: r1(it.p), c: r1(it.c), f: r1(it.f), fiber: r1(it.fiber), cal: Math.round((Number(it.cal) || 0) * r) };
+};
+// Số bữa trong ngày đã có món cùng "họ" (từ đầu: trứng, sữa, chuối…) — món kèm không lặp quá 2 bữa/ngày
+const familyOf = (key) => String(key || "").toLowerCase().split(" ")[0];
+const mealsWithFamily = (meals, key) => meals.filter(m => (m.items || []).some(i => familyOf(i.food) === familyOf(key))).length;
+export function topUpMeals(template, target, { diet = "balanced", avoidText = "", avoidKeys = null } = {}) {
+  const meals = template.meals || [];
+  const per = splitDayIntoMeals(target, meals.map(m => m.meal_id));
+  const lowCarb = diet === "low_carb" || diet === "keto";
+  const banned = avoidKeys || buildExclusionKeys(avoidText);
+  const isAvoided = avoidMatcher(avoidText);
+  const calOf = (items) => items.reduce((a, i) => a + (Number(i.cal) || 0), 0);
+  const addedFam = {};
+  const out = meals.map(m => {
+    const t = per[m.meal_id];
+    if (!t || !t.cal) return m;
+    let items = [...(m.items || [])];
+    const thr = () => Math.max(60, t.cal * 0.1);
+    let gap = t.cal - calOf(items);
+    // 0) bữa dư > max(80 kcal, 15%) → giảm khẩu phần về gần mục tiêu: tinh bột → béo → đạm (đạm không dưới
+    //    mức đạm của bữa), không dưới sàn gram của món
+    if (-gap > Math.max(80, t.cal * 0.15)) {
+      for (const role of ["carb", "fat", "protein"]) {
+        if (-gap <= t.cal * 0.05) break;
+        items = items.map(it => {
+          if (-gap <= t.cal * 0.05 || (it.role || getFoodRole(it.food)) !== role || !it.gram || !it.cal) return it;
+          const min = getGramLimit(it.food).min || 0;
+          const perG = it.cal / it.gram;
+          let cut = Math.min(it.gram - min, Math.ceil(-gap / perG));
+          if (role === "protein") {
+            const pNow = items.reduce((a, i) => a + (Number(i.p) || 0), 0);
+            const pPerG = (Number(it.p) || 0) / it.gram;
+            if (pPerG > 0) cut = Math.min(cut, Math.floor(Math.max(0, pNow - t.p) / pPerG));
+          }
+          if (cut <= 4) return it;
+          const next = snapWholeUnit(scaleTo(it, Math.max(min, Math.round((it.gram - cut) / 5) * 5)));
+          gap += it.cal - next.cal;
+          return next;
+        });
+      }
+      return { ...m, items };
+    }
+    if (gap <= thr()) return m;
+    // 1) tăng khẩu phần món sẵn có
+    for (const role of lowCarb ? ["protein"] : ["carb", "protein"]) {
+      if (gap <= thr() * 0.5) break;
+      items = items.map(it => {
+        if (gap <= thr() * 0.5 || (it.role || getFoodRole(it.food)) !== role || !it.gram || !it.cal) return it;
+        const max = getGramLimit(it.food).max;
+        const perG = it.cal / it.gram;
+        const add = Math.min(max - it.gram, Math.ceil(gap / perG));
+        if (add <= 4) return it;
+        const g = Math.round((it.gram + add) / 5) * 5;
+        const next = scaleTo(it, Math.min(max, g));
+        gap -= next.cal - it.cal;
+        return next;
+      });
+    }
+    // 2) thêm món kèm
+    let added = 0;
+    for (const [key, gMin, gMax] of SIDES[m.meal_id] || []) {
+      if (gap <= thr() || added >= 2) break;
+      const base = LOCAL_FOODS[key];
+      if (!base || banned.has(key) || isAvoided(key)) continue;
+      if (lowCarb && base.c > 15) continue;
+      if (diet === "keto" && base.c > 9) continue;
+      if (items.some(i => i.food === key || familyOf(i.food) === familyOf(key))) continue;
+      if (mealsWithFamily(meals, key) + (addedFam[familyOf(key)] || 0) >= 2) continue;
+      const g = Math.max(gMin, Math.min(gMax, Math.round((gap / base.cal) * 100 / 10) * 10));
+      const it = foodToItem(key, g, getFoodDisplay(key), getFoodRole(key));
+      if (!it) continue;
+      const snapped = snapWholeUnit(it);
+      items.push(snapped);
+      gap -= snapped.cal;
+      added++;
+      addedFam[familyOf(key)] = (addedFam[familyOf(key)] || 0) + 1;
+    }
+    return { ...m, items };
+  });
+  return trimDay(balanceProtein({ ...template, meals: out }, per, { banned, isAvoided, diet }), target, diet);
+}
+
+// Cả ngày còn dư > 8% (mục tiêu thấp, nhiều bữa: sàn gram 1 tô / 1 bát làm dư) → bớt đều tinh bột rồi béo
+// (keto/low-carb: béo trước) ở mọi bữa, cho xuống tới 75% sàn gram ("tô nhỏ", "lưng bát"); đạm giữ nguyên.
+function trimDay(template, target, diet) {
+  const tot = () => (template.meals || []).reduce((a, m) => a + (m.items || []).reduce((b, i) => b + (Number(i.cal) || 0), 0), 0);
+  let over = tot() - (target.cal || 0) * 1.03;
+  if (!target.cal || over <= (target.cal || 0) * 0.05) return template;
+  for (const role of diet === "keto" || diet === "low_carb" ? ["fat", "carb"] : ["carb", "fat"]) {
+    if (over <= 0) break;
+    const pool = [];
+    (template.meals || []).forEach((m, mi) => (m.items || []).forEach((it, ii) => { if ((it.role || getFoodRole(it.food)) === role && it.gram && it.cal) pool.push([mi, ii]); }));
+    const room = pool.reduce((a, [mi, ii]) => { const it = template.meals[mi].items[ii]; const min = (getGramLimit(it.food).min || 0) * 0.75; return a + Math.max(0, it.cal - (it.cal / it.gram) * min); }, 0);
+    if (room <= 0) continue;
+    const k = Math.min(1, over / room);
+    const meals = template.meals.map(m => ({ ...m, items: [...m.items] }));
+    for (const [mi, ii] of pool) {
+      const it = meals[mi].items[ii];
+      const min = (getGramLimit(it.food).min || 0) * 0.75;
+      const perG = it.cal / it.gram;
+      const cutCal = Math.max(0, it.cal - perG * min) * k;
+      const g = Math.max(Math.ceil(min), Math.round((it.gram - cutCal / perG) / 5) * 5);
+      if (it.gram - g < 5) continue;
+      const next = snapWholeUnit(scaleTo(it, g));
+      over -= it.cal - next.cal;
+      meals[mi].items[ii] = next;
+    }
+    template = { ...template, meals };
+  }
+  return template;
+}
+
+// Bữa đủ calo nhưng thiếu đạm nặng (< 70% đạm của bữa — hay gặp ở món trọn suất phở/bún/cơm tấm khi giảm mỡ):
+// thêm 1 món đạm kèm rồi giảm tinh bột tương ứng để giữ calo (rà 16/10)
+const PROTEIN_SIDES = {
+  sang: [["trứng gà luộc", 50, 150], ["sữa chua hy lạp", 100, 200]],
+  phu_sang: [["sữa chua hy lạp", 100, 200], ["trứng gà luộc", 50, 100]],
+  phu_chieu: [["sữa chua hy lạp", 100, 200], ["trứng gà luộc", 50, 100]],
+  pre: [["sữa chua hy lạp", 100, 200]],
+  post: [["sữa chua hy lạp", 100, 250], ["trứng gà luộc", 50, 150]],
+  trua: [["ức gà luộc", 80, 150], ["trứng gà luộc", 50, 150], ["đậu phụ", 100, 200]],
+  toi: [["ức gà luộc", 80, 150], ["trứng gà luộc", 50, 150], ["đậu phụ", 100, 200]],
+};
+function balanceProtein(template, per, { banned, isAvoided, diet }) {
+  const sum = (items, k) => items.reduce((a, i) => a + (Number(i[k]) || 0), 0);
+  return {
+    ...template,
+    meals: (template.meals || []).map(m => {
+      const t = per[m.meal_id];
+      if (!t || !t.p) return m;
+      let items = [...(m.items || [])];
+      const pGap = t.p - sum(items, "p");
+      if (pGap < Math.max(8, t.p * 0.3)) return m;
+      for (const [key, gMin, gMax] of PROTEIN_SIDES[m.meal_id] || []) {
+        const base = LOCAL_FOODS[key];
+        if (!base || !base.p || banned.has(key) || isAvoided(key) || items.some(i => familyOf(i.food) === familyOf(key))) continue;
+        if (mealsWithFamily(template.meals || [], key) >= 2) continue;
+        const g = Math.max(gMin, Math.min(gMax, Math.round((pGap / base.p) * 100 / 10) * 10));
+        const it = foodToItem(key, g, getFoodDisplay(key), "protein");
+        if (!it) continue;
+        items.push(snapWholeUnit(it));
+        break;
+      }
+      // giữ calo: bớt tinh bột (keto/low-carb thì bớt béo) về gần mục tiêu bữa
+      let over = sum(items, "cal") - t.cal * 1.05;
+      for (const role of diet === "keto" || diet === "low_carb" ? ["fat", "carb"] : ["carb", "fat"]) {
+        if (over <= 0) break;
+        items = items.map(it => {
+          if (over <= 0 || (it.role || getFoodRole(it.food)) !== role || !it.gram || !it.cal) return it;
+          const min = getGramLimit(it.food).min || 0;
+          const cut = Math.min(it.gram - min, Math.ceil(over / (it.cal / it.gram)));
+          if (cut <= 4) return it;
+          const next = scaleTo(it, Math.max(min, Math.round((it.gram - cut) / 5) * 5));
+          over -= it.cal - next.cal;
+          return next;
+        });
+      }
+      return { ...m, items };
+    }),
+  };
 }
 
 // ============================================================
@@ -445,67 +632,22 @@ async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, p
           }
         }
 
-        // Engine dry-run lần 2 — đo CALO gap (slot mode ít món, gram cap dễ thiếu calo)
-        const virtualTpl2 = buildVirtualTemplate(normMeals, dayType);
-        const total2 = sumTemplate(enforceProteinFloor(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl2, target))));
-        const calGap = (target.cal || 0) - (total2.cal || 0);
-        const fatGap2 = (target.f || 0) - (total2.f || 0);
-        // Bù khi thiếu calo >12% HOẶC thiếu fat >10g
-        if (calGap > (target.cal || 0) * 0.12 || fatGap2 > 10) {
-          // CHỈ bù vào BỮA PHỤ (cấm bữa chính — tránh quá tải)
-          // Danh sách + thứ tự ưu tiên theo style; hạt điều = dự phòng khi dị ứng đậu phộng
-          const FILLERS_BY_STYLE = {
-            vn: [ // lạc rang chuẩn cơm nhà
-              { key: "đậu phộng", display: "Lạc rang", role: "fat" },        // 567cal/49f
-              { key: "bơ đậu phộng", display: "Bơ đậu phộng", role: "fat" }, // 588cal/50f
-              { key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" },
-              { key: "hạt điều", display: "Hạt điều", role: "fat" },
-            ],
-            clean: [ // đạm trước (clean luộc/hấp thiếu cả đạm lẫn fat), quả bơ = fat sạch
-              { key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" },
-              { key: "quả bơ", display: "Quả bơ", role: "fat" },             // 160cal/14.7f
-              { key: "bơ đậu phộng", display: "Bơ đậu phộng", role: "fat" },
-              { key: "hạt điều", display: "Hạt điều", role: "fat" },
-            ],
-            easy: [ // mua tạp hoá, không nấu
-              { key: "bơ đậu phộng", display: "Bơ đậu phộng", role: "fat" },
-              { key: "trứng gà luộc", display: "Trứng gà luộc", role: "protein" },
-              { key: "sữa tươi", display: "Sữa tươi", role: "fixed" },
-              { key: "hạt điều", display: "Hạt điều", role: "fat" },
-            ],
-          };
-          const SNACK_FILLERS = FILLERS_BY_STYLE[styleId] || FILLERS_BY_STYLE.vn;
-          const SNACK_MEALS = ["phu_chieu", "phu_sang", "post", "pre"];
-          let added = 0;
-          for (const mealId of SNACK_MEALS) {
-            if (added >= 3) break;
-            const m = normMeals.find(x => x.meal_id === mealId);
-            if (!m) continue;
-            for (const f of SNACK_FILLERS) {
-              if (added >= 3) break;
-              if (avoidSet.has(f.key)) continue;
-              // Đã bù món này ở bữa phụ khác → thử món tiếp theo (đa dạng giữa các bữa)
-              if (normMeals.some(mm => mm.foods.some(x => x.key === f.key || (x.fullName || "").includes(f.key)))) continue;
-              m.foods.push({ ...f });
-              added++;
-              break; // mỗi bữa phụ chỉ nhét 1 món bù
-            }
-          }
-          if (added > 0) console.warn(`[Slot Mode] thiếu ${Math.round(calGap)}cal/${Math.round(fatGap2)}f — bù ${added} món vào bữa phụ (style ${styleId || "vn"})`);
-        }
+        // (16/10) Bỏ bước nhét lạc/bơ đậu phộng vào bữa phụ khi thiếu calo — topUpMeals bù đúng từng bữa, hợp kiểu ăn.
 
         // Engine dry-run cuối
         const virtualTpl = buildVirtualTemplate(normMeals, dayType);
-        const template = attachPatternAndDisplay(
-          enforceProteinFloor(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target))),
+        const template = topUpMeals(attachPatternAndDisplay(
+          enforceProteinFloor(stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)), target),
           { meals: normMeals }
-        );
+        ), target, { diet, avoidText: prefs?.avoid || "" });
         return { ok: true, template, note: "" };
       }
     } catch (e) {
       if (e.quotaExceeded) return { ok: false, error: e.message, quota: true };
-      console.warn("[Slot Mode] lỗi, fallback V2:", e.message);
-      // rơi xuống flow V2 bên dưới
+      // (16/10) Không rơi xuống V2: V2 gọi AI thêm 1–2 lần nữa (tốn tiền, có thể trừ thêm lượt).
+      // Slot mode đã tự chọn món khi AI lỗi; lỗi tới đây là lỗi tính toán → báo Thử lại.
+      console.warn("[Slot Mode] lỗi:", e.message);
+      return { ok: false, error: "Chưa tạo được thực đơn. Bấm Thử lại nhé." };
     }
   }
 
@@ -651,10 +793,10 @@ async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, p
 
       // Lớp 2b: ENGINE DRY-RUN lần 2 — sau fat+carb filler, kiểm tra macro cuối cùng
       const virtualTpl = buildVirtualTemplate(normMeals, dayType);
-      const template = attachPatternAndDisplay(
+      const template = topUpMeals(attachPatternAndDisplay(
         stripZeroGramItems(applyMealEngineToTemplate(virtualTpl, target)),
         { meals: normMeals }
-      );
+      ), target, { diet, avoidText: prefs?.avoid || "" });
       const total = sumTemplate(template);
       const dry = checkDryRun(total, target);
       const dev = target.cal ? Math.abs(total.cal - target.cal) / target.cal : 0;
@@ -730,11 +872,14 @@ export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro,
 }
 
 // Cân lại cả thực đơn cho đủ mục tiêu ngày (không gọi AI): chạy mealEngine cho mọi bữa theo mục tiêu ngày tập/nghỉ
-export function rebalanceTemplate(template, macro, dayType) {
+export function rebalanceTemplate(template, macro, dayType, { avoidText = "" } = {}) {
   const info = displayInfo(template);
   const meals = (template.meals || []).map(m => ({ ...m, items: (m.items || []).map(it => (LOCAL_FOODS[it.food] ? foodToItem(it.food, it.gram, undefined, it.role) : it)) }));
-  const recomputed = stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType)));
-  return { ...recomputed, meals: finishMeals(recomputed.meals, info) };
+  const target = dayTarget(macro, dayType);
+  const recomputed = stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, target));
+  const done = { ...recomputed, meals: finishMeals(recomputed.meals, info) };
+  // Bù calo từng bữa như lúc tạo (món kèm mới có tên hiển thị riêng)
+  return topUpMeals(done, target, { diet: macro?.dietStrategy || "balanced", avoidText });
 }
 
 export function getPatternReason(mealId, patternName, goalType) {

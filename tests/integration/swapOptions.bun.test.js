@@ -71,12 +71,12 @@ test("Đổi món giữ calo bữa (±5%), không đụng bữa khác; Cân lạ
   const target = dayTarget(macro, "rest").cal;
   expect(sumTemplate(short).cal / target).toBeLessThan(0.75);
   const fixed = rebalanceTemplate(short, macro, "rest");
-  // Cân lại = đúng mức mealEngine đạt được với các món này (bằng thực đơn tính chuẩn ban đầu), không còn hụt 35%
-  expect(Math.abs(sumTemplate(fixed).cal - sumTemplate(base).cal) / sumTemplate(base).cal).toBeLessThan(0.03);
+  // Cân lại = mealEngine + bù calo từng bữa (topUpMeals) → sát mục tiêu ngày (±10%), không còn hụt 35%
+  expect(Math.abs(sumTemplate(fixed).cal - target) / target).toBeLessThan(0.1);
   expect(sumTemplate(fixed).cal).toBeGreaterThan(sumTemplate(short).cal * 1.3);
   // Không món nào bị ẩn (display null) chỉ vì thực đơn gốc chưa có tên hiển thị (lỗi CI 16/10: Cân lại làm mất món)
-  const disp = (t) => t.meals.flatMap((m) => m.items.map((i) => `${m.meal_id}:${i.food}:${i.display === null}`)).sort();
-  expect(disp(fixed)).toEqual(disp(short));
+  const hidden = (t) => t.meals.flatMap((m) => m.items.filter((i) => i.display === null).map((i) => `${m.meal_id}:${i.food}`)).sort();
+  expect(hidden(fixed)).toEqual(hidden(short));
   const noDisp = JSON.parse(JSON.stringify(short)); noDisp.meals.forEach((m) => m.items.forEach((i) => { delete i.display; }));
   expect(rebalanceTemplate(noDisp, macro, "rest").meals.flatMap((m) => m.items).some((i) => i.display === null)).toBe(false);
 });

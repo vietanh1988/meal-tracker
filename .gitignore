@@ -10,3 +10,4 @@ playwright-report/
 test-results/
 shots/
 .bl-tmp.md
+.sim/
