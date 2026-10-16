@@ -35,6 +35,19 @@ test("Sửa bữa: gram, xoá món, xoá bữa, chuyển bữa + chuyển ngày 
     await page.getByRole("button", { name: "Lưu", exact: true }).click();
     await waitDb(async () => { const m = meal(await row(s.today), "sang"); return m && m.items.length === 1 && Math.round(m.items[0].gram) === 200 && Math.round(m.items[0].cal) === 200; }, "sửa gram + xoá món");
 
+    // 1b) Sửa bữa › Thêm món: tìm theo từ ("thịt gà xào" → món gà xào); món lạ có nút tính calo (AI) — 16/10
+    await page.getByTestId("meal-foods-sang").click();
+    await tap(page.getByTestId("edit-add"));
+    const search = page.getByPlaceholder(/Tìm món/);
+    await search.fill("Thịt gà xào");
+    await expect(page.getByRole("button", { name: /^Thêm .*gà xào/i }).first()).toBeVisible();
+    await search.fill("Món lạ không có xyz");
+    await tap(page.getByTestId("log-calc-q"));
+    await expect(page.getByTestId("calc-close")).toHaveText("Huỷ");
+    await expect(page.getByTestId("calc-meal")).toHaveCount(0);
+    await page.getByTestId("calc-close").click();
+    await page.getByRole("button", { name: "Quay lại" }).click();
+
     // 2) Xoá bữa
     await page.getByTestId("meal-foods-trua").click();
     await page.getByRole("button", { name: /Thêm tuỳ chọn/ }).click();

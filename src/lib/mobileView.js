@@ -185,7 +185,15 @@ export function itemFromCache(name, v) {
 export function searchFoods(query, foodCache, limit = 20) {
   const q = stripVN(query);
   if (q.length < 1) return [];
-  const score = (plain) => (plain === q ? 0 : plain.startsWith(q) ? 1 : plain.includes(" " + q) ? 2 : plain.includes(q) ? 3 : 9);
+  // Khớp theo từ (16/10): "thịt gà xào" không có nguyên cụm vẫn ra "gà xào sả ớt" — đủ mọi từ (4) hoặc thiếu 1 từ khi gõ ≥ 3 từ (5)
+  const words = q.split(/\s+/).filter((w) => w.length >= 2);
+  const byWords = (plain) => {
+    if (words.length < 2) return 9;
+    const pw = ` ${plain} `;
+    const hit = words.filter((w) => pw.includes(` ${w} `)).length;
+    return hit === words.length ? 4 : words.length >= 3 && hit >= words.length - 1 ? 5 : 9;
+  };
+  const score = (plain) => (plain === q ? 0 : plain.startsWith(q) ? 1 : plain.includes(" " + q) ? 2 : plain.includes(q) ? 3 : byWords(plain));
   const seen = new Set();
   const out = [];
   for (const { key, plain } of localIndex()) {

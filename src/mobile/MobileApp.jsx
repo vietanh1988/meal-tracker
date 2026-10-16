@@ -7,7 +7,7 @@ import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
 import { DK, DK_CSS, LT } from "../theme";
 import { readUser } from "../lib/userStore";
 import { TodayScreen } from "./TodayScreen";
-import { HEADER_CSS, hdrDelay, HDR_TOP } from "./TodayHeader";
+import { HEADER_CSS, HDR_TOP } from "./TodayHeader";
 import { LogMealSheet } from "./LogMealSheet";
 import { EditMealScreen } from "./EditMealScreen";
 import { ProgressScreen } from "./ProgressScreen";
@@ -295,6 +295,7 @@ export function MobileApp(props) {
     if (l.pick) {
       return <LogMealSheet pickMode pickTitle={MEAL_NAMES[l.mealId]} date={l.date} mealId={l.mealId} mealIds={[]} dateOptions={dateOptions}
         recentMeals={[]} frequent={frequent} foodCache={ud.foodCache} onClose={closeLayer}
+        onCalc={(text, auto) => replaceTop({ type: "calc", pick: true, text: text || "", auto: !!auto, date: l.date, mealId: l.mealId })}
         onPick={(it) => { setPendingPick({ item: it, n: Date.now() }); closeLayer(); return true; }} />;
     }
     const ids = idsFor(l.date);
@@ -512,29 +513,13 @@ export function MobileApp(props) {
     </div>
   ) : null;
 
-  // Dải che thanh giờ: chỉ tô màu header khi header xanh còn trên màn (Hôm nay) hoặc tab Tôi nền tối.
-  // Tab sáng / đã cuộn qua header → trong suốt, không tô màu (chủ dự án 16/10: cuộn lên thì không có dải màu).
-  const [hdrGone, setHdrGone] = useState(false);
-  useEffect(() => {
-    if (tab !== "today") { setHdrGone(false); return undefined; }
-    let raf = 0;
-    const check = () => { raf = 0; const h = document.querySelector('[data-testid="today-header"]'); setHdrGone(!!h && h.getBoundingClientRect().bottom < 4); };
-    const on = () => { if (!raf) raf = requestAnimationFrame(check); };
-    check();
-    window.addEventListener("scroll", on, { passive: true });
-    return () => { window.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
-  }, [tab]);
-  const coverToday = tab === "today" && !hdrGone;
 
   return (
     <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : LT.base, color: "#0F172A", minHeight: "100vh" }}>
       <style>{MOBILE_CSS + DK_CSS}</style>
-      {/* Dải che vùng thanh giờ iPhone (14/10): iOS phủ lớp kính mờ khi nội dung cuộn dưới thanh giờ → chữ nhoè, vệt sáng.
-          Dải cố định cùng màu đầu trang che nội dung lại, iOS chỉ còn làm mờ 1 màu đặc. Màn phụ (z 120+) tự có header riêng. */}
+      {/* Thanh giờ iPhone (16/10, chủ dự án chốt): KHÔNG phủ màu riêng — trong suốt, hiện đúng nền phía sau
+          (chưa cuộn = header Hôm nay / nền tab; đã cuộn = nội dung, iOS tự làm mờ). Bỏ dải che 14/10. */}
       <style>{HEADER_CSS}</style>
-      <div aria-hidden="true" data-testid="ios-top-cover" data-tone={coverToday ? "header" : tab === "me" ? "dark" : "none"} style={{ position: "fixed", left: 0, right: 0, top: 0, height: "env(safe-area-inset-top, 0px)", zIndex: 94, pointerEvents: "none", background: coverToday ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : "transparent" }}>
-        {coverToday && <span className="fp-hdr-dark" style={{ position: "absolute", inset: 0, background: HDR_TOP.dark, animationDelay: hdrDelay() }} />}
-      </div>
       {/* Tab Tôi: nền Blue Dark phủ cả màn (bản vẽ 48) */}
       {/* Tab sáng: nền xanh rất nhạt nối tiếp header (bản vẽ 69) */}
       <div aria-hidden="true" data-testid="page-bg" style={{ position: "fixed", inset: 0, zIndex: 0, background: tab === "me" ? DK.bg : LT.bg }} />
@@ -611,7 +596,11 @@ export function MobileApp(props) {
               dayInfo={{ target: targetsOf(macro, dayTypeOf(profile, l.date)).cal, eaten: eatenOfDay(dayOf(l.date)).cal }}
               mealIds={idsFor(l.date).length ? idsFor(l.date) : ["sang", "trua", "toi"]} initialMeal={l.mealId} date={l.date} dateOptions={dateOptions.some((o) => o.value === l.date) ? dateOptions : [{ value: l.date, label: fmtVN(l.date) }, ...dateOptions]}
               savePending={savePendingFoodCache} onClose={closeLayer}
-              onSave={(d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
+              pickTitle={l.pick ? MEAL_NAMES[l.mealId] : null}
+              onSave={l.pick
+                // Từ Sửa bữa › Thêm món: món AI tính đưa về bản nháp Sửa bữa (chưa lưu), như chọn món trong kho
+                ? (d, mealId, items) => { setPendingPick({ items, n: Date.now() }); return true; }
+                : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
           )}
           {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`)} />}
         </div>

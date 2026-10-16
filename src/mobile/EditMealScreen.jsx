@@ -31,7 +31,8 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
   useEffect(() => {
     if (pendingPick === seenPick.current) return;
     seenPick.current = pendingPick;
-    if (pendingPick && pendingPick.item) { setRows((r) => [...r, toRow(pendingPick.item)]); setDirty(true); }
+    const add = pendingPick ? (pendingPick.items || (pendingPick.item ? [pendingPick.item] : [])) : [];
+    if (add.length) { setRows((r) => [...r, ...add.map(toRow)]); setDirty(true); }
   }, [pendingPick]);
 
   const current = rows.filter(rowOk).map((r) => r.item);
@@ -162,7 +163,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
           })}
           {rows.length === 0 && <div style={{ minHeight: 56, display: "flex", alignItems: "center", fontSize: 13, color: "#64748B", borderBottom: "1px solid #EEF2FA" }}>Bữa chưa có món nào.</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 8, height: 52 }}>
-            <button onClick={onAddPick} style={{ flex: 1, height: 44, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#0062F0", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>{Icon.plus(16)}Thêm món</button>
+            <button data-testid="edit-add" onClick={onAddPick} style={{ flex: 1, height: 44, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#0062F0", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>{Icon.plus(16)}Thêm món</button>
             {onPhoto && <button onClick={onPhoto} aria-label="Chụp thêm món" style={{ width: 38, height: 38, borderRadius: 12, border: "none", background: "rgba(234,88,12,0.12)", color: "#C2410C", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.camera(17)}</button>}
           </div>
         </div>

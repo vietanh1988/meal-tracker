@@ -137,3 +137,10 @@ test("fmtKg luôn 1 số lẻ", () => {
   assert.equal(V.fmtKg(64), "64,0");
   assert.equal(V.fmtKg(64.45), "64,5");
 });
+
+test("searchFoods: khớp theo từ khi không có nguyên cụm ('thịt gà xào' → món gà xào)", () => {
+  const r = V.searchFoods("Thịt gà xào", {}, 20);
+  assert.ok(r.length > 0, "phải có kết quả");
+  assert.ok(r.some((i) => /gà xào/i.test(V.itemName(i))), r.map(V.itemName).join(", "));
+  assert.equal(V.searchFoods("zzqx abc", {}, 20).length, 0);
+});

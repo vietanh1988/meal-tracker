@@ -17,7 +17,7 @@ const sel = { height: 42, padding: "0 12px", borderRadius: 12, border: "none", b
 const stepBtn = { width: 32, height: 32, borderRadius: 10, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 18, fontWeight: 800, padding: 0, flexShrink: 0, fontFamily: "inherit" };
 const tag = (ai) => ({ fontSize: 11, fontWeight: 800, color: ai ? "#6D28D9" : "#00A67E", background: ai ? "rgba(124,58,237,0.1)" : "rgba(0,200,150,0.1)", padding: "2px 6px", borderRadius: 6, marginLeft: 4, whiteSpace: "nowrap" });
 
-export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, frequent, aiEnabled, userId, appSettings, dayInfo, mealIds, initialMeal, date, dateOptions, onSave, savePending, onClose }) {
+export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, frequent, aiEnabled, userId, appSettings, dayInfo, mealIds, initialMeal, date, dateOptions, onSave, savePending, onClose, pickTitle }) {
   const [text, setText] = useState(initialText);
   const [rows, setRows] = useState(() => (autoRun && initialText.trim() ? resolveAll(initialText, foodCache) : null));
   const [aiBusy, setAiBusy] = useState(false);
@@ -114,17 +114,17 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
   // ===== Bước 2: kết quả =====
   const footer = (
     <div style={{ flexShrink: 0, background: "rgba(255,255,255,0.94)", borderTop: "1px solid rgba(30,64,175,0.08)", padding: "10px 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px", display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ display: "flex", gap: 8 }}>
+      {!pickTitle && <div style={{ display: "flex", gap: 8 }}>
         <select data-testid="calc-meal" aria-label="Bữa" value={meal} onChange={(e) => setMeal(e.target.value)} style={sel}>
           {mealIds.map((id) => <option key={id} value={id}>{MEAL_NAMES[id]}</option>)}
         </select>
         <select data-testid="calc-date" aria-label="Ngày" value={day} onChange={(e) => setDay(e.target.value)} style={sel}>
           {dateOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
-      </div>
+      </div>}
       <div style={{ display: "flex", gap: 8 }}>
-        <button data-testid="calc-close" onClick={onClose} style={{ flex: 1, height: 52, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0F172A", fontFamily: "inherit", fontSize: 15, fontWeight: 800 }}>Chỉ xem</button>
-        <button data-testid="calc-save" disabled={!items.length || unknown.length > 0 || busy} onClick={save} style={{ flex: 2, height: 52, borderRadius: 14, border: "none", ...((!items.length || unknown.length > 0) ? { background: "#E2E8F0", color: "#64748B" } : { background: CY, color: "#FFFFFF" }), fontFamily: "inherit", fontSize: 15, fontWeight: 900 }}>{busy ? "Đang lưu…" : `Ghi vào ${(MEAL_NAMES[meal] || "bữa").toLowerCase()}`}</button>
+        <button data-testid="calc-close" onClick={onClose} style={{ flex: 1, height: 52, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0F172A", fontFamily: "inherit", fontSize: 15, fontWeight: 800 }}>{pickTitle ? "Huỷ" : "Chỉ xem"}</button>
+        <button data-testid="calc-save" disabled={!items.length || unknown.length > 0 || busy} onClick={save} style={{ flex: 2, height: 52, borderRadius: 14, border: "none", ...((!items.length || unknown.length > 0) ? { background: "#E2E8F0", color: "#64748B" } : { background: CY, color: "#FFFFFF" }), fontFamily: "inherit", fontSize: 15, fontWeight: 900 }}>{busy ? "Đang lưu…" : pickTitle ? `Thêm vào ${String(pickTitle).toLowerCase()}` : `Ghi vào ${(MEAL_NAMES[meal] || "bữa").toLowerCase()}`}</button>
       </div>
       {unknown.length > 0 && <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Còn {unknown.length} món chưa có calo — AI tính hoặc chọn món gần đúng trước khi ghi.</span>}
     </div>
