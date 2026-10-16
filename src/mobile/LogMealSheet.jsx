@@ -2,7 +2,7 @@
 // tab Tìm món | Kiểm tra calo (mở màn CalcCheckScreen), AI gợi ý / Từ thực đơn tuần, danh sách GẦN ĐÂY (ăn lại cả bữa + món hay ăn).
 // pickMode: dùng từ Sửa bữa để chọn 1 món đưa về bản nháp (không lưu ngay).
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Icon, GRAD_ORANGE, SR, useLockScroll, FONT, useSwipeClose, SheetHandle } from "./ui";
+import { Icon, GRAD_ORANGE, SR, useLockScroll, FONT, useSwipeClose, SheetHandle, Seg } from "./ui";
 import { MEAL_SHORT, searchFoods, itemName, itemPortion, fmtInt } from "../lib/mobileView";
 import { fmtVN } from "../lib/dateVN";
 import { MEAL_NAMES } from "../lib/mealMath";
@@ -75,10 +75,7 @@ export function LogMealSheet(p) {
           ))}
 
         {!pickMode && p.onCalc && (
-          <div role="tablist" aria-label="Cách ghi" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 4, padding: 3, background: "#F1F5F9", borderRadius: 12, flexShrink: 0 }}>
-            <button role="tab" aria-selected="true" style={{ height: 34, borderRadius: 10, border: "none", background: "#FFFFFF", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#0062F0", boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>Tìm món</button>
-            <button role="tab" aria-selected="false" data-testid="log-tab-calc" onClick={() => p.onCalc(q, false)} style={{ height: 34, borderRadius: 10, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 13, fontWeight: 700, color: "#475569" }}>Kiểm tra calo</button>
-          </div>
+          <Seg mode="tab" ariaLabel="Cách ghi" value="search" onChange={() => p.onCalc(q, false)} opts={[{ value: "search", label: "Tìm món" }, { value: "calc", label: "Kiểm tra calo", testid: "log-tab-calc" }]} />
         )}
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, height: 52, padding: "0 6px 0 14px", background: "#F1F5F9", border: "none", borderRadius: 16, flexShrink: 0, boxSizing: "border-box" }}>

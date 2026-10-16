@@ -1,14 +1,12 @@
 // Màn 4 · Tiến độ – Ăn uống và Màn 5 · Tiến độ – Cân nặng (đã chốt).
 import { useState, useEffect } from "react";
-import { GRAD_BLUE, Icon, SR } from "./ui";
+import { GRAD_BLUE, Icon, SR, Seg } from "./ui";
 import { LT, ltCard } from "../theme";
 import { rangeSummary, weekDates, weekdayStrip, fmtInt, fmtDec, fmtKg, deltaGood, weightChart } from "../lib/mobileView";
 import { addDays, monthRange, dateList, fmtVN, weekRange, todayVN } from "../lib/dateVN";
 import { parseKg } from "../lib/weightMath";
 import { appAlert, appConfirm } from "../lib/dialog";
 
-const seg = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 4, padding: 3, background: "rgba(30,64,175,0.07)", border: "none", borderRadius: 12 };
-const segBtn = (on) => ({ height: 36, borderRadius: 9, border: "none", background: on ? "#FFFFFF" : "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, color: on ? "#007AFF" : "#475569", boxShadow: on ? "0 2px 8px rgba(30,64,175,0.12)" : "none" });
 const navBtn = { width: 40, height: 40, borderRadius: 12, border: "none", boxShadow: "0 2px 8px rgba(30,64,175,0.10)", background: "#FFFFFF", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 };
 const BAR_COLOR = { ok: "#059669", low: "#F59E0B", high: "#EF4444" };
 const PCT_COLOR = { ok: "#047857", low: "#A16207", high: "#DC2626" };
@@ -20,10 +18,7 @@ export function ProgressScreen(p) {
     <div>
       <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 12px 10px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
         <span style={{ fontSize: 26, fontWeight: 900, padding: "0 4px" }}>Tiến độ</span>
-        <div role="tablist" style={seg}>
-          <button role="tab" aria-selected={segId === "food"} onClick={() => setSegId("food")} data-testid="seg-diary" style={segBtn(segId === "food")}>Nhật ký ăn uống</button>
-          <button role="tab" aria-selected={segId === "weight"} onClick={() => setSegId("weight")} style={segBtn(segId === "weight")}>Cân nặng</button>
-        </div>
+        <Seg mode="tab" value={segId} onChange={setSegId} opts={[{ value: "food", label: "Nhật ký ăn uống", testid: "seg-diary" }, { value: "weight", label: "Cân nặng" }]} />
         {segId === "food" && <FoodHeader {...p} />}
       </div>
       {segId === "food" ? <FoodPanel {...p} /> : <WeightPanel {...p} />}
@@ -267,11 +262,7 @@ function WeightChart({ weightLog, weight }) {
     <div data-testid="weight-chart" style={{ margin: "12px 12px 0 12px", ...ltCard, padding: "12px 10px 8px 10px", display: "flex", flexDirection: "column", gap: 6 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 4px" }}>
         <span style={{ fontSize: 15, fontWeight: 800 }}>Biểu đồ</span>
-        <div role="group" aria-label="Khoảng thời gian" style={{ display: "flex", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 10 }}>
-          {[["4w", "4 tuần"], ["8w", "8 tuần"], ["all", "Tất cả"]].map(([id, l]) => (
-            <button key={id} data-testid={`wchart-${id}`} aria-pressed={range === id} onClick={() => setRange(id)} style={{ height: 30, padding: "0 10px", borderRadius: 8, border: "none", background: range === id ? "#FFFFFF" : "transparent", fontFamily: "inherit", fontSize: 12, fontWeight: range === id ? 800 : 600, color: range === id ? "#0F172A" : "#475569", boxShadow: range === id ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>{l}</button>
-          ))}
-        </div>
+        <Seg size="sm" ariaLabel="Khoảng thời gian" value={range} onChange={setRange} opts={[["4w", "4 tuần"], ["8w", "8 tuần"], ["all", "Tất cả"]].map(([id, l]) => ({ value: id, label: l, testid: `wchart-${id}` }))} />
       </div>
       {c.points.length < 2 ? (
         <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#64748B", textAlign: "center", padding: "0 16px" }}>

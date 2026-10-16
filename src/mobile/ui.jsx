@@ -179,3 +179,28 @@ export function useSwipeClose(onClose) {
 }
 // Thanh nắm của sheet: vùng chạm cao 20 px cho dễ kéo
 export const SheetHandle = () => <span aria-hidden="true" style={{ alignSelf: "center", width: 56, height: 20, margin: "-6px 0 -8px 0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ width: 40, height: 5, borderRadius: 3, background: "#CBD5E1" }} /></span>;
+
+// Nút phân đoạn thanh thoát (16/10, chủ dự án: "làm thanh thoát lên"): rãnh bo tròn rất nhạt, 1 viên trắng
+// trượt mượt sang mục đang chọn, chữ 13 nét vừa; không đổi màu chữ sặc sỡ. opts: [{ value, label, testid }]
+// mode "tab" → role tab + aria-selected; mặc định nút bật/tắt aria-pressed. size "sm" cho chỗ hẹp (tiêu đề nhóm).
+export function Seg({ opts, value, onChange, size = "md", mode = "group", ariaLabel, accent = "#0F172A", style }) {
+  const n = opts.length || 1;
+  const i = Math.max(0, opts.findIndex((o) => o.value === value));
+  const h = size === "sm" ? 30 : 36;
+  return (
+    <div role={mode === "tab" ? "tablist" : "group"} aria-label={ariaLabel}
+      style={{ position: "relative", display: "grid", gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))`, padding: 3, borderRadius: 999, background: "rgba(15,23,42,0.05)", flexShrink: 0, ...style }}>
+      <span aria-hidden="true" style={{ position: "absolute", top: 3, bottom: 3, left: 3, width: `calc((100% - 6px) / ${n})`, borderRadius: 999, background: "#FFFFFF", boxShadow: "0 1px 2px rgba(15,23,42,0.06), 0 2px 8px rgba(30,64,175,0.08)", transform: `translateX(${i * 100}%)`, transition: "transform .24s cubic-bezier(.2,.8,.2,1)" }} />
+      {opts.map((o) => {
+        const on = o.value === value;
+        const a11y = mode === "tab" ? { role: "tab", "aria-selected": on } : { "aria-pressed": on };
+        return (
+          <button key={String(o.value)} type="button" data-testid={o.testid} {...a11y} onClick={() => !on && onChange(o.value)}
+            style={{ position: "relative", zIndex: 1, height: h, padding: "0 10px", border: "none", borderRadius: 999, background: "transparent", fontFamily: "inherit", fontSize: size === "sm" ? 12 : 13, fontWeight: on ? 700 : 500, color: on ? accent : "#64748B", whiteSpace: "nowrap", transition: "color .2s ease" }}>
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}

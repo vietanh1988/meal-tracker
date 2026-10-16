@@ -11,7 +11,7 @@ import { loadAIMenus } from "../lib/aiMenuService";
 import { SaveWeekSheet } from "./AIMenuScreen";
 import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT } from "../lib/menuView";
 import { applyMealEngineToTemplate } from "../mealEngine";
-import { Icon } from "./ui";
+import { Icon, Seg } from "./ui";
 import { PURPLE, GREEN, DT, MI, Chip, pill, fbtn, SumCard, totalsOf, Warn, MealCard, sortedMeals, DayPicker, Sheet, CloseX, Lbl, OptRow, StickyFoot, foodName, portionText } from "./menuUI";
 import { LT, ltCard } from "../theme";
 import { readUser, writeUser } from "../lib/userStore";
@@ -183,14 +183,7 @@ export function MenuScreen(p) {
           {!noEx && (
             <>
               <Lbl>TẠO CHO</Lbl>
-              <div role="group" aria-label="Tạo cho" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 12 }}>
-                {["train", "rest"].map((d) => (
-                  <button key={d} data-testid={`menu-day-${d}`} aria-pressed={dayType === d} onClick={() => setDayType(d)}
-                    style={{ height: 38, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: dayType === d ? 800 : 600, background: dayType === d ? "#FFFFFF" : "transparent", color: dayType === d ? "#6D28D9" : "#475569", boxShadow: dayType === d ? "0 1px 3px rgba(15,23,42,0.08)" : "none" }}>
-                    {DT[d]}{d === todayType ? " · hôm nay" : ""}
-                  </button>
-                ))}
-              </div>
+              <Seg ariaLabel="Tạo cho" accent="#6D28D9" value={dayType} onChange={setDayType} opts={["train", "rest"].map((d) => ({ value: d, label: `${DT[d]}${d === todayType ? " · hôm nay" : ""}`, testid: `menu-day-${d}` }))} />
             </>
           )}
           <Lbl>MÓN KHÔNG ĂN / DỊ ỨNG</Lbl>
@@ -238,11 +231,7 @@ export function MenuScreen(p) {
           <div style={secHead}>
             <span style={{ fontSize: 17, fontWeight: 900 }}>Thực đơn mẫu</span>
             {!noEx && (
-              <div role="group" aria-label="Loại ngày" style={{ display: "flex", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 10 }}>
-                {["train", "rest"].map((d) => (
-                  <button key={d} data-testid={`lib-day-${d}`} aria-pressed={libType === d} onClick={() => setLibType(d)} style={{ height: 28, padding: "0 12px", borderRadius: 8, border: "none", fontFamily: "inherit", fontSize: 12, fontWeight: libType === d ? 800 : 600, background: libType === d ? "#FFFFFF" : "transparent", color: libType === d ? "#0062F0" : "#475569", boxShadow: libType === d ? "0 1px 3px rgba(15,23,42,0.08)" : "none" }}>{d === "train" ? "Tập" : "Nghỉ"}</button>
-                ))}
-              </div>
+              <Seg size="sm" ariaLabel="Loại ngày" value={libType} onChange={setLibType} opts={[{ value: "train", label: "Tập", testid: "lib-day-train" }, { value: "rest", label: "Nghỉ", testid: "lib-day-rest" }]} />
             )}
           </div>
           <div style={box}>

@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { fmtInt } from "../lib/mobileView";
 import { fmtVN } from "../lib/dateVN";
-import { Icon } from "./ui";
+import { Icon, Seg } from "./ui";
 import { GREEN, DT, fbtn, pill, Sheet, CloseX, OptRow, foodName, portionText } from "./menuUI";
 import { MealIcon } from "./icons";
 import { scaleSuggestion } from "../lib/mealSuggest";
@@ -62,11 +62,9 @@ export function MealSuggestSheet({ mealId, mealName, list, target, rt, goal, day
         );
       })}
       {chosen && (
-        <div role="group" aria-label="Khẩu phần" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 12, flexShrink: 0 }}>
-          {PORTION.map(([x, l]) => (
-            <button key={x} data-testid={`suggest-k-${x}`} aria-pressed={k === x} onClick={() => setK(x)}
-              style={{ height: 38, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: k === x ? 800 : 600, background: k === x ? "#FFFFFF" : "transparent", color: k === x ? "#0062F0" : "#475569", boxShadow: k === x ? "0 1px 3px rgba(15,23,42,0.08)" : "none" }}>{l}</button>
-          ))}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>Khẩu phần</span>
+          <Seg ariaLabel="Khẩu phần" style={{ flex: 1 }} value={k} onChange={setK} opts={PORTION.map(([x, l]) => ({ value: x, label: l, testid: `suggest-k-${x}` }))} />
         </div>
       )}
       {onSearch && <button data-testid="suggest-search" onClick={onSearch} style={{ height: 36, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#0062F0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexShrink: 0 }}>{Icon.search(15)} Tìm món khác</button>}
