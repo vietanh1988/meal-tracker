@@ -107,6 +107,8 @@ export const DK_CSS = `
 .fpm .fpd :focus-visible{outline-color:#7CC2FF}
 .fpm .fpd input.pw-inner:focus{background:transparent !important;border-color:transparent !important}
 .fpm .fpd .pw-box:focus-within{border-color:#7CC2FF !important;background:rgba(255,255,255,0.14) !important}
+/* Chrome/Safari tự điền (email, mật khẩu đã lưu) tô nền trắng-xanh + chữ đen → giữ nền trong suốt, chữ trắng như ô thường */
+.fpm .fpd input:-webkit-autofill,.fpm .fpd input:-webkit-autofill:hover,.fpm .fpd input:-webkit-autofill:focus,.fpm .fpd input:autofill{-webkit-text-fill-color:#FFFFFF !important;caret-color:#FFFFFF;-webkit-box-shadow:0 0 0 1000px transparent inset !important;transition:background-color 600000s 0s,color 600000s 0s !important;font-size:16px}
 .fpm .fpd input[type=time],.fpm .fpd input[type=date]{color-scheme:dark}
 .fpm .fpd select{color-scheme:dark}
 .fpm .fpd select option{color:#0F172A;background:#FFFFFF}
