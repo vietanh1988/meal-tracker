@@ -28,6 +28,13 @@ test("Quản trị: ô đếm + trả lời góp ý", async ({ browser }) => {
     await tap(item.getByTestId("adm-fb-send"));
     await waitDb(async () => (await rest(`user_feedback?id=eq.${fb.id}&select=status,admin_reply`))[0]?.status === "replied", "trả lời góp ý");
     await expect(item).toContainText("Bạn đã trả lời");
+    // Trả lời thêm (16/10): góp ý đã trả lời vẫn gửi tiếp được → nối vào cuối kèm mốc giờ, người gửi nhận thông báo "trả lời thêm"
+    await item.getByTestId("adm-fb-reply").fill("Đã có nhắc uống nước ở Tôi › Nhắc nhở");
+    await expect(item.getByTestId("adm-fb-send")).toHaveText("Gửi thêm");
+    await tap(item.getByTestId("adm-fb-send"));
+    await waitDb(async () => /Đã ghi nhận, cảm ơn bạn\n\n— \d\d\/\d\d \d\d:\d\d —\nĐã có nhắc uống nước/.test((await rest(`user_feedback?id=eq.${fb.id}&select=admin_reply`))[0]?.admin_reply || ""), "trả lời thêm nối vào cuối");
+    await waitDb(async () => (await rest(`notifications?user_id=eq.${s.uid}&title=like.*tr%E1%BA%A3%20l%E1%BB%9Di%20th%C3%AAm*&select=id`)).length > 0, "thông báo trả lời thêm");
+    await expect(item).toContainText("Đã có nhắc uống nước");
   } finally {
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: false }) });
     await ctx.close();

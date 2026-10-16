@@ -4,6 +4,7 @@
 //  - Chỉ trả lời được góp ý chưa trả lời (như cũ). Mọi admin đều trả lời được (như cũ).
 //  - Bố cục: 3 ô số · 2 cột (bảng góp ý trái, lọc trạng thái / loại / tìm; chi tiết + ô trả lời phải) · hàng dưới: rating theo tính năng + nhận xét kèm sao.
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { appendReply } from "../lib/feedbackReply";
 import { supabase } from "../lib/supabase";
 import { PC } from "../theme";
 import { Btn, Pill, Card, SearchBox, FilterSelect, ErrorBox, Loading, headRow, bodyRow, cell, secLbl, vnInt, vnDec, fmtDT } from "./pcUI";
@@ -89,8 +90,10 @@ export function PcFeedback({ top, showToast, refreshCounts }) {
     const text = (reply[fb.id] || "").trim();
     if (!text || busy) return;
     setBusy(fb.id);
-    const { error } = await supabase.from("user_feedback").update({ admin_reply: text, status: "replied", admin_replied_at: new Date().toISOString() }).eq("id", fb.id);
-    if (!error && fb.user_id) await supabase.from("notifications").insert({ user_id: fb.user_id, title: "💬 Admin đã trả lời góp ý của bạn", body: text.slice(0, 100), url: "feedback" });
+    const nowIso = new Date().toISOString();
+    const more = !!(fb.admin_reply || "").trim(); // đã trả lời → trả lời thêm (nối vào cuối)
+    const { error } = await supabase.from("user_feedback").update({ admin_reply: appendReply(fb.admin_reply, text, nowIso), status: "replied", admin_replied_at: nowIso }).eq("id", fb.id);
+    if (!error && fb.user_id) await supabase.from("notifications").insert({ user_id: fb.user_id, title: more ? "💬 Admin trả lời thêm góp ý của bạn" : "💬 Admin đã trả lời góp ý của bạn", body: text.slice(0, 100), url: "feedback" });
     setBusy(null);
     if (error) { showToast?.({ text: "Chưa gửi được trả lời, thử lại nhé." }); return; }
     setReply((r) => ({ ...r, [fb.id]: "" }));
@@ -179,13 +182,13 @@ export function PcFeedback({ top, showToast, refreshCounts }) {
                 )}
                 {sel.admin_reply && (
                   <div data-testid="pc-feedback-reply-done" style={{ padding: "10px 12px", borderRadius: 10, background: "#F0FDF4", borderLeft: "3px solid #16A34A", display: "flex", flexDirection: "column", gap: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "#166534" }}>Bạn đã trả lời{sel.admin_replied_at ? ` · ${fmtDT(sel.admin_replied_at)}` : ""}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "#166534" }}>Bạn đã trả lời{sel.admin_replied_at ? ` · lần cuối ${fmtDT(sel.admin_replied_at)}` : ""}</span>
                     <span style={{ fontSize: 13, color: PC.t2, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{sel.admin_reply}</span>
                   </div>
                 )}
-                {open && (
+                {(
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingTop: 4, borderTop: `1px solid ${PC.rowLine}` }}>
-                    <span style={secLbl}>TRẢ LỜI</span>
+                    <span style={secLbl}>{open ? "TRẢ LỜI" : "TRẢ LỜI THÊM"}</span>
                     <textarea data-testid="pc-feedback-reply" className="pc-input" rows={4} value={txt} aria-label="Nội dung trả lời"
                       onChange={(e) => setReply((r) => ({ ...r, [sel.id]: e.target.value }))}
                       onKeyDown={(e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send(sel); }}
@@ -193,7 +196,7 @@ export function PcFeedback({ top, showToast, refreshCounts }) {
                       style={{ minHeight: 88, borderRadius: 10, border: `1px solid ${PC.field}`, padding: "8px 12px", fontFamily: "inherit", fontSize: 13, lineHeight: 1.5, resize: "vertical", color: PC.t1 }} />
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 12, color: PC.t4, flex: 1, minWidth: 0 }}>Người gửi nhận thông báo trong app · Ctrl + Enter để gửi</span>
-                      <Btn kind="blue" onClick={() => send(sel)} disabled={!txt.trim() || busy === sel.id} testid="pc-feedback-send">{busy === sel.id ? "Đang gửi…" : "Gửi trả lời"}</Btn>
+                      <Btn kind="blue" onClick={() => send(sel)} disabled={!txt.trim() || busy === sel.id} testid="pc-feedback-send">{busy === sel.id ? "Đang gửi…" : open ? "Gửi trả lời" : "Gửi thêm"}</Btn>
                     </div>
                   </div>
                 )}

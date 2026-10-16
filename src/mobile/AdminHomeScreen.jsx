@@ -4,6 +4,7 @@
 //  - Nhóm Bán hàng / Nội dung / Hệ thống; mở từng mục vẫn là màn admin cũ (AdminPanel initialSection).
 // AdminFeedbackScreen (bản vẽ 53): góp ý chưa trả lời lên đầu, ô trả lời 1 dòng + Gửi, rating theo tính năng, nhận xét kèm sao.
 import { useCallback, useEffect, useState } from "react";
+import { appendReply } from "../lib/feedbackReply";
 import { supabase } from "../lib/supabase";
 import { fmtVN, toVNDate } from "../lib/dateVN";
 import { Icon, DkIcon, GRAD_BLUE } from "./ui";
@@ -125,8 +126,10 @@ export function AdminFeedbackScreen({ showToast }) {
     const text = (reply[fb.id] || "").trim();
     if (!text || busy) return;
     setBusy(fb.id);
-    const { error } = await supabase.from("user_feedback").update({ admin_reply: text, status: "replied", admin_replied_at: new Date().toISOString() }).eq("id", fb.id);
-    if (!error && fb.user_id) await supabase.from("notifications").insert({ user_id: fb.user_id, title: "💬 Admin đã trả lời góp ý của bạn", body: text.slice(0, 100), url: "feedback" });
+    const nowIso = new Date().toISOString();
+    const more = !!(fb.admin_reply || "").trim(); // đã trả lời → trả lời thêm (nối vào cuối)
+    const { error } = await supabase.from("user_feedback").update({ admin_reply: appendReply(fb.admin_reply, text, nowIso), status: "replied", admin_replied_at: nowIso }).eq("id", fb.id);
+    if (!error && fb.user_id) await supabase.from("notifications").insert({ user_id: fb.user_id, title: more ? "💬 Admin trả lời thêm góp ý của bạn" : "💬 Admin đã trả lời góp ý của bạn", body: text.slice(0, 100), url: "feedback" });
     setBusy(null);
     if (error) { showToast?.({ text: "Chưa gửi được trả lời, thử lại nhé." }); return; }
     setReply((r) => ({ ...r, [fb.id]: "" }));
@@ -161,11 +164,11 @@ export function AdminFeedbackScreen({ showToast }) {
             <span style={{ fontSize: 13, color: DK.t2, whiteSpace: "pre-wrap" }}>{fb.admin_reply}</span>
           </div>
         )}
-        {open && (
+        {(
           <div style={{ display: "flex", gap: 8 }}>
             <input data-testid="adm-fb-reply" value={reply[fb.id] || ""} onChange={(e) => setReply((r) => ({ ...r, [fb.id]: e.target.value }))} onKeyDown={(e) => { if (e.key === "Enter") send(fb); }}
-              placeholder="Trả lời phản hồi này…" style={{ flex: 1, minWidth: 0, height: 44, padding: "0 12px", borderRadius: 12, border: `1.5px solid ${DK.fieldLine}`, background: DK.field, color: DK.t1, fontFamily: "inherit", fontSize: 15, boxSizing: "border-box" }} />
-            <button data-testid="adm-fb-send" disabled={!(reply[fb.id] || "").trim() || busy === fb.id} onClick={() => send(fb)} style={{ height: 44, padding: "0 16px", borderRadius: 12, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800 }}>{busy === fb.id ? "…" : "Gửi"}</button>
+              placeholder={open ? "Trả lời phản hồi này…" : "Trả lời thêm…"} style={{ flex: 1, minWidth: 0, height: 44, padding: "0 12px", borderRadius: 12, border: `1.5px solid ${DK.fieldLine}`, background: DK.field, color: DK.t1, fontFamily: "inherit", fontSize: 15, boxSizing: "border-box" }} />
+            <button data-testid="adm-fb-send" disabled={!(reply[fb.id] || "").trim() || busy === fb.id} onClick={() => send(fb)} style={{ height: 44, padding: "0 16px", borderRadius: 12, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800 }}>{busy === fb.id ? "…" : open ? "Gửi" : "Gửi thêm"}</button>
           </div>
         )}
       </div>
