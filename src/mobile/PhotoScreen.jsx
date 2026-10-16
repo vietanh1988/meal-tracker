@@ -24,13 +24,14 @@ function macroHint(it) {
 
 // Ô số lượng (16/10): trước đây xoá hết số bị chặn (chỉ nhận > 0) → không xoá được để gõ lại.
 // Giờ giữ bản nháp khi đang gõ (được để trống), số > 0 thì áp ngay; rời ô mà trống / 0 → trả về số cũ.
-function QtyInput({ value, onCommit, testid, style, ...rest }) {
+// onStart: lúc bấm vào ô → PhotoScreen giữ bản gốc của món để mỗi lần gõ đều tính từ bản gốc (không cộng dồn sai số làm tròn 1 g → 10 g → 100 g).
+function QtyInput({ value, onCommit, onStart, onEnd, testid, style, ...rest }) {
   const [draft, setDraft] = useState(null);
   return (
     <input data-testid={testid} {...rest} type="text" inputMode="decimal" value={draft ?? value}
-      onFocus={(e) => { setDraft(String(value)); e.target.select(); }}
+      onFocus={(e) => { onStart?.(); setDraft(String(value)); e.target.select(); }}
       onChange={(e) => { const v = e.target.value.replace(/[^\d,.]/g, ""); setDraft(v); if (Number(v.replace(",", ".")) > 0) onCommit(v); }}
-      onBlur={() => setDraft(null)}
+      onBlur={() => { setDraft(null); onEnd?.(); }}
       onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
       style={style} />
   );
@@ -69,6 +70,7 @@ export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodC
     }
   };
   const update = (i, patch) => setItems((arr) => arr.map((it, k) => (k === i ? { ...it, ...patch } : it)));
+  const baseRef = useRef({}); // món gốc lúc đang sửa ô số lượng (theo vị trí)
   const mapAt = (i, fn) => setItems((arr) => arr.map((it, k) => (k === i ? fn(it) : it)));
   const remove = (i) => setItems((arr) => arr.filter((_, k) => k !== i));
   const add = (it) => { setItems((arr) => [...arr, { ...it, source: it.source || "search" }]); setAdding(false); setQ(""); };
@@ -191,7 +193,7 @@ export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodC
                   <button aria-label="Giảm" onClick={() => mapAt(i, (x) => stepPortion(x, -1))} style={stepBtn}>−</button>
                   <span style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 62 }}>
                     <span style={{ height: 32, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", gap: 2, padding: "0 6px" }}>
-                      <QtyInput testid={`photo-gram-${i}`} aria-label={po.mode === "unit" ? `Số ${po.unit}` : "Gram"} value={po.label} onCommit={(v) => mapAt(i, (x) => setPortion(x, v))}
+                      <QtyInput testid={`photo-gram-${i}`} aria-label={po.mode === "unit" ? `Số ${po.unit}` : "Gram"} value={po.label} onStart={() => { baseRef.current[i] = it; }} onEnd={() => { delete baseRef.current[i]; }} onCommit={(v) => mapAt(i, (x) => setPortion(baseRef.current[i] || x, v))}
                         style={{ width: po.mode === "unit" ? 30 : 38, border: "none", background: "transparent", textAlign: "right", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#0F172A", padding: 0 }} />
                       <button data-testid={`photo-unit-${i}`} disabled={!hasUnit(it)} onClick={() => mapAt(i, toggleUnit)} aria-label="Đổi đơn vị" style={{ border: "none", background: "transparent", padding: 0, fontFamily: "inherit", fontSize: 12, fontWeight: 800, color: "#0062F0" }}>{po.unit}{hasUnit(it) ? " ▾" : ""}</button>
                     </span>
