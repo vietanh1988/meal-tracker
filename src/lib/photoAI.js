@@ -6,6 +6,9 @@ export { parsePhotoDishes };
 
 export const PHOTO_PROMPT = `Nhìn ảnh bữa ăn này. Liệt kê TẤT CẢ các món ăn/thức uống bạn nhìn thấy.
 Với mỗi món, ước lượng khối lượng (gram) và TÍNH LUÔN dinh dưỡng (cal, protein, carb, fat, fiber).
+Kèm SỐ LƯỢNG + ĐƠN VỊ quen thuộc của món (qty, unit): bát, tô, đĩa, quả, lát, miếng, cái, cuốn, xiên, ly, cốc, hộp…
+VD: cơm 1,5 bát → qty 1.5, unit "bát"; 2 quả trứng → qty 2, unit "quả". Đồ uống dùng unit "ml" (qty = số ml).
+Món không có đơn vị quen (thịt kho, rau xào…) thì unit "g", qty = gram.
 
 QUAN TRỌNG: Đây là món ĐÃ CHẾ BIẾN / ĂN LIỀN — KHÔNG phải nguyên liệu thô/khô.
 VD: "miến ngan nước 400g" = cả tô miến nấu chín + thịt ngan + nước dùng (~500-600 cal), KHÔNG phải 400g miến khô.
@@ -21,7 +24,7 @@ NGUYÊN TẮC TÁCH / GIỮ NGUYÊN:
 
 Tên món viết bằng tiếng Việt.
 Trả lời ĐÚNG JSON, không có text trước/sau:
-[{"name":"tên tiếng Việt","gram":số,"cal":số,"p":số,"c":số,"f":số,"fiber":số}]`;
+[{"name":"tên tiếng Việt","qty":số,"unit":"bát|quả|ml|g|…","gram":số,"cal":số,"p":số,"c":số,"f":số,"fiber":số}]`;
 
 export async function recognizeMeal(base64DataUrl, appSettings) {
   const fallback = appSettings?.ai_provider || "claude";

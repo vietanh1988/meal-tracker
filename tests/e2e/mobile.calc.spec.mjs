@@ -18,6 +18,8 @@ test("Kiểm tra calo: kho món + AI tính món lạ → ghi vào bữa tối", 
   await page.route("**/functions/v1/ai-proxy", (route) => { aiCalls++; route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ text: AI_TEXT }) }); });
 
   await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Ghi bữa" }).click();
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: "shots/ghi-bua.png" });
   await tap(page.getByTestId("log-tab-calc"));
   await page.getByTestId("calc-text").fill("1 tô phở bò, 2 quả trứng gà luộc");
   await tap(page.getByTestId("calc-run"));

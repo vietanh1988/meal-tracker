@@ -10,7 +10,7 @@ import { appAlert, appConfirm } from "../lib/dialog";
 const seg = { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 4, padding: 3, background: "rgba(30,64,175,0.07)", border: "none", borderRadius: 12 };
 const segBtn = (on) => ({ height: 36, borderRadius: 9, border: "none", background: on ? "#FFFFFF" : "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: on ? 800 : 600, color: on ? "#007AFF" : "#475569", boxShadow: on ? "0 2px 8px rgba(30,64,175,0.12)" : "none" });
 const navBtn = { width: 40, height: 40, borderRadius: 12, border: "none", boxShadow: "0 2px 8px rgba(30,64,175,0.10)", background: "#FFFFFF", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 };
-const BAR_COLOR = { ok: "#00C896", low: "#FACC15", high: "#EF4444" };
+const BAR_COLOR = { ok: "#059669", low: "#F59E0B", high: "#EF4444" };
 const PCT_COLOR = { ok: "#047857", low: "#A16207", high: "#DC2626" };
 
 export function ProgressScreen(p) {
@@ -83,18 +83,26 @@ function FoodPanel(p) {
 
   return (
     <>
-      <div style={{ margin: "0 12px", ...ltCard, padding: 14, display: "flex", flexDirection: "column", gap: 12, opacity: rows ? 1 : 0.6 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 22, fontWeight: 900, color: "#007AFF" }}>{fmtInt(sum.avg)}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>kcal TB/ngày · đạt {sum.okCount}/{sum.loggedCount} · ghi {sum.loggedCount}/{passed} ngày</span>
+      <div data-testid="diary-summary" style={{ margin: "0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 12, opacity: rows ? 1 : 0.6 }}>
+        {/* 16/10 (bản vẽ 86): số TB to + 3 ô nhỏ thay dòng chữ dài */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+          <span style={{ fontSize: 30, fontWeight: 900, color: "#0062F0" }}>{fmtInt(sum.avg)}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>kcal TB/ngày</span>
         </div>
-        <div role="img" aria-label={`Biểu đồ kcal từng ngày, mục tiêu ${fmtInt(lineCal)} kcal`} style={{ position: "relative", height: H, display: "grid", gridTemplateColumns: `repeat(${dates.length}, minmax(0, 1fr))`, gap: month ? 2 : 8, alignItems: "end", borderBottom: "1px solid #E2E8F0" }}>
-          <div style={{ position: "absolute", left: 0, right: 0, bottom: h(lineCal), borderTop: "2px dashed #007AFF" }} />
-          <span style={{ position: "absolute", right: 0, bottom: h(lineCal) + 4, fontSize: 11, fontWeight: 800, color: "#007AFF", background: "#FFFFFF", padding: "0 4px" }}>{fmtInt(lineCal)}</span>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6 }}>
+          {[["Đạt mục tiêu", `${sum.okCount} / ${sum.loggedCount} ngày`], ["Đã ghi", `${sum.loggedCount} / ${passed} ngày`], ["Mục tiêu", fmtInt(lineCal)]].map(([a, b]) => (
+            <span key={a} style={{ borderRadius: 12, background: "#F1F5FB", padding: 8, display: "flex", flexDirection: "column", minWidth: 0 }}>
+              <span style={{ fontSize: 11, color: "#64748B" }}>{a}</span><span style={{ fontSize: 15, fontWeight: 900, whiteSpace: "nowrap" }}>{b}</span>
+            </span>
+          ))}
+        </div>
+        <div role="img" aria-label={`Biểu đồ kcal từng ngày, mục tiêu ${fmtInt(lineCal)} kcal`} style={{ position: "relative", height: H, display: "grid", gridTemplateColumns: `repeat(${dates.length}, minmax(0, 1fr))`, gap: month ? 2 : 8, alignItems: "end", borderBottom: "1px solid #EEF2FA" }}>
+          <div style={{ position: "absolute", left: 0, right: 0, bottom: h(lineCal), borderTop: "1.5px dashed rgba(0,98,240,0.5)" }} />
+          <span style={{ position: "absolute", right: 0, bottom: h(lineCal) + 4, fontSize: 11, fontWeight: 800, color: "#0062F0", background: "#FFFFFF", padding: "0 4px" }}>{fmtInt(lineCal)}</span>
           {sum.days.map((d) => {
             if (d.status === "planned") return <div key={d.date} className="hatch" title={`${fmtVN(d.date)}: có thực đơn ${d.planCal} kcal`} style={{ height: h(d.planCal), borderRadius: month ? "3px 3px 0 0" : "6px 6px 0 0", border: "1.5px solid #CBD5E1", borderBottom: "none", boxSizing: "border-box" }} />;
             if (d.status === "none") return <div key={d.date} style={{ height: 3, background: "#E2E8F0" }} />;
-            return <button key={d.date} onClick={() => p.openDay(d.date)} aria-label={`${fmtVN(d.date)}: ${d.cal} kcal`} style={{ height: h(d.cal), borderRadius: month ? "3px 3px 0 0" : "6px 6px 0 0", background: BAR_COLOR[d.status], border: "none", padding: 0 }} />;
+            return <button key={d.date} onClick={() => p.openDay(d.date)} aria-label={`${fmtVN(d.date)}: ${d.cal} kcal`} style={{ height: h(d.cal), borderRadius: month ? "3px 3px 1px 1px" : "7px 7px 3px 3px", background: BAR_COLOR[d.status], border: "none", padding: 0 }} />;
           })}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: `repeat(${dates.length}, minmax(0, 1fr))`, gap: month ? 2 : 8, marginTop: -6, fontSize: 11, fontWeight: 600, color: "#64748B", textAlign: "center" }}>
@@ -102,7 +110,7 @@ function FoodPanel(p) {
             const day = Number(d.slice(8));
             const show = !month || day === 1 || day % 7 === 1;
             const strong = sum.days.find((x) => x.date === d)?.mealCount > 0 || d === today;
-            return <span key={d} style={{ fontWeight: strong ? 800 : 600, color: strong ? "#0F172A" : "#64748B", whiteSpace: "nowrap", overflow: "visible" }}>{show ? (month ? day : weekdayStrip(d)) : ""}</span>;
+            return <span key={d} style={{ fontWeight: d === today ? 900 : strong ? 800 : 600, color: d === today ? "#0062F0" : strong ? "#0F172A" : "#64748B", whiteSpace: "nowrap", overflow: "visible" }}>{show ? (month ? day : weekdayStrip(d)) : ""}</span>;
           })}
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 11, fontWeight: 600, color: "#475569" }}>
@@ -116,18 +124,18 @@ function FoodPanel(p) {
       {listed.length > 0 && (
         <div style={{ margin: "10px 12px 0 12px", ...ltCard, padding: "0 14px" }}>
           {listed.map((d, i) => (
-            <button key={d.date} onClick={() => p.openDay(d.date)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 56, boxSizing: "content-box", borderStyle: "solid", borderColor: LT.line, borderWidth: i < listed.length - 1 ? "0 0 1px 0" : 0, borderRadius: 0, background: "transparent", padding: 0, color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
-              <span style={{ width: 44, fontSize: 12, fontWeight: 700, color: "#475569", lineHeight: 1.3 }}>{weekdayStrip(d.date)}<br />{fmtVN(d.date)}</span>
+            <button key={d.date} onClick={() => p.openDay(d.date)} className="tap" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", height: 58, boxSizing: "content-box", borderStyle: "solid", borderColor: LT.line, borderWidth: i < listed.length - 1 ? "0 0 1px 0" : 0, borderRadius: 0, background: "transparent", padding: 0, color: "#0F172A", fontFamily: "inherit", textAlign: "left" }}>
+              <span style={{ width: 44, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.25 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#64748B" }}>{weekdayStrip(d.date)}</span><span style={{ fontSize: 14, fontWeight: 900 }}>{fmtVN(d.date)}</span></span>
               <span style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
                 {d.eatenCount > 0 ? <>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>{fmtInt(d.cal)} kcal</span>
+                  <span style={{ fontSize: 15, fontWeight: 800 }}>{fmtInt(d.cal)} kcal</span>
                   <span style={{ fontSize: 12, color: "#64748B" }}>{d.eatenCount}/{d.mealCount} bữa đã ăn</span>
                 </> : <>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>Chưa tick bữa nào</span>
+                  <span style={{ fontSize: 15, fontWeight: 800 }}>Chưa tick bữa nào</span>
                   <span style={{ fontSize: 12, color: "#B45309" }}>Có thực đơn {fmtInt(d.planCal)} kcal</span>
                 </>}
               </span>
-              <span style={{ fontSize: 12, fontWeight: 800, color: d.eatenCount > 0 ? PCT_COLOR[d.status] : "#64748B" }}>{d.eatenCount > 0 ? `${d.pct}%` : "—"}</span>
+              <span style={{ fontSize: 13, fontWeight: 900, color: d.eatenCount > 0 ? PCT_COLOR[d.status] : "#64748B" }}>{d.eatenCount > 0 ? `${d.pct}%` : "—"}</span>
               {Icon.chev(16)}
             </button>
           ))}
@@ -182,22 +190,22 @@ function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, update
 
   return (
     <>
-      <div style={{ margin: "0 12px", ...ltCard, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ margin: "0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontSize: 26, fontWeight: 900 }}>{fmtDec(w.curKg)} kg</span>
+          <span style={{ fontSize: 30, fontWeight: 900 }}>{fmtDec(w.curKg)} kg</span>
           <span style={{ fontSize: 13, fontWeight: 700, color: "#475569", flex: 1 }}>→ {fmtDec(w.goalKg)} kg</span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: "#007AFF" }}>{w.pct}%</span>
+          <span style={{ fontSize: 13, fontWeight: 900, color: "#0062F0" }}>{w.pct}%</span>
         </div>
-        <div style={{ height: 6, borderRadius: 3, background: LT.soft, overflow: "hidden" }}><div style={{ width: `${w.pct}%`, height: 6, background: "linear-gradient(90deg,#36A3FF,#007AFF,#0057FF)" }} /></div>
+        <div style={{ height: 8, borderRadius: 4, background: LT.soft, overflow: "hidden" }}><div style={{ width: `${w.pct}%`, height: 8, borderRadius: 4, background: "linear-gradient(90deg,#1A7CFF,#0050E6)" }} /></div>
         {w.startDate && <span style={{ fontSize: 12, color: "#475569" }}>Từ {fmtDec(w.startKg)} kg ({w.startDate}) · {w.change > 0 ? "+" : ""}{fmtDec(w.change)} kg / {fmtDec(w.weeks)} tuần{per}</span>}
         <div style={{ display: "flex", gap: 8, paddingTop: 2 }}>
-          <label style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6, height: 44, padding: "0 12px", background: LT.soft, border: "1.5px solid #DCE6F5", borderRadius: 10, boxSizing: "border-box" }}>
+          <label style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6, height: 46, padding: "0 12px", background: "#F1F5F9", border: "none", borderRadius: 12, boxSizing: "border-box" }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B", whiteSpace: "nowrap" }}>Hôm nay</span>
             <input data-testid="weight-input" type="text" inputMode="decimal" value={val} onChange={(e) => setVal(e.target.value.replace(",", ".").replace(/[^0-9.]/g, "").slice(0, 5))} onKeyDown={(e) => e.key === "Enter" && saveToday()} placeholder={String(w.curKg || "")}
               style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", textAlign: "right", fontFamily: "inherit", fontSize: 16, fontWeight: 700, color: "#0F172A", outline: "none" }} />
             <span style={{ fontSize: 13, fontWeight: 600, color: "#64748B" }}>kg</span>
           </label>
-          <button data-testid="weight-save" onClick={saveToday} disabled={busy || !val} style={{ height: 44, padding: "0 18px", borderRadius: 10, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 900 }}>Lưu</button>
+          <button data-testid="weight-save" onClick={saveToday} disabled={busy || !val} style={{ height: 46, padding: "0 22px", borderRadius: 12, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 900 }}>Lưu</button>
         </div>
         {w.weighedToday && <span style={{ fontSize: 12, color: "#64748B", marginTop: -4 }}>Hôm nay đã cân — lưu lần nữa sẽ sửa số hôm nay.</span>}
       </div>

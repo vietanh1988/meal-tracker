@@ -14,6 +14,8 @@ test("Giới thiệu: số món thật và điều khoản", async ({ browser })
   await expect(page.getByTestId("me-logout")).toBeVisible();
   await page.getByTestId("me-diary").click();
   await expect(page.getByTestId("seg-diary")).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByTestId("diary-summary")).toBeVisible();
+  await page.screenshot({ path: "shots/tien-do-nhat-ky.png", fullPage: true });
   await nav("Tôi").click();
   await page.getByRole("button", { name: /Giới thiệu/ }).click();
   await expect(page.getByTestId("about-foods")).toContainText(/[\d.]+ món/);

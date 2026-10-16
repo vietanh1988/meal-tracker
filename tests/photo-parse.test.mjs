@@ -13,3 +13,11 @@ test("parsePhotoDishes: lấy mảng JSON trong câu trả lời, làm tròn, b�
 test("parsePhotoDishes: không có JSON → lỗi dễ hiểu", () => {
   assert.throws(() => parsePhotoDishes("xin lỗi tôi không thấy"), /định dạng/);
 });
+
+test("parsePhotoDishes: đọc số lượng + đơn vị (16/10)", async () => {
+  const { parsePhotoDishes } = await import("../src/lib/photoParse.js");
+  const r = parsePhotoDishes('[{"name":"cơm trắng","qty":1.5,"unit":"bát","gram":250,"cal":325,"p":6,"c":71,"f":1,"fiber":1},{"name":"sữa đậu nành","qty":250,"unit":"ml","gram":250,"cal":90,"p":7,"c":8,"f":4,"fiber":0},{"name":"thịt kho","qty":150,"unit":"g","gram":150,"cal":248,"p":22,"c":3,"f":16,"fiber":0}]');
+  assert.equal(r[0].unit, "bát"); assert.equal(r[0].unit_g, 166.7);
+  assert.equal(r[1].unit, "ml"); assert.equal(r[1].unit_g, undefined);
+  assert.equal(r[2].unit, "g");
+});

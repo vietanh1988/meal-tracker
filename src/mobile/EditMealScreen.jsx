@@ -1,15 +1,19 @@
 // Màn 3 · Sửa bữa đã tick (đã chốt): danh sách món + ô gram, xoá món, + Thêm món / chụp,
 // nút "Đã ăn", menu ⋯ (chuyển sang ngày/bữa khác, xoá bữa), thanh dưới tổng kcal + macro + Lưu.
+// 16/10 (bản vẽ 88): dòng tóm tắt icon bữa + tổng kcal; món có ĐƠN VỊ −/+ (lib/portion.js), chạm đơn vị đổi qua gram.
 // 14/10: "Chuyển sang ngày / bữa khác" mở bảng chọn ngày (lùi 7 ngày + ngày mai) và bữa; bữa đích có món thì GỘP (hỏi trước ở MobileApp).
 import { useState, useEffect, useRef } from "react";
 import { SubPage, Icon, GRAD_BLUE, SR } from "./ui";
-import { scaleItem, itemName, fmtInt, fmtDec, weekdayFull } from "../lib/mobileView";
+import { itemName, fmtInt, fmtDec, weekdayFull } from "../lib/mobileView";
+import { portionOf, stepPortion, setPortion, toggleUnit, hasUnit } from "../lib/portion";
+import { MealIcon } from "./icons";
 import { sumItems } from "../lib/mealMath";
 import { fmtVN, addDays, friendlyDate } from "../lib/dateVN";
 import { appConfirm } from "../lib/dialog";
 
-const toRow = (it) => ({ base: it, gram: String(Math.round(Number(it.gram) || 0)) });
-const rowItem = (r) => scaleItem(r.base, parseFloat(String(r.gram).replace(",", ".")) || 0);
+// Mỗi dòng: món hiện tại + chữ đang gõ trong ô số lượng (theo đơn vị đang hiện)
+const toRow = (it) => ({ item: it, text: portionOf(it).label });
+const rowOk = (r) => r.text !== "" && Number(String(r.text).replace(",", ".")) > 0 && Number(r.item.gram) > 0;
 
 export function EditMealScreen({ date, today, mealId, mealName, items, eaten, dayType, onSave, onDelete, onMove, onAddPick, pendingPick, onPhoto, onClose, mealOptions = [] }) {
   const [rows, setRows] = useState(() => (items || []).map(toRow));
@@ -29,9 +33,11 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
     if (pendingPick && pendingPick.item) { setRows((r) => [...r, toRow(pendingPick.item)]); setDirty(true); }
   }, [pendingPick]);
 
-  const current = rows.map(rowItem).filter((it) => it.gram > 0);
+  const current = rows.filter(rowOk).map((r) => r.item);
   const tot = sumItems(current);
-  const setGram = (i, v) => { setRows((r) => r.map((x, j) => (j === i ? { ...x, gram: v.replace(/[^0-9.,]/g, "").slice(0, 5) } : x))); setDirty(true); };
+  const setQty = (i, v) => { const t = v.replace(/[^0-9.,]/g, "").slice(0, 5); setRows((r) => r.map((x, j) => (j === i ? { item: Number(t.replace(",", ".")) > 0 ? setPortion(x.item, t) : x.item, text: t } : x))); setDirty(true); };
+  const stepAt = (i, dir) => { setRows((r) => r.map((x, j) => { if (j !== i) return x; const it = stepPortion(x.item, dir); return { item: it, text: portionOf(it).label }; })); setDirty(true); };
+  const unitAt = (i) => { setRows((r) => r.map((x, j) => { if (j !== i) return x; const it = toggleUnit(x.item); return { item: it, text: portionOf(it).label }; })); };
   const remove = (i) => { setRows((r) => r.filter((_, j) => j !== i)); setDirty(true); };
 
   const save = async () => {
@@ -65,7 +71,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
   const same = toDate === date && toMeal === mealId;
 
 
-  const chip = (on, extra = {}) => ({ height: 40, padding: "0 12px", borderRadius: 10, border: on ? "none" : "1.5px solid #E2E8F0", background: on ? "#007AFF" : "#FFFFFF", color: on ? "#FFFFFF" : "#0F172A", fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, whiteSpace: "nowrap", ...extra });
+  const chip = (on, extra = {}) => ({ height: 40, padding: "0 12px", borderRadius: 10, border: "none", background: on ? "#0062F0" : "#EEF4FF", color: on ? "#FFFFFF" : "#0F172A", fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, whiteSpace: "nowrap", ...extra });
   const moveSheet = moving && (
     <div onClick={() => setMoving(false)} style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div data-testid="move-sheet" role="dialog" aria-modal="true" aria-label="Chuyển bữa" onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: "#FFFFFF", borderRadius: "20px 20px 0 0", padding: "10px 14px calc(env(safe-area-inset-bottom, 0px) + 18px) 14px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease" }}>
@@ -89,7 +95,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
 
   const header = (
     <>
-      <button aria-pressed={isEaten} onClick={() => { setIsEaten(!isEaten); setDirty(true); }} style={{ height: 34, padding: "0 12px", borderRadius: 999, border: isEaten ? "none" : "1.5px solid #E2E8F0", background: isEaten ? "rgba(0,200,150,0.12)" : "#FFFFFF", color: isEaten ? "#047857" : "#64748B", fontFamily: "inherit", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>{Icon.check(14, 2.8)}{isEaten ? "Đã ăn" : "Chưa ăn"}</button>
+      <button aria-pressed={isEaten} onClick={() => { setIsEaten(!isEaten); setDirty(true); }} style={{ height: 34, padding: "0 12px", borderRadius: 999, border: "none", background: isEaten ? "rgba(5,150,105,0.12)" : "#EEF4FF", color: isEaten ? "#047857" : "#64748B", fontFamily: "inherit", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>{Icon.check(14, 2.8)}{isEaten ? "Đã ăn" : "Chưa ăn"}</button>
       <div style={{ position: "relative" }}>
         <button onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Thêm tuỳ chọn: chuyển ngày hoặc bữa, xoá bữa" style={{ width: 44, height: 44, borderRadius: 22, border: "none", background: "transparent", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.more(20)}</button>
         {menu && (
@@ -103,43 +109,61 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
   );
 
   const footer = (
-    <div style={{ flexShrink: 0, background: "#FFFFFF", borderTop: "1px solid #E2E8F0", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+    <div style={{ flexShrink: 0, background: "rgba(255,255,255,0.94)", borderTop: "1px solid rgba(30,64,175,0.08)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "10px 12px 24px 16px", display: "flex", alignItems: "center", gap: 12, boxSizing: "border-box" }}>
         <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 18, fontWeight: 900, color: "#007AFF" }}>{fmtInt(tot.cal)} kcal</span>
+          <span style={{ fontSize: 20, fontWeight: 900, color: "#0062F0" }}>{fmtInt(tot.cal)} kcal</span>
           <span style={{ fontSize: 12, fontWeight: 600, color: "#475569" }}>Đạm {Math.round(tot.p)} · Tinh bột {Math.round(tot.c)} · Béo {Math.round(tot.f)} g</span>
         </span>
-        <button onClick={save} disabled={busy} style={{ height: 48, padding: "0 28px", borderRadius: 14, background: GRAD_BLUE, boxShadow: "0 4px 12px rgba(0,0,0,0.18)", color: "#FFFFFF", fontSize: 16, fontWeight: 900, border: "none", fontFamily: "inherit" }}>{busy ? "Đang lưu…" : "Lưu"}</button>
+        <button onClick={save} disabled={busy} style={{ height: 52, width: 140, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, border: "none", fontFamily: "inherit" }}>{busy ? "Đang lưu…" : "Lưu"}</button>
       </div>
     </div>
   );
 
   return (
     <SubPage title={mealName} subtitle={`${weekdayFull(date)} ${fmtVN(date)} · ${dayType === "rest" ? "Ngày nghỉ" : "Ngày tập"}`} onBack={back} right={header} footer={footer}>
-      <div onClick={() => menu && setMenu(false)} style={{ margin: "12px 12px 16px 12px", background: "#FFFFFF", border: "none", borderRadius: 14, padding: "0 6px 0 12px" }}>
-        {rows.map((r, i) => {
-          const it = rowItem(r);
-          const nm = itemName(r.base);
-          return (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 56, borderBottom: "1px solid #F1F5F9" }}>
-              <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nm}</span>
-                <span data-testid={`edit-item-macro-${i}`} style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fmtInt(it.cal)} kcal · Đ {fmtDec(it.p ?? it.protein)} · TB {fmtDec(it.c ?? it.carb)} · B {fmtDec(it.f ?? it.fat)} g</span>
-              </span>
-              <label style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={SR}>Gram {nm.toLowerCase()}</span>
-                <input type="text" inputMode="decimal" value={r.gram} onChange={(e) => setGram(i, e.target.value)} onFocus={(e) => e.target.select()}
-                  style={{ width: 56, height: 36, background: "#F1F5F9", border: "1.5px solid #E2E8F0", borderRadius: 8, textAlign: "right", padding: "0 6px", fontFamily: "inherit", fontSize: 16, fontWeight: 700, color: "#0F172A", boxSizing: "border-box", outline: "none" }} />
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>g</span>
-              </label>
-              <button onClick={() => remove(i)} aria-label={`Xoá ${nm.toLowerCase()}`} style={{ width: 40, height: 40, border: "none", background: "transparent", color: "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.close(16)}</button>
-            </div>
-          );
-        })}
-        {rows.length === 0 && <div style={{ minHeight: 56, display: "flex", alignItems: "center", fontSize: 13, color: "#64748B", borderBottom: "1px solid #F1F5F9" }}>Bữa chưa có món nào.</div>}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, height: 52 }}>
-          <button onClick={onAddPick} style={{ flex: 1, height: 44, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#007AFF", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>+ Thêm món</button>
-          {onPhoto && <button onClick={onPhoto} aria-label="Chụp thêm món" style={{ width: 40, height: 40, borderRadius: 10, border: "none", background: "rgba(249,115,22,0.1)", color: "#EA580C", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.camera(18)}</button>}
+      <div onClick={() => menu && setMenu(false)} style={{ padding: "12px 12px 16px 12px", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div data-testid="edit-summary" style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 4px 0 4px" }}>
+          <MealIcon id={mealId} size={44} />
+          <span style={{ display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: 12, color: "#64748B" }}>{mealName} · {current.length} món</span>
+            <span style={{ fontSize: 22, fontWeight: 900 }}>{fmtInt(tot.cal)} kcal</span>
+          </span>
+        </div>
+        <div style={{ background: "#FFFFFF", borderRadius: 20, padding: "0 14px" }}>
+          {rows.map((r, i) => {
+            const it = r.item;
+            const nm = itemName(it);
+            const po = portionOf(it);
+            const stepBtn = { width: 32, height: 32, borderRadius: 10, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 18, fontWeight: 800, padding: 0, flexShrink: 0, fontFamily: "inherit" };
+            return (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 66, borderBottom: "1px solid #EEF2FA" }}>
+                <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 2 }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{nm}</span>
+                  <span data-testid={`edit-item-macro-${i}`} style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fmtInt(it.cal)} kcal · Đ {fmtDec(it.p ?? it.protein)} · TB {fmtDec(it.c ?? it.carb)} · B {fmtDec(it.f ?? it.fat)} g</span>
+                </span>
+                <button aria-label={`Giảm ${nm.toLowerCase()}`} onClick={() => stepAt(i, -1)} style={stepBtn}>−</button>
+                <span style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 62 }}>
+                  <span style={{ height: 32, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", gap: 2, padding: "0 6px" }}>
+                    <label style={{ display: "flex" }}>
+                      <span style={SR}>{po.mode === "unit" ? `Số ${po.unit}` : "Gram"} {nm.toLowerCase()}</span>
+                      <input type="text" inputMode="decimal" value={r.text} onChange={(e) => setQty(i, e.target.value)} onFocus={(e) => e.target.select()}
+                        style={{ width: po.mode === "unit" ? 30 : 40, height: 30, background: "transparent", border: "none", textAlign: "right", padding: 0, fontFamily: "inherit", fontSize: 16, fontWeight: 800, color: "#0F172A", outline: "none" }} />
+                    </label>
+                    <button disabled={!hasUnit(it)} onClick={() => unitAt(i)} aria-label="Đổi đơn vị" style={{ border: "none", background: "transparent", padding: 0, fontFamily: "inherit", fontSize: 12, fontWeight: 800, color: "#0062F0" }}>{po.unit}{hasUnit(it) ? " ▾" : ""}</button>
+                  </span>
+                  {po.approxG != null && <span style={{ fontSize: 11, color: "#64748B" }}>≈ {fmtInt(po.approxG)} g</span>}
+                </span>
+                <button aria-label={`Tăng ${nm.toLowerCase()}`} onClick={() => stepAt(i, 1)} style={stepBtn}>+</button>
+                <button onClick={() => remove(i)} aria-label={`Xoá ${nm.toLowerCase()}`} style={{ width: 28, height: 40, border: "none", background: "transparent", color: "#64748B", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.close(16)}</button>
+              </div>
+            );
+          })}
+          {rows.length === 0 && <div style={{ minHeight: 56, display: "flex", alignItems: "center", fontSize: 13, color: "#64748B", borderBottom: "1px solid #EEF2FA" }}>Bữa chưa có món nào.</div>}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, height: 52 }}>
+            <button onClick={onAddPick} style={{ flex: 1, height: 44, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#0062F0", display: "flex", alignItems: "center", gap: 6, padding: 0 }}>{Icon.plus(16)}Thêm món</button>
+            {onPhoto && <button onClick={onPhoto} aria-label="Chụp thêm món" style={{ width: 38, height: 38, borderRadius: 12, border: "none", background: "rgba(234,88,12,0.12)", color: "#C2410C", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.camera(17)}</button>}
+          </div>
         </div>
       </div>
       {moveSheet}

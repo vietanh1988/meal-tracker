@@ -114,6 +114,7 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     expect(w[0].week).toBe(1);
     await expect(page.getByTestId("weight-chart")).toBeVisible();
     await expect(page.getByTestId("wchart-note")).toContainText("kg");
+    await page.screenshot({ path: "shots/tien-do-can-nang.png", fullPage: true });
   });
 
   test("về Hôm nay, bỏ tick bữa sáng → eaten rỗng, đã ăn về 0", async () => {
