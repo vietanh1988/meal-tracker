@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { login, rest, S, waitDb, tap } from "./helpers.mjs";
+import { todayVN } from "../../src/lib/dateVN.js";
 
 const FLAGS_OFF = '{"ai_chat":true,"ai_macro":true,"ai_menu_gen":true,"push":false,"sales_enabled":false,"registration_enabled":true,"template_library":false,"photo_macro":true}';
 
@@ -11,7 +12,7 @@ test("Gói cước: tắt bán = Lượt AI; bật bán = chọn gói → chuy�
   const page = await ctx.newPage();
   page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
   const s = S();
-  const day = new Date().toISOString().slice(0, 10); // kỳ đếm của ai-proxy là ngày UTC
+  const day = todayVN(); // kỳ đếm của ai-proxy là ngày VIỆT NAM từ 16/10 (trước là UTC → bài lỗi từ 0:00–7:00 sáng VN)
   await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ ai_chat_count_today: 3, ai_chat_count_reset_at: day, ai_menu_count_today: 9, ai_menu_count_reset_at: "2020-01-01" }) });
   const nav = (name) => page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name });
 
