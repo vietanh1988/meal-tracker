@@ -83,6 +83,7 @@ export function MenuScreen(p) {
   const [quota, setQuota] = useState(null);
   const [libType, setLibType] = useState(todayType);
   const [opts, setOpts] = useState(false);
+  const [scope, setScope] = useState("rest"); // đã ăn ≥ 1 bữa hôm nay: mặc định chỉ lên các bữa còn lại
   const [typed, setTyped] = useState("");
 
   useEffect(() => {
@@ -113,7 +114,9 @@ export function MenuScreen(p) {
   const avoids = avoidList(avoid);
 
   const savePrefs = (next = {}) => writePrefs(p.userId, { style, avoid, ...next });
-  const generate = () => { savePrefs(); setOpts(false); openGenerate({ style, avoid: avoid.trim(), dayType: dt }); };
+  const restN = p.todayRest && dt === todayType ? p.todayRest.left : 0; // số bữa chưa ăn hôm nay (chỉ khi đã ăn ≥ 1 bữa)
+  const useRest = restN > 0 && scope === "rest";
+  const generate = () => { savePrefs(); setOpts(false); openGenerate({ style, avoid: avoid.trim(), dayType: dt, scope: useRest ? "rest" : "day" }); };
   const toggleAvoid = (w) => { const has = avoids.includes(w); setAvoid((has ? avoids.filter((x) => x !== w) : [...avoids, w]).join(", ").slice(0, 120)); };
   const addTyped = () => { const w = typed.trim(); if (!w) return; if (!avoids.includes(w)) setAvoid([...avoids, w].join(", ").slice(0, 120)); setTyped(""); };
   const closeOpts = () => { savePrefs(); setOpts(false); };
@@ -158,6 +161,7 @@ export function MenuScreen(p) {
                 <button data-testid="menu-opt-style" onClick={() => setOpts(true)} style={pill()}>{styleName} {Icon.down(12)}</button>
                 {!noEx && <button data-testid="menu-opt-day" onClick={() => setOpts(true)} style={pill()}>{DT[dayType]} {Icon.down(12)}</button>}
                 <button data-testid="menu-opt-avoid" onClick={() => setOpts(true)} style={pill()}>{avoidPill} {Icon.down(12)}</button>
+                {restN > 0 && <button data-testid="menu-opt-scope" onClick={() => setOpts(true)} style={pill()}>{useRest ? `${restN} bữa còn lại` : "Cả ngày"} {Icon.down(12)}</button>}
               </div>
               <button data-testid="menu-generate" onClick={generate} disabled={quota?.out} style={{ ...fbtn("white", quota?.out, 50), position: "relative" }}>
                 {quota?.out ? "Hết lượt hôm nay — dùng thực đơn đã lưu" : <>{Icon.sparkle(18)} Lên thực đơn ngay</>}
@@ -184,6 +188,12 @@ export function MenuScreen(p) {
             <>
               <Lbl>TẠO CHO</Lbl>
               <Seg ariaLabel="Tạo cho" accent="#6D28D9" value={dayType} onChange={setDayType} opts={["train", "rest"].map((d) => ({ value: d, label: `${DT[d]}${d === todayType ? " · hôm nay" : ""}`, testid: `menu-day-${d}` }))} />
+            </>
+          )}
+          {restN > 0 && (
+            <>
+              <Lbl>HÔM NAY ĐÃ ĂN {p.todayRest.eatenN} BỮA</Lbl>
+              <Seg ariaLabel="Lên cho" accent="#6D28D9" value={scope} onChange={setScope} opts={[{ value: "rest", label: `${restN} bữa còn lại`, testid: "menu-scope-rest" }, { value: "day", label: "Cả ngày", testid: "menu-scope-day" }]} />
             </>
           )}
           <Lbl>MÓN KHÔNG ĂN / DỊ ỨNG</Lbl>

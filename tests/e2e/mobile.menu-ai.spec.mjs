@@ -96,6 +96,11 @@ test("AI lên thực đơn các bữa còn lại: không tạo lại bữa đã 
   await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(body) });
   try {
     await login(page);
+    // Tab Thực đơn: có lựa chọn "N bữa còn lại / Cả ngày", mặc định bữa còn lại
+    const navB = (name) => page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name });
+    await navB("Thực đơn").click();
+    await expect(page.getByTestId("menu-opt-scope")).toContainText("còn lại");
+    await navB("Hôm nay").click();
     const btn = page.getByTestId("today-ai-menu");
     await expect(btn).toContainText("còn lại");
     await tap(btn);

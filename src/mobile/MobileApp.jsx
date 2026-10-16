@@ -239,13 +239,22 @@ export function MobileApp(props) {
     openLayer({ type: "photo", mealId: typeof mealId === "string" ? mealId : null });
   };
   // Nút AI ở Hôm nay: tạo luôn với lựa chọn đã dùng lần trước ở tab Thực đơn
+  // Đã ăn ≥ 1 bữa hôm nay → AI chỉ lên các bữa còn lại, mục tiêu = cả ngày − đã ăn (16/10)
+  const restOfToday = () => {
+    const td = dayOf(today);
+    const eatenIds = (td?.eaten_meals || []).filter((id) => (td?.meals || []).some((m) => mealKey(m) === id && hasItems(m)));
+    return eatenIds.length ? { eatenIds, eaten: eatenOfDay(td) } : null;
+  };
+  const restInfoMenu = (() => {
+    const r = restOfToday();
+    if (!r) return null;
+    const left = idsFor(today).filter((id) => !r.eatenIds.includes(id)).length;
+    return { eatenN: r.eatenIds.length, left };
+  })();
   const quickAILayer = () => {
     let prefs = {};
     prefs = readUser("fp_menu_prefs", user?.id, {}) || {};
-    // Đã ăn ≥ 1 bữa hôm nay → AI chỉ lên các bữa còn lại, mục tiêu = cả ngày − đã ăn (16/10)
-    const td = dayOf(today);
-    const eatenIds = (td?.eaten_meals || []).filter((id) => (td?.meals || []).some((m) => mealKey(m) === id && hasItems(m)));
-    const rest = eatenIds.length ? { eatenIds, eaten: eatenOfDay(td) } : null;
+    const rest = restOfToday();
     return { type: "ai", auto: true, rest, prefs: { style: prefs.style, avoid: prefs.avoid, dayType: dayTypeOf(profile, today) } };
   };
   const aiMenuAction = aiAccess.usable ? () => openLayer(quickAILayer()) : aiAccess.enabled ? () => setTab("menu") : null;
@@ -551,7 +560,7 @@ export function MobileApp(props) {
         {tab === "menu" && (
           <div>
             <MenuScreen {...menuProps} active={!top} aiAccess={aiAccess} userId={user?.id} flags={flags} recentDays={recentRows} openToday={() => { setSelDate(null); setTab("today"); }}
-              openGenerate={(prefs) => openLayer({ type: "ai", prefs, auto: true })} openSaved={(template) => openLayer({ type: "ai", template })}
+              todayRest={restInfoMenu} openGenerate={(prefs) => openLayer({ type: "ai", prefs, auto: true, rest: prefs.scope === "rest" ? restOfToday() : null })} openSaved={(template) => openLayer({ type: "ai", template })}
               openPage={(sec, extra) => openLayer({ type: "page", sec, ...(extra || {}) })} clearToday={clearToday} />
           </div>
         )}
