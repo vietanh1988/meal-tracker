@@ -32,6 +32,7 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
   const [autoStyle, setAutoStyle] = useState("vn");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [aiErr, setAiErr] = useState("");
   const isStandalone = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone);
   const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
   const [showPin, setShowPin] = useState(!isStandalone && isIOS);
@@ -48,13 +49,15 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     finish();
   };
   const runAutoMenu = async () => {
-    setLoading(true); setResult(null);
+    setLoading(true); setResult(null); setAiErr("");
     try {
       const dayType = noEx ? "rest" : "train";
       const mealIds = resolveMealIds(dayType, p, appSettings);
       const res = await generateMenuAI({ macro, profile: p, dayType, mealIds, prefs: { style: autoStyle, avoid: "" }, avoidFoods: [], appSettings });
-      if (res && res.meals) setResult(res); else finish();
-    } catch (e) { console.error("Auto menu onboarding error:", e); finish(); } finally { setLoading(false); }
+      // generateMenuAI trả {ok, template:{meals}} (16/10: trước đây kiểm res.meals → luôn thoát im lặng, vẫn tốn 1 lượt AI)
+      if (res?.ok && res.template?.meals?.length) setResult({ ...res.template, day_type: dayType });
+      else setAiErr(res?.error || "Chưa tạo được thực đơn. Thử lại hoặc bỏ qua để tự ghi.");
+    } catch (e) { console.error("Auto menu onboarding error:", e); setAiErr("Chưa tạo được thực đơn (lỗi mạng). Thử lại hoặc bỏ qua để tự ghi."); } finally { setLoading(false); }
   };
 
   // ---------- khối dùng chung ----------
@@ -229,8 +232,9 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
           <span><b style={{ color: "#FFFFFF" }}>{fmt(sum("cal"))}</b> kcal</span><span>Đạm <b style={{ color: "#FFFFFF" }}>{sum("p")}</b> g</span><span>TB <b style={{ color: "#FFFFFF" }}>{sum("c")}</b> g</span><span>Béo <b style={{ color: "#FFFFFF" }}>{sum("f")}</b> g</span>
         </div>
       </div>}
+      {aiErr && !loading && <p data-testid="onb-ai-err" role="alert" style={{ margin: "12px 20px 0 20px", fontSize: 13, color: DK.red, lineHeight: 1.5 }}>{aiErr}</p>}
       {footer(<>
-        {!loading && !result && btn("AI lên thực đơn cho tôi", runAutoMenu, false, "onb-ai")}
+        {!loading && !result && btn(aiErr ? "Thử lại" : "AI lên thực đơn cho tôi", runAutoMenu, false, "onb-ai")}
         {result && btn("Dùng thực đơn này", () => applyMenu(result), false, "onb-apply")}
         <div style={{ display: "flex", justifyContent: "center", gap: 18, marginTop: 6 }}>
           {result && link("Tạo lại", runAutoMenu, DK.link)}

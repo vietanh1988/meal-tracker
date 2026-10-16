@@ -335,7 +335,7 @@ export function MobileApp(props) {
       mealIds={ids} dateOptions={dateOptions} recentMeals={recentMeals} frequent={frequent} foodCache={calcFoodCache}
       onClose={closeLayer}
       onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
-      onAI={aiAccess.usable && l.date === today ? () => replaceTop({ type: "ai" }) : null}
+      onAI={aiAccess.usable && l.date === today ? () => replaceTop(quickAILayer()) : null}
       weekly={weeklyFor(l.date, mealId)}
       onCalc={(text, auto) => replaceTop({ type: "calc", text: text || "", auto: !!auto, date: l.date, mealId })}
       onAddItems={async (items) => { const ok = await putItems(l.date, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`); if (ok !== false) closeLayer(); return ok; }}

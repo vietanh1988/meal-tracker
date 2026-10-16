@@ -457,6 +457,40 @@ export function topUpMeals(template, target, { diet = "balanced", avoidText = ""
 // (keto/low-carb: béo trước) ở mọi bữa, cho xuống tới 75% sàn gram ("tô nhỏ", "lưng bát"); đạm giữ nguyên.
 // Chốt cuối (16/10): tổng ngày vẫn lệch > 15% → co/giãn đều mọi món (giữ trong khoảng gram cho phép) cho về sát mục tiêu.
 // Thà đạm hơi lệch còn hơn đưa thực đơn dư/thiếu 40–60% calo.
+// Đạm dư > 30% (hay gặp ở Eat clean / tăng cơ: +40–60%) → bớt món đạm về ~115%, bù calo bằng tinh bột (16/10)
+export function capProtein(template, target, diet = "balanced") {
+  const all = (template.meals || []).flatMap((m) => m.items || []);
+  const P = all.reduce((a, i) => a + (Number(i.p) || 0), 0);
+  if (!target?.p || P <= target.p * 1.3) return template;
+  const roleOf = (it) => it.role || getFoodRole(it.food);
+  const protP = all.filter((i) => roleOf(i) === "protein").reduce((a, i) => a + (Number(i.p) || 0), 0);
+  if (protP <= 0) return template;
+  const k = Math.max(0.6, 1 - (P - target.p * 1.15) / protP);
+  let lost = 0;
+  let meals = (template.meals || []).map((m) => ({ ...m, items: (m.items || []).map((it) => {
+    if (roleOf(it) !== "protein" || !it.gram || !it.cal) return it;
+    const lim = getGramLimit(it.food) || {};
+    const g = Math.max(Math.ceil(lim.min || 0), Math.round((it.gram * k) / 5) * 5);
+    if (it.gram - g < 5) return it;
+    const next = snapWholeUnit(scaleTo(it, g));
+    lost += (Number(it.cal) || 0) - (Number(next.cal) || 0);
+    return next;
+  }) }));
+  if (lost > 0 && diet !== "keto" && diet !== "low_carb") {
+    const carbCal = meals.flatMap((m) => m.items).filter((i) => roleOf(i) === "carb").reduce((a, i) => a + (Number(i.cal) || 0), 0);
+    if (carbCal > 0) {
+      const kc = 1 + lost / carbCal;
+      meals = meals.map((m) => ({ ...m, items: m.items.map((it) => {
+        if (roleOf(it) !== "carb" || !it.gram || !it.cal) return it;
+        const lim = getGramLimit(it.food) || {};
+        const g = Math.min(lim.max || 3000, Math.round((it.gram * kc) / 5) * 5);
+        return g - it.gram < 5 ? it : snapWholeUnit(scaleTo(it, g));
+      }) }));
+    }
+  }
+  return { ...template, meals };
+}
+
 export function fitDayCal(template, target, diet = "balanced") {
   const t = Number(target?.cal) || 0;
   const sum = (tp) => (tp.meals || []).reduce((a, m) => a + (m.items || []).reduce((b, i) => b + (Number(i.cal) || 0), 0), 0);
@@ -523,13 +557,13 @@ function trimDay(template, target, diet) {
 // Bữa đủ calo nhưng thiếu đạm nặng (< 70% đạm của bữa — hay gặp ở món trọn suất phở/bún/cơm tấm khi giảm mỡ):
 // thêm 1 món đạm kèm rồi giảm tinh bột tương ứng để giữ calo (rà 16/10)
 const PROTEIN_SIDES = {
-  sang: [["trứng gà luộc", 50, 150], ["sữa chua hy lạp", 100, 200]],
-  phu_sang: [["sữa chua hy lạp", 100, 200], ["trứng gà luộc", 50, 100]],
-  phu_chieu: [["sữa chua hy lạp", 100, 200], ["trứng gà luộc", 50, 100]],
-  pre: [["sữa chua hy lạp", 100, 200]],
-  post: [["sữa chua hy lạp", 100, 250], ["trứng gà luộc", 50, 150]],
-  trua: [["ức gà luộc", 80, 150], ["trứng gà luộc", 50, 150], ["đậu phụ", 100, 200]],
-  toi: [["ức gà luộc", 80, 150], ["trứng gà luộc", 50, 150], ["đậu phụ", 100, 200]],
+  sang: [["trứng gà luộc", 50, 150], ["sữa chua hy lạp", 100, 200], ["sữa đậu nành", 200, 400], ["đậu phụ", 100, 200]],
+  phu_sang: [["sữa chua hy lạp", 100, 200], ["trứng gà luộc", 50, 100], ["sữa đậu nành", 200, 300]],
+  phu_chieu: [["sữa chua hy lạp", 100, 200], ["trứng gà luộc", 50, 100], ["sữa đậu nành", 200, 300]],
+  pre: [["sữa chua hy lạp", 100, 200], ["sữa đậu nành", 200, 300]],
+  post: [["sữa chua hy lạp", 100, 250], ["trứng gà luộc", 50, 150], ["sữa đậu nành", 200, 400]],
+  trua: [["ức gà luộc", 80, 150], ["trứng gà luộc", 50, 150], ["đậu phụ", 100, 250], ["tempeh", 80, 150]],
+  toi: [["ức gà luộc", 80, 150], ["trứng gà luộc", 50, 150], ["đậu phụ", 100, 250], ["tempeh", 80, 150]],
 };
 function balanceProtein(template, per, { banned, isAvoided, diet }) {
   const sum = (items, k) => items.reduce((a, i) => a + (Number(i[k]) || 0), 0);
@@ -539,9 +573,20 @@ function balanceProtein(template, per, { banned, isAvoided, diet }) {
       const t = per[m.meal_id];
       if (!t || !t.p) return m;
       let items = [...(m.items || [])];
-      const pGap = t.p - sum(items, "p");
-      if (pGap < Math.max(8, t.p * 0.3)) return m;
-      for (const [key, gMin, gMax] of PROTEIN_SIDES[m.meal_id] || []) {
+      let pGap = t.p - sum(items, "p");
+      // 16/10: ngưỡng 30% → 15% (giảm mỡ calo thấp thiếu đạm 13–18%, ăn chay chỉ 60–70%)
+      if (pGap < Math.max(6, t.p * 0.15)) return m;
+      // Trước hết nở món đạm sẵn có trong bữa (gọn hơn thêm món), tới trần gram
+      items = items.map(it => {
+        if (pGap <= 3 || (it.role || getFoodRole(it.food)) !== "protein" || !it.gram || !(Number(it.p) > 0)) return it;
+        const max = getGramLimit(it.food).max || it.gram;
+        const want = Math.min(max, Math.round((it.gram * (1 + pGap / it.p)) / 10) * 10);
+        if (want - it.gram < 10) return it;
+        const next = snapWholeUnit(scaleTo(it, want));
+        pGap -= (Number(next.p) || 0) - (Number(it.p) || 0);
+        return next;
+      });
+      for (const [key, gMin, gMax] of pGap >= Math.max(6, t.p * 0.15) ? PROTEIN_SIDES[m.meal_id] || [] : []) {
         const base = LOCAL_FOODS[key];
         if (!base || !base.p || banned.has(key) || isAvoided(key) || items.some(i => familyOf(i.food) === familyOf(key))) continue;
         if (mealsWithFamily(template.meals || [], key) >= 2) continue;
@@ -1144,6 +1189,8 @@ export async function generateMenuAI(args) {
     } catch (e) { /* giữ lỗi cũ */ }
   }
   if (s.broken) return { ok: false, error: "Chưa tạo được thực đơn (các món đều bị loại vì kiêng/dị ứng). Bấm Thử lại nhé." };
+  const dietS = args.macro?.dietStrategy || args.profile?.dietStrategy || "balanced";
+  try { s = { ...s, template: capProtein(s.template, target, dietS) }; } catch (e) { /* giữ nguyên */ }
   // Còn lệch > 10% (không hỏng) → co/giãn đều về sát mục tiêu (16/10: bỏ lệch TB 12–14% ở hồ sơ 1.200 kcal)
   try {
     const cal = sumTemplate(s.template).cal;
