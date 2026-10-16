@@ -221,8 +221,8 @@ function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
               : <span style={{ fontSize: 12, color: "#64748B" }}>{r.state === "missed" ? "Đã qua giờ · chưa ghi" : "Chưa ghi"}</span>}
           </span>
           {timeTag}
-          {/* Bữa đang ở thẻ đến giờ: bỏ nút + (trùng Chụp món / Tìm món của thẻ) — 16/10 */}
-          {!now && <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={{ ...plusBtn, fontSize: 22 }}>+</button>}
+          {/* Giữ nút + cả ở bữa đang trên thẻ đến giờ (chủ dự án 16/10: phải thêm/sửa được ngay ở dòng bữa) */}
+          <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={{ ...plusBtn, fontSize: 22 }}>+</button>
         </div>
       )}
     </div>

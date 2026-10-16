@@ -74,3 +74,12 @@ test("thiếu đạm → món nhiều đạm lên đầu, gắn nhãn Hợp nh�
   expect(big.cal).toBeGreaterThan(r[0].cal * 1.15);
   expect(big.p).toBeGreaterThan(r[0].p);
 });
+
+test("bữa cũ ghi trùng 1 món 2 lần → gợi ý gộp thành 1 dòng (16/10)", async () => {
+  const it = (food, gram, cal) => ({ food, gram, cal, p: 1, c: 1, f: 1, unit: "g" });
+  const macro = { calTarget: 2000, calRest: 2000, protein: 120, carb: 220, carbRest: 220, fat: 60 };
+  const r = mealSuggestions({ mealId: "phu_chieu", mealIds: ["sang", "trua", "phu_chieu", "toi"], macro, dayType: "train", history: [{ meal_id: "phu_chieu", log_date: "2026-10-15", items: [it("lạc rang", 10, 60), it("lạc rang", 40, 240)] }] });
+  const h = r.find((s) => s.kind === "history");
+  expect(h.items.length).toBe(1);
+  expect(h.items[0].food).toBe("lạc rang");
+});

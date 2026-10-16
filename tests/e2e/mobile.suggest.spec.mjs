@@ -105,8 +105,8 @@ test("Hôm nay: Ghi gợi ý hợp nhất 1 chạm ở thẻ đến giờ + Hoà
     await expect(apply).toContainText(/Ghi · [\d.]+ kcal/);
     await expect(page.getByTestId("focus-suggest-foods")).not.toHaveText("");
     await expect(page.getByTestId("focus-suggest")).toContainText("lựa chọn");
-    // Bữa ở thẻ đến giờ: dòng thời gian không còn nút + trùng
-    await expect(page.getByTestId("meal-row-now").getByRole("button", { name: /^Ghi / })).toHaveCount(0);
+    // Bữa ở thẻ đến giờ: dòng thời gian vẫn có nút + để ghi/sửa
+    await expect(page.getByTestId("meal-row-now").getByRole("button", { name: /^Ghi / })).toHaveCount(1);
     await page.screenshot({ path: "shots/the-den-gio-goi-y.png" });
     const mealId = await apply.getAttribute("data-meal");
     await tap(apply); // 1 chạm — không mở sheet

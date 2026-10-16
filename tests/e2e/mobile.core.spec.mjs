@@ -44,15 +44,8 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
   test("dòng thời gian có ĐỦ bữa (kể cả bữa ở thẻ đến giờ), tên có dấu", async () => {
     // meal_config train: sang, trua, phu_chieu, pre, toi → 2 bữa có món + 3 bữa trống có nút Ghi
     for (const id of ["sang", "trua"]) await expect(page.getByTestId(`eat-${id}`), `nút tick ${id}`).toHaveCount(1);
-    // 16/10: bữa đang ở thẻ đến giờ vẫn có dòng nhưng bỏ nút + (trùng Tìm món / Chụp món của thẻ)
-    const fm = await focusMealId(page);
-    for (const [id, n] of [["phu_chieu", "phụ chiều"], ["pre", "trước tập"], ["toi", "bữa tối"]]) {
-      if (id === fm) {
-        await expect(page.getByTestId("meal-row-now"), `dòng ${n} (bữa đến giờ) vẫn có`).toHaveCount(1);
-        await expect(page.getByRole("button", { name: `Ghi ${n}` }), `không còn nút + trùng ở ${n}`).toHaveCount(0);
-        await expect(page.getByTestId("focus-card").getByTestId("focus-search")).toBeVisible();
-      } else await expect(page.getByRole("button", { name: `Ghi ${n}` }), `nút Ghi ${n}`).toHaveCount(1);
-    }
+    // Mọi bữa trống đều có nút + ở dòng (kể cả bữa đang ở thẻ đến giờ — chủ dự án 16/10)
+    for (const [, n] of [["phu_chieu", "phụ chiều"], ["pre", "trước tập"], ["toi", "bữa tối"]]) await expect(page.getByRole("button", { name: `Ghi ${n}` }), `nút Ghi ${n}`).toHaveCount(1);
     const body = await page.locator("main").innerText();
     expect(body).not.toMatch(/\b(trua|phu_chieu|sang|toi)\b/);
     // Dòng bữa hiện luôn tên món; bấm vào → màn Sửa bữa có macro từng món

@@ -82,8 +82,22 @@ export function mealSuggestions({ mealId, mealIds, macro, dayType, history = [],
   const cur = valid(currentItems);
   if (cur.length) seen.add(sigOf(cur));
   const out = [];
+  // Bữa cũ ghi 2 lần cùng 1 món ("Lạc rang, Lạc rang") → gộp thành 1 dòng, cộng gram + macro (16/10)
+  const mergeSame = (items) => {
+    const m = new Map();
+    for (const it of items || []) {
+      const k = String(it.food || it.display || it.name || "").toLowerCase().trim();
+      if (!k) continue;
+      const prev = m.get(k);
+      if (!prev) { m.set(k, { ...it }); continue; }
+      const add = (f) => (Number(prev[f]) || 0) + (Number(it[f]) || 0);
+      const { qty_display, qty, ...rest } = prev;
+      m.set(k, { ...rest, gram: add("gram"), cal: add("cal"), p: add("p"), c: add("c"), f: add("f"), fiber: add("fiber") });
+    }
+    return [...m.values()];
+  };
   const push = (kind, title, items, extra = {}) => {
-    const its = valid(items);
+    const its = valid(mergeSame(items));
     if (!its.length || banned(its)) return;
     const sig = sigOf(its);
     if (seen.has(sig)) return;
