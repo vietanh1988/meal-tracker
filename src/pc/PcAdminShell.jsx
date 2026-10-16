@@ -79,38 +79,50 @@ function TopBar({ title, sub, right, onOpenApp }) {
   );
 }
 
-function SideNav({ section, go, counts, isSuperAdmin, user, profile }) {
+const SIDE_KEY = "fp_pc_side_mini";
+const MINI_W = 68;
+const chevSvg = (left) => <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">{left ? <path d="M15 6l-6 6 6 6M20 6v12" /> : <path d="M9 6l6 6-6 6M4 6v12" />}</svg>;
+
+// Thanh bên thu gọn (16/10): bấm nút « ở cạnh logo → chỉ còn icon (68 px), rê chuột hiện tên; » để sổ ra. Nhớ theo máy.
+function SideNav({ section, go, counts, isSuperAdmin, user, profile, mini, onToggle }) {
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "admin";
+  const w = mini ? MINI_W : PC.sideW;
   return (
-    <nav aria-label="Quản trị" data-testid="pc-sidebar" style={{ position: "fixed", left: 0, top: 0, bottom: 0, width: PC.sideW, background: PC.side, color: "#FFFFFF", padding: "18px 12px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto", zIndex: 30 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px 14px 8px" }}>
+    <nav aria-label="Quản trị" data-testid="pc-sidebar" data-mini={mini ? "1" : "0"} style={{ position: "fixed", left: 0, top: 0, bottom: 0, width: w, background: PC.side, color: "#FFFFFF", padding: mini ? "18px 10px" : "18px 12px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto", overflowX: "hidden", zIndex: 30, transition: "width .18s ease, padding .18s ease" }}>
+      <div style={{ display: "flex", flexDirection: mini ? "column" : "row", alignItems: "center", gap: 10, padding: mini ? "0 0 10px 0" : "0 0 14px 8px" }}>
         <img src="/logo.png" alt="" data-testid="pc-logo" width={34} height={34} style={{ width: 34, height: 34, borderRadius: 10, objectFit: "cover", flexShrink: 0, boxShadow: "0 0 0 1px rgba(255,255,255,0.25), 0 4px 10px rgba(0,10,40,0.35)" }} />
-        <span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 15, fontWeight: 900 }}>Fipilot AI</span><span style={{ fontSize: 11, opacity: 0.7 }}>Quản trị</span></span>
+        {!mini && <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}><span style={{ fontSize: 15, fontWeight: 900, whiteSpace: "nowrap" }}>Fipilot AI</span><span style={{ fontSize: 11, opacity: 0.7 }}>Quản trị</span></span>}
+        <button type="button" data-testid="pc-side-toggle" onClick={onToggle} className="pc-nav" aria-label={mini ? "Mở rộng thanh bên" : "Thu gọn thanh bên"} title={mini ? "Mở rộng thanh bên" : "Thu gọn thanh bên"} aria-expanded={!mini}
+          style={{ width: 30, height: 30, borderRadius: 8, border: "none", background: "rgba(255,255,255,0.10)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}>{chevSvg(!mini)}</button>
       </div>
       {PC_NAV.map((g) => (
         <div key={g.group} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".1em", opacity: 0.55, padding: "10px 10px 4px 10px" }}>{g.group}</span>
+          {mini ? <span aria-hidden="true" style={{ height: 1, background: "rgba(255,255,255,0.14)", margin: "8px 8px" }} /> : <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".1em", opacity: 0.55, padding: "10px 10px 4px 10px", whiteSpace: "nowrap" }}>{g.group}</span>}
           {g.items.filter((i) => !i.superOnly || isSuperAdmin).map((i) => {
             const on = section === i.id;
             const n = i.badge ? counts[i.badge] : null;
             return (
-              <button key={i.id} data-testid={`pc-nav-${i.id}`} aria-current={on ? "page" : undefined} onClick={() => go(i.id)} className="pc-nav"
-                style={{ display: "flex", alignItems: "center", gap: 10, height: 32, padding: "0 8px", borderRadius: 9, border: "none", fontSize: 13, fontWeight: on ? 800 : 600, opacity: on ? 1 : 0.85, background: on ? "rgba(255,255,255,0.16)" : "transparent", color: "#FFFFFF", fontFamily: "inherit", textAlign: "left", cursor: "pointer", flexShrink: 0 }}>
-                <span aria-hidden="true" data-testid={`pc-nav-ic-${i.id}`} style={{ width: 22, height: 22, borderRadius: 7, background: NAV_IC[i.id]?.[0] || "#334155", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)" }}>{NAV_IC[i.id]?.[1]}</span>
-                <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.label}</span>
-                {n > 0 && <span data-testid={`pc-badge-${i.id}`} style={{ marginLeft: "auto", fontSize: 11, fontWeight: 800, background: PC.badge, color: PC.badgeFg, padding: "1px 7px", borderRadius: 999 }}>{n}</span>}
+              <button key={i.id} data-testid={`pc-nav-${i.id}`} aria-current={on ? "page" : undefined} aria-label={mini ? i.label : undefined} title={mini ? (n > 0 ? `${i.label} · ${n}` : i.label) : undefined} onClick={() => go(i.id)} className="pc-nav"
+                style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: mini ? "center" : "flex-start", gap: 10, height: mini ? 40 : 32, padding: mini ? 0 : "0 8px", borderRadius: 9, border: "none", fontSize: 13, fontWeight: on ? 800 : 600, opacity: on ? 1 : 0.85, background: on ? "rgba(255,255,255,0.16)" : "transparent", color: "#FFFFFF", fontFamily: "inherit", textAlign: "left", cursor: "pointer", flexShrink: 0 }}>
+                <span aria-hidden="true" data-testid={`pc-nav-ic-${i.id}`} style={{ width: mini ? 28 : 22, height: mini ? 28 : 22, borderRadius: mini ? 8 : 7, background: NAV_IC[i.id]?.[0] || "#334155", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)" }}>{NAV_IC[i.id]?.[1]}</span>
+                {!mini && <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.label}</span>}
+                {n > 0 && (mini
+                  ? <span data-testid={`pc-badge-${i.id}`} style={{ position: "absolute", top: 2, right: 6, minWidth: 16, height: 16, padding: "0 4px", borderRadius: 8, background: PC.badge, color: PC.badgeFg, fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 2px #022B57" }}>{n > 99 ? "99+" : n}</span>
+                  : <span data-testid={`pc-badge-${i.id}`} style={{ marginLeft: "auto", fontSize: 11, fontWeight: 800, background: PC.badge, color: PC.badgeFg, padding: "1px 7px", borderRadius: 999 }}>{n}</span>)}
               </button>
             );
           })}
         </div>
       ))}
       <div style={{ marginTop: "auto", paddingTop: 12 }}>
-        <div data-testid="pc-me" style={{ display: "flex", alignItems: "center", gap: 8, padding: 10, borderRadius: 10, background: "rgba(255,255,255,0.08)", fontSize: 12 }}>
+        <div data-testid="pc-me" title={mini ? `${name} · ${profile?.adminRole === "super" ? "Super Admin" : "Admin"}` : undefined} style={{ display: "flex", alignItems: "center", justifyContent: mini ? "center" : "flex-start", gap: 8, padding: mini ? "8px 0" : 10, borderRadius: 10, background: "rgba(255,255,255,0.08)", fontSize: 12 }}>
           <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 14, background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, flexShrink: 0 }}>{initials(name)}</span>
-          <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-            <b style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</b>
-            <span style={{ opacity: 0.7 }}>{profile?.adminRole === "super" ? "Super Admin" : "Admin"}</span>
-          </span>
+          {mini ? <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>{name} · {profile?.adminRole === "super" ? "Super Admin" : "Admin"}</span> : (
+            <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+              <b style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</b>
+              <span style={{ opacity: 0.7 }}>{profile?.adminRole === "super" ? "Super Admin" : "Admin"}</span>
+            </span>
+          )}
         </div>
       </div>
     </nav>
@@ -125,6 +137,10 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   });
   const sec = section === "backup" && !isSuperAdmin ? "home" : section;
   const go = (id) => { setSection(id); try { localStorage.setItem(SEC_KEY, id); } catch (e) { /* */ } window.scrollTo(0, 0); };
+
+  const [mini, setMini] = useState(() => { try { return localStorage.getItem(SIDE_KEY) === "1"; } catch (e) { return false; } });
+  const toggleSide = () => setMini((v) => { const n = !v; try { localStorage.setItem(SIDE_KEY, n ? "1" : "0"); } catch (e) { /* */ } return n; });
+  const sideW = mini ? MINI_W : PC.sideW;
 
   const [counts, setCounts] = useState({});
   const refreshCounts = useCallback(() => { loadAdminCounts().then(setCounts).catch(() => {}); }, []);
@@ -154,9 +170,9 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   return (
     <div className="pc-root" data-testid="pc-admin" style={{ minHeight: "100vh", background: PC.bg, fontFamily: "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif", color: PC.t1 }}>
       <style>{PC_CSS}</style>
-      <SideNav section={sec} go={go} counts={counts} isSuperAdmin={isSuperAdmin} user={user} profile={profile} />
-      <main data-testid={`pc-page-${sec}`} style={{ marginLeft: PC.sideW, minWidth: 0 }}>{page}</main>
-      {toast && <div data-testid="pc-toast" role="status" style={{ position: "fixed", bottom: 24, left: `calc(50% + ${PC.sideW / 2}px)`, transform: "translateX(-50%)", zIndex: 60, background: PC.t1, color: "#FFFFFF", fontSize: 13, fontWeight: 700, padding: "10px 16px", borderRadius: 12, boxShadow: "0 8px 24px rgba(15,23,42,0.25)", maxWidth: 520 }}>{toast.text}</div>}
+      <SideNav section={sec} go={go} counts={counts} isSuperAdmin={isSuperAdmin} user={user} profile={profile} mini={mini} onToggle={toggleSide} />
+      <main data-testid={`pc-page-${sec}`} style={{ marginLeft: sideW, minWidth: 0, transition: "margin-left .18s ease" }}>{page}</main>
+      {toast && <div data-testid="pc-toast" role="status" style={{ position: "fixed", bottom: 24, left: `calc(50% + ${sideW / 2}px)`, transform: "translateX(-50%)", zIndex: 60, background: PC.t1, color: "#FFFFFF", fontSize: 13, fontWeight: 700, padding: "10px 16px", borderRadius: 12, boxShadow: "0 8px 24px rgba(15,23,42,0.25)", maxWidth: 520 }}>{toast.text}</div>}
     </div>
   );
 }

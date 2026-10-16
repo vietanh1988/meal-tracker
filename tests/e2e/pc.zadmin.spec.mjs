@@ -66,6 +66,23 @@ test("Quản trị PC: thanh bên đủ mục, mở từng trang, ngăn người
     await page.getByTestId("pc-food-row").first().click();
     await expect(page.getByTestId("pc-food-edit")).toHaveCount(0);
 
+    // Thu gọn thanh bên → chỉ icon (68 px), vẫn bấm được mục; tải lại vẫn gọn; sổ ra lại
+    const side = page.getByTestId("pc-sidebar");
+    await page.getByTestId("pc-side-toggle").click();
+    await expect(side).toHaveAttribute("data-mini", "1");
+    await expect.poll(() => side.evaluate((el) => Math.round(el.getBoundingClientRect().width))).toBe(68);
+    await page.getByTestId("pc-nav-orders").click();
+    await expect(page.getByTestId("pc-page-orders")).toBeVisible();
+    expect(await page.getByTestId("pc-page-orders").evaluate((el) => getComputedStyle(el).marginLeft)).toBe("68px");
+    await expect(page.getByTestId("pc-nav-orders")).toHaveAttribute("title", /Đơn hàng/);
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: "shots/pc-admin-sidebar-mini.png" });
+    await page.reload();
+    await expect(page.getByTestId("pc-sidebar")).toHaveAttribute("data-mini", "1");
+    await page.getByTestId("pc-side-toggle").click();
+    await expect(page.getByTestId("pc-sidebar")).toHaveAttribute("data-mini", "0");
+    await expect.poll(() => page.getByTestId("pc-sidebar").evaluate((el) => Math.round(el.getBoundingClientRect().width))).toBe(232);
+
     // Quay lại app
     await page.getByTestId("pc-open-app").click();
     await expect(page.getByTestId("pc-phone")).toBeVisible();
