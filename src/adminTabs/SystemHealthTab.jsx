@@ -15,7 +15,9 @@ function StatusDot({ ok }) {
   return <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: ok ? "#22C55E" : "#EF4444", marginRight: 6 }} />;
 }
 
-export function SystemHealthTab({ isAdmin, appSettings, isSuperAdmin }) {
+// Logic đo sức khoẻ hệ thống — dùng chung cho tab này và thẻ "Sức khoẻ hệ thống" ở Tổng quan PC.
+// Ping AI chỉ chạy khi admin bấm (gọi AI trả phí rất nhỏ), không tự chạy.
+export function useSystemHealth(appSettings) {
   const [activeUsers, setActiveUsers] = useState(null);
   const [errorSummary, setErrorSummary] = useState(null);
   const [pushSummary, setPushSummary] = useState(null);
@@ -60,10 +62,15 @@ export function SystemHealthTab({ isAdmin, appSettings, isSuperAdmin }) {
     setPinging(false);
   };
 
+  const pushRate = pushSummary && pushSummary.total_recipients > 0 ? Math.round((Number(pushSummary.total_sent) / Number(pushSummary.total_recipients)) * 100) : null;
+  return { activeUsers, errorSummary, pushSummary, pushRate, loading, dbPing, aiPing, pinging, pingAI, reload: loadCore };
+}
+
+export function SystemHealthTab({ isAdmin, appSettings, isSuperAdmin }) {
+  const { activeUsers, errorSummary, pushSummary, pushRate, loading, dbPing, aiPing, pinging, pingAI, reload: loadCore } = useSystemHealth(appSettings);
+
   if (!isAdmin) return <div style={card}>
       {!isSuperAdmin && <ReadOnlyBanner />}Chỉ Admin mới xem được trang này.</div>;
-
-  const pushRate = pushSummary && pushSummary.total_recipients > 0 ? Math.round((Number(pushSummary.total_sent) / Number(pushSummary.total_recipients)) * 100) : null;
 
   return (
     <div style={{ ...card, maxWidth: 800, margin: "0 auto" }}>

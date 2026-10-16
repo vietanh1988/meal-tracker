@@ -49,18 +49,24 @@ function Stat({ n, label, color, testid, onClick }) {
   );
 }
 
+// 3 số việc cần làm (dùng chung: Quản trị điện thoại + thanh bên / Tổng quan PC)
+export async function loadAdminCounts() {
+  const head = { count: "exact", head: true };
+  const [o, f, p] = await Promise.all([
+    supabase.from("orders").select("id", head).eq("status", "pending"),
+    supabase.from("user_feedback").select("id", head).neq("status", "replied"),
+    supabase.from("food_cache_pending").select("id", head),
+  ]);
+  return { orders: o.count ?? null, feedback: f.count ?? null, pending: p.count ?? null };
+}
+
 export function AdminHomeScreen({ isSuperAdmin, appVersion, open }) {
   const [c, setC] = useState({});
   useEffect(() => {
     let off = false;
     (async () => {
-      const head = { count: "exact", head: true };
-      const [o, f, p] = await Promise.all([
-        supabase.from("orders").select("id", head).eq("status", "pending"),
-        supabase.from("user_feedback").select("id", head).neq("status", "replied"),
-        supabase.from("food_cache_pending").select("id", head),
-      ]);
-      if (!off) setC({ orders: o.count ?? null, feedback: f.count ?? null, pending: p.count ?? null });
+      const r = await loadAdminCounts();
+      if (!off) setC(r);
     })().catch(() => {});
     return () => { off = true; };
   }, []);

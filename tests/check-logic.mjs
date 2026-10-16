@@ -267,9 +267,13 @@ test("MobileApp: loại ngày tính theo lịch tập (dayTypeOf), không chọn
   assert(SRC.mobileView.includes("isGymDate("), "dayTypeOf phải dùng isGymDate");
 });
 
-test("App: setPcDayManual sau applyTemplate", () => {
-  const h = SRC.app.match(/handleApplyAIMenuPC[\s\S]*?setShowAIMenuPC/);
-  assert(h && h[0].includes("setPcDayManual"), "Không đồng bộ pcDayManual");
+// 16/10 (bản vẽ 120): bỏ giao diện người dùng riêng cho PC (handleApplyAIMenuPC/pcDayManual không còn) —
+// máy tính dùng chính MobileApp trong khung điện thoại; kiểm thay: PC render MobileApp, không còn code PC cũ.
+test("App: PC dùng MobileApp trong khung điện thoại, không còn giao diện PC cũ", () => {
+  const pc = SRC.app.split("PC LAYOUT")[1] || "";
+  assert(pc.includes("<PcPhoneFrame") && pc.includes("{mobileApp}"), "PC chưa render MobileApp trong khung");
+  assert(!SRC.app.includes("handleApplyAIMenuPC") && !SRC.app.includes("pcDayManual"), "Còn code giao diện PC cũ");
+  assert(/isAdmin&&pcMode==="admin"/.test(pc), "Khung Quản trị PC phải chặn user thường");
 });
 
 // ============================================================

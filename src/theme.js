@@ -116,3 +116,32 @@ export const DK_CSS = `
 .fpm .dkic svg{stroke-width:2.2}
 @media (hover:hover){.fpm .fpd .row-hover:hover{background:rgba(255,255,255,0.06)}.fpm .fpd .chip-hover:hover{border-color:rgba(255,255,255,0.4)}}
 `;
+
+// ============================================================
+// PC (bản vẽ 117–120, chốt 16/10): khung Quản trị trên máy tính + khung điện thoại cho khách.
+// Thanh bên navy 232px, thanh trên trắng 64px, nền nội dung #F4F7FC, thẻ trắng bo 14.
+// ============================================================
+export const PC = {
+  bg: "#F4F7FC",            // nền vùng nội dung / nền trang khung điện thoại
+  side: "linear-gradient(180deg,#0F4585,#022B57 60%,#011B37)", // thanh bên
+  sideW: 232,
+  topH: 64,
+  line: "#E6ECF5",          // viền thanh trên / ngăn bên phải
+  rowLine: "#F1F5F9",       // kẻ giữa các dòng bảng
+  headLine: "#EEF2FA",      // kẻ dưới hàng tiêu đề bảng
+  headBg: "#FAFBFE",        // nền hàng tiêu đề bảng
+  rowSel: "#F5F9FF",        // dòng đang chọn / rê chuột
+  editBg: "#EEF4FF",        // dòng sửa tại chỗ
+  field: "#E2E8F0",         // viền ô nhập / bộ lọc
+  fieldOn: "#93C5FD",       // viền ô số đang sửa
+  t1: "#0F172A", t2: "#475569", t3: "#64748B", t4: "#94A3B8",
+  soft: "#EEF4FF", softFg: "#0062F0", // nút phụ
+  blue: "linear-gradient(135deg,#1A7CFF,#0062F0)",
+  green: "linear-gradient(135deg,#16A34A,#059669)",
+  badge: "#FCD34D", badgeFg: "#1E1B4B",
+  dangerBg: "#FEE2E2", danger: "#B91C1C",
+  shadow: "0 1px 2px rgba(15,23,42,0.04), 0 4px 16px rgba(30,64,175,0.06)",
+  // pill: [nền, chữ]
+  pill: { gray: ["#F1F5F9", "#475569"], blue: ["#DBEAFE", "#1E40AF"], amber: ["#FEF3C7", "#92400E"], green: ["#DCFCE7", "#166534"], red: ["#FEE2E2", "#B91C1C"], violet: ["#EDE9FE", "#5B21B6"] },
+};
+export const pcCard = { background: "#FFFFFF", borderRadius: 14, boxShadow: PC.shadow };

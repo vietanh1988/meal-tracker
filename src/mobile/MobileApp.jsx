@@ -37,6 +37,7 @@ import { mealSuggestions, remainingMealTarget, scaleSuggestion } from "../lib/me
 import { avoidMatcher } from "../lib/allergy";
 import { WEEK_KEYS, WEEK_SHORT, mealsCal, libraryFor } from "../lib/menuView";
 import { UpdatePopup } from "./UpdatePopup";
+import { scrollPcFrameTop } from "../pc/PcPhoneFrame";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
 import { PhotoScreen } from "./PhotoScreen";
@@ -77,7 +78,7 @@ export function MobileApp(props) {
 
   // ---------- điều hướng ----------
   const [tab, setTabState] = useState(() => { try { const t = localStorage.getItem(TAB_KEY); return ["today", "menu", "progress", "me"].includes(t) ? t : "today"; } catch (e) { return "today"; } });
-  const setTab = (t) => { setTabState(t); try { localStorage.setItem(TAB_KEY, t); } catch (e) { /* */ } window.scrollTo(0, 0); };
+  const setTab = (t) => { setTabState(t); try { localStorage.setItem(TAB_KEY, t); } catch (e) { /* */ } window.scrollTo(0, 0); scrollPcFrameTop(); };
   const [layers, setLayers] = useState([]);
   const layersRef = useRef(layers);
   layersRef.current = layers;

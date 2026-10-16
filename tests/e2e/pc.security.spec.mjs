@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { S, rest } from "./helpers.mjs";
+import { S, rest, login } from "./helpers.mjs";
 
 // User thường KHÔNG được tự nâng quyền / gói cước / reset bộ đếm AI qua API.
 test("bảo mật hồ sơ: user không tự sửa is_admin / tier / bộ đếm AI, vẫn sửa được cm", async () => {
@@ -30,4 +30,19 @@ test("bảo mật hồ sơ: user không tự sửa is_admin / tier / bộ đếm
   const [p2] = await rest(`profiles?id=eq.${s.uid}&select=cm`);
   expect(p2.cm).toBe(173);
   await asUser({ cm: 172 });
+});
+
+// Bản vẽ 117–120: khung Quản trị PC chỉ dành cho admin — user thường không có nút "Vào Quản trị",
+// kể cả khi tự ghi localStorage fp_pc_mode=admin rồi tải lại trang.
+test("PC: user thường không vào được khung Quản trị", async ({ page }) => {
+  await login(page);
+  await expect(page.getByTestId("pc-phone")).toBeVisible();
+  await expect(page.getByTestId("pc-open-admin")).toHaveCount(0);
+  await page.evaluate(() => { localStorage.setItem("fp_pc_mode", "admin"); localStorage.setItem("fp_pc_admin_sec", "users"); });
+  await page.reload();
+  await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId("pc-phone")).toBeVisible();
+  await expect(page.getByTestId("pc-admin")).toHaveCount(0);
+  await expect(page.getByTestId("pc-sidebar")).toHaveCount(0);
+  await expect(page.getByTestId("pc-users")).toHaveCount(0);
 });
