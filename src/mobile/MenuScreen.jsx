@@ -37,7 +37,7 @@ export function MealsPreview({ meals }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "0 12px" }}>
       {list.map((m) => (
-        <div key={m.meal_id} style={{ background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "12px 14px" }}>
+        <div key={m.meal_id} style={{ background: "#FFFFFF", border: "none", borderRadius: 14, padding: "12px 14px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
             <span style={{ fontSize: 15, fontWeight: 800 }}>{mealLabel(m.meal_name, m.meal_id)}</span>
             <span style={{ fontSize: 14, fontWeight: 800, color: "#007AFF" }}>{fmtInt(mealsCal([m]))} kcal</span>
@@ -374,7 +374,7 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
         </>
       ) : (
         <div style={{ margin: "16px 12px 0 12px", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: 16, fontSize: 14, color: "#475569", lineHeight: 1.5 }}>
+          <div style={{ background: "#FFFFFF", border: "none", borderRadius: 16, padding: 16, fontSize: 14, color: "#475569", lineHeight: 1.5 }}>
             {row.long} ({DT[row.dayType].toLowerCase()}) chưa có thực đơn. Lưu một ngày ăn ưng ý vào đây, mỗi {row.long} app sẽ tự áp sẵn các bữa.
           </div>
           {todayMeals.length > 0 && row.dayType === todayType && (

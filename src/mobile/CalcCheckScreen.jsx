@@ -83,7 +83,7 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
   // ===== Bước 1: nhập =====
   if (!rows) return (
     <SubPage title="Kiểm tra calo" subtitle="Gõ món, xem calo trước khi ăn" onBack={onClose}>
-      <div style={{ margin: "12px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 20, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ margin: "12px 12px 0 12px", background: "#FFFFFF", border: "none", borderRadius: 20, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
         <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" }}>BẠN ĂN GÌ?</span>
           <textarea data-testid="calc-text" value={text} onChange={(e) => setText(e.target.value)} placeholder="VD: 1 tô phở bò, 2 quả trứng luộc, 1 ly trà sữa"
@@ -147,7 +147,7 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
         {target > 0 && <span style={{ fontSize: 13, fontWeight: 600, borderTop: "1px solid rgba(255,255,255,0.25)", paddingTop: 10 }}>{after >= 0 ? `Ăn xong còn ${fmtInt(after)} kcal cho hôm nay` : `Ăn xong sẽ vượt ${fmtInt(-after)} kcal hôm nay`} (đã ăn {fmtInt(eatenNow)} / {fmtInt(target)})</span>}
       </div>
 
-      <div style={{ margin: "12px 12px 0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 12px" }}>
+      <div style={{ margin: "12px 12px 0 12px", background: "#FFFFFF", border: "none", borderRadius: 16, padding: "0 12px" }}>
         {rows.map((r, i) => r.unknown ? (
           <div key={i} data-testid={`calc-unknown-${i}`} style={{ display: "flex", flexDirection: "column", gap: 6, padding: "12px 0", borderBottom: i < rows.length - 1 ? "1px solid #F1F5F9" : "none" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 8 }}>

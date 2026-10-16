@@ -93,7 +93,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
       <div style={{ position: "relative" }}>
         <button onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Thêm tuỳ chọn: chuyển ngày hoặc bữa, xoá bữa" style={{ width: 44, height: 44, borderRadius: 22, border: "none", background: "transparent", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.more(20)}</button>
         {menu && (
-          <div role="menu" style={{ position: "absolute", right: 4, top: 46, zIndex: 5, width: 220, background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, boxShadow: "0 12px 32px rgba(15,23,42,0.16)", padding: 6 }}>
+          <div role="menu" style={{ position: "absolute", right: 4, top: 46, zIndex: 5, width: 220, background: "#FFFFFF", border: "none", borderRadius: 14, boxShadow: "0 12px 32px rgba(15,23,42,0.16)", padding: 6 }}>
             <button role="menuitem" data-testid="edit-move-open" onClick={() => { setMenu(false); setToDate(date); setToMeal(mealId); setMoving(true); }} className="row-hover" style={menuItem}>Chuyển sang ngày / bữa khác</button>
             <button role="menuitem" data-testid="edit-delete" onClick={del} className="row-hover" style={{ ...menuItem, color: "#DC2626" }}>Xoá bữa</button>
           </div>
@@ -116,7 +116,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
 
   return (
     <SubPage title={mealName} subtitle={`${weekdayFull(date)} ${fmtVN(date)} · ${dayType === "rest" ? "Ngày nghỉ" : "Ngày tập"}`} onBack={back} right={header} footer={footer}>
-      <div onClick={() => menu && setMenu(false)} style={{ margin: "12px 12px 16px 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 14, padding: "0 6px 0 12px" }}>
+      <div onClick={() => menu && setMenu(false)} style={{ margin: "12px 12px 16px 12px", background: "#FFFFFF", border: "none", borderRadius: 14, padding: "0 6px 0 12px" }}>
         {rows.map((r, i) => {
           const it = rowItem(r);
           const nm = itemName(r.base);

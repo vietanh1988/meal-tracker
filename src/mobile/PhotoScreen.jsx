@@ -127,7 +127,7 @@ export function PhotoScreen({ initialMeal, appSettings, photoCtx, foodCache, dat
             <span style={{ fontSize: 17, fontWeight: 900 }}>Đúng món chưa?</span>
             <span style={{ fontSize: 13, color: "#64748B" }}>Sửa tên hoặc gram nếu sai</span>
           </div>
-          <div style={{ margin: "0 12px", background: "#FFFFFF", border: "1.5px solid #E2E8F0", borderRadius: 16, padding: "0 12px" }}>
+          <div style={{ margin: "0 12px", background: "#FFFFFF", border: "none", borderRadius: 16, padding: "0 12px" }}>
             {items.map((it, i) => (
               <div key={i} data-testid="photo-item" style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 64, borderBottom: "1px solid #F1F5F9" }}>
                 <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
