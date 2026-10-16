@@ -245,7 +245,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
               : `${dev < 0 ? `Thiếu ${-dev}%` : `Dư ${dev}%`} mục tiêu ${DT[dayType].toLowerCase()} — các món này không cân thêm được, Tạo lại hoặc đổi món ${dev < 0 ? "to" : "nhẹ"} hơn`) : null}
             warnAction={balanced ? (
               <button data-testid="ai-rebalance" onClick={rebalance} style={{ height: 36, borderRadius: 10, border: "none", background: "#FFFFFF", color: "#6D28D9", fontFamily: "inherit", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                {Icon.redo(15)} Cân lại cho đủ {fmtInt(target.cal)} kcal · không tốn lượt
+                {Icon.redo(15)} Cân lại đủ {fmtInt(target.cal)} kcal
               </button>
             ) : null} />
           {meals.map((m) => {

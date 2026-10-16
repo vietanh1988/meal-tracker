@@ -44,6 +44,13 @@ test("Hôm nay: Gợi ý món → sheet chọn → ghi vào bữa", async ({ bro
     await tap(btn);
     await expect(page.getByTestId("suggest-sheet")).toBeVisible();
     await page.waitForTimeout(400);
+    // Phần còn lại trong ngày + macro từng lựa chọn + chỉnh khẩu phần
+    await expect(page.getByTestId("suggest-day")).toContainText("Còn");
+    await expect(page.getByTestId("suggest-macro").first()).toContainText("Đ ");
+    const apply = page.getByTestId("suggest-apply");
+    const t1 = await apply.innerText();
+    await tap(page.getByTestId("suggest-k-1.2"));
+    await expect(apply).not.toHaveText(t1);
     await page.screenshot({ path: "shots/goi-y-mon.png" });
     await tap(page.getByTestId("suggest-apply"));
     await expect(page.getByTestId("suggest-sheet")).toHaveCount(0);

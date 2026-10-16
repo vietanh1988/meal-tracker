@@ -1,6 +1,6 @@
 // bun test — Gợi ý món cho 1 bữa (thay nút "Ăn lại" tự áp): tối đa 5 lựa chọn, theo calo bữa + món không ăn
 import { test, expect } from "bun:test";
-const { mealSuggestions, mealTargetOf, fitItems } = await import("../../src/lib/mealSuggest.js");
+const { mealSuggestions, mealTargetOf, fitItems, remainingMealTarget, scaleSuggestion } = await import("../../src/lib/mealSuggest.js");
 const { avoidMatcher } = await import("../../src/lib/allergy.js");
 
 const macro = { calTarget: 2400, calRest: 2000, protein: 140, carb: 300, carbRest: 220, fat: 70, goal: "bulk" };
@@ -46,4 +46,31 @@ test("thực đơn mẫu chạy lại mealEngine theo calo bữa", () => {
   expect(r.length).toBe(1);
   expect(r[0].kind).toBe("template");
   expect(Math.abs(r[0].cal - 900) / 900).toBeLessThan(0.2);
+});
+
+test("mục tiêu bữa theo calo còn lại trong ngày, giới hạn 0,7–1,3 lần phần chuẩn", () => {
+  const std = mealTargetOf(macro, "train", ids, "toi").cal; // 750
+  // Sáng + trưa ăn ít (1.000) → còn 1.400 cho tối, nhưng không vượt 1,3 lần phần chuẩn
+  const low = remainingMealTarget({ macro, dayType: "train", mealIds: ids, mealId: "toi", dayMeals: [{ meal_id: "sang", items: [it("x", 100, 400, 20, 50, 10)] }, { meal_id: "trua", items: [it("y", 100, 600, 30, 70, 15)] }] });
+  expect(low.cal).toBe(Math.round(std * 1.3));
+  expect(low.remain.cal).toBe(1400);
+  // Đã ăn quá nhiều (2.300) → còn 100, nhưng không bắt nhịn: tối thiểu 0,7 lần
+  const high = remainingMealTarget({ macro, dayType: "train", mealIds: ids, mealId: "toi", dayMeals: [{ meal_id: "sang", items: [it("x", 100, 1100, 20, 50, 80)] }, { meal_id: "trua", items: [it("y", 100, 1200, 30, 70, 15)] }] });
+  expect(high.cal).toBe(Math.round(std * 0.7));
+  expect(high.over.f).toBe(true);
+  // Chưa ghi gì → đúng phần chuẩn
+  expect(remainingMealTarget({ macro, dayType: "train", mealIds: ids, mealId: "toi", dayMeals: [] }).cal).toBe(std);
+});
+
+test("thiếu đạm → món nhiều đạm lên đầu, gắn nhãn Hợp nhất; chỉnh khẩu phần nhân đều", () => {
+  const history = [
+    hist("2026-10-15", "toi", [it("bánh mì", 300, 750, 20, 140, 12)]),
+    hist("2026-10-14", "toi", [it("ức gà", 300, 495, 93, 0, 11), it("cơm trắng", 200, 260, 5, 57, 1)]),
+  ];
+  const r = mealSuggestions({ mealId: "toi", mealIds: ids, macro, dayType: "train", history, dayMeals: [] });
+  expect(r[0].items.some((i) => i.food === "ức gà")).toBe(true);
+  expect(r[0].best).toBe(true);
+  const big = scaleSuggestion(r[0], 1.2);
+  expect(big.cal).toBeGreaterThan(r[0].cal * 1.15);
+  expect(big.p).toBeGreaterThan(r[0].p);
 });

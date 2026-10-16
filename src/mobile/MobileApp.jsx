@@ -23,7 +23,7 @@ import { AboutScreen, TermsScreen } from "./AboutScreen";
 import { MenuScreen, MenuDayPage, MenuTplPage, MenuPastPage } from "./MenuScreen";
 import { AIMenuScreen } from "./AIMenuScreen";
 import { MealSuggestSheet } from "./MealSuggestSheet";
-import { mealSuggestions, mealTargetOf } from "../lib/mealSuggest";
+import { mealSuggestions, remainingMealTarget } from "../lib/mealSuggest";
 import { avoidMatcher } from "../lib/allergy";
 import { WEEK_KEYS, WEEK_SHORT, mealsCal, libraryFor } from "../lib/menuView";
 import { UpdatePopup } from "./UpdatePopup";
@@ -155,13 +155,15 @@ export function MobileApp(props) {
     const dt = dayTypeOf(profile, d);
     const avoidText = (readUser("fp_menu_prefs", user?.id, {}) || {}).avoid || "";
     const cur = (mealOf(dayOf(d), mealId) || {}).items || [];
-    const list = mealSuggestions({
+    const dayMeals = (dayOf(d) || {}).meals || [];
+    const rt = remainingMealTarget({ macro, dayType: dt, mealIds: idsFor(d), mealId, dayMeals });
+    const list = mealSuggestions({ dayMeals,
       mealId, mealIds: idsFor(d), macro, dayType: dt,
       history: historyMeals.filter((h) => h.log_date !== d),
       templates: flags.template_library ? libraryFor(ud.defaultTemplates, { goal: macro?.goal, dietStrategy: macro?.dietStrategy, dayType: dt }) : [],
       aiMenus: aiMenusS, avoidKeys: buildExclusionKeys(avoidText), isAvoided: avoidMatcher(avoidText), currentItems: cur, limit: 5,
     });
-    return { list, avoidText, dayType: dt, target: mealTargetOf(macro, dt, idsFor(d), mealId)?.cal || 0 };
+    return { list, avoidText, dayType: dt, target: rt?.cal || 0, rt };
   };
   const frequent = useMemo(() => frequentItems(recentRows, 15), [recentRows]);
   const weekDots = useMemo(() => {
@@ -573,7 +575,7 @@ export function MobileApp(props) {
           {l.type === "suggest" && (() => {
             const sg = suggestFor(l.mealId, l.date);
             const nm = MEAL_NAMES[l.mealId] || "Bữa";
-            return <MealSuggestSheet mealId={l.mealId} mealName={nm} list={sg.list} target={sg.target} goal={macro?.goal} dayType={sg.dayType} avoidText={sg.avoidText}
+            return <MealSuggestSheet mealId={l.mealId} mealName={nm} list={sg.list} target={sg.target} rt={sg.rt} goal={macro?.goal} dayType={sg.dayType} avoidText={sg.avoidText}
               onClose={closeLayer} onSearch={() => replaceTop({ type: "log", date: l.date, mealId: l.mealId })}
               onPick={async (opt) => {
                 const m = mealOf(dayOf(l.date), l.mealId);
