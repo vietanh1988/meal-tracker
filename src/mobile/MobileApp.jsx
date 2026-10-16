@@ -510,14 +510,28 @@ export function MobileApp(props) {
     </div>
   ) : null;
 
+  // Dải che thanh giờ ở tab Hôm nay: khi header xanh đã cuộn khỏi màn thì đổi sang màu nền nhạt (16/10 — trước đó
+  // dải xanh đặc còn nằm trên nội dung nhạt khi cuộn, nhìn như 1 khối xanh lơ lửng).
+  const [hdrGone, setHdrGone] = useState(false);
+  useEffect(() => {
+    if (tab !== "today") { setHdrGone(false); return undefined; }
+    let raf = 0;
+    const check = () => { raf = 0; const h = document.querySelector('[data-testid="today-header"]'); setHdrGone(!!h && h.getBoundingClientRect().bottom < 4); };
+    const on = () => { if (!raf) raf = requestAnimationFrame(check); };
+    check();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => { window.removeEventListener("scroll", on); if (raf) cancelAnimationFrame(raf); };
+  }, [tab]);
+  const coverToday = tab === "today" && !hdrGone;
+
   return (
     <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : LT.base, color: "#0F172A", minHeight: "100vh" }}>
       <style>{MOBILE_CSS + DK_CSS}</style>
       {/* Dải che vùng thanh giờ iPhone (14/10): iOS phủ lớp kính mờ khi nội dung cuộn dưới thanh giờ → chữ nhoè, vệt sáng.
           Dải cố định cùng màu đầu trang che nội dung lại, iOS chỉ còn làm mờ 1 màu đặc. Màn phụ (z 120+) tự có header riêng. */}
       <style>{HEADER_CSS}</style>
-      <div aria-hidden="true" data-testid="ios-top-cover" style={{ position: "fixed", left: 0, right: 0, top: 0, height: "env(safe-area-inset-top, 0px)", zIndex: 94, pointerEvents: "none", background: tab === "today" ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : LT.top }}>
-        {tab === "today" && <span className="fp-hdr-dark" style={{ position: "absolute", inset: 0, background: HDR_TOP.dark, animationDelay: hdrDelay() }} />}
+      <div aria-hidden="true" data-testid="ios-top-cover" data-tone={coverToday ? "header" : tab === "me" ? "dark" : "light"} style={{ position: "fixed", left: 0, right: 0, top: 0, height: "env(safe-area-inset-top, 0px)", zIndex: 94, pointerEvents: "none", transition: "background-color .2s ease", background: coverToday ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : LT.top }}>
+        {coverToday && <span className="fp-hdr-dark" style={{ position: "absolute", inset: 0, background: HDR_TOP.dark, animationDelay: hdrDelay() }} />}
       </div>
       {/* Tab Tôi: nền Blue Dark phủ cả màn (bản vẽ 48) */}
       {/* Tab sáng: nền xanh rất nhạt nối tiếp header (bản vẽ 69) */}

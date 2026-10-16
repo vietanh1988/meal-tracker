@@ -61,3 +61,15 @@ export async function tap(locator) {
   await locator.evaluate((e) => e.scrollIntoView({ block: "center" }));
   await locator.click();
 }
+
+// Vuốt xuống trên 1 phần tử (sheet) bằng sự kiện chạm thật của trình duyệt
+export async function swipeDown(locator, dy = 220) {
+  await locator.evaluate(async (el, dy) => {
+    const r = el.getBoundingClientRect();
+    const x = r.left + r.width / 2, y0 = r.top + 12;
+    const mk = (y) => new Touch({ identifier: 1, target: el, clientX: x, clientY: y });
+    el.dispatchEvent(new TouchEvent("touchstart", { touches: [mk(y0)], changedTouches: [mk(y0)], bubbles: true }));
+    for (let i = 1; i <= 6; i++) el.dispatchEvent(new TouchEvent("touchmove", { touches: [mk(y0 + (dy * i) / 6)], changedTouches: [mk(y0 + (dy * i) / 6)], bubbles: true }));
+    el.dispatchEvent(new TouchEvent("touchend", { touches: [], changedTouches: [mk(y0 + dy)], bubbles: true }));
+  }, dy);
+}

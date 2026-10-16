@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S, waitDb, tap, todayRow } from "./helpers.mjs";
+import { login, rest, S, waitDb, tap, todayRow, swipeDown } from "./helpers.mjs";
 import { addDays } from "../../src/lib/dateVN.js";
 
 const KEYS = ["thu_2", "thu_3", "thu_4", "thu_5", "thu_6", "thu_7", "cn"];
@@ -41,7 +41,7 @@ test("Thực đơn: ngày đã ăn → dùng hôm nay, lặp lại hằng tuần
     await expect(page.getByTestId("menu-avoid-chip-hải sản")).toHaveAttribute("aria-pressed", "true");
     await page.screenshot({ path: "shots/thuc-don-tuy-chon.png" });
     await tap(page.getByTestId("menu-avoid-chip-hải sản"));
-    await page.getByTestId("menu-opt-sheet").getByRole("button", { name: "Đóng", exact: true }).click();
+    await swipeDown(page.getByTestId("menu-opt-sheet")); // vuốt thanh nắm xuống để đóng
     await expect(page.getByTestId("menu-opt-sheet")).toHaveCount(0);
 
     // Lặp lại có sẵn của thứ hôm nay → dùng cho hôm nay

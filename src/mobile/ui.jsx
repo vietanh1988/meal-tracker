@@ -1,6 +1,6 @@
 // Thành phần dùng chung cho giao diện mobile (theo canvas "Fipilot mobile – bản sửa").
 // Số đo chép từ bản vẽ: nền #F8FAFC, card viền 1,5px #E2E8F0, bo 14–20, Inter.
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { C, DK, LT } from "../theme";
 import { Glyph, chipBg, IC_COLOR } from "./icons";
 
@@ -145,3 +145,37 @@ export function Toggle({ on, onClick, label, testid }) {
 export function DkIcon({ color, children, size = 32 }) {
   return <span aria-hidden="true" className="dkic" style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), background: chipBg(color), color: "#FFFFFF", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35), 0 3px 8px rgba(0,0,0,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{children}</span>;
 }
+
+// Vuốt xuống để đóng sheet (16/10): kéo từ thanh nắm hoặc bất kỳ chỗ nào khi nội dung đang ở đầu (không cuộn).
+// Kéo > 110 px hoặc vuốt nhanh → trượt xuống rồi đóng; kéo ít → bật về. Trả ref gắn vào khung sheet + props chạm.
+export function useSwipeClose(onClose) {
+  const ref = useRef(null);
+  const st = useRef(null);
+  const scrolledInside = (target) => {
+    for (let el = target; el && el !== ref.current?.parentNode; el = el.parentNode) if (el.scrollTop > 0) return true;
+    return false;
+  };
+  const reset = (el, to = "") => { el.style.transition = "transform .18s ease"; el.style.transform = to; };
+  const onTouchStart = (e) => {
+    if (!ref.current || e.touches.length !== 1 || scrolledInside(e.target)) { st.current = null; return; }
+    st.current = { y: e.touches[0].clientY, t: Date.now(), dy: 0 };
+  };
+  const onTouchMove = (e) => {
+    const s = st.current, el = ref.current;
+    if (!s || !el) return;
+    const dy = e.touches[0].clientY - s.y;
+    s.dy = Math.max(0, dy);
+    el.style.transition = "none";
+    el.style.transform = s.dy ? `translateY(${s.dy}px)` : "";
+  };
+  const onTouchEnd = () => {
+    const s = st.current, el = ref.current;
+    st.current = null;
+    if (!s || !el || !s.dy) return;
+    const v = s.dy / Math.max(1, Date.now() - s.t);
+    if (s.dy > 110 || (s.dy > 40 && v > 0.6)) { reset(el, "translateY(100%)"); setTimeout(onClose, 170); } else reset(el);
+  };
+  return { ref, swipe: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd } };
+}
+// Thanh nắm của sheet: vùng chạm cao 20 px cho dễ kéo
+export const SheetHandle = () => <span aria-hidden="true" style={{ alignSelf: "center", width: 56, height: 20, margin: "-6px 0 -8px 0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ width: 40, height: 5, borderRadius: 3, background: "#CBD5E1" }} /></span>;

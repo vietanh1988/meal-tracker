@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S, waitDb, tap, todayRow } from "./helpers.mjs";
+import { login, rest, S, waitDb, tap, todayRow, swipeDown } from "./helpers.mjs";
 import { addDays, templateKeyOf } from "../../src/lib/dateVN.js";
 
 // Gợi ý món ở thẻ bữa đến giờ (16/10): bấm KHÔNG tự áp nữa — mở sheet ≤5 lựa chọn, chọn rồi mới ghi vào bữa.
@@ -25,6 +25,13 @@ test("Hôm nay: Gợi ý món → sheet chọn → ghi vào bữa", async ({ bro
       meals: IDS.map((id) => ({ meal_id: id, items: foods[id] })), eaten_meals: IDS, total_cal: 2000 }) });
 
     await login(page);
+    // Dải che thanh giờ: màu header khi header còn trên màn, màu nền nhạt khi đã cuộn qua header
+    const cover = page.getByTestId("ios-top-cover");
+    await expect(cover).toHaveAttribute("data-tone", "header");
+    await page.evaluate(() => window.scrollTo(0, 1200));
+    await expect(cover).toHaveAttribute("data-tone", "light");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(cover).toHaveAttribute("data-tone", "header");
     const btn = page.getByTestId("focus-suggest");
     await expect(btn).toBeVisible();
     await expect(btn).toContainText("lựa chọn");
@@ -36,6 +43,12 @@ test("Hôm nay: Gợi ý món → sheet chọn → ghi vào bữa", async ({ bro
     expect(n).toBeLessThanOrEqual(5);
     // Mở sheet KHÔNG được tự ghi vào bữa
     expect(((await todayRow())?.meals || []).some((m) => m.meal_id === mealId && (m.items || []).length)).toBe(false);
+    // Vuốt xuống để đóng, mở lại
+    await swipeDown(page.getByTestId("suggest-sheet"));
+    await expect(page.getByTestId("suggest-sheet")).toHaveCount(0);
+    await tap(btn);
+    await expect(page.getByTestId("suggest-sheet")).toBeVisible();
+    await page.waitForTimeout(400);
     await page.screenshot({ path: "shots/goi-y-mon.png" });
     await tap(page.getByTestId("suggest-apply"));
     await expect(page.getByTestId("suggest-sheet")).toHaveCount(0);

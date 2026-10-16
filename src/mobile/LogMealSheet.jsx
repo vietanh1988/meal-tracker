@@ -2,7 +2,7 @@
 // tab Tìm món | Kiểm tra calo (mở màn CalcCheckScreen), AI gợi ý / Từ thực đơn tuần, danh sách GẦN ĐÂY (ăn lại cả bữa + món hay ăn).
 // pickMode: dùng từ Sửa bữa để chọn 1 món đưa về bản nháp (không lưu ngay).
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Icon, GRAD_ORANGE, SR, useLockScroll, FONT } from "./ui";
+import { Icon, GRAD_ORANGE, SR, useLockScroll, FONT, useSwipeClose, SheetHandle } from "./ui";
 import { MEAL_SHORT, searchFoods, itemName, itemPortion, fmtInt } from "../lib/mobileView";
 import { fmtVN } from "../lib/dateVN";
 
@@ -35,14 +35,15 @@ export function LogMealSheet(p) {
     try { const ok = await fn(); if (ok !== false) flash(key); } finally { setBusyKey(null); }
   };
 
+  const sw = useSwipeClose(onClose);
   const list = results || (frequent || []).map((f) => f.item);
   const shortName = (id) => MEAL_SHORT[id] || id;
 
   return (
     <div className="fpm" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.5)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
-      <div role="dialog" aria-modal="true" aria-label={pickMode ? "Thêm món" : "Ghi bữa"} onClick={(e) => e.stopPropagation()}
+      <div ref={sw.ref} {...sw.swipe} role="dialog" aria-modal="true" aria-label={pickMode ? "Thêm món" : "Ghi bữa"} onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, top: "max(96px, calc(env(safe-area-inset-top, 0px) + 56px))", bottom: 0, maxWidth: 560, margin: "0 auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px 0 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease" }}>
-        <div style={{ width: 36, height: 4, borderRadius: 2, background: "#CBD5E1", alignSelf: "center", flexShrink: 0 }} />
+        <SheetHandle />
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 4px", flexShrink: 0 }}>
           <span style={{ flex: 1, fontSize: 20, fontWeight: 900 }}>{pickMode ? `Thêm món · ${p.pickTitle || ""}` : "Ghi bữa"}</span>

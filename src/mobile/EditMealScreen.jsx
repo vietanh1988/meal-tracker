@@ -3,7 +3,7 @@
 // 16/10 (bản vẽ 88): dòng tóm tắt icon bữa + tổng kcal; món có ĐƠN VỊ −/+ (lib/portion.js), chạm đơn vị đổi qua gram.
 // 14/10: "Chuyển sang ngày / bữa khác" mở bảng chọn ngày (lùi 7 ngày + ngày mai) và bữa; bữa đích có món thì GỘP (hỏi trước ở MobileApp).
 import { useState, useEffect, useRef } from "react";
-import { SubPage, Icon, GRAD_BLUE, SR } from "./ui";
+import { SubPage, Icon, GRAD_BLUE, SR, useSwipeClose, SheetHandle } from "./ui";
 import { itemName, fmtInt, fmtDec, weekdayFull } from "../lib/mobileView";
 import { portionOf, stepPortion, setPortion, toggleUnit, hasUnit } from "../lib/portion";
 import { MealIcon } from "./icons";
@@ -20,6 +20,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
   const [isEaten, setIsEaten] = useState(!!eaten);
   const [menu, setMenu] = useState(false);
   const [moving, setMoving] = useState(false);
+  const moveSw = useSwipeClose(() => setMoving(false));
   const [toDate, setToDate] = useState(date);
   const [toMeal, setToMeal] = useState(mealId);
   const [busy, setBusy] = useState(false);
@@ -74,8 +75,8 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
   const chip = (on, extra = {}) => ({ height: 40, padding: "0 12px", borderRadius: 10, border: "none", background: on ? "#0062F0" : "#EEF4FF", color: on ? "#FFFFFF" : "#0F172A", fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, whiteSpace: "nowrap", ...extra });
   const moveSheet = moving && (
     <div onClick={() => setMoving(false)} style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div data-testid="move-sheet" role="dialog" aria-modal="true" aria-label="Chuyển bữa" onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: "#FFFFFF", borderRadius: "20px 20px 0 0", padding: "10px 14px calc(env(safe-area-inset-bottom, 0px) + 18px) 14px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease" }}>
-        <span style={{ width: 36, height: 4, borderRadius: 2, background: "#CBD5E1", alignSelf: "center" }} />
+      <div ref={moveSw.ref} {...moveSw.swipe} data-testid="move-sheet" role="dialog" aria-modal="true" aria-label="Chuyển bữa" onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, background: "#FFFFFF", borderRadius: "20px 20px 0 0", padding: "10px 14px calc(env(safe-area-inset-bottom, 0px) + 18px) 14px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease" }}>
+        <SheetHandle />
         <span style={{ fontSize: 18, fontWeight: 900 }}>Chuyển {mealName.toLowerCase()}</span>
         <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.45 }}>Ghi nhầm ngày hoặc nhầm bữa thì chọn lại bên dưới. Nếu bữa đích đã có món, các món sẽ được gộp thêm vào.</span>
         <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" }}>SANG NGÀY</span>

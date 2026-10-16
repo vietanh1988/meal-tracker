@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { supabase, SUPABASE_URL } from "../lib/supabase";
 import { appAlert, appConfirm } from "../lib/dialog";
 import { isPushSupported, getPushStatus, enablePushNotifications, disablePushNotifications } from "../pushNotifications";
-import { Icon, useLockScroll, DkIcon } from "./ui";
+import { Icon, useLockScroll, DkIcon, useSwipeClose, SheetHandle } from "./ui";
 import { DK, dkCard } from "../theme";
 import { UpdateFlow } from "./UpdatePopup";
 
@@ -55,6 +55,7 @@ function Toggle({ on, busy, onChange, testid }) {
 
 function DeleteSheet({ email, signOut, onClose }) {
   useLockScroll(true);
+  const sw = useSwipeClose(onClose);
   const [pw, setPw] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -83,9 +84,9 @@ function DeleteSheet({ email, signOut, onClose }) {
   const inp = { height: 48, padding: "0 14px", borderRadius: 12, border: "1.5px solid #E2E8F0", background: "#F1F5F9", fontFamily: "inherit", fontSize: 16, color: "#0F172A", boxSizing: "border-box", width: "100%" };
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div data-testid="delete-sheet" role="dialog" aria-modal="true" aria-label="Xoá tài khoản" onClick={(e) => e.stopPropagation()}
+      <div ref={sw.ref} {...sw.swipe} data-testid="delete-sheet" role="dialog" aria-modal="true" aria-label="Xoá tài khoản" onClick={(e) => e.stopPropagation()}
         style={{ width: "100%", maxWidth: 560, background: "#FFFFFF", borderRadius: "20px 20px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 20px) 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14 }}>
-        <span style={{ width: 36, height: 4, borderRadius: 2, background: "#CBD5E1", alignSelf: "center" }} />
+        <SheetHandle />
         <span style={{ width: 56, height: 56, borderRadius: 18, background: "#FEF2F2", color: "#DC2626", display: "flex", alignItems: "center", justifyContent: "center", alignSelf: "center" }}>
           <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4l9 16H3z" /><path d="M12 10v4M12 17v.5" /></svg>
         </span>
