@@ -55,7 +55,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
   const goalVal = gPerWeek ? `≈ ${gPerWeek > 0 ? "+" : "−"}${Math.abs(gPerWeek)} g/tuần` : `${fmtInt(macro?.calTarget)} kcal`;
 
   const rem = normalizeReminders(profile?.reminderSettings);
-  const remVal = [rem.meal.on && rem.meal.slots.length && "Bữa", rem.weigh.on && "Cân", rem.water.on && "Nước"].filter(Boolean).join(" · ") || "Đang tắt";
+  const remVal = [rem.meal.on && rem.meal.slots.length && "Bữa", rem.weigh.on && (rem.weigh.measure ? "Cân & đo" : "Cân"), rem.water.on && "Nước"].filter(Boolean).join(" · ") || "Đang tắt";
   const planLabel = salesEnabled || isAdmin ? "Gói cước" : "Lượt AI";
 
   const share = async () => {

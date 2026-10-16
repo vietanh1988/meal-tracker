@@ -90,12 +90,13 @@ export default function App(){
   },[getWeeklyTemplate,applyTemplate,hasMealsToday,userDataLoaded,todayLog]);
 
   // Màn chờ khi mở app (16/10): nền Blue Dark như header, logo + vòng quay mảnh — thay "⏳ Đang tải..." trên nền trắng
-  if(loading||profileLoading||!profile) return <div data-testid="app-splash" role="status" aria-label="Đang tải" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:18,minHeight:"100vh",background:"linear-gradient(180deg,#0050E6 0%,#01346A 60%,#001C38 100%)",fontFamily:"Inter,Roboto,-apple-system,sans-serif",color:"#FFFFFF"}}>
+  const splash=<div data-testid="app-splash" role="status" aria-label="Đang tải" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:18,minHeight:"100vh",background:"linear-gradient(180deg,#0050E6 0%,#01346A 60%,#001C38 100%)",fontFamily:"Inter,Roboto,-apple-system,sans-serif",color:"#FFFFFF"}}>
     <style>{"@keyframes fpSpin{to{transform:rotate(360deg)}}"}</style>
     <img src="/logo.png" alt="" style={{width:72,height:72,borderRadius:20,objectFit:"cover",boxShadow:"0 12px 30px rgba(0,0,0,0.3)"}}/>
     <span style={{fontSize:18,fontWeight:900,letterSpacing:"0.02em"}}>Fipilot AI</span>
     <span aria-hidden="true" style={{width:26,height:26,borderRadius:13,border:"3px solid rgba(255,255,255,0.25)",borderTopColor:"#FFFFFF",animation:"fpSpin 0.9s linear infinite"}}/>
   </div>;
+  if(loading||profileLoading||!profile) return splash;
   // PC (bản vẽ 120): đăng nhập / đặt lại mật khẩu / onboarding nằm trong cùng khung điện thoại giữa màn
   const inFrame=(el)=>mob?el:<PcPhoneFrame>{el}</PcPhoneFrame>;
   if(isPasswordRecovery) return inFrame(<ResetPasswordScreen/>);
@@ -120,6 +121,8 @@ export default function App(){
   // Onboarding: chỉ hiện cho user mới chưa có data thật (chờ data load xong)
   // 16/10: chỉ hiện onboarding khi hồ sơ ĐỌC ĐƯỢC từ DB (hoặc user mới thật) mà chưa xong — không hiện khi hồ sơ là mặc định tạm do lỗi phiên/mạng
   const needsOnboarding=userDataLoaded && !profileLoading && !weightLoading && !!profile?._loaded && !profile.onboardingDone && (!weightLog || weightLog.length===0);
+  // 17/10: user mới (hồ sơ chưa xong onboarding) mà dữ liệu ngày / cân còn đang tải → giữ màn chờ, không nháy app chính rồi mới sang onboarding
+  if(!!profile?._loaded && !profile.onboardingDone && (!userDataLoaded || weightLoading)) return splash;
   if(needsOnboarding) return inFrame(<OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>{}} appSettings={appSettings} user={user} saveWeeklyTemplate={saveWeeklyTemplate} applyTemplate={applyTemplate} getMealHistory={getMealHistory}/>);
 
   const mobileApp=<MobileApp user={user} profile={profile} setProfile={wrappedSetProfile} macro={macro} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} signOut={signOut} isOffline={isOffline} macroBanner={macroBanner}

@@ -57,7 +57,7 @@ test("Nhắc nhở: lưu cài đặt nhắc", async ({ browser }) => {
 
     // Mở lại màn: vẫn giữ cài đặt
     await page.getByRole("button", { name: "Quay lại" }).click();
-    await expect(page.getByRole("button", { name: /Nhắc nhở/ })).toContainText("Cân · Nước");
+    await expect(page.getByRole("button", { name: /Nhắc nhở/ })).toContainText("Cân & đo · Nước");
   } finally {
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ reminder_settings: before }) });
     await ctx.close();

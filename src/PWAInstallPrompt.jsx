@@ -9,9 +9,17 @@ import { createPortal } from "react-dom";
 // iOS in-app browser (Zalo/FB): cảnh báo + nút "Mở bằng Safari"
 //
 // Điều kiện hiện: mobile + chưa standalone + chưa dismiss 7 ngày + đã login
+// + (17/10) khách đã ghi ít nhất 1 bữa (prop ready) — mới vào app chưa làm gì đã bị mời cài thì dễ bấm Bỏ qua;
+//   hiện sau 2,5 s để không chồng lên thông báo "Đã ghi …"
 // ============================================================
 
 const DISMISS_KEY = "pwa_install_dismissed";
+// Bắt beforeinstallprompt ngay khi tải module (Chrome chỉ bắn 1 lần, thường trước khi khách ghi bữa đầu tiên)
+let savedBip = null;
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); savedBip = e; window.dispatchEvent(new Event("fp-bip")); });
+  window.addEventListener("appinstalled", () => { savedBip = null; });
+}
 const DISMISS_DAYS = 7;
 
 function isStandalone() {
@@ -40,35 +48,30 @@ function dismiss() {
   try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch {}
 }
 
-export default function PWAInstallPrompt() {
+export default function PWAInstallPrompt({ ready = true }) {
   const [show, setShow] = useState(false);
   const [mode, setMode] = useState(null); // "android" | "ios" | "webview"
   const deferredPrompt = useRef(null);
 
   useEffect(() => {
-    if (!isMobile() || isStandalone() || isDismissed()) return;
+    if (!ready || !isMobile() || isStandalone() || isDismissed()) return;
 
     if (isIOS()) {
-      if (isInAppBrowser()) setMode("webview");
-      else setMode("ios");
-      setShow(true);
-      return;
+      const t = setTimeout(() => { setMode(isInAppBrowser() ? "webview" : "ios"); setShow(true); }, 2500);
+      return () => clearTimeout(t);
     }
 
-    // Android: listen for beforeinstallprompt
+    // Android: sự kiện beforeinstallprompt bắn sớm lúc tải trang (trước khi khách ghi bữa) → giữ ở cấp module (savedBip)
     let got = false;
-    const handler = (e) => {
-      e.preventDefault();
-      deferredPrompt.current = e;
-      got = true;
-      setMode("android");
-      setShow(true);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
+    const take = () => { if (!savedBip || got) return; got = true; deferredPrompt.current = savedBip; setMode("android"); setShow(true); };
+    const t0 = setTimeout(take, 2500);
+    const onBip = () => setTimeout(take, 0);
+    window.addEventListener("fp-bip", onBip);
 
     // Fallback: nếu 10s không bắt được event → hiện hướng dẫn thủ công
     const timer = setTimeout(() => {
       if (!got && !isStandalone()) {
+        got = true;
         if (isInAppBrowser()) setMode("webview_android");
         else setMode("android_manual");
         setShow(true);
@@ -76,17 +79,17 @@ export default function PWAInstallPrompt() {
     }, 10000);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-      clearTimeout(timer);
+      window.removeEventListener("fp-bip", onBip);
+      clearTimeout(timer); clearTimeout(t0);
     };
-  }, []);
+  }, [ready]);
 
   const handleInstall = async () => {
     if (!deferredPrompt.current) return;
     deferredPrompt.current.prompt();
     const { outcome } = await deferredPrompt.current.userChoice;
     if (outcome === "accepted") setShow(false);
-    deferredPrompt.current = null;
+    deferredPrompt.current = null; savedBip = null;
   };
 
   const handleDismiss = () => {

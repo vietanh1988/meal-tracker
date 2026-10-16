@@ -75,6 +75,10 @@ export function MobileApp(props) {
   // Món tự nhập calo (16/10): lưu trên máy theo tài khoản, chỉ người đó thấy — không vào kho chung / hàng chờ duyệt
   // Món tự nhập: lưu theo tài khoản trên máy chủ (bảng user_foods) + bản đệm trên máy — đổi máy không mất
   const { myFoods, saveMyFoods } = useMyFoods(user?.id);
+  // Mời cài app chỉ sau khi khách đã ghi ít nhất 1 bữa (17/10) — nhớ theo máy để lần sau không phải chờ
+  const loggedToday = (ud.todayLog?.meals || []).some((m) => (m.items || []).length > 0);
+  const [hasLogged, setHasLogged] = useState(() => { try { return localStorage.getItem("fp_has_logged") === "1"; } catch (e) { return false; } });
+  useEffect(() => { if (loggedToday && !hasLogged) { setHasLogged(true); try { localStorage.setItem("fp_has_logged", "1"); } catch (e) { /* */ } } }, [loggedToday, hasLogged]);
   // Số đo cơ thể (bảng body_measurements, 17/10)
   const { measures, saveMeasure, deleteMeasure } = useBodyMeasure(user?.id);
   const calcFoodCache = useMemo(() => ({ ...(myFoods || {}), ...(myPending || {}), ...(ud.foodCache || {}) }), [myFoods, myPending, ud.foodCache]);
@@ -760,7 +764,7 @@ export function MobileApp(props) {
       ))}
 
       <Toast toast={toast} bottom={has("edit") ? 100 : 90} />
-      {!top && <PWAInstallPrompt />}
+      {!top && <PWAInstallPrompt ready={hasLogged} />}
     </div>
   );
 }
