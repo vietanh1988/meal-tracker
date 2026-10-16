@@ -457,16 +457,18 @@ export function topUpMeals(template, target, { diet = "balanced", avoidText = ""
 // (keto/low-carb: béo trước) ở mọi bữa, cho xuống tới 75% sàn gram ("tô nhỏ", "lưng bát"); đạm giữ nguyên.
 // Chốt cuối (16/10): tổng ngày vẫn lệch > 15% → co/giãn đều mọi món (giữ trong khoảng gram cho phép) cho về sát mục tiêu.
 // Thà đạm hơi lệch còn hơn đưa thực đơn dư/thiếu 40–60% calo.
-export function fitDayCal(template, target) {
+export function fitDayCal(template, target, diet = "balanced") {
   const t = Number(target?.cal) || 0;
   const sum = (tp) => (tp.meals || []).reduce((a, m) => a + (m.items || []).reduce((b, i) => b + (Number(i.cal) || 0), 0), 0);
   if (!t) return template;
   for (let pass = 0; pass < 3; pass++) {
     const cal = sum(template);
-    if (!cal || Math.abs(cal - t) <= t * 0.08) break;
+    if (!cal || Math.abs(cal - t) <= t * 0.05) break;
     const k = t / cal;
     template = { ...template, meals: (template.meals || []).map((m) => ({ ...m, items: (m.items || []).map((it) => {
       if (!it.gram || !it.cal) return it;
+      // keto / low-carb: thiếu calo thì không nở thêm món tinh bột (giữ trần tinh bột)
+      if (k > 1 && (diet === "keto" || diet === "low_carb") && (it.role || getFoodRole(it.food)) === "carb") return it;
       const lim = getGramLimit(it.food) || {};
       const lo = Math.max(5, (lim.min || 0) * 0.75), hi = lim.max || 3000;
       const g = Math.min(hi, Math.max(lo, Math.round((it.gram * k) / 5) * 5));
@@ -1137,11 +1139,16 @@ export async function generateMenuAI(args) {
       const off = (x) => Math.abs((x.cal || 0) - (target.cal || 0));
       // Lấy bản gần mục tiêu hơn; vẫn lệch thì KHÔNG báo lỗi (tốn lượt tạo lại) — màn kết quả tự hiện "Thiếu/Dư X%" + đổi món
       if (s2.template.meals.length && off(s2) < off(s)) s = { ...s2, removed: [...s.removed, ...s2.removed] };
-      if (off(s) > (target.cal || 0) * 0.15) s = { ...s, template: fitDayCal(s.template, target) };
+      if (off(s) > (target.cal || 0) * 0.1) s = { ...s, template: fitDayCal(s.template, target, args.macro?.dietStrategy || args.profile?.dietStrategy || "balanced") };
       s = { ...s, broken: !s.template.meals.length };
     } catch (e) { /* giữ lỗi cũ */ }
   }
   if (s.broken) return { ok: false, error: "Chưa tạo được thực đơn (các món đều bị loại vì kiêng/dị ứng). Bấm Thử lại nhé." };
+  // Còn lệch > 10% (không hỏng) → co/giãn đều về sát mục tiêu (16/10: bỏ lệch TB 12–14% ở hồ sơ 1.200 kcal)
+  try {
+    const cal = sumTemplate(s.template).cal;
+    if (target.cal && Math.abs(cal - target.cal) > target.cal * 0.1) s = { ...s, template: fitDayCal(s.template, target, args.macro?.dietStrategy || args.profile?.dietStrategy || "balanced") };
+  } catch (e) { /* giữ nguyên */ }
   const note = s.removed.length ? `Đã bỏ ${s.removed.slice(0, 3).join(", ")}${s.removed.length > 3 ? "…" : ""} vì bạn kiêng/dị ứng.` : res.note;
   return { ...res, template: s.template, note };
 }
