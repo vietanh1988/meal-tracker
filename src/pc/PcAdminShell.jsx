@@ -1,26 +1,26 @@
 // Quản trị trên máy tính (bản vẽ 117–119, chốt 16/10).
 //  - Thanh bên cố định 232 px nền navy, 4 nhóm: TỔNG QUAN · BÁN HÀNG · NỘI DUNG · HỆ THỐNG; số chờ (đơn, góp ý, món AI) hiện ngay trên thanh bên.
 //  - Thanh trên 64 px trắng: tiêu đề + dòng phụ + nút bên phải ("Xem app ›" quay lại khung điện thoại).
-//  - Nội dung nền #F4F7FC, thẻ trắng bo 14. Tổng quan / Người dùng / Kho thực phẩm vẽ mới; các mục khác dùng lại tab cũ src/adminTabs/*.
+//  - Nội dung nền #F4F7FC, thẻ trắng bo 14. Mọi mục đều là trang PC riêng src/pc/Pc*.jsx (cùng kiểu 117–119), không còn tab cũ.
 //  - Chỉ App render khung này khi isAdmin (user thường không bao giờ tới đây).
 import { useCallback, useEffect, useState } from "react";
 import { PC } from "../theme";
-import { PC_CSS, Btn, Card } from "./pcUI";
+import { PC_CSS, Btn } from "./pcUI";
 import { loadAdminCounts } from "../mobile/AdminHomeScreen";
-import { authFetch } from "../lib/authFetch";
-import { AdminPanel } from "../AdminPanel";
-import { OrdersTab } from "../adminTabs/OrdersTab";
-import { BusinessReportTab } from "../adminTabs/BusinessReportTab";
-import { SubscriptionSettingsTab } from "../adminTabs/SubscriptionSettingsTab";
-import FeedbackTab from "../adminTabs/FeedbackTab";
-import { NotifyTab } from "../adminTabs/NotifyTab";
-import { AdminTab } from "../adminTabs/AdminTab";
-import { FeatureFlagsTab } from "../adminTabs/FeatureFlagsTab";
-import { AiCostTab } from "../adminTabs/AiCostTab";
-import { SystemHealthTab } from "../adminTabs/SystemHealthTab";
-import { ErrorLogsTab } from "../adminTabs/ErrorLogsTab";
-import { AuditLogTab } from "../adminTabs/AuditLogTab";
-import BackupTab from "../adminTabs/BackupTab";
+import { PcOrders } from "./PcOrders";
+import { PcReport } from "./PcReport";
+import { PcSubscription } from "./PcSubscription";
+import { PcFeedback } from "./PcFeedback";
+import { PcNotify } from "./PcNotify";
+import { PcTemplates } from "./PcTemplates";
+import { PcPending } from "./PcPending";
+import { PcVersion } from "./PcVersion";
+import { PcFlags } from "./PcFlags";
+import { PcAi } from "./PcAi";
+import { PcAiCost } from "./PcAiCost";
+import { PcHealth } from "./PcHealth";
+import { PcAudit } from "./PcAudit";
+import { PcBackup } from "./PcBackup";
 import { PcHome } from "./PcHome";
 import { PcUsers } from "./PcUsers";
 import { PcFood } from "./PcFood";
@@ -111,33 +111,30 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
 
   const top = (right, title = LABEL[sec], sub = SUB[sec]) => <TopBar title={title} sub={sub} right={right} onOpenApp={onOpenApp} />;
   const uid = user?.id;
-  // Tab cũ đặt trong thẻ trắng của khung (cùng props như AdminPanel truyền)
-  const old = (el) => <>{top(null)}<div style={{ padding: "20px 24px" }}><Card testid={`pc-sec-${sec}`} style={{ padding: 20 }}>{el}</Card></div></>;
-  const viaPanel = (id) => old(<AdminPanel key={id} {...adminP} forcedSection="settings" initialSection={id} hidePills />);
+  // Báo nhanh góc dưới (thay showToast của app điện thoại)
+  const [toast, setToast] = useState(null);
+  const showToast = useCallback((t, ms = 3000) => {
+    const text = typeof t === "string" ? t : t?.text;
+    if (!text) return;
+    const id = Date.now();
+    setToast({ id, text });
+    setTimeout(() => setToast((c) => (c && c.id === id ? null : c)), ms);
+  }, []);
+  const P = { top, isAdmin, isSuperAdmin, user, profile, appSettings, saveSetting, showToast, refreshCounts, adminP };
+  const PAGES = { orders: PcOrders, report_biz: PcReport, subscription_settings: PcSubscription, feedback: PcFeedback, notify: PcNotify, templates: PcTemplates, food_cache_pending: PcPending, admin: PcVersion, feature_flags: PcFlags, ai: PcAi, ai_cost: PcAiCost, health: PcHealth, audit_log: PcAudit, backup: PcBackup };
 
   let page;
   if (sec === "home") page = <PcHome top={top} go={go} counts={counts} refreshCounts={refreshCounts} appSettings={appSettings} />;
   else if (sec === "users") page = <PcUsers top={top} currentUserId={uid} isSuperAdmin={isSuperAdmin} />;
   else if (sec === "food_db") page = <PcFood top={top} isSuperAdmin={isSuperAdmin} />;
-  else if (sec === "orders") page = old(<OrdersTab isAdmin={isAdmin} currentUserId={uid} appSettings={appSettings} isSuperAdmin={isSuperAdmin} />);
-  else if (sec === "report_biz") page = old(<BusinessReportTab isAdmin={isAdmin} />);
-  else if (sec === "subscription_settings") page = old(<SubscriptionSettingsTab isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />);
-  else if (sec === "feedback") page = old(<FeedbackTab user={user} isAdmin={isAdmin} />);
-  else if (sec === "notify") page = old(<NotifyTab isAdmin={isAdmin} currentUserId={uid} appSettings={appSettings} isSuperAdmin={isSuperAdmin} />);
-  else if (sec === "admin") page = old(<AdminTab appSettings={appSettings} saveSetting={saveSetting} mob={false} isSuperAdmin={isSuperAdmin} />);
-  else if (sec === "feature_flags") page = old(<FeatureFlagsTab appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} isSuperAdmin={isSuperAdmin} />);
-  else if (sec === "ai_cost") page = old(<AiCostTab isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />);
-  else if (sec === "health") page = old(<div style={{ display: "flex", flexDirection: "column", gap: 16 }}><SystemHealthTab isAdmin={isAdmin} appSettings={appSettings} isSuperAdmin={isSuperAdmin} /><ErrorLogsTab isAdmin={isAdmin} /></div>);
-  else if (sec === "audit_log") page = old(<AuditLogTab isAdmin={isAdmin} />);
-  else if (sec === "backup") page = old(<BackupTab authFetch={authFetch} />);
-  // Cần state/hàm nằm trong AdminPanel (callAI, usePendingFoodCache, khoá AI) → render AdminPanel 1 mục
-  else page = viaPanel(sec); // templates · food_cache_pending · ai
+  else { const Pg = PAGES[sec] || PcHome; page = <Pg key={sec} {...P} go={go} counts={counts} />; }
 
   return (
     <div className="pc-root" data-testid="pc-admin" style={{ minHeight: "100vh", background: PC.bg, fontFamily: "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif", color: PC.t1 }}>
       <style>{PC_CSS}</style>
       <SideNav section={sec} go={go} counts={counts} isSuperAdmin={isSuperAdmin} user={user} profile={profile} />
       <main data-testid={`pc-page-${sec}`} style={{ marginLeft: PC.sideW, minWidth: 0 }}>{page}</main>
+      {toast && <div data-testid="pc-toast" role="status" style={{ position: "fixed", bottom: 24, left: `calc(50% + ${PC.sideW / 2}px)`, transform: "translateX(-50%)", zIndex: 60, background: PC.t1, color: "#FFFFFF", fontSize: 13, fontWeight: 700, padding: "10px 16px", borderRadius: 12, boxShadow: "0 8px 24px rgba(15,23,42,0.25)", maxWidth: 520 }}>{toast.text}</div>}
     </div>
   );
 }

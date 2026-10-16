@@ -29,6 +29,10 @@ test("Quản trị PC: thanh bên đủ mục, mở từng trang, ngăn người
       await page.getByTestId(`pc-nav-${id}`).click();
       await expect(page.getByTestId(`pc-nav-${id}`)).toHaveAttribute("aria-current", "page");
       await expect(page.getByTestId(`pc-page-${id}`)).toBeVisible();
+      // Mọi mục là trang PC mới (không còn tab cũ bọc trong thẻ trắng)
+      const root = { home: "pc-home", users: "pc-users", food_db: "pc-food", admin: "pc-version" }[id] || `pc-${id}`;
+      await expect(page.getByTestId(`pc-page-${id}`).getByTestId(root).first(), `${id}: gốc trang mới`).toBeVisible();
+      await expect(page.getByTestId(`pc-sec-${id}`)).toHaveCount(0);
       await page.waitForTimeout(600);
       const w = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(w, `${id}: tràn ngang`).toBeLessThanOrEqual(1);
