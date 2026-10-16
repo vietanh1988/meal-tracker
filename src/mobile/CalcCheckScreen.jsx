@@ -167,7 +167,7 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
             </span>
             <button aria-label={`Giảm ${itemName(r)}`} onClick={() => setRow(i, stepItem(r, -1))} style={stepBtn}>−</button>
             <span style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 58 }}>
-              <span style={{ height: 32, padding: "0 8px", borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", gap: 3, fontSize: 14, fontWeight: 800, whiteSpace: "nowrap" }}>{(() => { const m = String(r.qty_display || "").match(/^(\S+)\s+(.*)$/); return m ? <>{m[1]}<span style={{ fontSize: 12, color: "#0062F0" }}>{m[2]}</span></> : <>{fmtInt(r.gram)}<span style={{ fontSize: 12, color: "#0062F0" }}>g</span></>; })()}</span>
+              <span style={{ height: 32, padding: "0 8px", borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", gap: 3, fontSize: 14, fontWeight: 800, whiteSpace: "nowrap" }}>{(() => { const m = String(r.qty_display || "").match(/^(\S+)\s+(.*)$/); return m ? <>{m[1]}{" "}<span style={{ fontSize: 12, color: "#0062F0" }}>{m[2]}</span></> : <>{fmtInt(r.gram)}{" "}<span style={{ fontSize: 12, color: "#0062F0" }}>g</span></>; })()}</span>
               {r.qty_display && <span style={{ fontSize: 11, color: "#64748B" }}>≈ {fmtInt(r.gram)} g</span>}
             </span>
             <button aria-label={`Tăng ${itemName(r)}`} onClick={() => setRow(i, stepItem(r, 1))} style={stepBtn}>+</button>
