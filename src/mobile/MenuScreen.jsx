@@ -1,73 +1,75 @@
-// Tab Thực đơn (chốt 13/10): thẻ Hôm nay, AI lên thực đơn, Thực đơn của tôi (AI đã tạo + ngày đã ăn),
-// Thực đơn mẫu, Lặp lại hằng tuần (chỉ khi đã đặt). Bỏ Gói tuần khỏi giao diện.
+// Tab Thực đơn (bản vẽ 90–97, chốt 16/10; trước đó 13/10): thẻ Hôm nay, AI lên thực đơn, Thực đơn của tôi (AI đã tạo + ngày đã ăn),
+// Thực đơn mẫu, dải 7 thứ Lặp lại hằng tuần (luôn hiện). Bỏ Gói tuần khỏi giao diện.
 // Màn chi tiết là lớp "page" của MobileApp: MenuPastPage / MenuDayPage / MenuTplPage.
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { todayVN, fmtVN } from "../lib/dateVN";
 import { appConfirm } from "../lib/dialog";
 import { fmtInt, dayTypeOf } from "../lib/mobileView";
-import { mealLabel, MEAL_ORDER } from "../lib/mealMath";
 import { aiQuota } from "../lib/aiQuota";
 import { loadAIMenus } from "../lib/aiMenuService";
 import { SaveWeekSheet } from "./AIMenuScreen";
 import { weekRows, libraryFor, pastDaysFor, dailyTargetOf, mealsCal, dayToTemplateMeals, WEEK_KEYS, WEEK_SHORT } from "../lib/menuView";
 import { applyMealEngineToTemplate } from "../mealEngine";
-import { Icon, GRAD_BLUE } from "./ui";
+import { Icon } from "./ui";
+import { PURPLE, GREEN, DT, MI, Chip, pill, fbtn, SumCard, totalsOf, Warn, MealCard, sortedMeals, DayPicker, Sheet, CloseX, Lbl, OptRow, StickyFoot, foodName, portionText } from "./menuUI";
 import { LT, ltCard } from "../theme";
 import { readUser, writeUser } from "../lib/userStore";
 import { AppIcon } from "./icons";
 
-const PURPLE = "linear-gradient(135deg,#7C3AED,#5B21B6)";
 const STYLES = [["vn", "Cơm nhà VN", "Cơm, canh, món mặn quen thuộc"], ["clean", "Eat clean", "Ức gà, khoai lang, yến mạch"], ["easy", "Tiện lợi", "Ít nấu nướng, đồ nhanh gọn"]];
 const PREFS_KEY = "fp_menu_prefs"; // lưu theo từng tài khoản (lib/userStore)
-const lbl = { fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" };
 const box = { margin: "0 12px", ...ltCard, padding: "0 14px" };
 const secHead = { padding: "20px 18px 10px 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
-const rowBtn = (last) => ({ display: "flex", alignItems: "center", gap: 12, minHeight: 60, width: "100%", padding: 0, border: "none", borderBottom: last ? "none" : `1px solid ${LT.line}`, background: "transparent", fontFamily: "inherit", color: "#0F172A", textAlign: "left" });
-const iconBox = (bg, color) => ({ width: 36, height: 36, borderRadius: 10, background: bg, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 13, fontWeight: 900 });
-const btn = (kind, disabled) => ({ height: 50, borderRadius: 14, border: kind === "ghost" ? "1.5px solid #E2E8F0" : kind === "danger" ? "1.5px solid #FCA5A5" : "none", background: disabled ? "#E2E8F0" : kind === "ghost" ? "#FFFFFF" : kind === "danger" ? "#FEF2F2" : kind === "purple" ? PURPLE : GRAD_BLUE, color: disabled ? "#64748B" : kind === "ghost" ? "#0F172A" : kind === "danger" ? "#DC2626" : "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900, width: "100%" });
-const DT = { train: "Ngày tập", rest: "Ngày nghỉ" };
+const AVOID_SUGGEST = ["hải sản", "sữa", "thịt bò", "trứng", "đậu phộng"];
+const avoidList = (s) => String(s || "").split(/[,;]/).map((x) => x.trim()).filter(Boolean);
 
 function readPrefs(uid) { return readUser(PREFS_KEY, uid, {}) || {}; }
 function writePrefs(uid, p) { writeUser(PREFS_KEY, uid, p); }
 
-// Danh sách bữa + món (dùng chung cho các màn chi tiết)
+// Danh sách bữa + món (dùng chung cho các màn chi tiết, bản vẽ 95/96)
 export function MealsPreview({ meals }) {
-  const list = (meals || []).filter((m) => (m.items || []).length > 0).sort((a, b) => MEAL_ORDER.indexOf(a.meal_id) - MEAL_ORDER.indexOf(b.meal_id));
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "0 12px" }}>
-      {list.map((m) => (
-        <div key={m.meal_id} style={{ background: "#FFFFFF", border: "none", borderRadius: 14, padding: "12px 14px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontSize: 15, fontWeight: 800 }}>{mealLabel(m.meal_name, m.meal_id)}</span>
-            <span style={{ fontSize: 14, fontWeight: 800, color: "#007AFF" }}>{fmtInt(mealsCal([m]))} kcal</span>
-          </div>
-          {m.items.map((it, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "4px 0", fontSize: 13, color: "#334155" }}>
-              <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{it.display || it.food || it.name}{it.gram ? <span style={{ color: "#94A3B8" }}> · {fmtInt(it.gram)} g</span> : null}</span>
-              <span style={{ color: "#64748B", whiteSpace: "nowrap" }}>{fmtInt(it.cal)} kcal</span>
-            </div>
-          ))}
-        </div>
-      ))}
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {sortedMeals(meals).map((m) => <MealCard key={m.meal_id} meal={m} name={foodName} portion={portionText} />)}
     </div>
   );
 }
 
-function Summary({ title, sub, cal, target }) {
+// Khối tổng xanh của trang chi tiết (95/96)
+function Summary({ title, meals, cal, target, sub }) {
+  const t = totalsOf(meals);
+  return <SumCard title={title} cal={cal ?? t.cal} target={target} macros={{ p: t.p, c: t.c, f: t.f }} sub={sub} />;
+}
+
+const body = { padding: 12, display: "flex", flexDirection: "column", gap: 10 };
+
+// Ô 1 thứ trong dải Lặp lại hằng tuần (bản vẽ 90)
+function WeekCell({ r, noEx, onClick }) {
+  const on = !!r.tpl;
+  const st = r.isToday ? { background: "#0062F0", color: "#FFFFFF" } : on ? { background: LT.soft, color: "#0062F0" } : { background: "#F8FAFC", color: "#94A3B8" };
   return (
-    <div style={{ margin: "12px 12px 12px 12px", borderRadius: 18, padding: 16, background: GRAD_BLUE, color: "#FFFFFF", display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 13, fontWeight: 700, opacity: 0.9 }}>{title}</span>
-      <span style={{ fontSize: 26, fontWeight: 900 }}>{fmtInt(cal)} <span style={{ fontSize: 14, fontWeight: 700 }}>kcal</span>{target ? <span style={{ fontSize: 13, fontWeight: 600, opacity: 0.85 }}> / mục tiêu {fmtInt(target)}</span> : null}</span>
-      {sub && <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>{sub}</span>}
-    </div>
+    <button data-testid={`week-day-${r.idx}`} data-set={on ? "1" : "0"} onClick={onClick} aria-label={`${r.long}${on ? ` · ${fmtInt(r.cal)} kcal` : " · chưa đặt"}`}
+      style={{ flex: 1, minWidth: 0, height: 64, borderRadius: 14, border: "none", padding: 0, fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, ...st }}>
+      <span style={{ fontSize: 14, fontWeight: 900 }}>{r.short}</span>
+      {!noEx && <span style={{ fontSize: 10, fontWeight: 700, opacity: 0.85 }}>{r.dayType === "train" ? "Tập" : "Nghỉ"}</span>}
+      <span style={{ width: 5, height: 5, borderRadius: 3, background: on ? (r.isToday ? "#FFFFFF" : (r.low || r.mismatch ? "#F59E0B" : GREEN)) : "transparent" }} />
+    </button>
   );
 }
+
+const listRow = (last) => ({ display: "flex", alignItems: "center", gap: 12, minHeight: 62, width: "100%", padding: 0, border: "none", borderBottom: last ? "none" : `1px solid ${LT.line}`, background: "transparent", fontFamily: "inherit", color: "#0F172A", textAlign: "left" });
+const rowText = (t, s) => (
+  <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 2 }}>
+    <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t}</span>
+    <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s}</span>
+  </span>
+);
+const STYLE_ICON = { vn: [MI.food, "#EA580C"], clean: [MI.target, GREEN], easy: [MI.bolt, "#0891B2"] };
 
 // ---------------- Tab Thực đơn ----------------
-// Bố cục (chốt 13/10, gọn lại cho dễ hiểu): Hôm nay ăn gì → 1) AI lên thực đơn, 2) Thực đơn của tôi
-// (thực đơn AI đã tạo + ngày đã ăn trước, dùng lại không tốn lượt), 3) Thực đơn mẫu (admin soạn).
-// "Lặp lại hằng tuần" (weekly_templates, tự chép vào Hôm nay mỗi sáng) chỉ hiện khi user đã đặt.
+// Bố cục (bản vẽ 90, chốt 16/10): thẻ Hôm nay có thanh kcal; khối tím AI gọn (3 viên tuỳ chọn → sheet 91);
+// Thực đơn của tôi (AI đã tạo + ngày đã ăn), Thực đơn mẫu (admin soạn), dải 7 thứ Lặp lại hằng tuần (luôn hiện).
 export function MenuScreen(p) {
   const { profile, macro, aiAccess, userId, todayLog, getWeeklyTemplate, weeklyTemplates, defaultTemplates, refreshDefaultTemplates, flags, openGenerate, openSaved, openPage, openToday, clearToday, recentDays, active } = p;
   const today = todayVN();
@@ -80,6 +82,8 @@ export function MenuScreen(p) {
   const [aiMenus, setAiMenus] = useState([]);
   const [quota, setQuota] = useState(null);
   const [libType, setLibType] = useState(todayType);
+  const [opts, setOpts] = useState(false);
+  const [typed, setTyped] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -97,86 +101,113 @@ export function MenuScreen(p) {
 
   const rows = useMemo(() => weekRows({ getTemplate: getWeeklyTemplate, gymDays: profile?.gymDays, exerciseType: profile?.exerciseType, macro, today }),
     [weeklyTemplates, profile?.gymDays, profile?.exerciseType, macro?.calTarget, macro?.calRest, today]); // eslint-disable-line react-hooks/exhaustive-deps
-  const repeatRows = rows.filter((r) => r.tpl);
+  const setCount = rows.filter((r) => r.tpl).length;
   const lib = flags?.template_library ? libraryFor(defaultTemplates, { goal: macro?.goal, dietStrategy: macro?.dietStrategy, dayType: libType }) : [];
-  const target = dailyTargetOf(macro, dayType).cal;
+  const dt = noEx ? "rest" : dayType;
+  const target = dailyTargetOf(macro, dt).cal;
   const todayTarget = dailyTargetOf(macro, todayType).cal;
   const todayMeals = todayLog && todayLog.log_date === today ? dayToTemplateMeals(todayLog) : [];
   const todayHasMeals = todayMeals.length > 0;
+  const todayCal = mealsCal(todayMeals);
   const past = useMemo(() => pastDaysFor(recentDays, today, 5), [recentDays, today]);
+  const avoids = avoidList(avoid);
 
-  const generate = () => { writePrefs(p.userId, { style, avoid }); openGenerate({ style, avoid: avoid.trim(), dayType: noEx ? "rest" : dayType }); };
+  const savePrefs = (next = {}) => writePrefs(p.userId, { style, avoid, ...next });
+  const generate = () => { savePrefs(); setOpts(false); openGenerate({ style, avoid: avoid.trim(), dayType: dt }); };
+  const toggleAvoid = (w) => { const has = avoids.includes(w); setAvoid((has ? avoids.filter((x) => x !== w) : [...avoids, w]).join(", ").slice(0, 120)); };
+  const addTyped = () => { const w = typed.trim(); if (!w) return; if (!avoids.includes(w)) setAvoid([...avoids, w].join(", ").slice(0, 120)); setTyped(""); };
+  const closeOpts = () => { savePrefs(); setOpts(false); };
+  const styleName = (STYLES.find((x) => x[0] === style) || STYLES[0])[1];
+  const avoidPill = avoids.length ? `Không ăn: ${avoids.slice(0, 2).join(", ")}${avoids.length > 2 ? ` +${avoids.length - 2}` : ""}` : "Món không ăn";
 
   return (
     <div>
-      <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 10px 16px", display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ flex: 1, fontSize: 26, fontWeight: 900 }}>Thực đơn</span>
-        {quota && <span data-testid="menu-quota" style={{ height: 28, padding: "0 10px", borderRadius: 999, background: quota.out ? "rgba(239,68,68,0.1)" : "rgba(124,58,237,0.1)", color: quota.out ? "#B91C1C" : "#6D28D9", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center" }}>{quota.out ? "Hết lượt AI hôm nay" : `Còn ${fmtInt(quota.limit - quota.used)}/${fmtInt(quota.limit)} lượt`}</span>}
+      <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 12px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ flex: 1, fontSize: 28, fontWeight: 900 }}>Thực đơn</span>
+        {quota && <span data-testid="menu-quota" style={{ ...pill(quota.out ? "rgba(239,68,68,0.1)" : "rgba(124,58,237,0.12)", quota.out ? "#B91C1C" : "#6D28D9"), height: 28 }}>{Icon.sparkle(13)}{quota.out ? "Hết lượt AI hôm nay" : `Còn ${fmtInt(quota.limit - quota.used)}/${fmtInt(quota.limit)} lượt`}</span>}
       </div>
 
-      {/* Hôm nay đã có thực đơn chưa */}
-      <button data-testid="menu-today" onClick={openToday} className="tap" style={{ margin: "0 12px 12px 12px", width: "calc(100% - 24px)", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: 14, ...ltCard, borderLeft: `4px solid ${todayHasMeals ? "#00C896" : "#F59E0B"}`, fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
-        <span style={{ width: 40, height: 40, borderRadius: 12, background: todayHasMeals ? "rgba(0,200,150,0.12)" : "rgba(245,158,11,0.14)", color: todayHasMeals ? "#047857" : "#B45309", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{todayHasMeals ? Icon.check(20, 2.6) : Icon.plus(20)}</span>
-        <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 15, fontWeight: 800 }}>{todayHasMeals ? `Hôm nay đã có ${todayMeals.length} bữa · ${fmtInt(mealsCal(todayMeals))} kcal` : "Hôm nay chưa có thực đơn"}</span>
-          <span style={{ fontSize: 12, color: "#475569" }}>{todayHasMeals ? `Mục tiêu ${fmtInt(todayTarget)} kcal · bấm để xem ở Hôm nay` : "Chọn 1 trong các cách bên dưới để có thực đơn"}</span>
+      {/* Hôm nay đã có thực đơn chưa (bản vẽ 90) */}
+      <button data-testid="menu-today" onClick={openToday} className="tap" style={{ margin: "0 12px", width: "calc(100% - 24px)", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: 14, ...ltCard, fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
+        {todayHasMeals ? <AppIcon color={GREEN} size={40}>{Icon.check(20, 2.6)}</AppIcon> : <AppIcon color="#F59E0B" size={40}>{Icon.plus(20)}</AppIcon>}
+        <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 2 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>HÔM NAY · {DT[todayType].toUpperCase()}</span>
+          {todayHasMeals
+            ? <span style={{ fontSize: 16, fontWeight: 900 }}>{todayMeals.length} bữa · {fmtInt(todayCal)} <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>/ {fmtInt(todayTarget)} kcal</span></span>
+            : <span style={{ fontSize: 16, fontWeight: 900 }}>Chưa có thực đơn</span>}
+          {todayHasMeals
+            ? <span style={{ height: 6, borderRadius: 3, background: LT.line, overflow: "hidden", marginTop: 4, display: "block" }}><span style={{ display: "block", width: `${Math.max(2, Math.min(100, todayTarget ? (todayCal / todayTarget) * 100 : 0))}%`, height: 6, background: GREEN }} /></span>
+            : <span style={{ fontSize: 12, color: "#475569" }}>Chọn 1 cách bên dưới để có thực đơn</span>}
         </span>
-        {Icon.chev(16)}
+        <span style={{ height: 34, padding: "0 12px", borderRadius: 17, background: LT.soft, color: "#0062F0", display: "flex", alignItems: "center", fontSize: 13, fontWeight: 800, flexShrink: 0 }}>Xem</span>
       </button>
 
       {aiAccess?.enabled && (
-        <div data-testid="menu-ai-card" style={{ margin: "0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ width: 44, height: 44, borderRadius: 14, background: PURPLE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.sparkle(22)}</span>
+        <div data-testid="menu-ai-card" style={{ margin: "12px 12px 0 12px", borderRadius: 22, padding: 16, background: PURPLE, color: "#FFFFFF", display: "flex", flexDirection: "column", gap: 12, position: "relative", overflow: "hidden" }}>
+          <span aria-hidden="true" style={{ position: "absolute", right: -30, top: -30, width: 140, height: 140, borderRadius: 70, background: "rgba(255,255,255,0.08)" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+            <span style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(255,255,255,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.sparkle(22)}</span>
             <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 17, fontWeight: 900 }}>AI lên thực đơn</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#475569" }}>Món Việt, vừa đúng {fmtInt(target)} kcal · {DT[noEx ? "rest" : dayType]}</span>
+              <span style={{ fontSize: 18, fontWeight: 900 }}>AI lên thực đơn</span>
+              <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Món Việt, vừa đúng {fmtInt(target)} kcal</span>
             </span>
           </div>
           {aiAccess.usable ? (
             <>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <span style={lbl}>PHONG CÁCH ĂN</span>
-                {STYLES.map(([id, t, d]) => {
-                  const on = style === id;
-                  return (
-                    <button key={id} data-testid={`menu-style-${id}`} aria-pressed={on} onClick={() => setStyle(id)}
-                      style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 56, padding: "0 14px", borderRadius: 14, border: on ? "2px solid #7C3AED" : "1.5px solid #E2E8F0", background: on ? "rgba(124,58,237,0.05)" : "#FFFFFF", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
-                      <span style={{ display: "flex", flexDirection: "column", flex: 1 }}><span style={{ fontSize: 15, fontWeight: on ? 800 : 700 }}>{t}</span><span style={{ fontSize: 12, color: "#475569" }}>{d}</span></span>
-                      {on ? <span style={{ width: 22, height: 22, borderRadius: 11, background: "#7C3AED", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.check(12)}</span>
-                        : <span style={{ width: 22, height: 22, borderRadius: 11, border: "2px solid #CBD5E1", boxSizing: "border-box" }} />}
-                    </button>
-                  );
-                })}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", position: "relative" }}>
+                <button data-testid="menu-opt-style" onClick={() => setOpts(true)} style={pill()}>{styleName} {Icon.down(12)}</button>
+                {!noEx && <button data-testid="menu-opt-day" onClick={() => setOpts(true)} style={pill()}>{DT[dayType]} {Icon.down(12)}</button>}
+                <button data-testid="menu-opt-avoid" onClick={() => setOpts(true)} style={pill()}>{avoidPill} {Icon.down(12)}</button>
               </div>
-              <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <span style={lbl}>MÓN KHÔNG ĂN / DỊ ỨNG</span>
-                <input data-testid="menu-avoid" type="text" value={avoid} onChange={(e) => setAvoid(e.target.value.slice(0, 120))} placeholder="VD: hải sản, sữa, thịt bò..."
-                  style={{ height: 46, padding: "0 14px", borderRadius: 12, border: "1.5px solid #E2E8F0", background: "#F1F5F9", fontFamily: "inherit", fontSize: 16, color: "#0F172A", boxSizing: "border-box" }} />
-              </label>
-              {!noEx && (
-                <div role="group" aria-label="Tạo cho" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", padding: 3, background: "#F1F5F9", borderRadius: 12 }}>
-                  {["train", "rest"].map((d) => (
-                    <button key={d} data-testid={`menu-day-${d}`} aria-pressed={dayType === d} onClick={() => setDayType(d)}
-                      style={{ height: 36, borderRadius: 9, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: dayType === d ? 800 : 600, background: dayType === d ? "#FFFFFF" : "transparent", color: dayType === d ? "#7C3AED" : "#475569", boxShadow: dayType === d ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>
-                      {DT[d]}{d === todayType ? " · hôm nay" : ""}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button data-testid="menu-generate" onClick={generate} disabled={quota?.out} style={{ ...btn("purple", quota?.out), height: 52, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: quota?.out ? "none" : "0 4px 12px rgba(124,58,237,0.3)" }}>
+              <button data-testid="menu-generate" onClick={generate} disabled={quota?.out} style={{ ...fbtn("white", quota?.out, 50), position: "relative" }}>
                 {quota?.out ? "Hết lượt hôm nay — dùng thực đơn đã lưu" : <>{Icon.sparkle(18)} Lên thực đơn ngay</>}
               </button>
             </>
           ) : (
             <>
-              <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>AI lên thực đơn dành cho tài khoản Dùng thử / Premium. Bạn vẫn dùng lại được thực đơn của mình{flags?.template_library ? " và thực đơn mẫu" : ""} bên dưới, hoặc ghi món bằng Tìm món.</span>
-              <button data-testid="menu-upgrade" onClick={() => openPage("plan")} style={btn("ghost")}>Xem gói cước</button>
+              <span style={{ fontSize: 13, opacity: 0.92, lineHeight: 1.5, position: "relative" }}>AI lên thực đơn dành cho tài khoản Dùng thử / Premium. Bạn vẫn dùng lại được thực đơn của mình{flags?.template_library ? " và thực đơn mẫu" : ""} bên dưới, hoặc ghi món bằng Tìm món.</span>
+              <button data-testid="menu-upgrade" onClick={() => openPage("plan")} style={{ ...fbtn("white", false, 48), position: "relative" }}>Xem gói cước</button>
             </>
           )}
         </div>
       )}
 
+      {opts && (
+        <Sheet testid="menu-opt-sheet" onClose={closeOpts}>
+          <div style={{ display: "flex", alignItems: "center" }}><span style={{ flex: 1, fontSize: 20, fontWeight: 900 }}>Tuỳ chọn thực đơn AI</span><CloseX onClick={closeOpts} /></div>
+          <Lbl>PHONG CÁCH ĂN</Lbl>
+          {STYLES.map(([id, t, d]) => (
+            <OptRow key={id} testid={`menu-style-${id}`} on={style === id} color="#7C3AED" soft="#F3EEFF" title={t} sub={d} onClick={() => setStyle(id)}
+              icon={<Chip color={STYLE_ICON[id][1]} size={38}>{STYLE_ICON[id][0](20)}</Chip>} />
+          ))}
+          {!noEx && (
+            <>
+              <Lbl>TẠO CHO</Lbl>
+              <div role="group" aria-label="Tạo cho" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 12 }}>
+                {["train", "rest"].map((d) => (
+                  <button key={d} data-testid={`menu-day-${d}`} aria-pressed={dayType === d} onClick={() => setDayType(d)}
+                    style={{ height: 38, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: dayType === d ? 800 : 600, background: dayType === d ? "#FFFFFF" : "transparent", color: dayType === d ? "#6D28D9" : "#475569", boxShadow: dayType === d ? "0 1px 3px rgba(15,23,42,0.08)" : "none" }}>
+                    {DT[d]}{d === todayType ? " · hôm nay" : ""}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          <Lbl>MÓN KHÔNG ĂN / DỊ ỨNG</Lbl>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[...avoids, ...AVOID_SUGGEST.filter((w) => !avoids.includes(w))].map((w) => {
+              const on = avoids.includes(w);
+              return <button key={w} data-testid={`menu-avoid-chip-${w}`} aria-pressed={on} onClick={() => toggleAvoid(w)}
+                style={{ height: 32, padding: on ? "0 8px 0 12px" : "0 12px", borderRadius: 16, border: "none", background: on ? "#F3EEFF" : "#F1F5F9", color: on ? "#6D28D9" : "#334155", fontSize: 13, fontWeight: on ? 800 : 700, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>
+                {on ? <>{w}<span aria-hidden="true" style={{ fontSize: 15, opacity: 0.7 }}>×</span></> : `+ ${w}`}</button>;
+            })}
+          </div>
+          <input data-testid="menu-avoid" type="text" value={typed} onChange={(e) => setTyped(e.target.value.slice(0, 40))} onKeyDown={(e) => { if (e.key === "Enter") addTyped(); }} onBlur={addTyped}
+            placeholder="Gõ thêm món khác…" aria-label="Món không ăn khác"
+            style={{ height: 46, padding: "0 14px", borderRadius: 14, border: "1.5px solid transparent", background: "#F1F5F9", fontFamily: "inherit", fontSize: 16, color: "#0F172A", boxSizing: "border-box", width: "100%" }} />
+          <button data-testid="menu-opt-generate" onClick={() => { addTyped(); generate(); }} disabled={quota?.out} style={fbtn("purple", quota?.out)}>{Icon.sparkle(18)} Lên thực đơn ngay</button>
+        </Sheet>
+      )}
 
       <div style={secHead}>
         <span style={{ fontSize: 17, fontWeight: 900 }}>Thực đơn của tôi</span>
@@ -184,22 +215,16 @@ export function MenuScreen(p) {
       </div>
       <div style={box}>
         {aiMenus.map((m, i) => (
-          <button key={`ai-${m.date}`} data-testid={i === 0 ? "menu-latest-ai" : `menu-ai-${i}`} onClick={() => openSaved(m.template)} style={rowBtn(i === aiMenus.length - 1 && past.length === 0)}>
+          <button key={`ai-${m.date}`} data-testid={i === 0 ? "menu-latest-ai" : `menu-ai-${i}`} onClick={() => openSaved(m.template)} style={listRow(i === aiMenus.length - 1 && past.length === 0)}>
             <AppIcon color="#7C3AED" size={36}>{Icon.sparkle(18)}</AppIcon>
-            <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 14, fontWeight: 700 }}>Thực đơn AI · {m.date === today ? "hôm nay" : fmtVN(m.date)}</span>
-              <span style={{ fontSize: 12, color: "#64748B" }}>{DT[m.template.day_type] || "—"} · {(m.template.meals || []).length} bữa · {fmtInt(mealsCal(m.template.meals))} kcal</span>
-            </span>
+            {rowText(`Thực đơn AI · ${m.date === today ? "hôm nay" : fmtVN(m.date)}`, `${DT[m.template.day_type] || "—"} · ${(m.template.meals || []).length} bữa · ${fmtInt(mealsCal(m.template.meals))} kcal`)}
             {Icon.chev(16)}
           </button>
         ))}
         {past.map((d, i) => (
-          <button key={`d-${d.date}`} data-testid={`menu-past-${d.date}`} onClick={() => openPage("menu_past", { day: d })} style={rowBtn(i === past.length - 1)}>
-            <AppIcon color="#00A67E" size={36}>{Icon.redo(18)}</AppIcon>
-            <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 14, fontWeight: 700 }}>Ngày đã ăn · {fmtVN(d.date)}</span>
-              <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.meals.length} bữa · {fmtInt(d.cal)} kcal · {d.meals.flatMap((m) => m.items.map((it) => it.display || it.food || it.name)).slice(0, 4).join(", ")}</span>
-            </span>
+          <button key={`d-${d.date}`} data-testid={`menu-past-${d.date}`} onClick={() => openPage("menu_past", { day: d })} style={listRow(i === past.length - 1)}>
+            <AppIcon color={GREEN} size={36}>{Icon.redo(18)}</AppIcon>
+            {rowText(`Ngày đã ăn · ${fmtVN(d.date)}`, `${d.meals.length} bữa · ${fmtInt(d.cal)} kcal · ${d.meals.flatMap((m) => m.items.map((it) => it.display || it.food || it.name)).slice(0, 4).join(", ")}`)}
             {Icon.chev(16)}
           </button>
         ))}
@@ -215,7 +240,7 @@ export function MenuScreen(p) {
             {!noEx && (
               <div role="group" aria-label="Loại ngày" style={{ display: "flex", padding: 3, background: "rgba(30,64,175,0.07)", borderRadius: 10 }}>
                 {["train", "rest"].map((d) => (
-                  <button key={d} data-testid={`lib-day-${d}`} aria-pressed={libType === d} onClick={() => setLibType(d)} style={{ height: 30, padding: "0 10px", borderRadius: 8, border: "none", fontFamily: "inherit", fontSize: 12, fontWeight: libType === d ? 800 : 600, background: libType === d ? "#FFFFFF" : "transparent", color: libType === d ? "#007AFF" : "#475569" }}>{d === "train" ? "Tập" : "Nghỉ"}</button>
+                  <button key={d} data-testid={`lib-day-${d}`} aria-pressed={libType === d} onClick={() => setLibType(d)} style={{ height: 28, padding: "0 12px", borderRadius: 8, border: "none", fontFamily: "inherit", fontSize: 12, fontWeight: libType === d ? 800 : 600, background: libType === d ? "#FFFFFF" : "transparent", color: libType === d ? "#0062F0" : "#475569", boxShadow: libType === d ? "0 1px 3px rgba(15,23,42,0.08)" : "none" }}>{d === "train" ? "Tập" : "Nghỉ"}</button>
                 ))}
               </div>
             )}
@@ -225,12 +250,9 @@ export function MenuScreen(p) {
             {lib.map((t, i) => {
               const cal = mealsCal(applyMealEngineToTemplate(t, dailyTargetOf(macro, t.day_type)).meals);
               return (
-                <button key={t.id} data-testid={`lib-tpl-${t.id}`} onClick={() => openPage("menu_tpl", { id: t.id })} style={rowBtn(i === lib.length - 1)}>
-                  <AppIcon color="#007AFF" size={36}><span style={{ fontSize: 13, fontWeight: 900 }}>{(t.meals || []).length}</span></AppIcon>
-                  <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.name || "Mẫu"}</span>
-                    <span style={{ fontSize: 12, color: "#64748B" }}>{DT[t.day_type]} · {fmtInt(cal)} kcal · tính riêng cho bạn</span>
-                  </span>
+                <button key={t.id} data-testid={`lib-tpl-${t.id}`} onClick={() => openPage("menu_tpl", { id: t.id })} style={listRow(i === lib.length - 1)}>
+                  <Chip color="#0062F0" size={36}>{MI.layers(18)}</Chip>
+                  {rowText(t.name || "Mẫu", `${DT[t.day_type]} · ${(t.meals || []).length} bữa · ${fmtInt(cal)} kcal · tính riêng cho bạn`)}
                   {Icon.chev(16)}
                 </button>
               );
@@ -239,31 +261,14 @@ export function MenuScreen(p) {
         </>
       )}
 
-      {repeatRows.length > 0 && (
-        <>
-          <div style={secHead}>
-            <span style={{ fontSize: 17, fontWeight: 900 }}>Lặp lại hằng tuần</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Tự chép vào Hôm nay mỗi sáng</span>
-          </div>
-          <div style={box}>
-            {repeatRows.map((r, i) => (
-              <button key={r.key} data-testid={`week-day-${r.idx}`} onClick={() => openPage("menu_day", { key: r.key })} style={{ ...rowBtn(i === repeatRows.length - 1), minHeight: 56 }}>
-                <span style={{ ...iconBox(r.isToday ? "#007AFF" : LT.soft, r.isToday ? "#FFFFFF" : "#475569"), flexDirection: "column", lineHeight: 1.1 }}>
-                  <span style={{ fontSize: 13, fontWeight: 900 }}>{r.short}</span>
-                  {!noEx && <span style={{ fontSize: 9, fontWeight: 700, opacity: 0.85 }}>{r.dayType === "train" ? "Tập" : "Nghỉ"}</span>}
-                </span>
-                <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700 }}>Mỗi {r.long} · {fmtInt(r.cal)} kcal <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>· {r.meals.length} bữa</span></span>
-                  <span style={{ fontSize: 12, color: r.low || r.mismatch ? "#B45309" : "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {r.mismatch ? `Lưu cho ${DT[r.tpl.day_type].toLowerCase()} — nay là ${DT[r.dayType].toLowerCase()}` : r.low ? "Thiếu nhiều so với mục tiêu" : r.names.join(", ")}
-                  </span>
-                </span>
-                {Icon.chev(16)}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      <div style={secHead}>
+        <span style={{ fontSize: 17, fontWeight: 900 }}>Lặp lại hằng tuần</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Tự chép vào Hôm nay</span>
+      </div>
+      <div data-testid="week-strip" style={{ ...box, padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", gap: 5 }}>{rows.map((r) => <WeekCell key={r.key} r={r} noEx={noEx} onClick={() => openPage("menu_day", { key: r.key })} />)}</div>
+        <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>{setCount ? `Đã đặt ${setCount} thứ · chấm xanh = có thực đơn, chạm 1 thứ để xem / đặt` : "Chưa đặt thứ nào · chạm 1 thứ để lưu thực đơn ăn lại mỗi tuần"}</span>
+      </div>
 
       {todayHasMeals && (
         <button data-testid="clear-today" onClick={clearToday} style={{ display: "block", margin: "16px auto 0 auto", height: 44, padding: "0 16px", border: "none", background: "transparent", fontFamily: "inherit", fontSize: 14, fontWeight: 700, color: "#DC2626" }}>Xoá hết bữa hôm nay</button>
@@ -273,7 +278,7 @@ export function MenuScreen(p) {
   );
 }
 
-// ---------------- 1 ngày đã ăn (dùng lại) ----------------
+// ---------------- 1 ngày đã ăn (dùng lại) — bản vẽ 95 ----------------
 export function MenuPastPage({ day, profile, macro, applyTemplate, saveWeeklyTemplate, todayLog, refresh, showToast, close }) {
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
@@ -302,20 +307,22 @@ export function MenuPastPage({ day, profile, macro, applyTemplate, saveWeeklyTem
     showToast({ text: `Sẽ lặp lại mỗi ${idxs.map((i) => WEEK_SHORT[i]).join(", ")}.` });
   };
   return (
-    <div style={{ paddingBottom: 32 }}>
-      <Summary title={`Ngày ${fmtVN(day.date)} · ${DT[day.day_type]}`} cal={day.cal} target={dailyTargetOf(macro, todayType).cal} sub={`${day.meals.length} bữa đã ăn · so với mục tiêu hôm nay`} />
-      <MealsPreview meals={day.meals} />
-      <div style={{ margin: "14px 12px 0 12px", display: "flex", flexDirection: "column", gap: 8 }}>
-        <button data-testid="past-use-today" disabled={busy} onClick={useToday} style={btn("blue", busy)}>Dùng cho hôm nay</button>
-        <button data-testid="past-repeat" disabled={busy} onClick={() => setRepeat(true)} style={btn("ghost")}>Lặp lại hằng tuần…</button>
-        <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>Dùng cho hôm nay: bữa trùng tên được thay bằng món của ngày này (hỏi trước nếu hôm nay đã có món).</span>
+    <div>
+      <div style={body}>
+        <Summary title={`Ngày ${fmtVN(day.date)} · ${DT[day.day_type]}`} meals={day.meals} cal={day.cal} target={dailyTargetOf(macro, todayType).cal} sub={`${day.meals.length} bữa đã ăn · so với mục tiêu hôm nay`} />
+        <MealsPreview meals={day.meals} />
+        <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5, padding: "0 4px" }}>Dùng cho hôm nay: bữa trùng tên được thay bằng món của ngày này (hỏi trước nếu hôm nay đã có món).</span>
       </div>
+      <StickyFoot>
+        <button data-testid="past-repeat" disabled={busy} onClick={() => setRepeat(true)} style={fbtn("soft", false, 48)}>{Icon.redo(16)} Lặp lại hằng tuần</button>
+        <button data-testid="past-use-today" disabled={busy} onClick={useToday} style={fbtn("primary", busy)}>{Icon.check(18, 2.8)} Dùng cho hôm nay</button>
+      </StickyFoot>
       {repeat && <SaveWeekSheet dayType={day.day_type} gymDays={profile?.gymDays} noEx={(profile?.exerciseType || "gym") === "none"} onSave={saveRepeat} onClose={() => setRepeat(false)} />}
     </div>
   );
 }
 
-// ---------------- 1 ngày Lịch tuần ----------------
+// ---------------- 1 thứ Lặp lại hằng tuần — bản vẽ 95 ----------------
 export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplate, weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, applyTemplate, removeDayMeal, refresh, showToast, close }) {
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
@@ -358,36 +365,41 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
     showToast({ text: `Đã lưu thực đơn hôm nay vào ${row.long}.` });
   });
 
-  return (
-    <div style={{ paddingBottom: 32 }}>
-      {row.tpl ? (
-        <>
-          <Summary title={`${row.long} · ${DT[row.dayType]}`} cal={row.cal} target={target} sub={row.mismatch ? `Lưu cho ${DT[row.tpl.day_type].toLowerCase()} — bấm Tính lại để khớp mục tiêu ${DT[row.dayType].toLowerCase()}` : `${row.meals.length} bữa · tự chép vào Hôm nay mỗi ${row.long} nếu sáng đó chưa ghi gì`} />
-          <MealsPreview meals={row.meals} />
-          <div style={{ margin: "14px 12px 0 12px", display: "flex", flexDirection: "column", gap: 8 }}>
-            {row.dayType === todayType
-              ? <button data-testid="day-use-today" disabled={busy} onClick={useToday} style={btn("blue", busy)}>Dùng cho hôm nay</button>
-              : <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Hôm nay là {DT[todayType].toLowerCase()} nên không áp mẫu {DT[row.dayType].toLowerCase()} được.</span>}
-            <button data-testid="day-recalc" disabled={busy} onClick={recalc} style={btn("ghost")}>Tính lại theo mục tiêu hiện tại</button>
-            <button data-testid="day-delete" disabled={busy} onClick={remove} style={btn("danger")}>Bỏ lặp lại {row.long}</button>
-          </div>
-        </>
-      ) : (
-        <div style={{ margin: "16px 12px 0 12px", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ background: "#FFFFFF", border: "none", borderRadius: 16, padding: 16, fontSize: 14, color: "#475569", lineHeight: 1.5 }}>
-            {row.long} ({DT[row.dayType].toLowerCase()}) chưa có thực đơn. Lưu một ngày ăn ưng ý vào đây, mỗi {row.long} app sẽ tự áp sẵn các bữa.
-          </div>
-          {todayMeals.length > 0 && row.dayType === todayType && (
-            <button data-testid="day-save-today" disabled={busy} onClick={saveFromToday} style={btn("blue", busy)}>Lưu thực đơn hôm nay ({todayMeals.length} bữa · {fmtInt(mealsCal(todayMeals))} kcal)</button>
-          )}
-          {todayMeals.length > 0 && row.dayType !== todayType && <span style={{ fontSize: 12, color: "#64748B", textAlign: "center" }}>Hôm nay là {DT[todayType].toLowerCase()}, chỉ lưu được vào ngày cùng loại.</span>}
-        </div>
+  if (!row.tpl) return (
+    <div style={body}>
+      <div style={{ ...ltCard, padding: 16, display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <AppIcon color={GREEN} size={40}>{Icon.redo(20)}</AppIcon>
+        <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.5 }}>{row.long} ({DT[row.dayType].toLowerCase()}) chưa có thực đơn. Lưu một ngày ăn ưng ý vào đây, mỗi {row.long} app sẽ tự áp sẵn các bữa.</span>
+      </div>
+      {todayMeals.length > 0 && row.dayType === todayType && (
+        <button data-testid="day-save-today" disabled={busy} onClick={saveFromToday} style={fbtn("primary", busy)}>Lưu thực đơn hôm nay ({todayMeals.length} bữa · {fmtInt(mealsCal(todayMeals))} kcal)</button>
       )}
+      {todayMeals.length > 0 && row.dayType !== todayType && <span style={{ fontSize: 12, color: "#64748B", textAlign: "center" }}>Hôm nay là {DT[todayType].toLowerCase()}, chỉ lưu được vào ngày cùng loại.</span>}
+      {todayMeals.length === 0 && <span style={{ fontSize: 12, color: "#64748B", textAlign: "center", lineHeight: 1.5 }}>Hoặc mở 1 thực đơn AI / ngày đã ăn / thực đơn mẫu rồi bấm Lặp lại hằng tuần.</span>}
+    </div>
+  );
+  return (
+    <div>
+      <div style={body}>
+        <Summary title={`${row.long} · ${DT[row.dayType]}`} meals={row.meals} cal={row.cal} target={target} sub={`${row.meals.length} bữa · tự chép vào Hôm nay mỗi ${row.long} nếu sáng đó chưa ghi gì`} />
+        {row.mismatch ? <Warn>Lưu cho {DT[row.tpl.day_type].toLowerCase()} — bấm Tính lại để khớp mục tiêu {DT[row.dayType].toLowerCase()}</Warn>
+          : row.low ? <Warn>Thiếu nhiều so với mục tiêu — bấm Tính lại</Warn> : null}
+        <MealsPreview meals={row.meals} />
+      </div>
+      <StickyFoot>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button data-testid="day-recalc" disabled={busy} onClick={recalc} style={fbtn("soft", false, 48)}>{Icon.redo(16)} Tính lại</button>
+          <button data-testid="day-delete" disabled={busy} onClick={remove} style={fbtn("danger", false, 48)}>{MI.trash(16)} Bỏ lặp lại</button>
+        </div>
+        {row.dayType === todayType
+          ? <button data-testid="day-use-today" disabled={busy} onClick={useToday} style={fbtn("primary", busy)}>{Icon.check(18, 2.8)} Dùng cho hôm nay</button>
+          : <span style={{ fontSize: 12, color: "#B45309", textAlign: "center", padding: "4px 0" }}>Hôm nay là {DT[todayType].toLowerCase()} nên không áp mẫu {DT[row.dayType].toLowerCase()} được.</span>}
+      </StickyFoot>
     </div>
   );
 }
 
-// ---------------- 1 mẫu trong Kho mẫu ----------------
+// ---------------- 1 mẫu trong Kho mẫu — bản vẽ 96 ----------------
 export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeeklyTemplate, applyTemplate, refresh, showToast, close }) {
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
@@ -397,7 +409,7 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
   const [busy, setBusy] = useState(false);
   if (!t || !eng) return <p style={{ margin: 24, textAlign: "center", color: "#64748B" }}>Mẫu không còn.</p>;
   const none = (profile?.exerciseType || "gym") === "none";
-  const sameTypeIdx = WEEK_KEYS.map((_, i) => i).filter((i) => (none ? "rest" : (profile?.gymDays || []).includes(i) ? "train" : "rest") === t.day_type);
+  const typeOf = (i) => (none ? "rest" : (profile?.gymDays || []).includes(i) ? "train" : "rest");
   const cal = mealsCal(eng.meals);
 
   const useToday = async () => {
@@ -420,25 +432,22 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
   };
 
   return (
-    <div style={{ paddingBottom: 32 }}>
-      <Summary title={`${t.name || "Mẫu"} · ${DT[t.day_type]}`} cal={cal} target={dailyTargetOf(macro, t.day_type).cal} sub="Khẩu phần đã tính riêng theo mục tiêu của bạn" />
-      <MealsPreview meals={eng.meals} />
-      <div style={{ margin: "14px 12px 0 12px", display: "flex", flexDirection: "column", gap: 10 }}>
-        {t.day_type === todayType
-          ? <button data-testid="tpl-use-today" disabled={busy} onClick={useToday} style={btn("blue", busy)}>Dùng cho hôm nay</button>
-          : <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Mẫu {DT[t.day_type].toLowerCase()} — hôm nay là {DT[todayType].toLowerCase()}, chỉ đặt lặp lại hằng tuần được.</span>}
-        <span style={lbl}>LẶP LẠI HẰNG TUẦN VÀO · CHỈ {DT[t.day_type].toUpperCase()}</span>
-        <div role="group" aria-label="Gán vào ngày" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0,1fr))", gap: 6 }}>
-          {WEEK_SHORT.map((d, i) => {
-            const ok = sameTypeIdx.includes(i);
-            const on = days.includes(i);
-            return <button key={d} data-testid={`tpl-assign-${i}`} disabled={!ok} aria-pressed={on} onClick={() => setDays(on ? days.filter((x) => x !== i) : [...days, i])}
-              style={{ height: 44, borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: 800, background: on ? "#007AFF" : ok ? "#F1F5F9" : "#F8FAFC", color: on ? "#FFFFFF" : ok ? "#475569" : "#CBD5E1" }}>{d}</button>;
-          })}
+    <div>
+      <div style={body}>
+        <Summary title={`${t.name || "Mẫu"} · ${DT[t.day_type]}`} meals={eng.meals} cal={cal} target={dailyTargetOf(macro, t.day_type).cal} sub="Khẩu phần đã tính riêng theo mục tiêu của bạn" />
+        <MealsPreview meals={eng.meals} />
+        <div style={{ ...ltCard, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+          <span style={{ fontSize: 15, fontWeight: 900 }}>Lặp lại hằng tuần</span>
+          <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>Mẫu {DT[t.day_type].toLowerCase()} chỉ đặt được vào {DT[t.day_type].toLowerCase()} (ô nét đứt là {t.day_type === "train" ? "ngày nghỉ" : "ngày tập"})</span>
+          <DayPicker testid="tpl-assign" isOk={(i) => typeOf(i) === t.day_type} days={days} dayTypeOf={none ? null : typeOf} onToggle={(i) => setDays(days.includes(i) ? days.filter((x) => x !== i) : [...days, i])} />
+          <button data-testid="tpl-assign" disabled={busy || !days.length} onClick={assign} style={fbtn(days.length ? "soft" : "grey", busy || !days.length, 46)}>{Icon.redo(16)} {days.length === 1 ? `Lặp lại mỗi ${WEEK_SHORT[days[0]]}` : days.length ? `Lặp lại ${days.map((i) => WEEK_SHORT[i]).join(", ")} mỗi tuần` : "Chọn thứ cùng loại ngày"}</button>
         </div>
-        <button data-testid="tpl-assign" disabled={busy || !days.length} onClick={assign} style={btn("ghost")}>{days.length === 1 ? `Lặp lại mỗi ${WEEK_SHORT[days[0]]}` : days.length ? `Lặp lại ${days.length} thứ mỗi tuần` : "Chọn thứ cùng loại ngày"}</button>
-        <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>Ô mờ là {t.day_type === "train" ? "ngày nghỉ" : "ngày tập"} — mẫu {DT[t.day_type].toLowerCase()} chỉ lặp lại vào {DT[t.day_type].toLowerCase()}.</span>
       </div>
+      <StickyFoot>
+        {t.day_type === todayType
+          ? <button data-testid="tpl-use-today" disabled={busy} onClick={useToday} style={fbtn("primary", busy)}>{Icon.check(18, 2.8)} Dùng cho hôm nay</button>
+          : <span style={{ fontSize: 12, color: "#B45309", textAlign: "center", padding: "4px 0" }}>Mẫu {DT[t.day_type].toLowerCase()} — hôm nay là {DT[todayType].toLowerCase()}, chỉ đặt lặp lại hằng tuần được.</span>}
+      </StickyFoot>
     </div>
   );
 }

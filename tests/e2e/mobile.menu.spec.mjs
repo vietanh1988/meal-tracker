@@ -31,8 +31,18 @@ test("Thực đơn: ngày đã ăn → dùng hôm nay, lặp lại hằng tuần
     await nav("Thực đơn").click();
     await expect(page.getByTestId("menu-today")).toBeVisible();
     await expect(page.getByTestId("menu-ai-card")).toBeVisible();
-    await expect(page.getByTestId(`week-day-${ti}`)).toContainText("kcal");
+    await expect(page.getByTestId(`week-day-${ti}`)).toHaveAttribute("data-set", "1");
+    await expect(page.getByTestId(`week-day-${other}`)).toHaveAttribute("data-set", "0"); // dải 7 thứ luôn hiện (bản vẽ 90)
     await page.screenshot({ path: "shots/thuc-don.png", fullPage: true });
+    // Sheet tuỳ chọn AI (bản vẽ 91): mở từ viên trên thẻ tím, chọn món không ăn bằng chip
+    await tap(page.getByTestId("menu-opt-avoid"));
+    await expect(page.getByTestId("menu-opt-sheet")).toBeVisible();
+    await tap(page.getByTestId("menu-avoid-chip-hải sản"));
+    await expect(page.getByTestId("menu-avoid-chip-hải sản")).toHaveAttribute("aria-pressed", "true");
+    await page.screenshot({ path: "shots/thuc-don-tuy-chon.png" });
+    await tap(page.getByTestId("menu-avoid-chip-hải sản"));
+    await page.getByTestId("menu-opt-sheet").getByRole("button", { name: "Đóng", exact: true }).click();
+    await expect(page.getByTestId("menu-opt-sheet")).toHaveCount(0);
 
     // Lặp lại có sẵn của thứ hôm nay → dùng cho hôm nay
     await tap(page.getByTestId(`week-day-${ti}`));
@@ -68,7 +78,7 @@ test("Thực đơn: ngày đã ăn → dùng hôm nay, lặp lại hằng tuần
     await tap(page.getByTestId("day-delete"));
     await page.getByRole("button", { name: "Đồng ý" }).click();
     await waitDb(async () => (await tpl(KEYS[other])) === null, "bỏ lặp lại thứ kế");
-    await expect(page.getByTestId(`week-day-${other}`)).toHaveCount(0);
+    await expect(page.getByTestId(`week-day-${other}`)).toHaveAttribute("data-set", "0");
   } finally {
     await rest(`weekly_templates?user_id=eq.${s.uid}&day_name=eq.${KEYS[other]}`, { method: "DELETE" });
     await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${past}`, { method: "DELETE" });

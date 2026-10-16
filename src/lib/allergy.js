@@ -70,3 +70,14 @@ export function exclusionKeys(avoidText, foods) {
   }
   return out;
 }
+
+// Kiểm 1 tên món bất kỳ (kể cả món tự gõ / AI tính, không có trong kho) có dính món không ăn không
+export function avoidMatcher(avoidText) {
+  const t = norm(avoidText);
+  if (!t.trim()) return () => false;
+  const words = [...parse(avoidText).words];
+  return (name) => {
+    const k = norm(name).replace(/ trứng (gà|vịt|cút|ngỗng|chim)/g, " trứng ");
+    return words.some((w) => hasWord(k, w));
+  };
+}

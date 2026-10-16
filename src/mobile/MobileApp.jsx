@@ -22,7 +22,10 @@ import { FeedbackScreen } from "./FeedbackScreen";
 import { AboutScreen, TermsScreen } from "./AboutScreen";
 import { MenuScreen, MenuDayPage, MenuTplPage, MenuPastPage } from "./MenuScreen";
 import { AIMenuScreen } from "./AIMenuScreen";
-import { WEEK_KEYS, WEEK_SHORT, mealsCal } from "../lib/menuView";
+import { MealSuggestSheet } from "./MealSuggestSheet";
+import { mealSuggestions, mealTargetOf } from "../lib/mealSuggest";
+import { avoidMatcher } from "../lib/allergy";
+import { WEEK_KEYS, WEEK_SHORT, mealsCal, libraryFor } from "../lib/menuView";
 import { UpdatePopup } from "./UpdatePopup";
 import { AdminPanel } from "../AdminPanel";
 import { AICoachPanel } from "../AICoachPanel";
@@ -34,7 +37,7 @@ import { useNotifications } from "../hooks/useNotifications";
 import { NotificationsScreen, BellButton } from "./NotificationsScreen";
 import { AppDialogHost, appConfirm } from "../lib/dialog";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
-import { getAIMenuAccess } from "../lib/aiMenuService";
+import { getAIMenuAccess, loadAIMenus, buildExclusionKeys } from "../lib/aiMenuService";
 import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
@@ -138,6 +141,28 @@ export function MobileApp(props) {
   const eaten = eatenOfDay(day);
   const weight = weightSummary(weightLog, profile.goalKg, profile.kg, today);
   const recentMeals = useMemo(() => recentEatenMeals(recentRows, 12), [recentRows]);
+  const historyMeals = useMemo(() => recentEatenMeals(recentRows, 80), [recentRows]);
+  // Gợi ý món cho 1 bữa (thẻ bữa đến giờ): nguồn = bữa đã ăn + thực đơn mẫu hợp mục tiêu + thực đơn AI đã tạo;
+  // đồng bộ hồ sơ: calo bữa theo mục tiêu ngày + loại ngày, bỏ món "không ăn" ở tab Thực đơn.
+  const [aiMenusS, setAiMenusS] = useState([]);
+  useEffect(() => {
+    let alive = true;
+    if (user?.id) loadAIMenus(user.id, 5).then((r) => alive && setAiMenusS(r || []));
+    return () => { alive = false; };
+  }, [user?.id, version]);
+  useEffect(() => { if (flags.template_library && !(ud.defaultTemplates || []).length && ud.refreshDefaultTemplates) ud.refreshDefaultTemplates(); }, [flags.template_library]); // eslint-disable-line react-hooks/exhaustive-deps
+  const suggestFor = (mealId, d = date) => {
+    const dt = dayTypeOf(profile, d);
+    const avoidText = (readUser("fp_menu_prefs", user?.id, {}) || {}).avoid || "";
+    const cur = (mealOf(dayOf(d), mealId) || {}).items || [];
+    const list = mealSuggestions({
+      mealId, mealIds: idsFor(d), macro, dayType: dt,
+      history: historyMeals.filter((h) => h.log_date !== d),
+      templates: flags.template_library ? libraryFor(ud.defaultTemplates, { goal: macro?.goal, dietStrategy: macro?.dietStrategy, dayType: dt }) : [],
+      aiMenus: aiMenusS, avoidKeys: buildExclusionKeys(avoidText), isAvoided: avoidMatcher(avoidText), currentItems: cur, limit: 5,
+    });
+    return { list, avoidText, dayType: dt, target: mealTargetOf(macro, dt, idsFor(d), mealId)?.cal || 0 };
+  };
   const frequent = useMemo(() => frequentItems(recentRows, 15), [recentRows]);
   const weekDots = useMemo(() => {
     const m = {};
@@ -513,7 +538,7 @@ export function MobileApp(props) {
             week={week} onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
-            repeatFor={(id) => recentMeals.find((r) => r.meal_id === id && !(r.log_date === date))} onRepeat={(rec, id) => repeatMeal(rec, id)}
+            suggestCount={(id) => suggestFor(id).list.length} onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })}
             onAIMenu={aiMenuAction} onWeight={() => { setProgressSeg((s) => ({ seg: "weight", n: s.n + 1 })); setTab("progress"); }} />
         )}
         {tab === "menu" && (
@@ -544,6 +569,19 @@ export function MobileApp(props) {
           {l.type === "log" && renderLog(l)}
           {l.type === "edit" && renderEdit(l)}
           {l.type === "page" && renderPage(l)}
+          {l.type === "suggest" && (() => {
+            const sg = suggestFor(l.mealId, l.date);
+            const nm = MEAL_NAMES[l.mealId] || "Bữa";
+            return <MealSuggestSheet mealId={l.mealId} mealName={nm} list={sg.list} target={sg.target} goal={macro?.goal} dayType={sg.dayType} avoidText={sg.avoidText}
+              onClose={closeLayer} onSearch={() => replaceTop({ type: "log", date: l.date, mealId: l.mealId })}
+              onPick={async (opt) => {
+                const m = mealOf(dayOf(l.date), l.mealId);
+                if (m && hasItems(m) && !(await appConfirm(`${nm} đã có món. Thay bằng món gợi ý?`))) return;
+                const label = opt.kind === "history" ? `${nm.toLowerCase()} ${fmtVN(opt.date)}` : `gợi ý ${opt.title.toLowerCase()}`;
+                closeLayer();
+                await putItems(l.date, l.mealId, opt.items, true, label);
+              }} />;
+          })()}
           {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs}
             onOpenAIMenu={aiAccess.usable ? () => replaceTop(quickAILayer()) : null} initialInput={l.input || ""} />}
           {l.type === "ai" && (

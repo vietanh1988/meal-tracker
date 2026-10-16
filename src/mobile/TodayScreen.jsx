@@ -94,9 +94,9 @@ export function TodayScreen(p) {
 }
 
 // Thẻ bữa đến giờ (bản vẽ 77): cùng màu nền, nổi mềm; dải màu của bữa ở mép trên; dòng món lõm vào.
-function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepeat, busy, nowMinutes, onAskAI }) {
+function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestCount, onSuggest, busy, nowMinutes, onAskAI }) {
   const planned = r.state === "planned";
-  const rep = !planned ? repeatFor(r.id) : null;
+  const nSug = !planned && suggestCount ? suggestCount(r.id) : 0;
   const label = r.state === "missed" ? "CHƯA GHI" : (r.minutes ?? 0) > nowMinutes + 60 ? "BỮA TIẾP THEO" : "ĐẾN GIỜ ĂN";
   const c = IC_COLOR[r.id] || "#007AFF";
   const soft = { background: LT.tone, border: "none", fontFamily: "inherit" };
@@ -126,11 +126,13 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, repeatFor, onRepe
             <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Tìm món</button>
           </>}
         </div>
-        {rep && (
-          <button disabled={busy} onClick={() => onRepeat(rep, r.id)} className="tap" style={{ ...soft, boxShadow: LT.inset, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, color: "#0F172A", textAlign: "left" }}>
-            <span style={{ color: "#007AFF", display: "flex" }}>{Icon.redo(16)}</span>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Ăn lại {rep.meal_name ? rep.meal_name.toLowerCase() : "bữa"} {fmtVN(rep.log_date)} · {rep.items.map((i) => itemName(i).toLowerCase()).join(", ")}</span>
-            <span style={{ fontSize: 13, fontWeight: 800, color: "#007AFF" }}>{fmtInt(rep.cal)}</span>
+        {nSug > 0 && (
+          // Gợi ý món (16/10): mở sheet chọn 1 trong ≤5 gợi ý theo calo bữa + hồ sơ — không tự áp vào bữa như nút "Ăn lại" cũ
+          <button data-testid="focus-suggest" data-meal={r.id} disabled={busy} onClick={() => onSuggest(r.id)} className="tap" style={{ ...soft, boxShadow: LT.inset, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, color: "#0F172A", textAlign: "left" }}>
+            <span style={{ color: "#007AFF", display: "flex" }}>{Icon.sparkle(16)}</span>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 700, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Gợi ý món cho {r.name.toLowerCase()}</span>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF", whiteSpace: "nowrap" }}>{nSug} lựa chọn</span>
+            {Icon.chev(16, "#007AFF")}
           </button>
         )}
         {onAskAI && (
