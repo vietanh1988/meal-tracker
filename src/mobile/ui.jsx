@@ -11,6 +11,7 @@ export const SR = { position: "absolute", width: 1, height: 1, overflow: "hidden
 
 // CSS chung: trạng thái nhấn / focus / hover cho mọi nút trong khung mobile
 export const MOBILE_CSS = `
+.fpm input[type=search]::-webkit-search-cancel-button,.fpm input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
 .fpm button,.fpm a,.fpm [role=button]{-webkit-tap-highlight-color:transparent;cursor:pointer}
 .fpm button:disabled{cursor:default;opacity:.55}
 .fpm button:not(:disabled):active,.fpm a:active,.fpm .tap:active{transform:scale(.97)}
