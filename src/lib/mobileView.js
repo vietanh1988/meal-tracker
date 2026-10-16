@@ -206,13 +206,37 @@ export function searchFoods(query, foodCache, limit = 20) {
     if (s < 9) out.push({ key: name, s: s + 0.5, len: name.length, src: "cache" });
   }
   out.sort((a, b) => a.s - b.s || a.len - b.len || a.key.localeCompare(b.key, "vi"));
-  return out.slice(0, limit).map(({ key, src }) => {
+  const items = out.slice(0, limit * 2).map(({ key, src }) => {
     if (src === "local") {
       const p = defaultPortion(key);
       return itemFromLocal(key, p.gram, p.label);
     }
     return itemFromCache(key, foodCache[key]);
   }).filter(Boolean);
+  return dedupeByName(items).slice(0, limit);
+}
+
+// Trùng tên hiển thị (16/10): kho có nhiều mã cùng hiện 1 tên ("thịt lợn"/"thịt lợn nạc" → "Thịt lợn luộc",
+// "ức gà luộc"/"gà luộc" → "Gà luộc"). Món trùng cả tên lẫn calo/100 g → bỏ bớt; khác calo → hiện tên gốc của mã cho khỏi nhầm.
+export function dedupeByName(items) {
+  const per100 = (it) => Math.round(((Number(it.cal) || 0) / (Number(it.gram) || 100)) * 100);
+  const cap = (x) => { const r = String(x || ""); return r.charAt(0).toUpperCase() + r.slice(1); };
+  const out = [];
+  const names = new Map(); // tên → món đã giữ
+  for (const it of items) {
+    const n = stripVN(itemName(it));
+    const prev = names.get(n);
+    if (!prev) { names.set(n, it); out.push(it); continue; }
+    if (Math.abs(per100(prev) - per100(it)) <= 3) continue; // cùng món, khác mã
+    const own = cap(it.food);
+    if (names.has(stripVN(own))) continue;
+    // món giữ trước mà không đúng mã tên hiển thị thì cũng đổi về tên mã của nó
+    if (stripVN(prev.food || "") !== n) { const pn = cap(prev.food); prev.display = pn; names.set(stripVN(pn), prev); names.delete(n); }
+    const copy = { ...it, display: own };
+    names.set(stripVN(own), copy);
+    out.push(copy);
+  }
+  return out;
 }
 
 // Đổi gram 1 món: macro nhân theo tỉ lệ gram mới / gram cũ

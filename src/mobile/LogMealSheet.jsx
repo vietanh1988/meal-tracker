@@ -3,7 +3,8 @@
 // pickMode: dùng từ Sửa bữa để chọn 1 món đưa về bản nháp (không lưu ngay).
 import { useState, useMemo, useRef, useEffect } from "react";
 import { Icon, GRAD_ORANGE, SR, useLockScroll, FONT, useSwipeClose, SheetHandle, Seg } from "./ui";
-import { MEAL_SHORT, searchFoods, itemName, itemPortion, fmtInt } from "../lib/mobileView";
+import { MEAL_SHORT, searchFoods, itemName, itemPortion, fmtInt, scaleItem } from "../lib/mobileView";
+import { stepItem } from "../lib/calcCheck";
 import { fmtVN } from "../lib/dateVN";
 import { MEAL_NAMES } from "../lib/mealMath";
 
@@ -37,6 +38,24 @@ export function LogMealSheet(p) {
     if (busyKey) return;
     setBusyKey(key);
     try { const ok = await fn(); if (ok !== false) flash(key); } finally { setBusyKey(null); }
+  };
+
+  // Giỏ món (16/10): bấm + nhiều món, chỉnh gram từng món rồi ghi 1 lần (trước đây mỗi món ghi 1 lần / Sửa bữa phải mở lại sheet từng món)
+  const [tray, setTray] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const keyOf = (it) => `${it.food}|${itemName(it)}`;
+  const inTray = (it) => tray.some((t) => t.k === keyOf(it));
+  const toggleTray = (it) => setTray((t) => (t.some((x) => x.k === keyOf(it)) ? t.filter((x) => x.k !== keyOf(it)) : [...t, { k: keyOf(it), it }]));
+  const setTrayItem = (k, fn) => setTray((t) => t.map((x) => (x.k === k ? { ...x, it: fn(x.it) } : x)));
+  const trayCal = tray.reduce((a, x) => a + (Number(x.it.cal) || 0), 0);
+  const saveTray = async () => {
+    if (!tray.length || saving) return;
+    setSaving(true);
+    try {
+      const items = tray.map((x) => x.it);
+      const ok = pickMode ? await p.onPickMany(items) : await p.onAddItems(items);
+      if (ok !== false) setTray([]);
+    } finally { setSaving(false); }
   };
 
   const sw = useSwipeClose(onClose);
@@ -96,7 +115,7 @@ export function LogMealSheet(p) {
           </div>
         )}
 
-        <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", margin: "0 -12px", padding: "0 12px calc(20px + env(safe-area-inset-bottom, 0px)) 12px" }}>
+        <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", margin: "0 -12px", padding: tray.length ? "0 12px 12px 12px" : "0 12px calc(20px + env(safe-area-inset-bottom, 0px)) 12px" }}>
           <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em", padding: "4px 4px 6px 4px" }}>{results ? `KẾT QUẢ (${results.length})` : "GẦN ĐÂY"}</span>
 
           {!results && sugg.length > 0 && (
@@ -128,7 +147,7 @@ export function LogMealSheet(p) {
             return (
               <div key={key + i} style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 56, padding: "0 4px", borderBottom: i < list.length - 1 ? "1px solid #EEF2FA" : "none" }}>
                 <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 15, fontWeight: 700 }}>{nm}</span><span style={{ fontSize: 12, color: "#64748B" }}>{itemPortion(it)} · {fmtInt(it.cal)} kcal</span></span>
-                <button disabled={!!busyKey} onClick={() => add(key, () => (pickMode ? p.onPick(it) : p.onAddItem(it)))} aria-label={`Thêm ${nm.toLowerCase()}`} style={addBtn(done[key])}>{done[key] ? Icon.check(18) : "+"}</button>
+                <button data-testid="log-add" aria-pressed={inTray(it)} onClick={() => toggleTray(it)} aria-label={`Thêm ${nm.toLowerCase()}`} style={addBtn(inTray(it))}>{inTray(it) ? Icon.check(18) : "+"}</button>
               </div>
             );
           })}
@@ -149,7 +168,37 @@ export function LogMealSheet(p) {
             <div style={{ padding: "16px 4px", fontSize: 13, color: "#475569", lineHeight: 1.5 }}>Món bạn đã ăn sẽ hiện ở đây để ghi lại nhanh. Gõ tên món vào ô tìm ở trên.</div>
           )}
         </div>
+
+        {tray.length > 0 && (
+          <div data-testid="log-tray" style={{ flexShrink: 0, margin: "0 -16px", padding: "10px 16px calc(env(safe-area-inset-bottom, 0px) + 12px) 16px", background: "#FFFFFF", borderTop: "1px solid #EEF2FA", boxShadow: "0 -8px 24px rgba(15,23,42,0.06)", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ maxHeight: "34vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+              {tray.map(({ k, it }) => (
+                <div key={k} data-testid="log-tray-row" style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 48 }}>
+                  <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+                    <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{itemName(it)}</span>
+                    <span style={{ fontSize: 12, color: "#64748B" }}>{fmtInt(it.cal)} kcal{it.qty_display ? ` · ${it.qty_display}` : ""}</span>
+                  </span>
+                  <button onClick={() => setTrayItem(k, (x) => stepItem(x, -1))} aria-label={`Bớt ${itemName(it)}`} style={stepBtn}>−</button>
+                  <label style={{ width: 64, height: 36, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", gap: 2, fontSize: 14, fontWeight: 800 }}>
+                    <span style={SR}>Gram {itemName(it).toLowerCase()}</span>
+                    <input type="number" inputMode="numeric" value={Math.round(it.gram) || ""} onChange={(e) => { const g = Math.min(3000, Math.max(0, Number(e.target.value) || 0)); setTrayItem(k, (x) => (g ? scaleItem(x, g) : { ...x, gram: 0 })); }}
+                      style={{ width: 38, border: "none", background: "transparent", textAlign: "right", fontFamily: "inherit", fontSize: 16, fontWeight: 800, color: "#0F172A", outline: "none", padding: 0 }} />
+                    <span style={{ fontSize: 12, color: "#0062F0" }}>g</span>
+                  </label>
+                  <button onClick={() => setTrayItem(k, (x) => stepItem(x, 1))} aria-label={`Thêm phần ${itemName(it)}`} style={stepBtn}>+</button>
+                  <button onClick={() => setTray((t) => t.filter((x) => x.k !== k))} aria-label={`Bỏ ${itemName(it)}`} style={{ ...stepBtn, background: "transparent", color: "#94A3B8" }}>{Icon.close(14)}</button>
+                </div>
+              ))}
+            </div>
+            <button data-testid="log-tray-save" disabled={saving || tray.some((x) => !(x.it.gram > 0))} onClick={saveTray}
+              style={{ height: 52, borderRadius: 16, border: "none", background: "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 16, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: saving ? 0.6 : 1 }}>
+              {Icon.check(18)} {pickMode ? `Thêm ${tray.length} món · ${fmtInt(trayCal)} kcal` : `Ghi ${tray.length} món vào ${String(MEAL_NAMES[mealId] || "bữa").toLowerCase()} · ${fmtInt(trayCal)} kcal`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+const stepBtn = { width: 34, height: 36, borderRadius: 10, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 18, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0, fontFamily: "inherit" };

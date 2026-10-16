@@ -311,7 +311,7 @@ export function MobileApp(props) {
       return <LogMealSheet pickMode pickTitle={MEAL_NAMES[l.mealId]} date={l.date} mealId={l.mealId} mealIds={[]} dateOptions={dateOptions}
         recentMeals={[]} frequent={frequent} foodCache={ud.foodCache} onClose={closeLayer}
         onCalc={(text, auto) => replaceTop({ type: "calc", pick: true, text: text || "", auto: !!auto, date: l.date, mealId: l.mealId })}
-        onPick={(it) => { setPendingPick({ item: it, n: Date.now() }); closeLayer(); return true; }} />;
+        onPickMany={(items) => { setPendingPick({ items, n: Date.now() }); closeLayer(); return true; }} />;
     }
     const ids = idsFor(l.date);
     const mealId = ids.includes(l.mealId) ? l.mealId : ids[0];
@@ -324,7 +324,7 @@ export function MobileApp(props) {
       onAI={aiAccess.usable && l.date === today ? () => replaceTop({ type: "ai" }) : null}
       weekly={weeklyFor(l.date, mealId)}
       onCalc={(text, auto) => replaceTop({ type: "calc", text: text || "", auto: !!auto, date: l.date, mealId })}
-      onAddItem={(it) => putItems(l.date, mealId, [it], false, itemName(it).toLowerCase())}
+      onAddItems={async (items) => { const ok = await putItems(l.date, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`); if (ok !== false) closeLayer(); return ok; }}
       suggestions={sg.list} suggestTarget={sg.target}
       onAddSuggest={async (opt) => {
         const nm = mealLabel(target && target.meal_name, mealId);

@@ -66,3 +66,12 @@ test("chữ số lượng chỉ tính khi có đơn vị; có 'ổ'", () => {
   assert.equal(b.qty, 0.5); assert.equal(b.unit, "ổ"); assert.equal(b.name, "bánh mì");
   assert.equal(parseFoodLine("hai quả trứng gà luộc").qty, 2);
 });
+
+test("món không có trong kho (gốc + cách chế biến) giữ tên gõ, đánh dấu Ước tính (16/10)", async () => {
+  const { resolveAll } = await import("../src/lib/calcCheck.js");
+  const [a] = resolveAll("thịt lợn xào", {});
+  assert.equal(a.display, "Thịt lợn xào");
+  assert.equal(a.source, "estimate");
+  const [b] = resolveAll("trứng rán", {});
+  assert.ok(!/luộc/i.test(b.display), b.display);
+});

@@ -144,3 +144,11 @@ test("searchFoods: khớp theo từ khi không có nguyên cụm ('thịt gà x�
   assert.ok(r.some((i) => /gà xào/i.test(V.itemName(i))), r.map(V.itemName).join(", "));
   assert.equal(V.searchFoods("zzqx abc", {}, 20).length, 0);
 });
+
+test("tìm món không hiện 2 dòng trùng tên (16/10)", async () => {
+  const { searchFoods, itemName } = await import("../src/lib/mobileView.js");
+  for (const q of ["thịt lợn xào", "thịt heo", "trứng", "rau muống"]) {
+    const n = searchFoods(q, {}, 30).map((x) => itemName(x).toLowerCase());
+    assert.equal(new Set(n).size, n.length, `${q}: ${n.join(" | ")}`);
+  }
+});

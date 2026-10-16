@@ -162,7 +162,10 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
         ) : (
           <div key={i} data-testid={`calc-item-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 72, borderBottom: i < rows.length - 1 ? "1px solid #EEF2FA" : "none" }}>
             <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 15, fontWeight: 700 }}>{itemName(r)}<span style={tag(r.source === "ai")}>{r.source === "ai" ? "AI tính" : r.source === "cache" ? "Đã lưu" : "Kho món"}</span></span>
+              <span style={{ fontSize: 15, fontWeight: 700 }}>{itemName(r)}{r.source === "estimate"
+                ? <span data-testid="calc-estimate" style={{ marginLeft: 6, fontSize: 11, fontWeight: 800, color: "#B45309", background: "rgba(245,158,11,0.12)", padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>Ước tính</span>
+                : <span style={tag(r.source === "ai")}>{r.source === "ai" ? "AI tính" : r.source === "cache" ? "Đã lưu" : "Kho món"}</span>}</span>
+              {r.source === "estimate" && r.base && <span style={{ fontSize: 11, color: "#B45309" }}>Chưa có đúng món này — tính từ {r.base.toLowerCase()}{r.cook ? ` + ${r.cook}` : ""}</span>}
               <span style={{ fontSize: 12, color: "#475569" }}>{fmtInt(r.cal)} kcal · Đ {fmtDec(r.p)} · TB {fmtDec(r.c)} · B {fmtDec(r.f)} g</span>
             </span>
             <button aria-label={`Giảm ${itemName(r)}`} onClick={() => setRow(i, stepItem(r, -1))} style={stepBtn}>−</button>

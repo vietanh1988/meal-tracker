@@ -100,7 +100,23 @@ function covers(query, matchedName) {
 // Tên chung chung hay gõ → món cụ thể trong kho
 const ALIAS = { "cơm": "cơm trắng", "sữa": "sữa tươi", "trứng": "trứng gà luộc", "trứng gà": "trứng gà luộc", "thịt lợn": "thịt heo", "thịt lợn luộc": "thịt heo luộc" };
 
+// Từ miền Bắc/Nam cùng nghĩa: không thấy thì thử "rán"→"chiên", "lợn"→"heo" (VD "trứng rán" = "trứng chiên")
+const SYN = [[/\brán\b/g, "chiên"], [/\blợn\b/g, "heo"], [/\bluộc\b/g, "hấp"]];
+
 export function resolveEntry(entry0, foodCache) {
+  const r = resolveEntry1(entry0, foodCache);
+  if (!r.unknown && r.source !== "estimate") return r;
+  for (const [re, to] of SYN) {
+    if (!re.test(entry0.name)) continue;
+    re.lastIndex = 0;
+    const alt = resolveEntry1({ ...entry0, name: entry0.name.replace(re, to) }, foodCache);
+    re.lastIndex = 0;
+    if (!alt.unknown && alt.source !== "estimate") return { ...alt, display: entry0.name.charAt(0).toUpperCase() + entry0.name.slice(1) };
+  }
+  return r;
+}
+
+function resolveEntry1(entry0, foodCache) {
   const entry = ALIAS[entry0.name] ? { ...entry0, name: ALIAS[entry0.name] } : entry0;
   const plain = stripVN(entry.name);
   const cacheKey = Object.keys(foodCache || {}).find((k) => stripVN(k) === plain);
@@ -108,7 +124,8 @@ export function resolveEntry(entry0, foodCache) {
   if (localKey) {
     const gram = gramOf(entry, localKey);
     const r = lookupLocalFood(localKey, gram);
-    if (r) return toItem(entry, localKey, getFoodDisplay(localKey), gram, r, "localDB");
+    // Gõ đúng tên mã trong kho → hiện đúng tên đó (DISPLAY_MAP có chỗ gộp "ức gà luộc" thành "Gà luộc")
+    if (r) return toItem(entry, localKey, stripVN(entry0.name) === stripVN(localKey) ? localKey : getFoodDisplay(localKey), gram, r, "localDB");
   }
   if (cacheKey) {
     const v = foodCache[cacheKey];
@@ -129,8 +146,11 @@ export function resolveEntry(entry0, foodCache) {
     if (covers(entry.name, r.name)) {
       const g2 = gramOf(entry, matched);
       const r2 = lookupLocalFood(entry.name, g2) || r;
-      const disp = getFoodDisplay(matched) + (r2.cook && !stripVN(getFoodDisplay(matched)).includes(stripVN(r2.cook)) ? ` ${r2.cook}` : "");
-      return toItem(entry, entry.name, disp, g2, r2, "localDB");
+      // Không có đúng món trong kho, tính từ món gốc + cách chế biến ("thịt lợn" + xào): giữ ĐÚNG tên người dùng gõ
+      // (trước đây ghép tên hiển thị → "Thịt lợn luộc xào", "Trứng luộc rán") và đánh dấu Ước tính, không phải "Kho món"
+      const estimated = stripVN(matched) !== plain;
+      if (estimated) return { ...toItem(entry, entry.name, entry.name, g2, r2, "estimate"), base: matched, cook: r2.cook || null };
+      return toItem(entry, entry.name, getFoodDisplay(matched), g2, r2, "localDB");
     }
     return { unknown: true, entry, near: toItem(entry, matched, getFoodDisplay(matched), gramOf(entry, matched), lookupLocalFood(matched, gramOf(entry, matched)) || r, "localDB") };
   }
