@@ -72,7 +72,7 @@ export function MealSuggestSheet({ mealId, mealName, list, target, rt, goal, day
       {onSearch && <button data-testid="suggest-search" onClick={onSearch} style={{ height: 36, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#0062F0", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexShrink: 0 }}>{Icon.search(15)} Tìm món khác</button>}
       <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
         <button onClick={onClose} style={{ ...fbtn("grey"), flex: 1 }}>Huỷ</button>
-        <button data-testid="suggest-apply" disabled={!chosen || busy} onClick={pick} style={{ ...fbtn("primary", !chosen || busy), flex: 2 }}>{Icon.check(18, 2.8)} Dùng cho {String(mealName || "bữa").toLowerCase()}{chosen ? ` · ${fmtInt(chosen.cal)}` : ""}</button>
+        <button data-testid="suggest-apply" disabled={!chosen || busy} onClick={pick} style={{ ...fbtn("primary", !chosen || busy), flex: 2 }}>{Icon.check(18, 2.8)} {chosen ? `Dùng món này · ${fmtInt(chosen.cal)} kcal` : "Chọn món"}</button>
       </div>
     </Sheet>
   );
