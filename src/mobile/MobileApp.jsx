@@ -512,8 +512,8 @@ export function MobileApp(props) {
     </div>
   ) : null;
 
-  // Dải che thanh giờ ở tab Hôm nay: khi header xanh đã cuộn khỏi màn thì đổi sang màu nền nhạt (16/10 — trước đó
-  // dải xanh đặc còn nằm trên nội dung nhạt khi cuộn, nhìn như 1 khối xanh lơ lửng).
+  // Dải che thanh giờ: chỉ tô màu header khi header xanh còn trên màn (Hôm nay) hoặc tab Tôi nền tối.
+  // Tab sáng / đã cuộn qua header → trong suốt, không tô màu (chủ dự án 16/10: cuộn lên thì không có dải màu).
   const [hdrGone, setHdrGone] = useState(false);
   useEffect(() => {
     if (tab !== "today") { setHdrGone(false); return undefined; }
@@ -532,7 +532,7 @@ export function MobileApp(props) {
       {/* Dải che vùng thanh giờ iPhone (14/10): iOS phủ lớp kính mờ khi nội dung cuộn dưới thanh giờ → chữ nhoè, vệt sáng.
           Dải cố định cùng màu đầu trang che nội dung lại, iOS chỉ còn làm mờ 1 màu đặc. Màn phụ (z 120+) tự có header riêng. */}
       <style>{HEADER_CSS}</style>
-      <div aria-hidden="true" data-testid="ios-top-cover" data-tone={coverToday ? "header" : tab === "me" ? "dark" : "light"} style={{ position: "fixed", left: 0, right: 0, top: 0, height: "env(safe-area-inset-top, 0px)", zIndex: 94, pointerEvents: "none", transition: "background-color .2s ease", background: coverToday ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : LT.top }}>
+      <div aria-hidden="true" data-testid="ios-top-cover" data-tone={coverToday ? "header" : tab === "me" ? "dark" : "none"} style={{ position: "fixed", left: 0, right: 0, top: 0, height: "env(safe-area-inset-top, 0px)", zIndex: 94, pointerEvents: "none", background: coverToday ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : "transparent" }}>
         {coverToday && <span className="fp-hdr-dark" style={{ position: "absolute", inset: 0, background: HDR_TOP.dark, animationDelay: hdrDelay() }} />}
       </div>
       {/* Tab Tôi: nền Blue Dark phủ cả màn (bản vẽ 48) */}

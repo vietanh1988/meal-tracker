@@ -685,7 +685,7 @@ function displayInfo(template, swap = null) {
     const map = {};
     (m.items || []).forEach(it => {
       if (swap && it.food === swap.oldFood && m.meal_id === swap.mealId) map[swap.newFoodKey] = getFoodDisplay(swap.newFoodKey);
-      else if (it.display !== undefined) map[it.food] = it.display;
+      else map[it.food] = it.display; // giữ cả undefined (chưa có tên hiển thị) — chỉ null mới là món ẩn
     });
     out[m.meal_id] = { map, pattern: swap && m.meal_id === swap.mealId ? null : (m.pattern || null) };
   });
@@ -697,7 +697,7 @@ function finishMeals(meals, info) {
     const inf = info[m.meal_id] || { map: {}, pattern: null };
     const items = (m.items || []).map(it => snapWholeUnit({
       ...it,
-      display: inf.map[it.food] !== undefined ? inf.map[it.food] : null,
+      display: Object.prototype.hasOwnProperty.call(inf.map, it.food) ? inf.map[it.food] : undefined,
     }));
     items.sort((a, b) => {
       const ra = DISPLAY_ORDER[a.role || getFoodRole(a.food)] ?? 2;

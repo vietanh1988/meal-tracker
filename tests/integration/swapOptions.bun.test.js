@@ -74,5 +74,9 @@ test("Đổi món giữ calo bữa (±5%), không đụng bữa khác; Cân lạ
   // Cân lại = đúng mức mealEngine đạt được với các món này (bằng thực đơn tính chuẩn ban đầu), không còn hụt 35%
   expect(Math.abs(sumTemplate(fixed).cal - sumTemplate(base).cal) / sumTemplate(base).cal).toBeLessThan(0.03);
   expect(sumTemplate(fixed).cal).toBeGreaterThan(sumTemplate(short).cal * 1.3);
-  expect(fixed.meals.find((m) => m.meal_id === "trua").items.every((i) => i.display !== undefined)).toBe(true);
+  // Không món nào bị ẩn (display null) chỉ vì thực đơn gốc chưa có tên hiển thị (lỗi CI 16/10: Cân lại làm mất món)
+  const disp = (t) => t.meals.flatMap((m) => m.items.map((i) => `${m.meal_id}:${i.food}:${i.display === null}`)).sort();
+  expect(disp(fixed)).toEqual(disp(short));
+  const noDisp = JSON.parse(JSON.stringify(short)); noDisp.meals.forEach((m) => m.items.forEach((i) => { delete i.display; }));
+  expect(rebalanceTemplate(noDisp, macro, "rest").meals.flatMap((m) => m.items).some((i) => i.display === null)).toBe(false);
 });

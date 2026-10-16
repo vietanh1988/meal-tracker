@@ -25,11 +25,12 @@ test("Hôm nay: Gợi ý món → sheet chọn → ghi vào bữa", async ({ bro
       meals: IDS.map((id) => ({ meal_id: id, items: foods[id] })), eaten_meals: IDS, total_cal: 2000 }) });
 
     await login(page);
-    // Dải che thanh giờ: màu header khi header còn trên màn, màu nền nhạt khi đã cuộn qua header
+    // Dải che thanh giờ: màu header khi header còn trên màn, trong suốt khi đã cuộn qua header
     const cover = page.getByTestId("ios-top-cover");
     await expect(cover).toHaveAttribute("data-tone", "header");
     await page.evaluate(() => window.scrollTo(0, 1200));
-    await expect(cover).toHaveAttribute("data-tone", "light");
+    await expect(cover).toHaveAttribute("data-tone", "none");
+    expect(await cover.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgba(0, 0, 0, 0)");
     await page.evaluate(() => window.scrollTo(0, 0));
     await expect(cover).toHaveAttribute("data-tone", "header");
     const btn = page.getByTestId("focus-suggest");
