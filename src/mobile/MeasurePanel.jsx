@@ -61,7 +61,7 @@ export function MeasurePanel({ measures, profile, weightLog, today, onMeasure, o
           <span style={{ fontSize: 20, fontWeight: 900, color: x ? "#0F172A" : "#CBD5E1" }}>{x ? fmtDec(x.v) : "—"}</span>
           {x && <span style={{ fontSize: 12, color: "#64748B" }}>cm</span>}
           <span style={{ flex: 1 }} />
-          <span data-testid={`measure-delta-${f.k}`} data-tone={tone || ""} style={{ fontSize: 12, fontWeight: 900, color: tone ? TONE[tone] : "#94A3B8" }}>{x?.delta ? `${arrow(x.delta)} ${fmtDec(Math.abs(x.delta))}` : "—"}</span>
+          <span data-testid={`measure-delta-${f.k}`} data-tone={tone || ""} style={{ fontSize: 12, fontWeight: 900, color: tone ? TONE[tone] : "#94A3B8" }}>{x?.delta ? `${arrow(x.delta)} ${fmtDec(Math.abs(x.delta))}` : x && x.prev != null ? "=" : ""}</span>
         </span>
       </button>
     );
