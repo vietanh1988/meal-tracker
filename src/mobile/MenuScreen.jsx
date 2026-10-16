@@ -233,7 +233,7 @@ export function MenuScreen(p) {
           </button>
         ))}
         {aiMenus && aiMenus.length === 0 && past.length === 0 && (
-          <div style={{ padding: "14px 0", fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>Thực đơn AI bạn tạo và những ngày bạn đã ghi đủ bữa sẽ hiện ở đây để dùng lại.</div>
+          <div style={{ padding: "14px 0", fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>Thực đơn AI bạn tạo và những ngày bạn đã ăn đủ bữa sẽ hiện ở đây để dùng lại.</div>
         )}
       </div>
 
