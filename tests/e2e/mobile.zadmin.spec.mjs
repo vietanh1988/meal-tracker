@@ -54,6 +54,7 @@ test("Quản trị: 10 trang con nền tối", async ({ browser }) => {
       await tap(page.getByTestId(`admin-${id}`));
       await expect(page.getByTestId(root)).toBeVisible();
       await expect(page.getByTestId("admin-loading")).toHaveCount(0, { timeout: 15_000 });
+      await expect(page.getByTestId("admin-error"), `${id}: lỗi tải`).toHaveCount(0);
       const w = await page.evaluate(() => { const sp = [...document.querySelectorAll('[data-testid="subpage"]')].pop(); const c = sp?.querySelector("div[style*='overflow-y']"); return c ? c.scrollWidth - c.clientWidth : 0; });
       expect(w, `${id}: tràn ngang`).toBeLessThanOrEqual(1);
       if (id === "food_db") {

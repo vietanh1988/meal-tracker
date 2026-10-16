@@ -60,7 +60,7 @@ const BTN = {
 export function Btn({ children, kind = "blue", h = 44, flex = 1, disabled, onClick, testid, style, ariaLabel }) {
   return (
     <button data-testid={testid} aria-label={ariaLabel} disabled={disabled} onClick={onClick} className="tap"
-      style={{ flex, height: h, borderRadius: 12, border: "none", ...(disabled ? { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" } : BTN[kind]), display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "inherit", fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", padding: "0 12px", minWidth: 0, ...style }}>
+      style={{ flex, height: h, minHeight: h, maxHeight: h, flexShrink: 0, borderRadius: 12, border: "none", ...(disabled ? { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" } : BTN[kind]), display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "inherit", fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", padding: "0 12px", minWidth: 0, ...style }}>
       {children}
     </button>
   );
