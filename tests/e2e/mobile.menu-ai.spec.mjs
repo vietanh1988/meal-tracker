@@ -83,3 +83,32 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
     await ctx.close();
   }
 });
+
+// Đã ăn bữa sáng → nút Hôm nay "AI lên thực đơn các bữa còn lại" chỉ lên các bữa chưa ăn, mục tiêu = cả ngày − đã ăn (16/10).
+// AI bị chặn (trả rỗng) → máy tự chọn món trong kho hoặc báo lỗi; nếu ra kết quả thì không có bữa sáng.
+test("AI lên thực đơn các bữa còn lại: không tạo lại bữa đã ăn", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
+  const page = await ctx.newPage();
+  const s = S();
+  const before = await todayRow();
+  const sang = { meal_id: "sang", meal_name: "Bữa sáng", items: [it("phở bò", 450, 480, "carb", 25, 60, 12)] };
+  const body = { user_id: s.uid, log_date: s.today, day_type: "train", meals: [sang], eaten_meals: ["sang"], total_cal: 480, total_protein: 25, total_carb: 60, total_fat: 12 };
+  await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(body) });
+  try {
+    await login(page);
+    const btn = page.getByTestId("today-ai-menu");
+    await expect(btn).toContainText("còn lại");
+    await tap(btn);
+    await expect(page.getByTestId("ai-total").or(page.getByTestId("ai-error")).or(page.getByTestId("ai-out-of-quota"))).toBeVisible({ timeout: 20_000 });
+    if (await page.getByTestId("ai-total").count()) {
+      await expect(page.getByTestId("ai-total")).toContainText("Các bữa còn lại");
+      await expect(page.getByTestId("ai-meal-sang")).toHaveCount(0);
+      await expect(page.getByTestId("ai-save-week")).toHaveCount(0);
+      await page.screenshot({ path: "shots/thuc-don-ai-con-lai.png", fullPage: true });
+    }
+  } finally {
+    if (before) await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(before) });
+    else await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" });
+    await ctx.close();
+  }
+});

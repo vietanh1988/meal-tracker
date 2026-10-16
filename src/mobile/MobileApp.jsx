@@ -242,7 +242,11 @@ export function MobileApp(props) {
   const quickAILayer = () => {
     let prefs = {};
     prefs = readUser("fp_menu_prefs", user?.id, {}) || {};
-    return { type: "ai", auto: true, prefs: { style: prefs.style, avoid: prefs.avoid, dayType: dayTypeOf(profile, today) } };
+    // Đã ăn ≥ 1 bữa hôm nay → AI chỉ lên các bữa còn lại, mục tiêu = cả ngày − đã ăn (16/10)
+    const td = dayOf(today);
+    const eatenIds = (td?.eaten_meals || []).filter((id) => (td?.meals || []).some((m) => mealKey(m) === id && hasItems(m)));
+    const rest = eatenIds.length ? { eatenIds, eaten: eatenOfDay(td) } : null;
+    return { type: "ai", auto: true, rest, prefs: { style: prefs.style, avoid: prefs.avoid, dayType: dayTypeOf(profile, today) } };
   };
   const aiMenuAction = aiAccess.usable ? () => openLayer(quickAILayer()) : aiAccess.enabled ? () => setTab("menu") : null;
   const openDay = (d) => { setSelDate(d === today ? null : d); setTab("today"); };
@@ -589,7 +593,7 @@ export function MobileApp(props) {
             onOpenAIMenu={aiAccess.usable ? () => replaceTop(quickAILayer()) : null} initialInput={l.input || ""} />}
           {l.type === "ai" && (
             <AIMenuScreen macro={macro} profile={profile} user={user} appSettings={appSettings} todayType={dayTypeOf(profile, today)} getDailyLogs={ud.getDailyLogs}
-              initialPrefs={l.prefs} autoStart={!!l.auto} initialTemplate={l.template || null}
+              initialPrefs={l.prefs} autoStart={!!l.auto} initialTemplate={l.template || null} rest={l.rest || null}
               onApply={applyAIMenu} onSaveWeek={saveAIMenuToWeek} onClose={closeLayer}
               openSaved={() => { closeLayer(); setTab("menu"); }} openSearch={() => replaceTop({ type: "log", date: today, mealId: defaultMealFor(today) })} />
           )}

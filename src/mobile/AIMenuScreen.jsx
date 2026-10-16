@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { todayVN, addDays } from "../lib/dateVN";
 import { fmtInt } from "../lib/mobileView";
-import { mealLabel, MEAL_ORDER } from "../lib/mealMath";
+import { mealLabel, MEAL_ORDER, remainingTarget } from "../lib/mealMath";
 import { generateMenuAI, buildExclusionKeys, swapOptions, sumTemplate, dayTarget, resolveMealIds, getRecentFoodKeys, saveAIMenu, rebalanceTemplate } from "../lib/aiMenuService";
 import { buildWhitelist } from "../lib/whitelistBuilder";
 import { WEEK_SHORT } from "../lib/menuView";
@@ -142,7 +142,7 @@ export function SaveWeekSheet({ dayType, gymDays, noEx, onSave, onClose }) {
   );
 }
 
-export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, autoStart, initialTemplate, todayType, getDailyLogs, onApply, onSaveWeek, onClose, openSaved, openSearch }) {
+export function AIMenuScreen({ rest = null, macro: macroDay, profile, user, appSettings, initialPrefs, autoStart, initialTemplate, todayType, getDailyLogs, onApply, onSaveWeek, onClose, openSaved, openSearch }) {
   const noEx = (profile?.exerciseType || "gym") === "none";
   const prefs = { style: initialPrefs?.style || "vn", avoid: initialPrefs?.avoid || "" };
   const dayType = noEx ? "rest" : (initialTemplate?.day_type || initialPrefs?.dayType || todayType) === "rest" ? "rest" : "train";
@@ -155,8 +155,19 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
   const [note, setNote] = useState("");
   const shown = useRef(new Set());
   const runId = useRef(0);
-  const mealIds = resolveMealIds(dayType, profile, appSettings);
+  // rest = { eatenIds, eaten } khi mở từ "AI lên thực đơn các bữa còn lại": chỉ tạo bữa chưa ăn, mục tiêu = cả ngày − đã ăn
+  const dayTgt = dayTarget(macroDay, dayType);
+  const restInfo = useMemo(() => {
+    if (!rest || !rest.eatenIds?.length) return null;
+    const r = remainingTarget(dayTgt, rest.eaten);
+    return { ...r, eatenIds: rest.eatenIds, eaten: rest.eaten };
+  }, [rest, dayTgt.cal]); // eslint-disable-line react-hooks/exhaustive-deps
+  const macro = useMemo(() => (restInfo
+    ? { ...macroDay, calTarget: restInfo.cal, calRest: restInfo.cal, protein: restInfo.p, carb: restInfo.c, carbRest: restInfo.c, fat: restInfo.f }
+    : macroDay), [macroDay, restInfo]);
+  const mealIds = resolveMealIds(dayType, profile, appSettings).filter((id) => !restInfo || !restInfo.eatenIds.includes(id));
   const target = dayTarget(macro, dayType);
+  const restEmpty = !!restInfo && (!mealIds.length || restInfo.cal < 150);
   const allowed = useMemo(() => {
     const wl = buildWhitelist({ style: prefs.style, diet: macro?.dietStrategy || profile?.dietStrategy || "balanced", goal: macro?.goal || profile?.goalType || null, usesSupplements: profile?.usesSupplements === true, mealIds });
     const banned = buildExclusionKeys(prefs.avoid); // Đổi món cũng không gợi ý món đang kiêng
@@ -165,6 +176,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
 
   const generate = async () => {
     const id = ++runId.current;
+    if (restEmpty) { setErr({ text: !mealIds.length ? "Hôm nay bạn đã ăn hết các bữa rồi." : `Hôm nay bạn đã ăn ${fmtInt(restInfo.eaten.cal)} / ${fmtInt(dayTgt.cal)} kcal — gần đủ rồi, không cần thêm bữa.`, quota: false, done: true }); setStep("error"); return; }
     setStep("loading"); setErr({ text: "", quota: false });
     // Tránh lặp món: đã ăn 3 ngày gần nhất + đã hiện trong phiên này
     const avoidFoods = new Set(shown.current);
@@ -175,7 +187,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
     const res = await generateMenuAI({ macro, profile, dayType, mealIds, prefs, avoidFoods: [...avoidFoods], appSettings });
     if (id !== runId.current) return; // đã huỷ / tạo lần khác
     if (res.ok) {
-      const t = { ...res.template, day_type: dayType };
+      const t = { ...res.template, day_type: dayType, ...(restInfo ? { partial: true } : {}) };
       setTpl(t); setNote(res.note || ""); setStep("result");
       saveAIMenu(t, user?.id);
       t.meals.forEach((m) => (m.items || []).forEach((it) => { if (it.role === "protein" || it.role === "carb") shown.current.add(it.food); }));
@@ -206,7 +218,7 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
     } catch (e) { return null; }
   }, [tpl, target.cal, dev, dayType]); // eslint-disable-line react-hooks/exhaustive-deps
   const rebalance = () => { if (!balanced) return; setTpl(balanced.tpl); saveAIMenu(balanced.tpl, user?.id); };
-  const sub = `${DT[dayType]} · ${STYLE_NAME[prefs.style] || "Cơm nhà VN"}${tpl ? ` · ${meals.length} bữa` : ` · ${fmtInt(target.cal)} kcal`}`;
+  const sub = `${DT[dayType]} · ${STYLE_NAME[prefs.style] || "Cơm nhà VN"}${tpl ? ` · ${meals.length} bữa${restInfo ? " còn lại" : ""}` : ` · ${fmtInt(target.cal)} kcal`}`;
   const canApplyToday = dayType === todayType;
 
   const sq = { width: 56, height: 52, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0062F0", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, fontSize: 10, fontWeight: 800, fontFamily: "inherit", padding: 0, flexShrink: 0 };
@@ -214,9 +226,9 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
     <div style={{ flexShrink: 0, background: "rgba(255,255,255,0.92)", WebkitBackdropFilter: "blur(14px)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(30,64,175,0.08)", padding: "10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px) 12px" }}>
       <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", gap: 8 }}>
         <button data-testid="ai-regenerate" onClick={generate} disabled={busy} style={sq}>{Icon.redo(18)}Tạo lại</button>
-        <button data-testid="ai-save-week" onClick={() => setSaveWeek(true)} disabled={busy} style={sq}>{Icon.redo(18)}Hằng tuần</button>
+        {!restInfo && <button data-testid="ai-save-week" onClick={() => setSaveWeek(true)} disabled={busy} style={sq}>{Icon.redo(18)}Hằng tuần</button>}
         {canApplyToday
-          ? <button data-testid="ai-apply" onClick={apply} disabled={busy} style={{ ...fbtn("primary", busy), flex: 1, fontSize: 16 }}>{Icon.check(18, 2.8)} Áp dụng hôm nay</button>
+          ? <button data-testid="ai-apply" onClick={apply} disabled={busy} style={{ ...fbtn("primary", busy), flex: 1, fontSize: 16 }}>{Icon.check(18, 2.8)} {restInfo ? "Áp vào bữa còn lại" : "Áp dụng hôm nay"}</button>
           : <button onClick={() => setSaveWeek(true)} disabled={busy} style={{ ...fbtn("primary", busy), flex: 1 }}>Lưu vào {DT[dayType].toLowerCase()}</button>}
       </div>
     </div>
@@ -224,24 +236,28 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
 
   return (
     <SubPage title="Thực đơn AI" subtitle={sub} onBack={onClose} footer={footer}>
-      {step === "loading" && <Loading sub={`${DT[dayType]} · ${fmtInt(target.cal)} kcal · ${STYLE_NAME[prefs.style] || ""}`} onCancel={cancel} />}
+      {step === "loading" && <Loading sub={`${restInfo ? `${mealIds.length} bữa còn lại · ` : `${DT[dayType]} · `}${fmtInt(target.cal)} kcal · ${STYLE_NAME[prefs.style] || ""}`} onCancel={cancel} />}
       {step === "error" && (err.quota
         ? <OutOfQuota message={err.text} onSaved={openSaved} onSearch={openSearch} onClose={onClose} />
         : (
           <div data-testid="ai-error" style={{ padding: "40px 16px", display: "flex", flexDirection: "column", gap: 12, textAlign: "center" }}>
-            <span style={{ fontSize: 18, fontWeight: 900 }}>Chưa tạo được thực đơn</span>
+            <span style={{ fontSize: 18, fontWeight: 900 }}>{err.done ? "Không còn bữa cần lên" : "Chưa tạo được thực đơn"}</span>
             <span style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>{err.text}</span>
-            <button onClick={generate} style={fbtn("purple")}>Thử lại</button>
-            <button onClick={openSaved} style={fbtn("soft")}>Dùng thực đơn đã lưu</button>
+            {err.done
+              ? <button data-testid="ai-done-close" onClick={onClose} style={fbtn("primary")}>Đóng</button>
+              : <><button onClick={generate} style={fbtn("purple")}>Thử lại</button>
+                <button onClick={openSaved} style={fbtn("soft")}>Dùng thực đơn đã lưu</button></>}
           </div>
         ))}
       {step === "result" && tpl && (
         <div style={{ padding: "12px 12px 16px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
           {note && <p data-testid="ai-note" style={{ margin: "0 4px", fontSize: 13, color: "#475569", lineHeight: 1.45 }}>{note}</p>}
           <SumCard testid="ai-total" dataCal={total.cal} grad={PURPLE} cal={total.cal} target={target.cal} pct={pct} bar={pct}
+            title={restInfo ? `Các bữa còn lại · đã ăn ${fmtInt(restInfo.eaten.cal)} kcal (${restInfo.eatenIds.length} bữa)` : null}
+            sub={restInfo ? `Cả ngày ≈ ${fmtInt(restInfo.eaten.cal + total.cal)} / ${fmtInt(dayTgt.cal)} kcal` : null}
             macros={{ p: total.p, c: total.c, f: total.f }}
             warn={Math.abs(dev) > 5 ? (balanced
-              ? `${dev < 0 ? `Thiếu ${-dev}%` : `Dư ${dev}%`} mục tiêu ${DT[dayType].toLowerCase()}`
+              ? `${dev < 0 ? `Thiếu ${-dev}%` : `Dư ${dev}%`} ${restInfo ? "phần còn lại" : `mục tiêu ${DT[dayType].toLowerCase()}`}`
               : `${dev < 0 ? `Thiếu ${-dev}%` : `Dư ${dev}%`} mục tiêu ${DT[dayType].toLowerCase()} — các món này không cân thêm được, Tạo lại hoặc đổi món ${dev < 0 ? "to" : "nhẹ"} hơn`) : null}
             warnAction={balanced ? (
               <button data-testid="ai-rebalance" onClick={rebalance} style={{ height: 36, borderRadius: 10, border: "none", background: "#FFFFFF", color: "#6D28D9", fontFamily: "inherit", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>

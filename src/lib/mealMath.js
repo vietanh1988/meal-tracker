@@ -154,3 +154,16 @@ export function toSlots(day, baseSlots) {
     return { ...s, items: m.items || [], ...(m.pattern ? { pattern: m.pattern } : {}), ...(m.composite !== undefined ? { composite: !!m.composite } : {}) };
   });
 }
+
+// AI lên thực đơn "các bữa còn lại" (16/10): mục tiêu = cả ngày − đã ăn, giữ tỉ lệ macro hợp lý khi đạm/béo đã ăn gần đủ.
+// target: {cal,p,c,f} cả ngày · eaten: {cal,p,c,f} đã tick ăn. Trả {cal,p,c,f} cho phần còn lại (cal ≥ 0).
+export function remainingTarget(target, eaten) {
+  const n = (v) => Math.max(0, Number(v) || 0);
+  const cal = Math.round(Math.max(0, n(target?.cal) - n(eaten?.cal)));
+  if (!cal) return { cal: 0, p: 0, c: 0, f: 0 };
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const p = Math.round(clamp(n(target?.p) - n(eaten?.p), (cal * 0.15) / 4, (cal * 0.45) / 4));
+  const f = Math.round(clamp(n(target?.f) - n(eaten?.f), (cal * 0.15) / 9, (cal * 0.4) / 9));
+  const c = Math.round(Math.max(0, (cal - p * 4 - f * 9) / 4));
+  return { cal, p, c, f };
+}
