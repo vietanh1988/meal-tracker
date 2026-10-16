@@ -27,6 +27,28 @@ import { PcFood } from "./PcFood";
 
 const SEC_KEY = "fp_pc_admin_sec";
 
+// Icon thanh bên: cùng hình + màu với Quản trị trên điện thoại (AdminHomeScreen), ô màu 24 px, nét 14 px
+const svg = (d) => <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
+const NAV_IC = {
+  home: ["#2563EB", svg(<><path d="M3 11l9-7 9 7" /><path d="M5 10v10h14V10" /></>)],
+  orders: ["#7C3AED", svg(<><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></>)],
+  report_biz: ["#2563EB", svg(<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />)],
+  users: ["#0EA5E9", svg(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2" /></>)],
+  subscription_settings: ["#DB2777", svg(<><path d="M3 7h18v10H3z" /><path d="M3 11h18M7 15h3" /></>)],
+  feedback: ["#0891B2", svg(<path d="M5 5h14v10H9l-4 4z" />)],
+  notify: ["#F59E0B", svg(<><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" /><path d="M10 21h4" /></>)],
+  templates: ["#00A67E", svg(<><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 13l9 5 9-5" /></>)],
+  food_db: ["#EA580C", svg(<path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 0-3 2-3 5s1 4 3 4v9" />)],
+  food_cache_pending: ["#059669", svg(<path d="M5 12.5l4.5 4.5L19 7.5" />)],
+  admin: ["#0891B2", svg(<><path d="M4 4h16v12H4z" /><path d="M8 20h8M12 16v4M8 9l2 2-2 2M12 13h4" /></>)],
+  feature_flags: ["#4F46E5", svg(<><rect x="2" y="7" width="20" height="10" rx="5" /><circle cx="16" cy="12" r="3" /></>)],
+  ai: ["#007AFF", svg(<><rect x="6" y="6" width="12" height="12" rx="2" /><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4" /></>)],
+  ai_cost: ["#D97706", svg(<><circle cx="12" cy="12" r="9" /><path d="M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.7 0-2.8 1-2.8 2.2 0 2.8 5.6 1.5 5.6 4.3 0 1.2-1.1 2.2-2.8 2.2-1.2 0-2.2-.6-2.7-1.6M12 6v2M12 16v2" /></>)],
+  health: ["#DC2626", svg(<path d="M3 12h4l2-5 4 10 2-5h6" />)],
+  audit_log: ["#475569", svg(<><path d="M6 3h9l4 4v14H6z" /><path d="M9 11h7M9 15h7M9 7h3" /></>)],
+  backup: ["#64748B", svg(<><path d="M5 3h11l3 3v15H5z" /><path d="M8 3v6h8V3M8 21v-7h8v7" /></>)],
+};
+
 // Thứ tự + tên đúng bản vẽ 117. badge = khoá trong loadAdminCounts()
 export const PC_NAV = [
   { group: "TỔNG QUAN", items: [{ id: "home", label: "Tổng quan" }] },
@@ -62,7 +84,7 @@ function SideNav({ section, go, counts, isSuperAdmin, user, profile }) {
   return (
     <nav aria-label="Quản trị" data-testid="pc-sidebar" style={{ position: "fixed", left: 0, top: 0, bottom: 0, width: PC.sideW, background: PC.side, color: "#FFFFFF", padding: "18px 12px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto", zIndex: 30 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0 8px 14px 8px" }}>
-        <span aria-hidden="true" style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(160deg,#2C8DFF,#0040E0)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 18, flexShrink: 0 }}>F</span>
+        <img src="/logo.png" alt="" data-testid="pc-logo" width={34} height={34} style={{ width: 34, height: 34, borderRadius: 10, objectFit: "cover", flexShrink: 0, boxShadow: "0 0 0 1px rgba(255,255,255,0.25), 0 4px 10px rgba(0,10,40,0.35)" }} />
         <span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 15, fontWeight: 900 }}>Fipilot AI</span><span style={{ fontSize: 11, opacity: 0.7 }}>Quản trị</span></span>
       </div>
       {PC_NAV.map((g) => (
@@ -73,8 +95,8 @@ function SideNav({ section, go, counts, isSuperAdmin, user, profile }) {
             const n = i.badge ? counts[i.badge] : null;
             return (
               <button key={i.id} data-testid={`pc-nav-${i.id}`} aria-current={on ? "page" : undefined} onClick={() => go(i.id)} className="pc-nav"
-                style={{ display: "flex", alignItems: "center", gap: 10, height: 32, padding: "0 10px", borderRadius: 9, border: "none", fontSize: 13, fontWeight: on ? 800 : 600, opacity: on ? 1 : 0.85, background: on ? "rgba(255,255,255,0.16)" : "transparent", color: "#FFFFFF", fontFamily: "inherit", textAlign: "left", cursor: "pointer", flexShrink: 0 }}>
-                <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 3, background: on ? "#7CC2FF" : "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+                style={{ display: "flex", alignItems: "center", gap: 10, height: 32, padding: "0 8px", borderRadius: 9, border: "none", fontSize: 13, fontWeight: on ? 800 : 600, opacity: on ? 1 : 0.85, background: on ? "rgba(255,255,255,0.16)" : "transparent", color: "#FFFFFF", fontFamily: "inherit", textAlign: "left", cursor: "pointer", flexShrink: 0 }}>
+                <span aria-hidden="true" data-testid={`pc-nav-ic-${i.id}`} style={{ width: 22, height: 22, borderRadius: 7, background: NAV_IC[i.id]?.[0] || "#334155", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)" }}>{NAV_IC[i.id]?.[1]}</span>
                 <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{i.label}</span>
                 {n > 0 && <span data-testid={`pc-badge-${i.id}`} style={{ marginLeft: "auto", fontSize: 11, fontWeight: 800, background: PC.badge, color: PC.badgeFg, padding: "1px 7px", borderRadius: 999 }}>{n}</span>}
               </button>

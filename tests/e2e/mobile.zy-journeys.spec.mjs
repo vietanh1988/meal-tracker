@@ -83,6 +83,7 @@ test("J1 · ghi 1 bữa bằng Tìm món: 2 món, chỉnh gram 1 món", async ({
 test("J2 · ghi món lạ không có trong kho (tự nhập calo)", async ({ browser }) => run(browser, async (page) => {
   const s = S();
   await putDay(s.today, []);
+  await rest(`user_foods?user_id=eq.${s.uid}`, { method: "DELETE" }); // món tự nhập lưu trên máy chủ (16/10) → xoá để "món lạ" thật sự lạ
   await login(page);
   const j = journey(2, "J2 món lạ tự nhập calo", page);
   await j.act("Hôm nay: bấm + ở dòng Bữa tối (hoặc Tìm món ở thẻ đến giờ nếu đang là bữa tối)", () => openLogFor(page, "toi"));

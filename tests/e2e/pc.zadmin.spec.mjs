@@ -23,6 +23,9 @@ test("Quản trị PC: thanh bên đủ mục, mở từng trang, ngăn người
     await expect(page.getByTestId("pc-admin")).toBeVisible();
     await expect(page.getByTestId("pc-home")).toBeVisible();
     await expect(page.getByTestId("pc-me")).toContainText("Super Admin");
+    // Logo thật (ảnh /logo.png đã tải) + mỗi mục thanh bên có icon
+    expect(await page.getByTestId("pc-logo").evaluate((img) => img.complete && img.naturalWidth > 0), "logo tải được").toBe(true);
+    for (const id of NAV) await expect(page.getByTestId(`pc-nav-ic-${id}`).locator("svg"), `icon ${id}`).toHaveCount(1);
 
     for (const id of NAV) {
       console.log("BƯỚC: mở", id);
