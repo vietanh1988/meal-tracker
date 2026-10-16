@@ -36,6 +36,13 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
     await expect(page.getByTestId("ai-meal-trua")).toBeVisible();
     await page.screenshot({ path: "shots/thuc-don-ai.png", fullPage: true });
 
+    // Thiếu/dư mục tiêu: nút Cân lại (không tốn lượt) chỉ hiện khi kéo được gần mục tiêu hơn
+    const rb = page.getByTestId("ai-rebalance");
+    if (await rb.count()) {
+      const before = Number(await page.getByTestId("ai-total").getAttribute("data-cal"));
+      await tap(rb);
+      await expect.poll(async () => Number(await page.getByTestId("ai-total").getAttribute("data-cal"))).not.toBe(before);
+    }
     console.log("BƯỚC: Đổi Cá kho tộ");
     // Đổi Cá kho tộ: sheet hiện ứng viên kèm kcal, chọn món đầu → bữa trưa không còn Cá kho tộ
     await tap(page.getByTestId("swap-trua-cá kho tộ"));

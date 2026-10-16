@@ -62,7 +62,7 @@ export function MacroTiles({ p, c, f }) {
 }
 
 // Khối tổng kcal (bản vẽ 93/95): số to / mục tiêu, thanh tiến (tuỳ chọn), 3 ô macro, dòng phụ / cảnh báo
-export function SumCard({ grad = GRAD_BLUE, title, cal, target, macros, sub, warn, bar, testid, dataCal, pct }) {
+export function SumCard({ grad = GRAD_BLUE, title, cal, target, macros, sub, warn, warnAction, bar, testid, dataCal, pct }) {
   return (
     <div data-testid={testid} data-cal={dataCal} style={{ borderRadius: 22, padding: 16, background: grad, color: "#FFFFFF", display: "flex", flexDirection: "column", gap: 10 }}>
       {title && <span style={{ fontSize: 13, fontWeight: 800, opacity: 0.9 }}>{title}</span>}
@@ -73,7 +73,12 @@ export function SumCard({ grad = GRAD_BLUE, title, cal, target, macros, sub, war
       {bar != null && <span style={{ height: 8, borderRadius: 4, background: "rgba(255,255,255,0.22)", overflow: "hidden", display: "block" }}><span style={{ display: "block", width: `${Math.max(2, Math.min(100, bar))}%`, height: 8, background: "#FFFFFF" }} /></span>}
       {macros && <MacroTiles {...macros} />}
       {sub && <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.92, lineHeight: 1.4 }}>{sub}</span>}
-      {warn && <span style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 12, background: "rgba(250,204,21,0.22)", fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{MI.alert(15)}<span>{warn}</span></span>}
+      {warn && (
+        <span style={{ display: "flex", flexDirection: "column", gap: 8, padding: "8px 10px", borderRadius: 12, background: "rgba(250,204,21,0.22)", fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>{MI.alert(15)}<span>{warn}</span></span>
+          {warnAction}
+        </span>
+      )}
     </div>
   );
 }

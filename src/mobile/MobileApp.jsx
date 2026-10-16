@@ -223,7 +223,6 @@ export function MobileApp(props) {
     if (res && res.ok === false) return fail();
     await refresh(date);
   };
-  const repeatMeal = (rec, mealId, d = date) => putItems(d, mealId, rec.items, true, `${rec.meal_name.toLowerCase()} ${fmtVN(rec.log_date)}`);
 
   // ---------- mở các lớp ----------
   const defaultMealFor = (d) => {
@@ -301,6 +300,7 @@ export function MobileApp(props) {
     const ids = idsFor(l.date);
     const mealId = ids.includes(l.mealId) ? l.mealId : ids[0];
     const target = mealOf(dayOf(l.date), mealId);
+    const sg = suggestFor(mealId, l.date);
     return <LogMealSheet date={l.date} onDate={(d) => { updateLog({ date: d }); if (d !== today && !dayCache[d]) loadDay(d); }} mealId={mealId} onMeal={(id) => updateLog({ mealId: id })}
       mealIds={ids} dateOptions={dateOptions} recentMeals={recentMeals} frequent={frequent} foodCache={ud.foodCache}
       onClose={closeLayer}
@@ -309,9 +309,11 @@ export function MobileApp(props) {
       weekly={weeklyFor(l.date, mealId)}
       onCalc={(text, auto) => replaceTop({ type: "calc", text: text || "", auto: !!auto, date: l.date, mealId })}
       onAddItem={(it) => putItems(l.date, mealId, [it], false, itemName(it).toLowerCase())}
-      onAddMeal={async (rec) => {
-        if (target && hasItems(target) && !(await appConfirm(`${mealLabel(target.meal_name, mealId)} đã có món. Thay bằng ${rec.meal_name.toLowerCase()} ${fmtVN(rec.log_date)}?`))) return false;
-        return repeatMeal(rec, mealId, l.date);
+      suggestions={sg.list} suggestTarget={sg.target}
+      onAddSuggest={async (opt) => {
+        const nm = mealLabel(target && target.meal_name, mealId);
+        if (target && hasItems(target) && !(await appConfirm(`${nm} đã có món. Thay bằng món gợi ý?`))) return false;
+        return putItems(l.date, mealId, opt.items, true, opt.kind === "history" ? `${nm.toLowerCase()} ${fmtVN(opt.date)}` : `gợi ý ${opt.title.toLowerCase()}`);
       }} />;
   };
 

@@ -7,7 +7,7 @@ mock.module("react", () => ({ useState: () => [null, () => {}], useEffect: () =>
 mock.module("react/jsx-dev-runtime", () => ({ jsxDEV: () => null, Fragment: "f" }));
 mock.module("react/jsx-runtime", () => ({ jsx: () => null, jsxs: () => null, Fragment: "f" }));
 
-const { swapOptions, dayTarget, foodToItem, sanitizeAIMenu } = await import("../../src/lib/aiMenuService.js");
+const { swapOptions, dayTarget, foodToItem, sanitizeAIMenu, swapFoodInTemplate, rebalanceTemplate, sumTemplate } = await import("../../src/lib/aiMenuService.js");
 const { applyMealEngineToTemplate } = await import("../../src/mealEngine.js");
 
 const macro = { calTarget: 2400, calRest: 2083, protein: 130, carb: 300, carbRest: 225, fat: 70, goal: "bulk" };
@@ -56,4 +56,23 @@ test("sanitizeAIMenu: bỏ món kiêng (kể cả món độn), bỏ số vô l�
   expect(r.removed.length).toBeGreaterThan(1);
   const empty = sanitizeAIMenu({ meals: [{ meal_id: "sang", items: [{ food: "phở bò", gram: 400, cal: 450 }] }] }, { avoidText: "bò", target });
   expect(empty.broken).toBe(true);
+});
+
+test("Đổi món giữ calo bữa (±5%), không đụng bữa khác; Cân lại đưa cả ngày về mục tiêu", () => {
+  const cal = (t, id) => Math.round(t.meals.find((m) => m.meal_id === id).items.reduce((a, i) => a + i.cal, 0));
+  // Thực đơn hụt 35% (như AI tạo thiếu) → đổi món không được kéo bữa lên mục tiêu
+  const short = JSON.parse(JSON.stringify(base));
+  short.meals.forEach((m) => m.items.forEach((i) => { for (const k of ["gram", "cal", "p", "c", "f"]) i[k] = Math.round(i[k] * 0.65 * 10) / 10; }));
+  const before = cal(short, "trua");
+  const next = swapFoodInTemplate(short, "trua", "cá kho tộ", "mực xào", macro, "rest");
+  expect(next.meals.find((m) => m.meal_id === "trua").items.some((i) => i.food === "mực xào")).toBe(true);
+  expect(Math.abs(cal(next, "trua") - before) / before).toBeLessThan(0.06);
+  expect(next.meals.find((m) => m.meal_id === "toi")).toBe(short.meals.find((m) => m.meal_id === "toi"));
+  const target = dayTarget(macro, "rest").cal;
+  expect(sumTemplate(short).cal / target).toBeLessThan(0.75);
+  const fixed = rebalanceTemplate(short, macro, "rest");
+  // Cân lại = đúng mức mealEngine đạt được với các món này (bằng thực đơn tính chuẩn ban đầu), không còn hụt 35%
+  expect(Math.abs(sumTemplate(fixed).cal - sumTemplate(base).cal) / sumTemplate(base).cal).toBeLessThan(0.03);
+  expect(sumTemplate(fixed).cal).toBeGreaterThan(sumTemplate(short).cal * 1.3);
+  expect(fixed.meals.find((m) => m.meal_id === "trua").items.every((i) => i.display !== undefined)).toBe(true);
 });

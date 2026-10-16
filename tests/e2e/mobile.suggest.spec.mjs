@@ -53,6 +53,15 @@ test("Hôm nay: Gợi ý món → sheet chọn → ghi vào bữa", async ({ bro
     await tap(page.getByTestId("suggest-apply"));
     await expect(page.getByTestId("suggest-sheet")).toHaveCount(0);
     await waitDb(async () => ((await todayRow())?.meals || []).some((m) => m.meal_id === mealId && (m.items || []).length > 0), "ghi món gợi ý vào bữa");
+
+    // Sheet Ghi bữa: khối "Gợi ý cho bữa" (≤3, cùng thuật toán) thay khối "Ăn lại"; bấm + là ghi
+    const other = mealId === "toi" ? "sang" : "toi";
+    await tap(page.getByRole("button", { name: other === "toi" ? "Ghi bữa tối" : "Ghi bữa sáng" }));
+    await expect(page.getByTestId("log-suggest")).toBeVisible();
+    expect(await page.getByTestId("log-suggest-add").count()).toBeLessThanOrEqual(3);
+    await page.screenshot({ path: "shots/ghi-bua-goi-y.png" });
+    await tap(page.getByTestId("log-suggest-add").first());
+    await waitDb(async () => ((await todayRow())?.meals || []).some((m) => m.meal_id === other && (m.items || []).length > 0), "ghi gợi ý từ sheet Ghi bữa");
   } finally {
     if (saved) await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "PATCH", body: JSON.stringify({ meals: saved.meals, eaten_meals: saved.eaten_meals, total_cal: saved.total_cal, total_protein: saved.total_protein, total_carb: saved.total_carb, total_fat: saved.total_fat }) });
     else await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" });

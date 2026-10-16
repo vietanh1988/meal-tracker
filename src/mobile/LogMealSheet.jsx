@@ -5,6 +5,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { Icon, GRAD_ORANGE, SR, useLockScroll, FONT, useSwipeClose, SheetHandle } from "./ui";
 import { MEAL_SHORT, searchFoods, itemName, itemPortion, fmtInt } from "../lib/mobileView";
 import { fmtVN } from "../lib/dateVN";
+import { MEAL_NAMES } from "../lib/mealMath";
 
 // 16/10 (bản vẽ 82–83): nút bữa / + nền xanh nhạt không viền, "Ăn lại" thành khối riêng, khối Kiểm tra calo tím nhạt bỏ viền chấm.
 const chip = (on) => ({ flexShrink: 0, height: 36, padding: "0 12px", borderRadius: 12, border: "none", background: on ? "#0062F0" : "#EEF4FF", fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, color: on ? "#FFFFFF" : "#334155", whiteSpace: "nowrap" });
@@ -22,8 +23,11 @@ export function LogMealSheet(p) {
   useEffect(() => { if (pickMode) setTimeout(() => inputRef.current?.focus(), 150); }, [pickMode]);
 
   const results = useMemo(() => (q.trim() ? searchFoods(q, foodCache, 30) : null), [q, foodCache]);
-  const sameMeal = (recentMeals || []).filter((r) => r.meal_id === mealId).slice(0, 1);
-  const otherMeals = pickMode ? [] : (sameMeal.length ? sameMeal : (recentMeals || []).slice(0, 1));
+  // Gợi ý cho bữa (16/10): ≤3 lựa chọn cùng thuật toán thẻ Hôm nay (lib/mealSuggest — calo bữa + món không ăn),
+  // thay khối "Ăn lại" chép y nguyên 1 bữa cũ. Bấm + là ghi luôn (có Hoàn tác), bữa đã có món thì hỏi trước.
+  void recentMeals;
+  const sugg = pickMode ? [] : (p.suggestions || []).slice(0, 3);
+  const SRC = { history: ["Đã ăn", "#047857", "rgba(5,150,105,0.12)"], template: ["Mẫu", "#0062F0", "#FFFFFF"], ai: ["AI", "#6D28D9", "#F3EEFF"] };
 
   const flash = (key) => {
     setDone((d) => ({ ...d, [key]: true }));
@@ -98,20 +102,28 @@ export function LogMealSheet(p) {
         <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", margin: "0 -12px", padding: "0 12px calc(20px + env(safe-area-inset-bottom, 0px)) 12px" }}>
           <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em", padding: "4px 4px 6px 4px" }}>{results ? `KẾT QUẢ (${results.length})` : "GẦN ĐÂY"}</span>
 
-          {!results && otherMeals.map((rm) => {
-            const key = `meal:${rm.log_date}:${rm.meal_id}`;
-            return (
-              <div key={key} style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, margin: "0 0 10px 0", borderRadius: 16, background: "#EEF4FF" }}>
-                <span style={{ width: 40, height: 40, borderRadius: 12, background: "#FFFFFF", color: "#0062F0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.redo(18)}</span>
-                <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 14, fontWeight: 800 }}>Ăn lại {String(rm.meal_name || "").toLowerCase()} {fmtVN(rm.log_date)} · {rm.items.length} món</span>
-                  <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{rm.items.map(itemName).join(", ")}</span>
-                </span>
-                <span style={{ fontSize: 14, fontWeight: 900, color: "#0062F0" }}>{fmtInt(rm.cal)}</span>
-                <button disabled={!!busyKey} onClick={() => add(key, () => p.onAddMeal(rm))} aria-label={`Ghi lại ${rm.meal_name} ${fmtVN(rm.log_date)}`} style={{ ...addBtn(done[key]), background: done[key] ? "#059669" : "#0062F0", color: "#FFFFFF" }}>{done[key] ? Icon.check(18) : "+"}</button>
-              </div>
-            );
-          })}
+          {!results && sugg.length > 0 && (
+            <div data-testid="log-suggest" style={{ margin: "0 0 12px 0", borderRadius: 16, background: "#EEF4FF", padding: "10px 12px 4px 12px" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: "#0062F0", letterSpacing: "0.08em" }}>{Icon.sparkle(13)}GỢI Ý CHO {String(MEAL_NAMES[mealId] || "bữa này").toUpperCase()}{p.suggestTarget ? <span style={{ fontWeight: 700, color: "#64748B", letterSpacing: 0 }}> · ≈ {fmtInt(p.suggestTarget)} kcal</span> : null}</span>
+              {sugg.map((sg, i) => {
+                const key = `sug:${sg.id}`;
+                const [t, c, bg] = SRC[sg.kind] || SRC.history;
+                return (
+                  <div key={key} style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 58, borderBottom: i < sugg.length - 1 ? "1px solid rgba(0,98,240,0.10)" : "none" }}>
+                    <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 3 }}>
+                      <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sg.items.map(itemName).join(", ")}</span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: c, background: bg, padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap" }}>{sg.kind === "template" ? `${t} · ${sg.title}` : `${t}${sg.date ? ` ${fmtVN(sg.date)}` : ""}`}</span>
+                        <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sg.items.length} món</span>
+                      </span>
+                    </span>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#0062F0" }}>{fmtInt(sg.cal)}</span>
+                    <button data-testid="log-suggest-add" disabled={!!busyKey} onClick={() => add(key, () => p.onAddSuggest(sg))} aria-label={`Ghi ${sg.items.map(itemName).join(", ")}`} style={{ ...addBtn(done[key]), background: done[key] ? "#059669" : "#0062F0", color: "#FFFFFF" }}>{done[key] ? Icon.check(18) : "+"}</button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {list.map((it, i) => {
             const key = `item:${it.food}:${it.gram}`;
@@ -136,7 +148,7 @@ export function LogMealSheet(p) {
               <span style={{ fontSize: 12, color: "#64748B" }}>Món có trong kho tính ngay; món lạ thì AI tính (1 lượt).</span>
             </div>
           )}
-          {!results && list.length === 0 && otherMeals.length === 0 && (
+          {!results && list.length === 0 && sugg.length === 0 && (
             <div style={{ padding: "16px 4px", fontSize: 13, color: "#475569", lineHeight: 1.5 }}>Món bạn đã ăn sẽ hiện ở đây để ghi lại nhanh. Gõ tên món vào ô tìm ở trên.</div>
           )}
         </div>

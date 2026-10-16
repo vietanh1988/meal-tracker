@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { todayVN, addDays } from "../lib/dateVN";
 import { fmtInt } from "../lib/mobileView";
 import { mealLabel, MEAL_ORDER } from "../lib/mealMath";
-import { generateMenuAI, buildExclusionKeys, swapOptions, sumTemplate, dayTarget, resolveMealIds, getRecentFoodKeys, saveAIMenu } from "../lib/aiMenuService";
+import { generateMenuAI, buildExclusionKeys, swapOptions, sumTemplate, dayTarget, resolveMealIds, getRecentFoodKeys, saveAIMenu, rebalanceTemplate } from "../lib/aiMenuService";
 import { buildWhitelist } from "../lib/whitelistBuilder";
 import { WEEK_SHORT } from "../lib/menuView";
 import { SubPage, Icon } from "./ui";
@@ -196,6 +196,16 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
   const total = tpl ? sumTemplate(tpl) : { cal: 0, p: 0, c: 0, f: 0 };
   const pct = target.cal ? Math.round((total.cal / target.cal) * 100) : 0;
   const dev = target.cal ? Math.round(((total.cal - target.cal) / target.cal) * 100) : 0;
+  // Cân lại cho đủ mục tiêu (16/10): chỉ hiện khi mealEngine kéo được tổng kcal gần mục tiêu hơn rõ rệt (≥ 3 điểm %)
+  const balanced = useMemo(() => {
+    if (!tpl || !target.cal || Math.abs(dev) <= 5) return null;
+    try {
+      const t = rebalanceTemplate(tpl, macro, dayType);
+      const d = Math.round(((sumTemplate(t).cal - target.cal) / target.cal) * 100);
+      return Math.abs(d) <= Math.abs(dev) - 3 ? { tpl: t, dev: d } : null;
+    } catch (e) { return null; }
+  }, [tpl, target.cal, dev, dayType]); // eslint-disable-line react-hooks/exhaustive-deps
+  const rebalance = () => { if (!balanced) return; setTpl(balanced.tpl); saveAIMenu(balanced.tpl, user?.id); };
   const sub = `${DT[dayType]} · ${STYLE_NAME[prefs.style] || "Cơm nhà VN"}${tpl ? ` · ${meals.length} bữa` : ` · ${fmtInt(target.cal)} kcal`}`;
   const canApplyToday = dayType === todayType;
 
@@ -230,7 +240,14 @@ export function AIMenuScreen({ macro, profile, user, appSettings, initialPrefs, 
           {note && <p data-testid="ai-note" style={{ margin: "0 4px", fontSize: 13, color: "#475569", lineHeight: 1.45 }}>{note}</p>}
           <SumCard testid="ai-total" dataCal={total.cal} grad={PURPLE} cal={total.cal} target={target.cal} pct={pct} bar={pct}
             macros={{ p: total.p, c: total.c, f: total.f }}
-            warn={Math.abs(dev) > 5 ? `${dev < 0 ? `Thiếu ${-dev}%` : `Dư ${dev}%`} mục tiêu ${DT[dayType].toLowerCase()} — Tạo lại hoặc đổi món ${dev < 0 ? "to" : "nhẹ"} hơn` : null} />
+            warn={Math.abs(dev) > 5 ? (balanced
+              ? `${dev < 0 ? `Thiếu ${-dev}%` : `Dư ${dev}%`} mục tiêu ${DT[dayType].toLowerCase()}`
+              : `${dev < 0 ? `Thiếu ${-dev}%` : `Dư ${dev}%`} mục tiêu ${DT[dayType].toLowerCase()} — các món này không cân thêm được, Tạo lại hoặc đổi món ${dev < 0 ? "to" : "nhẹ"} hơn`) : null}
+            warnAction={balanced ? (
+              <button data-testid="ai-rebalance" onClick={rebalance} style={{ height: 36, borderRadius: 10, border: "none", background: "#FFFFFF", color: "#6D28D9", fontFamily: "inherit", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                {Icon.redo(15)} Cân lại cho đủ {fmtInt(target.cal)} kcal · không tốn lượt
+              </button>
+            ) : null} />
           {meals.map((m) => {
             if (m.composite) {
               const items = (m.items || []).filter((i) => i.gram > 0 && i.display !== null);

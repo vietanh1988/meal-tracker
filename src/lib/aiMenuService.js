@@ -678,49 +678,63 @@ async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, p
 // 7. TIỆN ÍCH — đổi món / swap / swap pattern
 // ============================================================
 
-export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro, dayType) {
-  if (!LOCAL_FOODS[newFoodKey]) return template;
-
-  // Ghi lại display map TOÀN template trước khi chạy engine (engine xoá display)
-  const displayByMeal = {};
+// Ghi lại display + pattern từng bữa (engine xoá display). swap = { mealId, oldFood, newFoodKey } khi đổi món.
+function displayInfo(template, swap = null) {
+  const out = {};
   (template.meals || []).forEach(m => {
     const map = {};
     (m.items || []).forEach(it => {
-      if (it.food === oldFood && m.meal_id === mealId) map[newFoodKey] = getFoodDisplay(newFoodKey);
+      if (swap && it.food === swap.oldFood && m.meal_id === swap.mealId) map[swap.newFoodKey] = getFoodDisplay(swap.newFoodKey);
       else if (it.display !== undefined) map[it.food] = it.display;
     });
-    displayByMeal[m.meal_id] = { map, pattern: m.meal_id === mealId ? null : (m.pattern || null) };
+    out[m.meal_id] = { map, pattern: swap && m.meal_id === swap.mealId ? null : (m.pattern || null) };
   });
-
-  const meals = (template.meals || []).map(m => {
-    if (m.meal_id !== mealId) return m;
-    const items = (m.items || []).map(it =>
-      it.food === oldFood ? foodToItem(newFoodKey, undefined, undefined, it.role) : foodToItem(it.food, it.gram, undefined, it.role)
-    );
-    return { ...m, items, pattern: null };
+  return out;
+}
+// Gắn lại display + pattern, làm tròn đơn vị nguyên, sắp lại thứ tự món kiểu Việt
+function finishMeals(meals, info) {
+  return (meals || []).map(m => {
+    const inf = info[m.meal_id] || { map: {}, pattern: null };
+    const items = (m.items || []).map(it => snapWholeUnit({
+      ...it,
+      display: inf.map[it.food] !== undefined ? inf.map[it.food] : null,
+    }));
+    items.sort((a, b) => {
+      const ra = DISPLAY_ORDER[a.role || getFoodRole(a.food)] ?? 2;
+      const rb = DISPLAY_ORDER[b.role || getFoodRole(b.food)] ?? 2;
+      return ra - rb;
+    });
+    return { ...m, pattern: inf.pattern, items };
   });
+}
+const mealTotals = (m) => (m?.items || []).reduce((a, i) => ({
+  cal: a.cal + (Number(i.cal) || 0), p: a.p + (Number(i.p ?? i.protein) || 0), c: a.c + (Number(i.c ?? i.carb) || 0), f: a.f + (Number(i.f ?? i.fat) || 0),
+}), { cal: 0, p: 0, c: 0, f: 0 });
 
-  const recomputed = stripZeroGramItems(
-    applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType))
+// Đổi 1 món (16/10, chủ dự án chốt): CHỈ tính lại bữa có món đổi, giữ calo/macro của bữa như trước khi đổi —
+// "đổi món" không được ngầm nâng/hạ cả bữa về mục tiêu. Các bữa khác giữ nguyên.
+// Thiếu/dư so với mục tiêu ngày → rebalanceTemplate (nút "Cân lại cho đủ mục tiêu").
+export function swapFoodInTemplate(template, mealId, oldFood, newFoodKey, macro, dayType) {
+  if (!LOCAL_FOODS[newFoodKey]) return template;
+  void macro; void dayType;
+  const meal = (template.meals || []).find(m => m.meal_id === mealId);
+  if (!meal) return template;
+  const info = displayInfo(template, { mealId, oldFood, newFoodKey });
+  const items = (meal.items || []).map(it =>
+    it.food === oldFood ? foodToItem(newFoodKey, undefined, undefined, it.role) : foodToItem(it.food, it.gram, undefined, it.role)
   );
+  const target = mealTotals(meal);
+  const one = stripZeroGramItems(applyMealEngineToTemplate({ meals: [{ ...meal, items, pattern: null }] }, target));
+  const fixed = finishMeals(one.meals, info)[0];
+  return { ...template, meals: (template.meals || []).map(m => (m.meal_id === mealId ? fixed : m)) };
+}
 
-  // Re-attach display + pattern (engine đã xoá) + sort lại đúng thứ tự Việt
-  return {
-    ...recomputed,
-    meals: (recomputed.meals || []).map(m => {
-      const info = displayByMeal[m.meal_id] || { map: {}, pattern: null };
-      const items = (m.items || []).map(it => snapWholeUnit({
-        ...it,
-        display: info.map[it.food] !== undefined ? info.map[it.food] : null,
-      }));
-      items.sort((a, b) => {
-        const ra = DISPLAY_ORDER[a.role || getFoodRole(a.food)] ?? 2;
-        const rb = DISPLAY_ORDER[b.role || getFoodRole(b.food)] ?? 2;
-        return ra - rb;
-      });
-      return { ...m, pattern: info.pattern, items };
-    }),
-  };
+// Cân lại cả thực đơn cho đủ mục tiêu ngày (không gọi AI): chạy mealEngine cho mọi bữa theo mục tiêu ngày tập/nghỉ
+export function rebalanceTemplate(template, macro, dayType) {
+  const info = displayInfo(template);
+  const meals = (template.meals || []).map(m => ({ ...m, items: (m.items || []).map(it => (LOCAL_FOODS[it.food] ? foodToItem(it.food, it.gram, undefined, it.role) : it)) }));
+  const recomputed = stripZeroGramItems(applyMealEngineToTemplate({ ...template, meals }, dayTarget(macro, dayType)));
+  return { ...recomputed, meals: finishMeals(recomputed.meals, info) };
 }
 
 export function getPatternReason(mealId, patternName, goalType) {
