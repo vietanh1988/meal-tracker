@@ -24,7 +24,8 @@ export function useProfile(userId, authLoading) {
         const defaulted = [];
         if (!data.cm) defaulted.push("cm");
         if (!Number(data.kg)) defaulted.push("kg");
-        if (!data.birth_year && !data.age) defaulted.push("birthYear");
+        // Chưa có năm sinh thật (cột age chỉ là mặc định DB khi tạo tài khoản) → coi là chưa nhập (onboarding để trống ô năm sinh)
+        if (!data.birth_year) defaulted.push("birthYear");
         if (!Number(data.goal_kg)) defaulted.push("goalKg");
         const p = {
           cm: data.cm || DEFAULT.cm,
