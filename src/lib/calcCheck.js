@@ -139,6 +139,14 @@ function resolveEntry1(entry0, foodCache) {
     const k = gram / base;
     return { food: cacheKey, display: getFoodDisplay(cacheKey), gram, unit: "g", ...(portionLabel(entry) ? { qty_display: portionLabel(entry) } : {}), p: r1(v.p * k), c: r1(v.c * k), f: r1(v.f * k), fiber: r1((v.fiber || 0) * k), cal: Math.round((v.cal || 0) * k), source: "cache", _raw: entry.raw };
   }
+  // Tên chung hay gõ mà kho chỉ có bản cụ thể ("bún bò" → "bún bò huế", "cơm tấm" → "cơm tấm sườn…"):
+  // lấy món ngắn nhất bắt đầu bằng đúng tên đó (16/10, trước đây rơi về "bún" 436 kcal)
+  const longer = Object.keys(LOCAL_FOODS).filter((k) => stripVN(k).startsWith(plain + " ")).sort((a, b) => a.length - b.length)[0];
+  if (longer) {
+    const g = gramOf(entry, longer);
+    const rr = lookupLocalFood(longer, g);
+    if (rr) return toItem(entry, longer, getFoodDisplay(longer), g, rr, "localDB");
+  }
   const gram = gramOf(entry, null);
   const r = lookupLocalFood(entry.name, gram);
   if (r) {

@@ -99,7 +99,7 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
       <div style={{ margin: "12px 12px 0 12px", background: "#FFFFFF", border: "none", borderRadius: 20, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
         <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em" }}>BẠN ĂN GÌ?</span>
-          <textarea data-testid="calc-text" value={text} onChange={(e) => setText(e.target.value)} placeholder="VD: 1 tô phở bò, 2 quả trứng luộc, 1 ly trà sữa"
+          <textarea data-testid="calc-text" autoFocus={!text} value={text} onChange={(e) => setText(e.target.value)} placeholder="VD: 1 tô phở bò, 2 quả trứng luộc, 1 ly trà sữa"
             style={{ height: 132, padding: "12px 14px", borderRadius: 14, border: "none", background: "#F1F5F9", fontFamily: "inherit", fontSize: 16, lineHeight: 1.5, color: "#0F172A", resize: "none", boxSizing: "border-box", outline: "none" }} />
           <span style={{ fontSize: 12, color: "#64748B" }}>Mỗi món cách nhau dấu phẩy hoặc xuống dòng. Ghi kèm số lượng nếu biết (tô, quả, ly, gram).</span>
         </label>

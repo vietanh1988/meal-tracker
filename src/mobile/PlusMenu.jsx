@@ -19,10 +19,10 @@ export function PlusMenu({ onClose, onLog, onPhoto, onCalc }) {
     { id: "plus-calc", title: "Kiểm tra calo", sub: "Gõ món đang định ăn, xem calo trước khi ăn — không cần ghi", bg: CY, icon: Icon.calc(22), on: onCalc },
   ].filter(Boolean);
   return (
-    <div className="fpm" data-testid="plus-menu" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 89, background: "rgba(15,23,42,0.45)", fontFamily: FONT, animation: "fpmFade .15s ease" }}>
+    <div className="fpm" data-testid="plus-menu" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 89, background: "rgba(15,23,42,0.62)", WebkitBackdropFilter: "blur(2px)", backdropFilter: "blur(2px)", fontFamily: FONT, animation: "fpmFade .15s ease" }}>
       <div role="menu" aria-label="Bạn muốn làm gì?" onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 12, right: 12, bottom: `calc(${NAV_BOTTOM} + 86px)`, maxWidth: 536, margin: "0 auto", display: "flex", flexDirection: "column", gap: 10, animation: "fpmSheetUp .2s ease" }}>
-        <span style={{ fontSize: 13, fontWeight: 800, color: "#FFFFFF", padding: "0 6px" }}>Bạn muốn làm gì?</span>
+        <span style={{ fontSize: 15, fontWeight: 900, color: "#FFFFFF", padding: "0 6px", textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}>Bạn muốn làm gì?</span>
         {opts.map((o) => (
           <button key={o.id} role="menuitem" data-testid={o.id} onClick={o.on} style={card}>
             <span style={ic(o.bg)}>{o.icon}</span>
