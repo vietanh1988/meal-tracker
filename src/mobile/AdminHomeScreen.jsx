@@ -24,7 +24,7 @@ const I = {
   chat: svg(<path d="M5 5h14v10H9l-4 4z" />),
 };
 // Tiêu đề màn con (MobileApp dùng làm tiêu đề SubPage)
-export const ADMIN_TITLES = { orders: "Duyệt đơn hàng", report_biz: "Báo cáo kinh doanh", templates: "Kho mẫu thực đơn", food_db: "Kho thực phẩm", food_cache_pending: "Duyệt món AI tính", admin: "Quản lý version", feature_flags: "Quản lý tính năng", ai: "Kết nối AI", ai_cost: "Chi phí AI", backup: "Sao lưu", admin_feedback: "Góp ý & báo lỗi" };
+export const ADMIN_TITLES = { orders: "Duyệt đơn hàng", report_biz: "Báo cáo kinh doanh", templates: "Kho mẫu thực đơn", food_db: "Kho thực phẩm", food_cache_pending: "Duyệt món AI tính", admin: "Phiên bản & thông báo", feature_flags: "Quản lý tính năng", ai: "Kết nối AI", ai_cost: "Chi phí AI", backup: "Sao lưu", admin_feedback: "Góp ý & báo lỗi" };
 
 const sec = { display: "block", padding: "18px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: DK.t3, letterSpacing: "0.08em" };
 const group = { ...dkCard, margin: "0 12px", borderRadius: 16, padding: "0 14px" };
@@ -85,7 +85,7 @@ export function AdminHomeScreen({ isSuperAdmin, appVersion, open }) {
       </div>
       <span style={sec}>HỆ THỐNG</span>
       <div style={group}>
-        <Row id="admin" open={open} icon={I.version} color="#0891B2" label="Quản lý version" value={appVersion ? <span style={{ fontSize: 13, color: DK.t2 }}>v{appVersion}</span> : null} />
+        <Row id="admin" open={open} icon={I.version} color="#0891B2" label="Phiên bản & thông báo" value={appVersion ? <span style={{ fontSize: 13, color: DK.t2 }}>v{appVersion}</span> : null} />
         <Row id="feature_flags" open={open} icon={I.toggle} color="#4F46E5" label="Quản lý tính năng" />
         <Row id="ai" open={open} icon={I.chip} color="#007AFF" label="Kết nối AI" />
         <Row id="ai_cost" open={open} icon={I.coin} color="#D97706" label="Chi phí AI" last={!isSuperAdmin} />

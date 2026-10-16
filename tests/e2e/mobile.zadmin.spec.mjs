@@ -33,3 +33,50 @@ test("Quản trị: ô đếm + trả lời góp ý", async ({ browser }) => {
     await ctx.close();
   }
 });
+
+// 10 trang con Quản trị nền tối (bản vẽ 98–108, 16/10): mở từng trang (Super Admin), không lỗi, có ảnh chụp
+test("Quản trị: 10 trang con nền tối", async ({ browser }) => {
+  const s = S();
+  const [prof] = await rest(`profiles?id=eq.${s.uid}&select=is_admin,admin_role`);
+  await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: true, admin_role: "super" }) });
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on("pageerror", (e) => { errs.push(e.message); console.log("PAGE ERROR:", e.message); });
+  const SCREENS = [["orders", "adm-orders"], ["report_biz", "adm-report"], ["food_cache_pending", "adm-pending"], ["food_db", "adm-food"], ["templates", "adm-tpl"], ["admin", "adm-version"], ["feature_flags", "adm-flags"], ["ai", "adm-ai"], ["ai_cost", "adm-cost"], ["backup", "adm-backup"]];
+  try {
+    await login(page);
+    await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Tôi" }).click();
+    await tap(page.getByTestId("me-admin"));
+    await expect(page.getByTestId("admin-home")).toBeVisible();
+    for (const [id, root] of SCREENS) {
+      console.log("BƯỚC: mở", id);
+      await tap(page.getByTestId(`admin-${id}`));
+      await expect(page.getByTestId(root)).toBeVisible();
+      await expect(page.getByTestId("admin-loading")).toHaveCount(0, { timeout: 15_000 });
+      const w = await page.evaluate(() => { const sp = [...document.querySelectorAll('[data-testid="subpage"]')].pop(); const c = sp?.querySelector("div[style*='overflow-y']"); return c ? c.scrollWidth - c.clientWidth : 0; });
+      expect(w, `${id}: tràn ngang`).toBeLessThanOrEqual(1);
+      if (id === "food_db") {
+        await page.getByTestId("adm-food-search").fill("ức gà");
+        await expect(page.getByTestId("adm-food-row").first()).toBeVisible();
+        await tap(page.getByTestId("adm-food-row").first());
+        await expect(page.getByTestId("adm-food-edit")).toBeVisible();
+      }
+      if (id === "templates") {
+        await tap(page.getByTestId("adm-tpl-new"));
+        await expect(page.getByTestId("adm-tpl-editor")).toBeVisible();
+        await page.screenshot({ path: "shots/admin-templates-editor.png", fullPage: true });
+        await page.getByRole("button", { name: "Quay lại" }).last().click();
+        const ok = page.getByTestId("admin-confirm-ok");
+        if (await ok.count()) await ok.click();
+      }
+      await page.screenshot({ path: `shots/admin-${id}.png`, fullPage: true });
+      await page.getByRole("button", { name: "Quay lại" }).last().click();
+      await expect(page.getByTestId("admin-home")).toBeVisible();
+    }
+    expect(errs).toEqual([]);
+  } finally {
+    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: prof?.is_admin ?? false, admin_role: prof?.admin_role ?? null }) });
+    await ctx.close();
+  }
+});

@@ -13,6 +13,16 @@ import { EditMealScreen } from "./EditMealScreen";
 import { ProgressScreen } from "./ProgressScreen";
 import { MeScreen } from "./MeScreen";
 import { AdminHomeScreen, AdminFeedbackScreen, ADMIN_TITLES } from "./AdminHomeScreen";
+import { OrdersScreen } from "./admin/OrdersScreen";
+import { ReportScreen } from "./admin/ReportScreen";
+import { PendingFoodsScreen } from "./admin/PendingFoodsScreen";
+import { FoodDBScreen } from "./admin/FoodDBScreen";
+import { TemplatesScreen } from "./admin/TemplatesScreen";
+import { VersionScreen } from "./admin/VersionScreen";
+import { FlagsScreen } from "./admin/FlagsScreen";
+import { AiScreen } from "./admin/AiScreen";
+import { AiCostScreen } from "./admin/AiCostScreen";
+import { BackupScreen } from "./admin/BackupScreen";
 import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
 import { RemindersScreen } from "./RemindersScreen";
@@ -486,6 +496,12 @@ export function MobileApp(props) {
         <AdminFeedbackScreen showToast={showToast} />
       </SubPage>
     );
+    // 10 trang con Quản trị nền tối (bản vẽ 98–108, 16/10) — thay AdminPanel cũ trên điện thoại (PC vẫn dùng tab cũ)
+    const ADM = { orders: OrdersScreen, report_biz: ReportScreen, food_cache_pending: PendingFoodsScreen, food_db: FoodDBScreen, templates: TemplatesScreen, admin: VersionScreen, feature_flags: FlagsScreen, ai: AiScreen, ai_cost: AiCostScreen, backup: BackupScreen };
+    if (ADM[sec] && isAdmin) {
+      const Scr = ADM[sec];
+      return <Scr {...panelProps} onBack={closeLayer} isAdmin={isAdmin} isSuperAdmin={profile.adminRole === "super"} user={user} appSettings={appSettings} saveSetting={saveSetting} showToast={showToast} />;
+    }
     const inner = <AdminPanel {...panelProps} forcedSection="settings" initialSection={sec === "about_edit" ? "about" : sec} hidePills />;
     return (
       <SubPage title={ADMIN_TITLES[sec] || SECTION_TITLE[sec] || "Cài đặt"} onBack={closeLayer}>
