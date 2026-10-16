@@ -63,6 +63,7 @@ export function useProfile(userId, authLoading) {
         p.push_enabled_clicked = !!data.push_enabled_clicked;
         p.push_prompted_after_eaten = !!data.push_prompted_after_eaten;
         if (defaulted.length) p._defaulted = defaulted;
+        p._loaded = true; // hồ sơ đọc được từ DB (dùng để quyết định có hiện onboarding hay không)
         setProfileState(p);
         if (!silent) console.log("✅ Profile loaded from cloud");
       } else if (error && error.code !== "PGRST116") {
@@ -72,8 +73,17 @@ export function useProfile(userId, authLoading) {
         setTimeout(() => fetchProfile(true), 3000);
         return; // giữ loading/profile như cũ — không hiện hồ sơ mặc định giả
       } else {
-        // Chưa có dòng profile (user mới) → tạo với giá trị mặc định
-        setProfileState(DEFAULT);
+        // Không thấy dòng profile. 16/10: có thể là phiên đăng nhập vừa hết hạn (iPhone mở lại app, mạng chập chờn)
+        // → RLS trả 0 dòng. KHÔNG coi là user mới khi đã có hồ sơ / phiên không hợp lệ: trước đây app hiện lại
+        // onboarding cho tài khoản đang dùng và có thể ghi đè hồ sơ thật bằng số mặc định.
+        const { data: au } = await supabase.auth.getUser();
+        if (silent || au?.user?.id !== userId) {
+          console.warn("Profile trống nhưng phiên chưa chắc chắn — giữ nguyên, thử lại sau 3s");
+          setTimeout(() => fetchProfile(true), 3000);
+          return;
+        }
+        // User mới thật → tạo dòng mặc định (chỉ chèn, KHÔNG bao giờ ghi đè dòng đã có)
+        setProfileState({ ...DEFAULT, _loaded: true });
         await supabase.from("profiles").upsert({
           id: userId, cm: DEFAULT.cm, kg: DEFAULT.kg,
           birth_year: DEFAULT.birthYear,
@@ -82,7 +92,7 @@ export function useProfile(userId, authLoading) {
           frequency: DEFAULT.frequency, diet_strategy: DEFAULT.dietStrategy,
           calorie_mode: DEFAULT.calorieMode,
           gym_days: DEFAULT.gymDays,
-        });
+        }, { onConflict: "id", ignoreDuplicates: true });
       }
     } catch (e) {
       console.error("Profile load error (thử lại sau 3s):", e);

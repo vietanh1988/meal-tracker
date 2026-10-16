@@ -192,7 +192,8 @@ export default function App(){
   </div>;
 
   // Onboarding: chỉ hiện cho user mới chưa có data thật (chờ data load xong)
-  const needsOnboarding=userDataLoaded && !profileLoading && !weightLoading && !profile.onboardingDone && (!weightLog || weightLog.length===0);
+  // 16/10: chỉ hiện onboarding khi hồ sơ ĐỌC ĐƯỢC từ DB (hoặc user mới thật) mà chưa xong — không hiện khi hồ sơ là mặc định tạm do lỗi phiên/mạng
+  const needsOnboarding=userDataLoaded && !profileLoading && !weightLoading && !!profile?._loaded && !profile.onboardingDone && (!weightLog || weightLog.length===0);
   if(needsOnboarding) return <OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>setTab("dashboard")} appSettings={appSettings} user={user} saveWeeklyTemplate={saveWeeklyTemplate} applyTemplate={applyTemplate} getMealHistory={getMealHistory}/>;
 
   // === PC DATA COMPUTATION ===

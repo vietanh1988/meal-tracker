@@ -462,12 +462,16 @@ export function MobileApp(props) {
     if (m) m.setAttribute("content", tab === "today" ? HDR_TOP.blue : tab === "me" ? HDR_TOP.dark : LT.top);
   }, [tab]);
 
-  // Tab Tôi nền tối: đổi cả màu nền trang để iPhone kéo quá đầu/cuối không lộ vệt trắng
+  // Nền trang theo tab để iPhone kéo quá đầu/cuối không lộ vệt khác màu.
+  // 16/10: app ghim màn hình iPhone bị lộ dải nền nhạt phía trên header khi kéo/bật lại app →
+  // khoá kéo nảy (overscroll) của trang + tab Hôm nay tô nửa trên nền trang bằng màu header.
   useEffect(() => {
-    const b = document.body;
-    const prev = b.style.backgroundColor;
-    b.style.backgroundColor = tab === "me" ? DK.base : LT.base;
-    return () => { b.style.backgroundColor = prev; };
+    const b = document.body, h = document.documentElement;
+    const prev = { bg: b.style.background, ob: b.style.overscrollBehaviorY, oh: h.style.overscrollBehaviorY, hb: h.style.background };
+    const bg = tab === "me" ? DK.base : tab === "today" ? `linear-gradient(180deg, ${HDR_TOP.blue} 0 50%, ${LT.base} 50% 100%)` : LT.base;
+    b.style.background = bg; h.style.background = tab === "today" ? HDR_TOP.blue : tab === "me" ? DK.base : LT.base;
+    b.style.overscrollBehaviorY = "none"; h.style.overscrollBehaviorY = "none";
+    return () => { b.style.background = prev.bg; b.style.overscrollBehaviorY = prev.ob; h.style.overscrollBehaviorY = prev.oh; h.style.background = prev.hb; };
   }, [tab]);
 
   // ---------- Tiến độ ----------
