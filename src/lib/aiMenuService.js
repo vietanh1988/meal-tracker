@@ -459,13 +459,27 @@ function trimDay(template, target, diet) {
   const tot = () => (template.meals || []).reduce((a, m) => a + (m.items || []).reduce((b, i) => b + (Number(i.cal) || 0), 0), 0);
   let over = tot() - (target.cal || 0) * 1.03;
   if (!target.cal || over <= (target.cal || 0) * 0.05) return template;
-  for (const role of diet === "keto" || diet === "low_carb" ? ["fat", "carb"] : ["carb", "fat"]) {
+  // Cuối cùng mới cắt món đạm (keto hay ra ba chỉ/trứng 300 g → dư 40–70%), nhưng giữ tổng đạm ≥ 95% mục tiêu
+  const totP = () => (template.meals || []).reduce((a, m) => a + (m.items || []).reduce((b, i) => b + (Number(i.p) || 0), 0), 0);
+  for (const role of [...(diet === "keto" || diet === "low_carb" ? ["fat", "carb"] : ["carb", "fat"]), "protein"]) {
     if (over <= 0) break;
     const pool = [];
     (template.meals || []).forEach((m, mi) => (m.items || []).forEach((it, ii) => { if ((it.role || getFoodRole(it.food)) === role && it.gram && it.cal) pool.push([mi, ii]); }));
     const room = pool.reduce((a, [mi, ii]) => { const it = template.meals[mi].items[ii]; const min = (getGramLimit(it.food).min || 0) * 0.75; return a + Math.max(0, it.cal - (it.cal / it.gram) * min); }, 0);
     if (room <= 0) continue;
-    const k = Math.min(1, over / room);
+    let k = Math.min(1, over / room);
+    if (role === "protein") {
+      const pRoom = pool.reduce((a, [mi, ii]) => { const it = template.meals[mi].items[ii]; const min = (getGramLimit(it.food).min || 0) * 0.75; return a + Math.max(0, (Number(it.p) || 0) * (1 - min / it.gram)); }, 0);
+      const slack = totP() - (target.p || 0) * 0.95;
+      if (pRoom <= 0) break;
+      if (slack > 0) k = Math.min(k, slack / pRoom);
+      else {
+        // Đạm đã thiếu mà calo vẫn dư > 25% (món đạm nhiều mỡ chạm trần 300 g) → chịu thiếu đạm, kéo calo về ~115%
+        const hard = tot() - (target.cal || 0) * 1.15;
+        if (tot() <= (target.cal || 0) * 1.25 || hard <= 0) break;
+        k = Math.min(1, hard / room);
+      }
+    }
     const meals = template.meals.map(m => ({ ...m, items: [...m.items] }));
     for (const [mi, ii] of pool) {
       const it = meals[mi].items[ii];
@@ -1093,7 +1107,15 @@ export async function generateMenuAI(args) {
   const res = await generateMenuAIRaw(args);
   if (!res?.ok || !res.template) return res;
   const target = dayTarget(args.macro, args.dayType || "train");
-  const s = sanitizeAIMenu(res.template, { avoidText: args.prefs?.avoid, target });
+  let s = sanitizeAIMenu(res.template, { avoidText: args.prefs?.avoid, target });
+  // Lệch quá xa (hiếm, ~0,5% lần tạo: món quá nhẹ/nặng) → thử cân lại khẩu phần trước khi báo lỗi bắt user tốn thêm lượt
+  if (s.broken && (s.template?.meals || []).length) {
+    try {
+      const fixed = rebalanceTemplate(s.template, args.macro, args.dayType || "train", { avoidText: args.prefs?.avoid || "" });
+      const s2 = sanitizeAIMenu(fixed, { avoidText: args.prefs?.avoid, target });
+      if (!s2.broken) s = { ...s2, removed: [...s.removed, ...s2.removed] };
+    } catch (e) { /* giữ lỗi cũ */ }
+  }
   if (s.broken) return { ok: false, error: "Thực đơn AI trả về lệch quá xa mục tiêu calo. Bấm Thử lại nhé." };
   const note = s.removed.length ? `Đã bỏ ${s.removed.slice(0, 3).join(", ")}${s.removed.length > 3 ? "…" : ""} vì bạn kiêng/dị ứng.` : res.note;
   return { ...res, template: s.template, note };
