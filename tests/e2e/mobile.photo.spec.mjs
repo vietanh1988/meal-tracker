@@ -20,8 +20,20 @@ test("Chụp ảnh: nhận diện → sửa → lưu vào bữa", async ({ brows
   await expect(page.getByTestId("photo-total")).toHaveAttribute("data-cal", "560");
 
   // Cơm 200 → 100 g: kcal cơm còn 130
-  await page.getByTestId("photo-gram-0").fill("100");
+  // Xoá hết số được (16/10: trước bị chặn, còn sót 1 chữ số) rồi gõ lại bằng bàn phím
+  const g0 = page.getByTestId("photo-gram-0");
+  await g0.click();
+  await g0.press("End");
+  for (let k = 0; k < 4; k++) await g0.press("Backspace");
+  await expect(g0).toHaveValue("");
+  await g0.pressSequentially("100");
+  await expect(g0).toHaveValue("100");
   await expect(page.getByTestId("photo-total")).toHaveAttribute("data-cal", "430");
+  // Để trống rồi rời ô → trả về số đang dùng
+  await g0.click();
+  await g0.fill("");
+  await page.getByTestId("photo-total").click();
+  await expect(g0).toHaveValue("100");
   // Bỏ thịt kho, thêm trứng bằng Tìm món
   await tap(page.getByTestId("photo-remove-1"));
   await tap(page.getByTestId("photo-add"));

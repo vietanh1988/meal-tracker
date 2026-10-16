@@ -22,6 +22,20 @@ function macroHint(it) {
   return `B ${fmtDec(f)}g`;
 }
 
+// Ô số lượng (16/10): trước đây xoá hết số bị chặn (chỉ nhận > 0) → không xoá được để gõ lại.
+// Giờ giữ bản nháp khi đang gõ (được để trống), số > 0 thì áp ngay; rời ô mà trống / 0 → trả về số cũ.
+function QtyInput({ value, onCommit, testid, style, ...rest }) {
+  const [draft, setDraft] = useState(null);
+  return (
+    <input data-testid={testid} {...rest} type="text" inputMode="decimal" value={draft ?? value}
+      onFocus={(e) => { setDraft(String(value)); e.target.select(); }}
+      onChange={(e) => { const v = e.target.value.replace(/[^\d,.]/g, ""); setDraft(v); if (Number(v.replace(",", ".")) > 0) onCommit(v); }}
+      onBlur={() => setDraft(null)}
+      onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+      style={style} />
+  );
+}
+
 export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodCache, dateOptions, onSave, onClose }) {
   const [img, setImg] = useState(null);
   const [stage, setStage] = useState("capture"); // capture | loading | edit
@@ -177,7 +191,7 @@ export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodC
                   <button aria-label="Giảm" onClick={() => mapAt(i, (x) => stepPortion(x, -1))} style={stepBtn}>−</button>
                   <span style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 62 }}>
                     <span style={{ height: 32, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", gap: 2, padding: "0 6px" }}>
-                      <input data-testid={`photo-gram-${i}`} aria-label={po.mode === "unit" ? `Số ${po.unit}` : "Gram"} inputMode="decimal" value={po.label} onChange={(e) => { const v = e.target.value.replace(/[^\d,.]/g, ""); if (Number(v.replace(",", ".")) > 0) mapAt(i, (x) => setPortion(x, v)); }}
+                      <QtyInput testid={`photo-gram-${i}`} aria-label={po.mode === "unit" ? `Số ${po.unit}` : "Gram"} value={po.label} onCommit={(v) => mapAt(i, (x) => setPortion(x, v))}
                         style={{ width: po.mode === "unit" ? 30 : 38, border: "none", background: "transparent", textAlign: "right", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#0F172A", padding: 0 }} />
                       <button data-testid={`photo-unit-${i}`} disabled={!hasUnit(it)} onClick={() => mapAt(i, toggleUnit)} aria-label="Đổi đơn vị" style={{ border: "none", background: "transparent", padding: 0, fontFamily: "inherit", fontSize: 12, fontWeight: 800, color: "#0062F0" }}>{po.unit}{hasUnit(it) ? " ▾" : ""}</button>
                     </span>
