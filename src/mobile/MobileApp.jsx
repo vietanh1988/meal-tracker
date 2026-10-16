@@ -2,10 +2,11 @@
 // thanh dưới Hôm nay · Thực đơn · (+) Ghi bữa · Tiến độ · Tôi, các lớp phủ
 // (Ghi bữa, Sửa bữa, Chụp ảnh, Fipilot AI, Thực đơn AI, màn phụ của Tôi).
 // Mọi ghi daily_logs đi qua useUserData (saveMealToCloud/toggleEaten/removeDayMeal/moveDayMeal/addWater/applyTemplate).
+import { useMyFoods } from "../hooks/useMyFoods";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
 import { DK, DK_CSS, LT } from "../theme";
-import { readUser, writeUser } from "../lib/userStore";
+import { readUser } from "../lib/userStore";
 import { TodayScreen } from "./TodayScreen";
 import { HEADER_CSS, HDR_TOP } from "./TodayHeader";
 import { LogMealSheet } from "./LogMealSheet";
@@ -70,9 +71,8 @@ export function MobileApp(props) {
   // Món lạ AI đã tính (chờ admin duyệt) — chính user dùng lại được ngay, không tốn lượt
   const { myPending, savePendingFoodCache } = usePendingFoodCache(user?.id, false);
   // Món tự nhập calo (16/10): lưu trên máy theo tài khoản, chỉ người đó thấy — không vào kho chung / hàng chờ duyệt
-  const [myFoods, setMyFoods] = useState(() => readUser("fp_my_foods", user?.id, {}) || {});
-  useEffect(() => { setMyFoods(readUser("fp_my_foods", user?.id, {}) || {}); }, [user?.id]);
-  const saveMyFoods = (entries) => setMyFoods((prev) => { const next = { ...prev, ...entries }; writeUser("fp_my_foods", user?.id, next); return next; });
+  // Món tự nhập: lưu theo tài khoản trên máy chủ (bảng user_foods) + bản đệm trên máy — đổi máy không mất
+  const { myFoods, saveMyFoods } = useMyFoods(user?.id);
   const calcFoodCache = useMemo(() => ({ ...(myFoods || {}), ...(myPending || {}), ...(ud.foodCache || {}) }), [myFoods, myPending, ud.foodCache]);
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "bạn";
 

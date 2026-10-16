@@ -92,7 +92,18 @@ test("Kiểm tra calo: tự nhập calo món lạ → ghi, lần sau tìm thấy
     await openPlus(page, "log");
     await page.getByPlaceholder(/Tìm món/).fill("bánh khọt cô ba qwz");
     await expect(page.getByRole("button", { name: /^Thêm bánh khọt cô ba qwz/i })).toBeVisible();
+    // Món tự nhập lưu lên máy chủ (user_foods) theo 1 cái → đổi máy / xoá trình duyệt không mất
+    await waitDb(async () => {
+      const r = await rest(`user_foods?user_id=eq.${s.uid}&food_name=eq.${encodeURIComponent("bánh khọt cô ba qwz")}&select=data`);
+      return r?.[0]?.data?.cal === 130;
+    }, "user_foods có món tự nhập");
+    await page.evaluate(() => { Object.keys(localStorage).filter((k) => k.startsWith("fp_my_foods")).forEach((k) => localStorage.removeItem(k)); });
+    await page.reload();
+    await openPlus(page, "log");
+    await page.getByPlaceholder(/Tìm món/).fill("bánh khọt cô ba qwz");
+    await expect(page.getByRole("button", { name: /^Thêm bánh khọt cô ba qwz/i }), "máy mới vẫn có món tự nhập").toBeVisible();
   } finally {
+    await rest(`user_foods?user_id=eq.${s.uid}`, { method: "DELETE" });
     await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${day}`, { method: "DELETE" });
     await ctx.close();
   }

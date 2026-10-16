@@ -28,7 +28,7 @@ export function useAuth() {
   const signUp = async (email, password, username) => {
     const { data, error } = await supabase.auth.signUp({
       email, password,
-      options: { data: { username } }
+      options: { data: { username, terms_accepted: true } } // màn đăng ký: "Tiếp tục nghĩa là bạn đồng ý…" → trigger ghi profiles.terms_accepted_at
     });
     if (error) throw error;
     return data.user;
