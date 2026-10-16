@@ -1,4 +1,5 @@
-// Màn 3 · Sửa bữa đã tick (đã chốt): danh sách món + ô gram, xoá món, + Thêm món / chụp,
+// Màn 3 · Sửa bữa đã tick (đã chốt): danh sách món + ô gram, xoá món (có Hoàn tác ngay), + Thêm món / chụp,
+// 16/10: quay lại khi còn thay đổi → tự lưu (toast Hoàn tác ở MobileApp).
 // nút "Đã ăn", menu ⋯ (chuyển sang ngày/bữa khác, xoá bữa), thanh dưới tổng kcal + macro + Lưu.
 // 16/10 (bản vẽ 88): dòng tóm tắt icon bữa + tổng kcal; món có ĐƠN VỊ −/+ (lib/portion.js), chạm đơn vị đổi qua gram.
 // 14/10: "Chuyển sang ngày / bữa khác" mở bảng chọn ngày (lùi 7 ngày + ngày mai) và bữa; bữa đích có món thì GỘP (hỏi trước ở MobileApp).
@@ -40,33 +41,65 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
   const setQty = (i, v) => { const t = v.replace(/[^0-9.,]/g, "").slice(0, 5); setRows((r) => r.map((x, j) => (j === i ? { item: Number(t.replace(",", ".")) > 0 ? setPortion(x.item, t) : x.item, text: t } : x))); setDirty(true); };
   const stepAt = (i, dir) => { setRows((r) => r.map((x, j) => { if (j !== i) return x; const it = stepPortion(x.item, dir); return { item: it, text: portionOf(it).label }; })); setDirty(true); };
   const unitAt = (i) => { setRows((r) => r.map((x, j) => { if (j !== i) return x; const it = toggleUnit(x.item); return { item: it, text: portionOf(it).label }; })); };
-  const remove = (i) => { setRows((r) => r.filter((_, j) => j !== i)); setDirty(true); };
+  // Bỏ 1 món: hiện ngay "Đã bỏ … · Hoàn tác" trong màn (chỉ bản nháp, chưa lưu) — 16/10
+  const [removed, setRemoved] = useState(null); // { row, i, n }
+  const undoTimer = useRef(null);
+  useEffect(() => () => clearTimeout(undoTimer.current), []);
+  const remove = (i) => {
+    const row = rows[i];
+    setRows((r) => r.filter((_, j) => j !== i)); setDirty(true);
+    if (!row) return;
+    clearTimeout(undoTimer.current);
+    setRemoved({ row, i, n: Date.now() });
+    undoTimer.current = setTimeout(() => setRemoved(null), 4000);
+  };
+  const undoRemove = () => {
+    if (!removed) return;
+    clearTimeout(undoTimer.current);
+    const { row, i } = removed;
+    setRows((r) => [...r.slice(0, i), row, ...r.slice(i)]);
+    setRemoved(null);
+  };
 
-  const save = async () => {
+  // Rời màn khi còn thay đổi chưa lưu → TỰ LƯU (16/10, thay hộp "Bỏ các thay đổi?"). Cả nút Quay lại lẫn Back của
+  // Android/trình duyệt (lớp bị gỡ → unmount). settled = đã lưu / xoá / chuyển rồi, không lưu lại lần nữa.
+  const settled = useRef(false);
+  const latest = useRef({});
+  latest.current = { dirty, current, isEaten, onSave };
+  useEffect(() => () => {
+    const L = latest.current;
+    if (settled.current || !L.dirty || !L.current.length) return;
+    settled.current = true;
+    L.onSave(L.current, L.isEaten, true);
+  }, []);
+
+  const save = async (auto = false) => {
     if (busy) return;
     if (current.length === 0) {
       if (!(await appConfirm(`Bữa không còn món nào. Xoá ${mealName.toLowerCase()} khỏi ${friendlyDate(date).toLowerCase()}?`))) return;
-      setBusy(true); const ok = await onDelete(); setBusy(false); if (ok) onClose();
+      setBusy(true); const ok = await onDelete(); setBusy(false); if (ok) { settled.current = true; onClose(); }
       return;
     }
     setBusy(true);
-    const ok = await onSave(current, isEaten);
+    settled.current = true;
+    const ok = await onSave(current, isEaten, auto);
     setBusy(false);
-    if (ok) onClose();
+    if (ok) onClose(); else settled.current = false;
   };
   const back = async () => {
-    if (dirty && !(await appConfirm("Bỏ các thay đổi chưa lưu?"))) return;
+    if (dirty) { await save(true); return; }
+    settled.current = true;
     onClose();
   };
   const del = async () => {
     setMenu(false);
     if (!(await appConfirm(`Xoá ${mealName.toLowerCase()} ${friendlyDate(date).toLowerCase()}?`))) return;
-    setBusy(true); const ok = await onDelete(); setBusy(false); if (ok) onClose();
+    setBusy(true); const ok = await onDelete(); setBusy(false); if (ok) { settled.current = true; onClose(); }
   };
   const move = async () => {
     if (dirty && !(await appConfirm("Bữa đang có thay đổi chưa lưu. Chuyển bữa sẽ bỏ các thay đổi đó, tiếp tục?"))) return;
     setBusy(true); const ok = await onMove(toDate, toMeal); setBusy(false);
-    if (ok) { setMoving(false); onClose(); }
+    if (ok) { settled.current = true; setMoving(false); onClose(); }
   };
   // Ngày chọn được: 7 ngày gần nhất + ngày mai (khớp với lúc ghi bữa)
   const moveDates = [1, 0, -1, -2, -3, -4, -5, -6].map((n) => addDays(today, n));
@@ -97,7 +130,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
 
   const header = (
     <>
-      <button aria-pressed={isEaten} onClick={() => { setIsEaten(!isEaten); setDirty(true); }} style={{ height: 34, padding: "0 12px", borderRadius: 999, border: "none", background: isEaten ? "rgba(5,150,105,0.12)" : "#EEF4FF", color: isEaten ? "#047857" : "#64748B", fontFamily: "inherit", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>{Icon.check(14, 2.8)}{isEaten ? "Đã ăn" : "Chưa ăn"}</button>
+      <button data-testid="edit-eaten" aria-pressed={isEaten} onClick={() => { setIsEaten(!isEaten); setDirty(true); }} style={{ height: 34, padding: "0 12px", borderRadius: 999, border: "none", background: isEaten ? "rgba(5,150,105,0.12)" : "#EEF4FF", color: isEaten ? "#047857" : "#64748B", fontFamily: "inherit", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>{Icon.check(14, 2.8)}{isEaten ? "Đã ăn" : "Chưa ăn"}</button>
       <div style={{ position: "relative" }}>
         <button onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Thêm tuỳ chọn: chuyển ngày hoặc bữa, xoá bữa" style={{ width: 44, height: 44, borderRadius: 22, border: "none", background: "transparent", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.more(20)}</button>
         {menu && (
@@ -117,7 +150,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
           <span style={{ fontSize: 20, fontWeight: 900, color: "#0062F0" }}>{fmtInt(tot.cal)} kcal</span>
           <span style={{ fontSize: 12, fontWeight: 600, color: "#475569" }}>Đạm {Math.round(tot.p)} · Tinh bột {Math.round(tot.c)} · Béo {Math.round(tot.f)} g</span>
         </span>
-        <button onClick={save} disabled={busy} style={{ height: 52, width: 140, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, border: "none", fontFamily: "inherit" }}>{busy ? "Đang lưu…" : "Lưu"}</button>
+        <button data-testid="edit-save" onClick={() => save(false)} disabled={busy} style={{ height: 52, width: 140, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, border: "none", fontFamily: "inherit" }}>{busy ? "Đang lưu…" : "Lưu"}</button>
       </div>
     </div>
   );
@@ -168,6 +201,12 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
           </div>
         </div>
       </div>
+      {removed && (
+        <div role="status" data-testid="edit-undo" style={{ position: "fixed", left: "50%", transform: "translateX(-50%)", bottom: "calc(100px + env(safe-area-inset-bottom, 0px))", zIndex: 130, width: "calc(100% - 24px)", maxWidth: 520, boxSizing: "border-box", background: "#0F172A", color: "#FFFFFF", borderRadius: 14, padding: "8px 8px 8px 14px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 8px 24px rgba(15,23,42,0.25)", animation: "fpmFade .15s ease" }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Đã bỏ {itemName(removed.row.item).toLowerCase()}</span>
+          <button data-testid="edit-undo-btn" onClick={undoRemove} style={{ height: 36, padding: "0 12px", borderRadius: 10, border: "none", background: "rgba(255,255,255,0.14)", color: "#FFFFFF", fontSize: 13, fontWeight: 800, fontFamily: "inherit", flexShrink: 0 }}>Hoàn tác</button>
+        </div>
+      )}
       {moveSheet}
     </SubPage>
   );

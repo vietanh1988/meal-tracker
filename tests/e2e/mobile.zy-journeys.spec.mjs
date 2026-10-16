@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S, waitDb, tap, todayRow, kcalRemainMobile } from "./helpers.mjs";
+import { login, rest, S, waitDb, tap, todayRow, kcalRemainMobile, openLogFor, confirmIfAsked } from "./helpers.mjs";
 import { addDays } from "../../src/lib/dateVN.js";
 
 // Đo các hành trình chính (16/10): đếm từng thao tác (chạm / gõ) để soát UX, chụp ảnh từng bước vào shots/journey-<n>-*.png,
@@ -60,7 +60,7 @@ test("J1 · ghi 1 bữa bằng Tìm món: 2 món, chỉnh gram 1 món", async ({
   await login(page);
   const j = journey(1, "J1 ghi bữa bằng Tìm món", page);
   await j.shot("hom-nay");
-  await j.act("Hôm nay: bấm + ở dòng Bữa tối", () => tap(page.getByRole("button", { name: "Ghi bữa tối" })));
+  await j.act("Hôm nay: bấm + ở dòng Bữa tối (hoặc Tìm món ở thẻ đến giờ nếu đang là bữa tối)", () => openLogFor(page, "toi"));
   const search = page.getByPlaceholder(/Tìm món/);
   await j.shot("sheet-ghi-bua");
   await j.act("gõ 'thịt heo'", () => search.fill("thịt heo"));
@@ -84,7 +84,7 @@ test("J2 · ghi món lạ không có trong kho (tự nhập calo)", async ({ bro
   await putDay(s.today, []);
   await login(page);
   const j = journey(2, "J2 món lạ tự nhập calo", page);
-  await j.act("Hôm nay: bấm + ở dòng Bữa tối", () => tap(page.getByRole("button", { name: "Ghi bữa tối" })));
+  await j.act("Hôm nay: bấm + ở dòng Bữa tối (hoặc Tìm món ở thẻ đến giờ nếu đang là bữa tối)", () => openLogFor(page, "toi"));
   await j.act("gõ tên món lạ", () => page.getByPlaceholder(/Tìm món/).fill("2 cái bánh khọt cô ba qwz"));
   await j.shot("khong-thay");
   await j.act("bấm 'Kiểm tra calo món này'", () => tap(page.getByTestId("log-calc-q")));
@@ -115,13 +115,13 @@ test("J3 · xem còn bao nhiêu calo + Gợi ý món ở thẻ bữa đến gi�
   j.look(`còn ${before} kcal ở vòng header (0 thao tác)`);
   await j.shot("con-lai");
   const btn = page.getByTestId("focus-suggest");
-  await expect(btn, "thẻ bữa đến giờ có nút Gợi ý món").toBeVisible();
+  await expect(btn, "thẻ bữa đến giờ có link Xem lựa chọn gợi ý").toBeVisible();
   const mealId = await btn.getAttribute("data-meal");
-  await j.act(`bấm 'Gợi ý món cho …' (${mealId})`, () => tap(btn));
+  await j.act(`bấm 'Xem … lựa chọn' ở thẻ đến giờ (${mealId})`, () => tap(btn));
   await expect(page.getByTestId("suggest-sheet")).toBeVisible();
   j.look(`${await page.getByTestId("suggest-opt").count()} lựa chọn, đã chọn sẵn lựa chọn 1`);
   await j.shot("sheet-goi-y");
-  await j.act("bấm 'Dùng · X kcal'", () => tap(page.getByTestId("suggest-apply")));
+  await j.act("bấm 'Ghi · X kcal'", () => tap(page.getByTestId("suggest-apply")));
   await waitDb(async () => (meal(await todayRow(), mealId)?.items || []).length > 0, "J3: ghi món gợi ý");
   await expect.poll(() => kcalRemainMobile(page)).toBeLessThan(before);
   j.look(`còn ${await kcalRemainMobile(page)} kcal sau khi ghi`);
@@ -146,7 +146,8 @@ test("J4 · AI lên thực đơn từ Hôm nay rồi áp vào ngày", async ({ b
     return;
   }
   j.look(`tổng ${await page.getByTestId("ai-total").getAttribute("data-cal")} kcal`);
-  await j.act("bấm 'Áp dụng hôm nay'", () => tap(page.getByTestId("ai-apply")));
+  await j.act("bấm 'Dùng cho hôm nay'", () => tap(page.getByTestId("ai-apply")));
+  await confirmIfAsked(page, 1500); // hôm nay trống → thường không hỏi
   await waitDb(async () => ((await todayRow())?.meals || []).filter((m) => (m.items || []).length).length >= 1, "J4: áp thực đơn AI vào hôm nay");
   await expect(page.getByTestId("kcal-remain")).toBeVisible();
   await j.shot("da-ap");

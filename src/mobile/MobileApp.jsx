@@ -33,7 +33,7 @@ import { AboutScreen, TermsScreen } from "./AboutScreen";
 import { MenuScreen, MenuDayPage, MenuTplPage, MenuPastPage } from "./MenuScreen";
 import { AIMenuScreen } from "./AIMenuScreen";
 import { MealSuggestSheet } from "./MealSuggestSheet";
-import { mealSuggestions, remainingMealTarget } from "../lib/mealSuggest";
+import { mealSuggestions, remainingMealTarget, scaleSuggestion } from "../lib/mealSuggest";
 import { avoidMatcher } from "../lib/allergy";
 import { WEEK_KEYS, WEEK_SHORT, mealsCal, libraryFor } from "../lib/menuView";
 import { UpdatePopup } from "./UpdatePopup";
@@ -49,10 +49,10 @@ import { AppDialogHost, appConfirm } from "../lib/dialog";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
 import { getAIMenuAccess, loadAIMenus, buildExclusionKeys } from "../lib/aiMenuService";
 import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
-import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel } from "../lib/mealMath";
+import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel, menuReplaces, menuWrites } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
-import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekCard, weekDates } from "../lib/mobileView";
+import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekCard, weekDates, MEAL_SHORT } from "../lib/mobileView";
 
 const TAB_KEY = "fp_mtab";
 const SECTION_TITLE = { profile: "Mục tiêu & hồ sơ", account: "Tài khoản & gói cước", feedback_inline: "Góp ý & báo lỗi", about: "Giới thiệu", about_edit: "Sửa giới thiệu", terms: "Điều khoản", admin_home: "Quản trị" };
@@ -277,14 +277,43 @@ export function MobileApp(props) {
   // ---------- Thực đơn AI ----------
   const applyAIMenu = async (tpl) => {
     try {
-      const tplDayType = tpl.day_type || dayTypeOf(profile, today);
-      // Không còn tự lưu ngầm vào Lịch tuần (chốt 13/10) — muốn lặp lại thì bấm "Lặp lại hằng tuần"
-      const res = await ud.applyTemplate({ ...tpl, day_type: tplDayType });
-      await refresh(today);
-      if (res && res.ok === false) fail();
-      else showToast({ text: "Đã áp thực đơn AI cho hôm nay." });
+      const res = await applyDayMenu(tpl);
+      if (res && res.cancelled) return; // Huỷ ở hộp hỏi → vẫn ở màn Thực đơn AI
     } catch (e) { console.error("Apply AI menu error:", e); fail(); }
     closeLayer();
+  };
+  // Áp thực đơn cả ngày (AI / lặp lại hằng tuần / mẫu / ngày đã ăn) cho HÔM NAY — 16/10:
+  // bữa chưa ăn đang có món mà thực đơn sẽ thay → hỏi trước; áp xong có Hoàn tác (ghi lại từng bữa cũ / xoá bữa mới thêm).
+  const shortMeals = (ids) => { const n = ids.map((id) => MEAL_SHORT[id] || MEAL_NAMES[id] || id); return n.length > 3 ? `${n.slice(0, 3).join(", ")}…` : n.join(", "); };
+  const applyDayMenu = async (tpl) => {
+    const repl = menuReplaces(dayOf(today), tpl.meals);
+    if (repl.length && !(await appConfirm(`Thay ${repl.length} bữa chưa ăn (${shortMeals(repl)}) bằng thực đơn này?`, { title: "Áp thực đơn" }))) return { ok: false, cancelled: true };
+    return serial(async () => {
+      const prevDay = await freshDay(today);
+      const prevMeals = JSON.parse(JSON.stringify((prevDay && prevDay.meals) || []));
+      const writes = menuWrites(prevDay, tpl.meals);
+      const prevType = (prevDay && prevDay.day_type) || dayTypeOf(profile, today);
+      // Không còn tự lưu ngầm vào Lịch tuần (chốt 13/10) — muốn lặp lại thì bấm "Lặp lại hằng tuần"
+      const res = await ud.applyTemplate({ ...tpl, day_type: tpl.day_type || dayTypeOf(profile, today) });
+      await refresh(today);
+      if (res && res.ok === false) { fail(); return res; }
+      const undo = async () => {
+        setToast(null);
+        await serial(async () => {
+          for (const id of writes) {
+            const pm = prevMeals.find((m) => mealKey(m) === id);
+            if (pm && hasItems(pm)) {
+              const { items, meal_id: _m, meal_name, id: _id, ...extra } = pm;
+              await ud.saveMealToCloud(id, prevType, items, false, today, { name: mealLabel(meal_name, id), extra });
+            } else await ud.removeDayMeal(today, id);
+          }
+          await refresh(today);
+          showToast({ text: "Đã hoàn tác, trả lại các bữa như trước." }, 3000);
+        });
+      };
+      showToast({ text: "Đã áp thực đơn · bấm ✓ khi ăn xong từng bữa", action: { label: "Hoàn tác", onClick: undo } }, 7000);
+      return res || { ok: true };
+    });
   };
 
   // Lặp lại hằng tuần: lưu thực đơn AI vào weekly_templates các thứ đã chọn (chỉ số 0 = T2)
@@ -316,9 +345,24 @@ export function MobileApp(props) {
     const tpl = ud.getWeeklyTemplate ? ud.getWeeklyTemplate(templateKeyOf(d)) : null;
     const m = tpl && (tpl.meals || []).find((x) => x.meal_id === mealId && (x.items || []).length);
     if (!m) return null;
-    return { cal: Math.round(m.items.reduce((s, i) => s + (Number(i.cal) || 0), 0)), onClick: () => putItems(d, mealId, m.items, true, "thực đơn tuần") };
+    return { cal: Math.round(m.items.reduce((s, i) => s + (Number(i.cal) || 0), 0)), onClick: async () => {
+      // Bữa đã có món → hỏi trước khi thay bằng thực đơn tuần (16/10)
+      const cur = mealOf(dayOf(d), mealId);
+      if (cur && hasItems(cur) && !(await appConfirm(`${mealLabel(cur.meal_name, mealId)} đã có món. Thay bằng thực đơn tuần?`))) return false;
+      return putItems(d, mealId, m.items, true, "thực đơn tuần");
+    } };
   };
   const updateLog = (patch) => setLayers((ls) => ls.map((l) => (l.type === "log" ? { ...l, ...patch } : l)));
+
+  // Ghi 1 gợi ý món vào bữa (sheet Gợi ý món + nút "Ghi · X kcal" ở thẻ đến giờ): bữa đã có món → hỏi trước; có Hoàn tác (putItems)
+  const pickSuggestion = async (d, mealId, opt, beforeWrite) => {
+    const nm = MEAL_NAMES[mealId] || "Bữa";
+    const m = mealOf(dayOf(d), mealId);
+    if (m && hasItems(m) && !(await appConfirm(`${nm} đã có món. Thay bằng món gợi ý?`))) return false;
+    const label = opt.kind === "history" ? `${nm.toLowerCase()} ${fmtVN(opt.date)}` : `gợi ý ${opt.title.toLowerCase()}`;
+    if (beforeWrite) beforeWrite();
+    return putItems(d, mealId, opt.items, true, label);
+  };
 
   const renderLog = (l) => {
     if (l.pick) {
@@ -359,12 +403,25 @@ export function MobileApp(props) {
       onAddPick={() => openLayer({ type: "log", pick: true, date: l.date, mealId: l.mealId })}
       onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
       onClose={closeLayer}
-      onSave={(items, eatenNow) => serial(async () => {
+      onSave={(items, eatenNow, auto) => serial(async () => {
+        const prevItems = (m && m.items) || [];
         const res = await ud.saveMealToCloud(l.mealId, dt, items, false, l.date, { markEaten: eatenNow, name: nm });
         if (res && res.ok === false) { fail(); return false; }
         if (!eatenNow && wasEaten) await ud.toggleEaten(l.mealId, false, l.date);
         await refresh(l.date);
-        showToast({ text: `Đã lưu ${nm.toLowerCase()}` }, 2500);
+        // Hoàn tác (16/10): ghi lại món + trạng thái đã ăn trước khi sửa (bữa mới tạo thì xoá)
+        const undo = async () => {
+          setToast(null);
+          await serial(async () => {
+            if (!prevItems.length) await ud.removeDayMeal(l.date, l.mealId);
+            else {
+              await ud.saveMealToCloud(l.mealId, dt, prevItems, false, l.date, { markEaten: wasEaten, name: nm });
+              if (!wasEaten && eatenNow) await ud.toggleEaten(l.mealId, false, l.date);
+            }
+            await refresh(l.date);
+          });
+        };
+        showToast({ text: `Đã lưu ${nm.toLowerCase()}`, action: { label: "Hoàn tác", onClick: undo } }, auto ? 6000 : 4500);
         return true;
       })}
       onDelete={() => serial(async () => {
@@ -418,7 +475,7 @@ export function MobileApp(props) {
     profile, macro, todayLog: ud.todayLog, getWeeklyTemplate: ud.getWeeklyTemplate, weeklyTemplates: ud.weeklyTemplates,
     saveWeeklyTemplate: ud.saveWeeklyTemplate, deleteWeeklyTemplate: ud.deleteWeeklyTemplate, applyTemplate: ud.applyTemplate,
     removeDayMeal: ud.removeDayMeal, defaultTemplates: ud.defaultTemplates, refreshDefaultTemplates: ud.refreshDefaultTemplates,
-    refresh: () => refresh(today), showToast, close: closeLayer,
+    refresh: () => refresh(today), showToast, close: closeLayer, applyDayMenu,
   };
   const MENU_PAGE_TITLE = { menu_day: "Lặp lại hằng tuần", menu_tpl: "Thực đơn mẫu", menu_past: "Ngày đã ăn" };
 
@@ -574,7 +631,8 @@ export function MobileApp(props) {
             week={week} onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
-            suggestCount={(id) => suggestFor(id).list.length} onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })}
+            suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
+            onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}
             onAIMenu={aiMenuAction} onWeight={() => { setProgressSeg((s) => ({ seg: "weight", n: s.n + 1 })); setTab("progress"); }} />
         )}
         {tab === "menu" && (
@@ -610,13 +668,7 @@ export function MobileApp(props) {
             const nm = MEAL_NAMES[l.mealId] || "Bữa";
             return <MealSuggestSheet mealId={l.mealId} mealName={nm} list={sg.list} target={sg.target} rt={sg.rt} goal={macro?.goal} dayType={sg.dayType} avoidText={sg.avoidText}
               onClose={closeLayer} onSearch={() => replaceTop({ type: "log", date: l.date, mealId: l.mealId })}
-              onPick={async (opt) => {
-                const m = mealOf(dayOf(l.date), l.mealId);
-                if (m && hasItems(m) && !(await appConfirm(`${nm} đã có món. Thay bằng món gợi ý?`))) return;
-                const label = opt.kind === "history" ? `${nm.toLowerCase()} ${fmtVN(opt.date)}` : `gợi ý ${opt.title.toLowerCase()}`;
-                closeLayer();
-                await putItems(l.date, l.mealId, opt.items, true, label);
-              }} />;
+              onPick={(opt) => pickSuggestion(l.date, l.mealId, opt, closeLayer)} />;
           })()}
           {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs}
             onOpenAIMenu={aiAccess.usable ? () => replaceTop(quickAILayer()) : null} initialInput={l.input || ""} />}
@@ -637,7 +689,7 @@ export function MobileApp(props) {
                 ? (d, mealId, items) => { setPendingPick({ items, n: Date.now() }); return true; }
                 : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
           )}
-          {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`)} />}
+          {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} mealIds={idsFor(today)} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`)} />}
         </div>
       ))}
 

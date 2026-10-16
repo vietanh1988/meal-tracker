@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S, waitDb, tap, todayRow } from "./helpers.mjs";
+import { login, rest, S, waitDb, tap, todayRow, openLogFor } from "./helpers.mjs";
 
 // Ghi bữa (16/10): bấm + nhiều món vào giỏ, chỉnh gram từng món rồi ghi 1 lần; tìm món không ra 2 dòng trùng tên.
 test("Ghi bữa: chọn nhiều món + gram, ghi 1 lần", async ({ browser }) => {
@@ -11,7 +11,7 @@ test("Ghi bữa: chọn nhiều món + gram, ghi 1 lần", async ({ browser }) =
   await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" });
   try {
     await login(page);
-    await tap(page.getByRole("button", { name: "Ghi bữa tối" }));
+    await openLogFor(page, "toi"); // + ở dòng Bữa tối, hoặc Tìm món của thẻ đến giờ nếu đang là bữa tối
     const search = page.getByPlaceholder(/Tìm món/);
     await search.fill("thịt heo");
     const names = await page.getByTestId("log-add").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")));

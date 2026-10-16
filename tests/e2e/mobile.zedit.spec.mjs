@@ -31,9 +31,26 @@ test("Sửa bữa: gram, xoá món, xoá bữa, chuyển bữa + chuyển ngày 
     // 1) Sửa gram + xoá món
     await page.getByTestId("meal-foods-sang").click();
     await page.getByLabel("Gram phở bò").fill("200");
+    // Bỏ món → hiện ngay "Đã bỏ … · Hoàn tác" trong màn (bản nháp); Hoàn tác trả món về, bỏ lại lần nữa
     await page.getByRole("button", { name: "Xoá trứng luộc" }).click();
-    await page.getByRole("button", { name: "Lưu", exact: true }).click();
+    await expect(page.getByTestId("edit-undo")).toContainText("Đã bỏ trứng luộc");
+    await tap(page.getByTestId("edit-undo-btn"));
+    await expect(page.getByRole("button", { name: "Xoá trứng luộc" })).toHaveCount(1);
+    await page.getByRole("button", { name: "Xoá trứng luộc" }).click();
+    await expect(page.getByTestId("edit-eaten")).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("edit-save").click();
     await waitDb(async () => { const m = meal(await row(s.today), "sang"); return m && m.items.length === 1 && Math.round(m.items[0].gram) === 200 && Math.round(m.items[0].cal) === 200; }, "sửa gram + xoá món");
+
+    await expect(page.getByTestId("toast")).toHaveCount(0, { timeout: 8000 }); // chờ toast lần lưu trước tắt, tránh bấm nhầm Hoàn tác cũ
+    // 1a) Quay lại khi còn thay đổi → TỰ LƯU (không hỏi bỏ thay đổi), toast "Đã lưu bữa sáng" + Hoàn tác trả gram cũ — 16/10
+    await page.getByTestId("meal-foods-sang").click();
+    await page.getByLabel("Gram phở bò").fill("150");
+    await page.getByRole("button", { name: "Quay lại" }).click();
+    await expect(page.getByTestId("app-dialog")).toHaveCount(0);
+    await waitDb(async () => { const r = await row(s.today); const m = meal(r, "sang"); return m && m.items.length === 1 && Math.round(m.items[0].gram) === 150 && r.eaten_meals.includes("sang"); }, "tự lưu khi quay lại");
+    await expect(page.getByTestId("toast")).toContainText("Đã lưu bữa sáng");
+    await tap(page.getByTestId("toast-action"));
+    await waitDb(async () => { const r = await row(s.today); const m = meal(r, "sang"); return m && m.items.length === 1 && Math.round(m.items[0].gram) === 200 && r.eaten_meals.includes("sang"); }, "Hoàn tác tự lưu → gram 200");
 
     // 1b) Sửa bữa › Thêm món: tìm theo từ ("thịt gà xào" → món gà xào); món lạ có nút tính calo (AI) — 16/10
     await page.getByTestId("meal-foods-sang").click();

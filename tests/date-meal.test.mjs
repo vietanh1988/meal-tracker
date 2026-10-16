@@ -100,6 +100,14 @@ test("applyMenu không xoá bữa chưa ăn mà thực đơn mới không có", 
   assert.equal(M.sumMeals(out.meals).cal, 300 + 500 + 400);
 });
 
+test("menuReplaces / menuWrites: chỉ bữa chưa ăn có món bị thay; bữa đã ăn không ghi", () => {
+  const day = { meals: [{ meal_id: "sang", items: [{ cal: 300 }] }, { meal_id: "trua", items: [{ cal: 700 }] }, { meal_id: "toi", items: [{ cal: 400 }] }, { meal_id: "pre", items: [] }], eaten_meals: ["sang"] };
+  const menu = [{ meal_id: "sang", items: [{ cal: 1 }] }, { meal_id: "trua", items: [{ cal: 2 }] }, { meal_id: "pre", items: [{ cal: 3 }] }, { meal_id: "phu_chieu", items: [] }];
+  assert.deepEqual(M.menuReplaces(day, menu), ["trua"]);
+  assert.deepEqual(M.menuWrites(day, menu).sort(), ["pre", "trua"]);
+  assert.deepEqual(M.menuReplaces(null, menu), []);
+});
+
 test("dayRowPayload làm tròn + is_complete theo bữa đã ăn", () => {
   const p = M.dayRowPayload("u", "2026-10-13", { day_type: "x", meals: [{ meal_id: "sang", items: [{ cal: 100.6, p: 1.25 }] }], eaten_meals: [] });
   assert.equal(p.total_cal, 101);

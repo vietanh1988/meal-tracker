@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S, waitDb, tap, todayRow } from "./helpers.mjs";
+import { login, rest, S, waitDb, tap, todayRow, confirmIfAsked } from "./helpers.mjs";
 
-// Thực đơn AI (không gọi AI thật): mở thực đơn AI đã lưu → Đổi món (tính trước kcal) → Lưu mẫu vào Lịch tuần → Áp dụng hôm nay.
+// Thực đơn AI (không gọi AI thật): mở thực đơn AI đã lưu → Đổi món (tính trước kcal) → Lưu mẫu vào Lịch tuần → Dùng cho hôm nay.
 // Nút "Lên thực đơn ngay": chỉ kiểm màn đang tạo + Huỷ (AI bị chặn trong E2E).
 const it = (food, gram, cal, role, p = 0, c = 0, f = 0) => ({ food, gram, cal, role, unit: "g", qty: 1, p, c, f, fiber: 0 });
 const TEMPLATE = {
@@ -60,9 +60,11 @@ test("Thực đơn AI: đổi món, lưu mẫu, áp dụng hôm nay", async ({ b
     await tap(page.getByTestId("save-week-confirm"));
     await waitDb(async () => ((await wk(KEYS[other]))?.meals || []).length === 3, "lưu Lịch tuần");
 
-    console.log("BƯỚC: Áp dụng hôm nay");
-    // Áp dụng hôm nay → nhật ký hôm nay có 3 bữa, trưa không còn Cá kho tộ
+    console.log("BƯỚC: Dùng cho hôm nay");
+    // Dùng cho hôm nay → nhật ký hôm nay có 3 bữa, trưa không còn Cá kho tộ
+    await expect(page.getByTestId("ai-apply")).toContainText("Dùng cho hôm nay");
     await tap(page.getByTestId("ai-apply"));
+    await confirmIfAsked(page); // hỏi khi hôm nay có bữa chưa ăn đang có món (tuỳ bài chạy trước)
     await waitDb(async () => {
       const ms = ((await todayRow())?.meals || []).filter((m) => (m.items || []).length);
       const trua = ms.find((m) => m.meal_id === "trua");
@@ -111,6 +113,55 @@ test("AI lên thực đơn các bữa còn lại: không tạo lại bữa đã 
       await expect(page.getByTestId("ai-save-week")).toHaveCount(0);
       await page.screenshot({ path: "shots/thuc-don-ai-con-lai.png", fullPage: true });
     }
+  } finally {
+    if (before) await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(before) });
+    else await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" });
+    await ctx.close();
+  }
+});
+
+// Áp thực đơn cả ngày (16/10): thay bữa chưa ăn đang có món → hỏi trước (Huỷ = không đổi gì); áp xong toast Hoàn tác
+// trả lại đúng các bữa cũ (bữa trưa cũ quay lại, bữa tối thực đơn mới thêm bị xoá, bữa sáng đã ăn không bị đụng).
+test("Áp thực đơn AI: hỏi trước khi thay bữa chưa ăn + Hoàn tác trả lại ngày cũ", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
+  const page = await ctx.newPage();
+  page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
+  const s = S();
+  const before = await todayRow();
+  const meal = (r, id) => (r?.meals || []).find((m) => m.meal_id === id);
+  const sang = { meal_id: "sang", meal_name: "Bữa sáng", items: [it("bánh mì trứng", 200, 420, "carb", 15, 50, 16)] };
+  const trua = { meal_id: "trua", meal_name: "Bữa trưa", items: [it("bún chả", 350, 520, "carb", 25, 60, 18)] };
+  const body = { user_id: s.uid, log_date: s.today, day_type: "train", meals: [sang, trua], eaten_meals: ["sang"], total_cal: 940, total_protein: 40, total_carb: 110, total_fat: 34 };
+  await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(body) });
+  await rest(`ai_menu_cache?user_id=eq.${s.uid}`, { method: "DELETE" });
+  await rest("ai_menu_cache", { method: "POST", body: JSON.stringify({ user_id: s.uid, menu_date: s.today, template: TEMPLATE }) });
+  const nav = (name) => page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name });
+  try {
+    await login(page);
+    await nav("Thực đơn").click();
+    await tap(page.getByTestId("menu-latest-ai"));
+    await expect(page.getByTestId("ai-meal-trua")).toBeVisible();
+    // Huỷ ở hộp hỏi → vẫn ở màn Thực đơn AI, DB không đổi
+    await tap(page.getByTestId("ai-apply"));
+    await expect(page.getByTestId("app-dialog")).toContainText("Thay 1 bữa chưa ăn (Trưa)");
+    await page.screenshot({ path: "shots/ap-thuc-don-hoi.png" });
+    await tap(page.getByTestId("confirm-cancel"));
+    await expect(page.getByTestId("ai-meal-trua")).toBeVisible();
+    await page.waitForTimeout(600);
+    expect((meal(await todayRow(), "trua")?.items || []).map((i) => i.food)).toEqual(["bún chả"]);
+    // Đồng ý → trưa + tối theo thực đơn, sáng (đã ăn) giữ nguyên
+    await tap(page.getByTestId("ai-apply"));
+    await tap(page.getByTestId("confirm-ok"));
+    await waitDb(async () => { const r = await todayRow(); return (meal(r, "trua")?.items || []).some((i) => i.food === "cá kho tộ") && meal(r, "toi") && (meal(r, "sang")?.items || [])[0]?.food === "bánh mì trứng" && (r.eaten_meals || []).includes("sang"); }, "áp thực đơn: thay trưa, thêm tối, giữ sáng");
+    await expect(page.getByTestId("toast")).toContainText("Đã áp thực đơn · bấm ✓ khi ăn xong từng bữa");
+    await page.screenshot({ path: "shots/ap-thuc-don-hoan-tac.png" });
+    // Hoàn tác → trưa về bún chả, không còn bữa tối, sáng vẫn đã ăn
+    await tap(page.getByTestId("toast-action"));
+    await waitDb(async () => {
+      const r = await todayRow();
+      const t = (meal(r, "trua")?.items || []).map((i) => i.food);
+      return t.length === 1 && t[0] === "bún chả" && !((meal(r, "toi")?.items || []).length) && !((meal(r, "phu_chieu")?.items || []).length) && (meal(r, "sang")?.items || [])[0]?.food === "bánh mì trứng" && (r.eaten_meals || []).includes("sang") && !(r.eaten_meals || []).includes("trua");
+    }, "Hoàn tác trả lại ngày cũ");
   } finally {
     if (before) await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(before) });
     else await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" });

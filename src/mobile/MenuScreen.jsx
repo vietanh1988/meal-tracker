@@ -208,7 +208,7 @@ export function MenuScreen(p) {
           <input data-testid="menu-avoid" type="text" value={typed} onChange={(e) => setTyped(e.target.value.slice(0, 40))} onKeyDown={(e) => { if (e.key === "Enter") addTyped(); }} onBlur={addTyped}
             placeholder="Gõ thêm món khác…" aria-label="Món không ăn khác"
             style={{ height: 46, padding: "0 14px", borderRadius: 14, border: "1.5px solid transparent", background: "#F1F5F9", fontFamily: "inherit", fontSize: 16, color: "#0F172A", boxSizing: "border-box", width: "100%" }} />
-          <button data-testid="menu-opt-generate" onClick={() => { addTyped(); generate(); }} disabled={quota?.out} style={fbtn("purple", quota?.out)}>{Icon.sparkle(18)} Lên thực đơn ngay</button>
+          <button data-testid="menu-opt-generate" onClick={() => { addTyped(); generate(); }} disabled={quota?.out} style={fbtn("purple", quota?.out)}>{Icon.sparkle(18)} Lưu tuỳ chọn & lên thực đơn</button>
         </Sheet>
       )}
 
@@ -279,22 +279,19 @@ export function MenuScreen(p) {
 }
 
 // ---------------- 1 ngày đã ăn (dùng lại) — bản vẽ 95 ----------------
-export function MenuPastPage({ day, profile, macro, applyTemplate, saveWeeklyTemplate, todayLog, refresh, showToast, close }) {
+export function MenuPastPage({ day, profile, macro, applyDayMenu, saveWeeklyTemplate, showToast, close }) {
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
   const [busy, setBusy] = useState(false);
   const [repeat, setRepeat] = useState(false);
   if (!day) return null;
-  const todayHas = todayLog && todayLog.log_date === today && dayToTemplateMeals(todayLog).length > 0;
+  // Dùng cho hôm nay: MobileApp.applyDayMenu hỏi trước nếu thay bữa chưa ăn, áp xong có Hoàn tác (16/10)
   const useToday = async () => {
     if (busy) return;
-    if (todayHas && !(await appConfirm("Hôm nay đã có món. Bữa trùng tên sẽ được thay bằng thực đơn này. Tiếp tục?"))) return;
     setBusy(true);
-    const res = await applyTemplate({ name: `Ngày ${fmtVN(day.date)}`, day_type: todayType, meals: day.meals });
-    await refresh?.();
+    const res = await applyDayMenu({ name: `Ngày ${fmtVN(day.date)}`, day_type: todayType, meals: day.meals });
     setBusy(false);
-    if (res && res.ok === false) { showToast({ text: "Chưa áp được, thử lại nhé." }); return; }
-    showToast({ text: `Đã dùng thực đơn ngày ${fmtVN(day.date)} cho hôm nay.` });
+    if (!res || res.cancelled || res.ok === false) return;
     close();
   };
   const saveRepeat = async (idxs) => {
@@ -311,7 +308,7 @@ export function MenuPastPage({ day, profile, macro, applyTemplate, saveWeeklyTem
       <div style={body}>
         <Summary title={`Ngày ${fmtVN(day.date)} · ${DT[day.day_type]}`} meals={day.meals} cal={day.cal} target={dailyTargetOf(macro, todayType).cal} sub={`${day.meals.length} bữa đã ăn · so với mục tiêu hôm nay`} />
         <MealsPreview meals={day.meals} />
-        <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5, padding: "0 4px" }}>Dùng cho hôm nay: bữa trùng tên được thay bằng món của ngày này (hỏi trước nếu hôm nay đã có món).</span>
+        <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5, padding: "0 4px" }}>Dùng cho hôm nay: bữa trùng tên chưa ăn được thay bằng món của ngày này (hỏi trước nếu bữa đó đã có món, áp xong vẫn Hoàn tác được).</span>
       </div>
       <StickyFoot>
         <button data-testid="past-repeat" disabled={busy} onClick={() => setRepeat(true)} style={fbtn("soft", false, 48)}>{Icon.redo(16)} Lặp lại hằng tuần</button>
@@ -323,7 +320,7 @@ export function MenuPastPage({ day, profile, macro, applyTemplate, saveWeeklyTem
 }
 
 // ---------------- 1 thứ Lặp lại hằng tuần — bản vẽ 95 ----------------
-export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplate, weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, applyTemplate, removeDayMeal, refresh, showToast, close }) {
+export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplate, weeklyTemplates, saveWeeklyTemplate, deleteWeeklyTemplate, applyDayMenu, removeDayMeal, refresh, showToast, close }) {
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
   const row = weekRows({ getTemplate: getWeeklyTemplate, gymDays: profile?.gymDays, exerciseType: profile?.exerciseType, macro, today }).find((r) => r.key === dayKey);
@@ -335,10 +332,8 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
   const run = async (fn) => { if (busy) return; setBusy(true); try { await fn(); } finally { setBusy(false); } };
 
   const useToday = () => run(async () => {
-    const res = await applyTemplate({ ...row.tpl, day_type: todayType, meals: row.meals });
-    await refresh?.();
-    if (res && res.ok === false) { showToast({ text: "Chưa áp được, thử lại nhé." }); return; }
-    showToast({ text: `Đã áp thực đơn ${row.long} cho hôm nay.` });
+    const res = await applyDayMenu({ ...row.tpl, day_type: todayType, meals: row.meals });
+    if (!res || res.cancelled || res.ok === false) return;
     close();
   });
   const recalc = () => run(async () => {
@@ -400,7 +395,7 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
 }
 
 // ---------------- 1 mẫu trong Kho mẫu — bản vẽ 96 ----------------
-export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeeklyTemplate, applyTemplate, refresh, showToast, close }) {
+export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeeklyTemplate, applyDayMenu, showToast, close }) {
   const today = todayVN();
   const todayType = dayTypeOf(profile, today);
   const t = (defaultTemplates || []).find((x) => String(x.id) === String(tplId));
@@ -413,12 +408,11 @@ export function MenuTplPage({ tplId, profile, macro, defaultTemplates, saveWeekl
   const cal = mealsCal(eng.meals);
 
   const useToday = async () => {
+    if (busy) return;
     setBusy(true);
-    const res = await applyTemplate(eng);
-    await refresh?.();
+    const res = await applyDayMenu(eng);
     setBusy(false);
-    if (res && res.ok === false) { showToast({ text: "Chưa áp được, thử lại nhé." }); return; }
-    showToast({ text: `Đã áp mẫu "${t.name}" cho hôm nay.` });
+    if (!res || res.cancelled || res.ok === false) return;
     close();
   };
   const assign = async () => {

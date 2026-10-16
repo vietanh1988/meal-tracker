@@ -3,7 +3,7 @@
 //  - Kết quả: tổng kcal / mục tiêu, thanh tiến, macro, cảnh báo lệch; từng bữa + nút Đổi từng món
 //  - Sheet Đổi món: tính trước kết quả cho từng ứng viên (swapOptions) — gram, kcal, "bữa sẽ thành", gần calo bữa cũ nhất lên đầu
 //  - Hết lượt: gợi ý dùng thực đơn đã lưu / tự ghi bằng Tìm món
-// Áp dụng / lặp lại hằng tuần (weekly_templates) do MobileApp xử lý (onApply / onSaveWeek). Không gọi AI khi mở thực đơn đã lưu.
+// Dùng cho hôm nay (hỏi trước nếu thay bữa chưa ăn, có Hoàn tác) / lặp lại hằng tuần (weekly_templates) do MobileApp xử lý (onApply / onSaveWeek). Không gọi AI khi mở thực đơn đã lưu.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { todayVN, addDays } from "../lib/dateVN";
 import { fmtInt } from "../lib/mobileView";
@@ -226,9 +226,9 @@ export function AIMenuScreen({ rest = null, macro: macroDay, profile, user, appS
     <div style={{ flexShrink: 0, background: "rgba(255,255,255,0.92)", WebkitBackdropFilter: "blur(14px)", backdropFilter: "blur(14px)", borderTop: "1px solid rgba(30,64,175,0.08)", padding: "10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px) 12px" }}>
       <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", gap: 8 }}>
         <button data-testid="ai-regenerate" onClick={generate} disabled={busy} style={sq}>{Icon.redo(18)}Tạo lại</button>
-        {!restInfo && <button data-testid="ai-save-week" onClick={() => setSaveWeek(true)} disabled={busy} style={sq}>{Icon.redo(18)}Hằng tuần</button>}
+        {!restInfo && <button data-testid="ai-save-week" onClick={() => setSaveWeek(true)} disabled={busy} style={sq}>{Icon.calendar(18)}Hằng tuần</button>}
         {canApplyToday
-          ? <button data-testid="ai-apply" onClick={apply} disabled={busy} style={{ ...fbtn("primary", busy), flex: 1, fontSize: 16 }}>{Icon.check(18, 2.8)} {restInfo ? "Áp vào bữa còn lại" : "Áp dụng hôm nay"}</button>
+          ? <button data-testid="ai-apply" onClick={apply} disabled={busy} style={{ ...fbtn("primary", busy), flex: 1, fontSize: 16 }}>{Icon.check(18, 2.8)} {restInfo ? "Dùng cho bữa còn lại" : "Dùng cho hôm nay"}</button>
           : <button onClick={() => setSaveWeek(true)} disabled={busy} style={{ ...fbtn("primary", busy), flex: 1 }}>Lưu vào {DT[dayType].toLowerCase()}</button>}
       </div>
     </div>

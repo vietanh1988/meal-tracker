@@ -73,3 +73,24 @@ export async function swipeDown(locator, dy = 220) {
     el.dispatchEvent(new TouchEvent("touchend", { touches: [], changedTouches: [mk(y0 + dy)], bubbles: true }));
   }, dy);
 }
+
+// Mở sheet Ghi bữa cho 1 bữa ở Hôm nay (16/10): bữa đang ở thẻ "đến giờ ăn" không còn nút + ở dòng thời gian
+// (trùng với thẻ) → bấm "Tìm món" của thẻ; bữa khác bấm + ở dòng ("Ghi bữa tối"…). Bữa đến giờ phụ thuộc giờ chạy CI.
+const ROW_LABEL = { sang: "bữa sáng", phu_sang: "phụ sáng", trua: "bữa trưa", phu_chieu: "phụ chiều", pre: "trước tập", post: "sau tập", toi: "bữa tối" };
+export async function focusMealId(page) {
+  await expect(page.getByTestId("meal-skeleton")).toHaveCount(0);
+  const fc = page.getByTestId("focus-card");
+  return (await fc.count()) ? fc.getAttribute("data-meal") : null;
+}
+export async function openLogFor(page, mealId) {
+  if ((await focusMealId(page)) === mealId) return tap(page.getByTestId("focus-card").getByTestId("focus-search"));
+  return tap(page.getByRole("button", { name: `Ghi ${ROW_LABEL[mealId]}` }));
+}
+
+// Hộp hỏi trong app (lib/dialog): bấm Đồng ý nếu có hiện trong `ms` (VD áp thực đơn chỉ hỏi khi thay bữa chưa ăn có món)
+export async function confirmIfAsked(page, ms = 2500) {
+  const ok = page.getByTestId("confirm-ok");
+  try { await ok.waitFor({ state: "visible", timeout: ms }); } catch (e) { return false; }
+  await ok.click();
+  return true;
+}

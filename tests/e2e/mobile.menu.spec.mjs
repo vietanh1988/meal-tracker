@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S, waitDb, tap, todayRow, swipeDown } from "./helpers.mjs";
+import { login, rest, S, waitDb, tap, todayRow, swipeDown, confirmIfAsked } from "./helpers.mjs";
 import { addDays } from "../../src/lib/dateVN.js";
 
 const KEYS = ["thu_2", "thu_3", "thu_4", "thu_5", "thu_6", "thu_7", "cn"];
@@ -53,6 +53,7 @@ test("Thực đơn: ngày đã ăn → dùng hôm nay, lặp lại hằng tuần
     expect(bg.i, "màn phụ sáng dùng nền xanh nhạt LT").toMatch(/211, 226, 255/);
     await page.screenshot({ path: "shots/lich-tuan-ngay.png", fullPage: true });
     await tap(page.getByTestId("day-use-today"));
+    await confirmIfAsked(page); // 16/10: chỉ hỏi khi thay bữa chưa ăn đang có món
     await waitDb(async () => {
       const ids = ((await todayRow())?.meals || []).filter((m) => (m.items || []).length).map((m) => m.meal_id);
       return ids.includes("sang") && ids.includes("trua");
@@ -62,7 +63,8 @@ test("Thực đơn: ngày đã ăn → dùng hôm nay, lặp lại hằng tuần
     await tap(page.getByTestId(`menu-past-${past}`));
     await expect(page.getByText("Phụ chiều").first()).toBeVisible();
     await tap(page.getByTestId("past-use-today"));
-    await page.getByRole("button", { name: "Đồng ý" }).click();
+    // Bữa sáng hôm nay (nếu chưa ăn, có món từ lặp lại) sẽ bị thay → hỏi "Thay 1 bữa chưa ăn (Sáng) …"
+    await confirmIfAsked(page);
     await waitDb(async () => ((await todayRow())?.meals || []).some((m) => m.meal_id === "phu_chieu" && (m.items || []).some((i) => i.food === "chuối")), "dùng ngày đã ăn cho hôm nay");
 
     // Đặt lặp lại hằng tuần vào thứ kế tiếp (user test tập cả tuần)

@@ -116,7 +116,7 @@ export function LogMealSheet(p) {
         )}
 
         <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", margin: "0 -12px", padding: tray.length ? "0 12px 12px 12px" : "0 12px calc(20px + env(safe-area-inset-bottom, 0px)) 12px" }}>
-          <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em", padding: "4px 4px 6px 4px" }}>{results ? `KẾT QUẢ (${results.length})` : "GẦN ĐÂY"}</span>
+          {results && <span style={secLbl}>KẾT QUẢ ({results.length})</span>}
 
           {!results && sugg.length > 0 && (
             <div data-testid="log-suggest" style={{ margin: "0 0 12px 0", borderRadius: 16, background: "#EEF4FF", padding: "10px 12px 4px 12px" }}>
@@ -141,6 +141,8 @@ export function LogMealSheet(p) {
             </div>
           )}
 
+          {/* "GẦN ĐÂY" chỉ đứng trên danh sách món hay ăn (sau khối Gợi ý cho bữa) — 16/10 */}
+          {!results && list.length > 0 && <span data-testid="log-recent-label" style={secLbl}>GẦN ĐÂY</span>}
           {list.map((it, i) => {
             const key = `item:${it.food}:${it.gram}`;
             const nm = itemName(it);
@@ -201,4 +203,5 @@ export function LogMealSheet(p) {
   );
 }
 
+const secLbl = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", letterSpacing: "0.08em", padding: "4px 4px 6px 4px" };
 const stepBtn = { width: 34, height: 36, borderRadius: 10, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 18, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0, fontFamily: "inherit" };

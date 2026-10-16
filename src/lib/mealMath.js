@@ -129,6 +129,19 @@ export function applyMenu(day, menuMeals, dayType) {
   };
 }
 
+// Áp thực đơn cả ngày sẽ THAY những bữa nào (16/10 — hỏi trước khi áp): bữa chưa ăn, đang có món, thực đơn có bữa đó.
+export function menuReplaces(day, menuMeals) {
+  const eaten = (day && Array.isArray(day.eaten_meals) ? day.eaten_meals : []);
+  const ids = new Set((menuMeals || []).filter((m) => mealKey(m) && hasItems(m)).map(mealKey));
+  return (day?.meals || []).filter((m) => hasItems(m) && !eaten.includes(mealKey(m)) && ids.has(mealKey(m))).map(mealKey);
+}
+
+// Các bữa mà áp thực đơn sẽ ghi (bữa của thực đơn có món, trừ bữa đã ăn) — dùng để Hoàn tác
+export function menuWrites(day, menuMeals) {
+  const eaten = (day && Array.isArray(day.eaten_meals) ? day.eaten_meals : []);
+  return [...new Set((menuMeals || []).filter((m) => mealKey(m) && hasItems(m) && !eaten.includes(mealKey(m))).map(mealKey))];
+}
+
 // Payload ghi daily_logs từ 1 ngày
 export function dayRowPayload(userId, logDate, day) {
   const t = roundTotals(sumMeals(day.meals));

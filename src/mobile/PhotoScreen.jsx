@@ -2,7 +2,7 @@
 //  79: khung ngắm tối (chạm = mở camera) + mẹo chụp + 1 nút chọn ảnh có sẵn. 80: ảnh + vệt quét + 3 bước.
 //  81: thẻ tổng cam dưới ảnh; món có ĐƠN VỊ (bát/quả/ml… — lib/portion.js), chạm đơn vị đổi qua gram.
 //  1) Chụp / chọn ảnh → 2) AI nhận diện → 3) MỘT màn sửa: tên, gram (−/+ hoặc gõ), bỏ món, thêm món AI bỏ sót (Tìm món),
-//     tổng kcal + macro, chọn bữa + ngày → "Lưu vào <bữa>" (thêm vào bữa, tự đánh dấu đã ăn, có Hoàn tác ở Hôm nay).
+//     tổng kcal + macro, chọn bữa + ngày → "Ghi vào <bữa>" (thêm vào bữa, tự đánh dấu đã ăn, có Hoàn tác ở Hôm nay).
 import { useEffect, useMemo, useRef, useState } from "react";
 import { recognizeMeal, resizeImage } from "../lib/photoAI";
 import { searchFoods, scaleItem, fmtInt, fmtDec } from "../lib/mobileView";
@@ -22,7 +22,7 @@ function macroHint(it) {
   return `B ${fmtDec(f)}g`;
 }
 
-export function PhotoScreen({ initialMeal, appSettings, photoCtx, foodCache, dateOptions, onSave, onClose }) {
+export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodCache, dateOptions, onSave, onClose }) {
   const [img, setImg] = useState(null);
   const [stage, setStage] = useState("capture"); // capture | loading | edit
   const [items, setItems] = useState([]);
@@ -35,6 +35,8 @@ export function PhotoScreen({ initialMeal, appSettings, photoCtx, foodCache, dat
   const [date, setDate] = useState(now.hour < 4 ? addDays(todayVN(), -1) : todayVN()); // ăn khuya trước 4h tính vào hôm qua
   const visible = photoCtx?.visibleMealIds?.length ? photoCtx.visibleMealIds : MEAL_ORDER;
   const [meal, setMeal] = useState(() => initialMeal || currentMealId(now.minutes, visible, photoCtx?.mealTimes) || "trua");
+  // Ô chọn bữa: chỉ các bữa user đang bật (16/10 — trước liệt kê cả 7 bữa, kể cả trước/sau tập với người không tập)
+  const mealList = (() => { const base = mealIds && mealIds.length ? mealIds : visible; const l = base.includes(meal) ? base : [...base, meal]; return MEAL_ORDER.filter((id) => l.includes(id)); })();
   const total = sum(items);
   const results = useMemo(() => (q.trim().length >= 1 ? searchFoods(q, foodCache, 8) : []), [q, foodCache]);
 
@@ -75,7 +77,7 @@ export function PhotoScreen({ initialMeal, appSettings, photoCtx, foodCache, dat
       <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
         <div style={{ display: "flex", gap: 8 }}>
           <select data-testid="photo-meal" aria-label="Bữa" value={meal} onChange={(e) => setMeal(e.target.value)} style={pill}>
-            {MEAL_ORDER.map((id) => <option key={id} value={id}>{MEAL_NAMES[id]}</option>)}
+            {mealList.map((id) => <option key={id} value={id}>{MEAL_NAMES[id]}</option>)}
           </select>
           <select data-testid="photo-date" aria-label="Ngày" value={date} onChange={(e) => setDate(e.target.value)} style={pill}>
             {(dateOptions || [{ value: todayVN(), label: "Hôm nay" }]).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -83,7 +85,7 @@ export function PhotoScreen({ initialMeal, appSettings, photoCtx, foodCache, dat
         </div>
         <button data-testid="photo-save" disabled={!items.length || busy} onClick={save}
           style={{ height: 52, borderRadius: 14, border: "none", background: items.length ? GRAD_ORANGE : "#E2E8F0", color: items.length ? "#FFFFFF" : "#64748B", fontFamily: "inherit", fontSize: 16, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          {items.length && !busy ? Icon.check(18, 2.8) : null}{busy ? "Đang lưu…" : `Lưu vào ${MEAL_NAMES[meal].toLowerCase()}`}
+          {items.length && !busy ? Icon.check(18, 2.8) : null}{busy ? "Đang lưu…" : `Ghi vào ${MEAL_NAMES[meal].toLowerCase()}`}
         </button>
       </div>
     </div>

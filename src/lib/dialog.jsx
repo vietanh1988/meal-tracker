@@ -70,7 +70,7 @@ export function AppDialogHost() {
   return (
     <div onClick={() => close(isConfirm ? false : undefined)}
       style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true"
+      <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" data-testid="app-dialog"
         style={{ background: "#fff", borderRadius: 18, width: "100%", maxWidth: 360, padding: "20px 18px 14px", boxShadow: "0 20px 50px rgba(0,0,0,0.25)", fontFamily: "inherit", textAlign: "center" }}>
         {/* Bản vẽ 65: tiêu đề + nội dung canh giữa, 2 nút chia đều cao 46 (cũ 36, khó bấm), nút nguy hiểm màu đỏ */}
         <div style={{ fontSize: 17, fontWeight: 900, color: C.t1, marginBottom: 8 }}>
@@ -81,12 +81,12 @@ export function AppDialogHost() {
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           {isConfirm && (
-            <button autoFocus onClick={() => close(false)}
+            <button autoFocus data-testid="confirm-cancel" onClick={() => close(false)}
               style={{ flex: 1, height: 46, borderRadius: 12, border: "none", background: "#F1F5F9", color: C.t1, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
               {current.cancelText}
             </button>
           )}
-          <button autoFocus={!isConfirm} onClick={() => close(isConfirm ? true : undefined)}
+          <button autoFocus={!isConfirm} data-testid={isConfirm ? "confirm-ok" : "alert-ok"} onClick={() => close(isConfirm ? true : undefined)}
             style={{ flex: 1, height: 46, borderRadius: 12, border: "none", background: isConfirm && current.danger ? dangerColor : C.primary, color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
             {isConfirm ? current.confirmText : "OK"}
           </button>

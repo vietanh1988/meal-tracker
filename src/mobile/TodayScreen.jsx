@@ -101,14 +101,27 @@ export function TodayScreen(p) {
 }
 
 // Thẻ bữa đến giờ (bản vẽ 77): cùng màu nền, nổi mềm; dải màu của bữa ở mép trên; dòng món lõm vào.
-function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestCount, onSuggest, busy, nowMinutes, onAskAI }) {
+// Gợi ý hợp nhất ghi 1 chạm (16/10): bữa chưa có món + có gợi ý → hiện ngay 1 dòng gợi ý + nút "Ghi · X kcal";
+// các lựa chọn khác vẫn mở sheet Gợi ý món (focus-suggest).
+const SUG_SRC = { history: ["Đã ăn", "#047857", "rgba(5,150,105,0.12)"], template: ["Mẫu", "#0062F0", "#EEF4FF"], ai: ["AI", "#6D28D9", "#F3EEFF"] };
+function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, onAskAI }) {
   const planned = r.state === "planned";
-  const nSug = !planned && suggestCount ? suggestCount(r.id) : 0;
+  const sug = !planned && suggestInfo ? suggestInfo(r.id) : { n: 0, best: null };
+  const nSug = sug.n || 0;
+  const best = sug.best;
+  const [applying, setApplying] = useState(false);
+  const applyBest = async () => {
+    if (!best || applying || !onSuggestApply) return;
+    setApplying(true);
+    try { await onSuggestApply(r.id, best); } finally { setApplying(false); }
+  };
+  const [srcT, srcC, srcBg] = best ? (SUG_SRC[best.kind] || SUG_SRC.history) : [];
+  const srcLabel = best ? (best.kind === "history" ? `${srcT}${best.date ? ` ${fmtVN(best.date)}` : ""}` : srcT) : "";
   const label = r.state === "missed" ? "CHƯA GHI" : (r.minutes ?? 0) > nowMinutes + 60 ? "BỮA TIẾP THEO" : "ĐẾN GIỜ ĂN";
   const c = IC_COLOR[r.id] || "#007AFF";
   const soft = { background: LT.tone, border: "none", fontFamily: "inherit" };
   return (
-    <div data-testid="focus-card" style={{ margin: "14px 12px 0 12px", background: LT.tone, borderRadius: 22, boxShadow: LT.raise, overflow: "hidden" }}>
+    <div data-testid="focus-card" data-meal={r.id} style={{ margin: "14px 12px 0 12px", background: LT.tone, borderRadius: 22, boxShadow: LT.raise, overflow: "hidden" }}>
       <span aria-hidden="true" style={{ display: "block", height: 4, background: `linear-gradient(90deg, ${c}, ${mix(c, "#FFFFFF", 0.45)})` }} />
       <div style={{ padding: "20px 16px 14px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -124,6 +137,29 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestCount, onS
             {Icon.chev(16)}
           </button>
         )}
+        {best && onSuggestApply && (
+          <div data-testid="focus-suggest-box" style={{ ...soft, boxShadow: LT.inset, borderRadius: 14, padding: "10px 12px 4px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: "#007AFF", letterSpacing: "0.06em" }}>{Icon.sparkle(13)}GỢI Ý CHO {r.name.toUpperCase()}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+              <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 3 }}>
+                <span data-testid="focus-suggest-foods" style={{ fontSize: 14, fontWeight: 800, color: "#0F172A", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{best.items.map(itemName).join(", ")}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: srcC, background: srcBg, padding: "2px 6px", borderRadius: 6, whiteSpace: "nowrap", flexShrink: 0 }}>{srcLabel}</span>
+                  <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{best.items.length} món</span>
+                </span>
+              </span>
+              <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
+                <span style={{ fontSize: 15, fontWeight: 900, color: "#0F172A" }}>{fmtInt(best.cal)}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#64748B" }}>kcal</span>
+              </span>
+            </span>
+            <button data-testid="focus-suggest-apply" data-meal={r.id} disabled={busy || applying} onClick={applyBest} style={{ height: 44, borderRadius: 12, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}{applying ? "Đang ghi…" : `Ghi · ${fmtInt(best.cal)} kcal`}</button>
+            {/* Xem các lựa chọn khác: mở sheet Gợi ý món (≤5 lựa chọn, chỉnh khẩu phần) */}
+            <button data-testid="focus-suggest" data-meal={r.id} disabled={busy} onClick={() => onSuggest(r.id)} style={{ height: 36, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: 0 }}>
+              {nSug > 1 ? `Xem ${nSug - 1} lựa chọn khác` : "Xem chi tiết lựa chọn"}{Icon.chev(14, "#007AFF")}
+            </button>
+          </div>
+        )}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
           {planned ? <>
             <button data-testid={`focus-eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
@@ -133,15 +169,6 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestCount, onS
             <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Tìm món</button>
           </>}
         </div>
-        {nSug > 0 && (
-          // Gợi ý món (16/10): mở sheet chọn 1 trong ≤5 gợi ý theo calo bữa + hồ sơ — không tự áp vào bữa như nút "Ăn lại" cũ
-          <button data-testid="focus-suggest" data-meal={r.id} disabled={busy} onClick={() => onSuggest(r.id)} className="tap" style={{ ...soft, boxShadow: LT.inset, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, color: "#0F172A", textAlign: "left" }}>
-            <span style={{ color: "#007AFF", display: "flex" }}>{Icon.sparkle(16)}</span>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 700, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Gợi ý món cho {r.name.toLowerCase()}</span>
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF", whiteSpace: "nowrap" }}>{nSug} lựa chọn</span>
-            {Icon.chev(16, "#007AFF")}
-          </button>
-        )}
         {onAskAI && (
           <button data-testid="focus-ask-ai" onClick={() => onAskAI(r)} style={{ alignSelf: "center", height: 32, padding: "0 8px", border: "none", background: "transparent", color: "#7C3AED", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>{Icon.sparkle(16)}Hỏi AI về {r.name.toLowerCase()}</button>
         )}
@@ -194,7 +221,8 @@ function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
               : <span style={{ fontSize: 12, color: "#64748B" }}>{r.state === "missed" ? "Đã qua giờ · chưa ghi" : "Chưa ghi"}</span>}
           </span>
           {timeTag}
-          <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={now ? { ...plusBtn, background: "#007AFF", borderColor: "#007AFF", color: "#FFFFFF", fontSize: 22 } : { ...plusBtn, fontSize: 22 }}>+</button>
+          {/* Bữa đang ở thẻ đến giờ: bỏ nút + (trùng Chụp món / Tìm món của thẻ) — 16/10 */}
+          {!now && <button onClick={() => onLog(r.id)} aria-label={`Ghi ${r.name.toLowerCase()}`} style={{ ...plusBtn, fontSize: 22 }}>+</button>}
         </div>
       )}
     </div>
