@@ -47,6 +47,7 @@ test("Ghi bữa: món lạ tự nhập calo ngay trong sheet → giỏ → ghi",
   const s = S();
   const before = await todayRow();
   await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" });
+  await rest(`user_foods?user_id=eq.${s.uid}`, { method: "DELETE" }); // món tự nhập lưu máy chủ (16/10) → "món lạ" phải thật sự lạ
   try {
     await login(page);
     let aiCalls = 0;

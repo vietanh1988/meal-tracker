@@ -33,8 +33,9 @@ export function useMyFoods(uid) {
       const { data, error } = await supabase.from("user_foods").select("food_name,data").eq("user_id", uid);
       if (dead || error) return;
       const { merged, localOnly } = mergeMyFoods(ref.current, data || []);
-      setMyFoods(merged);
-      writeUser(KEY, uid, merged);
+      // Không đổi gì thì giữ nguyên object cũ: đổi object làm kho món (calcFoodCache) tính lại → ô đang gõ trong
+      // sheet Ghi bữa bị đặt lại (E2E 17/10 bắt được khi máy chủ trả chậm)
+      if (JSON.stringify(merged) !== JSON.stringify(ref.current)) { setMyFoods(merged); writeUser(KEY, uid, merged); }
       if (Object.keys(localOnly).length) push(localOnly);
     })();
     return () => { dead = true; };
