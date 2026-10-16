@@ -94,8 +94,13 @@ Deno.serve(async (req) => {
         if (r.type === "meal") {
           await sendTo(p.id, { title: `${MEAL_ICON[r.meal] || "🍽️"} ${name} ơi!`, body: pick(MEAL_MSG)(MEAL_LABEL[r.meal] || r.meal), url: "/" });
         } else if (r.type === "weigh") {
+          // 17/10: "Cân & đo hằng tuần" — kèm đo số đo thì vẫn nhắc dù đã cân (còn phải đo), bấm mở Tiến độ
+          if (r.measure) {
+            await sendTo(p.id, { title: `📏 ${name} ơi, cân & đo sáng nay nhé!`, body: weighed.has(p.id) ? "Đã cân rồi — còn đo eo, bụng… bằng thước dây (2 phút)." : "Cân lúc mới ngủ dậy, rồi đo eo, bụng… bằng thước dây (2 phút).", url: "/?tab=progress&seg=measure" });
+            continue;
+          }
           if (weighed.has(p.id)) { skip++; continue; }
-          await sendTo(p.id, { title: `⚖️ ${name} ơi, đến giờ cân rồi!`, body: "Cân lúc mới ngủ dậy, trước khi ăn uống để số chuẩn nhất.", url: "/" });
+          await sendTo(p.id, { title: `⚖️ ${name} ơi, đến giờ cân rồi!`, body: "Cân lúc mới ngủ dậy, trước khi ăn uống để số chuẩn nhất.", url: "/?tab=progress&seg=weight" });
         } else if (r.type === "water") {
           const isTrain = (p.exercise_type || "gym") !== "none" && (p.gym_days || []).includes(now.weekday);
           const goal = waterGoalMl(p.kg, isTrain, p.water_goal_ml);

@@ -3,6 +3,8 @@
 // (Ghi bữa, Sửa bữa, Chụp ảnh, Fipilot AI, Thực đơn AI, màn phụ của Tôi).
 // Mọi ghi daily_logs đi qua useUserData (saveMealToCloud/toggleEaten/removeDayMeal/moveDayMeal/addWater/applyTemplate).
 import { useMyFoods } from "../hooks/useMyFoods";
+import { useBodyMeasure } from "../hooks/useBodyMeasure";
+import { MeasureSheet } from "./MeasureSheet";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
 import { DK, DK_CSS, LT } from "../theme";
@@ -73,6 +75,8 @@ export function MobileApp(props) {
   // Món tự nhập calo (16/10): lưu trên máy theo tài khoản, chỉ người đó thấy — không vào kho chung / hàng chờ duyệt
   // Món tự nhập: lưu theo tài khoản trên máy chủ (bảng user_foods) + bản đệm trên máy — đổi máy không mất
   const { myFoods, saveMyFoods } = useMyFoods(user?.id);
+  // Số đo cơ thể (bảng body_measurements, 17/10)
+  const { measures, saveMeasure, deleteMeasure } = useBodyMeasure(user?.id);
   const calcFoodCache = useMemo(() => ({ ...(myFoods || {}), ...(myPending || {}), ...(ud.foodCache || {}) }), [myFoods, myPending, ud.foodCache]);
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "bạn";
 
@@ -567,7 +571,7 @@ export function MobileApp(props) {
       const vis = ["train", "rest"].flatMap((dt) => visibleMealIds(mealConfig, dt, profile.exerciseType, DEFAULT_MEAL_CONFIG));
       return (
         <SubPage title="Nhắc nhở" onBack={closeLayer} dark>
-          <RemindersScreen profile={profile} setProfile={setProfile} pushFeature={flags.push} weightLog={weightLog} curKg={weight.curKg} visibleMeals={[...new Set(vis)]} />
+          <RemindersScreen profile={profile} setProfile={setProfile} pushFeature={flags.push} weightLog={weightLog} curKg={weight.curKg} visibleMeals={[...new Set(vis)]} lastMeasureDate={(measures || []).length ? measures[measures.length - 1].log_date : null} />
         </SubPage>
       );
     }
@@ -602,6 +606,22 @@ export function MobileApp(props) {
       </SubPage>
     );
   };
+
+  // Mở từ thông báo (17/10): url ?tab=progress&seg=weight|measure|food → chuyển tab Tiến độ đúng mục.
+  // Mở mới: đọc location.search; app đang mở: service worker gửi message "open-url".
+  useEffect(() => {
+    const go = (url) => {
+      try {
+        const u = new URL(url, window.location.origin);
+        const t = u.searchParams.get("tab"), sg = u.searchParams.get("seg");
+        if (t === "progress") { if (sg) setProgressSeg((s) => ({ seg: sg, n: s.n + 1 })); setTab("progress"); }
+      } catch (e) { /* url lạ: bỏ qua */ }
+    };
+    if (window.location.search.includes("tab=")) { go(window.location.href); try { window.history.replaceState(null, "", window.location.pathname); } catch (e) { /* */ } }
+    const onMsg = (e) => { if (e.data?.type === "open-url" && e.data.url) go(e.data.url); };
+    navigator.serviceWorker?.addEventListener?.("message", onMsg);
+    return () => navigator.serviceWorker?.removeEventListener?.("message", onMsg);
+  }, []);
 
   // Lưu hồ sơ lỗi (mất mạng, hết phiên…) → báo ngay kèm nút Thử lại (trước đây lỗi bị nuốt, mở lại app thấy số cũ)
   useEffect(() => {
@@ -680,7 +700,8 @@ export function MobileApp(props) {
           <ProgressScreen initialSeg={progressSeg.seg} segNonce={progressSeg.n}
             range={{ mode: rangeMode, setMode: setRangeMode, anchor: rangeAnchor, setAnchor: setRangeAnchor, today }}
             getDailyLogs={ud.getDailyLogs} dataVersion={version} targetOf={(d) => targetsOf(macro, dayTypeOf(profile, d)).cal} lineCal={Math.round(macro.calTarget)} openDay={openDay} onLog={() => openLog(null, today)}
-            weightLog={weightLog} weight={weight} profile={profile} setProfile={setProfile} addWeight={addWeight} updateWeight={updateWeight} deleteWeight={deleteWeight} />
+            weightLog={weightLog} weight={weight} profile={profile} setProfile={setProfile} addWeight={addWeight} updateWeight={updateWeight} deleteWeight={deleteWeight}
+            measures={measures} onMeasure={(d) => openLayer({ type: "measure", date: d })} onOpenReminders={() => openLayer({ type: "page", sec: "reminders" })} />
         )}
         {tab === "me" && (
           <MeScreen bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />} name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
@@ -710,7 +731,7 @@ export function MobileApp(props) {
               onClose={closeLayer} onSearch={() => replaceTop({ type: "log", date: l.date, mealId: l.mealId })}
               onPick={(opt) => pickSuggestion(l.date, l.mealId, opt, closeLayer)} />;
           })()}
-          {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs}
+          {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} measures={measures} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs}
             onOpenAIMenu={aiAccess.usable ? () => replaceTop(quickAILayer()) : null} initialInput={l.input || ""} />}
           {l.type === "ai" && (
             <AIMenuScreen macro={macro} profile={profile} user={user} appSettings={appSettings} todayType={dayTypeOf(profile, today)} getDailyLogs={ud.getDailyLogs}
@@ -729,6 +750,9 @@ export function MobileApp(props) {
                 ? (d, mealId, items) => { setPendingPick({ items, n: Date.now() }); return true; }
                 : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
           )}
+          {l.type === "measure" && <MeasureSheet today={today} date={l.date} rows={measures || []} gender={profile.gender}
+            onSave={async (d, v) => { const ok = await saveMeasure(d, v); showToast({ text: ok ? "Đã lưu số đo" : "Chưa lưu được số đo — kiểm tra mạng rồi thử lại." }); return ok; }}
+            onDelete={async (d) => { const ok = await deleteMeasure(d); if (ok) showToast({ text: "Đã xoá lần đo" }); return ok; }} onClose={closeLayer} />}
           {l.type === "weight" && <WeightSheet today={today} weightLog={weightLog} profileKg={profile.kg} goalKg={weight.goalKg} startKg={weight.startKg}
             onSave={saveWeightToday} onClose={closeLayer} onChart={l.fromGoals ? null : openWeightChart} />}
           {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} mealIds={idsFor(today)} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`)} />}

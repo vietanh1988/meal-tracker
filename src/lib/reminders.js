@@ -2,7 +2,7 @@
 // Dạng lưu:
 // {
 //   meal:  { on: true,  slots: [{ meal: "trua", time: "11:45" }, …] },   // chỉ nhắc khi bữa đó chưa ghi
-//   weigh: { on: true,  weekday: 0, time: "07:00" },                       // weekday 0 = T2 … 6 = CN (như gymDays)
+//   weigh: { on: true,  weekday: 0, time: "07:00", measure: false },       // weekday 0 = T2 … 6 = CN (như gymDays); measure = kèm nhắc đo số đo (17/10)
 //   water: { on: false, every: 2, from: "08:00", to: "20:00" }             // mỗi `every` giờ trong khung
 // }
 // Server: edge function push-meal-reminder (type "tick", cron mỗi phút) gọi dueReminders theo giờ VN.
@@ -15,7 +15,7 @@ export const WATER_EVERY = [1, 2, 3];
 
 export const DEFAULT_REMINDERS = {
   meal: { on: true, slots: [{ meal: "trua", time: "11:45" }, { meal: "toi", time: "19:30" }] },
-  weigh: { on: true, weekday: 0, time: "07:00" },
+  weigh: { on: true, weekday: 0, time: "07:00", measure: false },
   water: { on: false, every: 2, from: "08:00", to: "20:00" },
 };
 
@@ -39,7 +39,7 @@ export function normalizeReminders(raw) {
   if (toMin(to) <= toMin(from)) { from = D.water.from; to = D.water.to; }
   return {
     meal: { on: m.on !== undefined ? !!m.on : D.meal.on, slots },
-    weigh: { on: w.on !== undefined ? !!w.on : D.weigh.on, weekday: Number.isInteger(w.weekday) && w.weekday >= 0 && w.weekday <= 6 ? w.weekday : D.weigh.weekday, time: t(w.time, D.weigh.time) },
+    weigh: { on: w.on !== undefined ? !!w.on : D.weigh.on, weekday: Number.isInteger(w.weekday) && w.weekday >= 0 && w.weekday <= 6 ? w.weekday : D.weigh.weekday, time: t(w.time, D.weigh.time), measure: !!w.measure },
     water: { on: !!wa.on, every: WATER_EVERY.includes(wa.every) ? wa.every : D.water.every, from, to },
   };
 }
@@ -61,7 +61,7 @@ export function dueReminders(raw, { hhmm, weekday, loggedMeals = [] }) {
   const r = normalizeReminders(raw);
   const out = [];
   if (r.meal.on) r.meal.slots.forEach((s) => { if (s.time === hhmm && !loggedMeals.includes(s.meal)) out.push({ type: "meal", meal: s.meal }); });
-  if (r.weigh.on && r.weigh.weekday === weekday && r.weigh.time === hhmm) out.push({ type: "weigh" });
+  if (r.weigh.on && r.weigh.weekday === weekday && r.weigh.time === hhmm) out.push({ type: "weigh", measure: r.weigh.measure });
   if (r.water.on && waterTimes(r.water).includes(hhmm)) out.push({ type: "water" });
   return out;
 }

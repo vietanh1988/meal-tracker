@@ -1,3 +1,4 @@
+import { measureSummaryForAI, bodyInsight } from "./lib/bodyMeasure";
 import { useState, useRef, useEffect } from "react";
 import { readUser, writeUser } from "./lib/userStore";
 import { todayVN, addDays, weekdayOf, gymIdxOf, templateKeyOf } from "./lib/dateVN";
@@ -78,7 +79,7 @@ const hasCreate = ["tạo","lên","gợi ý","soạn","làm","giúp","cho"].some
 return hasMenu && hasCreate;
 }
 
-export function AICoachPanel({profile,macro,weightLog,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,onOpenAIMenu,initialInput}){
+export function AICoachPanel({profile,macro,weightLog,measures,todayData,mob,onClose,appSettings,isAdmin,getMeals,getWeeklyTemplate,foodCache,userId,applyTemplate,saveWeeklyTemplate,getMealHistory,getDailyLogs,onOpenAIMenu,initialInput}){
 // Mobile mới: mở màn Thực đơn AI riêng thay vì AIMenuGenerator lồng trong chat
 const openAIMenu=()=>{if(onOpenAIMenu)onOpenAIMenu();else setShowAIMenuFromChat(true);};
 const [messages,setMessages]=useState([]);
@@ -174,6 +175,9 @@ const buildContext=()=>{
 const p=profile||{};const m=macro||{};const t=todayData||{};
 const wl=weightLog||[];const curW=wl.length>0?wl[wl.length-1].kg:p.kg;
 const startW=wl.length>0?wl[0].kg:p.kg;
+// Số đo cơ thể (17/10): cho AI biết eo/bụng/% mỡ để không khuyên ăn ít đi chỉ vì cân đứng yên
+const measureLine=measureSummaryForAI(measures||[],p.cm);
+const bodyNote=bodyInsight({weightLog:wl,rows:measures||[],goalType:p.goalType})?.text||null;
 const trend=wl.length>=2?((wl[wl.length-1].kg-wl[0].kg)/wl.length).toFixed(1):"chưa đủ data";
 const age=p.birthYear?new Date().getFullYear()-p.birthYear:"?";
 const freqLabel={occasional:"Thỉnh thoảng (1-2 buổi/tuần)",regular:"Đều đặn (3-4 buổi/tuần)",frequent:"Rất thường xuyên (5-6 buổi/tuần)",daily:"Gần như mỗi ngày"}[p.frequency||"regular"]||"Đều đặn";
@@ -272,7 +276,7 @@ NGÀY MAI (${tmrDayLabel}, ${tmrIsRest?"nghỉ":"tập"}):
 
 CÂN NẶNG:
 - ${startW}kg → ${curW}kg → mục tiêu ${p.goalKg}kg
-- Trend: ${trend} kg/tuần (${wl.length} tuần)${foodDB}
+- Trend: ${trend} kg/tuần (${wl.length} tuần)${measureLine?`\n- ${measureLine}`:""}${bodyNote?`\n- Nhận xét cân + eo: ${bodyNote}`:""}${foodDB}
 
 LƯU Ý QUAN TRỌNG:
 - Chỉ tư vấn dựa trên MACRO MỤC TIÊU ở trên, KHÔNG tự suy diễn chế độ ăn khác

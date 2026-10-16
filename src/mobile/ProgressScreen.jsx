@@ -6,6 +6,8 @@ import { rangeSummary, weekDates, weekdayStrip, fmtInt, fmtDec, fmtKg, deltaGood
 import { addDays, monthRange, dateList, fmtVN, weekRange, todayVN } from "../lib/dateVN";
 import { parseKg } from "../lib/weightMath";
 import { appAlert, appConfirm } from "../lib/dialog";
+import { MeasurePanel, InsightLine } from "./MeasurePanel";
+import { bodyInsight } from "../lib/bodyMeasure";
 
 const navBtn = { width: 40, height: 40, borderRadius: 12, border: "none", boxShadow: "0 2px 8px rgba(30,64,175,0.10)", background: "#FFFFFF", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 };
 const BAR_COLOR = { ok: "#059669", low: "#F59E0B", high: "#EF4444" };
@@ -18,10 +20,10 @@ export function ProgressScreen(p) {
     <div>
       <div style={{ padding: "calc(env(safe-area-inset-top, 0px) + 14px) 12px 10px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
         <span style={{ fontSize: 26, fontWeight: 900, padding: "0 4px" }}>Tiến độ</span>
-        <Seg mode="tab" value={segId} onChange={setSegId} opts={[{ value: "food", label: "Nhật ký ăn uống", testid: "seg-diary" }, { value: "weight", label: "Cân nặng" }]} />
+        <Seg mode="tab" value={segId} onChange={setSegId} opts={[{ value: "food", label: "Nhật ký", testid: "seg-diary" }, { value: "weight", label: "Cân nặng", testid: "seg-weight" }, { value: "measure", label: "Số đo", testid: "seg-measure" }]} />
         {segId === "food" && <FoodHeader {...p} />}
       </div>
-      {segId === "food" ? <FoodPanel {...p} /> : <WeightPanel {...p} />}
+      {segId === "food" ? <FoodPanel {...p} /> : segId === "weight" ? <WeightPanel {...p} /> : <MeasurePanel measures={p.measures} profile={p.profile} weightLog={p.weightLog} today={p.range.today} onMeasure={p.onMeasure} onOpenReminders={p.onOpenReminders} />}
       <div style={{ height: 24 }} />
     </div>
   );
@@ -152,7 +154,7 @@ function FoodPanel(p) {
   );
 }
 
-function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, updateWeight, deleteWeight }) {
+function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, updateWeight, deleteWeight, measures }) {
   const [val, setVal] = useState("");
   const [busy, setBusy] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -217,6 +219,8 @@ function WeightPanel({ weightLog, weight, profile, setProfile, addWeight, update
       </div>
 
       <WeightChart weightLog={weightLog} weight={w} />
+      {/* 17/10: cân đứng mà eo giảm / tăng cân mà eo to nhanh → 1 dòng nhận xét (cần ≥ 2 lần đo eo cách ≥ 10 ngày) */}
+      <InsightLine insight={bodyInsight({ weightLog, rows: measures || [], goalType: profile?.goalType })} testid="weight-insight" />
 
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "14px 16px 6px 16px" }}>
         <span style={{ fontSize: 15, fontWeight: 800 }}>Lịch sử</span>

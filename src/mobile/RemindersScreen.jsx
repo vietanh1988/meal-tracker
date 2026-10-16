@@ -13,7 +13,9 @@ import { isPushSupported, getPushStatus, enablePushNotifications } from "../push
 
 const SHORT = { sang: "Sáng", phu_sang: "Phụ sáng", trua: "Trưa", phu_chieu: "Phụ chiều", pre: "Trước tập", post: "Sau tập", toi: "Tối" };
 // Nền tối (bản vẽ 48): thẻ kính mờ, nút giờ kiểu kính, chữ trắng
-const box = { ...dkCard, margin: "12px 12px 0 12px", borderRadius: 16, padding: "0 14px" };
+const box = { ...dkCard, margin: "0 12px", borderRadius: 16, padding: "0 14px" };
+// 17/10 (bản vẽ 124): mọi cài đặt nhắc gom ở đây, chia nhóm ĂN UỐNG · CƠ THỂ; nhắc cân + đo số đo gộp 1 mục
+const secT = { display: "block", padding: "18px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: DK.t3, letterSpacing: "0.08em" };
 const blk = (last) => ({ padding: "14px 0", borderBottom: last ? "none" : `1px solid ${DK.line}`, display: "flex", flexDirection: "column", gap: 10 });
 const chip = (dim, blue) => ({ height: 34, padding: "0 12px", borderRadius: 10, border: `1px solid ${DK.chipLine}`, background: DK.chip, fontFamily: "inherit", fontSize: 13, fontWeight: 700, color: dim ? "rgba(255,255,255,0.45)" : blue ? DK.link : DK.t1, display: "inline-flex", alignItems: "center", gap: 6 });
 const timeInput = { height: 34, padding: "0 8px", borderRadius: 10, border: `1.5px solid ${DK.link}`, fontFamily: "inherit", fontSize: 13, fontWeight: 700, color: DK.t1, background: "rgba(255,255,255,0.14)", WebkitAppearance: "none" };
@@ -44,7 +46,7 @@ function TimeChip({ label, value, dim, onSave, testid }) {
   return <button data-testid={testid} onClick={() => setEdit(true)} style={chip(dim)}>{label ? `${label} ` : ""}{value}</button>;
 }
 
-export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, curKg, visibleMeals }) {
+export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, curKg, visibleMeals, lastMeasureDate }) {
   const r = normalizeReminders(profile?.reminderSettings);
   const save = (next) => setProfile({ ...profile, reminderSettings: normalizeReminders(next) });
   const set = (key, patch) => save({ ...r, [key]: { ...r[key], ...patch } });
@@ -100,7 +102,8 @@ export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, c
         </div>
       )}
 
-      <div style={box}>
+      <span style={secT}>ĂN UỐNG</span>
+      <div data-testid="rem-sec-food" style={box}>
         <div style={blk(false)}>
           <Head testid="rem-meal" title="Nhắc ghi bữa" sub="Chỉ nhắc khi bữa đó chưa ghi" on={r.meal.on} onToggle={() => set("meal", { on: !r.meal.on })} />
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", opacity: r.meal.on ? 1 : 0.6 }}>
@@ -121,17 +124,6 @@ export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, c
           )}
         </div>
 
-        <div style={blk(false)}>
-          <Head testid="rem-weigh" title="Nhắc cân" sub={lastW ? `Lần cân gần nhất: ${fmtVN(lastW.logged_date)}` : "Chưa có lần cân nào"} on={r.weigh.on} onToggle={() => set("weigh", { on: !r.weigh.on })} />
-          <div style={{ display: "flex", gap: 8, alignItems: "center", opacity: r.weigh.on ? 1 : 0.6 }}>
-            <select data-testid="rem-weigh-day" aria-label="Thứ nhắc cân" value={r.weigh.weekday} onChange={(e) => set("weigh", { weekday: Number(e.target.value) })}
-              style={{ ...chip(!r.weigh.on), WebkitAppearance: "none", appearance: "none", paddingRight: 12 }}>
-              {WEEKDAY_NAMES.map((n, i) => <option key={i} value={i}>{n}</option>)}
-            </select>
-            <TimeChip testid="rem-weigh-time" label="" value={r.weigh.time} dim={!r.weigh.on} onSave={(v) => set("weigh", { time: v })} />
-          </div>
-        </div>
-
         <div style={blk(true)}>
           <Head testid="rem-water" title="Nhắc uống nước" sub={`Mục tiêu ${fmtL(waterGoalMl(curKg, true, profile?.waterGoalMl))} L ngày tập · ${fmtL(waterGoalMl(curKg, false, profile?.waterGoalMl))} L ngày nghỉ`} on={r.water.on} onToggle={() => set("water", { on: !r.water.on })} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
@@ -142,6 +134,27 @@ export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, c
           </div>
         </div>
       </div>
+
+      <span style={secT}>CƠ THỂ</span>
+      <div data-testid="rem-sec-body" style={box}>
+        <div style={blk(true)}>
+          <Head testid="rem-weigh" title="Cân & đo hằng tuần" sub={[lastW ? `Lần cân gần nhất ${fmtVN(lastW.logged_date)}` : "Chưa có lần cân nào", lastMeasureDate ? `lần đo gần nhất ${fmtVN(lastMeasureDate)}` : null].filter(Boolean).join(" · ")} on={r.weigh.on} onToggle={() => set("weigh", { on: !r.weigh.on })} />
+          <div style={{ display: "flex", gap: 8, alignItems: "center", opacity: r.weigh.on ? 1 : 0.6 }}>
+            <select data-testid="rem-weigh-day" aria-label="Thứ nhắc cân" value={r.weigh.weekday} onChange={(e) => set("weigh", { weekday: Number(e.target.value) })}
+              style={{ ...chip(!r.weigh.on), WebkitAppearance: "none", appearance: "none", paddingRight: 12 }}>
+              {WEEKDAY_NAMES.map((n, i) => <option key={i} value={i}>{n}</option>)}
+            </select>
+            <TimeChip testid="rem-weigh-time" label="" value={r.weigh.time} dim={!r.weigh.on} onSave={(v) => set("weigh", { time: v })} />
+          </div>
+          <button data-testid="rem-weigh-measure" role="checkbox" aria-checked={r.weigh.measure} onClick={() => set("weigh", { measure: !r.weigh.measure })}
+            style={{ ...chip(!r.weigh.on), alignSelf: "flex-start", gap: 8 }}>
+            <span aria-hidden="true" style={{ width: 18, height: 18, borderRadius: 6, background: r.weigh.measure ? "#00C896" : "transparent", border: `1.5px solid ${r.weigh.measure ? "#00C896" : "rgba(255,255,255,0.4)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900, color: "#FFFFFF" }}>{r.weigh.measure ? "✓" : ""}</span>
+            Kèm nhắc đo số đo
+          </button>
+        </div>
+
+      </div>
+      <p style={{ margin: "8px 20px 0 20px", fontSize: 12, color: DK.t3, lineHeight: 1.5 }}>Bấm vào thông báo cân &amp; đo sẽ mở thẳng Tiến độ.</p>
 
       <p style={{ margin: "12px 20px 0 20px", fontSize: 12, color: DK.t3, lineHeight: 1.5 }}>
         {iosNeedsHome ? "Trên iPhone cần thêm Fipilot vào Màn hình chính rồi mới bật được thông báo." : "Nhắc gửi theo giờ Việt Nam. Bấm vào giờ để đổi."}

@@ -42,6 +42,14 @@ test("Nhắc nhở: lưu cài đặt nhắc", async ({ browser }) => {
     await page.getByTestId("rem-weigh-day").selectOption("2");
     await waitDb(async () => (await rs()).weigh?.weekday === 2, "weigh.weekday = 2");
 
+    // 17/10 (bản vẽ 124): 2 nhóm ĂN UỐNG · CƠ THỂ; "Cân & đo hằng tuần" có ô kèm nhắc đo số đo
+    await expect(page.getByTestId("rem-sec-food")).toContainText("Nhắc ghi bữa");
+    await expect(page.getByTestId("rem-sec-food")).toContainText("Nhắc uống nước");
+    await expect(page.getByTestId("rem-sec-body")).toContainText("Cân & đo hằng tuần");
+    await tap(page.getByTestId("rem-weigh-measure"));
+    await waitDb(async () => (await rs()).weigh?.measure === true, "weigh.measure = true");
+    await expect(page.getByTestId("rem-weigh-measure")).toHaveAttribute("aria-checked", "true");
+
     // Tắt nhắc bữa
     await tap(page.getByTestId("rem-meal"));
     await waitDb(async () => (await rs()).meal?.on === false, "meal.on = false");
