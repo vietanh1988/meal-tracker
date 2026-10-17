@@ -5,14 +5,35 @@ const r1 = (n) => Math.round(n * 10) / 10;
 export const bmiOf = (kg, cm) => (Number(kg) > 0 && Number(cm) > 0 ? Number(kg) / ((Number(cm) / 100) ** 2) : null);
 export const kgAtBmi = (bmi, cm) => r1(bmi * ((Number(cm) / 100) ** 2));
 
-// 131b: chip "muốn giảm bao nhiêu" — chỉ các mức mà cân đích vẫn ≥ BMI 18,5; gợi ý sẵn mức gần nhất để về ~BMI 23
+// 131b: chip "muốn giảm bao nhiêu" (sửa 18/10: trước đây chỉ chặn BMI 18,5 nên số nào cũng "hợp lý")
+// Mức đẹp theo chiều cao = BMI 20–23 (chuẩn người châu Á). Chip chỉ gồm mức mà cân đích còn ≥ BMI 20;
+// gợi ý sẵn mức về gần BMI 23 nhưng chặng đầu tối đa ~12% cân hiện tại.
+const STEPS = [2, 3, 5, 8, 10, 15, 20];
+export const goodRange = (cm) => ({ lo: Math.ceil(kgAtBmi(20, cm)), hi: Math.floor(kgAtBmi(23, cm)) });
 export function lossChoices(kg, cm) {
-  const k = Number(kg), minKg = kgAtBmi(18.5, cm);
-  if (!(k > 0) || !(Number(cm) > 0)) return { options: [5, 8, 10], pick: 5, minKg: null };
-  const options = [5, 8, 10].filter((d) => k - d >= minKg);
-  const need = k - kgAtBmi(23, cm);
-  const pick = options.length ? options.reduce((best, d) => (Math.abs(d - need) < Math.abs(best - need) ? d : best), options[0]) : null;
-  return { options, pick, minKg };
+  const k = Number(kg);
+  if (!(k > 0) || !(Number(cm) > 0)) return { options: [5, 8, 10], pick: 5, minKg: null, normal: false };
+  const minKg = kgAtBmi(18.5, cm);
+  const valid = STEPS.filter((d) => k - d >= kgAtBmi(20, cm));
+  const normal = k <= kgAtBmi(23, cm); // đang trong mức chuẩn rồi
+  if (!valid.length) return { options: [], pick: "x", minKg, normal: true };
+  const want = Math.max(2, Math.min(k - kgAtBmi(23, cm), k * 0.12));
+  const pick = valid.reduce((best, d) => (Math.abs(d - want) < Math.abs(best - want) ? d : best), valid[0]);
+  const i = valid.indexOf(pick), start = Math.max(0, Math.min(i - 2, valid.length - 3));
+  return { options: valid.slice(start, start + 3), pick, minKg, normal };
+}
+
+// Nhận xét cân đích (đã qua goalError): tone ok / warn + câu hiện dưới chip
+export function goalVerdict(kg, goalKg, cm) {
+  const k = Number(kg), g = Number(goalKg), b = bmiOf(g, cm);
+  if (!(g > 0) || !b) return null;
+  const { lo, hi } = goodRange(cm);
+  const f = (n) => String(n).replace(".", ",");
+  const range = `${lo}–${hi} kg`;
+  if (b < 20) return { tone: "warn", text: `→ còn ${f(g)} kg · hơi gầy so với ${Math.round(cm)} cm, dễ tăng cân lại. Mức đẹp của bạn: ${range}.` };
+  if (k - g > k * 0.15) return { tone: "warn", text: `→ còn ${f(g)} kg · giảm nhiều một lúc dễ bỏ cuộc — nên làm chặng đầu −${Math.round(k * 0.1)} kg trước.` };
+  if (b > 23) return { tone: "ok", text: `→ còn ${f(g)} kg · chặng đầu vừa sức. Mức đẹp với chiều cao của bạn: ${range}.` };
+  return { tone: "ok", text: `→ còn ${f(g)} kg · đúng mức đẹp với chiều cao của bạn (${range}).` };
 }
 
 // Kiểm cân đích tự nhập: phải nhỏ hơn cân hiện tại và ≥ BMI 18,5

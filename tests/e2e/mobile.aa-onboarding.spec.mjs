@@ -132,6 +132,19 @@ test("Onboarding giảm cân: 3 màn rồi vào Hôm nay bản gọn", async ({ 
     await page.getByTestId("onb-year").fill("1990");
     await expect(page.getByTestId("onb-chip-loss-10")).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByTestId("onb-loss-goal")).toContainText("75 kg");
+    // 18/10: 61 kg · 160 cm không được gợi ý −10 kg; tự nhập 51 kg (BMI < 20) → cảnh báo vàng
+    await page.getByTestId("onb-weight").fill("61");
+    await page.getByTestId("onb-height").fill("160");
+    await expect(page.getByTestId("onb-chip-loss-2")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("onb-chip-loss-10")).toHaveCount(0);
+    await page.getByTestId("onb-chip-loss-x").click();
+    await page.getByTestId("onb-goalKg").fill("51");
+    await expect(page.getByTestId("onb-loss-goal")).toHaveAttribute("data-tone", "warn");
+    await page.screenshot({ path: "shots/onb-loss-canh-bao.png" });
+    await page.getByTestId("onb-weight").fill("85");
+    await page.getByTestId("onb-height").fill("170");
+    await page.getByTestId("onb-chip-loss-10").click();
+    await expect(page.getByTestId("onb-loss-goal")).toContainText("75 kg");
     await page.screenshot({ path: "shots/onb-loss-hoi.png" });
     await page.getByTestId("onb-chip-loss-x").click();
     await page.getByTestId("onb-goalKg").fill("90");

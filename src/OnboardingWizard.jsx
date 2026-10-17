@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { calcMacro } from "./calcMacro";
 import { PacePicker, etaMonth } from "./mobile/PacePicker";
-import { lossChoices, goalError } from "./lib/lossPlan";
+import { lossChoices, goalError, goalVerdict, goodRange } from "./lib/lossPlan";
 import { DK, DK_CSS, dkCard, dkGlass } from "./theme";
 import { Seg } from "./mobile/ui";
 import { todayVN } from "./lib/dateVN";
@@ -154,10 +154,11 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     const bodyOk = bodyValid(vals, year);
     const kg = numOf(draft.kg), cm = numOf(draft.cm);
     const ch = bodyOk ? lossChoices(kg, cm) : { options: [5, 8, 10], pick: 5 };
-    const pick = lossKg ?? ch.pick;
+    const pick = lossKg === "x" || ch.options.includes(lossKg) ? lossKg : ch.pick; // đổi cân/chiều cao làm chip cũ biến mất → về gợi ý
     const goalKg = pick === "x" ? numOf(draft.goalKg) : (bodyOk && pick ? Math.round((kg - pick) * 10) / 10 : NaN);
     const gErr = bodyOk && (pick === "x" ? String(draft.goalKg).length >= 2 : true) ? goalError(kg, goalKg, cm) : null;
     const ok = bodyOk && !Number.isNaN(goalKg) && !gErr;
+    const verdict = bodyOk && !gErr && !Number.isNaN(goalKg) ? goalVerdict(kg, goalKg, cm) : null;
     const next = () => {
       if (!ok) return;
       set({ cm: Math.round(cm), kg: Math.round(kg * 10) / 10, birthYear: numOf(draft.birthYear), goalKg, goalType: "cut", cutPace: "mid", dietStrategy: "balanced", uiMode: "loss", exerciseType: p.uiMode === "loss" ? p.exerciseType : "none", frequency: p.uiMode === "loss" ? p.frequency : undefined, _defaulted: keepDefaulted(["cm", "kg", "birthYear", "goalKg"]) });
@@ -174,13 +175,14 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
         </div>
         <span style={{ fontSize: 14, fontWeight: 800, marginTop: 4 }}>Bạn muốn giảm bao nhiêu kg?</span>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {[5, 8, 10].map((d) => (bodyOk && !ch.options.includes(d) ? null : chip(`loss-${d}`, `−${d} kg`, pick === d, () => setLossKg(d))))}
+          {ch.options.map((d) => chip(`loss-${d}`, `−${d} kg`, pick === d, () => setLossKg(d)))}
           {chip("loss-x", "Tự nhập", pick === "x", () => setLossKg("x"))}
         </div>
         {pick === "x" && field("goalKg", "Cân muốn đạt", "kg", "decimal", draft.goalKg, dnum("goalKg", true), blur("goalKg"), "VD 70", !!gErr, "onb-goalKg")}
         {bodyOk && (gErr
           ? <div data-testid="onb-goal-err" role="alert" style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(255,120,120,0.16)", color: DK.red, fontSize: 13, fontWeight: 700, lineHeight: 1.5 }}>{gErr}</div>
-          : !Number.isNaN(goalKg) && <div data-testid="onb-loss-goal" style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(0,200,150,0.18)", color: DK.green, fontSize: 13, fontWeight: 600 }}>→ còn {String(goalKg).replace(".", ",")} kg · mức hợp lý với chiều cao của bạn</div>)}
+          : verdict && <div data-testid="onb-loss-goal" data-tone={verdict.tone} style={{ padding: "10px 12px", borderRadius: 12, background: verdict.tone === "warn" ? "rgba(245,158,11,0.18)" : "rgba(0,200,150,0.18)", color: verdict.tone === "warn" ? DK.amber : DK.green, fontSize: 13, fontWeight: 600, lineHeight: 1.5 }}>{verdict.text}</div>)}
+        {bodyOk && ch.normal && <div data-testid="onb-loss-normal" style={{ fontSize: 13, color: DK.t2, lineHeight: 1.5 }}>Cân của bạn đã trong mức đẹp ({goodRange(cm).lo}–{goodRange(cm).hi} kg){ch.options.length ? " — giảm thêm 2–3 kg là đủ, ưu tiên gọn bụng." : " — không cần giảm thêm, chỉ nên giữ cân và tập cho săn chắc."}</div>}
         {note("Điền đúng số của bạn thì kế hoạch mới chính xác — cân buổi sáng, trước khi ăn.")}
       </div>
       {footer(btn("Xem kế hoạch", next, !ok, "onb-next"))}

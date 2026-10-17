@@ -1,21 +1,33 @@
 // node --test tests/ — flow giảm cân (bản vẽ 131)
 import test from "node:test";
 import assert from "node:assert/strict";
-import { lossChoices, goalError, lossStatus, streakDays, milestones } from "../src/lib/lossPlan.js";
+import { lossChoices, goalError, goalVerdict, lossStatus, streakDays, milestones } from "../src/lib/lossPlan.js";
 
-test("chip giảm bao nhiêu: lọc theo BMI 18,5, gợi ý gần BMI 23", () => {
-  const a = lossChoices(85, 170); // BMI 23 = 66,5 → cần 18,5 → gợi ý 10
+test("chip giảm bao nhiêu: chỉ mức còn ≥ BMI 20, gợi ý về gần BMI 23, chặng đầu ≤ ~12%", () => {
+  const a = lossChoices(85, 170);
   assert.deepEqual(a.options, [5, 8, 10]);
   assert.equal(a.pick, 10);
-  const b = lossChoices(55, 160); // BMI 18,5 = 47,4 → chỉ 5 (50) hợp lệ
-  assert.deepEqual(b.options, [5]);
-  assert.equal(lossChoices(48, 165).options.length, 0);
+  const b = lossChoices(61, 160); // ảnh chủ dự án 18/10: trước đây cho −10 kg "hợp lý"
+  assert.deepEqual(b.options, [2, 3, 5]);
+  assert.equal(b.pick, 2);
+  assert.equal(b.options.includes(10), false);
+  const c = lossChoices(55, 160);
+  assert.equal(c.normal, true);
+  assert.deepEqual(c.options, [2, 3]);
+  const d = lossChoices(48, 165);
+  assert.equal(d.options.length, 0);
+  assert.equal(d.pick, "x");
 });
 
-test("cân đích tự nhập", () => {
+test("cân đích tự nhập + nhận xét", () => {
   assert.match(goalError(85, 90, 170), /nhỏ hơn/);
   assert.match(goalError(85, 40, 170), /Thấp quá/);
   assert.equal(goalError(85, 75, 170), null);
+  assert.equal(goalVerdict(61, 51, 160).tone, "warn"); // BMI 19,9
+  assert.match(goalVerdict(61, 51, 160).text, /52–58 kg/);
+  assert.equal(goalVerdict(61, 56, 160).tone, "ok");
+  assert.equal(goalVerdict(100, 80, 175).tone, "warn"); // −20% một lúc
+  assert.equal(goalVerdict(85, 75, 170).tone, "ok");
 });
 
 test("dòng trạng thái Hôm nay", () => {
