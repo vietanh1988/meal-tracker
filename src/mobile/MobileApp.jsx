@@ -61,7 +61,10 @@ import { useNotifications } from "../hooks/useNotifications";
 import { NotificationsScreen, BellButton } from "./NotificationsScreen";
 import { AppDialogHost, appConfirm } from "../lib/dialog";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
-import { getAIMenuAccess, loadAIMenus, buildExclusionKeys } from "../lib/aiMenuService";
+import { getAIMenuAccess, loadAIMenus, buildExclusionKeys, generateMenuLocal, getRecentFoodKeys } from "../lib/aiMenuService";
+import { SwapSheet, AvoidSheet } from "./SwapSheet";
+import { LossMenuScreen } from "./LossMenuScreen";
+import { shouldAutoPlan, markPlanned, addAvoid } from "../lib/lossMenu";
 import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel, menuReplaces, menuWrites } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
@@ -708,6 +711,73 @@ export function MobileApp(props) {
   const leftKg = Math.round(((Number(weight.curKg) || 0) - (Number(weight.goalKg) || 0)) * 10) / 10;
   // Flow giảm cân (bản vẽ 131d): khách chọn "Tôi muốn giảm cân" ở màn chào
   const lossMode = profile.uiMode === "loss" && macro.goal === "cut";
+  // ---------- Thực đơn tự lên cho khách giảm cân (bản vẽ 133a–e, 18/10) — KHÔNG gọi AI, mọi gói đều dùng ----------
+  const tomorrow = addDays(today, 1);
+  const [lossSel, setLossSel] = useState("today");
+  const [planBusy, setPlanBusy] = useState(null);
+  const [, setPrefsV] = useState(0);
+  const planningRef = useRef({});
+  const menuPrefs = () => readUser("fp_menu_prefs", user?.id, {}) || {};
+  const autoDone = () => readUser("fp_autoplan", user?.id, []) || [];
+  const planDay = async (d, manual = false) => {
+    if (!user?.id || planningRef.current[d]) return;
+    planningRef.current[d] = true;
+    setPlanBusy(d);
+    try {
+      const prefs = menuPrefs();
+      const dt = dayTypeOf(profile, d);
+      const recent = [...getRecentFoodKeys((recentRows || []).flatMap((r) => (r.meals || []).map((m) => ({ log_date: r.log_date, items: m.items || [] }))), 2)];
+      // Khách có Lịch tuần cho thứ đó → dùng Lịch tuần (khách tự chọn), không thì app tự lên
+      const wt = ud.getWeeklyTemplate ? ud.getWeeklyTemplate(templateKeyOf(d)) : null;
+      const res = wt && (wt.meals || []).some(hasItems) ? { ok: true, template: wt }
+        : await generateMenuLocal({ macro: macroFor(d), profile, dayType: dt, mealIds: idsFor(d), prefs: { style: prefs.style, avoid: prefs.avoid }, avoidFoods: recent });
+      writeUser("fp_autoplan", user.id, markPlanned(autoDone(), d));
+      if (!res || !res.ok || !res.template) { if (manual) fail(); return; }
+      await serial(async () => {
+        const cur = await ud.getDailyLog(d); // đọc lại từ DB: khách vừa ghi gì đó thì không đè
+        if ((cur?.meals || []).some(hasItems)) { await refresh(d); return; }
+        const r = await ud.applyTemplate({ ...res.template, name: "Thực đơn tự lên", day_type: dt }, d);
+        if (r && r.ok === false) { if (manual) fail(); return; }
+        await refresh(d);
+      });
+    } catch (e) { console.error("Auto plan error:", e); if (manual) fail(); }
+    finally { planningRef.current[d] = false; setPlanBusy(null); }
+  };
+  // Hôm nay: mở app thấy thực đơn đã nằm sẵn trong từng bữa (chỉ khi hôm nay chưa ghi gì, 1 lần/ngày)
+  useEffect(() => {
+    if (!lossMode || !user?.id || !recentReady) return;
+    const td = ud.todayLog;
+    if (!td || td.log_date !== today || typeof td.exists !== "boolean") return; // chưa tải xong hôm nay
+    const wt = ud.getWeeklyTemplate ? ud.getWeeklyTemplate(templateKeyOf(today)) : null;
+    if (wt && (wt.meals || []).some(hasItems)) return; // Lịch tuần tự áp (App.jsx)
+    if (shouldAutoPlan({ lossMode, date: today, day: td, done: autoDone() })) planDay(today);
+  }, [lossMode, user?.id, recentReady, ud.todayLog, today]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Ngày mai: lên khi khách mở tab Thực đơn › Ngày mai
+  useEffect(() => {
+    if (!lossMode || tab !== "menu" || lossSel !== "tomorrow") return;
+    if (!dayCache[tomorrow]) { loadDay(tomorrow); return; }
+    if (shouldAutoPlan({ lossMode, date: tomorrow, day: dayCache[tomorrow], done: autoDone() })) planDay(tomorrow);
+  }, [lossMode, tab, lossSel, tomorrow, dayCache[tomorrow]]); // eslint-disable-line react-hooks/exhaustive-deps
+  const openSwap = (d, mealId, food = null) => {
+    const m = mealOf(dayOf(d), mealId);
+    if (!m || !hasItems(m)) { openEdit(mealId, d); return; }
+    openLayer({ type: "swap", date: d, mealId, food });
+  };
+  const swapMeal = (d, mealId, items, name) => serial(async () => {
+    const prevMeal = mealOf(dayOf(d), mealId);
+    const res = await ud.saveMealToCloud(mealId, dayTypeOf(profile, d), items, false, d, { name: mealLabel(prevMeal && prevMeal.meal_name, mealId) });
+    if (res && res.ok === false) { fail(); return false; }
+    await refresh(d);
+    showToast({ text: `Đã đổi sang ${String(name || "món mới").toLowerCase()}` });
+    return true;
+  });
+  const saveAvoid = (text, quiet = false) => {
+    writeUser("fp_menu_prefs", user?.id, { ...menuPrefs(), avoid: text });
+    setPrefsV((v) => v + 1);
+    if (!quiet) showToast({ text: "Đã lưu — thực đơn từ ngày mai sẽ tránh các món này" });
+  };
+  const lossMenuDate = lossSel === "tomorrow" ? tomorrow : today;
+
   const planCard = !noEx && !lossMode ? null : macro.goal === "cut"
     ? { value: `Giảm ${fmtDec(Math.round((macro.kgWeek || 0) * 10) / 10)} kg/tuần`, sub: leftKg > 0 ? `còn ${fmtDec(leftKg)} kg` : "Đã tới cân mục tiêu" }
     : { value: "Giữ cân", sub: "Không tập" };
@@ -769,9 +839,14 @@ export function MobileApp(props) {
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}
-            onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} />
+            onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} onSwap={lossMode ? (id) => openSwap(date, id) : null} />
         )}
-        {tab === "menu" && (
+        {tab === "menu" && lossMode && (
+          <LossMenuScreen today={today} tomorrow={tomorrow} sel={lossSel} onSel={setLossSel} day={lossSel === "tomorrow" ? dayCache[tomorrow] : dayOf(today)}
+            targetCal={targetsOf(macroFor(lossMenuDate), dayTypeOf(profile, lossMenuDate)).cal} kgWeek={macro.kgWeek} loading={planBusy === lossMenuDate}
+            avoid={menuPrefs().avoid || ""} onSwap={openSwap} onAvoid={() => openLayer({ type: "avoid" })} onRetry={(d) => planDay(d, true)} />
+        )}
+        {tab === "menu" && !lossMode && (
           <div>
             <MenuScreen {...menuProps} active={!top} aiAccess={aiAccess} userId={user?.id} flags={flags} recentDays={recentRows} openToday={() => { setSelDate(null); setTab("today"); }}
               todayRest={restInfoMenu} openGenerate={(prefs) => openLayer({ type: "ai", prefs, auto: true, rest: prefs.scope === "rest" ? restOfToday() : null })} openSaved={(template) => openLayer({ type: "ai", template })}
@@ -833,6 +908,14 @@ export function MobileApp(props) {
                 ? (d, mealId, items) => { setPendingPick({ items, n: Date.now() }); return true; }
                 : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
           )}
+          {l.type === "swap" && (() => {
+            const m = mealOf(dayOf(l.date), l.mealId);
+            if (!m || !hasItems(m)) return null;
+            return <SwapSheet mealName={mealLabel(m.meal_name, l.mealId)} mealId={l.mealId} items={m.items} food={l.food} macro={macroFor(l.date)} dayType={dayTypeOf(profile, l.date)}
+              onPick={(items, name) => swapMeal(l.date, l.mealId, items, name)} onNever={(name) => saveAvoid(addAvoid(menuPrefs().avoid, name), true)}
+              onEdit={() => openEdit(l.mealId, l.date)} onClose={closeLayer} />;
+          })()}
+          {l.type === "avoid" && <AvoidSheet avoid={menuPrefs().avoid || ""} onSave={(t) => saveAvoid(t)} onClose={closeLayer} />}
           {l.type === "activity" && <ActivitySheet kg={weight.curKg || profile.kg} goal={macro.goal} items={actToday} baseTarget={targetsOf(macro, dayTypeOf(profile, today)).cal}
             onSave={(list) => saveActivity(today, list)} onClose={closeLayer} />}
           {l.type === "measure" && <MeasureSheet today={today} date={l.date} rows={measures || []} gender={profile.gender}

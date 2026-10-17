@@ -124,7 +124,7 @@ function IconTile({ testid, bg, icon, label, onClick }) {
   );
 }
 const SUG_SRC = { history: ["Đã ăn", "#047857", "rgba(5,150,105,0.12)"], template: ["Mẫu", "#0062F0", "#EEF4FF"], ai: ["AI", "#6D28D9", "#F3EEFF"] };
-function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, onAskAI, focusBonus }) {
+function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, onAskAI, focusBonus, onSwap }) {
   const planned = r.state === "planned";
   const sug = !planned && suggestInfo ? suggestInfo(r.id) : { n: 0, best: null };
   const nSug = sug.n || 0;
@@ -184,7 +184,10 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSu
         {planned ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
             <button data-testid={`focus-eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.check(18, 2.6)}Đã ăn</button>
-            <button data-testid="focus-edit" onClick={() => onEdit(r.id)} style={{ ...soft, height: 48, borderRadius: 14, boxShadow: LT.raiseSm, border: "1.5px solid rgba(0,122,255,0.35)", color: "#0057FF", fontSize: 15, fontWeight: 800, boxSizing: "border-box" }}>Sửa món</button>
+            {/* Bản vẽ 133a: khách giảm cân — "Đổi món" (món calo gần bằng, không AI) thay "Sửa món"; sửa gram vẫn bấm dòng món ở trên */}
+            {onSwap
+              ? <button data-testid="focus-swap" onClick={() => onSwap(r.id)} style={{ ...soft, height: 48, borderRadius: 14, boxShadow: LT.raiseSm, border: "1.5px solid rgba(0,122,255,0.35)", color: "#0057FF", fontSize: 15, fontWeight: 800, boxSizing: "border-box" }}>Đổi món</button>
+              : <button data-testid="focus-edit" onClick={() => onEdit(r.id)} style={{ ...soft, height: 48, borderRadius: 14, boxShadow: LT.raiseSm, border: "1.5px solid rgba(0,122,255,0.35)", color: "#0057FF", fontSize: 15, fontWeight: 800, boxSizing: "border-box" }}>Sửa món</button>}
           </div>
         ) : (
           /* Bản vẽ 121c: 3 ô icon có chữ — Chụp món · Tìm món · Hỏi AI (gộp link Hỏi AI) */

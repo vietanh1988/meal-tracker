@@ -625,7 +625,7 @@ function balanceProtein(template, per, { banned, isAvoided, diet }) {
 // KHÔNG BAO GIỜ FAIL — AI trả sai/lệch → resolver tự fallback món đầu pool.
 const USE_SLOT_MODE = true;
 
-async function generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, goal, prov, mdl }) {
+async function generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, goal, prov, mdl, local = false }) {
   const style = prefs?.style || "vn";
   const exclude = buildExclusionKeys(prefs?.avoid);
   const avoidAll = [...(avoidFoods || []), ...exclude];
@@ -636,7 +636,8 @@ async function generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFood
 
   // 2. Prompt + gọi AI (1 lần duy nhất — sai thì resolver tự fix, không retry)
   let answers = {};
-  try {
+  // local (18/10 — thực đơn tự lên cho khách giảm cân): KHÔNG gọi AI; resolver lấy món đầu mỗi pool đã xáo → mỗi ngày một khác, 0 đồng
+  if (!local) try {
     const prompt = buildPromptV3(plan, { style, dayType, avoidRecent: avoidFoods || [] });
     const text = await callAI(prompt, { provider: prov, model: mdl });
     answers = parseSlotJSON(text);
@@ -664,9 +665,9 @@ async function generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFood
   return normMeals;
 }
 
-async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, avoidPatternNames, appSettings, provider, model }) {
+async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, prefs, avoidFoods, avoidPatternNames, appSettings, provider, model, local = false }) {
   const access = getAIMenuAccess(profile, appSettings);
-  if (!access.usable) {
+  if (!local && !access.usable) {
     return {
       ok: false,
       error: !access.enabled
@@ -689,7 +690,7 @@ async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, p
   // ===== SLOT MODE (V3): code quyết cấu trúc, AI chỉ chọn món =====
   if (USE_SLOT_MODE) {
     try {
-      const normMeals = await generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, goal: goalType, prov, mdl });
+      const normMeals = await generateMenuSlotMode({ target, dayType, mealIds, prefs, avoidFoods, diet, goal: goalType, prov, mdl, local });
       if (normMeals && normMeals.length > 0) {
         const avoidSet = new Set([...(avoidFoods || []).map(s => (s || "").toLowerCase().trim()), ...buildExclusionKeys(prefs?.avoid)]); // món vừa ăn + món dị ứng/kiêng (cả món độn thêm)
         const styleId = prefs?.style || null;
@@ -734,6 +735,8 @@ async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, p
       return { ok: false, error: "Chưa tạo được thực đơn. Bấm Thử lại nhé." };
     }
   }
+
+  if (local) return { ok: false, error: "Chưa lên được thực đơn. Thử lại nhé." }; // không bao giờ rơi xuống V2 (gọi AI)
 
 
   // Whitelist: code lọc TRƯỚC — AI không thấy được nguyên liệu sai.
@@ -1171,6 +1174,12 @@ export function sanitizeAIMenu(template, { avoidText, target } = {}) {
   const t = Number(target?.cal) || 0;
   const broken = !meals.length || (t > 0 && (cal < t * 0.6 || cal > t * 1.4));
   return { template: out, removed, broken, cal };
+}
+
+// Thực đơn tự lên KHÔNG dùng AI (18/10, bản vẽ 133): cùng khung bữa + máy tính gram như thực đơn AI, chọn món ngẫu nhiên trong kho
+// theo khung (đạm khác nhóm, không trùng rau/canh, tránh món không ăn + món vừa ăn) — mọi gói đều dùng được, không trừ lượt.
+export function generateMenuLocal(args) {
+  return generateMenuAI({ ...args, local: true });
 }
 
 export async function generateMenuAI(args) {
