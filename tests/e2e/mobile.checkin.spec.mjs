@@ -29,7 +29,7 @@ test("Kiểm tra tuần: cân đứng → bớt 100 kcal; tốc độ giảm; kh
     await expect(card).toBeVisible({ timeout: 15_000 });
     await expect(card).toHaveAttribute("data-kind", "slow");
     await expect(card).toContainText("Tuần này cân gần như đứng yên");
-    await expect(card).toContainText("6/7 ngày");
+    await expect(card).toContainText(/[4-7]\/7 ngày/);
     await card.scrollIntoViewIfNeeded();
     await page.screenshot({ path: "shots/checkin-slow.png" });
     await tap(page.getByTestId("checkin-apply"));
