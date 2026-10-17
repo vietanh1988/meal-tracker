@@ -19,3 +19,9 @@ test("đăng xuất xoá khoá của user (cả khoá cũ chung), giữ khoá kh
   assert.deepEqual([...s._m.keys()].sort(), ["fipilot_version", "fp_cup_ml"]);
   assert.ok(USER_KEYS.includes("fp_menu_prefs"));
 });
+
+test("đăng xuất xoá tab đang mở — tài khoản sau vào Hôm nay (18/10)", () => {
+  const s = fakeStorage({ "fp_mtab": "me", "fp_act_ask": "2026-10-18", "fp_cup_ml": "250" });
+  clearUserStore(s);
+  assert.deepEqual([...s._m.keys()], ["fp_cup_ml"]);
+});

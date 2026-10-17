@@ -123,7 +123,7 @@ export default function App(){
   const needsOnboarding=userDataLoaded && !profileLoading && !weightLoading && !!profile?._loaded && !profile.onboardingDone && (!weightLog || weightLog.length===0);
   // 17/10: user mới (hồ sơ chưa xong onboarding) mà dữ liệu ngày / cân còn đang tải → giữ màn chờ, không nháy app chính rồi mới sang onboarding
   if(!!profile?._loaded && !profile.onboardingDone && (!userDataLoaded || weightLoading)) return splash;
-  if(needsOnboarding) return inFrame(<OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>{}} appSettings={appSettings} user={user} saveWeeklyTemplate={saveWeeklyTemplate} applyTemplate={applyTemplate} getMealHistory={getMealHistory}/>);
+  if(needsOnboarding) return inFrame(<OnboardingWizard profile={profile} setProfile={wrappedSetProfile} onComplete={()=>{try{localStorage.setItem("fp_mtab","today");}catch(e){/* */}}} appSettings={appSettings} user={user} saveWeeklyTemplate={saveWeeklyTemplate} applyTemplate={applyTemplate} getMealHistory={getMealHistory}/>);
 
   const mobileApp=<MobileApp user={user} profile={profile} setProfile={wrappedSetProfile} macro={macro} appSettings={appSettings} isAdmin={isAdmin} saveSetting={saveSetting} signOut={signOut} isOffline={isOffline} macroBanner={macroBanner}
     weightLog={weightLog} addWeight={addWeight} updateWeight={updateWeight} deleteWeight={deleteWeight} resetWeights={resetWeights} setWeightLog={setWeightLog} ud={ud}/>;
