@@ -101,7 +101,7 @@ function StatCard({ icon, label, value, children }) {
 }
 
 // planCard (bản vẽ 128): khách không tập → ô thứ 3 bỏ 'Ngày tập / Ngày nghỉ', thay bằng kế hoạch (VD Giảm 0,4 kg/tuần · còn 7 kg)
-export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine, planCard, dayDone }) {
+export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine, planCard, goalSub, dayDone }) {
   const [y, m] = date.split("-");
   const remain = targets.cal - eaten.cal;
   const pct = targets.cal > 0 ? Math.min(100, Math.round((eaten.cal / targets.cal) * 100)) : 0;
@@ -142,7 +142,9 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 12 }}>
         <Ring remain={remain} eaten={eaten.cal} target={targets.cal} />
         <div style={{ flex: 1, height: 136, display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-          <StatCard icon={ICON.goal} label="Mục tiêu" value={`${fmtInt(targets.cal)} kcal`} />
+          <StatCard icon={ICON.goal} label="Mục tiêu" value={`${fmtInt(targets.cal)} kcal`}>
+            {goalSub && <span data-testid="goal-sub" style={{ fontSize: 10, opacity: 0.78, whiteSpace: "nowrap" }}>{goalSub}</span>}
+          </StatCard>
           <StatCard icon={ICON.eaten} label="Đã ăn" value={<span data-testid="kcal-eaten" data-value={eaten.cal}>{fmtInt(eaten.cal)} kcal</span>}>
             <span style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.18)", overflow: "hidden", display: "block" }}>
               <span style={{ display: "block", width: `${Math.max(pct ? 3 : 0, pct)}%`, height: 5, borderRadius: 3, background: remain < 0 ? "#FACC15" : "linear-gradient(90deg,#3FD0FF,#BFF4FF)", boxShadow: "0 0 6px rgba(80,210,255,0.85)", transition: "width .4s" }} />

@@ -35,7 +35,7 @@ export function WeeklyCheckCard({ check, target, onAct }) {
   let tone, title, body, stats, btns;
   if (c.kind === "nodata") {
     tone = "info"; title = "Chưa đủ dữ liệu để chỉnh";
-    body = <>Tuần này mới ghi bữa <b>{c.mealDays}/7 ngày</b> và cân <b>{c.weighCount} lần</b> trong 2 tuần. Ghi ít nhất 4 ngày và cân mỗi tuần 1 lần thì app mới biết nên ăn thêm hay bớt — chưa vội cắt calo nhé.</>;
+    body = <>Tuần này mới ghi bữa <b>{c.mealDays}/7 ngày</b> và cân <b>{c.weighCount} lần</b> trong 2 tuần. Ghi ít nhất 4 ngày và cân mỗi tuần 1 lần thì app mới biết nên ăn thêm hay bớt — chưa vội chỉnh calo nhé.</>;
     stats = [{ k: "Cân (2 tuần)", v: `${c.weighCount} lần`, c: c.weighCount >= 2 ? GREEN : ORANGE }, meals];
     btns = <><Btn testid="checkin-later" onClick={() => onAct("dismiss")}>Để sau</Btn><Btn testid="checkin-weigh" primary onClick={() => onAct("weigh")}>Cân hôm nay</Btn></>;
   } else if (c.kind === "waist") {
@@ -50,6 +50,26 @@ export function WeeklyCheckCard({ check, target, onAct }) {
       ? <>Bạn chọn giảm <b>{kgW(c.target)}</b> nhưng 2 tuần qua {lossTxt} dù ghi bữa đều. Thử bớt <b>100 kcal/ngày</b> (khoảng nửa chén cơm) — mục tiêu mới {fmtInt(target - 100)} kcal.</>
       : <>2 tuần qua {lossTxt}, nhưng mức ăn đã ở mức thấp nhất app cho phép — <b>đừng cắt thêm</b>. Đi bộ thêm 30 phút mỗi ngày và ghi bữa thật đủ (cả đồ uống, nước chấm) để giảm tiếp.</>;
     stats = [kgStat, meals, goalStat];
+    btns = c.delta
+      ? <><Btn testid="checkin-keep" onClick={() => onAct("keep")}>Giữ như cũ</Btn><Btn testid="checkin-apply" primary onClick={() => onAct("apply")}>Bớt 100 kcal</Btn></>
+      : <Btn testid="checkin-ok" onClick={() => onAct("dismiss")}>Đã hiểu</Btn>;
+  } else if (c.kind === "bulk_slow") {
+    // Bản vẽ 129a: tăng cơ mà cân chưa tăng
+    tone = "warn"; title = "Tuần này cân chưa tăng";
+    const gTxt = c.gain > 0.01 ? `chỉ tăng ${kgW(c.gain)}` : "chưa tăng";
+    body = c.delta
+      ? <>Bạn đang tăng cơ nhưng 2 tuần qua {gTxt} dù ghi bữa đều — thường do vận động thêm (đi bộ, đá bóng…) hoặc ăn thiếu ở bữa không ghi. Thêm <b>100 kcal/ngày</b> (1 quả chuối + 1 hộp sữa chua) — mục tiêu mới {fmtInt(target + 100)} kcal.</>
+      : <>2 tuần qua {gTxt}, mức ăn đã cộng tối đa. Ghi đủ mọi bữa (cả bữa phụ, đồ uống) và ghi phần vận động thêm ở Hôm nay để app tính đúng.</>;
+    stats = [kgStat, meals, { k: "Mục tiêu", v: `+${kgW(c.target || 0)}` }];
+    btns = c.delta
+      ? <><Btn testid="checkin-keep" onClick={() => onAct("keep")}>Giữ như cũ</Btn><Btn testid="checkin-apply" primary onClick={() => onAct("apply")}>Thêm 100 kcal</Btn></>
+      : <Btn testid="checkin-ok" onClick={() => onAct("dismiss")}>Đã hiểu</Btn>;
+  } else if (c.kind === "bulk_fast") {
+    // Bản vẽ 129b: tăng quá nhanh (hoặc eo to thêm) → dễ tích mỡ
+    tone = "warn"; title = "Tăng hơi nhanh";
+    const waistUp = c.waistFrom != null && c.waistTo - c.waistFrom >= 1;
+    body = <>2 tuần qua tăng <b>{kgW(c.gain)}</b>{waistUp ? ` và eo to thêm ${fmtDec(c.waistTo - c.waistFrom)} cm` : ""} — nhanh hơn mức cơ tăng được (khoảng {kgW(c.target)}), phần dư dễ thành mỡ bụng.{c.delta ? <> Bớt <b>100 kcal/ngày</b> (khoảng nửa chén cơm).</> : " Giữ mức ăn hiện tại, đừng ăn thêm."}</>;
+    stats = [kgStat, c.waistFrom != null ? { k: "Eo", v: `${fmtDec(c.waistFrom)} → ${fmtDec(c.waistTo)} cm`, c: waistUp ? ORANGE : "#0F172A" } : meals, { k: "Mục tiêu", v: `+${kgW(c.target || 0)}` }];
     btns = c.delta
       ? <><Btn testid="checkin-keep" onClick={() => onAct("keep")}>Giữ như cũ</Btn><Btn testid="checkin-apply" primary onClick={() => onAct("apply")}>Bớt 100 kcal</Btn></>
       : <Btn testid="checkin-ok" onClick={() => onAct("dismiss")}>Đã hiểu</Btn>;

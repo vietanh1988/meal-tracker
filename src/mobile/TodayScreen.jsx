@@ -32,11 +32,12 @@ export function TodayScreen(p) {
 
   return (
     <div data-testid="today-body" style={{ minHeight: "100%" }}>
-      <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} planCard={p.planCard} dayDone={date < today || allEaten} />
+      <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} planCard={p.planCard} goalSub={p.goalSub} dayDone={date < today || allEaten} />
 
       {p.banner}
       {isToday && p.checkin}
       {isToday && p.walkTip}
+      {isToday && p.activity}
 
       {/* ===== Thẻ bữa đang đến giờ ===== */}
       {focus && <FocusCard r={focus} {...p} />}
@@ -49,6 +50,8 @@ export function TodayScreen(p) {
           </span>
         </div>
       )}
+
+      {allEaten && p.snack}
 
       {/* ===== Bữa ăn ===== */}
       <div style={secHead}>
@@ -114,7 +117,7 @@ function IconTile({ testid, bg, icon, label, onClick }) {
   );
 }
 const SUG_SRC = { history: ["Đã ăn", "#047857", "rgba(5,150,105,0.12)"], template: ["Mẫu", "#0062F0", "#EEF4FF"], ai: ["AI", "#6D28D9", "#F3EEFF"] };
-function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, onAskAI }) {
+function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, onAskAI, focusBonus }) {
   const planned = r.state === "planned";
   const sug = !planned && suggestInfo ? suggestInfo(r.id) : { n: 0, best: null };
   const nSug = sug.n || 0;
@@ -141,6 +144,7 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSu
             <span style={{ fontSize: 19, fontWeight: 900 }}>{planned ? `${r.name} · ${fmtInt(r.cal)} kcal` : `${r.name} hôm nay ăn gì?`}</span>
           </span>
         </div>
+        {focusBonus && !planned && <span data-testid="focus-bonus" style={{ marginTop: -4, borderRadius: 12, background: "#ECFDF5", padding: "8px 12px", fontSize: 13, color: "#047857", fontWeight: 700, lineHeight: 1.45 }}>{focusBonus}</span>}
         {planned && (
           <button data-testid="focus-foods" onClick={() => onEdit(r.id)} className="tap" style={{ ...soft, boxShadow: LT.inset, display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, color: "#475569", textAlign: "left" }}>
             <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.items.map(itemName).join(", ")}</span>

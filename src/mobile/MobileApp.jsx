@@ -50,6 +50,9 @@ import { PlusMenu } from "./PlusMenu";
 import { calcMacro } from "../calcMacro";
 import { weeklyCheck, nextOffset } from "../lib/weeklyCheck";
 import { WeeklyCheckCard, WalkTipCard } from "./WeeklyCheckCard";
+import { ActivityRow, ActivitySheet, SnackCard } from "./ActivitySheet";
+import { useActivityLog } from "../hooks/useActivityLog";
+import { dayBurn, activityBonus, withBonus, bonusTip, actOf } from "../lib/activity";
 import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
 import PWAInstallPrompt from "../PWAInstallPrompt";
 import { useNotifications } from "../hooks/useNotifications";
@@ -83,6 +86,10 @@ export function MobileApp(props) {
   useEffect(() => { if (loggedToday && !hasLogged) { setHasLogged(true); try { localStorage.setItem("fp_has_logged", "1"); } catch (e) { /* */ } } }, [loggedToday, hasLogged]);
   // Số đo cơ thể (bảng body_measurements, 17/10)
   const { measures, saveMeasure, deleteMeasure } = useBodyMeasure(user?.id);
+  // Vận động thêm trong ngày (bản vẽ 130, 17/10): cộng vào mục tiêu của đúng ngày đó theo mục tiêu (lib/activity.js)
+  const { activityByDate, saveActivity } = useActivityLog(user?.id);
+  const bonusOf = (d) => activityBonus(dayBurn(activityByDate[d]), macro.goal);
+  const macroFor = (d) => withBonus(macro, bonusOf(d));
   const calcFoodCache = useMemo(() => ({ ...(myFoods || {}), ...(myPending || {}), ...(ud.foodCache || {}) }), [myFoods, myPending, ud.foodCache]);
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "bạn";
 
@@ -165,7 +172,7 @@ export function MobileApp(props) {
   const idsFor = (d) => timelineIds(dayOf(d), visibleMealIds(mealConfig, dayTypeOf(profile, d), profile.exerciseType, DEFAULT_MEAL_CONFIG));
   const day = dayOf(date);
   const dayType = dayTypeOf(profile, date);
-  const targets = targetsOf(macro, dayType);
+  const targets = targetsOf(macroFor(date), dayType);
   const rows = mealRows(day, idsFor(date), profile.mealTimes, now.minutes, date === today, date < today);
   const eaten = eatenOfDay(day);
   const weight = weightSummary(weightLog, profile.goalKg, profile.kg, today);
@@ -185,9 +192,10 @@ export function MobileApp(props) {
     const avoidText = (readUser("fp_menu_prefs", user?.id, {}) || {}).avoid || "";
     const cur = (mealOf(dayOf(d), mealId) || {}).items || [];
     const dayMeals = (dayOf(d) || {}).meals || [];
-    const rt = remainingMealTarget({ macro, dayType: dt, mealIds: idsFor(d), mealId, dayMeals });
+    const md = macroFor(d);
+    const rt = remainingMealTarget({ macro: md, dayType: dt, mealIds: idsFor(d), mealId, dayMeals });
     const list = mealSuggestions({ dayMeals,
-      mealId, mealIds: idsFor(d), macro, dayType: dt,
+      mealId, mealIds: idsFor(d), macro: md, dayType: dt,
       history: historyMeals.filter((h) => h.log_date !== d),
       templates: flags.template_library ? libraryFor(ud.defaultTemplates, { goal: macro?.goal, dietStrategy: macro?.dietStrategy, dayType: dt }) : [],
       aiMenus: aiMenusS, avoidKeys: buildExclusionKeys(avoidText), isAvoided: avoidMatcher(avoidText), currentItems: cur, limit: 5,
@@ -203,8 +211,8 @@ export function MobileApp(props) {
   }, [weekRows, ud.todayLog, today]);
 
   // Thẻ "Tuần này" ở Hôm nay (tuần của ngày đang xem)
-  const week = useMemo(() => weekCard(weekRows, ud.todayLog, weekDates(date), today, (d) => targetsOf(macro, dayTypeOf(profile, d)).cal),
-    [weekRows, ud.todayLog, date, today, macro, profile]);
+  const week = useMemo(() => weekCard(weekRows, ud.todayLog, weekDates(date), today, (d) => targetsOf(macroFor(d), dayTypeOf(profile, d)).cal),
+    [weekRows, ud.todayLog, date, today, macro, profile, activityByDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------- thông báo nhỏ ----------
   const [toast, setToast] = useState(null);
@@ -347,7 +355,7 @@ export function MobileApp(props) {
     try {
       const dt = dayTypeOf(profile, today);
       const ids = visibleMealIds(mealConfig, dt, profile.exerciseType, DEFAULT_MEAL_CONFIG);
-      return { target: targetsOf(macro, dt).cal, eatenCal: eatenOfDay(ud.todayLog).cal, goal: macro.goal, proteinTarget: macro.protein, dayType: dt, visibleMealIds: ids, mealTimes: profile.mealTimes || null };
+      return { target: targetsOf(macroFor(today), dt).cal, eatenCal: eatenOfDay(ud.todayLog).cal, goal: macro.goal, proteinTarget: macro.protein, dayType: dt, visibleMealIds: ids, mealTimes: profile.mealTimes || null };
     } catch (e) { return null; }
   })();
 
@@ -680,7 +688,7 @@ export function MobileApp(props) {
     setCheckinLocal(today);
     const patch = { checkinDate: today };
     if (act === "apply" && check?.delta) {
-      patch.calOffset = nextOffset(macro.calOffset, check.delta);
+      patch.calOffset = nextOffset(macro.calOffset, check.delta, macro.goal);
       patch.calOffsetDate = today;
       showToast({ text: `Đã ${check.delta < 0 ? "bớt" : "thêm"} 100 kcal/ngày — mục tiêu mới ${fmtInt(targets.cal + check.delta)} kcal. Đổi lại ở Tôi › Mục tiêu.` });
     }
@@ -702,6 +710,25 @@ export function MobileApp(props) {
   const planCard = !noEx ? null : macro.goal === "cut"
     ? { value: `Giảm ${fmtDec(Math.round((macro.kgWeek || 0) * 10) / 10)} kg/tuần`, sub: leftKg > 0 ? `còn ${fmtDec(leftKg)} kg` : "Đã tới cân mục tiêu" }
     : { value: "Giữ cân", sub: "Không tập" };
+
+  // Vận động thêm hôm nay (bản vẽ 130a–c)
+  const actToday = activityByDate[today] || [];
+  const bonusToday = bonusOf(today);
+  const clearActivity = async () => {
+    if (!(await appConfirm("Xoá phần vận động thêm hôm nay? Mục tiêu calo trở lại như cũ.", { title: "Xoá vận động?", confirmText: "Xoá", danger: true }))) return;
+    await saveActivity(today, []);
+  };
+  const activityRow = <ActivityRow items={actToday} goal={macro.goal} onOpen={() => openLayer({ type: "activity" })} onClear={clearActivity} />;
+  const actLabel = actToday.length ? actOf(actToday[actToday.length - 1].type).label.toLowerCase() : "";
+  const focusBonus = bonusToday > 0 ? `+${fmtInt(bonusToday)} kcal vì ${actToday.length > 1 ? "vận động thêm" : actLabel} — ${bonusTip(bonusToday)}` : null;
+  const bDate = bonusOf(date);
+  const goalSub = bDate > 0 ? `${fmtInt(targets.cal - bDate)} + ${fmtInt(bDate)} vận động` : null;
+  const [snackSkip, setSnackSkip] = useState(() => readUser("fp_snack_skip", user?.id, null));
+  const allEatenToday = date === today && rows.length > 0 && rows.every((r) => r.state === "eaten");
+  const snackRemain = targets.cal - eaten.cal;
+  const snackCard = allEatenToday && bonusToday > 0 && macro.goal !== "cut" && snackRemain >= 100 && now.minutes < 22 * 60 && snackSkip !== today
+    ? <SnackCard remain={snackRemain} onPick={(sn) => putItems(today, "toi", sn.items, false, sn.name.toLowerCase())} onSkip={() => { writeUser("fp_snack_skip", user?.id, today); setSnackSkip(today); }} />
+    : null;
 
   return (
     <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : LT.base, color: "#0F172A", minHeight: "100vh" }}>
@@ -726,6 +753,7 @@ export function MobileApp(props) {
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}
             checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}
+            activity={activityRow} snack={snackCard} focusBonus={focusBonus} goalSub={goalSub}
             week={week} onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
@@ -743,7 +771,7 @@ export function MobileApp(props) {
         {tab === "progress" && (
           <ProgressScreen initialSeg={progressSeg.seg} segNonce={progressSeg.n}
             range={{ mode: rangeMode, setMode: setRangeMode, anchor: rangeAnchor, setAnchor: setRangeAnchor, today }}
-            getDailyLogs={ud.getDailyLogs} dataVersion={version} targetOf={(d) => targetsOf(macro, dayTypeOf(profile, d)).cal} lineCal={Math.round(macro.calTarget)} openDay={openDay} onLog={() => openLog(null, today)}
+            getDailyLogs={ud.getDailyLogs} dataVersion={version} targetOf={(d) => targetsOf(macroFor(d), dayTypeOf(profile, d)).cal} lineCal={Math.round(macro.calTarget)} openDay={openDay} onLog={() => openLog(null, today)}
             weightLog={weightLog} weight={weight} profile={profile} setProfile={setProfile} addWeight={addWeight} updateWeight={updateWeight} deleteWeight={deleteWeight}
             measures={measures} onMeasure={(d) => openLayer({ type: "measure", date: d })} onOpenReminders={() => openLayer({ type: "page", sec: "reminders" })} />
         )}
@@ -785,7 +813,7 @@ export function MobileApp(props) {
           )}
           {l.type === "calc" && (
             <CalcCheckScreen initialText={l.text} autoRun={l.auto} foodCache={calcFoodCache} frequent={frequent} aiEnabled={!!flags.ai_macro} userId={user?.id} appSettings={appSettings}
-              dayInfo={{ target: targetsOf(macro, dayTypeOf(profile, l.date)).cal, eaten: eatenOfDay(dayOf(l.date)).cal }}
+              dayInfo={{ target: targetsOf(macroFor(l.date), dayTypeOf(profile, l.date)).cal, eaten: eatenOfDay(dayOf(l.date)).cal }}
               mealIds={idsFor(l.date).length ? idsFor(l.date) : ["sang", "trua", "toi"]} initialMeal={l.mealId} date={l.date} dateOptions={dateOptions.some((o) => o.value === l.date) ? dateOptions : [{ value: l.date, label: fmtVN(l.date) }, ...dateOptions]}
               savePending={savePendingFoodCache} saveMine={saveMyFoods} onClose={closeLayer}
               pickTitle={l.pick ? MEAL_NAMES[l.mealId] : null} viewFirst={!!l.viewFirst}
@@ -794,6 +822,8 @@ export function MobileApp(props) {
                 ? (d, mealId, items) => { setPendingPick({ items, n: Date.now() }); return true; }
                 : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
           )}
+          {l.type === "activity" && <ActivitySheet kg={weight.curKg || profile.kg} goal={macro.goal} items={actToday} baseTarget={targetsOf(macro, dayTypeOf(profile, today)).cal}
+            onSave={(list) => saveActivity(today, list)} onClose={closeLayer} />}
           {l.type === "measure" && <MeasureSheet today={today} date={l.date} rows={measures || []} gender={profile.gender}
             onSave={async (d, v) => { const ok = await saveMeasure(d, v); showToast({ text: ok ? "Đã lưu số đo" : "Chưa lưu được số đo — kiểm tra mạng rồi thử lại." }); return ok; }}
             onDelete={async (d) => { const ok = await deleteMeasure(d); if (ok) showToast({ text: "Đã xoá lần đo" }); return ok; }} onClose={closeLayer} />}

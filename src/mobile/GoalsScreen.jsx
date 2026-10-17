@@ -123,11 +123,12 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
     : m.directionMismatch ? { bad: true, text: "Cân mục tiêu cao hơn cân hiện tại — sửa lại cân mục tiêu hoặc đổi mục tiêu." }
     : !m.etaWeeks ? { bad: false, text: "Đã tới cân mục tiêu — chuyển sang Duy trì để giữ cân." }
     : { bad: false, text: `Đạt ${fmtDec(p.goalKg)} kg vào khoảng ${etaMonth(m.etaWeeks)} (≈ ${m.etaWeeks} tuần) · bớt ${fmtInt(m.deficit)} kcal/ngày · an toàn, giữ cơ` };
-  const offset = isCut ? Number(p.calOffset) || 0 : 0;
-  const sOff = (v) => `${v > 0 ? "+" : "−"}${fmtInt(Math.abs(v))}`;
+  const offset = isCut || (m.goal || goal) === "bulk" ? Number(m.calOffset) || 0 : 0;
+  const sOff = (v) => (v === 0 ? "±0" : `${v > 0 ? "+" : "−"}${fmtInt(Math.abs(v))}`);
   const gym = noEx ? "Không tập" : (p.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
 
-  const pickGoal = (g) => { const up = { goalType: g }; if (g !== "cut") up.dietStrategy = "balanced"; save(up); };
+  // Đổi mục tiêu → điều chỉnh tuần về 0 (bản vẽ 129c)
+  const pickGoal = (g) => { const up = { goalType: g, calOffset: 0, calOffsetDate: null }; if (g !== "cut") up.dietStrategy = "balanced"; save(up); };
   const pickExercise = (e) => {
     const up = { exerciseType: e };
     if (e === "none") { up.frequency = undefined; if (goal === "bulk") { up.goalType = "maintain"; up.dietStrategy = "balanced"; } }
@@ -152,7 +153,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
         <div style={{ gridColumn: "1 / -1", borderTop: `1px solid ${DK.line}`, paddingTop: 10, fontSize: 12, fontWeight: 600, color: DK.t2 }}>
           {(m.goal || goal) === "cut"
             ? `TDEE ${fmtInt(m.tdee)} kcal · bớt ${fmtInt(m.deficit - (m.calOffset || 0))} kcal/ngày · BMI ${fmtDec(m.bmi)}`
-            : `TDEE ${fmtInt(m.tdee)} kcal · BMI ${fmtDec(m.bmi)} · ${GOAL_NAME[m.goal || goal]} ${ADJUST[m.goal || goal]}`}
+            : (m.goal || goal) === "bulk" && m.calOffset ? `TDEE ${fmtInt(m.tdee)} kcal · BMI ${fmtDec(m.bmi)} · Tăng cơ ${sOff(250 + m.calOffset)} (+250 · ${sOff(m.calOffset)} kiểm tra tuần)` : `TDEE ${fmtInt(m.tdee)} kcal · BMI ${fmtDec(m.bmi)} · ${GOAL_NAME[m.goal || goal]} ${ADJUST[m.goal || goal]}`}
         </div>
         {m.floorApplied && <div data-testid="goals-floor" style={{ gridColumn: "1 / -1", fontSize: 12, fontWeight: 600, background: "rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 10px" }}>Đã nâng lên mức tối thiểu an toàn {fmtInt(m.calFloor)} kcal/ngày khi giảm mỡ.</div>}
       </div>

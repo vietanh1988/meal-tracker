@@ -51,12 +51,17 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   let calAdjust=calAdjustTable[effectiveGoal]||0;
   const pace=PACE_PCT[p.cutPace]?p.cutPace:"mid";
   let kgWeek=null,deficit=0,etaWeeks=null;
-  const calOffset=effectiveGoal==="cut"?Math.max(-300,Math.min(300,Math.round(Number(p.calOffset)||0))):0;
+  // Điều chỉnh tuần: giảm mỡ −300…+300; tăng cơ −250…+300 (không ăn dưới TDEE) — bản vẽ 129
+  const calOffset=effectiveGoal==="cut"?Math.max(-300,Math.min(300,Math.round(Number(p.calOffset)||0)))
+    :effectiveGoal==="bulk"?Math.max(-250,Math.min(300,Math.round(Number(p.calOffset)||0))):0;
   if(effectiveGoal==="cut"){
     kgWeek=Math.round(p.kg*PACE_PCT[pace]*100)/100;
     deficit=Math.min(Math.round(kgWeek*1100/10)*10,Math.round(tdee*0.25/10)*10);
     calAdjust=-deficit+calOffset;
     etaWeeks=diff<0&&kgWeek>0?Math.ceil(Math.abs(diff)/kgWeek):null;
+  }else if(effectiveGoal==="bulk"){
+    calAdjust=250+calOffset;
+    kgWeek=Math.round(calAdjust*7/7700*100)/100; // mức tăng mong đợi (kiểm tra tuần so với số này)
   }
   const calTarget=tdee+calAdjust;
   // C = phần calo còn lại (chế độ Cân bằng)

@@ -1,5 +1,5 @@
 // Thẻ "Kiểm tra tuần" ở Hôm nay (bản vẽ 127a–d, 17/10) — hàm thuần, có test (tests/weekly-check.test.mjs).
-// Chỉ khách Giảm mỡ. Mỗi tuần (T2–CN) tối đa 1 lần; khách đã bấm (giữ / bớt / thêm / ×) thì ẩn tới tuần sau.
+// Khách Giảm mỡ + Tăng cơ (129a–b, 17/10). Mỗi tuần (T2–CN) tối đa 1 lần; khách đã bấm (giữ / bớt / thêm / ×) thì ẩn tới tuần sau.
 // Lần đầu: khi dữ liệu cũ nhất (lần cân / ngày ghi bữa) đã ≥ 7 ngày.
 // So tốc độ giảm thật (đường xu hướng các lần cân trong 14 ngày) với tốc độ đã chọn (macro.kgWeek):
 //   chưa đủ dữ liệu (< 2 lần cân cách ≥ 7 ngày, hoặc ghi bữa < 4/7 ngày) → "nodata" (127d)
@@ -11,6 +11,7 @@ import { addDays, diffDays, weekRange } from "./dateVN.js";
 export const STEP = 100;
 export const OFFSET_MIN = -300;
 export const OFFSET_MAX = 300;
+export const BULK_MIN = -250; // tăng cơ: không bớt dưới TDEE (+250 − 250 = 0)
 
 const dOf = (r) => String(r?.logged_date || r?.log_date || "").slice(0, 10);
 
@@ -26,7 +27,7 @@ function slopePerDay(pts) {
 
 // Đến lượt hiện thẻ chưa (không xét dữ liệu cân/ăn)
 export function checkinDue({ today, goal, checkinDate, firstDate }) {
-  if (goal !== "cut") return false;
+  if (goal !== "cut" && goal !== "bulk") return false;
   if (checkinDate) {
     if (checkinDate >= weekRange(today).start) return false; // tuần này đã xử lý
     if (diffDays(checkinDate, today) < 5) return false;       // vừa xử lý cuối tuần trước → để tuần sau nữa
@@ -56,8 +57,19 @@ export function weeklyCheck({ today, goal, kgWeek, curKg, weightLog = [], dayRow
   const kg = Number(curKg) || Number(win[win.length - 1].kg);
   const stats = { ...base, loss, target, kgFrom: Number(win[0].kg), kgTo: Number(win[win.length - 1].kg) };
 
+  const wm = (measures || []).filter((r) => r.waist != null && dOf(r) >= from).sort((a, b) => dOf(a).localeCompare(dOf(b)));
+  const waistDiff = wm.length >= 2 ? Number(wm[wm.length - 1].waist) - Number(wm[0].waist) : null;
+  // Tăng cơ (bản vẽ 129a–b): mức mong đợi = (250 + điều chỉnh) × 7 / 7.700 kg/tuần (macro.kgWeek)
+  if (goal === "bulk") {
+    const gain = -loss;
+    const bstats = { ...stats, gain, ...(waistDiff != null ? { waistFrom: Number(wm[0].waist), waistTo: Number(wm[wm.length - 1].waist) } : {}) };
+    if (gain < target / 2) return { kind: "bulk_slow", ...bstats, delta: calOffset + STEP <= OFFSET_MAX ? STEP : 0 };
+    if (gain > Math.max(target * 2, 0.5) || (gain > 0 && waistDiff != null && waistDiff >= 1)) {
+      return { kind: "bulk_fast", ...bstats, delta: calOffset - STEP >= BULK_MIN ? -STEP : 0 };
+    }
+    return null;
+  }
   if (loss < target / 2) {
-    const wm = (measures || []).filter((r) => r.waist != null && dOf(r) >= from).sort((a, b) => dOf(a).localeCompare(dOf(b)));
     if (wm.length >= 2 && Number(wm[wm.length - 1].waist) - Number(wm[0].waist) <= -1) {
       return { kind: "waist", ...stats, waistFrom: Number(wm[0].waist), waistTo: Number(wm[wm.length - 1].waist) };
     }
@@ -71,4 +83,4 @@ export function weeklyCheck({ today, goal, kgWeek, curKg, weightLog = [], dayRow
 }
 
 // Điều chỉnh mới sau khi khách bấm Bớt / Thêm (kẹp trong khoảng cho phép)
-export const nextOffset = (cur, delta) => Math.max(OFFSET_MIN, Math.min(OFFSET_MAX, (Number(cur) || 0) + delta));
+export const nextOffset = (cur, delta, goal = "cut") => Math.max(goal === "bulk" ? BULK_MIN : OFFSET_MIN, Math.min(OFFSET_MAX, (Number(cur) || 0) + delta));

@@ -77,3 +77,11 @@ test("tốc độ giảm: chậm < vừa < nhanh, calo bớt = kg/tuần × 1.10
   const b = calcMacro({ ...base, goalKg: 90, goalType: "bulk", exerciseType: "gym" });
   assert.equal(b.calTargetRaw - b.tdee, 250);
 });
+
+test("tăng cơ: điều chỉnh tuần −250…+300, kgWeek = (250 + điều chỉnh) × 7 / 7.700", () => {
+  const base = { cm: 172, kg: 65, birthYear: 1995, goalKg: 70, goalType: "bulk", months: 6, gender: "male", exerciseType: "gym" };
+  const a = calcMacro(base), b = calcMacro({ ...base, calOffset: 100 });
+  assert.equal(b.calTargetRaw - a.calTargetRaw, 100);
+  assert.equal(a.kgWeek, 0.23);
+  assert.equal(calcMacro({ ...base, calOffset: -900 }).calOffset, -250);
+});

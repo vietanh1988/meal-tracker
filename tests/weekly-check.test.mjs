@@ -9,8 +9,8 @@ const W = (pairs) => pairs.map(([d, kg]) => ({ logged_date: addDays(today, -d), 
 const days = (n) => Array.from({ length: n }, (_, i) => ({ log_date: addDays(today, -(i + 1)), eaten_meals: ["sang"] }));
 const base = { today, goal: "cut", kgWeek: 0.4, curKg: 85, dayRows: days(7) };
 
-test("chỉ khách giảm mỡ, 1 lần / tuần, lần đầu sau 7 ngày", () => {
-  assert.equal(checkinDue({ today, goal: "bulk", firstDate: "2026-01-01" }), false);
+test("chỉ giảm mỡ + tăng cơ, 1 lần / tuần, lần đầu sau 7 ngày", () => {
+  assert.equal(checkinDue({ today, goal: "maintain", firstDate: "2026-01-01" }), false);
   assert.equal(checkinDue({ today, goal: "cut", firstDate: addDays(today, -3) }), false);
   assert.equal(checkinDue({ today, goal: "cut", firstDate: addDays(today, -7) }), true);
   assert.equal(checkinDue({ today, goal: "cut", checkinDate: today, firstDate: "2026-01-01" }), false);
@@ -53,4 +53,20 @@ test("127c: giảm quá nhanh → thêm 100 kcal; đúng tốc độ → không 
 test("nextOffset kẹp trong −300…+300", () => {
   assert.equal(nextOffset(-250, -100), -300);
   assert.equal(nextOffset(0, 100), 100);
+});
+
+test("129a–b tăng cơ: chưa tăng → +100; tăng nhanh hoặc eo to → −100; đúng tốc độ → không hiện", () => {
+  const b = { ...base, goal: "bulk", kgWeek: 0.23, curKg: 65 };
+  const slow = weeklyCheck({ ...b, weightLog: W([[13, 65.0], [0, 65.1]]) });
+  assert.equal(slow.kind, "bulk_slow");
+  assert.equal(slow.delta, 100);
+  assert.equal(weeklyCheck({ ...b, calOffset: 300, weightLog: W([[13, 65.0], [0, 65.1]]) }).delta, 0);
+  const fast = weeklyCheck({ ...b, weightLog: W([[13, 65.0], [0, 66.4]]) });
+  assert.equal(fast.kind, "bulk_fast");
+  assert.equal(fast.delta, -100);
+  const measures = [{ log_date: addDays(today, -12), waist: 78 }, { log_date: addDays(today, -1), waist: 79.5 }];
+  assert.equal(weeklyCheck({ ...b, measures, weightLog: W([[13, 65.0], [0, 65.4]]) }).kind, "bulk_fast", "eo to thêm ≥ 1 cm");
+  assert.equal(weeklyCheck({ ...b, weightLog: W([[13, 65.0], [0, 65.45]]) }), null);
+  assert.equal(weeklyCheck({ ...b, calOffset: -250, weightLog: W([[13, 65.0], [0, 66.4]]) }).delta, 0, "không bớt dưới TDEE");
+  assert.equal(nextOffset(-200, -100, "bulk"), -250);
 });
