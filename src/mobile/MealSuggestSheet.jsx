@@ -14,7 +14,7 @@ const SRC = { history: ["Đã ăn", GREEN, "rgba(5,150,105,0.12)"], template: ["
 
 const PORTION = [[0.8, "Ít hơn"], [1, "Vừa"], [1.2, "Nhiều hơn"]];
 
-export function MealSuggestSheet({ mealId, mealName, list, target, rt, goal, dayType, avoidText, onPick, onSearch, onClose }) {
+export function MealSuggestSheet({ noEx, mealId, mealName, list, target, rt, goal, dayType, avoidText, onPick, onSearch, onClose }) {
   const [sel, setSel] = useState(list[0]?.id || null);
   const [k, setK] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -37,7 +37,7 @@ export function MealSuggestSheet({ mealId, mealName, list, target, rt, goal, day
         {rt && <span style={pill("#EEF4FF", "#0062F0")}>Còn {fmtInt(Math.max(0, rt.remain.cal))} kcal · {need > 0 ? `thiếu ${fmtInt(need)} g đạm` : "đủ đạm"}</span>}
         {rt && rt.over.f && <span style={pill("#FFF7E6", "#B45309")}>Béo đã vượt · ưu tiên món ít béo</span>}
         {target ? <span style={pill("#F1F5F9", "#334155")}>Bữa này ≈ {fmtInt(target)} kcal</span> : null}
-        <span style={pill("#F1F5F9", "#334155")}>{GOAL[goal] || "Giữ cân"} · {DT[dayType] || "Ngày tập"}</span>
+        <span style={pill("#F1F5F9", "#334155")}>{GOAL[goal] || "Giữ cân"}{noEx ? "" : ` · ${DT[dayType] || "Ngày tập"}`}</span>
         {avoid.length > 0 && <span style={pill("#F3EEFF", "#6D28D9")}>Không ăn: {avoid.slice(0, 2).join(", ")}{avoid.length > 2 ? ` +${avoid.length - 2}` : ""}</span>}
       </div>
       <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>Khẩu phần đã chỉnh theo calo còn lại trong ngày. Chọn xong vẫn sửa được món ở bữa.</span>

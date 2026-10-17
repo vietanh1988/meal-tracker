@@ -51,7 +51,9 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
   const gym = (profile?.exerciseType || "gym") === "none" ? "Không tập" : (profile?.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
   // Tốc độ cần đạt: (mục tiêu − hiện tại) / số tuần của kế hoạch
   const weeks = (Number(profile?.months) || 0) * 4.33;
-  const gPerWeek = weeks > 0 ? Math.round(((Number(weight.goalKg) - Number(weight.curKg)) / weeks) * 1000) : 0;
+  // Giảm mỡ (bản vẽ 126): theo tốc độ đã chọn
+  const gPerWeek = macro?.goal === "cut" && macro?.kgWeek ? -Math.round(macro.kgWeek * 1000)
+    : weeks > 0 ? Math.round(((Number(weight.goalKg) - Number(weight.curKg)) / weeks) * 1000) : 0;
   const goalVal = gPerWeek ? `≈ ${gPerWeek > 0 ? "+" : "−"}${Math.abs(gPerWeek)} g/tuần` : `${fmtInt(macro?.calTarget)} kcal`;
 
   const rem = normalizeReminders(profile?.reminderSettings);
@@ -86,7 +88,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
             {tier !== "free" && <span style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", background: "#FFFFFF", padding: "2px 8px", borderRadius: 999, flexShrink: 0 }}>{TIER[tier] || tier}</span>}
           </span>
           <span style={{ fontSize: 13, color: DK.t2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{GOAL[profile?.goalType] || "Mục tiêu"} · {fmtDec(weight.curKg)} → {fmtDec(weight.goalKg)} kg</span>
-          <span style={{ fontSize: 13, color: DK.t2 }}>{fmtInt(macro?.calTarget)} kcal/ngày tập</span>
+          <span style={{ fontSize: 13, color: DK.t2 }}>{fmtInt(macro?.calTarget)} kcal/{(profile?.exerciseType || "gym") === "none" ? "ngày" : "ngày tập"}</span>
         </span>
         {Icon.chev(16, DK.chev)}
       </button>

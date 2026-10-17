@@ -4,7 +4,7 @@ import { rest, S, blockAI, waitDb } from "./helpers.mjs";
 // Thiết lập lần đầu nền tối (bản vẽ 54–59 + 110–112): ô cơ thể để trống + báo số vô lý, chọn ngày tập T2…CN,
 // chặn mục tiêu ngược hướng, macro 1 dòng ở đầu màn Phong cách ăn → bỏ qua AI → vào Hôm nay, onboarding_done = true.
 // Chạy đầu tiên (tên "aa-onboarding"). Cuối bài trả lại nguyên số đo / lịch tập của user test cho các bài sau.
-const KEEP = "cm,kg,birth_year,goal_kg,goal_type,months,gender,exercise_type,frequency,gym_days,diet_strategy";
+const KEEP = "cm,kg,birth_year,goal_kg,goal_type,months,gender,exercise_type,frequency,gym_days,diet_strategy,cut_pace";
 
 test("Onboarding: nhập số đo, chọn ngày tập, chặn mục tiêu ngược rồi vào app", async ({ browser }) => {
   const s = S();
@@ -70,6 +70,15 @@ test("Onboarding: nhập số đo, chọn ngày tập, chặn mục tiêu ngư�
     await expect(page.getByTestId("onb-goal-err")).toContainText("Giảm mỡ thì cân mục tiêu phải nhỏ hơn cân hiện tại (64,4 kg)");
     await expect(page.getByTestId("onb-next")).toBeDisabled();
     await page.screenshot({ path: "shots/onb-muc-tieu-loi.png" });
+    // Giảm mỡ: chọn Tốc độ giảm thay cho số tháng (bản vẽ 126), mặc định Vừa
+    await page.getByTestId("onb-goalKg").fill("60");
+    await expect(page.getByTestId("onb-months")).toHaveCount(0);
+    await expect(page.getByTestId("onb-pace-mid")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("onb-speed")).toContainText("Đạt 60 kg");
+    await page.getByTestId("onb-pace-slow").click();
+    await expect(page.getByTestId("onb-pace-slow")).toHaveAttribute("aria-pressed", "true");
+    await page.screenshot({ path: "shots/onb-toc-do.png" });
+    await page.getByTestId("onb-goalKg").fill("66");
     await page.getByTestId("onb-seg-maintain").click();
     await expect(page.getByTestId("onb-goalKg")).toHaveCount(0);
     await page.getByTestId("onb-seg-bulk").click();

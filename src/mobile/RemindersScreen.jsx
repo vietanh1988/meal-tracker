@@ -125,7 +125,7 @@ export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, c
         </div>
 
         <div style={blk(true)}>
-          <Head testid="rem-water" title="Nhắc uống nước" sub={`Mục tiêu ${fmtL(waterGoalMl(curKg, true, profile?.waterGoalMl))} L ngày tập · ${fmtL(waterGoalMl(curKg, false, profile?.waterGoalMl))} L ngày nghỉ`} on={r.water.on} onToggle={() => set("water", { on: !r.water.on })} />
+          <Head testid="rem-water" title="Nhắc uống nước" sub={(profile?.exerciseType || "gym") === "none" ? `Mục tiêu ${fmtL(waterGoalMl(curKg, false, profile?.waterGoalMl))} L/ngày` : `Mục tiêu ${fmtL(waterGoalMl(curKg, true, profile?.waterGoalMl))} L ngày tập · ${fmtL(waterGoalMl(curKg, false, profile?.waterGoalMl))} L ngày nghỉ`} on={r.water.on} onToggle={() => set("water", { on: !r.water.on })} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             <button data-testid="rem-water-every" onClick={() => set("water", { every: nextEvery })} style={chip(!r.water.on)}>Mỗi {r.water.every} giờ</button>
             <TimeChip testid="rem-water-from" label="" value={r.water.from} dim={!r.water.on} onSave={(v) => setWaterRange("from", v)} />

@@ -1,6 +1,7 @@
 // Màn Tôi › Mục tiêu & macro (bản vẽ HoSo):
 //  - Thẻ macro ngày tập / ngày nghỉ + TDEE · BMI (tự tính lại theo calcMacro ngay khi đổi)
-//  - Mục tiêu: Tăng cơ / Giảm mỡ / Duy trì, cân mục tiêu, số tháng, tốc độ an toàn
+//  - Mục tiêu: Tăng cơ / Giảm mỡ / Duy trì, cân mục tiêu, số tháng (tăng cơ) / Tốc độ giảm Chậm·Vừa·Nhanh (giảm mỡ, bản vẽ 126)
+//  - Điều chỉnh theo tuần: số kcal đã chỉnh từ thẻ Kiểm tra tuần (bấm để về 0)
 //  - Cơ thể: giới tính, chiều cao, cân nặng (theo lần cân nếu đã có), năm sinh
 //  - Tập luyện: loại tập, tần suất, lịch tập (mở màn Lịch tập & bữa), whey/TPBS, kiểu ăn khi giảm mỡ
 //  - Cách tính: Việt Nam (BMR ×0,9) / Chuẩn quốc tế
@@ -8,7 +9,8 @@
 import { useState } from "react";
 import { Icon, Toggle, Seg } from "./ui";
 import { fmtInt, fmtDec } from "../lib/mobileView";
-import { todayVN } from "../lib/dateVN";
+import { todayVN, fmtVN } from "../lib/dateVN";
+import { PacePicker, etaMonth } from "./PacePicker";
 import { DK, dkCard } from "../theme";
 
 const GOALS = [["bulk", "Tăng cơ"], ["cut", "Giảm mỡ"], ["maintain", "Duy trì"]];
@@ -115,6 +117,14 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
   const year = Number(todayVN().slice(0, 4));
   const age = p.birthYear ? year - Number(p.birthYear) : null;
   const speed = speedText(m, m.goal || goal, p.months);
+  const isCut = (m.goal || goal) === "cut";
+  const curKg = lastW ? lastW.kg : p.kg;
+  const cutLine = !isCut ? null
+    : m.directionMismatch ? { bad: true, text: "Cân mục tiêu cao hơn cân hiện tại — sửa lại cân mục tiêu hoặc đổi mục tiêu." }
+    : !m.etaWeeks ? { bad: false, text: "Đã tới cân mục tiêu — chuyển sang Duy trì để giữ cân." }
+    : { bad: false, text: `Đạt ${fmtDec(p.goalKg)} kg vào khoảng ${etaMonth(m.etaWeeks)} (≈ ${m.etaWeeks} tuần) · bớt ${fmtInt(m.deficit)} kcal/ngày · an toàn, giữ cơ` };
+  const offset = isCut ? Number(p.calOffset) || 0 : 0;
+  const sOff = (v) => `${v > 0 ? "+" : "−"}${fmtInt(Math.abs(v))}`;
   const gym = noEx ? "Không tập" : (p.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
 
   const pickGoal = (g) => { const up = { goalType: g }; if (g !== "cut") up.dietStrategy = "balanced"; save(up); };
@@ -140,7 +150,9 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
         <span aria-hidden="true" style={{ position: "absolute", left: 16, top: 0, width: 44, height: 3, borderRadius: "0 0 3px 3px", background: "#4DA3FF" }} />
         {noEx ? tile("Mỗi ngày", m.calTarget, m.carb) : <>{tile("Ngày tập", m.calTarget, m.carb)}{tile("Ngày nghỉ", m.calRest, m.carbRest)}</>}
         <div style={{ gridColumn: "1 / -1", borderTop: `1px solid ${DK.line}`, paddingTop: 10, fontSize: 12, fontWeight: 600, color: DK.t2 }}>
-          TDEE {fmtInt(m.tdee)} kcal · BMI {fmtDec(m.bmi)} · {GOAL_NAME[m.goal || goal]} {ADJUST[m.goal || goal]}
+          {(m.goal || goal) === "cut"
+            ? `TDEE ${fmtInt(m.tdee)} kcal · bớt ${fmtInt(m.deficit - (m.calOffset || 0))} kcal/ngày · BMI ${fmtDec(m.bmi)}`
+            : `TDEE ${fmtInt(m.tdee)} kcal · BMI ${fmtDec(m.bmi)} · ${GOAL_NAME[m.goal || goal]} ${ADJUST[m.goal || goal]}`}
         </div>
         {m.floorApplied && <div data-testid="goals-floor" style={{ gridColumn: "1 / -1", fontSize: 12, fontWeight: 600, background: "rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 10px" }}>Đã nâng lên mức tối thiểu an toàn {fmtInt(m.calFloor)} kcal/ngày khi giảm mỡ.</div>}
       </div>
@@ -157,18 +169,52 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
       <div style={{ ...box, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
         <Seg dark ariaLabel="Mục tiêu" value={goal} onChange={pickGoal} opts={GOALS.map(([g, t]) => ({ value: g, label: t, testid: `goals-goal-${g}`, disabled: noEx && g === "bulk" }))} />
         {noEx && <span style={{ fontSize: 12, color: DK.t3, marginTop: -4 }}>Không tập thì không đặt Tăng cơ được — chọn Giảm mỡ hoặc Duy trì.</span>}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Cân mục tiêu (kg)</span>
-            <NumField testid="goals-goalkg" ariaLabel="Cân mục tiêu" value={p.goalKg} min={30} max={250} decimal width="100%" onSave={(v) => save({ goalKg: v })} />
-          </label>
-          <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Trong vòng (tháng)</span>
-            <NumField testid="goals-months" ariaLabel="Số tháng" value={p.months} min={1} max={36} width="100%" onSave={(v) => save({ months: v })} />
-          </label>
-        </div>
-        <span data-testid="goals-speed" style={{ padding: "10px 12px", borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.4, background: speed.bad ? "rgba(245,158,11,0.18)" : "rgba(0,200,150,0.18)", color: speed.bad ? DK.amber : DK.green }}>{speed.text}</span>
+        {isCut ? (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <span style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Cân hiện tại</span>
+                <span data-testid="goals-curkg" style={{ height: 36, borderRadius: 10, background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 10px", fontSize: 16, fontWeight: 700, color: DK.t2 }}>{fmtDec(curKg)} kg</span>
+              </span>
+              <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Cân mục tiêu (kg)</span>
+                <NumField testid="goals-goalkg" ariaLabel="Cân mục tiêu" value={p.goalKg} min={30} max={250} decimal width="100%" onSave={(v) => save({ goalKg: v })} />
+              </label>
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3, marginBottom: -4 }}>Tốc độ giảm</span>
+            <PacePicker testid="goals-pace" kg={p.kg} value={p.cutPace} onChange={(v) => save({ cutPace: v })} />
+            <span data-testid="goals-speed" style={{ padding: "10px 12px", borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.4, background: cutLine.bad ? "rgba(245,158,11,0.18)" : "rgba(0,200,150,0.18)", color: cutLine.bad ? DK.amber : DK.green }}>{cutLine.text}</span>
+            <span style={{ fontSize: 12, color: DK.t3, lineHeight: 1.45 }}>Chậm: dễ giữ, ít đói · Vừa: khuyên dùng · Nhanh: đói hơn, cần ăn đủ đạm. Mức ăn luôn ≥ {fmtInt(m.calFloor || 1500)} kcal/ngày.</span>
+          </>
+        ) : (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Cân mục tiêu (kg)</span>
+                <NumField testid="goals-goalkg" ariaLabel="Cân mục tiêu" value={p.goalKg} min={30} max={250} decimal width="100%" onSave={(v) => save({ goalKg: v })} />
+              </label>
+              <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Trong vòng (tháng)</span>
+                <NumField testid="goals-months" ariaLabel="Số tháng" value={p.months} min={1} max={36} width="100%" onSave={(v) => save({ months: v })} />
+              </label>
+            </div>
+            <span data-testid="goals-speed" style={{ padding: "10px 12px", borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.4, background: speed.bad ? "rgba(245,158,11,0.18)" : "rgba(0,200,150,0.18)", color: speed.bad ? DK.amber : DK.green }}>{speed.text}</span>
+          </>
+        )}
       </div>
+
+      {offset !== 0 && <>
+        <span style={sec}>ĐIỀU CHỈNH THEO TUẦN</span>
+        <div style={box}>
+          <button data-testid="goals-offset" onClick={() => save({ calOffset: 0, calOffsetDate: null })} style={{ ...rowBase, minHeight: 58, borderWidth: 0 }}>
+            <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <span style={{ fontSize: 14, fontWeight: 700 }}>Đã chỉnh từ kiểm tra tuần</span>
+              <span style={{ fontSize: 12, color: DK.t3 }}>{sOff(offset)} kcal{p.calOffsetDate ? ` (${fmtVN(p.calOffsetDate)})` : ""} · bấm để về 0</span>
+            </span>
+            <span style={{ height: 32, padding: "0 12px", borderRadius: 10, background: "#FFFFFF", color: "#0040E0", fontSize: 14, fontWeight: 900, display: "flex", alignItems: "center" }}>{sOff(offset)}</span>
+          </button>
+        </div>
+      </>}
 
       <span style={sec}>CƠ THỂ</span>
       <div style={box}>
@@ -218,7 +264,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
         <ChoiceRow id="mode" k="Công thức" value={nameOf(MODE, p.calorieMode || "standard")} options={MODE} selected={p.calorieMode || "standard"} onPick={(v) => save({ calorieMode: v })} open={open} setOpen={setOpen} last />
       </div>
       <p style={{ margin: "8px 16px 0 16px", fontSize: 12, color: DK.t3, lineHeight: 1.45 }}>
-        BMR theo Mifflin-St Jeor × hệ số vận động = TDEE. Tăng cơ +250 kcal, giảm mỡ −350 kcal. Đạm {m.pRatio ? `${fmtDec(parseFloat(m.pRatio))} g/kg` : "—"}, béo tối thiểu 0,7 g/kg, tinh bột là phần còn lại (ngày nghỉ giảm 25%).
+        BMR theo Mifflin-St Jeor × hệ số vận động = TDEE. Tăng cơ +250 kcal; giảm mỡ bớt theo tốc độ đã chọn (kg/tuần × 7.700 / 7, tối đa 25% TDEE). Đạm {m.pRatio ? `${fmtDec(parseFloat(m.pRatio))} g/kg` : "—"}, béo tối thiểu 0,7 g/kg, tinh bột là phần còn lại (ngày nghỉ giảm 25%).
       </p>
     </div>
   );

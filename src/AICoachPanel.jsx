@@ -182,7 +182,7 @@ const trend=wl.length>=2?((wl[wl.length-1].kg-wl[0].kg)/wl.length).toFixed(1):"c
 const age=p.birthYear?new Date().getFullYear()-p.birthYear:"?";
 const freqLabel={occasional:"Thỉnh thoảng (1-2 buổi/tuần)",regular:"Đều đặn (3-4 buổi/tuần)",frequent:"Rất thường xuyên (5-6 buổi/tuần)",daily:"Gần như mỗi ngày"}[p.frequency||"regular"]||"Đều đặn";
 const exLabel={gym:"Gym",gym_cardio:"Gym + Cardio",cardio:"Cardio",none:"Không tập"}[p.exerciseType||"gym"]||"Gym";
-const goalLabel={bulk:"Tăng cơ (+250 cal)",cut:"Giảm mỡ (-350 cal)",maintain:"Duy trì"}[p.goalType||"bulk"]||"Tăng cơ";
+const goalLabel={bulk:"Tăng cơ (+250 cal)",cut:`Giảm mỡ (bớt ${(m.deficit||350)-(m.calOffset||0)} cal/ngày, tốc độ ~${m.kgWeek||"?"} kg/tuần)`,maintain:"Duy trì"}[m.goal||p.goalType||"bulk"]||"Tăng cơ";
 const dietLabel=p.goalType==="cut"?{balanced:"Cân bằng",low_carb:"Low-carb (≤100g carb)",keto:"Keto (≤50g carb)"}[p.dietStrategy||"balanced"]||"Cân bằng":"Cân bằng (mặc định)";
 const calMode=(p.calorieMode||"standard")==="asian"?"Việt Nam (-10%)":"Quốc tế";
 const isRest=t.dayType==="rest";

@@ -16,7 +16,7 @@ import { appConfirm } from "../lib/dialog";
 const toRow = (it) => ({ item: it, text: portionOf(it).label });
 const rowOk = (r) => r.text !== "" && Number(String(r.text).replace(",", ".")) > 0 && Number(r.item.gram) > 0;
 
-export function EditMealScreen({ date, today, mealId, mealName, items, eaten, dayType, onSave, onDelete, onMove, onAddPick, pendingPick, onPhoto, onClose, mealOptions = [] }) {
+export function EditMealScreen({ noEx, date, today, mealId, mealName, items, eaten, dayType, onSave, onDelete, onMove, onAddPick, pendingPick, onPhoto, onClose, mealOptions = [] }) {
   const [rows, setRows] = useState(() => (items || []).map(toRow));
   const [isEaten, setIsEaten] = useState(!!eaten);
   const [menu, setMenu] = useState(false);
@@ -156,7 +156,7 @@ export function EditMealScreen({ date, today, mealId, mealName, items, eaten, da
   );
 
   return (
-    <SubPage title={mealName} subtitle={`${weekdayFull(date)} ${fmtVN(date)} · ${dayType === "rest" ? "Ngày nghỉ" : "Ngày tập"}`} onBack={back} right={header} footer={footer}>
+    <SubPage title={mealName} subtitle={`${weekdayFull(date)} ${fmtVN(date)}${noEx ? "" : ` · ${dayType === "rest" ? "Ngày nghỉ" : "Ngày tập"}`}`} onBack={back} right={header} footer={footer}>
       <div onClick={() => menu && setMenu(false)} style={{ padding: "12px 12px 16px 12px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div data-testid="edit-summary" style={{ display: "flex", alignItems: "center", gap: 12, padding: "4px 4px 0 4px" }}>
           <MealIcon id={mealId} size={44} />

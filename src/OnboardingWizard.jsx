@@ -6,6 +6,7 @@
 // Khác bản cũ: áp thực đơn đầu tiên chỉ áp cho HÔM NAY, không tự lưu ngầm vào "Lặp lại hằng tuần" (thống nhất chốt 13/10).
 import { useState } from "react";
 import { calcMacro } from "./calcMacro";
+import { PacePicker, etaMonth } from "./mobile/PacePicker";
 import { generateMenuAI, resolveMealIds } from "./lib/aiMenuService";
 import { DK, DK_CSS, dkCard, dkGlass } from "./theme";
 import { Seg } from "./mobile/ui";
@@ -212,7 +213,7 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     const rangeErr = showGoal && !Number.isNaN(gk) && (gk < BODY_LIMITS.kg[0] || gk > BODY_LIMITS.kg[1]) && (touched.goalKg || String(draft.goalKg).replace(",", "").length >= 3) ? `Cân mục tiêu từ ${BODY_LIMITS.kg[0]} đến ${BODY_LIMITS.kg[1]} kg` : null;
     const dirErr = showGoal ? goalDirectionError({ goalType: goal, kg: p.kg, goalKg: draft.goalKg, exerciseType: p.exerciseType }) : null;
     const goalErr = rangeErr || dirErr;
-    const goalOk = !showGoal || (!Number.isNaN(gk) && gk >= BODY_LIMITS.kg[0] && gk <= BODY_LIMITS.kg[1] && !dirErr && Number(p.months) >= 1);
+    const goalOk = !showGoal || (!Number.isNaN(gk) && gk >= BODY_LIMITS.kg[0] && gk <= BODY_LIMITS.kg[1] && !dirErr && (goal === "cut" || Number(p.months) >= 1));
     const next = () => {
       if (!goalOk) return;
       if (showGoal) set({ goalKg: Math.round(gk * 10) / 10, _defaulted: keepDefaulted(["goalKg"]) });
@@ -222,12 +223,22 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     {top(3)}{head(3, "Mục tiêu của bạn", "Fipilot tính lượng calo thêm/bớt mỗi ngày theo mục tiêu.")}
     <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 14 }}>
       {seg([["bulk", "Tăng cơ"], ["cut", "Giảm mỡ"], ["maintain", "Duy trì"]], p.goalType || "bulk", (g) => { const up = { goalType: g }; if (g !== "cut") up.dietStrategy = "balanced"; set(up); }, noEx ? "bulk" : null)}
-      {showGoal && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, alignItems: "start" }}>
+      {showGoal && <div style={{ display: "grid", gridTemplateColumns: goal === "cut" ? "1fr" : "1fr 1fr", gap: 10, alignItems: "start" }}>
         {field("goalKg", "Cân mục tiêu", "kg", "decimal", draft.goalKg, dnum("goalKg", true), blur("goalKg"), goal === "cut" ? `VD ${Math.max(BODY_LIMITS.kg[0], Math.round((Number(p.kg) || 65) - 5))}` : `VD ${Math.round((Number(p.kg) || 60) + 5)}`, !!goalErr)}
-        {field("months", "Trong vòng", "tháng", "numeric", p.months, num("months"), () => { if (!p.months || p.months < 1) set({ months: 1 }); })}
+        {goal !== "cut" && field("months", "Trong vòng", "tháng", "numeric", p.months, num("months"), () => { if (!p.months || p.months < 1) set({ months: 1 }); })}
       </div>}
       {showGoal && goalErr && <div data-testid="onb-goal-err" role="alert" style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(255,120,120,0.16)", color: DK.red, fontSize: 13, fontWeight: 700, lineHeight: 1.5 }}>{goalErr}</div>}
-      {showGoal && !goalErr && !Number.isNaN(gk) && macro.perWeek > 0 && (
+      {/* Giảm mỡ (bản vẽ 126): chọn tốc độ thay cho số tháng; mặc định Vừa */}
+      {goal === "cut" && <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: DK.t2 }}>Tốc độ giảm</span>
+        <PacePicker testid="onb-pace" kg={pm.kg} value={p.cutPace} onChange={(v) => set({ cutPace: v })} />
+      </div>}
+      {goal === "cut" && !goalErr && !Number.isNaN(gk) && macro.etaWeeks > 0 && (
+        <div data-testid="onb-speed" style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(0,200,150,0.18)", color: DK.green, fontSize: 13, fontWeight: 600, lineHeight: 1.45 }}>
+          Đạt {String(gk).replace(".", ",")} kg vào khoảng {etaMonth(macro.etaWeeks)} (≈ {macro.etaWeeks} tuần) · bớt {macro.deficit} kcal/ngày
+        </div>
+      )}
+      {goal !== "cut" && showGoal && !goalErr && !Number.isNaN(gk) && macro.perWeek > 0 && (
         <div data-testid="onb-speed" style={{ padding: "10px 12px", borderRadius: 12, background: macro.safe ? "rgba(0,200,150,0.18)" : "rgba(245,158,11,0.18)", color: macro.safe ? DK.green : DK.amber, fontSize: 13, fontWeight: 600 }}>
           {macro.safe ? `Tốc độ ${String(macro.perWeek).replace(".", ",")} kg/tuần · An toàn` : `Tốc độ ${String(macro.perWeek).replace(".", ",")} kg/tuần · Hơi nhanh, nên kéo dài thời gian`}
         </div>
@@ -237,7 +248,7 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{[["balanced", "Cân bằng"], ["low_carb", "Low-carb (≤ 100 g)"], ["keto", "Keto (≤ 50 g)"]].map(([id, t]) => chip(id, t, (p.dietStrategy || "balanced") === id, () => set({ dietStrategy: id })))}</div>
       </div>}
     </div>
-    {note("Tốc độ quá nhanh sẽ báo vàng. Kiểu ăn chỉ hiện khi chọn Giảm mỡ.")}
+    {note(goal === "cut" ? "Chậm: dễ giữ, ít đói · Vừa: khuyên dùng · Nhanh: đói hơn, cần ăn đủ đạm." : "Tốc độ quá nhanh sẽ báo vàng. Kiểu ăn chỉ hiện khi chọn Giảm mỡ.")}
     {footer(btn("Tính macro", next, !goalOk, "onb-next"))}
   </>;
   }

@@ -32,9 +32,11 @@ export function TodayScreen(p) {
 
   return (
     <div data-testid="today-body" style={{ minHeight: "100%" }}>
-      <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} dayDone={date < today || allEaten} />
+      <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} planCard={p.planCard} dayDone={date < today || allEaten} />
 
       {p.banner}
+      {isToday && p.checkin}
+      {isToday && p.walkTip}
 
       {/* ===== Thẻ bữa đang đến giờ ===== */}
       {focus && <FocusCard r={focus} {...p} />}

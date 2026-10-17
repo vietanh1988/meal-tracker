@@ -57,3 +57,23 @@ test("không tập / keto: 1 bộ số (không chia ngày tập / nghỉ)", () =
   const k = calcMacro({ cm: 170, kg: 70, birthYear: 1995, goalKg: 65, goalType: "cut", months: 3, gender: "male", exerciseType: "gym", dietStrategy: "keto", gymDays: [0, 2, 4] });
   assert.equal(k.carb, k.carbRest);
 });
+
+// 17/10 (bản vẽ 126): giảm mỡ theo tốc độ % cân nặng / tuần + điều chỉnh từ kiểm tra tuần
+test("tốc độ giảm: chậm < vừa < nhanh, calo bớt = kg/tuần × 1.100, tối đa 25% TDEE", () => {
+  const base = { cm: 170, kg: 85, birthYear: 1990, goalKg: 75, goalType: "cut", gender: "male", exerciseType: "none" };
+  const [s, m, f] = ["slow", "mid", "fast"].map((cutPace) => calcMacro({ ...base, cutPace }));
+  assert.deepEqual([s.kgWeek, m.kgWeek, f.kgWeek], [0.21, 0.43, 0.64]);
+  assert.equal(m.deficit, 470);
+  assert.ok(f.deficit <= Math.round(f.tdee * 0.25 / 10) * 10);
+  assert.ok(s.calTarget > m.calTarget && m.calTarget > f.calTarget, `${s.calTarget} ${m.calTarget} ${f.calTarget}`);
+  assert.equal(m.calTarget, m.calTargetRaw, "không tập: calo đúng bằng mục tiêu (sàn tinh bột không đội lên)");
+  assert.equal(m.etaWeeks, 24);
+  assert.equal(calcMacro(base).pace, "mid", "chưa chọn = Vừa");
+  // điều chỉnh tuần: cộng thẳng vào calo, kẹp −300…+300, chỉ khi giảm mỡ
+  assert.equal(calcMacro({ ...base, calOffset: -100 }).calTargetRaw, m.calTargetRaw - 100);
+  assert.equal(calcMacro({ ...base, calOffset: -900 }).calOffset, -300);
+  assert.equal(calcMacro({ ...base, goalType: "maintain", calOffset: -100 }).calOffset, 0);
+  // tăng cơ giữ +250
+  const b = calcMacro({ ...base, goalKg: 90, goalType: "bulk", exerciseType: "gym" });
+  assert.equal(b.calTargetRaw - b.tdee, 250);
+});

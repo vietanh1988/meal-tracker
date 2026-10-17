@@ -7,7 +7,7 @@ test("Mục tiêu & macro: lưu hồ sơ và tính lại kcal", async ({ browser
   const page = await ctx.newPage();
   page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
   const s = S();
-  const prof = async () => (await rest(`profiles?id=eq.${s.uid}&select=goal_type,goal_kg,months,cm,uses_supplements,calorie_mode,exercise_type,diet_strategy`))[0];
+  const prof = async () => (await rest(`profiles?id=eq.${s.uid}&select=goal_type,goal_kg,months,cm,uses_supplements,calorie_mode,exercise_type,diet_strategy,cut_pace`))[0];
   const before = await prof();
   const nav = (name) => page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name });
   const cal = async () => Number(await page.getByTestId("goals-macro").getAttribute("data-cal"));
@@ -30,14 +30,16 @@ test("Mục tiêu & macro: lưu hồ sơ và tính lại kcal", async ({ browser
     await expect.poll(cal).toBeLessThan(calBulk);
     await expect(page.getByTestId("goals-diet")).toBeVisible();
 
-    // Cân mục tiêu 60 kg trong 6 tháng
+    // Cân mục tiêu 60 kg; giảm mỡ chọn Tốc độ (không còn ô số tháng — bản vẽ 126)
     await page.getByTestId("goals-goalkg").fill("60");
     await page.getByTestId("goals-goalkg").press("Enter");
     await waitDb(async () => Number((await prof()).goal_kg) === 60, "goal_kg = 60");
-    await page.getByTestId("goals-months").fill("6");
-    await page.getByTestId("goals-months").press("Enter");
-    await waitDb(async () => (await prof()).months === 6, "months = 6");
-    await expect(page.getByTestId("goals-speed")).toContainText("g/tuần");
+    await expect(page.getByTestId("goals-months")).toHaveCount(0);
+    await expect(page.getByTestId("goals-speed")).toContainText("Đạt 60 kg");
+    const calMid = await cal();
+    await tap(page.getByTestId("goals-pace-slow"));
+    await waitDb(async () => (await prof()).cut_pace === "slow", "cut_pace = slow");
+    await expect.poll(cal).toBeGreaterThan(calMid);
 
     // Số sai (chiều cao 20) không lưu; 175 thì lưu
     await page.getByTestId("goals-cm").fill("20");

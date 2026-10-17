@@ -256,7 +256,7 @@ function UserDrawer({ userId, currentUserId, isSuperAdmin, onClose, onChanged })
   let kcal = null;
   if (prof && prof.kg) {
     try {
-      kcal = calcMacro({ cm: prof.cm || 170, kg: Number(prof.kg), birthYear: prof.birth_year || 1995, goalKg: Number(prof.goal_kg) || Number(prof.kg), goalType: prof.goal_type || "bulk", months: prof.months || 4, gender: prof.gender || "male", exerciseType: prof.exercise_type || "gym", frequency: prof.frequency || "regular", dietStrategy: prof.diet_strategy || "balanced", calorieMode: prof.calorie_mode || "standard", gymDays: prof.gym_days || [] })?.calTarget || null;
+      kcal = calcMacro({ cm: prof.cm || 170, kg: Number(prof.kg), birthYear: prof.birth_year || 1995, goalKg: Number(prof.goal_kg) || Number(prof.kg), goalType: prof.goal_type || "bulk", months: prof.months || 4, gender: prof.gender || "male", exerciseType: prof.exercise_type || "gym", frequency: prof.frequency || "regular", dietStrategy: prof.diet_strategy || "balanced", calorieMode: prof.calorie_mode || "standard", gymDays: prof.gym_days || [], cutPace: prof.cut_pace || null, calOffset: prof.cal_offset || 0 })?.calTarget || null;
     } catch (e) { kcal = null; }
   }
   const gymN = Array.isArray(prof?.gym_days) ? prof.gym_days.length : null;

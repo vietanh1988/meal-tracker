@@ -8,7 +8,7 @@ import { MeasureSheet } from "./MeasureSheet";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
 import { DK, DK_CSS, LT } from "../theme";
-import { readUser } from "../lib/userStore";
+import { readUser, writeUser } from "../lib/userStore";
 import { TodayScreen } from "./TodayScreen";
 import { HEADER_CSS, HDR_TOP } from "./TodayHeader";
 import { LogMealSheet } from "./LogMealSheet";
@@ -48,6 +48,8 @@ import { CalcCheckScreen } from "./CalcCheckScreen";
 import { WeightSheet } from "./WeightSheet";
 import { PlusMenu } from "./PlusMenu";
 import { calcMacro } from "../calcMacro";
+import { weeklyCheck, nextOffset } from "../lib/weeklyCheck";
+import { WeeklyCheckCard, WalkTipCard } from "./WeeklyCheckCard";
 import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
 import PWAInstallPrompt from "../PWAInstallPrompt";
 import { useNotifications } from "../hooks/useNotifications";
@@ -129,6 +131,7 @@ export function MobileApp(props) {
   const [dayCache, setDayCache] = useState({});
   const [version, setVersion] = useState(0);
   const [recentRows, setRecentRows] = useState([]);
+  const [recentReady, setRecentReady] = useState(false);
   const [weekRows, setWeekRows] = useState([]);
   const loadDay = useCallback(async (d) => {
     if (d === todayVN()) return;
@@ -138,7 +141,7 @@ export function MobileApp(props) {
   useEffect(() => { if (date !== today && !dayCache[date]) loadDay(date); }, [date, today]);
   useEffect(() => {
     let alive = true;
-    ud.getRecentDays(30).then((r) => { if (alive) setRecentRows(r || []); });
+    ud.getRecentDays(30).then((r) => { if (alive) { setRecentRows(r || []); setRecentReady(true); } });
     return () => { alive = false; };
   }, [version, ud.getRecentDays]);
   const wk = weekRange(date);
@@ -400,7 +403,7 @@ export function MobileApp(props) {
     const wasEaten = (dy.eaten_meals || []).includes(l.mealId);
     const nm = mealLabel(m && m.meal_name, l.mealId);
     const dt = dayTypeOf(profile, l.date);
-    return <EditMealScreen key={`${l.date}:${l.mealId}`} date={l.date} today={today} mealId={l.mealId} mealName={nm} items={(m && m.items) || []} eaten={wasEaten} dayType={dt}
+    return <EditMealScreen key={`${l.date}:${l.mealId}`} noEx={(profile.exerciseType || "gym") === "none"} date={l.date} today={today} mealId={l.mealId} mealName={nm} items={(m && m.items) || []} eaten={wasEaten} dayType={dt}
       pendingPick={pendingPick}
       onAddPick={() => openLayer({ type: "log", pick: true, date: l.date, mealId: l.mealId })}
       onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
@@ -663,6 +666,42 @@ export function MobileApp(props) {
     </div>
   ) : null;
 
+  // ---------- Kiểm tra tuần (bản vẽ 127) + khách không tập (bản vẽ 128) ----------
+  const noEx = (profile.exerciseType || "gym") === "none";
+  // Ngày đã xử lý thẻ: cột profiles.checkin_date (khi prod đã có cột) + bản trên máy — lấy ngày mới hơn
+  const [checkinLocal, setCheckinLocal] = useState(() => readUser("fp_checkin", user?.id, null));
+  const checkinDate = [profile.checkinDate, checkinLocal].filter(Boolean).sort().pop() || null;
+  const check = useMemo(() => (recentReady ? weeklyCheck({
+    today, goal: macro.goal, kgWeek: macro.kgWeek, curKg: weight.curKg, weightLog, dayRows: recentRows, measures, checkinDate,
+    calOffset: macro.calOffset, atFloor: !!macro.floorApplied || macro.calTargetRaw - 100 < macro.calFloor,
+  }) : null), [recentReady, today, macro, weight.curKg, weightLog, recentRows, measures, checkinDate]);
+  const onCheckin = (act) => {
+    writeUser("fp_checkin", user?.id, today);
+    setCheckinLocal(today);
+    const patch = { checkinDate: today };
+    if (act === "apply" && check?.delta) {
+      patch.calOffset = nextOffset(macro.calOffset, check.delta);
+      patch.calOffsetDate = today;
+      showToast({ text: `Đã ${check.delta < 0 ? "bớt" : "thêm"} 100 kcal/ngày — mục tiêu mới ${fmtInt(targets.cal + check.delta)} kcal. Đổi lại ở Tôi › Mục tiêu.` });
+    }
+    setProfile({ ...profileRef.current, ...patch });
+    if (act === "weigh") openWeigh(false);
+  };
+  const checkinCard = check ? <WeeklyCheckCard check={check} target={targets.cal} onAct={onCheckin} /> : null;
+  // Mẹo đi bộ: 3 lần mở app đầu tiên (đếm theo lần mở), × thì ẩn luôn
+  const [walkTip, setWalkTip] = useState(false);
+  useEffect(() => {
+    if (!noEx || !user?.id) { setWalkTip(false); return; }
+    const w = readUser("fp_walk_tip", user.id, null) || { n: 0 };
+    if (w.off || w.n >= 3) { setWalkTip(false); return; }
+    writeUser("fp_walk_tip", user.id, { ...w, n: w.n + 1 });
+    setWalkTip(true);
+  }, [noEx, user?.id]);
+  const closeWalkTip = () => { writeUser("fp_walk_tip", user?.id, { n: 3, off: true }); setWalkTip(false); };
+  const leftKg = Math.round(((Number(weight.curKg) || 0) - (Number(weight.goalKg) || 0)) * 10) / 10;
+  const planCard = !noEx ? null : macro.goal === "cut"
+    ? { value: `Giảm ${fmtDec(Math.round((macro.kgWeek || 0) * 10) / 10)} kg/tuần`, sub: leftKg > 0 ? `còn ${fmtDec(leftKg)} kg` : "Đã tới cân mục tiêu" }
+    : { value: "Giữ cân", sub: "Không tập" };
 
   return (
     <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : LT.base, color: "#0F172A", minHeight: "100vh" }}>
@@ -685,7 +724,8 @@ export function MobileApp(props) {
             nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
             waterMl={Number(day?.water_ml) || 0} addWater={(ml) => ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; })} waterGoalOverride={profile.waterGoalMl}
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
-            planLine={(profile.exerciseType || "gym") === "none" ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`}
+            planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}
+            checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}
             week={week} onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
@@ -731,7 +771,7 @@ export function MobileApp(props) {
           {l.type === "suggest" && (() => {
             const sg = suggestFor(l.mealId, l.date);
             const nm = MEAL_NAMES[l.mealId] || "Bữa";
-            return <MealSuggestSheet mealId={l.mealId} mealName={nm} list={sg.list} target={sg.target} rt={sg.rt} goal={macro?.goal} dayType={sg.dayType} avoidText={sg.avoidText}
+            return <MealSuggestSheet noEx={noEx} mealId={l.mealId} mealName={nm} list={sg.list} target={sg.target} rt={sg.rt} goal={macro?.goal} dayType={sg.dayType} avoidText={sg.avoidText}
               onClose={closeLayer} onSearch={() => replaceTop({ type: "log", date: l.date, mealId: l.mealId })}
               onPick={(opt) => pickSuggestion(l.date, l.mealId, opt, closeLayer)} />;
           })()}

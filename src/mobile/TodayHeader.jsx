@@ -100,7 +100,8 @@ function StatCard({ icon, label, value, children }) {
   );
 }
 
-export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine, dayDone }) {
+// planCard (bản vẽ 128): khách không tập → ô thứ 3 bỏ 'Ngày tập / Ngày nghỉ', thay bằng kế hoạch (VD Giảm 0,4 kg/tuần · còn 7 kg)
+export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine, planCard, dayDone }) {
   const [y, m] = date.split("-");
   const remain = targets.cal - eaten.cal;
   const pct = targets.cal > 0 ? Math.min(100, Math.round((eaten.cal / targets.cal) * 100)) : 0;
@@ -147,9 +148,15 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
               <span style={{ display: "block", width: `${Math.max(pct ? 3 : 0, pct)}%`, height: 5, borderRadius: 3, background: remain < 0 ? "#FACC15" : "linear-gradient(90deg,#3FD0FF,#BFF4FF)", boxShadow: "0 0 6px rgba(80,210,255,0.85)", transition: "width .4s" }} />
             </span>
           </StatCard>
-          <StatCard icon={dayType === "rest" ? ICON.rest : ICON.train} label={isToday ? "Hôm nay" : "Hôm đó"} value={dayType === "rest" ? "Ngày nghỉ" : "Ngày tập"}>
-            {planLine && <span style={{ fontSize: 10, opacity: 0.78, whiteSpace: "nowrap" }}>{planLine}</span>}
-          </StatCard>
+          {planCard ? (
+            <StatCard icon={ICON.goal} label="Kế hoạch" value={<span data-testid="plan-card">{planCard.value}</span>}>
+              {planCard.sub && <span style={{ fontSize: 10, opacity: 0.78, whiteSpace: "nowrap" }}>{planCard.sub}</span>}
+            </StatCard>
+          ) : (
+            <StatCard icon={dayType === "rest" ? ICON.rest : ICON.train} label={isToday ? "Hôm nay" : "Hôm đó"} value={dayType === "rest" ? "Ngày nghỉ" : "Ngày tập"}>
+              {planLine && <span style={{ fontSize: 10, opacity: 0.78, whiteSpace: "nowrap" }}>{planLine}</span>}
+            </StatCard>
+          )}
         </div>
       </div>
 

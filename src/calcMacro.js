@@ -1,3 +1,6 @@
+// Tốc độ giảm mỡ: % cân nặng mỗi tuần (bản vẽ 126)
+export const PACE_PCT={slow:0.0025,mid:0.005,fast:0.0075};
+
 export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};
   const gender=p.gender||"male";
   const exerciseType=p.exerciseType||"gym";
@@ -43,14 +46,31 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const totalDiff=Math.abs(diff);
   const perMonth=months>0?Math.round(totalDiff/months*10)/10:0;
   const perWeek=months>0?Math.round(totalDiff/(months*4.33)*10)/10:0;
-  const calAdjust=calAdjustTable[effectiveGoal]||0;
+  // 17/10 (bản vẽ 126): giảm mỡ theo TỐC ĐỘ (% cân nặng / tuần) thay cho −350 cố định.
+  // Calo bớt = kg/tuần × 7.700 / 7, tối đa 25% TDEE; cộng điều chỉnh từ thẻ Kiểm tra tuần (calOffset, −300…+300).
+  let calAdjust=calAdjustTable[effectiveGoal]||0;
+  const pace=PACE_PCT[p.cutPace]?p.cutPace:"mid";
+  let kgWeek=null,deficit=0,etaWeeks=null;
+  const calOffset=effectiveGoal==="cut"?Math.max(-300,Math.min(300,Math.round(Number(p.calOffset)||0))):0;
+  if(effectiveGoal==="cut"){
+    kgWeek=Math.round(p.kg*PACE_PCT[pace]*100)/100;
+    deficit=Math.min(Math.round(kgWeek*1100/10)*10,Math.round(tdee*0.25/10)*10);
+    calAdjust=-deficit+calOffset;
+    etaWeeks=diff<0&&kgWeek>0?Math.ceil(Math.abs(diff)/kgWeek):null;
+  }
   const calTarget=tdee+calAdjust;
   // C = phần calo còn lại (chế độ Cân bằng)
   const dietStrategy=(effectiveGoal==="cut")?(p.dietStrategy||"balanced"):"balanced";
   let carbBalanced=Math.round((calTarget-protein*4-fat*9)/4);
   if(carbBalanced<0)carbBalanced=0;
-  // Carb floor: tối thiểu 2g/kg (cần cho tập luyện)
-  const carbFloor=Math.round(refKg*2);
+  // Carb floor: tối thiểu 2g/kg (cần cho tập luyện).
+  // 17/10: giảm mỡ hạ sàn còn 1,5 g/kg (không tập: 1 g/kg) và nhường béo xuống sàn 0,7 g/kg trước —
+  // trước đây sàn tinh bột đội calo lên nên người to / không tập chọn tốc độ nào cũng ra cùng 1 số.
+  const carbFloor=Math.round(refKg*(effectiveGoal==="cut"?(exerciseType==="none"?1:1.5):2));
+  if(carbBalanced<carbFloor&&effectiveGoal==="cut"){
+    const give=Math.min(fat-Math.round(refKg*0.7),Math.ceil((carbFloor-carbBalanced)*4/9));
+    if(give>0){fat-=give;carbBalanced=Math.max(0,Math.round((calTarget-protein*4-fat*9)/4));}
+  }
   if(carbBalanced<carbFloor)carbBalanced=carbFloor;
   let carb=carbBalanced;
   // Diet strategy: low-carb / keto cap carb, fat = phần còn lại
@@ -89,11 +109,11 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const calRest=exerciseType==="none"?calFinal:(protein*4+carbRest*4+fat*9);
   const fiber=Math.round(calFinal/1000*14);
   const bmi=Math.round((p.kg/(p.cm/100)**2)*10)/10;
-  const safe=directionMismatch?false:(effectiveGoal==="bulk"?perWeek<=0.5:effectiveGoal==="cut"?perWeek<=0.75:true);
+  const safe=directionMismatch?false:(effectiveGoal==="bulk"?perWeek<=0.5:true);
   const pRatio=pRatioVal+"g/kg";
   const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
   const fRatio=fRatioVal+"g/kg";
-  return{refKg,floorApplied,calFloor,tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,directionMismatch,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
+  return{pace:effectiveGoal==="cut"?pace:null,kgWeek,deficit,etaWeeks,calOffset,refKg,floorApplied,calFloor,tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,directionMismatch,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
 }
 
 export const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};
