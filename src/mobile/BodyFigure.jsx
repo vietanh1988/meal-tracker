@@ -2,10 +2,10 @@
 // Vòng: nét liền phía trước người, nét đứt mờ phía sau. active = ô đang nhập → vòng đó đậm, vòng khác mờ.
 import { FIELDS } from "../lib/bodyMeasure";
 
-// Toạ độ trên khung 600×1200: k → [y, x trái, x phải] (đo từ ảnh, 17/10)
+// Toạ độ trên khung 600×1200: k → [y, x trái, x phải] (đo lại từ ảnh mới 18/10)
 const BANDS = {
-  male: { chest: [318, 178, 422], arm: [410, 413, 484], waist: [462, 212, 389], belly: [492, 208, 393], hip: [640, 172, 430], thigh: [765, 176, 280] },
-  female: { chest: [372, 196, 404], arm: [450, 412, 465], waist: [488, 228, 373], belly: [515, 223, 378], hip: [668, 172, 430], thigh: [780, 187, 274] },
+  male: { chest: [370, 186, 412], arm: [440, 408, 468], waist: [470, 216, 384], belly: [510, 212, 389], hip: [640, 178, 424], thigh: [770, 189, 279] },
+  female: { chest: [395, 205, 395], arm: [460, 384, 427], waist: [490, 233, 368], belly: [530, 222, 378], hip: [650, 182, 418], thigh: [780, 200, 285] },
 };
 const LEFT = new Set(["chest", "waist", "hip", "thigh"]);
 
