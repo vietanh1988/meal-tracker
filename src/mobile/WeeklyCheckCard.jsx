@@ -28,7 +28,8 @@ export function WeeklyCheckCard({ check, target, onAct }) {
   if (!check) return null;
   const c = check;
   const meals = { k: "Ghi bữa", v: `${c.mealDays}/7 ngày`, c: c.mealDays >= 4 ? GREEN : ORANGE };
-  const kgLine = c.kgFrom != null ? `${fmtDec(c.kgFrom)} → ${fmtDec(c.kgTo)} kg` : "";
+  const k1 = (v) => Number(v).toFixed(1).replace(".", ",");
+  const kgLine = c.kgFrom != null ? `${k1(c.kgFrom)} → ${k1(c.kgTo)} kg` : "";
   const goalStat = { k: "Mục tiêu", v: `−${kgW(c.target || 0)}` };
   const kgStat = { k: "Cân", v: kgLine };
   let tone, title, body, stats, btns;
