@@ -58,9 +58,10 @@ test("Kiểm tra tuần: cân đứng → bớt 100 kcal; tốc độ giảm; kh
     await tap(page.getByTestId("goals-exercise-none"));
     await waitDb(async () => (await prof()).exercise_type === "none", "exercise_type = none");
     await page.reload();
-    await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 });
+    // Tải lại vẫn ở tab Tôi → về Hôm nay
     const nav = page.getByRole("navigation", { name: "Điều hướng chính" });
-    if (await nav.getByRole("button", { name: "Hôm nay" }).isVisible()) await nav.getByRole("button", { name: "Hôm nay" }).click();
+    await expect(nav.getByRole("button", { name: "Hôm nay" })).toBeVisible({ timeout: 20_000 });
+    await nav.getByRole("button", { name: "Hôm nay" }).click();
     await expect(page.getByTestId("plan-card")).toContainText("kg/tuần");
     await expect(page.getByTestId("today-header")).not.toContainText("Ngày nghỉ");
     await expect(page.getByTestId("walk-tip")).toBeVisible();
