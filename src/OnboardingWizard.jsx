@@ -187,7 +187,8 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     </>;
   }
   if (step === 12) {
-    const eta = etaMonth(macro.etaWeeks);
+    // cân mục tiêu lấy từ hồ sơ (chip ở bước 11), không lấy ô nhập cũ trong draft
+    const eta = etaMonth(calcMacro({ ...pm, goalKg: p.goalKg }).etaWeeks);
     const exOn = (p.exerciseType || "none") !== "none";
     const start = () => {
       setProfile({ ...p, onboardingDone: true, uiMode: "loss", goalType: "cut" });
