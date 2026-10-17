@@ -30,10 +30,14 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const calAdjustTable={bulk:250,cut:-350,maintain:0};
   const pRatioVal=pTable[effectiveGoal]||1.8;
   const fRatioVal=fTable[gender]?.[effectiveGoal]||0.9;
-  let protein=Math.round(p.kg*pRatioVal);
-  let fat=Math.round(p.kg*fRatioVal);
+  // 17/10: người BMI > 27 → đạm / béo / tinh bột tối thiểu tính theo cân nặng ở mức BMI 27 (refKg), không theo tổng cân
+  // (trước: 120 kg giảm mỡ bị bắt 264 g đạm + tinh bột tối thiểu 240 g → tổng calo cao hơn cả TDEE, không thể giảm)
+  const hM=(p.cm||170)/100;
+  const refKg=(p.kg/(hM*hM))>27?Math.round(27*hM*hM*10)/10:p.kg;
+  let protein=Math.round(refKg*pRatioVal);
+  let fat=Math.round(refKg*fRatioVal);
   // Fat floor: không dưới 0.7g/kg
-  if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
+  if(fat<Math.round(refKg*0.7))fat=Math.round(refKg*0.7);
   // Surplus/deficit
   const months=p.months||4;
   const totalDiff=Math.abs(diff);
@@ -46,17 +50,26 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   let carbBalanced=Math.round((calTarget-protein*4-fat*9)/4);
   if(carbBalanced<0)carbBalanced=0;
   // Carb floor: tối thiểu 2g/kg (cần cho tập luyện)
-  const carbFloor=Math.round(p.kg*2);
+  const carbFloor=Math.round(refKg*2);
   if(carbBalanced<carbFloor)carbBalanced=carbFloor;
   let carb=carbBalanced;
   // Diet strategy: low-carb / keto cap carb, fat = phần còn lại
   if(dietStrategy==="low_carb"){carb=Math.min(100,carbBalanced);fat=Math.round((calTarget-protein*4-carb*4)/9);}
   else if(dietStrategy==="keto"){carb=Math.min(50,carbBalanced);fat=Math.round((calTarget-protein*4-carb*4)/9);}
   // Fat floor sau diet adjustment
-  if(fat<Math.round(p.kg*0.7))fat=Math.round(p.kg*0.7);
+  if(fat<Math.round(refKg*0.7))fat=Math.round(refKg*0.7);
   // Ngày nghỉ: carb giảm 25%, fat giữ nguyên (option A)
   // Khi exerciseType=none: chỉ 1 set macro duy nhất (không phân biệt train/rest)
-  let carbRest=exerciseType==="none"?carb:(dietStrategy==="keto"?carb:Math.round(carb*0.75));
+  // 17/10: chia lại để TRUNG BÌNH CẢ TUẦN = mục tiêu (TDEE đã là mức trung bình tuần). Trước: ngày tập = mục tiêu,
+  // ngày nghỉ còn bớt 25% tinh bột → cả tuần ăn ít hơn mục tiêu (tăng cơ 65 kg, 4 buổi: dư +250 chỉ còn ≈ +90/ngày).
+  // nTrain = số ngày tập trong tuần (gymDays), C_tập·n + 0,75·C_tập·(7−n) = 7·C  →  C_tập = 7C / (n + 0,75(7−n)).
+  let carbRest=carb;
+  if(exerciseType!=="none"&&dietStrategy!=="keto"){
+    const nDefault={occasional:3,regular:4,frequent:5,daily:6}[freq]||4;
+    const nTrain=Array.isArray(p.gymDays)&&p.gymDays.length>0?Math.min(7,new Set(p.gymDays).size):nDefault;
+    if(nTrain>=7){carbRest=Math.round(carb*0.75);}
+    else{const avg=carb;carb=Math.round(avg*7/(nTrain+0.75*(7-nTrain)));carbRest=Math.round(carb*0.75);}
+  }
   // Sàn calo an toàn khi giảm mỡ: nữ 1.200, nam 1.500 kcal/ngày (cả ngày tập lẫn ngày nghỉ).
   // Thiếu thì bù tinh bột; low-carb/keto bù chất béo để giữ đúng kiểu ăn.
   const calFloor=gender==="female"?1200:1500;
@@ -80,7 +93,7 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const pRatio=pRatioVal+"g/kg";
   const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
   const fRatio=fRatioVal+"g/kg";
-  return{floorApplied,calFloor,tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,directionMismatch,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
+  return{refKg,floorApplied,calFloor,tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,directionMismatch,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
 }
 
 export const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};

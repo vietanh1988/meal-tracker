@@ -26,3 +26,34 @@ test("người to không bị ảnh hưởng", () => {
   assert.equal(b.floorApplied, false);
   assert.ok(b.calTarget > 2000);
 });
+
+// 17/10: trung bình cả tuần (ngày tập + ngày nghỉ) đúng bằng mục tiêu calo
+test("trung bình tuần = mục tiêu (TDEE ± điều chỉnh), theo số ngày tập", () => {
+  for (const [goal, gk] of [["bulk", 68], ["cut", 60], ["maintain", 65]]) {
+    for (const days of [[0, 2, 4], [0, 1, 2, 3], [0, 1, 2, 3, 4, 5]]) {
+      const m = calcMacro({ cm: 172, kg: 65, birthYear: 1990, goalKg: gk, goalType: goal, months: 4, gender: "male", exerciseType: "gym", frequency: "regular", gymDays: days });
+      const n = days.length;
+      const avg = (m.calTarget * n + m.calRest * (7 - n)) / 7;
+      assert.ok(Math.abs(avg - m.calTargetRaw) <= 12, `${goal} ${n} ngày: TB ${avg.toFixed(0)} vs mục tiêu ${m.calTargetRaw}`);
+      assert.ok(m.calTarget > m.calRest, "ngày tập nhiều hơn ngày nghỉ");
+    }
+  }
+});
+
+test("BMI > 27: đạm / béo theo cân ở BMI 27, giảm mỡ thì tổng calo dưới TDEE", () => {
+  const m = calcMacro({ cm: 175, kg: 120, birthYear: 1990, goalKg: 95, goalType: "cut", months: 6, gender: "male", exerciseType: "gym", frequency: "occasional", gymDays: [0, 2, 4] });
+  assert.equal(m.refKg, 82.7);
+  assert.equal(m.protein, Math.round(82.7 * 2.2));
+  const avg = (m.calTarget * 3 + m.calRest * 4) / 7;
+  assert.ok(avg < m.tdee - 300, `TB ${avg} phải thấp hơn TDEE ${m.tdee}`);
+  const n = calcMacro({ cm: 172, kg: 65, birthYear: 1990, goalKg: 68, goalType: "bulk", months: 4, gender: "male", exerciseType: "gym" });
+  assert.equal(n.refKg, 65); // người bình thường không đổi
+  assert.equal(n.protein, 130);
+});
+
+test("không tập / keto: 1 bộ số (không chia ngày tập / nghỉ)", () => {
+  const a = calcMacro({ cm: 160, kg: 55, birthYear: 1995, goalKg: 52, goalType: "cut", months: 3, gender: "female", exerciseType: "none" });
+  assert.equal(a.calTarget, a.calRest);
+  const k = calcMacro({ cm: 170, kg: 70, birthYear: 1995, goalKg: 65, goalType: "cut", months: 3, gender: "male", exerciseType: "gym", dietStrategy: "keto", gymDays: [0, 2, 4] });
+  assert.equal(k.carb, k.carbRest);
+});
