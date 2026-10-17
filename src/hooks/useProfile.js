@@ -5,7 +5,8 @@ import { readUser, writeUser } from "../lib/userStore";
 // 17/10 (bản vẽ 126–127): tốc độ giảm + điều chỉnh tuần. Cột mới trên profiles (migration 20261017120000);
 // prod chưa chạy SQL thì chưa có cột → giữ trên máy (fp_pace) và KHÔNG gửi cột lạ (upsert sẽ lỗi cả hồ sơ).
 const PACE_KEY = "fp_pace";
-const PACE_COLS = { cutPace: "cut_pace", calOffset: "cal_offset", calOffsetDate: "cal_offset_date", checkinDate: "checkin_date" };
+// 18/10: + uiMode (ui_mode) — flow giảm cân. Mỗi cột kiểm riêng (prod có thể có cột này mà chưa có cột kia)
+const PACE_COLS = { cutPace: "cut_pace", calOffset: "cal_offset", calOffsetDate: "cal_offset_date", checkinDate: "checkin_date", uiMode: "ui_mode" };
 
 // Các số đo lấy mặc định khi hồ sơ thiếu — đánh dấu để KHÔNG ghi ngược số giả vào DB và để màn Mục tiêu nhắc nhập.
 export const BODY_FIELDS = ["cm", "kg", "birthYear", "goalKg"];
@@ -18,7 +19,7 @@ export function useProfile(userId, authLoading) {
   // Hàng đợi lưu (14/10): chỉ 1 lệnh lưu chạy cùng lúc, lần bấm sau cùng luôn thắng; lỗi thì giữ lại để thử lại
   const pendingRef = useRef(null);
   const busyRef = useRef(false);
-  const paceColsRef = useRef(false);
+  const paceColsRef = useRef(new Set());
 
   const fetchProfile = useCallback(async (silent = false) => {
     if (authLoading) return; // auth chưa xác thực xong, chờ - không set state gì cả
@@ -70,10 +71,10 @@ export function useProfile(userId, authLoading) {
         p.push_dismissed_date = data.push_dismissed_date || null;
         p.push_enabled_clicked = !!data.push_enabled_clicked;
         p.push_prompted_after_eaten = !!data.push_prompted_after_eaten;
-        paceColsRef.current = "cut_pace" in data;
+        paceColsRef.current = new Set(Object.values(PACE_COLS).filter((c) => c in data));
         const localPace = readUser(PACE_KEY, userId, {}) || {};
         Object.entries(PACE_COLS).forEach(([k, col]) => {
-          const v = paceColsRef.current ? data[col] : localPace[k];
+          const v = paceColsRef.current.has(col) ? data[col] : localPace[k];
           if (v != null) p[k] = v;
         });
         if (defaulted.length) p._defaulted = defaulted;
@@ -181,7 +182,7 @@ export function useProfile(userId, authLoading) {
     Object.entries(PACE_COLS).forEach(([k, col]) => {
       if (merged[k] === undefined) return;
       pace[k] = merged[k];
-      if (paceColsRef.current) payload[col] = merged[k] ?? (k === "calOffset" ? 0 : null);
+      if (paceColsRef.current.has(col)) payload[col] = merged[k] ?? (k === "calOffset" ? 0 : null);
     });
     if (Object.keys(pace).length) writeUser(PACE_KEY, userId, pace);
     // Legacy fields

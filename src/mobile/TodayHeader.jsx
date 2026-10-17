@@ -101,7 +101,8 @@ function StatCard({ icon, label, value, children }) {
 }
 
 // planCard (bản vẽ 128): khách không tập → ô thứ 3 bỏ 'Ngày tập / Ngày nghỉ', thay bằng kế hoạch (VD Giảm 0,4 kg/tuần · còn 7 kg)
-export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine, planCard, goalSub, dayDone }) {
+// status (bản vẽ 131d, flow giảm cân): thay 4 ô macro bằng 1 dòng trả lời "Hôm nay mình ổn không?"
+export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine, planCard, goalSub, dayDone, status }) {
   const [y, m] = date.split("-");
   const remain = targets.cal - eaten.cal;
   const pct = targets.cal > 0 ? Math.min(100, Math.round((eaten.cal / targets.cal) * 100)) : 0;
@@ -162,6 +163,15 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
         </div>
       </div>
 
+      {status ? (
+        <div data-testid="loss-status" data-tone={status.tone} className="fp-glass" style={{ position: "relative", borderRadius: 16, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
+          <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.92)", color: status.tone === "ok" ? "#047857" : "#B45309", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{svg(status.tone === "ok" ? <path d="M5 12.5l4.5 4.5L19 7.5" /> : <path d="M12 7v6M12 17h.01" />, 20, 2.8)}</span>
+          <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
+            <span style={{ fontSize: 16, fontWeight: 900 }}>{status.title}</span>
+            <span style={{ fontSize: 12.5, opacity: 0.9, lineHeight: 1.4 }}>{status.sub}</span>
+          </span>
+        </div>
+      ) : (
       <div data-testid="macro-strip" style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
         {MACROS.map((mc) => {
           const e = eaten[mc.k] || 0, t = targets[mc.k] || 0;
@@ -181,6 +191,7 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
           );
         })}
       </div>
+      )}
     </div>
   );
 }

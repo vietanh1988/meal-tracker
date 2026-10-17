@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { calcMacro } from "./calcMacro";
 import { PacePicker, etaMonth } from "./mobile/PacePicker";
+import { lossChoices, goalError } from "./lib/lossPlan";
 import { DK, DK_CSS, dkCard, dkGlass } from "./theme";
 import { Seg } from "./mobile/ui";
 import { todayVN } from "./lib/dateVN";
@@ -50,6 +51,9 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     return d;
   });
   const [touched, setTouched] = useState({});
+  // 18/10 (bản vẽ 131a): màn chào hỏi "Bạn muốn gì?" — loss = flow giảm cân 3 màn (bước 11, 12), gym = Bước 1–3 như cũ
+  const [mode, setMode] = useState(profile?.uiMode === "gym" ? "gym" : "loss");
+  const [lossKg, setLossKg] = useState(null); // số kg muốn giảm (chip) · null = theo gợi ý · "x" = tự nhập
   const p = { ...(profile || {}) };
   if (!p.gender) p.gender = "male";
   const pm = { ...p };
@@ -70,9 +74,9 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
       {[1, 2, 3].map((i) => <span key={i} style={{ width: i === cur ? 22 : 8, height: 8, borderRadius: 4, background: i === cur ? "#FFFFFF" : i < cur ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.2)", transition: "all .3s" }} />)}
     </div>
   );
-  const top = (n) => (
+  const top = (n, back = step - 1) => (
     <div style={{ display: "flex", alignItems: "center", padding: "6px 12px 0 4px" }}>
-      <button aria-label="Quay lại" onClick={() => setStep(step - 1)} style={{ width: 44, height: 44, border: "none", background: "transparent", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center" }}>{svg(P.back, 22, 2.4)}</button>
+      <button aria-label="Quay lại" onClick={() => setStep(back)} style={{ width: 44, height: 44, border: "none", background: "transparent", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center" }}>{svg(P.back, 22, 2.4)}</button>
       <span style={{ flex: 1 }} />
       {n && <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3 }}>Bước {n}/3</span>}
     </div>
@@ -122,18 +126,95 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
   // ---------- từng bước ----------
   let body = null;
   if (step === 0) body = <>
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "40px 24px 0 24px", textAlign: "center" }}>
-      <img src="/icon-192.png" alt="Fipilot AI" style={{ width: 96, height: 96, borderRadius: 26, objectFit: "cover", boxShadow: "0 0 0 1px rgba(255,255,255,0.3), 0 16px 40px rgba(0,30,120,0.5)", background: "#FFFFFF" }} />
-      <span style={{ fontSize: 28, fontWeight: 900, marginTop: 8 }}>Chào mừng đến Fipilot AI!</span>
-      <span style={{ fontSize: 15, color: DK.t2, lineHeight: 1.5 }}>Trả lời 3 câu hỏi nhanh để app tính calo &amp; macro đúng cho bạn. Điền đúng thì kết quả mới chính xác.</span>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "36px 24px 0 24px", textAlign: "center" }}>
+      <img src="/icon-192.png" alt="Fipilot AI" style={{ width: 84, height: 84, borderRadius: 24, objectFit: "cover", boxShadow: "0 0 0 1px rgba(255,255,255,0.3), 0 16px 40px rgba(0,30,120,0.5)", background: "#FFFFFF" }} />
+      <span style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>Chào mừng đến Fipilot AI!</span>
+      <span style={{ fontSize: 15, color: DK.t2, lineHeight: 1.5 }}>Bạn muốn gì? Chọn 1 — đổi lại được bất cứ lúc nào.</span>
     </div>
-    <div style={{ ...dkCard, margin: "28px 16px 0 16px", padding: "0 14px" }}>
-      {[["target", "#007AFF", "Calo chính xác", "Tính theo cơ thể & mục tiêu của bạn"], ["spark", "#7C3AED", "AI gợi ý bữa ăn", "Thực đơn đúng kcal, món Việt quen thuộc"], ["chart", "#00A67E", "Theo dõi tiến trình", "Cân nặng, calo từng ngày"]].map(([k, c, t, s], i) => (
-        <div key={k} style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 58, borderBottom: i < 2 ? `1px solid ${DK.line}` : "none" }}>{ic(k, c, 32, 18)}<span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 15, fontWeight: 700 }}>{t}</span><span style={{ fontSize: 12, color: DK.t3 }}>{s}</span></span></div>
+    <div role="radiogroup" aria-label="Mục tiêu" style={{ padding: "20px 16px 0 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+      {opt("mode-loss", mode === "loss", "chart", "#00A67E", "Tôi muốn giảm cân", "Kế hoạch ăn sẵn mỗi ngày, cơm Việt, không nhịn đói", () => setMode("loss"))}
+      {opt("mode-gym", mode === "gym", "bolt", "#EA580C", "Tôi tập gym, muốn tăng cơ", "Tính calo, đạm theo ngày tập / ngày nghỉ", () => setMode("gym"))}
+    </div>
+    <div style={{ ...dkCard, margin: "18px 16px 0 16px", padding: "0 14px" }}>
+      {(mode === "loss"
+        ? [["check", "#00A67E", "Giảm cân không nhịn đói", "Ăn đủ bữa, mức ăn luôn an toàn"], ["food", "#EA580C", "Thực đơn món Việt có sẵn", "Phở, bún, cơm nhà — ăn theo là đạt"], ["chart", "#007AFF", "Mỗi tuần app tự chỉnh", "Xem cân của bạn rồi chỉnh mức ăn"]]
+        : [["target", "#007AFF", "Calo chính xác", "Tính theo cơ thể & lịch tập của bạn"], ["spark", "#7C3AED", "AI gợi ý bữa ăn", "Thực đơn đúng kcal, món Việt quen thuộc"], ["chart", "#00A67E", "Theo dõi tiến trình", "Cân nặng, số đo, nhật ký ăn"]]
+      ).map(([k, c, t, sub], i) => (
+        <div key={k} style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 56, borderBottom: i < 2 ? `1px solid ${DK.line}` : "none" }}>{ic(k, c, 32, 18)}<span style={{ display: "flex", flexDirection: "column", textAlign: "left" }}><span style={{ fontSize: 14, fontWeight: 800 }}>{t}</span><span style={{ fontSize: 12, color: DK.t3 }}>{sub}</span></span></div>
       ))}
     </div>
-    {footer(<>{btn("Bắt đầu thiết lập", () => setStep(1), false, "onb-start")}<p style={{ margin: "10px 0 0 0", textAlign: "center", fontSize: 12, color: DK.t3 }}>Đổi lại được bất cứ lúc nào ở Tôi › Mục tiêu &amp; macro</p></>)}
+    {footer(<>{btn("Bắt đầu", () => { if (mode === "loss") setStep(11); else { set({ uiMode: "gym" }); setStep(1); } }, false, "onb-start")}<p style={{ margin: "10px 0 0 0", textAlign: "center", fontSize: 12, color: DK.t3 }}>Mất khoảng 30 giây</p></>)}
   </>;
+
+  // ---------- Flow giảm cân (bản vẽ 131b–c) ----------
+  if (step === 11) {
+    const vals = { cm: draft.cm, kg: draft.kg, birthYear: draft.birthYear };
+    const errs = bodyErrors(vals, year);
+    const shown = (k, len) => (errs[k] && (touched[k] || String(vals[k]).replace(",", "").length >= len) ? errs[k] : null);
+    const bodyOk = bodyValid(vals, year);
+    const kg = numOf(draft.kg), cm = numOf(draft.cm);
+    const ch = bodyOk ? lossChoices(kg, cm) : { options: [5, 8, 10], pick: 5 };
+    const pick = lossKg ?? ch.pick;
+    const goalKg = pick === "x" ? numOf(draft.goalKg) : (bodyOk && pick ? Math.round((kg - pick) * 10) / 10 : NaN);
+    const gErr = bodyOk && (pick === "x" ? String(draft.goalKg).length >= 2 : true) ? goalError(kg, goalKg, cm) : null;
+    const ok = bodyOk && !Number.isNaN(goalKg) && !gErr;
+    const next = () => {
+      if (!ok) return;
+      set({ cm: Math.round(cm), kg: Math.round(kg * 10) / 10, birthYear: numOf(draft.birthYear), goalKg, goalType: "cut", cutPace: "mid", dietStrategy: "balanced", uiMode: "loss", exerciseType: p.uiMode === "loss" ? p.exerciseType : "none", frequency: p.uiMode === "loss" ? p.frequency : undefined, _defaulted: keepDefaulted(["cm", "kg", "birthYear", "goalKg"]) });
+      setStep(12);
+    };
+    body = <>
+      {top(1, 0)}{head(1, "Vài thông tin để lên kế hoạch", "Chỉ 1 màn — app tự chọn mức ăn an toàn cho bạn.")}
+      <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+        {seg([["male", "Nam"], ["female", "Nữ"]], p.gender || "male", (g) => set({ gender: g }))}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, alignItems: "start" }}>
+          {field("kg", "Cân nặng", "kg", "decimal", draft.kg, dnum("kg", true), blur("kg"), "VD 75", shown("kg", 3), "onb-weight")}
+          {field("cm", "Chiều cao", "cm", "numeric", draft.cm, dnum("cm"), blur("cm"), "VD 160", shown("cm", 3), "onb-height")}
+          {field("birthYear", "Năm sinh", "", "numeric", draft.birthYear, dnum("birthYear"), blur("birthYear"), "VD 1990", shown("birthYear", 4), "onb-year")}
+        </div>
+        <span style={{ fontSize: 14, fontWeight: 800, marginTop: 4 }}>Bạn muốn giảm bao nhiêu kg?</span>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {[5, 8, 10].map((d) => (bodyOk && !ch.options.includes(d) ? null : chip(`loss-${d}`, `−${d} kg`, pick === d, () => setLossKg(d))))}
+          {chip("loss-x", "Tự nhập", pick === "x", () => setLossKg("x"))}
+        </div>
+        {pick === "x" && field("goalKg", "Cân muốn đạt", "kg", "decimal", draft.goalKg, dnum("goalKg", true), blur("goalKg"), "VD 70", !!gErr, "onb-goalKg")}
+        {bodyOk && (gErr
+          ? <div data-testid="onb-goal-err" role="alert" style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(255,120,120,0.16)", color: DK.red, fontSize: 13, fontWeight: 700, lineHeight: 1.5 }}>{gErr}</div>
+          : !Number.isNaN(goalKg) && <div data-testid="onb-loss-goal" style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(0,200,150,0.18)", color: DK.green, fontSize: 13, fontWeight: 600 }}>→ còn {String(goalKg).replace(".", ",")} kg · mức hợp lý với chiều cao của bạn</div>)}
+        {note("Điền đúng số của bạn thì kế hoạch mới chính xác — cân buổi sáng, trước khi ăn.")}
+      </div>
+      {footer(btn("Xem kế hoạch", next, !ok, "onb-next"))}
+    </>;
+  }
+  if (step === 12) {
+    const eta = etaMonth(macro.etaWeeks);
+    const exOn = (p.exerciseType || "none") !== "none";
+    const start = () => {
+      setProfile({ ...p, onboardingDone: true, uiMode: "loss", goalType: "cut" });
+      onComplete();
+    };
+    body = <>
+      {top(2, 11)}{head(2, "Kế hoạch của bạn", null)}
+      <div data-testid="onb-promise" style={{ ...dkCard, margin: "0 16px", padding: 16, display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontSize: 14, color: DK.t2 }}>Theo kế hoạch này, bạn còn</span>
+        <span style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.05 }}>{String(p.goalKg).replace(".", ",")} kg</span>
+        {eta && <span style={{ fontSize: 16, fontWeight: 800, color: DK.green }}>vào khoảng {eta}</span>}
+        <svg width="100%" height="96" viewBox="0 0 320 96" aria-hidden="true"><path d="M8 16 C 90 26, 170 52, 312 82" fill="none" stroke="#4ADE9B" strokeWidth="4" strokeLinecap="round" /><circle cx="8" cy="16" r="6" fill="#FFFFFF" /><circle cx="312" cy="82" r="7" fill="#4ADE9B" /><text x="16" y="40" fill="rgba(255,255,255,0.8)" fontSize="12" fontWeight="700">{String(p.kg).replace(".", ",")} kg · hôm nay</text></svg>
+      </div>
+      <div style={{ ...dkCard, margin: "12px 16px 0 16px", padding: "0 14px" }}>
+        {[["food", "#EA580C", "Ăn cơm, phở, bún như thường", "App gợi ý sẵn món mỗi bữa"], ["check", "#00A67E", "Mỗi ngày chỉ 1 việc", "Ăn rồi bấm Đã ăn, hoặc chụp 1 tấm"], ["chart", "#007AFF", "Mỗi tuần app tự chỉnh", "Xem cân của bạn rồi chỉnh mức ăn"]].map(([k, c, t, sub], i) => (
+          <div key={k} style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 58, borderBottom: i < 2 ? `1px solid ${DK.line}` : "none" }}>{ic(k, c, 32, 18)}<span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 15, fontWeight: 800 }}>{t}</span><span style={{ fontSize: 12, color: DK.t3 }}>{sub}</span></span></div>
+        ))}
+      </div>
+      <div style={{ margin: "14px 16px 0 16px", display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ flex: 1, fontSize: 14, color: DK.t2 }}>Bạn có hay tập / vận động không?</span>
+        {chip("ex-no", "Không", !exOn, () => set({ exerciseType: "none", frequency: undefined }))}
+        {chip("ex-yes", "Có", exOn, () => set({ exerciseType: "gym", frequency: "regular", gymDays: [0, 2, 4] }))}
+      </div>
+      <p data-testid="onb-kcal" style={{ margin: "10px 20px 0 20px", fontSize: 12, color: DK.t3 }}>Mỗi ngày ăn khoảng {fmt(macro.calTarget)} kcal — xem chi tiết ở Tôi › Mục tiêu.</p>
+      {footer(btn("Bắt đầu", start, false, "onb-loss-start"))}
+    </>;
+  }
 
   if (step === 1) {
     const vals = { cm: draft.cm, kg: draft.kg, birthYear: draft.birthYear };

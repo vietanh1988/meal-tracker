@@ -53,6 +53,8 @@ import { WeeklyCheckCard, WalkTipCard } from "./WeeklyCheckCard";
 import { ActivityRow, ActivitySheet, SnackCard, ActivityAsk } from "./ActivitySheet";
 import { useActivityLog } from "../hooks/useActivityLog";
 import { dayBurn, activityBonus, withBonus, bonusTip, actOf } from "../lib/activity";
+import { lossStatus, streakDays } from "../lib/lossPlan";
+import { LossResult } from "./LossResult";
 import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
 import PWAInstallPrompt from "../PWAInstallPrompt";
 import { useNotifications } from "../hooks/useNotifications";
@@ -704,7 +706,9 @@ export function MobileApp(props) {
   }, [noEx, user?.id]);
   const closeWalkTip = () => { writeUser("fp_walk_tip", user?.id, { n: 3, off: true }); setWalkTip(false); };
   const leftKg = Math.round(((Number(weight.curKg) || 0) - (Number(weight.goalKg) || 0)) * 10) / 10;
-  const planCard = !noEx ? null : macro.goal === "cut"
+  // Flow giảm cân (bản vẽ 131d): khách chọn "Tôi muốn giảm cân" ở màn chào
+  const lossMode = profile.uiMode === "loss" && macro.goal === "cut";
+  const planCard = !noEx && !lossMode ? null : macro.goal === "cut"
     ? { value: `Giảm ${fmtDec(Math.round((macro.kgWeek || 0) * 10) / 10)} kg/tuần`, sub: leftKg > 0 ? `còn ${fmtDec(leftKg)} kg` : "Đã tới cân mục tiêu" }
     : { value: "Giữ cân", sub: "Không tập" };
 
@@ -757,7 +761,9 @@ export function MobileApp(props) {
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}
             checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}
-            activity={activityRow} activityAsk={activityAsk} snack={snackCard} focusBonus={focusBonus} goalSub={goalSub}
+            activity={activityRow} activityAsk={activityAsk} snack={snackCard}
+            status={lossMode && date === today ? lossStatus({ target: targets.cal, eaten: eaten.cal, rows, nowMinutes: now.minutes }) : null}
+            onPhotoBig={lossMode ? () => openPhoto(null) : null} focusBonus={focusBonus} goalSub={goalSub}
             onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
@@ -777,7 +783,8 @@ export function MobileApp(props) {
             range={{ mode: rangeMode, setMode: setRangeMode, anchor: rangeAnchor, setAnchor: setRangeAnchor, today }}
             getDailyLogs={ud.getDailyLogs} dataVersion={version} targetOf={(d) => targetsOf(macroFor(d), dayTypeOf(profile, d)).cal} lineCal={Math.round(macro.calTarget)} openDay={openDay} onLog={() => openLog(null, today)}
             weightLog={weightLog} weight={weight} profile={profile} setProfile={setProfile} addWeight={addWeight} updateWeight={updateWeight} deleteWeight={deleteWeight}
-            measures={measures} onMeasure={(d) => openLayer({ type: "measure", date: d })} onOpenReminders={() => openLayer({ type: "page", sec: "reminders" })} />
+            measures={measures} onMeasure={(d) => openLayer({ type: "measure", date: d })} onOpenReminders={() => openLayer({ type: "page", sec: "reminders" })}
+            lossResult={lossMode ? <LossResult weight={weight} macro={macro} measures={measures || []} streak={streakDays([...recentRows, ...(ud.todayLog ? [ud.todayLog] : [])], today)} onWeigh={() => openWeigh(false)} onMeasure={() => openLayer({ type: "measure", date: today })} /> : null} />
         )}
         {tab === "me" && (
           <MeScreen bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />} name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}

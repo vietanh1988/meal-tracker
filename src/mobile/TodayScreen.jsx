@@ -32,7 +32,7 @@ export function TodayScreen(p) {
 
   return (
     <div data-testid="today-body" style={{ minHeight: "100%" }}>
-      <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} planCard={p.planCard} goalSub={p.goalSub} dayDone={date < today || allEaten} />
+      <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} planCard={p.planCard} goalSub={p.goalSub} status={p.status} dayDone={date < today || allEaten} />
 
       {p.banner}
       {isToday && p.checkin}
@@ -69,7 +69,13 @@ export function TodayScreen(p) {
         {dayLoaded && rows.map((r, i) => <MealRow key={r.id} r={r} last={i === rows.length - 1} now={!!focus && focus.id === r.id} {...p} />)}
         {dayLoaded && rows.length === 0 && <div style={{ ...card, margin: 0, minHeight: 56, padding: "0 14px", display: "flex", alignItems: "center", fontSize: 13, color: "#64748B" }}>Chưa bật bữa nào — vào Tôi › Lịch tập & bữa để bật.</div>}
       </div>
-      {p.onAIMenu && date >= today && (
+      {/* Bản vẽ 131d (flow giảm cân): 1 nút cam "Chụp 1 tấm" thay nút AI lên thực đơn */}
+      {p.onPhotoBig && isToday && (
+        <button onClick={p.onPhotoBig} data-testid="today-photo-big" style={{ margin: "12px 12px 0 12px", width: "calc(100% - 24px)", height: 56, borderRadius: 18, border: "none", background: GRAD_ORANGE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontSize: 16, fontWeight: 900, fontFamily: "inherit", boxShadow: "0 8px 18px rgba(234,88,12,0.28)" }}>
+          {Icon.camera(20)}Ăn món khác? Chụp 1 tấm
+        </button>
+      )}
+      {!p.onPhotoBig && p.onAIMenu && date >= today && (
         <button onClick={p.onAIMenu} data-testid="today-ai-menu" style={{ margin: "10px 12px 0 12px", width: "calc(100% - 24px)", height: 48, borderRadius: 16, border: "none", background: "linear-gradient(135deg, rgba(124,58,237,0.10), rgba(0,122,255,0.08))", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14, fontWeight: 800, color: "#6D28D9", fontFamily: "inherit" }}>
           {Icon.sparkle(18)}{eatenCount > 0 ? "AI lên thực đơn các bữa còn lại" : "AI lên thực đơn cả ngày"}
         </button>
