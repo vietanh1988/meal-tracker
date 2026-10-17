@@ -182,7 +182,9 @@ function parseMenuJSON(text) {
     console.warn("parseMenuJSON: JSON.parse failed, attempting truncation fix:", e.message);
     let fixed = jsonStr;
     // Đóng string đang mở
-    const quoteCount = (fixed.match(/(?<!\\)"/g) || []).length;
+    // 18/10: KHÔNG dùng regex lookbehind — Safari < 16.4 (iPhone cũ) báo lỗi cú pháp khi tải cả app → màn trắng
+    let quoteCount = 0;
+    for (let i = 0; i < fixed.length; i++) if (fixed[i] === '"' && fixed[i - 1] !== "\\") quoteCount++;
     if (quoteCount % 2 !== 0) fixed += '"';
     // Đếm và đóng ngoặc còn thiếu
     let brackets = 0, braces = 0;

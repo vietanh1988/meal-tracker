@@ -14,6 +14,7 @@
 // 8. Màn mobile (MobileApp) thiếu props cho AIMenuGenerator
 // ============================================================
 
+import * as fs from "fs";
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -103,6 +104,13 @@ for (const [name, src] of Object.entries(FILES_TO_CHECK)) {
     });
   }
 }
+
+// 18/10: iPhone Safari < 16.4 không hiểu regex lookbehind → lỗi cú pháp, cả app màn trắng
+test("Không dùng regex lookbehind (?<= / ?<!) trong src (Safari cũ màn trắng)", () => {
+  const walk = (d) => fs.readdirSync(d).flatMap((n) => { const p = d + "/" + n; return fs.statSync(p).isDirectory() ? walk(p) : /\.(jsx?|mjs)$/.test(n) ? [p] : []; });
+  const bad = walk("src").filter((p) => /\(\?<[=!]/.test(fs.readFileSync(p, "utf8")));
+  assert(bad.length === 0, "Có lookbehind: " + bad.join(", "));
+});
 
 test("Onboarding: thực đơn đầu tiên chỉ áp hôm nay, KHÔNG lưu ngầm vào Lặp lại hằng tuần (14/10)", () => {
   assert(!SRC.onboarding.includes("saveWeeklyTemplate("), "OnboardingWizard vẫn gọi saveWeeklyTemplate");
