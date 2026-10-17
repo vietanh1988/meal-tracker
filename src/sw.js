@@ -2,11 +2,14 @@ import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from
 import { registerRoute, NavigationRoute } from "workbox-routing";
 import { clientsClaim } from "workbox-core";
 
-// Không dùng skipWaiting/clientsClaim — để popup update hiện trước
+// (cũ) Không dùng skipWaiting/clientsClaim — để popup update hiện trước. 18/10: đổi, xem dưới
 // SW mới sẽ activate khi user bấm "Nâng cấp" (xoá cache + reload)
 // 16/10: app tự lên bản mới khi khách mở lại app (main.jsx gửi SKIP_WAITING lúc mở app / app chạy nền) —
 // trước đây SW mới chờ tới khi đóng hết tab, iPhone ghim màn hình gần như không bao giờ → khách kẹt bản cũ
 self.addEventListener("message", (e) => { if (e.data && e.data.type === "SKIP_WAITING") self.skipWaiting(); });
+// 18/10: SW mới lên ngay (không chờ app gửi SKIP_WAITING) — máy đang kẹt màn trắng không chạy được app để gửi lệnh
+self.addEventListener("install", () => self.skipWaiting());
+clientsClaim();
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html")));

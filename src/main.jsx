@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
+// 18/10: báo cho script cứu màn trắng ở index.html biết JS đã chạy được
+try { window.__fpBooted = true; } catch (e) { /* */ }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

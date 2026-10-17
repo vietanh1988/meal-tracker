@@ -26,7 +26,10 @@ export default defineConfig({
         ]
       },
       injectManifest: {
-        injectionPoint: "self.__WB_MANIFEST"
+        injectionPoint: "self.__WB_MANIFEST",
+        // 18/10: file JS chính > 2 MB (mặc định workbox) → trước đây KHÔNG được lưu sẵn, chỉ index.html được lưu
+        // → sau mỗi lần deploy, máy khách mở index.html cũ trỏ tới file JS cũ đã mất → màn trắng
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024
       }
     })
   ]

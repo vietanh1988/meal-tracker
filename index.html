@@ -36,6 +36,20 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- 18/10: cứu máy kẹt màn trắng (bản cũ trong bộ nhớ đệm trỏ tới file JS đã mất): 12 s chưa chạy được app
+         → gỡ service worker + xoá bộ nhớ đệm + tải lại 1 lần (main.jsx đặt window.__fpBooted = true) -->
+    <script>
+      setTimeout(function () {
+        try {
+          if (window.__fpBooted || sessionStorage.getItem("fp_recover")) return;
+          sessionStorage.setItem("fp_recover", "1");
+          var sw = navigator.serviceWorker ? navigator.serviceWorker.getRegistrations() : Promise.resolve([]);
+          sw.then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); })
+            .then(function () { return window.caches ? caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }) : null; })
+            .catch(function () {}).then(function () { location.reload(); });
+        } catch (e) {}
+      }, 12000);
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
