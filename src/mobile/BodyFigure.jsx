@@ -13,7 +13,7 @@ export function BodyFigure({ gender, active, width = 140, labels = true }) {
   const g = gender === "female" ? "female" : "male";
   return (
     <svg data-testid="body-figure" data-gender={g} width={width} height={width * 2} viewBox="0 0 600 1200" role="img" aria-label={`Hình hướng dẫn đo (${g === "female" ? "nữ" : "nam"})`} style={{ display: "block", flexShrink: 0 }}>
-      <image href={`/body/${g}.webp`} x="0" y="0" width="600" height="1200" />
+      <image href={`/body/${g}-v2.webp`} x="0" y="0" width="600" height="1200" />
       {FIELDS.map((f) => {
         const [y, x1, x2] = BANDS[g][f.k];
         const cx = (x1 + x2) / 2, rx = (x2 - x1) / 2 + 6, ry = Math.max(8, rx * 0.15);
