@@ -84,16 +84,15 @@ test("Onboarding: nhập số đo, chọn ngày tập, chặn mục tiêu ngư�
     await page.getByTestId("onb-seg-bulk").click();
     await expect(page.getByTestId("onb-goal-err")).toHaveCount(0);
     await expect(page.getByTestId("onb-next")).toBeEnabled();
-    await page.screenshot({ path: "shots/onb-muc-tieu.png" });
-    await page.getByTestId("onb-next").click();
-
-    // Phong cách ăn: không còn màn "Xong" riêng, macro 1 dòng ở đầu
-    await expect(page.getByTestId("onb-macro")).toBeVisible();
     await expect(page.getByTestId("onb-macro")).toContainText(/kcal\s*· Đạm \d+\s*· TB \d+\s*· Béo \d+/);
     await expect(page.getByTestId("onb-kcal")).not.toHaveText("0");
-    await expect(page.getByTestId("onb-opt-vn")).toBeVisible();
-    await page.screenshot({ path: "shots/onb-phong-cach.png" });
-    await page.getByRole("button", { name: "Bỏ qua, tự ghi sau" }).click();
+    await expect(page.getByTestId("onb-next")).toHaveText("Bắt đầu");
+    await page.screenshot({ path: "shots/onb-muc-tieu.png" });
+    await page.getByTestId("onb-next").click();
+    await expect(page.getByTestId("onb-ai")).toHaveCount(0);
+
+    // 17/10: bỏ bước AI lên thực đơn — bấm Bắt đầu ở bước Mục tiêu là vào app (macro 1 dòng ngay bước Mục tiêu)
+
     await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 });
     await waitDb(async () => {
       const r = (await rest(`profiles?id=eq.${s.uid}&select=onboarding_done,cm,kg,birth_year,goal_kg,goal_type,frequency,gym_days`))[0];

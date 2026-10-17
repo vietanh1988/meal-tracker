@@ -2,12 +2,11 @@
 //  0 Chào → 1 Cơ thể → 2 Tập luyện → 3 Mục tiêu → 4 Phong cách ăn (dòng macro mỗi ngày ở đầu) + AI lên thực đơn ngày đầu.
 // Bản vẽ 110–112 (16/10): ô cơ thể để trống + báo số vô lý; chọn thẳng ngày tập T2…CN (tần suất tự suy ra);
 // chặn mục tiêu ngược hướng; bỏ màn "Xong" riêng (BMR/TDEE) → 1 dòng macro ở đầu màn Phong cách ăn.
-// Logic giữ nguyên bản cũ: lưu từng thay đổi qua setProfile, tính macro bằng calcMacro, AI qua generateMenuAI.
+// Logic giữ nguyên bản cũ: lưu từng thay đổi qua setProfile, tính macro bằng calcMacro. 17/10: bỏ bước AI lên thực đơn cuối onboarding.
 // Khác bản cũ: áp thực đơn đầu tiên chỉ áp cho HÔM NAY, không tự lưu ngầm vào "Lặp lại hằng tuần" (thống nhất chốt 13/10).
 import { useState } from "react";
 import { calcMacro } from "./calcMacro";
 import { PacePicker, etaMonth } from "./mobile/PacePicker";
-import { generateMenuAI, resolveMealIds } from "./lib/aiMenuService";
 import { DK, DK_CSS, dkCard, dkGlass } from "./theme";
 import { Seg } from "./mobile/ui";
 import { todayVN } from "./lib/dateVN";
@@ -37,10 +36,6 @@ const DAY_NAMES = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]; // profile.gymDays
 
 export function OnboardingWizard({ profile, setProfile, onComplete, appSettings, applyTemplate }) {
   const [step, setStep] = useState(0);
-  const [autoStyle, setAutoStyle] = useState("vn");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [aiErr, setAiErr] = useState("");
   const isStandalone = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone);
   const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
   const [showPin, setShowPin] = useState(!isStandalone && isIOS);
@@ -66,28 +61,10 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
   const keepDefaulted = (fields) => { const d = (p._defaulted || []).filter((f) => !fields.includes(f)); return d.length ? d : undefined; };
   const gymDays = Array.isArray(p.gymDays) ? p.gymDays : [];
 
-  const finish = () => { setProfile({ ...p, onboardingDone: true }); onComplete(); };
-  const applyMenu = async (tpl) => {
-    try { if (applyTemplate) await applyTemplate(tpl); } catch (e) { console.error("Apply AI menu on onboarding error:", e); } // chỉ áp cho hôm nay
-    finish();
-  };
-  const runAutoMenu = async () => {
-    setLoading(true); setResult(null); setAiErr("");
-    try {
-      const dayType = noEx ? "rest" : "train";
-      const mealIds = resolveMealIds(dayType, pm, appSettings);
-      const res = await generateMenuAI({ macro, profile: pm, dayType, mealIds, prefs: { style: autoStyle, avoid: "" }, avoidFoods: [], appSettings });
-      // generateMenuAI trả {ok, template:{meals}} (16/10: trước đây kiểm res.meals → luôn thoát im lặng, vẫn tốn 1 lượt AI)
-      if (res?.ok && res.template?.meals?.length) setResult({ ...res.template, day_type: dayType });
-      else setAiErr(res?.error || "Chưa tạo được thực đơn. Thử lại hoặc bỏ qua để tự ghi.");
-    } catch (e) { console.error("Auto menu onboarding error:", e); setAiErr("Chưa tạo được thực đơn (lỗi mạng). Thử lại hoặc bỏ qua để tự ghi."); } finally { setLoading(false); }
-  };
-
   // ---------- khối dùng chung ----------
   const btn = (label, onClick, disabled, testid) => (
     <button data-testid={testid} onClick={onClick} disabled={disabled} style={{ width: "100%", height: 52, borderRadius: 14, border: "none", background: disabled ? "rgba(255,255,255,0.18)" : GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 16, fontWeight: 900, boxShadow: disabled ? "none" : "0 6px 16px rgba(0,87,255,0.35)", cursor: disabled ? "default" : "pointer" }}>{label}</button>
   );
-  const link = (label, onClick, color = DK.t3) => <button onClick={onClick} style={{ border: "none", background: "transparent", color, fontFamily: "inherit", fontSize: 13, fontWeight: 700, padding: "8px 6px" }}>{label}</button>;
   const dots = (cur) => (
     <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
       {[1, 2, 3].map((i) => <span key={i} style={{ width: i === cur ? 22 : 8, height: 8, borderRadius: 4, background: i === cur ? "#FFFFFF" : i < cur ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.2)", transition: "all .3s" }} />)}
@@ -216,8 +193,9 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     const goalOk = !showGoal || (!Number.isNaN(gk) && gk >= BODY_LIMITS.kg[0] && gk <= BODY_LIMITS.kg[1] && !dirErr && (goal === "cut" || Number(p.months) >= 1));
     const next = () => {
       if (!goalOk) return;
-      if (showGoal) set({ goalKg: Math.round(gk * 10) / 10, _defaulted: keepDefaulted(["goalKg"]) });
-      setStep(4);
+      // 17/10: bỏ bước "AI lên thực đơn" (vướng, tốn 1 lượt AI) — xong mục tiêu là vào app; Hôm nay đã có Gợi ý món 1 chạm
+      setProfile({ ...p, ...(showGoal ? { goalKg: Math.round(gk * 10) / 10, _defaulted: keepDefaulted(["goalKg"]) } : {}), onboardingDone: true });
+      onComplete();
     };
     body = <>
     {top(3)}{head(3, "Mục tiêu của bạn", "Fipilot tính lượng calo thêm/bớt mỗi ngày theo mục tiêu.")}
@@ -249,56 +227,16 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
       </div>}
     </div>
     {note(goal === "cut" ? "Chậm: dễ giữ, ít đói · Vừa: khuyên dùng · Nhanh: đói hơn, cần ăn đủ đạm." : "Tốc độ quá nhanh sẽ báo vàng. Kiểu ăn chỉ hiện khi chọn Giảm mỡ.")}
-    {footer(btn("Tính macro", next, !goalOk, "onb-next"))}
+    {goalOk && <div data-testid="onb-macro" style={{ ...dkGlass, margin: "14px 16px 0 16px", padding: "10px 14px", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", fontSize: 14, fontWeight: 700, color: DK.t2, lineHeight: 1.4, textAlign: "center" }}>
+      <span>Mỗi ngày ≈ <b data-testid="onb-kcal" style={{ color: "#FFFFFF", fontWeight: 900 }}>{fmt(macro.calTarget)}</b> kcal</span>
+      <span>· Đạm <b style={{ color: "#FFFFFF" }}>{fmt(macro.protein)}</b></span>
+      <span>· TB <b style={{ color: "#FFFFFF" }}>{fmt(macro.carb)}</b></span>
+      <span>· Béo <b style={{ color: "#FFFFFF" }}>{fmt(macro.fat)}</b></span>
+    </div>}
+    {footer(btn("Bắt đầu", next, !goalOk, "onb-next"))}
   </>;
   }
 
-  if (step === 4) {
-    const meals = result?.meals || [];
-    const sum = (k) => Math.round(meals.reduce((s, m) => (m.items || []).reduce((a, i) => a + (Number(i[k]) || 0), s), 0));
-    body = <>
-      {top(null)}
-      {/* Bản vẽ 112: thay màn "Xong – macro mỗi ngày" bằng 1 dòng tóm tắt ở đầu màn này */}
-      <div data-testid="onb-macro" style={{ ...dkGlass, margin: "4px 16px 0 16px", padding: "10px 14px", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap", fontSize: 14, fontWeight: 700, color: DK.t2, lineHeight: 1.4, textAlign: "center" }}>
-        <span><b data-testid="onb-kcal" style={{ color: "#FFFFFF", fontWeight: 900 }}>{fmt(macro.calTarget)}</b> kcal</span>
-        <span>· Đạm <b style={{ color: "#FFFFFF" }}>{fmt(macro.protein)}</b></span>
-        <span>· TB <b style={{ color: "#FFFFFF" }}>{fmt(macro.carb)}</b></span>
-        <span>· Béo <b style={{ color: "#FFFFFF" }}>{fmt(macro.fat)}</b></span>
-      </div>
-      <div style={{ padding: "14px 20px 10px 20px", display: "flex", flexDirection: "column", gap: 6 }}><span style={{ fontSize: 26, fontWeight: 900 }}>Bạn thích ăn kiểu nào?</span><span style={{ fontSize: 14, color: DK.t2 }}>AI lên thực đơn ngày đầu tiên theo kiểu này. Đổi macro được ở Tôi › Mục tiêu &amp; macro.</span></div>
-      {!loading && !result && <div style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-        {opt("vn", autoStyle === "vn", "food", "#EA580C", "Cơm nhà VN", "Thịt kho, cá chiên, canh rau, cơm trắng…", () => setAutoStyle("vn"))}
-        {opt("clean", autoStyle === "clean", "target", "#00A67E", "Eat clean", "Ức gà, cá hấp, rau luộc, gạo lứt…", () => setAutoStyle("clean"))}
-        {opt("easy", autoStyle === "easy", "bolt", "#0891B2", "Tiện lợi", "Mua nhanh, nấu nhanh, dân văn phòng", () => setAutoStyle("easy"))}
-      </div>}
-      {loading && <div style={{ textAlign: "center", padding: "50px 0" }}>
-        <style>{"@keyframes onbspin{to{transform:rotate(360deg)}}"}</style>
-        <div style={{ width: 48, height: 48, border: "4px solid rgba(255,255,255,0.18)", borderTopColor: "#FFFFFF", borderRadius: "50%", animation: "onbspin .8s linear infinite", margin: "0 auto 14px" }} />
-        <div style={{ fontSize: 15, fontWeight: 800 }}>AI đang lên thực đơn…</div>
-        <div style={{ fontSize: 12, color: DK.t3, marginTop: 4 }}>Chọn món từ kho món Việt có sẵn macro</div>
-      </div>}
-      {result && <div style={{ ...dkCard, margin: "0 16px", padding: "4px 14px" }} data-testid="onb-result">
-        {meals.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "8px 0", borderBottom: `1px solid ${DK.line}` }}>
-            <span style={{ display: "flex", flexDirection: "column", minWidth: 0 }}><span style={{ fontSize: 14, fontWeight: 800 }}>{m.meal_name || m.meal_id}</span><span style={{ fontSize: 12, color: DK.t3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{(m.items || []).map((it) => it.display || it.food).join(" · ")}</span></span>
-            <span style={{ fontSize: 13, fontWeight: 800, color: DK.link, whiteSpace: "nowrap" }}>{fmt((m.items || []).reduce((s, it) => s + (Number(it.cal) || 0), 0))} kcal</span>
-          </div>
-        ))}
-        <div style={{ display: "flex", justifyContent: "space-around", padding: "10px 0", fontSize: 12, color: DK.t2 }}>
-          <span><b style={{ color: "#FFFFFF" }}>{fmt(sum("cal"))}</b> kcal</span><span>Đạm <b style={{ color: "#FFFFFF" }}>{sum("p")}</b> g</span><span>TB <b style={{ color: "#FFFFFF" }}>{sum("c")}</b> g</span><span>Béo <b style={{ color: "#FFFFFF" }}>{sum("f")}</b> g</span>
-        </div>
-      </div>}
-      {aiErr && !loading && <p data-testid="onb-ai-err" role="alert" style={{ margin: "12px 20px 0 20px", fontSize: 13, color: DK.red, lineHeight: 1.5 }}>{aiErr}</p>}
-      {footer(<>
-        {!loading && !result && btn(aiErr ? "Thử lại" : "AI lên thực đơn cho tôi", runAutoMenu, false, "onb-ai")}
-        {result && btn("Dùng thực đơn này", () => applyMenu(result), false, "onb-apply")}
-        <div style={{ display: "flex", justifyContent: "center", gap: 18, marginTop: 6 }}>
-          {result && link("Tạo lại", runAutoMenu, DK.link)}
-          {!loading && link("Bỏ qua, tự ghi sau", finish)}
-        </div>
-      </>)}
-    </>;
-  }
 
   return (
     <div className="fpm" style={{ fontFamily: FONT, background: DK.bg, minHeight: "100dvh", color: "#FFFFFF" }}>
