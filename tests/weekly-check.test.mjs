@@ -70,3 +70,17 @@ test("129a–b tăng cơ: chưa tăng → +100; tăng nhanh hoặc eo to → −
   assert.equal(weeklyCheck({ ...b, calOffset: -250, weightLog: W([[13, 65.0], [0, 66.4]]) }).delta, 0, "không bớt dưới TDEE");
   assert.equal(nextOffset(-200, -100, "bulk"), -250);
 });
+
+test("127d: tính cả hôm nay; nói đúng thứ thiếu; đã cân hôm nay thì không mời cân", () => {
+  const today3 = [0, 1, 2].map((i) => ({ log_date: addDays(today, -i), eaten_meals: ["sang"] }));
+  const old = [{ log_date: addDays(today, -10), eaten_meals: [] }, { log_date: addDays(today, -9), eaten_meals: ["sang"] }];
+  const r = weeklyCheck({ ...base, dayRows: [...today3, ...old], weightLog: W([[4, 64.8], [2, 64.8], [0, 64.8]]) });
+  assert.equal(r.kind, "nodata");
+  assert.equal(r.mealDays, 3, "hôm nay được tính");
+  assert.equal(r.need, "meals");
+  assert.equal(r.weighedToday, true);
+  const s = weeklyCheck({ ...base, weightLog: W([[4, 64.8], [0, 64.8]]) });
+  assert.equal(s.need, "spread");
+  assert.equal(s.weighSpan, 4);
+  assert.equal(weeklyCheck({ ...base, weightLog: W([[3, 85]]) }).need, "weigh");
+});

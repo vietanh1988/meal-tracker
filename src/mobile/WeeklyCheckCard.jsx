@@ -34,10 +34,16 @@ export function WeeklyCheckCard({ check, target, onAct }) {
   const kgStat = { k: "Cân", v: kgLine };
   let tone, title, body, stats, btns;
   if (c.kind === "nodata") {
+    // 17/10: chỉ nói đúng thứ còn thiếu; đã cân hôm nay thì không mời cân nữa
     tone = "info"; title = "Chưa đủ dữ liệu để chỉnh";
-    body = <>Tuần này mới ghi bữa <b>{c.mealDays}/7 ngày</b> và cân <b>{c.weighCount} lần</b> trong 2 tuần. Ghi ít nhất 4 ngày và cân mỗi tuần 1 lần thì app mới biết nên ăn thêm hay bớt — chưa vội chỉnh calo nhé.</>;
-    stats = [{ k: "Cân (2 tuần)", v: `${c.weighCount} lần`, c: c.weighCount >= 2 ? GREEN : ORANGE }, meals];
-    btns = <><Btn testid="checkin-later" onClick={() => onAct("dismiss")}>Để sau</Btn><Btn testid="checkin-weigh" primary onClick={() => onAct("weigh")}>Cân hôm nay</Btn></>;
+    const weighOk = c.weighCount >= 2 && c.weighSpan >= 7;
+    if (c.need === "meals") body = <>7 ngày qua mới ghi bữa <b>{c.mealDays}/7 ngày</b>. Ghi ít nhất 4 ngày mỗi tuần thì app mới biết nên ăn thêm hay bớt — chưa vội chỉnh calo nhé.</>;
+    else if (c.need === "spread") body = <>Bạn đã cân {c.weighCount} lần nhưng mới trong <b>{c.weighSpan} ngày</b> — cân tiếp vào tuần sau để app so được 2 tuần rồi mới chỉnh calo.</>;
+    else body = <>Mới có <b>{c.weighCount} lần cân</b> trong 2 tuần. Cân mỗi tuần 1 lần (sáng, trước khi ăn) thì app mới biết nên ăn thêm hay bớt.</>;
+    stats = [{ k: "Cân (2 tuần)", v: c.weighCount >= 2 && c.weighSpan < 7 ? `${c.weighCount} lần · ${c.weighSpan} ngày` : `${c.weighCount} lần`, c: weighOk ? GREEN : ORANGE }, meals];
+    btns = c.need === "weigh" && !c.weighedToday
+      ? <><Btn testid="checkin-later" onClick={() => onAct("dismiss")}>Để sau</Btn><Btn testid="checkin-weigh" primary onClick={() => onAct("weigh")}>Cân hôm nay</Btn></>
+      : <Btn testid="checkin-ok" onClick={() => onAct("dismiss")}>Đã hiểu</Btn>;
   } else if (c.kind === "waist") {
     tone = "good"; title = `Cân đứng nhưng eo nhỏ đi ${fmtDec(Math.abs(c.waistTo - c.waistFrom))} cm 👍`;
     body = <>Cân chưa giảm nhưng vòng eo nhỏ lại — bạn đang mất mỡ và giữ cơ (cơ thể giữ nước thêm vài ngày là bình thường). <b>Đừng cắt thêm</b>, cứ giữ cách ăn này thêm 1 tuần.</>;

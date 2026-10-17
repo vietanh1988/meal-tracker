@@ -46,9 +46,13 @@ export function weeklyCheck({ today, goal, kgWeek, curKg, weightLog = [], dayRow
   const win = weights.filter((r) => dOf(r) >= from && dOf(r) <= today);
   const span = win.length >= 2 ? diffDays(dOf(win[0]), dOf(win[win.length - 1])) : 0;
   let days = 0;
-  for (let i = 1; i <= 7; i++) if (logged.has(addDays(today, -i))) days++;
-  const range = { from: addDays(today, -7), to: today };
-  const base = { range, mealDays: days, weighCount: win.length };
+  // 7 ngày gần nhất tính cả hôm nay (17/10: khách ghi đủ hôm nay mà thẻ vẫn đếm thiếu)
+  for (let i = 0; i < 7; i++) if (logged.has(addDays(today, -i))) days++;
+  const range = { from: addDays(today, -6), to: today };
+  const weighedToday = win.some((r) => dOf(r) === today);
+  // need: thứ còn thiếu — "meals" ghi bữa < 4/7 · "weigh" < 2 lần cân · "spread" đủ lần nhưng cách nhau < 7 ngày
+  const need = days < 4 ? "meals" : win.length < 2 ? "weigh" : span < 7 ? "spread" : null;
+  const base = { range, mealDays: days, weighCount: win.length, weighSpan: span, weighedToday, need };
   if (win.length < 2 || span < 7 || days < 4) return { kind: "nodata", ...base };
 
   const pts = win.map((r) => ({ x: diffDays(from, dOf(r)), y: Number(r.kg) }));
