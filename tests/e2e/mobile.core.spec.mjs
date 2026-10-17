@@ -32,7 +32,7 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     const bg = await page.getByTestId("page-bg").evaluate((el) => getComputedStyle(el).backgroundImage);
     expect(bg).toContain("linear-gradient");
     expect(bg).toMatch(/211, 226, 255|D3E2FF/i);
-    const st = await page.getByTestId("week-card").evaluate((el) => { const s = getComputedStyle(el); return { c: s.backgroundColor, b: s.borderTopWidth, sh: s.boxShadow }; });
+    const st = await page.getByTestId("body-card").evaluate((el) => { const s = getComputedStyle(el); return { c: s.backgroundColor, b: s.borderTopWidth, sh: s.boxShadow }; });
     expect(st.c).toBe("rgb(255, 255, 255)");
     expect(st.b).toBe("0px");
     expect(st.sh).toBe("none");
@@ -92,9 +92,10 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     await page.getByTestId("water-cup-size").selectOption("250");
   });
 
-  test("thẻ Tuần này có mặt", async () => {
-    await expect(page.getByTestId("week-card")).toBeVisible();
-    await expect(page.getByTestId("week-ok")).toContainText("ngày");
+  test("17/10: bỏ thẻ Tuần này ở Hôm nay; Cân nặng + Vận động chung 1 thẻ", async () => {
+    await expect(page.getByTestId("week-card")).toHaveCount(0);
+    await expect(page.getByTestId("body-card").getByTestId("weight-tile")).toBeVisible();
+    await expect(page.getByTestId("body-card").getByTestId("activity-row")).toBeVisible();
   });
 
   test("tải lại trang: dữ liệu còn, không áp Lịch tuần lần 2", async () => {

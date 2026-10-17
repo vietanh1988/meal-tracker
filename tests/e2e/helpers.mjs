@@ -101,3 +101,18 @@ export async function confirmIfAsked(page, ms = 2500) {
   await ok.click();
   return true;
 }
+
+// Vào Tôi › Quản trị. Quyền admin đọc từ DB lúc mở app — CI đôi khi đọc trước khi bài test bật is_admin xong
+// → không thấy nút thì tải lại 1 lần (17/10)
+export async function openAdmin(page) {
+  const nav = page.getByRole("navigation", { name: "Điều hướng chính" });
+  await nav.getByRole("button", { name: "Tôi" }).click();
+  const btn = page.getByTestId("me-admin");
+  try { await btn.waitFor({ state: "visible", timeout: 8_000 }); }
+  catch (e) {
+    await page.reload();
+    await nav.getByRole("button", { name: "Tôi" }).waitFor({ state: "visible", timeout: 20_000 });
+    await nav.getByRole("button", { name: "Tôi" }).click();
+  }
+  await tap(btn);
+}

@@ -4,28 +4,29 @@ import { useState } from "react";
 import { Icon, FONT, GRAD_BLUE, useLockScroll, useSwipeClose, SheetHandle } from "./ui";
 import { ACTS, MINUTES, actKcal, actOf, actSummary, activityBonus, dayBurn, stepsToMin, SNACKS, DAY_CAP } from "../lib/activity";
 import { fmtInt, fmtDec } from "../lib/mobileView";
+import { AppIcon, IC_COLOR } from "./icons";
 
 const GREEN = "#047857";
 const card = { margin: "14px 12px 0 12px", background: "#FFFFFF", borderRadius: 20, color: "#0F172A" };
 
 // Dòng ở Hôm nay
-export function ActivityRow({ items, goal, onOpen, onClear }) {
+export function ActivityRow({ items, goal, onOpen, onClear, inline }) {
   const has = (items || []).length > 0;
   const burn = dayBurn(items);
   const bonus = activityBonus(burn, goal);
   // Chưa ghi: hỏi thẳng + giải thích ghi vào thì được gì (theo mục tiêu)
-  const emptySub = goal === "bulk" ? "Nếu có đi bộ, chạy, đá bóng… ghi vào để app cộng thêm calo cho bạn ăn bù"
-    : goal === "maintain" ? "Nếu có đi bộ, chạy, đá bóng… ghi vào để app cộng thêm một phần calo"
-    : "Nếu có đi bộ, chạy, đá bóng… ghi vào để app ghi nhận — giúp bạn giảm nhanh hơn, không cần ăn bù";
+  const emptySub = goal === "bulk" ? "Đi bộ, chạy, đá bóng… nếu có thì ghi vào để app cộng thêm calo cho bạn ăn bù"
+    : goal === "maintain" ? "Đi bộ, chạy, đá bóng… nếu có thì ghi vào để app cộng thêm một phần calo"
+    : "Đi bộ, chạy, đá bóng… nếu có thì ghi vào — app ghi nhận, giúp bạn giảm nhanh hơn";
   const sub = !has ? emptySub
     : bonus > 0 ? `${actSummary(items)} · +${fmtInt(bonus)} kcal vào mục tiêu`
     : `${actSummary(items)} · đã đốt thêm ~${fmtInt(burn)} kcal 👍 không cần ăn bù`;
   return (
-    <div data-testid="activity-row" style={{ ...card, padding: "12px 10px 12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
+    <div data-testid="activity-row" style={inline ? { padding: "12px 0 0 0", borderTop: "1px solid #EEF2FA", display: "flex", alignItems: "center", gap: 12, color: "#0F172A" } : { ...card, padding: "12px 10px 12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
       <button onClick={onOpen} data-testid="activity-open" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 12, border: "none", background: "transparent", padding: 0, fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
-        <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🚶</span>
+        <AppIcon name="walk" color={IC_COLOR.activity} size={44} />
         <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <span data-testid="activity-title" style={{ fontSize: 15, fontWeight: 900 }}>{has ? "Vận động thêm hôm nay" : "Hôm nay bạn có vận động thêm không?"}</span>
+          <span data-testid="activity-title" style={{ fontSize: 15, fontWeight: 900 }}>{has ? "Vận động thêm hôm nay" : inline ? "Vận động thêm" : "Hôm nay bạn có vận động thêm không?"}</span>
           <span data-testid="activity-sub" style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.4 }}>{sub}</span>
         </span>
       </button>
@@ -33,6 +34,27 @@ export function ActivityRow({ items, goal, onOpen, onClear }) {
         ? <button data-testid="activity-clear" aria-label="Xoá vận động hôm nay" onClick={onClear} style={{ width: 32, height: 32, border: "none", background: "transparent", color: "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>{Icon.close(16)}</button>
         : <button data-testid="activity-add" onClick={onOpen} style={{ height: 34, padding: "0 12px", borderRadius: 17, border: "none", background: "#EEF4FF", color: "#0062F0", fontFamily: "inherit", fontSize: 13, fontWeight: 800, flexShrink: 0 }}>+ Thêm</button>}
     </div>
+  );
+}
+
+// Bản vẽ 132a: hỏi ở đầu Hôm nay đúng lúc (chiều tối, đã ghi ≥ 2 bữa, chưa trả lời) — Không = ẩn tới mai
+export function ActivityAsk({ goal, onYes, onNo }) {
+  const sub = goal === "cut" ? "Đi bộ, đá bóng, cầu lông… — có thì ghi vào, app ghi nhận giúp bạn giảm nhanh hơn"
+    : "Đi bộ, đá bóng, cầu lông… — có thì app cộng calo vào bữa tối cho bạn";
+  return (
+    <section data-testid="activity-ask" aria-label="Hỏi vận động thêm" style={{ ...card, padding: 14, display: "flex", flexDirection: "column", gap: 12, border: "1.5px solid #A7F3D0" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <AppIcon name="walk" color={IC_COLOR.activity} size={44} />
+        <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+          <span style={{ fontSize: 16, fontWeight: 900, lineHeight: 1.3 }}>Hôm nay bạn có vận động thêm không?</span>
+          <span style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.4 }}>{sub}</span>
+        </span>
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button data-testid="activity-ask-no" onClick={onNo} style={{ flex: 1, height: 44, borderRadius: 14, border: "none", background: "#F1F5F9", color: "#334155", fontFamily: "inherit", fontSize: 14, fontWeight: 900 }}>Không</button>
+        <button data-testid="activity-ask-yes" onClick={onYes} style={{ flex: 1.4, height: 44, borderRadius: 14, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 900 }}>Có, ghi vào</button>
+      </div>
+    </section>
   );
 }
 

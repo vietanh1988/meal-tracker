@@ -14,7 +14,7 @@ test("Vận động thêm: đi bộ 45 phút cộng vào mục tiêu (tăng cơ)
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ goal_type: "bulk", exercise_type: "gym" }) });
     await login(page);
     const remain0 = await kcalRemainMobile(page);
-    await expect(page.getByTestId("activity-title")).toHaveText("Hôm nay bạn có vận động thêm không?");
+    await expect(page.getByTestId("activity-title")).toHaveText("Vận động thêm");
     await expect(page.getByTestId("activity-sub")).toContainText("cộng thêm calo cho bạn ăn bù");
     await tap(page.getByTestId("activity-add"));
     await expect(page.getByTestId("activity-sheet")).toBeVisible();

@@ -38,8 +38,11 @@ export function useAppSettings(userId) {
       if (userId) {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles").select("is_admin").eq("id", userId).single();
-        if (profileError) { console.error("Load is_admin error:", profileError); }
-        setIsAdmin(!!profileData?.is_admin);
+        if (profileError) {
+          // 17/10: lỗi tạm (phiên vừa đăng nhập) → thử lại sau 2 s, không coi là "không phải admin" luôn
+          console.error("Load is_admin error:", profileError);
+          setTimeout(() => fetchSettings(true), 2000);
+        } else setIsAdmin(!!profileData?.is_admin);
       } else {
         setIsAdmin(false);
       }

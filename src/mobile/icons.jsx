@@ -22,11 +22,12 @@ const P = {
   fiber: <><path d="M5 19c0-8 6-14 15-14 0 9-6 15-14 15" /><path d="M5 19l8-8" /></>,
   drop: <path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" />,
   scale: <><rect x="3" y="4" width="18" height="16" rx="4" /><path d="M8 9a4 4 0 0 1 8 0M12 9l1.5-2" /></>,
+  walk: <><circle cx="13" cy="4.5" r="1.8" /><path d="M10 21l2.2-6.2 2.8 2.7V21M9 12.5l1.8-4 3.4 1.8 2.6 2.7M10.8 8.5L7.5 10.5V13" /></>,
 };
 export const IC_COLOR = {
   home: "#007AFF", plate: "#00A67E", plus: "#EA580C", progress: "#7C3AED", me: "#0891B2",
   sang: "#F59E0B", phu_sang: "#0D9488", trua: "#F97316", phu_chieu: "#E11D48", pre: "#EAB308", post: "#16A34A", toi: "#6366F1",
-  protein: "#2563EB", carb: "#0D9488", fat: "#F59E0B", fiber: "#16A34A", water: "#0891B2", weight: "#64748B",
+  protein: "#2563EB", carb: "#0D9488", fat: "#F59E0B", fiber: "#16A34A", water: "#0891B2", weight: "#64748B", activity: "#16A34A",
 };
 export const MEAL_ICON_KEY = { sang: "sunrise", phu_sang: "cup", trua: "sun", phu_chieu: "apple", pre: "bolt", post: "dumbbell", toi: "moon" };
 

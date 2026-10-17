@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S, waitDb, tap } from "./helpers.mjs";
+import { login, rest, S, waitDb, tap, openAdmin } from "./helpers.mjs";
 
 // Quản trị (bản vẽ 52) + Góp ý admin (53): nền tối, ô đếm việc cần làm, trả lời góp ý.
 // Tạm bật is_admin cho user test, cuối bài trả lại (pc.security kiểm is_admin = false).
@@ -12,8 +12,7 @@ test("Quản trị: ô đếm + trả lời góp ý", async ({ browser }) => {
   page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
   try {
     await login(page);
-    await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Tôi" }).click();
-    await tap(page.getByTestId("me-admin"));
+    await openAdmin(page);
     await expect(page.getByTestId("admin-home")).toBeVisible();
     await expect(page.getByTestId("admin-stat-feedback")).not.toContainText("–");
     const bg = await page.getByTestId("subpage").last().evaluate((el) => getComputedStyle(el).backgroundImage);
@@ -53,8 +52,7 @@ test("Quản trị: 10 trang con nền tối", async ({ browser }) => {
   const SCREENS = [["orders", "adm-orders"], ["report_biz", "adm-report"], ["food_cache_pending", "adm-pending"], ["food_db", "adm-food"], ["templates", "adm-tpl"], ["admin", "adm-version"], ["feature_flags", "adm-flags"], ["ai", "adm-ai"], ["ai_cost", "adm-cost"], ["backup", "adm-backup"]];
   try {
     await login(page);
-    await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Tôi" }).click();
-    await tap(page.getByTestId("me-admin"));
+    await openAdmin(page);
     await expect(page.getByTestId("admin-home")).toBeVisible();
     for (const [id, root] of SCREENS) {
       console.log("BƯỚC: mở", id);

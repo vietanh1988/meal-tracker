@@ -50,7 +50,7 @@ import { PlusMenu } from "./PlusMenu";
 import { calcMacro } from "../calcMacro";
 import { weeklyCheck, nextOffset } from "../lib/weeklyCheck";
 import { WeeklyCheckCard, WalkTipCard } from "./WeeklyCheckCard";
-import { ActivityRow, ActivitySheet, SnackCard } from "./ActivitySheet";
+import { ActivityRow, ActivitySheet, SnackCard, ActivityAsk } from "./ActivitySheet";
 import { useActivityLog } from "../hooks/useActivityLog";
 import { dayBurn, activityBonus, withBonus, bonusTip, actOf } from "../lib/activity";
 import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
@@ -64,7 +64,7 @@ import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel, menuReplaces, menuWrites } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
-import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekCard, weekDates, MEAL_SHORT, fmtKg, fmtDec, fmtInt } from "../lib/mobileView";
+import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekDates, MEAL_SHORT, fmtKg, fmtDec, fmtInt } from "../lib/mobileView";
 
 const TAB_KEY = "fp_mtab";
 const SECTION_TITLE = { profile: "Mục tiêu & hồ sơ", account: "Tài khoản & gói cước", feedback_inline: "Góp ý & báo lỗi", about: "Giới thiệu", about_edit: "Sửa giới thiệu", terms: "Điều khoản", admin_home: "Quản trị" };
@@ -210,9 +210,6 @@ export function MobileApp(props) {
     return m;
   }, [weekRows, ud.todayLog, today]);
 
-  // Thẻ "Tuần này" ở Hôm nay (tuần của ngày đang xem)
-  const week = useMemo(() => weekCard(weekRows, ud.todayLog, weekDates(date), today, (d) => targetsOf(macroFor(d), dayTypeOf(profile, d)).cal),
-    [weekRows, ud.todayLog, date, today, macro, profile, activityByDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------- thông báo nhỏ ----------
   const [toast, setToast] = useState(null);
@@ -718,7 +715,14 @@ export function MobileApp(props) {
     if (!(await appConfirm("Xoá phần vận động thêm hôm nay? Mục tiêu calo trở lại như cũ.", { title: "Xoá vận động?", confirmText: "Xoá", danger: true }))) return;
     await saveActivity(today, []);
   };
-  const activityRow = <ActivityRow items={actToday} goal={macro.goal} onOpen={() => openLayer({ type: "activity" })} onClear={clearActivity} />;
+  const activityRow = <ActivityRow inline items={actToday} goal={macro.goal} onOpen={() => openLayer({ type: "activity" })} onClear={clearActivity} />;
+  // Bản vẽ 132a: hỏi ở đầu từ 16:00 tới giờ bữa tối + 60', đã ăn ≥ 2 bữa, chưa ghi vận động, chưa bấm Không hôm nay
+  const [askSkip, setAskSkip] = useState(() => readUser("fp_act_ask", user?.id, null));
+  const dinnerEnd = (() => { const r = rows.find((x) => x.id === "toi"); return (r?.minutes ?? 19 * 60 + 30) + 60; })();
+  const eatenN = rows.filter((r) => r.state === "eaten").length;
+  const activityAsk = date === today && !actToday.length && askSkip !== today && eatenN >= 2 && now.minutes >= 16 * 60 && now.minutes < dinnerEnd
+    ? <ActivityAsk goal={macro.goal} onYes={() => openLayer({ type: "activity" })} onNo={() => { writeUser("fp_act_ask", user?.id, today); setAskSkip(today); }} />
+    : null;
   const actLabel = actToday.length ? actOf(actToday[actToday.length - 1].type).label.toLowerCase() : "";
   const focusBonus = bonusToday > 0 ? `+${fmtInt(bonusToday)} kcal vì ${actToday.length > 1 ? "vận động thêm" : actLabel} — ${bonusTip(bonusToday)}` : null;
   const bDate = bonusOf(date);
@@ -753,8 +757,8 @@ export function MobileApp(props) {
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}
             checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}
-            activity={activityRow} snack={snackCard} focusBonus={focusBonus} goalSub={goalSub}
-            week={week} onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
+            activity={activityRow} activityAsk={activityAsk} snack={snackCard} focusBonus={focusBonus} goalSub={goalSub}
+            onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}

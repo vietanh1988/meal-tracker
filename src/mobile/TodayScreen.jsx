@@ -37,7 +37,7 @@ export function TodayScreen(p) {
       {p.banner}
       {isToday && p.checkin}
       {isToday && p.walkTip}
-      {isToday && p.activity}
+      {isToday && p.activityAsk}
 
       {/* ===== Thẻ bữa đang đến giờ ===== */}
       {focus && <FocusCard r={focus} {...p} />}
@@ -79,8 +79,10 @@ export function TodayScreen(p) {
       <WaterCups waterMl={p.waterMl} addWater={p.addWater} kg={w.curKg} isTrainDay={dayType !== "rest"} goalOverride={p.waterGoalOverride} />
 
       {/* ===== Cân nặng ===== */}
-      <div style={secHead}><span style={secTitle}>Cân nặng</span></div>
-      <button data-testid="weight-tile" onClick={p.onWeight} className="tap" style={{ ...card, width: "calc(100% - 24px)", padding: 14, display: "flex", flexDirection: "column", gap: 12, color: "#0F172A", fontFamily: "inherit", textAlign: "left", boxSizing: "border-box" }}>
+      {/* 17/10 (bản vẽ 132b): Cân nặng + Vận động thêm chung 1 thẻ; bỏ thẻ "Tuần này" (xem ở Tiến độ) */}
+      <div style={secHead}><span style={secTitle}>{isToday && p.activity ? "Cân nặng & vận động" : "Cân nặng"}</span></div>
+      <div data-testid="body-card" style={{ ...card, padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+      <button data-testid="weight-tile" onClick={p.onWeight} className="tap" style={{ width: "100%", padding: 0, border: "none", background: "transparent", display: "flex", flexDirection: "column", gap: 12, color: "#0F172A", fontFamily: "inherit", textAlign: "left", boxSizing: "border-box" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 12, width: "100%" }}>
           <AppIcon name="scale" color={IC_COLOR.weight} size={44} />
           <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
@@ -97,9 +99,8 @@ export function TodayScreen(p) {
           </span>
         </span>
       </button>
-
-      {/* ===== Tuần này ===== */}
-      {p.week && <WeekCard week={p.week} onOpen={p.onDiary} />}
+      {isToday && p.activity}
+      </div>
       <div style={{ height: 24 }} />
     </div>
   );
@@ -307,39 +308,3 @@ function WaterCups({ waterMl = 0, addWater, kg, isTrainDay, goalOverride }) {
   );
 }
 
-function WeekCard({ week, onOpen }) {
-  return (
-    <>
-      <div style={secHead}>
-        <span style={secTitle}>Tuần này</span>
-        {onOpen && <button onClick={onOpen} style={{ border: "none", background: "transparent", padding: "10px 0", margin: "-10px 0", fontSize: 12, fontWeight: 700, color: "#007AFF", fontFamily: "inherit" }}>Xem nhật ký ›</button>}
-      </div>
-      <div data-testid="week-card" style={{ ...card, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
-        <div style={{ display: "flex", gap: 20 }}>
-          <span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 11, fontWeight: 700, color: "#64748B" }}>ĐẠT MỤC TIÊU</span><span data-testid="week-ok" style={{ fontSize: 18, fontWeight: 900 }}>{week.okDays} / {week.countedDays} ngày</span></span>
-          <span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 11, fontWeight: 700, color: "#64748B" }}>TB MỖI NGÀY</span><span style={{ fontSize: 18, fontWeight: 900 }}>{week.countedDays ? `${fmtInt(week.avg)} kcal` : "—"}</span></span>
-        </div>
-        <div style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", justifyItems: "center" }}>
-          <span style={{ position: "absolute", left: 0, right: 0, top: 74 - 64, borderTop: "1.5px dashed #CBD5E1" }} />
-          {week.days.map((d, i) => {
-            const h = d.has ? Math.max(4, Math.round(Math.min(1.15, d.ratio) * 64)) : 0;
-            const col = d.ok ? "#00C896" : d.kind === "today" ? "#007AFF" : "#94A3B8";
-            return (
-              <div key={d.date} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                <div style={{ height: 74, width: 22, display: "flex", alignItems: "flex-end" }}>
-                  {d.has ? <span style={{ width: "100%", height: h, borderRadius: 6, background: col }} /> : <span style={{ width: "100%", height: 4, borderRadius: 2, background: "#DCE6F5" }} />}
-                </div>
-                <span style={{ fontSize: 11, fontWeight: d.kind === "today" ? 900 : 700, color: d.kind === "today" ? "#007AFF" : "#64748B" }}>{WEEK_LBL[i]}</span>
-              </div>
-            );
-          })}
-        </div>
-        <span style={{ display: "flex", flexWrap: "wrap", gap: 14, fontSize: 11, fontWeight: 700, color: "#64748B" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: 2, background: "#00C896" }} />Đủ ±10%</span>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: 2, background: "#94A3B8" }} />Thiếu / vượt</span>
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ width: 12, borderTop: "1.5px dashed #CBD5E1" }} />Mục tiêu</span>
-        </span>
-      </div>
-    </>
-  );
-}
