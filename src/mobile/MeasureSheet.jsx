@@ -1,4 +1,4 @@
-// Sheet "Đo số đo" (bản vẽ 123b, 17/10). Mở từ "+ Đo" (hôm nay) hoặc chạm 1 dòng lịch sử (ngày đó, sửa / xoá).
+// Sheet "Số đo cơ thể" (bản vẽ 123b, 17/10). Mở từ "+ Đo" (hôm nay) hoặc chạm 1 dòng lịch sử (ngày đó, sửa / xoá).
 // Hình 3D nam/nữ theo hồ sơ; ô đang nhập → vòng thước đó sáng. Số mờ = lần đo trước để so; ô trống không lưu.
 // 1 lần đo / ngày: lưu ngày đã có → thay số của ngày đó.
 import { useMemo, useState } from "react";
@@ -59,12 +59,12 @@ export function MeasureSheet({ today, date: initDate, rows, gender, onSave, onDe
 
   return (
     <div className="fpm" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.45)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
-      <div ref={sw.ref} {...sw.swipe} data-testid="measure-sheet" role="dialog" aria-modal="true" aria-label="Đo số đo" onClick={(e) => e.stopPropagation()}
+      <div ref={sw.ref} {...sw.swipe} data-testid="measure-sheet" role="dialog" aria-modal="true" aria-label="Số đo cơ thể" onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: "max(24px, env(safe-area-inset-top, 0px))", maxWidth: 560, margin: "0 auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", display: "flex", flexDirection: "column", animation: "fpmSheetUp .2s ease", overflow: "hidden" }}>
         <div style={{ padding: "8px 16px 0 16px", display: "flex", flexDirection: "column", gap: 6 }}>
           <SheetHandle />
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ flex: 1, fontSize: 20, fontWeight: 900 }}>Đo số đo</span>
+            <span style={{ flex: 1, fontSize: 20, fontWeight: 900 }}>Số đo cơ thể</span>
             <label style={{ position: "relative", height: 34, padding: "0 12px", borderRadius: 17, background: "#EEF4FF", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, color: "#0062F0" }}>
               {Icon.calendar ? Icon.calendar(14) : null}{date === today ? "Hôm nay" : `${weekdayFull(date)} ${fmtVN(date)}`} ▾
               <select data-testid="measure-date" aria-label="Ngày đo" value={date} onChange={(e) => pickDate(e.target.value)} style={{ position: "absolute", inset: 0, opacity: 0, width: "100%" }}>
