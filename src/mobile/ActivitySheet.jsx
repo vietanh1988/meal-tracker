@@ -13,7 +13,11 @@ export function ActivityRow({ items, goal, onOpen, onClear }) {
   const has = (items || []).length > 0;
   const burn = dayBurn(items);
   const bonus = activityBonus(burn, goal);
-  const sub = !has ? "Đi bộ, chạy, đá bóng… app cộng calo cho bạn"
+  // Chưa ghi: hỏi thẳng + giải thích ghi vào thì được gì (theo mục tiêu)
+  const emptySub = goal === "bulk" ? "Nếu có đi bộ, chạy, đá bóng… ghi vào để app cộng thêm calo cho bạn ăn bù"
+    : goal === "maintain" ? "Nếu có đi bộ, chạy, đá bóng… ghi vào để app cộng thêm một phần calo"
+    : "Nếu có đi bộ, chạy, đá bóng… ghi vào để app ghi nhận — giúp bạn giảm nhanh hơn, không cần ăn bù";
+  const sub = !has ? emptySub
     : bonus > 0 ? `${actSummary(items)} · +${fmtInt(bonus)} kcal vào mục tiêu`
     : `${actSummary(items)} · đã đốt thêm ~${fmtInt(burn)} kcal 👍 không cần ăn bù`;
   return (
@@ -21,7 +25,7 @@ export function ActivityRow({ items, goal, onOpen, onClear }) {
       <button onClick={onOpen} data-testid="activity-open" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 12, border: "none", background: "transparent", padding: 0, fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
         <span aria-hidden="true" style={{ width: 40, height: 40, borderRadius: 12, background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🚶</span>
         <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <span style={{ fontSize: 15, fontWeight: 900 }}>Vận động thêm hôm nay</span>
+          <span data-testid="activity-title" style={{ fontSize: 15, fontWeight: 900 }}>{has ? "Vận động thêm hôm nay" : "Hôm nay bạn có vận động thêm không?"}</span>
           <span data-testid="activity-sub" style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.4 }}>{sub}</span>
         </span>
       </button>
