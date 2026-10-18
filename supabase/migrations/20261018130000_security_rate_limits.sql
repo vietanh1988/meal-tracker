@@ -45,7 +45,7 @@ BEGIN
   RETURN NOT EXISTS (SELECT 1 FROM profiles WHERE lower(username) = lower(left(btrim(coalesce(p_username, '')), 60)));
 END $$;
 
-CREATE OR REPLACE FUNCTION public.log_client_error(p_message text, p_stack text, p_component_stack text, p_url text, p_user_agent text)
+CREATE OR REPLACE FUNCTION public.log_client_error(p_message text, p_stack text DEFAULT NULL, p_component_stack text DEFAULT NULL, p_url text DEFAULT NULL, p_user_agent text DEFAULT NULL)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $$
 BEGIN
   IF NOT public.rpc_rate_ok('log_error', 20, interval '1 minute', auth.uid()::text) THEN RETURN; END IF;
