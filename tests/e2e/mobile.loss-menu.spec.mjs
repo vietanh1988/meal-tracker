@@ -65,6 +65,15 @@ test("Giảm cân: Thực đơn ngày mai tự lên (không AI), Đổi món, M�
     await expect(page.getByTestId("me-schedule")).toContainText("Giờ ăn");
     await expect(page.getByTestId("me-schedule")).toContainText(/\d bữa · \d{1,2}:\d{2}–\d{1,2}:\d{2}/);
     await page.screenshot({ path: "shots/loss-toi.png", fullPage: true });
+    // Tôi › Mục tiêu: nút Giao diện Đầy đủ (gym) / Gọn (giảm cân) — đổi qua lại, lưu ui_mode
+    await page.getByTestId("me-goals").click();
+    await expect(page.getByTestId("goals-ui-loss")).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("goals-ui-gym").click();
+    await waitDb(async () => (await rest(`profiles?id=eq.${s.uid}&select=ui_mode`))[0]?.ui_mode === "gym", "ui_mode = gym");
+    await page.getByTestId("goals-ui-loss").click();
+    await waitDb(async () => (await rest(`profiles?id=eq.${s.uid}&select=ui_mode`))[0]?.ui_mode === "loss", "ui_mode = loss");
+    await page.screenshot({ path: "shots/loss-giao-dien.png", fullPage: true });
+    await page.getByRole("button", { name: "Quay lại" }).click();
     // 18/10: ghi hành vi (app_events) — mở app, xem thực đơn ngày mai, lưu món không ăn
     await waitDb(async () => {
       const r = await rest(`app_events?user_id=eq.${s.uid}&at=gte.${encodeURIComponent(t0)}&select=name,mode&order=at.desc&limit=100`); // chỉ sự kiện của bài này (bài trước là chế độ gym)

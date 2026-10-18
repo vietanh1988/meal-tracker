@@ -186,6 +186,11 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
             <PacePicker testid="goals-pace" kg={p.kg} value={p.cutPace} onChange={(v) => save({ cutPace: v })} />
             <span data-testid="goals-speed" style={{ padding: "10px 12px", borderRadius: 12, fontSize: 13, fontWeight: 600, lineHeight: 1.4, background: cutLine.bad ? "rgba(245,158,11,0.18)" : "rgba(0,200,150,0.18)", color: cutLine.bad ? DK.amber : DK.green }}>{cutLine.text}</span>
             <span style={{ fontSize: 12, color: DK.t3, lineHeight: 1.45 }}>Chậm: dễ giữ, ít đói · Vừa: khuyên dùng · Nhanh: đói hơn, cần ăn đủ đạm. Mức ăn luôn ≥ {fmtInt(m.calFloor || 1500)} kcal/ngày.</span>
+            {/* 18/10: khách giảm mỡ tự chọn giao diện — Đầy đủ (gym, xem macro) hoặc Gọn (giảm cân: thực đơn tự lên, Hôm nay bản gọn) */}
+            <span style={{ fontSize: 12, fontWeight: 700, color: DK.t3, marginBottom: -4, marginTop: 4 }}>Giao diện</span>
+            <Seg dark ariaLabel="Giao diện" value={p.uiMode === "loss" ? "loss" : "gym"} onChange={(v) => save({ uiMode: v })}
+              opts={[{ value: "gym", label: "Đầy đủ (gym)", testid: "goals-ui-gym" }, { value: "loss", label: "Gọn (giảm cân)", testid: "goals-ui-loss" }]} />
+            <span style={{ fontSize: 12, color: DK.t3, lineHeight: 1.45 }}>{p.uiMode === "loss" ? "Gọn: thực đơn món Việt tự lên mỗi ngày, Hôm nay chỉ báo bạn có đang đúng kế hoạch không — không cần tính macro." : "Đầy đủ: xem đạm, tinh bột, béo từng bữa — hợp người tập gym. Chọn Gọn nếu bạn chỉ cần giảm cân cho dễ."}</span>
           </>
         ) : (
           <>
