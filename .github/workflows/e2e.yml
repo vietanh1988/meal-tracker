@@ -75,6 +75,21 @@ jobs:
       - name: Build (trỏ Supabase local)
         run: npx vite build
 
+      - name: Web fipilotai.com (Next.js trong web/) — test + build
+        working-directory: web
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+          NEXT_PUBLIC_SUPABASE_URL="$VITE_SUPABASE_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" npm run build 2>&1 | tee /tmp/web-build.txt
+          test "${PIPESTATUS[0]}" -eq 0
+
+      - name: Đưa lỗi build web lên annotation
+        if: failure()
+        run: |
+          [ -f /tmp/web-build.txt ] || exit 0
+          body=$(tail -n 80 /tmp/web-build.txt | sed 's/\x1b\[[0-9;]*m//g' | sed -e 's/%/%25/g' | awk 'BEGIN{ORS="%0A"}{print}')
+          echo "::error title=Web build log::$body"
+
       - name: Cài Chromium cho Playwright
         run: npx playwright install --with-deps chromium
 
