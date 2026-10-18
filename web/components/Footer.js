@@ -3,7 +3,7 @@
 import Logo from "./Logo";
 import Icon from "./Icon";
 import { appLink } from "@/lib/site";
-import { getFood, mainPortion } from "@/lib/foods";
+import { getFood, mainPortion, porName } from "@/lib/foods";
 
 const COLS = [["footer_1", "Chủ đề", "grid", "#38BDF8"], ["footer_2", "Fipilot AI", "star", "#FBBF24"], ["footer_3", "Chính sách", "shield", "#4ADE80"]];
 const head = { display: "flex", alignItems: "center", gap: 8, fontSize: 11.5, fontWeight: 800, letterSpacing: ".1em", color: "rgba(255,255,255,.55)" };
@@ -49,7 +49,7 @@ export default async function Footer({ s, menus }) {
                 <a key={fd.key} href={`/calo/${fd.slug}`} className="fchip">
                   <span className="fc-ic"><Icon name="bowl" size={13} /></span>
                   <b className="fc-n">{fd.name}</b>
-                  {por && <span className="fc-d"><span className="fc-u">{por.name}</span><b className="fc-k">{por.cal} kcal</b></span>}
+                  {por && <span className="fc-d"><span className="fc-u">{porName(por)}</span><b className="fc-k">{por.cal} kcal</b></span>}
                 </a>
               ))}
               <a href="/bang-calo" className="fchip-all">Xem cả bảng calo →</a>

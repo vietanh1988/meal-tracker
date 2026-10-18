@@ -31,3 +31,9 @@ export async function getFood(key) { const all = await base(); return shape(key,
 export async function allFoods() { const all = await base(); return Object.entries(all).map(([k, v]) => shape(k, v)); }
 export async function foodBySlug(slug) { const all = await allFoods(); return all.find((x) => x.slug === slug) || null; }
 export const mainPortion = (fd) => fd?.portions?.find((p) => /vừa/.test(p.name)) || fd?.portions?.[0] || null;
+
+// Tên khẩu phần như bản vẽ: "ổ" → "1 ổ" (đơn vị trơn thêm 1), "tô vừa" giữ nguyên; cap=true viết hoa chữ đầu ("Tô vừa")
+export const porName = (p, cap = false) => { if (!p?.name) return ""; const n = /\d|nhỏ|vừa|lớn/.test(p.name) ? p.name : `1 ${p.name}`; return cap ? n[0].toUpperCase() + n.slice(1) : n; };
+// Nhóm món theo bản vẽ 139g (lọc theo kiểu món, không theo nhóm dinh dưỡng)
+export const DISH_GROUPS = [["Món nước", /^(phở|bún|hủ tiếu|mì quảng|cao lầu|miến|bánh canh|mì)/i], ["Cơm", /^cơm/i], ["Bánh", /^(bánh|nem|gỏi cuốn)/i], ["Xôi, cháo", /^(xôi|cháo)/i], ["Đồ uống", /^(trà|cà phê|sinh tố|nước|sữa)/i]];
+export const dishGroup = (fd) => DISH_GROUPS.findIndex(([, re]) => re.test(fd?.name || ""));

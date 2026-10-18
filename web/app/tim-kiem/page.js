@@ -2,7 +2,7 @@
 import { PostList } from "@/components/PostCard";
 import { searchPosts } from "@/lib/content";
 import { caloFoods } from "@/lib/calo";
-import { mainPortion } from "@/lib/foods";
+import { mainPortion, porName } from "@/lib/foods";
 import { slugify } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export default async function Search({ searchParams }) {
       </section>
       {qs && (
         <div className="wrap" style={{ paddingTop: 48, display: "flex", flexDirection: "column", gap: 16 }}>
-          {foods.length > 0 && <><h2 style={{ fontSize: 26, fontWeight: 800 }}>Món ăn</h2><div className="grid2" style={{ gap: 12 }}>{foods.map((f) => { const p = mainPortion(f); return <a key={f.key} href={`/calo/${f.slug}`} className="card" style={{ padding: "16px 18px", display: "flex", gap: 14, alignItems: "center" }}><span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}><b style={{ fontSize: 17 }}>{f.name}</b><span style={{ fontSize: 14, color: "#64748B" }}>{p ? `${p.name} ${p.gram} g · ` : ""}{f.per100.cal} kcal/100 g</span></span><b style={{ fontSize: 20, color: "#0062F0" }}>{p ? p.cal : f.per100.cal} kcal</b></a>; })}</div></>}
+          {foods.length > 0 && <><h2 style={{ fontSize: 26, fontWeight: 800 }}>Món ăn</h2><div className="grid2" style={{ gap: 12 }}>{foods.map((f) => { const p = mainPortion(f); return <a key={f.key} href={`/calo/${f.slug}`} className="card" style={{ padding: "16px 18px", display: "flex", gap: 14, alignItems: "center" }}><span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}><b style={{ fontSize: 17 }}>{f.name}</b><span style={{ fontSize: 14, color: "#64748B" }}>{p ? `${porName(p, true)} ${p.gram} g · ` : ""}{f.per100.cal} kcal/100 g</span></span><b style={{ fontSize: 20, color: "#0062F0" }}>{p ? p.cal : f.per100.cal} kcal</b></a>; })}</div></>}
           <h2 style={{ fontSize: 26, fontWeight: 800, marginTop: foods.length ? 32 : 0 }}>Bài viết</h2>
           <PostList posts={posts} />
         </div>
