@@ -50,6 +50,8 @@ import { PlusMenu } from "./PlusMenu";
 import { calcMacro } from "../calcMacro";
 import { weeklyCheck, nextOffset } from "../lib/weeklyCheck";
 import { WeeklyCheckCard, WalkTipCard } from "./WeeklyCheckCard";
+import { RecapTodayCard, MonthRecapScreen } from "./MonthRecap";
+import { monthRecap, recapCardMonth, monthDates, prevMonth } from "../lib/monthRecap";
 import { ActivityRow, ActivitySheet, SnackCard, ActivityAsk } from "./ActivitySheet";
 import { useActivityLog } from "../hooks/useActivityLog";
 import { dayBurn, activityBonus, withBonus, bonusTip, actOf } from "../lib/activity";
@@ -722,6 +724,27 @@ export function MobileApp(props) {
     if (act === "weigh") openWeigh(false);
   };
   const checkinCard = check ? <WeeklyCheckCard check={check} target={targets.cal} onAct={onCheckin} /> : null;
+
+  // ---------- Tổng kết tháng (bản vẽ 136): thẻ ở Hôm nay ngày 1–7, cho tháng vừa xong ----------
+  const recapTarget = Math.round(macro.calTarget);
+  const recapTargetOf = (d) => targetsOf(macroFor(d), dayTypeOf(profile, d)).cal;
+  const recapM = recapCardMonth(today);
+  const [recapHide, setRecapHide] = useState(() => readUser("fp_recap_hide", user?.id, null));
+  const [recapData, setRecapData] = useState(null);
+  useEffect(() => {
+    if (!recapM || recapHide === recapM || !ud.getDailyLogs) { setRecapData(null); return; }
+    let alive = true;
+    const a = monthDates(recapM), b = monthDates(prevMonth(recapM));
+    Promise.all([ud.getDailyLogs(a.start, a.end), ud.getDailyLogs(b.start, b.end)])
+      .then(([rows, prevRows]) => { if (alive) setRecapData({ m: recapM, rows: rows || [], prevRows: prevRows || [] }); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [recapM, recapHide, version]); // eslint-disable-line react-hooks/exhaustive-deps
+  const recapSum = useMemo(() => (recapData && recapData.m === recapM ? monthRecap({ m: recapM, today, rows: recapData.rows, prevRows: recapData.prevRows, weightLog, goalKg: profile.goalKg, goalType: profile.goalType, targetOf: recapTargetOf, target: recapTarget }) : null),
+    [recapData, recapM, today, weightLog, profile.goalKg, profile.goalType, recapTarget]); // eslint-disable-line react-hooks/exhaustive-deps
+  const openRecap = (m) => openLayer({ type: "recap", m });
+  const hideRecap = () => { writeUser("fp_recap_hide", user?.id, recapM); setRecapHide(recapM); };
+  const recapCard = recapSum && recapSum.loggedDays >= 3 ? <RecapTodayCard r={recapSum} onOpen={() => { track("recap_card"); openRecap(recapM); }} onHide={hideRecap} /> : null;
   // Mẹo đi bộ: 3 lần mở app đầu tiên (đếm theo lần mở), × thì ẩn luôn
   const [walkTip, setWalkTip] = useState(false);
   useEffect(() => {
@@ -858,7 +881,7 @@ export function MobileApp(props) {
             waterMl={Number(day?.water_ml) || 0} addWater={(ml) => { if (ml > 0) trackDaily("water"); return ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; }); }} waterGoalOverride={profile.waterGoalMl}
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}
-            checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}
+            recap={recapCard} checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}
             activity={activityRow} activityAsk={activityAsk} snack={snackCard}
             status={lossMode && date === today ? lossStatus({ target: targets.cal, eaten: eaten.cal, rows, nowMinutes: now.minutes }) : null}
             onPhotoBig={lossMode ? () => openPhoto(null) : null} focusBonus={focusBonus} goalSub={goalSub}
@@ -886,7 +909,7 @@ export function MobileApp(props) {
             range={{ mode: rangeMode, setMode: setRangeMode, anchor: rangeAnchor, setAnchor: setRangeAnchor, today }}
             getDailyLogs={ud.getDailyLogs} dataVersion={version} targetOf={(d) => targetsOf(macroFor(d), dayTypeOf(profile, d)).cal} lineCal={Math.round(macro.calTarget)} openDay={openDay} onLog={() => openLog(null, today)}
             weightLog={weightLog} weight={weight} profile={profile} setProfile={setProfile} addWeight={addWeight} updateWeight={updateWeight} deleteWeight={deleteWeight}
-            measures={measures} onMeasure={(d) => openLayer({ type: "measure", date: d })} onOpenReminders={() => openLayer({ type: "page", sec: "reminders" })}
+            measures={measures} onMeasure={(d) => openLayer({ type: "measure", date: d })} onOpenReminders={() => openLayer({ type: "page", sec: "reminders" })} onRecap={openRecap}
             lossResult={lossMode ? <LossResult weight={weight} macro={macro} measures={measures || []} streak={streakDays([...recentRows, ...(ud.todayLog ? [ud.todayLog] : [])], today)} onWeigh={() => openWeigh(false)} onMeasure={() => openLayer({ type: "measure", date: today })} /> : null} />
         )}
         {tab === "me" && (
@@ -918,6 +941,8 @@ export function MobileApp(props) {
               onClose={closeLayer} onSearch={() => replaceTop({ type: "log", date: l.date, mealId: l.mealId })}
               onPick={(opt) => pickSuggestion(l.date, l.mealId, opt, closeLayer)} />;
           })()}
+          {l.type === "recap" && <MonthRecapScreen month={l.m} today={today} getDailyLogs={ud.getDailyLogs} weightLog={weightLog} profile={profile} targetOf={recapTargetOf} target={recapTarget} name={name}
+            onClose={closeLayer} onReminders={() => replaceTop({ type: "page", sec: "reminders" })} showToast={showToast} />}
           {l.type === "coach" && <AICoachPanel profile={profile} macro={macro} weightLog={weightLog} measures={measures} todayData={{ ...eatenOfDay(ud.todayLog), dayType: dayTypeOf(profile, today) }} mob={true} onClose={closeLayer} appSettings={appSettings} isAdmin={isAdmin} getMeals={ud.getMeals} getWeeklyTemplate={ud.getWeeklyTemplate} foodCache={ud.foodCache} userId={user?.id} applyTemplate={ud.applyTemplate} saveWeeklyTemplate={ud.saveWeeklyTemplate} getMealHistory={ud.getMealHistory} getDailyLogs={ud.getDailyLogs}
             onOpenAIMenu={aiAccess.usable ? () => replaceTop(quickAILayer()) : null} initialInput={l.input || ""} />}
           {l.type === "ai" && (

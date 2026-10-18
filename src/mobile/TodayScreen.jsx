@@ -35,6 +35,7 @@ export function TodayScreen(p) {
       <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} planCard={p.planCard} goalSub={p.goalSub} status={p.status} dayDone={date < today || allEaten} />
 
       {p.banner}
+      {isToday && p.recap}
       {isToday && p.checkin}
       {isToday && p.walkTip}
       {isToday && p.activityAsk}

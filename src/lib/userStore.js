@@ -2,7 +2,7 @@
 // và bản dự phòng chat AI lưu chung 1 khoá → 2 tài khoản dùng chung máy bị lẫn của nhau.
 // Khoá = `${tên}:${userId}`. Đăng xuất gọi clearUserStore() xoá hết khoá của app (cả khoá cũ không gắn user).
 // 18/10: thêm tab đang mở (fp_mtab — tài khoản mới đăng nhập phải vào Hôm nay, không vào tab Tôi của người trước) và dữ liệu dự phòng vận động / tốc độ.
-export const USER_KEYS = ["fp_menu_prefs", "aicoach_backup", "fp_mtab", "fp_act_ask", "fp_activity", "fp_pace"];
+export const USER_KEYS = ["fp_menu_prefs", "aicoach_backup", "fp_mtab", "fp_act_ask", "fp_activity", "fp_pace", "fp_recap_hide"];
 export const userKey = (name, uid) => `${name}:${uid || "anon"}`;
 export function readUser(name, uid, fallback = null) {
   try { const v = localStorage.getItem(userKey(name, uid)); return v == null ? fallback : JSON.parse(v); } catch (e) { return fallback; }

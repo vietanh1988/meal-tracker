@@ -80,6 +80,17 @@ function FoodPanel(p) {
 
   return (
     <>
+      {month && p.onRecap && (
+        <button data-testid="diary-recap" onClick={() => p.onRecap(anchor.slice(0, 7))} className="tap"
+          style={{ margin: "0 12px 10px 12px", width: "calc(100% - 24px)", minHeight: 52, borderRadius: 16, border: "none", background: GRAD_BLUE, color: "#FFFFFF", display: "flex", alignItems: "center", gap: 10, padding: "0 14px", fontFamily: "inherit", textAlign: "left" }}>
+          <span aria-hidden="true" style={{ fontSize: 20 }}>🎉</span>
+          <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <span style={{ fontSize: 15, fontWeight: 900 }}>Tổng kết tháng {Number(anchor.slice(5, 7))}</span>
+            <span style={{ fontSize: 12, opacity: 0.85 }}>{anchor.slice(0, 7) === today.slice(0, 7) ? "Tạm tính tới hôm nay · kg, chuỗi ngày, so tháng trước" : "Kg thay đổi, chuỗi ngày, so tháng trước"}</span>
+          </span>
+          {Icon.next(18)}
+        </button>
+      )}
       <div data-testid="diary-summary" style={{ margin: "0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 12, opacity: rows ? 1 : 0.6 }}>
         {/* 16/10 (bản vẽ 86): số TB to + 3 ô nhỏ thay dòng chữ dài */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
