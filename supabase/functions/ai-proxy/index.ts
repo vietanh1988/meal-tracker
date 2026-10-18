@@ -297,28 +297,33 @@ serve(async (req) => {
     let inputTok = 0, outputTok = 0;
 
     if (provider === "claude") {
-      // Khoá admin dán ở Kết nối AI (app_settings, chỉ ghi) ưu tiên; không có thì dùng Secret CLAUDE_API_KEY như cũ
-      const CLAUDE_KEY = (await getAppSettingValue(admin, "claude_key")) || CLAUDE_API_KEY;
-      if (!CLAUDE_KEY) throw new Error("Chưa cấu hình Claude API Key — vào Quản trị › Kết nối AI để nhập.")
+      // 2 nguồn khoá: ô Kết nối AI (app_settings, chỉ ghi) và Secret CLAUDE_API_KEY. Thử khoá ô trước;
+      // khoá đó sai / hết hạn (lỗi xác thực) thì tự thử khoá Secret — đổi khoá ở chỗ nào cũng chạy.
+      const CLAUDE_KEYS = [...new Set([await getAppSettingValue(admin, "claude_key"), CLAUDE_API_KEY].filter(Boolean))];
+      if (!CLAUDE_KEYS.length) throw new Error("Chưa cấu hình Claude API Key — vào Quản trị › Kết nối AI để nhập.")
       usedModel = model || DEFAULT_MODEL.claude;
       const cx = claudeExtra(usedModel);
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "anthropic-version": "2023-06-01",
-          "x-api-key": CLAUDE_KEY,
-        },
-        body: JSON.stringify({
-          model: usedModel,
-          max_tokens: (maxTokens || 1000) + cx.room,
-          ...(system ? { system } : {}),
-          ...(temperature !== undefined && !Object.keys(cx.extra).length ? { temperature } : {}), // đời 5.5 báo lỗi nếu gửi temperature
-          ...cx.extra,
-          messages: msgs,
-        }),
-      })
-      const d = await res.json()
+      let d: any = null;
+      for (const CLAUDE_KEY of CLAUDE_KEYS) {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "anthropic-version": "2023-06-01",
+            "x-api-key": CLAUDE_KEY,
+          },
+          body: JSON.stringify({
+            model: usedModel,
+            max_tokens: (maxTokens || 1000) + cx.room,
+            ...(system ? { system } : {}),
+            ...(temperature !== undefined && !Object.keys(cx.extra).length ? { temperature } : {}), // đời 5.5 báo lỗi nếu gửi temperature
+            ...cx.extra,
+            messages: msgs,
+          }),
+        })
+        d = await res.json();
+        if (!(res.status === 401 || d?.error?.type === "authentication_error")) break;
+      }
       if (d.error) throw new Error(d.error.message)
       text = (d.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("")
       inputTok = d.usage?.input_tokens || 0;
