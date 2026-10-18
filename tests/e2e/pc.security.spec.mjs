@@ -58,8 +58,9 @@ test("bảo mật đơn hàng, món chờ duyệt, hàm quản trị", async () 
   const H = { apikey: s.anon, Authorization: `Bearer ${tok.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" };
   const post = (path, body, h = H) => fetch(`${s.url}/rest/v1/${path}`, { method: "POST", headers: h, body: JSON.stringify(body) });
   try {
+    // khách gửi status 'confirmed' → bị chặn hoặc tự về 'pending' (trigger ép trước khi kiểm quyền)
     const bad = await post("orders", { user_id: s.uid, package: "12m", amount: 1, status: "confirmed" });
-    expect(bad.ok, "đơn 'confirmed' do khách tự tạo phải bị chặn").toBe(false);
+    if (bad.ok) { const [b] = await bad.json(); expect(b.status, "đơn khách tạo luôn là chờ duyệt").toBe("pending"); expect(b.confirmed_at).toBeNull(); }
     const good = await post("orders", { user_id: s.uid, package: "12m", amount: 1, status: "pending" });
     expect(good.ok).toBe(true);
     const [o] = await good.json();
