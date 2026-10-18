@@ -12,6 +12,7 @@ test("Giảm cân: Thực đơn ngày mai tự lên (không AI), Đổi món, M�
   const orig = (await rest(`profiles?id=eq.${s.uid}&select=${KEEP},kg`))[0];
   await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${tomorrow}`, { method: "DELETE" });
   await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ ui_mode: "loss", goal_type: "cut", exercise_type: "none", cut_pace: "mid", goal_kg: Math.max(45, Math.round(Number(orig.kg) - 6)) }) });
+  const t0 = new Date(Date.now() - 2000).toISOString();
   const ai = [];
   page.on("request", (r) => { if (r.url().includes("/functions/v1/")) ai.push(r.url()); });
   const errs = [];
@@ -66,7 +67,7 @@ test("Giảm cân: Thực đơn ngày mai tự lên (không AI), Đổi món, M�
     await page.screenshot({ path: "shots/loss-toi.png", fullPage: true });
     // 18/10: ghi hành vi (app_events) — mở app, xem thực đơn ngày mai, lưu món không ăn
     await waitDb(async () => {
-      const r = await rest(`app_events?user_id=eq.${s.uid}&select=name,mode&order=at.desc&limit=100`);
+      const r = await rest(`app_events?user_id=eq.${s.uid}&at=gte.${encodeURIComponent(t0)}&select=name,mode&order=at.desc&limit=100`); // chỉ sự kiện của bài này (bài trước là chế độ gym)
       const n = new Set(r.map((x) => x.name));
       return n.has("app_open") && n.has("menu_tomorrow") && n.has("avoid_save") && r.every((x) => x.mode === "loss" || x.mode === null) ? r : null;
     }, "app_events có app_open, menu_tomorrow, avoid_save", 15_000);
