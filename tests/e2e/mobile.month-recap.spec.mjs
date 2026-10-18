@@ -25,9 +25,9 @@ test("Tổng kết tháng: mở từ Nhật ký tháng trước, có số liệu
     await nav("Tôi").click();
     await page.getByTestId("me-diary").click();
     await expect(page.getByTestId("seg-diary")).toHaveAttribute("aria-selected", "true");
-    await page.getByRole("button", { name: "Tháng", exact: true }).click();
-    await page.getByRole("button", { name: "Tháng trước" }).click();
-    await page.getByTestId("diary-recap").click();
+    await page.locator('button[aria-pressed]:visible', { hasText: /^Tháng$/ }).first().click();
+    await page.locator('button[aria-label="Tháng trước"]:visible').first().click();
+    await page.locator('[data-testid="diary-recap"]:visible').first().click();
     await expect(page.getByTestId("recap-screen")).toBeVisible();
     await expect(page.getByTestId("recap-hero")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId("recap-delta")).toContainText("−");
