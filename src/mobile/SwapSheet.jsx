@@ -7,14 +7,15 @@ import { AVOID_CHIPS, avoidList, hasAvoid, toggleAvoid, addAvoid } from "../lib/
 
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-function Sheet({ testid, label, onClose, children }) {
+function Sheet({ testid, label, title, sub, onClose, children }) {
   useLockScroll(true);
   const sw = useSwipeClose(onClose);
   return (
-    <div className="fpm" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.45)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
+    <div className="fpm" onClick={sw.close} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.45)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
       <div ref={sw.ref} {...sw.swipe} data-testid={testid} role="dialog" aria-modal="true" aria-label={label} onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, bottom: 0, maxWidth: 560, margin: "0 auto", maxHeight: "92dvh", overflowY: "auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 18px) 16px", display: "flex", flexDirection: "column", gap: 14, boxSizing: "border-box", animation: "fpmSheetUp .2s ease" }}>
         <SheetHandle />
+        <Head title={title} sub={sub} onClose={sw.close} />
         {children}
       </div>
     </div>
@@ -63,8 +64,7 @@ export function SwapSheet({ mealName, mealId, items, food, macro, dayType, onPic
     onClose();
   };
   return (
-    <Sheet testid="swap-sheet" label={`Đổi món ${mealName}`} onClose={onClose}>
-      <Head title={`Đổi ${curName}`} sub={`${mealName} · ${fmtInt(mealCal)} kcal — các món dưới đây giữ bữa gần bằng calo`} onClose={onClose} />
+    <Sheet testid="swap-sheet" label={`Đổi món ${mealName}`} title={`Đổi ${curName}`} sub={`${mealName} · ${fmtInt(mealCal)} kcal — các món dưới đây giữ bữa gần bằng calo`} onClose={onClose}>
       {list.length > 1 && (
         <div role="group" aria-label="Đổi món nào" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {list.map((i) => {
@@ -131,8 +131,7 @@ export function AvoidSheet({ avoid, onSave, onClose }) {
     </button>
   );
   return (
-    <Sheet testid="avoid-sheet" label="Món bạn không ăn" onClose={onClose}>
-      <Head title="Món bạn không ăn" sub="Thực đơn từ ngày mai sẽ tránh các món này" onClose={onClose} />
+    <Sheet testid="avoid-sheet" label="Món bạn không ăn" title="Món bạn không ăn" sub="Thực đơn từ ngày mai sẽ tránh các món này" onClose={onClose}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {AVOID_CHIPS.map((w) => chip(w, hasAvoid(text, w), () => setText((t) => toggleAvoid(t, w)), `avoid-chip-${w}`))}
         {extra.map((w) => chip(w, true, () => setText((t) => toggleAvoid(t, w)), "avoid-extra"))}

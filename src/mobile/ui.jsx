@@ -12,7 +12,8 @@ export const SR = { position: "absolute", width: 1, height: 1, overflow: "hidden
 // CSS chung: trạng thái nhấn / focus / hover cho mọi nút trong khung mobile
 export const MOBILE_CSS = `
 .fpm input[type=search]::-webkit-search-cancel-button,.fpm input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
-.fpm button,.fpm a,.fpm [role=button]{-webkit-tap-highlight-color:transparent;cursor:pointer}
+.fpm button,.fpm a,.fpm [role=button]{-webkit-tap-highlight-color:transparent;cursor:pointer;touch-action:manipulation}
+.fpm [role=dialog]{overscroll-behavior:contain}
 .fpm button:disabled{cursor:default;opacity:.55}
 .fpm button:not(:disabled):active,.fpm a:active,.fpm .tap:active{transform:scale(.97)}
 .fpm button,.fpm a,.fpm .tap{transition:transform .08s ease,background-color .15s ease,box-shadow .15s ease}
@@ -66,7 +67,7 @@ export function BottomNav({ tab, onTab, onAdd, hidden, dark, addOpen = false }) 
     <nav data-testid="bottom-nav" aria-label="Điều hướng chính" aria-hidden={hidden ? true : undefined} style={{ position: "fixed", left: 0, right: 0, bottom: NAV_BOTTOM, zIndex: 90, padding: "0 12px", pointerEvents: "none" }}>
       <div style={{ maxWidth: 536, margin: "0 auto", height: 64, borderRadius: 32, display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", alignItems: "center", boxSizing: "border-box", pointerEvents: "auto",
         background: "rgba(255,255,255,0.94)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: dark ? "0 12px 30px rgba(0,10,40,0.35)" : "0 12px 30px rgba(30,64,175,0.18), 0 0 0 1px rgba(15,23,42,0.04)",
-        WebkitBackdropFilter: "blur(20px)", backdropFilter: "blur(20px)" }}>
+        /* 18/10: bỏ làm mờ nền (blur) — nền đã 94% trắng nên nhìn như cũ, nhưng iPhone không phải tính mờ lại mỗi khung hình khi cuộn */ }}>
         {NAV.map((n) => {
           if (n.id === "add") return (
             <button key="add" data-testid="nav-add" onClick={onAdd} aria-label={addOpen ? "Đóng menu" : "Ghi bữa"} aria-expanded={addOpen} aria-haspopup="menu" style={{ display: "flex", justifyContent: "center", border: "none", background: "transparent", padding: 0, marginTop: -22 }}>
@@ -88,12 +89,23 @@ export function BottomNav({ tab, onTab, onAdd, hidden, dark, addOpen = false }) 
 }
 
 // Khoá cuộn nền khi mở lớp phủ
+// 18/10: iPhone (Safari) bỏ qua overflow:hidden → màn phía sau vẫn kéo / nảy khi đang mở sheet.
+// Ghim body (position:fixed, giữ vị trí cuộn) rồi trả lại đúng chỗ khi đóng; đếm số lớp đang mở để sheet chồng sheet không mở khoá sớm.
+let lockN = 0, lockY = 0;
 export function useLockScroll(on = true) {
   useEffect(() => {
     if (!on) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    const b = document.body;
+    if (lockN++ === 0) {
+      lockY = window.scrollY || 0;
+      Object.assign(b.style, { position: "fixed", top: `-${lockY}px`, left: "0", right: "0", width: "100%", overflow: "hidden" });
+    }
+    return () => {
+      if (--lockN > 0) return;
+      lockN = 0;
+      Object.assign(b.style, { position: "", top: "", left: "", right: "", width: "", overflow: "" });
+      window.scrollTo(0, lockY);
+    };
   }, [on]);
 }
 
@@ -163,6 +175,19 @@ export function useSwipeClose(onClose) {
     return false;
   };
   const reset = (el, to = "") => { el.style.transition = "transform .18s ease"; el.style.transform = to; };
+  // 18/10: đóng (nút ×, chạm nền tối, vuốt) có hiệu ứng trượt xuống + nền mờ dần, thay vì biến mất ngay
+  const closing = useRef(false);
+  const close = () => {
+    const el = ref.current;
+    const reduce = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!el || reduce) { onClose(); return; }
+    if (closing.current) return;
+    closing.current = true;
+    reset(el, "translateY(100%)");
+    const ov = el.parentNode;
+    if (ov && ov.style) { ov.style.transition = "opacity .18s ease"; ov.style.opacity = "0"; ov.style.pointerEvents = "none"; }
+    setTimeout(() => { closing.current = false; onClose(); }, 170);
+  };
   const onTouchStart = (e) => {
     if (!ref.current || e.touches.length !== 1 || scrolledInside(e.target)) { st.current = null; return; }
     st.current = { y: e.touches[0].clientY, t: Date.now(), dy: 0 };
@@ -180,9 +205,9 @@ export function useSwipeClose(onClose) {
     st.current = null;
     if (!s || !el || !s.dy) return;
     const v = s.dy / Math.max(1, Date.now() - s.t);
-    if (s.dy > 110 || (s.dy > 40 && v > 0.6)) { reset(el, "translateY(100%)"); setTimeout(onClose, 170); } else reset(el);
+    if (s.dy > 110 || (s.dy > 40 && v > 0.6)) close(); else reset(el);
   };
-  return { ref, swipe: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd } };
+  return { ref, close, swipe: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd } };
 }
 // Thanh nắm của sheet: vùng chạm cao 20 px cho dễ kéo
 export const SheetHandle = () => <span aria-hidden="true" style={{ alignSelf: "center", width: 56, height: 20, margin: "-6px 0 -8px 0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ width: 40, height: 5, borderRadius: 3, background: "#CBD5E1" }} /></span>;

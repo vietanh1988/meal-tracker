@@ -134,9 +134,9 @@ export function DayPicker({ isOk, days, onToggle, dayTypeOf, testid = "save-week
 // Sheet đáy dùng chung (91 / 94 / 97)
 export function Sheet({ testid, onClose, children, max = "88vh", z = 220 }) {
   useLockScroll(true);
-  const { ref, swipe } = useSwipeClose(onClose);
+  const { ref, swipe, close: swClose } = useSwipeClose(onClose);
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: z, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fpmFade .15s ease" }}>
+    <div onClick={swClose} style={{ position: "fixed", inset: 0, zIndex: z, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fpmFade .15s ease" }}>
       <div ref={ref} {...swipe} data-testid={testid} onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: max, overflowY: "auto", overscrollBehavior: "contain", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 16px) 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease", color: "#0F172A" }}>
         <SheetHandle />
         {children}

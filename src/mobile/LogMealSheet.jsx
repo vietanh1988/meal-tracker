@@ -99,7 +99,7 @@ export function LogMealSheet(p) {
   const shortName = (id) => MEAL_SHORT[id] || id;
 
   return (
-    <div className="fpm" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.5)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
+    <div className="fpm" onClick={sw.close} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.5)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
       <div ref={sw.ref} {...sw.swipe} role="dialog" aria-modal="true" aria-label={pickMode ? "Thêm món" : "Ghi bữa"} onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, top: "max(96px, calc(env(safe-area-inset-top, 0px) + 56px))", bottom: 0, maxWidth: 560, margin: "0 auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px 0 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease" }}>
         <SheetHandle />
@@ -115,7 +115,7 @@ export function LogMealSheet(p) {
               </select>
             </label>
           )}
-          <button onClick={onClose} aria-label="Đóng" style={{ width: 40, height: 40, borderRadius: 20, background: "#F1F5F9", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", border: "none", padding: 0 }}>{Icon.close(18)}</button>
+          <button onClick={sw.close} aria-label="Đóng" style={{ width: 40, height: 40, borderRadius: 20, background: "#F1F5F9", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", border: "none", padding: 0 }}>{Icon.close(18)}</button>
         </div>
 
         {!pickMode && (mealIds.length <= 5 ? (

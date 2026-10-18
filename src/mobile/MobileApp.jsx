@@ -192,9 +192,20 @@ export function MobileApp(props) {
     return () => { alive = false; };
   }, [user?.id, version]);
   useEffect(() => { if (flags.template_library && !(ud.defaultTemplates || []).length && ud.refreshDefaultTemplates) ud.refreshDefaultTemplates(); }, [flags.template_library]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 18/10 (mượt thao tác): nhớ kết quả gợi ý theo ngày + bữa — trước đây MỖI lần vẽ lại (bấm cốc nước, tick…) tính lại ~5–10 ms;
+  // tự xoá khi dữ liệu liên quan đổi (nhật ký, thực đơn AI, mục tiêu, hồ sơ, vận động, kho mẫu)
+  const todayMealsSig = JSON.stringify((ud.todayLog && ud.todayLog.meals) || []); // bấm cốc nước không đổi món → không tính lại
+  const sugCache = useMemo(() => new Map(), [historyMeals, aiMenusS, todayMealsSig, dayCache, macro, profile, flags.template_library, ud.defaultTemplates, activityByDate]);
   const suggestFor = (mealId, d = date) => {
-    const dt = dayTypeOf(profile, d);
     const avoidText = (readUser("fp_menu_prefs", user?.id, {}) || {}).avoid || "";
+    const ck = `${d}|${mealId}|${avoidText}`;
+    if (sugCache.has(ck)) return sugCache.get(ck);
+    const res = suggestForRaw(mealId, d, avoidText);
+    sugCache.set(ck, res);
+    return res;
+  };
+  const suggestForRaw = (mealId, d, avoidText) => {
+    const dt = dayTypeOf(profile, d);
     const cur = (mealOf(dayOf(d), mealId) || {}).items || [];
     const dayMeals = (dayOf(d) || {}).meals || [];
     const md = macroFor(d);

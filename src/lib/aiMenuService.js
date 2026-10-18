@@ -70,8 +70,15 @@ const EXCLUDE_FROM_CATALOG = new Set(["creatine", "bcaa", "nước", "trà xanh"
 // LỌC DỊ ỨNG
 // ============================================================
 // Khớp theo từ + nhóm món — xem src/lib/allergy.js (có test)
+// Nhớ kết quả theo chữ "món không ăn" (kho món cố định): trước đây mỗi lần vẽ lại Hôm nay quét lại cả 1.273 món (~7 ms)
+const exclCache = new Map();
 export function buildExclusionKeys(avoidText) {
-  return exclusionKeys(avoidText, LOCAL_FOODS);
+  const k = String(avoidText || "");
+  if (exclCache.has(k)) return exclCache.get(k);
+  const v = exclusionKeys(k, LOCAL_FOODS);
+  if (exclCache.size > 20) exclCache.clear();
+  exclCache.set(k, v);
+  return v;
 }
 
 // ============================================================

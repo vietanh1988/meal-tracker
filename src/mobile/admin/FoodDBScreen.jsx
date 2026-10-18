@@ -34,9 +34,9 @@ const DropChip = ({ on, children, onClick, testid }) => (
 
 // Sheet chọn nền tối nhỏ
 function PickSheet({ title, opts, value, onPick, onClose }) {
-  const { ref, swipe } = useSwipeClose(onClose);
+  const { ref, swipe, close: swClose } = useSwipeClose(onClose);
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(1,15,35,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fpmFade .15s ease" }}>
+    <div onClick={swClose} style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(1,15,35,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fpmFade .15s ease" }}>
       <div ref={ref} {...swipe} data-testid="adm-food-sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
         style={{ width: "100%", maxWidth: 560, maxHeight: "70vh", overflowY: "auto", overscrollBehavior: "contain", background: "#0B2F5C", borderTop: `1px solid ${DK.line}`, borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 16px) 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", animation: "fpmSheetUp .2s ease", color: DK.t1 }}>
         <span aria-hidden="true" style={{ alignSelf: "center", width: 40, height: 5, borderRadius: 3, background: "rgba(255,255,255,0.3)", margin: "2px 0 10px 0", flexShrink: 0 }} />

@@ -53,7 +53,7 @@ export function WeightSheet({ today, weightLog, profileKg, goalKg, startKg, onSa
 
   const sw = useSwipeClose(onClose);
   return (
-    <div className="fpm" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.45)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
+    <div className="fpm" onClick={sw.close} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.45)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
       <div ref={sw.ref} {...sw.swipe} data-testid="weight-sheet" role="dialog" aria-modal="true" aria-label="Cân hôm nay" onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, bottom: 0, maxWidth: 560, margin: "0 auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 16px) 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease" }}>
         <SheetHandle />
@@ -62,7 +62,7 @@ export function WeightSheet({ today, weightLog, profileKg, goalKg, startKg, onSa
             <span style={{ fontSize: 20, fontWeight: 900 }}>Cân hôm nay</span>
             <span data-testid="weight-sub" style={{ fontSize: 12, color: "#64748B" }}>{weekdayFull(today)} {fmtVN(today)} · {prev ? `lần trước ${fmtKg(prev.kg)} kg (${fmtVN(prev.logged_date)})` : "lần cân đầu tiên"}</span>
           </span>
-          <button onClick={onClose} aria-label="Đóng" style={{ width: 34, height: 34, borderRadius: 17, border: "none", background: "#F1F5F9", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>{Icon.close(16)}</button>
+          <button onClick={sw.close} aria-label="Đóng" style={{ width: 34, height: 34, borderRadius: 17, border: "none", background: "#F1F5F9", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>{Icon.close(16)}</button>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14 }}>

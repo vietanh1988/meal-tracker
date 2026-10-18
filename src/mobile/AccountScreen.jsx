@@ -83,7 +83,7 @@ function DeleteSheet({ email, signOut, onClose }) {
   };
   const inp = { height: 48, padding: "0 14px", borderRadius: 12, border: "1.5px solid #E2E8F0", background: "#F1F5F9", fontFamily: "inherit", fontSize: 16, color: "#0F172A", boxSizing: "border-box", width: "100%" };
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+    <div onClick={sw.close} style={{ position: "fixed", inset: 0, zIndex: 220, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <div ref={sw.ref} {...sw.swipe} data-testid="delete-sheet" role="dialog" aria-modal="true" aria-label="Xoá tài khoản" onClick={(e) => e.stopPropagation()}
         style={{ width: "100%", maxWidth: 560, background: "#FFFFFF", borderRadius: "20px 20px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 20px) 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14 }}>
         <SheetHandle />
@@ -102,7 +102,7 @@ function DeleteSheet({ email, signOut, onClose }) {
         </label>
         {err && <p role="alert" style={{ margin: 0, fontSize: 13, color: "#DC2626" }}>{err}</p>}
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={onClose} style={{ flex: 1, height: 50, borderRadius: 14, border: "1.5px solid #E2E8F0", background: "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 800, color: "#0F172A" }}>Huỷ</button>
+          <button onClick={sw.close} style={{ flex: 1, height: 50, borderRadius: 14, border: "1.5px solid #E2E8F0", background: "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 800, color: "#0F172A" }}>Huỷ</button>
           <button data-testid="delete-go" disabled={!ok || busy} onClick={run} style={{ flex: 1.4, height: 50, borderRadius: 14, border: "none", background: ok ? "#DC2626" : "#FCA5A5", color: "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900 }}>{busy ? "Đang xoá…" : "Xoá vĩnh viễn"}</button>
         </div>
       </div>

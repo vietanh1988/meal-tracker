@@ -58,7 +58,7 @@ export function MeasureSheet({ today, date: initDate, rows, gender, onSave, onDe
   );
 
   return (
-    <div className="fpm" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.45)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
+    <div className="fpm" onClick={sw.close} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.45)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
       <div ref={sw.ref} {...sw.swipe} data-testid="measure-sheet" role="dialog" aria-modal="true" aria-label="Số đo cơ thể" onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: "max(24px, env(safe-area-inset-top, 0px))", maxWidth: 560, margin: "0 auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", display: "flex", flexDirection: "column", animation: "fpmSheetUp .2s ease", overflow: "hidden" }}>
         <div style={{ padding: "8px 16px 0 16px", display: "flex", flexDirection: "column", gap: 6 }}>
@@ -72,7 +72,7 @@ export function MeasureSheet({ today, date: initDate, rows, gender, onSave, onDe
                 {dateOpts.map((d) => <option key={d} value={d}>{d === today ? "Hôm nay" : `${weekdayFull(d)} ${fmtVN(d)}`}</option>)}
               </select>
             </label>
-            <button onClick={onClose} aria-label="Đóng" style={{ width: 34, height: 34, borderRadius: 17, border: "none", background: "#F1F5F9", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>{Icon.close(16)}</button>
+            <button onClick={sw.close} aria-label="Đóng" style={{ width: 34, height: 34, borderRadius: 17, border: "none", background: "#F1F5F9", color: "#475569", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>{Icon.close(16)}</button>
           </div>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "8px 16px 16px 16px", WebkitOverflowScrolling: "touch" }}>
