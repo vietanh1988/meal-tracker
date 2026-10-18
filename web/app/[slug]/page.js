@@ -4,6 +4,7 @@ import Crumb from "@/components/Crumb";
 import Blocks from "@/components/Blocks";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
+import LegalToc from "@/components/LegalToc";
 import PostCard from "@/components/PostCard";
 import { getSettings, siteUrl, appLink, alt } from "@/lib/site";
 import { getPostBySlug, latestPosts, catOf, fmtDate, readMin } from "@/lib/content";
@@ -34,7 +35,9 @@ export default async function Page({ params }) {
   const p = await getPostBySlug(params.slug);
   if (!p) notFound();
   const s = await getSettings();
-  const blocks = await prepare(p.blocks);
+  let blocks = await prepare(p.blocks);
+  // Trang Điều khoản / Chính sách (139w): đánh số mục "1. 2. …" nếu chưa gõ số
+  if (p.kind === "page" && p.template === "legal") { let n = 0; blocks = blocks.map((b) => (b?.type === "h" && (b.level || 2) === 2 ? (n++, /^\s*\d/.test(textOf(b.text)) ? b : { ...b, text: `${n}. ${b.text}` }) : b)); }
   const t = mkToc(blocks);
   const fq = faqs(blocks);
   const cat = catOf(p);
@@ -49,13 +52,14 @@ export default async function Page({ params }) {
     return (
       <main>
         <JsonLd data={ld(...graphs)} />
-        <section className="phead"><div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 14 }}><Crumb items={crumbs} /><h1 className="h1">{p.title}</h1>{long && <span className="mut">Cập nhật {fmtDate(p.updated_at)}</span>}</div></section>
-        <div className="wrap" style={{ paddingTop: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
-          <article className="card art" style={{ flex: 1, minWidth: 0, padding: 48, maxWidth: long ? 860 : undefined }}><Blocks blocks={blocks} s={s} toc={t} /></article>
-          {long && t.length > 0 && <aside className="only-pc" style={{ width: 300, position: "sticky", top: 90 }}><TocBox t={t} /></aside>}
+        <section className="phead"><div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 14 }}><Crumb items={crumbs} /><h1 className="h1">{p.title}</h1>{long && <p className="lg-up" style={{ fontSize: 18, lineHeight: 1.6, color: "#475569" }}>Cập nhật {fmtDate(p.updated_at)}</p>}</div></section>
+        <div className={`wrap${long ? " lg-w" : ""}`} style={{ paddingTop: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
+          {long && t.length > 0 && <div className="only-m lg-mt"><LegalToc t={t} /></div>}
+          <article className={`card art${long ? " legal" : ""}`} style={{ flex: 1, minWidth: 0, padding: 48 }}><Blocks blocks={blocks} s={s} toc={t} /></article>
+          {long && t.length > 0 && <aside className="only-pc" style={{ width: 300, flexShrink: 0, position: "sticky", top: 90 }}><LegalToc t={t} /></aside>}
         </div>
         <Sticky s={s} ref_={`page-${p.slug}`} />
-        <style>{`@media(max-width:720px){.art{padding:20px!important}}`}</style>
+        <style>{`.legal .prose{gap:20px}.legal .prose h2{font-size:26px;line-height:normal;margin-top:12px}.legal .prose h2:first-child{margin-top:0}.legal .prose p,.legal .prose li{max-width:720px}@media(max-width:720px){.art{padding:20px!important}.lg-up{font-size:16px!important}.lg-w{flex-direction:column;gap:16px!important;padding-top:24px!important}.lg-w>article{width:100%}.lg-mt{display:block;align-self:flex-start;max-width:100%}.legal .prose h2{font-size:22px}}`}</style>
       </main>
     );
   }
