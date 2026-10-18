@@ -82,3 +82,26 @@ test("bảo mật đơn hàng, món chờ duyệt, hàm quản trị", async () 
     await rest("food_cache_pending?food_name=eq.món người khác e2e", { method: "DELETE" }).catch(() => {});
   }
 });
+
+// 18/10 rà bảo mật đợt 2: hàm mở cho khách chưa đăng nhập bị giới hạn số lần theo IP; báo lỗi bị cắt độ dài.
+test("giới hạn dò email / ghi lỗi theo IP", async () => {
+  const s = S();
+  const ip = `10.9.${Math.floor(Math.random() * 200)}.${Math.floor(Math.random() * 200)}`;
+  const rpc = (fn, body, extra = {}) => fetch(`${s.url}/rest/v1/rpc/${fn}`, {
+    method: "POST", headers: { apikey: s.anon, Authorization: `Bearer ${s.anon}`, "Content-Type": "application/json", "x-real-ip": ip, ...extra },
+    body: JSON.stringify(body),
+  });
+  const codes = [];
+  for (let i = 0; i < 21; i++) codes.push((await rpc("check_email_available", { p_email: `x${i}@test.local` })).ok);
+  expect(codes.slice(0, 20).every(Boolean), "20 lần đầu phải được").toBe(true);
+  expect(codes[20], "lần 21 trong 10 phút phải bị chặn").toBe(false);
+  // IP khác vẫn dùng bình thường
+  expect((await rpc("check_email_available", { p_email: "y@test.local" }, { "x-real-ip": ip + "1" })).ok).toBe(true);
+
+  const tag = `e2e-len-${Date.now()}`;
+  expect((await rpc("log_client_error", { p_message: tag + "x".repeat(5000), p_stack: null, p_component_stack: null, p_url: "u", p_user_agent: "a" })).ok).toBe(true);
+  const rows = await rest(`client_errors?message=like.${tag}*&select=message`);
+  expect(rows.length).toBe(1);
+  expect(rows[0].message.length).toBe(1000);
+  await rest(`client_errors?message=like.${tag}*`, { method: "DELETE" });
+});
