@@ -26,7 +26,7 @@ export default async function Price() {
             <div key={n} className="card" style={{ padding: 32, display: "flex", flexDirection: "column", gap: 16, position: "relative", ...(hi ? { border: "2px solid #0062F0", boxShadow: "0 20px 40px rgba(0,98,240,.12)" } : {}) }}>
               {hi && <span className="pill" style={{ position: "absolute", top: -13, left: 32, background: "#0062F0", color: "#fff" }}>Nhiều người chọn</span>}
               <span style={{ fontSize: 18, fontWeight: 800 }}>{n}</span>
-              <span><b style={{ fontSize: 44, letterSpacing: "-.03em" }}>{p}</b><span className="mut" style={{ fontSize: 16 }}>{u}</span></span>
+              <span><b style={{ fontSize: 44 }}>{p}</b><span className="mut" style={{ fontSize: 16 }}>{u}</span></span>
               <span style={{ fontSize: 14.5, color: "#64748B" }}>{sub}</span>
               <div style={{ height: 1, background: "#EEF2F7" }} />
               {l.map((x) => <span key={x} style={{ display: "flex", gap: 10, fontSize: 15.5, lineHeight: 1.45 }}><span className="chk">✓</span>{x}</span>)}

@@ -52,7 +52,7 @@ export default function Calc({ full = false, appUrl = "https://app.fipilotai.com
         <div style={{ borderRadius: 20, background: "linear-gradient(135deg,#ECFDF5,#EEF4FF)", padding: full ? 28 : 18, display: "flex", alignItems: full ? "stretch" : "center", flexDirection: full ? "column" : "row", gap: full ? 8 : 16, flexWrap: "wrap" }} aria-live="polite">
           <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
             <span style={{ fontSize: 15, color: "#334155" }}>Bạn nên ăn khoảng</span>
-            <b style={{ fontSize: full ? 56 : 36, color: "#047857", letterSpacing: full ? "-1.5px" : "-.02em", lineHeight: 1.1 }}>{kcal ? vn(kcal) : "—"}{full ? <span style={{ fontSize: 20 }}> kcal / ngày</span> : " kcal / ngày"}</b>
+            <b style={{ fontSize: full ? 56 : 36, color: "#047857", lineHeight: 1.1 }}>{kcal ? vn(kcal) : "—"}{full ? <span style={{ fontSize: 20 }}> kcal / ngày</span> : " kcal / ngày"}</b>
             {r?.kgWeek && <span style={{ fontSize: 15, color: "#475569", lineHeight: 1.55 }}>Giảm khoảng <b>{d1(r.kgWeek)} kg/tuần</b>{r.etaWeeks ? <> · về {v.goalKg} kg sau khoảng <b>{r.etaWeeks} tuần</b></> : null}</span>}
             {!r && <span style={{ fontSize: 14, color: "#B45309" }}>Kiểm tra lại số đo (cân 30–250 kg, cao 120–220 cm).</span>}
           </span>

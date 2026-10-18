@@ -31,7 +31,7 @@ export default async function Home() {
   const FEATS = [
     ["Thực đơn tự lên mỗi ngày", "Sáng phở, trưa cơm gà, tối bún chả — đúng calo cho bạn.", <>{menu.map(({ f, meal, img }) => <FoodRow key={f.name} img={img} name={f.name} kcal={`${meal} · ${f.por} · ${f.cal} kcal`} extra={<span style={{ color: "#94A3B8" }}>›</span>} />)}</>],
     ["Không thích món nào? Đổi 1 chạm", "Gợi ý món giữ bữa gần bằng calo.", sw.length === 3 ? <><FoodRow img="/img/bowl-1.jpg" name={sw[0].name} kcal={`${sw[0].cal} kcal`} /><span style={{ textAlign: "center", color: "#0062F0", fontSize: 13, fontWeight: 700 }}>⇅ đổi sang</span>{sw.slice(1).map((x, i) => { const d = x.cal - sw[0].cal; return <FoodRow key={x.name} img={i ? "/img/bowl-3.jpg" : "/img/bowl-2.jpg"} name={x.name} kcal={`${x.cal} kcal`} extra={<span className="pill" style={{ height: 22, ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : {}) }}>{d > 0 ? "+" : "−"}{Math.abs(d)}</span>} />; })}</> : null],
-    ["Thấy rõ kết quả mỗi tháng", "Kg đã giảm, ngày ghi bữa, so tháng trước.", <div style={{ display: "flex", flexDirection: "column", gap: 8 }}><span className="mut" style={{ fontSize: 13 }}>Ví dụ: tháng 10 của bạn</span><b style={{ fontSize: 30, color: "#16A34A", letterSpacing: "-1px" }}>−2,4 kg</b><Chk t="ghi bữa 24/31 ngày" /><Chk t="chuỗi 9 ngày liên tục" />{spark}</div>],
+    ["Thấy rõ kết quả mỗi tháng", "Kg đã giảm, ngày ghi bữa, so tháng trước.", <div style={{ display: "flex", flexDirection: "column", gap: 8 }}><span className="mut" style={{ fontSize: 13 }}>Ví dụ: tháng 10 của bạn</span><b style={{ fontSize: 30, color: "#16A34A" }}>−2,4 kg</b><Chk t="ghi bữa 24/31 ngày" /><Chk t="chuỗi 9 ngày liên tục" />{spark}</div>],
   ];
   return (
     <main>
@@ -74,7 +74,7 @@ export default async function Home() {
               <div key={n} className="card" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12, position: "relative", ...(hi ? { border: "1.5px solid #0062F0" } : {}) }}>
                 {hi && <span className="pill" style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "#0062F0", color: "#fff" }}>Phổ biến</span>}
                 <span style={{ fontSize: 15, fontWeight: 800, color: "#334155" }}>{n}</span>
-                <span><b style={{ fontSize: 32, letterSpacing: "-.02em" }}>{p}</b><span className="mut" style={{ fontSize: 14 }}>{u}</span></span>
+                <span><b style={{ fontSize: 32 }}>{p}</b><span className="mut" style={{ fontSize: 14 }}>{u}</span></span>
                 {l.map((x) => <span key={x} style={{ display: "flex", gap: 8, fontSize: 14.5, lineHeight: 1.45 }}><span className="chk">✓</span>{x}</span>)}
                 <a className={`btn ${hi ? "b1" : "b2"}`} href={appLink(s, hi ? "home-premium" : "home-free")} style={{ marginTop: 6 }}>{c}</a>
               </div>

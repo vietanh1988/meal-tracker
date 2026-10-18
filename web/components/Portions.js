@@ -13,7 +13,7 @@ export default function Portions({ fd }) {
       <div role="tablist" aria-label="Khẩu phần" style={{ display: "flex", gap: 8, maxWidth: 480 }}>
         {list.map((x, k) => <button key={x.name} role="tab" aria-selected={k === i} onClick={() => setI(k)} style={{ flex: 1, minWidth: 0, height: 52, padding: "0 6px", borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", ...(k === i ? { background: "linear-gradient(180deg,#1A7CFF,#0062F0)", color: "#fff", border: 0, boxShadow: "0 4px 10px rgba(0,98,240,.25)" } : { background: "#F5F8FD", color: "#334155", border: "1px solid #E6ECF5" }) }}>{x.name.charAt(0).toUpperCase() + x.name.slice(1)}<span style={{ fontWeight: 500, fontSize: 12.5, opacity: 0.85 }}>{x.gram} g</span></button>)}
       </div>
-      <div><b style={{ fontSize: 56, letterSpacing: "-1.5px", lineHeight: 1 }}>{p.cal} kcal</b></div>
+      <div><b style={{ fontSize: 56, lineHeight: 1 }}>{p.cal} kcal</b></div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, maxWidth: 480 }}>
         {mac.map(([a, g, w, c]) => <div key={a} className="card" style={{ padding: 14, borderRadius: 14, display: "flex", flexDirection: "column", gap: 6 }}><span className="lbl">{a}</span><b style={{ fontSize: 19 }}>{vn(g)} g</b>{w != null && <div className="bar"><span style={{ width: `${Math.round(w * 100)}%`, background: c }} /></div>}</div>)}
       </div>
