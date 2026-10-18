@@ -67,7 +67,7 @@ import { LossMenuScreen } from "./LossMenuScreen";
 import { shouldAutoPlan, markPlanned, addAvoid } from "../lib/lossMenu";
 import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel, menuReplaces, menuWrites } from "../lib/mealMath";
-import { recentEatenMeals, frequentItems, currentMealId } from "../lib/dayPlan";
+import { recentEatenMeals, frequentItems, currentMealId, mealTimesOf } from "../lib/dayPlan";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
 import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekDates, MEAL_SHORT, fmtKg, fmtDec, fmtInt } from "../lib/mobileView";
 
@@ -555,7 +555,7 @@ export function MobileApp(props) {
       </SubPage>
     );
     if (sec === "goals") return (
-      <SubPage title="Mục tiêu & macro" onBack={closeLayer} dark right={<span style={{ fontSize: 12, fontWeight: 700, color: DK.green, paddingRight: 8 }}>Tự động lưu</span>}>
+      <SubPage title={lossMode ? "Mục tiêu & tốc độ giảm" : "Mục tiêu & macro"} onBack={closeLayer} dark right={<span style={{ fontSize: 12, fontWeight: 700, color: DK.green, paddingRight: 8 }}>Tự động lưu</span>}>
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} openWeigh={() => openWeigh(true)} />
       </SubPage>
     );
@@ -604,7 +604,7 @@ export function MobileApp(props) {
       );
     }
     if (sec === "schedule") return (
-      <SubPage title="Lịch tập & bữa" onBack={closeLayer} dark>
+      <SubPage title={lossMode ? "Giờ ăn" : "Lịch tập & bữa"} onBack={closeLayer} dark>
         <ScheduleScreen profile={profile} setProfile={setProfile} mealConfig={profile.mealConfig || null} defaultConfig={mealConfig} curKg={weight.curKg} />
       </SubPage>
     );
@@ -874,6 +874,7 @@ export function MobileApp(props) {
         )}
         {tab === "me" && (
           <MeScreen bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />} name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
+            loss={lossMode} mealInfo={(() => { const ids0 = idsFor(today); const mt = mealTimesOf(profile.mealTimes); const h = (t) => String(t || "").replace(/^0/, ""); return ids0.length ? `${ids0.length} bữa · ${h(mt[ids0[0]])}–${h(mt[ids0[ids0.length - 1]])}` : null; })()}
             openCoach={flags.ai_chat ? () => openLayer({ type: "coach" }) : null} salesEnabled={!!flags.sales_enabled}
             openDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             open={(sec) => openLayer({ type: "page", sec })} />

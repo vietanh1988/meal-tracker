@@ -45,7 +45,8 @@ function Row({ icon, label, value, onClick, last, testid }) {
 }
 const Sec = ({ children }) => <span style={dkSec}>{children}</span>;
 
-export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, salesEnabled, signOut, bell }) {
+// loss (bản vẽ 134b, 18/10): khách giảm cân — chữ đời thường (bỏ "macro", "lịch tập"); mealInfo: "4 bữa · 7:00–19:30"
+export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, salesEnabled, signOut, bell, loss = false, mealInfo = null }) {
   const tier = profile?.tier || "free";
   const initials = (name || "?").replace(/[^A-Za-zÀ-ỹ0-9]/g, "").slice(0, 2).toUpperCase() || "?";
   const gym = (profile?.exerciseType || "gym") === "none" ? "Không tập" : (profile?.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
@@ -75,7 +76,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
       <div style={{ display: "flex", alignItems: "center", padding: "calc(env(safe-area-inset-top, 0px) + 14px) 16px 16px 18px" }}>
         <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.5px", lineHeight: 1.15 }}>Tôi</span>
-          <span style={{ fontSize: 13, color: DK.t2 }}>Quản lý tài khoản và cài đặt</span>
+          <span style={{ fontSize: 13, color: DK.t2 }}>{loss ? "Kế hoạch, tài khoản và cài đặt" : "Quản lý tài khoản và cài đặt"}</span>
         </span>
         {bell}
       </div>
@@ -87,23 +88,23 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
             <span style={{ fontSize: 17, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</span>
             {tier !== "free" && <span style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", background: "#FFFFFF", padding: "2px 8px", borderRadius: 999, flexShrink: 0 }}>{TIER[tier] || tier}</span>}
           </span>
-          <span style={{ fontSize: 13, color: DK.t2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{GOAL[profile?.goalType] || "Mục tiêu"} · {fmtDec(weight.curKg)} → {fmtDec(weight.goalKg)} kg</span>
+          <span style={{ fontSize: 13, color: DK.t2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{loss ? "Giảm cân" : GOAL[profile?.goalType] || "Mục tiêu"} · {fmtDec(weight.curKg)} → {fmtDec(weight.goalKg)} kg</span>
           <span style={{ fontSize: 13, color: DK.t2 }}>{fmtInt(macro?.calTarget)} kcal/{(profile?.exerciseType || "gym") === "none" ? "ngày" : "ngày tập"}</span>
         </span>
         {Icon.chev(16, DK.chev)}
       </button>
 
-      <Sec>Theo dõi & dinh dưỡng</Sec>
+      <Sec>{loss ? "Kế hoạch giảm cân" : "Theo dõi & dinh dưỡng"}</Sec>
       <div style={group}>
         <Row icon="diary" testid="me-diary" label="Nhật ký ăn uống" value="Calo từng ngày" onClick={openDiary} />
-        <Row icon="goals" testid="me-goals" label="Mục tiêu & macro" value={goalVal} onClick={() => open("goals")} />
-        <Row icon="schedule" testid="me-schedule" label="Lịch tập & bữa" value={gym} onClick={() => open("schedule")} />
+        <Row icon="goals" testid="me-goals" label={loss ? "Mục tiêu & tốc độ giảm" : "Mục tiêu & macro"} value={goalVal} onClick={() => open("goals")} />
+        <Row icon="schedule" testid="me-schedule" label={loss ? "Giờ ăn" : "Lịch tập & bữa"} value={loss ? mealInfo || "Giờ các bữa" : gym} onClick={() => open("schedule")} />
         <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} last />
       </div>
 
       <Sec>AI & hỗ trợ</Sec>
       <div style={group}>
-        {openCoach && <Row icon="coach" testid="me-coach" label="Hỏi Fipilot AI" value="Chat về ăn uống, tập" onClick={openCoach} />}
+        {openCoach && <Row icon="coach" testid="me-coach" label="Hỏi Fipilot AI" value={loss ? "Hỏi gì về ăn uống, giảm cân" : "Chat về ăn uống, tập"} onClick={openCoach} />}
         <Row icon="feedback" testid="me-feedback" label="Góp ý & báo lỗi" onClick={() => open(isAdmin ? "admin_feedback" : "feedback")} last />
       </div>
 

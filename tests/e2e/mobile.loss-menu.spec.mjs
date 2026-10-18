@@ -58,6 +58,12 @@ test("Giảm cân: Thực đơn ngày mai tự lên (không AI), Đổi món, M�
     await page.getByTestId("avoid-save").click();
     await expect(page.getByTestId("loss-menu-avoid")).toContainText("Hải sản");
 
+    // Bản vẽ 134b: tab Tôi chữ đời thường cho khách giảm cân
+    await page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name: "Tôi" }).click();
+    await expect(page.getByTestId("me-goals")).toContainText("Mục tiêu & tốc độ giảm");
+    await expect(page.getByTestId("me-schedule")).toContainText("Giờ ăn");
+    await expect(page.getByTestId("me-schedule")).toContainText(/\d bữa · \d{1,2}:\d{2}–\d{1,2}:\d{2}/);
+    await page.screenshot({ path: "shots/loss-toi.png", fullPage: true });
     expect(ai, "không gọi AI").toEqual([]);
     expect(errs, "lỗi trang").toEqual([]);
   } finally {

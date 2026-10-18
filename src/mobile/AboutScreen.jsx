@@ -55,9 +55,10 @@ export function AboutScreen({ appSettings, openTerms, openEdit }) {
   const pages = parseContent(appSettings).filter((p) => p && p.label);
   const feats = [
     [P.db, "#00A67E", "rgba(0,200,150,0.12)", `${fmtInt(stats.total)} món`, `${fmtInt(stats.vn)} món Việt`, "about-foods"],
-    [P.spark, "#7C3AED", "rgba(124,58,237,0.1)", "AI lên thực đơn", "đúng kcal & macro"],
-    [P.camera, "#EA580C", "rgba(249,115,22,0.12)", "Chụp ảnh", "nhận món, tính calo"],
-    [P.calc, "#007AFF", "rgba(0,122,255,0.1)", "Công thức chuẩn", "Mifflin-St Jeor · ISSN"],
+    // 18/10 (bản vẽ 134a): app giảm cân bằng món Việt — bán giải pháp, không kể tính năng kỹ thuật
+    [P.spark, "#7C3AED", "rgba(124,58,237,0.1)", "Thực đơn tự lên", "mỗi ngày, đổi món 1 chạm"],
+    [P.camera, "#EA580C", "rgba(249,115,22,0.12)", "Chụp 1 tấm", "app tự tính calo"],
+    [P.calc, "#007AFF", "rgba(0,122,255,0.1)", "Giảm đều, an toàn", "0,25–0,75% cân mỗi tuần"],
   ];
 
   return (
@@ -67,7 +68,7 @@ export function AboutScreen({ appSettings, openTerms, openEdit }) {
         <span aria-hidden="true" style={{ position: "absolute", left: "50%", top: -60, width: 220, height: 160, marginLeft: -110, background: "radial-gradient(closest-side, rgba(77,163,255,0.45), rgba(77,163,255,0))", pointerEvents: "none" }} />
         <img src="/icon-192.png" alt="Fipilot AI" style={{ position: "relative", width: 72, height: 72, borderRadius: 20, objectFit: "cover", boxShadow: "0 0 0 1px rgba(255,255,255,0.3), 0 10px 24px rgba(0,30,120,0.45)", background: "#FFFFFF" }} />
         <span style={{ position: "relative", fontSize: 22, fontWeight: 900 }}>{a.appName || "Fipilot AI"}</span>
-        <span style={{ position: "relative", fontSize: 13, color: DK.t2, lineHeight: 1.5 }}>{(a.tagline || "Trợ lý bữa ăn thông minh cho người Việt").replace(/^AI Nutrition Coach\s*[│|·]\s*/i, "")}</span>
+        <span style={{ position: "relative", fontSize: 13, color: DK.t2, lineHeight: 1.5 }}>{(a.tagline || "Giảm cân bằng món Việt quen thuộc — app lo phần tính, bạn chỉ việc ăn theo").replace(/^AI Nutrition Coach\s*[│|·]\s*/i, "")}</span>
         {version && <span data-testid="about-version" style={{ position: "relative", fontSize: 11, fontWeight: 800, color: "#0040E0", background: "#FFFFFF", padding: "4px 10px", borderRadius: 999 }}>Phiên bản {version}</span>}
       </div>
 
