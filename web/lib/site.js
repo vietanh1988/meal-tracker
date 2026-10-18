@@ -1,3 +1,4 @@
+import { aboutApp, fmtPhone } from "./appdata.js";
 import { q } from "./sb.js";
 
 export const DEFAULTS = {
@@ -14,6 +15,11 @@ export async function getSettings() {
   const rows = (await q("web_settings?select=key,value")) || [];
   const s = JSON.parse(JSON.stringify(DEFAULTS));
   for (const r of rows) s[r.key] = { ...(s[r.key] || {}), ...(r.value || {}) };
+  // Liên hệ: ô trống ở Cài đặt web lấy từ trang Giới thiệu của app (email, hotline, Zalo, Facebook)
+  const a = await aboutApp();
+  const fromApp = { email: a.contact, phone: a.hotline && fmtPhone(a.hotline), zalo: a.zalo && `https://zalo.me/${String(a.zalo).replace(/\D/g, "")}`, zalo_phone: a.zalo && fmtPhone(a.zalo), facebook: a.facebook };
+  const web = Object.fromEntries(Object.entries((rows.find((r) => r.key === "contact") || {}).value || {}).filter(([, v]) => v));
+  s.contact = { ...DEFAULTS.contact, ...Object.fromEntries(Object.entries(fromApp).filter(([, v]) => v)), ...web };
   return s;
 }
 

@@ -10,6 +10,7 @@ import { prepare } from "@/lib/blocks";
 import { allFoods } from "@/lib/foods";
 import { vnInt } from "@/lib/slug";
 import { breadcrumb, ld } from "@/lib/schema";
+import { aboutApp } from "@/lib/appdata";
 
 export const revalidate = 300;
 const H1 = "Fipilot AI giúp người Việt giảm cân bằng chính món mình ăn hằng ngày";
@@ -21,7 +22,9 @@ export async function generateMetadata() {
 export default async function About() {
   const s = await getSettings();
   const p = await getPostBySlug("gioi-thieu");
-  const blocks = p?.kind === "page" ? await prepare(p.blocks || []) : [];
+  let blocks = p?.kind === "page" ? await prepare(p.blocks || []) : [];
+  // chưa viết trang Giới thiệu cho web → dùng lời giới thiệu anh viết trong app (Quản trị app › Giới thiệu)
+  if (!blocks.length) { const a = await aboutApp(); blocks = [a.devBio, a.description].filter(Boolean).map((x) => ({ type: "p", html: String(x).replace(/[<>]/g, "") })); }
   const n = (await allFoods()).length;
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Giới thiệu", path: "/gioi-thieu" }];
   const RULES = [["🍜", "Món Việt là gốc", `${vnInt(n)} món trong kho, khẩu phần theo cách người Việt ăn: tô, đĩa, ổ, bát.`], ["🧮", "App tính, bạn ăn", "Không bắt đếm calo bằng tay. Thực đơn lên sẵn, đổi món 1 chạm."], ["📉", "Giảm đều, không ép", "Không xuống dưới 1.200 kcal/ngày. Tự chỉnh theo cân mỗi tuần."]];

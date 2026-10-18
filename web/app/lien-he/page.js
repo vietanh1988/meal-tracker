@@ -17,7 +17,9 @@ export default async function Contact() {
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Liên hệ", path: "/lien-he" }];
   const items = [
     c.email && ["mail", "#E8F0FF", "#0062F0", "Email", c.email, `mailto:${c.email}`],
-    c.phone && ["call", "#DCFCE7", "#16A34A", "Điện thoại / Zalo", c.phone, zalo || `tel:${tel}`],
+    ...(c.zalo_phone && c.zalo_phone !== c.phone
+      ? [c.phone && ["call", "#DCFCE7", "#16A34A", "Điện thoại", c.phone, `tel:${tel}`], ["chat", "#E0F2FE", "#0068FF", "Zalo", c.zalo_phone, zalo]]
+      : [c.phone && ["call", "#DCFCE7", "#16A34A", "Điện thoại / Zalo", c.phone, zalo || `tel:${tel}`]]),
     c.facebook && ["chat", "#EDE9FE", "#7C3AED", "Facebook", "Nhắn tin trang Fipilot AI", c.facebook],
   ].filter(Boolean);
   return (

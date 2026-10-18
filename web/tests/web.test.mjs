@@ -38,3 +38,15 @@ test("ô tính calo dùng đúng công thức app", () => {
   const r = calcMacro({ cm: 158, kg: 68, birthYear: 1995, goalKg: 58, goalType: "cut", months: 6, gender: "female", exerciseType: "none", frequency: "regular", dietStrategy: "balanced", calorieMode: "standard", cutPace: "mid" });
   assert.ok(r.calTarget >= 1200 && r.calTarget < r.tdee);
 });
+
+import { legalToBlocks, vnDateIso, fmtPhone } from "../lib/appdata.js";
+test("trang điều khoản từ app: bỏ H1, tách ngày cập nhật, tách mục", () => {
+  const r = legalToBlocks("<h1>Điều khoản sử dụng Fipilot AI</h1>\n<p><strong>Cập nhật lần cuối:</strong> 12/07/2026</p>\n<p>Chào mừng</p><hr><h2>1. Phạm vi</h2><ul><li>Web</li></ul><h3>1.1. Con</h3><p>x</p>");
+  assert.equal(r.title, "Điều khoản sử dụng Fipilot AI");
+  assert.equal(r.updated, "12/07/2026");
+  assert.equal(vnDateIso(r.updated), "2026-07-12T00:00:00+07:00");
+  assert.deepEqual(r.blocks.map((b) => b.type + (b.level || "")), ["html", "h2", "html", "h3", "html"]);
+  assert.equal(r.blocks[1].text, "1. Phạm vi");
+  assert.ok(!JSON.stringify(r.blocks).includes("<hr"));
+  assert.equal(fmtPhone("0973113698"), "0973 113 698");
+});

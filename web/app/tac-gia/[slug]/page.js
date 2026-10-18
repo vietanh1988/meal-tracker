@@ -7,21 +7,24 @@ import { PostList } from "@/components/PostCard";
 import { getSettings, siteUrl, alt } from "@/lib/site";
 import { getAuthor, latestPosts } from "@/lib/content";
 import { breadcrumb, ld } from "@/lib/schema";
+import { appAuthor } from "@/lib/appdata";
+// Chưa tạo tác giả riêng cho web → dùng thông tin anh ở trang Giới thiệu của app
+const findAuthor = async (slug) => (await getAuthor(slug)) || (await appAuthor().then((a) => (a && a.slug === slug ? a : null)));
 
 export const revalidate = 60;
 // Nút mạng xã hội như bản vẽ 139m: ô màu + tên
 const SOC = [[/facebook\.com|fb\.com/, "Facebook", "f", "#1877F2"], [/zalo\.me|zalo\./, "Zalo", "Z", "#0068FF"], [/youtube\.com|youtu\.be/, "YouTube", "▶", "#FF0000"], [/tiktok\.com/, "TikTok", "♪", "#0F172A"], [/instagram\.com/, "Instagram", "◎", "#E1306C"], [/linkedin\.com/, "LinkedIn", "in", "#0A66C2"], [/x\.com|twitter\.com/, "X", "X", "#0F172A"]];
 const social = (u) => { const m = SOC.find(([re]) => re.test(u)); if (m) return { n: m[1], i: m[2], c: m[3] }; let h = u; try { h = new URL(u).hostname.replace("www.", ""); } catch (e) {} return { n: h, i: h[0]?.toUpperCase() || "•", c: "#64748B" }; };
 export async function generateMetadata({ params }) {
-  const a = await getAuthor(params.slug);
+  const a = await findAuthor(params.slug);
   if (!a) return {};
   return { title: a.name, description: a.bio?.slice(0, 158) || `Các bài viết của ${a.name} trên Fipilot AI`, alternates: alt(`/tac-gia/${a.slug}`) };
 }
 export default async function Author({ params }) {
-  const a = await getAuthor(params.slug);
+  const a = await findAuthor(params.slug);
   if (!a) notFound();
   const s = await getSettings();
-  const posts = await latestPosts({ authorId: a.id, limit: 24 });
+  const posts = a.id ? await latestPosts({ authorId: a.id, limit: 24 }) : [];
   const path = `/tac-gia/${a.slug}`;
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Tác giả", path }, { name: a.name, path }];
   const person = { "@type": "Person", name: a.name, url: siteUrl(s, path), jobTitle: a.job_title || undefined, description: a.bio || undefined, image: a.avatar_url || undefined, sameAs: (a.same_as || []).length ? a.same_as : undefined, worksFor: { "@id": siteUrl(s, "/#org") } };
@@ -43,10 +46,10 @@ export default async function Author({ params }) {
           </div>
         </div>
       </section>
-      <div className="wrap apw" style={{ paddingTop: 56 }}>
+      {posts.length > 0 && <div className="wrap apw" style={{ paddingTop: 56 }}>
         <SecHead eye="Bài viết" title={`${posts.length} bài của ${a.name}`} />
         <PostList posts={posts} variant="list" mCard={false} />
-      </div>
+      </div>}
       <style>{`.ahd{padding:56px 0 48px!important}@media(max-width:720px){.ahd{padding:28px 0 32px!important}.ahead{flex-direction:column;align-items:flex-start!important;gap:16px!important}.aav{width:96px!important;height:96px!important;border-radius:48px!important;font-size:32px!important}.abio{font-size:16px!important}.apw{padding-top:32px!important}}`}</style>
     </main>
   );

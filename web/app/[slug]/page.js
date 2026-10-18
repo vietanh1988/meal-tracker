@@ -5,6 +5,7 @@ import Blocks from "@/components/Blocks";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import LegalToc from "@/components/LegalToc";
+import { legalPages, legalToBlocks, vnDateIso } from "@/lib/appdata";
 import PostCard from "@/components/PostCard";
 import { getSettings, siteUrl, appLink, alt } from "@/lib/site";
 import { getPostBySlug, latestPosts, catOf, fmtDate, readMin } from "@/lib/content";
@@ -16,8 +17,19 @@ export const revalidate = 60;
 export const dynamicParams = true;
 export async function generateStaticParams() { return []; }
 
+// Bài / trang web; chưa có thì lấy trang Điều khoản / Chính sách soạn trong app (app_settings.terms_content)
+async function findPage(slug) {
+  const p = await getPostBySlug(slug);
+  if (p) return p;
+  const lp = (await legalPages()).find((x) => x.slug === slug);
+  if (!lp) return null;
+  const { title, updated, blocks } = legalToBlocks(lp.html);
+  const iso = vnDateIso(updated);
+  return { id: `legal-${lp.id}`, kind: "page", template: "legal", slug, title: lp.label || title, blocks, seo: { desc: `${lp.label} của Fipilot AI: quy định khi dùng app và web fipilotai.com.` }, updated_at: iso, published_at: iso };
+}
+
 export async function generateMetadata({ params }) {
-  const p = await getPostBySlug(params.slug);
+  const p = await findPage(params.slug);
   if (!p) return {};
   const seo = p.seo || {};
   const desc = seo.desc || p.excerpt || textOf((p.blocks || []).find((b) => b.type === "p")?.html).slice(0, 158);
@@ -32,7 +44,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function Page({ params }) {
-  const p = await getPostBySlug(params.slug);
+  const p = await findPage(params.slug);
   if (!p) notFound();
   const s = await getSettings();
   let blocks = await prepare(p.blocks);
@@ -59,7 +71,7 @@ export default async function Page({ params }) {
           {long && t.length > 0 && <aside className="only-pc" style={{ width: 300, flexShrink: 0, position: "sticky", top: 90 }}><LegalToc t={t} /></aside>}
         </div>
         <Sticky s={s} ref_={`page-${p.slug}`} />
-        <style>{`.legal .prose{gap:20px}.legal .prose h2{font-size:26px;line-height:normal;margin-top:12px}.legal .prose h2:first-child{margin-top:0}.legal .prose p,.legal .prose li{max-width:720px}@media(max-width:720px){.art{padding:20px!important}.lg-up{font-size:16px!important}.lg-w{flex-direction:column;gap:16px!important;padding-top:24px!important}.lg-w>article{width:100%}.lg-mt{display:block;align-self:flex-start;max-width:100%}.legal .prose h2{font-size:22px}}`}</style>
+        <style>{`.legal .prose{gap:20px}.legal .prose h2{font-size:26px;line-height:normal;margin-top:12px}.legal .prose h2:first-child{margin-top:0}.legal .prose p,.legal .prose li{max-width:720px}.legal .prose>div>*+*{margin-top:14px}.legal .prose ul,.legal .prose ol{padding-left:22px;display:flex;flex-direction:column;gap:6px}@media(max-width:720px){.art{padding:20px!important}.lg-up{font-size:16px!important}.lg-w{flex-direction:column;gap:16px!important;padding-top:24px!important}.lg-w>article{width:100%}.lg-mt{display:block;align-self:flex-start;max-width:100%}.legal .prose h2{font-size:22px}}`}</style>
       </main>
     );
   }
