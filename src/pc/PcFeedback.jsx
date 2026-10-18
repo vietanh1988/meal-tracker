@@ -13,7 +13,7 @@ const COLS = "112px minmax(0,1fr) 72px 104px";
 const FEATURES = [["ai_menu", "AI tạo thực đơn"], ["photo", "Chụp ảnh kiểm tra"], ["ai_chat", "AI Coach"], ["ui", "Giao diện"]];
 const FEAT_NAME = Object.fromEntries(FEATURES);
 // [nhãn, tông pill]
-const CAT = { suggestion: ["Góp ý", "blue"], bug: ["Báo lỗi", "red"], ai_menu: ["Lỗi · AI thực đơn", "red"], photo: ["Lỗi · Chụp ảnh", "red"], ai_chat: ["Lỗi · AI Chat", "red"], ui: ["Lỗi · Giao diện", "red"], other: ["Lỗi · Khác", "red"] };
+const CAT = { suggestion: ["Góp ý", "blue"], web_contact: ["Liên hệ từ web", "blue"], bug: ["Báo lỗi", "red"], ai_menu: ["Lỗi · AI thực đơn", "red"], photo: ["Lỗi · Chụp ảnh", "red"], ai_chat: ["Lỗi · AI Chat", "red"], ui: ["Lỗi · Giao diện", "red"], other: ["Lỗi · Khác", "red"] };
 const isReplied = (f) => f.status === "replied";
 const okImg = (u) => typeof u === "string" && /^data:image\/(jpeg|png|webp);base64,/.test(u);
 const avgOf = (arr) => (arr.length ? Math.round((arr.reduce((s, v) => s + v, 0) / arr.length) * 10) / 10 : null);
@@ -67,7 +67,7 @@ export function PcFeedback({ top, showToast, refreshCounts }) {
     if (statusF === "waiting") items = items.filter((f) => !isReplied(f));
     if (statusF === "replied") items = items.filter(isReplied);
     if (catF === "suggestion") items = items.filter((f) => f.category === "suggestion");
-    else if (catF === "bugs") items = items.filter((f) => f.category !== "suggestion");
+    else if (catF === "bugs") items = items.filter((f) => f.category !== "suggestion" && f.category !== "web_contact");
     else if (catF !== "all") items = items.filter((f) => f.category === catF);
     if (search.trim()) { const s = search.trim().toLowerCase(); items = items.filter((f) => (f.username || "").toLowerCase().includes(s) || (f.content || "").toLowerCase().includes(s)); }
     return items;
