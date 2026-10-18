@@ -15,7 +15,7 @@ export default async function Tool() {
     <main>
       <JsonLd data={ld(breadcrumb(s, crumbs), { "@type": "WebApplication", name: "Tính calo cần ăn mỗi ngày", applicationCategory: "HealthApplication", operatingSystem: "Web", offers: { "@type": "Offer", price: "0", priceCurrency: "VND" } })} />
       <PageHead eye="Công cụ miễn phí" h1="Tính calo cần ăn mỗi ngày để giảm cân" sub="Nhập số đo — công cụ tính theo đúng công thức app Fipilot AI đang dùng (Mifflin-St Jeor + mức vận động)." crumb={crumbs} />
-      <div className="wrap toolw" style={{ paddingTop: 40 }}><style>{`@media(max-width:720px){.toolw{padding-top:24px!important}.howc{padding:20px!important}.howg{gap:12px!important}}`}</style><Calc full appUrl={s.site.app_url} /></div>
+      <div className="wrap toolw" style={{ paddingTop: 40 }}><style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.toolw{padding-top:24px!important}.howc{padding:20px!important}.howg{gap:12px!important}}` }} /><Calc full appUrl={s.site.app_url} /></div>
       <section className="wrap sec">
         <SecHead eye="Cách tính" title="Con số này từ đâu ra?" />
         <div className="grid3 howg" style={{ gap: 20 }}>

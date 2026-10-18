@@ -18,7 +18,7 @@ export default function PostCard({ p, big = false, row = false, variant = "home"
         <b style={{ fontSize: big ? 24 : 18, lineHeight: L ? 1.35 : 1.4 }}>{p.title}</b>
         {L && <span style={{ fontSize: 13.5, color: "#94A3B8" }}>{fmtDate(p.published_at)}</span>}
       </span>
-      <style>{`.pcard{transition:box-shadow .15s}.pcard:hover{box-shadow:0 12px 28px rgba(15,23,42,.10)}@media(max-width:720px){.pcard{grid-column:auto!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `.pcard{transition:box-shadow .15s}.pcard:hover{box-shadow:0 12px 28px rgba(15,23,42,.10)}@media(max-width:720px){.pcard{grid-column:auto!important}}` }} />
     </a>
   );
 }
@@ -42,7 +42,7 @@ export function PostList({ posts, firstBig = false, gap = 24, variant = "home", 
   return (
     <>
       {pc}
-      <div className="only-m card" style={{ padding: "4px 12px" }}>{posts.map((p) => <PostCard key={p.id} p={p} row />)}<style>{`.prow+.prow{border-top:1px solid #EEF2F7}`}</style></div>
+      <div className="only-m card" style={{ padding: "4px 12px" }}>{posts.map((p) => <PostCard key={p.id} p={p} row />)}<style dangerouslySetInnerHTML={{ __html: `.prow+.prow{border-top:1px solid #EEF2F7}` }} /></div>
     </>
   );
 }
@@ -65,5 +65,5 @@ export function Pager({ page, total, per, base }) {
   if (page > 1) list.push(btn(page - 1, "← Trước"));
   for (let n = Math.max(1, page - 2); n <= Math.min(pages, page + 2); n++) list.push(btn(n, String(n), n === page));
   if (page < pages) list.push(btn(page + 1, "Sau →"));
-  return <nav aria-label="Phân trang" className="pager" style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 48, flexWrap: "wrap" }}>{list}<style>{`@media(max-width:720px){.pager{margin-top:32px!important}}`}</style></nav>;
+  return <nav aria-label="Phân trang" className="pager" style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 48, flexWrap: "wrap" }}>{list}<style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.pager{margin-top:32px!important}}` }} /></nav>;
 }

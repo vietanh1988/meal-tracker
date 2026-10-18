@@ -21,7 +21,7 @@ export default async function Price() {
       <JsonLd data={ld(breadcrumb(s, crumbs), faqGraph(faq))} />
       <PageHead eye="Bảng giá" h1="Bắt đầu miễn phí, nâng cấp khi cần" sub="Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI." crumb={crumbs} />
       <div className="wrap pricew" style={{ paddingTop: 48, maxWidth: 960 }}>
-        <style>{`@media(max-width:720px){.pricew{padding-top:28px!important}.plans{gap:20px!important}.plan{padding:24px!important}.plan-p{font-size:36px!important}.cmp-c{width:90px!important}.cmp-t{font-size:15px!important}}`}</style>
+        <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.pricew{padding-top:28px!important}.plans{gap:20px!important}.plan{padding:24px!important}.plan-p{font-size:36px!important}.cmp-c{width:90px!important}.cmp-t{font-size:15px!important}}` }} />
         <div className="grid2 plans" style={{ gap: 28 }}>
           {plans.map(([n, p, u, sub, l, c, hi]) => (
             <div key={n} className="card plan" style={{ padding: 32, display: "flex", flexDirection: "column", gap: 16, position: "relative", ...(hi ? { border: "2px solid #0062F0", boxShadow: "0 20px 40px rgba(0,98,240,.12)" } : {}) }}>

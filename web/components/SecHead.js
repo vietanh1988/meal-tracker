@@ -7,7 +7,7 @@ export default function SecHead({ eye, title, sub, right, as: H = "h2" }) {
         {sub && <p className="sec-sub" style={{ maxWidth: 620, fontSize: 17, lineHeight: 1.6, color: "#64748B" }}>{sub}</p>}
       </div>
       {right}
-      <style>{`@media(max-width:720px){.sechead{margin-bottom:24px!important}.sec-sub{font-size:15px!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.sechead{margin-bottom:24px!important}.sec-sub{font-size:15px!important}}` }} />
     </div>
   );
 }

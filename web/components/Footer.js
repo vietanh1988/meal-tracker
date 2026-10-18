@@ -83,7 +83,7 @@ export default async function Footer({ s, menus }) {
           </div>
         </div>
       </footer>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
 .fchip{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px 0 6px;border-radius:17px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:12.5px;color:#E2E8F0;white-space:nowrap;transition:background .12s}
 .fchip:hover{background:rgba(255,255,255,.12)}
 .fc-ic{width:24px;height:24px;border-radius:12px;background:rgba(26,124,255,.25);display:inline-flex;align-items:center;justify-content:center;color:#7CC2FF}
@@ -103,7 +103,7 @@ export default async function Footer({ s, menus }) {
  .fcols{margin-top:26px!important;padding-top:24px!important;grid-template-columns:1fr 1fr!important;gap:24px!important}.fbrand{grid-column:1/-1}
  .watermark{margin-top:18px!important;font-size:64px!important}
  .fbar{flex-direction:column;align-items:flex-start!important;gap:6px;height:auto!important;padding:14px 16px!important}
-}`}</style>
+}` }} />
     </div>
   );
 }

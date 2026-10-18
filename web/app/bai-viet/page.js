@@ -19,7 +19,7 @@ export default async function Blog({ searchParams }) {
     <main>
       <PageHead eye="Blog Fipilot AI" h1="Bài viết về giảm cân bằng món Việt" sub="Calo từng món, thực đơn mẫu và kiến thức ăn uống — viết dễ hiểu, áp dụng được ngay." crumb={[{ name: "Trang chủ", path: "/" }, { name: "Bài viết", path: "/bai-viet" }]} />
       <div className="wrap blogw" style={{ paddingTop: 40 }}>
-        <style>{`@media(max-width:720px){.blogw{padding-top:28px!important}.blogw>.chips{margin-bottom:20px!important}}`}</style>
+        <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.blogw{padding-top:28px!important}.blogw>.chips{margin-bottom:20px!important}}` }} />
         <div className="chips" style={{ marginBottom: 32 }}><span className="chip on">Tất cả</span>{[...cats.filter((c) => !c.parent_id), ...cats.filter((c) => c.parent_id)].map((c) => <a key={c.id} className="chip" href={`/chu-de/${c.slug}`}>{c.name}</a>)}</div>
         <PostList posts={posts} firstBig={page === 1} variant="list" />
         <Pager page={page} total={total} per={per} base="/bai-viet" />

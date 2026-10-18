@@ -19,7 +19,7 @@ export default function Portions({ fd }) {
         {mac.map(([a, g, w, c]) => <div key={a} className="card" style={{ padding: 14, borderRadius: 14, display: "flex", flexDirection: "column", gap: 6 }}><span className="lbl" style={{ fontSize: 13.5 }}>{a}</span><b style={{ fontSize: 19 }}>{vn(g)} g</b>{w != null && <div className="bar"><span style={{ width: `${Math.round(w * 100)}%`, background: c }} /></div>}</div>)}
       </div>
       <span className="mut" style={{ fontSize: 13.5 }}>100 g {fd.name.toLowerCase()}: {fd.per100.cal} kcal · đạm {vn(fd.per100.p)} g · tinh bột {vn(fd.per100.c)} g · chất béo {vn(fd.per100.f)} g · thanh màu = % năng lượng</span>
-      <style>{`@media(max-width:720px){.por{padding:20px!important}.por-k{font-size:44px!important}.por-tabs button{height:46px!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.por{padding:20px!important}.por-k{font-size:44px!important}.por-tabs button{height:46px!important}}` }} />
     </div>
   );
 }

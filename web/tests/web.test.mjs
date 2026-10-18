@@ -50,3 +50,11 @@ test("trang điều khoản từ app: bỏ H1, tách ngày cập nhật, tách m
   assert.ok(!JSON.stringify(r.blocks).includes("<hr"));
   assert.equal(fmtPhone("0973113698"), "0973 113 698");
 });
+
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
+test("CSS viết trong trang phải dùng dangerouslySetInnerHTML (React đổi > và \" thành &gt; khi dựng trang)", () => {
+  const walk = (d) => readdirSync(d).flatMap((f) => { const p = join(d, f); return statSync(p).isDirectory() ? walk(p) : p.endsWith(".js") ? [p] : []; });
+  const bad = [...walk("app"), ...walk("components")].filter((f) => /<style>\s*\{/.test(readFileSync(f, "utf8")));
+  assert.deepEqual(bad, []);
+});

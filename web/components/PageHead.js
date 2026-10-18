@@ -11,7 +11,7 @@ export default function PageHead({ eye, h1, sub, crumb, right }) {
         </div>
         {right}
       </div>
-      <style>{`@media(max-width:720px){.phead-in{flex-direction:column;align-items:stretch!important;gap:20px!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.phead-in{flex-direction:column;align-items:stretch!important;gap:20px!important}}` }} />
     </section>
   );
 }

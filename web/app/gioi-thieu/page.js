@@ -52,8 +52,8 @@ export default async function About() {
         </div>
       </section>
       <Sticky s={s} ref_="gioi-thieu" />
-      <style>{`.ph{border-radius:30px;background:#0F172A;padding:7px;box-shadow:0 24px 48px rgba(15,23,42,.22)}.ph img{display:block;border-radius:24px;width:100%;height:auto}.ab-story .prose p{font-size:18px;line-height:1.75;color:#334155}
-@media(max-width:720px){.ab-s{padding-top:32px!important;grid-template-columns:1fr!important;gap:24px!important}.ab-h2{font-size:26px!important}.ab-story .prose p{font-size:16px}.ab-art{height:300px!important}.ab-bowl{width:220px!important;height:220px!important}.ab-ph{width:150px!important;right:4%!important}.ab-g{gap:12px!important}.ab-c{padding:20px!important}.ab-t{font-size:18px!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `.ph{border-radius:30px;background:#0F172A;padding:7px;box-shadow:0 24px 48px rgba(15,23,42,.22)}.ph img{display:block;border-radius:24px;width:100%;height:auto}.ab-story .prose p{font-size:18px;line-height:1.75;color:#334155}
+@media(max-width:720px){.ab-s{padding-top:32px!important;grid-template-columns:1fr!important;gap:24px!important}.ab-h2{font-size:26px!important}.ab-story .prose p{font-size:16px}.ab-art{height:300px!important}.ab-bowl{width:220px!important;height:220px!important}.ab-ph{width:150px!important;right:4%!important}.ab-g{gap:12px!important}.ab-c{padding:20px!important}.ab-t{font-size:18px!important}}` }} />
     </main>
   );
 }

@@ -49,7 +49,7 @@ export default async function Cat({ params, searchParams }) {
         <Pager page={page} total={total} per={per} base={`/chu-de/${t.slug}`} />
       </div>
       <Sticky s={s} ref_={`cat-${t.slug}`} />
-      <style>{`@media(max-width:720px){.catpin{flex-direction:column;margin-bottom:40px!important}.catpin img{width:100%!important;height:200px!important}.catpin>span{padding:20px!important}.catpin b{font-size:22px!important}.catpin-ex{font-size:15px!important}.catw{padding-top:24px!important}.catw>.chips{margin-bottom:20px!important}.cat-h2{font-size:22px!important;margin-bottom:16px!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.catpin{flex-direction:column;margin-bottom:40px!important}.catpin img{width:100%!important;height:200px!important}.catpin>span{padding:20px!important}.catpin b{font-size:22px!important}.catpin-ex{font-size:15px!important}.catw{padding-top:24px!important}.catw>.chips{margin-bottom:20px!important}.cat-h2{font-size:22px!important;margin-bottom:16px!important}}` }} />
     </main>
   );
 }

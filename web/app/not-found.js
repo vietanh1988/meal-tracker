@@ -18,7 +18,7 @@ export default async function NotFound() {
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}><a className="btn b2" href="/" style={{ height: 46 }}>Về trang chủ</a><a className="btn b2" href="/bang-calo" style={{ height: 46 }}>Bảng calo món</a></div>
       </div>
       {posts.length > 0 && <section className="wrap sec"><SecHead eye="Gợi ý" title="Có thể bạn đang tìm" /><PostList posts={posts} variant="list" mCard={false} /></section>}
-      <style>{`@media(max-width:720px){.nf{padding-top:48px!important}.nf-art{width:180px!important;height:180px!important}.nf-n{font-size:56px!important}.nf-h1{font-size:30px!important}.nf-p{font-size:16px!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.nf{padding-top:48px!important}.nf-art{width:180px!important;height:180px!important}.nf-n{font-size:56px!important}.nf-h1{font-size:30px!important}.nf-p{font-size:16px!important}}` }} />
     </main>
   );
 }

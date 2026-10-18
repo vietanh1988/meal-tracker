@@ -50,7 +50,7 @@ export default async function Author({ params }) {
         <SecHead eye="Bài viết" title={`${posts.length} bài của ${a.name}`} />
         <PostList posts={posts} variant="list" mCard={false} />
       </div>}
-      <style>{`.ahd{padding:56px 0 48px!important}@media(max-width:720px){.ahd{padding:28px 0 32px!important}.ahead{flex-direction:column;align-items:flex-start!important;gap:16px!important}.aav{width:96px!important;height:96px!important;border-radius:48px!important;font-size:32px!important}.abio{font-size:16px!important}.apw{padding-top:32px!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `.ahd{padding:56px 0 48px!important}@media(max-width:720px){.ahd{padding:28px 0 32px!important}.ahead{flex-direction:column;align-items:flex-start!important;gap:16px!important}.aav{width:96px!important;height:96px!important;border-radius:48px!important;font-size:32px!important}.abio{font-size:16px!important}.apw{padding-top:32px!important}}` }} />
     </main>
   );
 }

@@ -37,7 +37,7 @@ export default async function Contact() {
         </div>
         <ContactForm fallback={c.phone ? `Zalo ${c.phone}` : c.email || "qua email"} />
       </div>
-      <style>{`@media(max-width:720px){.ct-w{padding-top:28px!important;grid-template-columns:1fr!important;gap:20px!important}.ct-c{padding:20px!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.ct-w{padding-top:28px!important;grid-template-columns:1fr!important;gap:20px!important}.ct-c{padding:20px!important}}` }} />
     </main>
   );
 }

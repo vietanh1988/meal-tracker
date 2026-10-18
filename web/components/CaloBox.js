@@ -14,7 +14,7 @@ export default function CaloBox({ fd, por, link = true, img }) {
           <span className="mut" style={{ fontSize: 13.5 }}>Số liệu từ kho món Fipilot AI · 100 g = {fd.per100.cal} kcal</span>
           {link && <a className="btn b2" href={`/calo/${fd.slug}`} style={{ height: 36, fontSize: 13 }}>Xem đủ các khẩu phần</a>}
         </div>
-        <style>{`@media(max-width:720px){.cbox>div{padding:16px!important}.cbox-m{margin-left:0!important}.cbox-f{flex-direction:column!important;align-items:stretch!important;gap:8px!important}}`}</style>
+        <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.cbox>div{padding:16px!important}.cbox-m{margin-left:0!important}.cbox-f{flex-direction:column!important;align-items:stretch!important;gap:8px!important}}` }} />
       </div>
     </figure>
   );

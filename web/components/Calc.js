@@ -81,7 +81,7 @@ export default function Calc({ full = false, appUrl = "https://app.fipilotai.com
           </>
         )}
       </div>
-      <style>{`@media(max-width:720px){.calc-full>*,.calc>*{min-width:0}.calc,.calc>div{gap:16px!important}.calc .calc-res{flex-direction:column!important;align-items:stretch!important}.calc .calc-k{font-size:30px!important}.calc .calc-go{width:100%!important}.calc-full{grid-template-columns:1fr!important;gap:20px!important}.calc-full>.card{padding:20px!important}.calc-full .calc-t{font-size:20px!important}.calc-full .calc-res{padding:22px!important}.calc-full .calc-k{font-size:44px!important}.calc-in{grid-template-columns:1fr 1fr!important}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.calc-full>*,.calc>*{min-width:0}.calc,.calc>div{gap:16px!important}.calc .calc-res{flex-direction:column!important;align-items:stretch!important}.calc .calc-k{font-size:30px!important}.calc .calc-go{width:100%!important}.calc-full{grid-template-columns:1fr!important;gap:20px!important}.calc-full>.card{padding:20px!important}.calc-full .calc-t{font-size:20px!important}.calc-full .calc-res{padding:22px!important}.calc-full .calc-k{font-size:44px!important}.calc-in{grid-template-columns:1fr 1fr!important}}` }} />
     </div>
   );
 }

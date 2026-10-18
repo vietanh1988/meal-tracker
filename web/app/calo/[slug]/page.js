@@ -77,7 +77,7 @@ export default async function Calo({ params }) {
         </div>
       </div>
       <Sticky s={s} ref_={`calo-${fd.slug}`} />
-      <style>{`@media(max-width:720px){.calowrap{padding-top:24px!important;gap:20px!important}.calo-cols{flex-direction:column;gap:20px!important}.calo-main,.calo-side{display:contents!important}.o1{order:1}.o2{order:2}.o3{order:3}.o4{order:4}.o5{order:5;margin-top:0!important}.o6{order:6}.verdict{padding:18px!important}.calo-cols>*>*{width:100%}}`}</style>
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.calowrap{padding-top:24px!important;gap:20px!important}.calo-cols{flex-direction:column;gap:20px!important}.calo-main,.calo-side{display:contents!important}.o1{order:1}.o2{order:2}.o3{order:3}.o4{order:4}.o5{order:5;margin-top:0!important}.o6{order:6}.verdict{padding:18px!important}.calo-cols>*>*{width:100%}}` }} />
     </main>
   );
 }

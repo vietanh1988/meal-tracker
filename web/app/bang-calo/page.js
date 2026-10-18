@@ -40,7 +40,7 @@ export default async function Index({ searchParams }) {
       <PageHead eye="Bảng calo món Việt" h1="Bảng calo món ăn Việt Nam" sub="Calo theo 100 g và theo khẩu phần thường gặp. Bấm vào món để xem đạm, tinh bột, chất béo và cách ăn khi giảm cân." crumb={crumbs}
         right={<form action="/bang-calo" className="bc-q" style={{ display: "flex", gap: 8, width: 420, maxWidth: "100%" }}><input name="q" defaultValue={qs} className="inp" placeholder="Tìm món: phở, cơm tấm, trà sữa…" aria-label="Tìm món" />{g && <input type="hidden" name="nhom" value={g} />}<button className="btn b1" style={{ height: 52, width: 52, padding: 0, borderRadius: 14 }} aria-label="Tìm"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg></button></form>} />
       <div className="wrap bcw" style={{ paddingTop: 40 }}>
-        <style>{`@media(max-width:720px){.bcw{padding-top:24px!important}.bc-q{width:100%!important}}`}</style>
+        <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.bcw{padding-top:24px!important}.bc-q{width:100%!important}}` }} />
         <div className="chips"><a className={`chip${g ? "" : " on"}`} href="/bang-calo">Tất cả</a>{groups.map(([k, n]) => <a key={k} className={`chip${g === slugify(n) ? " on" : ""}`} href={`/bang-calo?nhom=${slugify(n)}`}>{n}</a>)}</div>
         {qs && <p className="mut" style={{ marginTop: 20, fontSize: 15 }}>{total} món khớp “{qs}”</p>}
         <div className="card only-pc" style={{ overflow: "hidden", padding: 0, marginTop: 28 }}>
