@@ -1,12 +1,14 @@
 // Quản trị PC › Kết nối AI. Cùng logic với src/mobile/admin/AiScreen.jsx (nạp / lưu / quyền giữ nguyên):
 //  - aiProvider: localStorage "aiProvider" → appSettings.ai_provider → "claude"; mô hình: ai_model / gemini_model / gpt_model
-//  - khoá gemini / gpt / usda (+ claude_key giữ nguyên giá trị): appSettings → localStorage; appSettings tải sau thì "cloud luôn thắng"
-//  - luôn ghi localStorage aiProvider; admin ghi thêm 4 khoá vào localStorage (như cũ)
+//  - khoá gemini / gpt: CHỈ GHI qua RPC (src/lib/aiKeys.js), không tải về; usda: appSettings → localStorage
+//  - luôn ghi localStorage aiProvider; admin ghi thêm khoá USDA vào localStorage
 //  - Chọn nhà cung cấp / mô hình / AI xử lý ảnh lưu ngay key đó; "Lưu" ghi đủ 8 key.
 //  - "Kiểm tra kết nối" gọi ai-proxy feature "ping_test" CHỈ khi người dùng bấm (không tự gọi khi mở trang).
 //  - Admin thường: chỉ xem (dải vàng), không chọn / sửa được, không có nút Lưu, vẫn Kiểm tra kết nối được.
 import { useEffect, useState } from "react";
 import { authFetch } from "../lib/authFetch";
+import { useAiKeys } from "../lib/aiKeys";
+import { keyPlaceholder } from "../lib/aiKeysView";
 import { pickAiModel } from "../lib/aiProvider";
 import { PC } from "../theme";
 import { Btn, Pill, Card, secLbl } from "./pcUI";
@@ -57,9 +59,10 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
   const [aiModel, setAiModel] = useState(() => appSettings.ai_model || "claude-sonnet-5");
   const [geminiModel, setGeminiModel] = useState(() => appSettings.gemini_model || "gemini-2.5-flash");
   const [gptModel, setGptModel] = useState(() => appSettings.gpt_model || "gpt-4o-mini");
-  const [claudeKey, setClaudeKey] = useState(() => appSettings.claude_key || lsGet("claudeKey") || "");
-  const [geminiKey, setGeminiKey] = useState(() => appSettings.gemini_key || lsGet("geminiKey") || "");
-  const [gptKey, setGptKey] = useState(() => appSettings.gpt_key || lsGet("gptKey") || "");
+  // Khoá AI chỉ ghi: ô luôn trống, hiện "Đã cài ••••1234"; dán khoá mới + Lưu mới thay
+  const [geminiKey, setGeminiKey] = useState("");
+  const [gptKey, setGptKey] = useState("");
+  const { status: keySt, saveKeys } = useAiKeys(!!isAdmin);
   const [usdaKey, setUsdaKey] = useState(() => appSettings.usda_key || lsGet("usdaKey") || "");
   const [aiConnected, setAiConnected] = useState(true);
   const [testing, setTesting] = useState(false);
@@ -69,9 +72,6 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
   // appSettings tải sau (bất đồng bộ) — cloud luôn thắng
   useEffect(() => {
     if (appSettings.ai_provider) setAiProvider(appSettings.ai_provider);
-    if (appSettings.claude_key) setClaudeKey(appSettings.claude_key);
-    if (appSettings.gemini_key) setGeminiKey(appSettings.gemini_key);
-    if (appSettings.gpt_key) setGptKey(appSettings.gpt_key);
     if (appSettings.usda_key) setUsdaKey(appSettings.usda_key);
     if (appSettings.gpt_model) setGptModel(appSettings.gpt_model);
     if (appSettings.gemini_model) setGeminiModel(appSettings.gemini_model);
@@ -81,8 +81,8 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
 
   useEffect(() => {
     lsSet("aiProvider", aiProvider);
-    if (isAdmin) { lsSet("claudeKey", claudeKey); lsSet("geminiKey", geminiKey); lsSet("gptKey", gptKey); lsSet("usdaKey", usdaKey); }
-  }, [aiProvider, claudeKey, geminiKey, gptKey, usdaKey, isAdmin]);
+    if (isAdmin) lsSet("usdaKey", usdaKey);
+  }, [aiProvider, usdaKey, isAdmin]);
 
   if (!isAdmin) return <>{top(null)}<div data-testid="pc-ai" style={{ padding: 20, textAlign: "center", color: PC.t3, fontSize: 13 }}>Chỉ Admin mới xem được trang này.</div></>;
 
@@ -128,9 +128,9 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
     if (readOnly) return;
     setSaving(true);
     await saveSetting("ai_provider", aiProvider);
-    await saveSetting("claude_key", claudeKey);
-    await saveSetting("gemini_key", geminiKey);
-    await saveSetting("gpt_key", gptKey);
+    const k = await saveKeys({ gemini_key: geminiKey, gpt_key: gptKey });
+    if (!k.ok) { setSaving(false); showToast?.({ text: k.error }, 3500); return; }
+    setGeminiKey(""); setGptKey("");
     await saveSetting("usda_key", usdaKey);
     await saveSetting("ai_model", aiModel);
     await saveSetting("gpt_model", gptModel);
@@ -217,11 +217,11 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
           <Card testid="pc-ai-keys">
             {cardHead("Khoá API", "Bấm Lưu để ghi khoá")}
             <div style={{ borderTop: `1px solid ${PC.headLine}` }}>
-              {aiProvider === "gemini" && keyRow("Gemini", geminiKey, setGeminiKey, "AIzaSy...", "pc-ai-key-gemini")}
-              {aiProvider === "gpt" && keyRow("OpenAI", gptKey, setGptKey, "sk-...", "pc-ai-key-gpt")}
+              {aiProvider === "gemini" && keyRow("Gemini", geminiKey, setGeminiKey, keyPlaceholder(keySt.gemini_key, "AIzaSy..."), "pc-ai-key-gemini")}
+              {aiProvider === "gpt" && keyRow("OpenAI", gptKey, setGptKey, keyPlaceholder(keySt.gpt_key, "sk-..."), "pc-ai-key-gpt")}
               {keyRow("USDA (tra macro)", usdaKey, setUsdaKey, "USDA key...", "pc-ai-key-usda", true)}
             </div>
-            <div style={{ padding: "4px 16px 14px 16px", fontSize: 12, color: PC.t3 }}>Claude: khoá đặt trên server, không lưu ở trình duyệt.</div>
+            <div style={{ padding: "4px 16px 14px 16px", fontSize: 12, color: PC.t3 }}>Claude: khoá đặt trên server. Khoá AI chỉ ghi — đã lưu thì không ai xem lại được nguyên khoá, kể cả admin.</div>
           </Card>
 
           <Card testid="pc-ai-vision">

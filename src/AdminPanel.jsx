@@ -140,17 +140,15 @@ export function AdminPanel({todayLog,updateWeight,removeDayMeal,moveDayMeal,weig
   const [gptModel,setGptModel]=useState(()=>appSettings.gpt_model||"gpt-4o-mini");
   const [aiConnected,setAiConnected]=useState(true);
   // Shared keys: appSettings > localStorage
-  const [claudeKey,setClaudeKey]=useState(()=>appSettings.claude_key||localStorage.getItem("claudeKey")||"");
-  const [geminiKey,setGeminiKey]=useState(()=>appSettings.gemini_key||localStorage.getItem("geminiKey")||"");
-  const [gptKey,setGptKey]=useState(()=>appSettings.gpt_key||localStorage.getItem("gptKey")||"");
+  // Khoá AI chỉ ghi (src/lib/aiKeys.js) — không tải về trình duyệt
+  const [claudeKey,setClaudeKey]=useState("");
+  const [geminiKey,setGeminiKey]=useState("");
+  const [gptKey,setGptKey]=useState("");
   const [usdaKey,setUsdaKey]=useState(()=>appSettings.usda_key||localStorage.getItem("usdaKey")||"");
 
   // Sync appSettings when they load (async) — cloud always wins
   useEffect(()=>{
     if(appSettings.ai_provider)setAiProvider(appSettings.ai_provider);
-    if(appSettings.claude_key)setClaudeKey(appSettings.claude_key);
-    if(appSettings.gemini_key)setGeminiKey(appSettings.gemini_key);
-    if(appSettings.gpt_key)setGptKey(appSettings.gpt_key);
     if(appSettings.usda_key)setUsdaKey(appSettings.usda_key);
     if(appSettings.gpt_model)setGptModel(appSettings.gpt_model);
     if(appSettings.gemini_model)setGeminiModel(appSettings.gemini_model);
@@ -165,9 +163,9 @@ export function AdminPanel({todayLog,updateWeight,removeDayMeal,moveDayMeal,weig
   useEffect(()=>{
     localStorage.setItem("aiProvider",aiProvider);
     if(isAdmin){
-      localStorage.setItem("claudeKey",claudeKey);localStorage.setItem("geminiKey",geminiKey);localStorage.setItem("gptKey",gptKey);localStorage.setItem("usdaKey",usdaKey);
+      localStorage.setItem("usdaKey",usdaKey);
     }
-  },[aiProvider,claudeKey,geminiKey,gptKey,usdaKey,isAdmin]);
+  },[aiProvider,usdaKey,isAdmin]);
 
   // Stable ref to getMeals to avoid unnecessary effect reruns
   const getMealsRef=useRef(getMeals);

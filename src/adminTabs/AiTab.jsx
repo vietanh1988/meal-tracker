@@ -1,8 +1,11 @@
 import { C, card, redBtn } from "../theme";
 import { authFetch } from "../lib/authFetch";
 import { pickAiModel } from "../lib/aiProvider";
+import { useAiKeys } from "../lib/aiKeys";
+import { keyPlaceholder } from "../lib/aiKeysView";
 
 export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel, setAiModel, geminiModel, setGeminiModel, gptModel, setGptModel, aiConnected, setAiConnected, claudeKey, setClaudeKey, geminiKey, setGeminiKey, gptKey, setGptKey, usdaKey, setUsdaKey, appSettings, isSuperAdmin}){
+  const { status: keySt, saveKeys } = useAiKeys(!!isAdmin);
   if(!isAdmin) return <div style={card}>Chỉ Admin mới xem được trang này.</div>;
   const providerName=aiProvider==="claude"?"Claude":aiProvider==="gemini"?"Gemini":"GPT";
   const readOnly = !isSuperAdmin;
@@ -84,13 +87,13 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         </div>}
         {aiProvider==="gemini"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>Gemini</span>
-          <input type="password" value={geminiKey} onChange={e=>!readOnly&&setGeminiKey(e.target.value)} disabled={readOnly} placeholder="AIzaSy..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
-          <div style={{width:6,height:6,borderRadius:"50%",background:geminiKey?"#34C759":"#ddd",flexShrink:0}}/>
+          <input type="password" value={geminiKey} onChange={e=>!readOnly&&setGeminiKey(e.target.value)} disabled={readOnly} placeholder={keyPlaceholder(keySt.gemini_key,"AIzaSy...")} style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:(geminiKey||keySt.gemini_key?.set)?"#34C759":"#ddd",flexShrink:0}}/>
         </div>}
         {aiProvider==="gpt"&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>OpenAI</span>
-          <input type="password" value={gptKey} onChange={e=>!readOnly&&setGptKey(e.target.value)} disabled={readOnly} placeholder="sk-..." style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
-          <div style={{width:6,height:6,borderRadius:"50%",background:gptKey?"#34C759":"#ddd",flexShrink:0}}/>
+          <input type="password" value={gptKey} onChange={e=>!readOnly&&setGptKey(e.target.value)} disabled={readOnly} placeholder={keyPlaceholder(keySt.gpt_key,"sk-...")} style={{flex:1,padding:"6px 10px",border:`0.5px solid ${C.border}`,borderRadius:6,fontSize:11,background:"#F9F9F9",fontFamily:"inherit"}}/>
+          <div style={{width:6,height:6,borderRadius:"50%",background:(gptKey||keySt.gpt_key?.set)?"#34C759":"#ddd",flexShrink:0}}/>
         </div>}
         <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",background:"#fff",border:`0.5px solid ${C.border}`,borderRadius:10,marginBottom:6}}>
           <span style={{fontSize:11,fontWeight:600,color:C.t1,width:48,flexShrink:0}}>USDA</span>
@@ -111,9 +114,9 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
 
       {isSuperAdmin&&<button onClick={async()=>{
         await saveSetting("ai_provider",aiProvider);
-        await saveSetting("claude_key",claudeKey);
-        await saveSetting("gemini_key",geminiKey);
-        await saveSetting("gpt_key",gptKey);
+        const k=await saveKeys({gemini_key:geminiKey,gpt_key:gptKey});
+        if(!k.ok){alert(k.error);return;}
+        setGeminiKey("");setGptKey("");
         await saveSetting("usda_key",usdaKey);
         await saveSetting("ai_model",aiModel);
         await saveSetting("gpt_model",gptModel);
@@ -126,7 +129,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
         <span style={{fontSize:13,fontWeight:700,color:"#14532D"}}>✅ Đã lưu!</span>
       </div>}
 
-      {!isAdmin&&(claudeKey||geminiKey||gptKey)&&<div style={{marginTop:12,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1px solid ${C.green}`}}>
+      {false&&<div style={{marginTop:12,padding:"10px 14px",background:C.greenBg,borderRadius:10,border:`1px solid ${C.green}`}}>
         <span style={{fontSize:12,fontWeight:600,color:"#14532D"}}>✅ API đã được admin cấu hình sẵn</span>
       </div>}
 

@@ -2,8 +2,8 @@
 // State trước đây nằm ở AdminPanel.jsx, chép nguyên cách nạp/lưu vào đây:
 //  - aiProvider: localStorage "aiProvider" → appSettings.ai_provider → "claude"
 //  - ai_model / gemini_model / gpt_model: appSettings → mặc định claude-sonnet-5 / gemini-2.5-flash / gpt-4o-mini
-//  - khoá claude/gemini/gpt/usda: appSettings → localStorage; appSettings tải sau thì "cloud luôn thắng"
-//  - luôn ghi localStorage aiProvider; admin ghi thêm 4 khoá vào localStorage (như cũ)
+//  - khoá gemini / gpt: CHỈ GHI qua RPC (src/lib/aiKeys.js), không tải về; usda: appSettings → localStorage
+//  - luôn ghi localStorage aiProvider; admin ghi thêm khoá USDA vào localStorage
 // Hành vi giữ như cũ: chọn nhà cung cấp / mô hình lưu ngay key đó; "Lưu" ghi đủ 8 key; "Thử kết nối" gọi ai-proxy
 // feature "ping_test" (tốn rất ít tiền — không bấm khi test tự động).
 // Sửa lỗi: ô "AI xử lý ảnh" đọc appSettings.photo_vision_provider (bản cũ không được truyền appSettings nên luôn hiện "auto").
@@ -11,6 +11,8 @@
 import { useEffect, useState } from "react";
 import { DK } from "../../theme";
 import { authFetch } from "../../lib/authFetch";
+import { useAiKeys } from "../../lib/aiKeys";
+import { keyPlaceholder } from "../../lib/aiKeysView";
 import { pickAiModel } from "../../lib/aiProvider";
 import { SubPage, Seg } from "../ui";
 import { Sec, Card, Row, Pill, Btn, BtnRow, ReadOnly, Field, inp, Empty } from "./adminUI";
@@ -55,9 +57,10 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
   const [aiModel, setAiModel] = useState(() => appSettings.ai_model || "claude-sonnet-5");
   const [geminiModel, setGeminiModel] = useState(() => appSettings.gemini_model || "gemini-2.5-flash");
   const [gptModel, setGptModel] = useState(() => appSettings.gpt_model || "gpt-4o-mini");
-  const [claudeKey, setClaudeKey] = useState(() => appSettings.claude_key || lsGet("claudeKey") || "");
-  const [geminiKey, setGeminiKey] = useState(() => appSettings.gemini_key || lsGet("geminiKey") || "");
-  const [gptKey, setGptKey] = useState(() => appSettings.gpt_key || lsGet("gptKey") || "");
+  // Khoá AI chỉ ghi: ô luôn trống, hiện "Đã cài ••••1234"; dán khoá mới + Lưu mới thay
+  const [geminiKey, setGeminiKey] = useState("");
+  const [gptKey, setGptKey] = useState("");
+  const { status: keySt, saveKeys } = useAiKeys(!!isAdmin);
   const [usdaKey, setUsdaKey] = useState(() => appSettings.usda_key || lsGet("usdaKey") || "");
   const [aiConnected, setAiConnected] = useState(true);
   const [testing, setTesting] = useState(false);
@@ -67,9 +70,6 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
   // appSettings tải sau (bất đồng bộ) — cloud luôn thắng (như AdminPanel)
   useEffect(() => {
     if (appSettings.ai_provider) setAiProvider(appSettings.ai_provider);
-    if (appSettings.claude_key) setClaudeKey(appSettings.claude_key);
-    if (appSettings.gemini_key) setGeminiKey(appSettings.gemini_key);
-    if (appSettings.gpt_key) setGptKey(appSettings.gpt_key);
     if (appSettings.usda_key) setUsdaKey(appSettings.usda_key);
     if (appSettings.gpt_model) setGptModel(appSettings.gpt_model);
     if (appSettings.gemini_model) setGeminiModel(appSettings.gemini_model);
@@ -80,8 +80,8 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
   // Ghi localStorage như AdminPanel
   useEffect(() => {
     lsSet("aiProvider", aiProvider);
-    if (isAdmin) { lsSet("claudeKey", claudeKey); lsSet("geminiKey", geminiKey); lsSet("gptKey", gptKey); lsSet("usdaKey", usdaKey); }
-  }, [aiProvider, claudeKey, geminiKey, gptKey, usdaKey, isAdmin]);
+    if (isAdmin) lsSet("usdaKey", usdaKey);
+  }, [aiProvider, usdaKey, isAdmin]);
 
   const title = "Kết nối AI";
   if (!isAdmin) return (
@@ -132,9 +132,9 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
     if (readOnly) return;
     setSaving(true);
     await saveSetting("ai_provider", aiProvider);
-    await saveSetting("claude_key", claudeKey);
-    await saveSetting("gemini_key", geminiKey);
-    await saveSetting("gpt_key", gptKey);
+    const k = await saveKeys({ gemini_key: geminiKey, gpt_key: gptKey });
+    if (!k.ok) { setSaving(false); showToast?.({ text: k.error }, 3500); return; }
+    setGeminiKey(""); setGptKey("");
     await saveSetting("usda_key", usdaKey);
     await saveSetting("ai_model", aiModel);
     await saveSetting("gpt_model", gptModel);
@@ -199,10 +199,10 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
         <Sec>Khoá API</Sec>
         <Card>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "12px 0" }}>
-            {aiProvider === "gemini" && keyField("Gemini", geminiKey, setGeminiKey, "AIzaSy...", "adm-ai-key-gemini")}
-            {aiProvider === "gpt" && keyField("OpenAI", gptKey, setGptKey, "sk-...", "adm-ai-key-gpt")}
+            {aiProvider === "gemini" && keyField("Gemini", geminiKey, setGeminiKey, keyPlaceholder(keySt.gemini_key, "AIzaSy..."), "adm-ai-key-gemini")}
+            {aiProvider === "gpt" && keyField("OpenAI", gptKey, setGptKey, keyPlaceholder(keySt.gpt_key, "sk-..."), "adm-ai-key-gpt")}
             {keyField("USDA (tra macro)", usdaKey, setUsdaKey, "USDA key...", "adm-ai-key-usda")}
-            <span style={{ fontSize: 11, color: DK.t3, lineHeight: 1.5 }}>Claude: khoá đặt trên server, không lưu ở trình duyệt.</span>
+            <span style={{ fontSize: 11, color: DK.t3, lineHeight: 1.5 }}>Claude: khoá đặt trên server. Khoá AI chỉ ghi — đã lưu thì không ai xem lại được nguyên khoá, kể cả admin.</span>
           </div>
         </Card>
 
