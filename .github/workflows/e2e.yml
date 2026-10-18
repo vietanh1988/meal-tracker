@@ -78,10 +78,8 @@ jobs:
       - name: Web fipilotai.com (Next.js trong web/) — test + build
         working-directory: web
         run: |
-          npm install --no-audit --no-fund
-          npm test
-          NEXT_PUBLIC_SUPABASE_URL="$VITE_SUPABASE_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" npm run build 2>&1 | tee /tmp/web-build.txt
-          test "${PIPESTATUS[0]}" -eq 0
+          set -o pipefail
+          { npm install --no-audit --no-fund && npm test && NEXT_PUBLIC_SUPABASE_URL="$VITE_SUPABASE_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" npm run build; } 2>&1 | tee /tmp/web-build.txt
 
       - name: Đưa lỗi build web lên annotation
         if: failure()
