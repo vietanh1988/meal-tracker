@@ -35,6 +35,7 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
   const [geminiModel, setGeminiModel] = useState(() => appSettings.gemini_model || DEFAULT_MODEL.gemini);
   const [gptModel, setGptModel] = useState(() => appSettings.gpt_model || DEFAULT_MODEL.gpt);
   // Khoá AI chỉ ghi: ô luôn trống, hiện "Đã cài ••••1234"; dán khoá mới + Lưu mới thay
+  const [claudeKey, setClaudeKey] = useState("");
   const [geminiKey, setGeminiKey] = useState("");
   const [gptKey, setGptKey] = useState("");
   const { status: keySt, saveKeys } = useAiKeys(!!isAdmin);
@@ -109,9 +110,9 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
     if (readOnly) return;
     setSaving(true);
     await saveSetting("ai_provider", aiProvider);
-    const k = await saveKeys({ gemini_key: geminiKey, gpt_key: gptKey });
+    const k = await saveKeys({ claude_key: claudeKey, gemini_key: geminiKey, gpt_key: gptKey });
     if (!k.ok) { setSaving(false); showToast?.({ text: k.error }, 3500); return; }
-    setGeminiKey(""); setGptKey("");
+    setClaudeKey(""); setGeminiKey(""); setGptKey("");
     await saveSetting("usda_key", usdaKey);
     await saveSetting("ai_model", aiModel);
     await saveSetting("gpt_model", gptModel);
@@ -146,6 +147,7 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
               <button key={p.id} data-testid={`adm-ai-prov-${p.id}`} aria-pressed={on} disabled={readOnly && !on} onClick={() => pickProvider(p.id)} className="tap"
                 style={{ flex: 1, minWidth: 0, borderRadius: 14, padding: "10px 6px", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, border: "none", fontFamily: "inherit",
                   background: on ? "#FFFFFF" : "rgba(255,255,255,0.08)", color: on ? "#0040E0" : "#FFFFFF", boxShadow: on ? "0 4px 14px rgba(0,0,0,0.18)" : "none", opacity: readOnly && !on ? 0.55 : 1 }}>
+                <img src={p.logo} alt="" aria-hidden="true" style={{ width: 26, height: 26, objectFit: "contain" }} />
                 <span style={{ fontSize: 15, fontWeight: 900 }}>{p.name}</span>
                 <span style={{ fontSize: 10, opacity: 0.75 }}>{p.desc}</span>
               </button>
@@ -176,10 +178,11 @@ export function AiScreen({ onBack, isAdmin, isSuperAdmin, appSettings = {}, save
         <Sec>Khoá API</Sec>
         <Card>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "12px 0" }}>
-            {aiProvider === "gemini" && keyField("Gemini", geminiKey, setGeminiKey, keyPlaceholder(keySt.gemini_key, "AIzaSy..."), "adm-ai-key-gemini")}
-            {aiProvider === "gpt" && keyField("OpenAI", gptKey, setGptKey, keyPlaceholder(keySt.gpt_key, "sk-..."), "adm-ai-key-gpt")}
+            {keyField(`Claude · ${keySt.claude_key?.set ? "Đã cài" : "Chưa cài"}`, claudeKey, setClaudeKey, keyPlaceholder(keySt.claude_key, "sk-ant-..."), "adm-ai-key-claude")}
+            {keyField(`OpenAI (GPT) · ${keySt.gpt_key?.set ? "Đã cài" : "Chưa cài"}`, gptKey, setGptKey, keyPlaceholder(keySt.gpt_key, "sk-..."), "adm-ai-key-gpt")}
+            {keyField(`Gemini · ${keySt.gemini_key?.set ? "Đã cài" : "Chưa cài"}`, geminiKey, setGeminiKey, keyPlaceholder(keySt.gemini_key, "AIzaSy..."), "adm-ai-key-gemini")}
             {keyField("USDA (tra macro)", usdaKey, setUsdaKey, "USDA key...", "adm-ai-key-usda")}
-            <span style={{ fontSize: 11, color: DK.t3, lineHeight: 1.5 }}>Claude: khoá đặt trên server. Khoá AI chỉ ghi — đã lưu thì không ai xem lại được nguyên khoá, kể cả admin.</span>
+            <span style={{ fontSize: 11, color: DK.t3, lineHeight: 1.5 }}>Dán khoá mới rồi bấm Lưu để thay; để trống = giữ khoá cũ. Khoá chỉ ghi — không ai xem lại được nguyên khoá.</span>
           </div>
         </Card>
 

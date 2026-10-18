@@ -297,7 +297,9 @@ serve(async (req) => {
     let inputTok = 0, outputTok = 0;
 
     if (provider === "claude") {
-      if (!CLAUDE_API_KEY) throw new Error("Server chưa cấu hình CLAUDE_API_KEY")
+      // Khoá admin dán ở Kết nối AI (app_settings, chỉ ghi) ưu tiên; không có thì dùng Secret CLAUDE_API_KEY như cũ
+      const CLAUDE_KEY = (await getAppSettingValue(admin, "claude_key")) || CLAUDE_API_KEY;
+      if (!CLAUDE_KEY) throw new Error("Chưa cấu hình Claude API Key — vào Quản trị › Kết nối AI để nhập.")
       usedModel = model || DEFAULT_MODEL.claude;
       const cx = claudeExtra(usedModel);
       const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -305,7 +307,7 @@ serve(async (req) => {
         headers: {
           "Content-Type": "application/json",
           "anthropic-version": "2023-06-01",
-          "x-api-key": CLAUDE_API_KEY,
+          "x-api-key": CLAUDE_KEY,
         },
         body: JSON.stringify({
           model: usedModel,

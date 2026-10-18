@@ -2,9 +2,9 @@
 // Tra cứu 18/10/2026 trên trang chính thức (platform.claude.com, developers.openai.com, ai.google.dev).
 // Giá USD / 1 triệu token (vào / ra) ghi ở `price` để admin so; bảng tính chi phí thật ở ai-proxy (PRICING).
 export const PROVIDERS = [
-  { id: "claude", name: "Claude", desc: "Anthropic" },
-  { id: "gemini", name: "Gemini", desc: "Google" },
-  { id: "gpt", name: "GPT", desc: "OpenAI" },
+  { id: "claude", name: "Claude", desc: "Anthropic", logo: "/icons/claude-logo.svg" },
+  { id: "gemini", name: "Gemini", desc: "Google", logo: "/icons/gemini-logo.svg" },
+  { id: "gpt", name: "GPT", desc: "OpenAI", logo: "/icons/gpt-logo.svg" },
 ];
 export const MODELS = {
   claude: [
