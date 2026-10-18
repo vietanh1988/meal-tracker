@@ -22,18 +22,19 @@ export default function PostCard({ p, big = false, row = false, variant = "home"
     </a>
   );
 }
-export function PostList({ posts, firstBig = false, gap = 24, variant = "home" }) {
+export function PostList({ posts, firstBig = false, gap = 24, variant = "home", mCard = true }) {
   if (!posts.length) return <p className="lead" style={{ padding: "32px 0" }}>Chưa có bài viết nào.</p>;
   const pc = <div className="grid3 only-pc" style={{ gap }}>{posts.map((p, i) => <PostCard key={p.id} p={p} big={firstBig && i === 0} variant={variant} />)}</div>;
   if (variant === "list") {
     // 139b: bài đầu = thẻ lớn ảnh 190, các bài sau = hàng ảnh 92 kẻ trên
-    const [first, ...rest] = posts;
+    // mCard=false (139d): chỉ có hàng, không thẻ lớn đầu
+    const [first, ...rest] = mCard ? posts : [null, ...posts];
     return (
       <>
         {pc}
         <div className="only-m">
-          <PostCard p={first} variant="list" />
-          {rest.length > 0 && <div style={{ marginTop: 12 }}>{rest.map((p) => <ListRow key={p.id} p={p} />)}</div>}
+          {first && <PostCard p={first} variant="list" />}
+          {rest.length > 0 && <div style={{ marginTop: first ? 12 : 0 }}>{rest.map((p) => <ListRow key={p.id} p={p} />)}</div>}
         </div>
       </>
     );
@@ -45,7 +46,7 @@ export function PostList({ posts, firstBig = false, gap = 24, variant = "home" }
     </>
   );
 }
-function ListRow({ p }) {
+export function ListRow({ p }) {
   const c = catOf(p);
   return (
     <a href={`/${p.slug}`} style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 0", borderTop: "1px solid #EEF2F7" }}>
