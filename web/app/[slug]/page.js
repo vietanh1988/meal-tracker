@@ -5,7 +5,7 @@ import Blocks from "@/components/Blocks";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import PostCard from "@/components/PostCard";
-import { getSettings, siteUrl, appLink } from "@/lib/site";
+import { getSettings, siteUrl, appLink, alt } from "@/lib/site";
 import { getPostBySlug, latestPosts, catOf, fmtDate, readMin } from "@/lib/content";
 import { prepare, toc as mkToc, faqs } from "@/lib/blocks";
 import { textOf } from "@/lib/sanitize";
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }) {
   return {
     title: seo.title ? { absolute: seo.title } : p.title,
     description: desc,
-    alternates: { canonical: seo.canonical || `/${p.slug}` },
+    alternates: alt(seo.canonical || `/${p.slug}`),
     robots,
     openGraph: { type: p.kind === "post" ? "article" : "website", title: seo.og_title || seo.title || p.title, description: desc, url: `/${p.slug}`, images: seo.og_image || p.cover_url ? [{ url: seo.og_image || p.cover_url }] : undefined, publishedTime: p.published_at, modifiedTime: p.updated_at },
   };
@@ -78,7 +78,7 @@ export default async function Page({ params }) {
               {p.reviewer && <><span>Kiểm duyệt: <a href={`/tac-gia/${p.reviewer.slug}`} style={{ color: "#0F172A", fontWeight: 600 }}>{p.reviewer.name}</a></span><span>·</span></>}
               <time dateTime={p.updated_at || p.published_at}>Cập nhật {fmtDate(p.updated_at || p.published_at)}</time><span>·</span><span>{readMin(p.word_count)} phút đọc</span>
             </div>
-            {p.cover_url && <figure><img src={p.cover_url} alt={p.cover_alt || p.title} fetchPriority="high" style={{ width: "100%", height: "auto", maxHeight: 460, objectFit: "cover", borderRadius: 16, display: "block" }} /></figure>}
+            {p.cover_url && <figure><img src={p.cover_url} alt={p.cover_alt || p.title} fetchPriority="high" className="cover" style={{ width: "100%", height: 330, objectFit: "cover", borderRadius: 16, display: "block" }} /></figure>}
             {t.length > 1 && <div className="only-m"><TocBox t={t} /></div>}
             <Blocks blocks={blocks} s={s} toc={t} />
             {a?.show_box !== false && a && (
@@ -102,13 +102,16 @@ export default async function Page({ params }) {
           <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12, background: "linear-gradient(180deg,#EEF4FF,#FFFFFF)", borderColor: "#DCE7FF" }}>
             <b style={{ fontSize: 18, color: "#0B3B91" }}>Thực đơn giảm cân món Việt</b>
             <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.5 }}>App tự lên mỗi ngày, đúng calo cho bạn.</span>
-            <img src="/img/app-today.png" alt="Màn Hôm nay của app Fipilot AI" loading="lazy" style={{ width: 120, alignSelf: "center", borderRadius: 18, border: "5px solid #0F172A" }} />
+            <div style={{ position: "relative", height: 170, marginTop: 4 }}>
+              <img src="/img/food-cta.jpg" alt="" loading="lazy" style={{ position: "absolute", left: 0, bottom: 0, width: 160, height: 96, objectFit: "cover", borderRadius: 12 }} />
+              <img src="/img/app-today.png" alt="Màn Hôm nay của app Fipilot AI" loading="lazy" style={{ position: "absolute", right: 14, bottom: 0, width: 80, height: "auto", borderRadius: 14, border: "4px solid #0F172A", transform: "rotate(6deg)", boxShadow: "0 12px 24px rgba(15,23,42,.2)" }} />
+            </div>
             <a className="btn b1" href={appLink(s, `post-${p.slug}`)}>Dùng thử miễn phí</a>
           </div>
         </aside>
       </div>
       <Sticky s={s} ref_={`post-${p.slug}`} />
-      <style>{`@media(max-width:720px){.art{padding:20px!important}}`}</style>
+      <style>{`@media(max-width:720px){.art{padding:20px!important}.cover{height:230px!important}}`}</style>
     </main>
   );
 }

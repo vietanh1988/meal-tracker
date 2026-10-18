@@ -3,7 +3,7 @@ import PageHead from "@/components/PageHead";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import { Pager } from "@/components/PostCard";
-import { getSettings } from "@/lib/site";
+import { getSettings, alt } from "@/lib/site";
 import { caloFoods } from "@/lib/calo";
 import { mainPortion, GROUPS } from "@/lib/foods";
 import { slugify } from "@/lib/slug";
@@ -13,7 +13,7 @@ export const revalidate = 300;
 const PER = 40;
 export async function generateMetadata({ searchParams }) {
   const g = searchParams?.nhom; const page = +searchParams?.trang || 1;
-  return { title: "Bảng calo món ăn Việt Nam", description: "Calo theo 100 g và theo khẩu phần thường gặp của món Việt: phở, bún, cơm tấm, bánh mì… Kèm đạm, tinh bột, chất béo.", alternates: { canonical: `/bang-calo${g ? `?nhom=${g}` : ""}${page > 1 ? `${g ? "&" : "?"}trang=${page}` : ""}` } };
+  return { title: "Bảng calo món ăn Việt Nam", description: "Calo theo 100 g và theo khẩu phần thường gặp của món Việt: phở, bún, cơm tấm, bánh mì… Kèm đạm, tinh bột, chất béo.", alternates: alt(`/bang-calo${g ? `?nhom=${g}` : ""}${page > 1 ? `${g ? "&" : "?"}trang=${page}` : ""}`) };
 }
 export default async function Index({ searchParams }) {
   const s = await getSettings();

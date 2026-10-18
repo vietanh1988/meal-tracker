@@ -1,3 +1,4 @@
+import { alt } from "@/lib/site";
 // Thẻ (139e/f) — mặc định không cho Google lập chỉ mục (trang mỏng)
 import { notFound } from "next/navigation";
 import PageHead from "@/components/PageHead";
@@ -8,7 +9,7 @@ export const revalidate = 60;
 export async function generateMetadata({ params }) {
   const t = await getTerm("tag", params.slug);
   if (!t) return {};
-  return { title: `Thẻ: ${t.name}`, robots: { index: t.seo?.index === true, follow: true }, alternates: { canonical: `/the/${t.slug}` } };
+  return { title: `Thẻ: ${t.name}`, robots: { index: t.seo?.index === true, follow: true }, alternates: alt(`/the/${t.slug}`) };
 }
 export default async function Tag({ params }) {
   const t = await getTerm("tag", params.slug);

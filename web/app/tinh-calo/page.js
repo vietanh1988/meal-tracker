@@ -3,11 +3,11 @@ import PageHead from "@/components/PageHead";
 import SecHead from "@/components/SecHead";
 import Calc from "@/components/Calc";
 import JsonLd from "@/components/JsonLd";
-import { getSettings } from "@/lib/site";
+import { getSettings, alt } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
 
 export const revalidate = 3600;
-export const metadata = { title: "Tính calo cần ăn mỗi ngày để giảm cân", description: "Công cụ tính calo miễn phí: nhập cân nặng, chiều cao, mức vận động — biết ngay cần ăn bao nhiêu kcal mỗi ngày để giảm cân an toàn.", alternates: { canonical: "/tinh-calo" } };
+export const metadata = { title: "Tính calo cần ăn mỗi ngày để giảm cân", description: "Công cụ tính calo miễn phí: nhập cân nặng, chiều cao, mức vận động — biết ngay cần ăn bao nhiêu kcal mỗi ngày để giảm cân an toàn.", alternates: alt("/tinh-calo") };
 export default async function Tool() {
   const s = await getSettings();
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Tính calo", path: "/tinh-calo" }];

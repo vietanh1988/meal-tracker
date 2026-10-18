@@ -4,7 +4,7 @@ import Crumb from "@/components/Crumb";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import Portions from "@/components/Portions";
-import { getSettings, appLink } from "@/lib/site";
+import { getSettings, appLink, alt } from "@/lib/site";
 import { caloBySlug, caloFoods } from "@/lib/calo";
 import { mainPortion } from "@/lib/foods";
 import { breadcrumb, faqGraph, foodGraph, ld } from "@/lib/schema";
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
   if (!r?.food) return { robots: { index: false } };
   const fd = r.food, por = mainPortion(fd);
   const desc = `${por ? `${por.name.charAt(0).toUpperCase() + por.name.slice(1)} ${fd.name.toLowerCase()} (${por.gram} g) khoảng ${por.cal} kcal. ` : ""}100 g ${fd.name.toLowerCase()} có ${fd.per100.cal} kcal, đạm ${vn(fd.per100.p)} g, tinh bột ${vn(fd.per100.c)} g, chất béo ${vn(fd.per100.f)} g. Cách ăn khi giảm cân.`;
-  return { title: `${fd.name} bao nhiêu calo?`, description: desc.slice(0, 160), alternates: { canonical: `/calo/${fd.slug}` }, robots: { index: !r.page?.noindex, follow: true }, openGraph: { images: r.page?.image_url ? [{ url: r.page.image_url }] : undefined } };
+  return { title: `${fd.name} bao nhiêu calo?`, description: desc.slice(0, 160), alternates: alt(`/calo/${fd.slug}`), robots: { index: !r.page?.noindex, follow: true }, openGraph: { images: r.page?.image_url ? [{ url: r.page.image_url }] : undefined } };
 }
 
 export default async function Calo({ params }) {
@@ -58,9 +58,10 @@ export default async function Calo({ params }) {
             </form>
             {same.length > 0 && (
               <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
-                <b style={{ fontSize: 16, marginBottom: 6 }}>So với món tương tự</b>
+                <b style={{ fontSize: 16, marginBottom: 6 }}>So với món tương tự (khẩu phần vừa)</b>
                 {same.map(({ x, p }, i) => { const d = p.cal - (por?.cal || 0); return (
                   <a key={x.key} href={`/calo/${x.slug}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>
+                    <img className="th" src={x.page?.image_url || ["/img/bowl-1.jpg", "/img/bowl-2.jpg", "/img/bowl-3.jpg"][i % 3]} alt="" width={46} height={46} loading="lazy" style={{ width: 46, height: 46 }} />
                     <span style={{ flex: 1, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 14.5, fontWeight: 600 }}>{x.name}</span><span style={{ fontSize: 13, color: "#64748B" }}>{p.name} {p.gram} g</span></span>
                     <b style={{ fontSize: 16 }}>{p.cal} <span style={{ fontSize: 13 }}>kcal</span></b>
                     {por && <span style={{ fontSize: 12.5, fontWeight: 800, borderRadius: 8, padding: "3px 8px", ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : { background: "#FFEDD5", color: "#C2410C" }) }}>{d > 0 ? "+" : d < 0 ? "−" : "±"}{Math.abs(d)}</span>}
@@ -70,6 +71,7 @@ export default async function Calo({ params }) {
             <div style={{ borderRadius: 18, background: "linear-gradient(160deg,#1A7CFF,#0050E6)", color: "#fff", padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
               <b style={{ fontSize: 19, lineHeight: 1.35 }}>Hôm nay ăn {fd.name.toLowerCase()} thì các bữa khác ăn gì?</b>
               <span style={{ fontSize: 14.5, opacity: 0.88, lineHeight: 1.5 }}>Fipilot AI tự cân lại cả ngày cho đúng calo.</span>
+              <img src={pg.image_url || "/img/food-cta.jpg"} alt="" loading="lazy" style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 12 }} />
               <a className="btn b3" href={appLink(s, `calo-${fd.slug}`)}>Lên thực đơn miễn phí</a>
             </div>
           </div>

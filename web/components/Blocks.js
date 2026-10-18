@@ -33,6 +33,7 @@ export default function Blocks({ blocks, s, toc }) {
           case "faq": return <div key={i} style={{ display: "flex", flexDirection: "column", gap: 10 }}>{b.title && <h2 id={b.id || "hoi-dap"}>{b.title}</h2>}{(b.items || []).map((x, k) => <details key={k} className="faq" open={k === 0}><summary>{x.q}</summary><p>{x.a}</p></details>)}</div>;
           case "app": return (
             <aside key={i} className="card" style={{ padding: "18px 20px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", background: "linear-gradient(90deg,#EEF4FF,#F8FBFF)", borderColor: "#DCE7FF" }}>
+              <img className="th" src={b.image || "/img/bowl-1.jpg"} alt="" width={58} height={58} loading="lazy" style={{ width: 58, height: 58 }} />
               <span style={{ flex: 1, minWidth: 200, display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 17, color: "#0B3B91" }}>{b.title || "Muốn app lên sẵn thực đơn đúng calo?"}</b><span style={{ fontSize: 14.5, color: "#475569", lineHeight: 1.5 }}>{b.text || "Fipilot AI tự lên thực đơn món Việt đúng calo cho bạn — miễn phí."}</span></span>
               <a className="btn b1" href={b.url || appLink(s, "post-box")}>{b.button || "Mở app"}</a>
             </aside>

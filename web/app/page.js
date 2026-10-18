@@ -6,17 +6,33 @@ import Sticky from "@/components/Sticky";
 import { PostList } from "@/components/PostCard";
 import { getSettings, appLink } from "@/lib/site";
 import { latestPosts } from "@/lib/content";
+import { getFood, mainPortion } from "@/lib/foods";
 import { orgGraph, websiteGraph, appGraph, faqGraph, ld } from "@/lib/schema";
 
 export const revalidate = 60;
 const STEPS = [["1", "Nhập cân nặng, chiều cao", "30 giây là xong."], ["2", "App tự lên thực đơn mỗi ngày", "Món Việt, đúng calo, đổi món 1 chạm."], ["3", "Ăn theo, bấm “Đã ăn”", "App nhắc đúng giờ, tự chỉnh calo theo cân mỗi tuần."]];
-const FEATS = [["Thực đơn tự lên mỗi ngày", "Sáng phở, trưa cơm gà, tối bún cá — đúng calo cho bạn.", "/img/app-menu.png", "Màn thực đơn của app"], ["Không thích món nào? Đổi 1 chạm", "Gợi ý món giữ bữa gần bằng calo.", "/img/app-swap.png", "Màn đổi món của app"], ["Thấy rõ kết quả mỗi tháng", "Kg đã giảm, ngày ghi bữa, so tháng trước.", "/img/app-recap.png", "Màn tổng kết tháng của app"]];
+// Thẻ tính năng (bản vẽ 137a): giao diện thu nhỏ — số calo lấy từ kho món app (khẩu phần vừa)
+const MENU_ROWS = [["phở bò", "Sáng", "/img/bowl-1.jpg"], ["cơm gà", "Trưa", "/img/bowl-2.jpg"], ["bún chả", "Tối", "/img/bowl-3.jpg"]];
+const SWAP = ["phở bò", "bún bò huế", "bánh mì trứng"];
+function FoodRow({ img, name, kcal, extra }) {
+  return <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 12, background: "#F8FAFD", border: "1px solid #EEF2F7" }}><img className="th" src={img} alt="" width={40} height={40} loading="lazy" style={{ width: 40, height: 40 }} /><span style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}><b style={{ fontSize: 14.5 }}>{name}</b><span style={{ fontSize: 13, color: "#64748B" }}>{kcal}</span></span>{extra}</div>;
+}
+const Chk = ({ t }) => <span style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, lineHeight: 1.45 }}><span className="chk">✓</span>{t}</span>;
 const FAQ = [{ q: "Ăn phở, bún có giảm cân được không?", a: "Được. Quan trọng là tổng calo cả ngày — app tính sẵn khẩu phần để bạn vẫn ăn món quen." }, { q: "Có phải cài app từ CH Play / App Store không?", a: "Không cần. Mở app.fipilotai.com trên điện thoại rồi bấm “Thêm vào màn hình chính” là dùng như app." }, { q: "Tôi không tập gym thì sao?", a: "Vẫn dùng được. App tính calo theo mức vận động bạn chọn, kể cả ít vận động." }, { q: "App có miễn phí không?", a: "Có gói Miễn phí với thực đơn tự lên mỗi ngày. Premium thêm chụp ảnh tính calo và hỏi AI, dùng thử 7 ngày." }];
 
 export default async function Home() {
   const s = await getSettings();
   const posts = await latestPosts({ limit: 3 });
   const pr = s.pricing || {};
+  const pick = async (k) => { const fd = await getFood(k); const p = mainPortion(fd); return fd && p ? { name: fd.name, cal: p.cal, por: p.name } : null; };
+  const menu = (await Promise.all(MENU_ROWS.map(async ([k, meal, img]) => ({ f: await pick(k), meal, img })))).filter((x) => x.f);
+  const sw = (await Promise.all(SWAP.map(pick))).filter(Boolean);
+  const spark = <svg viewBox="0 0 200 60" width="100%" height="60" aria-hidden="true"><path d="M4 10 L36 16 L70 22 L104 30 L140 40 L196 50 L196 60 L4 60Z" fill="rgba(22,163,74,.08)" /><path d="M4 10 L36 16 L70 22 L104 30 L140 40 L196 50" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" />{[[4, 10], [36, 16], [70, 22], [104, 30], [140, 40], [196, 50]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="3" fill="#fff" stroke="#16A34A" strokeWidth="2" />)}</svg>;
+  const FEATS = [
+    ["Thực đơn tự lên mỗi ngày", "Sáng phở, trưa cơm gà, tối bún chả — đúng calo cho bạn.", <>{menu.map(({ f, meal, img }) => <FoodRow key={f.name} img={img} name={f.name} kcal={`${meal} · ${f.por} · ${f.cal} kcal`} extra={<span style={{ color: "#94A3B8" }}>›</span>} />)}</>],
+    ["Không thích món nào? Đổi 1 chạm", "Gợi ý món giữ bữa gần bằng calo.", sw.length === 3 ? <><FoodRow img="/img/bowl-1.jpg" name={sw[0].name} kcal={`${sw[0].cal} kcal`} /><span style={{ textAlign: "center", color: "#0062F0", fontSize: 13, fontWeight: 700 }}>⇅ đổi sang</span>{sw.slice(1).map((x, i) => { const d = x.cal - sw[0].cal; return <FoodRow key={x.name} img={i ? "/img/bowl-3.jpg" : "/img/bowl-2.jpg"} name={x.name} kcal={`${x.cal} kcal`} extra={<span className="pill" style={{ height: 22, ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : {}) }}>{d > 0 ? "+" : "−"}{Math.abs(d)}</span>} />; })}</> : null],
+    ["Thấy rõ kết quả mỗi tháng", "Kg đã giảm, ngày ghi bữa, so tháng trước.", <div style={{ display: "flex", flexDirection: "column", gap: 8 }}><span className="mut" style={{ fontSize: 13 }}>Ví dụ: tháng 10 của bạn</span><b style={{ fontSize: 30, color: "#16A34A", letterSpacing: "-1px" }}>−2,4 kg</b><Chk t="ghi bữa 24/31 ngày" /><Chk t="chuỗi 9 ngày liên tục" />{spark}</div>],
+  ];
   return (
     <main>
       <JsonLd data={ld(orgGraph(s), websiteGraph(s), appGraph(s), faqGraph(FAQ))} />
@@ -48,7 +64,7 @@ export default async function Home() {
       </section>
       <section className="wrap sec">
         <SecHead eye="Tính năng" title="3 tính năng giúp bạn giảm cân dễ hơn" />
-        <div className="grid3" style={{ gap: 20 }}>{FEATS.map(([t, x, img, alt]) => <div key={t} className="card" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 18 }}><span style={{ display: "flex", flexDirection: "column", gap: 6 }}><h3 style={{ fontSize: 20, lineHeight: 1.3 }}>{t}</h3><span style={{ fontSize: 15.5, color: "#64748B", lineHeight: 1.55 }}>{x}</span></span><div style={{ height: 260, overflow: "hidden", borderRadius: 14, background: "#F5F9FF", display: "flex", justifyContent: "center", paddingTop: 16 }}><img src={img} alt={alt} loading="lazy" width={170} height={350} style={{ width: 170, height: "auto", borderRadius: 20, border: "5px solid #0F172A" }} /></div></div>)}</div>
+        <div className="grid3" style={{ gap: 20 }}>{FEATS.map(([t, x, ui]) => <div key={t} className="card feat" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 18 }}><span style={{ display: "flex", flexDirection: "column", gap: 6 }}><h3 style={{ fontSize: 20, lineHeight: 1.3 }}>{t}</h3><span style={{ fontSize: 15.5, color: "#64748B", lineHeight: 1.55 }}>{x}</span></span><div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{ui}</div></div>)}</div>
       </section>
       <section className="wrap sec grid2" style={{ gap: 48 }}>
         <div>
@@ -77,7 +93,7 @@ export default async function Home() {
         </section>
       )}
       <Sticky s={s} ref_="home-sticky" />
-      <style>{`@media(max-width:720px){.hero{padding:40px 0!important}.hero-in{flex-direction:column;gap:18px!important}.hero-btn{flex-direction:column}.hero-ph{width:100%!important;height:390px!important}.hero-ph img:first-child{right:8%!important;width:150px!important}.hero-ph img:last-child{left:8%!important;width:170px!important}.wrap>.card{padding:20px!important}.calc .calc-in{grid-template-columns:1fr 1fr!important}}`}</style>
+      <style>{`@media(max-width:720px){.hero{padding:40px 0!important}.hero-in{flex-direction:column;gap:18px!important}.hero-btn{flex-direction:column}.hero-ph{width:100%!important;height:390px!important}.hero-ph img:first-child{right:8%!important;width:150px!important}.hero-ph img:last-child{left:8%!important;width:170px!important}.wrap>.card{padding:20px!important}.feat{padding:20px!important}.feat h3{font-size:18px!important}.calc .calc-in{grid-template-columns:1fr 1fr!important}}`}</style>
     </main>
   );
 }

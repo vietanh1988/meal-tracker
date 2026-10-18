@@ -4,7 +4,7 @@ import Crumb from "@/components/Crumb";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
 import { PostList } from "@/components/PostCard";
-import { getSettings, siteUrl } from "@/lib/site";
+import { getSettings, siteUrl, alt } from "@/lib/site";
 import { getAuthor, latestPosts } from "@/lib/content";
 import { breadcrumb, ld } from "@/lib/schema";
 
@@ -12,7 +12,7 @@ export const revalidate = 60;
 export async function generateMetadata({ params }) {
   const a = await getAuthor(params.slug);
   if (!a) return {};
-  return { title: a.name, description: a.bio?.slice(0, 158) || `Các bài viết của ${a.name} trên Fipilot AI`, alternates: { canonical: `/tac-gia/${a.slug}` } };
+  return { title: a.name, description: a.bio?.slice(0, 158) || `Các bài viết của ${a.name} trên Fipilot AI`, alternates: alt(`/tac-gia/${a.slug}`) };
 }
 export default async function Author({ params }) {
   const a = await getAuthor(params.slug);

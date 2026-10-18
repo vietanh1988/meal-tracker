@@ -1,7 +1,7 @@
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import { getSettings, getMenu, siteUrl } from "@/lib/site";
+import { getSettings, getMenu, siteUrl, alt } from "@/lib/site";
 
 // Font y hệt app (index.html của app): Inter + Roboto từ Google Fonts, cùng độ đậm, cùng thứ tự dự phòng.
 const FONT_CSS = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap";
@@ -17,13 +17,12 @@ export async function generateMetadata() {
   if (Object.keys(other).length) verification.other = other;
   return {
     metadataBase: new URL(siteUrl(s, "/")),
-    title: { default: `${s.site.name} — ${s.site.tagline}`, template: (s.site.title_tpl || "%title% | %site%").replace("%title%", "%s").replace("%site%", s.site.name) },
+    title: { default: `${s.site.name} — ${s.site.tagline}, thực đơn đúng calo`, template: (s.site.title_tpl || "%title% | %site%").replace("%title%", "%s").replace("%site%", s.site.name) },
     description: "Giảm cân bằng món Việt quen thuộc. App tự lên thực đơn đúng calo mỗi ngày — phở, bún, cơm tấm vẫn ăn được.",
     applicationName: s.site.name,
     openGraph: { siteName: s.site.name, locale: "vi_VN", type: "website", images: [{ url: "/og-image.png", width: 1200, height: 630 }] },
-    icons: { icon: "/favicon.png", apple: "/icon-192.png" },
     verification,
-    alternates: { canonical: "/" },
+    alternates: alt("/"),
   };
 }
 export const viewport = { themeColor: "#0062F0", width: "device-width", initialScale: 1 };

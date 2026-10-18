@@ -1,13 +1,14 @@
-export default function CaloBox({ fd, por, link = true }) {
+export default function CaloBox({ fd, por, link = true, img }) {
   if (!fd) return null;
   const n = por || { name: "100 g", gram: 100, ...fd.per100 };
   return (
     <figure className="card" style={{ margin: 0, overflow: "hidden" }}>
       <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14, background: "linear-gradient(180deg,#F5F9FF,#FFFFFF)" }}>
         <b style={{ fontSize: 17 }}>{fd.name} · {n.name}{n.gram ? ` ${n.gram} g` : ""}</b>
-        <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <img className="th" src={img || "/img/bowl-1.jpg"} alt="" width={64} height={64} loading="lazy" style={{ width: 64, height: 64 }} />
           <b style={{ fontSize: 34, letterSpacing: "-.02em" }}>{n.cal} kcal</b>
-          <span style={{ display: "flex", gap: 18 }}>{[["Đạm", n.p], ["Tinh bột", n.c], ["Chất béo", n.f]].map(([a, b]) => <span key={a} style={{ display: "flex", flexDirection: "column" }}><span className="lbl">{a}</span><b style={{ fontSize: 16 }}>{String(b).replace(".", ",")} g</b></span>)}</span>
+          <span style={{ display: "flex", gap: 18, marginLeft: 8 }}>{[["Đạm", n.p], ["Tinh bột", n.c], ["Chất béo", n.f]].map(([a, b]) => <span key={a} style={{ display: "flex", flexDirection: "column" }}><span className="lbl">{a}</span><b style={{ fontSize: 16 }}>{String(b).replace(".", ",")} g</b></span>)}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
           <span className="mut" style={{ fontSize: 13.5 }}>Số liệu từ kho món Fipilot AI · 100 g = {fd.per100.cal} kcal</span>

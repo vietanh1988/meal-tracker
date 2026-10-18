@@ -25,3 +25,6 @@ export async function getMenu(location) {
 export const siteUrl = (s, path = "/") => (s?.site?.url || DEFAULTS.site.url).replace(/\/$/, "") + path;
 export const appLink = (s, ref) => `${s?.site?.app_url || DEFAULTS.site.app_url}/?ref=${encodeURIComponent(ref || "web")}`;
 export function titleOf(s, t) { return (s?.site?.title_tpl || "%title% | %site%").replace("%title%", t).replace("%site%", s?.site?.name || "Fipilot AI"); }
+
+// canonical + hreflang (web chỉ tiếng Việt: vi-VN + x-default trỏ cùng địa chỉ)
+export const alt = (path) => ({ canonical: path, languages: { "vi-VN": path, "x-default": path } });

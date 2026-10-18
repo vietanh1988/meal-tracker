@@ -22,8 +22,11 @@ export default async function Footer({ s, menus }) {
               <span style={{ fontSize: 15, color: "#475569", lineHeight: 1.55 }}>Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần.</span>
               <div className="fbtns" style={{ display: "flex", gap: 10, marginTop: 6 }}><a className="btn b1" href={appLink(s, "footer")}>Dùng thử miễn phí</a><a className="btn b2" href="/bang-calo">Tra calo món ăn</a></div>
             </div>
-            <div className="only-pc" style={{ width: 380, flexShrink: 0, background: "radial-gradient(circle at 70% 40%,#D6E6FF,#EEF4FF 60%,#F5F9FF)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <img src="/img/app-today.png" alt="Màn Hôm nay của app Fipilot AI" width={150} height={300} loading="lazy" style={{ borderRadius: 22, border: "6px solid #0F172A", boxShadow: "0 24px 48px rgba(15,23,42,.22)", height: "auto" }} />
+            <div className="fart" style={{ position: "relative", width: 380, flexShrink: 0, background: "radial-gradient(circle at 70% 40%,#D6E6FF,#EEF4FF 60%,#F5F9FF)", overflow: "hidden" }}>
+              <span aria-hidden="true" style={{ position: "absolute", right: -40, bottom: -60, width: 220, height: 220, borderRadius: "50%", background: "rgba(26,124,255,.12)" }} />
+              <img src="/img/bowl-pho.jpg" alt="" loading="lazy" className="th fbowl" style={{ position: "absolute", left: 26, bottom: 26, width: 130, height: 130, border: "5px solid #fff" }} />
+              <img src="/img/bowl-2.jpg" alt="" loading="lazy" className="th fbowl2" style={{ position: "absolute", left: 120, top: 26, width: 62, height: 62, border: "4px solid #fff" }} />
+              <img src="/img/app-today.png" alt="Màn Hôm nay của app Fipilot AI" loading="lazy" className="fphone" style={{ position: "absolute", right: 36, top: 24, width: 128, height: "auto", borderRadius: 20, border: "6px solid #0F172A", boxShadow: "0 24px 48px rgba(15,23,42,.22)", transform: "rotate(6deg)" }} />
             </div>
           </div>
         </div>
@@ -35,11 +38,12 @@ export default async function Footer({ s, menus }) {
             <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, fontWeight: 800, letterSpacing: ".1em", color: "rgba(255,255,255,.55)" }}><span style={{ width: 26, height: 26, borderRadius: 8, background: "#F9731622", color: "#FB923C", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Icon name="bowl" size={14} stroke={2.4} /></span>CALO MÓN PHỔ BIẾN</span>
             <div className="fchips" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {foods.map(({ fd, por }) => (
-                <a key={fd.key} href={`/calo/${fd.slug}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 36, padding: "6px 14px 6px 8px", borderRadius: 18, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.12)", fontSize: 13.5, color: "#E2E8F0" }}>
-                  <span style={{ color: "#FB923C", display: "inline-flex" }}><Icon name="bowl" size={14} /></span><b style={{ color: "#fff" }}>{fd.name}</b>{por && <><span style={{ color: "rgba(255,255,255,.55)" }}>{por.name}</span><b style={{ color: "#7CC2FF" }}>{por.cal} kcal</b></>}
+                <a key={fd.key} href={`/calo/${fd.slug}`} className="fchip">
+                  <span className="fc-n"><span style={{ color: "#FB923C", display: "inline-flex" }}><Icon name="bowl" size={14} /></span><b style={{ color: "#fff" }}>{fd.name}</b></span>
+                  {por && <span className="fc-d"><span style={{ color: "rgba(255,255,255,.55)" }}>{por.name}</span><b style={{ color: "#7CC2FF" }}>{por.cal} kcal</b></span>}
                 </a>
               ))}
-              <a href="/bang-calo" style={{ display: "inline-flex", alignItems: "center", minHeight: 36, padding: "0 12px", fontSize: 13.5, fontWeight: 700, color: "#7CC2FF" }}>Xem cả bảng calo →</a>
+              <a href="/bang-calo" className="fchip-all">Xem cả bảng calo →</a>
             </div>
           </div>
         )}
@@ -70,7 +74,7 @@ export default async function Footer({ s, menus }) {
           </div>
         </div>
       </footer>
-      <style>{`@media(max-width:720px){.fcard{flex-direction:column}.fcard>div:first-child{padding:22px 20px!important}.fcard b{font-size:22px!important}.fbtns{flex-direction:column}.fbar{flex-direction:column;align-items:flex-start!important;padding:14px 16px!important}.fchips{display:grid!important;grid-template-columns:1fr 1fr}}`}</style>
+      <style>{`.fcard{min-height:250px}.fchip{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 14px 6px 10px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:13.5px;color:#E2E8F0;transition:background .12s}.fchip:hover{background:rgba(255,255,255,.12)}.fc-n,.fc-d{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}.fchip-all{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;font-size:13.5px;font-weight:700;color:#7CC2FF}@media(max-width:720px){.fcard{flex-direction:column}.fart{width:auto!important;height:190px}.fbowl{left:8%!important;bottom:14px!important;width:110px!important;height:110px!important}.fbowl2{left:36%!important;top:16px!important}.fphone{right:8%!important;top:18px!important;width:108px!important}.fcard>div:first-child{padding:22px 20px!important}.fcard b{font-size:22px!important}.fbtns{flex-direction:column}.fbar{flex-direction:column;align-items:flex-start!important;padding:14px 16px!important}.fchips{display:grid!important;grid-template-columns:1fr 1fr}.fchip{flex-direction:column;align-items:flex-start;gap:2px;border-radius:12px;padding:9px 11px}.fc-n{gap:6px;font-size:13px}.fc-d{gap:4px;font-size:11.5px}.fchip-all{justify-content:center;border-radius:12px;border:1px dashed rgba(124,194,255,.4);min-height:48px}}`}</style>
     </div>
   );
 }

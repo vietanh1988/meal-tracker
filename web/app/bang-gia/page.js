@@ -2,11 +2,11 @@
 import PageHead from "@/components/PageHead";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
-import { getSettings, appLink } from "@/lib/site";
+import { getSettings, appLink, alt } from "@/lib/site";
 import { breadcrumb, faqGraph, ld } from "@/lib/schema";
 
 export const revalidate = 300;
-export const metadata = { title: "Bảng giá", description: "Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI — dùng thử 7 ngày.", alternates: { canonical: "/bang-gia" } };
+export const metadata = { title: "Bảng giá", description: "Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI — dùng thử 7 ngày.", alternates: alt("/bang-gia") };
 const ROWS = [["Thực đơn món Việt tự lên mỗi ngày", 1, 1], ["Đổi món giữ gần bằng calo", 1, 1], ["Ghi bữa, nhắc giờ ăn", 1, 1], ["Theo dõi cân, tổng kết tháng", 1, 1], ["Chụp ảnh món, app tính calo", 0, 1], ["Hỏi AI về ăn uống", 0, 1], ["AI lên thực đơn theo ý", 0, 1]];
 const FAQ = [{ q: "Hết 7 ngày dùng thử có tự trừ tiền không?", a: "Không. Hết dùng thử app tự về gói Miễn phí, bạn chọn nâng cấp mới phải trả." }];
 export default async function Price() {

@@ -4,7 +4,7 @@ import PageHead from "@/components/PageHead";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import PostCard, { PostList, Pager } from "@/components/PostCard";
-import { getSettings } from "@/lib/site";
+import { getSettings, alt } from "@/lib/site";
 import { getTerm, allTerms, latestPosts, countPosts } from "@/lib/content";
 import { breadcrumb, ld } from "@/lib/schema";
 
@@ -13,7 +13,7 @@ export async function generateMetadata({ params, searchParams }) {
   const t = await getTerm("category", params.slug);
   if (!t) return {};
   const page = Math.max(1, +searchParams?.trang || 1);
-  return { title: t.seo?.title || t.name, description: t.seo?.desc || t.description?.slice(0, 158), alternates: { canonical: `/chu-de/${t.slug}${page > 1 ? `?trang=${page}` : ""}` }, robots: { index: !t.seo?.noindex, follow: true } };
+  return { title: t.seo?.title || t.name, description: t.seo?.desc || t.description?.slice(0, 158), alternates: alt(`/chu-de/${t.slug}${page > 1 ? `?trang=${page}` : ""}`), robots: { index: !t.seo?.noindex, follow: true } };
 }
 
 export default async function Cat({ params, searchParams }) {
