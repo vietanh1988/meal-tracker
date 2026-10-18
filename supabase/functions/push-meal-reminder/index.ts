@@ -4,6 +4,7 @@
 //                   gửi nhắc ghi bữa (bữa chưa đánh dấu đã ăn), nhắc cân (chưa cân hôm nay), nhắc uống nước (chưa đủ mục tiêu)
 //   type "streak" — 20:00 VN: sắp mất chuỗi ngày ghi
 //   type "weekly" — 20:00 CN: báo cáo tuần
+//   tổng kết tháng — ngày 1 lúc 08:00 trong "tick" (hoặc gọi type "monthly"): mở /?recap=YYYY-MM
 //   type "sang" | "trua" | … — kiểu cũ (giờ cố định cho mọi người), giữ để tương thích, cron không còn gọi
 // Deploy: supabase functions deploy push-meal-reminder --no-verify-jwt   (cùng thư mục có reminders.js — bản chép của src/lib/reminders.js)
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -72,12 +73,41 @@ Deno.serve(async (req) => {
     return names[uid] || "bạn";
   };
 
+  // ===== TỔNG KẾT THÁNG (bản vẽ 136, 18/10): ngày 1 lúc 08:00 VN, chạy trong cron mỗi phút ("tick") — hoặc gọi type "monthly" =====
+  const monthly = async () => {
+    const [y, mo] = today.split("-").map(Number);
+    const t = y * 12 + mo - 2, pm = `${Math.floor(t / 12)}-${String((t % 12) + 1).padStart(2, "0")}`;
+    const start = `${pm}-01`, end = new Date(Date.UTC(Number(pm.slice(0, 4)), Number(pm.slice(5, 7)), 0)).toISOString().slice(0, 10);
+    const from = new Date(Date.parse(start) - 90 * 86400000).toISOString().slice(0, 10);
+    const [{ data: dl }, { data: wl }] = await Promise.all([
+      sb.from("daily_logs").select("user_id,log_date,eaten_meals").gte("log_date", start).lte("log_date", end).in("user_id", uids),
+      sb.from("weight_logs").select("user_id,logged_date,kg").gte("logged_date", from).lte("logged_date", end).in("user_id", uids).order("logged_date", { ascending: true }),
+    ]);
+    const days: Record<string, number> = {};
+    for (const d of dl || []) if ((d.eaten_meals || []).length) days[d.user_id] = (days[d.user_id] || 0) + 1;
+    const ws: Record<string, any[]> = {};
+    for (const w of wl || []) (ws[w.user_id] ||= []).push(w);
+    const label = `tháng ${Number(pm.slice(5, 7))}`;
+    for (const uid of uids) {
+      const n = days[uid] || 0;
+      if (n < 3) { skip++; continue; } // giống thẻ ở Hôm nay: ghi < 3 ngày thì không báo
+      const list = ws[uid] || [];
+      const before = list.filter((w) => w.logged_date < start), inM = list.filter((w) => w.logged_date >= start);
+      const a0 = before.length ? before[before.length - 1] : inM[0], a1 = inM[inM.length - 1];
+      const delta = a0 && a1 && a0 !== a1 ? Math.round((Number(a1.kg) - Number(a0.kg)) * 10) / 10 : null;
+      const kg = delta == null ? "" : delta < 0 ? `giảm ${Math.abs(delta).toLocaleString("vi-VN")} kg · ` : delta > 0 ? `tăng ${delta.toLocaleString("vi-VN")} kg · ` : "giữ cân · ";
+      const name = await nameOf(uid);
+      await sendTo(uid, { title: `🎉 ${name} ơi, tổng kết ${label} đã có!`, body: ((b) => b.charAt(0).toUpperCase() + b.slice(1))(`${kg}ghi bữa ${n} ngày. Bấm xem kết quả & ảnh khoe thành tích.`), url: `/?recap=${pm}` });
+    }
+  };
+  if (type === "monthly" || (type === "tick" && today.slice(8, 10) === "01" && now.hhmm === "08:00")) await monthly();
+
   // ===== NHẮC THEO CÀI ĐẶT TỪNG NGƯỜI (cron mỗi phút) =====
   if (type === "tick") {
     const { data: profs } = await sb.from("profiles").select("id,reminder_settings,kg,gym_days,exercise_type,water_goal_ml").in("id", uids);
     // Ai có nhắc đúng phút này (chưa xét đã ăn/đã cân) — đa số phút không có ai → thoát sớm
     const cands = (profs || []).map((p: any) => ({ p, due: dueReminders(p.reminder_settings, { hhmm: now.hhmm, weekday: now.weekday }) })).filter((x) => x.due.length);
-    if (!cands.length) return json({ v: 9, type, at: now.hhmm, sent: 0 });
+    if (!cands.length) { if (dead.length) await sb.from("push_subscriptions").delete().in("id", dead); return json({ v: 10, type, at: now.hhmm, sent }); }
     const ids = cands.map((x) => x.p.id);
     const [{ data: dl }, { data: wl }] = await Promise.all([
       sb.from("daily_logs").select("user_id,eaten_meals,water_ml").eq("log_date", today).in("user_id", ids),
@@ -158,5 +188,5 @@ Deno.serve(async (req) => {
   }
 
   if (dead.length) await sb.from("push_subscriptions").delete().in("id", dead);
-  return json({ v: 9, type, today, at: now.hhmm, sent, skipped: skip, cleaned: dead.length });
+  return json({ v: 10, type, today, at: now.hhmm, sent, skipped: skip, cleaned: dead.length });
 });
