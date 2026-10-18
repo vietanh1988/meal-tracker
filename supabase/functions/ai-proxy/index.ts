@@ -359,7 +359,7 @@ serve(async (req) => {
       if (d.error) throw new Error(d.error.message)
       text = (d.candidates?.[0]?.content?.parts || []).filter((p: any) => p && typeof p.text === "string" && !p.thought).map((p: any) => p.text).join("")
       inputTok = d.usageMetadata?.promptTokenCount || 0;
-      outputTok = d.usageMetadata?.candidatesTokenCount || 0;
+      outputTok = (d.usageMetadata?.candidatesTokenCount || 0) + (d.usageMetadata?.thoughtsTokenCount || 0); // token suy nghĩ cũng tính tiền
 
     } else if (provider === "gpt") {
       const OPENAI_KEY = await getAppSettingValue(admin, "gpt_key");
