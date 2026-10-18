@@ -86,7 +86,12 @@ const MINI_W = 68;
 const chevSvg = (left) => <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">{left ? <path d="M15 6l-6 6 6 6M20 6v12" /> : <path d="M9 6l6 6-6 6M4 6v12" />}</svg>;
 
 // Thanh bên thu gọn (16/10): bấm nút « ở cạnh logo → chỉ còn icon (68 px), rê chuột hiện tên; » để sổ ra. Nhớ theo máy.
+// 19/10 (chủ dự án): bấm tên nhóm để thu gọn / mở nhóm, nhớ theo máy (fp_pc_nav_closed). Mặc định mở hết; nhóm chứa trang đang mở luôn mở.
+// Nhóm đang thu hiện số mục + tổng số chờ xử lý (đơn, góp ý, món chờ duyệt).
+const GROUP_KEY = "fp_pc_nav_closed";
 function SideNav({ section, go, counts, isSuperAdmin, user, profile, mini, onToggle }) {
+  const [closed, setClosed] = useState(() => { try { const v = JSON.parse(localStorage.getItem(GROUP_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } });
+  const toggleGroup = (g) => setClosed((c) => { const n = c.includes(g) ? c.filter((x) => x !== g) : [...c, g]; try { localStorage.setItem(GROUP_KEY, JSON.stringify(n)); } catch (e) { /* */ } return n; });
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "admin";
   const w = mini ? MINI_W : PC.sideW;
   return (
@@ -97,10 +102,24 @@ function SideNav({ section, go, counts, isSuperAdmin, user, profile, mini, onTog
         <button type="button" data-testid="pc-side-toggle" onClick={onToggle} className="pc-nav" aria-label={mini ? "Mở rộng thanh bên" : "Thu gọn thanh bên"} title={mini ? "Mở rộng thanh bên" : "Thu gọn thanh bên"} aria-expanded={!mini}
           style={{ width: 30, height: 30, borderRadius: 8, border: "none", background: "rgba(255,255,255,0.10)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}>{chevSvg(!mini)}</button>
       </div>
-      {PC_NAV.map((g) => (
-        <div key={g.group} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {mini ? <span aria-hidden="true" style={{ height: 1, background: "rgba(255,255,255,0.14)", margin: "8px 8px" }} /> : <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".1em", opacity: 0.55, padding: "10px 10px 4px 10px", whiteSpace: "nowrap" }}>{g.group}</span>}
-          {g.items.filter((i) => !i.superOnly || isSuperAdmin).map((i) => {
+      {PC_NAV.map((g) => {
+        const items = g.items.filter((i) => !i.superOnly || isSuperAdmin);
+        const hasOn = items.some((i) => i.id === section);
+        const shut = !mini && closed.includes(g.group) && !hasOn;
+        const sum = shut ? items.reduce((a, i) => a + (i.badge ? counts[i.badge] || 0 : 0), 0) : 0;
+        const gid = g.group.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        return (
+        <div key={g.group} data-testid={`pc-group-${gid}`} data-open={shut ? "0" : "1"} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {mini ? <span aria-hidden="true" style={{ height: 1, background: "rgba(255,255,255,0.14)", margin: "8px 8px" }} /> : (
+            <button type="button" data-testid={`pc-group-btn-${gid}`} className="pc-nav pc-grp" onClick={() => toggleGroup(g.group)} aria-expanded={!shut} title={hasOn ? "Nhóm đang mở trang hiện tại" : shut ? "Bấm để mở nhóm" : "Bấm để thu gọn nhóm"}
+              style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: "none", background: "transparent", color: "#FFFFFF", fontFamily: "inherit", cursor: hasOn ? "default" : "pointer", fontSize: 10, fontWeight: 800, letterSpacing: ".1em", padding: "10px 10px 4px 10px", borderRadius: 8, textAlign: "left", whiteSpace: "nowrap" }}>
+              <span style={{ opacity: 0.55 }}>{g.group}</span>
+              {shut && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0, opacity: 0.55 }}>· {items.length}</span>}
+              {sum > 0 && <span data-testid={`pc-group-badge-${gid}`} style={{ fontSize: 10, fontWeight: 900, letterSpacing: 0, background: PC.badge, color: PC.badgeFg, padding: "0 6px", borderRadius: 999, lineHeight: "16px" }}>{sum > 99 ? "99+" : sum}</span>}
+              <span aria-hidden="true" style={{ marginLeft: "auto", opacity: hasOn ? 0.25 : 0.6, display: "inline-flex", transform: shut ? "rotate(-90deg)" : "none", transition: "transform .15s ease" }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg></span>
+            </button>
+          )}
+          {!shut && items.map((i) => {
             const on = section === i.id;
             const n = i.badge ? counts[i.badge] : null;
             return (
@@ -115,7 +134,8 @@ function SideNav({ section, go, counts, isSuperAdmin, user, profile, mini, onTog
             );
           })}
         </div>
-      ))}
+        );
+      })}
       <div style={{ marginTop: "auto", paddingTop: 12 }}>
         <div data-testid="pc-me" title={mini ? `${name} · ${profile?.adminRole === "super" ? "Super Admin" : "Admin"}` : undefined} style={{ display: "flex", alignItems: "center", justifyContent: mini ? "center" : "flex-start", gap: 8, padding: mini ? "8px 0" : 10, borderRadius: 10, background: "rgba(255,255,255,0.08)", fontSize: 12 }}>
           <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 14, background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, flexShrink: 0 }}>{initials(name)}</span>
