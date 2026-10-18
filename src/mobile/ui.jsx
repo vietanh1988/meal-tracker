@@ -22,6 +22,9 @@ export const MOBILE_CSS = `
 @media (hover:hover){.fpm .row-hover:hover{background:#F8FAFC}.fpm .chip-hover:hover{border-color:#CBD5E1}}
 @keyframes fpmSheetUp{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
 @keyframes fpmFade{from{opacity:0}to{opacity:1}}
+@keyframes fpmSlideIn{from{transform:translateX(100%)}to{transform:none}}
+@keyframes fpmTabIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion: reduce){.fpm [data-anim]{animation:none !important}}
 @keyframes fpmToast{from{transform:translate(-50%,12px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 .fpm .hatch{background:repeating-linear-gradient(45deg,#E2E8F0 0,#E2E8F0 4px,#FFFFFF 4px,#FFFFFF 8px)}
 @keyframes fpmShimmer{0%{background-position:100% 0}100%{background-position:0 0}}
@@ -113,13 +116,56 @@ export function useLockScroll(on = true) {
 // LƯU Ý: chỉ dùng "background" (không kèm backgroundColor: undefined) — React 18 gán chuỗi rỗng cho giá trị undefined
 // và xoá màu nền của shorthand → màn phụ trong suốt, lộ màn bên dưới (lỗi 14/10 ở Quản trị, Góp ý admin, trang Thực đơn).
 // Màn phụ sáng (16/10): nền xanh nhạt LT như 3 tab sáng (bản vẽ 77), thanh tiêu đề kính mờ trắng; thẻ bên trong trắng phẳng.
+// 18/10 (mượt như app): màn phụ trượt vào từ phải; nút ‹ hoặc vuốt từ mép trái → trượt ra phải rồi mới đóng.
+// Vuốt mép: chỉ bắt đầu trong 24 px sát mép trái, kéo ngang (không lẫn cuộn dọc); thả quá 35% bề ngang hoặc vuốt nhanh thì đóng.
+export function useEdgeBack(onBack) {
+  const ref = useRef(null);
+  const st = useRef(null);
+  const closing = useRef(false);
+  const reduce = () => typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const back = () => {
+    const el = ref.current;
+    if (!el || reduce()) { onBack && onBack(); return; }
+    if (closing.current) return;
+    closing.current = true;
+    el.style.transition = "transform .22s cubic-bezier(.2,.8,.2,1)";
+    el.style.transform = "translateX(100%)";
+    setTimeout(() => { closing.current = false; onBack && onBack(); }, 200);
+  };
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    if (e.touches.length !== 1 || !t || t.clientX > 24) { st.current = null; return; }
+    st.current = { x: t.clientX, y: t.clientY, t: Date.now(), dx: 0, lock: null };
+  };
+  const onTouchMove = (e) => {
+    const s = st.current, el = ref.current, t = e.touches[0];
+    if (!s || !el || !t) return;
+    const dx = t.clientX - s.x, dy = t.clientY - s.y;
+    if (s.lock == null) { if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; s.lock = Math.abs(dx) > Math.abs(dy) ? "x" : "y"; }
+    if (s.lock !== "x") { st.current = null; return; }
+    s.dx = Math.max(0, dx);
+    el.style.transition = "none";
+    el.style.transform = s.dx ? `translateX(${s.dx}px)` : "";
+  };
+  const onTouchEnd = () => {
+    const s = st.current, el = ref.current;
+    st.current = null;
+    if (!s || !el || s.lock !== "x") return;
+    const v = s.dx / Math.max(1, Date.now() - s.t);
+    if (s.dx > el.offsetWidth * 0.35 || (s.dx > 40 && v > 0.5)) back();
+    else { el.style.transition = "transform .2s ease"; el.style.transform = ""; }
+  };
+  return { ref, back, edge: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd } };
+}
+
 export function SubPage({ title, subtitle, onBack, right, children, footer, bg = LT.bg, dark }) {
   useLockScroll(true);
+  const eb = useEdgeBack(onBack);
   return (
-    <div data-testid="subpage" className={dark ? "fpm fpd" : "fpm"} data-dark={dark ? "1" : undefined} style={{ position: "fixed", inset: 0, zIndex: 120, background: dark ? DK.bg : bg, display: "flex", flexDirection: "column", fontFamily: FONT, color: dark ? DK.t1 : "#0F172A", animation: "fpmFade .15s ease" }}>
+    <div ref={eb.ref} {...eb.edge} data-anim="1" data-testid="subpage" className={dark ? "fpm fpd" : "fpm"} data-dark={dark ? "1" : undefined} style={{ position: "fixed", inset: 0, zIndex: 120, background: dark ? DK.bg : bg, display: "flex", flexDirection: "column", fontFamily: FONT, color: dark ? DK.t1 : "#0F172A", animation: "fpmSlideIn .28s cubic-bezier(.2,.8,.2,1)", boxShadow: "-10px 0 30px rgba(0,0,0,0.18)" }}>
       <div style={{ flexShrink: 0, background: dark ? "transparent" : "rgba(255,255,255,0.6)", WebkitBackdropFilter: dark ? undefined : "blur(14px)", backdropFilter: dark ? undefined : "blur(14px)", borderBottom: dark ? `1px solid ${DK.line}` : "1px solid rgba(30,64,175,0.08)", paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", gap: 6, padding: "10px 8px 10px 4px" }}>
-          <button onClick={onBack} aria-label="Quay lại" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: dark ? "#FFFFFF" : "#007AFF", border: "none", background: "transparent", padding: 0 }}>{Icon.back(22)}</button>
+          <button onClick={eb.back} aria-label="Quay lại" style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: dark ? "#FFFFFF" : "#007AFF", border: "none", background: "transparent", padding: 0 }}>{Icon.back(22)}</button>
           <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 17, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</span>
             {subtitle && <span style={{ fontSize: 12, fontWeight: 600, color: dark ? DK.t2 : "#64748B" }}>{subtitle}</span>}

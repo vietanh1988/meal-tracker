@@ -274,6 +274,7 @@ export function MobileApp(props) {
 
   const toggleEaten = async (mealId, v) => {
     if (v) track("meal_eaten", { meal: mealId });
+    if (v) { try { navigator.vibrate && navigator.vibrate(10); } catch (e) { /* iPhone không hỗ trợ: bỏ qua */ } } // rung nhẹ (Android)
     setBusy(true);
     const res = await ud.toggleEaten(mealId, v, date);
     setBusy(false);
@@ -849,7 +850,8 @@ export function MobileApp(props) {
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0" /><path d="M3 3l18 18" /></svg>
         Mất kết nối — dữ liệu có thể chưa cập nhật</div>}
 
-      <main aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd" : undefined} style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
+      {/* 18/10: đổi tab hiện mờ dần (chỉ độ mờ — không transform để không xô lệch phần tử cố định bên trong), thay vì nhảy ngay */}
+      <main key={tab} data-anim="1" aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd" : undefined} style={{ animation: "fpmTabIn .2s ease", position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
             nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
