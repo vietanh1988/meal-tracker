@@ -116,21 +116,33 @@ export function useLockScroll(on = true) {
 // LƯU Ý: chỉ dùng "background" (không kèm backgroundColor: undefined) — React 18 gán chuỗi rỗng cho giá trị undefined
 // và xoá màu nền của shorthand → màn phụ trong suốt, lộ màn bên dưới (lỗi 14/10 ở Quản trị, Góp ý admin, trang Thực đơn).
 // Màn phụ sáng (16/10): nền xanh nhạt LT như 3 tab sáng (bản vẽ 77), thanh tiêu đề kính mờ trắng; thẻ bên trong trắng phẳng.
-// 18/10 (mượt như app): màn phụ trượt vào từ phải; nút ‹ hoặc vuốt từ mép trái → trượt ra phải rồi mới đóng.
+// 18/10 (mượt như app): màn phụ trượt vào từ phải; nút ‹ hoặc vuốt từ mép trái → đóng, kèm hiệu ứng trượt ra phải.
 // Vuốt mép: chỉ bắt đầu trong 24 px sát mép trái, kéo ngang (không lẫn cuộn dọc); thả quá 35% bề ngang hoặc vuốt nhanh thì đóng.
 export function useEdgeBack(onBack) {
   const ref = useRef(null);
   const st = useRef(null);
-  const closing = useRef(false);
   const reduce = () => typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Đóng NGAY (trạng thái lớp luôn đúng, bấm nhanh không lệch), còn hiệu ứng trượt ra chạy trên 1 bản chụp tĩnh của màn
+  // (bản chụp: không bấm được, ẩn với trình đọc màn hình, bỏ data-testid) — tự xoá sau 0,26 s.
   const back = () => {
     const el = ref.current;
-    if (!el || reduce()) { onBack && onBack(); return; }
-    if (closing.current) return;
-    closing.current = true;
-    el.style.transition = "transform .22s cubic-bezier(.2,.8,.2,1)";
-    el.style.transform = "translateX(100%)";
-    setTimeout(() => { closing.current = false; onBack && onBack(); }, 200);
+    if (el && !reduce() && typeof document !== "undefined") {
+      try {
+        const c = el.cloneNode(true);
+        c.removeAttribute("data-testid");
+        c.querySelectorAll("[data-testid]").forEach((n) => n.removeAttribute("data-testid"));
+        c.setAttribute("aria-hidden", "true");
+        Object.assign(c.style, { pointerEvents: "none", animation: "none", zIndex: "130" });
+        const sc = el.querySelector("div[style*='overflow-y']"), cs = c.querySelector("div[style*='overflow-y']");
+        document.body.appendChild(c);
+        if (sc && cs) cs.scrollTop = sc.scrollTop;
+        requestAnimationFrame(() => { c.style.transition = "transform .22s cubic-bezier(.2,.8,.2,1)"; c.style.transform = "translateX(100%)"; });
+        setTimeout(() => c.remove(), 260);
+      } catch (e) { /* không có hiệu ứng cũng được */ }
+    }
+    onBack && onBack();
+    // màn chưa đóng (VD hỏi lưu trước khi thoát) → trả về chỗ cũ sau khi vuốt
+    requestAnimationFrame(() => { if (ref.current) { ref.current.style.transition = "none"; ref.current.style.transform = ""; } });
   };
   const onTouchStart = (e) => {
     const t = e.touches[0];
@@ -232,7 +244,13 @@ export function useSwipeClose(onClose) {
     reset(el, "translateY(100%)");
     const ov = el.parentNode;
     if (ov && ov.style) { ov.style.transition = "opacity .18s ease"; ov.style.opacity = "0"; ov.style.pointerEvents = "none"; }
-    setTimeout(() => { closing.current = false; onClose(); }, 170);
+    setTimeout(() => {
+      closing.current = false; onClose();
+      requestAnimationFrame(() => { // khối có thể được dùng lại cho lớp kế tiếp → trả kiểu về như cũ
+        if (ref.current) { ref.current.style.transition = "none"; ref.current.style.transform = ""; }
+        if (ov && ov.style) { ov.style.transition = ""; ov.style.opacity = ""; ov.style.pointerEvents = ""; }
+      });
+    }, 170);
   };
   const onTouchStart = (e) => {
     if (!ref.current || e.touches.length !== 1 || scrolledInside(e.target)) { st.current = null; return; }
