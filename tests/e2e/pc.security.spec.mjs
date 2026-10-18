@@ -46,3 +46,38 @@ test("PC: user thường không vào được khung Quản trị", async ({ page
   await expect(page.getByTestId("pc-sidebar")).toHaveCount(0);
   await expect(page.getByTestId("pc-users")).toHaveCount(0);
 });
+
+// 18/10 (rà bảo mật): khách không tự tạo đơn "đã duyệt", số tiền theo bảng giá; không đọc món chờ duyệt của người khác;
+// khách chưa đăng nhập không gọi được hàm quản trị.
+test("bảo mật đơn hàng, món chờ duyệt, hàm quản trị", async () => {
+  const s = S();
+  const tok = await fetch(`${s.url}/auth/v1/token?grant_type=password`, {
+    method: "POST", headers: { apikey: s.anon, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: s.email, password: s.password }),
+  }).then((r) => r.json());
+  const H = { apikey: s.anon, Authorization: `Bearer ${tok.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" };
+  const post = (path, body, h = H) => fetch(`${s.url}/rest/v1/${path}`, { method: "POST", headers: h, body: JSON.stringify(body) });
+  try {
+    const bad = await post("orders", { user_id: s.uid, package: "12m", amount: 1, status: "confirmed" });
+    expect(bad.ok, "đơn 'confirmed' do khách tự tạo phải bị chặn").toBe(false);
+    const good = await post("orders", { user_id: s.uid, package: "12m", amount: 1, status: "pending" });
+    expect(good.ok).toBe(true);
+    const [o] = await good.json();
+    const [st] = await rest("subscription_settings?id=eq.1&select=price_12m");
+    if (st && st.price_12m != null) expect(Number(o.amount)).toBe(Number(st.price_12m));
+    expect(o.status).toBe("pending");
+
+    const other = "00000000-0000-0000-0000-0000000000e3";
+    await rest("food_cache_pending", { method: "POST", body: JSON.stringify({ food_name: "món người khác e2e", gram: 100, cal: 100, protein: 1, carb: 1, fat: 1, created_by: null }) }).catch(() => {});
+    const seen = await fetch(`${s.url}/rest/v1/food_cache_pending?select=created_by`, { headers: H }).then((r) => r.json());
+    expect(seen.every((r) => r.created_by === s.uid), "chỉ thấy món chờ duyệt của mình").toBe(true);
+    void other;
+
+    const anon = await fetch(`${s.url}/rest/v1/rpc/admin_behavior_users`, { method: "POST", headers: { apikey: s.anon, "Content-Type": "application/json" }, body: "{}" });
+    expect(anon.ok, "khách chưa đăng nhập không gọi được hàm quản trị").toBe(false);
+  } finally {
+    await rest(`orders?user_id=eq.${s.uid}&amount=eq.1`, { method: "DELETE" }).catch(() => {});
+    await rest(`orders?user_id=eq.${s.uid}&package=eq.12m&status=eq.pending`, { method: "DELETE" }).catch(() => {});
+    await rest("food_cache_pending?food_name=eq.món người khác e2e", { method: "DELETE" }).catch(() => {});
+  }
+});
