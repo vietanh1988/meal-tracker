@@ -91,12 +91,13 @@ test("giới hạn dò email / ghi lỗi theo IP", async () => {
     method: "POST", headers: { apikey: s.anon, Authorization: `Bearer ${s.anon}`, "Content-Type": "application/json", "x-real-ip": ip, ...extra },
     body: JSON.stringify(body),
   });
-  const codes = [];
-  for (let i = 0; i < 21; i++) codes.push((await rpc("check_email_available", { p_email: `x${i}@test.local` })).ok);
-  expect(codes.slice(0, 20).every(Boolean), "20 lần đầu phải được").toBe(true);
-  expect(codes[20], "lần 21 trong 10 phút phải bị chặn").toBe(false);
-  // IP khác vẫn dùng bình thường
-  expect((await rpc("check_email_available", { p_email: "y@test.local" }, { "x-real-ip": ip + "1" })).ok).toBe(true);
+  // Gateway tự gắn IP thật (không tin IP client gửi) → các bài trước có thể đã dùng bớt lượt: chỉ cần thấy bị chặn trong ≤ 21 lần
+  let blockedAt = -1;
+  for (let i = 0; i < 21 && blockedAt < 0; i++) if (!(await rpc("check_email_available", { p_email: `x${i}@test.local` })).ok) blockedAt = i;
+  expect(blockedAt, "phải bị chặn sau tối đa 20 lần / 10 phút").toBeGreaterThanOrEqual(0);
+  const hits = await rest("rpc_hits?fn=eq.check_email&select=who");
+  expect(hits.length).toBeGreaterThan(0);
+  await rest("rpc_hits?fn=eq.check_email", { method: "DELETE" }); // trả lượt cho các bài sau
 
   const tag = `e2e-len-${Date.now()}`;
   expect((await rpc("log_client_error", { p_message: tag + "x".repeat(5000), p_stack: null, p_component_stack: null, p_url: "u", p_user_agent: "a" })).ok).toBe(true);
