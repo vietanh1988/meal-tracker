@@ -34,9 +34,9 @@ export default function Calc({ full = false, appUrl = "https://app.fipilotai.com
   const kcal = r ? r.calTarget : null;
   const link = `${appUrl}/?ref=${full ? "tinh-calo" : "home-calc"}`;
   return (
-    <div className={full ? "calc-full" : "calc"} style={{ display: "grid", gridTemplateColumns: full ? "1fr 1fr" : "1fr", gap: full ? 32 : 20 }}>
+    <div className={full ? "calc-full" : "calc"} style={{ display: "grid", gridTemplateColumns: full ? "1fr 1fr" : "1fr", gap: full ? 32 : 20, alignItems: "start" }}>
       <div className={full ? "card" : ""} style={full ? { padding: 32, display: "flex", flexDirection: "column", gap: 20 } : { display: "flex", flexDirection: "column", gap: 20 }}>
-        {full && <b style={{ fontSize: 22 }}>Số đo của bạn</b>}
+        {full && <b className="calc-t" style={{ fontSize: 22 }}>Số đo của bạn</b>}
         <div className="calc-in" style={{ display: "grid", gridTemplateColumns: full ? "1fr 1fr 1fr" : "repeat(4,1fr)", gap: full ? 14 : 10 }}>
           <Field label="Giới tính"><select value={v.gender} onChange={set("gender")} style={{ ...box, backgroundImage: "linear-gradient(45deg,transparent 50%,#94A3B8 50%),linear-gradient(135deg,#94A3B8 50%,transparent 50%)", backgroundPosition: "calc(100% - 20px) 50%,calc(100% - 15px) 50%", backgroundSize: "5px 5px", backgroundRepeat: "no-repeat" }}><option value="female">Nữ</option><option value="male">Nam</option></select></Field>
           {full && <Field label="Năm sinh">{num("birthYear", "", 1930, 2015)}</Field>}
@@ -51,9 +51,10 @@ export default function Calc({ full = false, appUrl = "https://app.fipilotai.com
             <div role="radiogroup" style={{ display: "flex", gap: 8 }}>{[["slow", "Chậm"], ["mid", "Vừa"], ["fast", "Nhanh"]].map(([a, b]) => <button type="button" role="radio" aria-checked={v.pace === a} key={a} onClick={() => setV({ ...v, pace: a })} style={{ flex: 1, height: 48, borderRadius: 12, fontSize: 15, fontWeight: 700, fontFamily: "inherit", cursor: "pointer", ...(v.pace === a ? { background: "#0062F0", color: "#fff", border: 0 } : { background: "#F5F8FD", color: "#334155", border: "1px solid #E6ECF5" }) }}>{b}</button>)}</div>
           </div>
         )}
+        {full && <button type="button" className="btn b1" data-testid="calc-go" onClick={() => document.getElementById("calc-res")?.scrollIntoView({ behavior: "smooth", block: "start" })} style={{ height: 54, fontSize: 16, borderRadius: 14, fontFamily: "inherit", border: 0, cursor: "pointer" }}>Tính ngay</button>}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div className="calc-res" style={{ borderRadius: full ? 20 : 16, background: "linear-gradient(135deg,#ECFDF5,#EEF4FF)", padding: full ? 28 : 16, display: "flex", alignItems: full ? "stretch" : "center", flexDirection: full ? "column" : "row", gap: full ? 8 : 12 }} aria-live="polite">
+        <div id={full ? "calc-res" : undefined} className="calc-res" style={{ borderRadius: full ? 20 : 16, background: "linear-gradient(135deg,#ECFDF5,#EEF4FF)", padding: full ? 28 : 16, display: "flex", alignItems: full ? "stretch" : "center", flexDirection: full ? "column" : "row", gap: full ? 8 : 12 }} aria-live="polite">
           <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: full ? 8 : 4, minWidth: 0 }}>
             <span style={{ fontSize: 15, color: "#334155" }}>Bạn nên ăn khoảng</span>
             <b className="calc-k" style={{ fontSize: full ? 56 : 36, fontWeight: 900, color: "#047857", lineHeight: full ? 1 : "normal" }}>{kcal ? vn(kcal) : "—"}{full ? <span style={{ fontSize: 20 }}> kcal / ngày</span> : " kcal / ngày"}</b>
@@ -66,21 +67,21 @@ export default function Calc({ full = false, appUrl = "https://app.fipilotai.com
           <>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[["Năng lượng nghỉ (BMR)", `${vn(r.bmr)} kcal`, "cơ thể tự đốt khi nằm yên"], ["Năng lượng cả ngày (TDEE)", `${vn(r.tdee)} kcal`, "đã tính mức vận động"], ["Thiếu hụt mỗi ngày", `${vn(r.deficit)} kcal`, "để giảm mỡ đều"], ["Chỉ số BMI", d1(r.bmi), r.bmi >= 25 ? "thừa cân" : r.bmi < 18.5 ? "thiếu cân" : "bình thường"]].map(([a, b, c]) => (
-                <div key={a} className="card" style={{ padding: 16, borderRadius: 14, display: "flex", flexDirection: "column", gap: 4 }}><span className="lbl">{a}</span><b style={{ fontSize: 22 }}>{b}</b><span style={{ fontSize: 13, color: "#94A3B8" }}>{c}</span></div>
+                <div key={a} className="card" style={{ padding: 16, borderRadius: 14, display: "flex", flexDirection: "column", gap: 4 }}><span className="lbl" style={{ fontSize: 13.5 }}>{a}</span><b style={{ fontSize: 22 }}>{b}</b><span style={{ fontSize: 13, color: "#94A3B8" }}>{c}</span></div>
               ))}
             </div>
             <div className="card" style={{ padding: 18, display: "flex", flexDirection: "column", gap: 12 }}>
               <b style={{ fontSize: 17 }}>Chia theo chất</b>
               {[["Đạm", r.protein, 4, "#2563EB"], ["Chất béo", r.fat, 9, "#EF4444"], ["Tinh bột", r.carb, 4, "#F59E0B"]].map(([a, g, k, c]) => (
-                <div key={a} style={{ display: "flex", flexDirection: "column", gap: 6 }}><span style={{ display: "flex", justifyContent: "space-between", fontSize: 15 }}><b>{a}</b><span>{g} g</span></span><div className="bar"><span style={{ width: `${Math.min(100, Math.round((g * k * 100) / (r.calTarget || 1)))}%`, background: c }} /></div></div>
+                <div key={a} style={{ display: "flex", flexDirection: "column", gap: 6 }}><span style={{ display: "flex", justifyContent: "space-between", fontSize: 15 }}><b>{a}</b><span>{g} g</span></span><div className="bar" style={{ height: 8 }}><span style={{ height: 8, width: `${Math.min(100, Math.round((g * k * 100) / (r.calTarget || 1)))}%`, background: c }} /></div></div>
               ))}
-              <span style={{ fontSize: 13, color: "#94A3B8" }}>Theo cách chia “cân bằng” của app</span>
+              <span style={{ fontSize: 13, color: "#94A3B8" }}>Theo cách chia “cân bằng” của app · % là tỉ lệ năng lượng</span>
             </div>
-            <a className="btn b1 big" href={link}>Nhận thực đơn món Việt theo {vn(kcal)} kcal →</a>
+            <a className="btn b1" href={link} style={{ height: 54, fontSize: 16, borderRadius: 14 }}>Nhận thực đơn món Việt theo {vn(kcal)} kcal →</a>
           </>
         )}
       </div>
-      <style>{`@media(max-width:720px){.calc-full>*,.calc>*{min-width:0}.calc,.calc>div{gap:16px!important}.calc .calc-res{flex-direction:column!important;align-items:stretch!important}.calc .calc-k{font-size:30px!important}.calc .calc-go{width:100%!important}.calc-full{grid-template-columns:1fr!important;gap:20px!important}.calc-full>.card{padding:20px!important}.calc-in{grid-template-columns:1fr 1fr!important}}`}</style>
+      <style>{`@media(max-width:720px){.calc-full>*,.calc>*{min-width:0}.calc,.calc>div{gap:16px!important}.calc .calc-res{flex-direction:column!important;align-items:stretch!important}.calc .calc-k{font-size:30px!important}.calc .calc-go{width:100%!important}.calc-full{grid-template-columns:1fr!important;gap:20px!important}.calc-full>.card{padding:20px!important}.calc-full .calc-t{font-size:20px!important}.calc-full .calc-res{padding:22px!important}.calc-full .calc-k{font-size:44px!important}.calc-in{grid-template-columns:1fr 1fr!important}}`}</style>
     </div>
   );
 }
