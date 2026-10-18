@@ -1,10 +1,10 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { getSettings, getMenu, siteUrl } from "@/lib/site";
 
-const inter = Inter({ subsets: ["latin", "vietnamese"], weight: ["400", "500", "600", "700", "800", "900"], display: "swap", fallback: ["Roboto", "-apple-system", "Segoe UI", "sans-serif"] });
+// Font y hệt app (index.html của app): Inter + Roboto từ Google Fonts, cùng độ đậm, cùng thứ tự dự phòng.
+const FONT_CSS = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap";
 
 export async function generateMetadata() {
   const s = await getSettings();
@@ -36,8 +36,11 @@ export default async function RootLayout({ children }) {
   const showBar = nb.enabled && nb.text && (!nb.from || Date.parse(nb.from) <= now) && (!nb.to || Date.parse(nb.to) >= now);
   const t = s.tracking || {};
   return (
-    <html lang="vi" className={inter.className}>
+    <html lang="vi">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href={FONT_CSS} rel="stylesheet" />
       </head>
       <body>
         {showBar && <a href={nb.url || "#"} style={{ display: "block", background: "#0B1F45", color: "#fff", textAlign: "center", padding: "10px 16px", fontSize: 14, fontWeight: 600 }}>{nb.text}</a>}
