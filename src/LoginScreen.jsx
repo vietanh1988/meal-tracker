@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { passwordError, PASSWORD_HINT } from "./lib/password";
 import { useAuth } from "./hooks/useAuth";
 import { supabase } from "./lib/supabase";
 import { C } from "./theme";
@@ -75,7 +76,7 @@ export function LoginScreen({onLogin,appSettings}){
       if(!email.includes("@")){setErr("Vui lòng nhập email hợp lệ");return;}
       if(emailStatus==="taken"){setErr("Email đã tồn tại");return;}
     }
-    if(pass.length<6){setErr("Mật khẩu tối thiểu 6 ký tự");return;}
+    if(mode==="register"){const pe=passwordError(pass);if(pe){setErr(pe);return;}}
     try{
       if(mode==="register"){
         setSaving(true);
@@ -145,7 +146,7 @@ export function LoginScreen({onLogin,appSettings}){
       <Seg dark mode="tab" value={mode} onChange={(m)=>{setMode(m);setErr("");setSuccess("");}} opts={[{value:"login",label:"Đăng nhập",testid:"auth-tab-login"},{value:"register",label:"Đăng ký",testid:"auth-tab-register"}]} />
       {reg&&!registrationEnabled&&<Notice tone="bad">Hiện chưa nhận đăng ký tài khoản mới. Bạn quay lại sau nhé!</Notice>}
       {(!reg||registrationEnabled)&&<Field label="Email" hint={emailHint} hintTone={tone(emailStatus)}><input data-testid={reg?"auth-reg-email":"login-email"} type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={reg?"ban@gmail.com":"ban@email.com"} style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
-      {(!reg||registrationEnabled)&&<Field label="Mật khẩu"><PasswordInput testid={reg?"auth-reg-pass":"login-pass"} value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete={reg?"new-password":"current-password"}/></Field>}
+      {(!reg||registrationEnabled)&&<Field label="Mật khẩu"><PasswordInput placeholder={reg?PASSWORD_HINT:"Mật khẩu"} testid={reg?"auth-reg-pass":"login-pass"} value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete={reg?"new-password":"current-password"}/></Field>}
       {!reg&&<button data-testid="forgot-open" onClick={()=>{setMode("forgot");setErr("");setForgotEmail(email);}} style={{...linkBtn,alignSelf:"flex-end"}}>Quên mật khẩu?</button>}
       {canReg&&<p data-testid="reg-terms-note" style={{margin:"0 4px",fontSize:12,color:DK.t3,lineHeight:1.5}}>Bấm Đăng ký là bạn đồng ý {regTermsLinks}.</p>}
       {err&&<Notice tone="bad">{err}</Notice>}

@@ -42,7 +42,7 @@ export function Field({ label, hint, hintTone, children }) {
   );
 }
 
-export function PasswordInput({ value, onChange, onEnter, placeholder = "Tối thiểu 6 ký tự", autoComplete = "current-password", testid }) {
+export function PasswordInput({ value, onChange, onEnter, placeholder = "Mật khẩu", autoComplete = "current-password", testid }) {
   const [show, setShow] = useState(false);
   return (
     <span className="pw-box" style={{ display: "flex", alignItems: "center", height: 48, padding: "0 6px 0 14px", borderRadius: 12, border: `1.5px solid ${DK.fieldLine}`, background: DK.field, boxSizing: "border-box" }}>

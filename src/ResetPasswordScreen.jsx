@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { passwordError, PASSWORD_HINT } from "./lib/password";
 import { useAuth } from "./hooks/useAuth";
 import { AuthShell, Field, PasswordInput, Notice, primaryBtn } from "./AuthShell";
 import { DK } from "./theme";
@@ -13,7 +14,7 @@ export function ResetPasswordScreen(){
 
   const handleSubmit=async()=>{
     setErr("");
-    if(pass.length<6){setErr("Mật khẩu tối thiểu 6 ký tự");return;}
+    const pe=passwordError(pass);if(pe){setErr(pe);return;}
     if(pass!==pass2){setErr("Mật khẩu nhập lại không khớp");return;}
     setSaving(true);
     try{
@@ -29,7 +30,7 @@ export function ResetPasswordScreen(){
       <button onClick={()=>window.location.href="/"} style={primaryBtn(false)}>Vào app</button>
     </> : <>
       <span style={{fontSize:11,fontWeight:700,color:DK.t3,letterSpacing:"0.08em"}}>BƯỚC 2 · SAU KHI BẤM LINK TRONG EMAIL</span>
-      <Field label="Mật khẩu mới"><PasswordInput value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete="new-password"/></Field>
+      <Field label="Mật khẩu mới"><PasswordInput value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete="new-password" placeholder={PASSWORD_HINT}/></Field>
       <Field label="Nhập lại mật khẩu mới"><PasswordInput value={pass2} onChange={setPass2} onEnter={handleSubmit} autoComplete="new-password" placeholder="Nhập lại"/></Field>
       {err&&<Notice tone="bad">{err}</Notice>}
       <button onClick={handleSubmit} disabled={saving} style={primaryBtn(saving)}>{saving?"Đang lưu…":"Lưu và vào app"}</button>

@@ -40,7 +40,11 @@ test("Đăng nhập: báo lỗi rõ, chuyển Đăng ký / Quên mật khẩu", 
   await page.getByTestId("auth-reg-email").fill(`e2e_short_${Date.now()}@test.local`);
   await page.getByTestId("auth-reg-pass").fill("123");
   await page.getByTestId("auth-reg-submit").click();
-  await expect(page.getByRole("alert")).toContainText("tối thiểu 6");
+  await expect(page.getByRole("alert")).toContainText("ít nhất 8 ký tự");
+  // 18/10: đủ 8 ký tự nhưng toàn số → báo cần cả chữ và số
+  await page.getByTestId("auth-reg-pass").fill("12345678");
+  await page.getByTestId("auth-reg-submit").click();
+  await expect(page.getByRole("alert")).toContainText("cả chữ và số");
   await page.screenshot({ path: "shots/dang-ky.png", fullPage: true });
 
   // Đăng nhập đúng → vào app
