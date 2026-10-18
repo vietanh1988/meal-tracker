@@ -5,7 +5,7 @@ import { login, rest, S } from "./helpers.mjs";
 // chụp ảnh từng trang; mở ngăn chi tiết 1 người dùng; mở dòng sửa 1 món trong Kho thực phẩm (không lưu).
 // Tạm bật is_admin + admin_role super cho user test, cuối bài trả lại (pc.security kiểm is_admin = false).
 // Supabase local chưa có RPC admin_list_users / admin_get_user_detail (chỉ có trên prod) → giả lập 2 RPC này.
-const NAV = ["home", "orders", "report_biz", "users", "subscription_settings", "feedback", "notify", "templates", "food_db", "food_cache_pending", "admin", "feature_flags", "ai", "ai_cost", "health", "audit_log", "backup"];
+const NAV = ["home", "orders", "report_biz", "behavior", "users", "subscription_settings", "feedback", "notify", "templates", "food_db", "food_cache_pending", "admin", "feature_flags", "ai", "ai_cost", "health", "audit_log", "backup"];
 
 test("Quản trị PC: thanh bên đủ mục, mở từng trang, ngăn người dùng, sửa món tại chỗ", async ({ page }) => {
   const s = S();
@@ -44,6 +44,9 @@ test("Quản trị PC: thanh bên đủ mục, mở từng trang, ngăn người
 
     // Người dùng → ngăn bên phải
     await page.getByTestId("pc-nav-users").click();
+    // 18/10 (bản vẽ 135e): cột Đang dùng app — chấm xanh / đỏ + đếm số người đang mở app
+    await expect(page.getByTestId("pc-user-online").first()).toBeVisible();
+    await expect(page.getByTestId("pc-users-online")).toContainText("đang dùng app");
     await page.getByTestId("pc-user-row").first().click();
     const drawer = page.getByTestId("pc-user-drawer");
     await expect(drawer).toBeVisible();

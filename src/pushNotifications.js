@@ -1,4 +1,5 @@
 import { supabase } from "./lib/supabase";
+import { track } from "./lib/track";
 
 const VAPID_PUBLIC_KEY = "BGx5Wnwmdb2CMOhqFVYzoF6iw_Ijqd-QHKYQVZGEDngJMye9vk-9G--eevlSJjxm4QzRArZuS-y12JeS3to7uPo";
 
@@ -54,6 +55,7 @@ export async function enablePushNotifications() {
     });
   }
 
+  track("notif_on");
   const json = sub.toJSON();
   const { error } = await supabase.rpc("save_push_subscription", {
     p_endpoint: json.endpoint,
@@ -75,6 +77,7 @@ export async function disablePushNotifications() {
 
     const endpoint = sub.endpoint;
     await sub.unsubscribe();
+    track("notif_off");
     try { await supabase.rpc("delete_push_subscription", { p_endpoint: endpoint }); } catch (e) { console.error("delete_push_subscription error:", e); }
   } catch (e) {
     console.error("disablePushNotifications error:", e);

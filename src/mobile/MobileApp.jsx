@@ -65,6 +65,8 @@ import { getAIMenuAccess, loadAIMenus, buildExclusionKeys, generateMenuLocal, ge
 import { SwapSheet, AvoidSheet } from "./SwapSheet";
 import { LossMenuScreen } from "./LossMenuScreen";
 import { shouldAutoPlan, markPlanned, addAvoid } from "../lib/lossMenu";
+import { track, trackDaily } from "../lib/track";
+import { joinPresence } from "../lib/presence";
 import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel, menuReplaces, menuWrites } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId, mealTimesOf } from "../lib/dayPlan";
@@ -114,6 +116,7 @@ export function MobileApp(props) {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
   const openLayer = (layer) => {
+    if (layer && layer.type === "coach") track("ai_chat"); else if (layer && layer.type === "ai") track("ai_menu");
     const depth = layersRef.current.length + 1;
     setLayers((l) => [...l, layer]);
     try { window.history.pushState({ fpDepth: depth }, ""); } catch (e) { /* */ }
@@ -243,7 +246,8 @@ export function MobileApp(props) {
   const fail = () => showToast({ text: "Lưu không được, kiểm tra mạng rồi thử lại." });
 
   // Thêm món vào 1 bữa (hoặc thay cả bữa) và đánh dấu đã ăn. Trả về true/false.
-  const putItems = (d, mealId, newItems, replace, label) => serial(async () => {
+  const putItems = (d, mealId, newItems, replace, label, how = null) => serial(async () => {
+    track("meal_log", { meal: mealId, how, n: (newItems || []).length });
     const dy = await freshDay(d);
     const prevMeal = mealOf(dy, mealId);
     const prev = (prevMeal && prevMeal.items) || [];
@@ -269,6 +273,7 @@ export function MobileApp(props) {
   });
 
   const toggleEaten = async (mealId, v) => {
+    if (v) track("meal_eaten", { meal: mealId });
     setBusy(true);
     const res = await ud.toggleEaten(mealId, v, date);
     setBusy(false);
@@ -393,7 +398,7 @@ export function MobileApp(props) {
     if (m && hasItems(m) && !(await appConfirm(`${nm} đã có món. Thay bằng món gợi ý?`))) return false;
     const label = opt.kind === "history" ? `${nm.toLowerCase()} ${fmtVN(opt.date)}` : `gợi ý ${opt.title.toLowerCase()}`;
     if (beforeWrite) beforeWrite();
-    return putItems(d, mealId, opt.items, true, label);
+    return putItems(d, mealId, opt.items, true, label, "suggest");
   };
 
   const renderLog = (l) => {
@@ -482,6 +487,7 @@ export function MobileApp(props) {
   profileRef.current = profile;
   const openWeigh = (fromGoals) => openLayer({ type: "weight", fromGoals: fromGoals === true });
   const saveWeightToday = async (kg, prev) => {
+    trackDaily("weigh");
     const d = todayVN();
     const before = (weightRef.current || []).find((w) => w.logged_date === d) || null;
     const prevKg = profileRef.current.kg;
@@ -635,6 +641,9 @@ export function MobileApp(props) {
     );
   };
 
+  // 18/10 (bản vẽ 135e): báo "đang dùng app" cho Quản trị PC (chấm xanh) khi app đang hiện
+  useEffect(() => joinPresence(user?.id), [user?.id]);
+
   // Mở từ thông báo (17/10): url ?tab=progress&seg=weight|measure|food → chuyển tab Tiến độ đúng mục.
   // Mở mới: đọc location.search; app đang mở: service worker gửi message "open-url".
   useEffect(() => {
@@ -645,8 +654,11 @@ export function MobileApp(props) {
         if (t === "progress") { if (sg) setProgressSeg((s) => ({ seg: sg, n: s.n + 1 })); setTab("progress"); }
       } catch (e) { /* url lạ: bỏ qua */ }
     };
-    if (window.location.search.includes("tab=")) { go(window.location.href); try { window.history.replaceState(null, "", window.location.pathname); } catch (e) { /* */ } }
-    const onMsg = (e) => { if (e.data?.type === "open-url" && e.data.url) go(e.data.url); };
+    const fromPush = window.location.search.includes("from=push");
+    // 18/10: mở app (1 lần/ngày) — ghi có phải mở từ thông báo không
+    if (fromPush) track("notif_click"); trackDaily("app_open", fromPush ? { from: "push" } : null);
+    if (window.location.search.includes("tab=") || fromPush) { go(window.location.href); try { window.history.replaceState(null, "", window.location.pathname); } catch (e) { /* */ } }
+    const onMsg = (e) => { if (e.data?.type === "open-url" && e.data.url) { if (String(e.data.url).includes("from=push")) track("notif_click"); go(e.data.url); } };
     navigator.serviceWorker?.addEventListener?.("message", onMsg);
     return () => navigator.serviceWorker?.removeEventListener?.("message", onMsg);
   }, []);
@@ -740,6 +752,7 @@ export function MobileApp(props) {
       const recent = [...getRecentFoodKeys((recentRows || []).flatMap((r) => (r.meals || []).map((m) => ({ log_date: r.log_date, items: m.items || [] }))), 2)];
       // Khách có Lịch tuần cho thứ đó → dùng Lịch tuần (khách tự chọn), không thì app tự lên
       const wt = ud.getWeeklyTemplate ? ud.getWeeklyTemplate(templateKeyOf(d)) : null;
+      track("menu_auto", { day: d === today ? "today" : "tomorrow", src: wt && (wt.meals || []).some(hasItems) ? "week" : "auto", manual: manual || null });
       const res = wt && (wt.meals || []).some(hasItems) ? { ok: true, template: wt }
         : await generateMenuLocal({ macro: macroFor(d), profile, dayType: dt, mealIds: idsFor(d), prefs: { style: prefs.style, avoid: prefs.avoid }, avoidFoods: recent });
       writeUser("fp_autoplan", user.id, markPlanned(autoDone(), d));
@@ -776,6 +789,7 @@ export function MobileApp(props) {
   };
   const swapMeal = (d, mealId, items, name) => serial(async () => {
     const prevMeal = mealOf(dayOf(d), mealId);
+    track("swap", { meal: mealId });
     const res = await ud.saveMealToCloud(mealId, dayTypeOf(profile, d), items, false, d, { name: mealLabel(prevMeal && prevMeal.meal_name, mealId) });
     if (res && res.ok === false) { fail(); return false; }
     await refresh(d);
@@ -783,6 +797,7 @@ export function MobileApp(props) {
     return true;
   });
   const saveAvoid = (text, quiet = false) => {
+    track("avoid_save", { n: text ? text.split(",").length : 0 });
     writeUser("fp_menu_prefs", user?.id, { ...menuPrefs(), avoid: text });
     setPrefsV((v) => v + 1);
     if (!quiet) showToast({ text: "Đã lưu — thực đơn từ ngày mai sẽ tránh các món này" });
@@ -816,7 +831,7 @@ export function MobileApp(props) {
   const allEatenToday = date === today && rows.length > 0 && rows.every((r) => r.state === "eaten");
   const snackRemain = targets.cal - eaten.cal;
   const snackCard = allEatenToday && bonusToday > 0 && macro.goal !== "cut" && snackRemain >= 100 && now.minutes < 22 * 60 && snackSkip !== today
-    ? <SnackCard remain={snackRemain} onPick={(sn) => putItems(today, "toi", sn.items, false, sn.name.toLowerCase())} onSkip={() => { writeUser("fp_snack_skip", user?.id, today); setSnackSkip(today); }} />
+    ? <SnackCard remain={snackRemain} onPick={(sn) => putItems(today, "toi", sn.items, false, sn.name.toLowerCase(), "snack")} onSkip={() => { writeUser("fp_snack_skip", user?.id, today); setSnackSkip(today); }} />
     : null;
 
   return (
@@ -838,7 +853,7 @@ export function MobileApp(props) {
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
             nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
-            waterMl={Number(day?.water_ml) || 0} addWater={(ml) => ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; })} waterGoalOverride={profile.waterGoalMl}
+            waterMl={Number(day?.water_ml) || 0} addWater={(ml) => { if (ml > 0) trackDaily("water"); return ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; }); }} waterGoalOverride={profile.waterGoalMl}
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}
             checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}
@@ -853,7 +868,7 @@ export function MobileApp(props) {
             onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} onSwap={lossMode ? (id) => openSwap(date, id) : null} />
         )}
         {tab === "menu" && lossMode && (
-          <LossMenuScreen today={today} tomorrow={tomorrow} sel={lossSel} onSel={setLossSel} day={lossSel === "tomorrow" ? dayCache[tomorrow] : dayOf(today)}
+          <LossMenuScreen today={today} tomorrow={tomorrow} sel={lossSel} onSel={(v) => { if (v === "tomorrow") track("menu_tomorrow"); setLossSel(v); }} day={lossSel === "tomorrow" ? dayCache[tomorrow] : dayOf(today)}
             targetCal={targetsOf(macroFor(lossMenuDate), dayTypeOf(profile, lossMenuDate)).cal} kgWeek={macro.kgWeek} loading={planBusy === lossMenuDate}
             avoid={menuPrefs().avoid || ""} onSwap={openSwap} onAvoid={() => openLayer({ type: "avoid" })} onRetry={(d) => planDay(d, true)} />
         )}
@@ -918,7 +933,7 @@ export function MobileApp(props) {
               onSave={l.pick
                 // Từ Sửa bữa › Thêm món: món AI tính đưa về bản nháp Sửa bữa (chưa lưu), như chọn món trong kho
                 ? (d, mealId, items) => { setPendingPick({ items, n: Date.now() }); return true; }
-                : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`)} />
+                : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`, "calc")} />
           )}
           {l.type === "swap" && (() => {
             const m = mealOf(dayOf(l.date), l.mealId);
@@ -929,13 +944,13 @@ export function MobileApp(props) {
           })()}
           {l.type === "avoid" && <AvoidSheet avoid={menuPrefs().avoid || ""} onSave={(t) => saveAvoid(t)} onClose={closeLayer} />}
           {l.type === "activity" && <ActivitySheet kg={weight.curKg || profile.kg} goal={macro.goal} items={actToday} baseTarget={targetsOf(macro, dayTypeOf(profile, today)).cal}
-            onSave={(list) => saveActivity(today, list)} onClose={closeLayer} />}
+            onSave={(list) => { if (list.length > actToday.length) track("activity"); return saveActivity(today, list); }} onClose={closeLayer} />}
           {l.type === "measure" && <MeasureSheet today={today} date={l.date} rows={measures || []} gender={profile.gender}
-            onSave={async (d, v) => { const ok = await saveMeasure(d, v); showToast({ text: ok ? "Đã lưu số đo" : "Chưa lưu được số đo — kiểm tra mạng rồi thử lại." }); return ok; }}
+            onSave={async (d, v) => { track("measure"); const ok = await saveMeasure(d, v); showToast({ text: ok ? "Đã lưu số đo" : "Chưa lưu được số đo — kiểm tra mạng rồi thử lại." }); return ok; }}
             onDelete={async (d) => { const ok = await deleteMeasure(d); if (ok) showToast({ text: "Đã xoá lần đo" }); return ok; }} onClose={closeLayer} />}
           {l.type === "weight" && <WeightSheet today={today} weightLog={weightLog} profileKg={profile.kg} goalKg={weight.goalKg} startKg={weight.startKg}
             onSave={saveWeightToday} onClose={closeLayer} onChart={l.fromGoals ? null : openWeightChart} />}
-          {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} mealIds={idsFor(today)} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`)} />}
+          {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} mealIds={idsFor(today)} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`, "photo")} />}
         </div>
       ))}
 

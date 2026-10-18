@@ -16,6 +16,7 @@ import { useAppSettings } from "./hooks/useAppSettings";
 import { PcPhoneFrame } from "./pc/PcPhoneFrame";
 import { PcAdminShell } from "./pc/PcAdminShell";
 import { todayVN, isGymDate, templateKeyOf } from "./lib/dateVN";
+import { setTrackUser } from "./lib/track";
 
 // PC (bản vẽ 117–120, 16/10): bỏ giao diện người dùng riêng cho máy tính (Tổng quan/Bữa ăn/Cân nặng/Nhật ký/Hồ sơ cũ).
 // Máy tính: MỌI người thấy CHÍNH app điện thoại (MobileApp) trong khung 400 px giữa màn; admin có nút "Vào Quản trị"
@@ -47,6 +48,8 @@ export default function App(){
   const ud=useUserData(user?.id);
   const {loaded:userDataLoaded,getMeals,hasMealsToday,getMealHistory,getDailyLogs,foodCache,saveMealToCloud,saveFoodCache,deleteFoodCache,weeklyTemplates,saveWeeklyTemplate,deleteWeeklyTemplate,getWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,applyTemplate,todayLog,removeDayMeal,moveDayMeal}=ud;
   const {settings:appSettings,isAdmin,saveSetting}=useAppSettings(user?.id);
+  // 18/10: ghi hành vi khách (app_events) — gắn tài khoản + chế độ giảm cân / gym; admin không bị ghi
+  useEffect(()=>{setTrackUser(user?.id,profile?(profile.uiMode==="loss"?"loss":"gym"):null,isAdmin);},[user?.id,profile?.uiMode,!!profile,isAdmin]);
   const macro=calcMacro(profile||defaultProfile);
   const [macroBanner,setMacroBanner]=useState(null);
   const prevCalRef=useRef(null);

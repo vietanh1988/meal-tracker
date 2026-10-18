@@ -4,7 +4,8 @@
 // chặn mục tiêu ngược hướng; bỏ màn "Xong" riêng (BMR/TDEE) → 1 dòng macro ở đầu màn Phong cách ăn.
 // Logic giữ nguyên bản cũ: lưu từng thay đổi qua setProfile, tính macro bằng calcMacro. 17/10: bỏ bước AI lên thực đơn cuối onboarding.
 // Khác bản cũ: áp thực đơn đầu tiên chỉ áp cho HÔM NAY, không tự lưu ngầm vào "Lặp lại hằng tuần" (thống nhất chốt 13/10).
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { track } from "./lib/track";
 import { calcMacro } from "./calcMacro";
 import { PacePicker, etaMonth } from "./mobile/PacePicker";
 import { lossChoices, goalError, goalVerdict, goodRange } from "./lib/lossPlan";
@@ -37,6 +38,8 @@ const DAY_NAMES = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]; // profile.gymDays
 
 export function OnboardingWizard({ profile, setProfile, onComplete, appSettings, applyTemplate }) {
   const [step, setStep] = useState(0);
+  // 18/10: ghi khách tới bước nào (Quản trị PC › Hành vi khách › Bỏ ngang ở onboarding)
+  useEffect(() => { track("onb_step", { step }); }, [step]);
   const isStandalone = typeof window !== "undefined" && (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone);
   const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
   const [showPin, setShowPin] = useState(!isStandalone && isIOS);
@@ -194,6 +197,7 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
     const exOn = (p.exerciseType || "none") !== "none";
     const start = () => {
       setProfile({ ...p, onboardingDone: true, uiMode: "loss", goalType: "cut" });
+      track("onb_done", { mode: "loss", kg: lossKg === "x" ? "x" : lossKg });
       onComplete();
     };
     body = <>
@@ -279,6 +283,7 @@ export function OnboardingWizard({ profile, setProfile, onComplete, appSettings,
       if (!goalOk) return;
       // 17/10: bỏ bước "AI lên thực đơn" (vướng, tốn 1 lượt AI) — xong mục tiêu là vào app; Hôm nay đã có Gợi ý món 1 chạm
       setProfile({ ...p, ...(showGoal ? { goalKg: Math.round(gk * 10) / 10, _defaulted: keepDefaulted(["goalKg"]) } : {}), onboardingDone: true });
+      track("onb_done", { mode: "gym", goal: p.goalType || null });
       onComplete();
     };
     body = <>

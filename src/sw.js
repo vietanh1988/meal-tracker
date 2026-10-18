@@ -48,7 +48,8 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   console.log("[SW] Notification clicked");
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || "/";
+  const url0 = (event.notification.data && event.notification.data.url) || "/";
+  const url = url0 + (url0.includes("?") ? "&" : "?") + "from=push"; // 18/10: ghi "mở app từ thông báo" (Quản trị › Hành vi khách)
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {

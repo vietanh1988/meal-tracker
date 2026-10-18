@@ -64,6 +64,12 @@ test("Giảm cân: Thực đơn ngày mai tự lên (không AI), Đổi món, M�
     await expect(page.getByTestId("me-schedule")).toContainText("Giờ ăn");
     await expect(page.getByTestId("me-schedule")).toContainText(/\d bữa · \d{1,2}:\d{2}–\d{1,2}:\d{2}/);
     await page.screenshot({ path: "shots/loss-toi.png", fullPage: true });
+    // 18/10: ghi hành vi (app_events) — mở app, xem thực đơn ngày mai, lưu món không ăn
+    await waitDb(async () => {
+      const r = await rest(`app_events?user_id=eq.${s.uid}&select=name,mode&order=at.desc&limit=100`);
+      const n = new Set(r.map((x) => x.name));
+      return n.has("app_open") && n.has("menu_tomorrow") && n.has("avoid_save") && r.every((x) => x.mode === "loss" || x.mode === null) ? r : null;
+    }, "app_events có app_open, menu_tomorrow, avoid_save", 15_000);
     expect(ai, "không gọi AI").toEqual([]);
     expect(errs, "lỗi trang").toEqual([]);
   } finally {

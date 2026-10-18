@@ -10,9 +10,13 @@ import { appAlert, appConfirm } from "../lib/dialog";
 import { todayVN, addDays, diffDays, fmtVN, isValidDateStr } from "../lib/dateVN";
 import { calcMacro } from "../calcMacro";
 import { PC } from "../theme";
+import { watchPresence } from "../lib/presence";
+import { agoShort } from "../lib/behavior";
+import { Dot } from "./PcBehavior";
 import { Btn, Pill, Card, SearchBox, FilterSelect, ErrorBox, Loading, headRow, bodyRow, cell, secLbl, vnInt, vnDec, fmtDT } from "./pcUI";
 
-const COLS = "1.7fr 0.8fr 1.1fr 0.9fr 0.9fr 1fr";
+// 18/10 (bản vẽ 135e): cột đầu "Đang dùng app" — chấm xanh = đang mở app (Realtime Presence), đỏ = offline · lần cuối bao lâu (app_events)
+const COLS = "1.1fr 1.7fr 0.8fr 1.1fr 0.9fr 0.9fr 0.8fr";
 const PAGE = 50;
 const TIER = { free: ["Free", "gray"], trial: ["Trial", "amber"], premium: ["Premium", "blue"] };
 const GOAL = { bulk: "Tăng cơ", cut: "Giảm mỡ", maintain: "Giữ cân" };
@@ -61,6 +65,15 @@ export function PcUsers({ top, currentUserId, isSuperAdmin }) {
   const [total, setTotal] = useState(0);
   const [err, setErr] = useState(null);
   const [sel, setSel] = useState(null);
+  const [online, setOnline] = useState(() => new Set());
+  const [lastAt, setLastAt] = useState({});
+  const [onlineF, setOnlineF] = useState("");
+  useEffect(() => watchPresence(setOnline), []);
+  useEffect(() => {
+    let alive = true;
+    supabase.rpc("admin_behavior_users").then(({ data }) => { if (alive && Array.isArray(data)) setLastAt(Object.fromEntries(data.map((u) => [u.id, u.last_at]))); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
 
   const fetchUsers = useCallback(async () => {
     setErr(null);
@@ -85,11 +98,12 @@ export function PcUsers({ top, currentUserId, isSuperAdmin }) {
           <SearchBox value={search} onChange={setSearch} placeholder="Tìm tên, email…" width={200} testid="pc-users-search" />
           <FilterSelect label="Gói" value={tier} onChange={setTier} testid="pc-users-f-tier" options={[{ v: "", label: "Tất cả" }, { v: "free", label: "Free" }, { v: "trial", label: "Trial" }, { v: "premium", label: "Premium" }]} />
           <FilterSelect label="Trạng thái" value={status} onChange={setStatus} testid="pc-users-f-status" options={[{ v: "", label: "Tất cả" }, { v: "active", label: "Hoạt động" }, { v: "locked", label: "Bị khoá" }]} />
+          <FilterSelect label="Đang dùng app" value={onlineF} onChange={setOnlineF} testid="pc-users-f-online" options={[{ v: "", label: "Tất cả" }, { v: "on", label: "Đang dùng" }, { v: "off", label: "Offline" }]} />
           <FilterSelect label="Vai trò" value={role} onChange={setRole} testid="pc-users-f-role" options={[{ v: "", label: "Tất cả" }, { v: "user", label: "User" }, { v: "admin", label: "Admin" }]} />
           <FilterSelect label="Hạn dùng" value={expiry} onChange={setExpiry} testid="pc-users-f-expiry" options={[{ v: "", label: "Tất cả" }, { v: "expiring_7d", label: "Sắp hết hạn (7 ngày)" }, { v: "expired", label: "Đã hết hạn" }]} />
           {filtered && <Btn kind="light" onClick={() => { setSearch(""); setTier(""); setStatus(""); setRole(""); setExpiry(""); }} testid="pc-users-clear" style={{ height: 36 }}>Xoá lọc</Btn>}
           <span data-testid="pc-users-count" style={{ marginLeft: "auto", fontSize: 12, color: PC.t3, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 8 }}>
-            {vnInt(total)} user
+            <span data-testid="pc-users-online" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#15803D", fontWeight: 800 }}><Dot on />{online.size} đang dùng app</span>· {vnInt(total)} user
             {pages > 1 && <>· trang {page + 1}/{pages}
               <Btn kind="light" style={{ height: 28, padding: "0 10px" }} disabled={page === 0} onClick={() => setPage((p) => p - 1)} title="Trang trước">‹</Btn>
               <Btn kind="light" style={{ height: 28, padding: "0 10px" }} disabled={page >= pages - 1} onClick={() => setPage((p) => p + 1)} title="Trang sau">›</Btn></>}
@@ -97,15 +111,19 @@ export function PcUsers({ top, currentUserId, isSuperAdmin }) {
         </div>
         {err && <ErrorBox text={`Chưa tải được danh sách người dùng: ${err}`} onRetry={fetchUsers} />}
         <Card>
-          <div style={headRow(COLS)}><span>NGƯỜI DÙNG</span><span>GÓI</span><span>HẾT HẠN</span><span>TRẠNG THÁI</span><span>HOẠT ĐỘNG CUỐI</span><span>VAI TRÒ</span></div>
+          <div style={headRow(COLS)}><span>ĐANG DÙNG APP</span><span>NGƯỜI DÙNG</span><span>GÓI</span><span>HẾT HẠN</span><span>TRẠNG THÁI</span><span>HOẠT ĐỘNG CUỐI</span><span>VAI TRÒ</span></div>
           {rows == null && <Loading />}
           {rows && rows.length === 0 && !err && <div data-testid="pc-users-empty" style={{ padding: 20, textAlign: "center", fontSize: 13, color: PC.t3 }}>Không tìm thấy người dùng nào.</div>}
-          {(rows || []).map((u, i, arr) => {
+          {(rows || []).filter((u) => !onlineF || (onlineF === "on") === online.has(u.id)).map((u, i, arr) => {
             const [tl, tt] = TIER[u.tier] || [u.tier || "Free", "gray"];
             const r = roleOf(u);
             return (
               <button key={u.id} data-testid="pc-user-row" data-id={u.id} onClick={() => setSel(u.id)} className="pc-row pc-click"
                 style={{ ...bodyRow(COLS, sel === u.id), borderBottom: i === arr.length - 1 ? "none" : bodyRow(COLS).borderBottom, borderRadius: i === arr.length - 1 ? "0 0 14px 14px" : 0 }}>
+                {(() => { const on = online.has(u.id); const ago = agoShort(lastAt[u.id]); return (
+                  <span data-testid="pc-user-online" data-on={on ? "1" : "0"} style={{ ...cell, display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 700, color: on ? "#15803D" : "#B91C1C" }} title={on ? "Đang mở app" : ago ? `Offline · lần cuối ${ago} trước` : "Offline"}>
+                    <Dot on={on} />{on ? "Đang dùng" : ago ? `Offline · ${ago}` : "Offline"}
+                  </span>); })()}
                 <span style={cell} title={`${u.username} · ${u.email}`}>{u.username} · {u.email}</span>
                 <span style={cell}><Pill tone={tt}>{tl}</Pill></span>
                 <span style={cell}>{expiryText(u)}</span>

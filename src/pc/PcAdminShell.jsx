@@ -24,6 +24,7 @@ import { PcBackup } from "./PcBackup";
 import { PcHome } from "./PcHome";
 import { PcUsers } from "./PcUsers";
 import { PcFood } from "./PcFood";
+import { PcBehavior } from "./PcBehavior";
 
 const SEC_KEY = "fp_pc_admin_sec";
 
@@ -33,6 +34,7 @@ const NAV_IC = {
   home: ["#2563EB", svg(<><path d="M3 11l9-7 9 7" /><path d="M5 10v10h14V10" /></>)],
   orders: ["#7C3AED", svg(<><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></>)],
   report_biz: ["#2563EB", svg(<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />)],
+  behavior: ["#16A34A", svg(<><path d="M3 17l6-6 4 4 8-8" /><path d="M14 7h7v7" /></>)],
   users: ["#0EA5E9", svg(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2" /></>)],
   subscription_settings: ["#DB2777", svg(<><path d="M3 7h18v10H3z" /><path d="M3 11h18M7 15h3" /></>)],
   feedback: ["#0891B2", svg(<path d="M5 5h14v10H9l-4 4z" />)],
@@ -52,12 +54,12 @@ const NAV_IC = {
 // Thứ tự + tên đúng bản vẽ 117. badge = khoá trong loadAdminCounts()
 export const PC_NAV = [
   { group: "TỔNG QUAN", items: [{ id: "home", label: "Tổng quan" }] },
-  { group: "BÁN HÀNG", items: [{ id: "orders", label: "Đơn hàng", badge: "orders" }, { id: "report_biz", label: "Báo cáo kinh doanh" }, { id: "users", label: "Người dùng" }, { id: "subscription_settings", label: "Gói cước & giới hạn" }] },
+  { group: "BÁN HÀNG", items: [{ id: "orders", label: "Đơn hàng", badge: "orders" }, { id: "report_biz", label: "Báo cáo kinh doanh" }, { id: "behavior", label: "Hành vi khách" }, { id: "users", label: "Người dùng" }, { id: "subscription_settings", label: "Gói cước & giới hạn" }] },
   { group: "NỘI DUNG", items: [{ id: "feedback", label: "Góp ý", badge: "feedback" }, { id: "notify", label: "Gửi thông báo" }, { id: "templates", label: "Kho mẫu thực đơn" }, { id: "food_db", label: "Kho thực phẩm" }, { id: "food_cache_pending", label: "Duyệt món AI", badge: "pending" }] },
   { group: "HỆ THỐNG", items: [{ id: "admin", label: "Phiên bản & thông báo" }, { id: "feature_flags", label: "Quản lý tính năng" }, { id: "ai", label: "Kết nối AI" }, { id: "ai_cost", label: "Chi phí AI" }, { id: "health", label: "Sức khoẻ & lỗi" }, { id: "audit_log", label: "Nhật ký admin" }, { id: "backup", label: "Sao lưu", superOnly: true }] },
 ];
 const SUB = {
-  orders: "Duyệt đơn chuyển khoản, kích hoạt gói", report_biz: "Doanh thu, gói cước, người dùng", users: "Quản lý tài khoản, gói, quyền",
+  orders: "Duyệt đơn chuyển khoản, kích hoạt gói", report_biz: "Doanh thu, gói cước, người dùng", behavior: "Khách đi tới đâu, dùng gì, bỏ ở đâu", users: "Quản lý tài khoản, gói, quyền",
   subscription_settings: "Giá gói, lượt AI theo gói", feedback: "Góp ý & báo lỗi của người dùng", notify: "Gửi thông báo đẩy tới người dùng",
   templates: "Thực đơn mẫu dùng chung", food_db: "Số trên 100 g · sửa ghi đè số gốc, về gốc được", food_cache_pending: "Món lạ AI đã tính, chờ duyệt vào kho",
   admin: "Số phiên bản, thông báo cập nhật", feature_flags: "Bật / tắt tính năng", ai: "Nhà cung cấp, model, khoá API", ai_cost: "Chi phí gọi AI theo ngày, tính năng, người dùng",
@@ -159,7 +161,7 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
     setTimeout(() => setToast((c) => (c && c.id === id ? null : c)), ms);
   }, []);
   const P = { top, isAdmin, isSuperAdmin, user, profile, appSettings, saveSetting, showToast, refreshCounts, adminP };
-  const PAGES = { orders: PcOrders, report_biz: PcReport, subscription_settings: PcSubscription, feedback: PcFeedback, notify: PcNotify, templates: PcTemplates, food_cache_pending: PcPending, admin: PcVersion, feature_flags: PcFlags, ai: PcAi, ai_cost: PcAiCost, health: PcHealth, audit_log: PcAudit, backup: PcBackup };
+  const PAGES = { orders: PcOrders, report_biz: PcReport, behavior: PcBehavior, subscription_settings: PcSubscription, feedback: PcFeedback, notify: PcNotify, templates: PcTemplates, food_cache_pending: PcPending, admin: PcVersion, feature_flags: PcFlags, ai: PcAi, ai_cost: PcAiCost, health: PcHealth, audit_log: PcAudit, backup: PcBackup };
 
   let page;
   if (sec === "home") page = <PcHome top={top} go={go} counts={counts} refreshCounts={refreshCounts} appSettings={appSettings} />;
