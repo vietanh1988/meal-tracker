@@ -8,7 +8,7 @@ export default function Nav({ items, s }) {
   const cta = (items || []).find((x) => x.style === "button") || { label: "Dùng thử miễn phí", url: appLink(s, "header") };
   return (
     <header id="top" style={{ background: "#fff", borderBottom: "1px solid #E6ECF5", position: "sticky", top: 0, zIndex: 40 }}>
-      <div className="wrap" style={{ height: 64, display: "flex", alignItems: "center", gap: 30 }}>
+      <div className="wrap navbar" style={{ height: 64, display: "flex", alignItems: "center", gap: 30 }}>
         <a href="/" aria-label="Fipilot AI — trang chủ"><Logo /></a>
         <nav aria-label="Menu chính" className="only-pc" style={{ display: "flex", gap: 26 }}>
           {links.map((it) => (
@@ -20,7 +20,7 @@ export default function Nav({ items, s }) {
         </nav>
         <span style={{ flex: 1 }} />
         <a href="/tim-kiem" aria-label="Tìm kiếm" className="only-pc" style={{ color: "#334155", display: "inline-flex" }}><Icon name="search" size={20} /></a>
-        <a className="btn b1" href={cta.url} {...(ext(cta.url) ? { rel: "noopener" } : {})} style={{ height: 40 }}><span className="only-pc">{cta.label}</span><span className="only-m">Dùng app</span></a>
+        <a className="btn b1 navcta" href={cta.url} {...(ext(cta.url) ? { rel: "noopener" } : {})} style={{ height: 38 }}><span className="only-pc">{cta.label}</span><span className="only-m">Dùng app</span></a>
         <details className="only-m mnav" style={{ display: "none" }}>
           <summary aria-label="Mở menu" style={{ listStyle: "none", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Icon name="hamb" size={24} /></summary>
           <div style={{ position: "absolute", left: 0, right: 0, top: 64, background: "#fff", borderBottom: "1px solid #E6ECF5", boxShadow: "0 12px 24px rgba(15,23,42,.08)", padding: "8px 16px 16px" }}>
@@ -34,7 +34,7 @@ export default function Nav({ items, s }) {
           </div>
         </details>
       </div>
-      <style>{`.navsub{display:none;position:absolute;left:-12px;top:100%;padding:8px;min-width:240px;background:#fff;border:1px solid #E6ECF5;border-radius:12px;box-shadow:0 12px 28px rgba(15,23,42,.14)}.navsub a{display:block;padding:9px 12px;border-radius:8px;font-size:14.5px;font-weight:600;color:#334155}.navsub a:hover{background:#E8F1FF;color:#0062F0}.navi:hover .navsub,.navi:focus-within .navsub{display:block}.navi>a:hover{color:#0062F0}@media(max-width:720px){.mnav{display:block!important}.mnav[open] summary{color:#0062F0}}`}</style>
+      <style>{`.navsub{display:none;position:absolute;left:-12px;top:100%;padding:8px;min-width:240px;background:#fff;border:1px solid #E6ECF5;border-radius:12px;box-shadow:0 12px 28px rgba(15,23,42,.14)}.navsub a{display:block;padding:9px 12px;border-radius:8px;font-size:14.5px;font-weight:600;color:#334155}.navsub a:hover{background:#E8F1FF;color:#0062F0}.navi:hover .navsub,.navi:focus-within .navsub{display:block}.navi>a:hover{color:#0062F0}@media(max-width:720px){.navbar{height:56px!important;gap:8px!important}.navcta{height:34px!important;padding:0 12px!important;font-size:13px!important}.navbar b{font-size:16px!important}.mnav{display:block!important}.mnav summary{width:36px!important;height:36px!important}.mnav>div{top:56px!important}.mnav[open] summary{color:#0062F0}}`}</style>
     </header>
   );
 }

@@ -38,10 +38,10 @@ export default async function Home() {
       <JsonLd data={ld(orgGraph(s), websiteGraph(s), appGraph(s), faqGraph(FAQ))} />
       <section style={{ background: "linear-gradient(180deg,#EAF1FF 0%,#F3F6FB 100%)", padding: "72px 0 64px" }} className="hero">
         <div className="wrap hero-in" style={{ display: "flex", alignItems: "center", gap: 40 }}>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, maxWidth: 560 }}>
+          <div className="hero-l" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, maxWidth: 560 }}>
             <span className="pill" style={{ alignSelf: "flex-start" }}>Miễn phí 7 ngày · không cần thẻ</span>
             <h1 className="h1home">Giảm cân bằng<br />món Việt quen thuộc</h1>
-            <p className="lead" style={{ fontSize: 19, maxWidth: 520 }}>Phở, bún, cơm tấm vẫn ăn được. App tự lên thực đơn đúng calo mỗi ngày — bạn chỉ việc ăn theo và bấm “Đã ăn”.</p>
+            <p className="lead hero-p" style={{ fontSize: 19, maxWidth: 520 }}>Phở, bún, cơm tấm vẫn ăn được. App tự lên thực đơn đúng calo mỗi ngày — bạn chỉ việc ăn theo và bấm “Đã ăn”.</p>
             <div className="hero-btn" style={{ display: "flex", gap: 12, marginTop: 6 }}><a className="btn b1 big" href={appLink(s, "home-hero")}>Dùng thử miễn phí</a><a className="btn b2 big" href="#cach-hoat-dong">Xem cách hoạt động</a></div>
             <span style={{ fontSize: 13.5, color: "#64748B" }}>Không cần cài từ kho ứng dụng · Chạy trên mọi điện thoại</span>
           </div>
@@ -52,29 +52,29 @@ export default async function Home() {
         </div>
       </section>
       <section className="wrap">
-        <div className="card" style={{ padding: 36, display: "flex", flexDirection: "column", gap: 20, borderRadius: 24, boxShadow: "0 20px 40px rgba(15,23,42,.08)" }}>
+        <div className="card calc-card" style={{ padding: 36, display: "flex", flexDirection: "column", gap: 20, borderRadius: 24, boxShadow: "0 20px 40px rgba(15,23,42,.08)" }}>
           <span className="eye">Tính thử trong 10 giây</span>
-          <h2 style={{ fontSize: 30, lineHeight: 1.25, fontWeight: 800 }}>Bạn cần ăn bao nhiêu để giảm cân?</h2>
+          <h2 className="calc-h" style={{ fontSize: 30, lineHeight: 1.25, fontWeight: 700 }}>Bạn cần ăn bao nhiêu để giảm cân?</h2>
           <Calc appUrl={s.site.app_url} />
         </div>
       </section>
       <section className="wrap sec" id="cach-hoat-dong">
         <SecHead eye="Cách hoạt động" title="3 bước, không phải tự tính" sub="Bạn chỉ nhập số đo một lần — phần còn lại app lo." />
-        <div className="grid3" style={{ gap: 20 }}>{STEPS.map(([n, t, x]) => <div key={n} className="card" style={{ display: "flex", gap: 16, padding: 24 }}><span style={{ width: 44, height: 44, borderRadius: 22, background: "linear-gradient(180deg,#1A7CFF,#0062F0)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{n}</span><span style={{ display: "flex", flexDirection: "column", gap: 4 }}><h3 style={{ fontSize: 19 }}>{t}</h3><span style={{ fontSize: 16, color: "#64748B", lineHeight: 1.55 }}>{x}</span></span></div>)}</div>
+        <div className="grid3 g12" style={{ gap: 20 }}>{STEPS.map(([n, t, x]) => <div key={n} className="card step" style={{ display: "flex", gap: 16, padding: 24 }}><span style={{ width: 44, height: 44, borderRadius: 22, background: "linear-gradient(180deg,#1A7CFF,#0062F0)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{n}</span><span style={{ display: "flex", flexDirection: "column", gap: 4 }}><h3 style={{ fontSize: 19 }}>{t}</h3><span className="step-x" style={{ fontSize: 16, color: "#64748B", lineHeight: 1.55 }}>{x}</span></span></div>)}</div>
       </section>
       <section className="wrap sec">
         <SecHead eye="Tính năng" title="3 tính năng giúp bạn giảm cân dễ hơn" />
-        <div className="grid3" style={{ gap: 20 }}>{FEATS.map(([t, x, ui]) => <div key={t} className="card feat" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 18 }}><span style={{ display: "flex", flexDirection: "column", gap: 6 }}><h3 style={{ fontSize: 20, lineHeight: 1.3 }}>{t}</h3><span style={{ fontSize: 15.5, color: "#64748B", lineHeight: 1.55 }}>{x}</span></span><div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{ui}</div></div>)}</div>
+        <div className="grid3 g12" style={{ gap: 20 }}>{FEATS.map(([t, x, ui]) => <div key={t} className="card feat" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 18 }}><span style={{ display: "flex", flexDirection: "column", gap: 6 }}><h3 style={{ fontSize: 20, lineHeight: 1.3 }}>{t}</h3><span className="ui-t" style={{ fontSize: 15.5, color: "#64748B", lineHeight: 1.55 }}>{x}</span></span><div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{ui}</div></div>)}</div>
       </section>
-      <section className="wrap sec grid2" style={{ gap: 48 }}>
+      <section className="wrap sec grid2 pf" style={{ gap: 48 }}>
         <div>
           <SecHead eye="Bảng giá" title="Bắt đầu miễn phí" />
-          <div className="grid2" style={{ gap: 16 }}>
+          <div className="grid2 plans" style={{ gap: 16 }}>
             {[[pr.free?.name || "Miễn phí", pr.free?.price || "0đ", "", ["Thực đơn tự lên mỗi ngày", "Đổi món, ghi bữa, nhắc giờ", "Tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", pr.premium?.price || "99.000đ", pr.premium?.unit || " / tháng", ["Mọi thứ của gói Miễn phí", "Chụp ảnh tính calo", "Hỏi AI về ăn uống", "AI lên thực đơn theo ý"], "Dùng thử 7 ngày", true]].map(([n, p, u, l, c, hi]) => (
-              <div key={n} className="card" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12, position: "relative", ...(hi ? { border: "1.5px solid #0062F0" } : {}) }}>
+              <div key={n} className="card plan" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12, position: "relative", ...(hi ? { border: "1.5px solid #0062F0" } : {}) }}>
                 {hi && <span className="pill" style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "#0062F0", color: "#fff" }}>Phổ biến</span>}
                 <span style={{ fontSize: 15, fontWeight: 800, color: "#334155" }}>{n}</span>
-                <span><b style={{ fontSize: 32 }}>{p}</b><span className="mut" style={{ fontSize: 14 }}>{u}</span></span>
+                <span><b className="plan-p" style={{ fontSize: 32 }}>{p}</b><span className="mut" style={{ fontSize: 14 }}>{u}</span></span>
                 {l.map((x) => <span key={x} style={{ display: "flex", gap: 8, fontSize: 14.5, lineHeight: 1.45 }}><span className="chk">✓</span>{x}</span>)}
                 <a className={`btn ${hi ? "b1" : "b2"}`} href={appLink(s, hi ? "home-premium" : "home-free")} style={{ marginTop: 6 }}>{c}</a>
               </div>
@@ -89,11 +89,11 @@ export default async function Home() {
       {posts.length > 0 && (
         <section className="wrap sec">
           <SecHead eye="Blog" title="Bài viết mới" right={<a href="/bai-viet" style={{ fontSize: 15, fontWeight: 700, color: "#0062F0", whiteSpace: "nowrap" }}>Xem tất cả →</a>} />
-          <PostList posts={posts} />
+          <PostList posts={posts} gap={20} />
         </section>
       )}
       <Sticky s={s} ref_="home-sticky" />
-      <style>{`@media(max-width:720px){.hero{padding:40px 0!important}.hero-in{flex-direction:column;gap:18px!important}.hero-btn{flex-direction:column}.hero-ph{width:100%!important;height:390px!important}.hero-ph img:first-child{right:8%!important;width:150px!important}.hero-ph img:last-child{left:8%!important;width:170px!important}.wrap>.card{padding:20px!important}.feat{padding:20px!important}.feat h3{font-size:18px!important}.calc .calc-in{grid-template-columns:1fr 1fr!important}}`}</style>
+      <style>{`@media(max-width:720px){.hero{padding:40px 0!important}.hero-in{flex-direction:column;gap:18px!important}.hero-btn{flex-direction:column}.hero-btn .btn{height:50px!important}.hero-ph{width:100%!important;height:390px!important}.hero-ph img:first-child{right:8%!important;width:150px!important}.hero-ph img:last-child{left:8%!important;width:170px!important}.hero-l{gap:14px!important}.hero-p{font-size:17px!important}.calc-card{padding:20px!important;gap:16px!important}.g12{gap:12px!important}.step{padding:20px!important}.step h3{font-size:17px!important}.step-x{font-size:15px!important}.feat .ui-t{font-size:15px!important}.pf{gap:64px!important}.plans{gap:20px!important}.plan{padding:20px!important}.plan-p{font-size:26px!important}details.faq{padding:16px!important}details.faq summary{font-size:15.5px!important}details.faq p{font-size:15px!important;line-height:1.6!important;margin-top:8px!important}.calc-h{font-size:24px!important}.feat{padding:20px!important}.feat h3{font-size:18px!important}.calc .calc-in{grid-template-columns:1fr 1fr!important}}`}</style>
     </main>
   );
 }

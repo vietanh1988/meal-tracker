@@ -3,29 +3,28 @@ export default function PostCard({ p, big = false, row = false }) {
   const c = catOf(p);
   const meta = `${c ? c.name + " · " : ""}${readMin(p.word_count)} phút đọc`;
   if (row) return (
-    <a href={`/${p.slug}`} style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 0", borderTop: "1px solid #EEF2F7" }}>
-      {p.cover_url ? <img src={p.cover_url} alt={p.cover_alt || ""} width={92} height={92} loading="lazy" style={{ width: 92, height: 92, borderRadius: 14, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 92, height: 92, borderRadius: 14, background: "#E8F0FF", flexShrink: 0 }} />}
-      <span style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 16, lineHeight: 1.4 }}>{p.title}</b><span style={{ fontSize: 13, color: "#94A3B8" }}>{fmtDate(p.published_at)} · {readMin(p.word_count)} phút đọc</span></span>
+    <a href={`/${p.slug}`} className="prow" style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0" }}>
+      {p.cover_url ? <img src={p.cover_url} alt={p.cover_alt || ""} width={84} height={84} loading="lazy" style={{ width: 84, height: 84, borderRadius: 14, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 84, height: 84, borderRadius: 14, background: "#E8F0FF", flexShrink: 0 }} />}
+      <span style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 15.5, lineHeight: 1.4 }}>{p.title}</b><span style={{ fontSize: 13, color: "#94A3B8" }}>{readMin(p.word_count)} phút đọc</span></span>
     </a>
   );
   return (
     <a href={`/${p.slug}`} className="card pcard" style={{ overflow: "hidden", display: "flex", flexDirection: "column", gridColumn: big ? "span 2" : undefined }}>
-      {p.cover_url ? <img src={p.cover_url} alt={p.cover_alt || ""} loading="lazy" style={{ width: "100%", height: big ? 300 : 190, objectFit: "cover", display: "block" }} /> : <span style={{ height: big ? 300 : 190, background: "linear-gradient(135deg,#E8F0FF,#F5F9FF)" }} />}
-      <span style={{ padding: "20px 22px 22px", display: "flex", flexDirection: "column", gap: 10 }}>
+      {p.cover_url ? <img src={p.cover_url} alt={p.cover_alt || ""} loading="lazy" style={{ width: "100%", height: big ? 300 : 180, objectFit: "cover", display: "block" }} /> : <span style={{ height: big ? 300 : 180, background: "linear-gradient(135deg,#E8F0FF,#F5F9FF)" }} />}
+      <span style={{ padding: "18px 20px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
         <span style={{ fontSize: 13, color: "#0062F0", fontWeight: 700 }}>{meta}</span>
-        <b style={{ fontSize: big ? 24 : 18, lineHeight: 1.35 }}>{p.title}</b>
-        <span style={{ fontSize: 13.5, color: "#94A3B8" }}>{fmtDate(p.published_at)}</span>
+        <b style={{ fontSize: big ? 24 : 18, lineHeight: 1.4 }}>{p.title}</b>
       </span>
-      <style>{`.pcard:hover{box-shadow:0 12px 28px rgba(15,23,42,.10)}@media(max-width:720px){.pcard{grid-column:auto!important}}`}</style>
+      <style>{`.pcard{transition:box-shadow .15s}.pcard:hover{box-shadow:0 12px 28px rgba(15,23,42,.10)}@media(max-width:720px){.pcard{grid-column:auto!important}}`}</style>
     </a>
   );
 }
-export function PostList({ posts, firstBig = false }) {
+export function PostList({ posts, firstBig = false, gap = 24 }) {
   if (!posts.length) return <p className="lead" style={{ padding: "32px 0" }}>Chưa có bài viết nào.</p>;
   return (
     <>
-      <div className="grid3 only-pc">{posts.map((p, i) => <PostCard key={p.id} p={p} big={firstBig && i === 0} />)}</div>
-      <div className="only-m">{posts.map((p) => <PostCard key={p.id} p={p} row />)}</div>
+      <div className="grid3 only-pc" style={{ gap }}>{posts.map((p, i) => <PostCard key={p.id} p={p} big={firstBig && i === 0} />)}</div>
+      <div className="only-m card" style={{ padding: "4px 12px" }}>{posts.map((p) => <PostCard key={p.id} p={p} row />)}<style>{`.prow+.prow{border-top:1px solid #EEF2F7}`}</style></div>
     </>
   );
 }

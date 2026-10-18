@@ -68,10 +68,10 @@ export default async function Page({ params }) {
   return (
     <main>
       <JsonLd data={ld(...graphs)} />
-      <div className="wrap" style={{ paddingTop: 40, paddingBottom: 0, display: "flex", gap: 32, alignItems: "flex-start" }}>
+      <div className="wrap postwrap" style={{ paddingTop: 40, paddingBottom: 52, display: "flex", gap: 32, alignItems: "flex-start" }}>
         <div className="card art" style={{ flex: 1, minWidth: 0, padding: 48 }}>
           <article style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-            <Crumb items={crumbs} />
+            <Crumb items={crumbs.slice(0, -1)} last />
             <h1 className="h1">{p.title}</h1>
             <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "#64748B", flexWrap: "wrap" }}>
               {a && <><Avatar a={a} size={32} /><a href={`/tac-gia/${a.slug}`} style={{ color: "#0F172A", fontWeight: 700 }}>{a.name}</a><span>·</span></>}
@@ -87,12 +87,19 @@ export default async function Page({ params }) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}><span className="eye" style={{ fontSize: 12 }}>Viết bởi</span><b style={{ fontSize: 17 }}>{a.name}</b>{a.job_title && <span className="mut" style={{ fontSize: 14 }}>{a.job_title}</span>}{a.bio && <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.6 }}>{a.bio}</p>}<a href={`/tac-gia/${a.slug}`} style={{ color: "#0062F0", fontWeight: 700, fontSize: 14.5 }}>Xem các bài của {a.name} →</a></div>
               </div>
             )}
-            {(p.terms || []).filter((x) => x.kind === "tag").length > 0 && <div className="chips">{p.terms.filter((x) => x.kind === "tag").map((x) => <a key={x.id} className="chip" href={`/${s.seo.tag_base}/${x.slug}`}># {x.name}</a>)}</div>}
             {rel.length > 0 && (
-              <section style={{ display: "flex", flexDirection: "column", gap: 20, marginTop: 24, paddingTop: 32, borderTop: "1px solid #EEF2F7" }}>
-                <h2 style={{ fontSize: 24, fontWeight: 800 }}>Bài liên quan</h2>
-                <div className="grid3 only-pc">{rel.map((x) => <PostCard key={x.id} p={x} />)}</div>
-                <div className="only-m">{rel.map((x) => <PostCard key={x.id} p={x} row />)}</div>
+              <section className="rel" style={{ display: "flex", flexDirection: "column", gap: 20, marginTop: 40, paddingTop: 32, borderTop: "1px solid #EEF2F7" }}>
+                <h2 className="rel-h" style={{ fontSize: 24, fontWeight: 800 }}>Bài liên quan</h2>
+                <div className="grid3 only-pc" style={{ gap: 12 }}>{rel.map((x) => (
+                  <a key={x.id} href={`/${x.slug}`} className="card pcard" style={{ overflow: "hidden" }}>
+                    {x.cover_url ? <img src={x.cover_url} alt={x.cover_alt || ""} loading="lazy" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} /> : <span style={{ display: "block", height: 130, background: "linear-gradient(135deg,#E8F0FF,#F5F9FF)" }} />}
+                    <span style={{ display: "block", padding: "14px 16px", fontSize: 16, fontWeight: 700, lineHeight: 1.4 }}>{x.title}</span>
+                  </a>))}</div>
+                <div className="only-m">{rel.map((x) => { const c = catOf(x); return (
+                  <a key={x.id} href={`/${x.slug}`} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 0", borderTop: "1px solid #EEF2F7" }}>
+                    {x.cover_url ? <img src={x.cover_url} alt={x.cover_alt || ""} loading="lazy" style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 72, height: 72, borderRadius: 12, background: "#E8F0FF", flexShrink: 0 }} />}
+                    <span style={{ display: "flex", flexDirection: "column", gap: 4 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 15.5, lineHeight: 1.4 }}>{x.title}</b></span>
+                  </a>); })}</div>
               </section>
             )}
           </article>
@@ -111,7 +118,7 @@ export default async function Page({ params }) {
         </aside>
       </div>
       <Sticky s={s} ref_={`post-${p.slug}`} />
-      <style>{`@media(max-width:720px){.art{padding:20px!important}.cover{height:230px!important}}`}</style>
+      <style>{`@media(max-width:720px){.art{padding:20px!important}.cover{height:230px!important}.postwrap{padding-top:20px!important;padding-bottom:40px!important}.rel{gap:6px!important;margin-top:32px!important;padding-top:28px!important}.rel-h{font-size:22px!important;margin-bottom:8px}}`}</style>
     </main>
   );
 }

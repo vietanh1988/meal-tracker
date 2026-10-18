@@ -29,46 +29,45 @@ export default async function Calo({ params }) {
   const por = mainPortion(fd);
   const path = `/calo/${fd.slug}`;
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng calo món", path: "/bang-calo" }, { name: fd.name, path }];
-  const same = (await caloFoods()).filter((x) => x.cat === fd.cat && x.key !== fd.key).map((x) => ({ x, p: mainPortion(x) })).filter((y) => y.p).sort((a, b) => Math.abs(a.p.cal - (por?.cal || 0)) - Math.abs(b.p.cal - (por?.cal || 0))).slice(0, 4);
+  const same = (await caloFoods()).filter((x) => x.cat === fd.cat && x.key !== fd.key).map((x) => ({ x, p: mainPortion(x) })).filter((y) => y.p).sort((a, b) => Math.abs(a.p.cal - (por?.cal || 0)) - Math.abs(b.p.cal - (por?.cal || 0))).slice(0, 3);
   const faq = (pg.faq || []).filter((x) => x?.q && x?.a);
   const kcalLine = por ? `${por.name.charAt(0).toUpperCase() + por.name.slice(1)} ${fd.name.toLowerCase()} (${por.gram} g) khoảng ${por.cal} kcal.` : `100 g ${fd.name.toLowerCase()} có ${fd.per100.cal} kcal.`;
   const intro = pg.intro || `${kcalLine} Xem calo theo từng khẩu phần, lượng đạm, tinh bột, chất béo và so với món tương tự.`;
   return (
     <main>
       <JsonLd data={ld(breadcrumb(s, crumbs), foodGraph(s, fd, por, path), faqGraph(faq))} />
-      <div className="wrap" style={{ paddingTop: 48, display: "flex", flexDirection: "column", gap: 24 }}>
+      <div className="wrap calowrap" style={{ paddingTop: 48, paddingBottom: 24, display: "flex", flexDirection: "column", gap: 24 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 16 }}>
           <Crumb items={crumbs} />
           <h1 className="h1">{fd.name} bao nhiêu calo?</h1>
           <p className="lead" style={{ maxWidth: 680 }}>{intro}</p>
         </div>
         <div className="calo-cols" style={{ display: "flex", gap: 32, alignItems: "flex-start" }}>
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
-            <Portions fd={fd} />
-            <div className="card" style={{ padding: 24, display: "flex", gap: 14, background: "#F2FBF5", borderColor: "#C9EED6" }}>
+          <div className="calo-main" style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
+            <div className="o1"><Portions fd={fd} /></div>
+            <div className="card verdict o2" style={{ padding: 24, display: "flex", gap: 14, background: "#F2FBF5", borderColor: "#C9EED6" }}>
               <span style={{ width: 30, height: 30, borderRadius: 15, background: "#16A34A", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, flexShrink: 0 }}>✓</span>
-              <span style={{ display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 18, color: "#15803D" }}>Ăn {fd.name.toLowerCase()} khi giảm cân: được</b><span style={{ fontSize: 15.5, lineHeight: 1.6, color: "#334155" }}>Miễn tổng calo cả ngày nằm trong mục tiêu. Chọn khẩu phần vừa, ưu tiên thêm rau và đạm.</span></span>
+              <span style={{ display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 18, color: "#15803D" }}>Ăn {fd.name.toLowerCase()} khi giảm cân: được</b><span style={{ fontSize: 15.5, lineHeight: 1.6, color: "#334155" }}>Chọn khẩu phần vừa, thêm rau.<br />Cân lại các bữa khác cho đúng calo.</span></span>
             </div>
-            {faq.length > 0 && <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 28 }}><h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Câu hỏi thường gặp</h2>{faq.map((x, i) => <details key={i} className="faq" open={i === 0}><summary>{x.q}</summary><p>{x.a}</p></details>)}</div>}
+            {faq.length > 0 && <div className="o5 calofaq" style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 28 }}><h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Câu hỏi thường gặp</h2>{faq.map((x, i) => <details key={i} className="faq" open={i === 0}><summary>{x.q}</summary><p>{x.a}</p></details>)}</div>}
           </div>
           <div className="calo-side" style={{ width: 360, display: "flex", flexDirection: "column", gap: 20 }}>
-            <form action="/tim-kiem" className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+            <form action="/tim-kiem" className="card o6" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
               <label htmlFor="cq" style={{ fontSize: 16, fontWeight: 700 }}>Tìm món khác: bún chả, cơm tấm…</label>
               <div style={{ display: "flex", gap: 6 }}><input id="cq" name="q" className="inp" placeholder="Nhập tên món ăn…" style={{ height: 46 }} /><button className="btn b2" style={{ width: 46, padding: 0, height: 46 }} aria-label="Tìm">⌕</button></div>
             </form>
             {same.length > 0 && (
-              <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+              <div className="card o3" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
                 <b style={{ fontSize: 16, marginBottom: 6 }}>So với món tương tự (khẩu phần vừa)</b>
                 {same.map(({ x, p }, i) => { const d = p.cal - (por?.cal || 0); return (
-                  <a key={x.key} href={`/calo/${x.slug}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>
+                  <a key={x.key} href={`/calo/${x.slug}`} title={`${x.name} · ${p.name} ${p.gram} g`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>
                     <img className="th" src={x.page?.image_url || ["/img/bowl-1.jpg", "/img/bowl-2.jpg", "/img/bowl-3.jpg"][i % 3]} alt="" width={46} height={46} loading="lazy" style={{ width: 46, height: 46 }} />
-                    <span style={{ flex: 1, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 14.5, fontWeight: 600 }}>{x.name}</span><span style={{ fontSize: 13, color: "#64748B" }}>{p.name} {p.gram} g</span></span>
-                    <b style={{ fontSize: 16 }}>{p.cal} <span style={{ fontSize: 13 }}>kcal</span></b>
-                    {por && <span style={{ fontSize: 12.5, fontWeight: 800, borderRadius: 8, padding: "3px 8px", ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : { background: "#FFEDD5", color: "#C2410C" }) }}>{d > 0 ? "+" : d < 0 ? "−" : "±"}{Math.abs(d)}</span>}
+                    <span style={{ flex: 1, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 14.5, fontWeight: 600 }}>{x.name}</span><b style={{ fontSize: 16 }}>{p.cal} <span style={{ fontSize: 13, fontWeight: 600 }}>kcal</span></b></span>
+                    {por && <span style={{ fontSize: 12, fontWeight: 800, borderRadius: 8, padding: "3px 8px", ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : { background: "#FFEDD5", color: "#C2410C" }) }}>{d > 0 ? "+" : d < 0 ? "−" : "±"}{Math.abs(d)}</span>}
                   </a>); })}
               </div>
             )}
-            <div style={{ borderRadius: 18, background: "linear-gradient(160deg,#1A7CFF,#0050E6)", color: "#fff", padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="o4 calocta" style={{ borderRadius: 18, background: "linear-gradient(160deg,#1A7CFF,#0050E6)", color: "#fff", padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
               <b style={{ fontSize: 19, lineHeight: 1.35 }}>Hôm nay ăn {fd.name.toLowerCase()} thì các bữa khác ăn gì?</b>
               <span style={{ fontSize: 14.5, opacity: 0.88, lineHeight: 1.5 }}>Fipilot AI tự cân lại cả ngày cho đúng calo.</span>
               <img src={pg.image_url || "/img/food-cta.jpg"} alt="" loading="lazy" style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 12 }} />
@@ -78,7 +77,7 @@ export default async function Calo({ params }) {
         </div>
       </div>
       <Sticky s={s} ref_={`calo-${fd.slug}`} />
-      <style>{`@media(max-width:720px){.calo-cols{flex-direction:column}.calo-side{width:100%!important}}`}</style>
+      <style>{`@media(max-width:720px){.calowrap{padding-top:24px!important;gap:20px!important}.calo-cols{flex-direction:column;gap:20px!important}.calo-main,.calo-side{display:contents!important}.o1{order:1}.o2{order:2}.o3{order:3}.o4{order:4}.o5{order:5;margin-top:0!important}.o6{order:6}.verdict{padding:18px!important}.calo-cols>*>*{width:100%}}`}</style>
     </main>
   );
 }
