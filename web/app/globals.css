@@ -38,7 +38,7 @@ h1, h2, h3, h4, p, figure { margin: 0; }
 .phead { background: linear-gradient(180deg, #EAF1FF 0%, var(--bg) 100%); padding: 48px 0; }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip { height: 38px; padding: 0 16px; border-radius: 19px; display: inline-flex; align-items: center; font-size: 14.5px; font-weight: 700; white-space: nowrap; background: #fff; color: var(--ink2); border: 1px solid var(--line); }
-.chip.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+.chip.on { background: var(--blue); color: #fff; border: 0; }
 .inp { height: 52px; border-radius: 14px; border: 1px solid #DCE4F0; background: #fff; padding: 0 16px; font-size: 16px; font-family: inherit; color: var(--ink); width: 100%; }
 /* nội dung bài */
 .prose { display: flex; flex-direction: column; gap: 24px; }

@@ -1,0 +1,3 @@
+{
+  "git": { "deploymentEnabled": { "ci/**": false, "shots/**": false, "feat/**": false, "fix/**": false } }
+}
