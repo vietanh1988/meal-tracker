@@ -8,10 +8,12 @@
 
 // Dùng khi đã có 3 giá trị model cụ thể trong tay (từ appSettings đã lưu,
 // hoặc từ state form đang sửa — không quan trọng nguồn gốc).
+import { DEFAULT_MODEL } from "./aiModels.js";
+
 export function pickAiModel(provider, { claudeModel, geminiModel, gptModel } = {}) {
-  if (provider === "gemini") return geminiModel || "gemini-2.5-flash";
-  if (provider === "gpt") return gptModel || "gpt-4o-mini";
-  return claudeModel || "claude-sonnet-5";
+  if (provider === "gemini") return geminiModel || DEFAULT_MODEL.gemini;
+  if (provider === "gpt") return gptModel || DEFAULT_MODEL.gpt;
+  return claudeModel || DEFAULT_MODEL.claude;
 }
 
 // Tiện ích cho nơi đọc trực tiếp appSettings đã lưu (AICoachPanel,

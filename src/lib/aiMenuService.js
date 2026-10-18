@@ -13,6 +13,7 @@
 // Menu lưu Supabase (saveAIMenu) để reload không mất.
 // ============================================================
 
+import { DEFAULT_MODEL } from "./aiModels.js";
 import { LOCAL_FOODS, getFoodRole, getGramLimit, getFoodDisplay, isStandaloneDish, lookupLocalFood } from "./localFoodDB";
 import { todayVN, addDays } from "./dateVN";
 import { buildWhitelist } from "./whitelistBuilder";
@@ -149,7 +150,7 @@ export function dayTarget(macro, dayType) {
 async function callAI(prompt, { provider, model } = {}, _retriesLeft = 1) {
   const d = await authFetch("ai-proxy", {
     provider: provider || "claude",
-    model: model || "claude-sonnet-5",
+    model: model || DEFAULT_MODEL.claude,
     maxTokens: 1800, // đủ buffer JSON (whitelist gọn sau khi bỏ macro dư thừa)
                      // không quá cao để tránh cost lãng phí nếu model verbose
     feature: "menu_gen",
@@ -685,9 +686,9 @@ async function generateMenuAIRaw({ macro, profile, dayType = "train", mealIds, p
 
   const prov = provider || appSettings?.ai_provider || "claude";
   const mdl = model || (
-    prov === "claude" ? (appSettings?.ai_model || "claude-sonnet-5")
-    : prov === "gemini" ? (appSettings?.gemini_model || "gemini-2.5-flash")
-    : (appSettings?.gpt_model || "gpt-4o-mini")
+    prov === "claude" ? (appSettings?.ai_model || DEFAULT_MODEL.claude)
+    : prov === "gemini" ? (appSettings?.gemini_model || DEFAULT_MODEL.gemini)
+    : (appSettings?.gpt_model || DEFAULT_MODEL.gpt)
   );
   // ===== V2 PIPELINE: whitelist → scoring prompt → validate → engine dry-run =====
   const target = dayTarget(macro, dayType);

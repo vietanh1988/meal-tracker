@@ -1,3 +1,4 @@
+import { DEFAULT_MODEL } from "./lib/aiModels";
 import { useState, useRef, useEffect } from "react";
 import BackPill from "./components/BackPill";
 import { createPortal } from "react-dom";
@@ -25,9 +26,9 @@ function getVisionProvider(appSettings, fallbackProvider) {
 export default function PhotoMacroChecker({ onClose, appSettings, photoCtx, hasMealsToday, saveMealToCloud, toggleEaten, getTodayMeals }) {
   // Đọc AI provider/model từ appSettings
   const aiProvider = appSettings?.ai_provider || "claude";
-  const aiModel = appSettings?.ai_model || "claude-sonnet-5";
-  const geminiModel = appSettings?.gemini_model || "gemini-2.5-flash";
-  const gptModel = appSettings?.gpt_model || "gpt-4o-mini";
+  const aiModel = appSettings?.ai_model || DEFAULT_MODEL.claude;
+  const geminiModel = appSettings?.gemini_model || DEFAULT_MODEL.gemini;
+  const gptModel = appSettings?.gpt_model || DEFAULT_MODEL.gpt;
   const [step, setStep] = useState(() => {
     try { return localStorage.getItem(ONBOARDING_KEY) ? 1 : 0; } catch { return 0; }
   });

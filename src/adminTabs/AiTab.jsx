@@ -1,6 +1,7 @@
 import { C, card, redBtn } from "../theme";
 import { authFetch } from "../lib/authFetch";
 import { pickAiModel } from "../lib/aiProvider";
+import { modelsFor, DEFAULT_MODEL } from "../lib/aiModels";
 import { useAiKeys } from "../lib/aiKeys";
 import { keyPlaceholder } from "../lib/aiKeysView";
 
@@ -27,7 +28,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
           {id:"claude",name:"Claude",desc:"Anthropic",logo:"/icons/claude-logo.svg"},
           {id:"gemini",name:"Gemini",desc:"Google",logo:"/icons/gemini-logo.svg"},
           {id:"gpt",name:"GPT",desc:"OpenAI",logo:"/icons/gpt-logo.svg"},
-        ].map(p=><div key={p.id} onClick={()=>{if(readOnly)return;setAiProvider(p.id);if(p.id==="claude")setAiModel("claude-sonnet-5");if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
+        ].map(p=><div key={p.id} onClick={()=>{if(readOnly)return;setAiProvider(p.id);if(p.id==="claude")setAiModel(DEFAULT_MODEL.claude);if(isAdmin)saveSetting("ai_provider",p.id);}} style={{
           flex:1,padding:"14px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",position:"relative",
           background:aiProvider===p.id?"rgba(0,122,255,0.04)":"#fff",border:aiProvider===p.id?`2px solid ${C.primary}`:`1px solid ${C.border}`,transition:"all 0.15s",
         }}>
@@ -41,19 +42,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
       {/* Model */}
       <div style={{fontSize:11,fontWeight:700,color:C.t2,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Model</div>
       <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:18}}>
-        {(aiProvider==="claude"?[
-          {id:"claude-sonnet-4-6",name:"Sonnet 4.6",desc:"Nhanh, chính xác",badge:"Ổn định",bc:"#F3F4F6",btc:"#666"},
-          {id:"claude-sonnet-5",name:"Sonnet 5",desc:"Agentic mạnh, gần Opus",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
-          {id:"claude-opus-4-6",name:"Opus 4.6",desc:"Mạnh nhất",badge:"Cao cấp",bc:"#EFF6FF",btc:"#1E40AF"},
-        ]:aiProvider==="gemini"?[
-          {id:"gemini-2.5-flash",name:"Gemini 2.5 Flash",desc:"Nhanh, rẻ, thinking model",badge:"Tiết kiệm",bc:"#DCFCE7",btc:"#14532D"},
-          {id:"gemini-3.5-flash",name:"Gemini 3.5 Flash",desc:"Mới nhất, agentic + coding",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
-          {id:"gemini-3.1-pro",name:"Gemini 3.1 Pro",desc:"Reasoning mạnh nhất",badge:"Cao cấp",bc:"#F3F4F6",btc:"#666"},
-        ]:[
-          {id:"gpt-4o-mini",name:"GPT-4o Mini",desc:"Nhanh, rẻ nhất",badge:"Tiết kiệm",bc:"#DCFCE7",btc:"#14532D"},
-          {id:"chat-latest",name:"GPT-5.5 Instant",desc:"Mặc định ChatGPT",badge:"Khuyên dùng",bc:"#FEF3C7",btc:"#92400E"},
-          {id:"gpt-5.5",name:"GPT-5.5 Thinking",desc:"Mạnh nhất",badge:"Cao cấp",bc:"#F3F4F6",btc:"#666"},
-        ]).map(m=>{
+        {modelsFor(aiProvider,aiProvider==="claude"?aiModel:aiProvider==="gemini"?geminiModel:gptModel).map(m=>{
           const curModel=aiProvider==="claude"?aiModel:aiProvider==="gemini"?geminiModel:gptModel;
           const setModel=aiProvider==="claude"?setAiModel:aiProvider==="gemini"?setGeminiModel:setGptModel;
           const modelKey=aiProvider==="claude"?"ai_model":aiProvider==="gemini"?"gemini_model":"gpt_model";
@@ -67,7 +56,7 @@ export function AiTab({isAdmin, saveSetting, aiProvider, setAiProvider, aiModel,
               <div style={{fontSize:11,fontWeight:600,color:C.t2,marginTop:2}}>{m.desc}</div>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:10,background:m.bc,color:m.btc}}>{m.badge}</span>
+              <span style={{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:10,background:({"Tiết kiệm":"#DCFCE7","Khuyên dùng":"#FEF3C7","Bản cũ":"#FEE2E2"})[m.badge]||"#F3F4F6",color:({"Tiết kiệm":"#14532D","Khuyên dùng":"#92400E","Bản cũ":"#991B1B"})[m.badge]||"#666"}}>{m.badge}</span>
               <div style={{width:18,height:18,borderRadius:"50%",border:isActive?`none`:`1.5px solid #ddd`,background:isActive?C.primary:"transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"#fff"}}>{isActive?"✓":""}</div>
             </div>
           </div>;

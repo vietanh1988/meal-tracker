@@ -1,4 +1,5 @@
 // Chụp ảnh bữa ăn → AI nhận diện món (gọi ai-proxy, feature "photo_macro"). Dùng chung cho màn Chụp ảnh mobile.
+import { DEFAULT_MODEL } from "./aiModels.js";
 import { authFetch } from "./authFetch";
 import { pickAiModel } from "./aiProvider";
 import { parsePhotoDishes } from "./photoParse.js";
@@ -30,7 +31,7 @@ export async function recognizeMeal(base64DataUrl, appSettings) {
   const fallback = appSettings?.ai_provider || "claude";
   const override = appSettings?.photo_vision_provider;
   const provider = override && override !== "auto" ? override : fallback;
-  const model = pickAiModel(provider, { claudeModel: appSettings?.ai_model || "claude-sonnet-5", geminiModel: appSettings?.gemini_model || "gemini-2.5-flash", gptModel: appSettings?.gpt_model || "gpt-4o-mini" });
+  const model = pickAiModel(provider, { claudeModel: appSettings?.ai_model || DEFAULT_MODEL.claude, geminiModel: appSettings?.gemini_model || DEFAULT_MODEL.gemini, gptModel: appSettings?.gpt_model || DEFAULT_MODEL.gpt });
   const res = await authFetch("ai-proxy", { foodDesc: PHOTO_PROMPT, provider, model, feature: "photo_macro", image: String(base64DataUrl).split(",")[1] });
   if (res?.quotaExceeded) { const e = new Error(res.message || "Bạn đã hết lượt chụp ảnh tháng này."); e.quota = true; throw e; }
   if (res?.error) throw new Error(res.error);

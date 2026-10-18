@@ -36,18 +36,46 @@ async function getAppSettingValue(admin: any, key: string): Promise<string> {
   return data?.value || "";
 }
 
-// ---- Bảng giá USD / 1 TRIỆU token — tra cứu 15/07/2026 ----
+// ---- Bảng giá USD / 1 TRIỆU token — tra cứu 18/10/2026 (trang giá chính thức); giữ dòng cũ để tính đúng log cũ ----
 const PRICING: Record<string, { in: number; out: number }> = {
+  "claude-haiku-5-5": { in: 0.10, out: 0.50 },
+  "claude-sonnet-5-5": { in: 2, out: 10 },
+  "claude-opus-5-5": { in: 4, out: 20 },
   "claude-sonnet-4-6": { in: 3, out: 15 },
   "claude-sonnet-5": { in: 2, out: 10 },
   "claude-opus-4-6": { in: 5, out: 25 },
+  "gemini-3.5-flash-lite": { in: 0.30, out: 2.50 },
+  "gemini-3.8-flash": { in: 0.75, out: 3.75 }, // gấp đôi từ 1/1/2027
+  "gemini-3.1-pro-preview": { in: 2, out: 12 },
   "gemini-2.5-flash": { in: 0.30, out: 2.50 },
   "gemini-3.5-flash": { in: 1.50, out: 9 },
   "gemini-3.1-pro": { in: 2, out: 12 },
+  "gpt-6-luna": { in: 0.10, out: 0.50 },
+  "gpt-6.1-sol": { in: 2, out: 10 },
+  "gpt-6-astra": { in: 10, out: 50 },
   "gpt-4o-mini": { in: 0.15, out: 0.60 },
   "chat-latest": { in: 5, out: 30 },
   "gpt-5.5": { in: 5, out: 30 },
 };
+const DEFAULT_MODEL = { claude: "claude-sonnet-5-5", gemini: "gemini-3.8-flash", gpt: "gpt-6.1-sol" };
+// Mô hình đời mới có "suy nghĩ" (thinking / reasoning) — token suy nghĩ tính vào giới hạn đầu ra
+// → cho thêm chỗ, và hạ mức suy nghĩ xuống thấp (việc của app là tra calo / lên thực đơn, không cần suy nghĩ sâu).
+const THINK_ROOM = 2048;
+function claudeExtra(model: string) {
+  if (!/^claude-(haiku|sonnet|opus|fable)-5-5$|^claude-fable-5-1$/.test(model)) return { extra: {}, room: 0 };
+  if (model === "claude-haiku-5-5") return { extra: { thinking: { type: "disabled" }, output_config: { effort: "low" } }, room: 0 };
+  if (model === "claude-sonnet-5-5") return { extra: { thinking: { type: "between_tools" }, output_config: { effort: "low" } }, room: 0 };
+  return { extra: { output_config: { effort: "low" } }, room: THINK_ROOM }; // Opus 5.5 / Fable: luôn suy nghĩ
+}
+function gptExtra(model: string) {
+  if (model === "gpt-6-luna") return { extra: { reasoning_effort: "none" }, room: 0 };
+  if (/^gpt-6/.test(model)) return { extra: { reasoning_effort: "low" }, room: THINK_ROOM };
+  return { extra: {}, room: 0 };
+}
+function geminiExtra(model: string) {
+  if (/^gemini-3/.test(model)) return { extra: { thinkingConfig: { thinkingLevel: "low" } }, room: THINK_ROOM };
+  return { extra: {}, room: 0 };
+}
 
 function calcCost(model: string, inputTok: number, outputTok: number) {
   const p = PRICING[model];
@@ -270,7 +298,8 @@ serve(async (req) => {
 
     if (provider === "claude") {
       if (!CLAUDE_API_KEY) throw new Error("Server chưa cấu hình CLAUDE_API_KEY")
-      usedModel = model || "claude-sonnet-5";
+      usedModel = model || DEFAULT_MODEL.claude;
+      const cx = claudeExtra(usedModel);
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -280,9 +309,10 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: usedModel,
-          max_tokens: maxTokens || 1000,
+          max_tokens: (maxTokens || 1000) + cx.room,
           ...(system ? { system } : {}),
-          ...(temperature !== undefined ? { temperature } : {}),
+          ...(temperature !== undefined && !Object.keys(cx.extra).length ? { temperature } : {}), // đời 5.5 báo lỗi nếu gửi temperature
+          ...cx.extra,
           messages: msgs,
         }),
       })
@@ -295,7 +325,8 @@ serve(async (req) => {
     } else if (provider === "gemini") {
       const GEMINI_KEY = await getAppSettingValue(admin, "gemini_key");
       if (!GEMINI_KEY) throw new Error("Chưa cấu hình Gemini API Key — vào Cài đặt → Kết nối AI để nhập.")
-      usedModel = model || "gemini-2.5-flash";
+      usedModel = model || DEFAULT_MODEL.gemini;
+      const gx = geminiExtra(usedModel);
       let contents: any[];
       if (image) {
         // Gemini Vision: inlineData + text
@@ -320,23 +351,24 @@ serve(async (req) => {
           body: JSON.stringify({
             ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
             contents,
-            generationConfig: { maxOutputTokens: maxTokens || 1000, ...(temperature !== undefined ? { temperature } : {}) },
+            generationConfig: { maxOutputTokens: (maxTokens || 1000) + gx.room, ...(temperature !== undefined ? { temperature } : {}), ...gx.extra },
           }),
         }
       )
       const d = await res.json()
       if (d.error) throw new Error(d.error.message)
-      text = d.candidates?.[0]?.content?.parts?.[0]?.text || ""
+      text = (d.candidates?.[0]?.content?.parts || []).filter((p: any) => p && typeof p.text === "string" && !p.thought).map((p: any) => p.text).join("")
       inputTok = d.usageMetadata?.promptTokenCount || 0;
       outputTok = d.usageMetadata?.candidatesTokenCount || 0;
 
     } else if (provider === "gpt") {
       const OPENAI_KEY = await getAppSettingValue(admin, "gpt_key");
       if (!OPENAI_KEY) throw new Error("Chưa cấu hình OpenAI API Key — vào Cài đặt → Kết nối AI để nhập.")
-      usedModel = model || "gpt-4o-mini";
+      usedModel = model || DEFAULT_MODEL.gpt;
+      const ox = gptExtra(usedModel);
       const tokenParam = usedModel === "gpt-4o-mini"
         ? { max_tokens: maxTokens || 1000 }
-        : { max_completion_tokens: maxTokens || 1000 };
+        : { max_completion_tokens: (maxTokens || 1000) + ox.room };
       let gptMsgs: any[];
       if (image) {
         // GPT Vision: image_url with base64
@@ -358,7 +390,8 @@ serve(async (req) => {
         body: JSON.stringify({
           model: usedModel,
           ...tokenParam,
-          ...(temperature !== undefined ? { temperature } : {}),
+          ...(temperature !== undefined && !Object.keys(ox.extra).length ? { temperature } : {}),
+          ...ox.extra,
           messages: gptMsgs,
         }),
       })

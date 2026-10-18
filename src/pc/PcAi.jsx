@@ -5,6 +5,7 @@
 //  - Chọn nhà cung cấp / mô hình / AI xử lý ảnh lưu ngay key đó; "Lưu" ghi đủ 8 key.
 //  - "Kiểm tra kết nối" gọi ai-proxy feature "ping_test" CHỈ khi người dùng bấm (không tự gọi khi mở trang).
 //  - Admin thường: chỉ xem (dải vàng), không chọn / sửa được, không có nút Lưu, vẫn Kiểm tra kết nối được.
+import { PROVIDERS, MODEL_KEY, DEFAULT_MODEL, modelsFor } from "../lib/aiModels";
 import { useEffect, useState } from "react";
 import { authFetch } from "../lib/authFetch";
 import { useAiKeys } from "../lib/aiKeys";
@@ -13,29 +14,6 @@ import { pickAiModel } from "../lib/aiProvider";
 import { PC } from "../theme";
 import { Btn, Pill, Card, secLbl } from "./pcUI";
 
-const PROVIDERS = [
-  { id: "claude", name: "Claude", desc: "Anthropic" },
-  { id: "gemini", name: "Gemini", desc: "Google" },
-  { id: "gpt", name: "GPT", desc: "OpenAI" },
-];
-const MODELS = {
-  claude: [
-    { id: "claude-sonnet-4-6", name: "Sonnet 4.6", desc: "Nhanh, chính xác", badge: "Ổn định" },
-    { id: "claude-sonnet-5", name: "Sonnet 5", desc: "Agentic mạnh, gần Opus", badge: "Khuyên dùng" },
-    { id: "claude-opus-4-6", name: "Opus 4.6", desc: "Mạnh nhất", badge: "Cao cấp" },
-  ],
-  gemini: [
-    { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", desc: "Nhanh, rẻ, thinking model", badge: "Tiết kiệm" },
-    { id: "gemini-3.5-flash", name: "Gemini 3.5 Flash", desc: "Mới nhất, agentic + coding", badge: "Khuyên dùng" },
-    { id: "gemini-3.1-pro", name: "Gemini 3.1 Pro", desc: "Reasoning mạnh nhất", badge: "Cao cấp" },
-  ],
-  gpt: [
-    { id: "gpt-4o-mini", name: "GPT-4o Mini", desc: "Nhanh, rẻ nhất", badge: "Tiết kiệm" },
-    { id: "chat-latest", name: "GPT-5.5 Instant", desc: "Mặc định ChatGPT", badge: "Khuyên dùng" },
-    { id: "gpt-5.5", name: "GPT-5.5 Thinking", desc: "Mạnh nhất", badge: "Cao cấp" },
-  ],
-};
-const MODEL_KEY = { claude: "ai_model", gemini: "gemini_model", gpt: "gpt_model" };
 const VISION = [{ v: "auto", label: "Theo AI menu" }, { v: "claude", label: "Claude" }, { v: "gemini", label: "Gemini" }, { v: "gpt", label: "GPT" }];
 const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* bỏ qua */ } };
@@ -56,9 +34,9 @@ const cardHead = (title, sub) => (
 export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, saveSetting, showToast }) {
   const readOnly = !isSuperAdmin;
   const [aiProvider, setAiProvider] = useState(() => lsGet("aiProvider") || appSettings.ai_provider || "claude");
-  const [aiModel, setAiModel] = useState(() => appSettings.ai_model || "claude-sonnet-5");
-  const [geminiModel, setGeminiModel] = useState(() => appSettings.gemini_model || "gemini-2.5-flash");
-  const [gptModel, setGptModel] = useState(() => appSettings.gpt_model || "gpt-4o-mini");
+  const [aiModel, setAiModel] = useState(() => appSettings.ai_model || DEFAULT_MODEL.claude);
+  const [geminiModel, setGeminiModel] = useState(() => appSettings.gemini_model || DEFAULT_MODEL.gemini);
+  const [gptModel, setGptModel] = useState(() => appSettings.gpt_model || DEFAULT_MODEL.gpt);
   // Khoá AI chỉ ghi: ô luôn trống, hiện "Đã cài ••••1234"; dán khoá mới + Lưu mới thay
   const [geminiKey, setGeminiKey] = useState("");
   const [gptKey, setGptKey] = useState("");
@@ -89,13 +67,13 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
   const prov = PROVIDERS.find((p) => p.id === aiProvider) || PROVIDERS[0];
   const curModel = aiProvider === "claude" ? aiModel : aiProvider === "gemini" ? geminiModel : gptModel;
   const setModel = aiProvider === "claude" ? setAiModel : aiProvider === "gemini" ? setGeminiModel : setGptModel;
-  const models = MODELS[prov.id];
+  const models = modelsFor(prov.id, curModel);
   const modelName = (models.find((m) => m.id === curModel) || {}).name || curModel || "";
 
   const pickProvider = (id) => {
     if (readOnly || id === aiProvider) return;
     setAiProvider(id);
-    if (id === "claude") setAiModel("claude-sonnet-5");
+    if (id === "claude") setAiModel(DEFAULT_MODEL.claude);
     saveSetting("ai_provider", id);
   };
   const pickModel = (id) => {
@@ -205,7 +183,7 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
                       <span style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.name}</span>
                       <span style={{ fontSize: 12, color: PC.t3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.desc}</span>
                     </span>
-                    <Pill tone={m.badge === "Khuyên dùng" ? "green" : "gray"}>{m.badge}</Pill>
+                    <Pill tone={m.badge === "Khuyên dùng" ? "green" : m.legacy ? "amber" : "gray"}>{m.badge}</Pill>
                   </button>
                 );
               })}

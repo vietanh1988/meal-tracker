@@ -1,3 +1,4 @@
+import { DEFAULT_MODEL } from "./lib/aiModels";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { todayVN, isGymDate } from "./lib/dateVN";
 import { supabase } from "./lib/supabase";
@@ -135,9 +136,9 @@ export function AdminPanel({todayLog,updateWeight,removeDayMeal,moveDayMeal,weig
   const [aiError,setAiError]=useState(null);
   // Use shared keys from Supabase, fallback to localStorage for admin override
   const [aiProvider,setAiProvider]=useState(()=>localStorage.getItem("aiProvider")||appSettings.ai_provider||"claude");
-  const [aiModel,setAiModel]=useState(()=>appSettings.ai_model||"claude-sonnet-5");
-  const [geminiModel,setGeminiModel]=useState(()=>appSettings.gemini_model||"gemini-2.5-flash");
-  const [gptModel,setGptModel]=useState(()=>appSettings.gpt_model||"gpt-4o-mini");
+  const [aiModel,setAiModel]=useState(()=>appSettings.ai_model||DEFAULT_MODEL.claude);
+  const [geminiModel,setGeminiModel]=useState(()=>appSettings.gemini_model||DEFAULT_MODEL.gemini);
+  const [gptModel,setGptModel]=useState(()=>appSettings.gpt_model||DEFAULT_MODEL.gpt);
   const [aiConnected,setAiConnected]=useState(true);
   // Shared keys: appSettings > localStorage
   // Khoá AI chỉ ghi (src/lib/aiKeys.js) — không tải về trình duyệt
