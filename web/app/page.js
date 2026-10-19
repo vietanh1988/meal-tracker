@@ -99,7 +99,7 @@ export default async function Home() {
     <main>
       <JsonLd data={ld(orgGraph(s), websiteGraph(s), schemaOn(s, "home") ? appGraph(s) : null, faqGraph(FAQ, s))} />
       <section style={{ background: "linear-gradient(180deg,#EAF1FF 0%,#F3F6FB 100%)", padding: "72px 0 64px" }} className="hero">
-        <div className="wrap hero-in" style={{ display: "flex", alignItems: "center", gap: 40 }}>
+        <div className="wrap hero-in" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 40 }}>
           <div className="hero-l" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, maxWidth: 560 }}>
             {H.badge && <span className="pill" style={{ alignSelf: "flex-start" }}>{H.badge}</span>}
             <h1 className="h1home">{String(H.title).split("\n").map((x, i) => <span key={i}>{i > 0 && <br />}{x}</span>)}</h1>

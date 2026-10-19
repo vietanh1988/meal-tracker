@@ -89,7 +89,7 @@ export default async function Page({ params }) {
     <main>
       <JsonLd data={ld(...graphs)} />
       <div className="wrap postwrap" style={{ paddingTop: 40, paddingBottom: 52, display: "flex", gap: 32, alignItems: "flex-start" }}>
-        <div className="card art" style={{ flex: 1, minWidth: 0, padding: 48 }}>
+        <div className="card art" style={{ flex: 1, minWidth: 0, padding: "48px 56px" }}>
           <article style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <Crumb items={crumbs.slice(0, -1)} last />
             <h1 className="h1">{p.title}</h1>
@@ -124,7 +124,7 @@ export default async function Page({ params }) {
             )}
           </article>
         </div>
-        <aside className="only-pc" style={{ width: 300, flexShrink: 0, display: "flex", flexDirection: "column", gap: 20, position: "sticky", top: 90 }}>
+        <aside className="only-pc" style={{ width: 340, flexShrink: 0, display: "flex", flexDirection: "column", gap: 20, position: "sticky", top: 90 }}>
           {t.length > 1 && <TocBox t={t} />}
           <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12, background: "linear-gradient(180deg,#EEF4FF,#FFFFFF)", borderColor: "#DCE7FF" }}>
             <b style={{ fontSize: 18, color: "#0B3B91" }}>Thực đơn giảm cân món Việt</b>

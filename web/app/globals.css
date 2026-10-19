@@ -10,7 +10,7 @@ button, input, select, textarea { font-family: inherit; }
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; }
 h1, h2, h3, h4, p, figure { margin: 0; }
-.wrap { max-width: 1216px; margin: 0 auto; padding: 0 28px; }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 0 24px; } /* khung 1320 như baydep.vn (19/10) */
 .sec { margin-top: 80px; }
 .eye { font-size: 13px; font-weight: 800; letter-spacing: .1em; color: var(--blue); text-transform: uppercase; }
 .h1home { font-size: 56px; line-height: 1.08; font-weight: 900; }
@@ -126,12 +126,12 @@ span.only-pc { display: inline; }
 .ph-cam { right: calc(var(--w) * -.008); top: 62%; height: 7%; opacity: .8; }
 
 /* Banner trang chủ: 2 máy */
-.hero-ph2 { position: relative; width: 430px; height: 480px; flex-shrink: 0; }
+.hero-ph2 { position: relative; width: 480px; height: 530px; flex-shrink: 0; margin-right: 12px; }
 .hero-glow { position: absolute; left: 40px; right: 20px; top: 60px; bottom: 30px; border-radius: 50%; background: radial-gradient(closest-side, rgba(26,124,255,.28), rgba(26,124,255,0)); filter: blur(8px); }
 .hero-floor { position: absolute; left: 30px; right: 10px; bottom: 6px; height: 40px; border-radius: 50%; background: radial-gradient(closest-side, rgba(15,35,80,.22), rgba(15,35,80,0)); }
-.hero-ph2 .ph-front { --w: 206px; left: 30px; top: 4px; transform: rotate(-3deg); z-index: 2; }
-.hero-ph2 .ph-back { --w: 184px; right: 16px; top: 40px; transform: rotate(4deg); z-index: 1; }
-@media (min-width: 721px) and (max-width: 1024px) { .hero-ph2 { width: 360px; height: 420px; } .hero-ph2 .ph-front { --w: 176px; left: 10px; } .hero-ph2 .ph-back { --w: 158px; right: 6px; } }
+.hero-ph2 .ph-front { --w: 228px; left: 30px; top: 4px; transform: rotate(-3deg); z-index: 2; }
+.hero-ph2 .ph-back { --w: 204px; right: 16px; top: 44px; transform: rotate(4deg); z-index: 1; }
+@media (min-width: 721px) and (max-width: 1024px) { .hero-ph2 { width: 360px; height: 420px; margin-right: 0; } .hero-ph2 .ph-front { --w: 176px; left: 10px; } .hero-ph2 .ph-back { --w: 158px; right: 6px; } }
 @media (max-width: 720px) {
   .hero-ph2 { width: 100%; max-width: 390px; height: 420px; margin: 0 auto; }
   .hero-ph2 .ph-front { --w: 178px; left: 5%; } .hero-ph2 .ph-back { --w: 158px; right: 4%; top: 36px; } .hero-glow { left: 6%; right: 6%; }
