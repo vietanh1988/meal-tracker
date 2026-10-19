@@ -211,11 +211,14 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   const uid = user?.id;
   // Báo nhanh góc dưới (thay showToast của app điện thoại)
   const [toast, setToast] = useState(null);
-  const showToast = useCallback((t, ms = 3000) => {
+  // Thông báo: lưu xong (chữ bắt đầu "Đã …") = xanh lá ✓, lỗi ("Chưa …", "Không …") = đỏ !, còn lại = xám; hiện ở đầu màn, 4 giây
+  const showToast = useCallback((t, ms) => {
     const text = typeof t === "string" ? t : t?.text;
     if (!text) return;
     const id = Date.now();
-    setToast({ id, text });
+    const tone = /^(Đã|Xong)/i.test(text) ? "ok" : /^(Chưa|Không|Lỗi|Cần|Nhập)/i.test(text) ? "err" : "info";
+    ms = ms || (tone === "err" ? 6000 : 4000);
+    setToast({ id, text, tone });
     setTimeout(() => setToast((c) => (c && c.id === id ? null : c)), ms);
   }, []);
   const P = { top, isAdmin, isSuperAdmin, user, profile, appSettings, saveSetting, showToast, refreshCounts, adminP };
@@ -244,7 +247,7 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
       <style>{PC_CSS}</style>
       <SideNav section={sec} go={go} counts={counts} isSuperAdmin={isSuperAdmin} user={user} profile={profile} mini={mini} onToggle={toggleSide} />
       <main data-testid={`pc-page-${sec}`} style={{ marginLeft: sideW, minWidth: 0, transition: "margin-left .18s ease" }}>{page}</main>
-      {toast && <div data-testid="pc-toast" role="status" style={{ position: "fixed", bottom: 24, left: `calc(50% + ${sideW / 2}px)`, transform: "translateX(-50%)", zIndex: 60, background: PC.t1, color: "#FFFFFF", fontSize: 13, fontWeight: 700, padding: "10px 16px", borderRadius: 12, boxShadow: "0 8px 24px rgba(15,23,42,0.25)", maxWidth: 520 }}>{toast.text}</div>}
+      {toast && <div key={toast.id} data-testid="pc-toast" role="status" aria-live="polite" className="pc-toast" style={{ position: "fixed", top: 18, left: `calc(50% + ${sideW / 2}px)`, transform: "translateX(-50%)", zIndex: 90, display: "flex", alignItems: "center", gap: 10, background: toast.tone === "ok" ? "#16A34A" : toast.tone === "err" ? "#DC2626" : PC.t1, color: "#FFFFFF", fontSize: 14, fontWeight: 700, padding: "12px 18px 12px 12px", borderRadius: 14, boxShadow: "0 14px 34px rgba(15,23,42,0.28)", maxWidth: 560, lineHeight: 1.4 }}><span style={{ width: 24, height: 24, borderRadius: 12, background: "rgba(255,255,255,.22)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 13, fontWeight: 900 }}>{toast.tone === "ok" ? "✓" : toast.tone === "err" ? "!" : "i"}</span><span>{toast.text}</span><button type="button" aria-label="Đóng" onClick={() => setToast(null)} style={{ marginLeft: 6, border: 0, background: "transparent", color: "rgba(255,255,255,.8)", fontSize: 18, cursor: "pointer", lineHeight: 1, padding: 0 }}>×</button><style>{`@keyframes pcToastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}.pc-toast{animation:pcToastIn .22s ease-out}`}</style></div>}
     </div>
   );
 }

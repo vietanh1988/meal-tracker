@@ -55,13 +55,14 @@ export function PcWebSeo({ top, showToast }) {
   })(); }, []);
   useEffect(() => { window.__fpWebDirty = dirty; return () => { window.__fpWebDirty = false; }; }, [dirty]);
   const origRef = useRef(null);
+  const [justSaved, setJustSaved] = useState(false); // nút đổi thành "✓ Đã lưu" 2,5 giây sau khi lưu
   const set = (k, patch) => { setSt((x) => ({ ...x, [k]: { ...x[k], ...patch } })); setDirty(true); };
   const save = async () => {
     const extra = String(st.seo.robots_extra || "");
     if (/^\s*disallow:\s*\/\s*$/im.test(extra) && !(await appConfirm("robots.txt đang có “Disallow: /” — dòng này chặn Google đọc CẢ web. Vẫn lưu?", { danger: true }))) return;
     if (st.tracking.ga4 && !/^G-[A-Z0-9]+$/.test(st.tracking.ga4)) return showToast?.("Mã Google Analytics 4 phải dạng G-XXXXXXX.");
     setBusy(true);
-    try { const loc = { seo: st.seo, site: st.site, tracking: st.tracking }; const saved = await saveSettings(loc, origRef.current); origRef.current = JSON.parse(JSON.stringify({ ...loc, ...saved })); setSt((x) => ({ ...x, ...saved })); setDirty(false); showToast?.("Đã lưu cài đặt SEO. Web đổi theo trong khoảng 1 phút."); }
+    try { const loc = { seo: st.seo, site: st.site, tracking: st.tracking }; const saved = await saveSettings(loc, origRef.current); origRef.current = JSON.parse(JSON.stringify({ ...loc, ...saved })); setSt((x) => ({ ...x, ...saved })); setDirty(false); setJustSaved(true); setTimeout(() => setJustSaved(false), 2500); showToast?.("Đã lưu cài đặt SEO. Web đổi theo trong khoảng 1 phút."); }
     catch (e) { showToast?.("Chưa lưu được: " + (e.message || "")); }
     setBusy(false);
   };
@@ -82,7 +83,7 @@ export function PcWebSeo({ top, showToast }) {
   );
   return (
     <>
-      {top(<Btn kind="blue" onClick={save} disabled={busy || !dirty || !settingsTab} testid="web-seo-save">{busy ? "Đang lưu…" : "Lưu thay đổi"}</Btn>, "Cài đặt SEO", "Áp cho toàn web fipilotai.com")}
+      {top(<Btn kind="blue" onClick={save} disabled={busy || !dirty || !settingsTab} testid="web-seo-save">{busy ? "Đang lưu…" : justSaved && !dirty ? "✓ Đã lưu" : "Lưu thay đổi"}</Btn>, "Cài đặt SEO", "Áp cho toàn web fipilotai.com")}
       <div style={{ background: "#FFF", borderBottom: `1px solid ${PC.line}` }}><Tabs items={TABS} on={tab} onChange={setTab} testid="web-seoset-tab" /></div>
       {(tab === 0 || tab === 2) && (
         <div style={{ padding: "18px 24px 0" }}>
@@ -191,14 +192,14 @@ export function PcWebSeo({ top, showToast }) {
                 <Tog on={!!tr.vercel_analytics} onChange={(v) => set("tracking", { vercel_analytics: v })} label="Vercel Analytics (miễn phí, không cần cookie)" />
                 <Field label="Google Analytics 4" hint="Mã đo lường dạng G-XXXXXXX"><In v={tr.ga4} on={(v) => set("tracking", { ga4: v.trim().toUpperCase() })} ph="G-…" m testid="web-tr-ga4" /></Field>
                 <Field label="Facebook Pixel"><In v={tr.fb_pixel} on={(v) => set("tracking", { fb_pixel: v.replace(/\D/g, "") })} ph="Mã Pixel" m /></Field>
-                <Tog on={tr.lazy !== false} onChange={(v) => set("tracking", { lazy: v })} label="Chỉ chạy mã đo sau khi trang đã hiện xong (web nhanh hơn)" />
+                <Tog on={tr.lazy !== false} onChange={(v) => set("tracking", { lazy: v })} label="Vercel Analytics, Facebook Pixel chỉ chạy sau khi trang hiện xong (web nhanh hơn) · Google Analytics luôn nằm sẵn trong <head> để Google kiểm tra được" />
               </div>
             </Card>
           </div>
           <Card style={{ padding: 0 }}><H t="Chèn mã tuỳ ý" r={<span style={{ fontSize: 12, color: PC.t3 }}>Chỉ chạy trên web, không chạy trong app</span>} />
             <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
               {[["head", "Trong <head>", "<!-- ví dụ: mã xác minh khác -->"], ["body_start", "Ngay sau <body>", ""], ["body_end", "Cuối <body>", ""]].map(([k, t, ph]) => <Field key={k} label={t}><Code v={tr[k]} on={(v) => set("tracking", { [k]: v })} ph={ph} /></Field>)}
-              <span style={{ fontSize: 11.5, color: PC.t3 }}>Mỗi đoạn mã chèn thêm làm web chậm hơn — chỉ dán khi thật cần.</span>
+              <span style={{ fontSize: 11.5, color: PC.t3, lineHeight: 1.5 }}>Mã trong &lt;head&gt; (script, meta, link) được in thẳng vào HTML — Google, Facebook kiểm tra thấy ngay. Mã Google Analytics nên dán số G-… vào ô "Google Analytics 4" bên trái thay vì dán cả đoạn. Mỗi đoạn mã chèn thêm làm web chậm hơn — chỉ dán khi thật cần.</span>
             </div>
           </Card>
         </div>

@@ -30,7 +30,8 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
 
   useEffect(() => { (async () => { try { const rows = await supabase.from("web_settings").select("key,value").in("key", KEYS).then(must); const o = Object.fromEntries(KEYS.map((k) => [k, {}])); for (const r of rows) o[r.key] = r.value || {}; origRef.current = JSON.parse(JSON.stringify(o)); setS(o); } catch (e) { setErr("Chưa tải được cài đặt. " + (e.message || "")); } })(); }, []);
   useEffect(() => { window.__fpWebDirty = dirty; return () => { window.__fpWebDirty = false; }; }, [dirty]);
-  const origRef = useRef(null); // bản lúc mở màn — lưu chỉ ghi ô đã đổi
+  const origRef = useRef(null);
+  const [justSaved, setJustSaved] = useState(false); // nút đổi thành "✓ Đã lưu" 2,5 giây sau khi lưu // bản lúc mở màn — lưu chỉ ghi ô đã đổi
   const set = (k, patch) => { setS((x) => ({ ...x, [k]: { ...x[k], ...patch } })); setDirty(true); };
 
   const save = async () => {
@@ -38,7 +39,7 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
     const n = parseInt(s.site.posts_per_page, 10);
     if (!(n >= 3 && n <= 48)) return showToast?.("Số bài mỗi trang từ 3 đến 48.");
     setBusy(true);
-    try { const loc = { ...s, site: { ...s.site, posts_per_page: n } }; const saved = await saveSettings(loc, origRef.current); origRef.current = JSON.parse(JSON.stringify({ ...origRef.current, ...loc, ...saved })); setS((x) => ({ ...x, ...saved })); setDirty(false); showToast?.("Đã lưu cài đặt web. Web đổi theo trong khoảng 1 phút."); }
+    try { const loc = { ...s, site: { ...s.site, posts_per_page: n } }; const saved = await saveSettings(loc, origRef.current); origRef.current = JSON.parse(JSON.stringify({ ...origRef.current, ...loc, ...saved })); setS((x) => ({ ...x, ...saved })); setDirty(false); setJustSaved(true); setTimeout(() => setJustSaved(false), 2500); showToast?.("Đã lưu cài đặt web. Web đổi theo trong khoảng 1 phút."); }
     catch (e) { showToast?.("Chưa lưu được: " + (e.message || "")); }
     setBusy(false);
   };
@@ -56,7 +57,7 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
   );
   return (
     <>
-      {top(<Btn kind="blue" onClick={save} disabled={busy || !dirty} testid="web-set-save">{busy ? "Đang lưu…" : "Lưu thay đổi"}</Btn>, "Cài đặt web", "Thông tin chung của fipilotai.com — đổi ở đây, mọi trang tự đổi theo")}
+      {top(<Btn kind="blue" onClick={save} disabled={busy || !dirty} testid="web-set-save">{busy ? "Đang lưu…" : justSaved && !dirty ? "✓ Đã lưu" : "Lưu thay đổi"}</Btn>, "Cài đặt web", "Thông tin chung của fipilotai.com — đổi ở đây, mọi trang tự đổi theo")}
       <div style={{ padding: "18px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "start" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Card style={{ padding: 0 }}><H t="Chung" />

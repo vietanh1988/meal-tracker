@@ -4,6 +4,7 @@ import Nav from "@/components/Nav";
 import Track from "@/components/Track";
 import Footer from "@/components/Footer";
 import { safeUrl } from "@/lib/sanitize";
+import { headTags } from "@/lib/headTags";
 import { getSettings, getMenu, siteUrl, ogBase } from "@/lib/site";
 
 // Font y hệt app: thứ tự -apple-system, "system-ui", Inter, "Inter Fallback", "Segoe UI", Roboto, … (globals.css).
@@ -41,18 +42,24 @@ export default async function RootLayout({ children }) {
   const now = Date.now();
   const showBar = nb.enabled && nb.text && (!nb.from || Date.parse(nb.from) <= now) && (!nb.to || Date.parse(nb.to) >= now);
   const t = s.tracking || {};
+  const ga4 = /^G-[A-Z0-9]+$/.test(t.ga4 || "") ? t.ga4 : "";
   return (
     <html lang="vi" className={inter.variable}>
+      <head>
+        {/* GA4 + mã <head> tuỳ ý in thẳng vào HTML (không chèn bằng JS sau khi tải) → Google "Kiểm tra thẻ" và bot đọc được. async nên không làm chậm trang */}
+        {ga4 && <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4}`} />}
+        {ga4 && <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());if(/(^|\\.)fipilotai\\.com$/.test(location.hostname))gtag('config','${ga4}');` }} />}
+        {headTags(t.head, ga4)}
+      </head>
       <body>
         {showBar && <a href={safeUrl(nb.url)} style={{ display: "block", background: "#0B1F45", color: "#fff", textAlign: "center", padding: "10px 16px", fontSize: 14, fontWeight: 600 }}>{nb.text}</a>}
         <Nav items={header} mobile={mobile} s={s} />
         {children}
         <Footer s={s} menus={{ footer_1: f1, footer_2: f2, footer_3: f3 }} />
         <Track />
-        {t.ga4 && /^G-[A-Z0-9]+$/.test(t.ga4) && <script dangerouslySetInnerHTML={{ __html: later(t, `window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config','${t.ga4}');var g=document.createElement('script');g.async=1;g.src='https://www.googletagmanager.com/gtag/js?id=${t.ga4}';document.head.appendChild(g);`) }} />}
         {t.vercel_analytics && <script dangerouslySetInnerHTML={{ __html: later(t, `window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};var v=document.createElement('script');v.defer=1;v.src='/_vercel/insights/script.js';document.head.appendChild(v);`) }} />}
         {/^\d{5,20}$/.test(t.fb_pixel || "") && <script dangerouslySetInnerHTML={{ __html: later(t, `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${t.fb_pixel}');fbq('track','PageView');`) }} />}
-        {(t.head || t.body_start || t.body_end) && <script dangerouslySetInnerHTML={{ __html: customLoader(t) }} />}
+        {(t.body_start || t.body_end) && <script dangerouslySetInnerHTML={{ __html: customLoader(t) }} />}
       </body>
     </html>
   );
@@ -67,5 +74,6 @@ function later(t, js) {
 // Cài đặt SEO › Mã theo dõi › Chèn mã tuỳ ý (chỉ admin nhập): chèn khi trang hiện xong; createContextualFragment để <script> trong mã vẫn chạy
 function customLoader(t) {
   const j = (v) => JSON.stringify(String(v || "")).replace(/</g, "\\u003c");
-  return `(function(){function put(h,el,first){if(!h)return;try{var f=document.createRange().createContextualFragment(h);first?el.insertBefore(f,el.firstChild):el.appendChild(f)}catch(e){}}function go(){put(${j(t.head)},document.head);put(${j(t.body_start)},document.body,1);put(${j(t.body_end)},document.body)}document.readyState==="complete"?go():addEventListener("load",go)})();`;
+  return `(function(){function put(h,el,first){if(!h)return;try{var f=document.createRange().createContextualFragment(h);first?el.insertBefore(f,el.firstChild):el.appendChild(f)}catch(e){}}function go(){put(${j(t.body_start)},document.body,1);put(${j(t.body_end)},document.body)}document.readyState==="complete"?go():addEventListener("load",go)})();`;
 }
+
