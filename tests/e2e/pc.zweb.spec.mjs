@@ -32,6 +32,12 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect(page.getByTestId("web-ai-go")).toHaveText("Xếp hàng viết 2 bài");
     await page.getByTestId("web-ai-go").click();
     await expect(page.getByTestId("web-ai-row")).toHaveCount(2);
+    // Bấm dòng → hiện tiến trình từng bước (bài đang chờ: bước Xếp hàng đang chạy)
+    await page.getByTestId("web-ai-toggle").first().click();
+    await expect(page.getByTestId("web-ai-steps")).toBeVisible();
+    await expect(page.locator("[data-testid=web-ai-steps] [data-step=queued]")).toHaveAttribute("data-on", "now");
+    await page.getByTestId("web-ai-toggle").first().click();
+    await expect(page.getByTestId("web-ai-steps")).toHaveCount(0);
     const jobs = await rest("web_ai_jobs?keyword=like.e2e*&select=keyword,term_id,auto_term,model,status&order=keyword");
     expect(jobs.map((j) => [j.keyword, j.term_id, j.auto_term, j.model, j.status])).toEqual([["e2e ăn phở có béo không", cat.id, false, "claude-haiku-5-5", "queued"], ["e2e bữa sáng giảm cân", cat.id, false, "claude-haiku-5-5", "queued"]]);
     await page.getByTestId("web-ai-prov-gemini").click(); // đổi hãng viết → mô hình khuyên dùng của Gemini

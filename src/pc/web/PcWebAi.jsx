@@ -4,7 +4,7 @@
 //  - Cài đặt (lưu ngay khi đổi, bảng web_ai_config chỉ admin đọc): mô hình viết, khoá Claude chung / riêng, ảnh (Flux qua fal.ai,
 //    số ảnh, dùng lại ảnh thư viện trước), số lượt tra web, trần tiền mỗi ngày, tỷ giá, bộ quy tắc (sửa / về bản gốc).
 //  - Lịch sử & chi phí từng bài theo tháng (giờ VN): token, lượt tra web, ảnh, tiền chữ + tiền ảnh.
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PC } from "../../theme";
 import { appConfirm } from "../../lib/dialog";
 import { supabase } from "../../lib/supabase";
@@ -30,6 +30,50 @@ const ST = {
   images: ["Đang vẽ ảnh", "violet"], saving: ["Đang lưu", "blue"], done: ["Đã lưu nháp", "green"], error: ["Lỗi", "red"], canceled: ["Đã huỷ", "gray"],
 };
 const OPEN = ["queued", "research", "writing", "fixing", "images", "saving"];
+// Tiến trình 1 bài (bấm dòng để mở): các bước theo state.log do web-writer ghi khi đổi bước
+const STEPS = [["queued", "Xếp hàng"], ["research", "Tra web, kiểm số liệu"], ["writing", "Viết bài"], ["fixing", "Sửa lỗi theo quy tắc"], ["images", "Vẽ / chọn ảnh"], ["saving", "Lưu bài, gắn thẻ, đăng"], ["done", "Xong"]];
+const dur = (a, b) => { const s = Math.max(0, Math.round((new Date(b) - new Date(a)) / 1000)); return s < 60 ? `${s} giây` : `${Math.floor(s / 60)} phút ${s % 60 ? `${s % 60} giây` : ""}`.trim(); };
+function JobSteps({ j }) {
+  const log = Array.isArray(j.log) ? j.log : [];
+  const at = { queued: j.created_at }; for (const x of log) at[x.s] = x.at;
+  const shown = STEPS.filter(([k]) => k !== "fixing" || at.fixing || j.status === "fixing");
+  const cur = ["error", "canceled"].includes(j.status) ? null : j.status;
+  const reached = (k) => !!at[k] || k === cur;
+  const detail = (k) => {
+    if (k === "writing") return j.chunks ? `${j.chunks} phần${j.status === "writing" ? ", đang viết tiếp" : ""}` : "";
+    if (k === "fixing") return j.fixc ? `${j.fixc} phần` : "";
+    if (k === "images") { const n = Array.isArray(j.nimg) ? j.nimg.length : 0; return n ? `${n} ảnh${j.reused ? ` (${j.reused} dùng lại)` : ""}` : ""; }
+    if (k === "research") return j.searches ? `${j.searches} lượt tra web` : "";
+    if (k === "done" && j.links) { const l = j.links; return `Link nội bộ ${l.total}: trang chủ ${l.home} · chuyên mục ${l.cat} · trang liên quan ${l.page} · bài cùng chủ đề ${l.post}`; }
+    return "";
+  };
+  const end = j.finished_at || (OPEN.includes(j.status) ? new Date().toISOString() : j.updated_at);
+  return (
+    <div data-testid="web-ai-steps" style={{ display: "flex", flexDirection: "column", gap: 8, padding: "12px 14px", background: "#F8FBFF", borderRadius: 10, border: `1px solid ${PC.rowLine}` }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "stretch" }}>
+        {shown.map(([k, name], i) => {
+          const done = reached(k) && k !== cur, now = k === cur && k !== "done";
+          const bg = now ? "#E8F0FF" : done ? "#ECFDF5" : "#fff", bd = now ? "#BFD4FF" : done ? "#BBF7D0" : PC.rowLine, fg = now ? "#1E40AF" : done ? "#15803D" : PC.t3;
+          return (
+            <span key={k} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {i > 0 && <span aria-hidden="true" style={{ color: PC.t3 }}>›</span>}
+              <span data-step={k} data-on={now ? "now" : done ? "done" : "todo"} style={{ display: "flex", flexDirection: "column", gap: 2, padding: "6px 10px", borderRadius: 8, background: bg, border: `1px solid ${bd}`, minWidth: 92 }}>
+                <b style={{ fontSize: 12, color: fg }}>{now ? "● " : done ? "✓ " : ""}{name}</b>
+                <span style={{ fontSize: 11, color: PC.t3 }}>{at[k] ? vnTime(at[k]).slice(6) : now ? "đang chạy" : "—"}{detail(k) && k !== "done" ? ` · ${detail(k)}` : ""}</span>
+              </span>
+            </span>
+          );
+        })}
+      </div>
+      <span style={{ fontSize: 12, color: PC.t2 }}>
+        {j.status === "error" ? <b style={{ color: "#B91C1C" }}>Lỗi{j.attempts ? ` sau ${j.attempts} lần thử` : ""}: {j.error || "không rõ"}</b> : j.status === "canceled" ? "Đã huỷ." : null}
+        {j.status !== "error" && j.status !== "canceled" && <>Tổng thời gian {dur(j.created_at, end)}{j.status === "queued" ? " (đang chờ bài trước xong)" : ""}.</>}
+        {j.status === "done" && detail("done") ? ` ${detail("done")}.` : ""}
+        {!log.length && j.status === "done" ? " (bài viết trước khi có ghi tiến trình)" : ""}
+      </span>
+    </div>
+  );
+}
 const usd = (n) => `${(Math.round((Number(n) || 0) * 100) / 100).toFixed(2).replace(".", ",")} USD`;
 const kt = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1).replace(".0", "")}K` : String(n || 0));
 const monthStart = (ym) => new Date(`${ym}-01T00:00:00+07:00`).toISOString();
@@ -58,6 +102,7 @@ export function PcWebAi({ top, showToast, user, go }) {
   const [err, setErr] = useState("");
   const [ym, setYm] = useState(todayVN().slice(0, 7));
   const [kw, setKw] = useState("");
+  const [openId, setOpenId] = useState(null);
   const [term, setTerm] = useState("auto");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState("");
@@ -70,7 +115,7 @@ export function PcWebAi({ top, showToast, user, go }) {
     try {
       const [c, j, t, d] = await Promise.all([
         supabase.from("web_ai_config").select("data").eq("id", 1).maybeSingle(),
-        supabase.from("web_ai_jobs").select("id,keyword,term_id,model,status,post_id,in_tok,out_tok,searches,images,reused,cost_text,cost_img,error,created_at,warn:state->warn,note:state->published->>note,post:web_posts(status,published_at,slug,score:seo->score)").gte("created_at", monthStart(ym)).lt("created_at", monthStart(nextMonth(ym))).order("created_at", { ascending: false }),
+        supabase.from("web_ai_jobs").select("id,keyword,term_id,model,status,post_id,in_tok,out_tok,searches,images,reused,cost_text,cost_img,error,attempts,created_at,updated_at,finished_at,warn:state->warn,note:state->published->>note,log:state->log,chunks:state->draft->chunks,fixc:state->fix->chunks,nimg:state->imgs,links:state->linkStats,post:web_posts(status,published_at,slug,score:seo->score)").gte("created_at", monthStart(ym)).lt("created_at", monthStart(nextMonth(ym))).order("created_at", { ascending: false }),
         listTerms("category"),
         supabase.from("web_ai_jobs").select("cost_text,cost_img").gte("updated_at", new Date(`${todayVN()}T00:00:00+07:00`).toISOString()),
       ]);
@@ -264,9 +309,10 @@ export function PcWebAi({ top, showToast, user, go }) {
                       const num = { ...td, textAlign: "right" };
                       const cost = Number(j.cost_text) + Number(j.cost_img);
                       return (
-                        <tr key={j.id} data-testid="web-ai-row" data-status={j.status} className="pc-row">
+                        <Fragment key={j.id}>
+                        <tr data-testid="web-ai-row" data-status={j.status} className="pc-row" onClick={(e) => { if (!e.target.closest("button,a")) setOpenId(openId === j.id ? null : j.id); }} style={{ cursor: "pointer" }} title="Bấm để xem tiến trình">
                           <td style={td}><span style={{ display: "block" }}>{vnTime(j.created_at).slice(0, 5)}</span><span style={{ fontSize: 11, color: PC.t3 }}>{vnTime(j.created_at).slice(6)}</span></td>
-                          <td style={{ ...td, whiteSpace: "normal", minWidth: 150 }}><span style={{ display: "block", fontWeight: 700 }}>{j.keyword}</span><span style={{ fontSize: 11.5, color: PC.t3 }}>{cats.find((c) => c.id === j.term_id)?.name || (OPEN.includes(j.status) ? "Tự chọn chuyên mục" : "—")} · {short(j.model)}</span></td>
+                          <td style={{ ...td, whiteSpace: "normal", minWidth: 150 }}><span style={{ display: "flex", gap: 6, alignItems: "flex-start", fontWeight: 700 }}><button type="button" data-testid="web-ai-toggle" aria-expanded={openId === j.id} aria-label="Xem tiến trình" onClick={() => setOpenId(openId === j.id ? null : j.id)} style={{ border: 0, background: "none", padding: 0, cursor: "pointer", color: PC.t3, fontSize: 11, lineHeight: "18px", transform: openId === j.id ? "rotate(90deg)" : "none" }}>▶</button>{j.keyword}</span><span style={{ fontSize: 11.5, color: PC.t3 }}>{cats.find((c) => c.id === j.term_id)?.name || (OPEN.includes(j.status) ? "Tự chọn chuyên mục" : "—")} · {short(j.model)}</span></td>
                           <td style={td} title={j.status === "error" ? j.error || "" : [j.note, (j.warn || []).length ? `Nên xem lại: ${j.warn.join(" · ")}` : ""].filter(Boolean).join("\n")}><Pill tone={stTone}>{run ? "● " : ""}{stName}{j.status === "error" || j.note ? " ⓘ" : ""}</Pill></td>
                           <td style={num} title={j.reused ? `${j.reused} ảnh dùng lại từ thư viện` : ""}>{j.in_tok || j.out_tok ? <><span style={{ display: "block" }}>{kt(j.in_tok)} / {kt(j.out_tok)}</span><span style={{ fontSize: 11, color: PC.t3 }}>{j.searches} tra web · {j.images + j.reused} ảnh</span></> : "–"}</td>
                           <td style={num}>{cost ? <><b style={{ display: "block", fontSize: 13 }}>{vndOf(cost)}</b><span style={{ fontSize: 11, color: PC.t3, display: "block" }}>chữ {vnInt(j.cost_text * rate)}</span><span style={{ fontSize: 11, color: PC.t3, display: "block" }}>ảnh {vnInt(j.cost_img * rate)}</span></> : "–"}</td>
@@ -279,6 +325,8 @@ export function PcWebAi({ top, showToast, user, go }) {
                             {OPEN.includes(j.status) && <button type="button" data-testid="web-ai-cancel" onClick={async () => { if (j.status === "queued" || (await appConfirm("Bài đang viết dở. Huỷ thì phần đã tốn không lấy lại được. Huỷ bài này?"))) cancel(j); }} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>Huỷ</button>}
                           </span></td>
                         </tr>
+                        {openId === j.id && <tr><td colSpan={6} style={{ padding: "4px 7px 12px", borderBottom: `1px solid ${PC.rowLine}` }}><JobSteps j={j} /></td></tr>}
+                        </Fragment>
                       );
                     })}
                   </tbody>

@@ -99,3 +99,17 @@ test("pickFoods: lấy món xuất hiện trong từ khoá / ghi chú (đúng t�
   assert.ok(r.includes("Cơm trắng")); // ít món → thêm món phổ biến
   assert.equal(foodTable([F[0]]), "Phở bò | tô vừa | 500 | 450 | 25 | 60 | 12");
 });
+
+test("link nội bộ: chỉ giữ đích trong danh sách, mỗi đích 1 lần, không trong sapo / tiêu đề / bảng", async () => {
+  const { linkTargets, mdToBlocks: mb, linkStats } = await import("../src/pc/web/aiWrite.js");
+  const L = linkTargets({ keyword: "ăn phở", cat: { id: 1, slug: "kien-thuc", name: "Kiến thức" }, posts: [{ slug: "bmr-la-gi", title: "BMR", primary_term: 1 }, { slug: "x", title: "X" }], foods: [{ n: "phở bò", s: "pho-bo" }], selfSlug: "x" });
+  assert.deepEqual(L.map((l) => l.url), ["/", "/chu-de/kien-thuc", "/tinh-calo", "/bang-calo", "/calo/pho-bo", "/bmr-la-gi"]);
+  const b = mb("Sapo [trang chủ](/) **đậm**.\n\n## Tiêu đề [x](/bang-calo)\n\nĐoạn [app](/) và [lại app](/) và [lạ](/abc).\n\n| a | b |\n|---|---|\n| [c](/bang-calo) | 1 |\n\n- [bảng calo món việt rất là dài quá mức cho phép nhé](/bang-calo)\n- [calo phở bò](/calo/pho-bo)", { links: L });
+  assert.equal(b[0].html, "Sapo trang chủ <b>đậm</b>.");
+  assert.equal(b[1].text, "Tiêu đề x");
+  assert.equal(b[2].html, 'Đoạn <a href="/">app</a> và lại app và lạ.');
+  assert.equal(b[3].rows[0][0], "c");
+  assert.deepEqual(b[4].items, ["bảng calo món việt rất là dài quá mức cho phép nhé", '<a href="/calo/pho-bo">calo phở bò</a>']);
+  assert.deepEqual(linkStats(b, L), { total: 2, home: 1, cat: 0, page: 1, post: 0 });
+  assert.equal(mb("Sapo.\n\nĐoạn [a](/)")[1].html, "Đoạn a"); // không có danh sách đích → bỏ hết link
+});

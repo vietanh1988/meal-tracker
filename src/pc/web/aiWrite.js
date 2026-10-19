@@ -49,13 +49,15 @@ ${Array.from({ length: n }, (_, i) => `${i + 2}. <English photo prompt for inlin
 
 export const systemPrompt = (rules, cfg) => `${String(rules || RULES_DEFAULT).trim()}\n\n${runConfig(cfg)}`;
 
-export function buildUserPrompt({ keyword, category = "", notes = "", research = "", related = [], foods = "" } = {}) {
+export function buildUserPrompt({ keyword, category = "", notes = "", research = "", related = [], foods = "", links = [], tags = [] } = {}) {
   return [
     `Từ khóa chính: ${String(keyword || "").trim()}`,
     category && `Chuyên mục: ${category}`,
     research && `GHI CHÚ TRA CỨU (đã kiểm trên web, chỉ dùng số liệu ở đây hoặc kiến thức phổ biến chắc chắn):\n${research}`,
     foods && `BẢNG CALO KHO MÓN FIPILOT (số của app, dùng đúng khi nhắc các món này; dòng: món | khẩu phần | gram | kcal | đạm g | tinh bột g | béo g):\n${foods}`,
-    related.length ? `Bài đã có trên web (đừng viết trùng ý, có thể nhắc tới bằng chữ, không link): ${related.slice(0, 30).join("; ")}` : "",
+    related.length ? `Bài đã có trên web (đừng viết trùng ý): ${related.slice(0, 30).join("; ")}` : "",
+    links.length ? linkPrompt(links) : "",
+    tags.length ? `THẺ ĐÃ CÓ TRÊN WEB (dòng "Thẻ:" ưu tiên chọn ĐÚNG chữ các thẻ này khi hợp chủ đề; chỉ đặt thẻ mới khi không có thẻ nào hợp, không đặt thẻ gần trùng thẻ có sẵn): ${tags.slice(0, 150).join(", ")}` : "",
     notes && `Yêu cầu thêm của biên tập: ${notes}`,
     "Viết bài theo đúng ĐẦU RA.",
   ].filter(Boolean).join("\n\n");
@@ -76,6 +78,38 @@ Số liệu đã kiểm:
   ].filter(Boolean).join("\n\n");
 }
 export const pickCategory = (notes, cats = []) => { const m = String(notes || "").match(/^\s*Chuyên mục:\s*([a-z0-9-]+)/im); return m ? cats.find((c) => c.slug === m[1]) || null : null; };
+
+// ---- Link nội bộ ----
+// Danh sách đích được phép (máy lập): trang chủ · chuyên mục · trang liên quan (công cụ, bảng calo, trang calo món) · bài cùng chủ đề.
+// AI chỉ được link tới đích trong danh sách; máy kiểm lại khi đổi sang khối (đích lạ, trùng, chữ neo quá dài → bỏ link, giữ chữ).
+const SITE_HOST = /^https?:\/\/(www\.)?fipilotai\.com/i;
+export const normUrl = (u) => { let x = String(u || "").trim().replace(SITE_HOST, ""); if (!x.startsWith("/")) return ""; x = x.split("#")[0].split("?")[0]; return x.length > 1 ? x.replace(/\/+$/, "") : "/"; };
+const wordsOf = (s) => vnSlug(s).split("-").filter((w) => w.length > 1);
+export function linkTargets({ keyword = "", cat = null, posts = [], foods = [], selfSlug = "" } = {}) {
+  const out = [{ url: "/", kind: "home", title: "Trang chủ Fipilot AI: app ghi bữa ăn món Việt, tự tính calo và macro" }];
+  if (cat?.slug) out.push({ url: `/chu-de/${cat.slug}`, kind: "cat", title: `Chuyên mục ${cat.name}` });
+  out.push({ url: "/tinh-calo", kind: "page", title: "Công cụ tính calo cần ăn mỗi ngày (BMR, TDEE, mục tiêu giảm/tăng cân)" }, { url: "/bang-calo", kind: "page", title: "Bảng calo món Việt theo khẩu phần" });
+  for (const f of foods.filter((f) => f?.s && f?.n).slice(0, 8)) out.push({ url: `/calo/${f.s}`, kind: "page", title: `Calo ${f.n}: calo, đạm, tinh bột, béo theo khẩu phần` });
+  const kw = new Set(wordsOf(keyword));
+  const ranked = posts.filter((p) => p?.slug && p.slug !== selfSlug).map((p) => ({ p, sc: (cat && p.primary_term === cat.id ? 3 : 0) + wordsOf(`${p.title} ${p.keyword || ""}`).filter((w) => kw.has(w)).length }))
+    .sort((a, b) => b.sc - a.sc).slice(0, 12);
+  for (const { p } of ranked) out.push({ url: `/${p.slug}`, kind: "post", title: p.title });
+  return out;
+}
+export const linkPrompt = (links) => `LINK NỘI BỘ (chèn bằng markdown [chữ neo](đường dẫn), CHỈ dùng đường dẫn trong danh sách này, không link nơi khác; nguồn trích dẫn vẫn không link):
+- Cần có: 1 link về trang chủ (/), 1 link về chuyên mục, 1-3 link trang liên quan (công cụ, bảng calo, trang calo món) nếu bài có nhắc đúng nội dung đó, 3-5 link bài cùng chủ đề nếu có bài hợp.
+- Chữ neo là cụm 2-6 từ CÓ SẴN trong câu văn tự nhiên, nói đúng nội dung trang đích (ví dụ câu nhắc "tính calo cần ăn mỗi ngày" thì link /tinh-calo). Không dùng "tại đây", "xem thêm", "click", không viết câu chỉ để chèn link.
+- Mỗi đường dẫn tối đa 1 lần. Không link trong sapo, heading, bảng. Mỗi đoạn tối đa 1 link. Link bài cùng chủ đề đặt ở đoạn đang nói đúng ý bài đó.
+${links.map((l) => `${l.url} | ${l.title}`).join("\n")}`;
+// Đếm link đã chèn trong khối (để hiện ở tiến trình + nhắc thiếu)
+export function linkStats(blocks, links = []) {
+  const kind = Object.fromEntries(links.map((l) => [l.url, l.kind]));
+  const urls = blocks.flatMap((b) => [b.html, ...(b.type === "list" ? b.items || [] : [])].filter(Boolean)).join(" ").match(/href="([^"]+)"/g) || [];
+  const got = urls.map((h) => h.slice(6, -1));
+  const c = { total: got.length, home: 0, cat: 0, page: 0, post: 0 };
+  for (const u of got) if (kind[u]) c[kind[u]]++;
+  return c;
+}
 
 const vnSlug = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90).replace(/-+$/, "");
 export const slugOf = vnSlug;
@@ -100,19 +134,28 @@ export function parseArticle(text) {
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 // Chữ trong 1 dòng: **đậm**, *nghiêng*; bỏ link markdown (giữ chữ), bỏ URL trần
-export function mdInline(s) {
-  return esc(String(s || "").replace(/\[([^\]]+)\]\((?:[^)]+)\)/g, "$1").replace(/https?:\/\/\S+/g, "").replace(/[—–]/g, ","))
+export function mdInline(s, ln = null) {
+  const keep = [];
+  const raw = String(s || "").replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_, txt, href) => {
+    const u = normUrl(href), t = txt.replace(/\*+/g, "").trim();
+    if (!ln || !u || !ln.allow.has(u) || ln.used.has(u) || ln.para >= 2 || t.split(/\s+/).length > 8) return txt;
+    ln.used.add(u); ln.para++; keep.push([u, t]); return `\u0001${keep.length - 1}\u0002`;
+  });
+  return esc(raw.replace(/https?:\/\/\S+/g, "").replace(/[—–]/g, ","))
     .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/__(.+?)__/g, "<b>$1</b>").replace(/(^|[^*\w])\*(?!\s)(.+?)\*(?!\w)/g, "$1<i>$2</i>")
-    .replace(/\s+/g, " ").trim();
+    .replace(/\s+/g, " ").trim()
+    .replace(/\u0001(\d+)\u0002/g, (_, i) => `<a href="${esc(keep[i][0])}">${esc(keep[i][1])}</a>`);
 }
 const IMG = /^\s*\[chèn ảnh ở đây:\s*alt ảnh\s*["“”']?(.+?)["“”']?\s*\]\s*$/i;
 const cells = (l) => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => mdInline(c.trim()));
 
 // Markdown (bộ nhỏ AI hay dùng) → khối của trình soạn bài. Ảnh giữ chỗ → khối ảnh chưa có link (web tự ẩn tới khi có ảnh).
-export function mdToBlocks(md) {
+export function mdToBlocks(md, { links = null } = {}) {
   const L = String(md || "").replace(/\r/g, "").split("\n");
   const out = []; let para = [];
-  const flush = () => { if (para.length) { const h = mdInline(para.join(" ")); if (h) out.push({ type: "p", html: h }); para = []; } };
+  const ln = links?.length ? { allow: new Set(links.map((l) => normUrl(l.url)).filter(Boolean)), used: new Set(), para: 0 } : null;
+  const lk = () => { if (!ln) return null; ln.para = 0; return ln; }; // mỗi đoạn / dòng danh sách: máy giữ tối đa 2 link (lời dặn AI: 1)
+  const flush = () => { if (para.length) { const sapo = !out.some((b) => b.type === "p"); const h = mdInline(para.join(" "), sapo ? null : lk()); if (h) out.push({ type: "p", html: h }); para = []; } };
   for (let i = 0; i < L.length; i++) {
     const l = L[i];
     if (!l.trim()) { flush(); continue; }
@@ -129,13 +172,13 @@ export function mdToBlocks(md) {
       flush(); const ordered = /\d/.test(m[1]); const items = [];
       for (; i < L.length; i++) {
         const x = L[i].match(/^\s*([-*+]|\d+[.)])\s+(.+)/);
-        if (x && /\d/.test(x[1]) === ordered) items.push(mdInline(x[2]));
-        else if (L[i].trim() && /^\s{2,}\S/.test(L[i]) && items.length) items[items.length - 1] += " " + mdInline(L[i]);
+        if (x && /\d/.test(x[1]) === ordered) items.push(mdInline(x[2], lk()));
+        else if (L[i].trim() && /^\s{2,}\S/.test(L[i]) && items.length) items[items.length - 1] += " " + mdInline(L[i], ln);
         else break;
       }
       i--; out.push({ type: "list", ordered, items: items.filter(Boolean) }); continue;
     }
-    if ((m = l.match(/^\s*>\s?(.*)/))) { flush(); const q = mdInline(m[1]); if (q) out.push({ type: "quote", html: q }); continue; }
+    if ((m = l.match(/^\s*>\s?(.*)/))) { flush(); const q = mdInline(m[1], lk()); if (q) out.push({ type: "quote", html: q }); continue; }
     para.push(l.trim());
   }
   flush();
@@ -157,8 +200,8 @@ export function articleIssues(a, blocks, { inlineImages = null } = {}) {
 }
 
 // Kết quả AI → bài nháp. imgs: { cover: {url, alt}, inline: [{url, alt}] } (ảnh đã vẽ / dùng lại)
-export function articleToPost(a, { keyword = "", termId = null, authorId = null, kind = "post", imgs = null } = {}) {
-  const blocks = mdToBlocks(a.md);
+export function articleToPost(a, { keyword = "", termId = null, authorId = null, kind = "post", imgs = null, links = null } = {}) {
+  const blocks = mdToBlocks(a.md, { links });
   let k = 0;
   if (imgs?.inline?.length) for (const b of blocks) if (b.type === "img" && imgs.inline[k]) { const g = imgs.inline[k++]; if (g?.url) { b.url = g.url; if (g.alt) b.alt = g.alt; } }
   return {

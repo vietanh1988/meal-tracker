@@ -1,7 +1,7 @@
 // Lõi web-writer (JS thuần để test được bằng bun): index.ts chỉ nạp thư viện rồi gọi makeWriter.
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
-  imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable,
+  imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable, linkTargets, linkStats,
 } from "./aiWrite.js";
 
 export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
@@ -164,6 +164,11 @@ async function pingIndexNow(admin, path) {
 async function step(admin, job, cfg, t0) {
   const st = job.state || {};
   const save = async (patch) => {
+    // Tiến trình: mỗi lần đổi bước ghi 1 mốc {s, at} vào state.log (màn AI viết bài hiện dòng thời gian)
+    if (patch.status && patch.status !== job.status) {
+      const base = patch.state || job.state || {};
+      patch = { ...patch, state: { ...base, log: [...(base.log || job.state?.log || []), { s: patch.status, at: new Date().toISOString() }].slice(-30) } };
+    }
     const { data, error } = await admin.from("web_ai_jobs").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", job.id).select().single();
     if (error) throw new Error("Lưu tiến độ: " + error.message); // không nuốt lỗi quyền / DB
     Object.assign(job, data || patch);
@@ -200,10 +205,17 @@ async function step(admin, job, cfg, t0) {
       if (st.foods == null) { // lần viết đầu: lấy số calo kho món app cho các món bài sẽ nhắc (lỗi thì bỏ qua, AI ghi "ước tính")
         let list = [];
         try { const r = await fetch(CALO_API, { signal: AbortSignal.timeout(8000) }); if (r.ok) list = await r.json(); } catch (_e) { /* bỏ qua */ }
-        st.foods = foodTable(pickFoods(Array.isArray(list) ? list : [], `${job.keyword} ${job.notes || ""} ${st.research || ""}`));
+        const picked = pickFoods(Array.isArray(list) ? list : [], `${job.keyword} ${job.notes || ""} ${st.research || ""}`);
+        st.foods = foodTable(picked);
+        // Đích link nội bộ: trang chủ, chuyên mục, trang liên quan (công cụ / bảng calo / trang calo các món bài nhắc), bài đã đăng cùng chủ đề
+        const pub = ((await admin.from("web_posts").select("slug,title,primary_term,seo").eq("kind", "post").eq("status", "published").order("published_at", { ascending: false }).limit(300)).data || []).map((p) => ({ slug: p.slug, title: p.title, primary_term: p.primary_term, keyword: p.seo?.keyword || "" }));
+        const mention = ` ${`${job.keyword} ${st.research || ""}`.toLowerCase()} `;
+        st.links = linkTargets({ keyword: job.keyword, cat: term || null, posts: pub, foods: picked.filter((f) => mention.includes(String(f.n).toLowerCase())) });
+        // Thẻ có sẵn: AI ưu tiên dùng lại, tránh tạo thẻ gần trùng
+        st.tagNames = ((await admin.from("web_terms").select("name").eq("kind", "tag").order("name").limit(150)).data || []).map((t) => t.name);
       }
       const related = ((await admin.from("web_posts").select("title").eq("kind", "post").neq("status", "trash").order("updated_at", { ascending: false }).limit(30)).data || []).map((p) => p.title);
-      base = [{ role: "user", content: buildUserPrompt({ keyword: job.keyword, category: term?.name || "", notes: job.notes || "", research: st.research || "", related, foods: st.foods || "" }) }];
+      base = [{ role: "user", content: buildUserPrompt({ keyword: job.keyword, category: term?.name || "", notes: job.notes || "", research: st.research || "", related, foods: st.foods || "", links: st.links || [], tags: st.tagNames || [] }) }];
     } else {
       base = [{ role: "user", content: `Bài dưới đây còn các lỗi: ${(st.issues || []).join("; ")}.\nSửa ĐÚNG các lỗi đó, giữ nguyên phần còn lại, trả lại TOÀN BỘ bài đúng ĐẦU RA.\n\n${st.draft?.text || ""}` }];
     }
@@ -263,7 +275,7 @@ async function step(admin, job, cfg, t0) {
     const a = parseArticle(st.final);
     const imgs = st.imgs || [];
     const author = (await admin.from("web_authors").select("id").order("created_at").limit(1)).data?.[0]?.id || null;
-    const post = articleToPost(a, { keyword: job.keyword, termId: job.term_id, authorId: author, imgs: imgs.length ? { cover: imgs[0], inline: imgs.slice(1) } : null });
+    const post = articleToPost(a, { keyword: job.keyword, termId: job.term_id, authorId: author, imgs: imgs.length ? { cover: imgs[0], inline: imgs.slice(1) } : null, links: st.links || null });
     const base = post.slug || slugOf(job.keyword) || "bai-viet-ai";
     const taken = new Set(((await admin.from("web_posts").select("slug").like("slug", `${base}%`)).data || []).map((r) => r.slug));
     let slug = base, n = 2; while (taken.has(slug)) slug = `${base}-${n++}`;
@@ -299,7 +311,7 @@ async function step(admin, job, cfg, t0) {
     if (terms.length) await admin.from("web_post_terms").insert(terms.map((term_id) => ({ post_id: saved.id, term_id }))).then(() => {}, () => {});
     await admin.from("web_revisions").insert({ post_id: saved.id, snapshot: { ...row, terms }, reason: status === "draft" ? "ai" : "publish", created_by: job.created_by }).then(() => {}, () => {});
     if (status === "published") await pingIndexNow(admin, `/${slug}`);
-    await save({ status: "done", post_id: saved.id, finished_at: new Date().toISOString(), locked_until: null, error: null, state: { ...job.state, published: { status, at: published_at, note } } });
+    await save({ status: "done", post_id: saved.id, finished_at: new Date().toISOString(), locked_until: null, error: null, state: { ...job.state, published: { status, at: published_at, note }, linkStats: linkStats(post.blocks, st.links || []) } });
     return false;
   }
   return false;

@@ -215,3 +215,24 @@ test("đặt lịch nếu đạt → Hẹn giờ ở mốc trống kế tiếp",
   assert.ok([8, 19].includes(vn.getUTCHours()) && vn.getUTCMinutes() === 0);
   assert.ok(new Date(p.published_at) > new Date());
 });
+
+test("link nội bộ + thẻ có sẵn + dòng tiến trình: AI nhận danh sách đích & thẻ cũ, máy giữ link hợp lệ, bỏ link lạ, ghi mốc từng bước", async () => {
+  const text = ARTICLE.replace("Trứng và bánh mì nguyên cám.", "Trứng và bánh mì nguyên cám, nhớ [tính calo cần ăn mỗi ngày](/tinh-calo) và đọc [BMR là gì](https://fipilotai.com/bmr-la-gi/) trước, tránh [web lạ](https://x.com/a) hay [đường lạ](/khong-co).")
+    .replace("Khoảng 350 đến 450 kcal.", "Khoảng 350 đến 450 kcal, xem thêm [thực đơn giảm cân](/chu-de/thuc-don) và [Fipilot AI](/).");
+  const { w, tables, calls } = setup({ text });
+  tables.web_posts.push({ id: "p0", kind: "post", status: "published", slug: "bmr-la-gi", title: "BMR là gì", primary_term: "t1", seo: { keyword: "bmr" }, published_at: "2026-10-01T00:00:00Z" });
+  tables.web_terms.push({ id: "g1", kind: "tag", name: "Bữa sáng", slug: "bua-sang" });
+  for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  const j = tables.web_ai_jobs[0];
+  assert.equal(j.status, "done", j.error);
+  const prompt = calls.claude[1].messages[0].content;
+  assert.match(prompt, /LINK NỘI BỘ[\s\S]*^\/ \|[\s\S]*^\/chu-de\/thuc-don \|[\s\S]*^\/tinh-calo \|[\s\S]*^\/bmr-la-gi \| BMR là gì/m);
+  assert.match(prompt, /THẺ ĐÃ CÓ TRÊN WEB[^\n]*Bữa sáng/);
+  const p = tables.web_posts.find((x) => x.slug === "bua-sang-giam-can");
+  const html = p.blocks.map((b) => b.html || "").join(" ");
+  for (const u of ["/tinh-calo", "/bmr-la-gi", "/chu-de/thuc-don", "/"]) assert.ok(html.includes(`href="${u}"`), u);
+  assert.ok(!/x\.com|khong-co/.test(html)); assert.match(html, /web lạ/); // link lạ: bỏ link, giữ chữ
+  assert.deepEqual(j.state.linkStats, { total: 4, home: 1, cat: 1, page: 1, post: 1 });
+  assert.deepEqual(j.state.log.map((x) => x.s), ["research", "writing", "images", "saving", "done"]);
+  assert.equal(tables.web_post_terms.filter((x) => x.term_id === "g1").length, 1); // dùng lại thẻ cũ
+});
