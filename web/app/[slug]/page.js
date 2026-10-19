@@ -1,5 +1,6 @@
 // Bài viết (137c/d) hoặc Trang (Giới thiệu, Liên hệ, Chính sách…) — cùng 1 kiểu đường dẫn /<ten>
 import { notFound } from "next/navigation";
+import { imgAttrs } from "@/lib/img";
 import Crumb from "@/components/Crumb";
 import Blocks from "@/components/Blocks";
 import JsonLd from "@/components/JsonLd";
@@ -96,7 +97,7 @@ export default async function Page({ params }) {
               {p.reviewer && <><span>Kiểm duyệt: <a href={`/tac-gia/${p.reviewer.slug}`} style={{ color: "#0F172A", fontWeight: 600 }}>{p.reviewer.name}</a></span><span>·</span></>}
               {p.seo?.hide_updated ? <time dateTime={p.published_at}>Đăng {fmtDate(p.published_at)}</time> : <time dateTime={p.updated_at || p.published_at}>Cập nhật {fmtDate(p.updated_at || p.published_at)}</time>}<span>·</span><span>{readMin(p.word_count)} phút đọc</span>
             </div>
-            {p.cover_url && <figure><img src={p.cover_url} alt={p.cover_alt || p.title} fetchPriority="high" className="cover" style={{ width: "100%", height: 330, objectFit: "cover", borderRadius: 16, display: "block" }} /></figure>}
+            {p.cover_url && <figure><img {...imgAttrs(p.cover_url)} alt={p.cover_alt || p.title} fetchPriority="high" className="cover" style={{ width: "100%", height: 330, objectFit: "cover", borderRadius: 16, display: "block" }} /></figure>}
             {t.length > 1 && <div className="only-m"><TocBox t={t} /></div>}
             <Blocks blocks={blocks} s={s} toc={t} />
             {a?.show_box !== false && a && (

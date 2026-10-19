@@ -1,4 +1,5 @@
 import { catOf, fmtDate, readMin } from "@/lib/content";
+import { imgAttrs } from "@/lib/img";
 // variant "home" = thẻ trang chủ (137a: ảnh 180, không ngày) · "list" = thẻ trang danh sách (139: ảnh 190, có ngày)
 export default function PostCard({ p, big = false, row = false, variant = "home" }) {
   const L = variant === "list";
@@ -12,7 +13,7 @@ export default function PostCard({ p, big = false, row = false, variant = "home"
   );
   return (
     <a href={`/${p.slug}`} className="card pcard" style={{ overflow: "hidden", display: "flex", flexDirection: "column", gridColumn: big ? "span 2" : undefined }}>
-      {p.cover_url ? <img src={p.cover_url} alt={p.cover_alt || ""} loading="lazy" style={{ width: "100%", height: big ? 300 : L ? 190 : 180, objectFit: "cover", display: "block" }} /> : <span style={{ height: big ? 300 : L ? 190 : 180, background: "linear-gradient(135deg,#E8F0FF,#F5F9FF)" }} />}
+      {p.cover_url ? <img {...imgAttrs(p.cover_url, big ? "(max-width: 720px) 100vw, 760px" : "(max-width: 720px) 100vw, 400px")} alt={p.cover_alt || ""} loading="lazy" style={{ width: "100%", height: big ? 300 : L ? 190 : 180, objectFit: "cover", display: "block" }} /> : <span style={{ height: big ? 300 : L ? 190 : 180, background: "linear-gradient(135deg,#E8F0FF,#F5F9FF)" }} />}
       <span style={{ padding: L ? "20px 22px 22px" : "18px 20px 20px", display: "flex", flexDirection: "column", gap: L ? 10 : 8 }}>
         <span style={{ fontSize: 13, color: "#0062F0", fontWeight: 700 }}>{meta}</span>
         <b style={{ fontSize: big ? 24 : 18, lineHeight: L ? 1.35 : 1.4 }}>{p.title}</b>

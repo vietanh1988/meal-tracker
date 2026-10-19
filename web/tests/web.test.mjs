@@ -65,3 +65,11 @@ test("foodSlugs: tên trùng đường dẫn — tên có dấu giữ gốc, tê
   assert.equal(s["phở bò"], "pho-bo"); assert.equal(s["pho bo"], "pho-bo-2");
   assert.equal(s["dừa"], "dua"); assert.equal(s["dứa"], "dua-2"); assert.equal(s["cơm"], "com");
 });
+
+test("srcSet: chỉ ảnh _<rộng>w.webp có bản nhỏ", async () => {
+  const { srcSet } = await import("../lib/img.js");
+  assert.equal(srcSet("https://fipilotai.com/anh/2026/10/pho-bo-ab_1600w.webp"), "https://fipilotai.com/anh/2026/10/pho-bo-ab_400w.webp 400w, https://fipilotai.com/anh/2026/10/pho-bo-ab_800w.webp 800w, https://fipilotai.com/anh/2026/10/pho-bo-ab_1200w.webp 1200w, https://fipilotai.com/anh/2026/10/pho-bo-ab_1600w.webp 1600w");
+  assert.equal(srcSet("https://x/a_900w.webp"), "https://x/a_400w.webp 400w, https://x/a_800w.webp 800w, https://x/a_900w.webp 900w");
+  assert.equal(srcSet("https://x/a_300w.webp"), undefined);
+  assert.equal(srcSet("https://x/old.webp"), undefined);
+});

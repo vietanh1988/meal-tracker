@@ -109,6 +109,6 @@ export async function toWebp(file, max = 1600, q = 0.82) {
   const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
   cv.getContext("2d").drawImage(bmp, 0, 0, w, h);
   const blob = await new Promise((r) => cv.toBlob(r, "image/webp", q));
-  return { blob, width: w, height: h };
+  return { blob, width: w, height: h, srcW: bmp.width, srcH: bmp.height };
 }
 export const youtubeId = (s) => { const m = String(s || "").match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{6,20})/); return m ? m[1] : /^[\w-]{6,20}$/.test(String(s || "").trim()) ? String(s).trim() : ""; };

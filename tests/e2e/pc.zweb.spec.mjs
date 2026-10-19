@@ -123,6 +123,11 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     if (cp0) await rest(`web_calo_pages?food_key=eq.${encodeURIComponent("phở bò")}`, { method: "PATCH", body: JSON.stringify(cp0) });
     else await rest(`web_calo_pages?food_key=eq.${encodeURIComponent("phở bò")}`, { method: "DELETE" });
 
+    // Thư viện ảnh: mở được, có ô kéo thả + nút tải
+    await page.getByTestId("pc-nav-web_media").click();
+    await expect(page.getByTestId("web-media-drop")).toBeVisible();
+    await expect(page.getByTestId("web-media-up")).toBeEnabled();
+
     // Cài đặt SEO: tab Chuyển hướng → thêm 301 → DB; tab Sitemap → tắt Thẻ + sửa robots → Lưu → DB; khôi phục
     const [seo0] = await rest("web_settings?key=eq.seo&select=value");
     await page.getByTestId("pc-nav-web_seo").click();
