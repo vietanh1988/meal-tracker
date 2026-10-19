@@ -20,7 +20,7 @@ export default function Blocks({ blocks, s, toc, slug }) {
           case "list": { const T = b.ordered ? "ol" : "ul"; return <T key={i}>{(b.items || []).map((x, k) => <H key={k} as="li" html={x} />)}</T>; }
           case "quote": return <blockquote key={i} style={b.align ? { textAlign: b.align } : undefined}><H html={b.html} /></blockquote>;
           case "tip": return <div key={i} className="tip"><H as="div" html={b.html} /></div>;
-          case "img": return b.url ? <figure key={i}><img {...imgAttrs(b.url)} alt={b.alt || b.caption || ""} width={b.width} height={b.height} loading={i < 3 ? "eager" : "lazy"} />{b.caption && <figcaption>{b.caption}</figcaption>}</figure> : null;
+          case "img": return b.url ? <figure key={i}><img {...imgAttrs(b.url)} alt={b.alt || b.caption || ""} width={b.width} height={b.height} loading="lazy" decoding="async" />{b.caption && <figcaption>{b.caption}</figcaption>}</figure> : null;
           case "gallery": return <div key={i} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 10 }}>{(b.images || []).map((im, k) => <img key={k} src={im.url} alt={im.alt || im.caption || ""} loading="lazy" decoding="async" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12 }} />)}</div>;
           case "youtube": return /^[\w-]{6,20}$/.test(b.id || "") ? <div key={i} className="yt"><iframe src={`https://www.youtube-nocookie.com/embed/${b.id}`} title={b.title || "Video"} loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture" allowFullScreen /></div> : null;
           case "table": return (

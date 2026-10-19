@@ -4,6 +4,7 @@ import { slugify } from "./slug.js";
 import { textOf } from "./sanitize.js";
 import { getBlocksById } from "./content.js";
 import { getFood, mainPortion } from "./foods.js";
+import { q, enc } from "./sb.js";
 
 // Thay khối dùng lại bằng nội dung thật + gắn id cho tiêu đề (mục lục)
 export async function prepare(blocks) {
@@ -30,6 +31,13 @@ export async function prepare(blocks) {
       b._rows = [];
       for (const key of b.foods) { const fd = await getFood(key); if (fd) b._rows.push({ fd, por: mainPortion(fd) }); }
     }
+  }
+  // Ảnh thiếu kích thước (ảnh AI vẽ, ảnh chọn từ thư viện cũ): lấy rộng / cao ở Thư viện ảnh → giữ khung, ảnh tải chậm (lazy) không làm trang giật
+  const miss = [...new Set(out.filter((b) => b?.type === "img" && b.url && !(b.width && b.height)).map((b) => b.url))].slice(0, 40);
+  if (miss.length) {
+    const rows = (await q(`web_media?select=url,width,height&url=in.(${miss.map((u) => enc(`"${u.replace(/"/g, "")}"`)).join(",")})`).catch(() => null)) || [];
+    const dim = Object.fromEntries(rows.filter((r) => r.width && r.height).map((r) => [r.url, r]));
+    for (const b of out) if (b?.type === "img" && !(b.width && b.height) && dim[b.url]) { b.width = dim[b.url].width; b.height = dim[b.url].height; }
   }
   return out;
 }
