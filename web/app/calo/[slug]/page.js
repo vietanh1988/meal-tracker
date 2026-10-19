@@ -6,6 +6,7 @@ import Sticky from "@/components/Sticky";
 import Portions from "@/components/Portions";
 import { getSettings, appLink, alt } from "@/lib/site";
 import { caloBySlug, caloFoods } from "@/lib/calo";
+import { q, enc } from "@/lib/sb";
 import { mainPortion } from "@/lib/foods";
 import { breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
@@ -25,8 +26,12 @@ export default async function Calo({ params }) {
   if (!r) notFound();
   if (r.gone) notFound();
   const s = await getSettings();
-  const fd = r.food, pg = r.page || {};
+  let fd = r.food; const pg = r.page || {};
+  // Quản trị › Trang calo món › Khẩu phần hiện trên trang (null = hiện hết; "100 g" = thêm ô 100 g)
+  if (Array.isArray(pg.portions) && pg.portions.length) { const keep = fd.portions.filter((x) => pg.portions.includes(x.name)); fd = { ...fd, portions: [...(pg.portions.includes("100 g") ? [{ name: "100 g", gram: 100, ...fd.per100 }] : []), ...(keep.length ? keep : fd.portions)] }; }
   const por = mainPortion(fd);
+  const relIds = (Array.isArray(pg.related) ? pg.related : []).filter((x) => /^[0-9a-f-]{36}$/i.test(x)).slice(0, 6);
+  const rel = relIds.length ? ((await q(`web_posts?id=in.(${relIds.map(enc).join(",")})&status=eq.published&select=id,title,slug,cover_url`)) || []).sort((a, b) => relIds.indexOf(a.id) - relIds.indexOf(b.id)) : [];
   const path = `/calo/${fd.slug}`;
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng calo món", path: "/bang-calo" }, { name: fd.name, path }];
   const same = (await caloFoods()).filter((x) => x.cat === fd.cat && x.key !== fd.key).map((x) => ({ x, p: mainPortion(x) })).filter((y) => y.p).sort((a, b) => Math.abs(a.p.cal - (por?.cal || 0)) - Math.abs(b.p.cal - (por?.cal || 0))).slice(0, 3);
@@ -65,6 +70,12 @@ export default async function Calo({ params }) {
                     <span style={{ flex: 1, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 14.5, fontWeight: 600 }}>{x.name}</span><b style={{ fontSize: 16 }}>{p.cal} <span style={{ fontSize: 13, fontWeight: 600 }}>kcal</span></b></span>
                     {por && <span style={{ fontSize: 12, fontWeight: 800, borderRadius: 8, padding: "3px 8px", ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : { background: "#FFEDD5", color: "#C2410C" }) }}>{d > 0 ? "+" : d < 0 ? "−" : "±"}{Math.abs(d)}</span>}
                   </a>); })}
+              </div>
+            )}
+            {rel.length > 0 && (
+              <div className="card o3" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+                <b style={{ fontSize: 16, marginBottom: 6 }}>Bài liên quan</b>
+                {rel.map((x, i) => <a key={x.id} href={`/${x.slug}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>{x.cover_url && <img className="th" src={x.cover_url} alt="" width={46} height={46} loading="lazy" style={{ width: 46, height: 46, objectFit: "cover" }} />}<span style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.4 }}>{x.title}</span></a>)}
               </div>
             )}
             <div className="o4 calocta" style={{ borderRadius: 18, background: "linear-gradient(160deg,#1A7CFF,#0050E6)", color: "#fff", padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>

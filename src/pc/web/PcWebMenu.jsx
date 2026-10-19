@@ -128,7 +128,7 @@ export function PcWebMenu({ top, showToast }) {
     setBusy(false);
   };
 
-  const foods = useMemo(() => FOODS.filter((f) => f.vn).map((f) => ({ label: `Calo ${f.name.toLowerCase()}`, url: `/calo/${slugify(f.key)}`, type: "calo" })), []);
+  const foods = useMemo(() => FOODS.filter((f) => f.vn).map((f) => ({ label: `Calo ${f.name.toLowerCase()}`, url: `/calo/${f.slug}`, type: "calo" })), []);
   const prev = tree(list);
   const footer = loc.startsWith("footer");
   const curName = LOCS.find((x) => x[0] === loc)?.[1];

@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PC } from "../../theme";
 import { LOCAL_FOODS, UNIT_MAP } from "../../lib/localFoodDB";
+import { foodSlugs } from "../../../web/lib/slug.js";
+const F_SLUG = foodSlugs(Object.keys(LOCAL_FOODS));
 import { Btn } from "../pcUI";
 import { inpStyle, BLUE } from "./webUI";
 import { clean, youtubeId } from "./webLib";
@@ -45,7 +47,7 @@ const small = { height: 28, fontSize: 12, padding: "0 10px" };
 // Kho món Việt có khẩu phần (giống trang /calo/… của web)
 const r1 = (n) => Math.round(n * 10) / 10;
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-export const FOODS = Object.entries(LOCAL_FOODS).filter(([k, f]) => (UNIT_MAP[k] || []).length).map(([k, f]) => ({ key: k, name: cap(k), vn: f.region === "vn", portions: UNIT_MAP[k].map((u) => ({ name: u.name, gram: u.gram, cal: Math.round((f.cal * u.gram) / 100), p: r1((f.p * u.gram) / 100), c: r1((f.c * u.gram) / 100), f: r1((f.f * u.gram) / 100) })) })).sort((a, b) => (b.vn - a.vn) || a.name.localeCompare(b.name, "vi"));
+export const FOODS = Object.entries(LOCAL_FOODS).filter(([k, f]) => (UNIT_MAP[k] || []).length).map(([k, f]) => ({ key: k, slug: F_SLUG[k], name: cap(k), vn: f.region === "vn", portions: UNIT_MAP[k].map((u) => ({ name: u.name, gram: u.gram, cal: Math.round((f.cal * u.gram) / 100), p: r1((f.p * u.gram) / 100), c: r1((f.c * u.gram) / 100), f: r1((f.f * u.gram) / 100) })) })).sort((a, b) => (b.vn - a.vn) || a.name.localeCompare(b.name, "vi"));
 const FOOD = Object.fromEntries(FOODS.map((f) => [f.key, f]));
 function FoodPick({ value, onPick, testid }) {
   const [q, setQ] = useState("");

@@ -15,3 +15,11 @@ export const cap = (s) => {
 };
 export const vnInt = (n) => Math.round(Number(n) || 0).toLocaleString("vi-VN");
 export const vnDec = (n, d = 1) => String(Math.round((Number(n) || 0) * 10 ** d) / 10 ** d).replace(".", ",");
+// Đường dẫn trang calo không trùng: "phở bò" và "pho bo" cùng ra pho-bo → tên có dấu giữ pho-bo, tên kia thành pho-bo-2 (thứ tự theo kho món)
+export function foodSlugs(keys) {
+  const by = {};
+  keys.forEach((k, i) => (by[slugify(k)] ||= []).push([k, i]));
+  const out = {};
+  for (const [s, ks] of Object.entries(by)) ks.sort((a, b) => (/[^\x00-\x7f]/.test(b[0]) - /[^\x00-\x7f]/.test(a[0])) || a[1] - b[1]).forEach(([k], n) => { out[k] = n ? `${s}-${n + 1}` : s; });
+  return out;
+}

@@ -104,6 +104,25 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await page.getByTestId("web-au-save").click();
     await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu tác giả");
 
+    // Trang calo món: tìm "phở bò" → viết giới thiệu riêng + tắt trang → Lưu → DB có dòng tắt + chuyển hướng 410; khôi phục
+    const [cp0] = await rest(`web_calo_pages?food_key=eq.${encodeURIComponent("phở bò")}&select=*`);
+    await page.getByTestId("pc-nav-web_calo").click();
+    await page.getByTestId("web-calo-q").fill("phở bò");
+    const crow = page.locator('[data-testid=web-calo-row][data-key="phở bò"]');
+    await expect(crow).toHaveCount(1);
+    await crow.click();
+    await page.getByTestId("web-calo-intro").fill("E2E giới thiệu phở bò");
+    await page.getByTestId("web-calo-on-pho-bo").click();
+    await page.getByTestId("web-calo-save").click();
+    await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu 1 trang calo");
+    const [cp1] = await rest(`web_calo_pages?food_key=eq.${encodeURIComponent("phở bò")}&select=enabled,intro,slug`);
+    expect(cp1).toMatchObject({ enabled: false, intro: "E2E giới thiệu phở bò", slug: "pho-bo" });
+    expect((await rest("web_redirects?src=eq./calo/pho-bo&select=code,source"))[0]).toMatchObject({ code: 410, source: "calo_off" });
+    await page.screenshot({ path: "shots/pc-web-calo.png", fullPage: true });
+    await rest("web_redirects?src=eq./calo/pho-bo&source=eq.calo_off", { method: "DELETE" });
+    if (cp0) await rest(`web_calo_pages?food_key=eq.${encodeURIComponent("phở bò")}`, { method: "PATCH", body: JSON.stringify(cp0) });
+    else await rest(`web_calo_pages?food_key=eq.${encodeURIComponent("phở bò")}`, { method: "DELETE" });
+
     // Cài đặt SEO: tab Chuyển hướng → thêm 301 → DB; tab Sitemap → tắt Thẻ + sửa robots → Lưu → DB; khôi phục
     const [seo0] = await rest("web_settings?key=eq.seo&select=value");
     await page.getByTestId("pc-nav-web_seo").click();

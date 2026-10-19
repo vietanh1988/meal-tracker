@@ -58,3 +58,10 @@ test("CSS viết trong trang phải dùng dangerouslySetInnerHTML (React đổi 
   const bad = [...walk("app"), ...walk("components")].filter((f) => /<style>\s*\{/.test(readFileSync(f, "utf8")));
   assert.deepEqual(bad, []);
 });
+
+test("foodSlugs: tên trùng đường dẫn — tên có dấu giữ gốc, tên kia thêm -2", async () => {
+  const { foodSlugs } = await import("../lib/slug.js");
+  const s = foodSlugs(["pho bo", "phở bò", "dừa", "dứa", "cơm"]);
+  assert.equal(s["phở bò"], "pho-bo"); assert.equal(s["pho bo"], "pho-bo-2");
+  assert.equal(s["dừa"], "dua"); assert.equal(s["dứa"], "dua-2"); assert.equal(s["cơm"], "com");
+});

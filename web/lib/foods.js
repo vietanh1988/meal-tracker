@@ -1,7 +1,8 @@
 // Số calo của web = số calo của app: đọc thẳng kho món app (bản chép lib/app/localFoodDB.js) + chỉnh sửa admin (food_overrides).
 import { LOCAL_FOODS, UNIT_MAP } from "./app/localFoodDB.js";
 import { q } from "./sb.js";
-import { slugify, cap } from "./slug.js";
+import { slugify, cap, foodSlugs } from "./slug.js";
+const SLUG = foodSlugs(Object.keys(LOCAL_FOODS));
 
 export const GROUPS = { starch: "Cơm, bún, phở, bánh", poultry: "Gà, vịt", beef: "Thịt bò", pork: "Thịt heo", seafood: "Hải sản", egg_dairy: "Trứng, sữa", veg: "Rau", fruit: "Trái cây", nuts: "Hạt, đậu, dầu", drink: "Đồ uống" };
 
@@ -24,7 +25,7 @@ const r1 = (n) => Math.round(n * 10) / 10;
 export function shape(key, f) {
   if (!f) return null;
   const units = (UNIT_MAP[key] || []).map((u) => ({ name: u.name, gram: u.gram, cal: Math.round((f.cal * u.gram) / 100), p: r1((f.p * u.gram) / 100), c: r1((f.c * u.gram) / 100), f: r1((f.f * u.gram) / 100), fiber: r1(((f.fiber || 0) * u.gram) / 100) }));
-  return { key, slug: slugify(key), name: cap(key), group: GROUPS[f.cat] || "Khác", cat: f.cat, region: f.region, per100: { cal: f.cal, p: f.p, c: f.c, f: f.f, fiber: f.fiber || 0 }, portions: units };
+  return { key, slug: SLUG[key] || slugify(key), name: cap(key), group: GROUPS[f.cat] || "Khác", cat: f.cat, region: f.region, per100: { cal: f.cal, p: f.p, c: f.c, f: f.f, fiber: f.fiber || 0 }, portions: units };
 }
 
 export async function getFood(key) { const all = await base(); return shape(key, all[key]); }
