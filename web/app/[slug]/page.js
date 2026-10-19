@@ -6,6 +6,7 @@ import Blocks from "@/components/Blocks";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import LegalToc from "@/components/LegalToc";
+import PostToc from "@/components/PostToc";
 import { legalPages, legalToBlocks, vnDateIso } from "@/lib/appdata";
 import PostCard from "@/components/PostCard";
 import { getSettings, siteUrl, appLink, alt, ogBase } from "@/lib/site";
@@ -99,7 +100,7 @@ export default async function Page({ params }) {
               {p.seo?.hide_updated ? <time dateTime={p.published_at}>Đăng {fmtDate(p.published_at)}</time> : <time dateTime={p.updated_at || p.published_at}>Cập nhật {fmtDate(p.updated_at || p.published_at)}</time>}<span>·</span><span>{readMin(p.word_count)} phút đọc</span>
             </div>
             {p.cover_url && <figure><img {...imgAttrs(p.cover_url)} alt={p.cover_alt || p.title} fetchPriority="high" className="cover" style={{ width: "100%", height: 330, objectFit: "cover", borderRadius: 16, display: "block" }} /></figure>}
-            {t.length > 1 && <div className="only-m"><TocBox t={t} /></div>}
+            {t.length > 1 && <div className="only-m"><PostToc t={t} mobile /></div>}
             <Blocks blocks={blocks} s={s} toc={t} slug={p.slug} />
             {a?.show_box !== false && a && (
               <div style={{ borderRadius: 16, border: "1px solid #E6ECF5", background: "#F8FBFF", padding: 20, display: "flex", gap: 14, marginTop: 8 }}>
@@ -125,7 +126,7 @@ export default async function Page({ params }) {
           </article>
         </div>
         <aside className="only-pc" style={{ width: 340, flexShrink: 0, display: "flex", flexDirection: "column", gap: 20, position: "sticky", top: 90 }}>
-          {t.length > 1 && <TocBox t={t} />}
+          {t.length > 1 && <PostToc t={t} />}
           <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12, background: "linear-gradient(180deg,#EEF4FF,#FFFFFF)", borderColor: "#DCE7FF" }}>
             <b style={{ fontSize: 18, color: "#0B3B91" }}>Thực đơn giảm cân món Việt</b>
             <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.5 }}>App tự lên mỗi ngày, đúng calo cho bạn.</span>
@@ -143,14 +144,6 @@ export default async function Page({ params }) {
   );
 }
 
-function TocBox({ t }) {
-  return (
-    <nav aria-label="Mục lục" className="card" style={{ padding: 18, display: "flex", flexDirection: "column", gap: 4 }}>
-      <b style={{ fontSize: 16, padding: "0 8px 8px" }}>Mục lục</b>
-      {t.map((x, i) => <a key={x.id} href={`#${x.id}`} style={{ fontSize: 14.5, lineHeight: 1.4, padding: "8px 10px", paddingLeft: x.level === 3 ? 24 : 10, borderRadius: 8, color: "#475569" }}>{x.level === 2 ? `${t.filter((y, k) => k <= i && y.level === 2).length}. ` : ""}{x.text}</a>)}
-    </nav>
-  );
-}
 function Avatar({ a, size }) {
   return a.avatar_url ? <img src={a.avatar_url} alt={a.name} width={size} height={size} style={{ width: size, height: size, borderRadius: size / 2, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: size, height: size, borderRadius: size / 2, background: "#0062F0", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: size / 2.6, flexShrink: 0 }}>{(a.name || "?").split(/\s+/).map((w) => w[0]).slice(-2).join("").toUpperCase()}</span>;
 }
