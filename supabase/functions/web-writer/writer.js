@@ -135,9 +135,10 @@ async function storeImage(admin, im, name, alt, uid, by) {
   let main = null, w = null, h = null; const small = [];
   try {
     const img = await Image.decode(im.bytes);
-    if (img.width > 1200) img.resize(1200, Image.RESIZE_AUTO);
+    const ow = img.width;
+    if (ow > 1200) img.resize(1200, Image.RESIZE_AUTO);
     w = img.width; h = img.height;
-    main = /jpe?g/.test(im.mime) && w === img.width && im.bytes.length < 400_000 ? im.bytes : await img.encodeJPEG(82);
+    main = /jpe?g/.test(im.mime) && ow === w && im.bytes.length < 400_000 ? im.bytes : await img.encodeJPEG(82); // JPEG gốc vừa cỡ thì giữ nguyên
     for (const sw of [400, 800]) if (sw < w) small.push([sw, await img.clone().resize(sw, Image.RESIZE_AUTO).encodeJPEG(80)]);
   } catch (_e) { main = null; small.length = 0; }
   const ext = main ? "jpg" : (im.mime.split("/")[1] || "png").replace("jpeg", "jpg");
