@@ -23,7 +23,7 @@ export default async function Blog({ searchParams }) {
       <div className="wrap blogw" style={{ paddingTop: 40 }}>
         <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.blogw{padding-top:28px!important}.blogw>.chips{margin-bottom:20px!important}}` }} />
         <div className="chips" style={{ marginBottom: 32 }}><span className="chip on">Tất cả</span>{[...cats.filter((c) => !c.parent_id), ...cats.filter((c) => c.parent_id)].map((c) => <a key={c.id} className="chip" href={`/chu-de/${c.slug}`}>{c.name}</a>)}</div>
-        <PostList posts={posts} firstBig={page === 1} variant="list" />
+        <PostList posts={posts} firstBig={page === 1} variant="list" mCard={false} />
         <Pager page={page} total={total} per={per} base="/bai-viet" />
       </div>
       <Sticky s={s} ref_="blog" />
