@@ -6,6 +6,7 @@ import { fillTrial, vnd, premiumPoints } from "@/lib/plans";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
+import Phone from "@/components/Phone";
 import { PostList } from "@/components/PostCard";
 import { getSettings, appLink, alt } from "@/lib/site";
 import { latestPosts } from "@/lib/content";
@@ -106,15 +107,16 @@ export default async function Home() {
             <div className="hero-btn" style={{ display: "flex", gap: 12, marginTop: 6 }}><a className="btn b1 big" href={H.btn1_url || appLink(s, "home-hero")}>{H.btn1}</a>{H.btn2 && <a className="btn b2 big" href={H.btn2_url || "#cach-hoat-dong"}>{H.btn2}</a>}</div>
             {H.note && <span style={{ fontSize: 13.5, color: "#64748B" }}>{H.note}</span>}
           </div>
-          <div className="hero-ph" style={{ position: "relative", width: 430, height: 430, flexShrink: 0 }}>
-            <img src={H.img2 || "/img/app-menu.webp"} alt={H.img2_alt} width={175} height={379} style={{ position: "absolute", right: 10, top: 40, width: 175, height: "auto", borderRadius: 26, border: "7px solid #0F172A", transform: "rotate(4deg)", boxShadow: "0 24px 48px rgba(15,23,42,.22)" }} />
-            <picture>{H.img1_m && <source media="(max-width: 720px)" srcSet={H.img1_m} />}<img src={H.img1 || "/img/app-today.webp"} alt={H.img1_alt} width={195} height={422} fetchPriority="high" style={{ position: "absolute", left: 50, top: 0, width: 195, height: "auto", borderRadius: 26, border: "7px solid #0F172A", transform: "rotate(-4deg)", boxShadow: "0 24px 48px rgba(15,23,42,.22)" }} /></picture>
+          <div className="hero-ph2">
+            <span className="hero-glow" aria-hidden="true" /><span className="hero-floor" aria-hidden="true" />
+            <Phone className="ph-back" src={H.img2 || "/img/app-menu.webp"} alt={H.img2_alt} />
+            <Phone className="ph-front" dark src={H.img1 || "/img/app-today.webp"} mSrc={H.img1_m} alt={H.img1_alt} priority />
           </div>
         </div>
       </section>
       {order.map((id) => SEC[id])}
       <Sticky s={s} ref_="home-sticky" />
-      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.hero{padding:40px 0!important}.hero-in{flex-direction:column;gap:18px!important}.hero-btn{flex-direction:column}.hero-btn .btn{height:50px!important}.hero-ph{width:100%!important;height:390px!important}.hero-ph img:first-child{right:8%!important;width:150px!important}.hero-ph img:last-child{left:8%!important;width:170px!important}.hero-l{gap:14px!important}.hero-p{font-size:17px!important}.calc-card{padding:20px!important;gap:16px!important}.g12{gap:12px!important}.step{padding:20px!important}.step h3{font-size:17px!important}.step-x{font-size:15px!important}.feat .ui-t{font-size:15px!important}.pf{gap:64px!important}.plans{gap:20px!important}.plan{padding:20px!important}.plan-p{font-size:26px!important}details.faq{padding:16px!important}details.faq summary{font-size:15.5px!important}details.faq p{font-size:15px!important;line-height:1.6!important;margin-top:8px!important}.calc-h{font-size:24px!important}.feat{padding:20px!important}.feat h3{font-size:18px!important}.calc .calc-in{grid-template-columns:1fr 1fr!important}}` }} />
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.hero{padding:40px 0!important}.hero-in{flex-direction:column;gap:18px!important}.hero-btn{flex-direction:column}.hero-btn .btn{height:50px!important}.hero-l{gap:14px!important}.hero-p{font-size:17px!important}.calc-card{padding:20px!important;gap:16px!important}.g12{gap:12px!important}.step{padding:20px!important}.step h3{font-size:17px!important}.step-x{font-size:15px!important}.feat .ui-t{font-size:15px!important}.pf{gap:64px!important}.plans{gap:20px!important}.plan{padding:20px!important}.plan-p{font-size:26px!important}details.faq{padding:16px!important}details.faq summary{font-size:15.5px!important}details.faq p{font-size:15px!important;line-height:1.6!important;margin-top:8px!important}.calc-h{font-size:24px!important}.feat{padding:20px!important}.feat h3{font-size:18px!important}.calc .calc-in{grid-template-columns:1fr 1fr!important}}` }} />
     </main>
   );
 }

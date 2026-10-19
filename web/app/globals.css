@@ -74,7 +74,7 @@ details.faq p { font-size: 15px; color: var(--mut); line-height: 1.6; margin-top
 span.only-pc { display: inline; }
 /* Tablet 721–1024px: thu cột phụ, ảnh cố định cho vừa */
 @media (min-width: 721px) and (max-width: 1024px) {
-  .calo-side { width: 300px !important; } .hero-ph { width: 340px !important; } .fart { width: 300px !important; }
+  .calo-side { width: 300px !important; } .fx-r { width: 320px !important; }
   .grid3 { grid-template-columns: 1fr 1fr; }
   .pin-img { width: 360px !important; }
 }
@@ -95,4 +95,44 @@ span.only-pc { display: inline; }
   body { padding-bottom: 76px; }
   .prose .cols { grid-template-columns: 1fr !important; }
   .only-pc { display: none !important; } .only-m { display: block; } span.only-m { display: inline; }
+}
+
+/* ===== Khung điện thoại (components/Phone.js) — bản vẽ 19/10 kiểu ảnh ChatGPT, mẫu B titan đen ===== */
+.ph { --w: 200px; position: absolute; width: var(--w); aspect-ratio: 9 / 19.3; border-radius: calc(var(--w) * .205); padding: calc(var(--w) * .02);
+  background: linear-gradient(135deg, #5B5F66 0%, #2A2D32 25%, #6C7077 48%, #1E2025 72%, #4A4E55 100%);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.38), inset 0 0 0 1px rgba(255,255,255,.75), inset 0 0 0 2.5px rgba(0,0,0,.18), inset calc(var(--w) * .012) 0 calc(var(--w) * .02) rgba(255,255,255,.45), inset calc(var(--w) * -.012) 0 calc(var(--w) * .02) rgba(0,0,0,.25), 0 50px 60px -30px rgba(15,35,80,.55), 0 20px 30px -16px rgba(15,23,42,.35);
+  -webkit-box-reflect: below 4px linear-gradient(transparent 82%, rgba(255,255,255,.22)); }
+.ph-bz { width: 100%; height: 100%; border-radius: calc(var(--w) * .196); background: #030304; padding: calc(var(--w) * .02); box-shadow: inset 0 0 0 1px #24272D; }
+.ph-sc { position: relative; width: 100%; height: 100%; border-radius: calc(var(--w) * .178); overflow: hidden; background: #EEF4FF; display: flex; flex-direction: column; }
+.ph-sc-d { background: #1756D9; }
+.ph-sc picture { flex: 1; min-height: 0; display: block; }
+.ph-sc img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.ph-sb { height: calc(var(--w) * .17); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: calc(var(--w) * .025) calc(var(--w) * .075) 0 calc(var(--w) * .1); color: #0F172A; font-size: calc(var(--w) * .062); letter-spacing: -.01em; }
+.ph-sb-d { color: #fff; background: #1452D6; }
+.ph-sb b { font-weight: 700; min-width: 22%; }
+.ph-ic { display: flex; align-items: center; gap: calc(var(--w) * .018); }
+.ph-ic svg { height: calc(var(--w) * .04); width: auto; fill: currentColor; }
+.ph-bat { position: relative; display: inline-block; width: calc(var(--w) * .085); height: calc(var(--w) * .044); border-radius: calc(var(--w) * .014); border: 1px solid currentColor; }
+.ph-bat i { position: absolute; inset: 1.5px; right: 22%; border-radius: 2px; background: currentColor; }
+.ph-bat::after { content: ""; position: absolute; right: -3px; top: 30%; width: 1.5px; height: 40%; border-radius: 1px; background: currentColor; }
+.ph-di { position: absolute; left: 50%; top: calc(var(--w) * .038); transform: translateX(-50%); width: 27%; height: calc(var(--w) * .092); border-radius: 999px; background: #000; display: flex; align-items: center; justify-content: flex-end; padding-right: calc(var(--w) * .03); }
+.ph-di i { width: calc(var(--w) * .04); height: calc(var(--w) * .04); border-radius: 50%; background: radial-gradient(circle at 35% 35%, #3B4A6B, #0B0F1A 70%); }
+.ph-gl { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.04) 26%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 72%, rgba(255,255,255,.08) 100%); }
+.ph-btn { position: absolute; width: calc(var(--w) * .016); border-radius: 2px; background: linear-gradient(90deg, #2A2D32, #6C7077 50%, #2A2D32); box-shadow: 0 0 0 .5px rgba(0,0,0,.35); }
+.ph-act { left: calc(var(--w) * -.008); top: 18%; height: 5%; }
+.ph-v1 { left: calc(var(--w) * -.008); top: 26%; height: 9%; }
+.ph-v2 { left: calc(var(--w) * -.008); top: 37%; height: 9%; }
+.ph-pw { right: calc(var(--w) * -.008); top: 28%; height: 14%; }
+.ph-cam { right: calc(var(--w) * -.008); top: 62%; height: 7%; opacity: .8; }
+
+/* Banner trang chủ: 2 máy */
+.hero-ph2 { position: relative; width: 430px; height: 480px; flex-shrink: 0; }
+.hero-glow { position: absolute; left: 40px; right: 20px; top: 60px; bottom: 30px; border-radius: 50%; background: radial-gradient(closest-side, rgba(26,124,255,.28), rgba(26,124,255,0)); filter: blur(8px); }
+.hero-floor { position: absolute; left: 30px; right: 10px; bottom: 6px; height: 40px; border-radius: 50%; background: radial-gradient(closest-side, rgba(15,35,80,.22), rgba(15,35,80,0)); }
+.hero-ph2 .ph-front { --w: 206px; left: 30px; top: 4px; transform: rotate(-3deg); z-index: 2; }
+.hero-ph2 .ph-back { --w: 184px; right: 16px; top: 40px; transform: rotate(4deg); z-index: 1; }
+@media (min-width: 721px) and (max-width: 1024px) { .hero-ph2 { width: 360px; height: 420px; } .hero-ph2 .ph-front { --w: 176px; left: 10px; } .hero-ph2 .ph-back { --w: 158px; right: 6px; } }
+@media (max-width: 720px) {
+  .hero-ph2 { width: 100%; max-width: 390px; height: 420px; margin: 0 auto; }
+  .hero-ph2 .ph-front { --w: 178px; left: 5%; } .hero-ph2 .ph-back { --w: 158px; right: 4%; top: 36px; } .hero-glow { left: 6%; right: 6%; }
 }

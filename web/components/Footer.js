@@ -1,6 +1,7 @@
 // Chân trang — chép đúng bản vẽ 137 (footer v3, rr/web137b.py › footer). Chỉ thay chữ mẫu bằng dữ liệu thật:
 // cột link = Menu chân trang (Quản trị › Menu), món phổ biến + kcal = kho món app, liên hệ = Cài đặt web.
 import Logo from "./Logo";
+import Phone from "./Phone";
 import { safeUrl } from "@/lib/sanitize";
 import Icon from "./Icon";
 import { appLink } from "@/lib/site";
@@ -22,20 +23,19 @@ export default async function Footer({ s, menus }) {
     <div className="fwrap" style={{ position: "relative", marginTop: 56 }}>
       {f.show_app_card !== false && (
         <div className="wrap fcardwrap" style={{ position: "relative", zIndex: 2, marginBottom: -110 }}>
-          <div className="fcard" style={{ position: "relative", zIndex: 2, borderRadius: 24, overflow: "hidden", background: "#FFFFFF", boxShadow: "0 24px 60px rgba(10,26,58,.22)", display: "flex", alignItems: "stretch" }}>
-            <div className="fcard-l" style={{ flex: 1, padding: "30px 32px", display: "flex", flexDirection: "column", gap: 10, justifyContent: "center" }}>
-              {s.plan?.trial ? <span className="pill" style={{ alignSelf: "flex-start" }}>Miễn phí {s.plan.trial} ngày · không cần thẻ</span> : null}
-              <b className="fcard-t" style={{ fontSize: 28, lineHeight: 1.2, color: "#0F172A" }}>Tối nay ăn gì để vẫn giảm cân?<br /><span style={{ color: "#0062F0" }}>Để app lo.</span></b>
-              <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.55 }}>Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần.</span>
-              <div className="fbtns" style={{ display: "flex", gap: 10, marginTop: 6 }}><a className="btn b1" href={appLink(s, "footer")} style={{ height: 46 }}>Dùng thử miễn phí</a><a className="btn b2" href="/bang-calo" style={{ height: 46 }}>Tra calo món ăn</a></div>
+          <div className="fx">
+            <span className="fx-dots" aria-hidden="true" /><span className="fx-glow" aria-hidden="true" />
+            <div className="fx-l">
+              {s.plan?.trial ? <span className="fx-pill">Miễn phí {s.plan.trial} ngày · không cần thẻ</span> : null}
+              <b className="fx-t">Tối nay ăn gì để vẫn giảm cân?<br /><span>Để app lo.</span></b>
+              <span className="fx-s">Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần.</span>
+              <div className="fx-b"><a className="btn fx-b1" href={appLink(s, "footer")}>Dùng thử miễn phí →</a><a className="btn fx-b2" href="/bang-calo">Tra calo món ăn</a></div>
             </div>
-            <div className="fart" style={{ position: "relative", width: 380, flexShrink: 0, background: "radial-gradient(circle at 70% 40%,#D6E6FF,#EEF4FF 60%,#F5F9FF)", overflow: "hidden" }}>
-              <span aria-hidden="true" style={{ position: "absolute", right: -40, bottom: -60, width: 220, height: 220, borderRadius: "50%", background: "rgba(26,124,255,.12)" }} />
-              <img src="/img/bowl-pho.jpg" alt="" width={130} height={130} loading="lazy" decoding="async" className="th fbowl" style={{ position: "absolute", left: 26, bottom: 26, width: 130, height: 130, border: "5px solid #fff" }} />
-              <img src="/img/bowl-2.jpg" alt="" width={62} height={62} loading="lazy" decoding="async" className="th fbowl2" style={{ position: "absolute", left: 120, top: 26, width: 62, height: 62, border: "4px solid #fff" }} />
-              <div className="fphone" style={{ position: "absolute", right: 36, top: 24, width: 128, transform: "rotate(6deg)", borderRadius: 30, background: "#0F172A", padding: 7, boxShadow: "0 24px 48px rgba(15,23,42,.22)" }}>
-                <img src="/img/app-today.webp" alt="Màn Hôm nay của app Fipilot AI" width={312} height={675} loading="lazy" decoding="async" style={{ display: "block", width: "100%", borderRadius: 24 }} />
-              </div>
+            <div className="fx-r" aria-hidden="true">
+              <span className="fx-ring" />
+              <Phone className="fx-ph" dark src="/img/app-today.webp" />
+              <img className="fx-bowl" src="/img/bowl-pho.jpg" alt="" width={150} height={150} loading="lazy" decoding="async" />
+              <span className="fx-chip"><img src="/img/bowl-pho.jpg" alt="" width={36} height={36} loading="lazy" decoding="async" /><span><b>Phở bò tái</b><i>Bữa sáng · 420 kcal</i></span><em>✓</em></span>
             </div>
           </div>
         </div>
@@ -91,10 +91,36 @@ export default async function Footer({ s, menus }) {
 .fc-n{font-weight:700;color:#fff}.fc-d{display:inline-flex;align-items:center;gap:8px}.fc-u{color:rgba(255,255,255,.55)}.fc-k{color:#7CC2FF}
 .fchip-all{display:inline-flex;align-items:center;height:34px;padding:0 12px;font-size:12.5px;font-weight:700;color:#7CC2FF}
 .flink:hover{color:#fff!important}
+.fx{position:relative;overflow:hidden;border-radius:28px;display:flex;align-items:stretch;min-height:300px;background:linear-gradient(115deg,#0047D6 0%,#0062F0 42%,#2B8CFF 100%);box-shadow:0 30px 70px -20px rgba(0,50,160,.55),0 12px 24px -10px rgba(10,26,58,.35)}
+.fx-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1px);background-size:22px 22px;-webkit-mask-image:linear-gradient(90deg,transparent 30%,#000 75%);mask-image:linear-gradient(90deg,transparent 30%,#000 75%)}
+.fx-glow{position:absolute;right:-120px;top:-160px;width:520px;height:520px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.28),rgba(255,255,255,0))}
+.fx-l{position:relative;flex:1;padding:44px 48px;display:flex;flex-direction:column;gap:14px;justify-content:center;color:#fff}
+.fx-pill{align-self:flex-start;height:30px;padding:0 12px;border-radius:15px;display:inline-flex;align-items:center;font-size:13px;font-weight:700;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
+.fx-t{font-size:34px;line-height:1.18;font-weight:800;letter-spacing:-.02em}.fx-t span{color:#BFE0FF}
+.fx-s{font-size:16px;line-height:1.6;color:rgba(255,255,255,.86);max-width:460px}
+.fx-b{display:flex;gap:12px;margin-top:8px}
+.fx-b1{height:50px;padding:0 22px;border-radius:14px;background:#fff;color:#0052E0;font-size:15.5px;font-weight:800;box-shadow:0 10px 24px -8px rgba(0,20,80,.45)}
+.fx-b1:hover{background:#EEF5FF}
+.fx-b2{height:50px;padding:0 20px;border-radius:14px;background:rgba(255,255,255,.08);color:#fff;font-size:15.5px;font-weight:700;border:1.5px solid rgba(255,255,255,.55)}
+.fx-b2:hover{background:rgba(255,255,255,.16)}
+.fx-r{position:relative;width:420px;flex-shrink:0}
+.fx-ring{position:absolute;right:40px;top:34px;width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,255,255,.22);box-shadow:0 0 0 46px rgba(255,255,255,.05),0 0 0 92px rgba(255,255,255,.035)}
+.fx .fx-ph{--w:200px;right:92px;top:38px;transform:rotate(-7deg);z-index:2;-webkit-box-reflect:unset}
+.fx-bowl{position:absolute;left:22px;bottom:-26px;width:150px;height:150px;border-radius:50%;object-fit:cover;border:5px solid rgba(255,255,255,.95);box-shadow:0 20px 40px -10px rgba(0,20,80,.5);z-index:3}
+.fx-chip{position:absolute;right:24px;bottom:34px;z-index:4;display:flex;align-items:center;gap:10px;padding:9px 12px 9px 9px;border-radius:16px;background:rgba(255,255,255,.94);box-shadow:0 14px 30px -8px rgba(0,20,80,.45)}
+.fx-chip img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+.fx-chip span{display:flex;flex-direction:column;gap:1px}.fx-chip b{font-size:13.5px;color:#0F172A}.fx-chip i{font-style:normal;font-size:12px;color:#64748B}
+.fx-chip em{font-style:normal;width:24px;height:24px;border-radius:12px;background:#16A34A;color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-left:4px}
 @media(max-width:720px){
- .fwrap{margin-top:36px!important}.fcardwrap{margin-bottom:-90px!important}.fcard{flex-direction:column!important}
- .fcard-l{padding:22px 20px!important}.fcard-t{font-size:22px!important}.fbtns{flex-direction:column}
- .fart{width:auto!important;height:190px}.fbowl{left:8%!important;bottom:14px!important;width:110px!important;height:110px!important}.fbowl2{left:36%!important;top:16px!important}.fphone{right:8%!important;top:18px!important;width:108px!important}
+ .fwrap{margin-top:36px!important}.fcardwrap{margin-bottom:-90px!important}
+ .fx{flex-direction:column;border-radius:22px;min-height:0}
+ .fx-l{padding:28px 22px 6px;gap:12px}.fx-t{font-size:26px}.fx-s{font-size:15px}
+ .fx-b{flex-direction:column}.fx-b .btn{width:100%}
+ .fx-r{width:auto!important;height:250px}
+ .fx-ring{right:50%;margin-right:-150px;top:30px}
+ .fx .fx-ph{--w:170px;right:auto;left:50%;margin-left:-60px;top:36px}
+ .fx-bowl{left:16px;bottom:-30px;width:120px;height:120px}
+ .fx-chip{right:14px;bottom:22px}
  .foot{padding-top:120px!important}
  .fchips{display:grid!important;grid-template-columns:1fr 1fr}
  .fchip{flex-direction:column;align-items:flex-start;gap:2px;height:auto;padding:9px 11px;border-radius:12px}
