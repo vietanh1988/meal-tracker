@@ -2,7 +2,7 @@
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
   imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable, linkTargets, linkStats,
-  caloHints, reviewPrompt, parseReview, fixPrompt,
+  caloHints, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk,
 } from "./aiWrite.js";
 
 export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
@@ -221,9 +221,9 @@ async function step(admin, job, cfg, t0) {
     } else {
       base = [{ role: "user", content: fixPrompt(st.issues || [], st.final || st.draft?.text || "") }];
     }
-    const msgs = g.text ? [...base, { role: "assistant", content: g.text }, { role: "user", content: "Viết tiếp đúng chỗ đang dừng, không lặp lại, không thêm lời dẫn." }] : base;
+    const msgs = g.text ? [...base, { role: "assistant", content: g.text }, { role: "user", content: "Viết tiếp đúng chỗ đang dừng (đang giữa hai từ thì bắt đầu bằng dấu cách), không lặp lại, không thêm lời dẫn." }] : base;
     const r = await llm(prov, await keys(), { model: job.model, maxTokens: CHUNK_TOKENS, system: sys(), messages: msgs });
-    const ng = { text: g.text + r.text, chunks: g.chunks + 1 };
+    const ng = { text: joinChunk(g.text, r.text), chunks: g.chunks + 1 };
     const more = r.more;
     if (more && ng.chunks >= MAX_CHUNKS) throw new Error("Bài dài quá 5 đoạn viết, dừng để tránh tốn tiền.");
     const patch = await addText(r, { state: { ...st, [kind]: ng } });
@@ -255,7 +255,7 @@ async function step(admin, job, cfg, t0) {
     });
     const cost = textCost(rm, r.inTok, r.outTok, r.searches);
     await logUsage(admin, job.created_by, rp, rm, r.inTok, r.outTok, cost, "web_review");
-    const issues = parseReview(r.text);
+    const issues = [...parseReview(r.text), ...linkIssues(mdToBlocks(a.md, { links: st.links || null }), st.links || [])].slice(0, 18); // + máy kiểm thiếu link bắt buộc
     const nst = { ...st, reviewed: true, review: { model: rm, issues } };
     if (issues.length) { nst.issues = issues; nst.fix = null; }
     await save({ in_tok: job.in_tok + r.inTok, out_tok: job.out_tok + r.outTok, cost_text: Number(job.cost_text) + cost, state: nst, status: issues.length ? "fixing" : afterText(true) });

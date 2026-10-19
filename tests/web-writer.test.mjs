@@ -37,7 +37,7 @@ function fakeDb(tables, rpcs) {
 }
 
 const ARTICLE = ["SEO Title: Bữa sáng giảm cân với món Việt dễ làm mỗi ngày", "SEO Description: Gợi ý bữa sáng giảm cân với món Việt quen thuộc, đủ đạm và rau, kèm bảng calo ước tính để bạn chọn món nhanh mỗi sáng.", "Slug: bua-sang-giam-can", "Excerpt: Ăn sáng đủ đạm giúp no lâu.", "Thẻ: bữa sáng, Món Việt, #giảm cân", "Ảnh bìa: bát phở gà ít bánh nhiều rau cho bữa sáng giảm cân", "Full Article:", "Tiêu đề bài viết: Bữa sáng giảm cân với món Việt",
-  "**Bữa sáng giảm cân nên có đạm, rau và ít tinh bột tinh chế.** " + "Chữ ".repeat(120), "", "## Nên ăn gì?", "Trứng và bánh mì nguyên cám.", "", "[chèn ảnh ở đây: alt ảnh \"đĩa trứng luộc và bánh mì nguyên cám buổi sáng\"]", "", "## Bao nhiêu calo?", "Khoảng 350 đến 450 kcal.", "", "| Món | Calo |", "|---|---|", "| Phở gà | 400 |", "", "## Sai lầm hay gặp", "Bỏ bữa sáng.", "",
+  "**Bữa sáng giảm cân nên có đạm, rau và ít tinh bột tinh chế.** " + "Chữ ".repeat(120), "", "## Nên ăn gì?", "Trứng và bánh mì nguyên cám.", "", "[chèn ảnh ở đây: alt ảnh \"đĩa trứng luộc và bánh mì nguyên cám buổi sáng\"]", "", "## Bao nhiêu calo?", "Khoảng 350 đến 450 kcal.", "", "| Món | Calo |", "|---|---|", "| Phở gà | 400 |", "", "## Sai lầm hay gặp", "Bỏ bữa sáng.", "", "Ghi bữa sáng trên [Fipilot AI](/) và đọc thêm [thực đơn giảm cân](/chu-de/thuc-don) hoặc [mẹo giảm cân](/chu-de/giam-can).", "",
   "Image Prompts:", "1. A bowl of Vietnamese chicken pho with herbs", "2. Boiled eggs and whole wheat bread on a plate"].join("\n");
 
 function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "KHÔNG CÓ LỖI" } = {}) {
@@ -253,7 +253,7 @@ test("soát bài thấy lỗi → 1 lượt viết sửa đúng chỗ (giữ lin
   const fix = calls.claude[calls.claude.length - 1];
   assert.match(fix.messages[0].content, /\[so-khong-nguon\] "Khoảng 350 đến 450 kcal" => dùng số app/);
   assert.match(fix.messages[0].content, /Khoảng 350 đến 450 kcal\./); // sửa trên bản đã viết
-  assert.deepEqual(j.state.review.issues.length, 2);
+  assert.equal(j.state.review.issues.length, 2); // bài đã đủ link trang chủ + chuyên mục → máy không nhắc thêm
   assert.deepEqual(j.state.log.map((x) => x.s), ["writing", "review", "fixing", "images", "saving", "done"]);
   assert.ok(tables.web_posts[0].blocks.some((b) => /Khoảng 400 kcal theo bảng calo/.test(b.html || "")));
   assert.ok(tables.ai_usage_log.some((l) => l.feature === "web_review" && l.model === "claude-haiku-5-5"));
@@ -271,4 +271,17 @@ test("soát bằng hãng khác (Gemini) dùng khoá Gemini; tắt soát (review_
   for (let i = 0; i < 8 && g.tables.web_ai_jobs[0].status !== "review"; i++) await g.w.handle(req({ action: "tick", secret: "s3cret" }));
   await g.w.handle(req({ action: "tick", secret: "s3cret" }));
   assert.match(g.tables.web_ai_jobs[0].error || "", /Chưa có khoá Gemini/); // chưa nhập khoá Gemini → báo rõ, thử lại lần sau
+});
+
+test("bước soát không thấy lỗi nhưng bài thiếu link chuyên mục → máy thêm lỗi thiếu link, vẫn có lượt sửa", async () => {
+  const noCat = ARTICLE.replace(" và đọc thêm [thực đơn giảm cân](/chu-de/thuc-don) hoặc [mẹo giảm cân](/chu-de/giam-can)", "");
+  const { w, tables, calls } = setup({ cfg: { searches: 0, img_on: false }, writes: [{ text: noCat }, { text: ARTICLE }] });
+  tables.web_ai_jobs[0].auto_term = false; tables.web_ai_jobs[0].term_id = "t1";
+  for (let i = 0; i < 10 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  const j = tables.web_ai_jobs[0];
+  assert.equal(j.status, "done", j.error);
+  assert.deepEqual(j.state.review.issues.length, 1);
+  assert.match(j.state.review.issues[0], /thieu-link[\s\S]*\/chu-de\/thuc-don/);
+  assert.match(calls.claude[calls.claude.length - 1].messages[0].content, /thieu-link/);
+  assert.equal(j.state.linkStats.cat, 1);
 });

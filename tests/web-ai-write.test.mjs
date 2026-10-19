@@ -125,3 +125,15 @@ test("soát bài: máy gợi câu lệch số app, đọc danh sách lỗi, quy 
   assert.match(m.runConfig({ inlineImages: 2 }), /không đặt ngay sau sapo/);
   assert.equal(m.AI_DEFAULTS.review_model, "claude-sonnet-5-5");
 });
+
+test("nối lượt viết không dính chữ; thiếu link trang chủ / chuyên mục / bài cùng chủ đề → thành lỗi cho bước sửa", async () => {
+  const m = await import("../src/pc/web/aiWrite.js");
+  assert.equal(m.joinChunk("Cách", "chắc nhất"), "Cách chắc nhất");
+  assert.equal(m.joinChunk("phư", "ơng pháp"), "phương pháp");
+  assert.equal(m.joinChunk("Các", "h làm"), "Cách làm");
+  assert.equal(m.joinChunk("quy", "ết định"), "quyết định");
+  const L = m.linkTargets({ cat: { id: 1, slug: "kien-thuc", name: "Kiến thức" }, posts: [{ slug: "bmr-la-gi", title: "BMR" }] });
+  const iss = m.linkIssues(m.mdToBlocks("Sapo.\n\nĐoạn [app](/) và [tính calo](/tinh-calo).", { links: L }), L);
+  assert.equal(iss.length, 2); assert.match(iss[0], /chuyên mục[\s\S]*\/chu-de\/kien-thuc/); assert.match(iss[1], /bmr-la-gi/);
+  assert.deepEqual(m.linkIssues(m.mdToBlocks("Sapo.\n\nĐoạn [app](/) [kt](/chu-de/kien-thuc) x.\n\nĐoạn [b](/bmr-la-gi).", { links: L }), L), []);
+});

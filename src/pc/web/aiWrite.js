@@ -148,6 +148,25 @@ export const linkPrompt = (links) => `LINK NỘI BỘ (chèn bằng markdown [ch
 - Chữ neo là cụm 2-6 từ CÓ SẴN trong câu văn tự nhiên, nói đúng nội dung trang đích (ví dụ câu nhắc "tính calo cần ăn mỗi ngày" thì link /tinh-calo). Không dùng "tại đây", "xem thêm", "click", không viết câu chỉ để chèn link.
 - Mỗi đường dẫn tối đa 1 lần. Không link trong sapo, heading, bảng. Mỗi đoạn tối đa 1 link. Link bài cùng chủ đề đặt ở đoạn đang nói đúng ý bài đó.
 ${links.map((l) => `${l.url} | ${l.title}`).join("\n")}`;
+// Thiếu link bắt buộc (trang chủ, chuyên mục; bài cùng chủ đề khi có) → thêm vào danh sách lỗi của bước soát để lượt sửa chèn vào
+export function linkIssues(blocks, links = []) {
+  if (!links.length) return [];
+  const c = linkStats(blocks, links), out = [];
+  const need = (kind, what) => { const l = links.find((x) => x.kind === kind); if (l && !c[kind]) out.push(`[thieu-link] "${what}" => thêm 1 link markdown [chữ neo](${l.url}) (${l.title}) vào một câu đang nói đúng ý đó ở thân bài, không ở sapo / heading / bảng`); };
+  need("home", "chưa có link về trang chủ");
+  need("cat", "chưa có link về chuyên mục");
+  const posts = links.filter((x) => x.kind === "post");
+  if (posts.length && !c.post) out.push(`[thieu-link] "chưa có link bài cùng chủ đề" => thêm 1-3 link tới bài hợp ý nhất trong: ${posts.slice(0, 6).map((p) => p.url).join(", ")}`);
+  return out;
+}
+// Nối 2 lượt viết: AI hay bỏ dấu cách ở chỗ nối ("Cách" + "chắc" → "Cáchchắc"). Chữ ghép có ≥ 2 cụm nguyên âm = 2 âm tiết tiếng Việt → chèn dấu cách.
+const VOW = /[aăâeêioôơuưyáàảãạắằẳẵặấầẩẫậéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]+/gi;
+export function joinChunk(prev, next) {
+  const a = String(prev || ""), b = String(next || "");
+  const ma = a.match(/[\p{L}]+$/u), mb = b.match(/^[\p{L}]+/u);
+  if (!ma || !mb) return a + b;
+  return (ma[0] + mb[0]).match(VOW)?.length >= 2 && (ma[0].match(VOW) || []).length && (mb[0].match(VOW) || []).length ? `${a} ${b}` : a + b;
+}
 // Đếm link đã chèn trong khối (để hiện ở tiến trình + nhắc thiếu)
 export function linkStats(blocks, links = []) {
   const kind = Object.fromEntries(links.map((l) => [l.url, l.kind]));
