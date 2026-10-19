@@ -62,7 +62,7 @@ function FoodPick({ value, onPick, testid }) {
   );
 }
 
-function Upload({ onDone, label = "Chọn ảnh từ máy", name, showToast, testid, box }) {
+function Upload({ onDone, label = "Chọn ảnh từ máy", name, showToast, testid, box, link }) {
   const [busy, setBusy] = useState(false);
   const pick = async (file) => {
     if (!file) return;
@@ -74,7 +74,7 @@ function Upload({ onDone, label = "Chọn ảnh từ máy", name, showToast, tes
   return (
     <label style={{ display: box ? "flex" : "inline-flex" }}>
       <input type="file" accept="image/*" data-testid={testid} style={{ display: "none" }} onChange={(e) => pick(e.target.files?.[0])} />
-      {box ? <span style={{ width: "100%", height: 70, borderRadius: 10, border: "1.5px dashed #BFD4FF", background: "#F5F9FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12.5, color: BLUE, fontWeight: 700, cursor: "pointer" }}>{busy ? "Đang tải…" : label}</span>
+      {link ? <span style={{ color: BLUE, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{busy ? "Đang tải…" : label}</span> : box ? <span style={{ width: "100%", height: 70, borderRadius: 10, border: "1.5px dashed #BFD4FF", background: "#F5F9FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12.5, color: BLUE, fontWeight: 700, cursor: "pointer" }}>{busy ? "Đang tải…" : label}</span>
         : <span className="pc-btn" style={{ ...small, borderRadius: 10, background: "#F1F5F9", display: "inline-flex", alignItems: "center", fontWeight: 800, cursor: "pointer" }}>{busy ? "Đang tải…" : label}</span>}
     </label>
   );

@@ -75,6 +75,34 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await page.getByTestId("web-terms-tab-1").click();
     await expect(page.getByTestId("web-tag-chip").filter({ hasText: "e2e thẻ" })).toHaveCount(1);
     await page.screenshot({ path: "shots/pc-web-terms.png", fullPage: true });
+
+    // Menu: thêm link tự nhập vào menu chân trang cột 3 → lưu → DB có mục
+    const [m0] = await rest("web_menus?location=eq.footer_3&select=items");
+    await page.getByTestId("pc-nav-web_menu").click();
+    await page.getByTestId("web-menu-loc-footer_3").click();
+    await page.getByTestId("web-menu-link-url").fill("https://app.fipilotai.com/?ref=e2e");
+    await page.getByTestId("web-menu-link-label").fill("E2E mở app");
+    await page.getByTestId("web-menu-link-add").click();
+    await page.getByTestId("web-menu-save").click();
+    await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu menu");
+    const [m1] = await rest("web_menus?location=eq.footer_3&select=items");
+    expect(m1.items.at(-1).label).toBe("E2E mở app");
+    await rest("web_menus?location=eq.footer_3", { method: "PATCH", body: JSON.stringify({ items: m0?.items || [] }) });
+
+    // Cài đặt web: đổi tên web → lưu → DB
+    const [st0] = await rest("web_settings?key=eq.site&select=value");
+    await page.getByTestId("pc-nav-web_settings").click();
+    await page.getByTestId("web-set-name").fill("Fipilot AI E2E");
+    await page.getByTestId("web-set-save").click();
+    await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu cài đặt web");
+    expect((await rest("web_settings?key=eq.site&select=value"))[0].value.name).toBe("Fipilot AI E2E");
+    await rest("web_settings?key=eq.site", { method: "PATCH", body: JSON.stringify({ value: st0.value }) });
+
+    // Tác giả: mở trang, có ít nhất 1 tác giả (tạo lúc viết bài), lưu hồ sơ
+    await page.getByTestId("pc-nav-web_authors").click();
+    await expect(page.getByTestId("web-au-row").first()).toBeVisible();
+    await page.getByTestId("web-au-save").click();
+    await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu tác giả");
     expect(errs, errs.join("\n")).toEqual([]);
   } finally {
     await rest(`web_posts?slug=like.e2e-*`, { method: "DELETE" }).catch(() => {});

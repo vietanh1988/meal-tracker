@@ -41,7 +41,7 @@ export default async function Footer({ s, menus }) {
       )}
       <footer className="foot" style={{ position: "relative", overflow: "hidden", background: "radial-gradient(circle at 15% 20%,rgba(26,124,255,.30),transparent 38%),radial-gradient(circle at 90% 85%,rgba(22,163,74,.18),transparent 34%),linear-gradient(180deg,#0B1F45,#081631)", color: "#fff", padding: f.show_app_card !== false ? "150px 0 0 0" : "48px 0 0 0" }}>
         <span aria-hidden="true" style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px)", backgroundSize: "24px 24px", pointerEvents: "none" }} />
-        {foods.length > 0 && (
+        {foods.length > 0 && f.show_calo !== false && (
           <div className="wrap" style={{ position: "relative", display: "flex", flexDirection: "column", gap: 12 }}>
             <span style={head}><span style={sq("#F9731622", "#FB923C")}><Icon name="bowl" size={13} stroke={2.4} /></span>CALO MÓN PHỔ BIẾN</span>
             <div className="fchips" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -58,7 +58,7 @@ export default async function Footer({ s, menus }) {
         )}
         <div className="wrap fcols" style={{ position: "relative", marginTop: 34, paddingTop: 30, borderTop: "1px solid rgba(255,255,255,.1)", display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr", gap: 32 }}>
           <div className="fbrand" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 10 }}><Logo label={false} /><b style={{ fontSize: 18 }}>{s.site.name}</b></span>
+            <span style={{ display: "flex", alignItems: "center", gap: 10 }}><Logo label={false} src={s.site.logo_url} /><b style={{ fontSize: 18 }}>{s.site.name}</b></span>
             <span style={{ fontSize: 13.5, color: "rgba(255,255,255,.72)", lineHeight: 1.65, maxWidth: 320 }}>{f.about}</span>
             <span style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "rgba(255,255,255,.8)" }}>
               {c.email && <a href={`mailto:${c.email}`} style={{ display: "flex", gap: 10, alignItems: "center" }}><span style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#7CC2FF" }}><Icon name="mail" size={15} /></span>{c.email}</a>}
@@ -71,14 +71,14 @@ export default async function Footer({ s, menus }) {
           {COLS.map(([loc, h, ic, col]) => (
             <nav key={loc} aria-label={h} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <span style={head}><span style={sq(`${col}22`, col)}><Icon name={ic} size={13} stroke={2.4} /></span>{h.toUpperCase()}</span>
-              {(menus[loc] || []).map((it) => <a key={it.url} href={it.url} className="flink" style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13.5, color: "rgba(255,255,255,.82)", fontWeight: 500 }}><span style={{ color: col, opacity: 0.85, display: "inline-flex" }}><Icon name={it.icon || "doc"} size={15} /></span>{it.label}</a>)}
+              {(menus[loc] || []).map((it) => <a key={it.url} href={it.url} className="flink" {...(it.new_tab ? { target: "_blank" } : {})} {...([it.new_tab && "noopener", it.nofollow && "nofollow"].filter(Boolean).length ? { rel: [it.new_tab && "noopener", it.nofollow && "nofollow"].filter(Boolean).join(" ") } : {})} {...(it.title ? { title: it.title } : {})} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13.5, color: "rgba(255,255,255,.82)", fontWeight: 500 }}><span style={{ color: col, opacity: 0.85, display: "inline-flex" }}><Icon name={it.icon || "doc"} size={15} /></span>{it.label}</a>)}
             </nav>
           ))}
         </div>
         <div aria-hidden="true" className="watermark" style={{ position: "relative", marginTop: 10, textAlign: "center", fontSize: 168, fontWeight: 900, lineHeight: 1, background: "linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", whiteSpace: "nowrap", userSelect: "none" }}>Fipilot AI</div>
         <div style={{ position: "relative", background: "rgba(0,0,0,.18)" }}>
           <div className="wrap fbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 52, fontSize: 12, color: "rgba(255,255,255,.55)" }}>
-            <span>{(f.copyright || "© %year% Fipilot AI").replace("%year%", year)} · fipilotai.com</span><span>{f.note}</span>
+            <span>{(f.copyright || "© %year% Fipilot AI").replace(/%(year|nam)%/g, year)} · fipilotai.com</span><span>{f.note}</span>
             <a href="#top" className="only-pc" style={{ height: 32, padding: "0 12px", borderRadius: 10, background: "rgba(255,255,255,.08)", display: "inline-flex", alignItems: "center", gap: 6, color: "#fff", fontWeight: 700 }}>↑ Lên đầu trang</a>
           </div>
         </div>

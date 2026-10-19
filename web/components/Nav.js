@@ -3,18 +3,21 @@ import Icon from "./Icon";
 import { appLink } from "@/lib/site";
 
 const ext = (u) => /^https?:/.test(u || "");
-export default function Nav({ items, s }) {
+// Thuộc tính link theo Quản trị › Menu: mở tab mới, nofollow, chữ khi rê chuột
+const la = (it) => { const rel = [it.new_tab && "noopener", it.nofollow && "nofollow"].filter(Boolean).join(" "); return { ...(it.new_tab ? { target: "_blank" } : {}), ...(rel ? { rel } : {}), ...(it.title ? { title: it.title } : {}) }; };
+export default function Nav({ items, s, mobile }) {
   const links = (items || []).filter((x) => x.style !== "button");
+  const mlinks = (mobile?.length ? mobile : items || []).filter((x) => x.style !== "button");
   const cta = (items || []).find((x) => x.style === "button") || { label: "Dùng thử miễn phí", url: appLink(s, "header") };
   return (
     <header id="top" style={{ background: "#fff", borderBottom: "1px solid #E6ECF5", position: "sticky", top: 0, zIndex: 40 }}>
       <div className="wrap navbar" style={{ height: 64, display: "flex", alignItems: "center", gap: 30 }}>
-        <a href="/" aria-label="Fipilot AI — trang chủ"><Logo /></a>
+        <a href="/" aria-label="Fipilot AI — trang chủ"><Logo src={s?.site?.logo_url} name={s?.site?.name} /></a>
         <nav aria-label="Menu chính" className="only-pc" style={{ display: "flex", gap: 26 }}>
           {links.map((it) => (
             <span key={it.url} style={{ position: "relative" }} className="navi">
-              <a href={it.url} style={{ fontSize: 15, fontWeight: 600, color: "#334155" }} {...(it.new_tab ? { target: "_blank", rel: "noopener" } : {})}>{it.label}{it.children?.length ? " ⌄" : ""}</a>
-              {it.children?.length ? <span className="navsub">{it.children.map((c) => <a key={c.url} href={c.url}>{c.label}</a>)}</span> : null}
+              <a href={it.url} style={{ fontSize: 15, fontWeight: 600, color: "#334155" }} {...la(it)}>{it.label}{it.children?.length ? " ⌄" : ""}</a>
+              {it.children?.length ? <span className="navsub">{it.children.map((c) => <a key={c.url} href={c.url} {...la(c)}>{c.label}</a>)}</span> : null}
             </span>
           ))}
         </nav>
@@ -24,10 +27,10 @@ export default function Nav({ items, s }) {
         <details className="only-m mnav" style={{ display: "none" }}>
           <summary aria-label="Mở menu" style={{ listStyle: "none", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Icon name="hamb" size={24} /></summary>
           <div style={{ position: "absolute", left: 0, right: 0, top: 64, background: "#fff", borderBottom: "1px solid #E6ECF5", boxShadow: "0 12px 24px rgba(15,23,42,.08)", padding: "8px 16px 16px" }}>
-            {links.map((it) => (
+            {mlinks.map((it) => (
               <div key={it.url}>
-                <a href={it.url} style={{ display: "block", padding: "14px 4px", fontSize: 17, fontWeight: 700, borderBottom: "1px solid #EEF2F7" }}>{it.label}</a>
-                {(it.children || []).map((c) => <a key={c.url} href={c.url} style={{ display: "block", padding: "12px 4px 12px 20px", fontSize: 15.5, color: "#475569", borderBottom: "1px solid #EEF2F7" }}>{c.label}</a>)}
+                <a href={it.url} {...la(it)} style={{ display: "block", padding: "14px 4px", fontSize: 17, fontWeight: 700, borderBottom: "1px solid #EEF2F7" }}>{it.label}</a>
+                {(it.children || []).map((c) => <a key={c.url} href={c.url} {...la(c)} style={{ display: "block", padding: "12px 4px 12px 20px", fontSize: 15.5, color: "#475569", borderBottom: "1px solid #EEF2F7" }}>{c.label}</a>)}
               </div>
             ))}
             <a href="/tim-kiem" style={{ display: "flex", gap: 10, alignItems: "center", padding: "14px 4px", fontSize: 16, fontWeight: 600, color: "#475569" }}><Icon name="search" size={18} />Tìm món, bài viết</a>

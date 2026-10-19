@@ -62,7 +62,7 @@ export async function savePost(post, { reason = "update", uid } = {}) {
   const row = {
     kind: post.kind || "post", title: post.title.trim() || "Bài chưa có tiêu đề", slug: post.slug, status: post.status, blocks: post.blocks || [],
     excerpt: post.excerpt || null, cover_url: post.cover_url || null, cover_alt: post.cover_alt || null,
-    author_id: post.author_id || null, primary_term: post.primary_term || null, template: post.template || null, parent_id: post.parent_id || null,
+    author_id: post.author_id || null, reviewer_id: post.reviewer_id || null, primary_term: post.primary_term || null, template: post.template || null, parent_id: post.parent_id || null,
     pinned: !!post.pinned, related: post.related || { mode: "auto", ids: [] }, seo: { ...(post.seo || {}), score: sc.score },
     word_count: wordCount(post.blocks), published_at: post.published_at || (post.status === "published" ? new Date().toISOString() : null),
     updated_at: new Date().toISOString(), updated_by: uid || null,
