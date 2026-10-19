@@ -1,6 +1,7 @@
 // Bài viết (137c/d) hoặc Trang (Giới thiệu, Liên hệ, Chính sách…) — cùng 1 kiểu đường dẫn /<ten>
 import { notFound } from "next/navigation";
-import { imgAttrs } from "@/lib/img";
+import { imgAttrs, srcSet } from "@/lib/img";
+import { preload } from "react-dom";
 import Crumb from "@/components/Crumb";
 import Blocks from "@/components/Blocks";
 import JsonLd from "@/components/JsonLd";
@@ -48,6 +49,8 @@ export async function generateMetadata({ params }) {
 
 export default async function Page({ params }) {
   const p = await findPage(params.slug);
+  // Ảnh bìa = phần tử lớn nhất màn đầu (LCP): báo trình duyệt tải ngay từ <head>, đúng bản theo cỡ màn
+  if (p?.cover_url) preload(p.cover_url, { as: "image", fetchPriority: "high", ...(srcSet(p.cover_url) ? { imageSrcSet: srcSet(p.cover_url), imageSizes: "(max-width: 720px) 100vw, 760px" } : {}) });
   if (!p) notFound();
   const s = await getSettings();
   let blocks = await prepare(p.blocks);
@@ -113,12 +116,12 @@ export default async function Page({ params }) {
                 <h2 className="rel-h" style={{ fontSize: 24, fontWeight: 800 }}>Bài liên quan</h2>
                 <div className="grid3 only-pc" style={{ gap: 12 }}>{rel.map((x) => (
                   <a key={x.id} href={`/${x.slug}`} className="card pcard" style={{ overflow: "hidden" }}>
-                    {x.cover_url ? <img src={x.cover_url} alt={x.cover_alt || ""} loading="lazy" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} /> : <span style={{ display: "block", height: 130, background: "linear-gradient(135deg,#E8F0FF,#F5F9FF)" }} />}
+                    {x.cover_url ? <img {...imgAttrs(x.cover_url, "(max-width: 720px) 50vw, 240px")} alt={x.cover_alt || ""} loading="lazy" decoding="async" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} /> : <span style={{ display: "block", height: 130, background: "linear-gradient(135deg,#E8F0FF,#F5F9FF)" }} />}
                     <span style={{ display: "block", padding: "14px 16px", fontSize: 16, fontWeight: 700, lineHeight: 1.4 }}>{x.title}</span>
                   </a>))}</div>
                 <div className="only-m">{rel.map((x) => { const c = catOf(x); return (
                   <a key={x.id} href={`/${x.slug}`} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 0", borderTop: "1px solid #EEF2F7" }}>
-                    {x.cover_url ? <img src={x.cover_url} alt={x.cover_alt || ""} loading="lazy" style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 72, height: 72, borderRadius: 12, background: "#E8F0FF", flexShrink: 0 }} />}
+                    {x.cover_url ? <img {...imgAttrs(x.cover_url, "72px")} alt={x.cover_alt || ""} loading="lazy" decoding="async" style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 72, height: 72, borderRadius: 12, background: "#E8F0FF", flexShrink: 0 }} />}
                     <span style={{ display: "flex", flexDirection: "column", gap: 4 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 15.5, lineHeight: 1.4 }}>{x.title}</b></span>
                   </a>); })}</div>
               </section>
@@ -145,5 +148,5 @@ export default async function Page({ params }) {
 }
 
 function Avatar({ a, size }) {
-  return a.avatar_url ? <img src={a.avatar_url} alt={a.name} width={size} height={size} style={{ width: size, height: size, borderRadius: size / 2, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: size, height: size, borderRadius: size / 2, background: "#0062F0", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: size / 2.6, flexShrink: 0 }}>{(a.name || "?").split(/\s+/).map((w) => w[0]).slice(-2).join("").toUpperCase()}</span>;
+  return a.avatar_url ? <img {...imgAttrs(a.avatar_url, `${size}px`)} alt={a.name} width={size} height={size} loading="lazy" decoding="async" style={{ width: size, height: size, borderRadius: size / 2, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: size, height: size, borderRadius: size / 2, background: "#0062F0", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: size / 2.6, flexShrink: 0 }}>{(a.name || "?").split(/\s+/).map((w) => w[0]).slice(-2).join("").toUpperCase()}</span>;
 }
