@@ -222,7 +222,7 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   else if (sec === "users") page = <PcUsers top={top} currentUserId={uid} isSuperAdmin={isSuperAdmin} />;
   else if (sec === "food_db") page = <PcFood top={top} isSuperAdmin={isSuperAdmin} />;
   else if (sec === "web_posts") page = <PcWebPosts key={`post${nonce}`} top={top} showToast={showToast} user={user} appSettings={appSettings} kind="post" />;
-  else if (sec === "web_pages") page = <PcWebPosts key={`page${nonce}`} top={top} showToast={showToast} user={user} appSettings={appSettings} kind="page" go={go} />;
+  else if (sec === "web_pages") page = <PcWebPosts key={`page${nonce}`} top={top} showToast={showToast} user={user} appSettings={appSettings} kind="page" go={go} saveSetting={saveSetting} />;
   else if (sec === "web_authors") page = <PcWebAuthors key={nonce} top={top} showToast={showToast} user={user} appSettings={appSettings} />;
   else if (sec === "web_settings") page = <PcWebSettings key={nonce} top={top} showToast={showToast} appSettings={appSettings} go={go} />;
   else if (sec === "web_menu") page = <PcWebMenu key={nonce} top={top} showToast={showToast} />;

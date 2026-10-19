@@ -24,6 +24,7 @@ export async function generateMetadata() {
     openGraph: { siteName: s.site.name, locale: "vi_VN", type: "website", images: [{ url: s.site.og_image || "/og-image.png", width: 1200, height: 630 }] },
     ...(s.site.favicon_url ? { icons: { icon: s.site.favicon_url, apple: s.site.favicon_url } } : {}),
     verification,
+    ...(s.seo?.block_all ? { robots: { index: false, follow: false } } : {}),
     alternates: alt("/"),
   };
 }
@@ -59,7 +60,10 @@ export default async function RootLayout({ children }) {
 }
 
 // Mã đo: mặc định chạy sau khi trang tải xong (Cài đặt SEO › Mã theo dõi › Chỉ chạy mã đo sau khi trang đã hiện xong)
-function later(t, js) { return t.lazy === false ? js : `(function(){function go(){${js}}document.readyState==="complete"?go():addEventListener("load",go)})();`; }
+function later(t, js) {
+  const g = `if(navigator.webdriver||!/(^|\\.)fipilotai\\.com$/.test(location.hostname))return;`; // không đếm máy test / bản xem trước
+  return t.lazy === false ? `(function(){${g}${js}})();` : `(function(){${g}function go(){${js}}document.readyState==="complete"?go():addEventListener("load",go)})();`;
+}
 
 // Cài đặt SEO › Mã theo dõi › Chèn mã tuỳ ý (chỉ admin nhập): chèn khi trang hiện xong; createContextualFragment để <script> trong mã vẫn chạy
 function customLoader(t) {

@@ -82,6 +82,14 @@ export function PcWebSeo({ top, showToast }) {
     <>
       {top(<Btn kind="blue" onClick={save} disabled={busy || !dirty || !settingsTab} testid="web-seo-save">{busy ? "Đang lưu…" : "Lưu thay đổi"}</Btn>, "Cài đặt SEO", "Áp cho toàn web fipilotai.com")}
       <div style={{ background: "#FFF", borderBottom: `1px solid ${PC.line}` }}><Tabs items={TABS} on={tab} onChange={setTab} testid="web-seoset-tab" /></div>
+      {(tab === 0 || tab === 2) && (
+        <div style={{ padding: "18px 24px 0" }}>
+          <Card style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, background: seo.block_all ? "#FEF2F2" : "#FFF", boxShadow: seo.block_all ? "inset 0 0 0 1.5px #FCA5A5" : undefined }} testid="web-seo-blockall-card">
+            <span style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1 }}><b style={{ fontSize: 13.5, color: seo.block_all ? "#B91C1C" : PC.t1 }}>{seo.block_all ? "Đang chặn Google và mọi công cụ tìm kiếm" : "Hiện web trên Google"}</b><span style={{ fontSize: 12, lineHeight: 1.45, color: PC.t3 }}>Giống WordPress › “Ngăn chặn các công cụ tìm kiếm đánh chỉ mục trang web này”. Bật khi web đang làm dở: mọi trang gắn noindex, sitemap rỗng, không báo IndexNow. Google tự gỡ dần link đã có. Tắt để Google đọc lại.</span></span>
+            <Tog on={!!seo.block_all} onChange={async (v) => { if (v && !(await appConfirm("Chặn Google đọc CẢ web fipilotai.com? Bài đã lên Google sẽ bị gỡ dần.", { danger: true }))) return; set("seo", { block_all: v }); }} label={seo.block_all ? "Đang chặn" : "Không chặn"} testid="web-seo-blockall" />
+          </Card>
+        </div>
+      )}
       {tab === 0 && (
         <div style={{ padding: "18px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "start" }}>
           {chung}

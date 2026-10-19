@@ -82,7 +82,7 @@ export async function savePost(post, { reason = "update", uid } = {}) {
 export async function pingIndexNow(paths) {
   try {
     const { data } = await supabase.from("web_settings").select("value").eq("key", "seo").maybeSingle();
-    const k = data?.value?.indexnow && data.value.indexnow_key;
+    const k = data?.value?.indexnow && !data.value.block_all && data.value.indexnow_key;
     if (!k || typeof fetch !== "function") return;
     for (const p of paths.slice(0, 20)) fetch(`https://api.indexnow.org/indexnow?url=${encodeURIComponent("https://fipilotai.com" + p)}&key=${k}&keyLocation=${encodeURIComponent("https://fipilotai.com/indexnow-key.txt")}`, { mode: "no-cors" }).catch(() => {});
   } catch (e) { /* */ }

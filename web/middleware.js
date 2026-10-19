@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://veodsvojxjmjhtrlaieq.supabase.co";
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-let cache = { t: 0, rules: [], maint: false };
+let cache = { t: 0, rules: [], maint: false, noindex: false };
 
 async function load() {
   if (Date.now() - cache.t < 60_000 || !KEY) return cache;
@@ -11,9 +11,10 @@ async function load() {
     const h = { apikey: KEY, Authorization: `Bearer ${KEY}` };
     const [r, m] = await Promise.all([
       fetch(`${URL_}/rest/v1/web_redirects?enabled=eq.true&select=id,src,dest,code,match&limit=5000`, { headers: h }).then((x) => (x.ok ? x.json() : [])),
-      fetch(`${URL_}/rest/v1/web_settings?key=eq.maintenance&select=value`, { headers: h }).then((x) => (x.ok ? x.json() : [])),
+      fetch(`${URL_}/rest/v1/web_settings?key=in.(maintenance,seo)&select=key,value`, { headers: h }).then((x) => (x.ok ? x.json() : [])),
     ]);
-    cache = { t: Date.now(), rules: Array.isArray(r) ? r : [], maint: !!m?.[0]?.value?.enabled };
+    const g = (k) => (Array.isArray(m) ? m.find((x) => x.key === k)?.value : null) || {};
+    cache = { t: Date.now(), rules: Array.isArray(r) ? r : [], maint: !!g("maintenance").enabled, noindex: !!g("seo").block_all };
   } catch { cache.t = Date.now(); }
   return cache;
 }
@@ -28,7 +29,7 @@ export async function middleware(req) {
   if (path !== pathname) return NextResponse.redirect(new URL(path + search, req.url), 308);
   const lower = decodeURIComponent(path).toLowerCase();
   const hit = c.rules.find((r) => r.match === "exact" && r.src.toLowerCase() === lower) || c.rules.find((r) => r.match === "prefix" && lower.startsWith(r.src.toLowerCase().replace(/\*$/, "")));
-  if (!hit) return NextResponse.next();
+  if (!hit) { const res = NextResponse.next(); if (c.noindex) res.headers.set("X-Robots-Tag", "noindex, nofollow"); return res; } // Cài đặt SEO › Chặn công cụ tìm kiếm
   if (KEY) fetch(`${URL_}/rest/v1/rpc/hit_web_redirect`, { method: "POST", headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: hit.id }) }).catch(() => {});
   if (hit.code === 410) return new NextResponse("Trang này đã bị xoá.", { status: 410, headers: { "content-type": "text/plain; charset=utf-8" } });
   let dest = hit.dest || "/";

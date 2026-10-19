@@ -12,6 +12,7 @@ import { STATUS, slugify } from "./webLib";
 import { listPosts, listTerms, setStatus, deleteForever, duplicatePost } from "./webApi";
 import { PcWebEditor } from "./PcWebEditor";
 import { PcWebPageBuilder } from "./PcWebPageBuilder";
+import { PcWebSysPages, PcWebSysEdit } from "./PcWebSysPages";
 
 const COLS = "28px minmax(0,2.6fr) minmax(0,1fr) 0.7fr 0.9fr 1.1fr";
 const WEB = "https://fipilotai.com";
@@ -20,7 +21,8 @@ export const fullDT = (iso) => (iso ? new Date(iso).toLocaleString("vi-VN", { ti
 const ago = (iso) => { const m = Math.round((Date.now() - new Date(iso)) / 60000); if (m < 1) return "Sửa vừa xong"; if (m < 60) return `Sửa ${m} phút trước`; if (m < 24 * 60) return `Sửa ${Math.round(m / 60)} giờ trước`; if (m < 48 * 60) return "Sửa hôm qua"; return `Sửa ${fullDT(iso).slice(0, 10)}`; };
 const monthOf = (iso) => (iso ? new Date(iso).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", month: "2-digit", year: "numeric" }) : "");
 
-export function PcWebPosts({ top, showToast, user, appSettings, kind = "post", go }) {
+export function PcWebPosts({ top, showToast, user, appSettings, saveSetting, kind = "post", go }) {
+  const [sys, setSys] = useState(null); // Trang có sẵn: "terms" | "about" (nội dung dùng chung app)
   const [builder, setBuilder] = useState(false); // Trang › Sửa trang chủ tại chỗ (138d)
   const [rows, setRows] = useState(null);
   const [cats, setCats] = useState([]);
@@ -86,6 +88,7 @@ export function PcWebPosts({ top, showToast, user, appSettings, kind = "post", g
   };
   const dup = async (id) => { setBusy(true); try { await duplicatePost(id, user?.id); showToast?.("Đã nhân bản thành bản nháp."); await load(); } catch (e) { showToast?.("Chưa nhân bản được: " + (e.message || "")); } setBusy(false); };
 
+  if (sys) return <PcWebSysEdit top={top} sub={sys} appSettings={appSettings} saveSetting={saveSetting} onBack={() => setSys(null)} />;
   if (builder) return <PcWebPageBuilder top={top} showToast={showToast} go={go} onBack={() => setBuilder(false)} />;
   if (edit) return <PcWebEditor top={top} id={edit === "new" ? null : edit} kind={kind} user={user} appSettings={appSettings} showToast={showToast} onBack={() => { setEdit(null); load(); }} />;
 
@@ -95,6 +98,7 @@ export function PcWebPosts({ top, showToast, user, appSettings, kind = "post", g
     <>
       {top(<span style={{ display: "flex", gap: 8 }}>{kind === "page" && <Btn kind="soft" testid="web-page-builder" onClick={() => setBuilder(true)}>✎ Sửa trang chủ tại chỗ</Btn>}<Btn kind="blue" testid="web-post-new" onClick={() => setEdit("new")}>+ {kind === "page" ? "Thêm trang mới" : "Viết bài mới"}</Btn></span>)}
       <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {kind === "page" && <><PcWebSysPages rows={rows} appSettings={appSettings} go={go} onBuilder={() => setBuilder(true)} onEdit={setEdit} onSub={setSys} showToast={showToast} user={user} reload={load} /><b style={{ fontSize: 13.5, marginTop: 8 }}>Trang tự tạo</b></>}
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 13, flexWrap: "wrap" }}>
           {[["all", "Tất cả"], ["published", "Đã đăng"], ["scheduled", "Hẹn giờ"], ["draft", "Bản nháp"], ["trash", "Thùng rác"]].map(([k, t]) => (
             <button key={k} type="button" data-testid={`web-tab-${k}`} onClick={() => { setTab(k); setSel([]); }} style={{ border: 0, background: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: tab === k ? 900 : 600, color: tab === k ? PC.t1 : BLUE }}>{t} <span style={{ color: PC.t4, fontWeight: 600 }}>({counts[k] || 0})</span></button>

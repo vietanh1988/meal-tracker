@@ -7,6 +7,7 @@ import { legalPages, appAuthor } from "@/lib/appdata";
 export const revalidate = 600;
 export default async function sitemap() {
   const s = await getSettings();
+  if (s.seo?.block_all) return []; // đang chặn công cụ tìm kiếm
   const on = s.seo?.sitemap || {};
   const u = (p) => siteUrl(s, p);
   const out = [{ url: u("/"), changeFrequency: "daily", priority: 1 }, { url: u("/bai-viet"), changeFrequency: "daily", priority: 0.8 }, { url: u("/bang-calo"), changeFrequency: "weekly", priority: 0.8 }, { url: u("/tinh-calo"), changeFrequency: "monthly", priority: 0.7 }, { url: u("/bang-gia"), changeFrequency: "monthly", priority: 0.6 }];

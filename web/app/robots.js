@@ -8,5 +8,7 @@ export default async function robots() {
   const rules = [{ userAgent: "*", allow: "/", disallow: ["/api/", ...disallow] }];
   if (s.seo?.allow_ai_bots === false) rules.push({ userAgent: AI, disallow: "/" });
   if (s.maintenance?.enabled) return { rules: [{ userAgent: "*", disallow: "/" }] };
+  // Chặn công cụ tìm kiếm (như WordPress): vẫn cho bot đọc để thấy noindex trên từng trang → Google gỡ link đã có; không khai sitemap
+  if (s.seo?.block_all) return { rules: [{ userAgent: "*", allow: "/", disallow: "/api/" }] };
   return { rules, sitemap: siteUrl(s, "/sitemap.xml"), host: siteUrl(s, "") };
 }

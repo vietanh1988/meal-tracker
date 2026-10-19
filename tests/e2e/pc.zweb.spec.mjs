@@ -156,6 +156,8 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
 
     // Sửa trang chủ tại chỗ (138d): đổi tiêu đề → Lưu nháp → DB page_home_draft (web chưa đổi); dọn
     await page.getByTestId("pc-nav-web_pages").click();
+    // Trang có sẵn của web (Trang chủ, Giới thiệu, Liên hệ, Bảng giá…) hiện trên danh sách Trang
+    expect(await page.getByTestId("web-sys-row").count()).toBeGreaterThanOrEqual(5);
     await page.getByTestId("web-page-builder").click();
     await page.getByTestId("web-pb-title").click();
     await page.keyboard.press("End");
