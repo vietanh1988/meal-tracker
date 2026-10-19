@@ -36,7 +36,7 @@ function fakeDb(tables, rpcs) {
   return { uploads, from: q, rpc: async (n, a) => ({ data: rpcs[n](a), error: null }), storage: { from: () => ({ upload: async (path) => { uploads.push(path); return { error: null }; } }) }, auth: { getUser: async () => ({ data: { user: { id: "u1" } } }) } };
 }
 
-const ARTICLE = ["SEO Title: Bữa sáng giảm cân với món Việt dễ làm mỗi ngày", "SEO Description: Gợi ý bữa sáng giảm cân với món Việt quen thuộc, đủ đạm và rau, kèm bảng calo ước tính để bạn chọn món nhanh mỗi sáng.", "Slug: bua-sang-giam-can", "Excerpt: Ăn sáng đủ đạm giúp no lâu.", "Ảnh bìa: bát phở gà ít bánh nhiều rau cho bữa sáng giảm cân", "Full Article:", "Tiêu đề bài viết: Bữa sáng giảm cân với món Việt",
+const ARTICLE = ["SEO Title: Bữa sáng giảm cân với món Việt dễ làm mỗi ngày", "SEO Description: Gợi ý bữa sáng giảm cân với món Việt quen thuộc, đủ đạm và rau, kèm bảng calo ước tính để bạn chọn món nhanh mỗi sáng.", "Slug: bua-sang-giam-can", "Excerpt: Ăn sáng đủ đạm giúp no lâu.", "Thẻ: bữa sáng, Món Việt, #giảm cân", "Ảnh bìa: bát phở gà ít bánh nhiều rau cho bữa sáng giảm cân", "Full Article:", "Tiêu đề bài viết: Bữa sáng giảm cân với món Việt",
   "**Bữa sáng giảm cân nên có đạm, rau và ít tinh bột tinh chế.** " + "Chữ ".repeat(120), "", "## Nên ăn gì?", "Trứng và bánh mì nguyên cám.", "", "[chèn ảnh ở đây: alt ảnh \"đĩa trứng luộc và bánh mì nguyên cám buổi sáng\"]", "", "## Bao nhiêu calo?", "Khoảng 350 đến 450 kcal.", "", "| Món | Calo |", "|---|---|", "| Phở gà | 400 |", "", "## Sai lầm hay gặp", "Bỏ bữa sáng.", "",
   "Image Prompts:", "1. A bowl of Vietnamese chicken pho with herbs", "2. Boiled eggs and whole wheat bread on a plate"].join("\n");
 
@@ -182,3 +182,34 @@ for (const [model, ip, searchUrl, writeUrl, imgUrl] of [
     assert.ok(tables.ai_usage_log.some((l) => l.provider === ip && l.feature === "web_article"));
   });
 }
+
+test("tự đăng nếu đạt: đủ ảnh + chuyên mục + thẻ (tạo thẻ mới / dùng thẻ cũ) → Đã đăng, gắn đủ chuyên mục và thẻ", async () => {
+  const { w, tables } = setup({ cfg: { publish: "auto" } });
+  tables.web_terms.push({ id: "tg1", kind: "tag", name: "Bữa sáng", slug: "bua-sang" });
+  for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  const p = tables.web_posts[0];
+  assert.equal(p.status, "published"); assert.ok(p.published_at);
+  const tags = tables.web_terms.filter((t) => t.kind === "tag").map((t) => t.slug).sort();
+  assert.deepEqual(tags, ["bua-sang", "giam-can", "mon-viet"]);
+  assert.deepEqual(tables.web_post_terms.map((x) => x.term_id).length, 4); // chuyên mục + 3 thẻ
+  assert.ok(tables.web_post_terms.some((x) => x.term_id === "tg1"));
+  assert.ok(p.cover_url && p.blocks.every((b) => b.type !== "img" || b.url));
+  assert.equal(tables.web_ai_jobs[0].state.published.status, "published");
+});
+
+test("tự đăng nhưng KHÔNG đạt (tắt vẽ ảnh → thiếu ảnh đại diện) → để nháp, ghi lý do", async () => {
+  const { w, tables } = setup({ cfg: { publish: "auto", img_on: false } });
+  for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  assert.equal(tables.web_posts[0].status, "draft");
+  assert.match(tables.web_ai_jobs[0].state.published.note, /thiếu ảnh đại diện/);
+});
+
+test("đặt lịch nếu đạt → Hẹn giờ ở mốc trống kế tiếp", async () => {
+  const { w, tables } = setup({ cfg: { publish: "schedule", sched_times: ["08:00", "19:00"] } });
+  for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  const p = tables.web_posts[0];
+  assert.equal(p.status, "scheduled");
+  const vn = new Date(new Date(p.published_at).getTime() + 7 * 3600e3);
+  assert.ok([8, 19].includes(vn.getUTCHours()) && vn.getUTCMinutes() === 0);
+  assert.ok(new Date(p.published_at) > new Date());
+});

@@ -36,6 +36,7 @@ SEO Title: <50-65 ký tự, chứa từ khóa chính tự nhiên, không "tốt 
 SEO Description: <140-160 ký tự, khớp title và thân bài, không hứa quá>
 Slug: <chữ thường không dấu, nối bằng gạch ngang>
 Excerpt: <1-2 câu tóm tắt cho thẻ bài, dưới 200 ký tự>
+Thẻ: <3-5 thẻ ngắn 1-4 chữ, chữ thường, cách nhau dấu phẩy, đúng chủ đề bài, ví dụ: thâm hụt calo, bữa sáng, món việt>
 Ảnh bìa: <mô tả 8-12 từ tiếng Việt, có từ khóa chính tự nhiên, thứ chụp được thật>
 Full Article:
 Tiêu đề bài viết: <tiêu đề, gần nghĩa SEO Title, tự nhiên>
@@ -92,7 +93,8 @@ export function parseArticle(text) {
   const seoTitle = line("SEO Title"), seoDesc = line("SEO Description");
   const slug = vnSlug(line("Slug") || title || seoTitle);
   const cover = line("Ảnh bìa").replace(/^["“”']|["“”']$/g, "");
-  return { seoTitle, seoDesc, slug, excerpt: line("Excerpt"), cover, prompts, title: title || seoTitle, md: body.replace(/[—–]/g, ",").trim() };
+  const tags = [...new Set(line("Thẻ").split(/[,;]/).map((x) => x.replace(/[#*"“”]/g, "").trim().toLowerCase()).filter((x) => x.length >= 2 && x.length <= 40))].slice(0, 5);
+  return { seoTitle, seoDesc, slug, excerpt: line("Excerpt"), cover, tags, prompts, title: title || seoTitle, md: body.replace(/[—–]/g, ",").trim() };
 }
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -166,6 +168,33 @@ export function articleToPost(a, { keyword = "", termId = null, authorId = null,
   };
 }
 
+// Bài đủ điều kiện đăng chưa (dùng chung: tự đăng / đặt lịch ở máy chủ, nút Đăng ở màn AI viết bài, trình soạn)
+export function postReady(p) {
+  const miss = [];
+  if (!String(p?.title || "").trim()) miss.push("tiêu đề");
+  if (!p?.cover_url) miss.push("ảnh đại diện");
+  const empty = (p?.blocks || []).filter((b) => b?.type === "img" && !b.url).length; if (empty) miss.push(`${empty} ô ảnh trống`);
+  if (!p?.primary_term) miss.push("chuyên mục");
+  if (Array.isArray(p?.terms) && !p.terms.some((t) => t !== p.primary_term)) miss.push("thẻ");
+  if (!String(p?.seo?.title || "").trim() || !String(p?.seo?.desc || "").trim()) miss.push("SEO title / mô tả");
+  if (!String(p?.excerpt || "").trim()) miss.push("đoạn trích");
+  return { ok: !miss.length, miss };
+}
+
+// Giờ đăng kế tiếp còn trống (giờ VN). times: ["08:00","19:00"]; taken: ISO các bài đã hẹn / đã đăng ở các mốc đó
+export function nextSlot(times, taken = [], nowMs = Date.now()) {
+  const list = [...new Set((times || []).filter((t) => /^\d{1,2}:\d{2}$/.test(t)).map((t) => t.padStart(5, "0")))].sort();
+  if (!list.length) return null;
+  const used = new Set(taken.map((t) => new Date(t).getTime()));
+  const vn = new Date(nowMs + 7 * 3600e3);
+  for (let d = 0; d < 400; d++) for (const t of list) {
+    const [h, m] = t.split(":").map(Number);
+    const at = Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate() + d, h, m) - 7 * 3600e3;
+    if (at > nowMs + 5 * 60e3 && !used.has(at)) return new Date(at).toISOString();
+  }
+  return null;
+}
+
 // Câu vẽ ảnh: khung phong cách cố định cho cả web + nội dung từng ảnh
 export const IMG_STYLE = "Realistic editorial food photography, Vietnamese home setting, natural window light, wooden table or light linen, shallow depth of field, appetizing, true-to-life colors. No text, no letters, no watermark, no logo, no collage.";
 export const imagePrompt = (subject, alt = "") => `${String(subject || alt || "Vietnamese healthy meal").trim()}. ${IMG_STYLE}`;
@@ -202,5 +231,5 @@ export const textCost = (model, inTok, outTok, searches = 0) => { const p = TEXT
 export const estText = (model, searches = 3) => textCost(model, 25000, 8000, searches);
 
 // Cài đặt mặc định của màn AI viết bài
-export const AI_DEFAULTS = { provider: "claude", model: "claude-sonnet-5-5", key_mode: "shared", searches: 3, img_on: true, img_provider: "flux", img_inline: 1, img_reuse: true, rate: 26000, daily_cap_usd: 2, rules: null };
+export const AI_DEFAULTS = { provider: "claude", model: "claude-sonnet-5-5", key_mode: "shared", searches: 3, img_on: true, img_provider: "flux", img_inline: 1, img_reuse: true, rate: 26000, daily_cap_usd: 2, rules: null, publish: "draft", sched_times: ["08:00", "19:00"] };
 export const cfgOf = (data) => { const c = { ...AI_DEFAULTS, ...(data || {}) }; c.provider = providerOf(c.model); return c; };

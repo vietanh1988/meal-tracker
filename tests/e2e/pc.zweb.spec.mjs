@@ -38,6 +38,10 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data.model).toBe("gemini-3.8-flash");
     await page.getByTestId("web-ai-img-prov").selectOption("gpt");
     await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data.img_provider).toBe("gpt");
+    await page.getByTestId("web-ai-pub-sched").click();
+    await page.getByTestId("web-ai-sched-times").fill("07:30, 20:00");
+    await page.getByTestId("web-ai-sched-times").blur();
+    await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data).toMatchObject({ publish: "schedule", sched_times: ["07:30", "20:00"] });
     await page.getByTestId("web-ai-cancel").first().click();
     await expect(page.locator("[data-testid=web-ai-row][data-status=canceled]")).toHaveCount(1);
     await page.getByTestId("web-ai-rules-edit").click();

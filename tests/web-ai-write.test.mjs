@@ -79,3 +79,14 @@ test("Ảnh bìa + Image Prompts tách khỏi bài; articleToPost gắn ảnh v�
   assert.match(systemPrompt(null, { inlineImages: 2 }), /chỗ ảnh trong thân bài: đúng 2/);
   assert.ok(systemPrompt("LUẬT RIÊNG", {}).startsWith("LUẬT RIÊNG")); assert.ok(RULES_DEFAULT.includes("QUY TẮC BẮT BUỘC"));
 });
+
+test("nextSlot: mốc trống kế tiếp theo giờ VN, bỏ mốc đã có bài; postReady liệt kê chỗ thiếu", async () => {
+  const { nextSlot, postReady } = await import("../src/pc/web/aiWrite.js");
+  const now = Date.parse("2026-10-19T03:00:00Z"); // 10:00 giờ VN
+  assert.equal(nextSlot(["08:00", "19:00"], [], now), "2026-10-19T12:00:00.000Z"); // 19:00 VN hôm nay
+  assert.equal(nextSlot(["08:00", "19:00"], ["2026-10-19T12:00:00.000Z"], now), "2026-10-20T01:00:00.000Z"); // 8:00 VN mai
+  assert.equal(nextSlot([], [], now), null);
+  const r = postReady({ title: "x", blocks: [{ type: "img", url: "" }], seo: { title: "a" } });
+  assert.equal(r.ok, false); assert.deepEqual(r.miss, ["ảnh đại diện", "1 ô ảnh trống", "chuyên mục", "SEO title / mô tả", "đoạn trích"]);
+  assert.deepEqual(postReady({ title: "x", cover_url: "c", blocks: [], primary_term: "t1", terms: ["t1"], seo: { title: "a", desc: "b" }, excerpt: "e" }).miss, ["thẻ"]);
+});

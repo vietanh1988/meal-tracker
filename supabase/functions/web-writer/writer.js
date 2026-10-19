@@ -1,7 +1,7 @@
 // Lõi web-writer (JS thuần để test được bằng bun): index.ts chỉ nạp thư viện rồi gọi makeWriter.
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
-  imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf,
+  imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot,
 } from "./aiWrite.js";
 
 export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
@@ -149,6 +149,15 @@ async function storeImage(admin, im, name, alt, uid, by) {
   return url;
 }
 
+// Báo Bing / Cốc Cốc link mới (bật ở Cài đặt SEO › IndexNow), giống nút Đăng trong trình soạn
+async function pingIndexNow(admin, path) {
+  try {
+    const { data } = await admin.from("web_settings").select("value").eq("key", "seo").maybeSingle();
+    const k = data?.value?.indexnow && !data.value.block_all && data.value.indexnow_key;
+    if (k) await fetch(`https://api.indexnow.org/indexnow?url=${encodeURIComponent("https://fipilotai.com" + path)}&key=${k}&keyLocation=${encodeURIComponent("https://fipilotai.com/indexnow-key.txt")}`).catch(() => {});
+  } catch (_e) { /* bỏ qua */ }
+}
+
 // ---- Một bước của 1 bài ----
 async function step(admin, job, cfg, t0) {
   const st = job.state || {};
@@ -251,12 +260,38 @@ async function step(admin, job, cfg, t0) {
     const taken = new Set(((await admin.from("web_posts").select("slug").like("slug", `${base}%`)).data || []).map((r) => r.slug));
     let slug = base, n = 2; while (taken.has(slug)) slug = `${base}-${n++}`;
     const words = post.blocks.map((b) => [b.text, b.html, ...(b.items || []), ...(b.head || []), ...((b.rows || []).flat())].filter(Boolean).join(" ")).join(" ").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
-    const row = { kind: "post", title: post.title || job.keyword, slug, status: "draft", blocks: post.blocks, excerpt: post.excerpt || null, cover_url: post.cover_url || null, cover_alt: post.cover_alt || null, author_id: author, primary_term: post.primary_term, related: post.related, seo: { ...post.seo, ai_job: job.id, warn: st.warn || [] }, word_count: words, updated_at: new Date().toISOString(), updated_by: job.created_by };
+    // Thẻ: AI đề xuất 3-5 thẻ → dùng thẻ đã có cùng đường dẫn, chưa có thì tạo mới
+    const tagIds = [];
+    if (a.tags?.length) {
+      const all = (await admin.from("web_terms").select("id,slug,name").eq("kind", "tag")).data || [];
+      for (const name of a.tags) {
+        const sl = slugOf(name); if (!sl) continue;
+        let t = all.find((x) => x.slug === sl);
+        if (!t) { const { data: nt } = await admin.from("web_terms").insert({ kind: "tag", name: name.charAt(0).toUpperCase() + name.slice(1), slug: sl }).select("id,slug,name").single(); if (nt) { t = nt; all.push(nt); } }
+        if (t && !tagIds.includes(t.id)) tagIds.push(t.id);
+      }
+    }
+    const terms = [...new Set([post.primary_term, ...tagIds].filter(Boolean))];
+    // Đăng theo cài đặt: nháp (mặc định) · tự đăng nếu đạt · tự đặt lịch nếu đạt. Đạt = đủ mọi chỗ (ảnh đại diện, ảnh trong bài, chuyên mục, SEO, đoạn trích) + không còn ghi chú cần xem lại.
+    const ready = postReady({ ...post, slug, terms });
+    const warn = st.warn || [];
+    let status = "draft", published_at = null, note = "";
+    if (cfg.publish !== "draft") {
+      if (!ready.ok || warn.length) note = `Chưa đạt nên để nháp: ${[...ready.miss.map((m) => "thiếu " + m), ...warn].join(" · ")}`;
+      else if (cfg.publish === "auto") { status = "published"; published_at = new Date().toISOString(); }
+      else {
+        const takenAt = ((await admin.from("web_posts").select("published_at,status").gte("published_at", new Date().toISOString())).data || []).filter((r) => r.status === "scheduled" || r.status === "published").map((r) => r.published_at);
+        const at = nextSlot(cfg.sched_times, takenAt);
+        if (at) { status = "scheduled"; published_at = at; } else note = "Chưa có giờ đăng hợp lệ trong cài đặt nên để nháp.";
+      }
+    }
+    const row = { kind: "post", title: post.title || job.keyword, slug, status, published_at, blocks: post.blocks, excerpt: post.excerpt || null, cover_url: post.cover_url || null, cover_alt: post.cover_alt || null, author_id: author, primary_term: post.primary_term, related: post.related, seo: { ...post.seo, ai_job: job.id, warn }, word_count: words, updated_at: new Date().toISOString(), updated_by: job.created_by };
     const { data: saved, error } = await admin.from("web_posts").insert(row).select("id").single();
     if (error) throw new Error("Lưu bài: " + error.message);
-    if (post.primary_term) await admin.from("web_post_terms").insert({ post_id: saved.id, term_id: post.primary_term }).then(() => {}, () => {});
-    await admin.from("web_revisions").insert({ post_id: saved.id, snapshot: { ...row, terms: post.terms }, reason: "ai", created_by: job.created_by }).then(() => {}, () => {});
-    await save({ status: "done", post_id: saved.id, finished_at: new Date().toISOString(), locked_until: null, error: null });
+    if (terms.length) await admin.from("web_post_terms").insert(terms.map((term_id) => ({ post_id: saved.id, term_id }))).then(() => {}, () => {});
+    await admin.from("web_revisions").insert({ post_id: saved.id, snapshot: { ...row, terms }, reason: status === "draft" ? "ai" : "publish", created_by: job.created_by }).then(() => {}, () => {});
+    if (status === "published") await pingIndexNow(admin, `/${slug}`);
+    await save({ status: "done", post_id: saved.id, finished_at: new Date().toISOString(), locked_until: null, error: null, state: { ...job.state, published: { status, at: published_at, note } } });
     return false;
   }
   return false;
