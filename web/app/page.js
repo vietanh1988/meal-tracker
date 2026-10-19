@@ -1,7 +1,7 @@
 // Trang chủ — bản vẽ 19/10 (dựng lại theo ảnh ChatGPT chủ dự án gửi; kiểu ở globals.css mục "Trang chủ")
 import { Fragment } from "react";
 import Calc from "@/components/Calc";
-import { HOME_HERO, HOME_SECTIONS, HOME_FAQ } from "@/lib/home";
+import { HOME_HERO, HOME_SECTIONS, HOME_FAQ, HOME_TEXT } from "@/lib/home";
 import { fillTrial, vnd, premiumPoints } from "@/lib/plans";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
@@ -14,7 +14,6 @@ import { orgGraph, websiteGraph, appGraph, faqGraph, ld, schemaOn } from "@/lib/
 
 export const revalidate = 60;
 export const metadata = { alternates: alt("/") };
-const STEPS = [["1", "Nhập cân nặng, chiều cao", "30 giây là xong."], ["2", "App tự lên thực đơn mỗi ngày", "Món Việt, đúng calo, đổi món 1 chạm."], ["3", "Ăn theo, bấm “Đã ăn”", "App nhắc đúng giờ, tự chỉnh calo theo cân mỗi tuần."]];
 // Bản vẽ trang chủ 19/10 (theo ảnh ChatGPT, giữ decor): ảnh món nhìn từ trên (public/img/home), số calo lấy từ kho món app
 const DISH = { "phở bò": "pho-bo", "cơm gà": "com-ga", "bún chả": "bun-cha", "bún bò huế": "bun-bo-hue", "bánh mì trứng": "banh-mi-trung", "sữa chua": "sua-chua" };
 const dimg = (k) => `/img/home/${DISH[k] || "pho-bo"}.webp`;
@@ -37,31 +36,32 @@ export default async function Home() {
   const order = (s.page_home?.sections?.length ? s.page_home.sections : HOME_SECTIONS.map((id) => ({ id, on: true }))).filter((x) => x.on !== false && HOME_SECTIONS.includes(x.id)).map((x) => x.id);
   for (const id of HOME_SECTIONS) if (!(s.page_home?.sections || []).some((x) => x.id === id) && s.page_home?.sections?.length) order.push(id); // khối mới thêm sau: mặc định hiện
   const P = s.plan || {};
+  const T = Object.fromEntries(Object.entries({ ...HOME_TEXT, ...Object.fromEntries(Object.entries(s.page_home?.text || {}).filter(([, v]) => String(v || "").trim())) }).map(([k, v]) => [k, fillTrial(v, s.plan)])); // ô để trống = chữ mặc định
   const SEC = {
     calc: <Fragment key="calc">
       <section className="wrap h-calcw">
         <div className="h-calc">
-          <div className="h-calc-l"><span className="eye">Tính thử trong 10 giây</span><h2 className="h-h2s">Bạn cần ăn bao nhiêu để giảm cân?</h2><Calc appUrl={s.site.app_url} /></div>
+          <div className="h-calc-l"><span className="eye">{T.calc_eye}</span><h2 className="h-h2s">{T.calc_title}</h2><Calc appUrl={s.site.app_url} /></div>
           <span className="h-calc-ic" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="hcg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#7CB6FF" /><stop offset="1" stopColor="#1A6BFF" /></linearGradient></defs><rect x="10" y="6" width="44" height="54" rx="10" fill="url(#hcg)" /><rect x="16" y="12" width="32" height="12" rx="4" fill="#E8F2FF" />{[0, 1, 2].map((r) => [0, 1, 2].map((c) => <rect key={`${r}${c}`} x={16 + c * 11.5} y={29 + r * 9.5} width="9" height="7" rx="2.5" fill={c === 2 && r === 2 ? "#FFB020" : "#FFFFFF"} fillOpacity={c === 2 && r === 2 ? 1 : 0.85} />))}</svg></span>
         </div>
       </section>
     </Fragment>,
     steps: <Fragment key="steps">
       <section className="wrap h-sec" id="cach-hoat-dong">
-        <div className="h-head"><span className="eye">Cách hoạt động</span><h2 className="h2">3 bước, không phải tự tính</h2><p className="h-sub">Bạn chỉ nhập số đo một lần — phần còn lại app lo.</p></div>
-        <div className="h-steps">{STEPS.map(([n, t, x], i) => <div key={n} className="h-step"><span className="h-num">{n}</span><span className="h-sic" style={{ background: STEP_IC[i][1] }}><img src={`/img/home/${STEP_IC[i][0]}.webp`} alt="" width={56} height={56} loading="lazy" /></span><span className="h-stx"><b>{t}</b><span>{x}</span></span>{i < 2 && <span className="h-arr" aria-hidden="true">›</span>}</div>)}</div>
+        <div className="h-head"><span className="eye">{T.steps_eye}</span><h2 className="h2">{T.steps_title}</h2>{T.steps_sub && <p className="h-sub">{T.steps_sub}</p>}</div>
+        <div className="h-steps">{[1, 2, 3].map((n) => [String(n), T[`step${n}_t`], T[`step${n}_x`]]).map(([n, t, x], i) => <div key={n} className="h-step"><span className="h-num">{n}</span><span className="h-sic" style={{ background: STEP_IC[i][1] }}><img src={`/img/home/${STEP_IC[i][0]}.webp`} alt="" width={56} height={56} loading="lazy" /></span><span className="h-stx"><b>{t}</b><span>{x}</span></span>{i < 2 && <span className="h-arr" aria-hidden="true">›</span>}</div>)}</div>
       </section>
     </Fragment>,
     feats: <Fragment key="feats">
       <section className="wrap h-sec">
         <img className="dc lf5" src="/img/home/canh-hung.webp" alt="" width={120} height={84} loading="lazy" /><img className="dc lf6" src="/img/home/ot.webp" alt="" width={40} height={90} loading="lazy" />
-        <div className="h-head"><span className="eye">Tính năng</span><h2 className="h2">3 tính năng giúp bạn giảm cân dễ hơn</h2></div>
+        <div className="h-head"><span className="eye">{T.feats_eye}</span><h2 className="h2">{T.feats_title}</h2></div>
         <div className="h-feats">
-          <div className="h-feat f1"><h3>Thực đơn tự lên mỗi ngày</h3><span className="fsub">Sáng phở, trưa cơm gà, tối bún chả — đúng calo cho bạn.</span>
+          <div className="h-feat f1"><h3>{T.feat1_t}</h3><span className="fsub">{T.feat1_x}</span>
             <div className="f1-ui"><div className="f1-list">{menu.map(({ f, meal, img }) => <div key={f.name} className="frow"><img src={img} alt="" width={46} height={46} loading="lazy" /><span><b>{f.name}</b><i>{meal} · {f.por}</i></span><em>{f.cal} kcal</em></div>)}</div><span className="f1-ph" aria-hidden="true"><span /></span></div></div>
-          <div className="h-feat f2"><h3>Không thích món nào? Đổi 1 chạm</h3><span className="fsub">Gợi ý món giữ bữa gần bằng calo.</span>
-            <div className="f2-ui">{sw.map((pr2, i) => <div key={i} className="f2-row">{pr2.map(({ f, img }, j) => [<div key={f.name} className="f2-c"><img src={img} alt="" width={46} height={46} loading="lazy" /><span><b>{f.name}</b><i>{f.cal} kcal</i></span></div>, j === 0 ? <span key="x" className="f2-x" aria-label="đổi sang">⇄</span> : null])}</div>)}<span className="f2-tip">Bấm <b>Đổi</b> ở món bất kỳ → app gợi ý món khác giữ bữa gần bằng calo</span></div></div>
-          <div className="h-feat f3"><h3>Thấy rõ kết quả mỗi tháng</h3><span className="fsub">Kg đã giảm, ngày ghi bữa, so tháng trước.</span>
+          <div className="h-feat f2"><h3>{T.feat2_t}</h3><span className="fsub">{T.feat2_x}</span>
+            <div className="f2-ui">{sw.map((pr2, i) => <div key={i} className="f2-row">{pr2.map(({ f, img }, j) => [<div key={f.name} className="f2-c"><img src={img} alt="" width={46} height={46} loading="lazy" /><span><b>{f.name}</b><i>{f.cal} kcal</i></span></div>, j === 0 ? <span key="x" className="f2-x" aria-label="đổi sang">⇄</span> : null])}</div>)}{T.feat2_tip && <span className="f2-tip">{T.feat2_tip}</span>}</div></div>
+          <div className="h-feat f3"><h3>{T.feat3_t}</h3><span className="fsub">{T.feat3_x}</span>
             <div className="f3-ui"><span className="f3-ph" aria-hidden="true"><span className="f3-bars">{[34, 52, 40, 70, 58, 86, 64].map((h, i) => <i key={i} style={{ height: `${h}%` }} />)}</span></span>
               <div className="f3-card"><span className="mut" style={{ fontSize: 13 }}>Ví dụ: tháng 10 của bạn</span><b className="f3-kg">−2,4 kg</b><span className="ck">✓ Ghi bữa 24/31 ngày</span><span className="ck">✓ Chuỗi 9 ngày liên tục</span>{spark}</div></div></div>
         </div>
@@ -70,14 +70,14 @@ export default async function Home() {
     pricing: <Fragment key="pricing">
       <section className="wrap h-sec h-price">
         <div>
-          <div className="h-head"><span className="eye">Bảng giá</span><h2 className="h2">Bắt đầu miễn phí</h2></div>
+          <div className="h-head"><span className="eye">{T.price_eye}</span><h2 className="h2">{T.price_title}</h2></div>
           <div className="h-plans">
             <div className="h-plan"><span className="pn">{pr.free?.name || "Miễn phí"}</span><b className="pp">0đ</b>{["Thực đơn tự lên mỗi ngày", "Đổi món, ghi bữa, nhắc giờ", "Tổng kết tháng"].map((x) => <span key={x} className="ck2"><i>✓</i>{x}</span>)}<a className="btn b2" href={appLink(s, "home-free")} style={{ marginTop: "auto" }}>Bắt đầu miễn phí</a></div>
             <div className="h-plan hi"><span className="ptag">Phổ biến</span><span className="pn">{pr.premium?.name || "Premium"}</span><b className="pp">{P.month ? vnd(P.month.per) : "Liên hệ"}{P.month && <small> / tháng</small>}</b>{premiumPoints(P).filter((x) => !/^Chỉ từ/.test(x)).map((x) => <span key={x} className="ck2"><i>✓</i>{x}</span>)}{P.cheapest && P.cheapest.m > 1 && <span className="psave">Chỉ từ {vnd(P.cheapest.per)} / tháng khi mua {P.cheapest.m} tháng</span>}<a className="btn b1" href={appLink(s, "home-premium")} style={{ marginTop: "auto" }}>{P.trial ? `Dùng thử ${P.trial} ngày` : "Nâng cấp Premium"}</a></div>
           </div>
         </div>
         <div>
-          <div className="h-head"><span className="eye">Hỏi đáp</span><h2 className="h2">Câu hỏi thường gặp</h2></div>
+          <div className="h-head"><span className="eye">{T.faq_eye}</span><h2 className="h2">{T.faq_title}</h2></div>
           <div className="h-faq">{FAQ.map((x, i) => <details key={x.q} className="faq" open={i === 0}><summary>{x.q}</summary><p>{x.a}</p></details>)}</div>
         </div>
       </section>
@@ -85,7 +85,7 @@ export default async function Home() {
     posts: <Fragment key="posts">
       {posts.length > 0 && (
         <section className="wrap h-sec">
-          <div className="h-head h-row"><div><span className="eye">Blog</span><h2 className="h2">Bài viết mới</h2></div><a className="h-all" href="/bai-viet">Xem tất cả →</a></div>
+          <div className="h-head h-row"><div><span className="eye">{T.posts_eye}</span><h2 className="h2">{T.posts_title}</h2></div><a className="h-all" href="/bai-viet">{T.posts_all}</a></div>
           <div className="h-posts">{posts.map((p) => { const c = catOf(p); return (
             <a key={p.id} className="h-post" href={`/${p.slug}`}>
               <span className="h-pimg">{p.cover_url ? <img {...imgAttrs(p.cover_url, "(max-width: 720px) 96px, 420px")} alt={p.cover_alt || ""} loading="lazy" /> : <span className="h-pnone" />}{c && <span className="h-pcat">{c.name}</span>}</span>

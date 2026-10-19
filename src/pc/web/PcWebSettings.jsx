@@ -128,6 +128,19 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
               </div>
               <span style={{ display: "flex", gap: 8, alignItems: "center" }}><Tog on={f.show_calo !== false} onChange={(v) => set("footer", { show_calo: v })} label="Hiện dải “Calo món phổ biến”" /><span style={{ marginLeft: "auto" }}><Lnk onClick={() => setFoodsOpen(true)} testid="web-set-foods">Chọn món ({pop.length})</Lnk></span></span>
               <Tog on={f.show_app_card !== false} onChange={(v) => set("footer", { show_app_card: v })} label="Hiện thẻ mời dùng app trên chân trang" />
+              {f.show_app_card !== false && <div data-testid="web-set-cta" style={{ display: "flex", flexDirection: "column", gap: 10, padding: 12, borderRadius: 12, background: "#F8FAFC", border: `1px solid ${PC.line}` }}>
+                <b style={{ fontSize: 12.5 }}>Chữ trên thẻ mời dùng app <span style={{ fontWeight: 500, color: PC.t3 }}>· để trống = chữ mặc định</span></b>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <Field label="Dòng 1 (chữ trắng)"><In v={f.cta_title} on={(v) => set("footer", { cta_title: v })} ph="Tối nay ăn gì để vẫn giảm cân?" /></Field>
+                  <Field label="Dòng 2 (chữ xanh nhạt)"><In v={f.cta_hl} on={(v) => set("footer", { cta_hl: v })} ph="Để app lo." /></Field>
+                </div>
+                <Field label="Dòng mô tả"><In v={f.cta_sub} on={(v) => set("footer", { cta_sub: v })} ph="Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần." /></Field>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                  <Field label="Nút trắng (sang app)"><In v={f.cta_btn1} on={(v) => set("footer", { cta_btn1: v })} ph="Dùng thử miễn phí →" /></Field>
+                  <Field label="Nút viền"><In v={f.cta_btn2} on={(v) => set("footer", { cta_btn2: v })} ph="Tra calo món ăn" /></Field>
+                  <Field label="Nút viền dẫn tới"><In v={f.cta_btn2_url} on={(v) => set("footer", { cta_btn2_url: v })} ph="/bang-calo" mono /></Field>
+                </div>
+              </div>}
               <span style={{ fontSize: 11.5, color: PC.t3 }}>Các cột link ở chân trang sửa trong <Lnk onClick={() => go?.("web_menu")}>Menu</Lnk>.</span>
             </div>
           </Card>

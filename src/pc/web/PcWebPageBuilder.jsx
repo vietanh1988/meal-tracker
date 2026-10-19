@@ -10,7 +10,7 @@ import { Btn, Loading, secLbl } from "../pcUI";
 import { Field, Tog, Modal, inpStyle, BLUE } from "./webUI";
 import { Upload } from "./BlockEdit";
 import { MediaPick } from "./MediaPick";
-import { HOME_HERO, HOME_SECTIONS, HOME_SECTION_NAME, HOME_FAQ } from "../../../web/lib/home.js";
+import { HOME_HERO, HOME_SECTIONS, HOME_SECTION_NAME, HOME_FAQ, HOME_TEXT_FIELDS } from "../../../web/lib/home.js";
 
 const WEB = "https://fipilotai.com";
 const must = ({ data, error }) => { if (error) throw error; return data; };
@@ -18,7 +18,7 @@ const OUT = { boxShadow: "0 0 0 2px #1A7CFF", borderRadius: 6 };
 const PAGES = [["home", "Trang chủ", "/"], ["pricing", "Bảng giá", "/bang-gia", "web_settings"], ["about", "Giới thiệu", "/gioi-thieu", "web_pages"], ["install", "Cài app lên điện thoại", "/cai-app", null], ["contact", "Liên hệ", "/lien-he", "web_settings"], ["footer", "Chân trang (mọi trang)", "", "web_settings"], ["bar", "Thanh trên (mọi trang)", "", "web_settings"]];
 const fmt = (iso) => new Date(iso).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
 const base = () => ({ hero: { ...HOME_HERO }, sections: HOME_SECTIONS.map((id) => ({ id, on: true })) });
-const norm = (v) => { const b = base(); const secs = [...(v?.sections || []).filter((x) => HOME_SECTIONS.includes(x.id))]; for (const id of HOME_SECTIONS) if (!secs.some((x) => x.id === id)) secs.push({ id, on: true }); return { hero: { ...b.hero, ...(v?.hero || {}) }, sections: secs, ...(v?.faq?.length ? { faq: v.faq } : {}) }; };
+const norm = (v) => { const b = base(); const secs = [...(v?.sections || []).filter((x) => HOME_SECTIONS.includes(x.id))]; for (const id of HOME_SECTIONS) if (!secs.some((x) => x.id === id)) secs.push({ id, on: true }); return { hero: { ...b.hero, ...(v?.hero || {}) }, sections: secs, ...(v?.faq?.length ? { faq: v.faq } : {}), ...(v?.text ? { text: v.text } : {}) }; };
 
 // Chữ sửa ngay trên trang: Enter = xuống dòng (chỉ ở tiêu đề), dán chỉ lấy chữ trơn
 function Ed({ value, onChange, onFocus, multi, style, testid, sel }) {
@@ -95,6 +95,7 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
             <span key={x.id} draggable onDragStart={() => setDrag(i)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (drag == null || drag === i) return; const n = [...v.sections]; const [it] = n.splice(drag, 1); n.splice(i, 0, it); setSec(n); setDrag(null); }} data-testid="web-pb-sec"
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", fontSize: 12.5, borderRadius: 8, cursor: "grab", opacity: drag === i ? 0.5 : 1 }}>
               <span style={{ color: PC.t4 }}>⋮⋮</span><span style={{ flex: 1, color: x.on ? PC.t1 : PC.t4, textDecoration: x.on ? "none" : "line-through" }}>{HOME_SECTION_NAME[x.id]}</span>
+              {HOME_TEXT_FIELDS[x.id] && <button type="button" title="Sửa chữ của khối này" data-testid={`web-pb-txt-${x.id}`} onClick={() => setSel(`t:${x.id}`)} style={{ border: 0, background: "none", cursor: "pointer", padding: 0, fontSize: 11.5, color: sel === `t:${x.id}` ? BLUE : PC.t3, fontWeight: 800 }}>Chữ</button>}
               {x.id === "pricing" && <button type="button" title="Sửa câu hỏi thường gặp" data-testid="web-pb-faq" onClick={() => setSel("faq")} style={{ border: 0, background: "none", cursor: "pointer", padding: 0, fontSize: 12, color: BLUE, fontWeight: 800 }}>✎</button>}
               <button type="button" title={x.on ? "Đang hiện · bấm để ẩn" : "Đang ẩn · bấm để hiện"} data-testid={`web-pb-eye-${x.id}`} onClick={() => setSec(v.sections.map((y, k) => (k === i ? { ...y, on: !y.on } : y)))} style={{ border: 0, background: "none", cursor: "pointer", padding: 0, fontSize: 13, color: x.on ? PC.t2 : PC.t4, opacity: x.on ? 1 : 0.45 }}>👁</button>
             </span>
@@ -128,7 +129,12 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
           </div>
         </div>
         <aside style={{ width: 300, flexShrink: 0, background: "#FFF", borderLeft: `1px solid ${PC.line}`, padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
-          {sel === "faq" ? <>
+          {String(sel || "").startsWith("t:") ? <>
+            <b style={{ fontSize: 14 }}>Chữ khối · {HOME_SECTION_NAME[sel.slice(2)]}</b>
+            <span style={{ fontSize: 12, lineHeight: 1.45, color: PC.t3 }}>Để trống ô nào thì web dùng chữ mặc định (chữ mờ trong ô). Gõ %trial% = {trial} ngày dùng thử.</span>
+            {HOME_TEXT_FIELDS[sel.slice(2)].map(([k, label, def]) => <Field key={k} label={label}>{/_x$|_sub$|_tip$/.test(k) ? <textarea value={v.text?.[k] || ""} placeholder={def} onChange={(e) => { setV((y) => ({ ...y, text: { ...(y.text || {}), [k]: e.target.value } })); setDirty(true); }} data-testid={`web-pb-t-${k}`} className="pc-input" style={{ ...inpStyle(), height: 58, padding: "8px 10px", fontSize: 12.5, lineHeight: 1.5 }} /> : <input value={v.text?.[k] || ""} placeholder={def} onChange={(e) => { setV((y) => ({ ...y, text: { ...(y.text || {}), [k]: e.target.value } })); setDirty(true); }} data-testid={`web-pb-t-${k}`} className="pc-input" style={{ ...inpStyle(32), fontSize: 12.5 }} />}</Field>)}
+            {HOME_TEXT_FIELDS[sel.slice(2)].some(([k]) => v.text?.[k]) && <Btn kind="light" style={{ height: 30, fontSize: 12, alignSelf: "flex-start" }} onClick={() => { setV((y) => ({ ...y, text: Object.fromEntries(Object.entries(y.text || {}).filter(([k]) => !HOME_TEXT_FIELDS[sel.slice(2)].some(([f]) => f === k))) })); setDirty(true); }}>Về chữ mặc định</Btn>}
+          </> : sel === "faq" ? <>
             <b style={{ fontSize: 14 }}>Hỏi đáp trên trang chủ</b>
             <span style={{ fontSize: 12, lineHeight: 1.45, color: PC.t3 }}>Hiện cạnh bảng giá và gắn schema Hỏi đáp cho Google. Gõ %trial% = {trial} ngày dùng thử. Giá gói lấy từ Gói cước & giới hạn của app.</span>
             {(v.faq || HOME_FAQ).map((x, i) => { const list = v.faq || HOME_FAQ; const upd = (patch) => { setV((y) => ({ ...y, faq: list.map((z, k) => (k === i ? { ...z, ...patch } : z)) })); setDirty(true); }; return (

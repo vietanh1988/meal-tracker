@@ -27,9 +27,9 @@ export default async function Footer({ s, menus }) {
             <span className="fx-dots" aria-hidden="true" /><span className="fx-glow" aria-hidden="true" />
             <div className="fx-l">
               {s.plan?.trial ? <span className="fx-pill">Miễn phí {s.plan.trial} ngày · không cần thẻ</span> : null}
-              <b className="fx-t">Tối nay ăn gì để vẫn giảm cân?<br /><span>Để app lo.</span></b>
-              <span className="fx-s">Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần.</span>
-              <div className="fx-b"><a className="btn fx-b1" href={appLink(s, "footer")}>Dùng thử miễn phí →</a><a className="btn fx-b2" href="/bang-calo">Tra calo món ăn</a></div>
+              <b className="fx-t">{f.cta_title || "Tối nay ăn gì để vẫn giảm cân?"}<br /><span>{f.cta_hl || "Để app lo."}</span></b>
+              <span className="fx-s">{f.cta_sub || "Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần."}</span>
+              <div className="fx-b"><a className="btn fx-b1" href={appLink(s, "footer")}>{f.cta_btn1 || "Dùng thử miễn phí →"}</a>{(f.cta_btn2 ?? "Tra calo món ăn") && <a className="btn fx-b2" href={safeUrl(f.cta_btn2_url || "/bang-calo")}>{f.cta_btn2 ?? "Tra calo món ăn"}</a>}</div>
             </div>
             <div className="fx-r" aria-hidden="true">
               <span className="fx-ring" />
