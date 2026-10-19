@@ -5,7 +5,7 @@ export default async function robots() {
   const s = await getSettings();
   const extra = String(s.seo?.robots_extra || "").split("\n").map((l) => l.trim()).filter(Boolean);
   const disallow = extra.filter((l) => /^disallow:/i.test(l)).map((l) => l.replace(/^disallow:\s*/i, "")).filter((p) => p && p !== "/");
-  const rules = [{ userAgent: "*", allow: "/", disallow: ["/api/", ...disallow] }];
+  const rules = [{ userAgent: "*", allow: "/", disallow: [...new Set(["/api/", ...disallow])] }]; // gộp dòng trùng
   if (s.seo?.allow_ai_bots === false) rules.push({ userAgent: AI, disallow: "/" });
   // Bảo trì: không đổi robots.txt (file cache 10 phút, chặn lâu hơn cần) — middleware đã trả 503 cho mọi trang
   // Chặn công cụ tìm kiếm (như WordPress): vẫn cho bot đọc để thấy noindex trên từng trang → Google gỡ link đã có; không khai sitemap

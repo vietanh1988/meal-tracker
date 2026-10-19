@@ -31,11 +31,11 @@ export default async function Footer({ s, menus }) {
               <span className="fx-s">{f.cta_sub || "Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần."}</span>
               <div className="fx-b"><a className="btn fx-b1" href={appLink(s, "footer")}>{f.cta_btn1 || "Dùng thử miễn phí →"}</a>{(f.cta_btn2 ?? "Tra calo món ăn") && <a className="btn fx-b2" href={safeUrl(f.cta_btn2_url || "/bang-calo")}>{f.cta_btn2 ?? "Tra calo món ăn"}</a>}</div>
             </div>
-            <div className="fx-r" aria-hidden="true">
-              <span className="fx-ring" />
-              <Phone className="fx-ph" dark src="/img/app-today.webp" />
-              <img className="fx-bowl" src="/img/bowl-pho.jpg" alt="" width={150} height={150} loading="lazy" decoding="async" />
-              <span className="fx-chip"><img src="/img/bowl-pho.jpg" alt="" width={36} height={36} loading="lazy" decoding="async" /><span><b>Phở bò tái</b><i>Bữa sáng · 420 kcal</i></span><em>✓</em></span>
+            <div className="fx-r">
+              <span className="fx-ring" aria-hidden="true" />
+              <Phone className="fx-ph" dark src="/img/app-today.webp" alt="Màn Hôm nay của app Fipilot AI: calo còn lại, bữa sắp tới" />
+              <img className="fx-bowl" src="/img/bowl-pho.jpg" alt="Tô phở bò tái — món Việt vẫn ăn được khi giảm cân" width={150} height={150} loading="lazy" decoding="async" />
+              <span className="fx-chip"><img src="/img/bowl-pho.jpg" alt="" aria-hidden="true" width={36} height={36} loading="lazy" decoding="async" /><span><b>Phở bò tái</b><i>Bữa sáng · 420 kcal</i></span><em>✓</em></span>
             </div>
           </div>
         </div>

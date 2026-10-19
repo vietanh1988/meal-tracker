@@ -6,7 +6,7 @@ export default function CaloBox({ fd, por, link = true, img }) {
       <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14, background: "linear-gradient(180deg,#F5F9FF,#FFFFFF)" }}>
         <b style={{ fontSize: 17 }}>{fd.name} · {n.name}{n.gram ? ` ${n.gram} g` : ""}</b>
         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-          <img className="th" src={img || "/img/bowl-1.jpg"} alt="" width={64} height={64} loading="lazy" style={{ width: 64, height: 64 }} />
+          <img className="th" src={img || "/img/bowl-1.jpg"} alt={fd.name} width={64} height={64} loading="lazy" style={{ width: 64, height: 64 }} />
           <b style={{ fontSize: 34 }}>{n.cal} kcal</b>
           <span className="cbox-m" style={{ display: "flex", gap: 16, marginLeft: 8 }}>{[["Đạm", n.p], ["Tinh bột", n.c], ["Chất béo", n.f]].map(([a, b]) => <span key={a} style={{ display: "flex", flexDirection: "column" }}><span className="lbl">{a}</span><b style={{ fontSize: 16 }}>{String(b).replace(".", ",")} g</b></span>)}</span>
         </div>

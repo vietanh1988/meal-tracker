@@ -146,6 +146,8 @@ export function PcWebSeo({ top, showToast }) {
             <Card style={{ padding: 0 }}><H t="Bot AI & công cụ tìm kiếm khác" />
               <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
                 <Tog on={seo.allow_ai_bots !== false} onChange={(v) => set("seo", { allow_ai_bots: v })} label="Cho bot AI đọc bài (ChatGPT, Claude, Gemini) — để được trích dẫn khi người dùng hỏi AI" />
+                <Tog on={seo.allow_ai_bots !== false && seo.llms !== false} onChange={(v) => set("seo", { llms: v })} label="Có file tóm tắt cho AI (llms.txt) — tự liệt kê trang chính, chuyên mục, bài mới, bảng calo món" />
+                {seo.allow_ai_bots !== false && seo.llms !== false && <Field label="Giới thiệu thêm trong llms.txt (không bắt buộc)" hint={<>Một đoạn ngắn AI sẽ đọc đầu tiên: app dành cho ai, khác gì app khác. Xem file: <a href={`${WEB}/llms.txt`} target="_blank" rel="noopener" style={{ color: BLUE }}>{WEB}/llms.txt ↗</a></>}><textarea value={seo.llms_intro || ""} onChange={(e) => set("seo", { llms_intro: e.target.value })} data-testid="web-llms-intro" rows={3} className="pc-input" placeholder="VD: Fipilot AI dành cho người Việt muốn giảm cân mà vẫn ăn món quen…" style={{ ...inpStyle(), height: "auto", padding: "8px 10px", fontSize: 12.5, lineHeight: 1.5 }} /></Field>}
                 <Tog on={!!seo.indexnow} onChange={(v) => set("seo", { indexnow: v, indexnow_key: seo.indexnow_key || Array.from(crypto.getRandomValues(new Uint8Array(16)), (x) => x.toString(16).padStart(2, "0")).join("") })} label="Báo Bing / Cốc Cốc ngay khi đăng bài (IndexNow)" testid="web-indexnow" />
               </div>
             </Card>

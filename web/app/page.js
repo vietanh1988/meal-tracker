@@ -49,18 +49,18 @@ export default async function Home() {
     steps: <Fragment key="steps">
       <section className="wrap h-sec" id="cach-hoat-dong">
         <div className="h-head"><span className="eye">{T.steps_eye}</span><h2 className="h2">{T.steps_title}</h2>{T.steps_sub && <p className="h-sub">{T.steps_sub}</p>}</div>
-        <div className="h-steps">{[1, 2, 3].map((n) => [String(n), T[`step${n}_t`], T[`step${n}_x`]]).map(([n, t, x], i) => <div key={n} className="h-step"><span className="h-num">{n}</span><span className="h-sic" style={{ background: STEP_IC[i][1] }}><img src={`/img/home/${STEP_IC[i][0]}.webp`} alt="" width={56} height={56} loading="lazy" /></span><span className="h-stx"><b>{t}</b><span>{x}</span></span>{i < 2 && <span className="h-arr" aria-hidden="true">›</span>}</div>)}</div>
+        <div className="h-steps">{[1, 2, 3].map((n) => [String(n), T[`step${n}_t`], T[`step${n}_x`]]).map(([n, t, x], i) => <div key={n} className="h-step"><span className="h-num">{n}</span><span className="h-sic" style={{ background: STEP_IC[i][1] }}><img src={`/img/home/${STEP_IC[i][0]}.webp`} alt={`Bước ${n}: ${t}`} width={56} height={56} loading="lazy" /></span><span className="h-stx"><b>{t}</b><span>{x}</span></span>{i < 2 && <span className="h-arr" aria-hidden="true">›</span>}</div>)}</div>
       </section>
     </Fragment>,
     feats: <Fragment key="feats">
       <section className="wrap h-sec">
-        <img className="dc lf5" src="/img/home/canh-hung.webp" alt="" width={120} height={84} loading="lazy" /><img className="dc lf6" src="/img/home/ot.webp" alt="" width={40} height={90} loading="lazy" />
+        <img className="dc lf5" src="/img/home/canh-hung.webp" alt="" aria-hidden="true" width={120} height={84} loading="lazy" /><img className="dc lf6" src="/img/home/ot.webp" alt="" aria-hidden="true" width={40} height={90} loading="lazy" />
         <div className="h-head"><span className="eye">{T.feats_eye}</span><h2 className="h2">{T.feats_title}</h2></div>
         <div className="h-feats">
           <div className="h-feat f1"><h3>{T.feat1_t}</h3><span className="fsub">{T.feat1_x}</span>
-            <div className="f1-ui"><div className="f1-list">{menu.map(({ f, meal, img }) => <div key={f.name} className="frow"><img src={img} alt="" width={46} height={46} loading="lazy" /><span><b>{f.name}</b><i>{meal} · {f.por}</i></span><em>{f.cal} kcal</em></div>)}</div><span className="f1-ph" aria-hidden="true"><span /></span></div></div>
+            <div className="f1-ui"><div className="f1-list">{menu.map(({ f, meal, img }) => <div key={f.name} className="frow"><img src={img} alt={`${f.name} – ${meal}, ${f.por} ${f.cal} kcal`} width={46} height={46} loading="lazy" /><span><b>{f.name}</b><i>{meal} · {f.por}</i></span><em>{f.cal} kcal</em></div>)}</div><span className="f1-ph" aria-hidden="true"><span /></span></div></div>
           <div className="h-feat f2"><h3>{T.feat2_t}</h3><span className="fsub">{T.feat2_x}</span>
-            <div className="f2-ui">{sw.map((pr2, i) => <div key={i} className="f2-row">{pr2.map(({ f, img }, j) => [<div key={f.name} className="f2-c"><img src={img} alt="" width={46} height={46} loading="lazy" /><span><b>{f.name}</b><i>{f.cal} kcal</i></span></div>, j === 0 ? <span key="x" className="f2-x" aria-label="đổi sang">⇄</span> : null])}</div>)}{T.feat2_tip && <span className="f2-tip">{T.feat2_tip}</span>}</div></div>
+            <div className="f2-ui">{sw.map((pr2, i) => <div key={i} className="f2-row">{pr2.map(({ f, img }, j) => [<div key={f.name} className="f2-c"><img src={img} alt={`${f.name} ${f.cal} kcal`} width={46} height={46} loading="lazy" /><span><b>{f.name}</b><i>{f.cal} kcal</i></span></div>, j === 0 ? <span key="x" className="f2-x" aria-label="đổi sang">⇄</span> : null])}</div>)}{T.feat2_tip && <span className="f2-tip">{T.feat2_tip}</span>}</div></div>
           <div className="h-feat f3"><h3>{T.feat3_t}</h3><span className="fsub">{T.feat3_x}</span>
             <div className="f3-ui"><span className="f3-ph" aria-hidden="true"><span className="f3-bars">{[34, 52, 40, 70, 58, 86, 64].map((h, i) => <i key={i} style={{ height: `${h}%` }} />)}</span></span>
               <div className="f3-card"><span className="mut" style={{ fontSize: 13 }}>Ví dụ: tháng 10 của bạn</span><b className="f3-kg">−2,4 kg</b><span className="ck">✓ Ghi bữa 24/31 ngày</span><span className="ck">✓ Chuỗi 9 ngày liên tục</span>{spark}</div></div></div>
@@ -100,7 +100,7 @@ export default async function Home() {
       <JsonLd data={ld(orgGraph(s), websiteGraph(s), schemaOn(s, "home") ? appGraph(s) : null, faqGraph(FAQ, s))} />
       <section className={`h-hero${order[0] === "calc" ? " h-hero-c" : ""}`} style={{ "--hbg": `url(${H.bg || "/img/home/hero-bg.webp"})`, "--hbgm": `url(${H.bg_m || H.bg || "/img/home/hero-bg-900.webp"})` }}>
         <span className="h-bg" aria-hidden="true" />
-        <img className="dc lf1" src="/img/home/la-hung.webp" alt="" width={120} height={98} /><img className="dc lf2" src="/img/home/chanh-xanh.webp" alt="" width={92} height={92} />
+        <img className="dc lf1" src="/img/home/la-hung.webp" alt="" aria-hidden="true" width={120} height={98} /><img className="dc lf2" src="/img/home/chanh-xanh.webp" alt="" aria-hidden="true" width={92} height={92} />
         <div className="wrap h-in">
           <div className="h-l">
             {H.badge && <span className="pill" style={{ alignSelf: "flex-start" }}>{H.badge}</span>}

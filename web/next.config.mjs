@@ -3,6 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   trailingSlash: false,
+  // Ngày dựng bản web — làm "lastmod" cho trang lấy dữ liệu từ code (bảng calo, trang cố định) trong sitemap / llms.txt
+  env: { BUILD_DATE: new Date().toISOString() },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [{ protocol: "https", hostname: "veodsvojxjmjhtrlaieq.supabase.co" }],
