@@ -40,7 +40,7 @@ export default async function About() {
         </div>
         <div className="ab-art" style={{ position: "relative", height: 380 }}>
           <img className="ab-bowl" src="/img/bowl-pho.jpg" alt="Tô phở bò" width={300} height={300} style={{ position: "absolute", left: 0, top: 30, width: 300, height: 300, borderRadius: 24, objectFit: "cover" }} />
-          <div className="ph ab-ph" style={{ width: 180, transform: "rotate(4deg)", position: "absolute", right: 40, top: 0 }}><img src="/img/app-today.png" alt="Màn Hôm nay của app Fipilot AI" /></div>
+          <div className="ph ab-ph" style={{ width: 180, transform: "rotate(4deg)", position: "absolute", right: 40, top: 0 }}><img src="/img/app-today.webp" alt="Màn Hôm nay của app Fipilot AI" /></div>
         </div>
       </section>
       <section className="wrap sec">

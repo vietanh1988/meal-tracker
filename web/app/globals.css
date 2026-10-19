@@ -4,7 +4,7 @@
 :root { --bg: #F3F6FB; --ink: #0F172A; --ink2: #334155; --mut: #64748B; --mut2: #94A3B8; --line: #E6ECF5; --line2: #EEF2F7; --blue: #0062F0; --blue2: #1A7CFF; --navy: #0B1F45; --green: #16A34A; }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-html, body { font-family: -apple-system, "system-ui", Inter, "Inter Fallback", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; }
+html, body { font-family: -apple-system, "system-ui", var(--font-inter), Inter, "Inter Fallback", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; }
 body { margin: 0; background: var(--bg); color: var(--ink); font-size: 14px; line-height: normal; }
 button, input, select, textarea { font-family: inherit; }
 a { color: inherit; text-decoration: none; }

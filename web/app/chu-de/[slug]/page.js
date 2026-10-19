@@ -39,7 +39,7 @@ export default async function Cat({ params, searchParams }) {
         {subs.length > 0 && <div className="chips" style={{ marginBottom: 32 }}><span className="chip on">Tất cả trong {t.name}</span>{subs.map((x) => <a key={x.id} className="chip" href={`/chu-de/${x.slug}`}>{x.name}</a>)}</div>}
         {pin && (
           <a href={`/${pin.slug}`} className="card catpin" style={{ display: "flex", overflow: "hidden", marginBottom: 56 }}>
-            {pin.cover_url && <img src={pin.cover_url} alt={pin.cover_alt || ""} style={{ width: 480, height: 280, objectFit: "cover", flexShrink: 0 }} />}
+            {pin.cover_url && <img src={pin.cover_url} alt={pin.cover_alt || ""} width={480} height={280} loading="lazy" style={{ width: 480, height: 280, objectFit: "cover", flexShrink: 0 }} />}
             <span style={{ padding: 32, display: "flex", flexDirection: "column", gap: 12, justifyContent: "center" }}><span className="pill" style={{ alignSelf: "flex-start" }}>{pin.pinned ? "📌 Bài nên đọc trước" : "Mới nhất"}</span><b style={{ fontSize: 28, lineHeight: 1.3 }}>{pin.title}</b>{pin.excerpt && <span className="catpin-ex" style={{ fontSize: 16, color: "#64748B", lineHeight: 1.6 }}>{pin.excerpt}</span>}<span style={{ fontSize: 13.5, color: "#94A3B8" }}>{fmtDate(pin.published_at)} · {readMin(pin.word_count)} phút đọc</span></span>
           </a>
         )}

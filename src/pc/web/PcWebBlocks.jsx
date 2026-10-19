@@ -152,7 +152,7 @@ function AppPreview({ b }) {
   return (
     <div style={{ borderRadius: 18, background: "linear-gradient(135deg,#0B1F45,#0050E6)", color: "#FFF", padding: 18, display: "flex", alignItems: "center", gap: 14 }}>
       <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}><b style={{ fontSize: 17 }}>{b.title || "Muốn app lên sẵn thực đơn đúng calo?"}</b><span style={{ fontSize: 13, opacity: 0.85 }}>{b.text || "Fipilot AI tự lên thực đơn món Việt đúng calo cho bạn — miễn phí."}</span><span style={{ alignSelf: "flex-start", marginTop: 4, height: 36, padding: "0 14px", borderRadius: 10, background: "#FFF", color: BLUE, fontWeight: 800, fontSize: 13, display: "inline-flex", alignItems: "center" }}>{b.button || "Mở app"}</span></span>
-      <img src={`${WEB}/img/app-today.png`} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: 78, borderRadius: 12, border: "3px solid #1E293B" }} />
+      <img src={`${WEB}/img/app-today.webp`} alt="" onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: 78, borderRadius: 12, border: "3px solid #1E293B" }} />
     </div>
   );
 }

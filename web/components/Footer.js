@@ -33,7 +33,7 @@ export default async function Footer({ s, menus }) {
               <img src="/img/bowl-pho.jpg" alt="" className="th fbowl" style={{ position: "absolute", left: 26, bottom: 26, width: 130, height: 130, border: "5px solid #fff" }} />
               <img src="/img/bowl-2.jpg" alt="" className="th fbowl2" style={{ position: "absolute", left: 120, top: 26, width: 62, height: 62, border: "4px solid #fff" }} />
               <div className="fphone" style={{ position: "absolute", right: 36, top: 24, width: 128, transform: "rotate(6deg)", borderRadius: 30, background: "#0F172A", padding: 7, boxShadow: "0 24px 48px rgba(15,23,42,.22)" }}>
-                <img src="/img/app-today.png" alt="Màn Hôm nay của app Fipilot AI" style={{ display: "block", width: "100%", borderRadius: 24 }} />
+                <img src="/img/app-today.webp" alt="Màn Hôm nay của app Fipilot AI" style={{ display: "block", width: "100%", borderRadius: 24 }} />
               </div>
             </div>
           </div>

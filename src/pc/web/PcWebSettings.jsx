@@ -68,7 +68,7 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
             <div style={{ padding: 16, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {tile("Logo", "SVG hoặc PNG nền trong", "logo_url", site.logo_url ? <img src={site.logo_url} alt="" style={{ maxHeight: 52, maxWidth: "100%" }} /> : <span style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,#1A7CFF,#0050E6)", color: "#FFF", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 900 }}>F</span><b>{site.name || "Fipilot AI"}</b></span>, "logo")}
               {tile("Biểu tượng tab (favicon)", "Vuông 512 × 512", "favicon_url", <img src={site.favicon_url || "/icon-192.png"} alt="" style={{ width: 40, height: 40, borderRadius: 10 }} />, "favicon")}
-              {tile("Ảnh chia sẻ mặc định", "1200 × 630", "og_image", <img src={site.og_image || "https://fipilotai.com/og-image.png"} alt="" style={{ width: "100%", height: 52, objectFit: "cover", borderRadius: 6 }} />, "anh-chia-se")}
+              {tile("Ảnh chia sẻ mặc định", "1200 × 630", "og_image", <img src={site.og_image || "https://fipilotai.com/og-image.jpg"} alt="" style={{ width: "100%", height: 52, objectFit: "cover", borderRadius: 6 }} />, "anh-chia-se")}
             </div>
           </Card>
           <Card style={{ padding: 0 }}><H t="Thanh thông báo đầu trang" r={<Tog on={!!nb.enabled} onChange={(v) => set("notice_bar", { enabled: v })} testid="web-set-bar" />} />

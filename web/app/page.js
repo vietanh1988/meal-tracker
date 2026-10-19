@@ -105,8 +105,8 @@ export default async function Home() {
             {H.note && <span style={{ fontSize: 13.5, color: "#64748B" }}>{H.note}</span>}
           </div>
           <div className="hero-ph" style={{ position: "relative", width: 430, height: 430, flexShrink: 0 }}>
-            <img src={H.img2 || "/img/app-menu.png"} alt={H.img2_alt} width={175} height={360} style={{ position: "absolute", right: 10, top: 40, width: 175, height: "auto", borderRadius: 26, border: "7px solid #0F172A", transform: "rotate(4deg)", boxShadow: "0 24px 48px rgba(15,23,42,.22)" }} />
-            <picture>{H.img1_m && <source media="(max-width: 720px)" srcSet={H.img1_m} />}<img src={H.img1 || "/img/app-today.png"} alt={H.img1_alt} width={195} height={400} fetchPriority="high" style={{ position: "absolute", left: 50, top: 0, width: 195, height: "auto", borderRadius: 26, border: "7px solid #0F172A", transform: "rotate(-4deg)", boxShadow: "0 24px 48px rgba(15,23,42,.22)" }} /></picture>
+            <img src={H.img2 || "/img/app-menu.webp"} alt={H.img2_alt} width={175} height={379} style={{ position: "absolute", right: 10, top: 40, width: 175, height: "auto", borderRadius: 26, border: "7px solid #0F172A", transform: "rotate(4deg)", boxShadow: "0 24px 48px rgba(15,23,42,.22)" }} />
+            <picture>{H.img1_m && <source media="(max-width: 720px)" srcSet={H.img1_m} />}<img src={H.img1 || "/img/app-today.webp"} alt={H.img1_alt} width={195} height={422} fetchPriority="high" style={{ position: "absolute", left: 50, top: 0, width: 195, height: "auto", borderRadius: 26, border: "7px solid #0F172A", transform: "rotate(-4deg)", boxShadow: "0 24px 48px rgba(15,23,42,.22)" }} /></picture>
           </div>
         </div>
       </section>

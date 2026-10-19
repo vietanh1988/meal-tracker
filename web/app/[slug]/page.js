@@ -130,7 +130,7 @@ export default async function Page({ params }) {
             <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.5 }}>App tự lên mỗi ngày, đúng calo cho bạn.</span>
             <div style={{ position: "relative", height: 170, marginTop: 4 }}>
               <img src="/img/food-cta.jpg" alt="" loading="lazy" style={{ position: "absolute", left: 0, bottom: 0, width: 160, height: 96, objectFit: "cover", borderRadius: 12 }} />
-              <img src="/img/app-today.png" alt="Màn Hôm nay của app Fipilot AI" loading="lazy" style={{ position: "absolute", right: 14, bottom: 0, width: 80, height: "auto", borderRadius: 14, border: "4px solid #0F172A", transform: "rotate(6deg)", boxShadow: "0 12px 24px rgba(15,23,42,.2)" }} />
+              <img src="/img/app-today.webp" alt="Màn Hôm nay của app Fipilot AI" loading="lazy" style={{ position: "absolute", right: 14, bottom: 0, width: 80, height: "auto", borderRadius: 14, border: "4px solid #0F172A", transform: "rotate(6deg)", boxShadow: "0 12px 24px rgba(15,23,42,.2)" }} />
             </div>
             <a className="btn b1" href={appLink(s, `post-${p.slug}`)}>Dùng thử miễn phí</a>
           </div>
