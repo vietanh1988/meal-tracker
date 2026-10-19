@@ -1,7 +1,7 @@
 // Quản trị PC › WEB & BÀI VIẾT › Tác giả (bản vẽ 138l, E-E-A-T): danh sách tác giả · hồ sơ (ảnh chân dung, tên, đường dẫn,
 // chức danh, kinh nghiệm, giới thiệu, chứng chỉ, link hồ sơ nơi khác sameAs, hộp tác giả cuối bài, người kiểm duyệt)
 // · xem trước hộp tác giả · schema Person tự tạo. Lưu → web_authors.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { PC } from "../../theme";
 import { appConfirm } from "../../lib/dialog";
@@ -9,6 +9,7 @@ import { Btn, Card, ErrorBox, Loading } from "../pcUI";
 import { Tog, Field, Lnk, inpStyle, BLUE } from "./webUI";
 import { slugify } from "./webLib";
 import { Upload } from "./BlockEdit";
+import { slugRedirect, slugType } from "./webApi";
 
 const WEB = "https://fipilotai.com";
 const must = ({ data, error }) => { if (error) throw error; return data; };
@@ -26,6 +27,7 @@ export function PcWebAuthors({ top, showToast, user, appSettings }) {
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
 
+  const asRef = useRef(appSettings); asRef.current = appSettings; // appSettings đổi giữa chừng không làm tải lại form (mất chữ đang sửa)
   const load = useCallback(async (keepId) => {
     try {
       const [a, p] = await Promise.all([supabase.from("web_authors").select("*").order("created_at").then(must), supabase.from("web_posts").select("author_id").eq("kind", "post").neq("status", "trash").limit(5000).then(must)]);
@@ -33,10 +35,10 @@ export function PcWebAuthors({ top, showToast, user, appSettings }) {
       setList(a); setCnt(c);
       const cur = a.find((x) => x.id === keepId) || a[0];
       if (cur) setF({ ...BLANK, ...cur, same_as: cur.same_as?.length ? cur.same_as : [""], credentials: cur.credentials || [] });
-      else { let ab = {}; try { ab = JSON.parse(appSettings?.about_page || "{}"); } catch (e) { /* */ } setF({ ...BLANK, name: ab.devName || "", slug: slugify(ab.devName || ""), job_title: ab.devRole || "", bio: ab.devBio || "", avatar_url: ab.devAvatar || "", same_as: [ab.facebook || ""] }); }
+      else { let ab = {}; try { ab = JSON.parse(asRef.current?.about_page || "{}"); } catch (e) { /* */ } setF({ ...BLANK, name: ab.devName || "", slug: slugify(ab.devName || ""), job_title: ab.devRole || "", bio: ab.devBio || "", avatar_url: ab.devAvatar || "", same_as: [ab.facebook || ""] }); }
       setDirty(false);
     } catch (e) { setErr("Chưa tải được tác giả. " + (e.message || "")); }
-  }, [appSettings]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [load]);
   useEffect(() => { window.__fpWebDirty = dirty; return () => { window.__fpWebDirty = false; }; }, [dirty]);
   const set = (patch) => { setF((x) => ({ ...x, ...patch })); setDirty(true); };
@@ -52,6 +54,8 @@ export function PcWebAuthors({ top, showToast, user, appSettings }) {
     try {
       const row = { name: f.name.trim(), slug, job_title: f.job_title || null, experience: f.experience || null, bio: f.bio || null, avatar_url: f.avatar_url || null, credentials: f.credentials, same_as: same, show_box: !!f.show_box, is_reviewer: !!f.is_reviewer };
       const saved = f.id ? await supabase.from("web_authors").update(row).eq("id", f.id).select().single().then(must) : await supabase.from("web_authors").insert({ ...row, profile_id: list.length ? null : user?.id || null }).select().single().then(must);
+      const old = f.id && list.find((x) => x.id === f.id);
+      if (old && old.slug !== slug) await slugRedirect(`/tac-gia/${old.slug}`, `/tac-gia/${slug}`);
       showToast?.("Đã lưu tác giả."); await load(saved.id);
     } catch (e) { showToast?.("Chưa lưu được: " + (e.message || "")); }
     setBusy(false);
@@ -82,7 +86,7 @@ export function PcWebAuthors({ top, showToast, user, appSettings }) {
           <div style={{ padding: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div style={{ gridColumn: "1/-1", display: "flex", gap: 14, alignItems: "center" }}><Av a={f} s={72} /><span style={{ display: "flex", flexDirection: "column", gap: 6 }}><span style={{ display: "flex", gap: 8 }}><Upload showToast={showToast} name={`tac-gia-${slug}`} label="Tải ảnh chân dung" onDone={(r) => set({ avatar_url: r.url })} />{f.avatar_url && <Btn kind="light" style={{ height: 28, fontSize: 12 }} onClick={() => set({ avatar_url: "" })}>Gỡ</Btn>}</span><span style={{ fontSize: 11.5, color: PC.t3 }}>Ảnh thật, mặt rõ — tăng độ tin cậy</span></span></div>
             <Field label="Tên hiển thị"><input value={f.name} onChange={(e) => set({ name: e.target.value, ...(f.id ? {} : { slug: slugify(e.target.value) }) })} data-testid="web-au-name" className="pc-input" style={inpStyle()} /></Field>
-            <Field label="Đường dẫn"><input value={f.slug} onChange={(e) => set({ slug: slugify(e.target.value) })} className="pc-input" style={{ ...inpStyle(), fontFamily: "ui-monospace, Menlo, monospace" }} /></Field>
+            <Field label="Đường dẫn"><input value={f.slug} onChange={(e) => set({ slug: slugType(e.target.value) })} className="pc-input" style={{ ...inpStyle(), fontFamily: "ui-monospace, Menlo, monospace" }} /></Field>
             <Field label="Chức danh"><input value={f.job_title || ""} onChange={(e) => set({ job_title: e.target.value })} placeholder="VD: Người sáng lập Fipilot AI" className="pc-input" style={inpStyle()} /></Field>
             <Field label="Kinh nghiệm"><input value={f.experience || ""} onChange={(e) => set({ experience: e.target.value })} placeholder="VD: 5 năm theo dõi ăn uống, tập gym" className="pc-input" style={inpStyle()} /></Field>
             <div style={{ gridColumn: "1/-1" }}><Field label="Giới thiệu ngắn" hint="2–4 câu, hiện cuối mỗi bài và trên trang tác giả"><textarea value={f.bio || ""} onChange={(e) => set({ bio: e.target.value })} placeholder="Viết vài câu về bạn: vì sao làm Fipilot AI, bạn đã giảm cân / tập luyện thế nào…" className="pc-input" style={{ ...inpStyle(84), height: 84, padding: "8px 12px", resize: "vertical", lineHeight: 1.55 }} /></Field></div>

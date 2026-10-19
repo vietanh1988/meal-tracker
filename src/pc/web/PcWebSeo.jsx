@@ -11,6 +11,7 @@ import { Btn, Pill, Card, SearchBox, ErrorBox, Loading, headRow, bodyRow, cell }
 import { Check, Tog, Radio, Tabs, Field, Lnk, inpStyle, BLUE } from "./webUI";
 import { slugify } from "./webLib";
 import { Upload, FOODS } from "./BlockEdit";
+import { readAll } from "./webApi";
 
 const WEB = "https://fipilotai.com";
 const must = ({ data, error }) => { if (error) throw error; return data; };
@@ -45,7 +46,7 @@ export function PcWebSeo({ top, showToast }) {
       const o = { seo: {}, site: {}, tracking: {} }; for (const r of rows) o[r.key] = r.value || {};
       o.seo.sitemap = { post: true, page: true, category: true, tag: false, calo: true, author: true, images: true, ...(o.seo.sitemap || {}) };
       setSt(o);
-      const [posts, terms, authors] = await Promise.all([supabase.from("web_posts").select("slug,kind,status,seo,updated_at").neq("status", "trash").limit(5000).then(must), supabase.from("web_terms").select("slug,kind").then(must), supabase.from("web_authors").select("slug").then(must)]);
+      const [posts, terms, authors] = await Promise.all([readAll(() => supabase.from("web_posts").select("slug,kind,status,seo,updated_at").neq("status", "trash").order("id")), supabase.from("web_terms").select("slug,kind").then(must), supabase.from("web_authors").select("slug").then(must)]);
       const live = posts.filter((p) => p.status === "published");
       const tot = (o.seo.sitemap.post !== false ? live.filter((p) => p.kind === "post" && !p.seo?.noindex).length : 0) + (o.seo.sitemap.page !== false ? live.filter((p) => p.kind === "page" && !p.seo?.noindex).length : 0) + (o.seo.sitemap.category !== false ? terms.filter((t) => t.kind === "category").length : 0) + (o.seo.sitemap.tag ? terms.filter((t) => t.kind === "tag").length : 0) + (o.seo.sitemap.author !== false ? authors.length : 0) + (o.seo.sitemap.calo !== false ? FOODS.filter((f) => f.vn).length : 0) + 7;
       setCounts({ total: tot, last: live.map((p) => p.updated_at).filter(Boolean).sort().pop(), post: live.filter((p) => p.kind === "post" && !p.seo?.noindex).length, page: live.filter((p) => p.kind === "page" && !p.seo?.noindex).length, pageNo: live.filter((p) => p.kind === "page" && p.seo?.noindex).length, category: terms.filter((t) => t.kind === "category").length, tag: terms.filter((t) => t.kind === "tag").length, author: authors.length, calo: FOODS.filter((f) => f.vn).length });
@@ -245,7 +246,7 @@ function Redirects({ showToast, paths }) {
   const del = async () => { if (!sel.length || !(await appConfirm(`Xoá ${sel.length} quy tắc chuyển hướng?`, { danger: true }))) return; try { await supabase.from("web_redirects").delete().in("id", sel).then(must); showToast?.("Đã xoá."); load(); } catch (e) { showToast?.(e.message); } };
   // Chuỗi: A → B và B → C → gộp thành A → C
   const chains = useMemo(() => { const by = Object.fromEntries((rows || []).filter((r) => r.enabled && r.match === "exact" && r.code !== 410).map((r) => [r.src.toLowerCase(), r])); return (rows || []).filter((r) => r.enabled && r.dest && by[r.dest.toLowerCase()] && by[r.dest.toLowerCase()].id !== r.id).map((r) => { const path = [r.src, r.dest]; let cur = by[r.dest.toLowerCase()]; const seen = new Set([r.id]); while (cur && !seen.has(cur.id)) { seen.add(cur.id); path.push(cur.dest); cur = cur.dest ? by[cur.dest.toLowerCase()] : null; } return { r, path }; }); }, [rows]);
-  const flatten = async () => { try { for (const { r, path } of chains) await supabase.from("web_redirects").update({ dest: path[path.length - 1] }).eq("id", r.id).then(must); showToast?.(`Đã gộp ${chains.length} chuỗi thành 1 bước.`); load(); } catch (e) { showToast?.(e.message); } };
+  const flatten = async () => { try { let loop = 0; for (const { r, path } of chains) { const end = path[path.length - 1]; if (end.toLowerCase() === r.src.toLowerCase() || new Set(path.map((x) => x.toLowerCase())).size < path.length) { loop++; continue; } await supabase.from("web_redirects").update({ dest: end }).eq("id", r.id).then(must); } showToast?.(`Đã gộp ${chains.length - loop} chuỗi thành 1 bước.${loop ? ` ${loop} quy tắc chuyển vòng (A → B → A) — sửa tay.` : ""}`); load(); } catch (e) { showToast?.(e.message); } };
   const exportCsv = () => { const csv = ["tu,toi,kieu,cach_khop,luot,bat", ...(rows || []).map((r) => [r.src, r.dest || "", r.code, r.match, r.hits, r.enabled ? 1 : 0].map((x) => `"${String(x).replace(/"/g, '""')}"`).join(","))].join("\n"); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv" })); a.download = "chuyen-huong-fipilotai.csv"; a.click(); };
   const importCsv = async (file) => {
     if (!file) return; const text = await file.text(); const lines = text.replace(/^\ufeff/, "").split(/\r?\n/).filter(Boolean);
@@ -297,13 +298,13 @@ function NotFound({ showToast, paths }) {
   useEffect(() => { load(); }, [load]);
   const suggest = (p) => { let best = null, sc = 0; for (const x of paths) { const s = sim(p, x); if (s > sc) { sc = s; best = x; } } return sc >= 0.6 ? { to: best, pct: Math.round(sc * 100) } : null; };
   const bot = (p) => /\.(php|asp|env|git|sql|bak)|wp-|xmlrpc|\/\.well-known|cgi-bin/i.test(p);
-  const redirect = async (r, code, to) => { try { await supabase.from("web_redirects").insert({ src: r.path, dest: code === 410 ? null : to, code, match: "exact", source: "manual" }).then(must); await supabase.from("web_404").update({ ignored: true }).eq("path", r.path).then(must); showToast?.(code === 410 ? `Đã báo 410 cho ${r.path}.` : `Đã chuyển ${r.path} → ${to}.`); load(); } catch (e) { showToast?.("Chưa làm được: " + e.message); } };
+  const redirect = async (r, code, to) => { if (code === 410 && !(await appConfirm(`Báo Google “${r.path}” đã xoá hẳn (410)? Google sẽ gỡ link này khỏi kết quả tìm kiếm.`, { danger: true }))) return; try { await supabase.from("web_redirects").upsert({ src: r.path, dest: code === 410 ? null : to, code, match: "exact", source: "manual", enabled: true }, { onConflict: "src" }).then(must); await supabase.from("web_404").update({ ignored: true }).eq("path", r.path).then(must); showToast?.(code === 410 ? `Đã báo 410 cho ${r.path}.` : `Đã chuyển ${r.path} → ${to}.`); load(); } catch (e) { showToast?.("Chưa làm được: " + e.message); } };
   const ignore = async (ps) => { if (!ps.length) return; try { await supabase.from("web_404").update({ ignored: true }).in("path", ps).then(must); showToast?.(`Đã bỏ qua ${ps.length} link.`); load(); } catch (e) { showToast?.(e.message); } };
   // Quét link nội bộ trong bài đã đăng: link tới trang không có → hỏng
   const scan = async () => {
     setScanning(true);
     try {
-      const posts = await supabase.from("web_posts").select("id,title,slug,blocks").eq("status", "published").limit(2000).then(must);
+      const posts = await readAll(() => supabase.from("web_posts").select("id,title,slug,blocks").eq("status", "published").order("id"));
       const rds = await supabase.from("web_redirects").select("src,dest,code").eq("enabled", true).then(must);
       const have = new Set(paths.map((p) => p.toLowerCase())); const rd = Object.fromEntries(rds.map((r) => [r.src.toLowerCase(), r]));
       const out = [];

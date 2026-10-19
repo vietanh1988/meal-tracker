@@ -8,7 +8,7 @@ export default function PostCard({ p, big = false, row = false, variant = "home"
   if (row) return (
     <a href={`/${p.slug}`} className="prow" style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0" }}>
       {p.cover_url ? <img src={p.cover_url} alt={p.cover_alt || ""} width={84} height={84} loading="lazy" style={{ width: 84, height: 84, borderRadius: 14, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 84, height: 84, borderRadius: 14, background: "#E8F0FF", flexShrink: 0 }} />}
-      <span style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 15.5, lineHeight: 1.4 }}>{p.title}</b><span style={{ fontSize: 13, color: "#94A3B8" }}>{readMin(p.word_count)} phút đọc</span></span>
+      <span style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 15.5, lineHeight: 1.4 }}>{p.title}</b><span style={{ fontSize: 13, color: "#64748B" }}>{readMin(p.word_count)} phút đọc</span></span>
     </a>
   );
   return (
@@ -17,7 +17,7 @@ export default function PostCard({ p, big = false, row = false, variant = "home"
       <span style={{ padding: L ? "20px 22px 22px" : "18px 20px 20px", display: "flex", flexDirection: "column", gap: L ? 10 : 8 }}>
         <span style={{ fontSize: 13, color: "#0062F0", fontWeight: 700 }}>{meta}</span>
         <b style={{ fontSize: big ? 24 : 18, lineHeight: L ? 1.35 : 1.4 }}>{p.title}</b>
-        {L && <span style={{ fontSize: 13.5, color: "#94A3B8" }}>{fmtDate(p.published_at)}</span>}
+        {L && <span style={{ fontSize: 13.5, color: "#64748B" }}>{fmtDate(p.published_at)}</span>}
       </span>
       <style dangerouslySetInnerHTML={{ __html: `.pcard{transition:box-shadow .15s}.pcard:hover{box-shadow:0 12px 28px rgba(15,23,42,.10)}@media(max-width:720px){.pcard{grid-column:auto!important}}` }} />
     </a>
@@ -52,7 +52,7 @@ export function ListRow({ p }) {
   return (
     <a href={`/${p.slug}`} style={{ display: "flex", gap: 14, alignItems: "center", padding: "14px 0", borderTop: "1px solid #EEF2F7" }}>
       {p.cover_url ? <img src={p.cover_url} alt={p.cover_alt || ""} width={92} height={92} loading="lazy" style={{ width: 92, height: 92, borderRadius: 14, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 92, height: 92, borderRadius: 14, background: "#E8F0FF", flexShrink: 0 }} />}
-      <span style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 16, lineHeight: 1.4 }}>{p.title}</b><span style={{ fontSize: 13, color: "#94A3B8" }}>{fmtDate(p.published_at)} · {readMin(p.word_count)} phút đọc</span></span>
+      <span style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 16, lineHeight: 1.4 }}>{p.title}</b><span style={{ fontSize: 13, color: "#64748B" }}>{fmtDate(p.published_at)} · {readMin(p.word_count)} phút đọc</span></span>
     </a>
   );
 }

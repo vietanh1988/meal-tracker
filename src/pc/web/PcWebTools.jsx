@@ -8,7 +8,7 @@ import { appConfirm } from "../../lib/dialog";
 import { Btn, Pill, Card, Loading, headRow, bodyRow, cell, vnInt } from "../pcUI";
 import { Check, Tabs, Field, Lnk, Radio, inpStyle, BLUE } from "./webUI";
 import { slugify, htmlToBlocks, textOf, wordCount } from "./webLib";
-import { createTerm, freeSlug, uploadImage } from "./webApi";
+import { createTerm, freeSlug, uploadImage, readAll } from "./webApi";
 
 const must = ({ data, error }) => { if (error) throw error; return data; };
 const H = ({ t, r }) => <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: `1px solid ${PC.headLine}` }}><b style={{ fontSize: 13.5 }}>{t}</b><span style={{ marginLeft: "auto" }}>{r}</span></div>;
@@ -45,7 +45,7 @@ export function PcWebTools({ top, showToast, user, go }) {
   const [tab, setTab] = useState(0);
   const [data, setData] = useState(null);
   const load = async () => {
-    const [posts, blocks, terms, links] = await Promise.all([supabase.from("web_posts").select("*").neq("status", "trash").limit(3000).then(must), supabase.from("web_blocks").select("*").then(must), supabase.from("web_terms").select("*").then(must), supabase.from("web_post_terms").select("post_id,term_id").limit(20000).then(must)]);
+    const [posts, blocks, terms, links] = await Promise.all([readAll(() => supabase.from("web_posts").select("*").neq("status", "trash").order("id")), supabase.from("web_blocks").select("*").then(must), supabase.from("web_terms").select("*").then(must), readAll(() => supabase.from("web_post_terms").select("post_id,term_id").order("post_id").order("term_id"))]);
     setData({ posts, blocks, terms, links });
   };
   useEffect(() => { load().catch((e) => showToast?.("Chưa tải được: " + e.message)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -178,7 +178,9 @@ function ExportImport({ data, reload, showToast, user, short, onMore }) {
     setBusy("export");
     try {
       const out = { app: "fipilot-web", version: 1, exported_at: new Date().toISOString() };
-      for (const k of KEYS) { const r = await supabase.from(k).select("*").limit(20000); out[k] = r.error ? [] : r.data; }
+      const miss = [];
+      for (const k of KEYS) { try { out[k] = await readAll(() => supabase.from(k).select("*")); } catch (e) { out[k] = []; miss.push(k); } }
+      if (miss.length) showToast?.(`Chưa đọc được: ${miss.join(", ")} — file xuất thiếu các bảng này.`);
       const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type: "application/json" })); a.download = `fipilotai-web-${new Date().toISOString().slice(0, 10)}.json`; a.click();
       showToast?.(`Đã xuất ${out.web_posts.length} bài / trang, ${out.web_terms.length} chuyên mục & thẻ, ${out.web_media.length} ảnh (link ảnh).`);
     } catch (e) { showToast?.("Chưa xuất được: " + e.message); }

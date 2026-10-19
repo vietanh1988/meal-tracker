@@ -3,7 +3,8 @@ import { Inter } from "next/font/google";
 import Nav from "@/components/Nav";
 import Track from "@/components/Track";
 import Footer from "@/components/Footer";
-import { getSettings, getMenu, siteUrl, alt } from "@/lib/site";
+import { safeUrl } from "@/lib/sanitize";
+import { getSettings, getMenu, siteUrl, ogBase } from "@/lib/site";
 
 // Font y hệt app: thứ tự -apple-system, "system-ui", Inter, "Inter Fallback", "Segoe UI", Roboto, … (globals.css).
 // Máy Apple dùng San Francisco; Windows / Android dùng Inter — tải từ chính fipilotai.com (next/font, chỉ bộ chữ Việt + Latin,
@@ -25,12 +26,11 @@ export async function generateMetadata() {
     description: "Giảm cân bằng món Việt quen thuộc. App tự lên thực đơn đúng calo mỗi ngày — phở, bún, cơm tấm vẫn ăn được.",
     applicationName: s.site.name,
     twitter: { card: "summary_large_image" },
-    openGraph: { siteName: s.site.name, locale: "vi_VN", type: "website", images: [{ url: s.site.og_image || "/og-image.jpg", width: 1200, height: 630 }] },
+    openGraph: ogBase(s),
     ...(s.site.favicon_url ? { icons: { icon: s.site.favicon_url, apple: s.site.favicon_url } } : {}),
     verification,
     ...(s.seo?.block_all ? { robots: { index: false, follow: false } } : {}),
-    alternates: alt("/"),
-  };
+  }; // canonical đặt ở từng trang (đặt ở đây thì /tim-kiem, 404 kế thừa canonical trang chủ)
 }
 export const viewport = { themeColor: "#0062F0", width: "device-width", initialScale: 1 };
 
@@ -44,7 +44,7 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="vi" className={inter.variable}>
       <body>
-        {showBar && <a href={nb.url || "#"} style={{ display: "block", background: "#0B1F45", color: "#fff", textAlign: "center", padding: "10px 16px", fontSize: 14, fontWeight: 600 }}>{nb.text}</a>}
+        {showBar && <a href={safeUrl(nb.url)} style={{ display: "block", background: "#0B1F45", color: "#fff", textAlign: "center", padding: "10px 16px", fontSize: 14, fontWeight: 600 }}>{nb.text}</a>}
         <Nav items={header} mobile={mobile} s={s} />
         {children}
         <Footer s={s} menus={{ footer_1: f1, footer_2: f2, footer_3: f3 }} />

@@ -1,4 +1,5 @@
 // Bảng calo món (139g/h)
+import { notFound } from "next/navigation";
 import PageHead from "@/components/PageHead";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
@@ -28,10 +29,11 @@ export default async function Index({ searchParams }) {
   let list = (await caloFoods()).map((f, i) => ({ ...f, _i: i, dg: dishGroup(f) })).sort((a, b) => gi(a) - gi(b) || a._i - b._i);
   const all = (await allFoods()).length;
   const groups = DISH_GROUPS.map(([n], i) => [i, n]).filter(([i]) => list.some((x) => x.dg === i));
-  if (g) { const i = DISH_GROUPS.findIndex(([n]) => slugify(n) === g); list = list.filter((x) => x.dg === i); }
+  if (g) { const i = DISH_GROUPS.findIndex(([n]) => slugify(n) === g); if (i < 0) notFound(); list = list.filter((x) => x.dg === i); }
   if (qs) list = list.filter((x) => slugify(x.name).includes(slugify(qs)));
   const total = list.length;
   const rows = list.slice((page - 1) * PER, page * PER);
+  if (page > 1 && !rows.length) notFound(); // ?trang=999 → 404, không để Google lập chỉ mục trang rỗng
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng calo món", path: "/bang-calo" }];
   const base = `/bang-calo${g ? `?nhom=${g}` : ""}`;
   return (
@@ -62,7 +64,7 @@ export default async function Index({ searchParams }) {
             <a key={f.key} href={`/calo/${f.slug}`} style={{ display: "flex", gap: 12, alignItems: "center", padding: "14px 0", borderTop: k ? "1px solid #EEF2F7" : 0 }}>
               <img className="th" src={imgOf(f, k)} alt="" width={52} height={52} loading="lazy" style={{ width: 52, height: 52 }} />
               <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}><b style={{ fontSize: 16 }}>{f.name}</b><span style={{ fontSize: 13, color: "#64748B" }}>{p ? `${porName(p, true)} ${p.gram} g` : f.group}</span></span>
-              <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}><b style={{ fontSize: 18 }}>{p ? p.cal : f.per100.cal}</b><span style={{ fontSize: 12, color: "#94A3B8" }}>kcal · {f.per100.cal}/100 g</span></span>
+              <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}><b style={{ fontSize: 18 }}>{p ? p.cal : f.per100.cal}</b><span style={{ fontSize: 12, color: "#64748B" }}>kcal · {f.per100.cal}/100 g</span></span>
             </a>); })}
         </div>
         {!rows.length && <p className="lead" style={{ padding: "32px 0" }}>Chưa tìm thấy món này. Thử tên khác, ví dụ “bún”, “cơm”.</p>}

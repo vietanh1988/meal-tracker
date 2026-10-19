@@ -84,7 +84,7 @@ export function htmlToBlocks(html, parse) {
     for (const el of node.children) {
       const t = el.tagName.toLowerCase();
       const al = /^(center|right)$/.test(el.style?.textAlign || "") ? { align: el.style.textAlign } : {};
-      if (/^h[1-6]$/.test(t)) { const s = inline(el); if (s) out.push({ type: "h", level: Math.min(4, Math.max(2, +t[1] === 1 ? 2 : +t[1])), text: s, ...al }); }
+      if (/^h[1-6]$/.test(t)) { const s = inline(el); if (s) out.push({ type: "h", level: Math.min(4, Math.max(2, +t[1] === 1 ? 2 : +t[1])), text: s, ...(el.id ? { id: el.id } : {}), ...al }); }
       else if (t === "ul" || t === "ol") { const items = [...el.querySelectorAll(":scope > li")].map(inline).filter(Boolean); if (items.length) out.push({ type: "list", ordered: t === "ol", items }); }
       else if (t === "blockquote") { const s = inline(el); if (s) out.push({ type: "quote", html: s, ...al }); }
       else if (t === "table") {
@@ -121,7 +121,7 @@ export function blocksToHtml(blocks) {
     const al = b.align ? ` style="text-align:${b.align}"` : "";
     switch (b.type) {
       case "p": return `<p${al}>${b.html || ""}</p>`;
-      case "h": return `<h${b.level || 2}${al}>${b.text || ""}</h${b.level || 2}>`;
+      case "h": return `<h${b.level || 2}${b.id ? ` id="${String(b.id).replace(/[^\w-]/g, "")}"` : ""}${al}>${b.text || ""}</h${b.level || 2}>`; // giữ mã neo khi đổi Trực quan ⇄ HTML
       case "list": { const t = b.ordered ? "ol" : "ul"; return `<${t}>\n${(b.items || []).map((x) => `  <li>${x}</li>`).join("\n")}\n</${t}>`; }
       case "quote": return `<blockquote${al}>${b.html || ""}</blockquote>`;
       case "hr": return "<hr>";

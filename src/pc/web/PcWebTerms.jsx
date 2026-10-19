@@ -10,7 +10,7 @@ import { appConfirm } from "../../lib/dialog";
 import { Btn, Card, SearchBox, ErrorBox, Loading, FilterSelect } from "../pcUI";
 import { Check, Tog, Field, Lnk, Modal, inpStyle, BLUE } from "./webUI";
 import { slugify } from "./webLib";
-import { listTerms, termCounts } from "./webApi";
+import { listTerms, termCounts, slugRedirect, slugType } from "./webApi";
 import { Upload } from "./BlockEdit";
 
 const WEB = "https://fipilotai.com";
@@ -51,7 +51,8 @@ export function PcWebTerms({ top, showToast }) {
     setBusy(true);
     try {
       const row = { kind: "category", name: f.name.trim(), slug: f.slug, parent_id: f.parent_id || null, description: f.description || null, image_url: f.image_url || null, seo: f.seo || {} };
-      if (f.id) await supabase.from("web_terms").update(row).eq("id", f.id).then(must);
+      row.slug = slugify(row.slug);
+      if (f.id) { const old = (cats || []).find((c) => c.id === f.id); await supabase.from("web_terms").update(row).eq("id", f.id).then(must); if (old && old.slug !== row.slug) await slugRedirect(`/chu-de/${old.slug}`, `/chu-de/${row.slug}`); }
       else await supabase.from("web_terms").insert({ ...row, sort: (cats || []).length }).then(must);
       showToast?.(f.id ? "Đã lưu chuyên mục." : "Đã thêm chuyên mục.");
       setF(BLANK); setSlugTouched(false); await load();
@@ -98,6 +99,7 @@ export function PcWebTerms({ top, showToast }) {
           const posts = await supabase.from("web_post_terms").select("post_id").eq("term_id", t.id).then(must);
           if (posts.length) await supabase.from("web_post_terms").upsert(posts.map((p) => ({ post_id: p.post_id, term_id: keep.id })), { onConflict: "post_id,term_id", ignoreDuplicates: true }).then(must);
           await supabase.from("web_terms").delete().eq("id", t.id).then(must);
+          await slugRedirect(`/the/${t.slug}`, `/the/${keep.slug}`);
         }
       }
       showToast?.("Đã gộp thẻ trùng."); await load();
@@ -108,7 +110,7 @@ export function PcWebTerms({ top, showToast }) {
     const t = tagEdit; const slug = slugify(t.slug || t.name);
     if (!t.name.trim() || !slug) return;
     if (tags.some((x) => x.slug === slug && x.id !== t.id)) return showToast?.(`Đã có thẻ dùng đường dẫn “${slug}”.`);
-    try { if (t.id) await supabase.from("web_terms").update({ name: t.name.trim(), slug, seo: t.seo || {} }).eq("id", t.id).then(must); else await supabase.from("web_terms").insert({ kind: "tag", name: t.name.trim(), slug }).then(must); setTagEdit(null); showToast?.("Đã lưu thẻ."); await load(); }
+    try { if (t.id) { const old = tags.find((x) => x.id === t.id); await supabase.from("web_terms").update({ name: t.name.trim(), slug, seo: t.seo || {} }).eq("id", t.id).then(must); if (old && old.slug !== slug) await slugRedirect(`/the/${old.slug}`, `/the/${slug}`); } else await supabase.from("web_terms").insert({ kind: "tag", name: t.name.trim(), slug }).then(must); setTagEdit(null); showToast?.("Đã lưu thẻ."); await load(); }
     catch (e) { showToast?.("Chưa lưu được: " + (e.message || "")); }
   };
 
@@ -127,8 +129,8 @@ export function PcWebTerms({ top, showToast }) {
               <div style={{ display: "flex", alignItems: "center", padding: "12px 16px", borderBottom: `1px solid ${PC.headLine}` }}><b style={{ fontSize: 13.5 }}>{f.id ? `Sửa “${f.name}”` : "Thêm chuyên mục mới"}</b>{f.id && <span style={{ marginLeft: "auto" }}><Lnk onClick={() => { setF(BLANK); setSlugTouched(false); }}>+ Thêm mới</Lnk></span>}</div>
               <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
                 <Field label="Tên"><input value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder="VD: Bài tập tại nhà" data-testid="web-cat-name" className="pc-input" style={inpStyle()} /></Field>
-                <Field label="Đường dẫn" hint={`fipilotai.com/chu-de/${f.slug || "…"} · tự tạo từ tên, bỏ dấu`}><input value={f.slug} onChange={(e) => { setSlugTouched(true); set({ slug: slugify(e.target.value) }); }} className="pc-input" style={{ ...inpStyle(), fontFamily: "ui-monospace, Menlo, monospace" }} /></Field>
-                <Field label="Chuyên mục cha"><select value={f.parent_id || ""} onChange={(e) => set({ parent_id: e.target.value })} className="pc-input" style={inpStyle()}><option value="">Không có (cấp 1)</option>{(cats || []).filter((c) => !c.parent_id && c.id !== f.id).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
+                <Field label="Đường dẫn" hint={`fipilotai.com/chu-de/${f.slug || "…"} · tự tạo từ tên, bỏ dấu`}><input value={f.slug} onChange={(e) => { setSlugTouched(true); set({ slug: slugType(e.target.value) }); }} className="pc-input" style={{ ...inpStyle(), fontFamily: "ui-monospace, Menlo, monospace" }} /></Field>
+                <Field label="Chuyên mục cha" hint={f.id && (cats || []).some((x) => x.parent_id === f.id) ? "Đang có mục con nên giữ ở cấp 1 (web chỉ có 2 cấp)" : undefined}><select value={f.parent_id || ""} disabled={!!f.id && (cats || []).some((x) => x.parent_id === f.id)} onChange={(e) => set({ parent_id: e.target.value })} className="pc-input" style={inpStyle()}><option value="">Không có (cấp 1)</option>{(cats || []).filter((c) => !c.parent_id && c.id !== f.id).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
                 <Field label="Mô tả" hint="Hiện đầu trang chuyên mục — viết 2–3 câu có từ khoá"><textarea value={f.description || ""} onChange={(e) => set({ description: e.target.value })} placeholder="Mô tả chuyên mục…" className="pc-input" style={{ ...inpStyle(64), height: 64, padding: "8px 12px", resize: "vertical", lineHeight: 1.5 }} /></Field>
                 <Field label="Ảnh chuyên mục">{f.image_url ? <span style={{ display: "flex", gap: 8, alignItems: "center" }}><img src={f.image_url} alt="" style={{ width: 90, height: 60, borderRadius: 8, objectFit: "cover" }} /><Btn kind="light" style={{ height: 28, fontSize: 12 }} onClick={() => set({ image_url: "" })}>Gỡ</Btn></span> : <Upload box showToast={showToast} name={f.slug} label="+ Chọn ảnh từ máy (tự đổi WebP)" onDone={(r) => set({ image_url: r.url })} />}</Field>
                 <div style={{ borderRadius: 10, background: "#F8FAFC", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -177,7 +179,7 @@ export function PcWebTerms({ top, showToast }) {
       {tagEdit && <Modal title={tagEdit.id ? `Sửa thẻ “${tagEdit.name}”` : "Thêm thẻ"} onClose={() => setTagEdit(null)} width={460} foot={<>{tagEdit.id && <Btn kind="danger" onClick={() => del([tagEdit.id], "thẻ")} style={{ marginRight: "auto" }}>Xoá thẻ</Btn>}<Btn kind="light" onClick={() => setTagEdit(null)}>Huỷ</Btn><Btn kind="blue" onClick={saveTag} testid="web-tag-save">Lưu</Btn></>}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <Field label="Tên thẻ"><input autoFocus value={tagEdit.name} onChange={(e) => setTagEdit({ ...tagEdit, name: e.target.value, slug: tagEdit.id ? tagEdit.slug : slugify(e.target.value) })} className="pc-input" style={inpStyle()} /></Field>
-          <Field label="Đường dẫn" hint={`fipilotai.com/the/${slugify(tagEdit.slug || tagEdit.name) || "…"} · trang thẻ mặc định không cho Google lập chỉ mục`}><input value={tagEdit.slug || ""} onChange={(e) => setTagEdit({ ...tagEdit, slug: slugify(e.target.value) })} className="pc-input" style={{ ...inpStyle(), fontFamily: "ui-monospace, Menlo, monospace" }} /></Field>
+          <Field label="Đường dẫn" hint={`fipilotai.com/the/${slugify(tagEdit.slug || tagEdit.name) || "…"} · trang thẻ mặc định không cho Google lập chỉ mục`}><input value={tagEdit.slug || ""} onChange={(e) => setTagEdit({ ...tagEdit, slug: slugType(e.target.value) })} className="pc-input" style={{ ...inpStyle(), fontFamily: "ui-monospace, Menlo, monospace" }} /></Field>
           {tagEdit.id && <Tog on={tagEdit.seo?.index === true} onChange={(v) => setTagEdit({ ...tagEdit, seo: { ...(tagEdit.seo || {}), index: v } })} label="Cho Google lập chỉ mục trang thẻ này" />}
         </div>
       </Modal>}

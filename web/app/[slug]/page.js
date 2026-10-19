@@ -8,11 +8,11 @@ import Sticky from "@/components/Sticky";
 import LegalToc from "@/components/LegalToc";
 import { legalPages, legalToBlocks, vnDateIso } from "@/lib/appdata";
 import PostCard from "@/components/PostCard";
-import { getSettings, siteUrl, appLink, alt } from "@/lib/site";
-import { getPostBySlug, latestPosts, catOf, fmtDate, readMin } from "@/lib/content";
+import { getSettings, siteUrl, appLink, alt, ogBase } from "@/lib/site";
+import { getPostBySlug, latestPosts, postsByIds, catOf, fmtDate, readMin } from "@/lib/content";
 import { prepare, toc as mkToc, faqs } from "@/lib/blocks";
 import { textOf } from "@/lib/sanitize";
-import { articleGraph, breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
+import { orgGraph, articleGraph, breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -26,12 +26,13 @@ async function findPage(slug) {
   if (!lp) return null;
   const { title, updated, blocks } = legalToBlocks(lp.html);
   const iso = vnDateIso(updated);
-  return { id: `legal-${lp.id}`, kind: "page", template: "legal", slug, title: lp.label || title, blocks, seo: { desc: `${lp.label} của Fipilot AI: quy định khi dùng app và web fipilotai.com.` }, updated_at: iso, published_at: iso };
+  return { id: `legal-${lp.id}`, kind: "page", template: "legal", slug, title: lp.label || title, blocks, seo: { desc: /riêng tư|bảo mật|privacy/i.test(lp.label || "") ? `${lp.label} của Fipilot AI: app và web fipilotai.com thu thập, dùng và bảo vệ dữ liệu của bạn thế nào.` : `${lp.label} của Fipilot AI: quy định khi dùng app và web fipilotai.com.` }, updated_at: iso, published_at: iso };
 }
 
 export async function generateMetadata({ params }) {
   const p = await findPage(params.slug);
   if (!p) return {};
+  const s = await getSettings();
   const seo = p.seo || {};
   const desc = seo.desc || p.excerpt || textOf((p.blocks || []).find((b) => b.type === "p")?.html).slice(0, 158);
   const robots = { index: !seo.noindex, follow: !seo.nofollow };
@@ -40,7 +41,7 @@ export async function generateMetadata({ params }) {
     description: desc,
     alternates: alt(seo.canonical || `/${p.slug}`),
     robots,
-    openGraph: { type: p.kind === "post" ? "article" : "website", title: seo.og_title || seo.title || p.title, description: desc, url: `/${p.slug}`, images: seo.og_image || p.cover_url ? [{ url: seo.og_image || p.cover_url }] : undefined, publishedTime: p.published_at, modifiedTime: p.updated_at },
+    openGraph: { ...ogBase(s), type: p.kind === "post" ? "article" : "website", title: seo.og_title || seo.title || p.title, description: desc, url: `/${p.slug}`, ...(seo.og_image || p.cover_url ? { images: [{ url: seo.og_image || p.cover_url }] } : {}), publishedTime: p.published_at, modifiedTime: p.updated_at },
   };
 }
 
@@ -60,14 +61,14 @@ export default async function Page({ params }) {
   const custom = p.seo?.schema && typeof p.seo.schema === "object" ? p.seo.schema : null;
   // Quản trị › Sửa bài › Schema: tắt từng loại schema tự sinh
   const off = new Set(p.seo?.schema_off || []);
-  const graphs = [off.has("BreadcrumbList") ? null : breadcrumb(s, crumbs), p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? articleGraph(s, p, path) : null, off.has("FAQPage") ? null : faqGraph(fq, s), firstCalo && !off.has("NutritionInformation") && schemaOn(s, "calo") ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
+  const graphs = [off.has("BreadcrumbList") ? null : breadcrumb(s, crumbs), p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? articleGraph(s, p, path) : null, p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? orgGraph(s) : null, off.has("FAQPage") ? null : faqGraph(fq, s), firstCalo && !off.has("NutritionInformation") && schemaOn(s, "calo") ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
 
   if (p.kind === "page") {
     const long = p.template === "legal";
     return (
       <main>
         <JsonLd data={ld(...graphs)} />
-        <section className="phead"><div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 14 }}><Crumb items={crumbs} /><h1 className="h1">{p.title}</h1>{long && !p.seo?.hide_updated && <p className="lg-up" style={{ fontSize: 18, lineHeight: 1.6, color: "#475569" }}>Cập nhật {fmtDate(p.updated_at)}</p>}</div></section>
+        <section className="phead"><div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 14 }}><Crumb items={crumbs} /><h1 className="h1">{p.title}</h1>{long && !p.seo?.hide_updated && p.updated_at && <p className="lg-up" style={{ fontSize: 18, lineHeight: 1.6, color: "#475569" }}>Cập nhật {fmtDate(p.updated_at)}</p>}</div></section>
         <div className={`wrap${long ? " lg-w" : ""}`} style={{ paddingTop: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
           {long && t.length > 0 && <div className="only-m lg-mt"><LegalToc t={t} /></div>}
           <article className={`card art${long ? " legal" : ""}`} style={{ flex: 1, minWidth: 0, padding: 48 }}><Blocks blocks={blocks} s={s} toc={t} slug={p.slug} /></article>
@@ -81,7 +82,7 @@ export default async function Page({ params }) {
 
   const ids = p.related?.mode === "manual" ? p.related.ids || [] : [];
   let rel = [];
-  if (ids.length) rel = (await latestPosts({ limit: 6 })).filter((x) => ids.includes(x.id));
+  if (ids.length) rel = (await postsByIds(ids)).filter((x) => x.id !== p.id);
   if (rel.length < 3) rel = [...rel, ...(await latestPosts({ limit: 4, termId: cat?.id || null, exclude: [p.id, ...rel.map((x) => x.id)] }))].slice(0, 3);
   const a = p.author;
   return (

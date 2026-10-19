@@ -4,10 +4,11 @@ import Crumb from "@/components/Crumb";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import Portions from "@/components/Portions";
-import { getSettings, appLink, alt } from "@/lib/site";
+import { getSettings, appLink, alt, ogBase } from "@/lib/site";
 import { caloBySlug, caloFoods } from "@/lib/calo";
 import { q, enc } from "@/lib/sb";
 import { mainPortion } from "@/lib/foods";
+import { fillTrial } from "@/lib/plans";
 import { breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 300;
@@ -16,9 +17,10 @@ const vn = (n) => String(n).replace(".", ",");
 export async function generateMetadata({ params }) {
   const r = await caloBySlug(params.slug);
   if (!r?.food) return { robots: { index: false } };
+  const s = await getSettings();
   const fd = r.food, por = mainPortion(fd);
   const desc = `${por ? `${por.name.charAt(0).toUpperCase() + por.name.slice(1)} ${fd.name.toLowerCase()} (${por.gram} g) khoảng ${por.cal} kcal. ` : ""}100 g ${fd.name.toLowerCase()} có ${fd.per100.cal} kcal, đạm ${vn(fd.per100.p)} g, tinh bột ${vn(fd.per100.c)} g, chất béo ${vn(fd.per100.f)} g. Cách ăn khi giảm cân.`;
-  return { title: `${fd.name} bao nhiêu calo?`, description: desc.slice(0, 160), alternates: alt(`/calo/${fd.slug}`), robots: { index: !r.page?.noindex, follow: true }, openGraph: { images: r.page?.image_url ? [{ url: r.page.image_url }] : undefined } };
+  return { title: `${fd.name} bao nhiêu calo?`, description: desc.slice(0, 160), alternates: alt(`/calo/${fd.slug}`), robots: { index: !r.page?.noindex, follow: true }, openGraph: { ...ogBase(s), ...(r.page?.image_url ? { images: [{ url: r.page.image_url }] } : {}) } };
 }
 
 export default async function Calo({ params }) {
@@ -35,7 +37,12 @@ export default async function Calo({ params }) {
   const path = `/calo/${fd.slug}`;
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng calo món", path: "/bang-calo" }, { name: fd.name, path }];
   const same = (await caloFoods()).filter((x) => x.cat === fd.cat && x.key !== fd.key).map((x) => ({ x, p: mainPortion(x) })).filter((y) => y.p).sort((a, b) => Math.abs(a.p.cal - (por?.cal || 0)) - Math.abs(b.p.cal - (por?.cal || 0))).slice(0, 3);
-  const faq = (pg.faq || []).filter((x) => x?.q && x?.a);
+  const faq = (pg.faq || []).filter((x) => x?.q && x?.a).map((x) => ({ q: fillTrial(x.q, s.plan), a: fillTrial(x.a, s.plan) }));
+  // Kết luận theo calo thật (không phải món nào cũng "được"): khẩu phần chính + calo / 100 g
+  const pc = por?.cal ?? fd.per100.cal, k100 = fd.per100.cal;
+  const V = pc <= 450 && k100 <= 220 ? { t: "được", c: "#15803D", bg: "#F2FBF5", bd: "#C9EED6", dot: "#16A34A", i: "✓", l: ["Chọn khẩu phần vừa, thêm rau.", "Cân lại các bữa khác cho đúng calo."] }
+    : pc <= 700 ? { t: "được, nhưng nên ăn ít", c: "#B45309", bg: "#FFFBEB", bd: "#FDE68A", dot: "#F59E0B", i: "!", l: ["Món khá nhiều calo — ăn nửa phần hoặc 1–2 lần / tuần.", "Ngày ăn món này thì bữa khác ăn nhẹ hơn."] }
+    : { t: "nên hạn chế", c: "#B91C1C", bg: "#FEF2F2", bd: "#FECACA", dot: "#EF4444", i: "!", l: ["Một phần đã gần nửa calo cả ngày của người giảm cân.", "Thỉnh thoảng mới ăn, chia sẻ phần hoặc chọn món nhẹ hơn."] };
   const kcalLine = por ? `${por.name.charAt(0).toUpperCase() + por.name.slice(1)} ${fd.name.toLowerCase()} (${por.gram} g) khoảng ${por.cal} kcal.` : `100 g ${fd.name.toLowerCase()} có ${fd.per100.cal} kcal.`;
   const intro = pg.intro || `${kcalLine} Xem calo theo từng khẩu phần, lượng đạm, tinh bột, chất béo và so với món tương tự.`;
   return (
@@ -50,9 +57,9 @@ export default async function Calo({ params }) {
         <div className="calo-cols" style={{ display: "flex", gap: 32, alignItems: "flex-start" }}>
           <div className="calo-main" style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 24 }}>
             <div className="o1"><Portions fd={fd} /></div>
-            <div className="card verdict o2" style={{ padding: 24, display: "flex", gap: 14, background: "#F2FBF5", borderColor: "#C9EED6" }}>
-              <span style={{ width: 30, height: 30, borderRadius: 15, background: "#16A34A", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, flexShrink: 0 }}>✓</span>
-              <span style={{ display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 18, color: "#15803D" }}>Ăn {fd.name.toLowerCase()} khi giảm cân: được</b><span style={{ fontSize: 15.5, lineHeight: 1.6, color: "#334155" }}>Chọn khẩu phần vừa, thêm rau.<br />Cân lại các bữa khác cho đúng calo.</span></span>
+            <div className="card verdict o2" style={{ padding: 24, display: "flex", gap: 14, background: V.bg, borderColor: V.bd }}>
+              <span style={{ width: 30, height: 30, borderRadius: 15, background: V.dot, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, flexShrink: 0 }}>{V.i}</span>
+              <span style={{ display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 18, color: V.c }}>Ăn {fd.name.toLowerCase()} khi giảm cân: {V.t}</b><span style={{ fontSize: 15.5, lineHeight: 1.6, color: "#334155" }}>{V.l[0]}<br />{V.l[1]}</span></span>
             </div>
             {faq.length > 0 && <div className="o5 calofaq" style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 28 }}><h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Câu hỏi thường gặp</h2>{faq.map((x, i) => <details key={i} className="faq" open={i === 0}><summary>{x.q}</summary><p>{x.a}</p></details>)}</div>}
           </div>

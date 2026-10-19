@@ -1,14 +1,26 @@
 // Đọc / ghi bảng web_* cho Quản trị web (RLS: chỉ admin ghi — is_web_admin()).
 import { supabase } from "../../lib/supabase";
 import { slugify, wordCount, seoChecks, toWebp } from "./webLib";
+import { todayVN } from "../../lib/dateVN";
 
-const LIST_COLS = "id,kind,title,slug,status,cover_url,primary_term,pinned,published_at,updated_at,author_id,seo,word_count";
+const LIST_COLS = "id,kind,title,slug,status,cover_url,primary_term,pinned,published_at,updated_at,author_id,seo,word_count,template";
 const must = ({ data, error }) => { if (error) throw error; return data; };
+// Supabase trả tối đa 1000 dòng / lần (max_rows) → đọc theo trang tới hết. mk = () => query mới (chưa .range)
+export async function readAll(mk, { page = 1000, max = 100000 } = {}) {
+  const out = [];
+  for (let from = 0; from < max; from += page) {
+    const { data, error } = await mk().range(from, from + page - 1);
+    if (error) throw error;
+    out.push(...(data || []));
+    if (!data || data.length < page) break;
+  }
+  return out;
+}
 
 export async function listPosts(kind = "post") {
   const [posts, links] = await Promise.all([
-    supabase.from("web_posts").select(LIST_COLS).eq("kind", kind).order("updated_at", { ascending: false }).limit(1000).then(must),
-    supabase.from("web_post_terms").select("post_id,term_id").limit(10000).then(must),
+    readAll(() => supabase.from("web_posts").select(LIST_COLS).eq("kind", kind).order("updated_at", { ascending: false }).order("id")),
+    readAll(() => supabase.from("web_post_terms").select("post_id,term_id").order("post_id").order("term_id")),
   ]);
   const by = {};
   for (const l of links) (by[l.post_id] ||= []).push(l.term_id);
@@ -23,7 +35,7 @@ export async function getPost(id) {
 
 export const listTerms = (kind) => supabase.from("web_terms").select("*").eq("kind", kind).order("sort").order("name").then(must);
 export async function termCounts() {
-  const rows = await supabase.from("web_post_terms").select("term_id").limit(20000).then(must);
+  const rows = await readAll(() => supabase.from("web_post_terms").select("term_id,post_id").order("post_id").order("term_id"));
   const c = {}; for (const r of rows) c[r.term_id] = (c[r.term_id] || 0) + 1; return c;
 }
 export async function createTerm(kind, name, parent_id = null) {
@@ -47,6 +59,17 @@ export async function ensureAuthor(appSettings, uid) {
 }
 
 // Đường dẫn chưa ai dùng (bài và trang dùng chung 1 kho đường dẫn)
+// Đổi đường dẫn chuyên mục / thẻ / tác giả → tự thêm 301 từ link cũ (trigger DB chỉ lo bài viết). Lỗi thì bỏ qua.
+export async function slugRedirect(from, to) {
+  if (!from || !to || from === to) return;
+  try {
+    await supabase.from("web_redirects").upsert({ src: from, dest: to, code: 301, match: "exact", source: "slug_change", enabled: true }, { onConflict: "src" });
+    await supabase.from("web_redirects").update({ dest: to }).eq("dest", from).eq("source", "slug_change"); // gộp chuỗi A→B→C thành A→C
+    await supabase.from("web_redirects").delete().eq("src", to).eq("source", "slug_change"); // đường dẫn mới đang có chuyển hướng cũ → bỏ (tránh vòng)
+  } catch (e) { /* */ }
+}
+// Gõ đường dẫn: bỏ dấu, chữ thường nhưng giữ "-" ở cuối để gõ tiếp được ("pho-" → "pho-bo"); lưu thì slugify hẳn
+export const slugType = (v) => (String(v || "").trim() ? slugify(String(v).replace(/\s/g, "-") + "x").slice(0, -1) : "");
 export async function freeSlug(want, selfId) {
   const base = slugify(want) || "bai-viet";
   const rows = await supabase.from("web_posts").select("id,slug").like("slug", `${base}%`).then(must);
@@ -72,7 +95,7 @@ export async function savePost(post, { reason = "update", uid } = {}) {
     : await supabase.from("web_posts").insert(row).select().single().then(must);
   const terms = [...new Set(post.terms || [])];
   await supabase.from("web_post_terms").delete().eq("post_id", saved.id).then(must);
-  if (terms.length) await supabase.from("web_post_terms").insert(terms.map((term_id) => ({ post_id: saved.id, term_id }))).then(must);
+  if (terms.length) await supabase.from("web_post_terms").upsert(terms.map((term_id) => ({ post_id: saved.id, term_id })), { onConflict: "post_id,term_id", ignoreDuplicates: true }).then(must);
   await supabase.from("web_revisions").insert({ post_id: saved.id, snapshot: { ...row, terms }, reason, created_by: uid || null }).then(must);
   if (saved.status === "published" && reason !== "autosave") pingIndexNow([`/${saved.slug}`]);
   return { ...saved, terms };
@@ -88,7 +111,15 @@ export async function pingIndexNow(paths) {
   } catch (e) { /* */ }
 }
 
-export const setStatus = (ids, status) => supabase.from("web_posts").update({ status, updated_at: new Date().toISOString(), ...(status === "published" ? {} : {}) }).in("id", ids).then(must);
+// Đăng: bài chưa có ngày đăng / đang hẹn giờ tương lai → ngày đăng = bây giờ (RLS web chỉ hiện published_at <= now)
+export async function setStatus(ids, status) {
+  const now = new Date().toISOString();
+  await supabase.from("web_posts").update({ status, updated_at: now }).in("id", ids).then(must);
+  if (status === "published") {
+    await supabase.from("web_posts").update({ published_at: now }).in("id", ids).is("published_at", null).then(must);
+    await supabase.from("web_posts").update({ published_at: now }).in("id", ids).gt("published_at", now).then(must);
+  }
+}
 export const deleteForever = (ids) => supabase.from("web_posts").delete().in("id", ids).then(must);
 
 export async function duplicatePost(id, uid) {
@@ -118,8 +149,8 @@ export const webUrl = (path) => PUB + String(path).replace(/^img\//, "");
 export async function uploadImage(file, name = "anh", { alt = "", uploader = "", uid = null } = {}) {
   if (file.size > 10 * 1024 * 1024) throw new Error("Ảnh lớn hơn 10 MB.");
   const raw = file.type === "image/svg+xml" || file.type === "image/gif";
-  const d = new Date();
-  const base = `img/${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${slugify(name).slice(0, 60) || "anh"}-${Date.now().toString(36).slice(-5)}`;
+  const ym = todayVN().slice(0, 7).split("-"); // năm/tháng giờ VN
+  const base = `img/${ym[0]}/${ym[1]}/${slugify(name).slice(0, 60) || "anh"}-${Date.now().toString(36).slice(-5)}`;
   const put = async (path, blob, type) => { const { error } = await supabase.storage.from("web").upload(path, blob, { contentType: type, cacheControl: "31536000", upsert: false }); if (error) throw error; };
   let out, path, sizes = [], orig = { w: null, h: null };
   if (raw) { out = { blob: file, width: null, height: null }; path = `${base}.${file.name.split(".").pop().toLowerCase()}`; await put(path, file, file.type); }

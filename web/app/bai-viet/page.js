@@ -1,4 +1,5 @@
 // Blog (139a/b)
+import { notFound } from "next/navigation";
 import PageHead from "@/components/PageHead";
 import Sticky from "@/components/Sticky";
 import { PostList, Pager } from "@/components/PostCard";
@@ -15,6 +16,7 @@ export default async function Blog({ searchParams }) {
   const per = s.site.posts_per_page || 12;
   const page = Math.max(1, +searchParams?.trang || 1);
   const [posts, total, cats] = await Promise.all([latestPosts({ limit: per, offset: (page - 1) * per }), countPosts(), allTerms("category")]);
+  if (page > 1 && !posts.length) notFound();
   return (
     <main>
       <PageHead eye="Blog Fipilot AI" h1="Bài viết về giảm cân bằng món Việt" sub="Calo từng món, thực đơn mẫu và kiến thức ăn uống — viết dễ hiểu, áp dụng được ngay." crumb={[{ name: "Trang chủ", path: "/" }, { name: "Bài viết", path: "/bai-viet" }]} />

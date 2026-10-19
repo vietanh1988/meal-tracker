@@ -10,6 +10,7 @@ import { Btn, Card, ErrorBox, Loading, headRow, bodyRow, cell } from "../pcUI";
 import { Tabs, Field, Lnk, Modal, inpStyle, BLUE } from "./webUI";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, withKeys, forSave } from "./blocksMeta";
 import { Rich, ListEdit, OtherBlock, H_STYLE } from "./BlockEdit";
+import { readAll } from "./webApi";
 
 const WEB = "https://fipilotai.com";
 const must = ({ data, error }) => { if (error) throw error; return data; };
@@ -34,7 +35,7 @@ export function PcWebBlocks({ top, showToast }) {
 
   const load = useCallback(async () => {
     try {
-      const [b, posts] = await Promise.all([supabase.from("web_blocks").select("*").order("updated_at", { ascending: false }).then(must), supabase.from("web_posts").select("title,slug,status,blocks").neq("status", "trash").limit(3000).then(must)]);
+      const [b, posts] = await Promise.all([supabase.from("web_blocks").select("*").order("updated_at", { ascending: false }).then(must), readAll(() => supabase.from("web_posts").select("title,slug,status,blocks").neq("status", "trash").order("id"))]);
       const m = {}; for (const p of posts) for (const x of p.blocks || []) if (x?.type === "ref" && x.id) { (m[x.id] ||= []); if (!m[x.id].some((y) => y.slug === p.slug)) m[x.id].push({ title: p.title, slug: p.slug, status: p.status }); }
       setRows(b); setUse(m); return b;
     } catch (e) { setErr("Chưa tải được khối dùng lại. " + (e.message || "")); return null; }

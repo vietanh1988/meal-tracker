@@ -8,7 +8,7 @@ import { appConfirm } from "../../lib/dialog";
 import { toVNDate } from "../../lib/dateVN";
 import { Btn, Pill, SearchBox, FilterSelect, ErrorBox, Loading } from "../pcUI";
 import { Field, inpStyle, BLUE } from "./webUI";
-import { uploadImage, SIZES } from "./webApi";
+import { uploadImage, SIZES, readAll } from "./webApi";
 
 const must = ({ data, error }) => { if (error) throw error; return data; };
 const mono = { fontFamily: "ui-monospace, Menlo, monospace" };
@@ -40,12 +40,13 @@ export function PcWebMedia({ top, showToast, user }) {
   // Ảnh đang được dùng ở đâu (so theo tên file, bỏ đuôi cỡ)
   useEffect(() => { (async () => {
     try {
-      const [posts, calo, authors, sets] = await Promise.all([supabase.from("web_posts").select("title,kind,cover_url,blocks").neq("status", "trash").limit(3000).then(must), supabase.from("web_calo_pages").select("food_key,image_url").then(must), supabase.from("web_authors").select("name,avatar_url").then(must), supabase.from("web_settings").select("key,value").then(must)]);
+      const [posts, calo, authors, sets, wb] = await Promise.all([readAll(() => supabase.from("web_posts").select("title,kind,cover_url,blocks").order("id")), supabase.from("web_calo_pages").select("food_key,image_url").then(must), supabase.from("web_authors").select("name,avatar_url").then(must), supabase.from("web_settings").select("key,value").then(must), supabase.from("web_blocks").select("name,blocks").then(must).catch(() => [])]);
       const m = {}; const add = (url, t, k) => { const s = stem(url); if (!s) return; (m[s] ||= []); if (!m[s].some((x) => x.t === t)) m[s].push({ t, k }); };
       for (const p of posts) { const kind = p.kind === "page" ? "Trang" : "Bài"; if (p.cover_url) add(p.cover_url, `${kind}: ${p.title} (ảnh đại diện)`, "post"); for (const u of JSON.stringify(p.blocks || []).match(/[\w./:%-]+\.(webp|jpe?g|png|gif|svg)/gi) || []) add(u, `${kind}: ${p.title}`, "post"); }
       for (const c of calo) if (c.image_url) add(c.image_url, `Trang calo món: ${c.food_key.charAt(0).toUpperCase() + c.food_key.slice(1)}`, "calo");
       for (const a of authors) if (a.avatar_url) add(a.avatar_url, `Tác giả: ${a.name}`, "other");
       for (const s of sets) for (const u of JSON.stringify(s.value || {}).match(/[\w./:%-]+\.(webp|jpe?g|png|gif|svg)/gi) || []) add(u, "Cài đặt web", "other");
+      for (const b of wb) for (const u of JSON.stringify(b.blocks || []).match(/[\w./:%-]+\.(webp|jpe?g|png|gif|svg)/gi) || []) add(u, `Khối dùng lại: ${b.name}`, "other");
       setUse(m);
     } catch (e) { /* không chặn thư viện */ }
   })(); }, [rows]);

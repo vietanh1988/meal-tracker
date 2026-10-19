@@ -21,10 +21,18 @@ export async function latestPosts({ limit = 12, offset = 0, termId = null, autho
 }
 
 export async function countPosts(termId = null) {
-  const rows = termId ? await q(`web_post_terms?term_id=eq.${termId}&select=post_id`) : await q(`web_posts?kind=eq.post&${LIVE}&select=id`);
+  // chỉ đếm bài đang hiện (không tính nháp / hẹn giờ chưa tới / trang)
+  const rows = termId ? await q(`web_posts?kind=eq.post&${LIVE}&select=id,t:web_terms!web_post_terms!inner(id)&t.id=eq.${termId}&limit=10000`) : await q(`web_posts?kind=eq.post&${LIVE}&select=id&limit=10000`);
   return rows?.length || 0;
 }
 
+// Bài chọn tay (Bài liên quan) — lấy đúng theo id, giữ thứ tự đã chọn
+export async function postsByIds(ids = []) {
+  const ok = ids.filter((x) => /^[0-9a-f-]{36}$/i.test(String(x))).slice(0, 12);
+  if (!ok.length) return [];
+  const r = (await q(`web_posts?id=in.(${ok.join(",")})&kind=eq.post&${LIVE}&select=${CARD_COLS}`)) || [];
+  return r.sort((a, b) => ok.indexOf(a.id) - ok.indexOf(b.id));
+}
 export async function getTerm(kind, slug) {
   const r = await q(`web_terms?kind=eq.${kind}&slug=eq.${enc(slug)}&select=*&limit=1`);
   return r?.[0] || null;

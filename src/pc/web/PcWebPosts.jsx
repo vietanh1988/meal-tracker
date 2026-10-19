@@ -9,7 +9,7 @@ import { Btn, Pill, Card, SearchBox, FilterSelect, ErrorBox, Loading, headRow, b
 import { Check, Score, Lnk, Modal, Field, inpStyle, BLUE } from "./webUI";
 import { supabase } from "../../lib/supabase";
 import { STATUS, slugify } from "./webLib";
-import { listPosts, listTerms, setStatus, deleteForever, duplicatePost } from "./webApi";
+import { listPosts, listTerms, setStatus, deleteForever, duplicatePost, slugType } from "./webApi";
 import { PcWebEditor } from "./PcWebEditor";
 import { PcWebPageBuilder } from "./PcWebPageBuilder";
 import { PcWebSysPages, PcWebSysEdit } from "./PcWebSysPages";
@@ -63,15 +63,18 @@ export function PcWebPosts({ top, showToast, user, appSettings, saveSetting, kin
   }, [rows, tab, qs, cat, month, score]);
   const catName = useMemo(() => Object.fromEntries(cats.map((c) => [c.id, c.name])), [cats]);
 
-  const act = async (what, ids) => {
+  const act = async (what, idsIn) => {
+    const vis = new Set(list.map((r) => r.id)); const ids = idsIn.filter((x) => vis.has(x)); // chỉ áp dụng cho bài đang hiện (đã lọc / tìm)
     if (!ids.length) return;
+    const live = (rows || []).filter((r) => ids.includes(r.id) && (r.status === "published" || r.status === "scheduled")).length;
+    if ((what === "trash" || what === "draft") && live && !(await appConfirm(`${live} ${noun} đang hiện trên web sẽ bị gỡ khỏi web. Tiếp tục?`, { danger: what === "trash" }))) return;
     if (what === "delete" && !(await appConfirm(`Xoá hẳn ${ids.length} ${noun}? Không khôi phục được.`, { danger: true }))) return;
     setBusy(true);
     try {
       if (what === "delete") await deleteForever(ids);
       else await setStatus(ids, what === "restore" ? "draft" : what);
       showToast?.({ published: "Đã đăng.", draft: "Đã chuyển về bản nháp.", trash: "Đã bỏ vào thùng rác.", restore: "Đã khôi phục về bản nháp.", delete: "Đã xoá hẳn." }[what]);
-      await load();
+      setSel([]); await load();
     } catch (e) { showToast?.("Chưa làm được: " + (e.message || "")); }
     setBusy(false);
   };
@@ -158,7 +161,7 @@ export function PcWebPosts({ top, showToast, user, appSettings, saveSetting, kin
       {quick && <Modal title="Sửa nhanh" onClose={() => setQuick(null)} width={520} testid="web-quick" foot={<><Btn kind="light" onClick={() => setQuick(null)}>Huỷ</Btn><Btn kind="blue" disabled={busy} onClick={saveQuick} testid="web-quick-save">Lưu</Btn></>}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <Field label="Tiêu đề"><input value={quick.title} onChange={(e) => setQuick({ ...quick, title: e.target.value })} className="pc-input" style={inpStyle()} /></Field>
-          <Field label="Đường dẫn" hint="Đổi đường dẫn bài đã đăng: web tự chuyển hướng 301 từ link cũ"><input value={quick.slug} onChange={(e) => setQuick({ ...quick, slug: slugify(e.target.value.replace(/\s/g, "-")) })} className="pc-input" style={{ ...inpStyle(), fontFamily: "ui-monospace, Menlo, monospace" }} /></Field>
+          <Field label="Đường dẫn" hint="Đổi đường dẫn bài đã đăng: web tự chuyển hướng 301 từ link cũ"><input value={quick.slug} onChange={(e) => setQuick({ ...quick, slug: slugType(e.target.value) })} className="pc-input" style={{ ...inpStyle(), fontFamily: "ui-monospace, Menlo, monospace" }} /></Field>
           <span style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <Field label="Trạng thái"><select value={quick.status} onChange={(e) => setQuick({ ...quick, status: e.target.value })} className="pc-input" style={inpStyle()}>{["published", "scheduled", "draft"].map((k) => <option key={k} value={k}>{STATUS[k][0]}</option>)}</select></Field>
             <Field label="Đăng lúc (giờ VN)"><input type="datetime-local" value={quick.published_at ? new Date(new Date(quick.published_at).getTime() + 7 * 3600e3).toISOString().slice(0, 16) : ""} onChange={(e) => setQuick({ ...quick, published_at: e.target.value ? new Date(`${e.target.value}:00+07:00`).toISOString() : null })} className="pc-input" style={inpStyle()} /></Field>

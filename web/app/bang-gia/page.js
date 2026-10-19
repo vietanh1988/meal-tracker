@@ -9,7 +9,7 @@ import { breadcrumb, faqGraph, ld, schemaOn, appGraph } from "@/lib/schema";
 export const revalidate = 300;
 export async function generateMetadata() {
   const s = await getSettings(); const m = s.plan?.month;
-  return { title: "Bảng giá", description: `Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium${m ? ` ${vnd(m.price)}/tháng` : ""} thêm nhiều lượt AI chụp ảnh tính calo, hỏi AI — dùng thử ${s.plan?.trial || 7} ngày, không cần thẻ.`, alternates: alt("/bang-gia") };
+  return { title: "Bảng giá", description: `Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium${m ? ` từ ${vnd(m.per)}/tháng` : ""} thêm nhiều lượt AI chụp ảnh tính calo, hỏi AI${s.plan?.trial ? ` — dùng thử ${s.plan.trial} ngày, không cần thẻ` : ""}.`, alternates: alt("/bang-gia") };
 }
 const ROWS = [["Thực đơn món Việt tự lên mỗi ngày", 1, 1], ["Đổi món giữ gần bằng calo", 1, 1], ["Ghi bữa, nhắc giờ ăn", 1, 1], ["Theo dõi cân, tổng kết tháng", 1, 1]];
 const FAQ = [{ q: "Hết %trial% ngày dùng thử có tự trừ tiền không?", a: "Không. Hết dùng thử app tự về gói Miễn phí, bạn chọn nâng cấp mới phải trả." }];
@@ -22,7 +22,7 @@ export default async function Price() {
   const aiRows = (P.limits || []).filter((x) => x.free != null || x.premium != null).map((x) => [LIMIT_NAME[x.k][0], limitText(x.free, LIMIT_NAME[x.k][1]), limitText(x.premium, LIMIT_NAME[x.k][1])]);
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng giá", path: "/bang-gia" }];
   const tick = (v) => (v ? <span className="chk" style={{ width: 22, height: 22, borderRadius: 11 }} aria-label="Có">✓</span> : <span style={{ color: "#CBD5E1", fontSize: 18 }} aria-label="Không">—</span>);
-  const plans = [[pr.free?.name || "Miễn phí", "0đ", "", "Cho người mới bắt đầu", ["Thực đơn tự lên mỗi ngày", "Đổi món 1 chạm", "Ghi bữa, nhắc giờ ăn", "Theo dõi cân, tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", P.month ? vnd(P.month.price) : "Liên hệ", P.month ? " / tháng" : "", `Dùng thử ${P.trial || 7} ngày, không cần thẻ`, premiumPoints(P), `Dùng thử ${P.trial || 7} ngày`, true]];
+  const plans = [[pr.free?.name || "Miễn phí", "0đ", "", "Cho người mới bắt đầu", ["Thực đơn tự lên mỗi ngày", "Đổi món 1 chạm", "Ghi bữa, nhắc giờ ăn", "Theo dõi cân, tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", P.month ? vnd(P.month.per) : "Liên hệ", P.month ? " / tháng" : "", P.trial ? `Dùng thử ${P.trial} ngày, không cần thẻ` : "Mở khoá nhiều lượt AI hơn", premiumPoints(P), P.trial ? `Dùng thử ${P.trial} ngày` : "Nâng cấp Premium", true]];
   return (
     <main>
       <JsonLd data={ld(breadcrumb(s, crumbs), faqGraph(faq, s), schemaOn(s, "price") ? appGraph(s) : null)} />

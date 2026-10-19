@@ -8,6 +8,7 @@ import { appConfirm } from "../../lib/dialog";
 import { Btn, Card, ErrorBox, Loading } from "../pcUI";
 import { Tog, Field, Lnk, Modal, inpStyle, BLUE } from "./webUI";
 import { Upload, FOODS } from "./BlockEdit";
+import { slugify } from "./webLib";
 
 const must = ({ data, error }) => { if (error) throw error; return data; };
 const KEYS = ["site", "contact", "footer", "notice_bar", "maintenance", "pricing"];
@@ -143,7 +144,7 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
 function FoodsModal({ value, onClose, onSave }) {
   const [list, setList] = useState(value);
   const [q, setQ] = useState("");
-  const res = q.trim() ? FOODS.filter((x) => x.key.includes(q.trim().toLowerCase()) && !list.includes(x.key)).slice(0, 8) : [];
+  const res = q.trim() ? FOODS.filter((x) => (slugify(x.key).includes(slugify(q)) || slugify(x.name || "").includes(slugify(q))) && !list.includes(x.key)).slice(0, 8) : [];
   return (
     <Modal title="Món hiện ở dải “Calo món phổ biến”" onClose={onClose} width={520} foot={<><Btn kind="light" onClick={onClose}>Huỷ</Btn><Btn kind="blue" onClick={() => onSave(list)}>Xong</Btn></>}>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

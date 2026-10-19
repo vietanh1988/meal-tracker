@@ -6,7 +6,7 @@ import { foodSlugs } from "../../../web/lib/slug.js";
 const F_SLUG = foodSlugs(Object.keys(LOCAL_FOODS));
 import { Btn } from "../pcUI";
 import { inpStyle, BLUE } from "./webUI";
-import { clean, youtubeId } from "./webLib";
+import { clean, youtubeId, slugify } from "./webLib";
 import { uploadImage } from "./webApi";
 import { MediaPick } from "./MediaPick";
 
@@ -54,7 +54,7 @@ const FOOD = Object.fromEntries(FOODS.map((f) => [f.key, f]));
 function FoodPick({ value, onPick, testid }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
-  const list = useMemo(() => { const s = q.trim().toLowerCase(); return (s ? FOODS.filter((f) => f.key.includes(s)) : FOODS).slice(0, 8); }, [q]);
+  const list = useMemo(() => { const s = slugify(q.trim()); return (s ? FOODS.filter((f) => slugify(f.key).includes(s) || slugify(f.name).includes(s)) : FOODS).slice(0, 8); }, [q]); // gõ không dấu vẫn ra ("pho bo")
   return (
     <span style={{ position: "relative", width: 130 }}>
       <input value={open ? q : (FOOD[value]?.name || "")} onFocus={() => { setOpen(true); setQ(""); }} onBlur={() => setTimeout(() => setOpen(false), 150)} onChange={(e) => setQ(e.target.value)} placeholder="Tìm món: phở bò…" data-testid={testid} className="pc-input" style={inpStyle(36)} />
@@ -77,7 +77,7 @@ function Upload({ onDone, label = "Chọn ảnh từ máy", name, showToast, tes
   };
   return (
     <label style={{ display: box ? "flex" : "inline-flex" }}>
-      <input type="file" accept="image/*" data-testid={testid} style={{ display: "none" }} onChange={(e) => pick(e.target.files?.[0])} />
+      <input type="file" accept="image/*" data-testid={testid} style={{ display: "none" }} onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
       {link ? <span style={{ color: BLUE, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>{busy ? "Đang tải…" : label}</span> : box ? <span style={{ width: "100%", height: 70, borderRadius: 10, border: "1.5px dashed #BFD4FF", background: "#F5F9FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12.5, color: BLUE, fontWeight: 700, cursor: "pointer" }}>{busy ? "Đang tải…" : label}</span>
         : <span className="pc-btn" style={{ ...small, borderRadius: 10, background: "#F1F5F9", display: "inline-flex", alignItems: "center", fontWeight: 800, cursor: "pointer" }}>{busy ? "Đang tải…" : label}</span>}
     </label>
@@ -107,7 +107,7 @@ export function OtherBlock({ b, set, showToast, slug }) {
     );
     case "gallery": return (
       <Box label="BỘ ẢNH">
-        <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{(b.images || []).map((im, i) => <span key={i} style={{ position: "relative" }}><img src={im.url} alt={im.alt || ""} style={{ width: 96, height: 96, borderRadius: 10, objectFit: "cover" }} /><button type="button" aria-label="Bỏ ảnh" onClick={() => set({ images: b.images.filter((_, k) => k !== i) })} style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: 11, border: 0, background: "rgba(15,23,42,.6)", color: "#FFF", cursor: "pointer" }}>×</button></span>)}</span>
+        <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{(b.images || []).map((im, i) => <span key={i} style={{ position: "relative", display: "flex", flexDirection: "column", gap: 4, width: 120 }}><img src={im.url} alt={im.alt || ""} style={{ width: 120, height: 96, borderRadius: 10, objectFit: "cover" }} /><input value={im.alt || ""} onChange={(e) => set({ images: b.images.map((x, k) => (k === i ? { ...x, alt: e.target.value } : x)) })} placeholder="Mô tả ảnh (alt)" className="pc-input" data-testid="web-blk-gal-alt" style={{ ...inpStyle(28), fontSize: 11.5, padding: "0 8px", borderColor: im.alt ? undefined : "#FCA5A5" }} /><button type="button" aria-label="Bỏ ảnh" onClick={() => set({ images: b.images.filter((_, k) => k !== i) })} style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: 11, border: 0, background: "rgba(15,23,42,.6)", color: "#FFF", cursor: "pointer" }}>×</button></span>)}</span>
         <Upload showToast={showToast} name={slug} label="+ Thêm ảnh" onDone={(r) => set({ images: [...(b.images || []), { url: r.url, alt: "" }] })} />
       </Box>
     );

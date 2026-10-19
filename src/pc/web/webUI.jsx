@@ -1,5 +1,5 @@
 // Mảnh giao diện riêng nhóm WEB & BÀI VIẾT (bản vẽ 138, cùng token PC). Số đo chép từ rr/PcWeb.jsx.
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PC } from "../../theme";
 import { Btn } from "../pcUI";
 
@@ -59,8 +59,16 @@ export function SideBox({ t, children, open: open0 = true, testid }) {
   );
 }
 export function Modal({ title, onClose, children, width = 640, foot, testid }) {
+  // Esc đóng hộp; mở hộp thì đưa con trỏ vào ô đầu tiên
+  const box = useRef(null); const closeRef = useRef(onClose); closeRef.current = onClose;
+  useEffect(() => {
+    const h = (e) => { if (e.key === "Escape") { e.stopPropagation(); closeRef.current?.(); } };
+    window.addEventListener("keydown", h);
+    const el = box.current?.querySelector("input:not([type=hidden]),textarea,select"); if (el && !box.current.contains(document.activeElement)) el.focus();
+    return () => window.removeEventListener("keydown", h);
+  }, []);
   return (
-    <div role="dialog" aria-modal="true" aria-label={title} data-testid={testid} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(15,23,42,.45)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "60px 20px", overflowY: "auto" }}>
+    <div ref={box} role="dialog" aria-modal="true" aria-label={title} data-testid={testid} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(15,23,42,.45)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "60px 20px", overflowY: "auto" }}>
       <div style={{ width, maxWidth: "100%", background: "#FFF", borderRadius: 16, boxShadow: "0 24px 60px rgba(15,23,42,.3)" }}>
         <div style={{ display: "flex", alignItems: "center", padding: "14px 18px", borderBottom: `1px solid ${PC.headLine}` }}><b style={{ fontSize: 15 }}>{title}</b><button type="button" aria-label="Đóng" onClick={onClose} style={{ marginLeft: "auto", border: 0, background: "none", fontSize: 18, cursor: "pointer", color: PC.t3 }}>×</button></div>
         <div style={{ padding: 18 }}>{children}</div>

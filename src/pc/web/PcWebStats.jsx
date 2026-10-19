@@ -7,6 +7,7 @@ import { todayVN, addDays, dateList } from "../../lib/dateVN";
 import { Btn, Pill, Card, ErrorBox, Loading, headRow, bodyRow, cell, vnInt } from "../pcUI";
 import { BLUE } from "./webUI";
 import { FOODS } from "./BlockEdit";
+import { readAll } from "./webApi";
 
 const must = ({ data, error }) => { if (error) throw error; return data; };
 const H = ({ t, r }) => <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: `1px solid ${PC.headLine}` }}><b style={{ fontSize: 13.5 }}>{t}</b><span style={{ marginLeft: "auto" }}>{r}</span></div>;
@@ -18,8 +19,7 @@ const RANGES = [[7, "7 ngày qua"], [30, "30 ngày qua"], [90, "90 ngày qua"]];
 
 // Lượt xem 30 ngày theo đường dẫn (dùng cho Trang calo món); null = chưa có bảng thống kê
 export async function views30(prefix = "/calo/") {
-  const { data, error } = await supabase.from("web_stats_daily").select("path,views").gte("day", addDays(todayVN(), -29)).like("path", `${prefix}%`).limit(20000);
-  if (error) return null;
+  let data; try { data = await readAll(() => supabase.from("web_stats_daily").select("path,views").gte("day", addDays(todayVN(), -29)).like("path", `${prefix}%`).order("day").order("path").order("src")); } catch (e) { return null; }
   const m = {}; for (const r of data || []) m[r.path] = (m[r.path] || 0) + r.views; return m;
 }
 
@@ -35,12 +35,12 @@ export function PcWebStats({ top }) {
   useEffect(() => { (async () => {
     setRows(null);
     try {
-      const r = await supabase.from("web_stats_daily").select("day,path,src,views,visitors,app").gte("day", pfrom).limit(50000);
+      const r = await readAll(() => supabase.from("web_stats_daily").select("day,path,src,views,visitors,app").gte("day", pfrom).order("day").order("path").order("src")).then((data) => ({ data }), (error) => ({ error }));
       if (r.error) { if (/web_stats_daily|relation|schema cache/i.test(r.error.message || "")) { setNoTable(true); setRows([]); setPrev([]); return; } throw r.error; }
       setRows(r.data.filter((x) => x.day >= from)); setPrev(r.data.filter((x) => x.day < from));
     } catch (e) { setErr("Chưa tải được thống kê. " + (e.message || "")); }
   })(); }, [days]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { supabase.from("web_posts").select("slug,title").neq("status", "trash").limit(3000).then(must).then((ps) => setTitles(Object.fromEntries(ps.map((p) => [`/${p.slug}`, p.title])))).catch(() => {}); }, []);
+  useEffect(() => { readAll(() => supabase.from("web_posts").select("slug,title").neq("status", "trash").order("id")).then((ps) => setTitles(Object.fromEntries(ps.map((p) => [`/${p.slug}`, p.title])))).catch(() => {}); }, []);
 
   const S = useMemo(() => {
     if (!rows) return null;

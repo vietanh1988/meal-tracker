@@ -20,7 +20,7 @@ export default async function Tag({ params }) {
   const others = (await allTerms("tag")).filter((x) => x.id !== t.id).slice(0, 12);
   return (
     <main>
-      <PageHead eye="Thẻ" h1={t.name} sub={`${posts.length} bài có gắn thẻ “${t.name}”.`} crumb={[{ name: "Trang chủ", path: "/" }, { name: "Thẻ", path: "/bai-viet" }, { name: t.name, path: `/the/${t.slug}` }]} />
+      <PageHead eye="Thẻ" h1={t.name} sub={`${posts.length} bài có gắn thẻ “${t.name}”.`} crumb={[{ name: "Trang chủ", path: "/" }, { name: "Bài viết", path: "/bai-viet" }, { name: t.name, path: `/the/${t.slug}` }]} />
       <div className="wrap tagw" style={{ paddingTop: 40 }}>
         <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.tagw{padding-top:24px!important}.tag-more{margin-top:32px!important}}` }} />
         <PostList posts={posts} variant="list" mCard={false} />

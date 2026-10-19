@@ -15,7 +15,7 @@ import { appConfirm } from "../../lib/dialog";
 import { Btn, Pill, Card, ErrorBox, Loading, fmtDT, secLbl } from "../pcUI";
 import { Check, Tog, Radio, Score, Tabs, Field, Count, SideBox, Modal, Lnk, inpStyle, BLUE } from "./webUI";
 import { STATUS, slugify, seoChecks, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
-import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus, uploadImage } from "./webApi";
+import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus, uploadImage, slugType } from "./webApi";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
 import { Rich, ListEdit, OtherBlock, Upload, kb, inlineClean, H_STYLE } from "./BlockEdit";
 import { PcWebRevisions } from "./PcWebRevisions";
@@ -116,7 +116,14 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
   useEffect(() => { if (!dirty || !post) return; const t = setTimeout(() => { try { localStorage.setItem(LS(post.id), JSON.stringify({ at: new Date().toISOString(), post: { ...post, blocks: forSave(post.blocks) } })); } catch (e) { /* */ } }, 1500); return () => clearTimeout(t); }, [post, dirty]);
 
   const fullRef = useRef(null); // ở chế độ HTML: lưu theo ô HTML
+  const inflight = useRef(null); // lần lưu đang chạy — tự lưu bỏ qua, lưu tay chờ xong rồi mới lưu
   const doSave = useCallback(async (mode) => {
+    if (inflight.current) { if (mode === "auto") return; await inflight.current.catch(() => {}); }
+    let done; inflight.current = new Promise((r) => { done = r; });
+    try { await saveNowRef.current(mode); } finally { inflight.current = null; done(); }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const saveNow = async (mode) => {
+    const snap = postRef.current; // gõ thêm trong lúc lưu → postRef đổi → giữ cờ "chưa lưu"
     const p = fullRef.current ? fullRef.current() : postRef.current; if (!p) return;
     if (!p.title.trim()) { showToast?.("Nhập tiêu đề trước đã."); return; }
     let status = p.status, published_at = p.published_at;
@@ -128,12 +135,14 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
       if (slug !== p.slug && p.slug) showToast?.(`Đường dẫn “${p.slug}” đã có bài khác dùng → đổi thành “${slug}”.`);
       const saved = await savePost({ ...p, slug, status, published_at, blocks: forSave(p.blocks) }, { reason: mode === "auto" ? "autosave" : mode === "draft" ? "draft" : p.status === "published" ? "update" : "publish", uid: user?.id });
       try { localStorage.removeItem(LS(p.id)); localStorage.removeItem(LS(null)); } catch (e) { /* */ }
-      setPost((cur) => ({ ...cur, id: saved.id, slug: saved.slug, status: saved.status, published_at: saved.published_at, updated_at: saved.updated_at, seo: saved.seo }));
-      setSlugTouched(true); setDirty(false); setSavedAt(new Date()); setRevCount((n) => Math.min(30, n + 1));
+      const same = postRef.current === snap;
+      setPost((cur) => ({ ...cur, id: saved.id, slug: same ? saved.slug : cur.slug, status: saved.status, published_at: saved.published_at, updated_at: saved.updated_at, seo: { ...(cur.seo || {}), score: saved.seo?.score } }));
+      setSlugTouched(true); if (same) setDirty(false); setSavedAt(new Date()); setRevCount((n) => Math.min(30, n + 1));
       if (mode !== "auto") showToast?.(mode === "draft" ? "Đã lưu nháp." : status === "scheduled" ? `Đã hẹn giờ đăng ${fmtDT(published_at)}.` : p.status === "published" ? "Đã cập nhật. Web đổi theo trong khoảng 1 phút." : "Đã đăng. Web hiện bài trong khoảng 1 phút.");
     } catch (e) { showToast?.("Chưa lưu được: " + (e.message || "")); }
     setSaving("");
-  }, [showToast, user?.id]);
+  };
+  const saveNowRef = useRef(saveNow); saveNowRef.current = saveNow;
 
   // Bản nháp tự lưu lên máy chủ mỗi 60 giây
   const dirtyRef = useRef(false); dirtyRef.current = dirty;
@@ -253,12 +262,13 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
   const seoDesc = post.seo?.desc || post.excerpt || "";
 
   // Lịch sử bản sửa (138m): màn so sánh thay chỗ trình soạn, về lại không mất gì
-  if (revs) return <PcWebRevisions top={top} revs={revs} post={fullRef.current ? fullRef.current() : post} termName={(id) => [...cats, ...tags].find((t) => t.id === id)?.name} onBack={() => setRevs(null)} onRestore={(sn) => { setMode("visual"); setPost((p) => ({ ...p, ...sn, id: p.id, blocks: withKeys(sn.blocks || []), terms: sn.terms || p.terms })); setDirty(true); setRevs(null); showToast?.("Đã mở lại bản cũ. Bấm Cập nhật / Lưu nháp để lưu."); }} />;
+  if (revs) return <PcWebRevisions top={top} revs={revs} post={fullRef.current ? fullRef.current() : post} termName={(id) => [...cats, ...tags].find((t) => t.id === id)?.name} onBack={() => setRevs(null)} onRestore={(sn) => { /* chỉ khôi phục nội dung — giữ trạng thái, đường dẫn, ngày đăng */ setMode("visual"); setPost((p) => ({ ...p, title: sn.title ?? p.title, excerpt: sn.excerpt ?? null, cover_url: sn.cover_url ?? null, cover_alt: sn.cover_alt ?? null, seo: { ...(sn.seo || {}) }, blocks: withKeys(sn.blocks || []), terms: sn.terms || p.terms })); setDirty(true); setRevs(null); showToast?.("Đã mở lại bản cũ. Bấm Cập nhật / Lưu nháp để lưu."); }} />;
 
   return (
     <div className={full ? "web-full" : ""}>
       {top(
         <span style={{ display: "flex", gap: 8 }}>
+          <Btn kind="light" onClick={back} title="Về danh sách (hỏi nếu còn thay đổi chưa lưu)" testid="web-ed-back">‹ Danh sách</Btn>
           <Btn kind="light" disabled={!post.id} onClick={async () => setRevs(await listRevisions(post.id))} testid="web-ed-history">↶ Lịch sử</Btn>
           <Btn kind="light" disabled={post.status !== "published"} title={post.status === "published" ? "Mở bài trên fipilotai.com" : "Đăng rồi mới xem được trên web"} onClick={() => window.open(`${WEB}/${post.slug}`, "_blank", "noopener")}>Xem trước ↗</Btn>
           <Btn kind="soft" disabled={!!saving} title={isLive ? "Chuyển bài về bản nháp (gỡ khỏi web)" : "Lưu, chưa đăng"} onClick={async () => { if (isLive && !(await appConfirm("Bài đang hiện trên web. Lưu nháp sẽ gỡ bài khỏi web cho tới khi bấm Đăng lại. Tiếp tục?"))) return; doSave("draft"); }} testid="web-ed-draft">{saving === "draft" ? "Đang lưu…" : "Lưu nháp"}</Btn>
@@ -274,7 +284,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
               <b style={{ color: PC.t2, fontSize: 12.5, whiteSpace: "nowrap" }}>Đường dẫn</b>
               <span style={{ flex: "0 1 auto", height: 34, borderRadius: 10, border: `1px solid ${slugEdit ? "#1A7CFF" : PC.field}`, boxShadow: slugEdit ? "0 0 0 3px rgba(26,124,255,.12)" : "none", display: "inline-flex", alignItems: "center", overflow: "hidden", background: "#FFF", minWidth: 0 }}>
                 <span style={{ height: "100%", padding: "0 10px", display: "inline-flex", alignItems: "center", background: "#F8FAFC", borderRight: `1px solid ${PC.field}`, color: PC.t3, flexShrink: 0 }}>fipilotai.com/</span>
-                {slugEdit ? <input autoFocus value={post.slug} onChange={(e) => { setSlugTouched(true); upd({ slug: slugify(e.target.value.replace(/\s/g, "-")) || "" }); }} onBlur={() => setSlugEdit(false)} onKeyDown={(e) => e.key === "Enter" && setSlugEdit(false)} data-testid="web-ed-slug" style={{ height: "100%", border: 0, outline: "none", padding: "0 12px", width: 320, fontFamily: "ui-monospace, Menlo, monospace", fontWeight: 700, fontSize: 12.5, color: PC.t1 }} />
+                {slugEdit ? <input autoFocus value={post.slug} onChange={(e) => { setSlugTouched(true); upd({ slug: slugType(e.target.value) }); }} onBlur={() => { setSlugEdit(false); if (post.slug !== slugify(post.slug)) upd({ slug: slugify(post.slug) }); }} onKeyDown={(e) => e.key === "Enter" && setSlugEdit(false)} data-testid="web-ed-slug" style={{ height: "100%", border: 0, outline: "none", padding: "0 12px", width: 320, fontFamily: "ui-monospace, Menlo, monospace", fontWeight: 700, fontSize: 12.5, color: PC.t1 }} />
                   : <span data-testid="web-ed-slug-view" style={{ padding: "0 12px", fontFamily: "ui-monospace, Menlo, monospace", fontWeight: 700, color: post.slug ? PC.t1 : PC.t4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{post.slug || "tu-dong-theo-tieu-de"}</span>}
               </span>
               {!slugEdit && <Btn kind="light" onClick={() => setSlugEdit(true)} title={post.status === "published" ? "Đổi đường dẫn bài đã đăng: web tự chuyển hướng 301 từ link cũ" : "Sửa đường dẫn (mặc định tự lấy từ tiêu đề)"} style={{ height: 30, fontSize: 12 }} testid="web-ed-slug-edit">Sửa</Btn>}

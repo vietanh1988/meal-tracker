@@ -82,3 +82,16 @@ test("shapePlan: giá theo tháng, % tiết kiệm, gói rẻ nhất", async () 
   assert.equal(p.cheapest.m, 12);
   assert.equal(fillTrial("Miễn phí %trial% ngày", p), "Miễn phí 30 ngày");
 });
+
+test("safeUrl chặn javascript: kể cả viết mã hoá / chèn tab", async () => {
+  const { safeUrl, clean } = await import("../lib/sanitize.js");
+  for (const u of ["javascript:alert(1)", "&#106;avascript:1", "java\tscript:1", "JaVa&#x53;cript:1", "vbscript:x", "data:text/html,1"]) assert.equal(safeUrl(u), "#", u);
+  for (const u of ["/bai-viet", "#muc", "https://fipilotai.com", "mailto:a@b.vn", "tel:0900"]) assert.equal(safeUrl(u), u);
+  assert.ok(!/href/.test(clean('<a href="&#106;avascript:alert(1)">x</a>')));
+});
+
+test("shapePlan: tắt gói 1 tháng thì giá / tháng vẫn đúng đơn vị", async () => {
+  const { shapePlan } = await import("../lib/plans.js");
+  const p = shapePlan({ price_1m: 0, price_3m: 297000, trial_days: 0 });
+  assert.equal(p.month.m, 3); assert.equal(p.month.per, 99000); assert.equal(p.trial, 0);
+});

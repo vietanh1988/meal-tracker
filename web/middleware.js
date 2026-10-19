@@ -27,13 +27,15 @@ export async function middleware(req) {
   }
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   if (path !== pathname) return NextResponse.redirect(new URL(path + search, req.url), 308);
-  const lower = decodeURIComponent(path).toLowerCase();
+  let dec = path; try { dec = decodeURIComponent(path); } catch {} // %… hỏng (bot quét) → dùng đường dẫn thô, không 500
+  const lower = dec.toLowerCase();
   const hit = c.rules.find((r) => r.match === "exact" && r.src.toLowerCase() === lower) || c.rules.find((r) => r.match === "prefix" && lower.startsWith(r.src.toLowerCase().replace(/\*$/, "")));
   if (!hit) { const res = NextResponse.next(); if (c.noindex) res.headers.set("X-Robots-Tag", "noindex, nofollow"); return res; } // Cài đặt SEO › Chặn công cụ tìm kiếm
   if (KEY) fetch(`${URL_}/rest/v1/rpc/hit_web_redirect`, { method: "POST", headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: hit.id }) }).catch(() => {});
   if (hit.code === 410) return new NextResponse("Trang này đã bị xoá.", { status: 410, headers: { "content-type": "text/plain; charset=utf-8" } });
   let dest = hit.dest || "/";
-  if (hit.match === "prefix" && /\*$/.test(hit.src) && /\*$/.test(dest)) dest = dest.replace(/\*$/, "") + path.slice(hit.src.length - 1);
+  if (hit.match === "prefix" && /\*$/.test(hit.src) && /\*$/.test(dest)) dest = dest.replace(/\*$/, "") + dec.slice(hit.src.length - 1); // cắt đuôi trên cùng chuỗi đã so khớp
+  dest = dest.replace(/^\/{2,}/, "/"); // "//evil.com" → không cho chuyển ra web khác
   return NextResponse.redirect(new URL(dest + search, req.url), hit.code === 302 ? 302 : 301);
 }
 

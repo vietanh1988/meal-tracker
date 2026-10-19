@@ -1,6 +1,7 @@
 // Chân trang — chép đúng bản vẽ 137 (footer v3, rr/web137b.py › footer). Chỉ thay chữ mẫu bằng dữ liệu thật:
 // cột link = Menu chân trang (Quản trị › Menu), món phổ biến + kcal = kho món app, liên hệ = Cài đặt web.
 import Logo from "./Logo";
+import { safeUrl } from "@/lib/sanitize";
 import Icon from "./Icon";
 import { appLink } from "@/lib/site";
 import { getFood, mainPortion, porName } from "@/lib/foods";
@@ -16,24 +17,24 @@ export default async function Footer({ s, menus }) {
   for (const k of f.popular_foods || []) { const fd = await getFood(k); if (fd) foods.push({ fd, por: mainPortion(fd) }); }
   const year = new Date().getFullYear();
   const zalo = c.zalo || (c.phone ? `https://zalo.me/${c.phone.replace(/\s/g, "")}` : "");
-  const social = [["Facebook", "f", "#1877F2", c.facebook], ["Zalo", "Z", "#0068FF", zalo]].filter((x) => x[3]);
+  const social = [["Facebook", "f", "#1877F2", c.facebook && safeUrl(c.facebook)], ["Zalo", "Z", "#0068FF", zalo]].filter((x) => x[3]);
   return (
     <div className="fwrap" style={{ position: "relative", marginTop: 56 }}>
       {f.show_app_card !== false && (
         <div className="wrap fcardwrap" style={{ position: "relative", zIndex: 2, marginBottom: -110 }}>
           <div className="fcard" style={{ position: "relative", zIndex: 2, borderRadius: 24, overflow: "hidden", background: "#FFFFFF", boxShadow: "0 24px 60px rgba(10,26,58,.22)", display: "flex", alignItems: "stretch" }}>
             <div className="fcard-l" style={{ flex: 1, padding: "30px 32px", display: "flex", flexDirection: "column", gap: 10, justifyContent: "center" }}>
-              <span className="pill" style={{ alignSelf: "flex-start" }}>Miễn phí {s.plan?.trial || 7} ngày · không cần thẻ</span>
+              {s.plan?.trial ? <span className="pill" style={{ alignSelf: "flex-start" }}>Miễn phí {s.plan.trial} ngày · không cần thẻ</span> : null}
               <b className="fcard-t" style={{ fontSize: 28, lineHeight: 1.2, color: "#0F172A" }}>Tối nay ăn gì để vẫn giảm cân?<br /><span style={{ color: "#0062F0" }}>Để app lo.</span></b>
               <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.55 }}>Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần.</span>
               <div className="fbtns" style={{ display: "flex", gap: 10, marginTop: 6 }}><a className="btn b1" href={appLink(s, "footer")} style={{ height: 46 }}>Dùng thử miễn phí</a><a className="btn b2" href="/bang-calo" style={{ height: 46 }}>Tra calo món ăn</a></div>
             </div>
             <div className="fart" style={{ position: "relative", width: 380, flexShrink: 0, background: "radial-gradient(circle at 70% 40%,#D6E6FF,#EEF4FF 60%,#F5F9FF)", overflow: "hidden" }}>
               <span aria-hidden="true" style={{ position: "absolute", right: -40, bottom: -60, width: 220, height: 220, borderRadius: "50%", background: "rgba(26,124,255,.12)" }} />
-              <img src="/img/bowl-pho.jpg" alt="" className="th fbowl" style={{ position: "absolute", left: 26, bottom: 26, width: 130, height: 130, border: "5px solid #fff" }} />
-              <img src="/img/bowl-2.jpg" alt="" className="th fbowl2" style={{ position: "absolute", left: 120, top: 26, width: 62, height: 62, border: "4px solid #fff" }} />
+              <img src="/img/bowl-pho.jpg" alt="" width={130} height={130} loading="lazy" decoding="async" className="th fbowl" style={{ position: "absolute", left: 26, bottom: 26, width: 130, height: 130, border: "5px solid #fff" }} />
+              <img src="/img/bowl-2.jpg" alt="" width={62} height={62} loading="lazy" decoding="async" className="th fbowl2" style={{ position: "absolute", left: 120, top: 26, width: 62, height: 62, border: "4px solid #fff" }} />
               <div className="fphone" style={{ position: "absolute", right: 36, top: 24, width: 128, transform: "rotate(6deg)", borderRadius: 30, background: "#0F172A", padding: 7, boxShadow: "0 24px 48px rgba(15,23,42,.22)" }}>
-                <img src="/img/app-today.webp" alt="Màn Hôm nay của app Fipilot AI" style={{ display: "block", width: "100%", borderRadius: 24 }} />
+                <img src="/img/app-today.webp" alt="Màn Hôm nay của app Fipilot AI" width={312} height={675} loading="lazy" decoding="async" style={{ display: "block", width: "100%", borderRadius: 24 }} />
               </div>
             </div>
           </div>
@@ -71,7 +72,7 @@ export default async function Footer({ s, menus }) {
           {COLS.map(([loc, h, ic, col]) => (
             <nav key={loc} aria-label={h} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <span style={head}><span style={sq(`${col}22`, col)}><Icon name={ic} size={13} stroke={2.4} /></span>{h.toUpperCase()}</span>
-              {(menus[loc] || []).map((it) => <a key={it.url} href={it.url} className="flink" {...(it.new_tab ? { target: "_blank" } : {})} {...([it.new_tab && "noopener", it.nofollow && "nofollow"].filter(Boolean).length ? { rel: [it.new_tab && "noopener", it.nofollow && "nofollow"].filter(Boolean).join(" ") } : {})} {...(it.title ? { title: it.title } : {})} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13.5, color: "rgba(255,255,255,.82)", fontWeight: 500 }}><span style={{ color: col, opacity: 0.85, display: "inline-flex" }}><Icon name={it.icon || "doc"} size={15} /></span>{it.label}</a>)}
+              {(menus[loc] || []).map((it, ix) => <a key={ix + it.url} href={it.url} className="flink" {...(it.new_tab ? { target: "_blank" } : {})} {...([it.new_tab && "noopener", it.nofollow && "nofollow"].filter(Boolean).length ? { rel: [it.new_tab && "noopener", it.nofollow && "nofollow"].filter(Boolean).join(" ") } : {})} {...(it.title ? { title: it.title } : {})} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13.5, color: "rgba(255,255,255,.82)", fontWeight: 500 }}><span style={{ color: col, opacity: 0.85, display: "inline-flex" }}><Icon name={it.icon || "doc"} size={15} /></span>{it.label}</a>)}
             </nav>
           ))}
         </div>

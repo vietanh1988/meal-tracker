@@ -72,7 +72,14 @@ details.faq p { font-size: 15px; color: var(--mut); line-height: 1.6; margin-top
 .sticky-cta { display: none; }
 .only-m { display: none; }
 span.only-pc { display: inline; }
+/* Tablet 721–1024px: thu cột phụ, ảnh cố định cho vừa */
+@media (min-width: 721px) and (max-width: 1024px) {
+  .calo-side { width: 300px !important; } .hero-ph { width: 340px !important; } .fart { width: 300px !important; }
+  .grid3 { grid-template-columns: 1fr 1fr; }
+  .pin-img { width: 360px !important; }
+}
 @media (max-width: 720px) {
+  .prose .btn, .btn.wrapm { white-space: normal; height: auto; min-height: 44px; padding-top: 10px; padding-bottom: 10px; text-align: center; }
   .wrap { padding: 0 16px; }
   .sec { margin-top: 56px; }
   .h1home { font-size: 36px; } .h1 { font-size: 32px; } .h2 { font-size: 26px; }

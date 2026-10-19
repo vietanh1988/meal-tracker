@@ -7,12 +7,13 @@ import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import { PostList } from "@/components/PostCard";
-import { getSettings, appLink } from "@/lib/site";
+import { getSettings, appLink, alt } from "@/lib/site";
 import { latestPosts } from "@/lib/content";
 import { getFood, mainPortion } from "@/lib/foods";
 import { orgGraph, websiteGraph, appGraph, faqGraph, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 60;
+export const metadata = { alternates: alt("/") };
 const STEPS = [["1", "Nhập cân nặng, chiều cao", "30 giây là xong."], ["2", "App tự lên thực đơn mỗi ngày", "Món Việt, đúng calo, đổi món 1 chạm."], ["3", "Ăn theo, bấm “Đã ăn”", "App nhắc đúng giờ, tự chỉnh calo theo cân mỗi tuần."]];
 // Thẻ tính năng (bản vẽ 137a): giao diện thu nhỏ — số calo lấy từ kho món app (khẩu phần vừa)
 const MENU_ROWS = [["phở bò", "Sáng", "/img/bowl-1.jpg"], ["cơm gà", "Trưa", "/img/bowl-2.jpg"], ["bún chả", "Tối", "/img/bowl-3.jpg"]];
@@ -31,7 +32,7 @@ export default async function Home() {
   const sw = (await Promise.all(SWAP.map(pick))).filter(Boolean);
   const spark = <svg viewBox="0 0 200 60" width="100%" height="60" aria-hidden="true"><path d="M4 10 L36 16 L70 22 L104 30 L140 40 L196 50 L196 60 L4 60Z" fill="rgba(22,163,74,.08)" /><path d="M4 10 L36 16 L70 22 L104 30 L140 40 L196 50" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" />{[[4, 10], [36, 16], [70, 22], [104, 30], [140, 40], [196, 50]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="3" fill="#fff" stroke="#16A34A" strokeWidth="2" />)}</svg>;
   const FEATS = [
-    ["Thực đơn tự lên mỗi ngày", "Sáng phở, trưa cơm gà, tối bún chả — đúng calo cho bạn.", <>{menu.map(({ f, meal, img }) => <FoodRow key={f.name} img={img} name={f.name} kcal={`${meal} · ${f.por} · ${f.cal} kcal`} extra={<span style={{ color: "#94A3B8" }}>›</span>} />)}</>],
+    ["Thực đơn tự lên mỗi ngày", "Sáng phở, trưa cơm gà, tối bún chả — đúng calo cho bạn.", <>{menu.map(({ f, meal, img }) => <FoodRow key={f.name} img={img} name={f.name} kcal={`${meal} · ${f.por} · ${f.cal} kcal`} extra={<span style={{ color: "#64748B" }}>›</span>} />)}</>],
     ["Không thích món nào? Đổi 1 chạm", "Gợi ý món giữ bữa gần bằng calo.", sw.length === 3 ? <><FoodRow img="/img/bowl-1.jpg" name={sw[0].name} kcal={`${sw[0].cal} kcal`} /><span style={{ textAlign: "center", color: "#0062F0", fontSize: 13, fontWeight: 700 }}>⇅ đổi sang</span>{sw.slice(1).map((x, i) => { const d = x.cal - sw[0].cal; return <FoodRow key={x.name} img={i ? "/img/bowl-3.jpg" : "/img/bowl-2.jpg"} name={x.name} kcal={`${x.cal} kcal`} extra={<span className="pill" style={{ height: 22, ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : {}) }}>{d > 0 ? "+" : "−"}{Math.abs(d)}</span>} />; })}</> : null],
     ["Thấy rõ kết quả mỗi tháng", "Kg đã giảm, ngày ghi bữa, so tháng trước.", <div style={{ display: "flex", flexDirection: "column", gap: 8 }}><span className="mut" style={{ fontSize: 13 }}>Ví dụ: tháng 10 của bạn</span><b style={{ fontSize: 30, color: "#16A34A" }}>−2,4 kg</b><Chk t="ghi bữa 24/31 ngày" /><Chk t="chuỗi 9 ngày liên tục" />{spark}</div>],
   ];
@@ -67,7 +68,7 @@ export default async function Home() {
         <div>
           <SecHead eye="Bảng giá" title="Bắt đầu miễn phí" />
           <div className="grid2 plans" style={{ gap: 16 }}>
-            {[[pr.free?.name || "Miễn phí", "0đ", "", ["Thực đơn tự lên mỗi ngày", "Đổi món, ghi bữa, nhắc giờ", "Tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", s.plan?.month ? vnd(s.plan.month.price) : "Liên hệ", s.plan?.month ? " / tháng" : "", premiumPoints(s.plan), `Dùng thử ${s.plan?.trial || 7} ngày`, true]].map(([n, p, u, l, c, hi]) => (
+            {[[pr.free?.name || "Miễn phí", "0đ", "", ["Thực đơn tự lên mỗi ngày", "Đổi món, ghi bữa, nhắc giờ", "Tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", s.plan?.month ? vnd(s.plan.month.per) : "Liên hệ", s.plan?.month ? " / tháng" : "", premiumPoints(s.plan), s.plan?.trial ? `Dùng thử ${s.plan.trial} ngày` : "Nâng cấp Premium", true]].map(([n, p, u, l, c, hi]) => (
               <div key={n} className="card plan" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12, position: "relative", ...(hi ? { border: "1.5px solid #0062F0" } : {}) }}>
                 {hi && <span className="pill" style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "#0062F0", color: "#fff" }}>Phổ biến</span>}
                 <span style={{ fontSize: 15, fontWeight: 800, color: "#334155" }}>{n}</span>

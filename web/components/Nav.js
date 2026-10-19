@@ -14,10 +14,10 @@ export default function Nav({ items, s, mobile }) {
       <div className="wrap navbar" style={{ height: 64, display: "flex", alignItems: "center", gap: 30 }}>
         <a href="/" aria-label="Fipilot AI — trang chủ"><Logo src={s?.site?.logo_url} name={s?.site?.name} /></a>
         <nav aria-label="Menu chính" className="only-pc" style={{ display: "flex", gap: 26 }}>
-          {links.map((it) => (
-            <span key={it.url} style={{ position: "relative" }} className="navi">
+          {links.map((it, ix) => (
+            <span key={ix + it.url} style={{ position: "relative" }} className="navi">
               <a href={it.url} style={{ fontSize: 15, fontWeight: 600, color: "#334155" }} {...la(it)}>{it.label}{it.children?.length ? " ⌄" : ""}</a>
-              {it.children?.length ? <span className="navsub">{it.children.map((c) => <a key={c.url} href={c.url} {...la(c)}>{c.label}</a>)}</span> : null}
+              {it.children?.length ? <span className="navsub">{it.children.map((c, cx) => <a key={cx + c.url} href={c.url} {...la(c)}>{c.label}</a>)}</span> : null}
             </span>
           ))}
         </nav>
@@ -27,10 +27,10 @@ export default function Nav({ items, s, mobile }) {
         <details className="only-m mnav" style={{ display: "none" }}>
           <summary aria-label="Mở menu" style={{ listStyle: "none", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Icon name="hamb" size={24} /></summary>
           <div style={{ position: "absolute", left: 0, right: 0, top: 64, background: "#fff", borderBottom: "1px solid #E6ECF5", boxShadow: "0 12px 24px rgba(15,23,42,.08)", padding: "8px 16px 16px" }}>
-            {mlinks.map((it) => (
-              <div key={it.url}>
+            {mlinks.map((it, ix) => (
+              <div key={ix + it.url}>
                 <a href={it.url} {...la(it)} style={{ display: "block", padding: "14px 4px", fontSize: 17, fontWeight: 700, borderBottom: "1px solid #EEF2F7" }}>{it.label}</a>
-                {(it.children || []).map((c) => <a key={c.url} href={c.url} {...la(c)} style={{ display: "block", padding: "12px 4px 12px 20px", fontSize: 15.5, color: "#475569", borderBottom: "1px solid #EEF2F7" }}>{c.label}</a>)}
+                {(it.children || []).map((c, cx) => <a key={cx + c.url} href={c.url} {...la(c)} style={{ display: "block", padding: "12px 4px 12px 20px", fontSize: 15.5, color: "#475569", borderBottom: "1px solid #EEF2F7" }}>{c.label}</a>)}
               </div>
             ))}
             <a href="/tim-kiem" style={{ display: "flex", gap: 10, alignItems: "center", padding: "14px 4px", fontSize: 16, fontWeight: 600, color: "#475569" }}><Icon name="search" size={18} />Tìm món, bài viết</a>

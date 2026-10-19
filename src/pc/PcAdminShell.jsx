@@ -192,7 +192,7 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   // Bấm lại mục đang mở (VD đang soạn bài → bấm "Bài viết") = về trang đầu của mục; có bài chưa lưu thì hỏi trước
   const [nonce, setNonce] = useState(0);
   const go = async (id) => {
-    if (window.__fpWebDirty && !(await appConfirm("Bài đang soạn có thay đổi chưa lưu. Vẫn rời trang?", { danger: true }))) return;
+    if (window.__fpWebDirty && !(await appConfirm("Có thay đổi chưa lưu. Vẫn rời trang?", { danger: true }))) return;
     window.__fpWebDirty = false;
     if (id === section) setNonce((n) => n + 1);
     setSection(id); try { localStorage.setItem(SEC_KEY, id); } catch (e) { /* */ } window.scrollTo(0, 0);
@@ -207,7 +207,7 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   useEffect(() => { refreshCounts(); }, [refreshCounts, sec]);
   useEffect(() => { const t = setInterval(refreshCounts, 60_000); return () => clearInterval(t); }, [refreshCounts]);
 
-  const top = (right, title = LABEL[sec], sub = SUB[sec]) => <TopBar title={title} sub={sub} right={right} onOpenApp={onOpenApp} />;
+  const top = (right, title = LABEL[sec], sub = SUB[sec]) => <TopBar title={title} sub={sub} right={right} onOpenApp={async () => { if (window.__fpWebDirty && !(await appConfirm("Có thay đổi chưa lưu. Vẫn sang app?", { danger: true }))) return; window.__fpWebDirty = false; onOpenApp?.(); }} />;
   const uid = user?.id;
   // Báo nhanh góc dưới (thay showToast của app điện thoại)
   const [toast, setToast] = useState(null);

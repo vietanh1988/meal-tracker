@@ -71,6 +71,7 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect(row).toHaveCount(1);
     await row.hover();
     await row.getByTestId("web-act-trash").click();
+    await page.getByTestId("confirm-ok").click(); // bài đang đăng → hỏi lại trước khi gỡ khỏi web
     await expect(page.getByTestId("pc-toast")).toContainText("thùng rác");
     expect((await rest(`web_posts?id=eq.${post.id}&select=status`))[0].status).toBe("trash");
     await page.getByTestId("web-tab-trash").click();

@@ -39,8 +39,8 @@ export default function ContactForm({ fallback }) {
       <input name="website" value={v.website} onChange={set("website")} tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, opacity: 0 }} />
       {err && <span role="alert" style={{ fontSize: 14, color: "#B45309" }}>{err}</span>}
       <button type="submit" className="btn b1" disabled={st === "sending"} data-testid="contact-send" style={{ height: 52, fontSize: 16, borderRadius: 12, border: 0, fontFamily: "inherit", cursor: "pointer" }}>{st === "sending" ? "Đang gửi…" : "Gửi"}</button>
-      <span style={{ fontSize: 13, color: "#94A3B8" }}>Lời nhắn về thẳng hộp thư của Fipilot AI. Có chống spam tự động.</span>
-      <style dangerouslySetInnerHTML={{ __html: `.cf input::placeholder,.cf textarea::placeholder{color:#94A3B8}.cf input:focus,.cf textarea:focus{border-color:#0062F0!important;box-shadow:0 0 0 3px rgba(0,98,240,.12)}@media(max-width:720px){.cf{padding:20px!important}.cf-t{font-size:20px!important}}` }} />
+      <span style={{ fontSize: 13, color: "#64748B" }}>Lời nhắn về thẳng hộp thư của Fipilot AI. Có chống spam tự động.</span>
+      <style dangerouslySetInnerHTML={{ __html: `.cf input::placeholder,.cf textarea::placeholder{color:#64748B}.cf input:focus,.cf textarea:focus{border-color:#0062F0!important;box-shadow:0 0 0 3px rgba(0,98,240,.12)}@media(max-width:720px){.cf{padding:20px!important}.cf-t{font-size:20px!important}}` }} />
     </form>
   );
 }
