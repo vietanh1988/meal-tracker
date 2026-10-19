@@ -6,7 +6,7 @@ import JsonLd from "@/components/JsonLd";
 import { PostList } from "@/components/PostCard";
 import { getSettings, siteUrl, alt } from "@/lib/site";
 import { getAuthor, latestPosts } from "@/lib/content";
-import { breadcrumb, ld } from "@/lib/schema";
+import { breadcrumb, ld, schemaOn } from "@/lib/schema";
 import { appAuthor } from "@/lib/appdata";
 // Chưa tạo tác giả riêng cho web → dùng thông tin anh ở trang Giới thiệu của app
 const findAuthor = async (slug) => (await getAuthor(slug)) || (await appAuthor().then((a) => (a && a.slug === slug ? a : null)));
@@ -31,7 +31,7 @@ export default async function Author({ params }) {
   const ini = (a.name || "?").split(/\s+/).map((w) => w[0]).slice(-2).join("").toUpperCase();
   return (
     <main>
-      <JsonLd data={ld(breadcrumb(s, crumbs), { "@type": "ProfilePage", mainEntity: person })} />
+      <JsonLd data={ld(breadcrumb(s, crumbs), schemaOn(s, "author") && { "@type": "ProfilePage", mainEntity: person })} />
       <section className="phead ahd">
         <div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Crumb items={crumbs} />

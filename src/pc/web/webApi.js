@@ -74,7 +74,18 @@ export async function savePost(post, { reason = "update", uid } = {}) {
   await supabase.from("web_post_terms").delete().eq("post_id", saved.id).then(must);
   if (terms.length) await supabase.from("web_post_terms").insert(terms.map((term_id) => ({ post_id: saved.id, term_id }))).then(must);
   await supabase.from("web_revisions").insert({ post_id: saved.id, snapshot: { ...row, terms }, reason, created_by: uid || null }).then(must);
+  if (saved.status === "published" && reason !== "autosave") pingIndexNow([`/${saved.slug}`]);
   return { ...saved, terms };
+}
+
+// IndexNow: báo Bing / Cốc Cốc link mới (bật ở Cài đặt SEO › Sitemap & robots). Không chờ, lỗi thì bỏ qua.
+export async function pingIndexNow(paths) {
+  try {
+    const { data } = await supabase.from("web_settings").select("value").eq("key", "seo").maybeSingle();
+    const k = data?.value?.indexnow && data.value.indexnow_key;
+    if (!k || typeof fetch !== "function") return;
+    for (const p of paths.slice(0, 20)) fetch(`https://api.indexnow.org/indexnow?url=${encodeURIComponent("https://fipilotai.com" + p)}&key=${k}&keyLocation=${encodeURIComponent("https://fipilotai.com/indexnow-key.txt")}`, { mode: "no-cors" }).catch(() => {});
+  } catch (e) { /* */ }
 }
 
 export const setStatus = (ids, status) => supabase.from("web_posts").update({ status, updated_at: new Date().toISOString(), ...(status === "published" ? {} : {}) }).in("id", ids).then(must);

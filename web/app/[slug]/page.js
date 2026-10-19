@@ -11,7 +11,7 @@ import { getSettings, siteUrl, appLink, alt } from "@/lib/site";
 import { getPostBySlug, latestPosts, catOf, fmtDate, readMin } from "@/lib/content";
 import { prepare, toc as mkToc, faqs } from "@/lib/blocks";
 import { textOf } from "@/lib/sanitize";
-import { articleGraph, breadcrumb, faqGraph, foodGraph, ld } from "@/lib/schema";
+import { articleGraph, breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -59,7 +59,7 @@ export default async function Page({ params }) {
   const custom = p.seo?.schema && typeof p.seo.schema === "object" ? p.seo.schema : null;
   // Quản trị › Sửa bài › Schema: tắt từng loại schema tự sinh
   const off = new Set(p.seo?.schema_off || []);
-  const graphs = [off.has("BreadcrumbList") ? null : breadcrumb(s, crumbs), p.kind === "post" && !off.has("Article") ? articleGraph(s, p, path) : null, off.has("FAQPage") ? null : faqGraph(fq), firstCalo && !off.has("NutritionInformation") ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
+  const graphs = [off.has("BreadcrumbList") ? null : breadcrumb(s, crumbs), p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? articleGraph(s, p, path) : null, off.has("FAQPage") ? null : faqGraph(fq, s), firstCalo && !off.has("NutritionInformation") && schemaOn(s, "calo") ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
 
   if (p.kind === "page") {
     const long = p.template === "legal";

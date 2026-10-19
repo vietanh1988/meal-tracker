@@ -103,10 +103,36 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect(page.getByTestId("web-au-row").first()).toBeVisible();
     await page.getByTestId("web-au-save").click();
     await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu tác giả");
+
+    // Cài đặt SEO: tab Chuyển hướng → thêm 301 → DB; tab Sitemap → tắt Thẻ + sửa robots → Lưu → DB; khôi phục
+    const [seo0] = await rest("web_settings?key=eq.seo&select=value");
+    await page.getByTestId("pc-nav-web_seo").click();
+    await page.getByTestId("web-seoset-tab-3").click();
+    await page.getByTestId("web-rd-src").fill("/e2e-link-cu");
+    await page.getByTestId("web-rd-dest").fill("/e2e-link-moi");
+    await page.getByTestId("web-rd-add").click();
+    await expect(page.getByTestId("pc-toast")).toContainText("Đã thêm chuyển hướng");
+    const [rd] = await rest("web_redirects?src=eq./e2e-link-cu&select=dest,code,source");
+    expect(rd).toMatchObject({ dest: "/e2e-link-moi", code: 301, source: "manual" });
+    await expect(page.getByTestId("web-rd-row").filter({ hasText: "/e2e-link-cu" })).toHaveCount(1);
+    await page.getByTestId("web-seoset-tab-2").click();
+    await page.getByTestId("web-robots").fill("Disallow: /api/\nDisallow: /e2e-an/");
+    await page.getByTestId("web-seo-save").click();
+    await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu cài đặt SEO");
+    const [seo1] = await rest("web_settings?key=eq.seo&select=value");
+    expect(seo1.value.robots_extra).toContain("/e2e-an/");
+    expect(seo1.value.sitemap.tag).toBe(false);
+    await page.getByTestId("web-seoset-tab-4").click();
+    await expect(page.getByTestId("web-404-scan")).toBeVisible();
+    await page.getByTestId("web-404-scan").click();
+    await page.screenshot({ path: "shots/pc-web-seo.png", fullPage: true });
+    if (seo0) await rest("web_settings?key=eq.seo", { method: "PATCH", body: JSON.stringify({ value: seo0.value }) });
+    else await rest("web_settings?key=eq.seo", { method: "DELETE" });
     expect(errs, errs.join("\n")).toEqual([]);
   } finally {
     await rest(`web_posts?slug=like.e2e-*`, { method: "DELETE" }).catch(() => {});
     await rest(`web_terms?slug=like.e2e-*`, { method: "DELETE" }).catch(() => {});
+    await rest(`web_redirects?src=like./e2e-*`, { method: "DELETE" }).catch(() => {});
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: prof?.is_admin ?? false, admin_role: prof?.admin_role ?? null }) });
   }
 });

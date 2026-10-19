@@ -7,7 +7,7 @@ import PostCard, { PostList, Pager } from "@/components/PostCard";
 import { getSettings, alt } from "@/lib/site";
 import { fmtDate, readMin } from "@/lib/content";
 import { getTerm, allTerms, latestPosts, countPosts } from "@/lib/content";
-import { breadcrumb, ld } from "@/lib/schema";
+import { breadcrumb, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 60;
 export async function generateMetadata({ params, searchParams }) {
@@ -33,7 +33,7 @@ export default async function Cat({ params, searchParams }) {
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Chuyên mục", path: "/bai-viet" }, { name: t.name, path: `/chu-de/${t.slug}` }];
   return (
     <main>
-      <JsonLd data={ld(breadcrumb(s, crumbs), { "@type": "CollectionPage", name: t.name, description: t.description || undefined })} />
+      <JsonLd data={ld(breadcrumb(s, crumbs), schemaOn(s, "cat") && { "@type": "CollectionPage", name: t.name, description: t.description || undefined })} />
       <PageHead eye="Chuyên mục" h1={t.name} sub={t.description} crumb={crumbs} right={<div className="card only-pc" style={{ padding: "18px 22px", flexShrink: 0 }}><div style={{ display: "flex", gap: 28 }}>{[[total, "bài viết"], ...(caloN ? [[caloN, "món có bảng calo"]] : [])].map(([n, l]) => <span key={l} style={{ display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 26 }}>{n}</b><span style={{ fontSize: 13.5, color: "#64748B" }}>{l}</span></span>)}</div></div>} />
       <div className="wrap catw" style={{ paddingTop: 40 }}>
         {subs.length > 0 && <div className="chips" style={{ marginBottom: 32 }}><span className="chip on">Tất cả trong {t.name}</span>{subs.map((x) => <a key={x.id} className="chip" href={`/chu-de/${x.slug}`}>{x.name}</a>)}</div>}

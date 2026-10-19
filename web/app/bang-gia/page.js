@@ -3,7 +3,7 @@ import PageHead from "@/components/PageHead";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
 import { getSettings, appLink, alt } from "@/lib/site";
-import { breadcrumb, faqGraph, ld } from "@/lib/schema";
+import { breadcrumb, faqGraph, ld, schemaOn, appGraph } from "@/lib/schema";
 
 export const revalidate = 300;
 export const metadata = { title: "Bảng giá", description: "Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI — dùng thử 7 ngày.", alternates: alt("/bang-gia") };
@@ -18,7 +18,7 @@ export default async function Price() {
   const plans = [[pr.free?.name || "Miễn phí", pr.free?.price || "0đ", "", "Cho người mới bắt đầu", ["Thực đơn tự lên mỗi ngày", "Đổi món 1 chạm", "Ghi bữa, nhắc giờ ăn", "Theo dõi cân, tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", pr.premium?.price || "99.000đ", pr.premium?.unit || " / tháng", pr.premium?.trial || "Dùng thử 7 ngày, không cần thẻ", ["Mọi thứ của gói Miễn phí", "Chụp ảnh món, app tính calo", "Hỏi AI về ăn uống", "AI lên thực đơn theo ý bạn"], "Dùng thử 7 ngày", true]];
   return (
     <main>
-      <JsonLd data={ld(breadcrumb(s, crumbs), faqGraph(faq))} />
+      <JsonLd data={ld(breadcrumb(s, crumbs), faqGraph(faq, s), schemaOn(s, "price") ? appGraph(s) : null)} />
       <PageHead eye="Bảng giá" h1="Bắt đầu miễn phí, nâng cấp khi cần" sub="Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI." crumb={crumbs} />
       <div className="wrap pricew" style={{ paddingTop: 48, maxWidth: 960 }}>
         <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.pricew{padding-top:28px!important}.plans{gap:20px!important}.plan{padding:24px!important}.plan-p{font-size:36px!important}.cmp-c{width:90px!important}.cmp-t{font-size:15px!important}}` }} />

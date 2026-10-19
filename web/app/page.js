@@ -7,7 +7,7 @@ import { PostList } from "@/components/PostCard";
 import { getSettings, appLink } from "@/lib/site";
 import { latestPosts } from "@/lib/content";
 import { getFood, mainPortion } from "@/lib/foods";
-import { orgGraph, websiteGraph, appGraph, faqGraph, ld } from "@/lib/schema";
+import { orgGraph, websiteGraph, appGraph, faqGraph, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 60;
 const STEPS = [["1", "Nhập cân nặng, chiều cao", "30 giây là xong."], ["2", "App tự lên thực đơn mỗi ngày", "Món Việt, đúng calo, đổi món 1 chạm."], ["3", "Ăn theo, bấm “Đã ăn”", "App nhắc đúng giờ, tự chỉnh calo theo cân mỗi tuần."]];
@@ -35,7 +35,7 @@ export default async function Home() {
   ];
   return (
     <main>
-      <JsonLd data={ld(orgGraph(s), websiteGraph(s), appGraph(s), faqGraph(FAQ))} />
+      <JsonLd data={ld(orgGraph(s), websiteGraph(s), schemaOn(s, "home") ? appGraph(s) : null, faqGraph(FAQ, s))} />
       <section style={{ background: "linear-gradient(180deg,#EAF1FF 0%,#F3F6FB 100%)", padding: "72px 0 64px" }} className="hero">
         <div className="wrap hero-in" style={{ display: "flex", alignItems: "center", gap: 40 }}>
           <div className="hero-l" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, maxWidth: 560 }}>

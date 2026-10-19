@@ -7,7 +7,7 @@ import Portions from "@/components/Portions";
 import { getSettings, appLink, alt } from "@/lib/site";
 import { caloBySlug, caloFoods } from "@/lib/calo";
 import { mainPortion } from "@/lib/foods";
-import { breadcrumb, faqGraph, foodGraph, ld } from "@/lib/schema";
+import { breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 300;
 const vn = (n) => String(n).replace(".", ",");
@@ -35,7 +35,7 @@ export default async function Calo({ params }) {
   const intro = pg.intro || `${kcalLine} Xem calo theo từng khẩu phần, lượng đạm, tinh bột, chất béo và so với món tương tự.`;
   return (
     <main>
-      <JsonLd data={ld(breadcrumb(s, crumbs), foodGraph(s, fd, por, path), faqGraph(faq))} />
+      <JsonLd data={ld(breadcrumb(s, crumbs), schemaOn(s, "calo") ? foodGraph(s, fd, por, path) : null, faqGraph(faq, s))} />
       <div className="wrap calowrap" style={{ paddingTop: 48, paddingBottom: 24, display: "flex", flexDirection: "column", gap: 24 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 16 }}>
           <Crumb items={crumbs} />
