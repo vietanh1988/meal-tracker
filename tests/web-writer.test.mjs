@@ -40,7 +40,7 @@ const ARTICLE = ["SEO Title: Bữa sáng giảm cân với món Việt dễ làm
   "**Bữa sáng giảm cân nên có đạm, rau và ít tinh bột tinh chế.** " + "Chữ ".repeat(120), "", "## Nên ăn gì?", "Trứng và bánh mì nguyên cám.", "", "[chèn ảnh ở đây: alt ảnh \"đĩa trứng luộc và bánh mì nguyên cám buổi sáng\"]", "", "## Bao nhiêu calo?", "Khoảng 350 đến 450 kcal.", "", "| Món | Calo |", "|---|---|", "| Phở gà | 400 |", "", "## Sai lầm hay gặp", "Bỏ bữa sáng.", "", "Ghi bữa sáng trên [Fipilot AI](/) và đọc thêm [thực đơn giảm cân](/chu-de/thuc-don) hoặc [mẹo giảm cân](/chu-de/giam-can).", "",
   "Image Prompts:", "1. A bowl of Vietnamese chicken pho with herbs", "2. Boiled eggs and whole wheat bread on a plate"].join("\n");
 
-function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "KHÔNG CÓ LỖI" } = {}) {
+function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "KHÔNG CÓ LỖI", relink = "KHÔNG CÓ" } = {}) {
   const tables = {
     web_ai_config: [{ id: 1, data: { searches: 2, img_inline: 1, ...cfg } }],
     app_settings: [{ key: "claude_key", value: "sk-ant-test-xxxxxxxxxxxxxxxxxxxxxxxx" }, { key: "fal_key", value: "fal-test-xxxxxxxxxxxxxxxxxxxx" }],
@@ -58,6 +58,7 @@ function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "
   const fetch = async (url, opt = {}) => {
     if (String(url).includes("anthropic")) {
       const body = JSON.parse(opt.body); calls.claude.push(body);
+      if (/biên tập viên SEO/.test(body.system || "")) { calls.relink = [...(calls.relink || []), body.messages[0].content]; return new Response(JSON.stringify({ content: [{ type: "text", text: typeof relink === "function" ? relink(body.messages[0].content) : relink }], stop_reason: "end_turn", usage: { input_tokens: 1500, output_tokens: 60 } })); }
       if (/soát bài/.test(body.system || "")) { calls.review = (calls.review || 0) + 1; return new Response(JSON.stringify({ content: [{ type: "text", text: review }], stop_reason: "end_turn", usage: { input_tokens: 2000, output_tokens: 100 } })); }
       if (body.tools) return new Response(JSON.stringify({ content: [{ type: "text", text: "Để tôi tra." }, { type: "server_tool_use" }, { type: "web_search_tool_result" }, { type: "text", text: "Chuyên mục: thuc-don\nÝ định tìm kiếm: chọn món sáng.\nSố liệu đã kiểm:\n- Trứng 6g đạm (nguồn: USDA)" }], stop_reason: "end_turn", usage: { input_tokens: 3000, output_tokens: 400, server_tool_use: { web_search_requests: 2 } } }));
       if (writes) { const x = writes[chunk++]; return new Response(JSON.stringify({ content: [{ type: "text", text: x.text }], stop_reason: x.stop || "end_turn", usage: { input_tokens: 1000, output_tokens: 1000 } })); }
@@ -259,7 +260,7 @@ test("soát bài thấy lỗi → 1 lượt viết sửa đúng chỗ (giữ lin
   assert.ok(tables.ai_usage_log.some((l) => l.feature === "web_review" && l.model === "claude-haiku-5-5"));
 });
 
-test("soát bằng hãng khác (Gemini) dùng khoá Gemini; tắt soát (review_model rỗng) thì bỏ qua bước soát", async () => {
+test("soát bằng hãng khác (Gemini) mà chưa có khoá Gemini → bỏ qua soát, vẫn lưu; tắt soát (review_model rỗng) thì bỏ qua bước soát", async () => {
   const off = setup({ cfg: { searches: 0, img_on: false, review_model: "" } });
   off.tables.web_ai_jobs[0].auto_term = false;
   for (let i = 0; i < 8 && off.tables.web_ai_jobs[0].status !== "done"; i++) await off.w.handle(req({ action: "tick", secret: "s3cret" }));
@@ -268,9 +269,9 @@ test("soát bằng hãng khác (Gemini) dùng khoá Gemini; tắt soát (review_
   assert.ok(!off.calls.review);
   const g = setup({ cfg: { searches: 0, img_on: false, review_model: "gemini-3.8-flash" } });
   g.tables.web_ai_jobs[0].auto_term = false;
-  for (let i = 0; i < 8 && g.tables.web_ai_jobs[0].status !== "review"; i++) await g.w.handle(req({ action: "tick", secret: "s3cret" }));
-  await g.w.handle(req({ action: "tick", secret: "s3cret" }));
-  assert.match(g.tables.web_ai_jobs[0].error || "", /Chưa có khoá Gemini/); // chưa nhập khoá Gemini → báo rõ, thử lại lần sau
+  for (let i = 0; i < 8 && g.tables.web_ai_jobs[0].status !== "done"; i++) await g.w.handle(req({ action: "tick", secret: "s3cret" }));
+  assert.equal(g.tables.web_ai_jobs[0].status, "done"); // chưa nhập khoá Gemini → bỏ qua soát, vẫn lưu bài
+  assert.match(g.tables.web_ai_jobs[0].state.review.skipped, /chưa có khoá Gemini/);
 });
 
 test("bước soát không thấy lỗi nhưng bài thiếu link chuyên mục → máy thêm lỗi thiếu link, vẫn có lượt sửa", async () => {
@@ -284,4 +285,30 @@ test("bước soát không thấy lỗi nhưng bài thiếu link chuyên mục �
   assert.match(j.state.review.issues[0], /thieu-link[\s\S]*\/chu-de\/thuc-don/);
   assert.match(calls.claude[calls.claude.length - 1].messages[0].content, /thieu-link/);
   assert.equal(j.state.linkStats.cat, 1);
+});
+
+test("nút Gắn link (bài đã có) + link ngược: AI chỉ chọn chỗ, máy chèn <a> đúng chữ, lưu bản sửa; đích lạ bị bỏ", async () => {
+  const relink = (prompt) => /Bài "Bữa sáng giảm cân với món Việt"/.test(prompt) ? "1 | Trứng và bánh mì nguyên cám | /bang-calo\n2 | 350 đến 450 kcal | /khong-co" : "1 | bữa sáng giảm cân | /bua-sang-giam-can";
+  const { w, tables, calls } = setup({ relink });
+  tables.profiles = [{ id: "u1", is_admin: true }];
+  const blocks = [{ type: "p", html: "Sapo <b>x</b>." }, { type: "h", text: "A" }, { type: "p", html: "Trứng và bánh mì nguyên cám." }, { type: "p", html: "Khoảng 350 đến 450 kcal." }];
+  tables.web_posts.push({ id: "p1", kind: "post", status: "published", slug: "bua-sang-giam-can", title: "Bữa sáng giảm cân với món Việt", primary_term: "t1", seo: { keyword: "bữa sáng giảm cân" }, blocks, published_at: "2026-10-02T00:00:00Z" });
+  tables.web_posts.push({ id: "old1", kind: "post", status: "published", slug: "an-sang-gi", title: "Ăn sáng gì khi giảm cân", primary_term: "t1", seo: { keyword: "bữa sáng giảm cân" }, published_at: "2026-10-01T00:00:00Z",
+    blocks: [{ type: "p", html: "Sapo." }, { type: "p", html: "Một bữa sáng giảm cân nên có trứng." }] });
+  const auth = (body) => new Request("https://x/functions/v1/web-writer", { method: "POST", body: JSON.stringify(body), headers: { origin: "https://app.fipilotai.com", authorization: "Bearer t" } });
+  const r = await (await w.handle(auth({ action: "links", post_id: "p1" }))).json();
+  assert.ok(r.ok, JSON.stringify(r));
+  assert.deepEqual(r.added.map((x) => x.url), ["/bang-calo"]); // /khong-co không có trong danh sách đích → bỏ
+  const p1 = tables.web_posts.find((p) => p.id === "p1");
+  assert.equal(p1.blocks[2].html, '<a href="/bang-calo">Trứng và bánh mì nguyên cám</a>.');
+  assert.equal(p1.blocks[0].html, "Sapo <b>x</b>."); // sapo không đụng
+  assert.deepEqual(r.back.map((x) => x.slug), ["an-sang-gi"]); // link ngược: bài cũ cùng chủ đề
+  assert.equal(tables.web_posts.find((p) => p.id === "old1").blocks[1].html, 'Một <a href="/bua-sang-giam-can">bữa sáng giảm cân</a> nên có trứng.');
+  assert.ok(tables.web_revisions.filter((x) => x.reason === "ai").length >= 2);
+  assert.ok(tables.ai_usage_log.some((l) => l.feature === "web_relink"));
+  // xem trước trong trình soạn: apply=false → trả khối mới, không lưu
+  const before = JSON.stringify(tables.web_posts.find((p) => p.id === "old1").blocks);
+  const pv = await (await w.handle(auth({ action: "relink", post_id: "old1", apply: false }))).json();
+  assert.ok(Array.isArray(pv.blocks));
+  assert.equal(JSON.stringify(tables.web_posts.find((p) => p.id === "old1").blocks), before);
 });

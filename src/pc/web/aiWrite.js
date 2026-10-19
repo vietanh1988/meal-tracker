@@ -89,7 +89,7 @@ export function caloHints(md, foods = "") {
   const app = {};
   for (const l of String(foods || "").split("\n")) { const c = l.split("|").map((x) => x.trim()); if (c.length >= 4 && c[0]) (app[c[0].toLowerCase()] ||= new Set()).add(Number(c[3])); }
   const out = [];
-  for (const sen of String(md || "").replace(/\n+/g, " ").split(/(?<=[.!?])\s+/)) {
+  for (const sen of String(md || "").replace(/\n+/g, " ").replace(/([.!?])\s+/g, "$1\u0000").split("\u0000")) {
     const low = sen.toLowerCase();
     for (const [name, set] of Object.entries(app)) {
       if (!low.includes(name)) continue;
@@ -167,6 +167,70 @@ export function joinChunk(prev, next) {
   if (!ma || !mb) return a + b;
   return (ma[0] + mb[0]).match(VOW)?.length >= 2 && (ma[0].match(VOW) || []).length && (mb[0].match(VOW) || []).length ? `${a} ${b}` : a + b;
 }
+// ---- Gắn link nội bộ cho bài ĐÃ CÓ (nút "Gắn link" / link ngược): AI chỉ chọn chỗ (đoạn + cụm chữ có sẵn + đích), máy chèn <a>, không viết lại chữ ----
+const strip = (h) => String(h || "").replace(/<a\b[^>]*>(.*?)<\/a>/gi, "[$1]").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+// Các chỗ được gắn: đoạn văn (trừ sapo), dòng danh sách, trích dẫn. Trả [{n, bi, ii, text}]
+export function relinkUnits(blocks = []) {
+  const out = []; let sapo = true;
+  blocks.forEach((b, bi) => {
+    if (b?.type === "p") { if (sapo) { sapo = false; return; } out.push({ n: out.length + 1, bi, ii: -1, text: strip(b.html) }); }
+    else if (b?.type === "quote") out.push({ n: out.length + 1, bi, ii: -1, text: strip(b.html) });
+    else if (b?.type === "list") (b.items || []).forEach((it, ii) => out.push({ n: out.length + 1, bi, ii, text: strip(it) }));
+  });
+  return out;
+}
+export const linkedUrls = (blocks = []) => new Set((JSON.stringify(blocks).match(/href=\\?"([^"\\]+)\\?"/g) || []).map((h) => normUrl(h.replace(/^href=\\?"/, "").replace(/\\?"$/, ""))));
+export function relinkPrompt(units, links, { title = "" } = {}) {
+  return `Bài "${title}" dưới đây đã viết xong. Việc của bạn: CHỌN CHỖ gắn link nội bộ, KHÔNG viết lại chữ.
+Danh sách trang được link (đường dẫn | nội dung trang):
+${links.map((l) => `${l.url} | ${l.title}`).join("\n")}
+
+Luật: chữ neo là cụm 2-6 từ CÓ NGUYÊN VĂN trong đoạn (chép đúng từng chữ, đúng dấu), nói đúng nội dung trang đích; mỗi đường dẫn tối đa 1 lần; mỗi đoạn tối đa 1 link; chữ trong [ngoặc vuông] là link đã có, không dùng lại; chỉ gắn khi thật hợp ngữ cảnh, không hợp thì bỏ.
+Ưu tiên: 1 link trang chủ (/) nếu đoạn nào nhắc app / ghi bữa ăn, 1 link chuyên mục, trang liên quan khi đoạn nói đúng nội dung đó, bài cùng chủ đề khi đoạn nói đúng ý bài đó.
+Trả lời mỗi link 1 dòng đúng khuôn, không thêm gì khác: <số đoạn> | <chữ neo nguyên văn> | <đường dẫn>
+Không có chỗ hợp thì trả: KHÔNG CÓ
+
+CÁC ĐOẠN:
+${units.map((u) => `${u.n}. ${u.text}`).join("\n")}`;
+}
+export function parseRelink(text) {
+  return String(text || "").split("\n").map((l) => l.trim().replace(/^[-*]\s*/, "")).map((l) => l.split("|").map((x) => x.trim().replace(/^["“”']|["“”']$/g, ""))).filter((c) => c.length >= 3 && /^\d+$/.test(c[0]) && c[1] && c[2].startsWith("/")).map((c) => ({ n: Number(c[0]), anchor: c[1], url: c[2] }));
+}
+// Bọc cụm chữ (nằm gọn trong 1 đoạn chữ, ngoài thẻ <a>) bằng <a href>. Không thấy → trả null.
+export function insertLink(html, anchor, url) {
+  const parts = String(html || "").split(/(<[^>]+>)/); let inA = 0;
+  const escA = esc(anchor);
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
+    if (p.startsWith("<")) { if (/^<a\b/i.test(p)) inA++; else if (/^<\/a>/i.test(p)) inA = Math.max(0, inA - 1); continue; }
+    if (inA) continue;
+    let k = p.indexOf(escA); if (k < 0) k = p.toLowerCase().indexOf(escA.toLowerCase());
+    if (k < 0) continue;
+    parts[i] = `${p.slice(0, k)}<a href="${esc(url)}">${p.slice(k, k + escA.length)}</a>${p.slice(k + escA.length)}`;
+    return parts.join("");
+  }
+  return null;
+}
+export function applyRelink(blocks, picks, links) {
+  const allow = new Set(links.map((l) => normUrl(l.url)));
+  const used = linkedUrls(blocks), units = relinkUnits(blocks), out = JSON.parse(JSON.stringify(blocks)), added = [], touched = new Set();
+  for (const pk of picks) {
+    const u = normUrl(pk.url), unit = units.find((x) => x.n === pk.n);
+    if (!unit || !allow.has(u) || used.has(u) || touched.has(pk.n) || pk.anchor.split(/\s+/).length > 8 || pk.anchor.length < 3) continue;
+    const b = out[unit.bi]; const cur = unit.ii < 0 ? b.html : b.items[unit.ii];
+    if ((String(cur).match(/<a\b/gi) || []).length >= 2) continue;
+    const nh = insertLink(cur, pk.anchor, u); if (!nh) continue;
+    if (unit.ii < 0) b.html = nh; else b.items[unit.ii] = nh;
+    used.add(u); touched.add(pk.n); added.push({ n: pk.n, anchor: pk.anchor, url: u });
+  }
+  return { blocks: out, added };
+}
+const postScore = (a, b, catId) => (catId && b.primary_term === catId ? 3 : 0) + wordsOf(`${b.title} ${b.keyword || ""}`).filter((w) => new Set(wordsOf(`${a.title} ${a.keyword || ""}`)).has(w)).length;
+// Link ngược: bài cũ đã đăng hợp chủ đề nhất với bài mới (chưa link tới bài mới)
+export function backlinkCandidates(post, posts = [], n = 2) {
+  return posts.filter((p) => p.slug && p.slug !== post.slug && !linkedUrls(p.blocks || []).has(`/${post.slug}`)).map((p) => ({ p, sc: postScore(post, p, post.primary_term) })).filter((x) => x.sc >= 2).sort((a, b) => b.sc - a.sc).slice(0, n).map((x) => x.p);
+}
+
 // Đếm link đã chèn trong khối (để hiện ở tiến trình + nhắc thiếu)
 export function linkStats(blocks, links = []) {
   const kind = Object.fromEntries(links.map((l) => [l.url, l.kind]));
@@ -355,5 +419,5 @@ export const estText = (model, searches = 3) => textCost(model, 25000, 8000, sea
 export const estReview = (model, writeModel = model) => textCost(model, 12000, 1200) + textCost(writeModel, 20000, 7000);
 
 // Cài đặt mặc định của màn AI viết bài
-export const AI_DEFAULTS = { provider: "claude", model: "claude-sonnet-5-5", key_mode: "shared", searches: 3, img_on: true, img_provider: "flux", img_inline: 1, img_reuse: true, rate: 26000, daily_cap_usd: 2, rules: null, publish: "draft", sched_times: ["08:00", "19:00"], review_model: "claude-sonnet-5-5" }; // review_model "" = không soát
+export const AI_DEFAULTS = { provider: "claude", model: "claude-sonnet-5-5", key_mode: "shared", searches: 3, img_on: true, img_provider: "flux", img_inline: 1, img_reuse: true, rate: 26000, daily_cap_usd: 2, rules: null, publish: "draft", sched_times: ["08:00", "19:00"], review_model: "claude-sonnet-5-5", backlinks: true }; // review_model "" = không soát
 export const cfgOf = (data) => { const c = { ...AI_DEFAULTS, ...(data || {}) }; c.provider = providerOf(c.model); return c; };

@@ -3,6 +3,7 @@ import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
   imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable, linkTargets, linkStats,
   caloHints, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk,
+  relinkUnits, relinkPrompt, parseRelink, applyRelink, backlinkCandidates,
 } from "./aiWrite.js";
 
 export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
@@ -249,7 +250,12 @@ async function step(admin, job, cfg, t0) {
     const rm = cfg.review_model;
     const rp = providerOf(rm);
     const a = parseArticle(st.final);
-    const r = await llm(rp, await keysFor(admin, cfg, rp), {
+    const rkeys = await keysFor(admin, cfg, rp);
+    if (!rkeys.length) { // thiếu khoá hãng soát: bỏ qua soát, vẫn lưu bài (ghi chú ở tiến trình), không làm bài lỗi
+      await save({ state: { ...st, reviewed: true, review: { model: rm, issues: [], skipped: `chưa có khoá ${NAMES[rp]}` } }, status: afterText(true) });
+      return true;
+    }
+    const r = await llm(rp, rkeys, {
       model: rm, maxTokens: 2000, system: "Bạn là biên tập viên soát bài, chỉ liệt kê lỗi đúng khuôn, tiếng Việt.",
       messages: [{ role: "user", content: reviewPrompt({ article: `Tiêu đề: ${a.title}\n\n${a.md}`, research: st.research || "", foods: st.foods || "", hints: caloHints(a.md, st.foods || "") }) }],
     });
@@ -331,10 +337,52 @@ async function step(admin, job, cfg, t0) {
     if (terms.length) await admin.from("web_post_terms").insert(terms.map((term_id) => ({ post_id: saved.id, term_id }))).then(() => {}, () => {});
     await admin.from("web_revisions").insert({ post_id: saved.id, snapshot: { ...row, terms }, reason: status === "draft" ? "ai" : "publish", created_by: job.created_by }).then(() => {}, () => {});
     if (status === "published") await pingIndexNow(admin, `/${slug}`);
-    await save({ status: "done", post_id: saved.id, finished_at: new Date().toISOString(), locked_until: null, error: null, state: { ...job.state, published: { status, at: published_at, note }, linkStats: linkStats(post.blocks, st.links || []) } });
+    if (status === "published" && cfg.backlinks) { try { st.backlinks = await backlinks(admin, cfg, { ...row, id: saved.id, terms }, job.created_by); } catch (_e) { /* link ngược lỗi không chặn bài */ } }
+    await save({ status: "done", post_id: saved.id, finished_at: new Date().toISOString(), locked_until: null, error: null, state: { ...job.state, published: { status, at: published_at, note }, linkStats: linkStats(post.blocks, st.links || []), ...(st.backlinks ? { backlinks: st.backlinks } : {}) } });
     return false;
   }
   return false;
+}
+
+// ---- Gắn link nội bộ cho bài đã có: AI chọn chỗ (đoạn | chữ neo | đích), máy chèn. onlyUrl: chỉ gắn link tới 1 trang (link ngược). ----
+async function publishedPosts(admin) {
+  return ((await admin.from("web_posts").select("id,slug,title,primary_term,seo,blocks").eq("kind", "post").eq("status", "published").order("published_at", { ascending: false }).limit(300)).data || []).map((p) => ({ ...p, keyword: p.seo?.keyword || "" }));
+}
+async function relinkPost(admin, cfg, post, { onlyUrl = null, apply = true, uid = null, pub = null } = {}) {
+  const cats = (await admin.from("web_terms").select("id,name,slug").eq("kind", "category")).data || [];
+  const cat = cats.find((c) => c.id === post.primary_term) || null;
+  const units = relinkUnits(post.blocks || []);
+  let foods = [];
+  if (!onlyUrl) { try { const r = await fetch(CALO_API, { signal: AbortSignal.timeout(8000) }); if (r.ok) foods = await r.json(); } catch (_e) { /* bỏ qua */ } }
+  const text = units.map((u) => u.text).join(" ").toLowerCase();
+  const picked = pickFoods(Array.isArray(foods) ? foods : [], `${post.title} ${text}`).filter((f) => text.includes(String(f.n).toLowerCase()));
+  let links = linkTargets({ keyword: post.seo?.keyword || post.title, cat, posts: pub || (await publishedPosts(admin)), foods: picked, selfSlug: post.slug });
+  if (onlyUrl) links = links.filter((l) => l.url === onlyUrl).concat(links.some((l) => l.url === onlyUrl) ? [] : [{ url: onlyUrl, kind: "post", title: (pub || []).find((p) => `/${p.slug}` === onlyUrl)?.title || onlyUrl }]);
+  if (!units.length || !links.length) return { added: [], blocks: post.blocks, cost: 0 };
+  const model = cfg.model, prov = providerOf(model);
+  const r = await llm(prov, await keysFor(admin, cfg, prov), { model, maxTokens: 900, system: "Bạn là biên tập viên SEO tiếng Việt, chỉ trả đúng khuôn.", messages: [{ role: "user", content: relinkPrompt(units, links, { title: post.title }) }] });
+  const cost = textCost(model, r.inTok, r.outTok);
+  await logUsage(admin, uid, prov, model, r.inTok, r.outTok, cost, "web_relink");
+  const res = applyRelink(post.blocks || [], parseRelink(r.text), links);
+  if (apply && res.added.length) {
+    const now = new Date().toISOString();
+    const { error } = await admin.from("web_posts").update({ blocks: res.blocks, updated_at: now, updated_by: uid }).eq("id", post.id);
+    if (error) throw new Error("Lưu bài: " + error.message);
+    await admin.from("web_revisions").insert({ post_id: post.id, snapshot: { ...post, blocks: res.blocks, updated_at: now }, reason: "ai", created_by: uid }).then(() => {}, () => {});
+  }
+  const { data: j } = await admin.from("web_ai_jobs").select("id,cost_text").eq("post_id", post.id).maybeSingle();
+  if (j) await admin.from("web_ai_jobs").update({ cost_text: Number(j.cost_text) + cost }).eq("id", j.id);
+  return { ...res, cost };
+}
+// Link ngược: 1-2 bài cũ đã đăng hợp chủ đề nhất được gắn link sang bài mới
+async function backlinks(admin, cfg, post, uid) {
+  const pub = await publishedPosts(admin);
+  const out = [];
+  for (const old of backlinkCandidates(post, pub, 2)) {
+    const r = await relinkPost(admin, cfg, old, { onlyUrl: `/${post.slug}`, uid, pub });
+    if (r.added.length) out.push({ slug: old.slug, title: old.title, anchor: r.added[0].anchor });
+  }
+  return out;
 }
 
 // Trần tiền mỗi ngày (giờ VN): đã tốn hôm nay ≥ trần thì không chạy bước mới
@@ -412,6 +460,16 @@ async function handle(req) {
         if (j) await admin.from("web_ai_jobs").update({ images: j.images + 1, cost_img: Number(j.cost_img) + IMG_PRICE[ip] }).eq("id", j.id);
       }
       return json(req, { ok: true, url, alt });
+    }
+    if (body.action === "relink" || body.action === "backlink" || body.action === "links") {
+      const { data: post } = await admin.from("web_posts").select("id,slug,title,primary_term,seo,blocks,status,kind").eq("id", String(body.post_id || "")).maybeSingle();
+      if (!post) return json(req, { error: "Không thấy bài." }, 404);
+      const out = { added: [], back: [] };
+      // apply=false (trình soạn): gắn trên khối đang soạn (chưa lưu cũng được), trả khối mới để người sửa xem rồi tự Lưu
+      const src = body.apply === false && Array.isArray(body.blocks) ? { ...post, blocks: body.blocks } : post;
+      if (body.action !== "backlink") { const r = await relinkPost(admin, cfg, src, { apply: body.apply !== false, uid: user.id }); out.added = r.added; if (body.apply === false) out.blocks = r.blocks; out.cost = r.cost; }
+      if (body.action !== "relink" && post.status === "published") out.back = await backlinks(admin, cfg, post, user.id);
+      return json(req, { ok: true, ...out });
     }
     return json(req, { error: "Yêu cầu không hợp lệ." }, 400);
   } catch (e) {

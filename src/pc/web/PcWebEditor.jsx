@@ -16,6 +16,7 @@ import { Btn, Pill, Card, ErrorBox, Loading, fmtDT, secLbl } from "../pcUI";
 import { Check, Tog, Radio, Score, Tabs, Field, Count, SideBox, Modal, Lnk, inpStyle, BLUE } from "./webUI";
 import { STATUS, slugify, seoChecks, fullTitle, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
 import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus, uploadImage, slugType, getSite } from "./webApi";
+import { authFetch } from "../../lib/authFetch";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
 import { Rich, ListEdit, OtherBlock, Upload, AiDrawBtn, kb, inlineClean, H_STYLE } from "./BlockEdit";
 import { PcWebRevisions } from "./PcWebRevisions";
@@ -87,6 +88,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
     return () => { off = true; };
   }, [id, kind]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [relinking, setRelinking] = useState(false);
   const upd = useCallback((patch) => { setPost((p) => ({ ...p, ...(typeof patch === "function" ? patch(p) : patch) })); setDirty(true); }, []);
   const setSeo = (patch) => upd((p) => ({ seo: { ...(p.seo || {}), ...patch } }));
   const setBlock = useCallback((i, patch) => upd((p) => ({ blocks: p.blocks.map((b, k) => (k === i ? { ...b, ...patch } : b)) })), [upd]);
@@ -476,6 +478,15 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
               {authors.length > 0 && <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12.5 }}><span style={{ color: PC.t3 }}>Tác giả</span><select value={post.author_id || ""} onChange={(e) => upd({ author_id: e.target.value || null })} aria-label="Tác giả" style={{ border: 0, background: "none", fontWeight: 700, fontSize: 12.5, fontFamily: "inherit", textAlign: "right", cursor: "pointer", color: PC.t1, padding: 0 }}>{authors.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></span>}
               {authors.some((a) => a.is_reviewer) && <span style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12.5 }}><span style={{ color: PC.t3 }}>Kiểm duyệt</span><select value={post.reviewer_id || ""} onChange={(e) => upd({ reviewer_id: e.target.value || null })} aria-label="Người kiểm duyệt" style={{ border: 0, background: "none", fontWeight: 700, fontSize: 12.5, fontFamily: "inherit", textAlign: "right", cursor: "pointer", color: PC.t1, padding: 0 }}><option value="">Không</option>{authors.filter((a) => a.is_reviewer).map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</select></span>}
               {kind === "post" && <Tog on={post.pinned} onChange={(v) => upd({ pinned: v })} label="Ghim lên đầu blog" testid="web-side-pin" />}
+              {kind === "post" && post.id && <span style={{ alignSelf: "flex-start" }}><Btn kind="soft" style={{ height: 28, fontSize: 12 }} disabled={relinking} testid="web-side-relink" title="AI chọn chỗ gắn link nội bộ (trang chủ, chuyên mục, trang calo, bài cùng chủ đề) vào chữ có sẵn, không sửa chữ. Xem lại rồi bấm Lưu." onClick={async () => {
+                setRelinking(true);
+                try {
+                  const d = await authFetch("web-writer", { action: "relink", post_id: post.id, apply: false, blocks: forSave(post.blocks) });
+                  if (d?.error) throw new Error(d.error);
+                  if (!d.added?.length) showToast?.("Không thấy chỗ hợp để gắn thêm link.");
+                  else { upd({ blocks: withKeys(d.blocks) }); showToast?.(`Đã gắn ${d.added.length} link: ${d.added.map((x) => `"${x.anchor}" → ${x.url}`).join(" · ")}. Xem lại rồi bấm Lưu.`); }
+                } catch (e) { showToast?.("Chưa gắn được link: " + (e.message || "")); } finally { setRelinking(false); }
+              }}>{relinking ? "Đang gắn link…" : "✦ Gắn link nội bộ"}</Btn></span>}
               {kind === "page" && <Field label="Mẫu trang"><select value={post.template || ""} onChange={(e) => upd({ template: e.target.value || null })} className="pc-input" style={inpStyle(32)}><option value="">Mặc định</option><option value="legal">Điều khoản / Chính sách (có mục lục)</option></select></Field>}
               {post.id && post.status !== "trash" && <span style={{ alignSelf: "flex-start" }}><Lnk red onClick={async () => { if (await appConfirm(`Bỏ ${noun} này vào thùng rác?`, { danger: true })) { await setStatus([post.id], "trash"); showToast?.("Đã bỏ vào thùng rác."); onBack(); } }} testid="web-side-trash">Bỏ vào thùng rác</Lnk></span>}
             </SideBox>
