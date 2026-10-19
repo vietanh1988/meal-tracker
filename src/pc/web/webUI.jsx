@@ -45,7 +45,7 @@ export const Field = ({ label, children, hint }) => (
   <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
     <span style={{ fontSize: 12, fontWeight: 800, color: PC.t2 }}>{label}</span>
     {children}
-    {hint && <span style={{ fontSize: 11.5, color: PC.t4 }}>{hint}</span>}
+    {hint && <span style={{ fontSize: 11.5, lineHeight: 1.45, color: PC.t4 }}>{hint}</span>}
   </label>
 );
 export const Count = ({ n, max, min = 0 }) => <span style={{ fontSize: 11.5, fontWeight: 800, color: n >= min && n <= max && n > 0 ? "#15803D" : "#B45309" }}>{n}/{max}</span>;
@@ -54,7 +54,7 @@ export function SideBox({ t, children, open: open0 = true, testid }) {
   return (
     <div style={{ borderBottom: `1px solid ${PC.headLine}` }} data-testid={testid}>
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} style={{ width: "100%", display: "flex", alignItems: "center", padding: "12px 16px", fontSize: 13, fontWeight: 800, border: 0, background: "none", cursor: "pointer", fontFamily: "inherit", color: PC.t1 }}>{t}<span style={{ marginLeft: "auto", color: PC.t4 }}>{open ? "⌃" : "⌄"}</span></button>
-      {open && <div style={{ padding: "0 16px 14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>{children}</div>}
+      {open && <div style={{ padding: "0 16px 14px 16px", display: "flex", flexDirection: "column", gap: 10, lineHeight: 1.45 }}>{children}</div>}
     </div>
   );
 }

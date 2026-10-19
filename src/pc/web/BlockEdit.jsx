@@ -9,8 +9,9 @@ import { inpStyle, BLUE } from "./webUI";
 import { clean, youtubeId } from "./webLib";
 import { uploadImage } from "./webApi";
 
-const P = { fontSize: 16, lineHeight: 1.75, color: "#1E293B", margin: 0, outline: "none", minHeight: 28 };
-const H = { 2: { fontSize: 22, fontWeight: 900, lineHeight: 1.2 }, 3: { fontSize: 19, fontWeight: 800, lineHeight: 1.25 }, 4: { fontSize: 16.5, fontWeight: 800, lineHeight: 1.3 } };
+// Chữ trong trình soạn = tỉ lệ chữ bài trên web (đoạn 18/1,75 · H2 28/1,3 · H3 22/1,35), thu nhỏ cho khung soạn
+const P = { fontSize: 17, lineHeight: 1.7, color: "#1E293B", margin: 0, outline: "none", minHeight: 29 };
+const H = { 2: { fontSize: 25, fontWeight: 800, lineHeight: 1.3 }, 3: { fontSize: 21, fontWeight: 800, lineHeight: 1.35 }, 4: { fontSize: 18, fontWeight: 800, lineHeight: 1.4 } };
 
 // Ô chữ sửa trực tiếp; chỉ ghi lại innerHTML khi giá trị đổi từ ngoài (không làm nhảy con trỏ khi gõ)
 export function Rich({ html, onChange, style, placeholder, as: Tag = "div", elRef, onKeyDown, onFocus, onPaste, testid }) {
@@ -30,7 +31,7 @@ export function ListEdit({ b, set, elRef, onFocus, onKeyDown, onPaste }) {
   useEffect(() => { const el = ref.current; if (el && el.dataset.v !== html) { el.innerHTML = html; el.dataset.v = html; } }, [html]);
   const Tag = b.ordered ? "ol" : "ul";
   const read = (el) => { const items = [...el.querySelectorAll(":scope > li")].map((li) => li.innerHTML.replace(/^<br>$/, "")); el.dataset.v = (items.length ? items : [""]).map((x) => `<li>${x || "<br>"}</li>`).join(""); set({ items: items.length ? items : [""] }); };
-  return <Tag ref={(el) => { ref.current = el; elRef?.(el); }} contentEditable suppressContentEditableWarning className="web-rich" onInput={(e) => read(e.currentTarget)} onFocus={onFocus} onKeyDown={onKeyDown} onPaste={onPaste} style={{ ...P, paddingLeft: 24, display: "flex", flexDirection: "column", gap: 4 }} />;
+  return <Tag ref={(el) => { ref.current = el; elRef?.(el); }} contentEditable suppressContentEditableWarning className="web-rich" onInput={(e) => read(e.currentTarget)} onFocus={onFocus} onKeyDown={onKeyDown} onPaste={onPaste} style={{ ...P, paddingLeft: 24, margin: 0, display: "flex", flexDirection: "column", gap: 6 }} />;
 }
 
 const Box = ({ label, children, testid }) => (

@@ -224,16 +224,6 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
     else document.execCommand("insertText", false, text);
   };
 
-  // ===== Khối đang chọn: thanh nhỏ =====
-  const BlockBar = ({ i, b }) => (
-    <span className="web-bbar" style={{ position: "absolute", top: -32, left: 0, height: 28, display: "flex", alignItems: "center", gap: 0, background: "#FFF", borderRadius: 8, boxShadow: "0 4px 14px rgba(15,23,42,.14)", border: `1px solid ${PC.line}`, padding: "0 4px", fontSize: 12, fontWeight: 800, color: PC.t2, zIndex: 5 }}>
-      <span style={{ padding: "0 8px", borderRight: `1px solid ${PC.line}` }}>{b.type === "h" ? `Tiêu đề H${b.level || 2}` : BLOCK_NAME[b.type]}</span>
-      <TI t="↑" title="Lên trên" onClick={() => { move(i, -1); setCur(i - 1); }} /><TI t="↓" title="Xuống dưới" onClick={() => { move(i, 1); setCur(i + 1); }} />
-      {isText(b) || b.type === "list" ? <><TI t={<b>B</b>} title="Đậm" onClick={() => exec("bold")} /><TI t={<i>I</i>} title="Nghiêng" onClick={() => exec("italic")} /><TI t="🔗" title="Chèn link (Ctrl+K)" onClick={openLink} /></> : null}
-      <TI t="⧉" title="Nhân đôi khối" onClick={() => insertAt(i + 1, { ...JSON.parse(JSON.stringify(b)), _k: newBlock("p")._k })} />
-      <TI t="🗑" title="Xoá khối" testid="web-blk-del" onClick={() => { removeAt(i); setCur(Math.max(0, i - 1)); }} />
-    </span>
-  );
 
   if (err) return <>{top(<Btn kind="light" onClick={onBack}>‹ Danh sách</Btn>, kind === "page" ? "Sửa trang" : "Sửa bài viết")}<div style={{ padding: 24 }}><ErrorBox text={err} /></div></>;
   if (!post) return <>{top(null, kind === "page" ? "Sửa trang" : "Sửa bài viết")}<Loading /></>;
@@ -264,25 +254,33 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
             <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}><span style={{ fontSize: 11, fontWeight: 800, color: PC.t3, letterSpacing: ".06em" }}>{kind === "page" ? "TÊN TRANG" : "TIÊU ĐỀ BÀI VIẾT"}</span><span style={{ fontSize: 11.5, color: PC.t4 }}>Tiêu đề hiện trên trang (H1) · <Count n={post.title.length} max={70} min={20} /></span></span>
             <textarea value={post.title} onChange={(e) => upd({ title: e.target.value.replace(/\n/g, " ") })} placeholder={kind === "page" ? "Tên trang" : "Thêm tiêu đề bài viết"} rows={1} data-testid="web-ed-title" className="web-title web-titlebox" style={{ minHeight: 60, borderRadius: 12, border: `1.5px solid ${PC.field}`, background: "#FFF", padding: "12px 18px", fontSize: 26, fontWeight: 900, lineHeight: 1.25, outline: "none", resize: "none", fontFamily: "inherit", color: PC.t1, fieldSizing: "content", boxSizing: "border-box", width: "100%" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12.5 }}>
-              <b style={{ color: PC.t2, fontSize: 12.5 }}>Đường dẫn</b>
-              <span style={{ height: 34, borderRadius: 10, border: `1px solid ${slugEdit ? "#1A7CFF" : PC.field}`, boxShadow: slugEdit ? "0 0 0 3px rgba(26,124,255,.12)" : "none", display: "inline-flex", alignItems: "center", overflow: "hidden", background: "#FFF", minWidth: 0 }}>
+              <b style={{ color: PC.t2, fontSize: 12.5, whiteSpace: "nowrap" }}>Đường dẫn</b>
+              <span style={{ flex: "0 1 auto", height: 34, borderRadius: 10, border: `1px solid ${slugEdit ? "#1A7CFF" : PC.field}`, boxShadow: slugEdit ? "0 0 0 3px rgba(26,124,255,.12)" : "none", display: "inline-flex", alignItems: "center", overflow: "hidden", background: "#FFF", minWidth: 0 }}>
                 <span style={{ height: "100%", padding: "0 10px", display: "inline-flex", alignItems: "center", background: "#F8FAFC", borderRight: `1px solid ${PC.field}`, color: PC.t3, flexShrink: 0 }}>fipilotai.com/</span>
                 {slugEdit ? <input autoFocus value={post.slug} onChange={(e) => { setSlugTouched(true); upd({ slug: slugify(e.target.value.replace(/\s/g, "-")) || "" }); }} onBlur={() => setSlugEdit(false)} onKeyDown={(e) => e.key === "Enter" && setSlugEdit(false)} data-testid="web-ed-slug" style={{ height: "100%", border: 0, outline: "none", padding: "0 12px", width: 320, fontFamily: "ui-monospace, Menlo, monospace", fontWeight: 700, fontSize: 12.5, color: PC.t1 }} />
                   : <span data-testid="web-ed-slug-view" style={{ padding: "0 12px", fontFamily: "ui-monospace, Menlo, monospace", fontWeight: 700, color: post.slug ? PC.t1 : PC.t4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{post.slug || "tu-dong-theo-tieu-de"}</span>}
               </span>
               {!slugEdit && <Btn kind="light" onClick={() => setSlugEdit(true)} title={post.status === "published" ? "Đổi đường dẫn bài đã đăng: web tự chuyển hướng 301 từ link cũ" : "Sửa đường dẫn (mặc định tự lấy từ tiêu đề)"} style={{ height: 30, fontSize: 12 }} testid="web-ed-slug-edit">Sửa</Btn>}
               {isLive && <Lnk onClick={() => window.open(`${WEB}/${post.slug}`, "_blank", "noopener")}>Xem ↗</Lnk>}
-              <span style={{ marginLeft: "auto", fontSize: 11.5, color: PC.t3, textAlign: "right" }}>{isLive ? "Đổi đường dẫn bài đã đăng → web tự chuyển 301 từ link cũ" : slugTouched ? "Đường dẫn đã sửa tay" : "Tự lấy từ tiêu đề"}</span>
+              <span style={{ marginLeft: "auto", fontSize: 11.5, lineHeight: 1.4, color: PC.t3, textAlign: "right", minWidth: 120 }}>{isLive ? "Đổi link bài đã đăng → tự chuyển 301" : slugTouched ? "Đã sửa tay" : "Tự lấy từ tiêu đề"}</span>
             </div>
           </Card>
           {/* Khung 2 · Nội dung bài */}
           <Card style={{ padding: 0 }}>
             <div style={{ display: "flex", alignItems: "center", padding: "10px 16px", borderBottom: `1px solid ${PC.headLine}` }}>
               <span style={{ fontSize: 11, fontWeight: 800, color: PC.t3, letterSpacing: ".06em" }}>{kind === "page" ? "NỘI DUNG TRANG" : "NỘI DUNG BÀI"}</span>
-              <span role="tablist" style={{ marginLeft: "auto", display: "inline-flex", padding: 3, borderRadius: 10, background: "#F1F5F9", gap: 2 }}>{[["visual", "Trực quan"], ["html", "HTML"]].map(([m, t]) => <button key={m} type="button" role="tab" aria-selected={mode === m} data-testid={`web-ed-mode-${m}`} onClick={() => switchMode(m)} style={{ height: 26, padding: "0 12px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", fontSize: 12, fontWeight: 800, background: mode === m ? "#FFF" : "transparent", color: mode === m ? BLUE : PC.t3, boxShadow: mode === m ? "0 1px 3px rgba(15,23,42,.12)" : "none" }}>{t}</button>)}</span>
+              {/* Thao tác khối đang chọn (thay thanh nổi trên khối — không che chữ) */}
+              <span style={{ marginLeft: 14, display: "flex", alignItems: "center", gap: 1, padding: "0 4px", borderRadius: 8, background: curB ? "#F1F5F9" : "transparent", opacity: curB ? 1 : 0.4, pointerEvents: curB ? "auto" : "none" }}>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: PC.t3, padding: "0 6px", whiteSpace: "nowrap" }}>{curB ? (curB.type === "h" ? `H${curB.level || 2}` : BLOCK_NAME[curB.type]) : "Khối"}</span>
+                <TI t="↑" title="Đưa khối lên" onClick={() => { if (cur > 0) { move(cur, -1); setCur(cur - 1); } }} /><TI t="↓" title="Đưa khối xuống" onClick={() => { if (cur < post.blocks.length - 1) { move(cur, 1); setCur(cur + 1); } }} />
+                <TI t="⧉" title="Nhân đôi khối" onClick={() => insertAt(cur + 1, { ...JSON.parse(JSON.stringify(curB)), _k: newBlock("p")._k })} />
+                <TI t="🗑" title="Xoá khối" testid="web-blk-del" onClick={() => { removeAt(cur); setCur(Math.max(0, cur - 1)); }} />
+              </span>
+              <span style={{ marginLeft: "auto", display: "flex", gap: 2, marginRight: 8 }}><TI t="☷" title="Dàn ý" on={outline} onClick={() => setOutline(!outline)} /><TI t="⛶" title="Toàn màn hình" on={full} onClick={() => setFull(!full)} /></span>
+              <span role="tablist" style={{ display: "inline-flex", padding: 3, borderRadius: 10, background: "#F1F5F9", gap: 2 }}>{[["visual", "Trực quan"], ["html", "HTML"]].map(([m, t]) => <button key={m} type="button" role="tab" aria-selected={mode === m} data-testid={`web-ed-mode-${m}`} onClick={() => switchMode(m)} style={{ height: 26, padding: "0 12px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", fontSize: 12, fontWeight: 800, background: mode === m ? "#FFF" : "transparent", color: mode === m ? BLUE : PC.t3, boxShadow: mode === m ? "0 1px 3px rgba(15,23,42,.12)" : "none" }}>{t}</button>)}</span>
             </div>
             {/* Thanh định dạng */}
-            <div style={{ position: "sticky", top: 64, zIndex: 8, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1, padding: "6px 10px", borderBottom: `1px solid ${PC.headLine}`, background: "#FBFCFE", opacity: mode === "html" ? 0.45 : 1, pointerEvents: mode === "html" ? "none" : "auto" }}>
+            <div style={{ position: "sticky", top: 64, zIndex: 8, display: "flex", alignItems: "center", flexWrap: "nowrap", overflowX: "auto", gap: 1, padding: "6px 10px", borderBottom: `1px solid ${PC.headLine}`, background: "#FBFCFE", opacity: mode === "html" ? 0.45 : 1, pointerEvents: mode === "html" ? "none" : "auto" }}>
               <TI t="↶" title="Hoàn tác" onClick={() => exec("undo")} /><TI t="↷" title="Làm lại" onClick={() => exec("redo")} /><Sep />
               <select value={typeVal} onChange={(e) => setType(e.target.value)} disabled={!curB || !(isText(curB) || curB.type === "list")} aria-label="Kiểu khối" data-testid="web-ed-type" className="pc-input" style={{ width: 104, height: 30, padding: "0 6px 0 10px", borderRadius: 7, border: `1px solid ${PC.line}`, background: "#FFF", fontSize: 12.5, fontWeight: 700, fontFamily: "inherit" }}>
                 {[["p", "Đoạn văn"], ["h2", "Tiêu đề H2"], ["h3", "Tiêu đề H3"], ["h4", "Tiêu đề H4"], ["quote", "Trích dẫn"], ["tip", "Hộp mẹo"], ["list", "Danh sách chấm"], ["olist", "Danh sách số"]].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -296,11 +294,10 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
               <TI t="⋮≡" title="Danh sách chấm" on={typeVal === "list"} onClick={() => setType(typeVal === "list" ? "p" : "list")} /><TI t="1≡" title="Danh sách số" on={typeVal === "olist"} onClick={() => setType(typeVal === "olist" ? "p" : "olist")} /><TI t="❝" title="Trích dẫn" on={typeVal === "quote"} onClick={() => setType(typeVal === "quote" ? "p" : "quote")} /><Sep />
               <TI t="🔗" title="Chèn link (Ctrl+K)" onClick={openLink} testid="web-ed-link" /><TI t="🖼" title="Ảnh" onClick={() => insertBlock("img")} /><TI t="▶" title="Video YouTube" onClick={() => insertBlock("youtube")} /><TI t="▦" title="Bảng" onClick={() => insertBlock("table")} /><TI t="🍜" title="Khối calo món" onClick={() => insertBlock("calo")} testid="web-ed-calo" /><TI t="?" title="Hỏi đáp FAQ" onClick={() => insertBlock("faq")} /><Sep />
               <TI t="</>" title="Sửa HTML khối đang chọn" on={htmlEdit} onClick={() => setHtmlEdit(!htmlEdit)} />
-              <span style={{ marginLeft: "auto", display: "flex", gap: 2 }}><TI t="☷" title="Dàn ý" on={outline} onClick={() => setOutline(!outline)} /><TI t="⛶" title="Toàn màn hình" on={full} onClick={() => setFull(!full)} /></span>
             </div>
             {/* Thân bài: cao tối thiểu như vùng soạn của WordPress; bấm vào chỗ trống phía dưới = viết tiếp ở cuối bài */}
             <div data-testid="web-ed-body" onMouseDown={(e) => { if (mode !== "visual" || e.target !== e.currentTarget) return; const bs = e.currentTarget.querySelectorAll("[data-testid=web-ed-block]"); if (bs.length && e.clientY < bs[bs.length - 1].getBoundingClientRect().bottom) return; e.preventDefault(); const last = post.blocks[post.blocks.length - 1]; if (last && last.type === "p" && !String(last.html || "").replace(/<[^>]+>/g, "").trim()) { setCur(post.blocks.length - 1); focusBlock(last._k, false); } else { const nb = newBlock("p"); insertAt(post.blocks.length, nb, false); focusBlock(nb._k, true); } }}
-              style={{ padding: "44px 40px 40px 40px", minHeight: "max(560px, calc(100vh - 380px))", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14, position: "relative", cursor: mode === "visual" ? "text" : "auto" }}>
+              style={{ padding: "30px 40px 40px 40px", minHeight: "max(560px, calc(100vh - 380px))", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 18, position: "relative", cursor: mode === "visual" ? "text" : "auto" }}>
               {mode === "html" && <textarea value={htmlText} onChange={(e) => { setHtmlText(e.target.value); setDirty(true); }} spellCheck={false} data-testid="web-ed-html" style={{ minHeight: 520, borderRadius: 10, border: `1px solid ${PC.field}`, padding: "12px 14px", fontFamily: "ui-monospace, Menlo, monospace", fontSize: 12.5, lineHeight: 1.65, color: PC.t1, resize: "vertical", outline: "none", fieldSizing: "content" }} />}
               {mode === "visual" && !post.id && reuse.some((r) => r.kind === "template") && post.blocks.length === 1 && post.blocks[0].type === "p" && !String(post.blocks[0].html || "").replace(/<[^>]+>/g, "").trim() && (
                 <div data-testid="web-ed-tpl" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 12.5, color: PC.t3 }}>Bắt đầu từ mẫu:
@@ -328,7 +325,6 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
                 else body = <div onFocus={() => setCur(i)} onClick={() => setCur(i)}><OtherBlock b={b} set={(patch) => setBlock(i, patch)} showToast={showToast} slug={post.slug} /></div>;
                 return (
                   <div key={b._k} data-testid="web-ed-block" data-type={b.type} style={{ position: "relative", borderRadius: 10, padding: "6px 10px", margin: "-6px -10px", boxShadow: on ? "inset 0 0 0 1.5px #1A7CFF" : "none" }} onMouseDown={() => setCur(i)}>
-                    {on && <BlockBar i={i} b={b} />}
                     {body}
                     {slash && slash.i === i && (
                       <div data-testid="web-ed-slash" style={{ position: "absolute", left: 10, top: "100%", marginTop: 4, width: 600, background: "#FFF", borderRadius: 12, boxShadow: "0 12px 32px rgba(15,23,42,.18)", border: `1px solid ${PC.line}`, padding: 8, zIndex: 9, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 8px" }}>
@@ -453,7 +449,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
         </aside>
       </div>
       {revs && <RevModal revs={revs} onClose={() => setRevs(null)} onRestore={(s) => { setPost((p) => ({ ...p, ...s, id: p.id, blocks: withKeys(s.blocks), terms: s.terms || p.terms })); setDirty(true); setRevs(null); showToast?.("Đã mở lại bản cũ. Bấm Cập nhật / Lưu nháp để lưu."); }} />}
-      <style>{`.web-rich:empty:before{content:attr(data-ph);color:#94A3B8;pointer-events:none}.web-rich a{color:${BLUE};text-decoration:underline}.web-full{position:fixed;inset:0;z-index:50;background:${PC.bg};overflow:auto}.web-title::placeholder{color:#CBD5E1}.web-titlebox:focus{border-color:#1A7CFF!important;box-shadow:0 0 0 3px rgba(26,124,255,.12)}`}</style>
+      <style>{`.web-rich:empty:before{content:attr(data-ph);color:#94A3B8;pointer-events:none}.web-rich a{color:${BLUE};text-decoration:underline}.web-full{position:fixed;inset:0;z-index:50;background:${PC.bg};overflow:auto}.web-title::placeholder{color:#CBD5E1}[data-testid=web-ed-block][data-type=h]:not(:first-child){margin-top:10px!important}[data-testid=web-ed-block][data-type=h]+[data-testid=web-ed-block]{margin-top:-14px!important}[data-testid=web-ed-block][data-type=list] li{line-height:1.7}.web-titlebox:focus{border-color:#1A7CFF!important;box-shadow:0 0 0 3px rgba(26,124,255,.12)}`}</style>
     </div>
   );
 }
