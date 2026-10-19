@@ -11,7 +11,7 @@ import { BLOCK_NAME } from "./blocksMeta";
 
 const DEL = { background: "#FEE2E2", color: "#991B1B", textDecoration: "line-through" };
 const ADD = { background: "#DCFCE7", color: "#166534" };
-const REASON = { autosave: "Tự lưu", draft: "Lưu nháp", update: "Bấm Cập nhật", publish: "Đăng bài", restore: "Khôi phục", replace: "Tìm & thay" };
+const REASON = { autosave: "Tự lưu", draft: "Lưu nháp", update: "Bấm Cập nhật", publish: "Đăng bài", restore: "Khôi phục", replace: "Tìm & thay", import: "Nhập bài", ai: "AI viết" };
 const when = (iso) => { const d = toVNDate(iso), t = todayVN(); const hm = new Date(new Date(iso).getTime() + 7 * 36e5).toISOString().slice(11, 16); return d === t ? `Hôm nay ${hm}` : d === addDays(t, -1) ? `Hôm qua ${hm}` : `${d.slice(8, 10)}/${d.slice(5, 7)} ${hm}`; };
 const H = ({ children }) => <b style={{ fontSize: 13, color: PC.t3 }}>{children}</b>;
 

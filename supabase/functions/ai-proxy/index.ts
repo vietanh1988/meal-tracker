@@ -120,7 +120,8 @@ async function verifyUser(req: Request) {
 // hiệu request không qua UI chuẩn (tự soạn request bypass) → từ chối
 // thẳng, không cho gọi AI. Trước đây feature "lạ" bị bỏ qua im lặng
 // (kind=null → allowed:true) — đây chính là khe hở để né mọi quota.
-const KNOWN_FEATURES = new Set(["menu_gen", "chat", "macro_lookup", "weight_advice", "ping_test", "photo_macro"]);
+const KNOWN_FEATURES = new Set(["menu_gen", "chat", "macro_lookup", "weight_advice", "ping_test", "photo_macro", "web_article"]);
+// web_article: viết bài cho web ở Quản trị — CHỈ admin (người thường gọi → từ chối).
 
 async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: string | null) {
   if (!feature || !KNOWN_FEATURES.has(feature)) {
@@ -129,6 +130,10 @@ async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: s
   const FEATURE_TO_KIND: Record<string, string> = {
     menu_gen: "menu", chat: "chat", macro_lookup: "macro", photo_macro: "photo",
   };
+  if (feature === "web_article") {
+    const { data: p } = await admin.from("profiles").select("is_admin").eq("id", userId).single();
+    return p?.is_admin ? { allowed: true } : { allowed: false, message: "Chỉ quản trị viên được dùng tính năng này." };
+  }
   const kind = FEATURE_TO_KIND[feature] || null;
   if (!kind) return { allowed: true }; // weight_advice/ping_test — hợp lệ nhưng chưa có quota
 

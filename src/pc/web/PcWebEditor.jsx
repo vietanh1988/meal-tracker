@@ -14,8 +14,8 @@ import { supabase } from "../../lib/supabase";
 import { appConfirm } from "../../lib/dialog";
 import { Btn, Pill, Card, ErrorBox, Loading, fmtDT, secLbl } from "../pcUI";
 import { Check, Tog, Radio, Score, Tabs, Field, Count, SideBox, Modal, Lnk, inpStyle, BLUE } from "./webUI";
-import { STATUS, slugify, seoChecks, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
-import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus, uploadImage, slugType } from "./webApi";
+import { STATUS, slugify, seoChecks, fullTitle, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
+import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus, uploadImage, slugType, getSite } from "./webApi";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
 import { Rich, ListEdit, OtherBlock, Upload, kb, inlineClean, H_STYLE } from "./BlockEdit";
 import { PcWebRevisions } from "./PcWebRevisions";
@@ -28,13 +28,15 @@ const LS = (id) => `fp_web_draft_${id || "new"}`;
 const toLocal = (iso) => { if (!iso) return ""; const d = new Date(new Date(iso).getTime() + 7 * 3600e3); return d.toISOString().slice(0, 16); };
 const fromLocal = (v) => (v ? new Date(`${v}:00+07:00`).toISOString() : null);
 const fmtVNdate = (iso) => new Date(iso || Date.now()).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", day: "numeric", month: "short", year: "numeric" });
-const REASON = { autosave: "Tự lưu", draft: "Lưu nháp", update: "Cập nhật", publish: "Đăng", restore: "Khôi phục", replace: "Thay thế" };
+const REASON = { autosave: "Tự lưu", draft: "Lưu nháp", update: "Cập nhật", publish: "Đăng", restore: "Khôi phục", replace: "Thay thế", import: "Nhập bài", ai: "AI viết" };
 
 const TI = ({ t, on, title, onClick, testid, w }) => <button type="button" title={title} aria-label={title} data-testid={testid} onMouseDown={(e) => e.preventDefault()} onClick={onClick} className="pc-btn" style={{ minWidth: w || 28, height: 30, padding: "0 6px", borderRadius: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4, fontSize: 13, fontWeight: 800, color: on ? BLUE : PC.t2, background: on ? "#E8F1FF" : "transparent", whiteSpace: "nowrap", border: 0, cursor: "pointer", fontFamily: "inherit" }}>{t}</button>;
 const Sep = () => <span style={{ width: 1, height: 20, background: PC.line, margin: "0 4px", flexShrink: 0 }} />;
 
 export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToast, onBack }) {
   const [post, setPost] = useState(null);
+  const [site, setSite] = useState(null); // tên web + mẫu tiêu đề (Cài đặt SEO) → độ dài tiêu đề Google thật
+  useEffect(() => { getSite().then(setSite); }, []);
   const [err, setErr] = useState("");
   const [cats, setCats] = useState([]);
   const [tags, setTags] = useState([]);
@@ -261,14 +263,14 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
   if (err) return <>{top(<Btn kind="light" onClick={onBack}>‹ Danh sách</Btn>, kind === "page" ? "Sửa trang" : "Sửa bài viết")}<div style={{ padding: 24 }}><ErrorBox text={err} /></div></>;
   if (!post) return <>{top(null, kind === "page" ? "Sửa trang" : "Sửa bài viết")}<Loading /></>;
 
-  const sc = seoChecks({ ...post, blocks: post.blocks });
+  const sc = seoChecks({ ...post, blocks: post.blocks }, site);
   const words = wordCount(post.blocks), hs = headings(post.blocks), imgs = images(post.blocks);
   const [stName, stTone] = STATUS[post.status] || STATUS.draft;
   const isLive = post.status === "published" || post.status === "scheduled";
   const sub = saving ? "Đang lưu…" : dirty ? "Có thay đổi chưa lưu · Ctrl+S để lưu" : savedAt ? `Đã lưu lúc ${savedAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}${revCount ? ` · Bản sửa thứ ${revCount}` : ""}` : post.id ? `Sửa lần cuối ${fmtDT(post.updated_at)}${revCount ? ` · ${revCount} bản trong lịch sử` : ""}` : `${kind === "page" ? "Trang" : "Bài"} mới · chưa lưu`;
   const catTree = [...cats.filter((c) => !c.parent_id), ...[]].flatMap((c) => [c, ...cats.filter((x) => x.parent_id === c.id).map((x) => ({ ...x, _sub: true }))]);
   const tagOn = tags.filter((t) => post.terms.includes(t.id));
-  const seoTitle = post.seo?.title || `${post.title}${post.title ? " | Fipilot AI" : ""}`;
+  const seoTitle = fullTitle(post, site);
   const seoDesc = post.seo?.desc || post.excerpt || "";
 
   // Lịch sử bản sửa (138m): màn so sánh thay chỗ trình soạn, về lại không mất gì

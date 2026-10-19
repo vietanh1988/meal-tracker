@@ -39,10 +39,16 @@ const norm = (s) => slugify(s).replace(/-/g, " ");
 const has = (hay, kw) => !!kw && norm(hay).includes(norm(kw));
 
 // Điểm SEO kiểu Rank Math (bản vẽ 138b): mỗi mục [đạt?, câu đời thường]; điểm = phần trăm mục đạt
-export function seoChecks(post) {
+// Tiêu đề hiện trên Google: ô Tiêu đề SEO (dùng nguyên) hoặc tiêu đề bài ghép theo mẫu ở Cài đặt SEO (site.title_tpl, mặc định "%title% | %site%")
+export function fullTitle(post, site) {
+  if (post?.seo?.title) return post.seo.title;
+  const t = post?.title || ""; if (!t) return "";
+  return (site?.title_tpl || "%title% | %site%").replace("%title%", t).replace("%site%", site?.name || "Fipilot AI");
+}
+export function seoChecks(post, site) {
   const seo = post.seo || {};
   const kw = String(seo.keyword || "").trim();
-  const title = seo.title || post.title || "";
+  const title = fullTitle(post, site);
   const desc = seo.desc || post.excerpt || "";
   const text = blocksText(post.blocks);
   const words = wordCount(post.blocks);

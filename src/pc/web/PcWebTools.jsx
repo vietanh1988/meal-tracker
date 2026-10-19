@@ -264,7 +264,7 @@ function ExportImport({ data, reload, showToast, user, short, onMore }) {
         const saved = ex ? await supabase.from("web_posts").update(row).eq("id", ex.id).select().single().then(must) : await supabase.from("web_posts").insert(row).select().single().then(must);
         await supabase.from("web_post_terms").delete().eq("post_id", saved.id).then(must);
         if (ids.length) await supabase.from("web_post_terms").insert([...new Set(ids)].map((term_id) => ({ post_id: saved.id, term_id }))).then(must);
-        await supabase.from("web_revisions").insert({ post_id: saved.id, snapshot: { ...row, terms: ids }, reason: "replace", created_by: user?.id || null }).then(() => {}, () => {});
+        await supabase.from("web_revisions").insert({ post_id: saved.id, snapshot: { ...row, terms: ids }, reason: "import", created_by: user?.id || null }).then(() => {}, () => {});
         have.add(row.slug); added++;
       }
       setLog(`Đã nhập ${added} bài / trang từ WordPress${skipped ? `, bỏ qua ${skipped} bài trùng đường dẫn` : ""}. Ảnh: ${imgOk} tải về kho web${imgKeep ? `, ${imgKeep} giữ link cũ (web cũ chặn tải)` : ""}.`); await reload();

@@ -95,8 +95,11 @@ export async function freeSlug(want, selfId) {
 }
 
 // Lưu bài: ghi bài + chuyên mục/thẻ + 1 bản trong lịch sử (DB tự giữ 30 bản gần nhất)
+// Cài đặt "site" (tên web + mẫu tiêu đề) cho điểm SEO — đọc 1 lần mỗi phiên
+let siteP = null;
+export const getSite = () => (siteP ||= supabase.from("web_settings").select("value").eq("key", "site").maybeSingle().then((r) => r.data?.value || {}, () => ({})));
 export async function savePost(post, { reason = "update", uid } = {}) {
-  const sc = seoChecks(post);
+  const sc = seoChecks(post, await getSite());
   const row = {
     kind: post.kind || "post", title: post.title.trim() || "Bài chưa có tiêu đề", slug: post.slug, status: post.status, blocks: post.blocks || [],
     excerpt: post.excerpt || null, cover_url: post.cover_url || null, cover_alt: post.cover_alt || null,

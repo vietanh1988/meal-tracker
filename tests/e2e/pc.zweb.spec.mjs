@@ -18,6 +18,18 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect(page.getByTestId("pc-nav-ic-web_posts").locator("svg")).toHaveCount(1);
     await page.getByTestId("pc-nav-web_posts").click();
     await expect(page.getByTestId("pc-page-web_posts")).toBeVisible();
+    // Viết bằng AI: giả lời AI (không gọi AI thật) → lưu nháp → mở trình soạn
+    const AI = ["SEO Title: E2E bữa sáng giảm cân với món Việt dễ làm", "SEO Description: Gợi ý bữa sáng giảm cân.", "Slug: e2e-bua-sang-giam-can", "Excerpt: Thử.", "Full Article:", "Tiêu đề bài viết: E2E bữa sáng giảm cân",
+      "**Bữa sáng giảm cân nên có đạm và rau.** " + "Chữ mẫu ".repeat(60), "", "[chèn ảnh ở đây: alt ảnh \"bát phở gà ít bánh cho bữa sáng giảm cân\"]", "", "## Ăn gì buổi sáng?", "Trứng và bánh mì.", "", "| Món | Calo |", "|---|---|", "| Phở gà | 400 |"].join("\n");
+    await page.route("**/functions/v1/ai-proxy", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ text: AI }) }));
+    await page.getByTestId("web-ai-write").click();
+    await page.getByTestId("web-ai-kw").fill("bữa sáng giảm cân");
+    await page.getByTestId("web-ai-cat").selectOption({ label: "E2E Giảm cân" });
+    await page.getByTestId("web-ai-go").click();
+    await expect(page.getByTestId("web-ed-title")).toHaveValue("E2E bữa sáng giảm cân", { timeout: 15000 });
+    await expect(page.locator("[data-testid=web-ed-block][data-type=table]")).toHaveCount(1);
+    await page.getByTestId("web-ed-back").click();
+    await expect(page.getByTestId("web-post-row").filter({ hasText: "E2E bữa sáng giảm cân" })).toHaveCount(1);
     await page.getByTestId("web-post-new").click();
     await page.getByTestId("web-ed-title").fill("E2E cơm tấm bao nhiêu calo");
     await page.getByTestId("web-ed-slug-edit").click();

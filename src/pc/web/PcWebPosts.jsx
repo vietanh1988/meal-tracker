@@ -11,6 +11,7 @@ import { supabase } from "../../lib/supabase";
 import { STATUS, slugify } from "./webLib";
 import { listPosts, listTerms, setStatus, deleteForever, duplicatePost, slugType } from "./webApi";
 import { PcWebEditor } from "./PcWebEditor";
+import { PcWebAiWrite } from "./PcWebAiWrite";
 import { PcWebPageBuilder } from "./PcWebPageBuilder";
 import { PcWebSysPages, PcWebSysEdit } from "./PcWebSysPages";
 
@@ -37,6 +38,7 @@ export function PcWebPosts({ top, showToast, user, appSettings, saveSetting, kin
   const [busy, setBusy] = useState(false);
   // Mở thẳng trình soạn khi trang khác (Công cụ › Link nội bộ) gửi id qua sessionStorage
   const [edit, setEdit] = useState(() => { try { const v = sessionStorage.getItem("fp_web_open"); if (v) { sessionStorage.removeItem("fp_web_open"); return v; } } catch (e) { /* */ } return null; }); // id | "new" | null
+  const [ai, setAi] = useState(false); // hộp "Viết bằng AI"
   const [quick, setQuick] = useState(null); // sửa nhanh: tiêu đề, đường dẫn, trạng thái, ngày đăng
   const noun = kind === "page" ? "trang" : "bài";
 
@@ -99,7 +101,8 @@ export function PcWebPosts({ top, showToast, user, appSettings, saveSetting, kin
   const BULK = tab === "trash" ? [["restore", "Khôi phục"], ["delete", "Xoá hẳn"]] : [["published", "Đăng ngay"], ["draft", "Chuyển về nháp"], ["trash", "Bỏ vào thùng rác"]];
   return (
     <>
-      {top(<span style={{ display: "flex", gap: 8 }}>{kind === "page" && <Btn kind="soft" testid="web-page-builder" onClick={() => setBuilder(true)}>✎ Sửa trang chủ tại chỗ</Btn>}<Btn kind="blue" testid="web-post-new" onClick={() => setEdit("new")}>+ {kind === "page" ? "Thêm trang mới" : "Viết bài mới"}</Btn></span>)}
+      {top(<span style={{ display: "flex", gap: 8 }}>{kind === "page" && <Btn kind="soft" testid="web-page-builder" onClick={() => setBuilder(true)}>✎ Sửa trang chủ tại chỗ</Btn>}{kind === "post" && <Btn kind="soft" testid="web-ai-write" onClick={() => setAi(true)}>✦ Viết bằng AI</Btn>}<Btn kind="blue" testid="web-post-new" onClick={() => setEdit("new")}>+ {kind === "page" ? "Thêm trang mới" : "Viết bài mới"}</Btn></span>)}
+      {ai && <PcWebAiWrite cats={cats} titles={(rows || []).filter((r) => r.status !== "trash").map((r) => r.title)} appSettings={appSettings} user={user} showToast={showToast} onClose={() => setAi(false)} onDone={(id) => { setAi(false); setEdit(id); }} />}
       <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
         {kind === "page" && <><PcWebSysPages rows={rows} appSettings={appSettings} go={go} onBuilder={() => setBuilder(true)} onEdit={setEdit} onSub={setSys} showToast={showToast} user={user} reload={load} /><b style={{ fontSize: 13.5, marginTop: 8 }}>Trang tự tạo</b></>}
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 13, flexWrap: "wrap" }}>
