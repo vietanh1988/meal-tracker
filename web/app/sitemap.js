@@ -12,7 +12,7 @@ export default async function sitemap() {
   const out = [{ url: u("/"), changeFrequency: "daily", priority: 1 }, { url: u("/bai-viet"), changeFrequency: "daily", priority: 0.8 }, { url: u("/bang-calo"), changeFrequency: "weekly", priority: 0.8 }, { url: u("/tinh-calo"), changeFrequency: "monthly", priority: 0.7 }, { url: u("/bang-gia"), changeFrequency: "monthly", priority: 0.6 }];
   const posts = (await q("web_posts?status=in.(published,scheduled)&select=slug,kind,updated_at,published_at,cover_url,seo&order=published_at.desc&limit=5000")) || [];
   for (const p of posts) {
-    if (p.seo?.noindex || p.seo?.canonical) continue;
+    if (p.seo?.noindex || p.seo?.canonical || p.seo?.sitemap_off) continue;
     if ((p.kind === "post" && on.post === false) || (p.kind === "page" && on.page === false)) continue;
     const e = { url: u(`/${p.slug}`), lastModified: p.updated_at || p.published_at, changeFrequency: p.kind === "post" ? "weekly" : "monthly", priority: p.kind === "post" ? 0.7 : 0.5 };
     if (on.images !== false && p.cover_url) e.images = [p.cover_url];

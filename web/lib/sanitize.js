@@ -2,7 +2,9 @@
 const ALLOWED = new Set(["b", "strong", "i", "em", "u", "s", "a", "br", "span", "mark", "sup", "sub", "code", "small", "p", "ul", "ol", "li", "h2", "h3", "h4", "blockquote", "table", "thead", "tbody", "tr", "th", "td", "img", "figure", "figcaption", "div", "hr"]);
 export function clean(html) {
   let s = String(html || "");
-  s = s.replace(/<\s*(script|style|iframe|object|embed|form|input|button|textarea|select|link|meta|base)[\s\S]*?(<\s*\/\s*\1\s*>|\/?>)/gi, "");
+  // bỏ cả nội dung bên trong script/style/iframe…, rồi bỏ thẻ lẻ còn sót
+  s = s.replace(/<\s*(script|style|iframe|object|embed|textarea|select|button|title)\b[\s\S]*?<\s*\/\s*\1\s*>/gi, "");
+  s = s.replace(/<\s*\/?\s*(script|style|iframe|object|embed|form|input|button|textarea|select|link|meta|base|title)\b[^>]*>/gi, "");
   s = s.replace(/<\/?([a-z0-9]+)([^>]*)>/gi, (m, tag, attrs) => {
     const t = tag.toLowerCase();
     if (!ALLOWED.has(t)) return "";

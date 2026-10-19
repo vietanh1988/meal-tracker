@@ -10,10 +10,11 @@ export default function Blocks({ blocks, s, toc }) {
     <div className="prose">
       {blocks.map((b, i) => {
         switch (b?.type) {
-          case "p": return <H key={i} html={b.html} />;
-          case "h": { const T = `h${Math.min(4, Math.max(2, b.level || 2))}`; return <H key={i} as={T} id={b.id} html={b.text} />; }
+          case "p": return <H key={i} html={b.html} style={b.align ? { textAlign: b.align } : undefined} />;
+          case "h": { const T = `h${Math.min(4, Math.max(2, b.level || 2))}`; return <H key={i} as={T} id={b.id} html={b.text} style={b.align ? { textAlign: b.align } : undefined} />; }
+          case "cols": return <div key={i} className="cols" style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(3, (b.cols || []).length || 1)},1fr)`, gap: 20 }}>{(b.cols || []).map((c, k) => <H key={k} as="div" html={c} />)}</div>;
           case "list": { const T = b.ordered ? "ol" : "ul"; return <T key={i}>{(b.items || []).map((x, k) => <H key={k} as="li" html={x} />)}</T>; }
-          case "quote": return <blockquote key={i}><H html={b.html} /></blockquote>;
+          case "quote": return <blockquote key={i} style={b.align ? { textAlign: b.align } : undefined}><H html={b.html} /></blockquote>;
           case "tip": return <div key={i} className="tip"><H as="div" html={b.html} /></div>;
           case "img": return b.url ? <figure key={i}><img src={b.url} alt={b.alt || ""} width={b.width} height={b.height} loading={i < 3 ? "eager" : "lazy"} />{b.caption && <figcaption>{b.caption}</figcaption>}</figure> : null;
           case "gallery": return <div key={i} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 10 }}>{(b.images || []).map((im, k) => <img key={k} src={im.url} alt={im.alt || ""} loading="lazy" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12 }} />)}</div>;

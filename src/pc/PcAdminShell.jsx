@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { PC } from "../theme";
 import { PC_CSS, Btn } from "./pcUI";
 import { loadAdminCounts } from "../mobile/AdminHomeScreen";
+import { appConfirm } from "../lib/dialog";
 import { PcOrders } from "./PcOrders";
 import { PcReport } from "./PcReport";
 import { PcSubscription } from "./PcSubscription";
@@ -25,6 +26,8 @@ import { PcHome } from "./PcHome";
 import { PcUsers } from "./PcUsers";
 import { PcFood } from "./PcFood";
 import { PcBehavior } from "./PcBehavior";
+import { PcWebPosts } from "./web/PcWebPosts";
+import { PcWebTerms } from "./web/PcWebTerms";
 
 const SEC_KEY = "fp_pc_admin_sec";
 
@@ -49,6 +52,9 @@ const NAV_IC = {
   health: ["#DC2626", svg(<path d="M3 12h4l2-5 4 10 2-5h6" />)],
   audit_log: ["#475569", svg(<><path d="M6 3h9l4 4v14H6z" /><path d="M9 11h7M9 15h7M9 7h3" /></>)],
   backup: ["#64748B", svg(<><path d="M5 3h11l3 3v15H5z" /><path d="M8 3v6h8V3M8 21v-7h8v7" /></>)],
+  web_posts: ["#0062F0", svg(<><path d="M4 20h4l10-10-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></>)],
+  web_pages: ["#0D9488", svg(<><path d="M6 3h9l4 4v14H6z" /><path d="M14 3v5h5" /></>)],
+  web_terms: ["#7C3AED", svg(<><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></>)],
 };
 
 // Thứ tự + tên đúng bản vẽ 117. badge = khoá trong loadAdminCounts()
@@ -56,6 +62,8 @@ export const PC_NAV = [
   { group: "TỔNG QUAN", items: [{ id: "home", label: "Tổng quan" }] },
   { group: "BÁN HÀNG", items: [{ id: "orders", label: "Đơn hàng", badge: "orders" }, { id: "report_biz", label: "Báo cáo kinh doanh" }, { id: "behavior", label: "Hành vi khách" }, { id: "users", label: "Người dùng" }, { id: "subscription_settings", label: "Gói cước & giới hạn" }] },
   { group: "NỘI DUNG", items: [{ id: "feedback", label: "Góp ý", badge: "feedback" }, { id: "notify", label: "Gửi thông báo" }, { id: "templates", label: "Kho mẫu thực đơn" }, { id: "food_db", label: "Kho thực phẩm" }, { id: "food_cache_pending", label: "Duyệt món AI", badge: "pending" }] },
+  // Quản trị web fipilotai.com (bản vẽ 138) — chỉ có trên PC, không thêm vào quản trị điện thoại
+  { group: "WEB & BÀI VIẾT", items: [{ id: "web_posts", label: "Bài viết" }, { id: "web_pages", label: "Trang" }, { id: "web_terms", label: "Chuyên mục & thẻ" }] },
   { group: "HỆ THỐNG", items: [{ id: "admin", label: "Phiên bản & thông báo" }, { id: "feature_flags", label: "Quản lý tính năng" }, { id: "ai", label: "Kết nối AI" }, { id: "ai_cost", label: "Chi phí AI" }, { id: "health", label: "Sức khoẻ & lỗi" }, { id: "audit_log", label: "Nhật ký admin" }, { id: "backup", label: "Sao lưu", superOnly: true }] },
 ];
 const SUB = {
@@ -63,6 +71,7 @@ const SUB = {
   subscription_settings: "Giá gói, lượt AI theo gói", feedback: "Góp ý & báo lỗi của người dùng", notify: "Gửi thông báo đẩy tới người dùng",
   templates: "Thực đơn mẫu dùng chung", food_db: "Số trên 100 g · sửa ghi đè số gốc, về gốc được", food_cache_pending: "Món lạ AI đã tính, chờ duyệt vào kho",
   admin: "Số phiên bản, thông báo cập nhật", feature_flags: "Bật / tắt tính năng", ai: "Nhà cung cấp, model, khoá API", ai_cost: "Chi phí gọi AI theo ngày, tính năng, người dùng",
+  web_posts: "Viết, sửa, hẹn giờ đăng bài lên fipilotai.com", web_pages: "Trang Giới thiệu, Điều khoản… của web", web_terms: "Chuyên mục = nhóm lớn · Thẻ = nhãn nhỏ gắn bài",
   health: "Chỉ số đo thật + lỗi app gần đây", audit_log: "Thao tác của admin", backup: "Sao lưu / tải dữ liệu (Super Admin)",
 };
 const LABEL = Object.fromEntries(PC_NAV.flatMap((g) => g.items.map((i) => [i.id, i.label])));
@@ -158,7 +167,14 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
     try { const s = localStorage.getItem(SEC_KEY); return s && LABEL[s] ? s : "home"; } catch (e) { return "home"; }
   });
   const sec = section === "backup" && !isSuperAdmin ? "home" : section;
-  const go = (id) => { setSection(id); try { localStorage.setItem(SEC_KEY, id); } catch (e) { /* */ } window.scrollTo(0, 0); };
+  // Bấm lại mục đang mở (VD đang soạn bài → bấm "Bài viết") = về trang đầu của mục; có bài chưa lưu thì hỏi trước
+  const [nonce, setNonce] = useState(0);
+  const go = async (id) => {
+    if (window.__fpWebDirty && !(await appConfirm("Bài đang soạn có thay đổi chưa lưu. Vẫn rời trang?", { danger: true }))) return;
+    window.__fpWebDirty = false;
+    if (id === section) setNonce((n) => n + 1);
+    setSection(id); try { localStorage.setItem(SEC_KEY, id); } catch (e) { /* */ } window.scrollTo(0, 0);
+  };
 
   const [mini, setMini] = useState(() => { try { return localStorage.getItem(SIDE_KEY) === "1"; } catch (e) { return false; } });
   const toggleSide = () => setMini((v) => { const n = !v; try { localStorage.setItem(SIDE_KEY, n ? "1" : "0"); } catch (e) { /* */ } return n; });
@@ -187,6 +203,9 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   if (sec === "home") page = <PcHome top={top} go={go} counts={counts} refreshCounts={refreshCounts} appSettings={appSettings} />;
   else if (sec === "users") page = <PcUsers top={top} currentUserId={uid} isSuperAdmin={isSuperAdmin} />;
   else if (sec === "food_db") page = <PcFood top={top} isSuperAdmin={isSuperAdmin} />;
+  else if (sec === "web_posts") page = <PcWebPosts key={`post${nonce}`} top={top} showToast={showToast} user={user} appSettings={appSettings} kind="post" />;
+  else if (sec === "web_pages") page = <PcWebPosts key={`page${nonce}`} top={top} showToast={showToast} user={user} appSettings={appSettings} kind="page" />;
+  else if (sec === "web_terms") page = <PcWebTerms key={nonce} top={top} showToast={showToast} />;
   else { const Pg = PAGES[sec] || PcHome; page = <Pg key={sec} {...P} go={go} counts={counts} />; }
 
   return (

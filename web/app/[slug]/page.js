@@ -57,14 +57,16 @@ export default async function Page({ params }) {
   const crumbs = [{ name: "Trang chủ", path: "/" }, ...(p.kind === "post" && cat ? [{ name: cat.name, path: `/${s.seo.cat_base}/${cat.slug}` }] : []), { name: p.title, path }];
   const firstCalo = blocks.find((b) => b.type === "calo" && b._food);
   const custom = p.seo?.schema && typeof p.seo.schema === "object" ? p.seo.schema : null;
-  const graphs = [breadcrumb(s, crumbs), p.kind === "post" ? articleGraph(s, p, path) : null, faqGraph(fq), firstCalo ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
+  // Quản trị › Sửa bài › Schema: tắt từng loại schema tự sinh
+  const off = new Set(p.seo?.schema_off || []);
+  const graphs = [off.has("BreadcrumbList") ? null : breadcrumb(s, crumbs), p.kind === "post" && !off.has("Article") ? articleGraph(s, p, path) : null, off.has("FAQPage") ? null : faqGraph(fq), firstCalo && !off.has("NutritionInformation") ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
 
   if (p.kind === "page") {
     const long = p.template === "legal";
     return (
       <main>
         <JsonLd data={ld(...graphs)} />
-        <section className="phead"><div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 14 }}><Crumb items={crumbs} /><h1 className="h1">{p.title}</h1>{long && <p className="lg-up" style={{ fontSize: 18, lineHeight: 1.6, color: "#475569" }}>Cập nhật {fmtDate(p.updated_at)}</p>}</div></section>
+        <section className="phead"><div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 14 }}><Crumb items={crumbs} /><h1 className="h1">{p.title}</h1>{long && !p.seo?.hide_updated && <p className="lg-up" style={{ fontSize: 18, lineHeight: 1.6, color: "#475569" }}>Cập nhật {fmtDate(p.updated_at)}</p>}</div></section>
         <div className={`wrap${long ? " lg-w" : ""}`} style={{ paddingTop: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
           {long && t.length > 0 && <div className="only-m lg-mt"><LegalToc t={t} /></div>}
           <article className={`card art${long ? " legal" : ""}`} style={{ flex: 1, minWidth: 0, padding: 48 }}><Blocks blocks={blocks} s={s} toc={t} /></article>
@@ -92,7 +94,7 @@ export default async function Page({ params }) {
             <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "#64748B", flexWrap: "wrap" }}>
               {a && <><Avatar a={a} size={32} /><a href={`/tac-gia/${a.slug}`} style={{ color: "#0F172A", fontWeight: 700 }}>{a.name}</a><span>·</span></>}
               {p.reviewer && <><span>Kiểm duyệt: <a href={`/tac-gia/${p.reviewer.slug}`} style={{ color: "#0F172A", fontWeight: 600 }}>{p.reviewer.name}</a></span><span>·</span></>}
-              <time dateTime={p.updated_at || p.published_at}>Cập nhật {fmtDate(p.updated_at || p.published_at)}</time><span>·</span><span>{readMin(p.word_count)} phút đọc</span>
+              {p.seo?.hide_updated ? <time dateTime={p.published_at}>Đăng {fmtDate(p.published_at)}</time> : <time dateTime={p.updated_at || p.published_at}>Cập nhật {fmtDate(p.updated_at || p.published_at)}</time>}<span>·</span><span>{readMin(p.word_count)} phút đọc</span>
             </div>
             {p.cover_url && <figure><img src={p.cover_url} alt={p.cover_alt || p.title} fetchPriority="high" className="cover" style={{ width: "100%", height: 330, objectFit: "cover", borderRadius: 16, display: "block" }} /></figure>}
             {t.length > 1 && <div className="only-m"><TocBox t={t} /></div>}
