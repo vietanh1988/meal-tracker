@@ -78,6 +78,17 @@ export const scoreLabel = (n) => (n >= 80 ? "Tốt" : n >= 50 ? "Tạm được"
 export function htmlToBlocks(html, parse) {
   const doc = parse(String(html || ""));
   doc.querySelectorAll("script,style,meta,link,title,noscript").forEach((e) => e.remove());
+  // Dán từ Google Docs / Word: đậm, nghiêng, gạch chân nằm trong style="" (bị lọc) → đổi sang <b> <i> <u> trước khi lọc
+  const unwrap = (el) => { el.replaceWith(...el.childNodes); };
+  [...doc.querySelectorAll("[style]")].reverse().forEach((el) => {
+    const st = el.style || {}; const fw = String(st.fontWeight || ""); const tag = el.tagName.toLowerCase();
+    if ((tag === "b" || tag === "strong") && /^(normal|[1-4]00)$/.test(fw)) { unwrap(el); return; } // Google Docs bọc cả bài trong <b style="font-weight:normal">
+    if (/^(p|div|h[1-6]|li|td|th|ul|ol|table|tr|blockquote)$/.test(tag)) return;
+    const wrap = (t) => { const w = doc.createElement(t); while (el.firstChild) w.appendChild(el.firstChild); el.appendChild(w); };
+    if (fw === "bold" || +fw >= 600) wrap("b");
+    if (st.fontStyle === "italic") wrap("i");
+    if (/underline/.test(st.textDecoration || st.textDecorationLine || "")) wrap("u");
+  });
   const out = [];
   const inline = (el) => clean(el.innerHTML).replace(/<\/?(p|div|h[1-6]|ul|ol|li|table|thead|tbody|tr|th|td|figure|figcaption|blockquote|hr)[^>]*>/gi, " ").replace(/\s+/g, " ").trim();
   const walk = (node) => {
@@ -93,7 +104,7 @@ export function htmlToBlocks(html, parse) {
       }
       else if (t === "img") { if (el.getAttribute("src") && !/^data:/.test(el.getAttribute("src"))) out.push({ type: "img", url: el.getAttribute("src"), alt: el.getAttribute("alt") || "" }); }
       else if (t === "hr") out.push({ type: "hr" });
-      else if (t === "p") { const img = el.querySelector("img"); const s = inline(el); if (s) out.push({ type: "p", html: s, ...al }); else if (img) walk(el); }
+      else if (t === "p") { const s = inline(el).replace(/<img\b[^>]*>/gi, "").trim(); if (s.replace(/<[^>]+>|&nbsp;/g, "").trim()) out.push({ type: "p", html: s, ...al }); for (const img of el.querySelectorAll("img")) { const src = img.getAttribute("src"); if (src && !/^data:/.test(src)) out.push({ type: "img", url: src, alt: img.getAttribute("alt") || "" }); } } // đoạn có cả chữ và ảnh → giữ cả hai
       else if (el.children.length && [...el.children].some((c) => /^(p|h[1-6]|ul|ol|table|blockquote|div)$/i.test(c.tagName))) walk(el);
       else { const s = inline(el); if (s) out.push({ type: "p", html: s }); }
     }

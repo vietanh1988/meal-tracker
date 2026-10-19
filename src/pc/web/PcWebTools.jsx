@@ -29,13 +29,19 @@ function textFields(blocks, base) {
   return out;
 }
 // Vị trí chữ cần tìm, bỏ qua chỗ nằm trong thẻ HTML (<a href="…">) để không làm hỏng link
+// So theo chữ người đọc thấy: "&" khớp cả "&amp;", dấu cách khớp cả "&nbsp;" (ô soạn hay lưu kiểu này), "<" ">" khớp "&lt;" "&gt;"
+const esc = (c) => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const needleRe = (q, cs) => new RegExp([...q].map((c) => (c === "&" ? "(?:&amp;|&)" : c === "<" ? "(?:&lt;|<)" : c === ">" ? "(?:&gt;|>)" : /\s/.test(c) ? "(?:\\s|&nbsp;|\u00a0)" : esc(c))).join(""), cs ? "g" : "gi");
 function findAll(str, q, cs) {
-  const s = String(str || ""), hay = cs ? s : s.toLowerCase(), needle = cs ? q : q.toLowerCase(); const out = [];
-  if (!needle) return out;
-  let i = hay.indexOf(needle);
-  while (i >= 0) { const lt = s.lastIndexOf("<", i), gt = s.lastIndexOf(">", i); if (!(lt > gt)) out.push(i); i = hay.indexOf(needle, i + needle.length); }
+  const s = String(str || ""); const out = [];
+  if (!q) return out;
+  const re = needleRe(q, cs); let m;
+  while ((m = re.exec(s))) { const i = m.index; const lt = s.lastIndexOf("<", i), gt = s.lastIndexOf(">", i); if (!(lt > gt) || m[0].startsWith("<")) out.push({ i, n: m[0].length }); if (!m[0].length) re.lastIndex++; }
   return out;
 }
+// Ô có HTML (nội dung khối) → mã hoá chữ thay bằng; ô chữ thường (tiêu đề, SEO, alt, nhãn nút) giữ nguyên
+const PLAIN = new Set(["title", "desc", "excerpt", "alt", "label", "button", "q"]);
+const toHtml = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const getIn = (o, p) => p.reduce((x, k) => (x == null ? x : x[k]), o);
 const setIn = (o, p, v) => { const c = Array.isArray(o) ? [...o] : { ...o }; if (p.length === 1) { c[p[0]] = v; return c; } c[p[0]] = setIn(o[p[0]] ?? (typeof p[1] === "number" ? [] : {}), p.slice(1), v); return c; };
 const plain = (x) => x.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
@@ -73,14 +79,15 @@ function Replace({ data, reload, showToast, user }) {
   const hits = useMemo(() => {
     const s = q.trim(); if (s.length < 2) return [];
     const out = [];
-    const add = (table, row, name, path, str) => { for (const i of findAll(str, s, f.cs)) out.push({ k: `${table}|${row.id}|${path.join(".")}|${i}`, table, row, name, path, i }); };
+    const add = (table, row, name, path, str) => { for (const { i, n } of findAll(str, s, f.cs)) out.push({ k: `${table}|${row.id}|${path.join(".")}|${i}`, table, row, name, path, i, n }); };
     for (const p of data.posts) {
       if (f.title) add("post", p, p.title, ["title"], p.title);
       if (f.body) for (const [path, v] of textFields(p.blocks, ["blocks"])) add("post", p, p.title, path, v);
       if (f.seo) { add("post", p, p.title, ["seo", "title"], p.seo?.title); add("post", p, p.title, ["seo", "desc"], p.seo?.desc); add("post", p, p.title, ["excerpt"], p.excerpt); }
     }
     if (f.reuse) for (const b of data.blocks) for (const [path, v] of textFields(b.blocks, ["blocks"])) add("block", b, `${b.kind === "template" ? "Mẫu bài" : "Khối dùng lại"}: ${b.name}`, path, v);
-    return out.slice(0, 500);
+    out.more = Math.max(0, out.length - 500);
+    const cut = out.slice(0, 500); cut.more = out.more; return cut;
   }, [q, f, data]);
   useEffect(() => setOff(new Set()), [q, f]);
   const picked = hits.filter((h) => !off.has(h.k));
@@ -91,10 +98,14 @@ function Replace({ data, reload, showToast, user }) {
     setBusy(true);
     try {
       const by = {}; for (const h of picked) (by[`${h.table}|${h.row.id}`] ||= []).push(h);
+      const skipped = [];
       for (const list of Object.values(by)) {
-        let row = list[0].row; const len = q.trim().length;
+        let row = list[0].row;
+        // đọc lại trước khi ghi: bài / khối vừa được sửa ở chỗ khác (tab khác, tự lưu) thì bỏ qua, không đè
+        const cur = await supabase.from(list[0].table === "post" ? "web_posts" : "web_blocks").select("updated_at").eq("id", row.id).single().then(must);
+        if (cur.updated_at !== row.updated_at) { skipped.push(list[0].name); continue; }
         const byPath = {}; for (const h of list) (byPath[h.path.join(".")] ||= []).push(h);
-        for (const hs of Object.values(byPath)) { let v = String(getIn(row, hs[0].path)); for (const h of hs.sort((a, b) => b.i - a.i)) v = v.slice(0, h.i) + to + v.slice(h.i + len); row = setIn(row, hs[0].path, v); }
+        for (const hs of Object.values(byPath)) { const key = hs[0].path[hs[0].path.length - 1]; const rep = PLAIN.has(key) ? to : toHtml(to); let v = String(getIn(row, hs[0].path)); for (const h of hs.sort((a, b) => b.i - a.i)) v = v.slice(0, h.i) + rep + v.slice(h.i + h.n); row = setIn(row, hs[0].path, v); }
         if (list[0].table === "post") {
           const patch = { title: row.title, blocks: row.blocks, seo: row.seo, excerpt: row.excerpt, word_count: wordCount(row.blocks), updated_at: new Date().toISOString(), updated_by: user?.id || null };
           await supabase.from("web_posts").update(patch).eq("id", row.id).then(must);
@@ -102,7 +113,7 @@ function Replace({ data, reload, showToast, user }) {
           await supabase.from("web_revisions").insert({ post_id: row.id, snapshot: { ...row, ...patch, terms }, reason: "replace", created_by: user?.id || null }).then(must);
         } else await supabase.from("web_blocks").update({ blocks: row.blocks, updated_at: new Date().toISOString() }).eq("id", row.id).then(must);
       }
-      showToast?.(`Đã thay ${picked.length} chỗ trong ${rowsN} bài / khối. Web đổi theo trong khoảng 1 phút.`); setQ(""); await reload();
+      showToast?.(skipped.length ? `Đã thay ${rowsN - skipped.length} bài / khối. Bỏ qua ${skipped.length} bài vừa được sửa ở chỗ khác (${skipped.slice(0, 3).join(", ")}${skipped.length > 3 ? "…" : ""}) — tìm lại rồi thay.` : `Đã thay ${picked.length} chỗ trong ${rowsN} bài / khối. Web đổi theo trong khoảng 1 phút.`); setQ(""); await reload();
     } catch (e) { showToast?.("Chưa thay xong: " + (e.message || "")); }
     setBusy(false);
   };
@@ -115,9 +126,9 @@ function Replace({ data, reload, showToast, user }) {
           <Field label="Thay bằng"><input value={to} onChange={(e) => setTo(e.target.value)} placeholder="VD: Dùng thử 7 ngày" data-testid="web-rp-to" className="pc-input" style={inpStyle()} /></Field>
         </div>
         <span style={{ display: "flex", gap: 16, fontSize: 12.5, flexWrap: "wrap" }}>{[["title", "Tiêu đề"], ["body", "Nội dung"], ["seo", "Mô tả SEO"], ["reuse", "Khối dùng lại"], ["cs", "Phân biệt hoa / thường"]].map(([k, t]) => <Check key={k} on={f[k]} onChange={(v) => setF({ ...f, [k]: v })} label={t} />)}</span>
-        {q.trim().length >= 2 && <span style={{ fontSize: 12.5, fontWeight: 800 }}>{hits.length ? `Tìm thấy ${hits.length} chỗ trong ${new Set(hits.map((h) => `${h.table}|${h.row.id}`)).size} bài — bỏ tick chỗ không muốn thay` : "Không tìm thấy chỗ nào."}</span>}
+        {q.trim().length >= 2 && <span style={{ fontSize: 12.5, fontWeight: 800 }}>{hits.length ? `Tìm thấy ${hits.length} chỗ trong ${new Set(hits.map((h) => `${h.table}|${h.row.id}`)).size} bài${hits.more ? ` (còn ${hits.more} chỗ nữa — thay xong đợt này rồi tìm lại)` : ""} — bỏ tick chỗ không muốn thay` : "Không tìm thấy chỗ nào."}</span>}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 520, overflowY: "auto" }}>
-          {hits.map((h) => { const [a, m, b] = ctx(getIn(h.row, h.path), h.i, q.trim().length); return (
+          {hits.map((h) => { const [a, m, b] = ctx(getIn(h.row, h.path), h.i, h.n); return (
             <label key={h.k} data-testid="web-rp-hit" style={{ display: "flex", gap: 10, padding: 10, borderRadius: 10, border: `1px solid ${PC.line}`, cursor: "pointer" }}>
               <Check on={!off.has(h.k)} onChange={(v) => setOff((s) => { const n = new Set(s); if (v) n.delete(h.k); else n.add(h.k); return n; })} />
               <span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}><b style={{ fontSize: 12.5 }}>{h.name}{h.path[0] !== "blocks" && <span style={{ fontWeight: 500, color: PC.t3 }}> · {h.path[0] === "title" ? "tiêu đề" : h.path[0] === "excerpt" ? "đoạn trích" : h.path[1] === "title" ? "tiêu đề SEO" : "mô tả SEO"}</span>}</b><span style={{ fontSize: 12.5, lineHeight: 1.5, color: PC.t2 }}>{a}<span style={HL}>{m}</span>{b}</span></span>
@@ -191,14 +202,39 @@ function ExportImport({ data, reload, showToast, user, short, onMore }) {
     if (!file) return; setBusy("own"); setLog("");
     try {
       const j = JSON.parse(await file.text()); if (j.app !== "fipilot-web") throw new Error("Không phải file xuất từ Fipilot.");
-      const ow = mode === "overwrite"; const n = {};
-      const up = async (t, rows, conflict) => { if (!rows?.length) return; const r = ow ? await supabase.from(t).upsert(rows, { onConflict: conflict }) : await supabase.from(t).upsert(rows, { onConflict: conflict, ignoreDuplicates: true }); if (r.error) throw r.error; n[t] = rows.length; };
-      await up("web_terms", j.web_terms, "id"); await up("web_authors", j.web_authors, "id");
-      const have = new Set(data.posts.map((p) => p.slug));
-      const posts = ow ? j.web_posts : (j.web_posts || []).filter((p) => !have.has(p.slug));
-      await up("web_posts", posts, "id"); await up("web_post_terms", (j.web_post_terms || []).filter((l) => posts.some((p) => p.id === l.post_id)), "post_id,term_id");
-      for (const [t, c] of [["web_menus", "location"], ["web_settings", "key"], ["web_blocks", "id"], ["web_redirects", "src"], ["web_calo_pages", "food_key"], ["web_media", "path"]]) await up(t, j[t], c);
-      setLog(`Đã nhập: ${posts.length} bài / trang${ow ? " (ghi đè bài trùng)" : `, bỏ qua ${(j.web_posts || []).length - posts.length} bài trùng đường dẫn`}.`); await reload();
+      const ow = mode === "overwrite"; const errs = [];
+      // Từng dòng một: khớp theo đường dẫn (không theo id), dòng lỗi thì ghi lại rồi làm tiếp — không dừng giữa chừng
+      const one = async (label, fn) => { try { await fn(); return true; } catch (e) { errs.push(`${label}: ${e.message || e}`); return false; } };
+      const strip = ({ created_at, ...r }) => r;
+      // Chuyên mục & thẻ: trùng (loại, đường dẫn) → dùng mục có sẵn
+      const allTerms = await readAll(() => supabase.from("web_terms").select("id,kind,slug").order("id"));
+      const tKey = (t) => `${t.kind}|${t.slug}`; const tHave = Object.fromEntries(allTerms.map((t) => [tKey(t), t.id])); const tMap = {};
+      for (const t of (j.web_terms || []).slice().sort((a, b) => (a.parent_id ? 1 : 0) - (b.parent_id ? 1 : 0))) {
+        const row = { ...strip(t), parent_id: t.parent_id ? tMap[t.parent_id] || null : null };
+        const ex = tHave[tKey(t)];
+        if (ex) { tMap[t.id] = ex; if (ow) await one(`Chuyên mục / thẻ ${t.slug}`, () => supabase.from("web_terms").update({ ...row, id: ex }).eq("id", ex).then(must)); }
+        else if (await one(`Chuyên mục / thẻ ${t.slug}`, () => supabase.from("web_terms").insert(row).then(must))) { tMap[t.id] = t.id; tHave[tKey(t)] = t.id; }
+      }
+      const aHave = Object.fromEntries((await supabase.from("web_authors").select("id,slug").then(must)).map((a) => [a.slug, a.id])); const aMap = {};
+      for (const a of j.web_authors || []) { const ex = aHave[a.slug]; if (ex) { aMap[a.id] = ex; if (ow) await one(`Tác giả ${a.slug}`, () => supabase.from("web_authors").update({ ...strip(a), id: ex }).eq("id", ex).then(must)); } else if (await one(`Tác giả ${a.slug}`, () => supabase.from("web_authors").insert(strip(a)).then(must))) aMap[a.id] = a.id; }
+      // Bài / trang: đường dẫn đã có (kể cả bài trong thùng rác) → ghi đè hoặc bỏ qua
+      const pHave = Object.fromEntries((await readAll(() => supabase.from("web_posts").select("id,slug").order("id"))).map((p) => [p.slug, p.id]));
+      let added = 0, over = 0, skip = 0;
+      for (const p of j.web_posts || []) {
+        const ex = pHave[p.slug]; if (ex && !ow) { skip++; continue; }
+        const row = { ...strip(p), author_id: p.author_id ? aMap[p.author_id] || null : null, reviewer_id: p.reviewer_id ? aMap[p.reviewer_id] || null : null, primary_term: p.primary_term ? tMap[p.primary_term] || null : null, parent_id: null };
+        let id = ex;
+        const ok = await one(`Bài ${p.slug}`, async () => {
+          if (ex) await supabase.from("web_posts").update({ ...row, id: ex }).eq("id", ex).then(must);
+          else { const { id: _, ...noId } = row; const r = await supabase.from("web_posts").insert(row).select("id").single(); id = r.error ? (await supabase.from("web_posts").insert(noId).select("id").single().then(must)).id : r.data.id; }
+          const links = (j.web_post_terms || []).filter((l) => l.post_id === p.id).map((l) => tMap[l.term_id]).filter(Boolean);
+          await supabase.from("web_post_terms").delete().eq("post_id", id).then(must);
+          if (links.length) await supabase.from("web_post_terms").upsert([...new Set(links)].map((term_id) => ({ post_id: id, term_id })), { onConflict: "post_id,term_id", ignoreDuplicates: true }).then(must);
+        });
+        if (ok) { ex ? over++ : added++; pHave[p.slug] = id; }
+      }
+      for (const [t, c] of [["web_menus", "location"], ["web_settings", "key"], ["web_blocks", "id"], ["web_redirects", "src"], ["web_calo_pages", "food_key"], ["web_media", "path"]]) for (const r of j[t] || []) await one(`${t} ${r[c]}`, () => supabase.from(t).upsert(strip(r), { onConflict: c, ignoreDuplicates: !ow }).then(must));
+      setLog(`Đã nhập: ${added} bài / trang mới${over ? `, ghi đè ${over} bài trùng đường dẫn` : ""}${skip ? `, bỏ qua ${skip} bài trùng đường dẫn` : ""}.${errs.length ? ` ${errs.length} dòng lỗi: ${errs.slice(0, 5).join(" · ")}${errs.length > 5 ? " …" : ""}` : ""}`); await reload();
     } catch (e) { setLog("Chưa nhập được: " + (e.message || "")); }
     setBusy("");
   };
@@ -216,8 +252,8 @@ function ExportImport({ data, reload, showToast, user, short, onMore }) {
         setLog(`Đang nhập ${k + 1}/${items.length}…`);
         const slug0 = slugify(decodeURIComponent(tx(it, "wp:post_name") || tx(it, "title"))) || `bai-${k + 1}`;
         if (have.has(slug0) && mode !== "overwrite") { skipped++; continue; }
-        let html = tx(it, "content:encoded").replace(/<!--\s*\/?wp:[\s\S]*?-->/g, "").replace(/\[\/?[a-z_]+[^\]]*\]/g, "").replace(/\n{2,}/g, "</p><p>");
-        if (!/<p[\s>]/i.test(html)) html = `<p>${html}</p>`;
+        // giống wpautop: đoạn chữ cách nhau 1 dòng trống → <p>; đoạn đã là thẻ khối (ul, table, h2…) giữ nguyên, không chèn </p><p> vào giữa
+        const html = tx(it, "content:encoded").replace(/<!--\s*\/?wp:[\s\S]*?-->/g, "").replace(/\[\/?[a-z_]+[^\]]*\]/g, "").split(/\n\s*\n/).map((c) => c.trim()).filter(Boolean).map((c) => (/^<(p|ul|ol|table|h[1-6]|blockquote|figure|div|pre|hr|img|iframe|section)\b/i.test(c) ? c : `<p>${c}</p>`)).join("\n");
         let blocks = htmlToBlocks(html, (h) => new DOMParser().parseFromString(h, "text/html"));
         if (wpImg) for (const b of blocks) if (b.type === "img" && /^https?:/.test(b.url)) { try { const r = await fetch(b.url, { mode: "cors" }); if (!r.ok) throw 0; const bl = await r.blob(); const up = await uploadImage(new File([bl], b.url.split("/").pop().split("?")[0] || "anh.jpg", { type: bl.type || "image/jpeg" }), b.alt || slug0, { uid: user?.id }); b.url = up.url; b.width = up.width; b.height = up.height; imgOk++; } catch (e) { imgKeep++; } }
         const ids = [];

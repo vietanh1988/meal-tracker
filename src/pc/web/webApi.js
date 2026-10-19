@@ -59,6 +59,21 @@ export async function ensureAuthor(appSettings, uid) {
 }
 
 // Đường dẫn chưa ai dùng (bài và trang dùng chung 1 kho đường dẫn)
+// Lưu Cài đặt web: chỉ ghi các ô đã đổi so với lúc mở màn, gộp vào bản mới nhất trên máy chủ
+// → 2 tab / 2 người cùng sửa (Cài đặt web và Cài đặt SEO cùng sửa "site") không đè ô của nhau. Trả về bản đã lưu.
+export async function saveSettings(local, orig) {
+  const keys = Object.keys(local).filter((k) => JSON.stringify(local[k] ?? {}) !== JSON.stringify(orig?.[k] ?? {}));
+  if (!keys.length) return {};
+  const now = await supabase.from("web_settings").select("key,value").in("key", keys).then(must);
+  const cur = Object.fromEntries(now.map((r) => [r.key, r.value || {}]));
+  const rows = keys.map((k) => {
+    const a = local[k] || {}, o = orig?.[k] || {};
+    const changed = Object.fromEntries([...new Set([...Object.keys(a), ...Object.keys(o)])].filter((f) => JSON.stringify(a[f]) !== JSON.stringify(o[f])).map((f) => [f, a[f]]));
+    return { key: k, value: { ...(cur[k] || {}), ...changed }, updated_at: new Date().toISOString() };
+  });
+  await supabase.from("web_settings").upsert(rows, { onConflict: "key" }).then(must);
+  return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+}
 // Đổi đường dẫn chuyên mục / thẻ / tác giả → tự thêm 301 từ link cũ (trigger DB chỉ lo bài viết). Lỗi thì bỏ qua.
 export async function slugRedirect(from, to) {
   if (!from || !to || from === to) return;

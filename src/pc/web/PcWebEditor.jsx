@@ -19,6 +19,7 @@ import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, sav
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
 import { Rich, ListEdit, OtherBlock, Upload, kb, inlineClean, H_STYLE } from "./BlockEdit";
 import { PcWebRevisions } from "./PcWebRevisions";
+import WEB_CSS from "../../../web/app/globals.css?raw"; // kiểu chữ của web cho Xem trước bản nháp
 
 const WEB = "https://fipilotai.com";
 const EMPTY = (kind) => ({ id: null, kind, title: "", slug: "", status: "draft", blocks: [newBlock("p")], excerpt: "", cover_url: "", cover_alt: "", author_id: null, primary_term: null, pinned: false, related: { mode: "auto", ids: [] }, seo: {}, published_at: null, terms: [], template: null });
@@ -126,6 +127,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
     const snap = postRef.current; // gõ thêm trong lúc lưu → postRef đổi → giữ cờ "chưa lưu"
     const p = fullRef.current ? fullRef.current() : postRef.current; if (!p) return;
     if (!p.title.trim()) { showToast?.("Nhập tiêu đề trước đã."); return; }
+    if (p.seo?.schema_bad) { if (mode !== "auto") showToast?.("Mã schema riêng (tab Schema) đang sai — sửa cho hợp lệ hoặc xoá trống rồi lưu."); return; }
     let status = p.status, published_at = p.published_at;
     if (mode === "draft") status = "draft";
     if (mode === "publish") { if (published_at && new Date(published_at) > new Date()) status = "scheduled"; else { status = "published"; published_at = published_at || new Date().toISOString(); } }
@@ -160,6 +162,14 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
     window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h);
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Xem trước bản nháp / bản đang sửa: mở tab mới, chữ theo kiểu chữ của web (globals.css), không cần đăng
+  const previewDraft = (p) => {
+    const w = window.open("", "_blank"); if (!w) return showToast?.("Trình duyệt chặn cửa sổ mới — cho phép popup rồi bấm lại.");
+    const e = (x) => String(x || "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+    const body = blocksToHtml(forSave(p.blocks || [])).replace(/<!--[\s\S]*?-->/g, "");
+    w.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Xem trước: ${e(p.title)}</title><style>${WEB_CSS}</style><style>body{background:#F3F6FB;font-family:-apple-system,"system-ui",Inter,"Segoe UI",Roboto,Arial,sans-serif}.pv-bar{position:sticky;top:0;z-index:5;background:#FFFBEB;border-bottom:1px solid #FDE68A;color:#92400E;font-size:13px;padding:10px 16px;text-align:center}</style></head><body><div class="pv-bar">Bản xem trước — chưa đăng lên web · đóng tab này để quay lại soạn</div><main class="wrap" style="padding-top:40px;padding-bottom:60px;max-width:820px"><h1 class="h1" style="margin-bottom:18px">${e(p.title)}</h1>${p.cover_url ? `<img src="${e(p.cover_url)}" alt="" style="width:100%;border-radius:16px;margin-bottom:24px">` : ""}<article class="card art" style="padding:40px"><div class="prose">${body}</div></article></main></body></html>`);
+    w.document.close();
+  };
   const back = async () => { if (dirty && !(await appConfirm("Có thay đổi chưa lưu. Vẫn quay lại danh sách?", { danger: true }))) return; onBack(); };
 
   // ===== Định dạng chữ =====
@@ -270,7 +280,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
         <span style={{ display: "flex", gap: 8 }}>
           <Btn kind="light" onClick={back} title="Về danh sách (hỏi nếu còn thay đổi chưa lưu)" testid="web-ed-back">‹ Danh sách</Btn>
           <Btn kind="light" disabled={!post.id} onClick={async () => setRevs(await listRevisions(post.id))} testid="web-ed-history">↶ Lịch sử</Btn>
-          <Btn kind="light" disabled={post.status !== "published"} title={post.status === "published" ? "Mở bài trên fipilotai.com" : "Đăng rồi mới xem được trên web"} onClick={() => window.open(`${WEB}/${post.slug}`, "_blank", "noopener")}>Xem trước ↗</Btn>
+          <Btn kind="light" title={post.status === "published" ? "Mở bài trên fipilotai.com" : "Xem trước bản đang soạn (chưa cần đăng) — dàn trang gần giống web"} onClick={() => (post.status === "published" && !dirty ? window.open(`${WEB}/${post.slug}`, "_blank", "noopener") : previewDraft(fullRef.current ? fullRef.current() : post))} testid="web-ed-preview">Xem trước ↗</Btn>
           <Btn kind="soft" disabled={!!saving} title={isLive ? "Chuyển bài về bản nháp (gỡ khỏi web)" : "Lưu, chưa đăng"} onClick={async () => { if (isLive && !(await appConfirm("Bài đang hiện trên web. Lưu nháp sẽ gỡ bài khỏi web cho tới khi bấm Đăng lại. Tiếp tục?"))) return; doSave("draft"); }} testid="web-ed-draft">{saving === "draft" ? "Đang lưu…" : "Lưu nháp"}</Btn>
           <Btn kind="blue" disabled={!!saving} onClick={() => doSave("publish")} testid="web-ed-publish">{saving === "publish" ? "Đang lưu…" : isLive ? "Cập nhật" : post.published_at && new Date(post.published_at) > new Date() ? "Hẹn giờ đăng" : "Đăng"}</Btn>
         </span>, post.id ? (kind === "page" ? "Sửa trang" : "Sửa bài viết") : (kind === "page" ? "Trang mới" : "Viết bài mới"), sub)}
@@ -574,7 +584,7 @@ function SchemaTab({ post, setSeo, kind }) {
       <span style={secLbl}>SCHEMA TỰ SINH (bật / tắt từng loại)</span>
       {items.map(([t, s]) => <div key={t} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", borderBottom: `1px solid ${PC.rowLine}` }}><Tog on={!off.includes(t)} onChange={(v) => setSeo({ schema_off: v ? off.filter((x) => x !== t) : [...off, t] })} /><span style={{ display: "flex", flexDirection: "column", flex: 1 }}><b style={{ fontSize: 13, fontFamily: "ui-monospace, Menlo, monospace" }}>{t}</b><span style={{ fontSize: 12, color: PC.t3 }}>{s}</span></span></div>)}
       <span style={{ ...secLbl, marginTop: 6 }}>SCHEMA RIÊNG CHO BÀI NÀY (JSON-LD)</span>
-      <textarea value={raw} onChange={(e) => { setRaw(e.target.value); try { setSeo({ schema: e.target.value.trim() ? JSON.parse(e.target.value) : null }); } catch (er) { /* chờ sửa xong */ } }} placeholder={'{\n  "@context": "https://schema.org",\n  "@type": "HowTo",\n  "name": "…"\n}'} spellCheck={false} style={{ minHeight: 160, borderRadius: 12, background: "#0F172A", color: "#C7D2FE", padding: 14, fontSize: 12, lineHeight: 1.6, fontFamily: "ui-monospace, Menlo, monospace", border: 0, resize: "vertical" }} />
+      <textarea value={raw} onChange={(e) => { setRaw(e.target.value); try { setSeo({ schema: e.target.value.trim() ? JSON.parse(e.target.value) : null, schema_bad: false }); } catch (er) { setSeo({ schema_bad: true }); /* chặn lưu tới khi sửa xong */ } }} placeholder={'{\n  "@context": "https://schema.org",\n  "@type": "HowTo",\n  "name": "…"\n}'} spellCheck={false} style={{ minHeight: 160, borderRadius: 12, background: "#0F172A", color: "#C7D2FE", padding: 14, fontSize: 12, lineHeight: 1.6, fontFamily: "ui-monospace, Menlo, monospace", border: 0, resize: "vertical" }} />
       <span style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12.5 }}>{raw.trim() ? (bad ? <Pill tone="red">Mã chưa hợp lệ: {bad.slice(0, 60)}</Pill> : <Pill tone="green">✓ Mã hợp lệ</Pill>) : <span style={{ color: PC.t4 }}>Để trống nếu không cần</span>}<span style={{ color: PC.t3 }}>Gộp với schema tự sinh</span>
         <span style={{ marginLeft: "auto" }}><Btn kind="soft" onClick={() => window.open(`https://search.google.com/test/rich-results?url=${encodeURIComponent(`${WEB}/${post.slug}`)}`, "_blank", "noopener")} disabled={post.status !== "published"}>Kiểm tra trên Google ↗</Btn></span></span>
     </div>

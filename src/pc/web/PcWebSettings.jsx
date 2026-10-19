@@ -1,7 +1,7 @@
 // Quản trị PC › WEB & BÀI VIẾT › Cài đặt web (bản vẽ 138k): Chung · Logo & biểu tượng · Thanh thông báo · Liên hệ & mạng xã hội ·
 // Chân trang (dải calo món phổ biến, thẻ mời app) · Nút "Dùng thử" & bảo trì (503). Lưu → web_settings (web đổi theo ~1 phút).
 // Ô liên hệ để trống: web lấy từ trang Giới thiệu của app (email, hotline, Zalo, Facebook) — không phải nhập 2 nơi.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { PC } from "../../theme";
 import { appConfirm } from "../../lib/dialog";
@@ -9,6 +9,7 @@ import { Btn, Card, ErrorBox, Loading } from "../pcUI";
 import { Tog, Field, Lnk, Modal, inpStyle, BLUE } from "./webUI";
 import { Upload, FOODS } from "./BlockEdit";
 import { slugify } from "./webLib";
+import { saveSettings } from "./webApi";
 
 const must = ({ data, error }) => { if (error) throw error; return data; };
 const KEYS = ["site", "contact", "footer", "notice_bar", "maintenance", "pricing"];
@@ -27,8 +28,9 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
   useEffect(() => { supabase.from("subscription_settings").select("price_1m,price_3m,price_6m,price_12m,trial_days").eq("id", 1).maybeSingle().then(({ data }) => setPlan(data || {})); }, []);
   let about = {}; try { about = JSON.parse(appSettings?.about_page || "{}"); } catch (e) { /* */ }
 
-  useEffect(() => { (async () => { try { const rows = await supabase.from("web_settings").select("key,value").in("key", KEYS).then(must); const o = Object.fromEntries(KEYS.map((k) => [k, {}])); for (const r of rows) o[r.key] = r.value || {}; setS(o); } catch (e) { setErr("Chưa tải được cài đặt. " + (e.message || "")); } })(); }, []);
+  useEffect(() => { (async () => { try { const rows = await supabase.from("web_settings").select("key,value").in("key", KEYS).then(must); const o = Object.fromEntries(KEYS.map((k) => [k, {}])); for (const r of rows) o[r.key] = r.value || {}; origRef.current = JSON.parse(JSON.stringify(o)); setS(o); } catch (e) { setErr("Chưa tải được cài đặt. " + (e.message || "")); } })(); }, []);
   useEffect(() => { window.__fpWebDirty = dirty; return () => { window.__fpWebDirty = false; }; }, [dirty]);
+  const origRef = useRef(null); // bản lúc mở màn — lưu chỉ ghi ô đã đổi
   const set = (k, patch) => { setS((x) => ({ ...x, [k]: { ...x[k], ...patch } })); setDirty(true); };
 
   const save = async () => {
@@ -36,7 +38,7 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
     const n = parseInt(s.site.posts_per_page, 10);
     if (!(n >= 3 && n <= 48)) return showToast?.("Số bài mỗi trang từ 3 đến 48.");
     setBusy(true);
-    try { await supabase.from("web_settings").upsert(KEYS.map((k) => ({ key: k, value: k === "site" ? { ...s.site, posts_per_page: n } : s[k], updated_at: new Date().toISOString() })), { onConflict: "key" }).then(must); setDirty(false); showToast?.("Đã lưu cài đặt web. Web đổi theo trong khoảng 1 phút."); }
+    try { const loc = { ...s, site: { ...s.site, posts_per_page: n } }; const saved = await saveSettings(loc, origRef.current); origRef.current = JSON.parse(JSON.stringify({ ...origRef.current, ...loc, ...saved })); setS((x) => ({ ...x, ...saved })); setDirty(false); showToast?.("Đã lưu cài đặt web. Web đổi theo trong khoảng 1 phút."); }
     catch (e) { showToast?.("Chưa lưu được: " + (e.message || "")); }
     setBusy(false);
   };

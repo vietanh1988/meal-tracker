@@ -8,7 +8,7 @@ import { BLUE } from "./webUI";
 import { TermsPage } from "../../TermsPage";
 import { AboutPage } from "../../AboutPage";
 import { legalList, legalToBlocks } from "../../../web/lib/legal.js";
-import { savePost, freeSlug } from "./webApi";
+import { savePost, freeSlug, setStatus } from "./webApi";
 
 const WEB = "https://fipilotai.com";
 const parse = (v) => { try { return typeof v === "string" ? JSON.parse(v) : v || null; } catch (e) { return null; } };
@@ -19,16 +19,21 @@ export function PcWebSysPages({ rows, appSettings, go, onBuilder, onEdit, onSub:
   const own = (slug) => (rows || []).find((p) => p.slug === slug && p.status !== "trash");
   // Tách riêng cho web: chép nội dung app sang 1 trang web cùng đường dẫn rồi mở trình soạn
   const fork = async (slug, title, blocks, template) => {
+    // trang tách riêng đã bỏ vào thùng rác → khôi phục trang đó (giữ đúng đường dẫn) thay vì tạo "-2"
+    const old = (rows || []).find((p) => p.slug === slug && p.status === "trash");
+    if (old) { try { await setStatus([old.id], "draft"); showToast?.("Đã khôi phục trang web riêng từ thùng rác (bản nháp)."); await reload?.(); onEdit(old.id); } catch (e) { showToast?.("Chưa khôi phục được: " + (e.message || "")); } return; }
     try { const saved = await savePost({ kind: "page", title, slug: await freeSlug(slug), status: "draft", blocks, template, seo: {}, terms: [] }, { reason: "draft", uid: user?.id }); showToast?.("Đã chép sang trang web (bản nháp) — sửa xong bấm Đăng thì web dùng bản này thay cho bản của app."); await reload?.(); onEdit(saved.id); }
     catch (e) { showToast?.("Chưa tạo được: " + (e.message || "")); }
   };
+  // Nhãn theo trạng thái: chỉ khi đã đăng web mới dùng bản riêng; nháp / hẹn giờ thì web vẫn hiện bản của app
+  const ownSrc = (o) => o.status === "published" ? <>Trang web riêng <Pill tone="blue">web đang dùng bản này</Pill></> : <>Trang web riêng · {o.status === "scheduled" ? "hẹn giờ" : "bản nháp"} <Pill tone="amber">web vẫn hiện bản của app tới khi đăng</Pill></>;
   const list = [
     { t: "Trang chủ", u: "/", src: "Sửa trực tiếp trên trang (banner, nút, ảnh, ẩn / hiện khối)", act: <Btn kind="soft" style={{ height: 30, fontSize: 12 }} onClick={onBuilder}>✎ Sửa tại chỗ</Btn> },
     own("gioi-thieu")
-      ? { t: "Giới thiệu", u: "/gioi-thieu", src: <>Trang web riêng <Pill tone="blue">đè lên bản của app</Pill></>, act: <Btn kind="soft" style={{ height: 30, fontSize: 12 }} onClick={() => onEdit(own("gioi-thieu").id)}>Sửa</Btn> }
+      ? { t: "Giới thiệu", u: "/gioi-thieu", src: ownSrc(own("gioi-thieu")), act: <Btn kind="soft" style={{ height: 30, fontSize: 12 }} onClick={() => onEdit(own("gioi-thieu").id)}>Sửa</Btn> }
       : { t: "Giới thiệu", u: "/gioi-thieu", src: `Giới thiệu của app${about.devName ? ` (${about.devName})` : ""} — dùng chung app + web`, act: <span style={{ display: "flex", gap: 6 }}><Btn kind="soft" style={{ height: 30, fontSize: 12 }} onClick={() => setSub("about")} testid="web-sys-about">Sửa</Btn><Btn kind="light" style={{ height: 30, fontSize: 12 }} title="Viết câu chuyện riêng cho web bằng trình soạn (khác bản trong app)" onClick={() => fork("gioi-thieu", "Giới thiệu Fipilot AI", [about.devBio, about.description].filter(Boolean).map((x) => ({ type: "p", html: String(x).replace(/[<>]/g, "") })), null)}>Tách riêng cho web</Btn></span> },
     ...legal.map((p) => { const o = own(p.slug); return o
-      ? { t: p.label, u: `/${p.slug}`, src: <>Trang web riêng <Pill tone="blue">đè lên bản của app</Pill></>, act: <Btn kind="soft" style={{ height: 30, fontSize: 12 }} onClick={() => onEdit(o.id)}>Sửa</Btn> }
+      ? { t: p.label, u: `/${p.slug}`, src: ownSrc(o), act: <Btn kind="soft" style={{ height: 30, fontSize: 12 }} onClick={() => onEdit(o.id)}>Sửa</Btn> }
       : { t: p.label, u: `/${p.slug}`, src: "Điều khoản của app — dùng chung app + web", act: <span style={{ display: "flex", gap: 6 }}><Btn kind="soft" style={{ height: 30, fontSize: 12 }} onClick={() => setSub("terms")} testid="web-sys-terms">Sửa</Btn><Btn kind="light" style={{ height: 30, fontSize: 12 }} title="Chép sang trang web để sửa riêng (khác bản trong app)" onClick={() => { const b = legalToBlocks(p.html); fork(p.slug, b.title || p.label, b.blocks, "legal"); }}>Tách riêng cho web</Btn></span> }; }),
     { t: "Liên hệ", u: "/lien-he", src: "Cài đặt web › Liên hệ (ô trống lấy từ Giới thiệu của app) · thư khách gửi → Góp ý", act: <Btn kind="light" style={{ height: 30, fontSize: 12 }} onClick={() => go?.("web_settings")}>Mở Cài đặt web</Btn> },
     { t: "Bảng giá", u: "/bang-gia", src: "Cài đặt web › Bảng giá (tên gói, giá, câu hỏi thanh toán)", act: <Btn kind="light" style={{ height: 30, fontSize: 12 }} onClick={() => go?.("web_settings")}>Mở Cài đặt web</Btn> },

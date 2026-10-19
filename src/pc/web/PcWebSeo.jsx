@@ -2,7 +2,7 @@
 //  Chung (tên web, mẫu tiêu đề, ảnh chia sẻ) · Đường dẫn · Sitemap & robots · Chuyển hướng (thêm, bật/tắt, chuỗi → gộp, CSV)
 //  · Lỗi 404 & link hỏng (nhật ký 404 → chuyển 301 / báo 410 / bỏ qua; quét link nội bộ hỏng trong bài) · Schema mặc định · Mã theo dõi.
 // Cài đặt lưu web_settings (seo, site, tracking); chuyển hướng → web_redirects; nhật ký → web_404. Web đổi theo trong khoảng 1 phút.
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { PC } from "../../theme";
 import { appConfirm } from "../../lib/dialog";
@@ -11,7 +11,7 @@ import { Btn, Pill, Card, SearchBox, ErrorBox, Loading, headRow, bodyRow, cell }
 import { Check, Tog, Radio, Tabs, Field, Lnk, inpStyle, BLUE } from "./webUI";
 import { slugify } from "./webLib";
 import { Upload, FOODS } from "./BlockEdit";
-import { readAll } from "./webApi";
+import { readAll, saveSettings } from "./webApi";
 
 const WEB = "https://fipilotai.com";
 const must = ({ data, error }) => { if (error) throw error; return data; };
@@ -45,7 +45,7 @@ export function PcWebSeo({ top, showToast }) {
       const rows = await supabase.from("web_settings").select("key,value").in("key", ["seo", "site", "tracking", "contact"]).then(must);
       const o = { seo: {}, site: {}, tracking: {} }; for (const r of rows) o[r.key] = r.value || {};
       o.seo.sitemap = { post: true, page: true, category: true, tag: false, calo: true, author: true, images: true, ...(o.seo.sitemap || {}) };
-      setSt(o);
+      origRef.current = JSON.parse(JSON.stringify({ seo: o.seo, site: o.site, tracking: o.tracking })); setSt(o);
       const [posts, terms, authors] = await Promise.all([readAll(() => supabase.from("web_posts").select("slug,kind,status,seo,updated_at").neq("status", "trash").order("id")), supabase.from("web_terms").select("slug,kind").then(must), supabase.from("web_authors").select("slug").then(must)]);
       const live = posts.filter((p) => p.status === "published");
       const tot = (o.seo.sitemap.post !== false ? live.filter((p) => p.kind === "post" && !p.seo?.noindex).length : 0) + (o.seo.sitemap.page !== false ? live.filter((p) => p.kind === "page" && !p.seo?.noindex).length : 0) + (o.seo.sitemap.category !== false ? terms.filter((t) => t.kind === "category").length : 0) + (o.seo.sitemap.tag ? terms.filter((t) => t.kind === "tag").length : 0) + (o.seo.sitemap.author !== false ? authors.length : 0) + (o.seo.sitemap.calo !== false ? FOODS.filter((f) => f.vn).length : 0) + 7;
@@ -54,13 +54,14 @@ export function PcWebSeo({ top, showToast }) {
     } catch (e) { setErr("Chưa tải được cài đặt SEO. " + (e.message || "")); }
   })(); }, []);
   useEffect(() => { window.__fpWebDirty = dirty; return () => { window.__fpWebDirty = false; }; }, [dirty]);
+  const origRef = useRef(null);
   const set = (k, patch) => { setSt((x) => ({ ...x, [k]: { ...x[k], ...patch } })); setDirty(true); };
   const save = async () => {
     const extra = String(st.seo.robots_extra || "");
     if (/^\s*disallow:\s*\/\s*$/im.test(extra) && !(await appConfirm("robots.txt đang có “Disallow: /” — dòng này chặn Google đọc CẢ web. Vẫn lưu?", { danger: true }))) return;
     if (st.tracking.ga4 && !/^G-[A-Z0-9]+$/.test(st.tracking.ga4)) return showToast?.("Mã Google Analytics 4 phải dạng G-XXXXXXX.");
     setBusy(true);
-    try { await supabase.from("web_settings").upsert(["seo", "site", "tracking"].map((k) => ({ key: k, value: st[k], updated_at: new Date().toISOString() })), { onConflict: "key" }).then(must); setDirty(false); showToast?.("Đã lưu cài đặt SEO. Web đổi theo trong khoảng 1 phút."); }
+    try { const loc = { seo: st.seo, site: st.site, tracking: st.tracking }; const saved = await saveSettings(loc, origRef.current); origRef.current = JSON.parse(JSON.stringify({ ...loc, ...saved })); setSt((x) => ({ ...x, ...saved })); setDirty(false); showToast?.("Đã lưu cài đặt SEO. Web đổi theo trong khoảng 1 phút."); }
     catch (e) { showToast?.("Chưa lưu được: " + (e.message || "")); }
     setBusy(false);
   };
