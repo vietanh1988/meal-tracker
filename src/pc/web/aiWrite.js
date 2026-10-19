@@ -15,13 +15,17 @@ QUY TẮC BẮT BUỘC
 4. Quy trình từ 3 bước dùng danh sách đánh số "1. ". Điều kiện song song dùng gạch đầu dòng "- ". So sánh từ 2 lựa chọn trên nhiều tiêu chí dùng bảng markdown (| a | b |). Có ít nhất 1 bảng hữu ích (ví dụ calo/macro món Việt, bảng so sánh, thực đơn mẫu).
 5. Mỗi H2 chính có ít nhất 1 chi tiết cụ thể: con số có điều kiện, ví dụ món Việt và khẩu phần, ngưỡng, phép tính mẫu, sai lầm thường gặp, giới hạn áp dụng. Không bịa trải nghiệm cá nhân, không bịa nghiên cứu.
 6. Số liệu dinh dưỡng/sức khỏe chỉ nêu khi đã kiểm ở ghi chú tra cứu hoặc là kiến thức phổ biến đã được công nhận (WHO, Viện Dinh dưỡng Quốc gia, Bộ Y tế, NIH, USDA, Harvard T.H. Chan...). Trích nguồn bằng câu tự nhiên kiểu "Theo Tổ chức Y tế Thế giới (WHO), ...", không URL, không link markdown. Không chắc thì nói chung hơn hoặc bỏ. Calo, đạm, tinh bột, béo của món Việt: món có trong BẢNG CALO KHO MÓN FIPILOT thì dùng ĐÚNG số trong bảng đó (đúng khẩu phần, có thể nói "theo bảng calo của Fipilot AI"); món không có trong bảng thì ghi là ước tính và nói rõ khẩu phần.
-7. Chủ đề sức khỏe (YMYL): không hứa kết quả, không khuyên nhịn đói cực đoan, nêu khi nào nên hỏi bác sĩ hoặc chuyên gia dinh dưỡng (người có bệnh nền, mang thai, cho con bú, dưới 18 tuổi). Không đưa mức calo dưới 1200 kcal/ngày cho nữ hoặc 1500 kcal/ngày cho nam mà không có giám sát y tế.
+6a. MỘT SỐ CHÍNH CHO MỖI MÓN: món có trong bảng app thì số app là số chính, dùng ĐÚNG số đó ở mọi chỗ (sapo, thân bài, bảng, FAQ). Số của nguồn khác chỉ nêu khi giải thích vì sao chênh (tô to hơn, nhiều nước béo, thêm quẩy...), tối đa 1 nguồn khác, ghi rõ khẩu phần của nguồn đó. Không rải nhiều khoảng số khác nhau cho cùng một món.
+6b. SỐ NÀO CŨNG CÓ NGUỒN CÓ TÊN: mọi con số ngoài bảng app (nhu cầu calo, natri, khối lượng tăng giảm, calo món ăn kèm...) phải có trong ghi chú tra cứu kèm tên tổ chức / tài liệu, hoặc là kiến thức phổ biến của WHO / Bộ Y tế / Viện Dinh dưỡng. Không có thì bỏ số đó, viết định tính. Cấm nguồn mơ hồ: "nhiều trang dinh dưỡng", "thực tế", "theo các chuyên gia", "nghiên cứu cho thấy" không tên. Hai số khác nhau cho cùng một thứ thì phải nói vì sao khác.
+6c. SO SÁNH PHẢI KHỚP BẢNG: câu so sánh trong sapo / thân bài ("ngang một bữa cơm", "ít hơn bún bò") phải đúng với số trong bảng của chính bài.
+6d. KHÔNG KHUYÊN ĐIỀU KHÔNG CÓ SỐ: lời khuyên kiểu "chọn X vì ít calo hơn" chỉ viết khi bài có số của X; không có số thì nói đúng mức chắc chắn hoặc bỏ.
+7. Chủ đề sức khỏe (YMYL): không hứa kết quả, không khuyên nhịn đói cực đoan, nêu khi nào nên hỏi bác sĩ hoặc chuyên gia dinh dưỡng. Tách nhóm đối tượng cho đúng, không gộp chung một dòng: người có bệnh nền (cao huyết áp, thận, tim mạch, tiểu đường, gan) · phụ nữ mang thai hoặc cho con bú · trẻ em và người dưới 18 tuổi (nhu cầu dinh dưỡng riêng, không áp dụng mức ăn kiêng người lớn). Không đưa mức calo dưới 1200 kcal/ngày cho nữ hoặc 1500 kcal/ngày cho nam mà không có giám sát y tế.
 8. Nhắc Fipilot AI tối đa 1-2 lần, ở nửa sau bài, giọng hướng dẫn (ví dụ dùng app để ghi bữa và xem calo còn lại), không tự khen, không hard-sell.
 9. Ảnh: số chỗ ảnh theo phần CẤU HÌNH LẦN CHẠY. Mỗi chỗ một dòng riêng, đúng mẫu: [chèn ảnh ở đây: alt ảnh "<mô tả 8-12 từ tiếng Việt>"]. Chỉ mô tả thứ chụp được thật (món ăn, mâm cơm, nguyên liệu, người đang ăn hay đi bộ, cái cân, chai nước), KHÔNG mô tả bảng, biểu đồ, infographic, ảnh có chữ. Mô tả đúng nội dung ảnh ở đoạn đó, không nhồi từ khóa.
 10. FAQ chỉ khi có từ 3 câu hỏi riêng đáng giá: "## Câu hỏi thường gặp" rồi mỗi câu là "### <câu hỏi>" kèm trả lời 2-4 câu.
 11. Đoạn chốt cuối là một đoạn văn không heading "Kết luận/Tóm lại/Tổng kết", không mở bằng "Tóm lại", "Nhìn chung", "Có thể thấy". Đoạn chốt phải thêm giá trị mới: ai nên/không nên, việc làm tiếp theo, hoặc cảnh báo.
-12. Cấm: dấu gạch dài (— hoặc –) và gạch nối tách mệnh đề trong văn, emoji, đường kẻ ngang, nhãn nội bộ (Insight, Trade-off...), "đóng vai trò quan trọng", "giúp nâng cao hiệu quả", "đáp ứng nhu cầu", "trong bối cảnh hiện nay", "Hy vọng bài viết...", nhịp "Thứ nhất/Thứ hai/Thứ ba" máy móc, lạm dụng "Ngoài ra/Bên cạnh đó/Hơn nữa".
-13. Giọng: tiếng Việt tự nhiên, ngắn gọn, trực diện, như chuyên gia tư vấn thực tế. Ưu tiên rõ ý hơn văn vẻ. Từ khóa chính xuất hiện tự nhiên ở SEO Title, Description, Slug, tiêu đề, sapo và ít nhất 1 H2, không nhồi.`;
+12. Cấm: dấu gạch dài (— hoặc –) và gạch nối tách mệnh đề trong văn, emoji, đường kẻ ngang, nhãn nội bộ (Insight, Trade-off...), "đóng vai trò quan trọng", "giúp nâng cao hiệu quả", "đáp ứng nhu cầu", "trong bối cảnh hiện nay", "Hy vọng bài viết...", nhịp "Thứ nhất/Thứ hai/Thứ ba" máy móc, lạm dụng "Ngoài ra/Bên cạnh đó/Hơn nữa". Cấm văn dịch: "mặc định" (by default), danh từ hoá "sự + tính từ/động từ" ("sự đơn điệu thực phẩm"), "không cấm với ai", "biến X thành Y", "phụ thuộc vào việc", "đóng góp vào", "mang lại", "một cách + tính từ". Không mở nhiều đoạn / mục bằng cùng một kiểu câu (ví dụ "Phở là..." lặp lại).
+13. Giọng: tiếng Việt tự nhiên như người Việt nói chuyện, câu chủ động, ngắn gọn, trực diện, như chuyên gia tư vấn thực tế. Ưu tiên rõ ý hơn văn vẻ. Từ khóa chính xuất hiện tự nhiên ở SEO Title, Description, Slug, tiêu đề, sapo và ít nhất 1 H2, không nhồi.`;
 
 // Phần máy tự ghép sau bộ quy tắc: bối cảnh web + khuôn đầu ra + số ảnh (không cho sửa, để máy đọc được kết quả)
 export function runConfig({ inlineImages = 1 } = {}) {
@@ -29,7 +33,7 @@ export function runConfig({ inlineImages = 1 } = {}) {
   return `${SITE_CTX}
 
 CẤU HÌNH LẦN CHẠY
-- Ảnh bìa: 1 (ghi ở dòng "Ảnh bìa:"), chỗ ảnh trong thân bài: đúng ${n}.
+- Ảnh bìa: 1 (ghi ở dòng "Ảnh bìa:"), chỗ ảnh trong thân bài: đúng ${n}. Chỗ ảnh đầu tiên đặt sau H2 đầu tiên, không đặt ngay sau sapo (ảnh bìa đã ở đầu bài); các chỗ ảnh rải đều, không liền nhau.
 
 ĐẦU RA (đúng thứ tự, đúng nhãn, không thêm gì khác, không bọc trong khối code):
 SEO Title: <50-65 ký tự, chứa từ khóa chính tự nhiên, không "tốt nhất", "mới nhất", "chính xác nhất">
@@ -78,6 +82,49 @@ Số liệu đã kiểm:
   ].filter(Boolean).join("\n\n");
 }
 export const pickCategory = (notes, cats = []) => { const m = String(notes || "").match(/^\s*Chuyên mục:\s*([a-z0-9-]+)/im); return m ? cats.find((c) => c.slug === m[1]) || null : null; };
+
+// ---- Soát bài (bước sau khi viết): 1 lượt AI đọc bài + ghi chú tra cứu + bảng calo app, liệt kê lỗi → AI viết sửa đúng chỗ ----
+// Máy gợi ý trước: câu nhắc món có trong bảng app mà số kcal khác mọi khẩu phần của app (chỉ là gợi ý cho bước soát, không tự sửa)
+export function caloHints(md, foods = "") {
+  const app = {};
+  for (const l of String(foods || "").split("\n")) { const c = l.split("|").map((x) => x.trim()); if (c.length >= 4 && c[0]) (app[c[0].toLowerCase()] ||= new Set()).add(Number(c[3])); }
+  const out = [];
+  for (const sen of String(md || "").replace(/\n+/g, " ").split(/(?<=[.!?])\s+/)) {
+    const low = sen.toLowerCase();
+    for (const [name, set] of Object.entries(app)) {
+      if (!low.includes(name)) continue;
+      const nums = [...low.matchAll(/(\d[\d.]*)\s*(?:đến|-|–)?\s*(\d[\d.]*)?\s*kcal/g)].flatMap((m) => [m[1], m[2]].filter(Boolean)).map((x) => Number(x.replace(/\./g, "")));
+      const bad = nums.filter((n) => n > 50 && ![...set].some((v) => Math.abs(v - n) <= 5));
+      if (bad.length) out.push(`"${sen.trim().slice(0, 220)}" (số app của ${name}: ${[...set].join(" / ")} kcal)`);
+    }
+    if (out.length >= 10) break;
+  }
+  return [...new Set(out)];
+}
+export function reviewPrompt({ article = "", research = "", foods = "", hints = [] } = {}) {
+  return [
+    "Bạn là biên tập viên soát bài dinh dưỡng tiếng Việt. ĐỌC bài dưới đây và CHỈ liệt kê lỗi thật, không viết lại bài.",
+    `Soát đúng 6 loại lỗi:
+1. so-mau-thuan: cùng một món / một thứ mà bài nêu các số khác nhau không giải thích; món có trong BẢNG CALO APP mà bài dùng số khác làm số chính; câu so sánh không khớp số trong bảng của bài.
+2. so-khong-nguon: con số không có trong GHI CHÚ TRA CỨU và không phải bảng app, hoặc nguồn mơ hồ ("nhiều trang", "thực tế", "chuyên gia" không tên).
+3. khuyen-khong-so: lời khuyên chọn món / cách ăn dựa trên so sánh mà bài không có số chứng minh.
+4. van-dich: câu dịch, danh từ hoá ("sự ..."), "mặc định", "biến X thành", "phụ thuộc vào việc", câu lủng củng, nhiều đoạn mở cùng một kiểu câu.
+5. doi-tuong: gộp nhóm đối tượng sai (ví dụ trẻ dưới 18 tuổi chung với người bệnh thận), lời khuyên y tế quá đà.
+6. sai-su-that: điều sai với kiến thức dinh dưỡng phổ biến.`,
+    `Trả lời đúng khuôn, mỗi lỗi 1 dòng, tối đa 15 dòng:
+- [loại] "trích NGUYÊN VĂN đoạn lỗi (ngắn)" => cách sửa cụ thể (số đúng lấy từ đâu, hoặc bỏ, hoặc câu viết lại)
+Không có lỗi thì trả đúng 1 dòng: KHÔNG CÓ LỖI`,
+    foods && `BẢNG CALO APP (món | khẩu phần | gram | kcal | đạm | tinh bột | béo):\n${foods}`,
+    research && `GHI CHÚ TRA CỨU (nguồn hợp lệ duy nhất ngoài bảng app):\n${research}`,
+    hints.length && `Máy thấy các câu có thể lệch số app (kiểm lại, chỉ báo nếu đúng là lỗi):\n${hints.map((h) => "- " + h).join("\n")}`,
+    `BÀI CẦN SOÁT:\n${article}`,
+  ].filter(Boolean).join("\n\n");
+}
+export function parseReview(text) {
+  if (/^\s*KHÔNG CÓ LỖI\s*$/im.test(text) && !/^\s*-\s*\[/m.test(text)) return [];
+  return String(text || "").split("\n").map((l) => l.trim()).filter((l) => /^-\s*\[[^\]]+\]/.test(l)).map((l) => l.replace(/^-\s*/, "").slice(0, 400)).slice(0, 15);
+}
+export const fixPrompt = (issues, article) => `Bài dưới đây còn các lỗi (mỗi dòng: [loại] "đoạn lỗi" => cách sửa):\n${issues.map((x) => "- " + x).join("\n")}\n\nSửa ĐÚNG các lỗi đó theo cách sửa đã ghi, giữ nguyên phần còn lại (giữ nguyên link nội bộ, chỗ ảnh, bảng), trả lại TOÀN BỘ bài đúng ĐẦU RA.\n\n${article}`;
 
 // ---- Link nội bộ ----
 // Danh sách đích được phép (máy lập): trang chủ · chuyên mục · trang liên quan (công cụ, bảng calo, trang calo món) · bài cùng chủ đề.
@@ -285,7 +332,9 @@ export const IMG_MODEL = { flux: "fal-ai/flux/schnell", gemini: "gemini-2.5-flas
 export const textCost = (model, inTok, outTok, searches = 0) => { const p = TEXT_PRICE[model] || TEXT_PRICE["claude-sonnet-5-5"]; return (inTok * p.in + outTok * p.out) / 1e6 + searches * SEARCH_PRICE[providerOf(model)]; };
 // Ước tính tiền chữ 1 bài khi chưa có bài thật: ~25 nghìn token vào (quy tắc + ghi chú tra cứu, cả các đoạn viết tiếp), ~8 nghìn token ra
 export const estText = (model, searches = 3) => textCost(model, 25000, 8000, searches);
+// Ước tính tiền soát 1 bài: đọc ~12 nghìn token (bài + ghi chú + bảng calo), ra ~1,2 nghìn; có lỗi thì cộng 1 lượt viết sửa (~20 nghìn vào, 7 nghìn ra) bằng mô hình viết
+export const estReview = (model, writeModel = model) => textCost(model, 12000, 1200) + textCost(writeModel, 20000, 7000);
 
 // Cài đặt mặc định của màn AI viết bài
-export const AI_DEFAULTS = { provider: "claude", model: "claude-sonnet-5-5", key_mode: "shared", searches: 3, img_on: true, img_provider: "flux", img_inline: 1, img_reuse: true, rate: 26000, daily_cap_usd: 2, rules: null, publish: "draft", sched_times: ["08:00", "19:00"] };
+export const AI_DEFAULTS = { provider: "claude", model: "claude-sonnet-5-5", key_mode: "shared", searches: 3, img_on: true, img_provider: "flux", img_inline: 1, img_reuse: true, rate: 26000, daily_cap_usd: 2, rules: null, publish: "draft", sched_times: ["08:00", "19:00"], review_model: "claude-sonnet-5-5" }; // review_model "" = không soát
 export const cfgOf = (data) => { const c = { ...AI_DEFAULTS, ...(data || {}) }; c.provider = providerOf(c.model); return c; };

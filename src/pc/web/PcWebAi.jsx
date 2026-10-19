@@ -15,7 +15,7 @@ import { Btn, Pill, Card, ErrorBox, Loading, vnInt } from "../pcUI";
 import { Modal, Tog, inpStyle } from "./webUI";
 import { listTerms, getPost, savePost, getSite } from "./webApi";
 import { seoChecks } from "./webLib";
-import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE, estText, providerOf, postReady, nextSlot } from "./aiWrite";
+import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE, estText, estReview, providerOf, postReady, nextSlot } from "./aiWrite";
 import { PROVIDERS, MODELS as AI_MODELS, DEFAULT_MODEL } from "../../lib/aiModels";
 
 // Hãng viết: Claude / Gemini / ChatGPT (danh sách mô hình dùng chung với Kết nối AI); mọi hãng đều tra web được
@@ -27,21 +27,22 @@ const short = (m) => ALL_MODELS.find((x) => x.id === m)?.name || m || "";
 const IMGP = [["flux", "Flux nhanh (fal.ai)", "fal_key"], ["gemini", "Gemini", "gemini_key"], ["gpt", "ChatGPT (OpenAI)", "gpt_key"]];
 const ST = {
   queued: ["Đang chờ", "gray"], research: ["Đang tra cứu", "blue"], writing: ["Đang viết", "blue"], fixing: ["Đang sửa", "blue"],
-  images: ["Đang vẽ ảnh", "violet"], saving: ["Đang lưu", "blue"], done: ["Đã lưu nháp", "green"], error: ["Lỗi", "red"], canceled: ["Đã huỷ", "gray"],
+  review: ["Đang soát bài", "blue"], images: ["Đang vẽ ảnh", "violet"], saving: ["Đang lưu", "blue"], done: ["Đã lưu nháp", "green"], error: ["Lỗi", "red"], canceled: ["Đã huỷ", "gray"],
 };
-const OPEN = ["queued", "research", "writing", "fixing", "images", "saving"];
+const OPEN = ["queued", "research", "writing", "fixing", "review", "images", "saving"];
 // Tiến trình 1 bài (bấm dòng để mở): các bước theo state.log do web-writer ghi khi đổi bước
-const STEPS = [["queued", "Xếp hàng"], ["research", "Tra web, kiểm số liệu"], ["writing", "Viết bài"], ["fixing", "Sửa lỗi theo quy tắc"], ["images", "Vẽ / chọn ảnh"], ["saving", "Lưu bài, gắn thẻ, đăng"], ["done", "Xong"]];
+const STEPS = [["queued", "Xếp hàng"], ["research", "Tra web, kiểm số liệu"], ["writing", "Viết bài"], ["review", "Soát số liệu, câu văn"], ["fixing", "Sửa lỗi"], ["images", "Vẽ / chọn ảnh"], ["saving", "Lưu bài, gắn thẻ, đăng"], ["done", "Xong"]];
 const dur = (a, b) => { const s = Math.max(0, Math.round((new Date(b) - new Date(a)) / 1000)); return s < 60 ? `${s} giây` : `${Math.floor(s / 60)} phút ${s % 60 ? `${s % 60} giây` : ""}`.trim(); };
 function JobSteps({ j }) {
   const log = Array.isArray(j.log) ? j.log : [];
   const at = { queued: j.created_at }; for (const x of log) at[x.s] = x.at;
-  const shown = STEPS.filter(([k]) => k !== "fixing" || at.fixing || j.status === "fixing");
+  const shown = STEPS.filter(([k]) => (k !== "fixing" || at.fixing || j.status === "fixing") && (k !== "review" || at.review || j.status === "review" || Array.isArray(j.rvi)));
   const cur = ["error", "canceled"].includes(j.status) ? null : j.status;
   const reached = (k) => !!at[k] || k === cur;
   const detail = (k) => {
     if (k === "writing") return j.chunks ? `${j.chunks} phần${j.status === "writing" ? ", đang viết tiếp" : ""}` : "";
     if (k === "fixing") return j.fixc ? `${j.fixc} phần` : "";
+    if (k === "review") return Array.isArray(j.rvi) ? (j.rvi.length ? `${j.rvi.length} lỗi cần sửa` : "không thấy lỗi") : "";
     if (k === "images") { const n = Array.isArray(j.nimg) ? j.nimg.length : 0; return n ? `${n} ảnh${j.reused ? ` (${j.reused} dùng lại)` : ""}` : ""; }
     if (k === "research") return j.searches ? `${j.searches} lượt tra web` : "";
     if (k === "done" && j.links) { const l = j.links; return `Link nội bộ ${l.total}: trang chủ ${l.home} · chuyên mục ${l.cat} · trang liên quan ${l.page} · bài cùng chủ đề ${l.post}`; }
@@ -71,6 +72,12 @@ function JobSteps({ j }) {
         {j.status === "done" && detail("done") ? ` ${detail("done")}.` : ""}
         {!log.length && j.status === "done" ? " (bài viết trước khi có ghi tiến trình)" : ""}
       </span>
+      {Array.isArray(j.rvi) && j.rvi.length > 0 && (
+        <details data-testid="web-ai-review-list" style={{ fontSize: 12, color: PC.t2 }}>
+          <summary style={{ cursor: "pointer", fontWeight: 700 }}>Lỗi bước soát đã tìm ({j.rvi.length}), AI đã sửa theo danh sách này</summary>
+          <ul style={{ margin: "6px 0 0", paddingLeft: 18, display: "flex", flexDirection: "column", gap: 3 }}>{j.rvi.map((x, i) => <li key={i}>{x}</li>)}</ul>
+        </details>
+      )}
     </div>
   );
 }
@@ -115,7 +122,7 @@ export function PcWebAi({ top, showToast, user, go }) {
     try {
       const [c, j, t, d] = await Promise.all([
         supabase.from("web_ai_config").select("data").eq("id", 1).maybeSingle(),
-        supabase.from("web_ai_jobs").select("id,keyword,term_id,model,status,post_id,in_tok,out_tok,searches,images,reused,cost_text,cost_img,error,attempts,created_at,updated_at,finished_at,warn:state->warn,note:state->published->>note,log:state->log,chunks:state->draft->chunks,fixc:state->fix->chunks,nimg:state->imgs,links:state->linkStats,post:web_posts(status,published_at,slug,score:seo->score)").gte("created_at", monthStart(ym)).lt("created_at", monthStart(nextMonth(ym))).order("created_at", { ascending: false }),
+        supabase.from("web_ai_jobs").select("id,keyword,term_id,model,status,post_id,in_tok,out_tok,searches,images,reused,cost_text,cost_img,error,attempts,created_at,updated_at,finished_at,warn:state->warn,note:state->published->>note,log:state->log,chunks:state->draft->chunks,fixc:state->fix->chunks,nimg:state->imgs,links:state->linkStats,rvi:state->review->issues,post:web_posts(status,published_at,slug,score:seo->score)").gte("created_at", monthStart(ym)).lt("created_at", monthStart(nextMonth(ym))).order("created_at", { ascending: false }),
         listTerms("category"),
         supabase.from("web_ai_jobs").select("cost_text,cost_img").gte("updated_at", new Date(`${todayVN()}T00:00:00+07:00`).toISOString()),
       ]);
@@ -142,8 +149,8 @@ export function PcWebAi({ top, showToast, user, go }) {
   const estFor = useCallback((model) => {
     const done = (jobs || []).filter((j) => j.status === "done" && j.model === model);
     if (done.length) return { v: done.reduce((s, j) => s + Number(j.cost_text), 0) / done.length, real: done.length };
-    return { v: estText(model, cfg?.searches ?? 3), real: 0 };
-  }, [jobs, cfg?.searches]);
+    return { v: estText(model, cfg?.searches ?? 3) + (cfg?.review_model ? estReview(cfg.review_model, model) : 0), real: 0 };
+  }, [jobs, cfg?.searches, cfg?.review_model]);
   const imgEst = cfg ? (cfg.img_on ? (1 + (cfg.img_inline || 0)) * IMG_PRICE[cfg.img_provider || "flux"] : 0) : 0;
 
   const stats = useMemo(() => {
@@ -232,6 +239,8 @@ export function PcWebAi({ top, showToast, user, go }) {
   const imgKey = keySt[imgP[2]];
   const keyOk = cfg.key_mode === "own" ? keyOwn : keyShared;
   const est = estFor(cfg.model);
+  const rvOn = !!cfg.review_model, rvProv = providerOf(cfg.review_model || "");
+  const rvKey = (cfg.key_mode === "own" && keySt[`${rvProv}_writer_key`]?.set) || keySt[`${rvProv}_key`]?.set; // giống máy chủ: khoá riêng nếu có, không thì khoá chung
   const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(`${todayVN().slice(0, 7)}-15T00:00:00+07:00`); d.setUTCMonth(d.getUTCMonth() - i); return d.toISOString().slice(0, 7); });
   const statC = [
     ["Chi phí tháng này", vndOf(stats.total), `${usd(stats.total)} · chữ ${vnInt(stats.text * rate)} · ảnh ${vnInt(stats.img * rate)}`, <><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M16 15h2" /></>],
@@ -420,6 +429,19 @@ export function PcWebAi({ top, showToast, user, go }) {
                   <button type="button" aria-label="Thêm 1 lượt" data-testid="web-ai-search-plus" onClick={() => setC({ searches: Math.min(10, cfg.searches + 1) })} style={{ width: 42, height: 36, border: 0, background: "#FFF", fontSize: 16, fontWeight: 800, cursor: "pointer" }}>+</button>
                 </span>
               </div>
+            </Card>
+
+            <Card style={card} testid="web-ai-review">
+              <h3 style={h3}>Soát bài sau khi viết{rvOn && <span style={{ marginLeft: "auto" }}><Pill tone={rvKey ? "green" : "red"}>{rvKey ? `✓ Có khoá ${PNAME[rvProv]}` : `Chưa có khoá ${PNAME[rvProv]}`}</Pill></span>}</h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, fontSize: 13 }}><span>AI soát số liệu và câu văn</span><Tog on={rvOn} onChange={(v) => setC({ review_model: v ? "claude-sonnet-5-5" : "" })} testid="web-ai-review-on" /></div>
+              {rvOn && <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, fontSize: 13, marginTop: 10 }}><span style={{ whiteSpace: "nowrap" }}>Mô hình soát</span>
+                  <select value={cfg.review_model} onChange={(e) => setC({ review_model: e.target.value })} data-testid="web-ai-review-model" style={{ ...inpStyle(32), width: "auto", maxWidth: 210, fontWeight: 700 }}>
+                    {PROVIDERS.map((p) => <optgroup key={p.id} label={PNAME[p.id]}>{ALL_MODELS.filter((m) => m.p === p.id).map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</optgroup>)}
+                  </select></div>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6, fontSize: 12, color: PC.t3 }}>~{vndOf(estReview(cfg.review_model, cfg.model))}/bài (ước tính, gồm 1 lượt sửa nếu có lỗi)</div>
+                <div style={{ ...sub, marginTop: 8 }}>Đọc bài cùng ghi chú tra cứu và bảng calo của app, tìm: số mâu thuẫn, số không nguồn, lời khuyên không có số, câu văn dịch, gộp sai nhóm đối tượng. Có lỗi thì mô hình viết sửa đúng chỗ rồi mới vẽ ảnh. Khoá lấy theo cách chọn ở "Khoá API" (chung / riêng) của hãng soát.</div>
+              </>}
             </Card>
 
             <Card style={card} testid="web-ai-rules">

@@ -44,6 +44,11 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data.model).toBe("gemini-3.8-flash");
     await page.getByTestId("web-ai-img-prov").selectOption("gpt");
     await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data.img_provider).toBe("gpt");
+    await page.getByTestId("web-ai-review-model").selectOption("claude-haiku-5-5"); // mô hình soát bài chọn riêng
+    await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data.review_model).toBe("claude-haiku-5-5");
+    await page.getByTestId("web-ai-review-on").click(); // tắt soát
+    await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data.review_model).toBe("");
+    await expect(page.getByTestId("web-ai-review-model")).toHaveCount(0);
     await page.getByTestId("web-ai-pub-sched").click();
     await page.getByTestId("web-ai-sched-times").fill("07:30, 20:00");
     await page.getByTestId("web-ai-sched-times").blur();

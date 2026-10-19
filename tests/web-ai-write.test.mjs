@@ -113,3 +113,15 @@ test("link nội bộ: chỉ giữ đích trong danh sách, mỗi đích 1 lần
   assert.deepEqual(linkStats(b, L), { total: 2, home: 1, cat: 0, page: 1, post: 0 });
   assert.equal(mb("Sapo.\n\nĐoạn [a](/)")[1].html, "Đoạn a"); // không có danh sách đích → bỏ hết link
 });
+
+test("soát bài: máy gợi câu lệch số app, đọc danh sách lỗi, quy tắc mới có 5 luật số liệu + ảnh không ngay sau sapo", async () => {
+  const m = await import("../src/pc/web/aiWrite.js");
+  const foods = "phở bò | tô vừa | 500 | 340 | 20 | 50 | 8\nphở bò | tô nhỏ | 350 | 255 | 15 | 38 | 6";
+  const h = m.caloHints("Một tô phở bò vừa khoảng 340 kcal. Thực tế phở bò 400-600 kcal tùy tô. Phở bò tô nhỏ 255 kcal.", foods);
+  assert.equal(h.length, 1); assert.match(h[0], /400-600 kcal[\s\S]*340 \/ 255/);
+  assert.deepEqual(m.parseReview('Đây là lỗi:\n- [van-dich] "mặc định gây béo" => "không làm bạn béo"\n- [so-khong-nguon] "2 cái quẩy 150-200 kcal" => bỏ'), ['[van-dich] "mặc định gây béo" => "không làm bạn béo"', '[so-khong-nguon] "2 cái quẩy 150-200 kcal" => bỏ']);
+  assert.deepEqual(m.parseReview("KHÔNG CÓ LỖI"), []);
+  for (const k of ["6a. MỘT SỐ CHÍNH", "6b. SỐ NÀO CŨNG CÓ NGUỒN", "6c. SO SÁNH PHẢI KHỚP BẢNG", "6d. KHÔNG KHUYÊN ĐIỀU KHÔNG CÓ SỐ", "trẻ em và người dưới 18 tuổi", "Cấm văn dịch"]) assert.ok(m.RULES_DEFAULT.includes(k), k);
+  assert.match(m.runConfig({ inlineImages: 2 }), /không đặt ngay sau sapo/);
+  assert.equal(m.AI_DEFAULTS.review_model, "claude-sonnet-5-5");
+});

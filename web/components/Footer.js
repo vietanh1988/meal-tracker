@@ -16,6 +16,7 @@ export default async function Footer({ s, menus }) {
   const c = s.contact || {};
   const foods = [];
   for (const k of f.popular_foods || []) { const fd = await getFood(k); if (fd) foods.push({ fd, por: mainPortion(fd) }); }
+  const pho = mainPortion(await getFood("phở bò")); // số trên khung trang trí = số kho món app (khớp bài viết, trang /calo)
   const year = new Date().getFullYear();
   const zalo = c.zalo || (c.phone ? `https://zalo.me/${c.phone.replace(/\s/g, "")}` : "");
   const social = [["Facebook", "f", "#1877F2", c.facebook && safeUrl(c.facebook)], ["Zalo", "Z", "#0068FF", zalo]].filter((x) => x[3]);
@@ -35,7 +36,7 @@ export default async function Footer({ s, menus }) {
               <span className="fx-ring" aria-hidden="true" />
               <Phone className="fx-ph" dark src="/img/app-today.webp" alt="Màn Hôm nay của app Fipilot AI: calo còn lại, bữa sắp tới" />
               <img className="fx-bowl" src="/img/bowl-pho.jpg" alt="Tô phở bò tái — món Việt vẫn ăn được khi giảm cân" width={150} height={150} loading="lazy" decoding="async" />
-              <span className="fx-chip"><img src="/img/bowl-pho.jpg" alt="" aria-hidden="true" width={36} height={36} loading="lazy" decoding="async" /><span><b>Phở bò tái</b><i>Bữa sáng · 420 kcal</i></span><em>✓</em></span>
+              <span className="fx-chip"><img src="/img/bowl-pho.jpg" alt="" aria-hidden="true" width={36} height={36} loading="lazy" decoding="async" /><span><b>Phở bò</b><i>Bữa sáng · {pho?.cal ?? 340} kcal</i></span><em>✓</em></span>
             </div>
           </div>
         </div>

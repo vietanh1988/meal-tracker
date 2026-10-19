@@ -2,6 +2,7 @@
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
   imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable, linkTargets, linkStats,
+  caloHints, reviewPrompt, parseReview, fixPrompt,
 } from "./aiWrite.js";
 
 export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
@@ -183,6 +184,7 @@ async function step(admin, job, cfg, t0) {
   const cats = (await admin.from("web_terms").select("id,name,slug").eq("kind", "category").order("sort")).data || [];
   const term = cats.find((c) => c.id === job.term_id);
   const sys = () => systemPrompt(cfg.rules, { inlineImages: cfg.img_on ? cfg.img_inline : 0 });
+  const afterText = (reviewed) => (cfg.review_model && !reviewed ? "review" : cfg.img_on ? "images" : "saving"); // viết xong → soát (nếu bật) → ảnh → lưu
 
   if (job.status === "queued") { await save({ status: cfg.searches > 0 || job.auto_term ? "research" : "writing" }); return true; }
 
@@ -217,7 +219,7 @@ async function step(admin, job, cfg, t0) {
       const related = ((await admin.from("web_posts").select("title").eq("kind", "post").neq("status", "trash").order("updated_at", { ascending: false }).limit(30)).data || []).map((p) => p.title);
       base = [{ role: "user", content: buildUserPrompt({ keyword: job.keyword, category: term?.name || "", notes: job.notes || "", research: st.research || "", related, foods: st.foods || "", links: st.links || [], tags: st.tagNames || [] }) }];
     } else {
-      base = [{ role: "user", content: `Bài dưới đây còn các lỗi: ${(st.issues || []).join("; ")}.\nSửa ĐÚNG các lỗi đó, giữ nguyên phần còn lại, trả lại TOÀN BỘ bài đúng ĐẦU RA.\n\n${st.draft?.text || ""}` }];
+      base = [{ role: "user", content: fixPrompt(st.issues || [], st.final || st.draft?.text || "") }];
     }
     const msgs = g.text ? [...base, { role: "assistant", content: g.text }, { role: "user", content: "Viết tiếp đúng chỗ đang dừng, không lặp lại, không thêm lời dẫn." }] : base;
     const r = await llm(prov, await keys(), { model: job.model, maxTokens: CHUNK_TOKENS, system: sys(), messages: msgs });
@@ -230,15 +232,33 @@ async function step(admin, job, cfg, t0) {
       const iss = articleIssues(a, mdToBlocks(a.md), { inlineImages: cfg.img_on ? cfg.img_inline : null });
       if (kind === "draft" && iss.hard.length) { patch.status = "fixing"; (patch.state).issues = iss.hard; }
       else {
-        // Bản sửa hỏng (quá ngắn) thì giữ bản viết đầu; còn lại dùng bản vừa xong
+        // Bản sửa hỏng (quá ngắn) thì giữ bản trước; còn lại dùng bản vừa xong
         const useFix = kind === "draft" || a.md.length > 400;
-        const fin = useFix ? ng.text : st.draft.text;
+        const fin = useFix ? ng.text : st.final || st.draft.text;
         const fa = parseArticle(fin);
-        patch.status = cfg.img_on ? "images" : "saving";
+        patch.status = afterText(st.reviewed);
         Object.assign(patch.state, { final: fin, warn: articleIssues(fa, mdToBlocks(fa.md), { inlineImages: cfg.img_on ? cfg.img_inline : null }).all });
       }
     }
     await save(patch);
+    return false;
+  }
+
+  // Soát bài: mô hình soát (cài đặt "Soát bài") đọc bài + ghi chú tra cứu + bảng calo app → danh sách lỗi; có lỗi thì 1 lượt viết sửa
+  if (job.status === "review") {
+    const rm = cfg.review_model;
+    const rp = providerOf(rm);
+    const a = parseArticle(st.final);
+    const r = await llm(rp, await keysFor(admin, cfg, rp), {
+      model: rm, maxTokens: 2000, system: "Bạn là biên tập viên soát bài, chỉ liệt kê lỗi đúng khuôn, tiếng Việt.",
+      messages: [{ role: "user", content: reviewPrompt({ article: `Tiêu đề: ${a.title}\n\n${a.md}`, research: st.research || "", foods: st.foods || "", hints: caloHints(a.md, st.foods || "") }) }],
+    });
+    const cost = textCost(rm, r.inTok, r.outTok, r.searches);
+    await logUsage(admin, job.created_by, rp, rm, r.inTok, r.outTok, cost, "web_review");
+    const issues = parseReview(r.text);
+    const nst = { ...st, reviewed: true, review: { model: rm, issues } };
+    if (issues.length) { nst.issues = issues; nst.fix = null; }
+    await save({ in_tok: job.in_tok + r.inTok, out_tok: job.out_tok + r.outTok, cost_text: Number(job.cost_text) + cost, state: nst, status: issues.length ? "fixing" : afterText(true) });
     return false;
   }
 
@@ -335,7 +355,7 @@ async function tick() {
     while (go && Date.now() - t0 < BUDGET_MS && !["done", "error", "canceled"].includes(job.status)) {
       const cur = (await admin.from("web_ai_jobs").select("status").eq("id", job.id).single()).data;
       if (cur?.status === "canceled") break; // admin bấm Huỷ giữa chừng
-      if (["research", "writing", "fixing"].includes(job.status) && Date.now() - t0 > 20_000) break; // bước gọi AI lâu: để lần sau
+      if (["research", "writing", "fixing", "review"].includes(job.status) && Date.now() - t0 > 20_000) break; // bước gọi AI lâu: để lần sau
       go = await step(admin, job, cfg, t0);
     }
     await admin.from("web_ai_jobs").update({ locked_until: null, attempts: 0 }).eq("id", job.id);

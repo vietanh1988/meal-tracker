@@ -40,7 +40,7 @@ const ARTICLE = ["SEO Title: Bữa sáng giảm cân với món Việt dễ làm
   "**Bữa sáng giảm cân nên có đạm, rau và ít tinh bột tinh chế.** " + "Chữ ".repeat(120), "", "## Nên ăn gì?", "Trứng và bánh mì nguyên cám.", "", "[chèn ảnh ở đây: alt ảnh \"đĩa trứng luộc và bánh mì nguyên cám buổi sáng\"]", "", "## Bao nhiêu calo?", "Khoảng 350 đến 450 kcal.", "", "| Món | Calo |", "|---|---|", "| Phở gà | 400 |", "", "## Sai lầm hay gặp", "Bỏ bữa sáng.", "",
   "Image Prompts:", "1. A bowl of Vietnamese chicken pho with herbs", "2. Boiled eggs and whole wheat bread on a plate"].join("\n");
 
-function setup({ cfg = {}, media = [], text = ARTICLE, writes = null } = {}) {
+function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "KHÔNG CÓ LỖI" } = {}) {
   const tables = {
     web_ai_config: [{ id: 1, data: { searches: 2, img_inline: 1, ...cfg } }],
     app_settings: [{ key: "claude_key", value: "sk-ant-test-xxxxxxxxxxxxxxxxxxxxxxxx" }, { key: "fal_key", value: "fal-test-xxxxxxxxxxxxxxxxxxxx" }],
@@ -58,6 +58,7 @@ function setup({ cfg = {}, media = [], text = ARTICLE, writes = null } = {}) {
   const fetch = async (url, opt = {}) => {
     if (String(url).includes("anthropic")) {
       const body = JSON.parse(opt.body); calls.claude.push(body);
+      if (/soát bài/.test(body.system || "")) { calls.review = (calls.review || 0) + 1; return new Response(JSON.stringify({ content: [{ type: "text", text: review }], stop_reason: "end_turn", usage: { input_tokens: 2000, output_tokens: 100 } })); }
       if (body.tools) return new Response(JSON.stringify({ content: [{ type: "text", text: "Để tôi tra." }, { type: "server_tool_use" }, { type: "web_search_tool_result" }, { type: "text", text: "Chuyên mục: thuc-don\nÝ định tìm kiếm: chọn món sáng.\nSố liệu đã kiểm:\n- Trứng 6g đạm (nguồn: USDA)" }], stop_reason: "end_turn", usage: { input_tokens: 3000, output_tokens: 400, server_tool_use: { web_search_requests: 2 } } }));
       if (writes) { const x = writes[chunk++]; return new Response(JSON.stringify({ content: [{ type: "text", text: x.text }], stop_reason: x.stop || "end_turn", usage: { input_tokens: 1000, output_tokens: 1000 } })); }
       // Bài viết chia 2 đoạn: đoạn 1 dừng vì max_tokens
@@ -88,13 +89,14 @@ test("chạy hết 1 bài: tra cứu → viết 2 đoạn → vẽ 2 ảnh → l
   const j = tables.web_ai_jobs[0];
   assert.equal(j.status, "done", JSON.stringify({ s: j.status, e: j.error }));
   assert.equal(j.term_id, "t1"); // AI tự chọn chuyên mục
-  assert.equal(calls.claude.length, 3); // 1 tra cứu + 2 đoạn viết
+  assert.equal(calls.claude.length, 4); // 1 tra cứu + 2 đoạn viết + 1 soát
+  assert.equal(calls.review, 1);
   assert.equal(calls.claude[0].tools[0].max_uses, 2);
   assert.equal(calls.claude[2].messages.length, 3); // đoạn 2 = viết tiếp
   assert.match(calls.claude[1].messages[0].content, /BẢNG CALO KHO MÓN FIPILOT[\s\S]*Bánh mì thịt \| ổ \| 150 \| 400/); // số calo của app đưa cho AI (món phổ biến bù khi bài ít nhắc món)
   assert.equal(calls.fal, 2); // ảnh bìa + 1 ảnh trong bài
-  assert.equal(j.searches, 2); assert.equal(j.in_tok, 13000); assert.equal(j.out_tok, 7400);
-  assert.ok(Math.abs(Number(j.cost_text) - ((13000 * 2 + 7400 * 10) / 1e6 + 0.02)) < 1e-9);
+  assert.equal(j.searches, 2); assert.equal(j.in_tok, 15000); assert.equal(j.out_tok, 7500);
+  assert.ok(Math.abs(Number(j.cost_text) - ((15000 * 2 + 7500 * 10) / 1e6 + 0.02)) < 1e-9);
   assert.ok(Math.abs(Number(j.cost_img) - 0.006) < 1e-9);
   const p = tables.web_posts[0];
   assert.equal(p.status, "draft"); assert.equal(p.slug, "bua-sang-giam-can"); assert.equal(p.primary_term, "t1");
@@ -137,7 +139,7 @@ test("bài thiếu sapo in đậm → nhờ AI sửa 1 lần rồi mới lưu", 
   tables.web_ai_jobs[0].auto_term = false; tables.web_ai_jobs[0].term_id = "t2";
   for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
   assert.equal(tables.web_ai_jobs[0].status, "done");
-  assert.equal(calls.claude.length, 2);
+  assert.equal(calls.claude.length, 3); // viết + sửa + soát
   assert.match(calls.claude[1].messages[0].content, /Sapo chưa bôi đậm/);
   assert.match(tables.web_posts[0].blocks[0].html, /<b>/);
   assert.equal(tables.web_posts[0].cover_url, null);
@@ -145,7 +147,7 @@ test("bài thiếu sapo in đậm → nhờ AI sửa 1 lần rồi mới lưu", 
 
 // Gemini / ChatGPT: cùng luồng, khác cách gọi API
 function setupProv(model, imgProvider) {
-  const env = setup({ cfg: { model, img_provider: imgProvider, searches: 2 } });
+  const env = setup({ cfg: { model, img_provider: imgProvider, searches: 2, review_model: "" } });
   env.tables.app_settings.push({ key: "gemini_key", value: "AIza-test-xxxxxxxxxxxxxxxxxxxx" }, { key: "gpt_key", value: "sk-test-xxxxxxxxxxxxxxxxxxxxxxxx" });
   env.tables.web_ai_jobs[0].model = model;
   const calls = []; let n = 0;
@@ -233,6 +235,40 @@ test("link nội bộ + thẻ có sẵn + dòng tiến trình: AI nhận danh s�
   for (const u of ["/tinh-calo", "/bmr-la-gi", "/chu-de/thuc-don", "/"]) assert.ok(html.includes(`href="${u}"`), u);
   assert.ok(!/x\.com|khong-co/.test(html)); assert.match(html, /web lạ/); // link lạ: bỏ link, giữ chữ
   assert.deepEqual(j.state.linkStats, { total: 4, home: 1, cat: 1, page: 1, post: 1 });
-  assert.deepEqual(j.state.log.map((x) => x.s), ["research", "writing", "images", "saving", "done"]);
+  assert.deepEqual(j.state.log.map((x) => x.s), ["research", "writing", "review", "images", "saving", "done"]);
   assert.equal(tables.web_post_terms.filter((x) => x.term_id === "g1").length, 1); // dùng lại thẻ cũ
+});
+
+test("soát bài thấy lỗi → 1 lượt viết sửa đúng chỗ (giữ link) → mới vẽ ảnh; tiền soát tính theo mô hình soát", async () => {
+  const fixed = ARTICLE.replace("Khoảng 350 đến 450 kcal.", "Khoảng 400 kcal theo bảng calo của Fipilot AI.");
+  const review = '- [so-khong-nguon] "Khoảng 350 đến 450 kcal" => dùng số app phở gà 420 kcal\n- [van-dich] "Bỏ bữa sáng." => viết lại câu đầy đủ';
+  const { w, tables, calls } = setup({ cfg: { searches: 0, review_model: "claude-haiku-5-5" }, writes: [{ text: ARTICLE }, { text: fixed }], review });
+  tables.web_ai_jobs[0].auto_term = false; tables.web_ai_jobs[0].term_id = "t1";
+  for (let i = 0; i < 10 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  const j = tables.web_ai_jobs[0];
+  assert.equal(j.status, "done", j.error);
+  const rv = calls.claude.find((c) => /soát bài/.test(c.system || ""));
+  assert.equal(rv.model, "claude-haiku-5-5");
+  assert.match(rv.messages[0].content, /BẢNG CALO APP[\s\S]*Bánh mì thịt \| ổ \| 150 \| 400/);
+  const fix = calls.claude[calls.claude.length - 1];
+  assert.match(fix.messages[0].content, /\[so-khong-nguon\] "Khoảng 350 đến 450 kcal" => dùng số app/);
+  assert.match(fix.messages[0].content, /Khoảng 350 đến 450 kcal\./); // sửa trên bản đã viết
+  assert.deepEqual(j.state.review.issues.length, 2);
+  assert.deepEqual(j.state.log.map((x) => x.s), ["writing", "review", "fixing", "images", "saving", "done"]);
+  assert.ok(tables.web_posts[0].blocks.some((b) => /Khoảng 400 kcal theo bảng calo/.test(b.html || "")));
+  assert.ok(tables.ai_usage_log.some((l) => l.feature === "web_review" && l.model === "claude-haiku-5-5"));
+});
+
+test("soát bằng hãng khác (Gemini) dùng khoá Gemini; tắt soát (review_model rỗng) thì bỏ qua bước soát", async () => {
+  const off = setup({ cfg: { searches: 0, img_on: false, review_model: "" } });
+  off.tables.web_ai_jobs[0].auto_term = false;
+  for (let i = 0; i < 8 && off.tables.web_ai_jobs[0].status !== "done"; i++) await off.w.handle(req({ action: "tick", secret: "s3cret" }));
+  assert.equal(off.tables.web_ai_jobs[0].status, "done");
+  assert.ok(!off.tables.web_ai_jobs[0].state.log.some((x) => x.s === "review"));
+  assert.ok(!off.calls.review);
+  const g = setup({ cfg: { searches: 0, img_on: false, review_model: "gemini-3.8-flash" } });
+  g.tables.web_ai_jobs[0].auto_term = false;
+  for (let i = 0; i < 8 && g.tables.web_ai_jobs[0].status !== "review"; i++) await g.w.handle(req({ action: "tick", secret: "s3cret" }));
+  await g.w.handle(req({ action: "tick", secret: "s3cret" }));
+  assert.match(g.tables.web_ai_jobs[0].error || "", /Chưa có khoá Gemini/); // chưa nhập khoá Gemini → báo rõ, thử lại lần sau
 });
