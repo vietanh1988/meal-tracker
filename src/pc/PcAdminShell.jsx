@@ -77,12 +77,16 @@ const NAV_IC = {
 
 // Thứ tự + tên đúng bản vẽ 117. badge = khoá trong loadAdminCounts()
 export const PC_NAV = [
+  // 19/10 (chủ dự án duyệt): gom theo việc làm — việc hằng ngày đứng trên, việc cài một lần xuống dưới
   { group: "TỔNG QUAN", items: [{ id: "home", label: "Tổng quan" }] },
-  { group: "BÁN HÀNG", items: [{ id: "orders", label: "Đơn hàng", badge: "orders" }, { id: "report_biz", label: "Báo cáo kinh doanh" }, { id: "behavior", label: "Hành vi khách" }, { id: "users", label: "Người dùng" }, { id: "subscription_settings", label: "Gói cước & giới hạn" }] },
-  { group: "NỘI DUNG", items: [{ id: "feedback", label: "Góp ý", badge: "feedback" }, { id: "notify", label: "Gửi thông báo" }, { id: "templates", label: "Kho mẫu thực đơn" }, { id: "food_db", label: "Kho thực phẩm" }, { id: "food_cache_pending", label: "Duyệt món AI", badge: "pending" }] },
+  { group: "KHÁCH & ĐƠN", items: [{ id: "orders", label: "Đơn hàng", badge: "orders" }, { id: "feedback", label: "Góp ý", badge: "feedback" }, { id: "users", label: "Người dùng" }, { id: "notify", label: "Gửi thông báo" }] },
+  { group: "BÁO CÁO", items: [{ id: "report_biz", label: "Báo cáo kinh doanh" }, { id: "behavior", label: "Hành vi khách" }, { id: "web_stats", label: "Thống kê web" }, { id: "ai_cost", label: "Chi phí AI" }] },
+  { group: "DỮ LIỆU MÓN", items: [{ id: "food_cache_pending", label: "Duyệt món AI", badge: "pending" }, { id: "food_db", label: "Kho thực phẩm" }, { id: "templates", label: "Kho mẫu thực đơn" }] },
   // Quản trị web fipilotai.com (bản vẽ 138) — chỉ có trên PC, không thêm vào quản trị điện thoại
-  { group: "WEB & BÀI VIẾT", items: [{ id: "web_posts", label: "Bài viết" }, { id: "web_pages", label: "Trang" }, { id: "web_terms", label: "Chuyên mục & thẻ" }, { id: "web_calo", label: "Trang calo món" }, { id: "web_media", label: "Thư viện ảnh" }, { id: "web_blocks", label: "Khối dùng lại" }, { id: "web_menu", label: "Menu" }, { id: "web_authors", label: "Tác giả" }, { id: "web_stats", label: "Thống kê web" }, { id: "web_seo", label: "Cài đặt SEO" }, { id: "web_tools", label: "Công cụ" }, { id: "web_settings", label: "Cài đặt web" }] },
-  { group: "HỆ THỐNG", items: [{ id: "admin", label: "Phiên bản & thông báo" }, { id: "feature_flags", label: "Quản lý tính năng" }, { id: "ai", label: "Kết nối AI" }, { id: "ai_cost", label: "Chi phí AI" }, { id: "health", label: "Sức khoẻ & lỗi" }, { id: "audit_log", label: "Nhật ký admin" }, { id: "backup", label: "Sao lưu", superOnly: true }] },
+  { group: "WEB · NỘI DUNG", items: [{ id: "web_posts", label: "Bài viết" }, { id: "web_pages", label: "Trang" }, { id: "web_terms", label: "Chuyên mục & thẻ" }, { id: "web_calo", label: "Trang calo món" }, { id: "web_media", label: "Thư viện ảnh" }, { id: "web_blocks", label: "Khối dùng lại" }] },
+  { group: "WEB · CÀI ĐẶT", items: [{ id: "web_menu", label: "Menu" }, { id: "web_authors", label: "Tác giả" }, { id: "web_settings", label: "Cài đặt web" }, { id: "web_seo", label: "Cài đặt SEO" }, { id: "web_tools", label: "Công cụ" }] },
+  { group: "CÀI ĐẶT APP", items: [{ id: "subscription_settings", label: "Gói cước & giới hạn" }, { id: "feature_flags", label: "Quản lý tính năng" }, { id: "ai", label: "Kết nối AI" }, { id: "admin", label: "Phiên bản & thông báo" }] },
+  { group: "HỆ THỐNG", items: [{ id: "health", label: "Sức khoẻ & lỗi" }, { id: "audit_log", label: "Nhật ký admin" }, { id: "backup", label: "Sao lưu", superOnly: true }] },
 ];
 const SUB = {
   orders: "Duyệt đơn chuyển khoản, kích hoạt gói", report_biz: "Doanh thu, gói cước, người dùng", behavior: "Khách đi tới đâu, dùng gì, bỏ ở đâu", users: "Quản lý tài khoản, gói, quyền",
@@ -129,18 +133,18 @@ function SideNav({ section, go, counts, isSuperAdmin, user, profile, mini, onTog
         <button type="button" data-testid="pc-side-toggle" onClick={onToggle} className="pc-nav" aria-label={mini ? "Mở rộng thanh bên" : "Thu gọn thanh bên"} title={mini ? "Mở rộng thanh bên" : "Thu gọn thanh bên"} aria-expanded={!mini}
           style={{ width: 30, height: 30, borderRadius: 8, border: "none", background: "rgba(255,255,255,0.10)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}>{chevSvg(!mini)}</button>
       </div>
-      {PC_NAV.map((g) => {
+      {PC_NAV.map((g, gi) => {
         const items = g.items.filter((i) => !i.superOnly || isSuperAdmin);
         const hasOn = items.some((i) => i.id === section);
         const shut = !mini && closed.includes(g.group) && !hasOn;
         const sum = shut ? items.reduce((a, i) => a + (i.badge ? counts[i.badge] || 0 : 0), 0) : 0;
         const gid = g.group.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-");
         return (
-        <div key={g.group} data-testid={`pc-group-${gid}`} data-open={shut ? "0" : "1"} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <div key={g.group} data-testid={`pc-group-${gid}`} data-open={shut ? "0" : "1"} style={{ display: "flex", flexDirection: "column", gap: 2, ...(gi > 0 && !mini ? { borderTop: "1px solid rgba(255,255,255,0.10)", marginTop: 6, paddingTop: 6 } : {}) }}>
           {mini ? <span aria-hidden="true" style={{ height: 1, background: "rgba(255,255,255,0.14)", margin: "8px 8px" }} /> : (
             <button type="button" data-testid={`pc-group-btn-${gid}`} className="pc-nav pc-grp" onClick={() => toggleGroup(g.group)} aria-expanded={!shut} title={hasOn ? "Nhóm đang mở trang hiện tại" : shut ? "Bấm để mở nhóm" : "Bấm để thu gọn nhóm"}
-              style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: "none", background: "transparent", color: "#FFFFFF", fontFamily: "inherit", cursor: hasOn ? "default" : "pointer", fontSize: 10, fontWeight: 800, letterSpacing: ".1em", padding: "10px 10px 4px 10px", borderRadius: 8, textAlign: "left", whiteSpace: "nowrap" }}>
-              <span style={{ opacity: 0.55 }}>{g.group}</span>
+              style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: "none", background: "transparent", color: "#BFD4FF", fontFamily: "inherit", cursor: hasOn ? "default" : "pointer", fontSize: 11.5, fontWeight: 800, letterSpacing: ".06em", padding: "8px 10px 6px 10px", borderRadius: 8, textAlign: "left", whiteSpace: "nowrap" }}>
+              <span>{g.group}</span>
               {shut && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0, opacity: 0.55 }}>· {items.length}</span>}
               {sum > 0 && <span data-testid={`pc-group-badge-${gid}`} style={{ fontSize: 10, fontWeight: 900, letterSpacing: 0, background: PC.badge, color: PC.badgeFg, padding: "0 6px", borderRadius: 999, lineHeight: "16px" }}>{sum > 99 ? "99+" : sum}</span>}
               <span aria-hidden="true" style={{ marginLeft: "auto", opacity: hasOn ? 0.25 : 0.6, display: "inline-flex", transform: shut ? "rotate(-90deg)" : "none", transition: "transform .15s ease" }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg></span>
