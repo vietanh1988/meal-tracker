@@ -28,7 +28,7 @@ const sim = (a, b) => { const g = (s) => { const x = slugify(s).replace(/-/g, ""
 const SRC = { manual: "Thêm tay", slug_change: "Tự tạo khi đổi đường dẫn", permalink: "Tự tạo khi đổi kiểu đường dẫn", calo_off: "Tự tạo khi tắt trang calo", import: "Nhập từ CSV" };
 // "Hôm nay" / "Hôm qua" / 16/10 (giờ VN)
 const day = (iso, time) => { const a = toVNDate(iso), t = todayVN(); const hm = new Date(new Date(iso).getTime() + 7 * 36e5).toISOString().slice(11, 16); const pre = a === t ? "Hôm nay" : a === addDays(t, -1) ? "Hôm qua" : null; if (pre) return time ? `${pre} ${hm}` : pre; return `${a.slice(8, 10)}/${a.slice(5, 7)}`; };
-const STATIC = ["/", "/bai-viet", "/bang-calo", "/tinh-calo", "/bang-gia", "/gioi-thieu", "/lien-he", "/tim-kiem", "/dieu-khoan", "/chinh-sach-rieng-tu", "/chinh-sach-bao-mat"];
+const STATIC = ["/", "/cai-app", "/bai-viet", "/bang-calo", "/tinh-calo", "/bang-gia", "/gioi-thieu", "/lien-he", "/tim-kiem", "/dieu-khoan", "/chinh-sach-rieng-tu", "/chinh-sach-bao-mat"];
 
 export function PcWebSeo({ top, showToast }) {
   const [tab, setTab] = useState(0);

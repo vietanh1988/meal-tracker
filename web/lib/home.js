@@ -1,6 +1,6 @@
 // Trang chủ: chữ mặc định của banner + các khối (Quản trị › Trang › Sửa trang tại chỗ ghi đè ở web_settings.page_home)
 export const HOME_HERO = {
-  badge: "Miễn phí 7 ngày · không cần thẻ",
+  badge: "Miễn phí %trial% ngày · không cần thẻ", // %trial% = số ngày dùng thử trong app
   title: "Giảm cân bằng\nmón Việt quen thuộc",
   sub: "Phở, bún, cơm tấm vẫn ăn được. App tự lên thực đơn đúng calo mỗi ngày — bạn chỉ việc ăn theo và bấm “Đã ăn”.",
   btn1: "Dùng thử miễn phí", btn1_url: "",
@@ -11,3 +11,5 @@ export const HOME_HERO = {
 };
 export const HOME_SECTIONS = ["calc", "steps", "feats", "pricing", "posts"];
 export const HOME_SECTION_NAME = { calc: "Tính thử", steps: "3 bước", feats: "3 tính năng", pricing: "Bảng giá + Hỏi đáp", posts: "Bài viết mới" };
+// Hỏi đáp trang chủ (Quản trị › Trang › Sửa trang chủ tại chỗ › Hỏi đáp ghi đè ở page_home.faq)
+export const HOME_FAQ = [{ q: "Ăn phở, bún có giảm cân được không?", a: "Được. Quan trọng là tổng calo cả ngày — app tính sẵn khẩu phần để bạn vẫn ăn món quen." }, { q: "Có phải cài app từ CH Play / App Store không?", a: "Không cần. Mở app.fipilotai.com trên điện thoại rồi bấm “Thêm vào màn hình chính” là dùng như app." }, { q: "Tôi không tập gym thì sao?", a: "Vẫn dùng được. App tính calo theo mức vận động bạn chọn, kể cả ít vận động." }, { q: "App có miễn phí không?", a: "Có gói Miễn phí với thực đơn tự lên mỗi ngày. Premium thêm nhiều lượt AI (chụp ảnh tính calo, hỏi AI), dùng thử %trial% ngày." }];

@@ -1,5 +1,6 @@
 import { aboutApp, fmtPhone } from "./appdata.js";
 import { q } from "./sb.js";
+import { getPlan } from "./plans.js";
 
 export const DEFAULTS = {
   site: { name: "Fipilot AI", tagline: "Giảm cân bằng món Việt", url: "https://fipilotai.com", app_url: "https://app.fipilotai.com", posts_per_page: 12, title_tpl: "%title% | %site%" },
@@ -8,7 +9,7 @@ export const DEFAULTS = {
   seo: { cat_base: "chu-de", tag_base: "the", calo_base: "calo", sitemap: { post: true, page: true, category: true, tag: false, calo: true, author: true, images: true }, robots_extra: "Disallow: /api/\nDisallow: /tim-kiem\n", allow_ai_bots: true, org: { type: "Organization", name: "Fipilot AI" } },
   tracking: {},
   notice_bar: { enabled: false },
-  pricing: { free: { name: "Miễn phí", price: "0đ" }, premium: { name: "Premium", price: "99.000đ", unit: " / tháng", trial: "Dùng thử 7 ngày, không cần thẻ" } },
+  pricing: { free: { name: "Miễn phí" }, premium: { name: "Premium" }, faq: [] }, // giá thật: s.plan (từ app)
 };
 
 export async function getSettings() {
@@ -19,6 +20,7 @@ export async function getSettings() {
   const a = await aboutApp();
   const fromApp = { email: a.contact, phone: a.hotline && fmtPhone(a.hotline), zalo: a.zalo && `https://zalo.me/${String(a.zalo).replace(/\D/g, "")}`, zalo_phone: a.zalo && fmtPhone(a.zalo), facebook: a.facebook };
   const web = Object.fromEntries(Object.entries((rows.find((r) => r.key === "contact") || {}).value || {}).filter(([, v]) => v));
+  s.plan = await getPlan(); // giá + ngày dùng thử + giới hạn AI lấy từ app (Gói cước & giới hạn)
   s.contact = { ...DEFAULTS.contact, ...Object.fromEntries(Object.entries(fromApp).filter(([, v]) => v)), ...web };
   return s;
 }

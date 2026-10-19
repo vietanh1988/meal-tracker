@@ -23,7 +23,7 @@ export default async function Footer({ s, menus }) {
         <div className="wrap fcardwrap" style={{ position: "relative", zIndex: 2, marginBottom: -110 }}>
           <div className="fcard" style={{ position: "relative", zIndex: 2, borderRadius: 24, overflow: "hidden", background: "#FFFFFF", boxShadow: "0 24px 60px rgba(10,26,58,.22)", display: "flex", alignItems: "stretch" }}>
             <div className="fcard-l" style={{ flex: 1, padding: "30px 32px", display: "flex", flexDirection: "column", gap: 10, justifyContent: "center" }}>
-              <span className="pill" style={{ alignSelf: "flex-start" }}>Miễn phí 7 ngày · không cần thẻ</span>
+              <span className="pill" style={{ alignSelf: "flex-start" }}>Miễn phí {s.plan?.trial || 7} ngày · không cần thẻ</span>
               <b className="fcard-t" style={{ fontSize: 28, lineHeight: 1.2, color: "#0F172A" }}>Tối nay ăn gì để vẫn giảm cân?<br /><span style={{ color: "#0062F0" }}>Để app lo.</span></b>
               <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.55 }}>Nhập cân nặng 30 giây — app lên sẵn thực đơn món Việt đúng calo cho cả tuần.</span>
               <div className="fbtns" style={{ display: "flex", gap: 10, marginTop: 6 }}><a className="btn b1" href={appLink(s, "footer")} style={{ height: 46 }}>Dùng thử miễn phí</a><a className="btn b2" href="/bang-calo" style={{ height: 46 }}>Tra calo món ăn</a></div>

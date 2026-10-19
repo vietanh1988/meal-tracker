@@ -15,7 +15,7 @@ import { appConfirm } from "../../lib/dialog";
 import { Btn, Pill, Card, ErrorBox, Loading, fmtDT, secLbl } from "../pcUI";
 import { Check, Tog, Radio, Score, Tabs, Field, Count, SideBox, Modal, Lnk, inpStyle, BLUE } from "./webUI";
 import { STATUS, slugify, seoChecks, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
-import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus } from "./webApi";
+import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus, uploadImage } from "./webApi";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
 import { Rich, ListEdit, OtherBlock, Upload, kb, inlineClean, H_STYLE } from "./BlockEdit";
 import { PcWebRevisions } from "./PcWebRevisions";
@@ -88,7 +88,20 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
   const setSeo = (patch) => upd((p) => ({ seo: { ...(p.seo || {}), ...patch } }));
   const setBlock = useCallback((i, patch) => upd((p) => ({ blocks: p.blocks.map((b, k) => (k === i ? { ...b, ...patch } : b)) })), [upd]);
   const insertAt = (i, bl, focus = true) => { const list = Array.isArray(bl) ? bl : [bl]; upd((p) => { const b = [...p.blocks]; b.splice(i, 0, ...list); return { blocks: b }; }); if (focus) focusBlock(list[list.length - 1]._k, false); setCur(i + list.length - 1); };
-  const removeAt = (i) => upd((p) => ({ blocks: p.blocks.length > 1 ? p.blocks.filter((_, k) => k !== i) : [newBlock("p")] }));
+  // Xoá khối: giữ lại để "Hoàn tác" trong 10 giây (chỉ khối có nội dung)
+  const [undoDel, setUndoDel] = useState(null); // { i, b }
+  const undoT = useRef(null);
+  const removeAt = (i) => { const b = postRef.current?.blocks[i]; const has = b && (b.type !== "p" || String(b.html || "").replace(/<[^>]+>/g, "").trim()); upd((p) => ({ blocks: p.blocks.length > 1 ? p.blocks.filter((_, k) => k !== i) : [newBlock("p")] })); if (has) { setUndoDel({ i, b }); clearTimeout(undoT.current); undoT.current = setTimeout(() => setUndoDel(null), 10000); } };
+  const undoRemove = () => { if (!undoDel) return; const { i, b } = undoDel; upd((p) => { const l = [...p.blocks]; l.splice(Math.min(i, l.length), 0, b); return { blocks: l }; }); setCur(i); setUndoDel(null); };
+  // Kéo thả ảnh từ máy vào thân bài → tải lên (WebP) và chèn khối ảnh sau khối đang chọn
+  const [dropOn, setDropOn] = useState(false);
+  const dropFiles = async (files) => {
+    const fs = [...(files || [])].filter((f) => /^image\//.test(f.type)); if (!fs.length) return;
+    showToast?.(`Đang tải ${fs.length} ảnh…`);
+    let at = (cur >= 0 ? cur : postRef.current.blocks.length - 1) + 1;
+    for (const f of fs) { try { const r = await uploadImage(f, f.name.replace(/\.\w+$/, ""), { uid: user?.id }); insertAt(at++, { ...newBlock("img"), url: r.url, width: r.width, height: r.height }, false); } catch (e) { showToast?.(`${f.name}: ${e.message || "chưa tải được"}`); } }
+    showToast?.("Đã chèn ảnh — nhớ điền mô tả ảnh (alt).");
+  };
   const move = (i, d) => upd((p) => { const b = [...p.blocks]; const j = i + d; if (j < 0 || j >= b.length) return {}; [b[i], b[j]] = [b[j], b[i]]; return { blocks: b }; });
   // Đặt con trỏ vào khối ngay sau khi vẽ xong (gõ nhanh sau Enter vẫn vào đúng dòng mới)
   const pend = useRef(null);
@@ -300,8 +313,10 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
               <TI t="</>" title="Sửa HTML khối đang chọn" on={htmlEdit} onClick={() => setHtmlEdit(!htmlEdit)} />
             </div>
             {/* Thân bài: cao tối thiểu như vùng soạn của WordPress; bấm vào chỗ trống phía dưới = viết tiếp ở cuối bài */}
-            <div data-testid="web-ed-body" onMouseDown={(e) => { if (mode !== "visual" || e.target !== e.currentTarget) return; const bs = e.currentTarget.querySelectorAll("[data-testid=web-ed-block]"); if (bs.length && e.clientY < bs[bs.length - 1].getBoundingClientRect().bottom) return; e.preventDefault(); const last = post.blocks[post.blocks.length - 1]; if (last && last.type === "p" && !String(last.html || "").replace(/<[^>]+>/g, "").trim()) { setCur(post.blocks.length - 1); focusBlock(last._k, false); } else { const nb = newBlock("p"); insertAt(post.blocks.length, nb, false); focusBlock(nb._k, true); } }}
-              style={{ padding: "30px 40px 40px 40px", minHeight: "max(560px, calc(100vh - 380px))", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 18, position: "relative", cursor: mode === "visual" ? "text" : "auto" }}>
+            <div data-testid="web-ed-body" onDragOver={(e) => { if (mode === "visual" && [...(e.dataTransfer?.types || [])].includes("Files")) { e.preventDefault(); setDropOn(true); } }} onDragLeave={(e) => { if (e.currentTarget === e.target) setDropOn(false); }} onDrop={(e) => { if (!e.dataTransfer?.files?.length) return; e.preventDefault(); setDropOn(false); dropFiles(e.dataTransfer.files); }} onMouseDown={(e) => { if (mode !== "visual" || e.target !== e.currentTarget) return; const bs = e.currentTarget.querySelectorAll("[data-testid=web-ed-block]"); if (bs.length && e.clientY < bs[bs.length - 1].getBoundingClientRect().bottom) return; e.preventDefault(); const last = post.blocks[post.blocks.length - 1]; if (last && last.type === "p" && !String(last.html || "").replace(/<[^>]+>/g, "").trim()) { setCur(post.blocks.length - 1); focusBlock(last._k, false); } else { const nb = newBlock("p"); insertAt(post.blocks.length, nb, false); focusBlock(nb._k, true); } }}
+              style={{ padding: "30px 40px 40px 40px", minHeight: "max(560px, calc(100vh - 380px))", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 18, position: "relative", cursor: mode === "visual" ? "text" : "auto", ...(dropOn ? { boxShadow: "inset 0 0 0 2px #1A7CFF", background: "#F5F9FF" } : {}) }}>
+              {undoDel && <div data-testid="web-ed-undo" style={{ position: "sticky", top: 112, zIndex: 7, alignSelf: "center", display: "flex", alignItems: "center", gap: 12, background: "#0F172A", color: "#FFF", borderRadius: 10, padding: "8px 14px", fontSize: 13, boxShadow: "0 8px 24px rgba(15,23,42,.25)" }}>Đã xoá khối {BLOCK_NAME[undoDel.b.type] || ""}<button type="button" onMouseDown={(e) => e.preventDefault()} onClick={undoRemove} style={{ border: 0, background: "none", color: "#93C5FD", fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>Hoàn tác</button></div>}
+              {dropOn && <div style={{ position: "sticky", top: 112, zIndex: 7, alignSelf: "center", background: BLUE, color: "#FFF", borderRadius: 10, padding: "8px 14px", fontSize: 13, fontWeight: 700 }}>Thả ảnh vào đây — tự nén WebP và chèn vào bài</div>}
               {mode === "html" && <textarea value={htmlText} onChange={(e) => { setHtmlText(e.target.value); setDirty(true); }} spellCheck={false} data-testid="web-ed-html" style={{ minHeight: 520, borderRadius: 10, border: `1px solid ${PC.field}`, padding: "12px 14px", fontFamily: "ui-monospace, Menlo, monospace", fontSize: 12.5, lineHeight: 1.65, color: PC.t1, resize: "vertical", outline: "none", fieldSizing: "content" }} />}
               {mode === "visual" && !post.id && reuse.some((r) => r.kind === "template") && post.blocks.length === 1 && post.blocks[0].type === "p" && !String(post.blocks[0].html || "").replace(/<[^>]+>/g, "").trim() && (
                 <div data-testid="web-ed-tpl" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 12.5, color: PC.t3 }}>Bắt đầu từ mẫu:

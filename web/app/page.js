@@ -1,7 +1,8 @@
 // Trang chủ — bản vẽ 137a/b
 import { Fragment } from "react";
 import Calc from "@/components/Calc";
-import { HOME_HERO, HOME_SECTIONS } from "@/lib/home";
+import { HOME_HERO, HOME_SECTIONS, HOME_FAQ } from "@/lib/home";
+import { fillTrial, vnd, premiumPoints } from "@/lib/plans";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
@@ -20,7 +21,6 @@ function FoodRow({ img, name, kcal, extra }) {
   return <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 12, background: "#F8FAFD", border: "1px solid #EEF2F7" }}><img className="th" src={img} alt="" width={40} height={40} loading="lazy" style={{ width: 40, height: 40 }} /><span style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}><b style={{ fontSize: 14.5 }}>{name}</b><span style={{ fontSize: 13, color: "#64748B" }}>{kcal}</span></span>{extra}</div>;
 }
 const Chk = ({ t }) => <span style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, lineHeight: 1.45 }}><span className="chk">✓</span>{t}</span>;
-const FAQ = [{ q: "Ăn phở, bún có giảm cân được không?", a: "Được. Quan trọng là tổng calo cả ngày — app tính sẵn khẩu phần để bạn vẫn ăn món quen." }, { q: "Có phải cài app từ CH Play / App Store không?", a: "Không cần. Mở app.fipilotai.com trên điện thoại rồi bấm “Thêm vào màn hình chính” là dùng như app." }, { q: "Tôi không tập gym thì sao?", a: "Vẫn dùng được. App tính calo theo mức vận động bạn chọn, kể cả ít vận động." }, { q: "App có miễn phí không?", a: "Có gói Miễn phí với thực đơn tự lên mỗi ngày. Premium thêm chụp ảnh tính calo và hỏi AI, dùng thử 7 ngày." }];
 
 export default async function Home() {
   const s = await getSettings();
@@ -36,7 +36,8 @@ export default async function Home() {
     ["Thấy rõ kết quả mỗi tháng", "Kg đã giảm, ngày ghi bữa, so tháng trước.", <div style={{ display: "flex", flexDirection: "column", gap: 8 }}><span className="mut" style={{ fontSize: 13 }}>Ví dụ: tháng 10 của bạn</span><b style={{ fontSize: 30, color: "#16A34A" }}>−2,4 kg</b><Chk t="ghi bữa 24/31 ngày" /><Chk t="chuỗi 9 ngày liên tục" />{spark}</div>],
   ];
   // Trang chủ sửa được ở Quản trị › Trang › Sửa trang tại chỗ (web_settings.page_home): chữ / ảnh / nút banner, ẩn hiện + thứ tự khối
-  const H = { ...HOME_HERO, ...(s.page_home?.hero || {}) };
+  const FAQ = (s.page_home?.faq?.length ? s.page_home.faq : HOME_FAQ).filter((x) => x?.q && x?.a).map((x) => ({ q: fillTrial(x.q, s.plan), a: fillTrial(x.a, s.plan) }));
+  const H = Object.fromEntries(Object.entries({ ...HOME_HERO, ...(s.page_home?.hero || {}) }).map(([k, v]) => [k, typeof v === "string" ? fillTrial(v, s.plan) : v]));
   const order = (s.page_home?.sections?.length ? s.page_home.sections : HOME_SECTIONS.map((id) => ({ id, on: true }))).filter((x) => x.on !== false && HOME_SECTIONS.includes(x.id)).map((x) => x.id);
   for (const id of HOME_SECTIONS) if (!(s.page_home?.sections || []).some((x) => x.id === id) && s.page_home?.sections?.length) order.push(id); // khối mới thêm sau: mặc định hiện
   const SEC = {
@@ -66,7 +67,7 @@ export default async function Home() {
         <div>
           <SecHead eye="Bảng giá" title="Bắt đầu miễn phí" />
           <div className="grid2 plans" style={{ gap: 16 }}>
-            {[[pr.free?.name || "Miễn phí", pr.free?.price || "0đ", "", ["Thực đơn tự lên mỗi ngày", "Đổi món, ghi bữa, nhắc giờ", "Tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", pr.premium?.price || "99.000đ", pr.premium?.unit || " / tháng", ["Mọi thứ của gói Miễn phí", "Chụp ảnh tính calo", "Hỏi AI về ăn uống", "AI lên thực đơn theo ý"], "Dùng thử 7 ngày", true]].map(([n, p, u, l, c, hi]) => (
+            {[[pr.free?.name || "Miễn phí", "0đ", "", ["Thực đơn tự lên mỗi ngày", "Đổi món, ghi bữa, nhắc giờ", "Tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", s.plan?.month ? vnd(s.plan.month.price) : "Liên hệ", s.plan?.month ? " / tháng" : "", premiumPoints(s.plan), `Dùng thử ${s.plan?.trial || 7} ngày`, true]].map(([n, p, u, l, c, hi]) => (
               <div key={n} className="card plan" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 12, position: "relative", ...(hi ? { border: "1.5px solid #0062F0" } : {}) }}>
                 {hi && <span className="pill" style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "#0062F0", color: "#fff" }}>Phổ biến</span>}
                 <span style={{ fontSize: 15, fontWeight: 800, color: "#334155" }}>{n}</span>

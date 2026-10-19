@@ -8,6 +8,7 @@ import { Btn } from "../pcUI";
 import { inpStyle, BLUE } from "./webUI";
 import { clean, youtubeId } from "./webLib";
 import { uploadImage } from "./webApi";
+import { MediaPick } from "./MediaPick";
 
 // Chữ trong trình soạn = tỉ lệ chữ bài trên web (đoạn 18/1,75 · H2 28/1,3 · H3 22/1,35), thu nhỏ cho khung soạn
 const P = { fontSize: 17, lineHeight: 1.7, color: "#1E293B", margin: 0, outline: "none", minHeight: 29 };
@@ -85,13 +86,21 @@ function Upload({ onDone, label = "Chọn ảnh từ máy", name, showToast, tes
 export { Upload };
 export const kb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1).replace(".", ",")} MB` : `${Math.round(n / 1024)} KB`);
 
+// Chọn ảnh có sẵn trong Thư viện ảnh
+function LibBtn({ onPick }) {
+  const [open, setOpen] = useState(false);
+  return <>
+    <button type="button" onClick={() => setOpen(true)} data-testid="web-blk-img-lib" className="pc-btn" style={{ ...small, borderRadius: 10, background: "#E8F1FF", color: BLUE, border: 0, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>Chọn từ thư viện</button>
+    {open && <MediaPick onClose={() => setOpen(false)} onPick={(r) => { onPick(r); setOpen(false); }} />}
+  </>;
+}
 // Khối không phải chữ
 export function OtherBlock({ b, set, showToast, slug }) {
   switch (b.type) {
     case "img": return (
       <Box label="ẢNH · tự nén WebP" testid="web-blk-img">
         {b.url ? <img src={b.url} alt={b.alt || ""} style={{ maxWidth: "100%", maxHeight: 360, borderRadius: 12, objectFit: "contain", alignSelf: "flex-start" }} /> : <span style={{ fontSize: 12.5, color: PC.t3 }}>Chọn ảnh từ máy (tự đổi WebP, tối đa 1600 px) hoặc dán đường dẫn ảnh.</span>}
-        <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><Upload name={b.alt || slug} showToast={showToast} onDone={(r) => { set({ url: r.url, width: r.width, height: r.height }); showToast?.(`Đã tải ảnh · ${kb(r.size)} (gốc ${kb(r.orig)})`); }} label={b.url ? "Thay ảnh" : "Chọn ảnh từ máy"} /><In v={b.url} on={(v) => set({ url: v })} ph="hoặc dán đường dẫn ảnh https://…" w={320} /></span>
+        <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><Upload name={b.alt || slug} showToast={showToast} onDone={(r) => { set({ url: r.url, width: r.width, height: r.height }); showToast?.(`Đã tải ảnh · ${kb(r.size)} (gốc ${kb(r.orig)})`); }} label={b.url ? "Thay ảnh" : "Chọn ảnh từ máy"} /><LibBtn onPick={(r) => set({ url: r.url, alt: b.alt || r.alt || "", width: r.width || undefined, height: r.height || undefined })} /><In v={b.url} on={(v) => set({ url: v })} ph="hoặc dán đường dẫn ảnh https://…" w={320} /></span>
         <In v={b.alt} on={(v) => set({ alt: v })} ph="Mô tả ảnh (alt) — giúp Google hiểu ảnh, VD: Tô phở bò tái chín" testid="web-blk-img-alt" />
         <In v={b.caption} on={(v) => set({ caption: v })} ph="Chú thích dưới ảnh (không bắt buộc)" />
       </Box>

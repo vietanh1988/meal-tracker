@@ -13,7 +13,7 @@ const H = ({ t, r }) => <div style={{ display: "flex", alignItems: "center", gap
 const Stat = ({ n, l, s, c = PC.t1 }) => <Card style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 4 }}><span style={{ fontSize: 12, color: PC.t3, fontWeight: 700 }}>{l}</span><b style={{ fontSize: 24, fontWeight: 900, color: c }}>{n}</b>{s && <span style={{ fontSize: 11.5, color: PC.t4 }}>{s}</span>}</Card>;
 const pct = (a, b) => (b ? `${String(Math.round((a / b) * 1000) / 10).replace(".", ",")}%` : "—");
 const SRC = [["google", "Google", "#0062F0"], ["facebook", "Facebook", "#1877F2"], ["direct", "Gõ thẳng / lưu sẵn", "#64748B"], ["zalo", "Zalo", "#0068FF"], ["other", "Khác", "#CBD5E1"]];
-const STATIC = { "/": "Trang chủ", "/bai-viet": "Tất cả bài viết", "/bang-calo": "Bảng calo món", "/tinh-calo": "Tính calo", "/bang-gia": "Bảng giá", "/gioi-thieu": "Giới thiệu", "/lien-he": "Liên hệ", "/tim-kiem": "Tìm kiếm" };
+const STATIC = { "/": "Trang chủ", "/bai-viet": "Tất cả bài viết", "/bang-calo": "Bảng calo món", "/tinh-calo": "Tính calo", "/bang-gia": "Bảng giá", "/gioi-thieu": "Giới thiệu", "/lien-he": "Liên hệ", "/tim-kiem": "Tìm kiếm", "/cai-app": "Cài app lên điện thoại" };
 const RANGES = [[7, "7 ngày qua"], [30, "30 ngày qua"], [90, "90 ngày qua"]];
 
 // Lượt xem 30 ngày theo đường dẫn (dùng cho Trang calo món); null = chưa có bảng thống kê

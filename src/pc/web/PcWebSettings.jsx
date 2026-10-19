@@ -10,7 +10,7 @@ import { Tog, Field, Lnk, Modal, inpStyle, BLUE } from "./webUI";
 import { Upload, FOODS } from "./BlockEdit";
 
 const must = ({ data, error }) => { if (error) throw error; return data; };
-const KEYS = ["site", "contact", "footer", "notice_bar", "maintenance"];
+const KEYS = ["site", "contact", "footer", "notice_bar", "maintenance", "pricing"];
 const H = ({ t, r }) => <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: `1px solid ${PC.headLine}` }}><b style={{ fontSize: 13.5 }}>{t}</b><span style={{ marginLeft: "auto" }}>{r}</span></div>;
 const In = ({ v, on, ph, mono, testid, type = "text", disabled }) => <input type={type} value={v ?? ""} onChange={(e) => on(e.target.value)} placeholder={ph} disabled={disabled} data-testid={testid} className="pc-input" style={{ ...inpStyle(), fontFamily: mono ? "ui-monospace, Menlo, monospace" : "inherit", background: disabled ? "#F8FAFC" : "#FFF" }} />;
 const toDate = (iso) => (iso ? new Date(new Date(iso).getTime() + 7 * 3600e3).toISOString().slice(0, 10) : "");
@@ -22,6 +22,8 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [foodsOpen, setFoodsOpen] = useState(false);
+  const [plan, setPlan] = useState(null); // giá + ngày dùng thử thật của app (subscription_settings) — web chỉ đọc
+  useEffect(() => { supabase.from("subscription_settings").select("price_1m,price_3m,price_6m,price_12m,trial_days").eq("id", 1).maybeSingle().then(({ data }) => setPlan(data || {})); }, []);
   let about = {}; try { about = JSON.parse(appSettings?.about_page || "{}"); } catch (e) { /* */ }
 
   useEffect(() => { (async () => { try { const rows = await supabase.from("web_settings").select("key,value").in("key", KEYS).then(must); const o = Object.fromEntries(KEYS.map((k) => [k, {}])); for (const r of rows) o[r.key] = r.value || {}; setS(o); } catch (e) { setErr("Chưa tải được cài đặt. " + (e.message || "")); } })(); }, []);
@@ -40,7 +42,7 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
 
   if (err) return <>{top(null)}<div style={{ padding: 24 }}><ErrorBox text={err} /></div></>;
   if (!s) return <>{top(null)}<Loading /></>;
-  const site = s.site, c = s.contact, f = s.footer, nb = s.notice_bar, mt = s.maintenance;
+  const site = s.site, c = s.contact, f = s.footer, nb = s.notice_bar, mt = s.maintenance, pr = s.pricing || {};
   const pop = f.popular_foods || ["phở bò", "cơm tấm", "bánh mì thịt", "bún chả", "bún bò huế", "bánh cuốn", "cháo gà"];
   const tile = (t, sub, key, el, name) => (
     <div style={{ borderRadius: 12, border: `1px solid ${PC.line}`, padding: 10, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -81,6 +83,27 @@ export function PcWebSettings({ top, showToast, appSettings, go }) {
           </Card>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Card style={{ padding: 0 }} testid="web-set-pricing"><H t="Bảng giá" r={<Lnk onClick={() => go?.("subscription_settings")}>Sửa giá ở Gói cước & giới hạn ›</Lnk>} />
+            <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ borderRadius: 10, background: "#F5F9FF", padding: "10px 12px", fontSize: 12.5, lineHeight: 1.6 }}>
+                <b>Giá & ngày dùng thử lấy thẳng từ app</b> (web không đặt giá riêng, đổi trong app là web đổi theo sau ~5 phút):<br />
+                {plan ? <>{[[1, plan.price_1m], [3, plan.price_3m], [6, plan.price_6m], [12, plan.price_12m]].filter(([, v]) => v > 0).map(([m, v]) => `${m} tháng ${Number(v).toLocaleString("vi-VN")}đ`).join(" · ") || "Chưa đặt giá"} · dùng thử {plan.trial_days || 0} ngày</> : "Đang tải…"}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <Field label="Tên gói miễn phí"><In v={pr.free?.name} on={(v) => set("pricing", { free: { ...(pr.free || {}), name: v } })} ph="Miễn phí" /></Field>
+                <Field label="Tên gói trả phí"><In v={pr.premium?.name} on={(v) => set("pricing", { premium: { ...(pr.premium || {}), name: v } })} ph="Premium" /></Field>
+              </div>
+              <Field label="Câu hỏi về thanh toán (trang Bảng giá)" hint="Gõ %trial% = số ngày dùng thử thật của app. Câu “Hết … ngày dùng thử có tự trừ tiền không?” web tự có sẵn.">
+                <span style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {(pr.faq || []).map((x, i) => <span key={i} style={{ display: "flex", flexDirection: "column", gap: 6, padding: 10, borderRadius: 10, background: "#F8FAFC" }}>
+                    <span style={{ display: "flex", gap: 6 }}><input value={x.q || ""} onChange={(e) => set("pricing", { faq: pr.faq.map((y, k) => (k === i ? { ...y, q: e.target.value } : y)) })} placeholder="Câu hỏi, VD: Thanh toán bằng cách nào?" data-testid="web-set-faq-q" className="pc-input" style={{ ...inpStyle(34), fontWeight: 700 }} /><Btn kind="light" style={{ height: 34 }} onClick={() => set("pricing", { faq: pr.faq.filter((_, k) => k !== i) })}>Xoá</Btn></span>
+                    <textarea value={x.a || ""} onChange={(e) => set("pricing", { faq: pr.faq.map((y, k) => (k === i ? { ...y, a: e.target.value } : y)) })} placeholder="Trả lời ngắn, thẳng" className="pc-input" style={{ ...inpStyle(), height: 60, padding: "8px 12px", lineHeight: 1.5 }} />
+                  </span>)}
+                  <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{[["Thanh toán bằng cách nào?", ""], ["Huỷ Premium thế nào?", ""], ["Có xuất hoá đơn không?", ""]].filter(([q]) => !(pr.faq || []).some((x) => x.q === q)).map(([q]) => <Btn key={q} kind="soft" style={{ height: 28, fontSize: 12 }} onClick={() => set("pricing", { faq: [...(pr.faq || []), { q, a: "" }] })}>+ {q}</Btn>)}<Btn kind="light" style={{ height: 28, fontSize: 12 }} onClick={() => set("pricing", { faq: [...(pr.faq || []), { q: "", a: "" }] })} testid="web-set-faq-add">+ Câu khác</Btn></span>
+                </span>
+              </Field>
+            </div>
+          </Card>
           <Card style={{ padding: 0 }}><H t="Liên hệ & mạng xã hội" />
             <div style={{ padding: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <Field label="Email"><In v={c.email} on={(v) => set("contact", { email: v.trim() })} ph={about.contact || "email@…"} /></Field>

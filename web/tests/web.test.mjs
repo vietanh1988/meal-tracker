@@ -73,3 +73,12 @@ test("srcSet: chỉ ảnh _<rộng>w.webp có bản nhỏ", async () => {
   assert.equal(srcSet("https://x/a_300w.webp"), undefined);
   assert.equal(srcSet("https://x/old.webp"), undefined);
 });
+
+test("shapePlan: giá theo tháng, % tiết kiệm, gói rẻ nhất", async () => {
+  const { shapePlan, fillTrial } = await import("../lib/plans.js");
+  const p = shapePlan({ price_1m: 69000, price_3m: 150000, price_6m: 280000, price_12m: 500000, trial_days: 30, free_ai_photo_limit: 30, premium_ai_photo_limit: 300 });
+  assert.equal(p.trial, 30); assert.equal(p.month.price, 69000);
+  assert.deepEqual(p.durs.map((d) => [d.m, d.per, d.save]), [[1, 69000, 0], [3, 50000, 28], [6, 46700, 32], [12, 41700, 40]]);
+  assert.equal(p.cheapest.m, 12);
+  assert.equal(fillTrial("Miễn phí %trial% ngày", p), "Miễn phí 30 ngày");
+});

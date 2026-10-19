@@ -33,6 +33,7 @@ export function PcWebSysPages({ rows, appSettings, go, onBuilder, onEdit, onSub:
     { t: "Liên hệ", u: "/lien-he", src: "Cài đặt web › Liên hệ (ô trống lấy từ Giới thiệu của app) · thư khách gửi → Góp ý", act: <Btn kind="light" style={{ height: 30, fontSize: 12 }} onClick={() => go?.("web_settings")}>Mở Cài đặt web</Btn> },
     { t: "Bảng giá", u: "/bang-gia", src: "Cài đặt web › Bảng giá (tên gói, giá, câu hỏi thanh toán)", act: <Btn kind="light" style={{ height: 30, fontSize: 12 }} onClick={() => go?.("web_settings")}>Mở Cài đặt web</Btn> },
     { t: "Bảng calo · trang calo món", u: "/bang-calo", src: "Tự sinh từ Kho thực phẩm của app", act: <Btn kind="light" style={{ height: 30, fontSize: 12 }} onClick={() => go?.("web_calo")}>Mở Trang calo món</Btn> },
+    { t: "Cài app lên điện thoại", u: "/cai-app", src: "Trang hướng dẫn cố định (iPhone / Android)", act: null },
     { t: "Tính calo", u: "/tinh-calo", src: "Công cụ tính — chạy đúng công thức của app, không có chữ để sửa", act: null },
   ];
   const C = "minmax(0,1.2fr) minmax(0,0.9fr) minmax(0,2fr) auto";

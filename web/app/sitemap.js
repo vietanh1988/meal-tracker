@@ -21,7 +21,7 @@ export default async function sitemap() {
   }
   const have = new Set(posts.map((p) => p.slug));
   if (on.page !== false) for (const lp of await legalPages()) if (!have.has(lp.slug)) out.push({ url: u(`/${lp.slug}`), changeFrequency: "yearly", priority: 0.3 });
-  out.push({ url: u("/gioi-thieu"), changeFrequency: "monthly", priority: 0.5 }, { url: u("/lien-he"), changeFrequency: "yearly", priority: 0.4 });
+  out.push({ url: u("/cai-app"), changeFrequency: "yearly", priority: 0.4 }, { url: u("/gioi-thieu"), changeFrequency: "monthly", priority: 0.5 }, { url: u("/lien-he"), changeFrequency: "yearly", priority: 0.4 });
   if (on.category !== false) for (const t of (await q("web_terms?kind=eq.category&select=slug,seo")) || []) if (!t.seo?.noindex) out.push({ url: u(`/chu-de/${t.slug}`), changeFrequency: "weekly", priority: 0.6 });
   if (on.tag === true) for (const t of (await q("web_terms?kind=eq.tag&select=slug")) || []) out.push({ url: u(`/the/${t.slug}`), priority: 0.3 });
   if (on.author !== false) { const au = (await q("web_authors?select=slug")) || []; if (!au.length) { const a = await appAuthor(); if (a) au.push(a); } for (const a of au) out.push({ url: u(`/tac-gia/${a.slug}`), priority: 0.4 }); }

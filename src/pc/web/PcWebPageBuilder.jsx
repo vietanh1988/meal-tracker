@@ -9,15 +9,16 @@ import { appConfirm } from "../../lib/dialog";
 import { Btn, Loading, secLbl } from "../pcUI";
 import { Field, Tog, Modal, inpStyle, BLUE } from "./webUI";
 import { Upload } from "./BlockEdit";
-import { HOME_HERO, HOME_SECTIONS, HOME_SECTION_NAME } from "../../../web/lib/home.js";
+import { MediaPick } from "./MediaPick";
+import { HOME_HERO, HOME_SECTIONS, HOME_SECTION_NAME, HOME_FAQ } from "../../../web/lib/home.js";
 
 const WEB = "https://fipilotai.com";
 const must = ({ data, error }) => { if (error) throw error; return data; };
 const OUT = { boxShadow: "0 0 0 2px #1A7CFF", borderRadius: 6 };
-const PAGES = [["home", "Trang chủ", "/"], ["pricing", "Bảng giá", "/bang-gia", "web_settings"], ["about", "Giới thiệu", "/gioi-thieu", "web_pages"], ["contact", "Liên hệ", "/lien-he", "web_settings"], ["footer", "Chân trang (mọi trang)", "", "web_settings"], ["bar", "Thanh trên (mọi trang)", "", "web_settings"]];
+const PAGES = [["home", "Trang chủ", "/"], ["pricing", "Bảng giá", "/bang-gia", "web_settings"], ["about", "Giới thiệu", "/gioi-thieu", "web_pages"], ["install", "Cài app lên điện thoại", "/cai-app", null], ["contact", "Liên hệ", "/lien-he", "web_settings"], ["footer", "Chân trang (mọi trang)", "", "web_settings"], ["bar", "Thanh trên (mọi trang)", "", "web_settings"]];
 const fmt = (iso) => new Date(iso).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
 const base = () => ({ hero: { ...HOME_HERO }, sections: HOME_SECTIONS.map((id) => ({ id, on: true })) });
-const norm = (v) => { const b = base(); const secs = [...(v?.sections || []).filter((x) => HOME_SECTIONS.includes(x.id))]; for (const id of HOME_SECTIONS) if (!secs.some((x) => x.id === id)) secs.push({ id, on: true }); return { hero: { ...b.hero, ...(v?.hero || {}) }, sections: secs }; };
+const norm = (v) => { const b = base(); const secs = [...(v?.sections || []).filter((x) => HOME_SECTIONS.includes(x.id))]; for (const id of HOME_SECTIONS) if (!secs.some((x) => x.id === id)) secs.push({ id, on: true }); return { hero: { ...b.hero, ...(v?.hero || {}) }, sections: secs, ...(v?.faq?.length ? { faq: v.faq } : {}) }; };
 
 // Chữ sửa ngay trên trang: Enter = xuống dòng (chỉ ở tiêu đề), dán chỉ lấy chữ trơn
 function Ed({ value, onChange, onFocus, multi, style, testid, sel }) {
@@ -41,6 +42,8 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
   const [pick, setPick] = useState(null); // "img1" | "img2" | "img1_m"
   const [showHist, setShowHist] = useState(false);
   const [drag, setDrag] = useState(null);
+  const [trial, setTrial] = useState(7); // số ngày dùng thử thật của app → thay %trial% khi xem trước
+  useEffect(() => { supabase.from("subscription_settings").select("trial_days").eq("id", 1).maybeSingle().then(({ data }) => data?.trial_days > 0 && setTrial(data.trial_days)); }, []);
   useEffect(() => { (async () => {
     try {
       const rows = await supabase.from("web_settings").select("key,value").in("key", ["page_home", "page_home_draft", "page_home_hist"]).then(must);
@@ -66,7 +69,7 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
     setBusy("");
   };
   const back = async () => { if (dirty && !(await appConfirm("Có thay đổi chưa lưu. Bỏ thay đổi?"))) return; setDirty(false); onBack(); };
-  const openPage = async (p) => { if (p[0] === "home") return; if (dirty && !(await appConfirm("Có thay đổi chưa lưu ở trang chủ. Bỏ thay đổi?"))) return; setDirty(false); go?.(p[3]); };
+  const openPage = async (p) => { if (p[0] === "home") return; if (!p[3]) return window.open(WEB + p[2], "_blank", "noopener"); if (dirty && !(await appConfirm("Có thay đổi chưa lưu ở trang chủ. Bỏ thay đổi?"))) return; setDirty(false); go?.(p[3]); };
   if (!v) return <>{top(null, "Sửa trang · Trang chủ")}<Loading /></>;
   const m = dev === "m";
   const draftDiff = JSON.stringify(v) !== JSON.stringify(live);
@@ -92,6 +95,7 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
             <span key={x.id} draggable onDragStart={() => setDrag(i)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (drag == null || drag === i) return; const n = [...v.sections]; const [it] = n.splice(drag, 1); n.splice(i, 0, it); setSec(n); setDrag(null); }} data-testid="web-pb-sec"
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", fontSize: 12.5, borderRadius: 8, cursor: "grab", opacity: drag === i ? 0.5 : 1 }}>
               <span style={{ color: PC.t4 }}>⋮⋮</span><span style={{ flex: 1, color: x.on ? PC.t1 : PC.t4, textDecoration: x.on ? "none" : "line-through" }}>{HOME_SECTION_NAME[x.id]}</span>
+              {x.id === "pricing" && <button type="button" title="Sửa câu hỏi thường gặp" data-testid="web-pb-faq" onClick={() => setSel("faq")} style={{ border: 0, background: "none", cursor: "pointer", padding: 0, fontSize: 12, color: BLUE, fontWeight: 800 }}>✎</button>}
               <button type="button" title={x.on ? "Đang hiện · bấm để ẩn" : "Đang ẩn · bấm để hiện"} data-testid={`web-pb-eye-${x.id}`} onClick={() => setSec(v.sections.map((y, k) => (k === i ? { ...y, on: !y.on } : y)))} style={{ border: 0, background: "none", cursor: "pointer", padding: 0, fontSize: 13, color: x.on ? PC.t2 : PC.t4, opacity: x.on ? 1 : 0.45 }}>👁</button>
             </span>
           ))}
@@ -102,7 +106,7 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
             <div style={{ height: 30, background: "#F1F5F9", display: "flex", alignItems: "center", gap: 6, padding: "0 12px", fontSize: 11.5, color: PC.t3 }}><span style={{ width: 9, height: 9, borderRadius: 5, background: "#F87171" }} /><span style={{ width: 9, height: 9, borderRadius: 5, background: "#FBBF24" }} /><span style={{ width: 9, height: 9, borderRadius: 5, background: "#34D399" }} /><span style={{ marginLeft: 10 }}>fipilotai.com · {draftDiff ? "xem trước bản nháp" : "giống bản đang chạy"}</span></div>
             <div style={{ background: "linear-gradient(180deg,#EAF1FF,#F3F6FB)", padding: m ? "34px 18px 24px" : "40px 32px 30px 32px", display: "flex", flexDirection: m ? "column" : "row", gap: 18, alignItems: m ? "stretch" : "center", position: "relative" }}>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 14, minWidth: 0 }}>
-                <span style={{ position: "relative", alignSelf: "flex-start", marginBottom: 14 }}>{sel === "badge" && label(TXT.badge)}<Ed value={H.badge} onChange={(x) => setH({ badge: x })} onFocus={() => setSel("badge")} sel={sel === "badge"} testid="web-pb-badge" style={{ display: "inline-block", minWidth: 40, fontSize: 11, fontWeight: 700, background: "#E8F0FF", color: BLUE, borderRadius: 10, padding: "3px 9px" }} /></span>
+                <span style={{ position: "relative", alignSelf: "flex-start", marginBottom: 14 }}>{sel === "badge" && label(`${TXT.badge}${/%trial%/.test(H.badge || "") ? ` · %trial% = ${trial} ngày dùng thử` : ""}`)}<Ed value={H.badge} onChange={(x) => setH({ badge: x })} onFocus={() => setSel("badge")} sel={sel === "badge"} testid="web-pb-badge" style={{ display: "inline-block", minWidth: 40, fontSize: 11, fontWeight: 700, background: "#E8F0FF", color: BLUE, borderRadius: 10, padding: "3px 9px" }} /></span>
                 <div style={{ position: "relative", padding: "2px 6px", margin: "0 -6px", ...(sel === "title" ? OUT : {}) }}>
                   {sel === "title" && label(`${TXT.title} · đang sửa · ${String(H.title || "").replace(/\n/g, " ").length}/60 ký tự`)}
                   <Ed multi value={H.title} onChange={(x) => setH({ title: x })} onFocus={() => setSel("title")} testid="web-pb-title" style={{ display: "block", fontSize: m ? 26 : 28, fontWeight: 900, lineHeight: 1.15, letterSpacing: "-.02em" }} />
@@ -123,7 +127,16 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
           </div>
         </div>
         <aside style={{ width: 300, flexShrink: 0, background: "#FFF", borderLeft: `1px solid ${PC.line}`, padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
-          {sel === "img1" || sel === "img2" ? <>
+          {sel === "faq" ? <>
+            <b style={{ fontSize: 14 }}>Hỏi đáp trên trang chủ</b>
+            <span style={{ fontSize: 12, lineHeight: 1.45, color: PC.t3 }}>Hiện cạnh bảng giá và gắn schema Hỏi đáp cho Google. Gõ %trial% = {trial} ngày dùng thử. Giá gói lấy từ Gói cước & giới hạn của app.</span>
+            {(v.faq || HOME_FAQ).map((x, i) => { const list = v.faq || HOME_FAQ; const upd = (patch) => { setV((y) => ({ ...y, faq: list.map((z, k) => (k === i ? { ...z, ...patch } : z)) })); setDirty(true); }; return (
+              <span key={i} style={{ display: "flex", flexDirection: "column", gap: 6, padding: 10, borderRadius: 10, background: "#F8FAFC" }}>
+                <span style={{ display: "flex", gap: 6 }}><input value={x.q} onChange={(e) => upd({ q: e.target.value })} data-testid="web-pb-faq-q" className="pc-input" style={{ ...inpStyle(32), fontWeight: 700, fontSize: 12.5 }} /><button type="button" title="Xoá câu" onClick={() => { setV((y) => ({ ...y, faq: list.filter((_, k) => k !== i) })); setDirty(true); }} style={{ border: 0, background: "none", cursor: "pointer", color: PC.t3 }}>✕</button></span>
+                <textarea value={x.a} onChange={(e) => upd({ a: e.target.value })} className="pc-input" style={{ ...inpStyle(), height: 64, padding: "8px 10px", fontSize: 12.5, lineHeight: 1.5 }} />
+              </span>); })}
+            <span style={{ display: "flex", gap: 8 }}><Btn kind="soft" style={{ height: 30, fontSize: 12 }} onClick={() => { setV((y) => ({ ...y, faq: [...(y.faq || HOME_FAQ), { q: "", a: "" }] })); setDirty(true); }}>+ Thêm câu</Btn>{v.faq && <Btn kind="light" style={{ height: 30, fontSize: 12 }} onClick={() => { setV((y) => { const { faq, ...r } = y; return r; }); setDirty(true); }}>Về câu mặc định</Btn>}</span>
+          </> : sel === "img1" || sel === "img2" ? <>
             <b style={{ fontSize: 14 }}>Ảnh đã chọn · Banner ({sel === "img1" ? "ảnh trước" : "ảnh sau"})</b>
             <img src={H[sel] || `${WEB}/img/${sel === "img1" ? "app-today" : "app-menu"}.webp`} alt="" style={{ width: "100%", height: 150, objectFit: "cover", objectPosition: "top", borderRadius: 10, border: `1px solid ${PC.line}` }} />
             <span style={{ display: "flex", gap: 8 }}><Btn kind="soft" style={{ flex: 1 }} onClick={() => setPick(sel)} testid="web-pb-lib">Chọn từ thư viện</Btn><span style={{ flex: 1, display: "flex" }}><Upload box={false} name={`banner-${sel}`} label="Tải ảnh mới" showToast={showToast} onDone={(r) => setH({ [sel]: r.url })} /></span></span>
@@ -152,19 +165,3 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
   );
 }
 
-// Chọn ảnh từ Thư viện ảnh (bảng web_media)
-export function MediaPick({ onClose, onPick }) {
-  const [rows, setRows] = useState(null); const [q, setQ] = useState("");
-  useEffect(() => { supabase.from("web_media").select("path,url,alt,name").order("created_at", { ascending: false }).limit(300).then(({ data }) => setRows(data || [])); }, []);
-  const list = (rows || []).filter((r) => !q || `${r.name} ${r.alt || ""}`.toLowerCase().includes(q.toLowerCase()));
-  return (
-    <Modal title="Chọn ảnh từ thư viện" onClose={onClose} width={760} testid="web-media-pick">
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm theo tên, mô tả…" className="pc-input" style={{ ...inpStyle(34), marginBottom: 12 }} />
-      {!rows ? <Loading /> : !list.length ? <span style={{ fontSize: 12.5, color: PC.t3 }}>Chưa có ảnh nào — tải ảnh ở Thư viện ảnh hoặc bấm “Tải ảnh mới”.</span> : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, maxHeight: 460, overflowY: "auto" }}>
-          {list.map((r) => <button key={r.path} type="button" onClick={() => onPick(r)} title={r.alt || r.name} style={{ aspectRatio: "1/1", borderRadius: 10, overflow: "hidden", border: 0, padding: 0, cursor: "pointer", boxShadow: PC.shadow, background: "#FFF" }}><img src={r.url} alt={r.alt || ""} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /></button>)}
-        </div>
-      )}
-    </Modal>
-  );
-}
