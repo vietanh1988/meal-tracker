@@ -58,6 +58,12 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     const revs = await rest(`web_revisions?post_id=eq.${post.id}&select=id,reason`);
     expect(revs.length).toBe(1);
 
+    // Lịch sử bản sửa (138m): mở → có 1 bản → về trình soạn
+    await page.getByTestId("web-ed-history").click();
+    await expect(page.getByTestId("web-rev-item")).toHaveCount(1);
+    await page.getByTestId("web-rev-back").click();
+    await expect(page.getByTestId("web-ed-title")).toBeVisible();
+
     // Về danh sách (bấm lại "Bài viết") → bài có trong bảng → bỏ vào thùng rác
     await page.getByTestId("pc-nav-web_posts").click();
     await expect(page.getByTestId("web-post-table")).toBeVisible();
@@ -139,6 +145,26 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     expect(blk.kind).toBe("block");
     expect(blk.blocks[0]).toMatchObject({ type: "app", title: "E2E tiêu đề hộp app" });
     await rest(`web_blocks?name=like.E2E*`, { method: "DELETE" });
+
+    // Công cụ: tìm chữ trong bài e2e (đang ở thùng rác → không tìm), tab Link nội bộ + Xuất / nhập mở được
+    await page.getByTestId("pc-nav-web_tools").click();
+    await page.getByTestId("web-rp-find").fill("cơm tấm sườn khoảng 660");
+    await expect(page.getByTestId("web-rp-hit")).toHaveCount(0);
+    await page.getByTestId("web-tools-tab-1").click();
+    await page.getByTestId("web-tools-tab-2").click();
+    await expect(page.getByTestId("web-exp")).toBeVisible();
+
+    // Sửa trang chủ tại chỗ (138d): đổi tiêu đề → Lưu nháp → DB page_home_draft (web chưa đổi); dọn
+    await page.getByTestId("pc-nav-web_pages").click();
+    await page.getByTestId("web-page-builder").click();
+    await page.getByTestId("web-pb-title").click();
+    await page.keyboard.press("End");
+    await page.keyboard.type(" E2E");
+    await page.getByTestId("web-pb-draft").click();
+    await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu nháp");
+    const [dr] = await rest("web_settings?key=eq.page_home_draft&select=value");
+    expect(dr.value.hero.title).toContain("E2E");
+    await rest("web_settings?key=eq.page_home_draft", { method: "DELETE" });
 
     // Thống kê web: mở được, có 4 ô số + chọn khoảng ngày
     await page.getByTestId("pc-nav-web_stats").click();

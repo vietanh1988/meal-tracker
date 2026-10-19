@@ -18,6 +18,7 @@ import { STATUS, slugify, seoChecks, scoreLabel, wordCount, readMin, headings, i
 import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus } from "./webApi";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
 import { Rich, ListEdit, OtherBlock, Upload, kb, inlineClean, H_STYLE } from "./BlockEdit";
+import { PcWebRevisions } from "./PcWebRevisions";
 
 const WEB = "https://fipilotai.com";
 const EMPTY = (kind) => ({ id: null, kind, title: "", slug: "", status: "draft", blocks: [newBlock("p")], excerpt: "", cover_url: "", cover_alt: "", author_id: null, primary_term: null, pinned: false, related: { mode: "auto", ids: [] }, seo: {}, published_at: null, terms: [], template: null });
@@ -238,6 +239,9 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
   const seoTitle = post.seo?.title || `${post.title}${post.title ? " | Fipilot AI" : ""}`;
   const seoDesc = post.seo?.desc || post.excerpt || "";
 
+  // Lịch sử bản sửa (138m): màn so sánh thay chỗ trình soạn, về lại không mất gì
+  if (revs) return <PcWebRevisions top={top} revs={revs} post={fullRef.current ? fullRef.current() : post} termName={(id) => [...cats, ...tags].find((t) => t.id === id)?.name} onBack={() => setRevs(null)} onRestore={(sn) => { setMode("visual"); setPost((p) => ({ ...p, ...sn, id: p.id, blocks: withKeys(sn.blocks || []), terms: sn.terms || p.terms })); setDirty(true); setRevs(null); showToast?.("Đã mở lại bản cũ. Bấm Cập nhật / Lưu nháp để lưu."); }} />;
+
   return (
     <div className={full ? "web-full" : ""}>
       {top(
@@ -448,7 +452,6 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
           </>}
         </aside>
       </div>
-      {revs && <RevModal revs={revs} onClose={() => setRevs(null)} onRestore={(s) => { setPost((p) => ({ ...p, ...s, id: p.id, blocks: withKeys(s.blocks), terms: s.terms || p.terms })); setDirty(true); setRevs(null); showToast?.("Đã mở lại bản cũ. Bấm Cập nhật / Lưu nháp để lưu."); }} />}
       <style>{`.web-rich:empty:before{content:attr(data-ph);color:#94A3B8;pointer-events:none}.web-rich a{color:${BLUE};text-decoration:underline}.web-full{position:fixed;inset:0;z-index:50;background:${PC.bg};overflow:auto}.web-title::placeholder{color:#CBD5E1}[data-testid=web-ed-block][data-type=h]:not(:first-child){margin-top:10px!important}[data-testid=web-ed-block][data-type=h]+[data-testid=web-ed-block]{margin-top:-14px!important}[data-testid=web-ed-block][data-type=list] li{line-height:1.7}.web-titlebox:focus{border-color:#1A7CFF!important;box-shadow:0 0 0 3px rgba(26,124,255,.12)}`}</style>
     </div>
   );
@@ -553,16 +556,3 @@ function SchemaTab({ post, setSeo, kind }) {
   );
 }
 
-function RevModal({ revs, onClose, onRestore }) {
-  const [sel, setSel] = useState(revs[0] || null);
-  return (
-    <Modal title="Lịch sử bản sửa (giữ 30 bản gần nhất)" onClose={onClose} width={760} testid="web-rev-modal" foot={<><Btn kind="light" onClick={onClose}>Đóng</Btn><Btn kind="blue" disabled={!sel} onClick={() => onRestore(sel.snapshot)} testid="web-rev-restore">Mở lại bản này</Btn></>}>
-      {!revs.length ? <span style={{ fontSize: 13, color: PC.t3 }}>Chưa có bản sửa nào.</span> : (
-        <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: 16 }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2, maxHeight: 420, overflowY: "auto" }}>{revs.map((r) => <button key={r.id} type="button" onClick={() => setSel(r)} style={{ textAlign: "left", padding: "8px 10px", borderRadius: 8, border: 0, background: sel?.id === r.id ? PC.rowSel : "none", cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 12.5 }}>{fmtDT(r.created_at)}</b><span style={{ fontSize: 11.5, color: PC.t3 }}>{REASON[r.reason] || r.reason} · {(r.snapshot?.word_count || 0).toLocaleString("vi-VN")} chữ</span></button>)}</div>
-          {sel && <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, maxHeight: 420, overflowY: "auto" }}><b style={{ fontSize: 16 }}>{sel.snapshot?.title}</b><span style={{ color: PC.t3, fontSize: 12 }}>fipilotai.com/{sel.snapshot?.slug} · {STATUS[sel.snapshot?.status]?.[0]}</span>{(sel.snapshot?.blocks || []).slice(0, 40).map((b, i) => <span key={i} style={{ color: b.type === "h" ? PC.t1 : PC.t2, fontWeight: b.type === "h" ? 800 : 400, lineHeight: 1.5 }}>{String(b.text || b.html || (b.items || []).join(" · ") || `[${BLOCK_NAME[b.type] || b.type}]`).replace(/<[^>]+>/g, "").slice(0, 220)}</span>)}</div>}
-        </div>
-      )}
-    </Modal>
-  );
-}

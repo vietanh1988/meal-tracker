@@ -11,6 +11,7 @@ import { supabase } from "../../lib/supabase";
 import { STATUS, slugify } from "./webLib";
 import { listPosts, listTerms, setStatus, deleteForever, duplicatePost } from "./webApi";
 import { PcWebEditor } from "./PcWebEditor";
+import { PcWebPageBuilder } from "./PcWebPageBuilder";
 
 const COLS = "28px minmax(0,2.6fr) minmax(0,1fr) 0.7fr 0.9fr 1.1fr";
 const WEB = "https://fipilotai.com";
@@ -19,7 +20,8 @@ export const fullDT = (iso) => (iso ? new Date(iso).toLocaleString("vi-VN", { ti
 const ago = (iso) => { const m = Math.round((Date.now() - new Date(iso)) / 60000); if (m < 1) return "Sửa vừa xong"; if (m < 60) return `Sửa ${m} phút trước`; if (m < 24 * 60) return `Sửa ${Math.round(m / 60)} giờ trước`; if (m < 48 * 60) return "Sửa hôm qua"; return `Sửa ${fullDT(iso).slice(0, 10)}`; };
 const monthOf = (iso) => (iso ? new Date(iso).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", month: "2-digit", year: "numeric" }) : "");
 
-export function PcWebPosts({ top, showToast, user, appSettings, kind = "post" }) {
+export function PcWebPosts({ top, showToast, user, appSettings, kind = "post", go }) {
+  const [builder, setBuilder] = useState(false); // Trang › Sửa trang chủ tại chỗ (138d)
   const [rows, setRows] = useState(null);
   const [cats, setCats] = useState([]);
   const [err, setErr] = useState("");
@@ -31,7 +33,8 @@ export function PcWebPosts({ top, showToast, user, appSettings, kind = "post" })
   const [sel, setSel] = useState([]);
   const [bulk, setBulk] = useState("");
   const [busy, setBusy] = useState(false);
-  const [edit, setEdit] = useState(null); // id | "new" | null
+  // Mở thẳng trình soạn khi trang khác (Công cụ › Link nội bộ) gửi id qua sessionStorage
+  const [edit, setEdit] = useState(() => { try { const v = sessionStorage.getItem("fp_web_open"); if (v) { sessionStorage.removeItem("fp_web_open"); return v; } } catch (e) { /* */ } return null; }); // id | "new" | null
   const [quick, setQuick] = useState(null); // sửa nhanh: tiêu đề, đường dẫn, trạng thái, ngày đăng
   const noun = kind === "page" ? "trang" : "bài";
 
@@ -83,13 +86,14 @@ export function PcWebPosts({ top, showToast, user, appSettings, kind = "post" })
   };
   const dup = async (id) => { setBusy(true); try { await duplicatePost(id, user?.id); showToast?.("Đã nhân bản thành bản nháp."); await load(); } catch (e) { showToast?.("Chưa nhân bản được: " + (e.message || "")); } setBusy(false); };
 
+  if (builder) return <PcWebPageBuilder top={top} showToast={showToast} go={go} onBack={() => setBuilder(false)} />;
   if (edit) return <PcWebEditor top={top} id={edit === "new" ? null : edit} kind={kind} user={user} appSettings={appSettings} showToast={showToast} onBack={() => { setEdit(null); load(); }} />;
 
   const allOn = list.length > 0 && list.every((r) => sel.includes(r.id));
   const BULK = tab === "trash" ? [["restore", "Khôi phục"], ["delete", "Xoá hẳn"]] : [["published", "Đăng ngay"], ["draft", "Chuyển về nháp"], ["trash", "Bỏ vào thùng rác"]];
   return (
     <>
-      {top(<Btn kind="blue" testid="web-post-new" onClick={() => setEdit("new")}>+ {kind === "page" ? "Thêm trang mới" : "Viết bài mới"}</Btn>)}
+      {top(<span style={{ display: "flex", gap: 8 }}>{kind === "page" && <Btn kind="soft" testid="web-page-builder" onClick={() => setBuilder(true)}>✎ Sửa trang chủ tại chỗ</Btn>}<Btn kind="blue" testid="web-post-new" onClick={() => setEdit("new")}>+ {kind === "page" ? "Thêm trang mới" : "Viết bài mới"}</Btn></span>)}
       <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 13, flexWrap: "wrap" }}>
           {[["all", "Tất cả"], ["published", "Đã đăng"], ["scheduled", "Hẹn giờ"], ["draft", "Bản nháp"], ["trash", "Thùng rác"]].map(([k, t]) => (

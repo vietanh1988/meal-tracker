@@ -136,3 +136,35 @@ export function htmlToBlocksFp(text, parse) {
   flush(text.slice(last));
   return out;
 }
+
+// ===== So sánh 2 bản (Lịch sử bản sửa, bản vẽ 138m) =====
+const lcs = (a, b, eq) => { const n = a.length, m = b.length; const d = Array.from({ length: n + 1 }, () => new Int32Array(m + 1)); for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) d[i][j] = eq(a[i], b[j]) ? d[i + 1][j + 1] + 1 : Math.max(d[i + 1][j], d[i][j + 1]); const out = []; let i = 0, j = 0; while (i < n && j < m) { if (eq(a[i], b[j])) { out.push(["=", a[i], b[j]]); i++; j++; } else if (d[i + 1][j] >= d[i][j + 1]) out.push(["-", a[i++], null]); else out.push(["+", null, b[j++]]); } while (i < n) out.push(["-", a[i++], null]); while (j < m) out.push(["+", null, b[j++]]); return out; };
+// Chữ → các phần [op, chữ] (op: "=" giữ, "-" bỏ, "+" thêm), so theo từ
+export function wordDiff(a, b) {
+  const tok = (x) => String(x || "").match(/\S+\s*|\s+/g) || []; // từ kèm dấu cách sau → đoạn đổi liền một khối
+  const A = tok(a), B = tok(b);
+  if (A.length * B.length > 250000) return [["-", a], ["+", b]];
+  const out = []; for (const [op, x, y] of lcs(A, B, (p, q) => p === q)) { const t = op === "+" ? y : x; const last = out[out.length - 1]; if (last && last[0] === op) last[1] += t; else out.push([op, t]); }
+  return out;
+}
+export const blockText = (b) => { if (!b) return ""; const t = b.type; if (t === "p" || t === "quote" || t === "tip" || t === "html") return textOf(b.html); if (t === "h") return textOf(b.text); if (t === "list") return (b.items || []).map(textOf).join(" · "); if (t === "faq") return (b.items || []).map((x) => `${x.q} ${x.a}`).join(" · "); if (t === "img") return b.alt || b.url || ""; if (t === "calo") return b.food || ""; if (t === "app") return [b.title, b.text, b.button].filter(Boolean).join(" · "); if (t === "button") return b.label || ""; if (t === "table") return [...(b.head || []), ...(b.rows || []).flat()].join(" · "); return JSON.stringify(b); };
+// Khối → cặp [op, khốiCũ, khốiMới]; khối cùng loại, chữ gần giống thì ghép thành "~" (sửa) để so theo từ
+export function blockDiff(oldB, newB) {
+  const key = (b) => `${b?.type}|${b?.level || ""}|${blockText(b)}`;
+  const raw = lcs(oldB || [], newB || [], (x, y) => key(x) === key(y));
+  // Trong mỗi cụm bỏ/thêm liền nhau: ghép khối cũ ↔ mới cùng loại, chữ giống nhau nhiều nhất (≥ 40% từ chung) thành "~"
+  const sim = (x, y) => { const A = new Set(blockText(x).toLowerCase().split(/\s+/).filter(Boolean)), B = blockText(y).toLowerCase().split(/\s+/).filter(Boolean); if (!A.size || !B.length) return 0; let n = 0; for (const w of B) if (A.has(w)) n++; return n / Math.max(A.size, B.length); };
+  const out = [];
+  for (let i = 0; i < raw.length;) {
+    if (raw[i][0] === "=") { out.push(raw[i++]); continue; }
+    const run = []; while (i < raw.length && raw[i][0] !== "=") run.push(raw[i++]);
+    const dels = run.filter((r) => r[0] === "-").map((r) => r[1]), adds = run.filter((r) => r[0] === "+").map((r) => r[2]);
+    const pair = new Map(); const used = new Set();
+    for (const y of adds) { let best = null, sc = 0.4; for (const x of dels) if (!used.has(x) && x.type === y.type) { const v = sim(x, y); if (v >= sc) { sc = v; best = x; } } if (best) { pair.set(y, best); used.add(best); } }
+    // giữ thứ tự bản mới; khối cũ bị bỏ chen vào đúng chỗ của nó
+    let di = 0;
+    for (const y of adds) { const x = pair.get(y); if (x) { const at = dels.indexOf(x); while (di < at) { if (!used.has(dels[di])) out.push(["-", dels[di], null]); di++; } out.push(["~", x, y]); di = Math.max(di, at + 1); } else out.push(["+", null, y]); }
+    for (; di < dels.length; di++) if (!used.has(dels[di])) out.push(["-", dels[di], null]);
+  }
+  return out;
+}
