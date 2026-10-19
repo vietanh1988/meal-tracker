@@ -187,12 +187,20 @@ export function matchMedia(alt, media = [], used = []) {
   return best;
 }
 
-// Tiền: giá USD / 1 triệu token (đồng bộ với ai-proxy); tra web 0,01 USD / lượt; ảnh theo bảng IMG_PRICE
-export const TEXT_PRICE = { "claude-haiku-5-5": { in: 0.10, out: 0.50 }, "claude-sonnet-5-5": { in: 2, out: 10 }, "claude-opus-5-5": { in: 4, out: 20 } };
-export const SEARCH_PRICE = 0.01;
-export const IMG_PRICE = { flux: 0.003 };
-export const textCost = (model, inTok, outTok, searches = 0) => { const p = TEXT_PRICE[model] || TEXT_PRICE["claude-sonnet-5-5"]; return (inTok * p.in + outTok * p.out) / 1e6 + searches * SEARCH_PRICE; };
+// Tiền: giá USD / 1 triệu token (đồng bộ với ai-proxy PRICING, tra 18/10/2026); tra web / ảnh: ƯỚC TÍNH, kiểm lại khi có hoá đơn thật
+export const TEXT_PRICE = {
+  "claude-haiku-5-5": { in: 0.10, out: 0.50 }, "claude-sonnet-5-5": { in: 2, out: 10 }, "claude-opus-5-5": { in: 4, out: 20 },
+  "gemini-3.5-flash-lite": { in: 0.30, out: 2.50 }, "gemini-3.8-flash": { in: 0.75, out: 3.75 }, "gemini-3.1-pro-preview": { in: 2, out: 12 },
+  "gpt-6-luna": { in: 0.10, out: 0.50 }, "gpt-6.1-sol": { in: 2, out: 10 }, "gpt-6-astra": { in: 10, out: 50 },
+};
+export const providerOf = (model) => (/^gemini/.test(model) ? "gemini" : /^gpt/.test(model) ? "gpt" : "claude");
+export const SEARCH_PRICE = { claude: 0.01, gemini: 0.014, gpt: 0.01 }; // USD / lượt tra web
+export const IMG_PRICE = { flux: 0.003, gemini: 0.039, gpt: 0.006 }; // USD / ảnh (Flux schnell ~1MP; Gemini ảnh; GPT ảnh mini chất lượng thấp)
+export const IMG_MODEL = { flux: "fal-ai/flux/schnell", gemini: "gemini-2.5-flash-image", gpt: "gpt-image-1-mini" };
+export const textCost = (model, inTok, outTok, searches = 0) => { const p = TEXT_PRICE[model] || TEXT_PRICE["claude-sonnet-5-5"]; return (inTok * p.in + outTok * p.out) / 1e6 + searches * SEARCH_PRICE[providerOf(model)]; };
+// Ước tính tiền chữ 1 bài khi chưa có bài thật: ~25 nghìn token vào (quy tắc + ghi chú tra cứu, cả các đoạn viết tiếp), ~8 nghìn token ra
+export const estText = (model, searches = 3) => textCost(model, 25000, 8000, searches);
 
 // Cài đặt mặc định của màn AI viết bài
-export const AI_DEFAULTS = { model: "claude-sonnet-5-5", key_mode: "shared", searches: 3, img_on: true, img_provider: "flux", img_inline: 1, img_reuse: true, rate: 26000, daily_cap_usd: 2, rules: null };
-export const cfgOf = (data) => ({ ...AI_DEFAULTS, ...(data || {}) });
+export const AI_DEFAULTS = { provider: "claude", model: "claude-sonnet-5-5", key_mode: "shared", searches: 3, img_on: true, img_provider: "flux", img_inline: 1, img_reuse: true, rate: 26000, daily_cap_usd: 2, rules: null };
+export const cfgOf = (data) => { const c = { ...AI_DEFAULTS, ...(data || {}) }; c.provider = providerOf(c.model); return c; };

@@ -14,14 +14,16 @@ import { todayVN } from "../../lib/dateVN";
 import { Btn, Pill, Card, ErrorBox, Loading, vnInt } from "../pcUI";
 import { Modal, Tog, inpStyle } from "./webUI";
 import { listTerms } from "./webApi";
-import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE } from "./aiWrite";
+import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE, estText, providerOf } from "./aiWrite";
+import { PROVIDERS, MODELS as AI_MODELS, DEFAULT_MODEL } from "../../lib/aiModels";
 
-const MODELS = [
-  { id: "claude-haiku-5-5", name: "Claude Haiku 5.5", badge: ["Tiết kiệm", "green"], est: 0.01 },
-  { id: "claude-sonnet-5-5", name: "Claude Sonnet 5.5", badge: ["Khuyên dùng", "blue"], est: 0.2 },
-  { id: "claude-opus-5-5", name: "Claude Opus 5.5", badge: ["Cao cấp", "amber"], est: 0.35 },
-];
-const short = (m) => (MODELS.find((x) => x.id === m)?.name || m || "").replace("Claude ", "").replace(" 5.5", "");
+// Hãng viết: Claude / Gemini / ChatGPT (danh sách mô hình dùng chung với Kết nối AI); mọi hãng đều tra web được
+const PNAME = { claude: "Claude", gemini: "Gemini", gpt: "ChatGPT" };
+const BADGE = { "Tiết kiệm": "green", "Khuyên dùng": "blue", "Cao cấp": "amber" };
+const ALL_MODELS = Object.entries(AI_MODELS).flatMap(([p, list]) => list.map((m) => ({ ...m, p })));
+const short = (m) => ALL_MODELS.find((x) => x.id === m)?.name || m || "";
+// Hãng vẽ ảnh: khoá lấy ở Kết nối AI (fal.ai / Gemini / OpenAI)
+const IMGP = [["flux", "Flux nhanh (fal.ai)", "fal_key"], ["gemini", "Gemini", "gemini_key"], ["gpt", "ChatGPT (OpenAI)", "gpt_key"]];
 const ST = {
   queued: ["Đang chờ", "gray"], research: ["Đang tra cứu", "blue"], writing: ["Đang viết", "blue"], fixing: ["Đang sửa", "blue"],
   images: ["Đang vẽ ảnh", "violet"], saving: ["Đang lưu", "blue"], done: ["Đã lưu nháp", "green"], error: ["Lỗi", "red"], canceled: ["Đã huỷ", "gray"],
@@ -94,9 +96,9 @@ export function PcWebAi({ top, showToast, user, go }) {
   const estFor = useCallback((model) => {
     const done = (jobs || []).filter((j) => j.status === "done" && j.model === model);
     if (done.length) return { v: done.reduce((s, j) => s + Number(j.cost_text), 0) / done.length, real: done.length };
-    return { v: MODELS.find((m) => m.id === model)?.est ?? 0.2, real: 0 };
-  }, [jobs]);
-  const imgEst = cfg ? (cfg.img_on ? (1 + (cfg.img_inline || 0)) * IMG_PRICE.flux : 0) : 0;
+    return { v: estText(model, cfg?.searches ?? 3), real: 0 };
+  }, [jobs, cfg?.searches]);
+  const imgEst = cfg ? (cfg.img_on ? (1 + (cfg.img_inline || 0)) * IMG_PRICE[cfg.img_provider || "flux"] : 0) : 0;
 
   const stats = useMemo(() => {
     const list = jobs || []; const done = list.filter((j) => j.status === "done");
@@ -128,10 +130,10 @@ export function PcWebAi({ top, showToast, user, go }) {
     setBusy("t-" + which);
     const d = await authFetch("web-writer", { action: "test", which, key_mode: cfg.key_mode }).catch((e) => ({ error: e.message }));
     setBusy("");
-    showToast?.(d?.ok ? { text: which === "fal" ? "Khoá fal.ai dùng được." : "Khoá Claude dùng được." } : { text: "Chưa được: " + (d?.error || "lỗi không rõ"), tone: "red" });
+    showToast?.(d?.ok ? { text: which === "fal" ? "Khoá fal.ai dùng được." : `Khoá ${PNAME[providerOf(cfg.model)]} dùng được.` } : { text: "Chưa được: " + (d?.error || "lỗi không rõ"), tone: "red" });
   };
   const saveOwnKey = async () => {
-    const r = await saveKeys({ claude_writer_key: ownKey });
+    const r = await saveKeys({ [`${providerOf(cfg.model)}_writer_key`]: ownKey });
     if (!r.ok) return showToast?.({ text: r.error, tone: "red" });
     setOwnKey(""); showToast?.({ text: "Đã lưu khoá riêng cho viết bài." });
   };
@@ -140,7 +142,10 @@ export function PcWebAi({ top, showToast, user, go }) {
   if (!cfg || !jobs) return <>{top(null, "AI viết bài")}<Loading /></>;
 
   const capHit = Number(cfg.daily_cap_usd) > 0 && today >= Number(cfg.daily_cap_usd);
-  const keyShared = keySt.claude_key?.set, keyOwn = keySt.claude_writer_key?.set;
+  const prov = providerOf(cfg.model);
+  const keyShared = keySt[`${prov}_key`]?.set, keyOwn = keySt[`${prov}_writer_key`]?.set;
+  const imgP = IMGP.find((x) => x[0] === (cfg.img_provider || "flux")) || IMGP[0];
+  const imgKey = keySt[imgP[2]];
   const keyOk = cfg.key_mode === "own" ? keyOwn : keyShared;
   const est = estFor(cfg.model);
   const months = Array.from({ length: 6 }, (_, i) => { const d = new Date(`${todayVN().slice(0, 7)}-15T00:00:00+07:00`); d.setUTCMonth(d.getUTCMonth() - i); return d.toISOString().slice(0, 7); });
@@ -190,7 +195,7 @@ export function PcWebAi({ top, showToast, user, go }) {
                 <div style={{ flex: 1, background: PC.soft, color: "#1E40AF", borderRadius: 10, padding: "11px 14px", fontSize: 12.5 }} data-testid="web-ai-est">
                   ⓘ Ước tính ~{usd(est.v).replace(" USD", "")} USD tiền chữ{cfg.img_on ? ` + ~${usd(imgEst).replace(" USD", "")} USD tiền ảnh` : ""} mỗi bài {est.real ? `(trung bình thật ${est.real} bài)` : "(chưa đo)"} · mỗi bài khoảng 3–7 phút · xong tự lưu bản nháp
                 </div>
-                <Btn kind="blue" testid="web-ai-go" disabled={!lines.length || lines.length > 10 || !!busy || !keyOk} onClick={enqueue} style={{ height: 44, padding: "0 26px", fontSize: 14 }} title={keyOk ? "" : "Chưa có khoá Claude"}>{busy === "q" ? "Đang xếp…" : `Xếp hàng viết ${lines.length || ""} bài`.replace("  ", " ")}</Btn>
+                <Btn kind="blue" testid="web-ai-go" disabled={!lines.length || lines.length > 10 || !!busy || !keyOk} onClick={enqueue} style={{ height: 44, padding: "0 26px", fontSize: 14 }} title={keyOk ? "" : `Chưa có khoá ${PNAME[prov]}`}>{busy === "q" ? "Đang xếp…" : `Xếp hàng viết ${lines.length || ""} bài`.replace("  ", " ")}</Btn>
               </div>
             </Card>
 
@@ -245,31 +250,36 @@ export function PcWebAi({ top, showToast, user, go }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
             <Card style={card} testid="web-ai-models">
               <h3 style={h3}>Mô hình viết</h3>
-              {MODELS.map((m) => {
-                const on = cfg.model === m.id; const p = TEXT_PRICE[m.id]; const e = estFor(m.id);
+              <div role="group" aria-label="Hãng AI viết" style={{ display: "flex", padding: 3, background: "#F1F5F9", borderRadius: 10, marginBottom: 10 }}>
+                {PROVIDERS.map((p) => <button key={p.id} type="button" data-testid={`web-ai-prov-${p.id}`} aria-pressed={prov === p.id} onClick={() => prov !== p.id && setC({ model: DEFAULT_MODEL[p.id] })}
+                  style={{ flex: 1, height: 32, border: 0, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 800, background: prov === p.id ? "#FFF" : "transparent", color: prov === p.id ? PC.softFg : PC.t2, boxShadow: prov === p.id ? "0 1px 3px rgba(15,23,42,.12)" : "none" }}>{PNAME[p.id]}</button>)}
+              </div>
+              {(AI_MODELS[prov] || []).map((m) => {
+                const on = cfg.model === m.id; const p = TEXT_PRICE[m.id] || { in: 0, out: 0 }; const e = estFor(m.id);
                 return (
                   <button key={m.id} type="button" data-testid={`web-ai-model-${m.id}`} aria-pressed={on} onClick={() => setC({ model: m.id })}
                     style={{ width: "100%", textAlign: "left", display: "flex", gap: 10, border: `1.5px solid ${on ? "#1A7CFF" : PC.field}`, background: on ? "#F5F9FF" : "#FFF", boxShadow: on ? "0 0 0 3px rgba(26,124,255,.10)" : "none", borderRadius: 12, padding: "11px 12px", marginBottom: 8, cursor: "pointer", fontFamily: "inherit", color: PC.t1 }}>
                     <span style={{ width: 18, height: 18, borderRadius: "50%", border: on ? "5px solid #0062F0" : "2px solid #CBD5E1", flex: "none", marginTop: 1, boxSizing: "border-box" }} />
-                    <span><b style={{ fontSize: 13.5 }}>{m.name}</b> <Pill tone={m.badge[1]}>{m.badge[0]}</Pill>
+                    <span><b style={{ fontSize: 13.5 }}>{prov === "claude" ? "Claude " : ""}{m.name}</b> <Pill tone={BADGE[m.badge] || "gray"}>{m.badge}</Pill>
                       <span style={{ display: "block", fontWeight: 800, fontSize: 12.5, marginTop: 3 }}>${p.in.toFixed(2)} / ${p.out.toFixed(2)} <span style={{ color: PC.t3, fontWeight: 500 }}>(1 triệu token vào / ra)</span></span>
                       <span style={{ display: "block", color: PC.t3, fontSize: 11.5, marginTop: 2 }}>~{usd(e.v)}/bài {e.real ? `(trung bình thật ${e.real} bài)` : "(chưa đo)"}</span></span>
                   </button>
                 );
               })}
+              <div style={sub}>Cả 3 hãng đều tra web để kiểm số liệu (Claude: web search · Gemini: Google Search · ChatGPT: web search).</div>
             </Card>
 
             <Card style={card} testid="web-ai-key">
-              <h3 style={h3}>Khoá API Claude <span style={{ marginLeft: "auto" }}><Pill tone={keyOk ? "green" : "red"}>{keyOk ? "✓ Đã có khoá" : "Chưa có khoá"}</Pill></span></h3>
-              <Radio on={cfg.key_mode !== "own"} onClick={() => setC({ key_mode: "shared" })} testid="web-ai-key-shared">Dùng chung khoá ở Kết nối AI{keyShared ? ` (••••${keySt.claude_key.last4})` : ""}</Radio>
+              <h3 style={h3}>Khoá API {PNAME[prov]} <span style={{ marginLeft: "auto" }}><Pill tone={keyOk ? "green" : "red"}>{keyOk ? "✓ Đã có khoá" : "Chưa có khoá"}</Pill></span></h3>
+              <Radio on={cfg.key_mode !== "own"} onClick={() => setC({ key_mode: "shared" })} testid="web-ai-key-shared">Dùng chung khoá ở Kết nối AI{keyShared ? ` (••••${keySt[`${prov}_key`].last4})` : ""}</Radio>
               <Radio on={cfg.key_mode === "own"} onClick={() => setC({ key_mode: "own" })} testid="web-ai-key-own">Dùng khoá riêng cho viết bài (để tách tiền)</Radio>
               {cfg.key_mode === "own" && <>
-                <input type="password" autoComplete="off" value={ownKey} onChange={(e) => setOwnKey(e.target.value)} data-testid="web-ai-key-input" placeholder={keyOwn ? `Đã cài · ••••${keySt.claude_writer_key.last4} — dán khoá mới để thay` : "sk-ant-..."} style={{ ...inpStyle(), marginTop: 8 }} />
+                <input type="password" autoComplete="off" value={ownKey} onChange={(e) => setOwnKey(e.target.value)} data-testid="web-ai-key-input" placeholder={keyOwn ? `Đã cài · ••••${keySt[`${prov}_writer_key`].last4} — dán khoá mới để thay` : { claude: "sk-ant-...", gemini: "AIzaSy...", gpt: "sk-..." }[prov]} style={{ ...inpStyle(), marginTop: 8 }} />
                 <div style={{ ...sub, marginTop: 6 }}>Chỉ ghi, không hiện lại khoá đã lưu.</div>
               </>}
               <div style={{ display: "grid", gridTemplateColumns: cfg.key_mode === "own" ? "1fr 1fr" : "1fr", gap: 10, marginTop: 12 }}>
                 {cfg.key_mode === "own" && <Btn kind="blue" onClick={saveOwnKey} disabled={!ownKey.trim()} testid="web-ai-key-save">Lưu khoá</Btn>}
-                <Btn kind="soft" onClick={() => test("claude")} disabled={!!busy || !keyOk} testid="web-ai-key-test" title="Gửi 1 câu rất ngắn (tốn rất ít phí)">{busy === "t-claude" ? "Đang thử…" : "Kiểm tra"}</Btn>
+                <Btn kind="soft" onClick={() => test("text")} disabled={!!busy || !keyOk} testid="web-ai-key-test" title="Gửi 1 câu rất ngắn (tốn rất ít phí)">{busy === "t-claude" ? "Đang thử…" : "Kiểm tra"}</Btn>
               </div>
             </Card>
 
@@ -281,19 +291,23 @@ export function PcWebAi({ top, showToast, user, go }) {
                   <select value={cfg.img_inline} onChange={(e) => setC({ img_inline: Number(e.target.value) })} data-testid="web-ai-img-count" style={{ ...inpStyle(32), width: "auto", fontWeight: 700 }}>
                     {[[0, "Chỉ ảnh bìa"], [1, "1 bìa + 1 trong bài"], [2, "1 bìa + 2 trong bài"], [3, "1 bìa + 3 trong bài"]].map(([v, t]) => <option key={v} value={v}>{t}</option>)}
                   </select></div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, fontSize: 13, marginTop: 10 }}><span>AI vẽ</span><span style={{ fontWeight: 700 }}>Flux nhanh (fal.ai) <Pill tone={keySt.fal_key?.set ? "green" : "red"}>{keySt.fal_key?.set ? `••••${keySt.fal_key.last4}` : "Chưa có khoá"}</Pill></span></div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, fontSize: 13, marginTop: 10 }}><span>AI vẽ</span>
+                  <select value={imgP[0]} onChange={(e) => setC({ img_provider: e.target.value })} data-testid="web-ai-img-prov" style={{ ...inpStyle(32), width: "auto", fontWeight: 700 }}>
+                    {IMGP.map(([v, t]) => <option key={v} value={v}>{t} · ~{String(IMG_PRICE[v]).replace(".", ",")} USD/ảnh</option>)}
+                  </select></div>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}><Pill tone={imgKey?.set ? "green" : "red"}>{imgKey?.set ? `Khoá ${imgP[0] === "flux" ? "fal.ai" : PNAME[imgP[0]]} ••••${imgKey.last4}` : `Chưa có khoá ${imgP[0] === "flux" ? "fal.ai" : PNAME[imgP[0]]}`}</Pill></div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, fontSize: 13, marginTop: 10 }}><span>Dùng lại ảnh trong Thư viện trước</span><Tog on={!!cfg.img_reuse} onChange={(v) => setC({ img_reuse: v })} testid="web-ai-img-reuse" /></div>
-                <div style={{ ...sub, marginTop: 10 }}>Vẽ theo câu mô tả ở từng ô ảnh: ảnh chụp món Việt thật, ánh sáng tự nhiên, không chữ trên ảnh. ~{IMG_PRICE.flux.toString().replace(".", ",")} USD/ảnh (chưa đo). Ảnh nào chưa ưng thì bấm "Vẽ lại" trong trình soạn bài. Bài còn ô ảnh trống thì không đăng được.</div>
+                <div style={{ ...sub, marginTop: 10 }}>Vẽ theo câu mô tả ở từng ô ảnh: ảnh chụp món Việt thật, ánh sáng tự nhiên, không chữ trên ảnh. Giá ảnh là ước tính (chưa đo). Ảnh nào chưa ưng thì bấm "Vẽ lại" trong trình soạn bài. Bài còn ô ảnh trống thì không đăng được.</div>
                 <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-                  {!keySt.fal_key?.set && <Btn kind="soft" onClick={() => go?.("ai")} testid="web-ai-fal-link">Nhập khoá ở Kết nối AI ›</Btn>}
-                  {keySt.fal_key?.set && <Btn kind="soft" onClick={() => test("fal")} disabled={!!busy} testid="web-ai-fal-test">{busy === "t-fal" ? "Đang thử…" : "Kiểm tra khoá fal.ai"}</Btn>}
+                  {!imgKey?.set && <Btn kind="soft" onClick={() => go?.("ai")} testid="web-ai-fal-link">Nhập khoá ở Kết nối AI ›</Btn>}
+                  {imgKey?.set && imgP[0] === "flux" && <Btn kind="soft" onClick={() => test("fal")} disabled={!!busy} testid="web-ai-fal-test">{busy === "t-fal" ? "Đang thử…" : "Kiểm tra khoá fal.ai"}</Btn>}
                 </div>
               </>}
             </Card>
 
             <Card style={card} testid="web-ai-search">
               <h3 style={h3}>Tra web khi viết</h3>
-              <div style={sub}>~{SEARCH_PRICE.toString().replace(".", ",")} USD mỗi lượt. Dùng để kiểm số liệu dinh dưỡng trước khi viết.</div>
+              <div style={sub}>~{String(SEARCH_PRICE[prov]).replace(".", ",")} USD mỗi lượt ({PNAME[prov]}). Dùng để kiểm số liệu dinh dưỡng trước khi viết.</div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10, fontSize: 13 }}>
                 <span>Tối đa <b>{cfg.searches}</b> lượt mỗi bài</span>
                 <span style={{ display: "flex", border: `1px solid ${PC.field}`, borderRadius: 10, overflow: "hidden" }}>

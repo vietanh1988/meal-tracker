@@ -140,3 +140,45 @@ test("bài thiếu sapo in đậm → nhờ AI sửa 1 lần rồi mới lưu", 
   assert.match(tables.web_posts[0].blocks[0].html, /<b>/);
   assert.equal(tables.web_posts[0].cover_url, null);
 });
+
+// Gemini / ChatGPT: cùng luồng, khác cách gọi API
+function setupProv(model, imgProvider) {
+  const env = setup({ cfg: { model, img_provider: imgProvider, searches: 2 } });
+  env.tables.app_settings.push({ key: "gemini_key", value: "AIza-test-xxxxxxxxxxxxxxxxxxxx" }, { key: "gpt_key", value: "sk-test-xxxxxxxxxxxxxxxxxxxxxxxx" });
+  env.tables.web_ai_jobs[0].model = model;
+  const calls = []; let n = 0;
+  const half = Math.floor(ARTICLE.length / 2);
+  const fetch = async (url, opt = {}) => {
+    const u = String(url); const body = opt.body ? JSON.parse(opt.body) : {}; calls.push({ u, body });
+    if (u.includes("gemini-2.5-flash-image")) return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { mimeType: "image/png", data: btoa("png") } }] } }] }));
+    if (u.includes("images/generations")) return new Response(JSON.stringify({ data: [{ b64_json: btoa("jpg") }] }));
+    if (u.includes("generativelanguage")) {
+      if (body.tools) return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "Chuyên mục: thuc-don\nSố liệu đã kiểm:\n- x" }] }, finishReason: "STOP", groundingMetadata: { webSearchQueries: ["a", "b"] } }], usageMetadata: { promptTokenCount: 1000, candidatesTokenCount: 200 } }));
+      const first = n++ === 0;
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: first ? ARTICLE.slice(0, half) : ARTICLE.slice(half) }] }, finishReason: first ? "MAX_TOKENS" : "STOP" }], usageMetadata: { promptTokenCount: 2000, candidatesTokenCount: 3000, thoughtsTokenCount: 100 } }));
+    }
+    if (u.includes("/v1/responses")) return new Response(JSON.stringify({ status: "completed", output: [{ type: "web_search_call" }, { type: "message", content: [{ type: "output_text", text: "Chuyên mục: thuc-don\n- x" }] }], usage: { input_tokens: 1000, output_tokens: 200 } }));
+    if (u.includes("chat/completions")) { const first = n++ === 0; return new Response(JSON.stringify({ choices: [{ message: { content: first ? ARTICLE.slice(0, half) : ARTICLE.slice(half) }, finish_reason: first ? "length" : "stop" }], usage: { prompt_tokens: 2000, completion_tokens: 3000 } })); }
+    throw new Error("fetch lạ " + u);
+  };
+  const w = makeWriter({ db: () => env.db, Image: { decode: async () => { throw new Error("x"); } }, fetch });
+  return { ...env, w, calls };
+}
+
+for (const [model, ip, searchUrl, writeUrl, imgUrl] of [
+  ["gemini-3.8-flash", "gemini", "generativelanguage", "generativelanguage", "gemini-2.5-flash-image"],
+  ["gpt-6.1-sol", "gpt", "/v1/responses", "chat/completions", "images/generations"],
+]) {
+  test(`viết bằng ${model} + vẽ ảnh ${ip}: tra web, viết tiếp khi bị cắt, ảnh, lưu nháp`, async () => {
+    const { w, tables, calls } = setupProv(model, ip);
+    for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+    const j = tables.web_ai_jobs[0];
+    assert.equal(j.status, "done", j.error || "");
+    assert.ok(calls.some((c) => c.u.includes(searchUrl) && (c.body.tools || []).length));
+    assert.equal(calls.filter((c) => c.u.includes(writeUrl) && !c.u.includes(imgUrl) && !(c.body.tools || []).length).length, 2);
+    assert.equal(calls.filter((c) => c.u.includes(imgUrl)).length, 2);
+    assert.ok(j.searches >= 1); assert.ok(Number(j.cost_text) > 0); assert.ok(Number(j.cost_img) > 0);
+    assert.equal(tables.web_posts[0].primary_term, "t1");
+    assert.ok(tables.ai_usage_log.some((l) => l.provider === ip && l.feature === "web_article"));
+  });
+}

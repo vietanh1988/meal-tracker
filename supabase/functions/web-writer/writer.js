@@ -1,7 +1,7 @@
 // Lõi web-writer (JS thuần để test được bằng bun): index.ts chỉ nạp thư viện rồi gọi makeWriter.
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
-  imagePrompt, matchMedia, textCost, IMG_PRICE, slugOf,
+  imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf,
 } from "./aiWrite.js";
 
 export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
@@ -20,9 +20,12 @@ const json = (req, body, status = 200) => new Response(JSON.stringify(body), { s
 
 async function setting(admin, key) { const { data } = await admin.from("app_settings").select("value").eq("key", key).maybeSingle(); return data?.value || ""; }
 async function config(admin) { const { data } = await admin.from("web_ai_config").select("data").eq("id", 1).maybeSingle(); return cfgOf(data?.data); }
-async function claudeKeys(admin, cfg) {
-  const own = cfg.key_mode === "own" ? await setting(admin, "claude_writer_key") : "";
-  return own ? [own] : [...new Set([await setting(admin, "claude_key"), ENV_CLAUDE].filter(Boolean))];
+const NAMES = { claude: "Claude", gemini: "Gemini", gpt: "ChatGPT" };
+// Khoá viết bài: khoá riêng (<hãng>_writer_key) nếu chọn "khoá riêng", không thì khoá chung ở Kết nối AI (Claude còn khoá Secret dự phòng)
+async function keysFor(admin, cfg, provider) {
+  const own = cfg.key_mode === "own" ? await setting(admin, `${provider}_writer_key`) : "";
+  if (own) return [own];
+  return [...new Set([await setting(admin, `${provider}_key`), provider === "claude" ? ENV_CLAUDE : ""].filter(Boolean))];
 }
 
 // Cấu hình suy nghĩ giống ai-proxy (đã chạy thật)
@@ -31,12 +34,56 @@ function claudeExtra(model) {
   if (model === "claude-sonnet-5-5") return { thinking: { type: "between_tools" }, output_config: { effort: "low" } };
   return { output_config: { effort: "low" } };
 }
+const THINK_ROOM = 2048;
+const gptExtra = (m) => (m === "gpt-6-luna" ? { extra: { reasoning_effort: "none" }, room: 0 } : /^gpt-6/.test(m) ? { extra: { reasoning_effort: "low" }, room: THINK_ROOM } : { extra: {}, room: 0 });
+const geminiExtra = (m) => (/^gemini-3/.test(m) ? { extra: { thinkingConfig: { thinkingLevel: "low" } }, room: THINK_ROOM } : { extra: {}, room: 0 });
 
-async function claude(keys, body) {
-  if (!keys.length) throw new Error("Chưa có khoá Claude: nhập ở Kết nối AI hoặc khoá riêng ở màn AI viết bài.");
+// 1 lần gọi AI viết. search > 0: cho tra web (Claude web_search · Gemini Google Search · ChatGPT web_search).
+// Trả { text, more (bị cắt vì hết token → viết tiếp), inTok, outTok, searches }
+async function llm(provider, keys, { model, system, messages, maxTokens, search = 0 }) {
+  if (!keys.length) throw new Error(`Chưa có khoá ${NAMES[provider]}: nhập ở Kết nối AI hoặc khoá riêng ở màn AI viết bài.`);
+  const key = keys[0];
+  if (provider === "gemini") {
+    const gx = geminiExtra(model);
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+      ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+      contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+      ...(search > 0 ? { tools: [{ google_search: {} }] } : {}),
+      generationConfig: { maxOutputTokens: maxTokens + gx.room, ...gx.extra },
+    }) });
+    const d = await r.json().catch(() => ({ error: { message: `Gemini trả lỗi ${r.status}` } }));
+    if (d.error) throw new Error("Gemini: " + (d.error.message || "lỗi"));
+    const c = d.candidates?.[0] || {};
+    const text = (c.content?.parts || []).filter((x) => typeof x?.text === "string" && !x.thought).map((x) => x.text).join("");
+    return { text, more: c.finishReason === "MAX_TOKENS", inTok: d.usageMetadata?.promptTokenCount || 0, outTok: (d.usageMetadata?.candidatesTokenCount || 0) + (d.usageMetadata?.thoughtsTokenCount || 0), searches: Math.min(search, c.groundingMetadata?.webSearchQueries?.length || 0) };
+  }
+  if (provider === "gpt") {
+    const ox = gptExtra(model);
+    if (search > 0) { // tra web: Responses API có công cụ web_search
+      const r = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({
+        model, instructions: system || undefined, input: messages.map((m) => ({ role: m.role, content: m.content })), tools: [{ type: "web_search" }],
+        max_output_tokens: maxTokens + ox.room, ...(ox.extra.reasoning_effort ? { reasoning: { effort: ox.extra.reasoning_effort === "none" ? "minimal" : ox.extra.reasoning_effort } } : {}),
+      }) });
+      const d = await r.json().catch(() => ({ error: { message: `ChatGPT trả lỗi ${r.status}` } }));
+      if (d.error) throw new Error("ChatGPT: " + (d.error.message || "lỗi"));
+      const out = d.output || [];
+      const text = out.filter((o) => o.type === "message").flatMap((o) => o.content || []).filter((c) => c.type === "output_text").map((c) => c.text).join("");
+      return { text, more: d.status === "incomplete", inTok: d.usage?.input_tokens || 0, outTok: d.usage?.output_tokens || 0, searches: Math.min(search, out.filter((o) => o.type === "web_search_call").length) };
+    }
+    const r = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({
+      model, max_completion_tokens: maxTokens + ox.room, ...ox.extra, messages: [...(system ? [{ role: "system", content: system }] : []), ...messages],
+    }) });
+    const d = await r.json().catch(() => ({ error: { message: `ChatGPT trả lỗi ${r.status}` } }));
+    if (d.error) throw new Error("ChatGPT: " + (d.error.message || "lỗi"));
+    const c = d.choices?.[0] || {};
+    return { text: c.message?.content || "", more: c.finish_reason === "length", inTok: d.usage?.prompt_tokens || 0, outTok: d.usage?.completion_tokens || 0, searches: 0 };
+  }
   let d = null;
   for (const k of keys) {
-    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01", "x-api-key": k }, body: JSON.stringify(body) });
+    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01", "x-api-key": k }, body: JSON.stringify({
+      model, max_tokens: maxTokens, ...claudeExtra(model), ...(system ? { system } : {}), messages,
+      ...(search > 0 ? { tools: [{ type: "web_search_20250305", name: "web_search", max_uses: search }] } : {}),
+    }) });
     d = await r.json().catch(() => ({ error: { message: `Claude trả lỗi ${r.status}` } }));
     if (!(r.status === 401 || d?.error?.type === "authentication_error")) break;
   }
@@ -45,40 +92,60 @@ async function claude(keys, body) {
   // Có tra web: chỉ lấy chữ SAU kết quả tra web cuối cùng (bỏ câu dẫn "để tôi tìm…")
   let lastTool = -1; blocks.forEach((b, i) => { if (/tool_result|tool_use/.test(b.type)) lastTool = i; });
   const text = blocks.slice(lastTool + 1).filter((b) => b.type === "text").map((b) => b.text).join("");
-  return { text, stop: d.stop_reason, inTok: d.usage?.input_tokens || 0, outTok: d.usage?.output_tokens || 0, searches: d.usage?.server_tool_use?.web_search_requests || 0 };
+  return { text, more: d.stop_reason === "max_tokens", inTok: d.usage?.input_tokens || 0, outTok: d.usage?.output_tokens || 0, searches: d.usage?.server_tool_use?.web_search_requests || 0 };
 }
 
 async function logUsage(admin, uid, provider, model, inTok, outTok, cost, feature = "web_article") {
   await admin.from("ai_usage_log").insert({ user_id: uid, provider, model, feature, input_tokens: inTok, output_tokens: outTok, cost_usd: cost }).then(() => {}, () => {});
 }
 
-// ---- Ảnh: fal.ai Flux schnell → JPEG 1200/1024 + bản nhỏ 800/400 → kho 'web' + Thư viện ảnh ----
-async function fluxImage(falKey, prompt, cover) {
+// ---- Ảnh: Flux (fal.ai) / Gemini / ChatGPT → ảnh ngang (bìa 16:9, trong bài 4:3) → kho 'web' + Thư viện ảnh ----
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function drawImage(admin, prov, prompt, cover) {
+  if (prov === "gemini") {
+    const k = await setting(admin, "gemini_key"); if (!k) throw new Error("Chưa có khoá Gemini (vẽ ảnh): nhập ở Kết nối AI.");
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${IMG_MODEL.gemini}:generateContent?key=${k}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: cover ? "16:9" : "4:3" } } }) });
+    const d = await r.json().catch(() => ({}));
+    const part = (d?.candidates?.[0]?.content?.parts || []).find((x) => x?.inlineData?.data);
+    if (!part) throw new Error("Gemini vẽ ảnh: " + (d?.error?.message || `không trả ảnh (${r.status})`));
+    return { bytes: b64(part.inlineData.data), mime: part.inlineData.mimeType || "image/png" };
+  }
+  if (prov === "gpt") {
+    const k = await setting(admin, "gpt_key"); if (!k) throw new Error("Chưa có khoá OpenAI (vẽ ảnh): nhập ở Kết nối AI.");
+    const r = await fetch("https://api.openai.com/v1/images/generations", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${k}` }, body: JSON.stringify({ model: IMG_MODEL.gpt, prompt, size: "1536x1024", quality: "low", output_format: "jpeg", n: 1 }) });
+    const d = await r.json().catch(() => ({}));
+    const data = d?.data?.[0]?.b64_json;
+    if (!data) throw new Error("ChatGPT vẽ ảnh: " + (d?.error?.message || `lỗi ${r.status}`));
+    return { bytes: b64(data), mime: "image/jpeg" };
+  }
+  const falKey = await setting(admin, "fal_key");
   if (!falKey) throw new Error("Chưa có khoá fal.ai (vẽ ảnh Flux): nhập ở Kết nối AI.");
   const size = cover ? { width: 1200, height: 672 } : { width: 1024, height: 768 };
   const r = await fetch("https://fal.run/fal-ai/flux/schnell", { method: "POST", headers: { Authorization: `Key ${falKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ prompt, image_size: size, num_inference_steps: 4, num_images: 1, enable_safety_checker: true, output_format: "jpeg" }) });
   const d = await r.json().catch(() => ({}));
   const url = d?.images?.[0]?.url;
   if (!r.ok || !url) throw new Error("fal.ai: " + (d?.detail?.[0]?.msg || d?.detail || d?.error || `lỗi ${r.status}`));
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  return { bytes, ...size };
+  return { bytes: new Uint8Array(await (await fetch(url)).arrayBuffer()), mime: "image/jpeg" };
 }
-async function storeImage(admin, bytes, w, h, name, alt, uid) {
+async function storeImage(admin, im, name, alt, uid, by) {
   const now = new Date(Date.now() + 7 * 3600e3); // giờ VN cho thư mục năm/tháng
   const base = `img/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${slugOf(name).slice(0, 60) || "anh-ai"}-${Date.now().toString(36).slice(-5)}`;
-  const put = async (path, b) => { const { error } = await admin.storage.from("web").upload(path, b, { contentType: "image/jpeg", cacheControl: "31536000", upsert: false }); if (error) throw new Error("Lưu ảnh: " + error.message); };
-  // Bản nhỏ cho srcset làm TRƯỚC: làm được đủ thì tên có _<rộng>w (web tự ghép srcset), lỗi thì lưu 1 ảnh tên thường (không srcset ảo)
-  const small = [];
+  const put = async (path, b, type) => { const { error } = await admin.storage.from("web").upload(path, b, { contentType: type, cacheControl: "31536000", upsert: false }); if (error) throw new Error("Lưu ảnh: " + error.message); };
+  // Đổi về JPEG rộng ≤ 1200 + bản nhỏ 400/800 (tên _<rộng>w → web tự ghép srcset). Không giải mã được thì lưu nguyên ảnh, tên thường.
+  let main = null, w = null, h = null; const small = [];
   try {
-    const img = await Image.decode(bytes);
+    const img = await Image.decode(im.bytes);
+    if (img.width > 1200) img.resize(1200, Image.RESIZE_AUTO);
+    w = img.width; h = img.height;
+    main = /jpe?g/.test(im.mime) && w === img.width && im.bytes.length < 400_000 ? im.bytes : await img.encodeJPEG(82);
     for (const sw of [400, 800]) if (sw < w) small.push([sw, await img.clone().resize(sw, Image.RESIZE_AUTO).encodeJPEG(80)]);
-  } catch (_e) { small.length = 0; }
-  const path = small.length ? `${base}_${w}w.jpg` : `${base}.jpg`;
-  await put(path, bytes);
-  for (const [sw, b] of small) await put(`${base}_${sw}w.jpg`, b);
-  const sizes = small.map((x) => x[0]);
+  } catch (_e) { main = null; small.length = 0; }
+  const ext = main ? "jpg" : (im.mime.split("/")[1] || "png").replace("jpeg", "jpg");
+  const path = main && small.length ? `${base}_${w}w.jpg` : `${base}.${ext}`;
+  await put(path, main || im.bytes, main ? "image/jpeg" : im.mime);
+  for (const [sw, b] of small) await put(`${base}_${sw}w.jpg`, b, "image/jpeg");
   const url = PUB + path.replace(/^img\//, "");
-  await admin.from("web_media").insert({ path, url, name: path.split("/").pop(), alt: alt || null, width: w, height: h, size: bytes.length, sizes, orig_name: "AI vẽ (Flux)", uploader: "AI viết bài", created_by: uid }).then(() => {}, () => {});
+  await admin.from("web_media").insert({ path, url, name: path.split("/").pop(), alt: alt || null, width: w, height: h, size: (main || im.bytes).length, sizes: small.map((x) => x[0]), orig_name: `AI vẽ (${by})`, uploader: "AI viết bài", created_by: uid }).then(() => {}, () => {});
   return url;
 }
 
@@ -89,10 +156,11 @@ async function step(admin, job, cfg, t0) {
     const { data } = await admin.from("web_ai_jobs").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", job.id).select().single();
     Object.assign(job, data || patch);
   };
-  const keys = () => claudeKeys(admin, cfg);
+  const prov = providerOf(job.model);
+  const keys = () => keysFor(admin, cfg, prov);
   const addText = async (r, extra = {}) => {
     const cost = textCost(job.model, r.inTok, r.outTok, r.searches);
-    await logUsage(admin, job.created_by, "claude", job.model, r.inTok, r.outTok, cost);
+    await logUsage(admin, job.created_by, prov, job.model, r.inTok, r.outTok, cost);
     return { in_tok: job.in_tok + r.inTok, out_tok: job.out_tok + r.outTok, searches: job.searches + r.searches, cost_text: Number(job.cost_text) + cost, ...extra };
   };
   const cats = (await admin.from("web_terms").select("id,name,slug").eq("kind", "category").order("sort")).data || [];
@@ -102,10 +170,9 @@ async function step(admin, job, cfg, t0) {
   if (job.status === "queued") { await save({ status: cfg.searches > 0 || job.auto_term ? "research" : "writing" }); return true; }
 
   if (job.status === "research") {
-    const r = await claude(await keys(), {
-      model: job.model, max_tokens: 2500, ...claudeExtra(job.model),
+    const r = await llm(prov, await keys(), {
+      model: job.model, maxTokens: 2500, search: cfg.searches,
       system: "Bạn là trợ lý tra cứu dinh dưỡng, chỉ ghi chú ngắn, tiếng Việt.",
-      ...(cfg.searches > 0 ? { tools: [{ type: "web_search_20250305", name: "web_search", max_uses: cfg.searches }] } : {}),
       messages: [{ role: "user", content: researchPrompt({ keyword: job.keyword, category: term?.name || "", cats: job.auto_term ? cats : [], notes: job.notes || "" }) }],
     });
     const pick = job.auto_term ? pickCategory(r.text, cats) : null;
@@ -124,9 +191,9 @@ async function step(admin, job, cfg, t0) {
       base = [{ role: "user", content: `Bài dưới đây còn các lỗi: ${(st.issues || []).join("; ")}.\nSửa ĐÚNG các lỗi đó, giữ nguyên phần còn lại, trả lại TOÀN BỘ bài đúng ĐẦU RA.\n\n${st.draft?.text || ""}` }];
     }
     const msgs = g.text ? [...base, { role: "assistant", content: g.text }, { role: "user", content: "Viết tiếp đúng chỗ đang dừng, không lặp lại, không thêm lời dẫn." }] : base;
-    const r = await claude(await keys(), { model: job.model, max_tokens: CHUNK_TOKENS, ...claudeExtra(job.model), system: sys(), messages: msgs });
+    const r = await llm(prov, await keys(), { model: job.model, maxTokens: CHUNK_TOKENS, system: sys(), messages: msgs });
     const ng = { text: g.text + r.text, chunks: g.chunks + 1 };
-    const more = r.stop === "max_tokens";
+    const more = r.more;
     if (more && ng.chunks >= MAX_CHUNKS) throw new Error("Bài dài quá 5 đoạn viết, dừng để tránh tốn tiền.");
     const patch = await addText(r, { state: { ...st, [kind]: ng } });
     if (!more) {
@@ -151,7 +218,7 @@ async function step(admin, job, cfg, t0) {
     const inl = mdToBlocks(a.md).filter((b) => b.type === "img").map((b) => b.alt);
     const slots = [{ alt: a.cover || inl[0] || job.keyword, prompt: a.prompts[0], cover: true }, ...inl.map((alt, i) => ({ alt, prompt: a.prompts[i + 1], cover: false }))];
     const imgs = st.imgs || [];
-    const falKey = await setting(admin, "fal_key");
+    const ip = cfg.img_provider || "flux";
     let media = null;
     while (imgs.length < slots.length && Date.now() - t0 < 60_000) {
       const s = slots[imgs.length];
@@ -163,10 +230,10 @@ async function step(admin, job, cfg, t0) {
       }
       let cost = 0;
       if (!got) {
-        const im = await fluxImage(falKey, imagePrompt(s.prompt, s.alt), s.cover);
-        const url = await storeImage(admin, im.bytes, im.width, im.height, `${a.slug || job.keyword}-${s.cover ? "bia" : "anh"}`, s.alt, job.created_by);
-        cost = IMG_PRICE.flux; got = { url, alt: s.alt };
-        await logUsage(admin, job.created_by, "fal", "flux-schnell", 0, 0, cost, "web_image");
+        const im = await drawImage(admin, ip, imagePrompt(s.prompt, s.alt), s.cover);
+        const url = await storeImage(admin, im, `${a.slug || job.keyword}-${s.cover ? "bia" : "anh"}`, s.alt, job.created_by, IMG_MODEL[ip]);
+        cost = IMG_PRICE[ip]; got = { url, alt: s.alt };
+        await logUsage(admin, job.created_by, ip === "flux" ? "fal" : ip, IMG_MODEL[ip], 0, 0, cost, "web_image");
       }
       imgs.push(got);
       await save({ state: { ...st, imgs }, images: job.images + (got.reused ? 0 : 1), reused: job.reused + (got.reused ? 1 : 0), cost_img: Number(job.cost_img) + cost });
@@ -254,19 +321,20 @@ async function handle(req) {
         const r = await fetch("https://fal.run/fal-ai/flux/schnell", { method: "POST", headers: { Authorization: `Key ${k}`, "Content-Type": "application/json" }, body: JSON.stringify({ prompt: "a green apple on a wooden table", image_size: { width: 256, height: 256 }, num_inference_steps: 1, num_images: 1 }) });
         return json(req, r.ok ? { ok: true } : { ok: false, error: `fal.ai trả lỗi ${r.status}` });
       }
-      const model = body.model || cfg.model;
-      const r = await claude(await claudeKeys(admin, body.key_mode ? { ...cfg, key_mode: body.key_mode } : cfg), { model, max_tokens: 16, ...claudeExtra(model), messages: [{ role: "user", content: "Trả lời đúng 1 chữ: OK" }] });
-      await logUsage(admin, user.id, "claude", model, r.inTok, r.outTok, textCost(model, r.inTok, r.outTok), "ping_test");
+      const model = body.model || cfg.model; const p = providerOf(model);
+      const r = await llm(p, await keysFor(admin, body.key_mode ? { ...cfg, key_mode: body.key_mode } : cfg, p), { model, maxTokens: 16, messages: [{ role: "user", content: "Trả lời đúng 1 chữ: OK" }] });
+      await logUsage(admin, user.id, p, model, r.inTok, r.outTok, textCost(model, r.inTok, r.outTok), "ping_test");
       return json(req, { ok: true, reply: r.text.trim().slice(0, 20) });
     }
     if (body.action === "redraw") {
       const alt = String(body.alt || "").trim().slice(0, 200); if (!alt) return json(req, { error: "Thiếu mô tả ảnh." }, 400);
-      const im = await fluxImage(await setting(admin, "fal_key"), imagePrompt(body.prompt, alt), !!body.cover);
-      const url = await storeImage(admin, im.bytes, im.width, im.height, `${body.slug || "anh"}-${body.cover ? "bia" : "anh"}`, alt, user.id);
-      await logUsage(admin, user.id, "fal", "flux-schnell", 0, 0, IMG_PRICE.flux, "web_image");
+      const ip = cfg.img_provider || "flux";
+      const im = await drawImage(admin, ip, imagePrompt(body.prompt, alt), !!body.cover);
+      const url = await storeImage(admin, im, `${body.slug || "anh"}-${body.cover ? "bia" : "anh"}`, alt, user.id, IMG_MODEL[ip]);
+      await logUsage(admin, user.id, ip === "flux" ? "fal" : ip, IMG_MODEL[ip], 0, 0, IMG_PRICE[ip], "web_image");
       if (body.post_id) { // cộng tiền vào bài AI đã viết (nếu có)
         const { data: j } = await admin.from("web_ai_jobs").select("id,images,cost_img").eq("post_id", body.post_id).maybeSingle();
-        if (j) await admin.from("web_ai_jobs").update({ images: j.images + 1, cost_img: Number(j.cost_img) + IMG_PRICE.flux }).eq("id", j.id);
+        if (j) await admin.from("web_ai_jobs").update({ images: j.images + 1, cost_img: Number(j.cost_img) + IMG_PRICE[ip] }).eq("id", j.id);
       }
       return json(req, { ok: true, url, alt });
     }

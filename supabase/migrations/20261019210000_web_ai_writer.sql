@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION public.admin_set_ai_key(p_name text, p_value text)
 RETURNS text LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin AND admin_role = 'super') THEN RAISE EXCEPTION 'Chỉ Super Admin'; END IF;
-  IF p_name NOT IN ('claude_key', 'gpt_key', 'gemini_key', 'claude_writer_key', 'fal_key') THEN RAISE EXCEPTION 'Khoá không hợp lệ'; END IF;
+  IF p_name NOT IN ('claude_key', 'gpt_key', 'gemini_key', 'claude_writer_key', 'gemini_writer_key', 'gpt_writer_key', 'fal_key') THEN RAISE EXCEPTION 'Khoá không hợp lệ'; END IF;
   p_value := btrim(coalesce(p_value, ''));
   IF char_length(p_value) < 20 OR char_length(p_value) > 400 THEN RAISE EXCEPTION 'Khoá không hợp lệ'; END IF;
   INSERT INTO app_settings (key, value, updated_at) VALUES (p_name, p_value, now())
@@ -20,7 +20,7 @@ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public, pg_temp AS $$
 BEGIN
   IF NOT public.is_admin_user() THEN RAISE EXCEPTION 'Không có quyền'; END IF;
   RETURN QUERY SELECT k.n, coalesce(char_length(s.value), 0) > 0, CASE WHEN char_length(s.value) > 0 THEN right(s.value, 4) END, s.updated_at
-    FROM unnest(ARRAY['claude_key', 'gpt_key', 'gemini_key', 'claude_writer_key', 'fal_key']) AS k(n) LEFT JOIN app_settings s ON s.key = k.n;
+    FROM unnest(ARRAY['claude_key', 'gpt_key', 'gemini_key', 'claude_writer_key', 'gemini_writer_key', 'gpt_writer_key', 'fal_key']) AS k(n) LEFT JOIN app_settings s ON s.key = k.n;
 END $$;
 
 -- 2) Cài đặt AI viết bài (1 dòng, chỉ admin web đọc / ghi — không để ở web_settings vì bảng đó công khai)
