@@ -6,7 +6,7 @@ import Sticky from "@/components/Sticky";
 import PostCard, { PostList, Pager } from "@/components/PostCard";
 import { getSettings, alt } from "@/lib/site";
 import { fmtDate, readMin } from "@/lib/content";
-import { getTerm, allTerms, latestPosts, countPosts } from "@/lib/content";
+import { getTerm, allTerms, latestPosts, countPosts, catIndexable } from "@/lib/content";
 import { breadcrumb, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 60;
@@ -14,7 +14,8 @@ export async function generateMetadata({ params, searchParams }) {
   const t = await getTerm("category", params.slug);
   if (!t) return {};
   const page = Math.max(1, +searchParams?.trang || 1);
-  return { title: t.seo?.title || t.name, description: t.seo?.desc || t.description?.slice(0, 158), alternates: alt(`/chu-de/${t.slug}${page > 1 ? `?trang=${page}` : ""}`), robots: { index: !t.seo?.noindex, follow: true } };
+  const n = await countPosts(t.id);
+  return { title: t.seo?.title || t.name, description: t.seo?.desc || t.description?.slice(0, 158), alternates: alt(`/chu-de/${t.slug}${page > 1 ? `?trang=${page}` : ""}`), robots: { index: catIndexable(t, n), follow: true } };
 }
 
 export default async function Cat({ params, searchParams }) {

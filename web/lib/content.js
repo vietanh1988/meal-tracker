@@ -20,6 +20,9 @@ export async function latestPosts({ limit = 12, offset = 0, termId = null, autho
   return (await q(path)) || [];
 }
 
+// Chuyên mục dưới số bài này là "trang mỏng": tự chưa cho Google lập chỉ mục + không đưa vào sitemap (trừ khi bật "Vẫn cho lập chỉ mục khi ít bài")
+export const THIN_CAT = 3;
+export const catIndexable = (t, n) => !t?.seo?.noindex && (n >= THIN_CAT || t?.seo?.index_thin === true);
 export async function countPosts(termId = null) {
   // chỉ đếm bài đang hiện (không tính nháp / hẹn giờ chưa tới / trang)
   const rows = termId ? await q(`web_posts?kind=eq.post&${LIVE}&select=id,t:web_terms!web_post_terms!inner(id)&t.id=eq.${termId}&limit=10000`) : await q(`web_posts?kind=eq.post&${LIVE}&select=id&limit=10000`);

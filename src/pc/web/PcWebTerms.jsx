@@ -138,6 +138,8 @@ export function PcWebTerms({ top, showToast }) {
                   <input value={f.seo?.title || ""} onChange={(e) => set({ seo: { ...f.seo, title: e.target.value } })} placeholder="Tiêu đề SEO (để trống: dùng tên)" className="pc-input" style={inpStyle(32)} />
                   <input value={f.seo?.desc || ""} onChange={(e) => set({ seo: { ...f.seo, desc: e.target.value } })} placeholder="Mô tả SEO (để trống: dùng mô tả)" className="pc-input" style={inpStyle(32)} />
                   <Tog on={!f.seo?.noindex} onChange={(v) => set({ seo: { ...f.seo, noindex: !v } })} label="Cho Google lập chỉ mục" />
+                  {!f.seo?.noindex && <Tog on={!!f.seo?.index_thin} onChange={(v) => set({ seo: { ...f.seo, index_thin: v } })} label="Vẫn cho lập chỉ mục khi dưới 3 bài" testid="web-cat-index-thin" />}
+                  <span style={{ fontSize: 11.5, color: PC.t3, lineHeight: 1.5 }}>Chuyên mục dưới 3 bài đang hiện thì web tự chưa cho Google lập chỉ mục và không đưa vào sitemap (tránh trang mỏng), đủ 3 bài tự mở.</span>
                 </div>
                 <span style={{ display: "flex", gap: 8 }}><Btn kind="blue" onClick={saveCat} disabled={busy} testid="web-cat-save">{f.id ? "Lưu chuyên mục" : "Thêm chuyên mục"}</Btn>{f.id && <Btn kind="light" onClick={() => { setF(BLANK); setSlugTouched(false); }}>Huỷ</Btn>}</span>
               </div>

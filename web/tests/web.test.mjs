@@ -101,3 +101,12 @@ test("srcSet: ảnh AI vẽ _<rộng>w.jpg có bản nhỏ .jpg; ảnh không đ
   assert.equal(srcSet("https://fipilotai.com/anh/2026/10/pho-bia-ab_1200w.jpg"), "https://fipilotai.com/anh/2026/10/pho-bia-ab_400w.jpg 400w, https://fipilotai.com/anh/2026/10/pho-bia-ab_800w.jpg 800w, https://fipilotai.com/anh/2026/10/pho-bia-ab_1200w.jpg 1200w");
   assert.equal(srcSet("https://fipilotai.com/anh/2026/10/pho-bia-ab.jpg"), undefined);
 });
+
+test("chuyên mục dưới 3 bài: tự chưa cho lập chỉ mục, trừ khi bật 'vẫn cho khi ít bài' hoặc đã tắt hẳn", async () => {
+  const { catIndexable, THIN_CAT } = await import("../lib/content.js");
+  assert.equal(THIN_CAT, 3);
+  assert.equal(catIndexable({ seo: {} }, 1), false);
+  assert.equal(catIndexable({ seo: {} }, 3), true);
+  assert.equal(catIndexable({ seo: { index_thin: true } }, 1), true);
+  assert.equal(catIndexable({ seo: { noindex: true, index_thin: true } }, 9), false);
+});

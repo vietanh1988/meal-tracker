@@ -4,6 +4,7 @@ import { getSettings, siteUrl } from "@/lib/site";
 import { caloFoods } from "@/lib/calo";
 import { legalPages, vnDateIso } from "@/lib/appdata";
 import { legalToBlocks } from "@/lib/legal";
+import { countPosts, catIndexable } from "@/lib/content";
 
 export const revalidate = 600;
 export default async function sitemap() {
@@ -38,7 +39,7 @@ export default async function sitemap() {
   const have = new Set(posts.map((p) => p.slug));
   if (on.page !== false) for (const lp of await legalPages()) if (!have.has(lp.slug)) out.push({ url: u(`/${lp.slug}`), lastModified: max(vnDateIso(legalToBlocks(lp.html).updated)) || base, changeFrequency: "yearly", priority: 0.3 });
   out.push({ url: u("/cai-app"), lastModified: base, changeFrequency: "yearly", priority: 0.4 }, { url: u("/gioi-thieu"), lastModified: base, changeFrequency: "monthly", priority: 0.5 }, { url: u("/lien-he"), lastModified: max(base, sets.contact), changeFrequency: "yearly", priority: 0.4 });
-  if (on.category !== false) for (const t of (await q("web_terms?kind=eq.category&select=id,slug,seo,created_at")) || []) if (!t.seo?.noindex) out.push({ url: u(`/chu-de/${t.slug}`), lastModified: max(t.created_at, ...posts.filter((p) => p.primary_term === t.id).map((p) => p.updated_at || p.published_at)), changeFrequency: "weekly", priority: 0.6 });
+  if (on.category !== false) for (const t of (await q("web_terms?kind=eq.category&select=id,slug,seo,created_at")) || []) if (catIndexable(t, await countPosts(t.id))) out.push({ url: u(`/chu-de/${t.slug}`), lastModified: max(t.created_at, ...posts.filter((p) => p.primary_term === t.id).map((p) => p.updated_at || p.published_at)), changeFrequency: "weekly", priority: 0.6 });
   if (on.tag === true) for (const t of (await q("web_terms?kind=eq.tag&select=slug,seo")) || []) if (t.seo?.index === true) out.push({ url: u(`/the/${t.slug}`), lastModified: base, priority: 0.3 });
   if (on.author !== false) { const has = new Set(posts.filter((p) => p.kind === "post").map((p) => p.author_id)); const au = ((await q("web_authors?select=id,slug")) || []).filter((a) => has.has(a.id)); for (const a of au) out.push({ url: u(`/tac-gia/${a.slug}`), lastModified: max(...posts.filter((p) => p.author_id === a.id).map((p) => p.updated_at || p.published_at)), priority: 0.4 }); }
   if (on.calo !== false) for (const f of await caloFoods()) if (!f.page?.noindex) out.push({ url: u(`/calo/${f.slug}`), lastModified: max(f.page?.updated_at, BUILD), changeFrequency: "monthly", priority: 0.6 });
