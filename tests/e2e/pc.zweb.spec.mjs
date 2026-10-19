@@ -18,18 +18,31 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect(page.getByTestId("pc-nav-ic-web_posts").locator("svg")).toHaveCount(1);
     await page.getByTestId("pc-nav-web_posts").click();
     await expect(page.getByTestId("pc-page-web_posts")).toBeVisible();
-    // Viết bằng AI: giả lời AI (không gọi AI thật) → lưu nháp → mở trình soạn
-    const AI = ["SEO Title: E2E bữa sáng giảm cân với món Việt dễ làm", "SEO Description: Gợi ý bữa sáng giảm cân.", "Slug: e2e-bua-sang-giam-can", "Excerpt: Thử.", "Full Article:", "Tiêu đề bài viết: E2E bữa sáng giảm cân",
-      "**Bữa sáng giảm cân nên có đạm và rau.** " + "Chữ mẫu ".repeat(60), "", "[chèn ảnh ở đây: alt ảnh \"bát phở gà ít bánh cho bữa sáng giảm cân\"]", "", "## Ăn gì buổi sáng?", "Trứng và bánh mì.", "", "| Món | Calo |", "|---|---|", "| Phở gà | 400 |"].join("\n");
-    await page.route("**/functions/v1/ai-proxy", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ text: AI }) }));
-    await page.getByTestId("web-ai-write").click();
-    await page.getByTestId("web-ai-kw").fill("bữa sáng giảm cân");
+    // AI viết bài (màn riêng): giả có khoá Claude + fal (không gọi AI thật) → đổi mô hình / lượt tra web (lưu ngay) → xếp hàng 2 bài → Huỷ 1 bài
+    await page.route("**/rest/v1/rpc/admin_ai_key_status*", (route) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{ name: "claude_key", is_set: true, last4: "e2e1", updated_at: null }, { name: "fal_key", is_set: true, last4: "e2e2", updated_at: null }]) }));
+    const [cfg0] = await rest("web_ai_config?id=eq.1&select=data");
+    await page.getByTestId("web-ai-write").click(); // nút ở danh sách bài → sang màn AI viết bài
+    await expect(page.getByTestId("web-ai")).toBeVisible();
+    await page.getByTestId("web-ai-model-claude-haiku-5-5").click();
+    await page.getByTestId("web-ai-search-plus").click();
+    await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data.model).toBe("claude-haiku-5-5");
+    await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data.searches).toBe(4);
+    await page.getByTestId("web-ai-kw").fill("e2e bữa sáng giảm cân\ne2e ăn phở có béo không");
     await page.getByTestId("web-ai-cat").selectOption({ label: "E2E Giảm cân" });
+    await expect(page.getByTestId("web-ai-go")).toHaveText("Xếp hàng viết 2 bài");
     await page.getByTestId("web-ai-go").click();
-    await expect(page.getByTestId("web-ed-title")).toHaveValue("E2E bữa sáng giảm cân", { timeout: 15000 });
-    await expect(page.locator("[data-testid=web-ed-block][data-type=table]")).toHaveCount(1);
-    await page.getByTestId("web-ed-back").click();
-    await expect(page.getByTestId("web-post-row").filter({ hasText: "E2E bữa sáng giảm cân" })).toHaveCount(1);
+    await expect(page.getByTestId("web-ai-row")).toHaveCount(2);
+    const jobs = await rest("web_ai_jobs?keyword=like.e2e*&select=keyword,term_id,auto_term,model,status&order=keyword");
+    expect(jobs.map((j) => [j.keyword, j.term_id, j.auto_term, j.model, j.status])).toEqual([["e2e ăn phở có béo không", cat.id, false, "claude-haiku-5-5", "queued"], ["e2e bữa sáng giảm cân", cat.id, false, "claude-haiku-5-5", "queued"]]);
+    await page.getByTestId("web-ai-cancel").first().click();
+    await expect(page.locator("[data-testid=web-ai-row][data-status=canceled]")).toHaveCount(1);
+    await page.getByTestId("web-ai-rules-edit").click();
+    await expect(page.getByTestId("web-ai-rules-text")).toHaveValue(/QUY TẮC BẮT BUỘC/);
+    await page.keyboard.press("Escape");
+    await page.screenshot({ path: "shots/pc-web-ai.png", fullPage: true });
+    await rest("web_ai_jobs?keyword=like.e2e*", { method: "DELETE" });
+    await rest("web_ai_config?id=eq.1", { method: "PATCH", body: JSON.stringify({ data: cfg0?.data || {} }) });
+    await page.getByTestId("pc-nav-web_posts").click();
     await page.getByTestId("web-post-new").click();
     await page.getByTestId("web-ed-title").fill("E2E cơm tấm bao nhiêu calo");
     await page.getByTestId("web-ed-slug-edit").click();
@@ -179,6 +192,8 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu nháp");
     const [dr] = await rest("web_settings?key=eq.page_home_draft&select=value");
     expect(dr.value.hero.title).toContain("E2E");
+    await page.getByTestId("web-pb-close").click(); // nút Đóng trên thanh trên → về danh sách trang
+    await expect(page.getByTestId("web-page-builder")).toBeVisible();
     await rest("web_settings?key=eq.page_home_draft", { method: "DELETE" });
 
     // Thống kê web: mở được, có 4 ô số + chọn khoảng ngày

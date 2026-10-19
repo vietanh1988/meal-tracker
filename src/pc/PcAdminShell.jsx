@@ -27,6 +27,7 @@ import { PcUsers } from "./PcUsers";
 import { PcFood } from "./PcFood";
 import { PcBehavior } from "./PcBehavior";
 import { PcWebPosts } from "./web/PcWebPosts";
+import { PcWebAi } from "./web/PcWebAi";
 import { PcWebTerms } from "./web/PcWebTerms";
 import { PcWebMenu } from "./web/PcWebMenu";
 import { PcWebAuthors } from "./web/PcWebAuthors";
@@ -62,6 +63,7 @@ const NAV_IC = {
   audit_log: ["#475569", svg(<><path d="M6 3h9l4 4v14H6z" /><path d="M9 11h7M9 15h7M9 7h3" /></>)],
   backup: ["#64748B", svg(<><path d="M5 3h11l3 3v15H5z" /><path d="M8 3v6h8V3M8 21v-7h8v7" /></>)],
   web_posts: ["#0062F0", svg(<><path d="M4 20h4l10-10-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></>)],
+  web_ai: ["#7C3AED", svg(<><path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15.5l-1.8-4.7L5.5 9l4.7-1.3z" /><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z" /></>)],
   web_pages: ["#0D9488", svg(<><path d="M6 3h9l4 4v14H6z" /><path d="M14 3v5h5" /></>)],
   web_menu: ["#F59E0B", svg(<path d="M4 6h16M4 12h16M4 18h10" />)],
   web_authors: ["#0EA5E9", svg(<><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></>)],
@@ -83,7 +85,7 @@ export const PC_NAV = [
   { group: "BÁO CÁO", items: [{ id: "report_biz", label: "Báo cáo kinh doanh" }, { id: "behavior", label: "Hành vi khách" }, { id: "web_stats", label: "Thống kê web" }, { id: "ai_cost", label: "Chi phí AI" }] },
   { group: "DỮ LIỆU MÓN", items: [{ id: "food_cache_pending", label: "Duyệt món AI", badge: "pending" }, { id: "food_db", label: "Kho thực phẩm" }, { id: "templates", label: "Kho mẫu thực đơn" }] },
   // Quản trị web fipilotai.com (bản vẽ 138) — chỉ có trên PC, không thêm vào quản trị điện thoại
-  { group: "WEB · NỘI DUNG", items: [{ id: "web_posts", label: "Bài viết" }, { id: "web_pages", label: "Trang" }, { id: "web_terms", label: "Chuyên mục & thẻ" }, { id: "web_calo", label: "Trang calo món" }, { id: "web_media", label: "Thư viện ảnh" }, { id: "web_blocks", label: "Khối dùng lại" }] },
+  { group: "WEB · NỘI DUNG", items: [{ id: "web_posts", label: "Bài viết" }, { id: "web_ai", label: "AI viết bài" }, { id: "web_pages", label: "Trang" }, { id: "web_terms", label: "Chuyên mục & thẻ" }, { id: "web_calo", label: "Trang calo món" }, { id: "web_media", label: "Thư viện ảnh" }, { id: "web_blocks", label: "Khối dùng lại" }] },
   { group: "WEB · CÀI ĐẶT", items: [{ id: "web_menu", label: "Menu" }, { id: "web_authors", label: "Tác giả" }, { id: "web_settings", label: "Cài đặt web" }, { id: "web_seo", label: "Cài đặt SEO" }, { id: "web_tools", label: "Công cụ" }] },
   { group: "CÀI ĐẶT APP", items: [{ id: "subscription_settings", label: "Gói cước & giới hạn" }, { id: "feature_flags", label: "Quản lý tính năng" }, { id: "ai", label: "Kết nối AI" }, { id: "admin", label: "Phiên bản & thông báo" }] },
   { group: "HỆ THỐNG", items: [{ id: "health", label: "Sức khoẻ & lỗi" }, { id: "audit_log", label: "Nhật ký admin" }, { id: "backup", label: "Sao lưu", superOnly: true }] },
@@ -93,7 +95,7 @@ const SUB = {
   subscription_settings: "Giá gói, lượt AI theo gói", feedback: "Góp ý & báo lỗi của người dùng", notify: "Gửi thông báo đẩy tới người dùng",
   templates: "Thực đơn mẫu dùng chung", food_db: "Số trên 100 g · sửa ghi đè số gốc, về gốc được", food_cache_pending: "Món lạ AI đã tính, chờ duyệt vào kho",
   admin: "Số phiên bản, thông báo cập nhật", feature_flags: "Bật / tắt tính năng", ai: "Nhà cung cấp, model, khoá API", ai_cost: "Chi phí gọi AI theo ngày, tính năng, người dùng",
-  web_posts: "Viết, sửa, hẹn giờ đăng bài lên fipilotai.com", web_pages: "Trang Giới thiệu, Điều khoản… của web", web_terms: "Chuyên mục = nhóm lớn · Thẻ = nhãn nhỏ gắn bài", web_menu: "Kéo thả để đổi thứ tự · kéo sang phải để thành menu con", web_authors: "Hồ sơ người viết — Google dùng để chấm độ tin cậy", web_settings: "Thông tin chung của fipilotai.com", web_seo: "Áp cho toàn web fipilotai.com", web_calo: "Mỗi món trong kho có thể thành 1 trang /calo/…", web_media: "Ảnh tải lên tự nén WebP, tạo sẵn 4 cỡ", web_stats: "Web tự đếm lượt xem, nguồn khách, bấm sang app", web_tools: "Việc làm 1 lần cho nhiều bài", web_blocks: "Sửa 1 lần ở đây → mọi bài đang dùng khối tự đổi theo",
+  web_posts: "Viết, sửa, hẹn giờ đăng bài lên fipilotai.com", web_ai: "Viết lần lượt từng bài theo bộ quy tắc rút gọn · xong tự lưu bản nháp", web_pages: "Trang Giới thiệu, Điều khoản… của web", web_terms: "Chuyên mục = nhóm lớn · Thẻ = nhãn nhỏ gắn bài", web_menu: "Kéo thả để đổi thứ tự · kéo sang phải để thành menu con", web_authors: "Hồ sơ người viết — Google dùng để chấm độ tin cậy", web_settings: "Thông tin chung của fipilotai.com", web_seo: "Áp cho toàn web fipilotai.com", web_calo: "Mỗi món trong kho có thể thành 1 trang /calo/…", web_media: "Ảnh tải lên tự nén WebP, tạo sẵn 4 cỡ", web_stats: "Web tự đếm lượt xem, nguồn khách, bấm sang app", web_tools: "Việc làm 1 lần cho nhiều bài", web_blocks: "Sửa 1 lần ở đây → mọi bài đang dùng khối tự đổi theo",
   health: "Chỉ số đo thật + lỗi app gần đây", audit_log: "Thao tác của admin", backup: "Sao lưu / tải dữ liệu (Super Admin)",
 };
 const LABEL = Object.fromEntries(PC_NAV.flatMap((g) => g.items.map((i) => [i.id, i.label])));
@@ -228,7 +230,8 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   if (sec === "home") page = <PcHome top={top} go={go} counts={counts} refreshCounts={refreshCounts} appSettings={appSettings} />;
   else if (sec === "users") page = <PcUsers top={top} currentUserId={uid} isSuperAdmin={isSuperAdmin} />;
   else if (sec === "food_db") page = <PcFood top={top} isSuperAdmin={isSuperAdmin} />;
-  else if (sec === "web_posts") page = <PcWebPosts key={`post${nonce}`} top={top} showToast={showToast} user={user} appSettings={appSettings} kind="post" />;
+  else if (sec === "web_posts") page = <PcWebPosts key={`post${nonce}`} top={top} showToast={showToast} user={user} appSettings={appSettings} kind="post" go={go} />;
+  else if (sec === "web_ai") page = <PcWebAi key={nonce} top={top} showToast={showToast} user={user} go={go} />;
   else if (sec === "web_pages") page = <PcWebPosts key={`page${nonce}`} top={top} showToast={showToast} user={user} appSettings={appSettings} kind="page" go={go} saveSetting={saveSetting} />;
   else if (sec === "web_authors") page = <PcWebAuthors key={nonce} top={top} showToast={showToast} user={user} appSettings={appSettings} />;
   else if (sec === "web_settings") page = <PcWebSettings key={nonce} top={top} showToast={showToast} appSettings={appSettings} go={go} />;

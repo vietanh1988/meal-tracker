@@ -41,6 +41,7 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
   const [claudeKey, setClaudeKey] = useState("");
   const [geminiKey, setGeminiKey] = useState("");
   const [gptKey, setGptKey] = useState("");
+  const [falKey, setFalKey] = useState(""); // fal.ai: vẽ ảnh Flux cho AI viết bài
   const { status: keySt, saveKeys } = useAiKeys(!!isAdmin);
   const [usdaKey, setUsdaKey] = useState(() => appSettings.usda_key || lsGet("usdaKey") || "");
   const [aiConnected, setAiConnected] = useState(true);
@@ -107,9 +108,9 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
     if (readOnly) return;
     setSaving(true);
     await saveSetting("ai_provider", aiProvider);
-    const k = await saveKeys({ claude_key: claudeKey, gemini_key: geminiKey, gpt_key: gptKey });
+    const k = await saveKeys({ claude_key: claudeKey, gemini_key: geminiKey, gpt_key: gptKey, fal_key: falKey });
     if (!k.ok) { setSaving(false); showToast?.({ text: k.error }, 3500); return; }
-    setClaudeKey(""); setGeminiKey(""); setGptKey("");
+    setClaudeKey(""); setGeminiKey(""); setGptKey(""); setFalKey("");
     await saveSetting("usda_key", usdaKey);
     await saveSetting("ai_model", aiModel);
     await saveSetting("gpt_model", gptModel);
@@ -180,6 +181,7 @@ export function PcAi({ top, isAdmin = true, isSuperAdmin, appSettings = {}, save
                 {keyRow("Claude", claudeKey, setClaudeKey, keyPlaceholder(keySt.claude_key, "sk-ant-..."), "pc-ai-key-claude", false, keySt.claude_key || null)}
                 {keyRow("OpenAI (GPT)", gptKey, setGptKey, keyPlaceholder(keySt.gpt_key, "sk-..."), "pc-ai-key-gpt", false, keySt.gpt_key || null)}
                 {keyRow("Gemini", geminiKey, setGeminiKey, keyPlaceholder(keySt.gemini_key, "AIzaSy..."), "pc-ai-key-gemini", false, keySt.gemini_key || null)}
+                {keyRow("fal.ai (vẽ ảnh bài web)", falKey, setFalKey, keyPlaceholder(keySt.fal_key, "fal key..."), "pc-ai-key-fal", false, keySt.fal_key || null)}
                 {keyRow("USDA (tra macro)", usdaKey, setUsdaKey, "USDA key...", "pc-ai-key-usda", true)}
               </div>
               <div style={{ padding: "4px 16px 14px 16px", fontSize: 12, color: PC.t3 }}>Dán khoá mới vào ô rồi bấm Lưu để thay; để trống = giữ khoá cũ. Khoá chỉ ghi — đã lưu thì không ai xem lại được nguyên khoá, kể cả admin.</div>

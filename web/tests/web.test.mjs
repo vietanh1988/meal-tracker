@@ -95,3 +95,9 @@ test("shapePlan: tắt gói 1 tháng thì giá / tháng vẫn đúng đơn vị"
   const p = shapePlan({ price_1m: 0, price_3m: 297000, trial_days: 0 });
   assert.equal(p.month.m, 3); assert.equal(p.month.per, 99000); assert.equal(p.trial, 0);
 });
+
+test("srcSet: ảnh AI vẽ _<rộng>w.jpg có bản nhỏ .jpg; ảnh không đuôi _<rộng>w thì không srcset", async () => {
+  const { srcSet } = await import("../lib/img.js");
+  assert.equal(srcSet("https://fipilotai.com/anh/2026/10/pho-bia-ab_1200w.jpg"), "https://fipilotai.com/anh/2026/10/pho-bia-ab_400w.jpg 400w, https://fipilotai.com/anh/2026/10/pho-bia-ab_800w.jpg 800w, https://fipilotai.com/anh/2026/10/pho-bia-ab_1200w.jpg 1200w");
+  assert.equal(srcSet("https://fipilotai.com/anh/2026/10/pho-bia-ab.jpg"), undefined);
+});

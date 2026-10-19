@@ -17,7 +17,7 @@ import { Check, Tog, Radio, Score, Tabs, Field, Count, SideBox, Modal, Lnk, inpS
 import { STATUS, slugify, seoChecks, fullTitle, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
 import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus, uploadImage, slugType, getSite } from "./webApi";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
-import { Rich, ListEdit, OtherBlock, Upload, kb, inlineClean, H_STYLE } from "./BlockEdit";
+import { Rich, ListEdit, OtherBlock, Upload, AiDrawBtn, kb, inlineClean, H_STYLE } from "./BlockEdit";
 import { PcWebRevisions } from "./PcWebRevisions";
 import WEB_CSS from "../../../web/app/globals.css?raw"; // kiểu chữ của web cho Xem trước bản nháp
 
@@ -130,6 +130,12 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
     const p = fullRef.current ? fullRef.current() : postRef.current; if (!p) return;
     if (!p.title.trim()) { showToast?.("Nhập tiêu đề trước đã."); return; }
     if (p.seo?.schema_bad) { if (mode !== "auto") showToast?.("Mã schema riêng (tab Schema) đang sai — sửa cho hợp lệ hoặc xoá trống rồi lưu."); return; }
+    // Chặn đăng khi còn ô ảnh trống (khối ảnh chưa có ảnh); bài AI viết còn bắt buộc có ảnh bìa
+    if (mode === "publish") {
+      const empty = (p.blocks || []).filter((b) => b?.type === "img" && !b.url).length;
+      const noCover = p.kind !== "page" && p.seo?.ai && !p.cover_url;
+      if (empty || noCover) { showToast?.(`Chưa đăng được: ${[empty && `còn ${empty} ô ảnh trống`, noCover && "chưa có ảnh đại diện"].filter(Boolean).join(", ")}. Chọn ảnh, bấm ✦ Vẽ bằng AI hoặc xoá ô ảnh rồi đăng.`); return; }
+    }
     let status = p.status, published_at = p.published_at;
     if (mode === "draft") status = "draft";
     if (mode === "publish") { if (published_at && new Date(published_at) > new Date()) status = "scheduled"; else { status = "published"; published_at = published_at || new Date().toISOString(); } }
@@ -363,7 +369,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
                       <span style={{ marginLeft: "auto" }}>{r && <Btn kind="light" style={{ height: 28, fontSize: 12 }} onClick={() => { const copy = withKeys(r.blocks.map((x) => ({ ...x }))); upd((p) => ({ blocks: [...p.blocks.slice(0, i), ...copy, ...p.blocks.slice(i + 1)] })); showToast?.("Đã tách — phần này giờ sửa riêng trong bài."); }} testid="web-ed-ref-detach">Tách khỏi khối dùng lại</Btn>}</span></span>
                     <span style={{ fontSize: 12.5, color: PC.t3 }}>{r ? `${r.blocks.length} khối · ${r.blocks.map((x) => BLOCK_NAME[x.type] || x.type).join(", ")} — sửa ở Quản trị › Khối dùng lại, mọi bài dùng khối tự đổi theo.` : "Khối này đã bị xoá — trên web phần này không hiện. Bấm 🗑 trên thanh khối để bỏ."}</span>
                   </div>); }
-                else body = <div onFocus={() => setCur(i)} onClick={() => setCur(i)}><OtherBlock b={b} set={(patch) => setBlock(i, patch)} showToast={showToast} slug={post.slug} /></div>;
+                else body = <div onFocus={() => setCur(i)} onClick={() => setCur(i)}><OtherBlock b={b} set={(patch) => setBlock(i, patch)} showToast={showToast} slug={post.slug} postId={post.id} /></div>;
                 return (
                   <div key={b._k} data-testid="web-ed-block" data-type={b.type} style={{ position: "relative", borderRadius: 10, padding: "6px 10px", margin: "-6px -10px", boxShadow: on ? "inset 0 0 0 1.5px #1A7CFF" : "none" }} onMouseDown={() => setCur(i)}>
                     {body}
@@ -480,6 +486,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
               {post._coverInfo && <span style={{ fontSize: 11.5, color: PC.t3 }}>{post._coverInfo}</span>}
               <span style={{ display: "flex", gap: 8 }}><Upload showToast={showToast} name={post.slug || post.title} label={post.cover_url ? "Thay ảnh" : "Chọn ảnh"} testid="web-side-cover-up" onDone={(r) => upd({ cover_url: r.url, _coverInfo: `${r.width} × ${r.height} · ${kb(r.size)} (gốc ${kb(r.orig)})` })} />{post.cover_url && <Btn kind="light" style={{ height: 28, fontSize: 12 }} onClick={() => upd({ cover_url: "", _coverInfo: "" })}>Gỡ</Btn>}</span>
               <input value={post.cover_alt || ""} onChange={(e) => upd({ cover_alt: e.target.value })} placeholder="Mô tả ảnh (alt)" className="pc-input" style={inpStyle(32)} />
+              <span><AiDrawBtn alt={post.cover_alt} slug={post.slug} postId={post.id} cover has={!!post.cover_url} onDone={(url) => upd({ cover_url: url, _coverInfo: "Ảnh AI vẽ" })} showToast={showToast} testid="web-side-cover-ai" /></span>
             </SideBox>
             <SideBox t="Đoạn trích">
               <textarea value={post.excerpt || ""} onChange={(e) => upd({ excerpt: e.target.value })} placeholder="1–2 câu tóm tắt" className="pc-input" style={{ ...inpStyle(60), height: 60, padding: "7px 10px", resize: "vertical", lineHeight: 1.5, fontSize: 12.5 }} />

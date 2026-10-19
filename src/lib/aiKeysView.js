@@ -1,5 +1,5 @@
 // Khoá AI chỉ ghi (18/10) — hàm thuần, có test (tests/aiKeys.test.mjs)
-export const AI_KEY_NAMES = ["claude_key", "gpt_key", "gemini_key"];
+export const AI_KEY_NAMES = ["claude_key", "gpt_key", "gemini_key", "claude_writer_key", "fal_key"]; // 2 khoá cuối: AI viết bài (khoá Claude riêng) + vẽ ảnh Flux (fal.ai)
 export const LOCAL_KEY_COPIES = ["claudeKey", "geminiKey", "gptKey"];
 // rows từ RPC admin_ai_key_status → { gpt_key: { set, last4, at } }
 export function keyStatusMap(rows) {

@@ -57,10 +57,25 @@ test("articleToPost là bản nháp có chuyên mục + SEO", () => {
   const p = articleToPost(parseArticle(OUT), { keyword: "thâm hụt calo", termId: "t1", authorId: "a1" });
   assert.equal(p.status, "draft"); assert.deepEqual(p.terms, ["t1"]); assert.equal(p.primary_term, "t1");
   assert.equal(p.seo.keyword, "thâm hụt calo"); assert.equal(p.author_id, "a1");
-  assert.ok(articleIssues(parseArticle(OUT), p.blocks).some((x) => /chỗ ảnh/.test(x)));
+  assert.ok(articleIssues(parseArticle(OUT), p.blocks, { inlineImages: 3 }).all.some((x) => /chỗ ảnh/.test(x)));
 });
 
 test("buildUserPrompt có từ khoá và bài đã có", () => {
   const s = buildUserPrompt({ keyword: " bmr ", category: "Kiến thức", related: ["A", "B"] });
   assert.match(s, /Từ khóa chính: bmr/); assert.match(s, /A; B/);
+});
+
+test("Ảnh bìa + Image Prompts tách khỏi bài; articleToPost gắn ảnh vào ô và ảnh bìa; dùng lại ảnh thư viện", async () => {
+  const { matchMedia, systemPrompt, RULES_DEFAULT } = await import("../src/pc/web/aiWrite.js");
+  const t = OUT.replace("Full Article:", "Ảnh bìa: bát phở bò ít bánh cho người giảm cân\nFull Article:") + "\nImage Prompts:\n1. A bowl of pho\n2. A plate of rice";
+  const a = parseArticle(t);
+  assert.equal(a.cover, "bát phở bò ít bánh cho người giảm cân");
+  assert.deepEqual(a.prompts, ["A bowl of pho", "A plate of rice"]);
+  assert.ok(!/Image Prompts/.test(a.md));
+  const p = articleToPost(a, { imgs: { cover: { url: "c.jpg", alt: "bìa" }, inline: [{ url: "i1.jpg", alt: "trong bài" }] } });
+  assert.equal(p.cover_url, "c.jpg"); assert.equal(p.blocks.find((b) => b.type === "img").url, "i1.jpg");
+  assert.equal(matchMedia("bát phở bò tái ít bánh", [{ url: "x", alt: "Phở bò tái chín" }])?.url, "x");
+  assert.equal(matchMedia("bát phở bò tái ít bánh", [{ url: "x", alt: "cơm gạo lứt" }]), null);
+  assert.match(systemPrompt(null, { inlineImages: 2 }), /chỗ ảnh trong thân bài: đúng 2/);
+  assert.ok(systemPrompt("LUẬT RIÊNG", {}).startsWith("LUẬT RIÊNG")); assert.ok(RULES_DEFAULT.includes("QUY TẮC BẮT BUỘC"));
 });

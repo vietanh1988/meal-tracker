@@ -9,6 +9,7 @@ import { inpStyle, BLUE } from "./webUI";
 import { clean, youtubeId, slugify } from "./webLib";
 import { uploadImage } from "./webApi";
 import { MediaPick } from "./MediaPick";
+import { authFetch } from "../../lib/authFetch";
 
 // Chữ trong trình soạn = tỉ lệ chữ bài trên web (đoạn 18/1,75 · H2 28/1,3 · H3 22/1,35), thu nhỏ cho khung soạn
 const P = { fontSize: 17, lineHeight: 1.7, color: "#1E293B", margin: 0, outline: "none", minHeight: 29 };
@@ -94,14 +95,28 @@ function LibBtn({ onPick }) {
     {open && <MediaPick onClose={() => setOpen(false)} onPick={(r) => { onPick(r); setOpen(false); }} />}
   </>;
 }
+// "✦ Vẽ bằng AI / Vẽ lại": vẽ ảnh theo mô tả (alt) bằng Flux (hàm web-writer, khoá fal.ai ở Kết nối AI); tiền cộng vào bài AI nếu có
+export function AiDrawBtn({ alt, slug, postId, cover, has, onDone, showToast, testid }) {
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    if (!String(alt || "").trim()) return showToast?.("Nhập mô tả ảnh (alt) trước, AI vẽ theo câu đó.");
+    setBusy(true);
+    const d = await authFetch("web-writer", { action: "redraw", alt, slug, post_id: postId || null, cover: !!cover }).catch((e) => ({ error: e.message }));
+    setBusy(false);
+    if (d?.url) { onDone(d.url); showToast?.("Đã vẽ ảnh mới (đã lưu vào Thư viện ảnh)."); } else showToast?.("Chưa vẽ được: " + (d?.error || "lỗi không rõ"));
+  };
+  return <Btn kind="soft" style={{ height: 28, fontSize: 12 }} disabled={busy} onClick={run} testid={testid} title="AI vẽ ảnh theo mô tả (alt) · ~0,003 USD/ảnh">{busy ? "Đang vẽ…" : has ? "✦ Vẽ lại" : "✦ Vẽ bằng AI"}</Btn>;
+}
+
 // Khối không phải chữ
-export function OtherBlock({ b, set, showToast, slug }) {
+export function OtherBlock({ b, set, showToast, slug, postId }) {
   switch (b.type) {
     case "img": return (
       <Box label="ẢNH · tự nén WebP" testid="web-blk-img">
         {b.url ? <img src={b.url} alt={b.alt || ""} style={{ maxWidth: "100%", maxHeight: 360, borderRadius: 12, objectFit: "contain", alignSelf: "flex-start" }} /> : <span style={{ fontSize: 12.5, color: PC.t3 }}>Chọn ảnh từ máy (tự đổi WebP, tối đa 1600 px) hoặc dán đường dẫn ảnh.</span>}
         <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><Upload name={b.alt || slug} showToast={showToast} onDone={(r) => { set({ url: r.url, width: r.width, height: r.height }); showToast?.(`Đã tải ảnh · ${kb(r.size)} (gốc ${kb(r.orig)})`); }} label={b.url ? "Thay ảnh" : "Chọn ảnh từ máy"} /><LibBtn onPick={(r) => set({ url: r.url, alt: b.alt || r.alt || "", width: r.width || undefined, height: r.height || undefined })} /><In v={b.url} on={(v) => set({ url: v })} ph="hoặc dán đường dẫn ảnh https://…" w={320} /></span>
         <In v={b.alt} on={(v) => set({ alt: v })} ph="Mô tả ảnh (alt) — giúp Google hiểu ảnh, VD: Tô phở bò tái chín" testid="web-blk-img-alt" />
+        <span style={{ display: "flex", gap: 8 }}><AiDrawBtn alt={b.alt} slug={slug} postId={postId} has={!!b.url} onDone={(url) => set({ url, width: undefined, height: undefined })} showToast={showToast} testid="web-blk-img-ai" /></span>
         <In v={b.caption} on={(v) => set({ caption: v })} ph="Chú thích dưới ảnh (không bắt buộc)" />
       </Box>
     );

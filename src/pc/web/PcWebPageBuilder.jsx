@@ -81,6 +81,7 @@ export function PcWebPageBuilder({ top, showToast, onBack, go }) {
     <>
       {top(<span style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <span style={{ display: "flex", padding: 3, background: "#F1F5F9", borderRadius: 10 }}>{[["pc", "Máy tính"], ["m", "Điện thoại"]].map(([k, t]) => <button key={k} type="button" onClick={() => setDev(k)} data-testid={`web-pb-dev-${k}`} style={{ height: 28, padding: "0 12px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", fontSize: 12, fontWeight: 800, background: dev === k ? "#FFF" : "transparent", color: dev === k ? PC.t1 : PC.t3, boxShadow: dev === k ? "0 1px 3px rgba(15,23,42,.12)" : "none" }}>{t}</button>)}</span>
+        <Btn kind="light" onClick={back} testid="web-pb-close" title="Đóng chỗ sửa, về danh sách trang (hỏi lại nếu còn thay đổi chưa lưu)">✕ Đóng</Btn>
         <Btn kind="light" onClick={() => setShowHist(true)} disabled={!hist.length}>↶ Lịch sử</Btn>
         <Btn kind="soft" onClick={() => save(false)} disabled={!!busy || !dirty} testid="web-pb-draft">{busy === "draft" ? "Đang lưu…" : "Lưu nháp"}</Btn>
         <Btn kind="blue" onClick={() => save(true)} disabled={!!busy || (!dirty && !draftDiff)} testid="web-pb-publish">{busy === "pub" ? "Đang đăng…" : "Đăng"}</Btn>
