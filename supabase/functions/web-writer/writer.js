@@ -185,6 +185,18 @@ async function step(admin, job, cfg, t0) {
   const cats = (await admin.from("web_terms").select("id,name,slug").eq("kind", "category").order("sort")).data || [];
   const term = cats.find((c) => c.id === job.term_id);
   const sys = () => systemPrompt(cfg.rules, { inlineImages: cfg.img_on ? cfg.img_inline : 0 });
+  // Bối cảnh viết: số calo kho món app cho các món bài sẽ nhắc (lỗi thì bỏ qua, AI ghi "ước tính"), đích link nội bộ
+  // (trang chủ, chuyên mục, trang liên quan, bài đã đăng cùng chủ đề), thẻ có sẵn. extra: chữ bài đã có (bài nhập vào ở bước soát).
+  const prepCtx = async (extra = "") => {
+    let list = [];
+    try { const r = await fetch(CALO_API, { signal: AbortSignal.timeout(8000) }); if (r.ok) list = await r.json(); } catch (_e) { /* bỏ qua */ }
+    const picked = pickFoods(Array.isArray(list) ? list : [], `${job.keyword} ${job.notes || ""} ${st.research || ""} ${extra}`);
+    st.foods = foodTable(picked);
+    const pub = ((await admin.from("web_posts").select("slug,title,primary_term,seo").eq("kind", "post").eq("status", "published").order("published_at", { ascending: false }).limit(300)).data || []).map((p) => ({ slug: p.slug, title: p.title, primary_term: p.primary_term, keyword: p.seo?.keyword || "" }));
+    const mention = ` ${`${job.keyword} ${st.research || ""} ${extra}`.toLowerCase()} `;
+    st.links = linkTargets({ keyword: job.keyword, cat: term || null, posts: pub, foods: picked.filter((f) => mention.includes(String(f.n).toLowerCase())) });
+    st.tagNames = ((await admin.from("web_terms").select("name").eq("kind", "tag").order("name").limit(150)).data || []).map((t) => t.name);
+  };
   const afterText = (reviewed) => (cfg.review_model && !reviewed ? "review" : cfg.img_on ? "images" : "saving"); // viết xong → soát (nếu bật) → ảnh → lưu
 
   if (job.status === "queued") { await save({ status: cfg.searches > 0 || job.auto_term ? "research" : "writing" }); return true; }
@@ -205,18 +217,7 @@ async function step(admin, job, cfg, t0) {
     const g = st[kind] || { text: "", chunks: 0 };
     let base;
     if (kind === "draft") {
-      if (st.foods == null) { // lần viết đầu: lấy số calo kho món app cho các món bài sẽ nhắc (lỗi thì bỏ qua, AI ghi "ước tính")
-        let list = [];
-        try { const r = await fetch(CALO_API, { signal: AbortSignal.timeout(8000) }); if (r.ok) list = await r.json(); } catch (_e) { /* bỏ qua */ }
-        const picked = pickFoods(Array.isArray(list) ? list : [], `${job.keyword} ${job.notes || ""} ${st.research || ""}`);
-        st.foods = foodTable(picked);
-        // Đích link nội bộ: trang chủ, chuyên mục, trang liên quan (công cụ / bảng calo / trang calo các món bài nhắc), bài đã đăng cùng chủ đề
-        const pub = ((await admin.from("web_posts").select("slug,title,primary_term,seo").eq("kind", "post").eq("status", "published").order("published_at", { ascending: false }).limit(300)).data || []).map((p) => ({ slug: p.slug, title: p.title, primary_term: p.primary_term, keyword: p.seo?.keyword || "" }));
-        const mention = ` ${`${job.keyword} ${st.research || ""}`.toLowerCase()} `;
-        st.links = linkTargets({ keyword: job.keyword, cat: term || null, posts: pub, foods: picked.filter((f) => mention.includes(String(f.n).toLowerCase())) });
-        // Thẻ có sẵn: AI ưu tiên dùng lại, tránh tạo thẻ gần trùng
-        st.tagNames = ((await admin.from("web_terms").select("name").eq("kind", "tag").order("name").limit(150)).data || []).map((t) => t.name);
-      }
+      if (st.foods == null) await prepCtx(); // lần viết đầu: bảng calo app + đích link nội bộ + thẻ có sẵn
       const related = ((await admin.from("web_posts").select("title").eq("kind", "post").neq("status", "trash").order("updated_at", { ascending: false }).limit(30)).data || []).map((p) => p.title);
       base = [{ role: "user", content: buildUserPrompt({ keyword: job.keyword, category: term?.name || "", notes: job.notes || "", research: st.research || "", related, foods: st.foods || "", links: st.links || [], tags: st.tagNames || [] }) }];
     } else {
@@ -250,6 +251,7 @@ async function step(admin, job, cfg, t0) {
     const rm = cfg.review_model;
     const rp = providerOf(rm);
     const a = parseArticle(st.final);
+    if (st.links == null) await prepCtx(a.md); // bài nhập sẵn (vào thẳng bước soát): lập bảng calo + đích link để soát + sửa chèn link
     const rkeys = await keysFor(admin, cfg, rp);
     if (!rkeys.length) { // thiếu khoá hãng soát: bỏ qua soát, vẫn lưu bài (ghi chú ở tiến trình), không làm bài lỗi
       await save({ state: { ...st, reviewed: true, review: { model: rm, issues: [], skipped: `chưa có khoá ${NAMES[rp]}` } }, status: afterText(true) });

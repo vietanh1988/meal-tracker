@@ -312,3 +312,17 @@ test("nút Gắn link (bài đã có) + link ngược: AI chỉ chọn chỗ, m�
   assert.ok(Array.isArray(pv.blocks));
   assert.equal(JSON.stringify(tables.web_posts.find((p) => p.id === "old1").blocks), before);
 });
+
+test("bài nhập sẵn vào thẳng bước soát: máy lập bảng calo + đích link, soát thấy thiếu link → lượt sửa chèn link rồi mới ảnh / lưu", async () => {
+  const withLinks = ARTICLE.replace("Bỏ bữa sáng.", "Bỏ bữa sáng.").replace(" và đọc thêm [thực đơn giảm cân](/chu-de/thuc-don) hoặc [mẹo giảm cân](/chu-de/giam-can)", " và đọc thêm [thực đơn giảm cân](/chu-de/thuc-don)");
+  const plain = withLinks.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+  const { w, tables, calls } = setup({ cfg: { searches: 0, img_on: false }, writes: [{ text: withLinks }] });
+  Object.assign(tables.web_ai_jobs[0], { status: "review", term_id: "t1", auto_term: false, state: { final: plain, research: "- Trứng 6g đạm (nguồn: USDA)" } });
+  for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  const j = tables.web_ai_jobs[0];
+  assert.equal(j.status, "done", j.error);
+  assert.ok(Array.isArray(j.state.links) && j.state.links.some((l) => l.url === "/chu-de/thuc-don"));
+  assert.match(calls.claude.find((c) => /soát bài/.test(c.system || "")).messages[0].content, /BẢNG CALO APP/);
+  assert.ok(j.state.review.issues.some((x) => /thieu-link/.test(x)));
+  assert.equal(j.state.linkStats.home, 1); assert.equal(j.state.linkStats.cat, 1);
+});
