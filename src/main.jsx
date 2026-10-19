@@ -13,31 +13,31 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   </React.StrictMode>
 );
 
-// Tự cập nhật bản mới (16/10): có SW mới đang chờ thì kích hoạt + tải lại ở lúc an toàn:
-//  - 5 s đầu khi mở app (chưa kịp nhập gì), hoặc
-//  - khi quay lại app sau ≥ 10 phút chạy nền.
-// Đang dùng app thì không tải lại giữa chừng (tránh mất món đang nhập).
+// Tự cập nhật bản mới — 19/10 làm lại cho hết "giật":
+//  - SW mới tự cài + kích hoạt ngầm (sw.js skipWaiting + clientsClaim) → lần mở app SAU dùng luôn bản mới, không cần tải lại.
+//  - Lần cài SW đầu tiên trên máy (trước đó chưa có SW) → KHÔNG tải lại (trước đây bị tải lại thừa 1 lần).
+//  - Bản mới kích hoạt khi app vẫn đang khởi động (≤ 2,5 s) → tải lại ngay (người dùng chưa kịp thấy gì).
+//  - Kích hoạt khi đang dùng → không tải lại giữa chừng; chỉ tải lại khi quay lại app sau ≥ 2 phút chạy nền.
+//  - App là 1 file JS duy nhất (không tách chunk) nên chạy tiếp bản cũ trong phiên này vẫn an toàn.
 if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
   const bootAt = Date.now();
-  let hiddenAt = 0;
-  let reloading = false;
-  navigator.serviceWorker.addEventListener("controllerchange", () => { if (!reloading) { reloading = true; window.location.reload(); } });
-  const apply = (reg) => { if (reg && reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" }); };
+  const hadController = !!navigator.serviceWorker.controller;
+  let hiddenAt = 0, pending = false, reloading = false;
+  const reload = () => { if (!reloading) { reloading = true; window.location.reload(); } };
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController) return; // lần cài đầu: trang đang chạy chính là bản mới nhất
+    if (Date.now() - bootAt < 2500) reload(); else pending = true;
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") { hiddenAt = Date.now(); return; }
+    if (pending && hiddenAt && Date.now() - hiddenAt >= 2 * 60 * 1000) return reload();
+    navigator.serviceWorker.getRegistration().then((reg) => reg && reg.update().catch(() => {})).catch(() => {});
+  });
   window.addEventListener("load", () => {
     navigator.serviceWorker.getRegistration().then((reg) => {
       if (!reg) return;
-      const early = () => Date.now() - bootAt < 5000;
-      if (early()) apply(reg);
-      reg.addEventListener("updatefound", () => {
-        const nw = reg.installing;
-        if (nw) nw.addEventListener("statechange", () => { if (nw.state === "installed" && early()) apply(reg); });
-      });
+      if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" }); // SW cũ còn chờ (máy cài bản trước 18/10)
       reg.update().catch(() => {});
-      document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "hidden") { hiddenAt = Date.now(); return; }
-        if (hiddenAt && Date.now() - hiddenAt >= 10 * 60 * 1000) apply(reg);
-        reg.update().catch(() => {});
-      });
     }).catch(() => {});
   });
 }
