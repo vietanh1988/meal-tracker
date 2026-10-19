@@ -2,7 +2,6 @@
 // Web không tự đặt giá: anh đổi giá trong app là web đổi theo (tối đa 5 phút). Chỉ đọc cột công khai, không đọc thông tin ngân hàng.
 import { q } from "./sb.js";
 
-const COLS = "price_1m,price_3m,price_6m,price_12m,trial_days,free_ai_macro_limit,free_ai_chat_limit,free_ai_menu_limit,free_ai_photo_limit,premium_ai_macro_limit,premium_ai_chat_limit,premium_ai_menu_limit,premium_ai_photo_limit";
 export const vnd = (n) => `${Math.round(Number(n) || 0).toLocaleString("vi-VN")}đ`;
 const round100 = (n) => Math.round(n / 100) * 100;
 export function shapePlan(r) {
@@ -17,7 +16,8 @@ export function shapePlan(r) {
     limits: ["macro", "chat", "menu", "photo"].map((k) => ({ k, free: lim("free", k), premium: lim("premium", k) })),
   };
 }
-export async function getPlan() { const r = await q(`subscription_settings?id=eq.1&select=${COLS}`, { revalidate: 300 }); return shapePlan(r?.[0]); }
+// Khách không đọc thẳng được subscription_settings (có thông tin ngân hàng) → hàm web_plan() chỉ trả cột công khai
+export async function getPlan() { const r = await q("rpc/web_plan", { revalidate: 300 }); return shapePlan(r && !Array.isArray(r) ? r : r?.[0]); }
 // %trial% trong chữ (banner, chân trang, hỏi đáp…) → số ngày dùng thử thật của app
 export const fillTrial = (s, plan) => String(s ?? "").replace(/%trial%/g, String(plan?.trial || 7));
 export const LIMIT_NAME = { macro: ["AI tính calo món lạ", "tháng"], chat: ["Hỏi AI về ăn uống", "ngày"], menu: ["AI lên thực đơn theo ý", "ngày"], photo: ["Chụp ảnh món, app tính calo", "tháng"] };
