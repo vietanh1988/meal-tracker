@@ -34,7 +34,7 @@ export class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ fontFamily: "'Inter',Roboto,-apple-system,'Segoe UI',sans-serif", background: C.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ fontFamily: "-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'", background: C.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div style={{ width: "100%", maxWidth: 400 }}>
             <div style={{ textAlign: "center", marginBottom: 24 }}>
               <img src="/logo.png" alt="Fipilot AI" style={{ width: 72, height: 72, borderRadius: 16, objectFit: "cover" }} />

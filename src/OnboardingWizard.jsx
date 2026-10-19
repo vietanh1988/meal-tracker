@@ -14,7 +14,7 @@ import { Seg } from "./mobile/ui";
 import { todayVN } from "./lib/dateVN";
 import { bodyErrors, bodyValid, daysToFrequency, goalDirectionError, isPlaceholderBody, BODY_LIMITS } from "./lib/onboardingCheck";
 
-const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
+const FONT = "-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'";
 const GRAD_BLUE = "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)";
 const svg = (d, s = 22, w = 2.2) => <svg aria-hidden="true" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={w} strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
 const P = {

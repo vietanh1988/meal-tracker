@@ -26,7 +26,7 @@ export function BodyFigure({ gender, active, width = 140, labels = true }) {
             {labels && <>
               <line x1={ex} y1={y} x2={lx + (L ? 34 : -34)} y2={y} stroke={f.color} strokeWidth="5" strokeDasharray="8 8" />
               <circle cx={lx} cy={y} r="34" fill={f.color} stroke="#FFFFFF" strokeWidth="6" />
-              <text x={lx} y={y + 15} textAnchor="middle" fontSize="44" fontWeight="800" fill="#FFFFFF" fontFamily="Inter, sans-serif">{f.n}</text>
+              <text x={lx} y={y + 15} textAnchor="middle" fontSize="44" fontWeight="800" fill="#FFFFFF" fontFamily="-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'">{f.n}</text>
             </>}
           </g>
         );

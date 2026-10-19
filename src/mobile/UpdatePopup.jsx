@@ -64,7 +64,7 @@ export function UpdateFlow({ fromVersion, toVersion, notes, onLater, manual }) {
   const r = 58, C = 2 * Math.PI * r;
   const steps = [["Tải bản mới", 30], ["Dọn bộ nhớ tạm", 75], ["Cài đặt & mở lại", 100]];
   return (
-    <div className="fpm" data-testid="update-flow" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(4,14,40,0.62)", WebkitBackdropFilter: "blur(6px)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif", color: "#0F172A" }}>
+    <div className="fpm" data-testid="update-flow" style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(4,14,40,0.62)", WebkitBackdropFilter: "blur(6px)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'", color: "#0F172A" }}>
       <style>{CSS}</style>
       <div role="dialog" aria-modal="true" aria-label="Cập nhật ứng dụng" className="fp-up-anim" style={{ width: "100%", maxWidth: 350, borderRadius: 26, overflow: "hidden", background: "#FFFFFF", boxShadow: "0 30px 80px rgba(0,10,40,0.5)", animation: "fpUpIn .25s ease" }}>
         {stage === "confirm" && <>

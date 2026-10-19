@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { C, DK, LT } from "../theme";
 import { Glyph, chipBg, IC_COLOR } from "./icons";
 
-export const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
+export const FONT = "-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'";
 export const GRAD_BLUE = "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)";
 export const GRAD_ORANGE = "linear-gradient(135deg,#EA580C,#C2410C)";
 export const SR = { position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" };

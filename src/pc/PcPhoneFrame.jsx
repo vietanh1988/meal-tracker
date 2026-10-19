@@ -37,7 +37,7 @@ export function QrCode({ text = APP_URL, size = 120 }) {
 
 export function PcPhoneFrame({ children, isAdmin, onOpenAdmin }) {
   return (
-    <div data-testid="pc-frame-page" className="pcf-wrap" style={{ position: "relative", minHeight: "100vh", background: PC.bg, fontFamily: "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif", color: PC.t1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 0", boxSizing: "border-box" }}>
+    <div data-testid="pc-frame-page" className="pcf-wrap" style={{ position: "relative", minHeight: "100vh", background: PC.bg, fontFamily: "-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'", color: PC.t1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 0", boxSizing: "border-box" }}>
       <style>{CSS}</style>
       {/* Lời mời bên trái: rộng 300, cách trái 70, canh giữa theo chiều dọc; ẩn khi màn < 1180 (không đè khung) */}
       <div className="pcf-invite" data-testid="pc-invite" style={{ position: "absolute", left: 70, top: "50%", transform: "translateY(-50%)", width: 300, display: "flex", flexDirection: "column", gap: 12 }}>

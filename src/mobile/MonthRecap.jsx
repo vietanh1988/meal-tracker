@@ -120,7 +120,7 @@ function Thin({ r, onReminders }) {
 function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
 function loadImg(src) { return new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; }); }
 export async function drawShareImage(r, { name, hideKg }) {
-  const W = 1080, H = 1350, F = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
+  const W = 1080, H = 1350, F = "-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'";
   const c = document.createElement("canvas"); c.width = W; c.height = H;
   const ctx = c.getContext("2d");
   const g = ctx.createLinearGradient(0, 0, W * 0.6, H); g.addColorStop(0, "#2C8DFF"); g.addColorStop(0.45, "#0062F0"); g.addColorStop(1, "#0040C0");

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DK, DK_CSS, dkCard, dkInp } from "./theme";
 
-export const FONT = "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif";
+export const FONT = "-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'";
 export const field = dkInp;
 export const primaryBtn = (disabled) => ({ height: 52, borderRadius: 14, border: "none", background: disabled ? "rgba(255,255,255,0.18)" : "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 16, fontWeight: 900, boxShadow: disabled ? "none" : "0 4px 12px rgba(0,0,0,0.18)", width: "100%", cursor: disabled ? "default" : "pointer" });
 export const linkBtn = { border: "none", background: "transparent", padding: "4px 0", fontFamily: "inherit", fontSize: 13, fontWeight: 700, color: DK.link, cursor: "pointer" };

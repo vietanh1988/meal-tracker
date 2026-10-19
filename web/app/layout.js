@@ -4,7 +4,7 @@ import Track from "@/components/Track";
 import Footer from "@/components/Footer";
 import { getSettings, getMenu, siteUrl, alt } from "@/lib/site";
 
-// Font y hệt app (index.html của app): Inter + Roboto từ Google Fonts, cùng độ đậm, cùng thứ tự dự phòng.
+// Font y hệt app (index.html của app): thứ tự -apple-system, "system-ui", Inter, "Inter Fallback", "Segoe UI", Roboto, … — Inter + Roboto tải từ Google Fonts cho máy không có font hệ thống.
 const FONT_CSS = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap";
 
 export async function generateMetadata() {

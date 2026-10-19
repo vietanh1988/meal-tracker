@@ -104,7 +104,7 @@ export default function App(){
   const inFrame=(el)=>mob?el:<PcPhoneFrame>{el}</PcPhoneFrame>;
   if(isPasswordRecovery) return inFrame(<ResetPasswordScreen/>);
   if(!user) return inFrame(<LoginScreen onLogin={()=>window.location.reload()} appSettings={appSettings}/>);
-  if(profile.isLocked) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"Inter,sans-serif",padding:20}}>
+  if(profile.isLocked) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'",padding:20}}>
     <div style={{width:"100%",maxWidth:380}}>
       <div style={{textAlign:"center",marginBottom:24}}>
         <img src="/logo.png" alt="Fipilot AI" style={{width:64,height:64,borderRadius:14,objectFit:"cover"}}/>

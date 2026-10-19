@@ -233,7 +233,7 @@ export function PcAdminShell({ adminP, user, profile, appSettings, saveSetting, 
   else { const Pg = PAGES[sec] || PcHome; page = <Pg key={sec} {...P} go={go} counts={counts} />; }
 
   return (
-    <div className="pc-root" data-testid="pc-admin" style={{ minHeight: "100vh", background: PC.bg, fontFamily: "Inter, Roboto, -apple-system, 'Segoe UI', sans-serif", color: PC.t1 }}>
+    <div className="pc-root" data-testid="pc-admin" style={{ minHeight: "100vh", background: PC.bg, fontFamily: "-apple-system, 'system-ui', Inter, 'Inter Fallback', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'", color: PC.t1 }}>
       <style>{PC_CSS}</style>
       <SideNav section={sec} go={go} counts={counts} isSuperAdmin={isSuperAdmin} user={user} profile={profile} mini={mini} onToggle={toggleSide} />
       <main data-testid={`pc-page-${sec}`} style={{ marginLeft: sideW, minWidth: 0, transition: "margin-left .18s ease" }}>{page}</main>
