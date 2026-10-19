@@ -70,7 +70,7 @@ export default async function Page({ params }) {
         <section className="phead"><div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 14 }}><Crumb items={crumbs} /><h1 className="h1">{p.title}</h1>{long && !p.seo?.hide_updated && <p className="lg-up" style={{ fontSize: 18, lineHeight: 1.6, color: "#475569" }}>Cập nhật {fmtDate(p.updated_at)}</p>}</div></section>
         <div className={`wrap${long ? " lg-w" : ""}`} style={{ paddingTop: 40, display: "flex", gap: 32, alignItems: "flex-start" }}>
           {long && t.length > 0 && <div className="only-m lg-mt"><LegalToc t={t} /></div>}
-          <article className={`card art${long ? " legal" : ""}`} style={{ flex: 1, minWidth: 0, padding: 48 }}><Blocks blocks={blocks} s={s} toc={t} /></article>
+          <article className={`card art${long ? " legal" : ""}`} style={{ flex: 1, minWidth: 0, padding: 48 }}><Blocks blocks={blocks} s={s} toc={t} slug={p.slug} /></article>
           {long && t.length > 0 && <aside className="only-pc" style={{ width: 300, flexShrink: 0, position: "sticky", top: 90 }}><LegalToc t={t} /></aside>}
         </div>
         <Sticky s={s} ref_={`page-${p.slug}`} />
@@ -99,7 +99,7 @@ export default async function Page({ params }) {
             </div>
             {p.cover_url && <figure><img {...imgAttrs(p.cover_url)} alt={p.cover_alt || p.title} fetchPriority="high" className="cover" style={{ width: "100%", height: 330, objectFit: "cover", borderRadius: 16, display: "block" }} /></figure>}
             {t.length > 1 && <div className="only-m"><TocBox t={t} /></div>}
-            <Blocks blocks={blocks} s={s} toc={t} />
+            <Blocks blocks={blocks} s={s} toc={t} slug={p.slug} />
             {a?.show_box !== false && a && (
               <div style={{ borderRadius: 16, border: "1px solid #E6ECF5", background: "#F8FBFF", padding: 20, display: "flex", gap: 14, marginTop: 8 }}>
                 <Avatar a={a} size={56} />

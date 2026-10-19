@@ -5,7 +5,7 @@ export const BLOCK_GROUPS = [
   ["BỐ CỤC", [["cols", "▥", "Chia 2–3 cột", "chia cot columns"], ["button", "⬭", "Nút bấm", "nut bam button"], ["hr", "—", "Đường kẻ / khoảng trống", "duong ke khoang trong"], ["toc", "☷", "Mục lục tự động", "muc luc toc"]]],
   ["RIÊNG FIPILOT", [["calo", "🍜", "Khối calo 1 món", "khoi calo mon"], ["calo_table", "▦", "Bảng calo nhiều món", "bang calo nhieu mon"], ["faq", "?", "Hỏi đáp (tự sinh schema FAQ)", "hoi dap faq"], ["app", "📱", "Hộp mời mở app", "hop moi mo app"], ["table", "≣", "Bảng so sánh", "bang so sanh table"]]],
 ];
-export const BLOCK_NAME = { p: "Đoạn văn", h: "Tiêu đề", list: "Danh sách", quote: "Trích dẫn", tip: "Hộp mẹo", html: "HTML", img: "Ảnh", gallery: "Bộ ảnh", youtube: "Video", cols: "Cột", button: "Nút bấm", hr: "Đường kẻ", toc: "Mục lục", calo: "Calo món", calo_table: "Bảng calo", faq: "Hỏi đáp", app: "Mời mở app", table: "Bảng" };
+export const BLOCK_NAME = { p: "Đoạn văn", h: "Tiêu đề", list: "Danh sách", quote: "Trích dẫn", tip: "Hộp mẹo", html: "HTML", img: "Ảnh", gallery: "Bộ ảnh", youtube: "Video", cols: "Cột", button: "Nút bấm", hr: "Đường kẻ", toc: "Mục lục", calo: "Calo món", calo_table: "Bảng calo", faq: "Hỏi đáp", app: "Mời mở app", table: "Bảng", ref: "Khối dùng lại" };
 let seq = 0;
 export const key = () => `b${Date.now().toString(36)}${(seq++).toString(36)}`;
 export function newBlock(t) {

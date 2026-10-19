@@ -123,6 +123,18 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     if (cp0) await rest(`web_calo_pages?food_key=eq.${encodeURIComponent("phở bò")}`, { method: "PATCH", body: JSON.stringify(cp0) });
     else await rest(`web_calo_pages?food_key=eq.${encodeURIComponent("phở bò")}`, { method: "DELETE" });
 
+    // Khối dùng lại: tạo khối mẫu "Hộp mời mở app" → đổi tiêu đề, tên → Lưu → DB có khối
+    await page.getByTestId("pc-nav-web_blocks").click();
+    await page.getByTestId("web-blk-new").click();
+    await page.getByTestId("web-blk-app-title").fill("E2E tiêu đề hộp app");
+    await page.getByTestId("web-blk-name").fill("E2E hộp app");
+    await page.getByTestId("web-blk-save").click();
+    await expect(page.getByTestId("pc-toast")).toContainText("Đã lưu khối");
+    const [blk] = await rest(`web_blocks?name=eq.${encodeURIComponent("E2E hộp app")}&select=kind,blocks`);
+    expect(blk.kind).toBe("block");
+    expect(blk.blocks[0]).toMatchObject({ type: "app", title: "E2E tiêu đề hộp app" });
+    await rest(`web_blocks?name=like.E2E*`, { method: "DELETE" });
+
     // Thư viện ảnh: mở được, có ô kéo thả + nút tải
     await page.getByTestId("pc-nav-web_media").click();
     await expect(page.getByTestId("web-media-drop")).toBeVisible();
@@ -157,6 +169,7 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await rest(`web_posts?slug=like.e2e-*`, { method: "DELETE" }).catch(() => {});
     await rest(`web_terms?slug=like.e2e-*`, { method: "DELETE" }).catch(() => {});
     await rest(`web_redirects?src=like./e2e-*`, { method: "DELETE" }).catch(() => {});
+    await rest(`web_blocks?name=like.E2E*`, { method: "DELETE" }).catch(() => {});
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: prof?.is_admin ?? false, admin_role: prof?.admin_role ?? null }) });
   }
 });

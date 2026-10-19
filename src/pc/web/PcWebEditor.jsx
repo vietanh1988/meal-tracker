@@ -10,6 +10,7 @@
 //  - Lưu: mỗi lần lưu ghi 1 bản vào Lịch sử (giữ 30 bản). Bản nháp tự lưu lên máy chủ mỗi 60 giây; bài đã đăng chỉ tự lưu trên máy.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PC } from "../../theme";
+import { supabase } from "../../lib/supabase";
 import { appConfirm } from "../../lib/dialog";
 import { Btn, Pill, Card, ErrorBox, Loading, fmtDT, secLbl } from "../pcUI";
 import { Check, Tog, Radio, Score, Tabs, Field, Count, SideBox, Modal, Lnk, inpStyle, BLUE } from "./webUI";
@@ -54,6 +55,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
   const [slugEdit, setSlugEdit] = useState(false);
   const [slugTouched, setSlugTouched] = useState(false);
   const [redirs, setRedirs] = useState([]);
+  const [reuse, setReuse] = useState([]);    // web_blocks: khối dùng lại + mẫu bài
   const els = useRef({});
   const color = useRef(null);
   const postRef = useRef(null);
@@ -72,6 +74,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
         try { const bk = JSON.parse(localStorage.getItem(LS(id)) || "null"); if (bk && new Date(bk.at) > new Date(p.updated_at || 0) && (await appConfirm(`Có bản đang soạn dở lưu trên máy lúc ${fmtDT(bk.at)} (mới hơn bản trên máy chủ). Mở bản đó?`))) { start = { ...bk.post, blocks: withKeys(bk.post.blocks) }; setDirty(true); } } catch (e) { /* */ }
         setPost(start); setCats(c); setTags(t); setTc(n); setAuthors(a); setAllPosts(ps.filter((x) => x.id !== id && x.status !== "trash"));
         setSlugTouched(!!id);
+        supabase.from("web_blocks").select("id,name,kind,blocks").order("name").then(({ data }) => !off && setReuse(data || []));
         if (id) { listRevisions(id).then((r) => setRevCount(r.length)).catch(() => {}); redirectsTo(`/${p.slug}`).then(setRedirs).catch(() => {}); }
       } catch (e) { if (!off) setErr("Chưa mở được bài. " + (e.message || "")); }
     })();
@@ -190,8 +193,10 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
     const b = postRef.current.blocks[i]; const txt = v.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ");
     if (b.type === "p" && /^\/[^/]{0,24}$/.test(txt) && slashOpts(txt.slice(1)).length) setSlash({ i, q: txt.slice(1), hi: 0 }); else if (slash?.i === i) setSlash(null);
   };
-  const slashOpts = (q) => { const s = slugify(q).replace(/-/g, " "); return BLOCK_GROUPS.flatMap(([, l]) => l).filter(([, , name, kw]) => !s || kw.includes(s) || slugify(name).replace(/-/g, " ").includes(s)); };
-  const pickSlash = (t) => { const i = slash.i; const nb = newBlock(t); upd((p) => ({ blocks: p.blocks.map((x, k) => (k === i ? nb : x)) })); setSlash(null); setCur(i); focusBlock(nb._k, false); };
+  const GROUPS = [...BLOCK_GROUPS, ...(reuse.some((r) => r.kind === "block") ? [["KHỐI DÙNG LẠI", reuse.filter((r) => r.kind === "block").map((r) => [`ref:${r.id}`, "♻", r.name, `${slugify(r.name).replace(/-/g, " ")} khoi dung lai`])]] : [])];
+  const mk = (t) => (t.startsWith("ref:") ? { _k: newBlock("p")._k, type: "ref", id: t.slice(4), name: reuse.find((r) => r.id === t.slice(4))?.name || "" } : newBlock(t));
+  const slashOpts = (q) => { const s = slugify(q).replace(/-/g, " "); return GROUPS.flatMap(([, l]) => l).filter(([, , name, kw]) => !s || kw.includes(s) || slugify(name).replace(/-/g, " ").includes(s)); };
+  const pickSlash = (t) => { const i = slash.i; const nb = mk(t); upd((p) => ({ blocks: p.blocks.map((x, k) => (k === i ? nb : x)) })); setSlash(null); setCur(i); focusBlock(nb._k, false); };
   const insertBlock = (t) => { const nb = newBlock(t); const b = post.blocks[cur]; const empty = b && b.type === "p" && !String(b.html || "").replace(/<[^>]+>/g, "").trim(); if (empty) { upd((p) => ({ blocks: p.blocks.map((x, k) => (k === cur ? nb : x)) })); focusBlock(nb._k, false); } else insertAt(cur + 1, nb); };
 
   // Dán: nhiều đoạn (Word / Google Docs) → tách khối; 1 đoạn → giữ đậm / nghiêng / link
@@ -266,6 +271,11 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
                 {slugEdit ? <><span style={{ color: BLUE }}>fipilotai.com/</span><input autoFocus value={post.slug} onChange={(e) => { setSlugTouched(true); upd({ slug: slugify(e.target.value.replace(/\s/g, "-")) || "" }); }} onBlur={() => setSlugEdit(false)} onKeyDown={(e) => e.key === "Enter" && setSlugEdit(false)} data-testid="web-ed-slug" className="pc-input" style={{ ...inpStyle(26), width: 320, fontSize: 12.5 }} /></>
                   : <><span style={{ color: BLUE }}>fipilotai.com/<b>{post.slug || "…"}</b></span><Btn kind="light" onClick={() => setSlugEdit(true)} title={post.status === "published" ? "Đổi đường dẫn bài đã đăng: web tự chuyển hướng 301 từ link cũ" : "Sửa đường dẫn"} style={{ height: 24, fontSize: 11.5, padding: "0 8px" }} testid="web-ed-slug-edit">Sửa</Btn></>}
               </div>
+              {!post.id && reuse.some((r) => r.kind === "template") && post.blocks.length === 1 && post.blocks[0].type === "p" && !String(post.blocks[0].html || "").replace(/<[^>]+>/g, "").trim() && (
+                <div data-testid="web-ed-tpl" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 12.5, color: PC.t3 }}>Bắt đầu từ mẫu:
+                  {reuse.filter((r) => r.kind === "template").map((r) => <Btn key={r.id} kind="soft" style={{ height: 28, fontSize: 12 }} onClick={() => upd({ blocks: withKeys(r.blocks.map((x) => ({ ...x }))) })}>{r.name}</Btn>)}
+                </div>
+              )}
               {post.blocks.map((b, i) => {
                 const on = i === cur;
                 const common = { elRef: (el) => { els.current[b._k] = el; }, onFocus: () => { setCur(i); }, onKeyDown: onKey(i), onPaste: onPaste(i) };
@@ -278,6 +288,12 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
                 else if (b.type === "quote") body = <Rich {...common} html={b.html} onChange={onText(i, "html")} placeholder="Trích dẫn…" style={{ borderLeft: `4px solid ${BLUE}`, paddingLeft: 16, fontStyle: "italic", color: PC.t2, textAlign: b.align }} />;
                 else if (b.type === "tip") body = <Rich {...common} html={b.html} onChange={onText(i, "html")} placeholder="Mẹo / lưu ý…" style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 12, padding: "12px 14px", fontSize: 15, textAlign: b.align }} />;
                 else if (b.type === "list") body = <ListEdit {...common} b={b} set={(patch) => setBlock(i, patch)} />;
+                else if (b.type === "ref") { const r = reuse.find((x) => x.id === b.id); body = (
+                  <div data-testid="web-ed-ref" onClick={() => setCur(i)} style={{ borderRadius: 14, border: "1.5px solid #C7D2FE", background: "#EEF2FF", padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontSize: 11, fontWeight: 800, color: "#4338CA", letterSpacing: ".04em" }}>♻ KHỐI DÙNG LẠI</span><b style={{ fontSize: 13.5 }}>{r?.name || b.name || "Khối đã xoá"}</b>
+                      <span style={{ marginLeft: "auto" }}>{r && <Btn kind="light" style={{ height: 28, fontSize: 12 }} onClick={() => { const copy = withKeys(r.blocks.map((x) => ({ ...x }))); upd((p) => ({ blocks: [...p.blocks.slice(0, i), ...copy, ...p.blocks.slice(i + 1)] })); showToast?.("Đã tách — phần này giờ sửa riêng trong bài."); }} testid="web-ed-ref-detach">Tách khỏi khối dùng lại</Btn>}</span></span>
+                    <span style={{ fontSize: 12.5, color: PC.t3 }}>{r ? `${r.blocks.length} khối · ${r.blocks.map((x) => BLOCK_NAME[x.type] || x.type).join(", ")} — sửa ở Quản trị › Khối dùng lại, mọi bài dùng khối tự đổi theo.` : "Khối này đã bị xoá — trên web phần này không hiện. Bấm 🗑 trên thanh khối để bỏ."}</span>
+                  </div>); }
                 else body = <div onFocus={() => setCur(i)} onClick={() => setCur(i)}><OtherBlock b={b} set={(patch) => setBlock(i, patch)} showToast={showToast} slug={post.slug} /></div>;
                 return (
                   <div key={b._k} data-testid="web-ed-block" data-type={b.type} style={{ position: "relative", borderRadius: 10, padding: "6px 10px", margin: "-6px -10px", boxShadow: on ? "inset 0 0 0 1.5px #1A7CFF" : "none" }} onMouseDown={() => setCur(i)}>
@@ -285,9 +301,9 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
                     {body}
                     {slash && slash.i === i && (
                       <div data-testid="web-ed-slash" style={{ position: "absolute", left: 10, top: "100%", marginTop: 4, width: 600, background: "#FFF", borderRadius: 12, boxShadow: "0 12px 32px rgba(15,23,42,.18)", border: `1px solid ${PC.line}`, padding: 8, zIndex: 9, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 8px" }}>
-                        {(() => { const opts = slashOpts(slash.q); let n = -1; return BLOCK_GROUPS.map(([g, l]) => { const ls = l.filter((x) => opts.includes(x)); if (!ls.length) return null; return (
+                        {(() => { const opts = slashOpts(slash.q); let n = -1; return GROUPS.map(([g, l]) => { const ls = l.filter((x) => opts.includes(x)); if (!ls.length) return null; return (
                           <div key={g} style={{ display: "flex", flexDirection: "column", gap: 1 }}><span style={{ fontSize: 10.5, fontWeight: 800, color: PC.t4, letterSpacing: ".06em", padding: "6px 8px 2px" }}>{g}</span>
-                            {ls.map(([t, ic, name]) => { n++; const hi = n === slash.hi; return <button key={t} type="button" data-testid={`web-slash-${t}`} onMouseDown={(e) => { e.preventDefault(); pickSlash(t); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 8px", borderRadius: 8, background: hi ? PC.rowSel : "transparent", border: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}><span style={{ width: 26, height: 26, borderRadius: 7, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>{ic}</span><b style={{ fontSize: 12.5, fontWeight: 700 }}>{name}</b></button>; })}
+                            {ls.map(([t, ic, name]) => { n++; const hi = n === slash.hi; return <button key={t} type="button" data-testid={`web-slash-${t.startsWith("ref:") ? "ref" : t}`} onMouseDown={(e) => { e.preventDefault(); pickSlash(t); }} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 8px", borderRadius: 8, background: hi ? PC.rowSel : "transparent", border: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}><span style={{ width: 26, height: 26, borderRadius: 7, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800 }}>{ic}</span><b style={{ fontSize: 12.5, fontWeight: 700 }}>{name}</b></button>; })}
                           </div>); }); })()}
                         {!slashOpts(slash.q).length && <span style={{ padding: 8, fontSize: 12.5, color: PC.t4 }}>Không có khối “{slash.q}”</span>}
                       </div>

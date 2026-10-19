@@ -6,7 +6,9 @@ import CaloBox from "./CaloBox";
 
 const H = ({ html, as: T = "p", ...r }) => <T {...r} dangerouslySetInnerHTML={{ __html: clean(html) }} />;
 
-export default function Blocks({ blocks, s, toc }) {
+export default function Blocks({ blocks, s, toc, slug }) {
+  // %bai% trong link nút / hộp mời app (khối dùng lại) = đường dẫn bài đang hiện
+  const lk = (u) => (u && slug ? u.replace(/%bai%/g, encodeURIComponent(slug)) : u ? u.replace(/%bai%/g, "web") : u);
   return (
     <div className="prose">
       {blocks.map((b, i) => {
@@ -37,10 +39,10 @@ export default function Blocks({ blocks, s, toc }) {
             <aside key={i} className="card" style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", background: "linear-gradient(90deg,#EEF4FF,#F8FBFF)", borderColor: "#DCE7FF" }}>
               <img className="th" src={b.image || "/img/bowl-1.jpg"} alt="" width={58} height={58} loading="lazy" style={{ width: 58, height: 58 }} />
               <span style={{ flex: 1, minWidth: 180, display: "flex", flexDirection: "column", gap: 3 }}><b style={{ fontSize: 17, color: "#0B3B91" }}>{b.title || "Muốn app lên sẵn thực đơn đúng calo?"}</b><span style={{ fontSize: 14, color: "#475569", lineHeight: 1.5 }}>{b.text || "Fipilot AI tự lên thực đơn món Việt đúng calo cho bạn — miễn phí."}</span></span>
-              <a className="btn b1" href={b.url || appLink(s, "post-box")} style={{ height: 38 }}>{b.button || "Mở app"}</a>
+              <a className="btn b1" href={lk(b.url) || appLink(s, slug ? `post-${slug}` : "post-box")} style={{ height: 38 }}>{b.button || "Mở app"}</a>
             </aside>
           );
-          case "button": return b.url ? <div key={i} style={{ textAlign: b.align || "left" }}><a className={`btn ${b.style === "outline" ? "b2" : "b1"}`} href={b.url}>{b.label || "Xem thêm"}</a></div> : null;
+          case "button": return b.url ? <div key={i} style={{ textAlign: b.align || "left" }}><a className={`btn ${b.style === "outline" ? "b2" : "b1"}`} href={lk(b.url)}>{b.label || "Xem thêm"}</a></div> : null;
           case "hr": return <hr key={i} style={{ border: 0, borderTop: "1px solid #E6ECF5", margin: "8px 0" }} />;
           case "toc": return toc?.length ? <nav key={i} aria-label="Mục lục" className="card" style={{ padding: 18 }}><b style={{ fontSize: 16 }}>Mục lục</b><ol style={{ marginTop: 10 }}>{toc.map((t) => <li key={t.id} style={{ fontSize: 15.5, marginLeft: t.level === 3 ? 16 : 0 }}><a href={`#${t.id}`}>{t.text}</a></li>)}</ol></nav> : null;
           case "html": return <H key={i} as="div" html={b.html} />;
