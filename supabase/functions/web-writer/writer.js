@@ -19,7 +19,7 @@ const cors = (req) => {
 const json = (req, body, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...cors(req), "Content-Type": "application/json" } });
 
 async function setting(admin, key) { const { data } = await admin.from("app_settings").select("value").eq("key", key).maybeSingle(); return data?.value || ""; }
-async function config(admin) { const { data } = await admin.from("web_ai_config").select("data").eq("id", 1).maybeSingle(); return cfgOf(data?.data); }
+async function config(admin) { const { data, error } = await admin.from("web_ai_config").select("data").eq("id", 1).maybeSingle(); if (error) throw new Error("Đọc cài đặt: " + error.message); return cfgOf(data?.data); }
 const NAMES = { claude: "Claude", gemini: "Gemini", gpt: "ChatGPT" };
 // Khoá viết bài: khoá riêng (<hãng>_writer_key) nếu chọn "khoá riêng", không thì khoá chung ở Kết nối AI (Claude còn khoá Secret dự phòng)
 async function keysFor(admin, cfg, provider) {
@@ -163,7 +163,8 @@ async function pingIndexNow(admin, path) {
 async function step(admin, job, cfg, t0) {
   const st = job.state || {};
   const save = async (patch) => {
-    const { data } = await admin.from("web_ai_jobs").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", job.id).select().single();
+    const { data, error } = await admin.from("web_ai_jobs").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", job.id).select().single();
+    if (error) throw new Error("Lưu tiến độ: " + error.message); // không nuốt lỗi quyền / DB
     Object.assign(job, data || patch);
   };
   const prov = providerOf(job.model);
