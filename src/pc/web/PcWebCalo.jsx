@@ -14,6 +14,7 @@ import { foodSlugs } from "../../../web/lib/slug.js";
 
 const SLUG = foodSlugs(Object.keys(LOCAL_FOODS));
 import { Upload } from "./BlockEdit";
+import { views30 } from "./PcWebStats";
 
 const WEB = "https://fipilotai.com";
 const must = ({ data, error }) => { if (error) throw error; return data; };
@@ -49,6 +50,8 @@ export function PcWebCalo({ top, showToast }) {
   const [bulk, setBulk] = useState(false);
   const [posts, setPosts] = useState([]);
   const [faqOpen, setFaqOpen] = useState(false);
+  const [views, setViews] = useState(null); // /calo/<slug> → lượt xem 30 ngày (null = chưa có thống kê)
+  useEffect(() => { views30("/calo/").then(setViews); }, []);
 
   useEffect(() => { (async () => {
     try {
@@ -140,12 +143,12 @@ export function PcWebCalo({ top, showToast }) {
                 <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}><b style={{ fontSize: 12.5 }}>{f.per100.cal} kcal / 100 g</b><span style={{ ...cell, fontSize: 11.5, color: PC.t3 }}>{p ? `${p.name} ${p.gram} g = ${p.cal}` : "chưa có khẩu phần"}</span></span>
                 <span>{x.image_url ? <Pill tone="green">Có</Pill> : <Pill tone="amber">Chưa có</Pill>}</span>
                 <span>{x.intro?.trim() ? <Pill tone="blue">Đã viết</Pill> : <span style={{ fontSize: 12, color: PC.t3 }}>Tự sinh</span>}</span>
-                <span style={{ ...cell, color: PC.t2 }}>—</span>
+                <span style={{ ...cell, color: PC.t2 }}>{views && x.enabled ? vnInt(views[`/calo/${x.slug}`] || 0) : "—"}</span>
                 <span onClick={(e) => e.stopPropagation()}><Tog on={x.enabled} onChange={(on) => set(f.key, { enabled: on })} testid={`web-calo-on-${f.slug}`} /></span>
               </div>); })}
             {!list.length && <div style={{ padding: 24, textAlign: "center", fontSize: 13, color: PC.t3 }}>Không có món khớp bộ lọc.</div>}
             {list.length > limit && <div style={{ padding: "10px 16px", borderTop: `1px solid ${PC.rowLine}` }}><Btn kind="light" onClick={() => setLimit((n) => n + PAGE)}>Xem thêm ({vnInt(list.length - limit)} món)</Btn></div>}
-            <div style={{ padding: "12px 16px", fontSize: 12, color: PC.t3 }}>Lượt xem hiện khi có Thống kê web. Tắt trang → đường dẫn trả lỗi 410 và tự bỏ khỏi sitemap.</div>
+            <div style={{ padding: "12px 16px", fontSize: 12, color: PC.t3 }}>Lượt xem = web tự đếm 30 ngày qua (Thống kê web). Tắt trang → đường dẫn trả lỗi 410 và tự bỏ khỏi sitemap.</div>
           </Card>
           {fd && (
             <Card style={{ padding: 0, position: "sticky", top: 12 }}>

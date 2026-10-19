@@ -31,6 +31,11 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await page.getByTestId("web-slash-h2").click();
     await page.keyboard.type("Cơm tấm bao nhiêu calo?");
     await expect(page.locator("[data-testid=web-ed-block][data-type=h]")).toHaveCount(1);
+    // Trực quan ⇄ HTML: chuyển qua lại không mất khối
+    await page.getByTestId("web-ed-mode-html").click();
+    await expect(page.getByTestId("web-ed-html")).toHaveValue(/<h2>Cơm tấm bao nhiêu calo\?<\/h2>/);
+    await page.getByTestId("web-ed-mode-visual").click();
+    await expect(page.locator("[data-testid=web-ed-block][data-type=h]")).toHaveCount(1);
     await page.getByTestId("web-cat-e2e-giam-can").check({ force: true });
     await page.getByTestId("web-tag-input").fill("e2e thẻ");
     await page.getByTestId("web-tag-input").press("Enter");
@@ -134,6 +139,11 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     expect(blk.kind).toBe("block");
     expect(blk.blocks[0]).toMatchObject({ type: "app", title: "E2E tiêu đề hộp app" });
     await rest(`web_blocks?name=like.E2E*`, { method: "DELETE" });
+
+    // Thống kê web: mở được, có 4 ô số + chọn khoảng ngày
+    await page.getByTestId("pc-nav-web_stats").click();
+    await expect(page.getByTestId("web-stats-range")).toBeVisible();
+    await page.getByTestId("web-stats-range").selectOption("7");
 
     // Thư viện ảnh: mở được, có ô kéo thả + nút tải
     await page.getByTestId("pc-nav-web_media").click();

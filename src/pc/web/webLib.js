@@ -83,16 +83,17 @@ export function htmlToBlocks(html, parse) {
   const walk = (node) => {
     for (const el of node.children) {
       const t = el.tagName.toLowerCase();
-      if (/^h[1-6]$/.test(t)) { const s = inline(el); if (s) out.push({ type: "h", level: Math.min(4, Math.max(2, +t[1] === 1 ? 2 : +t[1])), text: s }); }
+      const al = /^(center|right)$/.test(el.style?.textAlign || "") ? { align: el.style.textAlign } : {};
+      if (/^h[1-6]$/.test(t)) { const s = inline(el); if (s) out.push({ type: "h", level: Math.min(4, Math.max(2, +t[1] === 1 ? 2 : +t[1])), text: s, ...al }); }
       else if (t === "ul" || t === "ol") { const items = [...el.querySelectorAll(":scope > li")].map(inline).filter(Boolean); if (items.length) out.push({ type: "list", ordered: t === "ol", items }); }
-      else if (t === "blockquote") { const s = inline(el); if (s) out.push({ type: "quote", html: s }); }
+      else if (t === "blockquote") { const s = inline(el); if (s) out.push({ type: "quote", html: s, ...al }); }
       else if (t === "table") {
         const rows = [...el.querySelectorAll("tr")].map((tr) => [...tr.children].map(inline));
         if (rows.length) out.push({ type: "table", head: rows[0], rows: rows.slice(1) });
       }
       else if (t === "img") { if (el.getAttribute("src") && !/^data:/.test(el.getAttribute("src"))) out.push({ type: "img", url: el.getAttribute("src"), alt: el.getAttribute("alt") || "" }); }
       else if (t === "hr") out.push({ type: "hr" });
-      else if (t === "p") { const img = el.querySelector("img"); const s = inline(el); if (s) out.push({ type: "p", html: s }); else if (img) walk(el); }
+      else if (t === "p") { const img = el.querySelector("img"); const s = inline(el); if (s) out.push({ type: "p", html: s, ...al }); else if (img) walk(el); }
       else if (el.children.length && [...el.children].some((c) => /^(p|h[1-6]|ul|ol|table|blockquote|div)$/i.test(c.tagName))) walk(el);
       else { const s = inline(el); if (s) out.push({ type: "p", html: s }); }
     }
@@ -112,3 +113,26 @@ export async function toWebp(file, max = 1600, q = 0.82) {
   return { blob, width: w, height: h, srcW: bmp.width, srcH: bmp.height };
 }
 export const youtubeId = (s) => { const m = String(s || "").match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{6,20})/); return m ? m[1] : /^[\w-]{6,20}$/.test(String(s || "").trim()) ? String(s).trim() : ""; };
+
+// Chế độ HTML của trình soạn (bản vẽ 138b2): khối thường → thẻ HTML; khối riêng → <!-- fp {json} --> (giữ nguyên khi chuyển lại)
+const esc = (t) => String(t ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+export function blocksToHtml(blocks) {
+  return (blocks || []).map((b) => {
+    const al = b.align ? ` style="text-align:${b.align}"` : "";
+    switch (b.type) {
+      case "p": return `<p${al}>${b.html || ""}</p>`;
+      case "h": return `<h${b.level || 2}${al}>${b.text || ""}</h${b.level || 2}>`;
+      case "list": { const t = b.ordered ? "ol" : "ul"; return `<${t}>\n${(b.items || []).map((x) => `  <li>${x}</li>`).join("\n")}\n</${t}>`; }
+      case "quote": return `<blockquote${al}>${b.html || ""}</blockquote>`;
+      case "hr": return "<hr>";
+      default: { const { _k, ...rest } = b; return `<!-- fp ${JSON.stringify(rest).replace(/--/g, "\\u002d\\u002d")} -->`; }
+    }
+  }).join("\n\n");
+}
+export function htmlToBlocksFp(text, parse) {
+  const out = []; const re = /<!--\s*fp\s+(\{[\s\S]*?\})\s*-->/g; let last = 0, m;
+  const flush = (h) => { if (h.trim()) out.push(...htmlToBlocks(h, parse)); };
+  while ((m = re.exec(text))) { flush(text.slice(last, m.index)); try { const b = JSON.parse(m[1]); if (b && typeof b.type === "string") out.push(b); } catch (e) { /* dòng hỏng: bỏ */ } last = re.lastIndex; }
+  flush(text.slice(last));
+  return out;
+}

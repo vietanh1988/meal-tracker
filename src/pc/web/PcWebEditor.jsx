@@ -14,7 +14,7 @@ import { supabase } from "../../lib/supabase";
 import { appConfirm } from "../../lib/dialog";
 import { Btn, Pill, Card, ErrorBox, Loading, fmtDT, secLbl } from "../pcUI";
 import { Check, Tog, Radio, Score, Tabs, Field, Count, SideBox, Modal, Lnk, inpStyle, BLUE } from "./webUI";
-import { STATUS, slugify, seoChecks, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, clean } from "./webLib";
+import { STATUS, slugify, seoChecks, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
 import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus } from "./webApi";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
 import { Rich, ListEdit, OtherBlock, Upload, kb, inlineClean, H_STYLE } from "./BlockEdit";
@@ -47,6 +47,8 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
   const [slash, setSlash] = useState(null);   // { i, q, hi }
   const [link, setLink] = useState(null);     // { range, q, res, url, newTab, nofollow }
   const [htmlEdit, setHtmlEdit] = useState(false);
+  const [mode, setMode] = useState("visual"); // Trực quan / HTML (cả bài)
+  const [htmlText, setHtmlText] = useState("");
   const [outline, setOutline] = useState(false);
   const [full, setFull] = useState(false);
   const [side, setSide] = useState(0);
@@ -99,8 +101,9 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
   // Bản dự phòng trên máy (mỗi lần sửa, chậm 1,5 giây)
   useEffect(() => { if (!dirty || !post) return; const t = setTimeout(() => { try { localStorage.setItem(LS(post.id), JSON.stringify({ at: new Date().toISOString(), post: { ...post, blocks: forSave(post.blocks) } })); } catch (e) { /* */ } }, 1500); return () => clearTimeout(t); }, [post, dirty]);
 
+  const fullRef = useRef(null); // ở chế độ HTML: lưu theo ô HTML
   const doSave = useCallback(async (mode) => {
-    const p = postRef.current; if (!p) return;
+    const p = fullRef.current ? fullRef.current() : postRef.current; if (!p) return;
     if (!p.title.trim()) { showToast?.("Nhập tiêu đề trước đã."); return; }
     let status = p.status, published_at = p.published_at;
     if (mode === "draft") status = "draft";
@@ -165,6 +168,15 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
     host?.dispatchEvent(new Event("input", { bubbles: true }));
     setLink(null);
   };
+
+  // Trực quan ⇄ HTML: khối thường thành thẻ HTML, khối riêng (calo, hỏi đáp, hộp app…) thành dòng <!-- fp {…} --> để giữ nguyên
+  const switchMode = (m) => {
+    if (m === mode) return;
+    if (m === "html") { setHtmlText(blocksToHtml(forSave(post.blocks))); setSlash(null); setLink(null); setMode("html"); return; }
+    const bl = htmlToBlocksFp(htmlText, (h) => new DOMParser().parseFromString(h, "text/html"));
+    upd({ blocks: withKeys(bl.length ? bl : [newBlock("p")]) }); setMode("visual"); setCur(-1);
+  };
+  fullRef.current = () => (mode === "html" ? { ...postRef.current, blocks: withKeys(htmlToBlocksFp(htmlText, (h) => new DOMParser().parseFromString(h, "text/html"))) } : postRef.current);
 
   // ===== Phím trong khối chữ =====
   const onKey = (i) => (e) => {
@@ -247,9 +259,30 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
         </span>, post.id ? (kind === "page" ? "Sửa trang" : "Sửa bài viết") : (kind === "page" ? "Trang mới" : "Viết bài mới"), sub)}
       <div style={{ display: "flex", alignItems: "stretch", minHeight: "calc(100vh - 64px)" }}>
         <div style={{ flex: 1, minWidth: 0, padding: "22px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Khung 1 · Tiêu đề + đường dẫn (bản vẽ 138b2, kiểu WordPress) */}
+          <Card style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+            <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}><span style={{ fontSize: 11, fontWeight: 800, color: PC.t3, letterSpacing: ".06em" }}>{kind === "page" ? "TÊN TRANG" : "TIÊU ĐỀ BÀI VIẾT"}</span><span style={{ fontSize: 11.5, color: PC.t4 }}>Tiêu đề hiện trên trang (H1) · <Count n={post.title.length} max={70} min={20} /></span></span>
+            <textarea value={post.title} onChange={(e) => upd({ title: e.target.value.replace(/\n/g, " ") })} placeholder={kind === "page" ? "Tên trang" : "Thêm tiêu đề bài viết"} rows={1} data-testid="web-ed-title" className="web-title web-titlebox" style={{ minHeight: 60, borderRadius: 12, border: `1.5px solid ${PC.field}`, background: "#FFF", padding: "12px 18px", fontSize: 26, fontWeight: 900, lineHeight: 1.25, outline: "none", resize: "none", fontFamily: "inherit", color: PC.t1, fieldSizing: "content", boxSizing: "border-box", width: "100%" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12.5 }}>
+              <b style={{ color: PC.t2, fontSize: 12.5 }}>Đường dẫn</b>
+              <span style={{ height: 34, borderRadius: 10, border: `1px solid ${slugEdit ? "#1A7CFF" : PC.field}`, boxShadow: slugEdit ? "0 0 0 3px rgba(26,124,255,.12)" : "none", display: "inline-flex", alignItems: "center", overflow: "hidden", background: "#FFF", minWidth: 0 }}>
+                <span style={{ height: "100%", padding: "0 10px", display: "inline-flex", alignItems: "center", background: "#F8FAFC", borderRight: `1px solid ${PC.field}`, color: PC.t3, flexShrink: 0 }}>fipilotai.com/</span>
+                {slugEdit ? <input autoFocus value={post.slug} onChange={(e) => { setSlugTouched(true); upd({ slug: slugify(e.target.value.replace(/\s/g, "-")) || "" }); }} onBlur={() => setSlugEdit(false)} onKeyDown={(e) => e.key === "Enter" && setSlugEdit(false)} data-testid="web-ed-slug" style={{ height: "100%", border: 0, outline: "none", padding: "0 12px", width: 320, fontFamily: "ui-monospace, Menlo, monospace", fontWeight: 700, fontSize: 12.5, color: PC.t1 }} />
+                  : <span data-testid="web-ed-slug-view" style={{ padding: "0 12px", fontFamily: "ui-monospace, Menlo, monospace", fontWeight: 700, color: post.slug ? PC.t1 : PC.t4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{post.slug || "tu-dong-theo-tieu-de"}</span>}
+              </span>
+              {!slugEdit && <Btn kind="light" onClick={() => setSlugEdit(true)} title={post.status === "published" ? "Đổi đường dẫn bài đã đăng: web tự chuyển hướng 301 từ link cũ" : "Sửa đường dẫn (mặc định tự lấy từ tiêu đề)"} style={{ height: 30, fontSize: 12 }} testid="web-ed-slug-edit">Sửa</Btn>}
+              {isLive && <Lnk onClick={() => window.open(`${WEB}/${post.slug}`, "_blank", "noopener")}>Xem ↗</Lnk>}
+              <span style={{ marginLeft: "auto", fontSize: 11.5, color: PC.t3, textAlign: "right" }}>{isLive ? "Đổi đường dẫn bài đã đăng → web tự chuyển 301 từ link cũ" : slugTouched ? "Đường dẫn đã sửa tay" : "Tự lấy từ tiêu đề"}</span>
+            </div>
+          </Card>
+          {/* Khung 2 · Nội dung bài */}
           <Card style={{ padding: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", padding: "10px 16px", borderBottom: `1px solid ${PC.headLine}` }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: PC.t3, letterSpacing: ".06em" }}>{kind === "page" ? "NỘI DUNG TRANG" : "NỘI DUNG BÀI"}</span>
+              <span role="tablist" style={{ marginLeft: "auto", display: "inline-flex", padding: 3, borderRadius: 10, background: "#F1F5F9", gap: 2 }}>{[["visual", "Trực quan"], ["html", "HTML"]].map(([m, t]) => <button key={m} type="button" role="tab" aria-selected={mode === m} data-testid={`web-ed-mode-${m}`} onClick={() => switchMode(m)} style={{ height: 26, padding: "0 12px", borderRadius: 8, border: 0, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", fontSize: 12, fontWeight: 800, background: mode === m ? "#FFF" : "transparent", color: mode === m ? BLUE : PC.t3, boxShadow: mode === m ? "0 1px 3px rgba(15,23,42,.12)" : "none" }}>{t}</button>)}</span>
+            </div>
             {/* Thanh định dạng */}
-            <div style={{ position: "sticky", top: 64, zIndex: 8, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1, padding: "6px 10px", borderBottom: `1px solid ${PC.headLine}`, background: "#FBFCFE", borderRadius: "14px 14px 0 0" }}>
+            <div style={{ position: "sticky", top: 64, zIndex: 8, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1, padding: "6px 10px", borderBottom: `1px solid ${PC.headLine}`, background: "#FBFCFE", opacity: mode === "html" ? 0.45 : 1, pointerEvents: mode === "html" ? "none" : "auto" }}>
               <TI t="↶" title="Hoàn tác" onClick={() => exec("undo")} /><TI t="↷" title="Làm lại" onClick={() => exec("redo")} /><Sep />
               <select value={typeVal} onChange={(e) => setType(e.target.value)} disabled={!curB || !(isText(curB) || curB.type === "list")} aria-label="Kiểu khối" data-testid="web-ed-type" className="pc-input" style={{ width: 104, height: 30, padding: "0 6px 0 10px", borderRadius: 7, border: `1px solid ${PC.line}`, background: "#FFF", fontSize: 12.5, fontWeight: 700, fontFamily: "inherit" }}>
                 {[["p", "Đoạn văn"], ["h2", "Tiêu đề H2"], ["h3", "Tiêu đề H3"], ["h4", "Tiêu đề H4"], ["quote", "Trích dẫn"], ["tip", "Hộp mẹo"], ["list", "Danh sách chấm"], ["olist", "Danh sách số"]].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -266,17 +299,13 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
               <span style={{ marginLeft: "auto", display: "flex", gap: 2 }}><TI t="☷" title="Dàn ý" on={outline} onClick={() => setOutline(!outline)} /><TI t="⛶" title="Toàn màn hình" on={full} onClick={() => setFull(!full)} /></span>
             </div>
             <div style={{ padding: "24px 40px 30px 40px", display: "flex", flexDirection: "column", gap: 14, position: "relative" }}>
-              <textarea value={post.title} onChange={(e) => upd({ title: e.target.value.replace(/\n/g, " ") })} placeholder={kind === "page" ? "Tên trang" : "Tiêu đề bài viết"} rows={1} data-testid="web-ed-title" className="web-title" style={{ fontSize: 30, fontWeight: 900, lineHeight: 1.2, border: 0, outline: "none", resize: "none", fontFamily: "inherit", color: PC.t1, padding: 0, background: "none", fieldSizing: "content" }} />
-              <div style={{ fontSize: 12.5, color: PC.t3, display: "flex", gap: 6, alignItems: "center" }}>Đường dẫn:
-                {slugEdit ? <><span style={{ color: BLUE }}>fipilotai.com/</span><input autoFocus value={post.slug} onChange={(e) => { setSlugTouched(true); upd({ slug: slugify(e.target.value.replace(/\s/g, "-")) || "" }); }} onBlur={() => setSlugEdit(false)} onKeyDown={(e) => e.key === "Enter" && setSlugEdit(false)} data-testid="web-ed-slug" className="pc-input" style={{ ...inpStyle(26), width: 320, fontSize: 12.5 }} /></>
-                  : <><span style={{ color: BLUE }}>fipilotai.com/<b>{post.slug || "…"}</b></span><Btn kind="light" onClick={() => setSlugEdit(true)} title={post.status === "published" ? "Đổi đường dẫn bài đã đăng: web tự chuyển hướng 301 từ link cũ" : "Sửa đường dẫn"} style={{ height: 24, fontSize: 11.5, padding: "0 8px" }} testid="web-ed-slug-edit">Sửa</Btn></>}
-              </div>
-              {!post.id && reuse.some((r) => r.kind === "template") && post.blocks.length === 1 && post.blocks[0].type === "p" && !String(post.blocks[0].html || "").replace(/<[^>]+>/g, "").trim() && (
+              {mode === "html" && <textarea value={htmlText} onChange={(e) => { setHtmlText(e.target.value); setDirty(true); }} spellCheck={false} data-testid="web-ed-html" style={{ minHeight: 520, borderRadius: 10, border: `1px solid ${PC.field}`, padding: "12px 14px", fontFamily: "ui-monospace, Menlo, monospace", fontSize: 12.5, lineHeight: 1.65, color: PC.t1, resize: "vertical", outline: "none", fieldSizing: "content" }} />}
+              {mode === "visual" && !post.id && reuse.some((r) => r.kind === "template") && post.blocks.length === 1 && post.blocks[0].type === "p" && !String(post.blocks[0].html || "").replace(/<[^>]+>/g, "").trim() && (
                 <div data-testid="web-ed-tpl" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 12.5, color: PC.t3 }}>Bắt đầu từ mẫu:
                   {reuse.filter((r) => r.kind === "template").map((r) => <Btn key={r.id} kind="soft" style={{ height: 28, fontSize: 12 }} onClick={() => upd({ blocks: withKeys(r.blocks.map((x) => ({ ...x }))) })}>{r.name}</Btn>)}
                 </div>
               )}
-              {post.blocks.map((b, i) => {
+              {mode === "visual" && post.blocks.map((b, i) => {
                 const on = i === cur;
                 const common = { elRef: (el) => { els.current[b._k] = el; }, onFocus: () => { setCur(i); }, onKeyDown: onKey(i), onPaste: onPaste(i) };
                 let body;
@@ -311,8 +340,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
                   </div>
                 );
               })}
-              <button type="button" onClick={() => insertAt(post.blocks.length, newBlock("p"))} data-testid="web-ed-add" style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 10, color: PC.t4, fontSize: 14, border: 0, background: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}><span style={{ width: 28, height: 28, borderRadius: 8, background: BLUE, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900 }}>+</span>Thêm khối</button>
-              <div style={{ fontSize: 12, color: PC.t4, display: "flex", gap: 16, flexWrap: "wrap", marginTop: 8 }}><span data-testid="web-ed-words">{words.toLocaleString("vi-VN")} chữ</span><span>{readMin(words)} phút đọc</span><span>{hs.filter((h) => h.level === 2).length} tiêu đề H2</span><span>{imgs.length} ảnh</span><span>Gõ “/” để chèn khối · bôi đen chữ rồi bấm thanh định dạng · Ctrl+K chèn link · Ctrl+S lưu · dán từ Word / Google Docs giữ định dạng</span></div>
+              {mode === "visual" && <button type="button" onClick={() => insertAt(post.blocks.length, newBlock("p"))} data-testid="web-ed-add" style={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 10, color: PC.t4, fontSize: 14, border: 0, background: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}><span style={{ width: 28, height: 28, borderRadius: 8, background: BLUE, color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900 }}>+</span>Thêm khối</button>}
               {link && (
                 <div data-testid="web-ed-linkpop" style={{ position: "fixed", left: "50%", top: 160, transform: "translateX(-50%)", width: 420, background: "#FFF", borderRadius: 12, boxShadow: "0 12px 32px rgba(15,23,42,.22)", border: `1px solid ${PC.line}`, padding: 10, zIndex: 30, display: "flex", flexDirection: "column", gap: 8 }}>
                   <input autoFocus value={link.url || link.q} onChange={(e) => setLink({ ...link, q: e.target.value, url: /^(https?:|\/|mailto:|tel:)/.test(e.target.value) ? e.target.value : "" })} onKeyDown={(e) => e.key === "Enter" && applyLink(link.url || link.res[0]?.url)} placeholder="Tìm bài trong web hoặc dán link https://…" data-testid="web-ed-link-q" className="pc-input" style={inpStyle(34)} />
@@ -325,6 +353,11 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
                   </span>
                 </div>
               )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "9px 16px", borderTop: `1px solid ${PC.headLine}`, background: "#FBFCFE", borderRadius: "0 0 14px 14px", fontSize: 12, color: PC.t3, flexWrap: "wrap" }}>
+              <span data-testid="web-ed-words"><b style={{ color: PC.t2 }}>{words.toLocaleString("vi-VN")}</b> chữ</span><span>{readMin(words)} phút đọc</span><span>{hs.filter((h) => h.level === 2).length} tiêu đề H2</span><span>{imgs.length} ảnh</span>
+              <span style={{ color: PC.t4 }}>Gõ “/” chèn khối · Ctrl+K chèn link · Ctrl+S lưu</span>
+              <span style={{ marginLeft: "auto", color: saving ? PC.t3 : dirty ? "#B45309" : "#15803D", fontWeight: 700 }}>{saving ? "Đang lưu…" : dirty ? "● Có thay đổi chưa lưu" : savedAt ? `✓ Đã lưu lúc ${savedAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}` : post.id ? `✓ Đã lưu · ${fmtDT(post.updated_at)}` : "Chưa lưu"}</span>
             </div>
           </Card>
           {outline && <Card style={{ padding: 16 }}><span style={secLbl}>DÀN Ý BÀI</span><div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>{post.blocks.map((b, i) => b.type === "h" ? <button key={b._k} type="button" onClick={() => { setCur(i); els.current[b._k]?.scrollIntoView({ block: "center" }); }} style={{ textAlign: "left", border: 0, background: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, paddingLeft: ((b.level || 2) - 2) * 18, color: PC.t1 }}>H{b.level || 2} · {b.text.replace(/<[^>]+>/g, "") || "(trống)"}</button> : null)}{!hs.length && <span style={{ fontSize: 12.5, color: PC.t4 }}>Bài chưa có tiêu đề H2 / H3.</span>}</div></Card>}
@@ -418,7 +451,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
         </aside>
       </div>
       {revs && <RevModal revs={revs} onClose={() => setRevs(null)} onRestore={(s) => { setPost((p) => ({ ...p, ...s, id: p.id, blocks: withKeys(s.blocks), terms: s.terms || p.terms })); setDirty(true); setRevs(null); showToast?.("Đã mở lại bản cũ. Bấm Cập nhật / Lưu nháp để lưu."); }} />}
-      <style>{`.web-rich:empty:before{content:attr(data-ph);color:#94A3B8;pointer-events:none}.web-rich a{color:${BLUE};text-decoration:underline}.web-full{position:fixed;inset:0;z-index:50;background:${PC.bg};overflow:auto}.web-title::placeholder{color:#CBD5E1}`}</style>
+      <style>{`.web-rich:empty:before{content:attr(data-ph);color:#94A3B8;pointer-events:none}.web-rich a{color:${BLUE};text-decoration:underline}.web-full{position:fixed;inset:0;z-index:50;background:${PC.bg};overflow:auto}.web-title::placeholder{color:#CBD5E1}.web-titlebox:focus{border-color:#1A7CFF!important;box-shadow:0 0 0 3px rgba(26,124,255,.12)}`}</style>
     </div>
   );
 }
