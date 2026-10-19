@@ -90,3 +90,12 @@ test("nextSlot: mốc trống kế tiếp theo giờ VN, bỏ mốc đã có bà
   assert.equal(r.ok, false); assert.deepEqual(r.miss, ["ảnh đại diện", "1 ô ảnh trống", "chuyên mục", "SEO title / mô tả", "đoạn trích"]);
   assert.deepEqual(postReady({ title: "x", cover_url: "c", blocks: [], primary_term: "t1", terms: ["t1"], seo: { title: "a", desc: "b" }, excerpt: "e" }).miss, ["thẻ"]);
 });
+
+test("pickFoods: lấy món xuất hiện trong từ khoá / ghi chú (đúng tên, không bắt nhầm), thiếu thì thêm món phổ biến", async () => {
+  const { pickFoods, foodTable } = await import("../src/pc/web/aiWrite.js");
+  const F = [{ n: "Phở bò", u: [["tô vừa", 500, 450, 25, 60, 12]] }, { n: "Phở", u: [] }, { n: "Bún chả", u: [["suất", 400, 520, 22, 60, 20]] }, { n: "Cơm trắng", u: [["chén", 150, 195, 4, 43, 0]] }, { n: "Gà", u: [] }];
+  const r = pickFoods(F, "Ăn phở bò buổi tối có béo không? So với bún chả", 25).map((f) => f.n);
+  assert.ok(r.includes("Phở bò") && r.includes("Bún chả")); assert.ok(!r.includes("Gà"));
+  assert.ok(r.includes("Cơm trắng")); // ít món → thêm món phổ biến
+  assert.equal(foodTable([F[0]]), "Phở bò | tô vừa | 500 | 450 | 25 | 60 | 12");
+});

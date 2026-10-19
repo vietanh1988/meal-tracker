@@ -14,7 +14,7 @@ QUY TẮC BẮT BUỘC
 3. Câu đầu của mỗi H2 là câu trả lời thẳng cho nhiệm vụ của H2 đó (dưới 35 từ). Không mở section bằng "Đây là...", "Trước tiên cần hiểu rằng".
 4. Quy trình từ 3 bước dùng danh sách đánh số "1. ". Điều kiện song song dùng gạch đầu dòng "- ". So sánh từ 2 lựa chọn trên nhiều tiêu chí dùng bảng markdown (| a | b |). Có ít nhất 1 bảng hữu ích (ví dụ calo/macro món Việt, bảng so sánh, thực đơn mẫu).
 5. Mỗi H2 chính có ít nhất 1 chi tiết cụ thể: con số có điều kiện, ví dụ món Việt và khẩu phần, ngưỡng, phép tính mẫu, sai lầm thường gặp, giới hạn áp dụng. Không bịa trải nghiệm cá nhân, không bịa nghiên cứu.
-6. Số liệu dinh dưỡng/sức khỏe chỉ nêu khi đã kiểm ở ghi chú tra cứu hoặc là kiến thức phổ biến đã được công nhận (WHO, Viện Dinh dưỡng Quốc gia, Bộ Y tế, NIH, USDA, Harvard T.H. Chan...). Trích nguồn bằng câu tự nhiên kiểu "Theo Tổ chức Y tế Thế giới (WHO), ...", không URL, không link markdown. Không chắc thì nói chung hơn hoặc bỏ. Calo món ăn ghi là ước tính, nói rõ khẩu phần.
+6. Số liệu dinh dưỡng/sức khỏe chỉ nêu khi đã kiểm ở ghi chú tra cứu hoặc là kiến thức phổ biến đã được công nhận (WHO, Viện Dinh dưỡng Quốc gia, Bộ Y tế, NIH, USDA, Harvard T.H. Chan...). Trích nguồn bằng câu tự nhiên kiểu "Theo Tổ chức Y tế Thế giới (WHO), ...", không URL, không link markdown. Không chắc thì nói chung hơn hoặc bỏ. Calo, đạm, tinh bột, béo của món Việt: món có trong BẢNG CALO KHO MÓN FIPILOT thì dùng ĐÚNG số trong bảng đó (đúng khẩu phần, có thể nói "theo bảng calo của Fipilot AI"); món không có trong bảng thì ghi là ước tính và nói rõ khẩu phần.
 7. Chủ đề sức khỏe (YMYL): không hứa kết quả, không khuyên nhịn đói cực đoan, nêu khi nào nên hỏi bác sĩ hoặc chuyên gia dinh dưỡng (người có bệnh nền, mang thai, cho con bú, dưới 18 tuổi). Không đưa mức calo dưới 1200 kcal/ngày cho nữ hoặc 1500 kcal/ngày cho nam mà không có giám sát y tế.
 8. Nhắc Fipilot AI tối đa 1-2 lần, ở nửa sau bài, giọng hướng dẫn (ví dụ dùng app để ghi bữa và xem calo còn lại), không tự khen, không hard-sell.
 9. Ảnh: số chỗ ảnh theo phần CẤU HÌNH LẦN CHẠY. Mỗi chỗ một dòng riêng, đúng mẫu: [chèn ảnh ở đây: alt ảnh "<mô tả 8-12 từ tiếng Việt>"]. Chỉ mô tả thứ chụp được thật (món ăn, mâm cơm, nguyên liệu, người đang ăn hay đi bộ, cái cân, chai nước), KHÔNG mô tả bảng, biểu đồ, infographic, ảnh có chữ. Mô tả đúng nội dung ảnh ở đoạn đó, không nhồi từ khóa.
@@ -49,11 +49,12 @@ ${Array.from({ length: n }, (_, i) => `${i + 2}. <English photo prompt for inlin
 
 export const systemPrompt = (rules, cfg) => `${String(rules || RULES_DEFAULT).trim()}\n\n${runConfig(cfg)}`;
 
-export function buildUserPrompt({ keyword, category = "", notes = "", research = "", related = [] } = {}) {
+export function buildUserPrompt({ keyword, category = "", notes = "", research = "", related = [], foods = "" } = {}) {
   return [
     `Từ khóa chính: ${String(keyword || "").trim()}`,
     category && `Chuyên mục: ${category}`,
     research && `GHI CHÚ TRA CỨU (đã kiểm trên web, chỉ dùng số liệu ở đây hoặc kiến thức phổ biến chắc chắn):\n${research}`,
+    foods && `BẢNG CALO KHO MÓN FIPILOT (số của app, dùng đúng khi nhắc các món này; dòng: món | khẩu phần | gram | kcal | đạm g | tinh bột g | béo g):\n${foods}`,
     related.length ? `Bài đã có trên web (đừng viết trùng ý, có thể nhắc tới bằng chữ, không link): ${related.slice(0, 30).join("; ")}` : "",
     notes && `Yêu cầu thêm của biên tập: ${notes}`,
     "Viết bài theo đúng ĐẦU RA.",
@@ -194,6 +195,18 @@ export function nextSlot(times, taken = [], nowMs = Date.now()) {
   }
   return null;
 }
+
+// Món trong kho app (API /api/calo-data của web) mà bài sẽ nhắc: tên món xuất hiện trong từ khoá / ghi chú tra cứu / dặn thêm.
+// Ít hơn 8 món thì thêm các món phổ biến cho đủ ~15 (để bảng calo trong bài có số của app). Trả bảng chữ gọn cho AI.
+const POPULAR = ["phở bò", "bún chả", "cơm tấm sườn", "bánh mì thịt", "cơm trắng", "bún bò huế", "xôi", "cháo", "trứng gà luộc", "ức gà", "gỏi cuốn", "cơm gà", "bánh cuốn", "hủ tiếu", "mì quảng"];
+const norm = (s) => String(s || "").normalize("NFC").toLowerCase();
+export function pickFoods(foods = [], text = "", max = 25) {
+  const t = ` ${norm(text).replace(/[^\p{L}\p{N}]+/gu, " ")} `;
+  const hit = foods.filter((f) => f?.n && t.includes(` ${norm(f.n)} `)).sort((a, b) => b.n.length - a.n.length).slice(0, max);
+  if (hit.length < 8) for (const name of POPULAR) { const f = foods.find((x) => norm(x.n) === name); if (f && !hit.includes(f)) hit.push(f); if (hit.length >= 15) break; }
+  return hit;
+}
+export const foodTable = (list = []) => list.flatMap((f) => (f.u || []).slice(0, 2).map(([pn, g, cal, p, c, fat]) => `${f.n} | ${pn} | ${g} | ${cal} | ${p} | ${c} | ${fat}`)).join("\n");
 
 // Câu vẽ ảnh: khung phong cách cố định cho cả web + nội dung từng ảnh
 export const IMG_STYLE = "Realistic editorial food photography, Vietnamese home setting, natural window light, wooden table or light linen, shallow depth of field, appetizing, true-to-life colors. No text, no letters, no watermark, no logo, no collage.";

@@ -1,7 +1,7 @@
 // Lõi web-writer (JS thuần để test được bằng bun): index.ts chỉ nạp thư viện rồi gọi makeWriter.
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
-  imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot,
+  imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable,
 } from "./aiWrite.js";
 
 export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
@@ -9,6 +9,7 @@ const ENV_CLAUDE = envClaude;
 
 const ORIGINS = ["https://app.fipilotai.com", "https://fipilotai.com", "https://www.fipilotai.com", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173"];
 const PUB = "https://fipilotai.com/anh/";
+const CALO_API = "https://fipilotai.com/api/calo-data"; // số calo kho món app (giống trang /calo/…)
 const CHUNK_TOKENS = 3500, MAX_CHUNKS = 5, MAX_ATTEMPTS = 3;
 const BUDGET_MS = 95_000; // mỗi lần gọi dừng nhận bước mới sau ~95 giây
 
@@ -196,8 +197,13 @@ async function step(admin, job, cfg, t0) {
     const g = st[kind] || { text: "", chunks: 0 };
     let base;
     if (kind === "draft") {
+      if (st.foods == null) { // lần viết đầu: lấy số calo kho món app cho các món bài sẽ nhắc (lỗi thì bỏ qua, AI ghi "ước tính")
+        let list = [];
+        try { const r = await fetch(CALO_API, { signal: AbortSignal.timeout(8000) }); if (r.ok) list = await r.json(); } catch (_e) { /* bỏ qua */ }
+        st.foods = foodTable(pickFoods(Array.isArray(list) ? list : [], `${job.keyword} ${job.notes || ""} ${st.research || ""}`));
+      }
       const related = ((await admin.from("web_posts").select("title").eq("kind", "post").neq("status", "trash").order("updated_at", { ascending: false }).limit(30)).data || []).map((p) => p.title);
-      base = [{ role: "user", content: buildUserPrompt({ keyword: job.keyword, category: term?.name || "", notes: job.notes || "", research: st.research || "", related }) }];
+      base = [{ role: "user", content: buildUserPrompt({ keyword: job.keyword, category: term?.name || "", notes: job.notes || "", research: st.research || "", related, foods: st.foods || "" }) }];
     } else {
       base = [{ role: "user", content: `Bài dưới đây còn các lỗi: ${(st.issues || []).join("; ")}.\nSửa ĐÚNG các lỗi đó, giữ nguyên phần còn lại, trả lại TOÀN BỘ bài đúng ĐẦU RA.\n\n${st.draft?.text || ""}` }];
     }

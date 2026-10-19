@@ -4,7 +4,7 @@
 //  - Cài đặt (lưu ngay khi đổi, bảng web_ai_config chỉ admin đọc): mô hình viết, khoá Claude chung / riêng, ảnh (Flux qua fal.ai,
 //    số ảnh, dùng lại ảnh thư viện trước), số lượt tra web, trần tiền mỗi ngày, tỷ giá, bộ quy tắc (sửa / về bản gốc).
 //  - Lịch sử & chi phí từng bài theo tháng (giờ VN): token, lượt tra web, ảnh, tiền chữ + tiền ảnh.
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PC } from "../../theme";
 import { appConfirm } from "../../lib/dialog";
 import { supabase } from "../../lib/supabase";
@@ -13,8 +13,9 @@ import { useAiKeys } from "../../lib/aiKeys";
 import { todayVN } from "../../lib/dateVN";
 import { Btn, Pill, Card, ErrorBox, Loading, vnInt } from "../pcUI";
 import { Modal, Tog, inpStyle } from "./webUI";
-import { listTerms, getPost, savePost } from "./webApi";
-import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE, estText, providerOf, postReady } from "./aiWrite";
+import { listTerms, getPost, savePost, getSite } from "./webApi";
+import { seoChecks } from "./webLib";
+import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE, estText, providerOf, postReady, nextSlot } from "./aiWrite";
 import { PROVIDERS, MODELS as AI_MODELS, DEFAULT_MODEL } from "../../lib/aiModels";
 
 // Hãng viết: Claude / Gemini / ChatGPT (danh sách mô hình dùng chung với Kết nối AI); mọi hãng đều tra web được
@@ -69,7 +70,7 @@ export function PcWebAi({ top, showToast, user, go }) {
     try {
       const [c, j, t, d] = await Promise.all([
         supabase.from("web_ai_config").select("data").eq("id", 1).maybeSingle(),
-        supabase.from("web_ai_jobs").select("id,keyword,term_id,model,status,post_id,in_tok,out_tok,searches,images,reused,cost_text,cost_img,error,created_at,warn:state->warn,note:state->published->>note,post:web_posts(status,published_at,slug)").gte("created_at", monthStart(ym)).lt("created_at", monthStart(nextMonth(ym))).order("created_at", { ascending: false }),
+        supabase.from("web_ai_jobs").select("id,keyword,term_id,model,status,post_id,in_tok,out_tok,searches,images,reused,cost_text,cost_img,error,created_at,warn:state->warn,note:state->published->>note,post:web_posts(status,published_at,slug,score:seo->score)").gte("created_at", monthStart(ym)).lt("created_at", monthStart(nextMonth(ym))).order("created_at", { ascending: false }),
         listTerms("category"),
         supabase.from("web_ai_jobs").select("cost_text,cost_img").gte("updated_at", new Date(`${todayVN()}T00:00:00+07:00`).toISOString()),
       ]);
@@ -136,6 +137,33 @@ export function PcWebAi({ top, showToast, user, go }) {
       showToast?.("Đã đăng bài lên fipilotai.com."); load();
     } catch (e) { showToast?.("Chưa đăng được: " + (e.message || "")); } finally { setBusy(""); }
   };
+  // "Hẹn giờ" ở bảng: đặt bài vào giờ đăng trống kế tiếp (giờ ở thẻ "Sau khi viết xong", mặc định 08:00 · 19:00)
+  const schedule = async (j) => {
+    setBusy("s-" + j.id);
+    try {
+      const p = await getPost(j.post_id);
+      const r = postReady(p);
+      if (!r.ok) { showToast?.(`Chưa hẹn giờ được: thiếu ${r.miss.join(", ")}. Bấm Mở bài để bổ sung.`); return; }
+      const { data: tk } = await supabase.from("web_posts").select("published_at").in("status", ["scheduled", "published"]).gte("published_at", new Date().toISOString());
+      const at = nextSlot(cfg.sched_times?.length ? cfg.sched_times : ["08:00", "19:00"], (tk || []).map((x) => x.published_at));
+      if (!at) { showToast?.("Chưa có giờ đăng hợp lệ."); return; }
+      await savePost({ ...p, status: "scheduled", published_at: at }, { reason: "publish", uid: user?.id });
+      showToast?.(`Đã hẹn đăng lúc ${vnTime(at)}.`); load();
+    } catch (e) { showToast?.("Chưa hẹn giờ được: " + (e.message || "")); } finally { setBusy(""); }
+  };
+  // Bài AI lưu ở máy chủ chưa có điểm SEO → tính bù khi mở màn này (giống điểm ở trình soạn)
+  const scored = useRef(new Set());
+  useEffect(() => {
+    const need = (jobs || []).filter((j) => j.post_id && j.post && j.post.status !== "trash" && j.post.score == null && !scored.current.has(j.post_id)).slice(0, 10);
+    if (!need.length) return;
+    (async () => {
+      const site = await getSite();
+      for (const j of need) {
+        scored.current.add(j.post_id);
+        try { const p = await getPost(j.post_id); const sc = seoChecks(p, site); await supabase.from("web_posts").update({ seo: { ...(p.seo || {}), score: sc.score } }).eq("id", p.id); } catch (e) { /* bỏ qua */ }
+      }
+    })();
+  }, [jobs]);
   const openPost = (id) => { try { sessionStorage.setItem("fp_web_open", id); } catch (e) { /* */ } go?.("web_posts"); };
   const test = async (which) => {
     setBusy("t-" + which);
@@ -242,13 +270,14 @@ export function PcWebAi({ top, showToast, user, go }) {
                           <td style={td} title={j.status === "error" ? j.error || "" : [j.note, (j.warn || []).length ? `Nên xem lại: ${j.warn.join(" · ")}` : ""].filter(Boolean).join("\n")}><Pill tone={stTone}>{run ? "● " : ""}{stName}{j.status === "error" || j.note ? " ⓘ" : ""}</Pill></td>
                           <td style={num} title={j.reused ? `${j.reused} ảnh dùng lại từ thư viện` : ""}>{j.in_tok || j.out_tok ? <><span style={{ display: "block" }}>{kt(j.in_tok)} / {kt(j.out_tok)}</span><span style={{ fontSize: 11, color: PC.t3 }}>{j.searches} tra web · {j.images + j.reused} ảnh</span></> : "–"}</td>
                           <td style={num}>{cost ? <><b style={{ display: "block", fontSize: 13 }}>{vndOf(cost)}</b><span style={{ fontSize: 11, color: PC.t3, display: "block" }}>chữ {vnInt(j.cost_text * rate)}</span><span style={{ fontSize: 11, color: PC.t3, display: "block" }}>ảnh {vnInt(j.cost_img * rate)}</span></> : "–"}</td>
-                          <td style={td}>
-                            {j.status === "done" && j.post?.status === "draft" && <button type="button" data-testid="web-ai-publish" disabled={!!busy} onClick={() => publish(j)} style={{ border: 0, background: "none", color: "#15803D", fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5, marginRight: 6 }}>{busy === "p-" + j.id ? "Đang đăng…" : "Đăng"}</button>}
-                            {j.status === "done" && j.post?.status === "published" && <a href={`https://fipilotai.com/${j.post.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: PC.softFg, fontWeight: 800, fontSize: 12.5, textDecoration: "none", marginRight: 6 }}>Xem ↗</a>}
+                          <td style={td}><span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 3 }}>
+                            {j.status === "done" && j.post?.status === "draft" && <button type="button" data-testid="web-ai-publish" disabled={!!busy} onClick={() => publish(j)} style={{ border: 0, background: "none", color: "#15803D", fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5}}>{busy === "p-" + j.id ? "Đang đăng…" : "Đăng"}</button>}
+                            {j.status === "done" && j.post?.status === "draft" && <button type="button" data-testid="web-ai-schedule" disabled={!!busy} onClick={() => schedule(j)} title={`Hẹn vào giờ đăng trống kế tiếp (${(cfg.sched_times?.length ? cfg.sched_times : ["08:00", "19:00"]).join(", ")})`} style={{ border: 0, background: "none", color: "#1E40AF", fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5}}>{busy === "s-" + j.id ? "Đang hẹn…" : "Hẹn giờ"}</button>}
+                            {j.status === "done" && j.post?.status === "published" && <a href={`https://fipilotai.com/${j.post.slug}`} target="_blank" rel="noopener noreferrer" style={{ color: PC.softFg, fontWeight: 800, fontSize: 12.5, textDecoration: "none"}}>Xem ↗</a>}
                             {j.status === "done" && j.post_id && j.post?.status !== "trash" && <button type="button" className="pc-lnk" data-testid="web-ai-open" onClick={() => openPost(j.post_id)} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>Mở bài ›</button>}
                             {j.status === "error" && <button type="button" data-testid="web-ai-retry" onClick={() => retry(j)} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>Viết lại</button>}
                             {OPEN.includes(j.status) && <button type="button" data-testid="web-ai-cancel" onClick={async () => { if (j.status === "queued" || (await appConfirm("Bài đang viết dở. Huỷ thì phần đã tốn không lấy lại được. Huỷ bài này?"))) cancel(j); }} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>Huỷ</button>}
-                          </td>
+                          </span></td>
                         </tr>
                       );
                     })}

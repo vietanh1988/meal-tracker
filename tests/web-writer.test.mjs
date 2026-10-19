@@ -65,6 +65,7 @@ function setup({ cfg = {}, media = [], text = ARTICLE, writes = null } = {}) {
       const part = chunk++ === 0 ? text.slice(0, half) : text.slice(half);
       return new Response(JSON.stringify({ content: [{ type: "text", text: part }], stop_reason: chunk === 1 ? "max_tokens" : "end_turn", usage: { input_tokens: 5000, output_tokens: 3500 } }));
     }
+    if (String(url).includes("/api/calo-data")) return new Response(JSON.stringify([{ n: "Phở gà", s: "pho-ga", u: [["tô vừa", 500, 420, 25, 55, 9]] }, { n: "Bánh mì thịt", s: "banh-mi-thit", u: [["ổ", 150, 400, 15, 45, 16]] }]));
     if (String(url).includes("fal.run")) { calls.fal++; return new Response(JSON.stringify({ images: [{ url: "https://fal.media/x.jpg" }] })); }
     if (String(url).includes("fal.media")) return new Response(new Uint8Array([1, 2, 3]));
     throw new Error("fetch lạ " + url);
@@ -90,6 +91,7 @@ test("chạy hết 1 bài: tra cứu → viết 2 đoạn → vẽ 2 ảnh → l
   assert.equal(calls.claude.length, 3); // 1 tra cứu + 2 đoạn viết
   assert.equal(calls.claude[0].tools[0].max_uses, 2);
   assert.equal(calls.claude[2].messages.length, 3); // đoạn 2 = viết tiếp
+  assert.match(calls.claude[1].messages[0].content, /BẢNG CALO KHO MÓN FIPILOT[\s\S]*Bánh mì thịt \| ổ \| 150 \| 400/); // số calo của app đưa cho AI (món phổ biến bù khi bài ít nhắc món)
   assert.equal(calls.fal, 2); // ảnh bìa + 1 ảnh trong bài
   assert.equal(j.searches, 2); assert.equal(j.in_tok, 13000); assert.equal(j.out_tok, 7400);
   assert.ok(Math.abs(Number(j.cost_text) - ((13000 * 2 + 7400 * 10) / 1e6 + 0.02)) < 1e-9);
