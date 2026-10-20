@@ -31,8 +31,8 @@ def fitw(file, v, bottom, cw, cx=.5):
     w=im.width*s/bw; y=(bottom*bh - b*s + im.height*s/2)/bh
     x=cx + (im.width/2-(l+r)/2)*s/bw
     return {'x':round(x,4),'y':round(y,4),'w':round(w,4)}
-BRIM={'nam':0.305,'nu':0.352}
-HATW={1:.78,2:.78,3:.78,6:.78,9:.78,4:.80,5:.80,8:.84}
+BRIM={'nam':0.322,'nu':0.37}
+HATW={1:.72,2:.72,3:.72,6:.72,9:.72,4:.76,5:.76,8:.80}
 for i,cw in HATW.items():
     A[f'doi-dau-{i:02d}']={v:fitw(f'doi-dau/doi-dau-{i:02d}.webp',v,BRIM[v],cw) for v in ('nam','nu')}
 # --- Đồ cầm tay: điểm nắm (phần theo chiều cao ảnh) đặt đúng tâm bàn tay; tay vẽ đè lên → trông như đang cầm ---

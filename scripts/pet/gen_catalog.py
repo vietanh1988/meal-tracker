@@ -84,11 +84,15 @@ catalog = {
   'bodies': {
     'nam': {'file': 'than/than-nam.webp', 'file_ao': 'than/than-nam-mac-ao.webp', 'w': 588, 'h': 900,
             'eyes': A(0.5, 0.345, 0.36), 'mouth': A(0.5, 0.445, 0.12),
-            'hand': {'file': 'than/tay-phai-nam.webp', **A(0.852, 0.7828, 0.1259)}, 'hat_cut': 0.25},
+            'hand': {'file': 'than/tay-phai-nam.webp', **A(0.852, 0.7828, 0.1259)}, 'hat_cut': 0.27,
+            'file_nl': 'than/than-nam-khong-la.webp', 'file_ao_nl': 'than/than-nam-mac-ao-khong-la.webp',
+            'leaf': {'file': 'than/la-nam.webp', **A(0.4643, 0.0828, 0.3503), 'px': 0.80, 'py': 0.97}},
     'nu': {'file': 'than/than-nu.webp', 'file_ao': 'than/than-nu-mac-ao.webp', 'w': 559, 'h': 900,
            'eyes': A(0.5, 0.40, 0.40), 'mouth': A(0.5, 0.50, 0.13),
            'bow': {'file': 'than/no-nu.webp', **A(0.55, 0.20, 0.55)},
-           'hand': {'file': 'than/tay-phai-nu.webp', **A(0.8515, 0.7828, 0.1252)}, 'hat_cut': 0.28},
+           'hand': {'file': 'than/tay-phai-nu.webp', **A(0.8515, 0.7828, 0.1252)}, 'hat_cut': 0.30,
+           'file_nl': 'than/than-nu-khong-la.webp', 'file_ao_nl': 'than/than-nu-mac-ao-khong-la.webp',
+           'leaf': {'file': 'than/la-nu.webp', **A(0.4365, 0.0822, 0.4043), 'px': 0.76, 'py': 0.97}},
   },
   # thứ tự vẽ từ dưới lên
   'layers': ['duoi_chan', 'sau_lung', 'than', 'ao', 'deo', 'mat', 'mieng', 'kinh', 'tai_nghe', 'bow', 'dau', 'cam_tay', 'tay', 'hieu_ung', 'tam_trang'],
