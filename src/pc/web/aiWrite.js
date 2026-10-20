@@ -106,13 +106,14 @@ export function reviewPrompt({ article = "", research = "", foods = "", hints = 
     "Bạn là biên tập viên soát bài dinh dưỡng tiếng Việt. ĐỌC bài dưới đây và CHỈ liệt kê lỗi thật, không viết lại bài.",
     `Soát đúng 6 loại lỗi:
 1. so-mau-thuan: cùng một món / một thứ mà bài nêu các số khác nhau không giải thích; món có trong BẢNG CALO APP mà bài dùng số khác làm số chính; câu so sánh không khớp số trong bảng của bài.
-2. so-khong-nguon: con số không có trong GHI CHÚ TRA CỨU và không phải bảng app, hoặc nguồn mơ hồ ("nhiều trang", "thực tế", "chuyên gia" không tên).
+2. so-khong-nguon: con số không có trong GHI CHÚ TRA CỨU, không phải bảng app và không phải kiến thức phổ biến của tổ chức được nêu tên (WHO, Bộ Y tế, Viện Dinh dưỡng, USDA, NIH...), hoặc nguồn mơ hồ ("nhiều trang", "thực tế", "chuyên gia" không tên). KHÔNG tính là lỗi: calo / đạm món ngoài bảng app đã ghi \"ước tính\" kèm khẩu phần; phép tính suy ra từ số đã có trong bài; ví dụ giả định (người mẫu, thực đơn mẫu).
 3. khuyen-khong-so: lời khuyên chọn món / cách ăn dựa trên so sánh mà bài không có số chứng minh.
 4. van-dich: câu dịch, danh từ hoá ("sự ..."), "mặc định", "biến X thành", "phụ thuộc vào việc", câu lủng củng, nhiều đoạn mở cùng một kiểu câu.
 5. doi-tuong: gộp nhóm đối tượng sai (ví dụ trẻ dưới 18 tuổi chung với người bệnh thận), lời khuyên y tế quá đà.
 6. sai-su-that: điều sai với kiến thức dinh dưỡng phổ biến.`,
     `Trả lời đúng khuôn, mỗi lỗi 1 dòng, tối đa 15 dòng:
 - [loại] "trích NGUYÊN VĂN đoạn lỗi (ngắn)" => cách sửa cụ thể (số đúng lấy từ đâu, hoặc bỏ, hoặc câu viết lại)
+Chỉ ghi lỗi chắc chắn cần sửa, không ghi chỗ đã đúng (không ghi dòng kiểu \"khớp\", \"giữ nguyên\"), không bắt bỏ số ước tính hợp lý. Ít lỗi thật hơn nhiều lỗi vụn.
 Không có lỗi thì trả đúng 1 dòng: KHÔNG CÓ LỖI`,
     foods && `BẢNG CALO APP (món | khẩu phần | gram | kcal | đạm | tinh bột | béo):\n${foods}`,
     research && `GHI CHÚ TRA CỨU (nguồn hợp lệ duy nhất ngoài bảng app):\n${research}`,
@@ -122,7 +123,7 @@ Không có lỗi thì trả đúng 1 dòng: KHÔNG CÓ LỖI`,
 }
 export function parseReview(text) {
   if (/^\s*KHÔNG CÓ LỖI\s*$/im.test(text) && !/^\s*-\s*\[/m.test(text)) return [];
-  return String(text || "").split("\n").map((l) => l.trim()).filter((l) => /^-\s*\[[^\]]+\]/.test(l)).map((l) => l.replace(/^-\s*/, "").slice(0, 400)).slice(0, 15);
+  return String(text || "").split("\n").map((l) => l.trim()).filter((l) => /^-\s*\[[^\]]+\]/.test(l) && !/=>\s*(khớp|đúng rồi|không cần sửa|giữ nguyên\s*$)/i.test(l)).map((l) => l.replace(/^-\s*/, "").slice(0, 400)).slice(0, 15);
 }
 export const fixPrompt = (issues, article) => `Bài dưới đây còn các lỗi (mỗi dòng: [loại] "đoạn lỗi" => cách sửa):\n${issues.map((x) => "- " + x).join("\n")}\n\nSửa ĐÚNG các lỗi đó theo cách sửa đã ghi, giữ nguyên phần còn lại (giữ nguyên link nội bộ, chỗ ảnh, bảng), trả lại TOÀN BỘ bài đúng ĐẦU RA.\n\n${article}`;
 

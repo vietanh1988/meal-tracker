@@ -322,7 +322,7 @@ async function step(admin, job, cfg, t0) {
     const terms = [...new Set([post.primary_term, ...tagIds].filter(Boolean))];
     // Đăng theo cài đặt: nháp (mặc định) · tự đăng nếu đạt · tự đặt lịch nếu đạt. Đạt = đủ mọi chỗ (ảnh đại diện, ảnh trong bài, chuyên mục, SEO, đoạn trích) + không còn ghi chú cần xem lại.
     const ready = postReady({ ...post, slug, terms });
-    const warn = st.warn || [];
+    const warn = (st.warn || []).filter((x) => !/chỗ ảnh trong bài/.test(x)); // số chỗ ảnh lệch cấu hình nhưng ô ảnh đã đủ: không chặn tự đăng
     let status = "draft", published_at = null, note = "";
     if (cfg.publish !== "draft") {
       if (!ready.ok || warn.length) note = `Chưa đạt nên để nháp: ${[...ready.miss.map((m) => "thiếu " + m), ...warn].join(" · ")}`;
