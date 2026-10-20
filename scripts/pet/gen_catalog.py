@@ -155,13 +155,13 @@ def _fitTop(file, v, top, cw):  # mép trên khăn ngay dưới miệng (khăn d
     im = _I.open(f'public/pet/{file}'); l, t, r, b = im.split()[3].point(lambda p: 255 if p > 40 else 0).getbbox()
     bw, bh = {'nam': (588, 900), 'nu': (559, 900)}[v]; sc = cw * bw / (r - l)
     return {'x': round(.5 + (im.width / 2 - (l + r) / 2) * sc / bw, 4), 'y': round((top * bh - t * sc + im.height * sc / 2) / bh, 4), 'w': round(im.width * sc / bw, 4)}
+# 21/10 (chủ dự án: mũ, nơ, khăn hay lệch nhất): MỌI khăn quàng canh mép trên ngay dưới miệng (nam .535, nữ .595),
+# chỉ bề rộng là riêng từng khăn — tests/pet-catalog.test.mjs chặn khăn lên mặt / tụt xuống bụng
+SCARF_W = {'ao-roi-07': (.66, .58), 'phu-kien-13': (.66, .58), 'noel-05': (.66, .58), 'noel-06': (.66, .60), 'halloween-06': (.58, .52), 'bong-da-06': (.62, .55)}
 for it in items:
-    if it['id'] in ('ao-roi-07', 'phu-kien-13'):
-        it['anchor'] = {'nam': _fitTop(it['file'], 'nam', .535, .66), 'nu': _fitTop(it['file'], 'nu', .595, .58)}
-    if it['id'] == 'halloween-06':  # khăn ma cà rồng: dải dài → canh mép trên dưới miệng, hẹp hơn thân
-        it['anchor'] = {'nam': _fitTop(it['file'], 'nam', .545, .58), 'nu': _fitTop(it['file'], 'nu', .60, .52)}
-    if it['id'] == 'bong-da-06':  # khăn cổ vũ: dải dài → canh mép trên dưới miệng
-        it['anchor'] = {'nam': _fitTop(it['file'], 'nam', .545, .62), 'nu': _fitTop(it['file'], 'nu', .60, .55)}
+    if it['slot'] == 'deo' and it['name'].startswith('Khăn'):
+        wn, wu = SCARF_W.get(it['id'], (.62, .56))
+        it['anchor'] = {'nam': _fitTop(it['file'], 'nam', .535, wn), 'nu': _fitTop(it['file'], 'nu', .595, wu)}
     if it['id'] == 'bong-da-02':  # băng buộc trán: trán Pi nam thấp hơn → hạ thêm
         it['anchor']['nam']['y'] = round(it['anchor']['nam']['y'] + .035, 4)
     if it['id'] == 'halloween-12':  # ma nhỏ bay cạnh đầu (giữa đầu thì che lá)

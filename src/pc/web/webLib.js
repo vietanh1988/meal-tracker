@@ -119,15 +119,25 @@ export function htmlToBlocks(html, parse) {
   return out;
 }
 
-// Ảnh → WebP (cạnh dài tối đa 1600 px) ngay trên trình duyệt trước khi tải lên
-export async function toWebp(file, max = 1600, q = 0.82) {
+// 21/10 (chủ dự án: ảnh to làm nặng web) — LUẬT CỠ ẢNH WEB, một chỗ duy nhất (máy chủ viết bài AI chép đúng số này):
+//   ảnh thường (bài, bìa, thẻ…): rộng ≤ 1200 px, cao ≤ 1600 px, bản chính ≤ 150 KB; bản nhỏ 400 / 800 px ≤ 40 / 90 KB
+//   ảnh nền banner trang chủ (big): rộng ≤ 1920 px, ≤ 250 KB
+//   chất lượng WebP hạ dần 0,82 → 0,5 tới khi vừa; vẫn quá thì thu nhỏ 15% rồi thử lại
+export const IMG_RULE = { maxW: 1200, maxH: 1600, maxKB: 150, small: { 400: 40, 800: 90 }, big: { maxW: 1920, maxH: 1600, maxKB: 250 } };
+export async function toWebp(file, max = IMG_RULE.maxW, q = 0.82, { maxH = IMG_RULE.maxH, maxKB = IMG_RULE.maxKB } = {}) {
   const bmp = await createImageBitmap(file);
-  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
-  const w = Math.round(bmp.width * k), h = Math.round(bmp.height * k);
-  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
-  cv.getContext("2d").drawImage(bmp, 0, 0, w, h);
-  const blob = await new Promise((r) => cv.toBlob(r, "image/webp", q));
-  return { blob, width: w, height: h, srcW: bmp.width, srcH: bmp.height };
+  let k = Math.min(1, max / bmp.width, maxH / bmp.height);
+  for (let round = 0; round < 6; round++) {
+    const w = Math.max(1, Math.round(bmp.width * k)), h = Math.max(1, Math.round(bmp.height * k));
+    const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+    cv.getContext("2d").drawImage(bmp, 0, 0, w, h);
+    for (let qq = q; qq >= 0.5 - 1e-9; qq -= 0.08) {
+      const blob = await new Promise((r) => cv.toBlob(r, "image/webp", qq));
+      if (blob && blob.size <= maxKB * 1024) return { blob, width: w, height: h, srcW: bmp.width, srcH: bmp.height, q: Math.round(qq * 100) / 100 };
+    }
+    k *= 0.85;
+  }
+  throw new Error(`Ảnh quá nặng, nén mãi vẫn trên ${maxKB} KB — thử ảnh khác.`);
 }
 export const youtubeId = (s) => { const m = String(s || "").match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{6,20})/); return m ? m[1] : /^[\w-]{6,20}$/.test(String(s || "").trim()) ? String(s).trim() : ""; };
 

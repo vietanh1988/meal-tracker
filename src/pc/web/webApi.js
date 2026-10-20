@@ -1,6 +1,6 @@
 // Đọc / ghi bảng web_* cho Quản trị web (RLS: chỉ admin ghi — is_web_admin()).
 import { supabase } from "../../lib/supabase";
-import { slugify, wordCount, seoChecks, toWebp } from "./webLib";
+import { slugify, wordCount, seoChecks, toWebp, IMG_RULE } from "./webLib";
 import { todayVN } from "../../lib/dateVN";
 
 const LIST_COLS = "id,kind,title,slug,status,cover_url,primary_term,pinned,published_at,updated_at,author_id,seo,word_count,template";
@@ -160,11 +160,13 @@ export async function searchLinks(q) {
   return [...posts.map((p) => ({ icon: p.kind === "page" ? "📄" : "📝", t: p.title, url: `/${p.slug}` })), ...terms.map((t) => ({ icon: "📁", t: `Chuyên mục ${t.name}`, url: `/chu-de/${t.slug}` }))];
 }
 
-// Tải ảnh lên kho 'web': tự đổi WebP ≤1600 px + bản nhỏ 400/800/1200 (cho srcset), tên không dấu <ten>-<ma>_<rong>w.webp; ghi web_media
+// Tải ảnh lên kho 'web': tự đổi WebP theo IMG_RULE (webLib) + bản nhỏ 400/800 (cho srcset), tên không dấu <ten>-<ma>_<rong>w.webp; ghi web_media
+// (ảnh cũ trước 21/10 còn bản 1200 — SIZES giữ để xoá đủ bản)
 export const SIZES = [400, 800, 1200];
+const SMALL = Object.keys(IMG_RULE.small).map(Number);
 const PUB = "https://fipilotai.com/anh/"; // web chuyển /anh/* → kho 'web'/img/*
 export const webUrl = (path) => PUB + String(path).replace(/^img\//, "");
-export async function uploadImage(file, name = "anh", { alt = "", uploader = "", uid = null } = {}) {
+export async function uploadImage(file, name = "anh", { alt = "", uploader = "", uid = null, big = false } = {}) {
   if (file.size > 10 * 1024 * 1024) throw new Error("Ảnh lớn hơn 10 MB.");
   const raw = file.type === "image/svg+xml" || file.type === "image/gif";
   const ym = todayVN().slice(0, 7).split("-"); // năm/tháng giờ VN
@@ -173,10 +175,11 @@ export async function uploadImage(file, name = "anh", { alt = "", uploader = "",
   let out, path, sizes = [], orig = { w: null, h: null };
   if (raw) { out = { blob: file, width: null, height: null }; path = `${base}.${file.name.split(".").pop().toLowerCase()}`; await put(path, file, file.type); }
   else {
-    try { out = await toWebp(file); } catch (e) { throw new Error(/heic|heif/i.test(file.type + file.name) ? "Trình duyệt này chưa đọc được ảnh HEIC — mở bằng Safari hoặc đổi sang JPG." : "Không đọc được file ảnh."); }
+    const R = big ? IMG_RULE.big : IMG_RULE;
+    try { out = await toWebp(file, R.maxW, 0.82, { maxH: R.maxH, maxKB: R.maxKB }); } catch (e) { throw new Error(/heic|heif/i.test(file.type + file.name) ? "Trình duyệt này chưa đọc được ảnh HEIC — mở bằng Safari hoặc đổi sang JPG." : /quá nặng/.test(e.message) ? e.message : "Không đọc được file ảnh."); }
     orig = { w: out.srcW, h: out.srcH };
     path = `${base}_${out.width}w.webp`; await put(path, out.blob, "image/webp");
-    for (const w of SIZES) if (w < out.width) { const v = await toWebp(file, Math.round((w * Math.max(out.width, out.height)) / out.width)); await put(`${base}_${w}w.webp`, v.blob, "image/webp"); sizes.push(w); }
+    for (const w of SMALL) if (w < out.width) { const v = await toWebp(file, w, 0.8, { maxH: 99999, maxKB: IMG_RULE.small[w] }); await put(`${base}_${w}w.webp`, v.blob, "image/webp"); sizes.push(w); }
   }
   const { data } = supabase.storage.from("web").getPublicUrl(path);
   if (!uid || !uploader) { try { const { data: u } = await supabase.auth.getUser(); uid = uid || u?.user?.id || null; uploader = uploader || u?.user?.user_metadata?.full_name || u?.user?.user_metadata?.name || (u?.user?.email || "").split("@")[0]; } catch (e) { /* */ } }

@@ -134,15 +134,18 @@ async function storeImage(admin, im, name, alt, uid, by) {
   const now = new Date(Date.now() + 7 * 3600e3); // giờ VN cho thư mục năm/tháng
   const base = `img/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${slugOf(name).slice(0, 60) || "anh-ai"}-${Date.now().toString(36).slice(-5)}`;
   const put = async (path, b, type) => { const { error } = await admin.storage.from("web").upload(path, b, { contentType: type, cacheControl: "31536000", upsert: false }); if (error) throw new Error("Lưu ảnh: " + error.message); };
-  // Đổi về JPEG rộng ≤ 1200 + bản nhỏ 400/800 (tên _<rộng>w → web tự ghép srcset). Không giải mã được thì lưu nguyên ảnh, tên thường.
+  // Đổi về JPEG theo LUẬT CỠ ẢNH WEB (src/pc/web/webLib.js IMG_RULE, 21/10): rộng ≤ 1200, cao ≤ 1600, bản chính ≤ 150 KB,
+  // bản nhỏ 400 / 800 ≤ 40 / 90 KB (tên _<rộng>w → web tự ghép srcset). Chất lượng hạ dần 82 → 50. Không giải mã được thì lưu nguyên ảnh.
+  const fit = async (img0, maxKB) => { for (let q = 82; q >= 50; q -= 8) { const b = await img0.encodeJPEG(q); if (b.length <= maxKB * 1024) return b; } return await img0.encodeJPEG(45); };
   let main = null, w = null, h = null; const small = [];
   try {
     const img = await Image.decode(im.bytes);
     const ow = img.width;
-    if (ow > 1200) img.resize(1200, Image.RESIZE_AUTO);
+    if (img.width > 1200) img.resize(1200, Image.RESIZE_AUTO);
+    if (img.height > 1600) img.resize(Image.RESIZE_AUTO, 1600);
     w = img.width; h = img.height;
-    main = /jpe?g/.test(im.mime) && ow === w && im.bytes.length < 400_000 ? im.bytes : await img.encodeJPEG(82); // JPEG gốc vừa cỡ thì giữ nguyên
-    for (const sw of [400, 800]) if (sw < w) small.push([sw, await img.clone().resize(sw, Image.RESIZE_AUTO).encodeJPEG(80)]);
+    main = /jpe?g/.test(im.mime) && ow === w && im.bytes.length <= 150 * 1024 ? im.bytes : await fit(img, 150); // JPEG gốc vừa cỡ, đủ nhẹ thì giữ nguyên
+    for (const [sw, kb] of [[400, 40], [800, 90]]) if (sw < w) small.push([sw, await fit(img.clone().resize(sw, Image.RESIZE_AUTO), kb)]);
   } catch (_e) { main = null; small.length = 0; }
   const ext = main ? "jpg" : (im.mime.split("/")[1] || "png").replace("jpeg", "jpg");
   const path = main && small.length ? `${base}_${w}w.jpg` : `${base}.${ext}`;

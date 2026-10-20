@@ -69,3 +69,36 @@ test("mỗi món bán có dòng trong pet_items (migration)", () => {
   const miss = items.filter((it) => !sql.includes(`'${it.id}'`)).map((it) => it.id);
   assert.deepEqual(miss, []);
 });
+
+// 21/10 (chủ dự án: "hay lỗi nhất là mũ, nơ, khăn") — đo khung ảnh thật trên thân: khăn quấn ngay dưới miệng, vành mũ ngang trán,
+// nơ / băng đô / vương miện nằm trên đỉnh đầu. Số đo trên thân 588×900 (nam) / 559×900 (nữ), đã soát bằng ảnh 21/10.
+function webpSize(f) {
+  const b = readFileSync(f); const t = b.toString("ascii", 12, 16);
+  if (t === "VP8X") return [1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)];
+  if (t === "VP8 ") return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+  if (t === "VP8L") { const n = b.readUInt32LE(21); return [1 + (n & 0x3fff), 1 + ((n >> 14) & 0x3fff)]; }
+  throw new Error("không đọc được " + f);
+}
+const BODY = { nam: [588, 900], nu: [559, 900] };
+const box = (it, v) => { const a = it.anchor[v]; const [W, H] = webpSize(P + it.file); const [bw, bh] = BODY[v]; const h = a.h || (a.w * bw * H) / W / bh; return { top: a.y - h / 2, bot: a.y + h / 2, x: a.x }; };
+test("khăn quàng: mép trên ngay dưới miệng (không lên mặt, không tụt bụng)", () => {
+  const TOP = { nam: [0.52, 0.55], nu: [0.58, 0.61] }; const bad = [];
+  for (const it of items.filter((i) => i.slot === "deo" && i.name.startsWith("Khăn"))) for (const v of Object.keys(it.anchor)) {
+    const b = box(it, v); if (b.top < TOP[v][0] || b.top > TOP[v][1] || Math.abs(b.x - 0.5) > 0.02) bad.push(`${it.id}/${v} top${b.top.toFixed(3)} x${b.x}`);
+  }
+  assert.deepEqual(bad, []);
+});
+test("mũ trùm: vành ngang trán (đáy ảnh trong vùng trán), không bay khỏi đầu", () => {
+  const BOT = { nam: [0.26, 0.42], nu: [0.36, 0.46] }; const bad = [];
+  for (const it of items.filter((i) => i.slot === "dau" && (i.cover || i.hide_leaf))) for (const v of Object.keys(it.anchor)) {
+    const b = box(it, v); if (b.bot < BOT[v][0] || b.bot > BOT[v][1] || b.top > 0.12 || b.x < 0.42 || b.x > 0.62) bad.push(`${it.id}/${v} bot${b.bot.toFixed(3)} top${b.top.toFixed(3)} x${b.x}`);
+  }
+  assert.deepEqual(bad, []);
+});
+test("nơ / băng đô / vương miện: trên đỉnh đầu, giữa đầu (trâm / kẹp cài lệch bên được)", () => {
+  const bad = [];
+  for (const it of items.filter((i) => i.slot === "dau" && !i.cover && !i.hide_leaf && !/Trâm|Kẹp/.test(i.name))) for (const v of Object.keys(it.anchor)) {
+    const b = box(it, v); if (b.bot < 0.24 || b.bot > 0.44 || b.top < -0.08 || b.x < 0.46 || b.x > 0.62) bad.push(`${it.id}/${v} bot${b.bot.toFixed(3)} top${b.top.toFixed(3)} x${b.x}`);
+  }
+  assert.deepEqual(bad, []);
+});

@@ -67,13 +67,13 @@ function FoodPick({ value, onPick, testid }) {
   );
 }
 
-function Upload({ onDone, label = "Chọn ảnh từ máy", name, showToast, testid, box, link }) {
+function Upload({ onDone, label = "Chọn ảnh từ máy", name, showToast, testid, box, link, big }) {
   const [busy, setBusy] = useState(false);
   const pick = async (file) => {
     if (!file) return;
     if (!/^image\//.test(file.type)) return showToast?.("Chỉ nhận file ảnh.");
     setBusy(true);
-    try { onDone(await uploadImage(file, name || file.name.replace(/\.\w+$/, ""))); } catch (e) { showToast?.("Chưa tải ảnh lên được: " + (e.message || "")); }
+    try { onDone(await uploadImage(file, name || file.name.replace(/\.\w+$/, ""), { big })); } catch (e) { showToast?.("Chưa tải ảnh lên được: " + (e.message || "")); }
     setBusy(false);
   };
   return (
@@ -113,7 +113,7 @@ export function OtherBlock({ b, set, showToast, slug, postId }) {
   switch (b.type) {
     case "img": return (
       <Box label="ẢNH · tự nén WebP" testid="web-blk-img">
-        {b.url ? <img src={b.url} alt={b.alt || ""} style={{ maxWidth: "100%", maxHeight: 360, borderRadius: 12, objectFit: "contain", alignSelf: "flex-start" }} /> : <span style={{ fontSize: 12.5, color: PC.t3 }}>Chọn ảnh từ máy (tự đổi WebP, tối đa 1600 px) hoặc dán đường dẫn ảnh.</span>}
+        {b.url ? <img src={b.url} alt={b.alt || ""} style={{ maxWidth: "100%", maxHeight: 360, borderRadius: 12, objectFit: "contain", alignSelf: "flex-start" }} /> : <span style={{ fontSize: 12.5, color: PC.t3 }}>Chọn ảnh từ máy (tự đổi WebP, rộng tối đa 1200 px, dưới 150 KB) hoặc dán đường dẫn ảnh.</span>}
         <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><Upload name={b.alt || slug} showToast={showToast} onDone={(r) => { set({ url: r.url, width: r.width, height: r.height }); showToast?.(`Đã tải ảnh · ${kb(r.size)} (gốc ${kb(r.orig)})`); }} label={b.url ? "Thay ảnh" : "Chọn ảnh từ máy"} /><LibBtn onPick={(r) => set({ url: r.url, alt: b.alt || r.alt || "", width: r.width || undefined, height: r.height || undefined })} /><In v={b.url} on={(v) => set({ url: v })} ph="hoặc dán đường dẫn ảnh https://…" w={320} /></span>
         <In v={b.alt} on={(v) => set({ alt: v })} ph="Mô tả ảnh (alt) — giúp Google hiểu ảnh, VD: Tô phở bò tái chín" testid="web-blk-img-alt" />
         <span style={{ display: "flex", gap: 8 }}><AiDrawBtn alt={b.alt} slug={slug} postId={postId} has={!!b.url} onDone={(url) => set({ url, width: undefined, height: undefined })} showToast={showToast} testid="web-blk-img-ai" /></span>
