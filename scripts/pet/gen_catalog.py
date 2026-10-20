@@ -144,6 +144,20 @@ catalog = {
       ('gian', 'hieu-ung/hieu-ung-16.webp', 0.82, 0.24, 0.22)]},
   'items': items,
 }
+# 20/10 (chủ dự án: khăn nằm trên ngực): khăn quàng thường quấn sát dưới cằm như khăn bộ sưu tập (bo_suu_tap.py kind scarf)
+def _fitw(file, v, bottom, cw):
+    from PIL import Image as _I
+    im = _I.open(f'public/pet/{file}'); l, t, r, b = im.split()[3].point(lambda p: 255 if p > 40 else 0).getbbox()
+    bw, bh = {'nam': (588, 900), 'nu': (559, 900)}[v]; sc = cw * bw / (r - l)
+    return {'x': round(.5 + (im.width / 2 - (l + r) / 2) * sc / bw, 4), 'y': round((bottom * bh - b * sc + im.height * sc / 2) / bh, 4), 'w': round(im.width * sc / bw, 4)}
+def _fitTop(file, v, top, cw):  # mép trên khăn ngay dưới miệng (khăn dài → canh theo mép trên, không theo đáy)
+    from PIL import Image as _I
+    im = _I.open(f'public/pet/{file}'); l, t, r, b = im.split()[3].point(lambda p: 255 if p > 40 else 0).getbbox()
+    bw, bh = {'nam': (588, 900), 'nu': (559, 900)}[v]; sc = cw * bw / (r - l)
+    return {'x': round(.5 + (im.width / 2 - (l + r) / 2) * sc / bw, 4), 'y': round((top * bh - t * sc + im.height * sc / 2) / bh, 4), 'w': round(im.width * sc / bw, 4)}
+for it in items:
+    if it['id'] in ('ao-roi-07', 'phu-kien-13'):
+        it['anchor'] = {'nam': _fitTop(it['file'], 'nam', .535, .66), 'nu': _fitTop(it['file'], 'nu', .595, .58)}
 # 20/10: áo liền thân vẽ tay ở chỗ khác thân gốc → dò tâm bàn tay (màu da Pi) trong ảnh thân mặc áo, đồ cầm tay dời theo
 import numpy as np
 from PIL import Image
