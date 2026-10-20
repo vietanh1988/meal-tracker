@@ -106,6 +106,8 @@ export const COL_DEFAULT = {
   tet: { mode: "season", before: 21, after: 15 },
   "co-trang": { mode: "open" },
   halloween: { mode: "season", from: "10-15", to: "11-02" },
+  // Bóng đá: theo mùa giải → mặc định ĐÓNG, admin bật "Luôn mở" hoặc đặt ngày khi có giải; đang bán thì phòng Pi đổi sang phòng bóng đá
+  "bong-da": { mode: "closed", from: "11-15", to: "01-10" },
 };
 const fmtDM = (s) => `${+s.slice(8, 10)}/${+s.slice(5, 7)}`;
 const shift = (s, n) => new Date((dayNum(s) + n) * 86400000).toISOString().slice(0, 10);

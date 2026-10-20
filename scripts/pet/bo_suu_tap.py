@@ -96,6 +96,21 @@ C = {
   ('Dơi bay', 'hieu_ung', BOTH, 'common', 2, 'fx', None, ''),
   ('Ma nhỏ', 'hieu_ung', BOTH, 'rare', 3, 'fx', None, ''),
  ], [('Bộ ma cà rồng', ['nam'], 'legendary', 4), ('Bộ bí ngô', ['nam'], 'common', 1), ('Váy phù thuỷ', ['nu'], 'rare', 2), ('Bộ mèo đen', ['nu'], 'rare', 3)]),
+ # 20/10 khuya: Bóng đá (cổ vũ đội tuyển; admin mở bán theo mùa giải)
+ 'bong-da': ('Bóng đá', [
+  ('Mũ lưỡi trai cổ vũ', 'dau', BOTH, 'common', 1, 'cap', .80, 'cover'),
+  ('Băng đô cổ vũ', 'dau', BOTH, 'common', 1, 'cap', (.74, .055), ''),  # băng buộc ngang trán, nút thắt bên phải
+  ('Bờm nơ sao vàng', 'dau', ['nu'], 'common', 1, 'band', .80, 'leaf'),
+  ('Mũ len cổ vũ', 'dau', BOTH, 'common', 2, 'cap', .78, 'cover'),
+  ('Kính ngôi sao', 'kinh', BOTH, 'common', 1, 'glasses', None, ''),
+  ('Khăn cổ vũ', 'deo', BOTH, 'common', 1, 'scarf', None, ''),
+  ('Quả bóng đá', 'cam_tay', BOTH, 'common', 1, 'hold', 1.0, ''),
+  ('Cúp vô địch', 'cam_tay', BOTH, 'rare', 3, 'hold', 1.0, ''),
+  ('Cờ đỏ sao vàng', 'cam_tay', BOTH, 'common', 1, 'hold', 1.0, ''),
+  ('Kèn cổ vũ', 'cam_tay', BOTH, 'common', 2, 'hold', 1.0, ''),
+  ('Pháo giấy', 'hieu_ung', BOTH, 'common', 2, 'fx', None, ''),
+  ('Bóng bay sao', 'hieu_ung', BOTH, 'rare', 3, 'fx', None, ''),
+ ], [('Áo đấu đỏ', ['nam'], 'common', 1), ('Áo thủ môn', ['nam'], 'rare', 3), ('Váy cổ động', ['nu'], 'common', 1), ('Áo đấu trắng', ['nu'], 'rare', 2)]),
 }
 PRICE = {'common': 150, 'rare': 400, 'legendary': 1000}
 out = []

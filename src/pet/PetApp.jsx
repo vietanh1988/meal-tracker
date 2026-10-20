@@ -108,7 +108,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
       tasksLeft: left.length, todayLeft, level: { ...lv, nextUnlock }, owned, equipped: st.equipped || {},
       achievementIds: ACH.map((a) => a.item), achievements: ach, tasks, streak: st.streak || 0,
       trophies: owned.filter((id) => ITEMS[id]?.achievement || ACH.some((a) => a.item === id)),
-      time: roomTime(Math.floor(minutes / 60)), season: seasonOf(today), shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
+      time: roomTime(Math.floor(minutes / 60)), season: seasonOf(today) || (collectionStatus("bong-da", cfg, today).open ? "bong-da" : null), shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
       levelUp: (st.prevLevel || lv.n) < lv.n, waterGoal, waterMl: log.water_ml || 0, daysAway, logged, mealsOn: ids.length, times,
       week: weekdayVN() === 0 && cfg.week !== false ? { range: `${wk.start.slice(8)}/${wk.start.slice(5, 7)} – ${wk.end.slice(8)}/${wk.end.slice(5, 7)}`, meals: 0, waterDays: 0 } : null,
       // 20/10 (chủ dự án): khách không chỉnh — Pi nói / số câu / giờ yên lặng / tổng kết tuần do Quản trị quyết (pet_config)

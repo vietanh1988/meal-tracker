@@ -316,7 +316,7 @@ function Settings({ d, onSaveCfg }) {
 
 // ============ Bộ sưu tập theo dịp (20/10, chủ dự án: chưa tới dịp thì khoá) ============
 // Lưu pet_config.collections; app (collectionStatus) và máy chủ (pet_col_open trong pet_buy) cùng đọc. Đồ đã mua vẫn mặc quanh năm.
-const COL_NAME = { noel: "Noel", tet: "Tết", "co-trang": "Cổ trang", halloween: "Halloween" };
+const COL_NAME = { noel: "Noel", tet: "Tết", "co-trang": "Cổ trang", halloween: "Halloween", "bong-da": "Bóng đá" };
 const MODES = [["season", "Theo dịp"], ["open", "Luôn mở"], ["closed", "Đóng"]];
 const toDM = (md) => (md ? `${md.slice(3, 5)}/${md.slice(0, 2)}` : "");
 const toMD = (dm) => { const m = String(dm).match(/^(\d{1,2})\/(\d{1,2})$/); return m ? `${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : null; };
@@ -371,7 +371,7 @@ function Cols({ d, onSaveCfg }) {
           </Card>
         );
       })}
-      <span style={{ fontSize: 12, color: PC.t3, lineHeight: 1.5 }}>Phòng của Pi đổi theo dịp riêng (Halloween 20–31/10, Noel 15–31/12, Tết 10 ngày trước – 7 ngày sau mùng 1), không phụ thuộc lịch bán. Ẩn / hiện từng món ở tab Kho đồ.</span>
+      <span style={{ fontSize: 12, color: PC.t3, lineHeight: 1.5 }}>Phòng của Pi đổi theo dịp riêng (Bóng đá: lúc bộ đang bán; Halloween 20–31/10, Noel 15–31/12, Tết 10 ngày trước – 7 ngày sau mùng 1), không phụ thuộc lịch bán. Ẩn / hiện từng món ở tab Kho đồ.</span>
       {err && <span role="alert" style={{ fontSize: 13, fontWeight: 700, color: "#DC2626" }}>{err}</span>}
       <span style={{ display: "flex", justifyContent: "flex-end" }}><Btn kind="blue" testid="pc-pet-cols-save" disabled={busy || !onSaveCfg} onClick={save}>{busy ? "Đang lưu…" : "Lưu lịch bán"}</Btn></span>
     </div>

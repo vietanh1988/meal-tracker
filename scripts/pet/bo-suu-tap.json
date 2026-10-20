@@ -1830,5 +1830,465 @@
     "file_nl": "than-ao/than-nu-khong-la-halloween-ao-04.webp"
    }
   }
+ },
+ {
+  "id": "bong-da-01",
+  "name": "Mũ lưỡi trai cổ vũ",
+  "file": "bo-suu-tap/bong-da-01.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.1239,
+    "w": 0.8221
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.1817,
+    "w": 0.8221
+   }
+  },
+  "cover": true
+ },
+ {
+  "id": "bong-da-02",
+  "name": "Băng đô cổ vũ",
+  "file": "bo-suu-tap/bong-da-02.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.1906,
+    "w": 0.7583
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.2478,
+    "w": 0.7583
+   }
+  }
+ },
+ {
+  "id": "bong-da-03",
+  "name": "Bờm nơ sao vàng",
+  "file": "bo-suu-tap/bong-da-03.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.2675,
+    "w": 0.8248,
+    "h": 0.2112
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.2675,
+    "w": 0.8248,
+    "h": 0.2112
+   }
+  },
+  "behind_leaf": true
+ },
+ {
+  "id": "bong-da-04",
+  "name": "Mũ len cổ vũ",
+  "file": "bo-suu-tap/bong-da-04.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.0386,
+    "w": 0.8033
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.1006,
+    "w": 0.8033
+   }
+  },
+  "cover": true
+ },
+ {
+  "id": "bong-da-05",
+  "name": "Kính ngôi sao",
+  "file": "bo-suu-tap/bong-da-05.webp",
+  "slot": "kinh",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.4993,
+    "y": 0.357,
+    "w": 0.6778
+   },
+   "nu": {
+    "x": 0.4993,
+    "y": 0.412,
+    "w": 0.7189
+   }
+  }
+ },
+ {
+  "id": "bong-da-06",
+  "name": "Khăn cổ vũ",
+  "file": "bo-suu-tap/bong-da-06.webp",
+  "slot": "deo",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.5418,
+    "w": 0.7184
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.6342,
+    "w": 0.5953
+   }
+  }
+ },
+ {
+  "id": "bong-da-07",
+  "name": "Quả bóng đá",
+  "file": "bo-suu-tap/bong-da-07.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.8529,
+    "y": 0.6744,
+    "w": 0.4203
+   },
+   "nu": {
+    "x": 0.8524,
+    "y": 0.6798,
+    "w": 0.4203
+   }
+  },
+  "file_hold": "bo-suu-tap/bong-da-07.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ],
+  "mirror": true
+ },
+ {
+  "id": "bong-da-08",
+  "name": "Cúp vô địch",
+  "file": "bo-suu-tap/bong-da-08.webp",
+  "slot": "cam_tay",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.8288,
+    "y": 0.7428,
+    "w": 0.4515
+   },
+   "nu": {
+    "x": 0.8283,
+    "y": 0.7447,
+    "w": 0.4515
+   }
+  },
+  "file_hold": "bo-suu-tap/bong-da-08.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ],
+  "mirror": true
+ },
+ {
+  "id": "bong-da-09",
+  "name": "Cờ đỏ sao vàng",
+  "file": "bo-suu-tap/bong-da-09.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5927,
+    "y": 0.6683,
+    "w": 0.6881
+   },
+   "nu": {
+    "x": 0.5922,
+    "y": 0.674,
+    "w": 0.6881
+   }
+  },
+  "file_hold": "bo-suu-tap/bong-da-09.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ],
+  "mirror": true
+ },
+ {
+  "id": "bong-da-10",
+  "name": "Kèn cổ vũ",
+  "file": "bo-suu-tap/bong-da-10.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.7234,
+    "y": 0.7238,
+    "w": 0.5032
+   },
+   "nu": {
+    "x": 0.7229,
+    "y": 0.7267,
+    "w": 0.5032
+   }
+  },
+  "file_hold": "bo-suu-tap/bong-da-10.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ],
+  "mirror": true
+ },
+ {
+  "id": "bong-da-11",
+  "name": "Pháo giấy",
+  "file": "bo-suu-tap/bong-da-11.webp",
+  "slot": "hieu_ung",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "bong-da-12",
+  "name": "Bóng bay sao",
+  "file": "bo-suu-tap/bong-da-12.webp",
+  "slot": "hieu_ung",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "bong-da-ao-01",
+  "name": "Áo đấu đỏ",
+  "file": "bo-suu-tap/bong-da-ao-01.webp",
+  "slot": "ao",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-bong-da-ao-01.webp",
+    "file_nl": "than-ao/than-nam-khong-la-bong-da-ao-01.webp"
+   }
+  }
+ },
+ {
+  "id": "bong-da-ao-02",
+  "name": "Áo thủ môn",
+  "file": "bo-suu-tap/bong-da-ao-02.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-bong-da-ao-02.webp",
+    "file_nl": "than-ao/than-nam-khong-la-bong-da-ao-02.webp"
+   }
+  }
+ },
+ {
+  "id": "bong-da-ao-03",
+  "name": "Váy cổ động",
+  "file": "bo-suu-tap/bong-da-ao-03.webp",
+  "slot": "ao",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-bong-da-ao-03.webp",
+    "file_nl": "than-ao/than-nu-khong-la-bong-da-ao-03.webp"
+   }
+  }
+ },
+ {
+  "id": "bong-da-ao-04",
+  "name": "Áo đấu trắng",
+  "file": "bo-suu-tap/bong-da-ao-04.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 2,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-bong-da-ao-04.webp",
+    "file_nl": "than-ao/than-nu-khong-la-bong-da-ao-04.webp"
+   }
+  }
  }
 ]

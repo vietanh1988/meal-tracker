@@ -64,6 +64,12 @@ test("phòng theo dịp: Noel 15–31/12, Tết −10…+7 ngày quanh mùng 1",
   assert.equal(seasonOf("2026-11-01"), null);
 });
 
+test("bộ Bóng đá: mặc định đóng, admin mở", () => {
+  assert.deepEqual(collectionStatus("bong-da", {}, "2026-10-20"), { open: false, label: "Tạm đóng" });
+  assert.equal(collectionStatus("bong-da", { collections: { "bong-da": { mode: "open" } } }, "2026-10-20").open, true);
+  assert.equal(collectionStatus("bong-da", { collections: { "bong-da": { mode: "season", from: "11-15", to: "01-10" } } }, "2026-12-20").open, true);
+});
+
 test("bộ Halloween: bán 15/10–2/11", () => {
   assert.equal(collectionStatus("halloween", {}, "2026-10-14").open, false);
   assert.deepEqual(collectionStatus("halloween", {}, "2026-10-20"), { open: true, label: "Bán tới 2/11" });
