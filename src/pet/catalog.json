@@ -181,6 +181,12 @@
    ],
    "level": 1,
    "price": 100,
+   "body": {
+    "nam": {
+     "file": "than-ao/than-nam-ao-roi-01.webp",
+     "file_nl": "than-ao/than-nam-khong-la-ao-roi-01.webp"
+    }
+   },
    "anchor": {
     "nam": {
      "x": 0.5,
@@ -201,6 +207,12 @@
    ],
    "level": 1,
    "price": 100,
+   "body": {
+    "nam": {
+     "file": "than-ao/than-nam-ao-roi-02.webp",
+     "file_nl": "than-ao/than-nam-khong-la-ao-roi-02.webp"
+    }
+   },
    "anchor": {
     "nam": {
      "x": 0.5,
@@ -221,6 +233,12 @@
    ],
    "level": 3,
    "price": 400,
+   "body": {
+    "nam": {
+     "file": "than-ao/than-nam-ao-roi-03.webp",
+     "file_nl": "than-ao/than-nam-khong-la-ao-roi-03.webp"
+    }
+   },
    "anchor": {
     "nam": {
      "x": 0.5,
@@ -241,6 +259,12 @@
    ],
    "level": 3,
    "price": 400,
+   "body": {
+    "nam": {
+     "file": "than-ao/than-nam-ao-roi-04.webp",
+     "file_nl": "than-ao/than-nam-khong-la-ao-roi-04.webp"
+    }
+   },
    "anchor": {
     "nam": {
      "x": 0.5,
@@ -261,6 +285,12 @@
    ],
    "level": 5,
    "price": 1000,
+   "body": {
+    "nam": {
+     "file": "than-ao/than-nam-ao-roi-05.webp",
+     "file_nl": "than-ao/than-nam-khong-la-ao-roi-05.webp"
+    }
+   },
    "anchor": {
     "nam": {
      "x": 0.5,
@@ -272,7 +302,7 @@
   },
   {
    "id": "ao-roi-06",
-   "name": "Áo phao xanh",
+   "name": "Áo khoác jean",
    "file": "ao-roi/ao-roi-06.webp",
    "slot": "ao",
    "rarity": "rare",
@@ -281,6 +311,12 @@
    ],
    "level": 3,
    "price": 400,
+   "body": {
+    "nam": {
+     "file": "than-ao/than-nam-ao-roi-06.webp",
+     "file_nl": "than-ao/than-nam-khong-la-ao-roi-06.webp"
+    }
+   },
    "anchor": {
     "nam": {
      "x": 0.5,
@@ -326,6 +362,12 @@
    ],
    "level": 1,
    "price": 100,
+   "body": {
+    "nu": {
+     "file": "than-ao/than-nu-ao-roi-08.webp",
+     "file_nl": "than-ao/than-nu-khong-la-ao-roi-08.webp"
+    }
+   },
    "anchor": {
     "nu": {
      "x": 0.5009,
@@ -336,7 +378,7 @@
   },
   {
    "id": "ao-roi-09",
-   "name": "Áo khoác kem",
+   "name": "Áo len kem",
    "file": "ao-roi/ao-roi-09.webp",
    "slot": "ao",
    "rarity": "common",
@@ -345,6 +387,12 @@
    ],
    "level": 1,
    "price": 100,
+   "body": {
+    "nu": {
+     "file": "than-ao/than-nu-ao-roi-09.webp",
+     "file_nl": "than-ao/than-nu-khong-la-ao-roi-09.webp"
+    }
+   },
    "anchor": {
     "nu": {
      "x": 0.5009,
@@ -364,6 +412,12 @@
    ],
    "level": 3,
    "price": 400,
+   "body": {
+    "nu": {
+     "file": "than-ao/than-nu-ao-roi-10.webp",
+     "file_nl": "than-ao/than-nu-khong-la-ao-roi-10.webp"
+    }
+   },
    "anchor": {
     "nu": {
      "x": 0.5,
@@ -383,6 +437,12 @@
    ],
    "level": 4,
    "price": 400,
+   "body": {
+    "nu": {
+     "file": "than-ao/than-nu-ao-roi-11.webp",
+     "file_nl": "than-ao/than-nu-khong-la-ao-roi-11.webp"
+    }
+   },
    "anchor": {
     "nu": {
      "x": 0.5,
@@ -402,6 +462,12 @@
    ],
    "level": 6,
    "price": 1000,
+   "body": {
+    "nu": {
+     "file": "than-ao/than-nu-ao-roi-12.webp",
+     "file_nl": "than-ao/than-nu-khong-la-ao-roi-12.webp"
+    }
+   },
    "anchor": {
     "nu": {
      "x": 0.5,
@@ -421,6 +487,12 @@
    ],
    "level": 1,
    "price": 100,
+   "body": {
+    "nu": {
+     "file": "than-ao/than-nu-ao-roi-13.webp",
+     "file_nl": "than-ao/than-nu-khong-la-ao-roi-13.webp"
+    }
+   },
    "anchor": {
     "nu": {
      "x": 0.5009,

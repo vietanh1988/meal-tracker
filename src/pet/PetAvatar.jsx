@@ -1,6 +1,6 @@
 // Fipilot Pet — ghép nhân vật bằng lớp ảnh (spec §5, chốt 20/10).
 // Mọi vị trí lấy từ src/pet/catalog.json (anchor: x, y = tâm món theo phần rộng / cao thân; w = rộng món theo phần rộng thân;
-// h có thì kéo dãn theo chiều cao — chỉ áo, để che hết áo gốc). Mặc áo → dùng thân đã bỏ áo gốc (file_ao).
+// h có thì kéo dãn theo chiều cao). Mặc áo có ảnh liền thân (item.body) → thay cả thân bằng ảnh đó; không có thì dùng thân đã bỏ áo gốc (file_ao) + ảnh áo rời.
 // Bản nữ: nơ là lớp riêng (mặc định đeo, khách tháo được), đội mũ thì ẩn.
 // Mũ trùm (cover) cắt thân phía trên hat_cut; đồ cầm tay đặt điểm nắm vào tâm bàn tay rồi vẽ lại bàn tay (lớp "tay") đè lên.
 import catalog from "./catalog.json";
@@ -37,13 +37,14 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
   const face = FACES[mood] || FACES.vui;
   const [eyes, mouth] = face[variant];
   const behindLeaf = Object.values(eq).some((it) => it.behind_leaf);
+  const aoBody = eq.ao?.body?.[variant]; // 20/10: áo vẽ liền thân → mặc áo thì thay cả thân, không đặt ảnh áo rời
   const layers = [];
   for (const L of catalog.layers) {
-    if (L === "than") layers.push(<Layer key="than" file={behindLeaf ? (eq.ao ? b.file_ao_nl : b.file_nl) : (eq.ao ? b.file_ao : b.file)} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? b.hat_cut : 0} />);
+    if (L === "than") layers.push(<Layer key="than" file={aoBody ? (behindLeaf ? aoBody.file_nl : aoBody.file) : behindLeaf ? (eq.ao ? b.file_ao_nl : b.file_nl) : (eq.ao ? b.file_ao : b.file)} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? b.hat_cut : 0} />);
     else if (L === "quai") { Object.values(eq).forEach((it) => (it.front || []).forEach((f, i) => layers.push(<Layer key={`quai${it.id}${i}`} file={f.file} a={f} bw={bw} bh={bh} />))); } // quai balo đè lên áo
     else if (L === "tay") {
       if (eq.cam_tay && !eq.cam_tay.file_hold) layers.push(<Layer key="tay" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />); // tay vẽ đè lên đồ → trông như đang cầm
-      if (eq.ao) { // mặc áo thì tay áo che tay gốc → vẽ lại bàn tay trần ở tay đang không cầm gì
+      if (eq.ao && !aoBody) { // mặc áo thì tay áo che tay gốc → vẽ lại bàn tay trần ở tay đang không cầm gì
         layers.push(<Layer key="tay-trai" file={b.hand_l.file} a={b.hand_l} bw={bw} bh={bh} />);
         if (!eq.cam_tay) layers.push(<Layer key="tay-phai" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />);
       }
@@ -53,6 +54,7 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
     else if (L === "mieng") layers.push(<Layer key="mieng" file={mouth} a={b.mouth} bw={bw} bh={bh} />);
     else if (L === "bow") { if (b.bow && bow && !eq.dau) layers.push(<Layer key="bow" file={b.bow.file} a={b.bow} bw={bw} bh={bh} />); }
     else if (L === "tam_trang") { const m = catalog.moods[MOOD_FX[mood]]; if (m) layers.push(<Layer key="mood" file={m.file} a={m.anchor[variant]} bw={bw} bh={bh} />); }
+    else if (L === "ao" && aoBody) { /* thân đã mặc áo */ }
     else if (eq[L]) layers.push(<Layer key={L} file={eq[L].file_hold || eq[L].file} a={eq[L].anchor[variant]} bw={bw} bh={bh} />); // đồ cầm tay: ảnh kèm bàn tay đang nắm
   }
   return (

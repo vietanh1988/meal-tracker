@@ -6,8 +6,8 @@ import json, sys
 OUT = sys.argv[1]
 
 NAMES = {
- 'ao-roi': ['Áo khoác thể thao xanh','Áo khoác trắng','Áo hoodie xanh đậm','Áo vest học sinh','Bộ phi hành gia','Áo phao xanh','Khăn len xanh',
-            'Áo hoodie hồng','Áo khoác kem','Váy vàng','Váy trắng nơ','Váy tím công chúa','Áo khoác hồng tim'],
+ 'ao-roi': ['Áo khoác thể thao xanh','Áo khoác trắng','Áo hoodie xanh đậm','Áo vest học sinh','Bộ phi hành gia','Áo khoác jean','Khăn len xanh',
+            'Áo hoodie hồng','Áo len kem','Váy vàng','Váy trắng nơ','Váy tím công chúa','Áo khoác hồng tim'],
  'doi-dau': ['Mũ lưỡi trai xanh','Mũ lưỡi trai đen','Mũ lưỡi trai xanh trắng','Mũ tai bèo be','Mũ tai bèo xanh rêu','Mũ lưỡi trai đen trắng',
              'Nơ hồng to','Mũ rơm hoa','Mũ lưỡi trai hồng','Băng đô tai mèo','Vương miện vàng','Vương miện hồng ngọc'],
  'kinh-tai-nghe': ['Kính tròn đen','Kính râm đen','Kính râm xanh','Tai nghe xanh','Tai nghe đen','Kính tim hồng','Kính tròn hồng',
@@ -81,6 +81,8 @@ BODY_HAND = {'nam': (0.852, 0.7828, 588, 900), 'nu': (0.8515, 0.7828, 559, 900)}
 COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
 for it in items:
     if it['id'] in COVER: it['cover'] = True
+    if it['slot'] == 'ao':  # 20/10: áo vẽ liền thân (ChatGPT) + đầu gốc ghép đè → mặc áo thì thay cả thân; ảnh món = phần thân mặc áo (ô cửa hàng)
+        it['body'] = {v: {'file': f"than-ao/than-{v}-{it['id']}.webp", 'file_nl': f"than-ao/than-{v}-khong-la-{it['id']}.webp"} for v in it['variants']}
     if it['id'] in ('doi-dau-10', 'kinh-tai-nghe-04', 'kinh-tai-nghe-05', 'kinh-tai-nghe-09', 'kinh-tai-nghe-10'): it['behind_leaf'] = True  # vòng qua đỉnh đầu, đi SAU cuống lá
     if it['id'] in QUAI:
         it['front'] = [{'file': QUAI[it['id']] + 'trai.webp', **A(0.30, 0.712, 0.22)}, {'file': QUAI[it['id']] + 'phai.webp', **A(0.70, 0.712, 0.22)}]
