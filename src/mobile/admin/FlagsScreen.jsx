@@ -20,9 +20,10 @@ const I = {
   user: svg(<><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></>),
   bell: svg(<><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" /><path d="M10 20a2 2 0 0 0 4 0" /></>),
   layers: svg(<><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 13l9 5 9-5" /></>),
+  drop: svg(<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" />),
 };
 
-// key = khoá thật trong FLAG_DEFS (adminTabs/FeatureFlagsTab.jsx) — đủ 8 cờ
+// key = khoá thật trong FLAG_DEFS (adminTabs/FeatureFlagsTab.jsx) — đủ 9 cờ (20/10: thêm Thú cưng Pi)
 const GROUPS = [
   { title: "AI", items: [
     { key: "ai_chat", label: "Chat AI", desc: "Hỏi Fipilot AI ở Tôi và thẻ bữa", color: "#7C3AED", icon: I.chat },
@@ -37,6 +38,7 @@ const GROUPS = [
   { title: "Khác", items: [
     { key: "push", label: "Thông báo đẩy", desc: "Nhắc bữa, nhắc cân, báo cáo tuần", color: "#0EA5E9", icon: I.bell },
     { key: "template_library", label: "Thực đơn mẫu", desc: "Hiện mục Thực đơn mẫu ở tab Thực đơn", color: "#16A34A", icon: I.layers },
+    { key: "pet", label: "Thú cưng Pi", desc: "Tắt: chỉ admin thấy để thử", color: "#007AFF", icon: I.drop, confirmOff: "Khách sẽ không thấy Pi nữa (Hạt, đồ đã mua vẫn giữ)." },
   ] },
 ];
 
