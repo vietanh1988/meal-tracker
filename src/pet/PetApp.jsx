@@ -3,7 +3,7 @@
 // Điểm do máy chủ tính (pet_claim); ở đây chỉ dựng view-model hiển thị + gọi mua / mặc / lưu.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePet } from "../hooks/usePet";
-import { levelOf, moodOf, eventsFor, pickEvent, DAILY_CAP, seasonOf, collectionStatus, COL_DEFAULT } from "../lib/petMath";
+import { levelOf, moodOf, eventsFor, pickEvent, DAILY_CAP, POINTS, seasonOf, collectionStatus, COL_DEFAULT, isoWeek } from "../lib/petMath";
 import { nowVNParts, weekdayVN, weekRange, addDays, diffDays } from "../lib/dateVN";
 import { waterGoalMl } from "../lib/dayPlan";
 import { authFetch } from "../lib/authFetch";
@@ -43,47 +43,54 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   const st = pet.state;
   const variant = petVariant(profile);
   const premium = !!profile?.tier && profile.tier !== "free";
-  const log = ud?.todayLog || {};
+  // 20/10: sau 0:00 khi app đang mở, todayLog có thể còn là của hôm qua → chỉ dùng khi đúng ngày
+  const log = ud?.todayLog && (!ud.todayLog.log_date || ud.todayLog.log_date === today) ? ud.todayLog : {};
   const cfg = useMemo(() => { try { return JSON.parse(appSettings?.pet_config || "{}") || {}; } catch (e) { return {}; } }, [appSettings?.pet_config]);
 
   // hôm nay đổi (ghi bữa / tick / nước / cân) → nhờ máy chủ tính lại Hạt (chậm 1,2 giây để gom nhiều thao tác)
-  const sig = `${(log.eaten_meals || []).join(",")}|${(log.meals || []).length}|${log.water_ml || 0}|${(weightLog || []).length}`;
+  // 20/10: sig gồm kcal + món ảnh từng bữa (thêm món vào bữa đã có cũng tính lại); lần đầu chỉ bỏ qua KHI đã có st
+  const sig = `${(log.eaten_meals || []).join(",")}|${(log.meals || []).map((m) => `${m.meal_id}:${Math.round((m.items || []).reduce((a, i) => a + (Number(i.cal) || 0), 0))}:${(m.items || []).some((i) => i.source === "photo") ? 1 : 0}`).join(",")}|${log.water_ml || 0}|${(weightLog || []).length}`;
   const first = useRef(true);
   useEffect(() => {
     if (!on || !st) return;
     if (first.current) { first.current = false; return; }
     const t = setTimeout(() => pet.claim(), 1200);
     return () => clearTimeout(t);
-  }, [sig, on]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sig, on, !!st]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const vm = useMemo(() => {
     if (!st) return null;
     const keys = new Set(st.keys || []);
+    const pd = st.day || today; // ngày của Pi do máy chủ trả (trước 4:00 sáng = hôm trước) — khoá Hạt theo ngày này
+    const P = { ...POINTS, ...(cfg.points || {}) };
     const lv = levelOf(st.xp);
     const nextUnlock = catalog.items.filter((it) => it.variants.includes(variant) && !it.achievement && !it.hidden && it.level === lv.n + 1).length;
     const newNow = catalog.items.filter((it) => it.variants.includes(variant) && !it.achievement && !it.hidden && it.level === lv.n).length;
     const owned = st.owned || [];
-    const ids = mealIds.length ? mealIds : ["sang", "trua", "toi"];
+    const ids = (mealIds.length ? mealIds : ["sang", "trua", "toi"]).slice(0, 5); // máy chủ cấp Hạt tối đa 5 bữa
     const eatenIds = log.eaten_meals || [];
     const kcalOf = (id) => ((log.meals || []).find((m) => m.meal_id === id)?.items || []).reduce((a, i) => a + (Number(i.cal) || 0), 0);
     const tasks = ids.map((id) => {
-      const done = keys.has(`meal:${today}:${id}`);
+      const done = keys.has(`meal:${pd}:${id}`);
       const k = kcalOf(id);
-      return { key: id, meal: id, label: MEAL_LABEL[id] || "Ăn 1 bữa", sub: done ? `Đã ăn · ${Math.round(k)} kcal` : eatenIds.includes(id) && k < 100 ? "Bữa dưới 100 kcal chưa tính" : "Chưa ăn", pts: 10, done };
+      return { key: id, meal: id, label: MEAL_LABEL[id] || "Ăn 1 bữa", sub: done ? `Đã ăn · ${Math.round(k)} kcal` : eatenIds.includes(id) && k < 100 ? "Bữa dưới 100 kcal chưa tính" : "Chưa ăn", pts: P.meal, done };
     });
     const waterGoal = waterGoalMl(profile?.kg, log.day_type === "train", profile?.waterGoalMl);
     const fmtL = (ml) => String(Math.round(ml / 100) / 10).replace(".", ",");
     const wk = weekRange(today);
-    const weighedWeek = (weightLog || []).some((w) => w.logged_date >= wk.start && w.logged_date <= today);
+    const wkKey = `weigh:${isoWeek(pd)}`;
+    const weighedWeek = keys.has(wkKey) || (weightLog || []).some((w) => w.logged_date >= wk.start && w.logged_date <= today);
+    const meals100 = eatenIds.filter((id) => kcalOf(id) >= 100).length;
     tasks.push(
-      { key: "photo", label: "Chụp món", sub: keys.has(`photo:${today}`) ? "Đã chụp hôm nay" : "Chụp ảnh 1 bữa đã ăn", pts: 5, done: keys.has(`photo:${today}`), color: "#EA580C", icon: PIc.camera(18) },
-      { key: "water", label: "Uống đủ nước", sub: `${fmtL(log.water_ml || 0)} / ${fmtL(waterGoal)} lít`, pts: 15, done: keys.has(`water:${today}`), color: "#0891B2", icon: ic(<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" />) },
-      { key: "full", label: "Ăn từ 3 bữa trở lên", sub: `${eatenIds.length} bữa đã ăn hôm nay`, pts: 20, done: keys.has(`full:${today}`), color: "#007AFF", icon: PIc.list(18) },
-      { key: "streak", label: `Chuỗi ${Math.max(st.streak || 0, 0)} ngày`, sub: "Từ ngày thứ 3 được thêm", pts: 10, done: keys.has(`streak:${today}`), color: "#F97316", icon: PIc.flame(18) },
-      { key: "weigh", label: "Cân tuần này", sub: weighedWeek ? "Đã cân tuần này" : "Cân 1 lần trong tuần", pts: 20, done: weighedWeek && [...keys].some((k) => k.startsWith("weigh:")), color: "#64748B", icon: ic(<><rect x="3" y="4" width="18" height="16" rx="4" /><path d="M8 9a4 4 0 0 1 8 0M12 9l1.5-2" /></>) },
+      { key: "photo", label: "Chụp món", sub: keys.has(`photo:${pd}`) ? "Đã chụp hôm nay" : "Chụp ảnh 1 bữa đã ăn", pts: P.photo, done: keys.has(`photo:${pd}`), color: "#EA580C", icon: PIc.camera(18) },
+      { key: "water", label: "Uống đủ nước", sub: `${fmtL(log.water_ml || 0)} / ${fmtL(waterGoal)} lít`, pts: P.water, done: keys.has(`water:${pd}`), color: "#0891B2", icon: ic(<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" />) },
+      { key: "full", label: "Ăn từ 3 bữa trở lên", sub: `${meals100} bữa đã ăn hôm nay (từ 100 kcal)`, pts: P.full_day, done: keys.has(`full:${pd}`), color: "#007AFF", icon: PIc.list(18) },
+      // chuỗi: chỉ là việc khi đã có ít nhất 2 ngày liền (hôm nay ăn là thành ngày thứ 3) — dưới đó không tính vào "còn lại"
+      ...((st.streak || 0) >= 2 || keys.has(`streak:${pd}`) ? [{ key: "streak", label: `Chuỗi ${st.streak || 0} ngày`, sub: keys.has(`streak:${pd}`) ? "Đã giữ chuỗi hôm nay" : "Ăn hôm nay để giữ chuỗi", pts: P.streak, done: keys.has(`streak:${pd}`), color: "#F97316", icon: PIc.flame(18) }] : []),
+      { key: "weigh", label: "Cân tuần này", sub: keys.has(wkKey) ? "Đã cân tuần này" : weighedWeek ? "Đã cân, chưa tính Hạt" : "Cân 1 lần trong tuần", pts: P.weigh, done: keys.has(wkKey), color: "#64748B", icon: ic(<><rect x="3" y="4" width="18" height="16" rx="4" /><path d="M8 9a4 4 0 0 1 8 0M12 9l1.5-2" /></>) },
     );
     const left = tasks.filter((t) => !t.done);
-    const cap = Number(cfg.cap) || DAILY_CAP;
+    const cap = cfg.cap === undefined || cfg.cap === "" ? DAILY_CAP : Number(cfg.cap);
     const todayLeft = Math.max(0, Math.min(cap - (st.today || 0), left.reduce((a, t) => a + t.pts, 0)));
     // tâm trạng
     const times = ids.map((id) => toMin(mealTimes[id])).filter((x) => x != null);
@@ -93,7 +100,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const mood = moodOf({ minutes, mealTimes: times, logged, daysAway });
     const ach = ACH.map((a) => {
       const done = owned.includes(a.item);
-      const cur = a.of === "streak" ? st.streak || 0 : 0;
+      const cur = { streak: st.streak, weeks: st.weeks, water: st.waterDays, goal: st.goalDays }[a.of] || 0;
       return { key: a.key, label: a.label, item: ITEMS[a.item], done, cur: Math.min(cur, a.max), max: a.max };
     }).filter((a) => a.item);
     return {
@@ -120,7 +127,9 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const saidToday = ls.day === today ? ls.n || 0 : 0;
     const evs = eventsFor({ minutes, logged: vm.logged, mealsOn: vm.mealsOn, mealTimes: vm.times, daysAway: vm.daysAway, streak: vm.streak, levelUp: vm.levelUp, level: vm.level.n, waterMl: vm.waterMl, waterGoal: vm.waterGoal, gymDay: log.day_type === "train" });
     // câu đã chọn hôm nay cho việc còn đúng thì giữ nguyên (không đổi câu mỗi lần vẽ lại)
-    if (ls.cur && ls.day === today && evs.some((e) => e.key === ls.cur.key)) { setSayNow(ls.cur.text); return; }
+    const quiet0 = [toMin(vm.settings.quietFrom) ?? 1350, toMin(vm.settings.quietTo) ?? 420];
+    const inQuiet = quiet0[0] > quiet0[1] ? minutes >= quiet0[0] || minutes < quiet0[1] : minutes >= quiet0[0] && minutes < quiet0[1];
+    if (ls.cur && ls.day === today && evs.some((e) => e.key === ls.cur.key) && !(vm.settings.off || []).includes(ls.cur.key) && !inQuiet) { setSayNow(ls.cur.text); return; }
     const prio = Object.fromEntries(Object.values(EV).map((e) => [e.key, e.prio]));
     const quiet = [toMin(vm.settings.quietFrom) ?? 1350, toMin(vm.settings.quietTo) ?? 420];
     const e = pickEvent(evs, { prio, said, nowMs: Date.now(), saidToday, perDay: vm.settings.perDay || 3, gapH: cfg.gapH || 24, minutes, quiet, off: vm.settings.off || [] });
@@ -130,7 +139,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const text = fill(arr[(ls.rot?.[e.key] || 0) % arr.length], e.so);
     writeLS(saidKey, { said: { ...said, [e.key]: Date.now() }, day: today, n: saidToday + 1, cur: { key: e.key, text }, rot: { ...(ls.rot || {}), [e.key]: (ls.rot?.[e.key] || 0) + 1 } });
     setSayNow(text);
-  }, [vm?.logged, vm?.streak, vm?.level?.n, vm?.waterMl, vm?.settings?.talk, pet.lines, today, Math.floor(minutes / 30)]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [vm?.logged, vm?.streak, vm?.level?.n, vm?.waterMl, vm?.settings?.talk, pet.lines, today, Math.floor(minutes / 30), appSettings?.pet_config]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const view0 = vm ? { ...vm, say: sayNow } : null;
 
@@ -232,7 +241,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (sec === "pet_shop") return <PetShopScreen pet={view} onBack={closeLayer} onBuy={buy} onEquip={equip} onPremium={openPremium} />;
     if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onBow={(b) => pet.save({ bow: b }).then(toastErr)} />;
     if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onBack={closeLayer} onPremium={openPremium} />;
-    if (sec === "pet_week") return weekData ? <PetWeekScreen pet={view} w={weekData} onBack={closeLayer} onAI={writeWeek} aiBusy={weekBusy} onPremium={openPremium} /> : null;
+    if (sec === "pet_week") return weekData ? <PetWeekScreen pet={view} w={weekData} onBack={closeLayer} onAI={cfg.weekAI === false ? undefined : writeWeek} aiBusy={weekBusy} onPremium={openPremium} /> : null;
     if (sec === "pet_settings") return <PetSettingsScreen pet={view} onBack={closeLayer} onRename={rename} />;
     return null;
   };

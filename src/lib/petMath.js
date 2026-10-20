@@ -123,10 +123,21 @@ export function collectionStatus(col, cfg = {}, dateStr) {
     }
     return { open: false, label: "Chưa có lịch" };
   }
-  const md = dateStr.slice(5, 10), from = c.from || "12-01", to = c.to || "12-31";
+  const md = dateStr.slice(5, 10), from = c.from || (col === "noel" ? "12-01" : "01-01"), to = c.to || (col === "noel" ? "01-06" : "12-31"); // khớp mặc định SQL pet_col_open
   const open = from <= to ? md >= from && md <= to : md >= from || md <= to;
 
   const dm = (m) => `${+m.slice(3, 5)}/${+m.slice(0, 2)}`;
   if (open) return { open: true, label: `Bán tới ${dm(to)}` };
   return { open: false, label: `Mở bán ${dm(from)} – ${dm(to)}` };
+}
+
+// Tuần ISO dạng "2026-W43" — khớp to_char(day, 'IYYY-"W"IW') của máy chủ (khoá Hạt cân tuần)
+export function isoWeek(dateStr) {
+  const d = new Date(Date.UTC(+dateStr.slice(0, 4), +dateStr.slice(5, 7) - 1, +dateStr.slice(8, 10)));
+  const wd = (d.getUTCDay() + 6) % 7; // 0 = T2
+  d.setUTCDate(d.getUTCDate() - wd + 3); // thứ Năm cùng tuần
+  const y = d.getUTCFullYear();
+  const jan4 = new Date(Date.UTC(y, 0, 4));
+  const w = 1 + Math.round(((d - jan4) / 86400000 - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
+  return `${y}-W${String(w).padStart(2, "0")}`;
 }

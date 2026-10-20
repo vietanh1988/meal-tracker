@@ -102,7 +102,7 @@ export function PetWeekScreen({ pet, w, onBack, onAI, aiBusy, onPremium }) {
   const tiles = [
     ["Bữa đã ăn", `${w.meals} / ${w.mealsMax}`, "#007AFF"],
     ["Ngày đủ nước", `${w.waterDays} / 7`, "#0891B2"],
-    ["Chuỗi dài nhất", `${w.streak} ngày`, "#F97316"],
+    ["Chuỗi hiện tại", `${w.streak} ngày`, "#F97316"],
     ["Hạt kiếm được", fmt(w.seeds), "#16A34A"],
   ];
   return (
@@ -123,14 +123,14 @@ export function PetWeekScreen({ pet, w, onBack, onAI, aiBusy, onPremium }) {
       <div style={{ ...card, marginTop: 10, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
         <AppIcon color="#64748B" size={36}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="4" /><path d="M8 9a4 4 0 0 1 8 0M12 9l1.5-2" /></svg></AppIcon>
         <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 14, fontWeight: 800 }}>Cân tuần này {w.kg} kg</span>
+          <span style={{ fontSize: 14, fontWeight: 800 }}>{w.kg === "—" ? "Cân tuần này" : `Cân tuần này ${w.kg} kg`}</span>
           {/* luật giọng Pi: cân giảm mới nói số giảm; cân tăng chỉ ghi "đã cân" */}
-          <span style={{ fontSize: 12, fontWeight: 600, color: w.kgDown ? "#047857" : "#64748B" }}>{w.kgDown ? `Giảm ${w.kgDown} kg so với tuần trước` : "Đã cân tuần này"}</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: w.kgDown ? "#047857" : "#64748B" }}>{w.kg === "—" ? "Chưa cân tuần này" : w.kgDown ? `Giảm ${w.kgDown} kg so với tuần trước` : "Đã cân tuần này"}</span>
         </span>
       </div>
 
       <span style={secT}>{pet.name} nhận xét</span>
-      {pet.premium ? (
+      {pet.premium && onAI ? (
         <div data-testid="pet-week-ai" style={{ ...card, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, alignSelf: "flex-start", fontSize: 11, fontWeight: 800, color: "#7C3AED", background: "#F3EEFF", padding: "2px 8px", borderRadius: 6 }}>{PIc.sparkle(11)}AI viết riêng cho tuần này</span>
           {w.ai ? <span data-testid="pet-week-ai-text" style={{ fontSize: 14, lineHeight: 1.6, color: "#0F172A" }}>{w.ai}</span>

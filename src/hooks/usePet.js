@@ -37,17 +37,26 @@ export function usePet(userId, enabled) {
   const [itemsReady, setItemsReady] = useState(false);
   const [error, setError] = useState(null);
   const busy = useRef(false);
+  const again = useRef(false); // 20/10: đang tính mà có thao tác mới → tính thêm 1 lần sau (trước đây bị bỏ hẳn)
+  const stateRef = useRef(null);
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   const claim = useCallback(async () => {
-    if (!userId || busy.current) return null;
+    if (!userId) return null;
+    if (busy.current) { again.current = true; return null; }
     busy.current = true;
+    let out = null;
     try {
       const { data, error: e } = await supabase.rpc("pet_claim");
       if (e) { setError(errText(e)); return null; }
       setError(null);
       setState((prev) => ({ ...data, prevLevel: prev?.level ?? data.level }));
-      return data;
-    } finally { busy.current = false; }
+      out = data;
+    } finally {
+      busy.current = false;
+      if (again.current) { again.current = false; setTimeout(() => claim(), 300); }
+    }
+    return out;
   }, [userId]);
 
   useEffect(() => {
@@ -75,13 +84,13 @@ export function usePet(userId, enabled) {
   }, []);
 
   const equip = useCallback(async (slot, id) => {
-    let before;
-    setState((s) => { before = s; const eq = { ...(s?.equipped || {}) }; if (id) { for (const k of Object.keys(eq)) if (eq[k] === id) delete eq[k]; eq[slot] = id; } else delete eq[slot]; return { ...s, equipped: eq }; });
+    const before = stateRef.current; // 20/10: lấy bản trước khi đổi (gán trong setState có thể chạy muộn → lỗi thì màn trống)
+    setState((s) => { const eq = { ...(s?.equipped || {}) }; if (id) { for (const k of Object.keys(eq)) if (eq[k] === id) delete eq[k]; eq[slot] = id; } else delete eq[slot]; return { ...s, equipped: eq }; });
     const { data, error: e } = await supabase.rpc("pet_equip", { p_slot: slot, p_item: id || null });
-    if (e) { setState(before); return { ok: false, error: errText(e) }; }
+    if (e) { if (before) setState(before); else claim(); return { ok: false, error: errText(e) }; }
     setState((s) => ({ ...s, ...data }));
     return { ok: true };
-  }, []);
+  }, [claim]);
 
   const save = useCallback(async ({ name, bow, settings } = {}) => {
     const { data, error: e } = await supabase.rpc("pet_save", { p_name: name ?? null, p_bow: bow ?? null, p_settings: settings ?? null });

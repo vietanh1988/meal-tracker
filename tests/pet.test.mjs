@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { levelOf, moodOf, eventsFor, pickEvent, weekStart, itemStatus, seasonOf, collectionStatus } from "../src/lib/petMath.js";
+import { levelOf, moodOf, eventsFor, pickEvent, weekStart, itemStatus, seasonOf, collectionStatus, isoWeek } from "../src/lib/petMath.js";
 
 test("cấp theo kinh nghiệm (300, +150 mỗi cấp, sau cấp 10 +1.500)", () => {
   assert.deepEqual(levelOf(0), { n: 1, from: 0, to: 300 });
@@ -73,4 +73,12 @@ test("bộ sưu tập theo dịp: Noel 1/12–6/1, Tết −21…+15 ngày, Cổ
   assert.equal(collectionStatus("noel", { collections: { noel: { mode: "open" } } }, "2026-10-20").open, true);
   assert.equal(collectionStatus("co-trang", { collections: { "co-trang": { mode: "closed" } } }, "2026-10-20").open, false);
   assert.equal(collectionStatus("noel", { collections: { noel: { from: "10-15" } } }, "2026-10-20").open, true);
+});
+
+test("tuần ISO khớp máy chủ (IYYY-WIW)", () => {
+  assert.equal(isoWeek("2026-10-20"), "2026-W43");
+  assert.equal(isoWeek("2026-10-19"), "2026-W43");
+  assert.equal(isoWeek("2026-10-18"), "2026-W42");
+  assert.equal(isoWeek("2027-01-01"), "2026-W53");
+  assert.equal(isoWeek("2024-12-30"), "2025-W01");
 });

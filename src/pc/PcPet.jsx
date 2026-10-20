@@ -260,12 +260,18 @@ const Num = ({ v, unit, w = 110, onChange, testid }) => <span style={{ display: 
 const PT_LABEL = [["meal", "Ăn mỗi bữa (≥ 100 kcal)"], ["photo", "Chụp món"], ["water", "Uống đủ nước (≥ 80% mục tiêu)"], ["full_day", "Ăn từ 3 bữa trở lên"], ["streak", "Chuỗi ngày (từ ngày thứ 3)"], ["weigh", "Cân tuần"]];
 export const PET_CFG_DEFAULT = { points: { meal: 10, photo: 5, full_day: 20, water: 15, weigh: 20, streak: 10 }, cap: 120, talk: true, perDay: 3, gapH: 24, quietFrom: "22:30", quietTo: "07:00", ask: true, week: true, weekAI: true, off: [], prompt: {} };
 function Settings({ d, onSaveCfg }) {
-  const [c, setC] = useState(() => ({ ...PET_CFG_DEFAULT, ...(d.cfg || {}), points: { ...PET_CFG_DEFAULT.points, ...(d.cfg?.points || {}) }, prompt: { nam: d.prompt?.nam || "", nu: d.prompt?.nu || "", ...(d.cfg?.prompt || {}) } }));
+  const [c, setC] = useState(() => ({ ...PET_CFG_DEFAULT, ...(d.cfg || {}), points: { ...PET_CFG_DEFAULT.points, ...(d.cfg?.points || {}) }, prompt: { nam: "", nu: "", ...(d.cfg?.prompt || {}) } })); // 20/10: không điền sẵn lời dặn ngắn (lưu vào sẽ đè giọng đầy đủ của app)
   const [busy, setBusy] = useState(false);
   const setP = (k, v) => setC((x) => ({ ...x, points: { ...x.points, [k]: Number(v) || 0 } }));
-  const save = async () => { setBusy(true); await onSaveCfg?.(c); setBusy(false); };
+  const [bad, setBad] = useState(null);
+  const save = async () => {
+    if (!(Number(c.cap) > 0)) { setBad("Trần Hạt mỗi ngày phải lớn hơn 0"); return; }
+    if (!(Number(c.perDay) > 0)) { setBad("Số câu mỗi ngày phải lớn hơn 0"); return; }
+    setBad(null); setBusy(true); await onSaveCfg?.(c); setBusy(false);
+  };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    {bad && <span role="alert" style={{ fontSize: 13, fontWeight: 700, color: "#DC2626" }}>{bad}</span>}
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "start" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Card>
@@ -410,7 +416,11 @@ export function PcPetPage({ top, appSettings, saveSetting, showToast }) {
     soldToday: ov.soldToday || 0, soldPremium: ov.soldPremium || 0, askToday: ov.askToday || 0,
     topItems: (ov.top7 || []).filter(([id]) => ITEMS[id]), sold: ov.sold || {}, achievement: [], hidden: [], off: cfg.off || [], lines, cfg, prompt: DEFAULT_PROMPT, sample: { streak: 7, level: 5, water: 2 },
   };
-  const saveCfg = async (next) => { await saveSetting("pet_config", JSON.stringify(next)); showToast?.("Đã lưu cài đặt Pi"); };
+  const saveCfg = async (next) => {
+    const clean = { ...next, prompt: Object.fromEntries(Object.entries(next.prompt || {}).filter(([, v]) => String(v || "").trim())) }; // ô lời dặn trống = dùng giọng mặc định của app
+    const ok = await saveSetting("pet_config", JSON.stringify(clean));
+    showToast?.(ok === false ? "Chưa lưu được cài đặt Pi, thử lại" : "Đã lưu cài đặt Pi");
+  };
   return (
     <PcPet top={top} data={data}
       onSaveItem={async (id, f) => {

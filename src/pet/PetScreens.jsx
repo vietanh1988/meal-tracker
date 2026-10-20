@@ -241,8 +241,10 @@ function ColTabs({ value, onChange, tabs, locked = {} }) {
 
 // ============ Màn Cửa hàng ============
 // ô mặc cho đồ cầm tay: tay phải trống thì tay phải, không thì tay trái
-export function slotFor(it, equipped = {}) {
+export function slotFor(it, equipped0 = {}, variant) {
   if (it.slot !== "cam_tay") return it.slot;
+  // 20/10: đồ của bản Pi cũ (đổi giới tính hồ sơ) không tính là tay đang cầm
+  const equipped = Object.fromEntries(Object.entries(equipped0).filter(([, id]) => !variant || ITEMS[id]?.variants?.includes(variant)));
   if (equipped.cam_tay === it.id) return "cam_tay";
   if (equipped.cam_tay_trai === it.id) return "cam_tay_trai";
   return !equipped.cam_tay ? "cam_tay" : !equipped.cam_tay_trai ? "cam_tay_trai" : "cam_tay";
@@ -293,7 +295,7 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
   const [err, setErr] = useState(null);
   const st = phase === "bought" ? { kind: "owned" } : itemState(it, pet);
   const after = pet.seeds - it.price;
-  const slot = slotFor(it, pet.equipped);
+  const slot = slotFor(it, pet.equipped, pet.variant);
   const wearNow = async () => { const res = await onEquip?.(slot, it.id); if (res && !res.ok) setErr(res.error); else onClose?.(); };
   const buy = async () => {
     setPhase("busy"); setErr(null);
@@ -350,7 +352,7 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onB
   const wearing = Object.entries(pet.equipped).filter(([, id]) => ITEMS[id] && ITEMS[id].variants.includes(pet.variant));
   const toggle = (it) => {
     const on = Object.entries(pet.equipped).find(([, id]) => id === it.id);
-    if (on) onEquip?.(on[0], null); else onEquip?.(slotFor(it, pet.equipped), it.id);
+    if (on) onEquip?.(on[0], null); else onEquip?.(slotFor(it, pet.equipped, pet.variant), it.id);
   };
   return (
     <SubPage title="Tủ đồ" subtitle={`${mine.length} món · bấm để mặc / tháo`} onBack={onBack}>

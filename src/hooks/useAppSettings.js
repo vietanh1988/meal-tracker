@@ -68,7 +68,7 @@ export function useAppSettings(userId) {
   }, [fetchSettings]);
 
   const saveSetting = useCallback(async (key, value) => {
-    if (!isAdmin) { console.warn("Not admin, skip save"); return; }
+    if (!isAdmin) { console.warn("Not admin, skip save"); return false; }
     console.log("💾 Saving setting:", key, "=", value ? value.substring(0, 10) + "..." : "(empty)");
     setSettings(prev => ({ ...prev, [key]: value }));
     lastFetchRef.current = Date.now(); // block re-sync after save
@@ -88,9 +88,10 @@ export function useAppSettings(userId) {
         error = res.error;
       }
       
-      if (error) console.error("❌ Save setting error:", key, error);
-      else console.log("✅ Setting saved:", key);
-    } catch (e) { console.error("Save setting error:", e); }
+      if (error) { console.error("❌ Save setting error:", key, error); return false; }
+      console.log("✅ Setting saved:", key);
+      return true; // 20/10: trả kết quả để trang gọi báo đúng "Đã lưu" / "Chưa lưu được"
+    } catch (e) { console.error("Save setting error:", e); return false; }
   }, [isAdmin]);
 
   return { settings, loading, isAdmin, saveSetting };
