@@ -30,7 +30,7 @@ const GROUPS = [
 ];
 const ALL = GROUPS.flatMap((g) => g.items);
 
-function Switch({ on, onClick, disabled, label, testid }) {
+export function Switch({ on, onClick, disabled, label, testid }) {
   return (
     <button type="button" role="switch" aria-checked={!!on} aria-label={label} data-testid={testid} onClick={onClick} disabled={disabled} className="pc-btn"
       style={{ width: 42, height: 24, borderRadius: 12, border: "none", padding: 0, position: "relative", flexShrink: 0, cursor: disabled ? "default" : "pointer", background: on ? "#0062F0" : "#CBD5E1", transition: "background .18s ease", fontFamily: "inherit" }}>

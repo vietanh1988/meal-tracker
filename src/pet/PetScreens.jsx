@@ -37,6 +37,10 @@ export const PIc = {
   lock: (s) => svg(<><rect x="5" y="11" width="14" height="10" rx="2.5" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>, s),
   crown: (s) => svg(<path d="M4 8l4 4 4-7 4 7 4-4-2 11H6z" />, s),
   edit: (s) => svg(<><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></>, s),
+  chat: (s) => svg(<><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-6l-4 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" /><path d="M8 10h8M8 13h5" /></>, s),
+  gear: (s) => svg(<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>, s),
+  send: (s) => svg(<path d="M4 12l16-8-6 16-2.5-6.5z" />, s),
+  sparkle: (s) => svg(<path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15.5l-1.8-4.7L5.5 9l4.7-1.3z" />, s),
   shirt: (s) => svg(<path d="M9 4l3 2 3-2 5 3-2 4-2-1v10H8V10l-2 1-2-4z" />, s),
 };
 
@@ -47,15 +51,17 @@ function SeedPill({ n, dark }) {
     </span>
   );
 }
+// Câu theo tâm trạng, đúng giọng Pi nam / Pi nữ (chốt 20/10). Có pet.say (câu khen / nhắc theo việc thật, src/pet/lines.js) thì nói câu đó.
 const MOOD_TEXT = {
-  vui: "Hôm nay bạn ghi đều lắm, Pi vui ghê!", cuoi: "Pi thích bộ đồ mới này!", ngu: "Pi ngủ gật rồi… ghi bữa đầu tiên để gọi Pi dậy nhé.",
-  hoi: "Đến giờ ăn rồi mà chưa thấy ghi bữa nào?", gian: "Mấy hôm nay vắng bạn, Pi nhớ lắm đó.", mung: "Lên cấp rồi! Mở thêm 5 món mới.",
+  nam: { vui: "Hôm nay ghi đều tay, ngon lành!", cuoi: "Bộ này chất ghê, Pi thích!", ngu: "Pi ngủ gật rồi… ghi bữa đầu là Pi dậy liền.", hoi: "Tới giờ ăn rồi mà chưa thấy ghi bữa nào?", mung: "Ê bạn về rồi! Pi chờ mãi đó!" },
+  nu: { vui: "Hôm nay bạn ghi đều lắm, Pi vui ghê!", cuoi: "Bộ này xinh ghê, Pi thích lắm!", ngu: "Pi ngủ gật rồi… ghi bữa đầu để gọi Pi dậy nha.", hoi: "Đến giờ ăn rồi nè, bạn ghi bữa chưa?", mung: "A, bạn quay lại rồi! Pi nhớ bạn lắm!" },
 };
+export const moodText = (pet) => pet.say || (MOOD_TEXT[pet.variant] || MOOD_TEXT.nam)[pet.mood] || MOOD_TEXT.nam.vui;
 const sec = { padding: "20px 18px 10px 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
 const secT = { fontSize: 17, fontWeight: 900, letterSpacing: -0.2 };
 const card = { margin: "0 12px", ...ltCard };
 
-function Stage({ pet, height = 260, children, size = 210 }) {
+export function Stage({ pet, height = 260, children, size = 210 }) {
   return (
     <div style={{ position: "relative", height, borderRadius: 22, overflow: "hidden", background: "radial-gradient(circle at 50% 38%, #FFFFFF 0%, #EAF4FF 45%, #D6E8FF 100%)" }}>
       <span aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: 18, width: size * 0.62, height: 18, marginLeft: -(size * 0.31), borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,64,175,0.22), rgba(30,64,175,0))" }} />
@@ -68,19 +74,33 @@ function Stage({ pet, height = 260, children, size = 210 }) {
 }
 
 // ============ Màn Thú cưng ============
-export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset }) {
+export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, onSettings, onWeek }) {
   const lv = pet.level;
   const pct = Math.min(100, ((pet.xp - lv.from) / (lv.to - lv.from)) * 100);
   return (
-    <SubPage title={pet.name} subtitle={`Cấp ${lv.n} · ${pet.variant === "nu" ? "bản nữ" : "bản nam"}`} onBack={onBack} right={<SeedPill n={pet.seeds} />}>
+    <SubPage title={pet.name} subtitle={`Cấp ${lv.n} · ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}`} onBack={onBack} right={<SeedPill n={pet.seeds} />}>
       <div data-testid="pet-home" style={{ padding: "12px 12px 0 12px" }}>
         <Stage pet={pet}>
           <span style={{ position: "absolute", left: 14, right: 14, top: 14, display: "flex", justifyContent: "center" }}>
-            <span style={{ maxWidth: 280, background: "#FFFFFF", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center" }}>{MOOD_TEXT[pet.mood]}</span>
+            <span style={{ maxWidth: 280, background: "#FFFFFF", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center" }}>{moodText(pet)}</span>
           </span>
-          <button data-testid="pet-rename" aria-label="Đổi tên" style={{ position: "absolute", right: 12, bottom: 12, width: 40, height: 40, borderRadius: 20, border: "none", background: "rgba(255,255,255,0.9)", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(30,64,175,0.12)" }}>{PIc.edit(18)}</button>
+          {/* 20/10: nút Hỏi Pi (chat AI giọng Pi) + Cài đặt Pi (tên, bản, Pi nói chuyện, tổng kết tuần) */}
+          <button data-testid="pet-open-chat" onClick={onChat} className="tap" style={{ position: "absolute", left: 12, bottom: 12, height: 40, padding: "0 14px 0 10px", borderRadius: 20, border: "none", background: "rgba(255,255,255,0.92)", color: "#0062F0", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, fontFamily: "inherit", boxShadow: "0 4px 10px rgba(30,64,175,0.12)" }}>{PIc.chat(18)}Hỏi Pi</button>
+          <button data-testid="pet-open-settings" onClick={onSettings} aria-label="Cài đặt Pi" className="tap" style={{ position: "absolute", right: 12, bottom: 12, width: 40, height: 40, borderRadius: 20, border: "none", background: "rgba(255,255,255,0.92)", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(30,64,175,0.12)" }}>{PIc.gear(18)}</button>
         </Stage>
       </div>
+
+      {/* Chủ nhật: tổng kết tuần (mọi khách; Premium có thêm nhận xét AI) */}
+      {pet.week && (
+        <button data-testid="pet-open-week" onClick={onWeek} className="tap" style={{ ...card, width: "calc(100% - 24px)", marginTop: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A", background: "linear-gradient(135deg,#FFFFFF,#F0F7FF)" }}>
+          <AppIcon color="#F59E0B" size={44}>{PIc.trophy(22)}</AppIcon>
+          <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: 15, fontWeight: 900 }}>Tổng kết tuần {pet.week.range}</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{pet.week.meals} bữa đã ghi · {pet.week.waterDays} ngày đủ nước</span>
+          </span>
+          {Icon.chev(16)}
+        </button>
+      )}
 
       {/* Cấp + Hạt */}
       <div style={{ ...card, marginTop: 12, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -243,7 +263,7 @@ export function TryOnSheet({ pet, it }) {
             {st.kind === "level" ? <>{PIc.lock(18)}Mở ở cấp {it.level}</> : after < 0 ? `Còn thiếu ${fmt(-after)} Hạt` : <>Mua · <Seed size={18} color="#FFFFFF" />{fmt(it.price)}</>}
           </button>
         )}
-        <span style={{ display: "block", textAlign: "center", marginTop: 8, fontSize: 12, color: "#64748B" }}>Mua 1 lần, mặc mãi. Đổi bản nam / nữ không mất đồ.</span>
+        <span style={{ display: "block", textAlign: "center", marginTop: 8, fontSize: 12, color: "#64748B" }}>Mua 1 lần, mặc mãi. Đồ này chỉ dành cho {pet.variant === "nu" ? "Pi nữ" : "Pi nam"}.</span>
       </div>
     </div>
   );
@@ -285,8 +305,8 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all" }) {
           {shown.map((it) => <ItemCard key={it.id} it={it} state={{ kind: "owned" }} equipped={Object.values(pet.equipped).includes(it.id)} />)}
         </div>
         <div style={{ ...card, marginTop: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#334155" }}>Đổi sang {pet.variant === "nu" ? "bản nam" : "bản nữ"}</span>
-          <span style={{ fontSize: 12, color: "#64748B" }}>giữ nguyên đồ</span>{Icon.chev(16)}
+          <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#334155" }}>Đổi sang {pet.variant === "nu" ? "Pi nam" : "Pi nữ"}</span>
+          <span style={{ fontSize: 12, color: "#64748B" }}>đồ {pet.variant === "nu" ? "Pi nữ" : "Pi nam"} vẫn giữ</span>{Icon.chev(16)}
         </div>
         <div style={{ height: 28 }} />
       </div>
@@ -307,8 +327,18 @@ export function PetTodayCard({ pet, onOpen }) {
           <span style={{ fontSize: 16, fontWeight: 900 }}>{pet.name}</span>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", background: "#F3EEFF", padding: "2px 7px", borderRadius: 6 }}>Cấp {pet.level.n}</span>
         </span>
-        <span style={{ fontSize: 13, fontWeight: 600, color: "#475569", lineHeight: 1.4 }}>{pet.mood === "ngu" ? "Đang ngủ gật — ghi bữa đầu tiên để gọi dậy" : left > 0 ? `Còn ${left} việc hôm nay · +${pet.todayLeft} Hạt` : "Xong hết việc hôm nay!"}</span>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 900, color: "#065F46" }}><Seed size={15} />{fmt(pet.seeds)} Hạt</span>
+        {pet.say ? (
+          <>
+            {/* 20/10: Pi nói 1 câu khen / nhắc theo việc thật (kho câu src/pet/lines.js, đúng giọng nam / nữ) */}
+            <span data-testid="pet-say" style={{ position: "relative", alignSelf: "flex-start", maxWidth: "100%", background: "#EEF4FF", color: "#0F172A", fontSize: 13, fontWeight: 700, lineHeight: 1.4, padding: "7px 11px", borderRadius: "4px 14px 14px 14px", boxSizing: "border-box" }}>{pet.say}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#64748B" }}>{left > 0 ? `Còn ${left} việc · +${pet.todayLeft}` : "Xong việc hôm nay"}<span aria-hidden="true">·</span><Seed size={13} /><b style={{ color: "#065F46" }}>{fmt(pet.seeds)}</b></span>
+          </>
+        ) : (
+          <>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#475569", lineHeight: 1.4 }}>{pet.mood === "ngu" ? "Đang ngủ gật — ghi bữa đầu tiên để gọi dậy" : left > 0 ? `Còn ${left} việc hôm nay · +${pet.todayLeft} Hạt` : "Xong hết việc hôm nay!"}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 900, color: "#065F46" }}><Seed size={15} />{fmt(pet.seeds)} Hạt</span>
+          </>
+        )}
       </span>
       {Icon.chev(16)}
     </button>

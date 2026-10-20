@@ -1,6 +1,6 @@
 // CHỈ CHẠY KHI DEV (main.jsx: import.meta.env.DEV && đường dẫn /__pet) — trang xem bản vẽ Fipilot Pet,
 // dựng từ component thật của app với dữ liệu giả. Không vào bản build prod.
-// ?s=home|shop|tryon|closet|entryA|entryB  &v=nam|nu  &mood=vui|ngu|hoi|gian|mung
+// ?s=home|shop|tryon|closet|entryA|entryB|choose|chat|chatout|week|settings|admin  &v=nam|nu  &mood=vui|ngu|hoi|mung  &say=<key> &week=1 &premium=1 &tab=overview|items|lines|settings &sel=<id>
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { MOBILE_CSS, FONT, BottomNav, NAV_SPACE } from "../mobile/ui";
@@ -11,6 +11,12 @@ import { mealRows } from "../lib/mobileView";
 import { PET_CSS } from "./PetAvatar";
 import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PetMeRow, PIc } from "./PetScreens";
 import { AppIcon } from "../mobile/icons";
+import { PetChooseScreen, PetChatScreen, PetWeekScreen, PetSettingsScreen } from "./PetTalk";
+import { say as sayLine } from "./lines";
+import { PcPet } from "../pc/PcPet";
+import { SideNav, TopBar, PC_NAV } from "../pc/PcAdminShell";
+import { PC_CSS } from "../pc/pcUI";
+import { PC } from "../theme";
 import { ITEMS } from "./PetAvatar";
 
 const q = new URLSearchParams(typeof location !== "undefined" ? location.search : "");
@@ -20,15 +26,17 @@ const V = q.get("v") === "nu" ? "nu" : "nam";
 function mockPet() {
   const nam = V === "nam";
   const owned = nam
-    ? ["doi-dau-01", "doi-dau-02", "kinh-tai-nghe-01", "kinh-tai-nghe-02", "ao-roi-01", "ao-roi-02", "phu-kien-03", "phu-kien-06", "hieu-ung-02", "ao-roi-07", "hieu-ung-01", "phu-kien-15"]
-    : ["doi-dau-09", "doi-dau-07", "kinh-tai-nghe-07", "kinh-tai-nghe-08", "ao-roi-08", "ao-roi-09", "phu-kien-12", "phu-kien-10", "hieu-ung-11", "phu-kien-13", "hieu-ung-01", "phu-kien-15"];
+    ? ["doi-dau-01", "doi-dau-02", "kinh-tai-nghe-01", "kinh-tai-nghe-02", "ao-roi-01", "ao-roi-02", "phu-kien-03", "phu-kien-06", "hieu-ung-02", "ao-roi-07", "hieu-ung-01", "phu-kien-04"]
+    : ["doi-dau-09", "doi-dau-07", "kinh-tai-nghe-07", "kinh-tai-nghe-06", "ao-roi-08", "ao-roi-09", "phu-kien-12", "phu-kien-10", "hieu-ung-11", "phu-kien-13", "hieu-ung-13", "phu-kien-15"];
   const equipped = nam ? { dau: "doi-dau-01", ao: "ao-roi-01", cam_tay: "phu-kien-03" } : { ao: "ao-roi-08", cam_tay: "phu-kien-12", hieu_ung: "hieu-ung-11" };
   return {
     name: "Pi", variant: V, mood: q.get("mood") || "vui", bow: true, premium: q.get("premium") === "1",
+    say: q.get("say") ? sayLine(q.get("say"), V, { streak: 3, level: 5, water: 2 }[q.get("say")]) : null,
+    week: q.get("week") === "1" ? { range: "13 – 19/10", meals: 19, waterDays: 5 } : null,
     seeds: 1240, xp: 1620, today: 55, tasksLeft: 3, todayLeft: 45,
     level: { n: 4, from: 1350, to: 2100, nextUnlock: 5 },
     owned, equipped,
-    achievementIds: ["doi-dau-11", "hieu-ung-06"],
+    achievementIds: ["hieu-ung-05", "hieu-ung-06", "hieu-ung-17", "hieu-ung-02", "hieu-ung-04", "doi-dau-11"],
     achievements: [
       { key: "s7", label: "Chuỗi 7 ngày ghi bữa", item: ITEMS["hieu-ung-05"], done: true },
       { key: "s30", label: "Chuỗi 30 ngày", item: ITEMS["hieu-ung-06"], cur: 12, max: 30 },
@@ -95,9 +103,68 @@ function EntryA({ pet }) {
   );
 }
 
+
+// ---- dữ liệu giả cho bản vẽ đợt "Pi nói chuyện + khen" ----
+const CHAT = {
+  nam: [
+    { role: "pi", text: "Ê bạn! Hôm nay còn thiếu 42 g đạm đó. Hỏi Pi gì nè?" },
+    { role: "user", text: "Tối nay nên ăn gì cho đủ đạm?" },
+    { role: "pi", ai: true, text: "Còn 42 g đạm với 560 kcal. Tối làm 150 g ức gà áp chảo với 1 hộp sữa chua Hy Lạp là vừa khít, chiến luôn!" },
+    { role: "user", text: "Mai đi ăn lẩu được không?" },
+    { role: "pi", ai: true, text: "Được chứ! Chọn nước lẩu thanh, ăn nhiều thịt nạc, rau, bớt mì. Ăn xong nhớ ghi để Pi tính tiếp cho bạn nha." },
+  ],
+  nu: [
+    { role: "pi", text: "Bạn ơi, hôm nay còn thiếu 42 g đạm nè. Hỏi Pi gì nha?" },
+    { role: "user", text: "Tối nay nên ăn gì cho đủ đạm?" },
+    { role: "pi", ai: true, text: "Còn 42 g đạm với 560 kcal nè. Tối ăn 150 g ức gà áp chảo với 1 hộp sữa chua Hy Lạp là vừa đủ nha." },
+    { role: "user", text: "Mai đi ăn lẩu được không?" },
+    { role: "pi", ai: true, text: "Được nè! Chọn nước lẩu thanh, nhiều thịt nạc với rau, bớt mì một chút. Ăn xong nhớ ghi cho Pi nha." },
+  ],
+};
+const WEEK = (v) => ({
+  range: "13 – 19/10", meals: 19, mealsMax: 21, waterDays: 5, streak: 6, seeds: 610, kg: "72,0", kgDown: "0,4",
+  line: sayLine("weight", v),
+  ai: v === "nam"
+    ? "Tuần này bạn ghi 19 / 21 bữa, chỉ hụt 2 bữa tối thứ Năm và thứ Bảy. Đạm đủ 5 / 7 ngày, ngày thiếu đều là ngày nghỉ tập. Tuần tới chuẩn bị sẵn sữa chua hoặc trứng cho ngày nghỉ là ngon lành."
+    : "Tuần này bạn ghi 19 / 21 bữa, chỉ quên 2 bữa tối thứ Năm và thứ Bảy nè. Đạm đủ 5 / 7 ngày, hôm thiếu đều là ngày nghỉ tập. Tuần tới để sẵn sữa chua hay trứng cho ngày nghỉ nha.",
+  next: ["Ghi bữa tối trước 21:00", "Uống đủ nước thêm 2 ngày", "Giữ chuỗi qua 7 ngày"],
+});
+const ADMIN = {
+  pets: 1248, petsNam: 702, petsNu: 546, seedsToday: 38420, capHit: 214, soldToday: 96, soldPremium: 31, askToday: 412, askShare: 6,
+  topItems: [["phu-kien-06", 184], ["doi-dau-07", 161], ["ao-roi-10", 133], ["kinh-tai-nghe-02", 120], ["phu-kien-12", 97], ["doi-dau-01", 92]],
+  said: [["full", 820], ["meal_late", 604], ["water", 512], ["gym", 488], ["streak", 140], ["level", 61], ["back", 38]],
+  week: { when: "Chủ nhật 19/10 · 19:00", sent: 1102, opened: 64, ai: 212 },
+  achievement: ["hieu-ung-05", "hieu-ung-06", "hieu-ung-17", "hieu-ung-02", "hieu-ung-04", "doi-dau-11"], hidden: ["hieu-ung-09"],
+  sold: { "ao-roi-01": 88, "ao-roi-02": 64, "ao-roi-03": 41, "ao-roi-04": 37, "ao-roi-05": 12, "ao-roi-06": 45, "ao-roi-07": 52, "ao-roi-08": 79, "ao-roi-09": 58, "ao-roi-10": 133, "ao-roi-11": 70, "ao-roi-12": 26, "ao-roi-13": 61, "doi-dau-01": 92, "doi-dau-02": 47, "doi-dau-03": 30, "doi-dau-04": 55 },
+  off: ["poke_sleep"], sample: { streak: 7, level: 5, water: 2 },
+  points: [["Ghi mỗi bữa", 10], ["Chụp món", 5], ["Uống đủ nước", 15], ["Ghi đủ mọi bữa", 20], ["Chuỗi ngày (từ ngày thứ 3)", 10], ["Cân tuần", 20]],
+  prompt: {
+    nam: "Bạn là Pi nam, bạn tập cùng của khách: hăng hái, lém lỉnh, hay rủ rê. Xưng Pi, gọi bạn. Trả lời tối đa 3 câu, dùng số thật trong nhật ký. Không chê, không dọa, không bàn béo gầy. Bệnh / thuốc: khuyên hỏi bác sĩ.",
+    nu: "Bạn là Pi nữ, bạn thân của khách: dịu dàng, quan tâm, hay dặn dò. Xưng Pi, gọi bạn. Trả lời tối đa 3 câu, dùng số thật trong nhật ký. Không chê, không dọa, không bàn béo gầy. Bệnh / thuốc: khuyên hỏi bác sĩ.",
+  },
+};
+function Admin() {
+  const nav = [...PC_NAV.slice(0, 4), { group: "THÚ CƯNG", items: [{ id: "pet", label: "Thú cưng Pi" }] }, ...PC_NAV.slice(4)];
+  const top = (right, title, sub) => <TopBar title={title} sub={sub} right={right} onOpenApp={() => {}} />;
+  return (
+    <div className="pc-root" style={{ minHeight: "100vh", background: PC.bg, fontFamily: "-apple-system, 'system-ui', Inter, 'Segoe UI', Roboto, Arial, sans-serif", color: PC.t1 }}>
+      <style>{PC_CSS}</style>
+      <SideNav section="pet" go={() => {}} counts={{ orders: 3, feedback: 2 }} isSuperAdmin user={{ email: "vietanh@fipilot" }} profile={{ adminRole: "super" }} mini={false} onToggle={() => {}} nav={nav} />
+      <main style={{ marginLeft: PC.sideW, minWidth: 0 }}>
+        <PcPet top={top} tab={q.get("tab") || "overview"} data={ADMIN} sel={q.get("sel") || (q.get("tab") === "lines" ? "streak" : "ao-roi-10")} varFilter={q.get("vf") || "all"} />
+      </main>
+    </div>
+  );
+}
+
 export default function PetPreview() {
   const pet = mockPet();
   let body;
+  if (S === "admin") return <Admin />;
+  if (S === "choose") return <Shell><PetChooseScreen value={V} /></Shell>;
+  if (S === "chat" || S === "chatout") return <Shell><PetChatScreen pet={pet} msgs={CHAT[V]} left={S === "chatout" ? 0 : 3} max={5} /></Shell>;
+  if (S === "week") return <Shell><PetWeekScreen pet={pet} w={WEEK(V)} /></Shell>;
+  if (S === "settings") return <Shell><PetSettingsScreen pet={pet} set={{ talk: true, perDay: 3, quietFrom: "22:30", quietTo: "07:00", push: false, week: true, weekAt: "19:00" }} /></Shell>;
   if (S === "entryB") body = <Shell tab="today"><EntryB pet={pet} /></Shell>;
   else if (S === "entryA") body = <Shell dark tab="me"><EntryA pet={pet} /></Shell>;
   else {

@@ -333,8 +333,7 @@
    "slot": "deo",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 1,
    "price": 100,
@@ -343,11 +342,6 @@
      "x": 0.5,
      "y": 0.67,
      "w": 0.56
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.655,
-     "w": 0.6
     }
    }
   },
@@ -508,8 +502,7 @@
    "slot": "dau",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 1,
    "price": 100,
@@ -518,11 +511,6 @@
     "nam": {
      "x": 0.5,
      "y": 0.1652,
-     "w": 0.72
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.2209,
      "w": 0.72
     }
    }
@@ -534,8 +522,7 @@
    "slot": "dau",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 1,
    "price": 100,
@@ -544,11 +531,6 @@
     "nam": {
      "x": 0.5,
      "y": 0.1672,
-     "w": 0.72
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.2229,
      "w": 0.72
     }
    }
@@ -560,8 +542,7 @@
    "slot": "dau",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 1,
    "price": 100,
@@ -570,11 +551,6 @@
     "nam": {
      "x": 0.5,
      "y": 0.1534,
-     "w": 0.72
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.2097,
      "w": 0.72
     }
    }
@@ -612,8 +588,7 @@
    "slot": "dau",
    "rarity": "rare",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 4,
    "price": 400,
@@ -622,11 +597,6 @@
     "nam": {
      "x": 0.5,
      "y": 0.1587,
-     "w": 0.76
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.2148,
      "w": 0.76
     }
    }
@@ -638,8 +608,7 @@
    "slot": "dau",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 1,
    "price": 100,
@@ -648,11 +617,6 @@
     "nam": {
      "x": 0.5,
      "y": 0.1611,
-     "w": 0.72
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.2171,
      "w": 0.72
     }
    }
@@ -664,17 +628,11 @@
    "slot": "dau",
    "rarity": "common",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 1,
    "price": 100,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.1413,
-     "w": 0.55
-    },
     "nu": {
      "x": 0.5,
      "y": 0.1911,
@@ -689,18 +647,12 @@
    "slot": "dau",
    "rarity": "rare",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 4,
    "price": 400,
    "cover": true,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.1776,
-     "w": 0.8
-    },
     "nu": {
      "x": 0.5,
      "y": 0.2328,
@@ -715,18 +667,12 @@
    "slot": "dau",
    "rarity": "common",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 2,
    "price": 120,
    "cover": true,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.1753,
-     "w": 0.72
-    },
     "nu": {
      "x": 0.5,
      "y": 0.2305,
@@ -741,19 +687,12 @@
    "slot": "dau",
    "rarity": "rare",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 4,
    "price": 400,
    "behind_leaf": true,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.2338,
-     "w": 0.7939,
-     "h": 0.288
-    },
     "nu": {
      "x": 0.5,
      "y": 0.2338,
@@ -794,17 +733,11 @@
    "slot": "dau",
    "rarity": "legendary",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 7,
    "price": 1000,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.139,
-     "w": 0.5
-    },
     "nu": {
      "x": 0.5,
      "y": 0.181,
@@ -819,8 +752,7 @@
    "slot": "kinh",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 2,
    "price": 120,
@@ -829,11 +761,6 @@
      "x": 0.5,
      "y": 0.357,
      "w": 0.5823
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.412,
-     "w": 0.6225
     }
    }
   },
@@ -844,8 +771,7 @@
    "slot": "kinh",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 2,
    "price": 120,
@@ -854,11 +780,6 @@
      "x": 0.5,
      "y": 0.357,
      "w": 0.58
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.412,
-     "w": 0.62
     }
    }
   },
@@ -869,8 +790,7 @@
    "slot": "kinh",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 2,
    "price": 120,
@@ -879,11 +799,6 @@
      "x": 0.5,
      "y": 0.3573,
      "w": 0.58
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.4124,
-     "w": 0.62
     }
    }
   },
@@ -894,8 +809,7 @@
    "slot": "tai_nghe",
    "rarity": "rare",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 5,
    "price": 400,
@@ -905,11 +819,6 @@
      "x": 0.5,
      "y": 0.3247,
      "w": 0.9264
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.3284,
-     "w": 0.9675
     }
    }
   },
@@ -920,8 +829,7 @@
    "slot": "tai_nghe",
    "rarity": "rare",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 5,
    "price": 400,
@@ -931,11 +839,6 @@
      "x": 0.5,
      "y": 0.335,
      "w": 0.9276
-    },
-    "nu": {
-     "x": 0.5,
-     "y": 0.3387,
-     "w": 0.9689
     }
    }
   },
@@ -946,17 +849,11 @@
    "slot": "kinh",
    "rarity": "rare",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 5,
    "price": 400,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.357,
-     "w": 0.58
-    },
     "nu": {
      "x": 0.5,
      "y": 0.412,
@@ -971,17 +868,11 @@
    "slot": "kinh",
    "rarity": "common",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 2,
    "price": 120,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.357,
-     "w": 0.58
-    },
     "nu": {
      "x": 0.5,
      "y": 0.412,
@@ -996,8 +887,7 @@
    "slot": "kinh",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 2,
    "price": 120,
@@ -1006,11 +896,6 @@
      "x": 0.5006,
      "y": 0.3574,
      "w": 0.5811
-    },
-    "nu": {
-     "x": 0.5006,
-     "y": 0.4124,
-     "w": 0.6212
     }
    }
   },
@@ -1021,18 +906,12 @@
    "slot": "tai_nghe",
    "rarity": "rare",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 5,
    "price": 400,
    "behind_leaf": true,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.3278,
-     "w": 0.9264
-    },
     "nu": {
      "x": 0.5,
      "y": 0.3315,
@@ -1047,18 +926,12 @@
    "slot": "tai_nghe",
    "rarity": "legendary",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 8,
    "price": 1000,
    "behind_leaf": true,
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.3251,
-     "w": 0.9291
-    },
     "nu": {
      "x": 0.5,
      "y": 0.3286,
@@ -1073,8 +946,7 @@
    "slot": "sau_lung",
    "rarity": "rare",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 6,
    "price": 400,
@@ -1094,11 +966,6 @@
    ],
    "anchor": {
     "nam": {
-     "x": 0.5,
-     "y": 0.665,
-     "w": 0.84
-    },
-    "nu": {
      "x": 0.5,
      "y": 0.665,
      "w": 0.84
@@ -1167,8 +1034,7 @@
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 3,
    "price": 150,
@@ -1181,11 +1047,6 @@
     "nam": {
      "x": 0.8584,
      "y": 0.7453,
-     "w": 0.2132
-    },
-    "nu": {
-     "x": 0.8579,
-     "y": 0.7472,
      "w": 0.2132
     }
    }
@@ -1227,8 +1088,7 @@
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 3,
    "price": 150,
@@ -1242,11 +1102,6 @@
      "x": 0.8741,
      "y": 0.7828,
      "w": 0.2763
-    },
-    "nu": {
-     "x": 0.8736,
-     "y": 0.7828,
-     "w": 0.2763
     }
    }
   },
@@ -1257,8 +1112,7 @@
    "slot": "cam_tay",
    "rarity": "rare",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 6,
    "price": 400,
@@ -1272,11 +1126,6 @@
      "x": 0.8746,
      "y": 0.763,
      "w": 0.4524
-    },
-    "nu": {
-     "x": 0.8741,
-     "y": 0.764,
-     "w": 0.4524
     }
    }
   },
@@ -1287,18 +1136,12 @@
    "slot": "duoi_chan",
    "rarity": "legendary",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 8,
    "price": 1000,
    "anchor": {
     "nam": {
-     "x": 0.52,
-     "y": 0.955,
-     "w": 0.78
-    },
-    "nu": {
      "x": 0.52,
      "y": 0.955,
      "w": 0.78
@@ -1312,7 +1155,6 @@
    "slot": "sau_lung",
    "rarity": "rare",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 6,
@@ -1332,11 +1174,6 @@
     }
    ],
    "anchor": {
-    "nam": {
-     "x": 0.5,
-     "y": 0.665,
-     "w": 0.84
-    },
     "nu": {
      "x": 0.5,
      "y": 0.665,
@@ -1351,7 +1188,6 @@
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 3,
@@ -1362,11 +1198,6 @@
    ],
    "file_hold": "phu-kien/phu-kien-10-cam.webp",
    "anchor": {
-    "nam": {
-     "x": 0.8415,
-     "y": 0.8838,
-     "w": 0.4216
-    },
     "nu": {
      "x": 0.841,
      "y": 0.8788,
@@ -1381,7 +1212,6 @@
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 4,
@@ -1392,11 +1222,6 @@
    ],
    "file_hold": "phu-kien/phu-kien-11-cam.webp",
    "anchor": {
-    "nam": {
-     "x": 0.882,
-     "y": 0.9004,
-     "w": 0.4441
-    },
     "nu": {
      "x": 0.8815,
      "y": 0.8946,
@@ -1411,7 +1236,6 @@
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 4,
@@ -1422,11 +1246,6 @@
    ],
    "file_hold": "phu-kien/phu-kien-12-cam.webp",
    "anchor": {
-    "nam": {
-     "x": 0.8564,
-     "y": 0.739,
-     "w": 0.2197
-    },
     "nu": {
      "x": 0.8559,
      "y": 0.7412,
@@ -1441,17 +1260,11 @@
    "slot": "deo",
    "rarity": "common",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 4,
    "price": 180,
    "anchor": {
-    "nam": {
-     "x": 0.5006,
-     "y": 0.67,
-     "w": 0.5613
-    },
     "nu": {
      "x": 0.5007,
      "y": 0.655,
@@ -1466,17 +1279,11 @@
    "slot": "duoi_chan",
    "rarity": "rare",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 6,
    "price": 400,
    "anchor": {
-    "nam": {
-     "x": 0.52,
-     "y": 0.955,
-     "w": 0.78
-    },
     "nu": {
      "x": 0.52,
      "y": 0.955,
@@ -1491,7 +1298,6 @@
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 4,
@@ -1502,11 +1308,6 @@
    ],
    "file_hold": "phu-kien/phu-kien-15-cam.webp",
    "anchor": {
-    "nam": {
-     "x": 0.8576,
-     "y": 0.7271,
-     "w": 0.2796
-    },
     "nu": {
      "x": 0.8571,
      "y": 0.7299,
@@ -1521,8 +1322,7 @@
    "slot": "hieu_ung",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 4,
    "price": 180,
@@ -1530,11 +1330,6 @@
     "nam": {
      "x": 0.85,
      "y": 0.2,
-     "w": 0.28
-    },
-    "nu": {
-     "x": 0.85,
-     "y": 0.29,
      "w": 0.28
     }
    }
@@ -1746,8 +1541,7 @@
    "slot": "hieu_ung",
    "rarity": "common",
    "variants": [
-    "nam",
-    "nu"
+    "nam"
    ],
    "level": 5,
    "price": 200,
@@ -1755,11 +1549,6 @@
     "nam": {
      "x": 0.85,
      "y": 0.2,
-     "w": 0.28
-    },
-    "nu": {
-     "x": 0.85,
-     "y": 0.29,
      "w": 0.28
     }
    }
@@ -1771,17 +1560,11 @@
    "slot": "hieu_ung",
    "rarity": "rare",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 7,
    "price": 400,
    "anchor": {
-    "nam": {
-     "x": 0.85,
-     "y": 0.2,
-     "w": 0.28
-    },
     "nu": {
      "x": 0.85,
      "y": 0.29,
@@ -1796,17 +1579,11 @@
    "slot": "hieu_ung",
    "rarity": "rare",
    "variants": [
-    "nam",
     "nu"
    ],
    "level": 7,
    "price": 400,
    "anchor": {
-    "nam": {
-     "x": 0.85,
-     "y": 0.2,
-     "w": 0.28
-    },
     "nu": {
      "x": 0.85,
      "y": 0.29,

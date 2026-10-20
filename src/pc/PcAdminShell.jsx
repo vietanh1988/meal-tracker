@@ -73,6 +73,7 @@ const NAV_IC = {
   web_blocks: ["#6366F1", svg(<><rect x="3" y="3" width="8" height="8" rx="2" /><rect x="13" y="13" width="8" height="8" rx="2" /><path d="M13 7h4a2 2 0 0 1 2 2v2M11 17H7a2 2 0 0 1-2-2v-2" /></>)],
   web_stats: ["#0D9488", svg(<><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></>)],
   web_tools: ["#64748B", svg(<><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" /></>)],
+  pet: ["#0EA5E9", svg(<><circle cx="7" cy="10" r="1.8" /><circle cx="11" cy="6.5" r="1.8" /><circle cx="15.5" cy="7" r="1.8" /><circle cx="18" cy="11" r="1.8" /><path d="M8.5 17c0-2.5 2-4.5 4-4.5s4 2 4 4.5c0 1.5-1.3 2.5-2.7 2-1-.3-1.6-.3-2.6 0-1.4.5-2.7-.5-2.7-2z" /></>)],
   web_seo: ["#16A34A", svg(<><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5M8.5 11l2 2 3.5-4" /></>)],
   web_terms: ["#7C3AED", svg(<><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></>)],
 };
@@ -101,7 +102,7 @@ const SUB = {
 const LABEL = Object.fromEntries(PC_NAV.flatMap((g) => g.items.map((i) => [i.id, i.label])));
 const initials = (name) => (name || "?").trim().split(/[\s._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
 
-function TopBar({ title, sub, right, onOpenApp }) {
+export function TopBar({ title, sub, right, onOpenApp }) {
   return (
     <header style={{ position: "sticky", top: 0, zIndex: 20, height: PC.topH, background: "#FFFFFF", borderBottom: `1px solid ${PC.line}`, display: "flex", alignItems: "center", padding: "0 24px", gap: 12 }}>
       <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
@@ -122,7 +123,7 @@ const chevSvg = (left) => <svg aria-hidden="true" width="16" height="16" viewBox
 // 19/10 (chủ dự án): bấm tên nhóm để thu gọn / mở nhóm, nhớ theo máy (fp_pc_nav_closed). Mặc định mở hết; nhóm chứa trang đang mở luôn mở.
 // Nhóm đang thu hiện số mục + tổng số chờ xử lý (đơn, góp ý, món chờ duyệt).
 const GROUP_KEY = "fp_pc_nav_closed";
-function SideNav({ section, go, counts, isSuperAdmin, user, profile, mini, onToggle }) {
+export function SideNav({ section, go, counts, isSuperAdmin, user, profile, mini, onToggle, nav = PC_NAV }) {
   const [closed, setClosed] = useState(() => { try { const v = JSON.parse(localStorage.getItem(GROUP_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } });
   const toggleGroup = (g) => setClosed((c) => { const n = c.includes(g) ? c.filter((x) => x !== g) : [...c, g]; try { localStorage.setItem(GROUP_KEY, JSON.stringify(n)); } catch (e) { /* */ } return n; });
   const name = user?.user_metadata?.username || user?.email?.split("@")[0] || "admin";
@@ -135,7 +136,7 @@ function SideNav({ section, go, counts, isSuperAdmin, user, profile, mini, onTog
         <button type="button" data-testid="pc-side-toggle" onClick={onToggle} className="pc-nav" aria-label={mini ? "Mở rộng thanh bên" : "Thu gọn thanh bên"} title={mini ? "Mở rộng thanh bên" : "Thu gọn thanh bên"} aria-expanded={!mini}
           style={{ width: 30, height: 30, borderRadius: 8, border: "none", background: "rgba(255,255,255,0.10)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, padding: 0 }}>{chevSvg(!mini)}</button>
       </div>
-      {PC_NAV.map((g, gi) => {
+      {nav.map((g, gi) => {
         const items = g.items.filter((i) => !i.superOnly || isSuperAdmin);
         const hasOn = items.some((i) => i.id === section);
         const shut = !mini && closed.includes(g.group) && !hasOn;
