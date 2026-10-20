@@ -99,7 +99,7 @@ export function PcWebStats({ top }) {
             <H t="Từ khoá trên Google" r={<Pill tone="amber">Xem ở Search Console</Pill>} />
             <div style={{ ...headRow("1.8fr 0.6fr 0.6fr"), background: PC.headBg }}><span>TỪ KHOÁ</span><span>BẤM</span><span>HẠNG</span></div>
             <div style={{ padding: "14px 16px", fontSize: 12.5, color: PC.t3, lineHeight: 1.55, borderBottom: `1px solid ${PC.rowLine}` }}>Từ khoá, lượt bấm và hạng trung bình chỉ Google có — xem trong Search Console. Chưa xác minh web thì dán mã ở Cài đặt SEO › Mã theo dõi rồi nộp sitemap.xml.</div>
-            <div style={{ padding: 14 }}><Btn kind="soft" onClick={() => window.open("https://search.google.com/search-console/performance/search-analytics?resource_id=sc-domain%3Afipilotai.com", "_blank", "noopener")}>Mở Google Search Console ↗</Btn></div>
+            <div style={{ padding: 14 }}><Btn kind="soft" onClick={() => window.open("https://search.google.com/search-console/performance/search-analytics?resource_id=https%3A%2F%2Ffipilotai.com%2F", "_blank", "noopener")}>Mở Google Search Console ↗</Btn></div>
           </Card>
         </div>
       </div>

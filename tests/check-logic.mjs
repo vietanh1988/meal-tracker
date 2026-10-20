@@ -112,6 +112,20 @@ test("Không dùng regex lookbehind (?<= / ?<!) trong src (Safari cũ màn trắ
   assert(bad.length === 0, "Có lookbehind: " + bad.join(", "));
 });
 
+// 20/10: Supabase thôi tự cấp quyền Data API cho bảng mới trong public từ 30/10/2026 (cả CI dựng lại DB local)
+// → migration từ 21/10 tạo bảng public nào phải có GRANT cho bảng đó ngay trong file.
+test("Migration mới tạo bảng public phải có GRANT (Supabase bỏ tự cấp quyền từ 30/10)", () => {
+  const dir = join(ROOT, "supabase/migrations"); const bad = [];
+  for (const f of fs.readdirSync(dir).filter((n) => n.endsWith(".sql") && n.slice(0, 8) >= "20261021")) {
+    const sql = fs.readFileSync(join(dir, f), "utf8").toLowerCase();
+    for (const m of sql.matchAll(/create table (?:if not exists )?(?:public\.)?"?([a-z0-9_]+)"?/g)) {
+      const t = m[1];
+      if (!new RegExp(`grant [^;]+ on (?:table )?(?:public\\.)?${t}\\b[^;]* to [^;]*(authenticated|service_role)`).test(sql)) bad.push(`${f}: ${t}`);
+    }
+  }
+  assert(bad.length === 0, "Thiếu GRANT: " + bad.join(", "));
+});
+
 test("Onboarding: thực đơn đầu tiên chỉ áp hôm nay, KHÔNG lưu ngầm vào Lặp lại hằng tuần (14/10)", () => {
   assert(!SRC.onboarding.includes("saveWeeklyTemplate("), "OnboardingWizard vẫn gọi saveWeeklyTemplate");
 });

@@ -18,6 +18,7 @@ React 18 + Vite PWA · Supabase `veodsvojxjmjhtrlaieq` · Vercel `app.fipilotai.
 - GitHub Actions `.github/workflows/e2e.yml` tự: dựng Supabase LOCAL (supabase/migrations + seed.sql, dữ liệu giả) → unit test → build → E2E Playwright (tests/e2e, chặn mọi gọi AI) → ĐẠT thì fast-forward vào `main` → Vercel deploy.
 - Xem kết quả: `gh api repos/vietanh1988/meal-tracker/actions/runs?branch=<nhánh>`; log lỗi đọc qua annotation `gh api repos/vietanh1988/meal-tracker/check-runs/<job_id>/annotations` (tải log thô bị chặn).
 - Đổi schema DB: thêm file `supabase/migrations/<14 số>_ten.sql` (CI dùng để dựng local) + đưa SQL cho chủ dự án chạy trên prod.
+- Bảng mới trong `public` (từ 30/10/2026 Supabase không tự cấp quyền Data API): cùng migration phải có `grant select … to anon` (nếu khách xem), `grant select, insert, update, delete … to authenticated, service_role`. check-logic chặn migration từ 21/10 thiếu GRANT.
 - Màn/nút mới: gắn `data-testid` cho nút chính và thêm/sửa bài E2E tương ứng.
 
 ## Kiểm tra trước khi push
