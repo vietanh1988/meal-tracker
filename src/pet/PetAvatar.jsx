@@ -146,6 +146,6 @@ export const PET_CSS = `
 `;
 
 /** Ảnh 1 món (ô cửa hàng / tủ đồ) */
-export function ItemImg({ item, size = 72 }) {
-  return <img src={PET_BASE + item.file} alt="" draggable="false" style={{ maxWidth: size, maxHeight: size, objectFit: "contain", display: "block" }} />;
+export function ItemImg({ item, size = 72, variant }) {
+  return <img src={PET_BASE + ((variant && item.file_v?.[variant]) || item.file)} alt="" draggable="false" style={{ maxWidth: size, maxHeight: size, objectFit: "contain", display: "block" }} />;
 }

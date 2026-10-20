@@ -159,5 +159,12 @@ for col, (label, items, outfits) in C.items():
         out.append({'id': iid, 'name': name, 'file': f'bo-suu-tap/{iid}.webp', 'slot': 'ao', 'rarity': rar, 'level': lv, 'price': PRICE[rar], 'variants': vs, 'collection': col, 'collection_name': label,
                     'anchor': {v: {'x': .5, 'y': .735, 'w': .98} for v in vs},
                     'body': {v: {'file': f'than-ao/than-{v}-{iid}.webp', 'file_nl': f'than-ao/than-{v}-khong-la-{iid}.webp'} for v in vs}})
+# 21/10 (chủ dự án: phòng phải theo chủ đề, không tự đổi theo ngày): PHÒNG là món sưu tầm của bộ — bán trong Cửa hàng theo lịch bán
+# của bộ, mua rồi chọn ở Tủ đồ, dùng quanh năm; không chọn = phòng thường. Bản nào có ảnh phòng (khong-gian/phong-<giờ>-<bản>-<bộ>.webp) mới bán cho bản đó.
+ROOMS = {'halloween': ['nam', 'nu'], 'bong-da': ['nam', 'nu'], 'noel': ['nam'], 'tet': ['nu']}
+for col, vs in ROOMS.items():
+    label = C[col][0]
+    out.append({'id': f'{col}-phong', 'name': f'Phòng {label}', 'file': f'bo-suu-tap/{col}-phong-{vs[0]}.webp', 'file_v': {v: f'bo-suu-tap/{col}-phong-{v}.webp' for v in vs},
+                'slot': 'phong', 'rarity': 'rare', 'level': 2, 'price': 600, 'variants': vs, 'collection': col, 'collection_name': label, 'anchor': {}})
 json.dump(out, open("scripts/pet/bo-suu-tap.json", "w"), ensure_ascii=False, indent=1)
 print(len(out))

@@ -14,12 +14,13 @@ test("mọi ảnh món + ảnh thân áo có thật", () => {
     if (!existsSync(P + it.file)) miss.push(it.file);
     if (it.file_hold && !existsSync(P + it.file_hold)) miss.push(it.file_hold);
     for (const b of Object.values(it.body || {})) for (const f of [b.file, b.file_nl]) if (f && !existsSync(P + f)) miss.push(f);
+    for (const f of Object.values(it.file_v || {})) if (!existsSync(P + f)) miss.push(f);
   }
   assert.deepEqual(miss, []);
 });
 
 test("bản nào bán thì có điểm đặt (áo: có ảnh thân) cho bản đó", () => {
-  const bad = items.filter((it) => it.variants.some((v) => (it.slot === "ao" ? !it.body?.[v] && !it.anchor?.[v] : !it.anchor?.[v]))).map((it) => it.id);
+  const bad = items.filter((it) => it.slot !== "phong" && it.variants.some((v) => (it.slot === "ao" ? !it.body?.[v] && !it.anchor?.[v] : !it.anchor?.[v]))).map((it) => it.id);
   assert.deepEqual(bad, []);
 });
 
@@ -54,14 +55,20 @@ test("đồ cầm tay có bàn tay theo từng áo (body.hand) để không lệ
   assert.deepEqual(bad, []);
 });
 
-test("phòng theo dịp: bản nào bật thì đủ ảnh sáng / chiều / tối", () => {
+test("phòng theo chủ đề: món Phòng bán cho bản nào thì đủ ảnh sáng / chiều / tối của bản đó, PetRoom có điểm đặt", () => {
   const src = readFileSync("src/pet/PetRoom.jsx", "utf8");
   const art = new Function(`return ${src.match(/export const SEASON_ART = (\{[^\n]*\});/)[1]}`)();
   const miss = [];
-  for (const [s, vs] of Object.entries(art)) for (const v of Object.keys(vs)) for (const t of ["sang", "chieu", "toi"]) {
-    const f = `${P}khong-gian/phong-${t}-${v}-${s}.webp`; if (!existsSync(f)) miss.push(f);
+  for (const it of items.filter((i) => i.slot === "phong")) for (const v of it.variants) {
+    if (!art[it.collection]?.[v]) miss.push(`SEASON_ART thiếu ${it.collection}/${v}`);
+    for (const t of ["sang", "chieu", "toi"]) { const f = `${P}khong-gian/phong-${t}-${v}-${it.collection}.webp`; if (!existsSync(f)) miss.push(f); }
   }
   assert.deepEqual(miss, []);
+});
+test("phòng KHÔNG tự đổi theo ngày: Stage lấy phòng từ món đang dùng (equipped.phong)", () => {
+  const scr = readFileSync("src/pet/PetScreens.jsx", "utf8"), app = readFileSync("src/pet/PetApp.jsx", "utf8");
+  assert.match(scr, /season=\{roomOf\(pet\)\}/);
+  assert.doesNotMatch(app, /season: seasonOf/);
 });
 
 test("mỗi món bán có dòng trong pet_items (migration)", () => {

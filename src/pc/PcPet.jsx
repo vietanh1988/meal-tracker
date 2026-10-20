@@ -371,7 +371,7 @@ function Cols({ d, onSaveCfg }) {
           </Card>
         );
       })}
-      <span style={{ fontSize: 12, color: PC.t3, lineHeight: 1.5 }}>Phòng của Pi đổi theo dịp riêng (Bóng đá: lúc bộ đang bán; Halloween 20–31/10, Noel 15–31/12, Tết 10 ngày trước – 7 ngày sau mùng 1), không phụ thuộc lịch bán. Ẩn / hiện từng món ở tab Kho đồ.</span>
+      <span style={{ fontSize: 12, color: PC.t3, lineHeight: 1.5 }}>Phòng của bộ là 1 món trong bộ ("Phòng Halloween"…): bán theo lịch trên, khách mua rồi chọn ở Tủ đồ, dùng quanh năm; không chọn thì phòng thường. Giá / ẩn / hiện phòng sửa ở tab Kho đồ (ô Phòng).</span>
       {err && <span role="alert" style={{ fontSize: 13, fontWeight: 700, color: "#DC2626" }}>{err}</span>}
       <span style={{ display: "flex", justifyContent: "flex-end" }}><Btn kind="blue" testid="pc-pet-cols-save" disabled={busy || !onSaveCfg} onClick={save}>{busy ? "Đang lưu…" : "Lưu lịch bán"}</Btn></span>
     </div>

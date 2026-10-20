@@ -62,6 +62,8 @@ const sec = { padding: "20px 18px 10px 18px", display: "flex", alignItems: "base
 const secT = { fontSize: 17, fontWeight: 900, letterSpacing: -0.2 };
 const card = { margin: "0 12px", ...ltCard };
 
+// 21/10 (chủ dự án): phòng theo CHỦ ĐỀ khách chọn — món "Phòng <bộ>" đang dùng ở Tủ đồ; không chọn = phòng thường (không tự đổi theo ngày)
+export const roomOf = (pet) => { const r = ITEMS[pet?.equipped?.phong]; return r && r.slot === "phong" && r.variants.includes(pet.variant) ? r.collection : null; };
 export function Stage({ pet, height = 260, children, size = 210, talking, live = true }) {
   // 20/10: Pi đứng trong phòng của Pi (PetRoom: đổi theo giờ, kệ đồ thành tích, màu theo bản).
   // Pi "sống": chớp mắt, đảo mắt, lá đung đưa, thở; chạm vào Pi → nảy + cười tít + tim bay (chạm lúc ngủ: mở mắt rồi ngủ tiếp).
@@ -76,7 +78,7 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
   };
   const heart = pet.variant === "nu" ? "hieu-ung/hieu-ung-11.webp" : "hieu-ung/hieu-ung-01.webp";
   return (
-    <PetRoom time={pet.time || "sang"} variant={pet.variant} season={pet.season} trophies={pet.trophies || []} height={height}>
+    <PetRoom time={pet.time || "sang"} variant={pet.variant} season={roomOf(pet)} trophies={pet.trophies || []} height={height}>
       <span aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: 22, width: size * 0.62, height: 18, marginLeft: -(size * 0.31), borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
       <button type="button" data-testid="pet-tap" onClick={tap} aria-label={`Chạm vào ${pet.name}`} style={{ position: "absolute", left: "50%", bottom: 26, transform: "translateX(-50%)", border: "none", background: "transparent", padding: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} bow={pet.bow} size={Math.round(size * 0.9)} talking={talking} live={live} react={react} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
@@ -186,13 +188,13 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
 }
 
 // ============ Ô món (cửa hàng / tủ đồ) ============
-function ItemCard({ it, state, onClick, equipped }) {
+function ItemCard({ it, state, onClick, equipped, variant }) {
   const r = RARITY[it.rarity];
   const locked = state.kind === "level" || state.kind === "premium" || state.kind === "season";
   return (
     <button data-testid={`pet-item-${it.id}`} onClick={onClick} className="tap" style={{ position: "relative", ...ltCard, borderRadius: 18, padding: "10px 8px 10px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, border: equipped ? "2px solid #007AFF" : "2px solid transparent", fontFamily: "inherit", color: "#0F172A", minWidth: 0, boxSizing: "border-box" }}>
       <span style={{ alignSelf: "flex-start", fontSize: 10, fontWeight: 800, color: r.color, background: r.bg, padding: "2px 7px", borderRadius: 6 }}>{r.label}</span>
-      <span style={{ width: "100%", height: 70, display: "flex", alignItems: "center", justifyContent: "center", filter: state.kind === "level" || state.kind === "season" ? "grayscale(1)" : "none", opacity: state.kind === "level" || state.kind === "season" ? 0.45 : 1 }}><ItemImg item={it} size={66} /></span>
+      <span style={{ width: "100%", height: 70, display: "flex", alignItems: "center", justifyContent: "center", filter: state.kind === "level" || state.kind === "season" ? "grayscale(1)" : "none", opacity: state.kind === "level" || state.kind === "season" ? 0.45 : 1 }}><ItemImg item={it} size={66} variant={variant} /></span>
       <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.25, textAlign: "center", minHeight: 30, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{it.name}</span>
       {state.kind === "owned" && <span style={{ fontSize: 12, fontWeight: 800, color: equipped ? "#007AFF" : "#047857", display: "inline-flex", alignItems: "center", gap: 4 }}>{Icon.check(13, 3)}{equipped ? "Đang mặc" : "Đã có"}</span>}
       {state.kind === "buy" && <span style={{ fontSize: 13, fontWeight: 900, color: "#065F46", display: "inline-flex", alignItems: "center", gap: 4 }}><Seed size={14} />{fmt(it.price)}</span>}
@@ -281,7 +283,7 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", initialCol = "
         )}
         <Chips value={slot} onChange={setSlot} counts={counts} />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, padding: "8px 12px 0 12px" }}>
-          {shown.map((it) => <ItemCard key={it.id} it={it} state={itemState(it, pet)} equipped={Object.values(pet.equipped).includes(it.id)} onClick={() => setPv(it.id)} />)}
+          {shown.map((it) => <ItemCard key={it.id} it={it} variant={pet.variant} state={itemState(it, pet)} equipped={Object.values(pet.equipped).includes(it.id)} onClick={() => setPv(it.id)} />)}
         </div>
         <div style={{ height: 28 }} />
       </div>
@@ -328,7 +330,7 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
         )}
         {err && <span data-testid="pet-tryon-error" role="alert" style={{ display: "block", marginTop: 10, fontSize: 13, fontWeight: 700, color: "#DC2626" }}>{err}</span>}
         {st.kind === "owned" ? (
-          <button data-testid="pet-wear" onClick={wearNow} style={{ ...big, background: GRAD_BLUE }}>{phase === "bought" ? "Mua xong! Mặc luôn" : Object.values(pet.equipped).includes(it.id) ? "Đang mặc" : "Mặc món này"}</button>
+          <button data-testid="pet-wear" onClick={wearNow} style={{ ...big, background: GRAD_BLUE }}>{it.slot === "phong" ? (phase === "bought" ? "Mua xong! Dùng phòng này" : pet.equipped.phong === it.id ? "Đang dùng" : "Dùng phòng này") : phase === "bought" ? "Mua xong! Mặc luôn" : Object.values(pet.equipped).includes(it.id) ? "Đang mặc" : "Mặc món này"}</button>
         ) : st.kind === "season" ? (
           <button data-testid="pet-buy" disabled style={{ ...big, background: "#CBD5E1", color: "#334155" }}>{PIc.lock(18)}{st.label || "Chưa mở bán"}</button>
         ) : st.kind === "premium" ? (
@@ -339,7 +341,7 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
           </button>
         )}
         {phase === "bought" && <button data-testid="pet-later" onClick={onClose} style={{ ...big, marginTop: 8, background: LT.soft, color: "#334155", height: 44 }}>Để sau</button>}
-        <span style={{ display: "block", textAlign: "center", marginTop: 8, fontSize: 12, color: "#64748B" }}>Mua 1 lần, mặc mãi. Đồ này chỉ dành cho {pet.variant === "nu" ? "Pi nữ" : "Pi nam"}.</span>
+        <span style={{ display: "block", textAlign: "center", marginTop: 8, fontSize: 12, color: "#64748B" }}>{it.slot === "phong" ? "Mua 1 lần, dùng mãi · chọn / bỏ ở Tủ đồ." : `Mua 1 lần, mặc mãi. Đồ này chỉ dành cho ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}.`}</span>
       </div>
     </div>
   );
@@ -367,7 +369,7 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onB
             {wearing.length === 0 && <span style={{ fontSize: 13, color: "#64748B" }}>Chưa mặc món nào. Bấm vào món bên dưới để mặc.</span>}
             {wearing.map(([s, id]) => (
               <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 6, height: 36, padding: "0 6px 0 4px", borderRadius: 18, background: LT.soft, fontSize: 12, fontWeight: 800, color: "#0F172A" }}>
-                <span style={{ width: 28, height: 28, borderRadius: 14, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center" }}><ItemImg item={ITEMS[id]} size={22} /></span>
+                <span style={{ width: 28, height: 28, borderRadius: 14, background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center" }}><ItemImg item={ITEMS[id]} size={22} variant={pet.variant} /></span>
                 {SLOT_NAME[s] || s}
                 <button data-testid={`pet-unequip-${s}`} onClick={() => onEquip?.(s, null)} aria-label={`Tháo ${ITEMS[id].name}`} style={{ width: 24, height: 24, borderRadius: 12, border: "none", background: "transparent", color: "#64748B", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.close(13)}</button>
               </span>
@@ -384,7 +386,7 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onB
         <Chips value={slot} onChange={setSlot} counts={counts} />
         {mine.length === 0 && <span style={{ display: "block", padding: "16px 20px", fontSize: 13, color: "#64748B" }}>Tủ đồ còn trống. Kiếm Hạt từ việc hằng ngày rồi ghé Cửa hàng nhé.</span>}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, padding: "8px 12px 0 12px" }}>
-          {shown.map((it) => <ItemCard key={it.id} it={it} state={{ kind: "owned" }} equipped={Object.values(pet.equipped).includes(it.id)} onClick={() => toggle(it)} />)}
+          {shown.map((it) => <ItemCard key={it.id} it={it} variant={pet.variant} state={{ kind: "owned" }} equipped={Object.values(pet.equipped).includes(it.id)} onClick={() => toggle(it)} />)}
         </div>
         <div style={{ height: 28 }} />
       </div>

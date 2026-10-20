@@ -136,7 +136,7 @@ catalog = {
   },
   # thứ tự vẽ từ dưới lên
   'layers': ['duoi_chan', 'sau_lung', 'than', 'ao', 'quai', 'deo', 'mat', 'mieng', 'kinh', 'tai_nghe', 'bow', 'dau', 'cam_tay', 'tay', 'hieu_ung', 'tam_trang'],
-  'slots': {'dau': 'Đội đầu', 'kinh': 'Kính', 'tai_nghe': 'Tai nghe', 'ao': 'Áo', 'deo': 'Khăn / túi', 'cam_tay': 'Cầm tay',
+  'slots': {'phong': 'Phòng', 'dau': 'Đội đầu', 'kinh': 'Kính', 'tai_nghe': 'Tai nghe', 'ao': 'Áo', 'deo': 'Khăn / túi', 'cam_tay': 'Cầm tay',
             'sau_lung': 'Sau lưng', 'duoi_chan': 'Dưới chân', 'hieu_ung': 'Hiệu ứng'},
   'moods': {m: {'file': f, 'anchor': {'nam': A(x, y, w), 'nu': A(x + 0.02, y + 0.1, w)}} for m, f, x, y, w in [
       ('ngu', 'hieu-ung/hieu-ung-14.webp', 0.84, 0.17, 0.26),

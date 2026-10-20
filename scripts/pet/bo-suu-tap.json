@@ -2754,5 +2754,81 @@
     "file_nl": "than-ao/than-nu-khong-la-trung-thu-ao-04.webp"
    }
   }
+ },
+ {
+  "id": "halloween-phong",
+  "name": "Phòng Halloween",
+  "file": "bo-suu-tap/halloween-phong-nam.webp",
+  "file_v": {
+   "nam": "bo-suu-tap/halloween-phong-nam.webp",
+   "nu": "bo-suu-tap/halloween-phong-nu.webp"
+  },
+  "slot": "phong",
+  "rarity": "rare",
+  "level": 2,
+  "price": 600,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {}
+ },
+ {
+  "id": "bong-da-phong",
+  "name": "Phòng Bóng đá",
+  "file": "bo-suu-tap/bong-da-phong-nam.webp",
+  "file_v": {
+   "nam": "bo-suu-tap/bong-da-phong-nam.webp",
+   "nu": "bo-suu-tap/bong-da-phong-nu.webp"
+  },
+  "slot": "phong",
+  "rarity": "rare",
+  "level": 2,
+  "price": 600,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "bong-da",
+  "collection_name": "Bóng đá",
+  "anchor": {}
+ },
+ {
+  "id": "noel-phong",
+  "name": "Phòng Noel",
+  "file": "bo-suu-tap/noel-phong-nam.webp",
+  "file_v": {
+   "nam": "bo-suu-tap/noel-phong-nam.webp"
+  },
+  "slot": "phong",
+  "rarity": "rare",
+  "level": 2,
+  "price": 600,
+  "variants": [
+   "nam"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {}
+ },
+ {
+  "id": "tet-phong",
+  "name": "Phòng Tết",
+  "file": "bo-suu-tap/tet-phong-nu.webp",
+  "file_v": {
+   "nu": "bo-suu-tap/tet-phong-nu.webp"
+  },
+  "slot": "phong",
+  "rarity": "rare",
+  "level": 2,
+  "price": 600,
+  "variants": [
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {}
  }
 ]
