@@ -19,7 +19,14 @@ def render(v, equip, mood=None, bow=True):
     c = Image.new('RGBA', (round(bw) + 2 * pad, bh + 2 * pad), (238, 243, 251, 255))
     ox = oy = pad
     for L in cat['layers']:
-        if L == 'than': place(c, b['file_ao'] if 'ao' in equip else b['file'], {'x': .5, 'y': .5, 'w': 1}, bw, bh, ox, oy)
+        if L == 'than':
+            body = Image.new('RGBA', c.size, (0, 0, 0, 0))
+            place(body, b['file_ao'] if 'ao' in equip else b['file'], {'x': .5, 'y': .5, 'w': 1}, bw, bh, ox, oy)
+            if 'dau' in equip and equip['dau'].get('cover'):  # mũ trùm: bỏ phần thân phía trên đường cắt (lá, chỏm đầu)
+                cut = round(oy + b['hat_cut'] * bh); body.paste((0, 0, 0, 0), (0, 0, body.width, cut))
+            c.alpha_composite(body)
+        elif L == 'tay':
+            if 'cam_tay' in equip: place(c, b['hand']['file'], b['hand'], bw, bh, ox, oy)
         elif L == 'mat': place(c, 'mat-doi/' + ('mat-doi-nam-01.webp' if v == 'nam' else 'mat-doi-nu-13.webp'), b['eyes'], bw, bh, ox, oy)
         elif L == 'mieng': place(c, 'mieng/mieng-to-01.webp', b['mouth'], bw, bh, ox, oy)
         elif L == 'bow':

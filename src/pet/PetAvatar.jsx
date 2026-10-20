@@ -2,6 +2,7 @@
 // Mọi vị trí lấy từ src/pet/catalog.json (anchor: x, y = tâm món theo phần rộng / cao thân; w = rộng món theo phần rộng thân;
 // h có thì kéo dãn theo chiều cao — chỉ áo, để che hết áo gốc). Mặc áo → dùng thân đã bỏ áo gốc (file_ao).
 // Bản nữ: nơ là lớp riêng (mặc định đeo, khách tháo được), đội mũ thì ẩn.
+// Mũ trùm (cover) cắt thân phía trên hat_cut; đồ cầm tay đặt điểm nắm vào tâm bàn tay rồi vẽ lại bàn tay (lớp "tay") đè lên.
 import catalog from "./catalog.json";
 
 export const PET_BASE = "/pet/";
@@ -19,9 +20,10 @@ const FACES = {
 // tâm trạng → mặt + hiệu ứng tâm trạng (không bán)
 const MOOD_FX = { ngu: "ngu", hoi: "hoi", gian: "gian" };
 
-function Layer({ file, a, bw, bh }) {
+function Layer({ file, a, bw, bh, clipTop }) {
   const w = a.w * bw;
   const style = { position: "absolute", left: a.x * bw - w / 2, width: w, pointerEvents: "none", userSelect: "none" };
+  if (clipTop) style.clipPath = `inset(${clipTop * 100}% 0 0 0)`; // mũ trùm đầu: bỏ lá + chỏm đầu dưới mũ
   if (a.h) { const h = a.h * bh; Object.assign(style, { top: a.y * bh - h / 2, height: h }); }
   else Object.assign(style, { top: a.y * bh, transform: "translateY(-50%)", height: "auto" });
   return <img src={PET_BASE + file} alt="" draggable="false" style={style} />;
@@ -36,7 +38,8 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
   const [eyes, mouth] = face[variant];
   const layers = [];
   for (const L of catalog.layers) {
-    if (L === "than") layers.push(<Layer key="than" file={eq.ao ? b.file_ao : b.file} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} />);
+    if (L === "than") layers.push(<Layer key="than" file={eq.ao ? b.file_ao : b.file} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? b.hat_cut : 0} />);
+    else if (L === "tay") { if (eq.cam_tay) layers.push(<Layer key="tay" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />); } // tay vẽ đè lên đồ → trông như đang cầm
     else if (L === "mat") layers.push(<Layer key="mat" file={eyes} a={b.eyes} bw={bw} bh={bh} />);
     else if (L === "mieng") layers.push(<Layer key="mieng" file={mouth} a={b.mouth} bw={bw} bh={bh} />);
     else if (L === "bow") { if (b.bow && bow && !eq.dau) layers.push(<Layer key="bow" file={b.bow.file} a={b.bow} bw={bw} bh={bh} />); }

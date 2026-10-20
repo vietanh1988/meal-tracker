@@ -71,7 +71,9 @@ def default(it, v):
     if s == 'duoi_chan': return A(0.5, 0.965, 0.95)
     if s == 'cam_tay': return A(0.9, 0.74, 0.24)
     return A(0.85, 0.2 if v == 'nam' else 0.29, 0.28)
+COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
 for it in items:
+    if it['id'] in COVER: it['cover'] = True
     over = ANCH.get(it['id'], {})
     it['anchor'] = {}
     for v in it['variants']:
@@ -81,13 +83,15 @@ for it in items:
 catalog = {
   'bodies': {
     'nam': {'file': 'than/than-nam.webp', 'file_ao': 'than/than-nam-mac-ao.webp', 'w': 588, 'h': 900,
-            'eyes': A(0.5, 0.345, 0.36), 'mouth': A(0.5, 0.445, 0.12)},
+            'eyes': A(0.5, 0.345, 0.36), 'mouth': A(0.5, 0.445, 0.12),
+            'hand': {'file': 'than/tay-phai-nam.webp', **A(0.852, 0.7828, 0.1259)}, 'hat_cut': 0.25},
     'nu': {'file': 'than/than-nu.webp', 'file_ao': 'than/than-nu-mac-ao.webp', 'w': 559, 'h': 900,
            'eyes': A(0.5, 0.40, 0.40), 'mouth': A(0.5, 0.50, 0.13),
-           'bow': {'file': 'than/no-nu.webp', **A(0.55, 0.20, 0.55)}},
+           'bow': {'file': 'than/no-nu.webp', **A(0.55, 0.20, 0.55)},
+           'hand': {'file': 'than/tay-phai-nu.webp', **A(0.8515, 0.7828, 0.1252)}, 'hat_cut': 0.28},
   },
   # thứ tự vẽ từ dưới lên
-  'layers': ['duoi_chan', 'sau_lung', 'than', 'ao', 'deo', 'mat', 'mieng', 'kinh', 'tai_nghe', 'bow', 'dau', 'cam_tay', 'hieu_ung', 'tam_trang'],
+  'layers': ['duoi_chan', 'sau_lung', 'than', 'ao', 'deo', 'mat', 'mieng', 'kinh', 'tai_nghe', 'bow', 'dau', 'cam_tay', 'tay', 'hieu_ung', 'tam_trang'],
   'slots': {'dau': 'Đội đầu', 'kinh': 'Kính', 'tai_nghe': 'Tai nghe', 'ao': 'Áo', 'deo': 'Khăn / túi', 'cam_tay': 'Cầm tay',
             'sau_lung': 'Sau lưng', 'duoi_chan': 'Dưới chân', 'hieu_ung': 'Hiệu ứng'},
   'moods': {m: {'file': f, 'anchor': {'nam': A(x, y, w), 'nu': A(x + 0.02, y + 0.1, w)}} for m, f, x, y, w in [
