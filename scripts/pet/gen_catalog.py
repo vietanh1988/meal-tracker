@@ -144,5 +144,30 @@ catalog = {
       ('gian', 'hieu-ung/hieu-ung-16.webp', 0.82, 0.24, 0.22)]},
   'items': items,
 }
+# 20/10: áo liền thân vẽ tay ở chỗ khác thân gốc → dò tâm bàn tay (màu da Pi) trong ảnh thân mặc áo, đồ cầm tay dời theo
+import numpy as np
+from PIL import Image
+from scipy import ndimage
+def _hand_centers(path):
+    a = np.array(Image.open(path).convert('RGBA')).astype(int); H, W = a.shape[:2]
+    R, G, B, Al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    skin = (Al > 128) & (B > 200) & (G > 150) & (R > 70) & (R < 190) & (B - R > 55) & (G - R > 25)
+    out = []
+    for x0, x1 in ((.66, 1), (0, .34)):
+        m = np.zeros_like(skin); m[int(H * .66):int(H * .9), int(W * x0):int(W * x1)] = True; m &= skin
+        lab, n = ndimage.label(m)
+        if n == 0: out.append(None); continue
+        sz = ndimage.sum(m, lab, range(1, n + 1)); k = int(np.argmax(sz)) + 1
+        if sz[k - 1] < 600: out.append(None); continue
+        ys, xs = np.nonzero(lab == k); out.append((xs.mean() / W, ys.mean() / H))
+    return out
+# độ lệch của máy dò trên thân gốc nữ (thân gốc nam mặc áo xanh, dò không ra) → trừ đi để khớp điểm tay của catalog
+_BIAS_R, _BIAS_L = (0.0065, 0.004), (-0.0085, 0.0)
+for it in items:
+    for v, bd in (it.get('body') or {}).items():
+        try: r, l = _hand_centers(f"public/pet/{bd['file']}")
+        except Exception: continue
+        if r: bd['hand'] = [round(r[0] - _BIAS_R[0], 4), round(r[1] - _BIAS_R[1], 4)]
+        if l: bd['hand_l'] = [round(l[0] - _BIAS_L[0], 4), round(l[1] - _BIAS_L[1], 4)]
 json.dump(catalog, open(OUT, 'w'), ensure_ascii=False, indent=1)
 print(len(items), {r: sum(1 for i in items if i['rarity'] == r) for r in plan})

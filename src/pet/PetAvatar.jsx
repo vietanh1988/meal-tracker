@@ -41,6 +41,12 @@ function leftAnchor(a, b) {
   return { ...a, x: lx - (a.x - rx), y: a.y + (ly - ry) };
 }
 
+// 20/10: áo liền thân vẽ bàn tay ở chỗ khác thân gốc (catalog body.hand / hand_l, dò từ ảnh) → dời đồ cầm tay theo tay của áo
+function shiftHand(a, base, to) {
+  if (!to) return a;
+  return { ...a, x: a.x + (to[0] - base.x), y: a.y + (to[1] - base.y) };
+}
+
 /** size = chiều cao thân (px). equipped = { slot: itemId } (cam_tay = tay phải, cam_tay_trai = tay trái). mood: vui | cuoi | ngu | hoi | mung.
  *  live: chớp mắt, đảo mắt, lá đung đưa, tâm trạng động (spec §6). talking: miệng mấp máy. react: đổi số → nảy + cười tít 1,2 giây. */
 export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = true, size = 220, still = false, label, talking = false, live = false, react = 0 }) {
@@ -77,8 +83,8 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
     }
     else if (L === "quai") { Object.values(eq).forEach((it) => (it.front || []).forEach((f, i) => layers.push(<Layer key={`quai${it.id}${i}`} file={f.file} a={f} bw={bw} bh={bh} />))); } // quai balo đè lên áo
     else if (L === "cam_tay") {
-      if (holdR) layers.push(<Layer key="cam_tay" file={holdR.file_hold || holdR.file} a={holdR.anchor[variant]} bw={bw} bh={bh} />);
-      if (holdL) layers.push(<Layer key="cam_tay_trai" file={holdL.file_hold || holdL.file} a={leftAnchor(holdL.anchor[variant], b)} bw={bw} bh={bh} flip />);
+      if (holdR) layers.push(<Layer key="cam_tay" file={holdR.file_hold || holdR.file} a={shiftHand(holdR.anchor[variant], b.hand, aoBody?.hand)} bw={bw} bh={bh} />);
+      if (holdL) layers.push(<Layer key="cam_tay_trai" file={holdL.file_hold || holdL.file} a={shiftHand(leftAnchor(holdL.anchor[variant], b), { x: b.hand_left[0], y: b.hand_left[1] }, aoBody?.hand_l)} bw={bw} bh={bh} flip />);
     }
     else if (L === "tay") {
       if (holdR && !holdR.file_hold) layers.push(<Layer key="tay" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />); // tay vẽ đè lên đồ → trông như đang cầm
@@ -112,6 +118,7 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
 
 // Thở nhẹ (spec §6); máy bật "giảm chuyển động" thì đứng yên
 export const PET_CSS = `
+.pet-noscroll::-webkit-scrollbar{display:none}
 @keyframes petBreathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.015,.985)}}
 .pet-breathe{animation:petBreathe 3.2s ease-in-out infinite}
 @keyframes petLeaf{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg)}}

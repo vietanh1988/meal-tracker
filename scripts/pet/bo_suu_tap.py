@@ -40,7 +40,7 @@ FX = {'x': 0.5, 'y': 0.11, 'w': 0.92}
 C = {
  'noel': ('Noel', [
   ('Mũ ông già Noel', 'dau', BOTH, 'rare', 2, 'cap', .80, 'cover'),
-  ('Băng đô tuần lộc', 'dau', BOTH, 'common', 1, 'band', .86, 'leaf'),
+  ('Băng đô tuần lộc', 'dau', BOTH, 'common', 1, 'band', (.115, .30, .78), 'leaf'),
   ('Mũ len Noel', 'dau', ['nam'], 'common', 1, 'cap', .74, 'cover'),
   ('Băng đô nơ Noel', 'dau', ['nu'], 'common', 1, 'band', .80, 'leaf'),
   ('Khăn len caro', 'deo', ['nam'], 'common', 1, 'scarf', None, ''),
@@ -53,10 +53,10 @@ C = {
   ('Sao Noel', 'hieu_ung', BOTH, 'common', 2, 'fx', None, ''),
  ], [('Áo len tuần lộc', ['nam'], 'common', 1), ('Bộ ông già Noel', ['nam'], 'legendary', 4), ('Váy Noel', ['nu'], 'rare', 2), ('Áo choàng Noel', ['nu'], 'rare', 3)]),
  'tet': ('Tết', [
-  ('Khăn đóng đỏ', 'dau', ['nam'], 'common', 1, 'cap', .74, ''),
+  ('Khăn đóng đỏ', 'dau', ['nam'], 'common', 1, 'cap', (.84, .045), 'noleaf'),
   ('Băng đô hoa mai', 'dau', ['nu'], 'common', 1, 'band', .84, 'leaf'),
   ('Nón lá', 'dau', ['nu'], 'rare', 2, 'cone', 1.0, 'noleaf'),
-  ('Mũ lân', 'dau', ['nam'], 'legendary', 4, 'lion', .86, 'noleaf'),
+  ('Mũ lân', 'dau', ['nam'], 'legendary', 4, 'lion', .92, 'noleaf'),
   ('Bao lì xì', 'cam_tay', BOTH, 'common', 1, 'hold', 1.0, ''),
   ('Cành mai', 'cam_tay', ['nu'], 'common', 1, 'hold', 1.1, ''),
   ('Lồng đèn đỏ', 'cam_tay', BOTH, 'common', 2, 'hold', 1.0, ''),
@@ -71,7 +71,7 @@ C = {
   ('Mũ miện vua', 'dau', ['nam'], 'legendary', 5, 'crown', (.262, .312, .52, .58), ''),
   ('Mũ phượng', 'dau', ['nu'], 'legendary', 5, 'crown', (.262, .312, .66, .72), ''),
   ('Trâm cài hoa sen', 'dau', ['nu'], 'common', 2, 'pin', None, ''),
-  ('Nón quai thao', 'dau', ['nu'], 'rare', 3, 'cone', 1.04, 'noleaf'),
+  ('Nón quai thao', 'dau', ['nu'], 'rare', 3, 'cone', (1.04, .19), 'noleaf'),
   ('Quạt giấy', 'cam_tay', BOTH, 'common', 2, 'hold', 1.1, ''),
   ('Kiếm gỗ', 'cam_tay', ['nam'], 'rare', 3, 'hold', 1.0, ''),
   ('Ô giấy đỏ', 'cam_tay', ['nu'], 'rare', 3, 'hold', 1.1, ''),
@@ -89,14 +89,14 @@ for col, (label, items, outfits) in C.items():
         it = {'id': iid, 'name': name, 'file': f, 'slot': slot, 'rarity': rar, 'level': lv, 'price': PRICE[rar], 'variants': vs, 'collection': col, 'collection_name': label}
         anc = {}
         for v in BOTH:  # điểm đặt cho cả 2 thân (Quản trị đổi bản được)
-            if kind == 'cap': anc[v] = fitw(f, v, BRIM[v], p)
-            elif kind == 'band': anc[v] = fitband(f, v, .165, .37, p)
+            if kind == 'cap': anc[v] = fitw(f, v, BRIM[v] + p[1], p[0]) if isinstance(p, tuple) else fitw(f, v, BRIM[v], p)
+            elif kind == 'band': anc[v] = fitband(f, v, p[0], p[1], p[2]) if isinstance(p, tuple) else fitband(f, v, .165, .37, p)
             elif kind == 'crown': anc[v] = fitw(f, v, p[0] if v == 'nam' else p[1], p[2] if v == 'nam' else p[3])
             elif kind == 'pin': anc[v] = fitc(f, v, .19 if v == 'nam' else .22, .42, .66)
-            elif kind == 'scarf': anc[v] = fitc(f, v, .67 if v == 'nam' else .655, .56 if v == 'nam' else .60)
+            elif kind == 'scarf': anc[v] = fitw(f, v, .745 if v == 'nam' else .78, .60 if v == 'nam' else .58)  # quấn sát dưới cằm, rộng hơn thân
             elif kind == 'back': anc[v] = fitc(f, v, .64, 1.0)
-            elif kind == 'cone': anc[v] = fitw(f, v, CONE[v], p)  # nón rộng vành: vành ngang trán, cắt chỏm đầu cao hơn
-            elif kind == 'lion': anc[v] = fitw(f, v, BRIM[v] - .04, p)
+            elif kind == 'cone': anc[v] = fitw(f, v, CONE[v] + p[1], p[0]) if isinstance(p, tuple) else fitw(f, v, CONE[v], p)  # quai thao: tua dài dưới vành → đáy ảnh thấp hơn vành  # nón rộng vành: vành ngang trán, cắt chỏm đầu cao hơn
+            elif kind == 'lion': anc[v] = fitw(f, v, BRIM[v] + .05, p)  # đầu lân trùm xuống ngang lông mày
             elif kind == 'hip': anc[v] = fitc(f, v, .795, .30, .70)
             elif kind == 'hold': anc[v] = hold(f, v, p)
             else: anc[v] = dict(FX)

@@ -207,13 +207,29 @@ export function itemState(it, pet) {
   if (it.rarity !== "common" && !pet.premium) return { kind: "premium" };
   return { kind: "buy" };
 }
-const SLOT_TABS = [["all", "Tất cả"], ["dau", "Đội đầu"], ["ao", "Áo"], ["kinh", "Kính"], ["tai_nghe", "Tai nghe"], ["cam_tay", "Cầm tay"], ["deo", "Khăn, túi"], ["sau_lung", "Sau lưng"], ["duoi_chan", "Dưới chân"], ["hieu_ung", "Hiệu ứng"]];
+const SLOT_TABS = [["all", "Mọi loại"], ["dau", "Đội đầu"], ["ao", "Áo"], ["kinh", "Kính"], ["tai_nghe", "Tai nghe"], ["cam_tay", "Cầm tay"], ["deo", "Khăn, túi"], ["sau_lung", "Sau lưng"], ["duoi_chan", "Dưới chân"], ["hieu_ung", "Hiệu ứng"]];
+// 20/10 (chủ dự án chê 2 hàng nút to): loại món = hàng chip nhỏ cao 32, chọn = xanh đặc; hàng cuộn ngang có mép mờ bên phải
 function Chips({ value, onChange, counts }) {
   return (
-    <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 12px 4px 12px", scrollbarWidth: "none" }}>
-      {SLOT_TABS.filter(([k]) => k === "all" || counts[k]).map(([k, l]) => {
-        const a = value === k;
-        return <button key={k} onClick={() => onChange(k)} aria-pressed={a} style={{ flexShrink: 0, height: 36, padding: "0 14px", borderRadius: 18, border: "none", background: a ? "#0F172A" : "#FFFFFF", color: a ? "#FFFFFF" : "#334155", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>{l}</button>;
+    <div style={{ position: "relative" }}>
+      <div className="pet-noscroll" style={{ display: "flex", gap: 6, overflowX: "auto", padding: "10px 12px 4px 12px", scrollbarWidth: "none" }}>
+        {SLOT_TABS.filter(([k]) => k === "all" || counts[k]).map(([k, l]) => {
+          const a = value === k;
+          return <button key={k} type="button" data-testid={`pet-slot-${k}`} onClick={() => onChange(k)} aria-pressed={a} style={{ flexShrink: 0, height: 32, padding: "0 12px", borderRadius: 16, border: "none", background: a ? "#007AFF" : "rgba(255,255,255,0.7)", color: a ? "#FFFFFF" : "#475569", fontSize: 13, fontWeight: a ? 800 : 700, fontFamily: "inherit", boxShadow: a ? "0 4px 10px rgba(0,122,255,0.25)" : "none" }}>{l}</button>;
+        })}
+        <span aria-hidden="true" style={{ flexShrink: 0, width: 12 }} />
+      </div>
+      <span aria-hidden="true" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 24, background: "linear-gradient(90deg, rgba(230,239,255,0), #E6EFFF)", pointerEvents: "none" }} />
+    </div>
+  );
+}
+// bộ sưu tập: 1 thanh chia đều kiểu iOS (nền nhạt, mục đang chọn là ô trắng nổi chữ xanh)
+function ColTabs({ value, onChange, tabs }) {
+  return (
+    <div role="tablist" aria-label="Bộ sưu tập" style={{ margin: "12px 12px 0 12px", display: "flex", padding: 3, gap: 2, borderRadius: 14, background: "rgba(15,23,42,0.06)" }}>
+      {tabs.map(([k, l]) => {
+        const on = value === k;
+        return <button key={k} type="button" role="tab" aria-selected={on} data-testid={`pet-col-${k}`} onClick={() => onChange(k)} style={{ flex: 1, minWidth: 0, height: 34, padding: "0 4px", borderRadius: 11, border: "none", background: on ? "#FFFFFF" : "transparent", color: on ? "#0062F0" : "#475569", fontSize: 13, fontWeight: on ? 900 : 700, fontFamily: "inherit", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: on ? "0 2px 6px rgba(15,23,42,0.12)" : "none", transition: "background .15s, color .15s" }}>{l}</button>;
       })}
     </div>
   );
@@ -247,14 +263,7 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", preview, onBuy
             <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#831843", lineHeight: 1.4 }}>Đồ Hiếm và Huyền thoại dành cho Premium. Hạt bạn kiếm vẫn như nhau.</span>
           </div>
         )}
-        {cols.length > 0 && (
-          <div role="tablist" aria-label="Bộ sưu tập" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 12px 0 12px", scrollbarWidth: "none" }}>
-            {[["all", "Tất cả"], ["thuong", "Đồ thường"], ...cols].map(([k, l]) => {
-              const on = col === k;
-              return <button key={k} role="tab" aria-selected={on} data-testid={`pet-col-${k}`} onClick={() => { setCol(k); setSlot("all"); }} style={{ flexShrink: 0, height: 36, padding: "0 14px", borderRadius: 12, border: on ? "2px solid #007AFF" : "2px solid transparent", background: on ? "#EEF4FF" : "#FFFFFF", color: on ? "#0062F0" : "#334155", fontSize: 13, fontWeight: 900, fontFamily: "inherit" }}>{l}</button>;
-            })}
-          </div>
-        )}
+        {cols.length > 0 && <ColTabs value={col} onChange={(k) => { setCol(k); setSlot("all"); }} tabs={[["all", "Tất cả"], ["thuong", "Thường"], ...cols]} />}
         <Chips value={slot} onChange={setSlot} counts={counts} />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, padding: "8px 12px 0 12px" }}>
           {shown.map((it) => <ItemCard key={it.id} it={it} state={itemState(it, pet)} equipped={Object.values(pet.equipped).includes(it.id)} onClick={() => setPv(it.id)} />)}
