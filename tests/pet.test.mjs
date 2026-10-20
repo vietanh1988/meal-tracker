@@ -58,7 +58,18 @@ test("phòng theo dịp: Noel 15–31/12, Tết −10…+7 ngày quanh mùng 1",
   assert.equal(seasonOf("2027-02-13"), "tet");
   assert.equal(seasonOf("2027-02-14"), null);
   assert.equal(seasonOf("2028-01-16"), "tet");
-  assert.equal(seasonOf("2026-10-20"), null);
+  assert.equal(seasonOf("2026-10-19"), null);
+  assert.equal(seasonOf("2026-10-20"), "halloween");
+  assert.equal(seasonOf("2026-10-31"), "halloween");
+  assert.equal(seasonOf("2026-11-01"), null);
+});
+
+test("bộ Halloween: bán 15/10–2/11", () => {
+  assert.equal(collectionStatus("halloween", {}, "2026-10-14").open, false);
+  assert.deepEqual(collectionStatus("halloween", {}, "2026-10-20"), { open: true, label: "Bán tới 2/11" });
+  assert.equal(collectionStatus("halloween", {}, "2026-11-02").open, true);
+  assert.deepEqual(collectionStatus("halloween", {}, "2026-11-03"), { open: false, label: "Mở bán 15/10 – 2/11" });
+  assert.equal(collectionStatus("halloween", { collections: { halloween: { mode: "closed" } } }, "2026-10-20").open, false);
 });
 
 test("bộ sưu tập theo dịp: Noel 1/12–6/1, Tết −21…+15 ngày, Cổ trang luôn mở, admin đổi được", () => {

@@ -81,6 +81,21 @@ C = {
   ('Cánh sen bay', 'hieu_ung', BOTH, 'rare', 4, 'fx', None, ''),
   ('Mây ngũ sắc', 'hieu_ung', BOTH, 'rare', 4, 'fx', None, ''),
  ], [('Áo giao lĩnh xanh', ['nam'], 'rare', 3), ('Long bào', ['nam'], 'legendary', 6), ('Áo nhật bình hồng', ['nu'], 'rare', 3), ('Áo tấc xanh ngọc', ['nu'], 'rare', 4)]),
+ # 20/10 tối: Halloween (ChatGPT vẽ từng bộ riêng, ảnh to — không phóng)
+ 'halloween': ('Halloween', [
+  ('Mũ phù thuỷ', 'dau', BOTH, 'rare', 2, 'cap', .98, 'cover'),
+  ('Băng đô sừng quỷ', 'dau', BOTH, 'common', 1, 'band', .86, 'leaf'),
+  ('Mũ bí ngô', 'dau', BOTH, 'rare', 2, 'cap', .80, 'cover'),
+  ('Băng đô tai mèo đen', 'dau', ['nu'], 'common', 1, 'band', .84, 'leaf'),
+  ('Kính dơi', 'kinh', BOTH, 'common', 1, 'glasses', None, ''),
+  ('Khăn ma cà rồng', 'deo', BOTH, 'common', 1, 'scarf', None, ''),
+  ('Giỏ kẹo bí ngô', 'cam_tay', BOTH, 'common', 1, 'hold', .8, ''),  # treo dưới tay → nhỏ lại cho khỏi chạm đất
+  ('Đũa phép trăng sao', 'cam_tay', ['nu'], 'rare', 3, 'hold', 1.0, ''),
+  ('Chổi phù thuỷ', 'cam_tay', BOTH, 'rare', 3, 'hold', 1.0, ''),
+  ('Kẹo mút xoắn', 'cam_tay', BOTH, 'common', 1, 'hold', 1.0, ''),
+  ('Dơi bay', 'hieu_ung', BOTH, 'common', 2, 'fx', None, ''),
+  ('Ma nhỏ', 'hieu_ung', BOTH, 'rare', 3, 'fx', None, ''),
+ ], [('Bộ ma cà rồng', ['nam'], 'legendary', 4), ('Bộ bí ngô', ['nam'], 'common', 1), ('Váy phù thuỷ', ['nu'], 'rare', 2), ('Bộ mèo đen', ['nu'], 'rare', 3)]),
 }
 PRICE = {'common': 150, 'rare': 400, 'legendary': 1000}
 out = []
@@ -100,6 +115,7 @@ for col, (label, items, outfits) in C.items():
             elif kind == 'lion': anc[v] = fitw(f, v, BRIM[v] + .05, p)  # đầu lân trùm xuống ngang lông mày
             elif kind == 'hip': anc[v] = fitc(f, v, .795, .30, .70)
             elif kind == 'hold': anc[v] = hold(f, v, p)
+            elif kind == 'glasses': anc[v] = fitc(f, v, .357 if v == 'nam' else .412, .66 if v == 'nam' else .70)  # tâm kính ngang mắt như kính thường, cánh dơi rộng hơn
             else: anc[v] = dict(FX)
         it['anchor'] = anc
         if flag == 'cover': it['cover'] = True

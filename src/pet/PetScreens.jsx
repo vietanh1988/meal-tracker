@@ -230,10 +230,11 @@ function Chips({ value, onChange, counts }) {
 // bộ sưu tập: 1 thanh chia đều kiểu iOS (nền nhạt, mục đang chọn là ô trắng nổi chữ xanh)
 function ColTabs({ value, onChange, tabs, locked = {} }) {
   return (
-    <div role="tablist" aria-label="Bộ sưu tập" style={{ margin: "12px 12px 0 12px", display: "flex", padding: 3, gap: 2, borderRadius: 14, background: "rgba(15,23,42,0.06)" }}>
+    <div role="tablist" aria-label="Bộ sưu tập" className="pet-noscroll" style={{ margin: "12px 12px 0 12px", display: "flex", padding: 3, gap: 2, borderRadius: 14, background: "rgba(15,23,42,0.06)", overflowX: "auto", scrollbarWidth: "none" }}>
       {tabs.map(([k, l]) => {
         const on = value === k;
-        return <button key={k} type="button" role="tab" aria-selected={on} data-testid={`pet-col-${k}`} onClick={() => onChange(k)} style={{ flex: 1, minWidth: 0, height: 34, padding: "0 4px", borderRadius: 11, border: "none", background: on ? "#FFFFFF" : "transparent", color: on ? "#0062F0" : "#475569", fontSize: 13, fontWeight: on ? 900 : 700, fontFamily: "inherit", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: on ? "0 2px 6px rgba(15,23,42,0.12)" : "none", transition: "background .15s, color .15s", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 }}>{locked[k] && <span aria-label="chưa mở bán" style={{ display: "inline-flex", opacity: 0.7 }}>{PIc.lock(11)}</span>}{l}</button>;
+        // 20/10 tối: từ 6 bộ trở lên thanh cuộn ngang (mỗi ô vừa chữ), ít hơn thì chia đều
+        return <button key={k} type="button" role="tab" aria-selected={on} data-testid={`pet-col-${k}`} onClick={() => onChange(k)} style={{ flex: tabs.length > 5 ? "1 0 auto" : 1, minWidth: 0, height: 34, padding: tabs.length > 5 ? "0 10px" : "0 4px", borderRadius: 11, border: "none", background: on ? "#FFFFFF" : "transparent", color: on ? "#0062F0" : "#475569", fontSize: 13, fontWeight: on ? 900 : 700, fontFamily: "inherit", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: on ? "0 2px 6px rgba(15,23,42,0.12)" : "none", transition: "background .15s, color .15s", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 }}>{locked[k] && <span aria-label="chưa mở bán" style={{ display: "inline-flex", opacity: 0.7 }}>{PIc.lock(11)}</span>}{l}</button>;
       })}
     </div>
   );
@@ -257,7 +258,8 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", initialCol = "
   const [pv, setPv] = useState(preview || null);
   const [col, setCol] = useState(initialCol); // bộ sưu tập (Noel / Tết / Cổ trang) — mỗi bộ 1 mục riêng
   const all = catalog.items.filter((it) => it.variants.includes(pet.variant) && !it.hidden && !it.achievement && !pet.achievementIds.includes(it.id));
-  const cols = [...new Map(all.filter((it) => it.collection).map((it) => [it.collection, it.collection_name])).entries()];
+  const cols = [...new Map(all.filter((it) => it.collection).map((it) => [it.collection, it.collection_name])).entries()]
+    .sort((a, b) => (pet.cols?.[b[0]]?.open ? 1 : 0) - (pet.cols?.[a[0]]?.open ? 1 : 0)); // bộ đang bán đứng trước
   const list = all.filter((it) => col === "all" || (col === "thuong" ? !it.collection : it.collection === col));
   const counts = list.reduce((m, it) => ((m[it.slot] = (m[it.slot] || 0) + 1), m), {});
   const shown = list.filter((it) => slot === "all" || it.slot === slot).sort((a, b) => a.level - b.level || a.price - b.price);

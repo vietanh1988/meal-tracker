@@ -158,10 +158,15 @@ def _fitTop(file, v, top, cw):  # mép trên khăn ngay dưới miệng (khăn d
 for it in items:
     if it['id'] in ('ao-roi-07', 'phu-kien-13'):
         it['anchor'] = {'nam': _fitTop(it['file'], 'nam', .535, .66), 'nu': _fitTop(it['file'], 'nu', .595, .58)}
+    if it['id'] == 'halloween-06':  # khăn ma cà rồng: dải dài → canh mép trên dưới miệng, hẹp hơn thân
+        it['anchor'] = {'nam': _fitTop(it['file'], 'nam', .545, .58), 'nu': _fitTop(it['file'], 'nu', .60, .52)}
+    if it['id'] == 'halloween-12':  # ma nhỏ bay cạnh đầu (giữa đầu thì che lá)
+        it['anchor'] = {v: {'x': .80, 'y': .13, 'w': .48} for v in it['anchor']}
 # 20/10 (chủ dự án: mũ đội lệch, mũ Noel như bị cắt đầu): mũ canh giữa theo VÀNH MŨ (đáy mũ) chứ không theo cả khung ảnh —
 # quả bông mũ Noel, lưỡi trai chìa sang một bên làm khung ảnh lệch → mũ lệch, phần đầu đã cắt chỏm lộ ra bên kia.
 # Mũ lưỡi trai: lấy tâm phần chỏm (15–50% chiều cao) vì lưỡi trai nằm ở đáy. Tâm đầu Pi đo từ thân gốc (y 0,30).
 HEAD_X = {'nam': 0.523, 'nu': 0.516}
+HAT_DX = {'halloween-01': 0.07}  # mũ phù thuỷ: vành trái chìa dài hơn vành phải → dời sang phải (theo bề rộng ảnh)
 CAPS = {'doi-dau-01', 'doi-dau-02', 'doi-dau-03', 'doi-dau-06', 'doi-dau-09'}
 def _brim_cx(file, cap):
     from PIL import Image as _I
@@ -178,6 +183,7 @@ for it in items:
     for v, a in (it.get('anchor') or {}).items():
         if not a or 'w' not in a: continue
         a['x'] = round(a['x'] + HEAD_X.get(v, .52) - (a['x'] - a['w'] / 2 + cx * a['w']), 4)
+        a['x'] = round(a['x'] + HAT_DX.get(it['id'], 0) * a['w'], 4)
         if it['id'] in CAPS:  # lưỡi trai trước nhỏ so với đầu Pi → to thêm 10%, giữ nguyên đáy vành
             from PIL import Image as _I
             iw, ih = _I.open(f"public/pet/{it['file']}").size

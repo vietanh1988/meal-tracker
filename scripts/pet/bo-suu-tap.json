@@ -1368,5 +1368,467 @@
     "file_nl": "than-ao/than-nu-khong-la-co-trang-ao-04.webp"
    }
   }
+ },
+ {
+  "id": "halloween-01",
+  "name": "Mũ phù thuỷ",
+  "file": "bo-suu-tap/halloween-01.webp",
+  "slot": "dau",
+  "rarity": "rare",
+  "level": 2,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.0822,
+    "w": 1.0022
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.142,
+    "w": 1.0022
+   }
+  },
+  "cover": true
+ },
+ {
+  "id": "halloween-02",
+  "name": "Băng đô sừng quỷ",
+  "file": "bo-suu-tap/halloween-02.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.2675,
+    "w": 0.8852,
+    "h": 0.212
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.2675,
+    "w": 0.8852,
+    "h": 0.212
+   }
+  },
+  "behind_leaf": true
+ },
+ {
+  "id": "halloween-03",
+  "name": "Mũ bí ngô",
+  "file": "bo-suu-tap/halloween-03.webp",
+  "slot": "dau",
+  "rarity": "rare",
+  "level": 2,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.1066,
+    "w": 0.8203
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.1652,
+    "w": 0.8203
+   }
+  },
+  "cover": true
+ },
+ {
+  "id": "halloween-04",
+  "name": "Băng đô tai mèo đen",
+  "file": "bo-suu-tap/halloween-04.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5009,
+    "y": 0.2675,
+    "w": 0.864,
+    "h": 0.2119
+   },
+   "nu": {
+    "x": 0.5009,
+    "y": 0.2675,
+    "w": 0.864,
+    "h": 0.2119
+   }
+  },
+  "behind_leaf": true
+ },
+ {
+  "id": "halloween-05",
+  "name": "Kính dơi",
+  "file": "bo-suu-tap/halloween-05.webp",
+  "slot": "kinh",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.357,
+    "w": 0.6747
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.412,
+    "w": 0.7156
+   }
+  }
+ },
+ {
+  "id": "halloween-06",
+  "name": "Khăn ma cà rồng",
+  "file": "bo-suu-tap/halloween-06.webp",
+  "slot": "deo",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.5557,
+    "w": 0.7192
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.6451,
+    "w": 0.5959
+   }
+  }
+ },
+ {
+  "id": "halloween-07",
+  "name": "Giỏ kẹo bí ngô",
+  "file": "bo-suu-tap/halloween-07.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.8499,
+    "y": 0.9197,
+    "w": 0.4542
+   },
+   "nu": {
+    "x": 0.8494,
+    "y": 0.913,
+    "w": 0.4542
+   }
+  },
+  "file_hold": "bo-suu-tap/halloween-07.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ],
+  "mirror": true
+ },
+ {
+  "id": "halloween-08",
+  "name": "Đũa phép trăng sao",
+  "file": "bo-suu-tap/halloween-08.webp",
+  "slot": "cam_tay",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.758,
+    "y": 0.6902,
+    "w": 0.3686
+   },
+   "nu": {
+    "x": 0.7575,
+    "y": 0.6947,
+    "w": 0.3686
+   }
+  },
+  "file_hold": "bo-suu-tap/halloween-08.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ],
+  "mirror": true
+ },
+ {
+  "id": "halloween-09",
+  "name": "Chổi phù thuỷ",
+  "file": "bo-suu-tap/halloween-09.webp",
+  "slot": "cam_tay",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.9397,
+    "y": 0.8488,
+    "w": 0.5262
+   },
+   "nu": {
+    "x": 0.9392,
+    "y": 0.8456,
+    "w": 0.5262
+   }
+  },
+  "file_hold": "bo-suu-tap/halloween-09.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ],
+  "mirror": true
+ },
+ {
+  "id": "halloween-10",
+  "name": "Kẹo mút xoắn",
+  "file": "bo-suu-tap/halloween-10.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.8365,
+    "y": 0.6836,
+    "w": 0.3772
+   },
+   "nu": {
+    "x": 0.836,
+    "y": 0.6885,
+    "w": 0.3772
+   }
+  },
+  "file_hold": "bo-suu-tap/halloween-10.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ],
+  "mirror": true
+ },
+ {
+  "id": "halloween-11",
+  "name": "Dơi bay",
+  "file": "bo-suu-tap/halloween-11.webp",
+  "slot": "hieu_ung",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "halloween-12",
+  "name": "Ma nhỏ",
+  "file": "bo-suu-tap/halloween-12.webp",
+  "slot": "hieu_ung",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "halloween-ao-01",
+  "name": "Bộ ma cà rồng",
+  "file": "bo-suu-tap/halloween-ao-01.webp",
+  "slot": "ao",
+  "rarity": "legendary",
+  "level": 4,
+  "price": 1000,
+  "variants": [
+   "nam"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-halloween-ao-01.webp",
+    "file_nl": "than-ao/than-nam-khong-la-halloween-ao-01.webp"
+   }
+  }
+ },
+ {
+  "id": "halloween-ao-02",
+  "name": "Bộ bí ngô",
+  "file": "bo-suu-tap/halloween-ao-02.webp",
+  "slot": "ao",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-halloween-ao-02.webp",
+    "file_nl": "than-ao/than-nam-khong-la-halloween-ao-02.webp"
+   }
+  }
+ },
+ {
+  "id": "halloween-ao-03",
+  "name": "Váy phù thuỷ",
+  "file": "bo-suu-tap/halloween-ao-03.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 2,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-halloween-ao-03.webp",
+    "file_nl": "than-ao/than-nu-khong-la-halloween-ao-03.webp"
+   }
+  }
+ },
+ {
+  "id": "halloween-ao-04",
+  "name": "Bộ mèo đen",
+  "file": "bo-suu-tap/halloween-ao-04.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "halloween",
+  "collection_name": "Halloween",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-halloween-ao-04.webp",
+    "file_nl": "than-ao/than-nu-khong-la-halloween-ao-04.webp"
+   }
+  }
  }
 ]

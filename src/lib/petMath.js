@@ -86,11 +86,12 @@ export function itemStatus(it, { owned = [], level = 1, premium = false, variant
 // Ngày mùng 1 Tết (dương lịch) — bảng cố định, thêm năm mới khi cần.
 export const TET_DAYS = ["2027-02-06", "2028-01-26", "2029-02-13", "2030-02-03", "2031-01-23", "2032-02-11", "2033-01-31", "2034-02-19", "2035-02-08", "2036-01-28"];
 const dayNum = (s) => Math.round(Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)) / 86400000);
-/** dateStr "YYYY-MM-DD" (giờ VN) → "noel" | "tet" | null */
+/** dateStr "YYYY-MM-DD" (giờ VN) → "noel" | "tet" | "halloween" | null — Halloween 20/10–31/10 */
 export function seasonOf(dateStr) {
   if (!dateStr || dateStr.length < 10) return null;
   const md = dateStr.slice(5, 10);
   if (md >= "12-15" && md <= "12-31") return "noel";
+  if (md >= "10-20" && md <= "10-31") return "halloween";
   const d = dayNum(dateStr);
   for (const t of TET_DAYS) { const k = d - dayNum(t); if (k >= -10 && k <= 7) return "tet"; }
   return null;
@@ -104,6 +105,7 @@ export const COL_DEFAULT = {
   noel: { mode: "season", from: "12-01", to: "01-06" },
   tet: { mode: "season", before: 21, after: 15 },
   "co-trang": { mode: "open" },
+  halloween: { mode: "season", from: "10-15", to: "11-02" },
 };
 const fmtDM = (s) => `${+s.slice(8, 10)}/${+s.slice(5, 7)}`;
 const shift = (s, n) => new Date((dayNum(s) + n) * 86400000).toISOString().slice(0, 10);
@@ -123,7 +125,7 @@ export function collectionStatus(col, cfg = {}, dateStr) {
     }
     return { open: false, label: "Chưa có lịch" };
   }
-  const md = dateStr.slice(5, 10), from = c.from || (col === "noel" ? "12-01" : "01-01"), to = c.to || (col === "noel" ? "01-06" : "12-31"); // khớp mặc định SQL pet_col_open
+  const md = dateStr.slice(5, 10), from = c.from || "01-01", to = c.to || "12-31"; // mặc định từng bộ ở COL_DEFAULT, khớp SQL pet_col_open
   const open = from <= to ? md >= from && md <= to : md >= from || md <= to;
 
   const dm = (m) => `${+m.slice(3, 5)}/${+m.slice(0, 2)}`;

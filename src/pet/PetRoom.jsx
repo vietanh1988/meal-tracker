@@ -19,10 +19,11 @@ const ACC = { nam: { rug: ["#BFDBFE", "#93C5FD"], curtain: "#60A5FA", mat: "#3B8
 const RUG_Y = 0.79, FEET = 26, SHELF = { left: 0.775, width: 0.2, bottom: 0.405, h: 0.075 };
 // Phòng theo dịp (20/10, ChatGPT): ảnh phong-<giờ>-<bản>-<dịp>.webp. Dịp nào chưa có ảnh cho bản đó → phòng thường.
 // rug: tâm thảm đo lại trên ảnh dịp (ChatGPT vẽ thảm thấp hơn ~1%).
-export const SEASON_ART = { noel: { nam: true }, tet: { nu: true } };
-const SEASON_RUG = { noel: 0.8, tet: 0.805 };
+export const SEASON_ART = { noel: { nam: true }, tet: { nu: true }, halloween: { nam: true, nu: true } };
+const SEASON_RUG = { noel: 0.8, tet: 0.805, halloween: 0.843 };
 // Noel: tất treo che tầng giữa kệ → đồ thành tích xuống tầng dưới (đáy 52,7%).
-const SEASON_SHELF = { noel: { ...SHELF, bottom: 0.527 } };
+// Halloween (ảnh ngang 1536×1024 cắt vuông quanh thảm): kệ sát mép phải, tầng giữa trống ở đáy 51,5%.
+const SEASON_SHELF = { noel: { ...SHELF, bottom: 0.527 }, halloween: { left: 0.81, width: 0.18, bottom: 0.515, h: 0.07 } };
 export function PetRoom({ time = "sang", variant = "nam", season = null, trophies = [], height = 280, art, children, testid = "pet-room" }) {
   const ref = useRef(null);
   const [w, setW] = useState(366);
