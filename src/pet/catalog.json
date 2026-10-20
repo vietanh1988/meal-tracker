@@ -21,6 +21,10 @@
     "y": 0.7828,
     "w": 0.1259
    },
+   "hand_left": [
+    0.1395,
+    0.788
+   ],
    "hat_cut": 0.27,
    "file_nl": "than/than-nam-khong-la.webp",
    "file_ao_nl": "than/than-nam-mac-ao-khong-la.webp",
@@ -60,6 +64,10 @@
     "y": 0.7828,
     "w": 0.1252
    },
+   "hand_left": [
+    0.1395,
+    0.788
+   ],
    "hat_cut": 0.3,
    "file_nl": "than/than-nu-khong-la.webp",
    "file_ao_nl": "than/than-nu-mac-ao-khong-la.webp",
@@ -1028,6 +1036,10 @@
    ],
    "level": 3,
    "price": 150,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-03-cam.webp",
    "anchor": {
     "nam": {
@@ -1054,6 +1066,10 @@
    ],
    "level": 3,
    "price": 150,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-04-cam.webp",
    "anchor": {
     "nam": {
@@ -1080,6 +1096,10 @@
    ],
    "level": 3,
    "price": 150,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-05-cam.webp",
    "anchor": {
     "nam": {
@@ -1106,6 +1126,10 @@
    ],
    "level": 3,
    "price": 150,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-06-cam.webp",
    "anchor": {
     "nam": {
@@ -1132,6 +1156,10 @@
    ],
    "level": 6,
    "price": 400,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-07-cam.webp",
    "anchor": {
     "nam": {
@@ -1208,6 +1236,10 @@
    ],
    "level": 3,
    "price": 150,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-10-cam.webp",
    "anchor": {
     "nam": {
@@ -1234,6 +1266,10 @@
    ],
    "level": 4,
    "price": 180,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-11-cam.webp",
    "anchor": {
     "nam": {
@@ -1260,6 +1296,10 @@
    ],
    "level": 4,
    "price": 180,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-12-cam.webp",
    "anchor": {
     "nam": {
@@ -1336,6 +1376,10 @@
    ],
    "level": 4,
    "price": 180,
+   "hands": [
+    "phai",
+    "trai"
+   ],
    "file_hold": "phu-kien/phu-kien-15-cam.webp",
    "anchor": {
     "nam": {
