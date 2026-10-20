@@ -58,6 +58,8 @@ for r in plan:
         it['price'] = price_common[lv] if r == 'common' else 400 if r == 'rare' else 1000
 
 # điểm đặt (chỉnh tay sau khi soát ảnh ghép)
+# Balo: quai đeo vẽ riêng (ChatGPT 20/10), nằm đè lên áo ở lớp 'quai'; balo vẫn ở lớp sau lưng
+QUAI = {'phu-kien-01': 'phu-kien/phu-kien-01-quai-', 'phu-kien-09': 'phu-kien/phu-kien-09-quai-'}
 ANCH = json.load(open(sys.argv[2])) if len(sys.argv) > 2 else {}
 EYE_Y = {'nam': 0.345, 'nu': 0.40}
 def default(it, v):
@@ -79,6 +81,10 @@ BODY_HAND = {'nam': (0.852, 0.7828, 588, 900), 'nu': (0.8515, 0.7828, 559, 900)}
 COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9, 10)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
 for it in items:
     if it['id'] in COVER: it['cover'] = True
+    if it['id'] in QUAI:
+        it['front'] = [{'file': QUAI[it['id']] + 'trai.webp', **A(0.30, 0.712, 0.22)}, {'file': QUAI[it['id']] + 'phai.webp', **A(0.70, 0.712, 0.22)}]
+    if it['id'] == 'phu-kien-02':
+        it['name'] = 'Túi đeo hông'; it['anchor'] = {v: A(0.5, 0.80, 0.70) for v in it['variants']}; continue  # bản vẽ lại 20/10: nhìn thẳng, có dây quanh eo
     if it['slot'] == 'cam_tay':
         it['hands'] = ['phai', 'trai']   # luật 20/10: mọi đồ cầm tay cầm được ở tay trái hoặc tay phải, cả nam lẫn nữ; tay trái dùng ảnh lật ngang
     if it['id'] in HOLD:
@@ -110,7 +116,7 @@ catalog = {
            'leaf': {'file': 'than/la-nu.webp', **A(0.4365, 0.0822, 0.4043), 'px': 0.76, 'py': 0.97}},
   },
   # thứ tự vẽ từ dưới lên
-  'layers': ['duoi_chan', 'sau_lung', 'than', 'ao', 'deo', 'mat', 'mieng', 'kinh', 'tai_nghe', 'bow', 'dau', 'cam_tay', 'tay', 'hieu_ung', 'tam_trang'],
+  'layers': ['duoi_chan', 'sau_lung', 'than', 'ao', 'quai', 'deo', 'mat', 'mieng', 'kinh', 'tai_nghe', 'bow', 'dau', 'cam_tay', 'tay', 'hieu_ung', 'tam_trang'],
   'slots': {'dau': 'Đội đầu', 'kinh': 'Kính', 'tai_nghe': 'Tai nghe', 'ao': 'Áo', 'deo': 'Khăn / túi', 'cam_tay': 'Cầm tay',
             'sau_lung': 'Sau lưng', 'duoi_chan': 'Dưới chân', 'hieu_ung': 'Hiệu ứng'},
   'moods': {m: {'file': f, 'anchor': {'nam': A(x, y, w), 'nu': A(x + 0.02, y + 0.1, w)}} for m, f, x, y, w in [

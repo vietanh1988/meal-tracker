@@ -25,6 +25,9 @@ def render(v, equip, mood=None, bow=True):
             if 'dau' in equip and equip['dau'].get('cover'):  # mũ trùm: bỏ phần thân phía trên đường cắt (lá, chỏm đầu)
                 cut = round(oy + b['hat_cut'] * bh); body.paste((0, 0, 0, 0), (0, 0, body.width, cut))
             c.alpha_composite(body)
+        elif L == 'quai':
+            for it in equip.values():
+                for f in it.get('front', []): place(c, f['file'], f, bw, bh, ox, oy)
         elif L == 'tay':
             if 'cam_tay' in equip and not equip['cam_tay'].get('file_hold'): place(c, b['hand']['file'], b['hand'], bw, bh, ox, oy)
         elif L == 'mat': place(c, 'mat-doi/' + ('mat-doi-nam-01.webp' if v == 'nam' else 'mat-doi-nu-13.webp'), b['eyes'], bw, bh, ox, oy)

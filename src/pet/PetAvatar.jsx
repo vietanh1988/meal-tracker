@@ -39,6 +39,7 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
   const layers = [];
   for (const L of catalog.layers) {
     if (L === "than") layers.push(<Layer key="than" file={eq.ao ? b.file_ao : b.file} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? b.hat_cut : 0} />);
+    else if (L === "quai") { Object.values(eq).forEach((it) => (it.front || []).forEach((f, i) => layers.push(<Layer key={`quai${it.id}${i}`} file={f.file} a={f} bw={bw} bh={bh} />))); } // quai balo đè lên áo
     else if (L === "tay") { if (eq.cam_tay && !eq.cam_tay.file_hold) layers.push(<Layer key="tay" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />); } // tay vẽ đè lên đồ → trông như đang cầm
     else if (L === "mat") layers.push(<Layer key="mat" file={eyes} a={b.eyes} bw={bw} bh={bh} />);
     else if (L === "mieng") layers.push(<Layer key="mieng" file={mouth} a={b.mouth} bw={bw} bh={bh} />);

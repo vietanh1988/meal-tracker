@@ -86,6 +86,7 @@
   "sau_lung",
   "than",
   "ao",
+  "quai",
   "deo",
   "mat",
   "mieng",
@@ -987,6 +988,20 @@
    ],
    "level": 6,
    "price": 400,
+   "front": [
+    {
+     "file": "phu-kien/phu-kien-01-quai-trai.webp",
+     "x": 0.3,
+     "y": 0.712,
+     "w": 0.22
+    },
+    {
+     "file": "phu-kien/phu-kien-01-quai-phai.webp",
+     "x": 0.7,
+     "y": 0.712,
+     "w": 0.22
+    }
+   ],
    "anchor": {
     "nam": {
      "x": 0.5,
@@ -1014,14 +1029,14 @@
    "price": 150,
    "anchor": {
     "nam": {
-     "x": 0.66,
-     "y": 0.795,
-     "w": 0.36
+     "x": 0.5,
+     "y": 0.8,
+     "w": 0.7
     },
     "nu": {
-     "x": 0.66,
-     "y": 0.795,
-     "w": 0.36
+     "x": 0.5,
+     "y": 0.8,
+     "w": 0.7
     }
    }
   },
@@ -1212,6 +1227,20 @@
    ],
    "level": 6,
    "price": 400,
+   "front": [
+    {
+     "file": "phu-kien/phu-kien-09-quai-trai.webp",
+     "x": 0.3,
+     "y": 0.712,
+     "w": 0.22
+    },
+    {
+     "file": "phu-kien/phu-kien-09-quai-phai.webp",
+     "x": 0.7,
+     "y": 0.712,
+     "w": 0.22
+    }
+   ],
    "anchor": {
     "nam": {
      "x": 0.5,
