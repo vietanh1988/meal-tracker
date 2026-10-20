@@ -36,11 +36,19 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
   const eq = Object.fromEntries(Object.entries(equipped).map(([s, id]) => [s, ITEMS[id]]).filter(([, it]) => it && it.variants.includes(variant)));
   const face = FACES[mood] || FACES.vui;
   const [eyes, mouth] = face[variant];
+  const behindLeaf = Object.values(eq).some((it) => it.behind_leaf);
   const layers = [];
   for (const L of catalog.layers) {
-    if (L === "than") layers.push(<Layer key="than" file={eq.ao ? b.file_ao : b.file} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? b.hat_cut : 0} />);
+    if (L === "than") layers.push(<Layer key="than" file={behindLeaf ? (eq.ao ? b.file_ao_nl : b.file_nl) : (eq.ao ? b.file_ao : b.file)} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? b.hat_cut : 0} />);
     else if (L === "quai") { Object.values(eq).forEach((it) => (it.front || []).forEach((f, i) => layers.push(<Layer key={`quai${it.id}${i}`} file={f.file} a={f} bw={bw} bh={bh} />))); } // quai balo đè lên áo
-    else if (L === "tay") { if (eq.cam_tay && !eq.cam_tay.file_hold) layers.push(<Layer key="tay" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />); } // tay vẽ đè lên đồ → trông như đang cầm
+    else if (L === "tay") {
+      if (eq.cam_tay && !eq.cam_tay.file_hold) layers.push(<Layer key="tay" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />); // tay vẽ đè lên đồ → trông như đang cầm
+      if (eq.ao) { // mặc áo thì tay áo che tay gốc → vẽ lại bàn tay trần ở tay đang không cầm gì
+        layers.push(<Layer key="tay-trai" file={b.hand_l.file} a={b.hand_l} bw={bw} bh={bh} />);
+        if (!eq.cam_tay) layers.push(<Layer key="tay-phai" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />);
+      }
+      if (behindLeaf) layers.push(<Layer key="la" file={b.leaf.file} a={b.leaf} bw={bw} bh={bh} />); // băng đô / tai nghe đi sau cuống lá
+    }
     else if (L === "mat") layers.push(<Layer key="mat" file={eyes} a={b.eyes} bw={bw} bh={bh} />);
     else if (L === "mieng") layers.push(<Layer key="mieng" file={mouth} a={b.mouth} bw={bw} bh={bh} />);
     else if (L === "bow") { if (b.bow && bow && !eq.dau) layers.push(<Layer key="bow" file={b.bow.file} a={b.bow} bw={bw} bh={bh} />); }

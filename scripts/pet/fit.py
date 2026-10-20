@@ -53,17 +53,25 @@ for i,(cw,gy) in GRIP.items():
 # --- Đồ đội trên đầu không trùm (nơ, băng đô, vương miện): đáy món ngay trên lông mày, rộng theo đầu ---
 for i,(bn,bu,cn,cu) in {7:(.25,.30,.55,.58),10:(.305,.35,.62,.68),11:(.262,.312,.50,.56),12:(.262,.312,.50,.56)}.items():
     A[f'doi-dau-{i:02d}']={'nam':fitw(f'doi-dau/doi-dau-{i:02d}.webp','nam',bn,cn),'nu':fitw(f'doi-dau/doi-dau-{i:02d}.webp','nu',bu,cu)}
+
+# --- Băng đô tai mèo (20/10): vòng băng ôm theo đầu giọt nước — đỉnh vòng ngay dưới chỏm (sau cuống lá), 2 đầu băng chạm mép đầu ở ngang .37; ép dọc nhẹ cho vòng bớt cao ---
+def fitband(file,v,arc_top,end_y,cw):
+    im=Image.open(f'{R}/{file}'); a=im.split()[3].point(lambda p:255 if p>40 else 0); l,t,r,b=a.getbbox()
+    col=[y for y in range(im.height) if a.getpixel((im.width//2,y))]; at=col[0]
+    bw,bh=B[v]; sx=cw*bw/(r-l); sy=(end_y-arc_top)*bh/(b-at)
+    return {'x':round(.5+(im.width/2-(l+r)/2)*sx/bw,4),'y':round((arc_top*bh-at*sy+im.height*sy/2)/bh,4),'w':round(im.width*sx/bw,4),'h':round(im.height*sy/bh,4)}
+A['doi-dau-10']={'nam':fitband('doi-dau/doi-dau-10.webp','nam',.165,.37,.76),'nu':fitband('doi-dau/doi-dau-10.webp','nu',.165,.37,.78)}
 # --- Kính: tâm tròng kính trùng tâm mắt, kính đủ rộng để ôm trọn 2 mắt ---
 EYE_C={'nam':.357,'nu':.412}; GW={'nam':.58,'nu':.62}
 for i in (1,2,3,6,7,8):
     A[f'kinh-tai-nghe-{i:02d}']={v:fitc(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp',v,EYE_C[v],GW[v]) for v in ('nam','nu')}
-# --- Tai nghe (vẽ lại 20/10, nhìn thẳng như đang đeo): quai sát đỉnh đầu dưới cuống lá, chụp tai ôm 2 bầu đầu ---
+# --- Tai nghe (vẽ lại 20/10, nhìn thẳng như đang đeo): quai sát đỉnh đầu, chụp tai ôm 2 bầu đầu. Ảnh đã thu chụp tai còn 75% (giãn đoạn quai giữa để giữ bề ngang) vì chụp tai vẽ quá to ---
 def fittop(file,v,top,cw,cx=.5):
     im=Image.open(f'{R}/{file}'); l,t,r,b=im.split()[3].point(lambda p:255 if p>40 else 0).getbbox()
     bw,bh=B[v]; s=cw*bw/(r-l)
     return {'x':round(cx+(im.width/2-(l+r)/2)*s/bw,4),'y':round((top*bh-t*s+im.height*s/2)/bh,4),'w':round(im.width*s/bw,4)}
 for i in (4,5,9,10):
-    A[f'kinh-tai-nghe-{i:02d}']={'nam':fittop(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nam',.165,.90),'nu':fittop(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nu',.17,.94)}
+    A[f'kinh-tai-nghe-{i:02d}']={'nam':fittop(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nam',.15 if i!=10 else .12,.90),'nu':fittop(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nu',.155 if i!=10 else .125,.94)}
 # --- Khăn: quấn ngay dưới cằm, trên vai (không trùm lên mặt) ---
 for f in ('ao-roi/ao-roi-07.webp','phu-kien/phu-kien-13.webp'):
     k=f.split('/')[1][:-5]
