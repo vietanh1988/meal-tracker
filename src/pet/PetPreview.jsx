@@ -1,6 +1,6 @@
 // CHỈ CHẠY KHI DEV (main.jsx: import.meta.env.DEV && đường dẫn /__pet) — trang xem bản vẽ Fipilot Pet,
 // dựng từ component thật của app với dữ liệu giả. Không vào bản build prod.
-// ?s=home|shop|tryon|closet|entryA|entryB|choose|chat|chatout|week|settings|admin  &v=nam|nu  &mood=vui|ngu|hoi|mung  &say=<key> &week=1 &premium=1 &tab=overview|items|lines|settings &sel=<id>
+// ?s=home|shop|tryon|closet|entryA|entryB|chat|chatout|week|settings|admin  &v=nam|nu  &mood=vui|ngu|hoi|mung  &say=<key> &week=1 &premium=1 &tab=overview|items|lines|settings &sel=<id>
 import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { MOBILE_CSS, FONT, BottomNav, NAV_SPACE } from "../mobile/ui";
@@ -11,7 +11,7 @@ import { mealRows } from "../lib/mobileView";
 import { PET_CSS } from "./PetAvatar";
 import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PetMeRow, PIc } from "./PetScreens";
 import { AppIcon } from "../mobile/icons";
-import { PetChooseScreen, PetChatScreen, PetWeekScreen, PetSettingsScreen } from "./PetTalk";
+import { PetChatScreen, PetWeekScreen, PetSettingsScreen } from "./PetTalk";
 import { say as sayLine } from "./lines";
 import { PcPet } from "../pc/PcPet";
 import { SideNav, TopBar, PC_NAV } from "../pc/PcAdminShell";
@@ -161,7 +161,6 @@ export default function PetPreview() {
   const pet = mockPet();
   let body;
   if (S === "admin") return <Admin />;
-  if (S === "choose") return <Shell><PetChooseScreen value={V} /></Shell>;
   if (S === "chat" || S === "chatout") return <Shell><PetChatScreen pet={pet} msgs={CHAT[V]} left={S === "chatout" ? 0 : 3} max={5} /></Shell>;
   if (S === "week") return <Shell><PetWeekScreen pet={pet} w={WEEK(V)} /></Shell>;
   if (S === "settings") return <Shell><PetSettingsScreen pet={pet} set={{ talk: true, perDay: 3, quietFrom: "22:30", quietTo: "07:00", push: false, week: true, weekAt: "19:00" }} /></Shell>;

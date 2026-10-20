@@ -59,7 +59,7 @@ function Overview({ d }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div style={{ display: "flex", gap: 16 }}>
-        <Tile label="Khách có Pi" value={vnInt(d.pets)} sub={`Pi nam ${vnInt(d.petsNam)} · Pi nữ ${vnInt(d.petsNu)}`} color={PC.t1} />
+        <Tile label="Khách có Pi" value={vnInt(d.pets)} sub={`Pi nam ${vnInt(d.petsNam)} · Pi nữ ${vnInt(d.petsNu)} (theo giới tính hồ sơ)`} color={PC.t1} />
         <Tile label="Hạt phát hôm nay" value={vnInt(d.seedsToday)} sub={`${vnInt(d.capHit)} khách chạm trần 120`} color="#16A34A" />
         <Tile label="Đồ bán hôm nay" value={`${vnInt(d.soldToday)} món`} sub={`${vnInt(d.soldPremium)} món Hiếm / Huyền thoại`} color="#0062F0" />
         <Tile label="Lượt hỏi Pi hôm nay" value={vnInt(d.askToday)} sub={`${d.askShare}% lượt AI chat của app`} color="#7C3AED" />

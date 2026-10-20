@@ -1,9 +1,12 @@
 // Fipilot Pet — đợt "Pi nói chuyện + khen" (chốt 20/10). Bản vẽ dựng từ khối thật của app, dữ liệu truyền vào.
-//  - PetChooseScreen: lần đầu mở Pet → chọn Pi nam / Pi nữ (kho đồ theo bản), đặt tên.
+//  - Bản Pi KHÔNG cho chọn: theo giới tính trong hồ sơ (profile.gender: female → Pi nữ, còn lại Pi nam) — chủ dự án chốt 20/10.
 //  - PetChatScreen: Hỏi Pi — chat AI giọng Pi, dùng lượt AI của gói; hết lượt mời Premium.
 //  - PetWeekScreen: Tổng kết tuần Chủ nhật — số máy tính + câu soạn sẵn cho mọi khách; Premium thêm nhận xét AI.
 //  - PetSettingsScreen: tên, bản, Pi khen và nhắc (số câu / ngày, giờ yên lặng), tổng kết tuần.
 import { SubPage, Icon, GRAD_BLUE, Seg } from "../mobile/ui";
+
+/** Bản Pi theo hồ sơ: profile.gender "female" → "nu", còn lại "nam" */
+export const petVariant = (profile) => (profile?.gender === "female" ? "nu" : "nam");
 import { AppIcon } from "../mobile/icons";
 import { LT, ltCard } from "../theme";
 import { PetAvatar } from "./PetAvatar";
@@ -14,51 +17,6 @@ const fmt = (n) => Math.round(n).toLocaleString("vi-VN");
 const card = { margin: "0 12px", ...ltCard };
 const secT = { display: "block", padding: "20px 20px 8px 20px", fontSize: 13, fontWeight: 800, color: "#64748B" };
 const bubble = { background: "#FFFFFF", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center" };
-
-// ============ Chọn bạn đồng hành ============
-export function PetChooseScreen({ value = "nam", name = "Pi", onPick, onBack, onDone }) {
-  const opt = (v) => {
-    const on = value === v;
-    return (
-      <button key={v} data-testid={`pet-choose-${v}`} onClick={() => onPick?.(v)} aria-pressed={on} className="tap"
-        style={{ position: "relative", ...ltCard, borderRadius: 22, padding: 0, overflow: "hidden", border: on ? "2px solid #007AFF" : "2px solid transparent", fontFamily: "inherit", textAlign: "left", color: "#0F172A", display: "flex", flexDirection: "column", minWidth: 0, boxSizing: "border-box" }}>
-        <span style={{ position: "relative", height: 196, background: "radial-gradient(circle at 50% 40%, #FFFFFF 0%, #EAF4FF 50%, #D6E8FF 100%)", display: "block" }}>
-          <span style={{ position: "absolute", left: "50%", bottom: 10, transform: "translateX(-50%)" }}><PetAvatar variant={v} mood="vui" size={150} still label={VOICE[v].label} /></span>
-          {on && <span aria-hidden="true" style={{ position: "absolute", top: 10, right: 10, width: 26, height: 26, borderRadius: 13, background: "#007AFF", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.check(14, 3)}</span>}
-        </span>
-        <span style={{ padding: "10px 12px 12px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
-          <span style={{ fontSize: 16, fontWeight: 900 }}>{VOICE[v].label}</span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B", lineHeight: 1.35 }}>{VOICE[v].tag}</span>
-          <span style={{ marginTop: 4, background: "#EEF4FF", borderRadius: "4px 12px 12px 12px", padding: "6px 9px", fontSize: 12, fontWeight: 700, lineHeight: 1.35 }}>{say("full", v)}</span>
-        </span>
-      </button>
-    );
-  };
-  return (
-    <SubPage title="Chọn bạn đồng hành" subtitle="Pi khen bạn mỗi khi ghi bữa, uống nước, tập đều" onBack={onBack}
-      footer={<div style={{ padding: "10px 16px calc(14px + env(safe-area-inset-bottom, 0px)) 16px", background: "rgba(255,255,255,0.92)", borderTop: "1px solid rgba(30,64,175,0.08)" }}>
-        <button data-testid="pet-choose-done" onClick={onDone} style={{ display: "block", width: "100%", maxWidth: 528, margin: "0 auto", height: 52, borderRadius: 16, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, fontFamily: "inherit" }}>Chọn {VOICE[value].label}</button>
-      </div>}>
-      <div data-testid="pet-choose" style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, padding: "14px 12px 0 12px" }}>{opt("nam")}{opt("nu")}</div>
-      <span style={secT}>Tên bạn đồng hành</span>
-      <div style={{ ...card, padding: "0 14px", height: 52, display: "flex", alignItems: "center", gap: 10 }}>
-        <input data-testid="pet-name" defaultValue={name} maxLength={12} aria-label="Tên bạn đồng hành" style={{ flex: 1, minWidth: 0, border: "none", outline: "none", background: "transparent", fontSize: 16, fontWeight: 800, fontFamily: "inherit", color: "#0F172A" }} />
-        <span style={{ fontSize: 12, color: "#94A3B8" }}>tối đa 12 chữ</span>
-      </div>
-      <div style={{ ...card, marginTop: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
-        {[[PIc.shirt(18), "#0891B2", `${VOICE.nam.label} mặc đồ nam, ${VOICE.nu.label} mặc đồ nữ. Cửa hàng chỉ hiện đồ của bản bạn chọn.`],
-          [PIc.chat(18), "#7C3AED", "Pi nói theo giọng riêng: Pi nam hăng hái kiểu bạn tập cùng, Pi nữ dịu dàng kiểu bạn thân."],
-          [PIc.closet(18), "#16A34A", "Đổi bản sau trong Cài đặt Pi. Đồ đã mua của bản cũ vẫn giữ, đổi lại là có."]].map(([ic, c, t], i) => (
-          <span key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-            <AppIcon color={c} size={30}>{ic}</AppIcon>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#334155", lineHeight: 1.45, paddingTop: 5 }}>{t}</span>
-          </span>
-        ))}
-      </div>
-      <div style={{ height: 24 }} />
-    </SubPage>
-  );
-}
 
 // ============ Hỏi Pi (chat AI giọng Pi) ============
 function PiFace({ variant, size = 30 }) {
@@ -206,11 +164,7 @@ export function PetSettingsScreen({ pet, set, onBack }) {
         <span style={secT}>Bạn đồng hành</span>
         <div style={{ ...card, padding: "0 14px" }}>
           <Row title="Tên" right={val(pet.name)} testid="pet-set-name" />
-          <div style={{ padding: "12px 0", display: "flex", flexDirection: "column", gap: 8 }}>
-            <span style={{ fontSize: 15, fontWeight: 700 }}>Bản Pi</span>
-            <Seg ariaLabel="Bản Pi" value={pet.variant} onChange={() => {}} opts={[{ value: "nam", label: "Pi nam", testid: "pet-set-nam" }, { value: "nu", label: "Pi nữ", testid: "pet-set-nu" }]} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B", lineHeight: 1.4 }}>Đổi bản thì đổi cả giọng và kho đồ. Đồ đã mua của bản cũ vẫn giữ.</span>
-          </div>
+          <Row title="Bản Pi" sub="Theo giới tính trong hồ sơ của bạn. Đổi giới tính ở Hồ sơ thì Pi đổi theo, đồ đã mua vẫn giữ." right={<span style={{ fontSize: 14, fontWeight: 700, color: "#64748B" }}>{pet.variant === "nu" ? "Pi nữ" : "Pi nam"}</span>} last testid="pet-set-variant" />
         </div>
 
         <span style={secT}>Pi khen và nhắc</span>

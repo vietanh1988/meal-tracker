@@ -304,10 +304,6 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all" }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, padding: "8px 12px 0 12px" }}>
           {shown.map((it) => <ItemCard key={it.id} it={it} state={{ kind: "owned" }} equipped={Object.values(pet.equipped).includes(it.id)} />)}
         </div>
-        <div style={{ ...card, marginTop: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#334155" }}>Đổi sang {pet.variant === "nu" ? "Pi nam" : "Pi nữ"}</span>
-          <span style={{ fontSize: 12, color: "#64748B" }}>đồ {pet.variant === "nu" ? "Pi nữ" : "Pi nam"} vẫn giữ</span>{Icon.chev(16)}
-        </div>
         <div style={{ height: 28 }} />
       </div>
     </SubPage>
