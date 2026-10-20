@@ -42,6 +42,12 @@ test("Thú cưng Pi: khách thường — cờ tắt không thấy, cờ bật t
       await tap(page.getByTestId("pet-col-halloween"));
       await expect(page.getByTestId("pet-col-note")).toBeVisible();
       await expect(page.getByTestId("pet-shop").getByText("Mũ bí ngô")).toBeVisible();
+      // Bóng đá (mặc định đóng) + Trung thu (chưa tới rằm): xem được, có dòng chưa mở bán
+      for (const k of ["bong-da", "trung-thu"]) {
+        await tap(page.getByTestId(`pet-col-${k}`));
+        await expect(page.getByTestId("pet-col-note")).toBeVisible();
+      }
+      await expect(page.getByTestId("pet-shop").getByText("Đèn ông sao")).toBeVisible();
       await page.screenshot({ path: "shots/pet-user-gym.png" });
       await ctx.close(); }
 

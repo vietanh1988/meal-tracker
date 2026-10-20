@@ -4313,6 +4313,490 @@
      ]
     }
    }
+  },
+  {
+   "id": "trung-thu-01",
+   "name": "Bờm tai thỏ",
+   "file": "bo-suu-tap/trung-thu-01.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "level": 1,
+   "price": 150,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.526,
+     "y": 0.2675,
+     "w": 0.866,
+     "h": 0.2115
+    },
+    "nu": {
+     "x": 0.519,
+     "y": 0.2675,
+     "w": 0.866,
+     "h": 0.2115
+    }
+   },
+   "behind_leaf": true
+  },
+  {
+   "id": "trung-thu-02",
+   "name": "Mũ len trăng khuyết",
+   "file": "bo-suu-tap/trung-thu-02.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "level": 1,
+   "price": 150,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.5433,
+     "y": 0.1065,
+     "w": 0.802
+    },
+    "nu": {
+     "x": 0.5363,
+     "y": 0.1652,
+     "w": 0.802
+    }
+   },
+   "cover": true
+  },
+  {
+   "id": "trung-thu-03",
+   "name": "Kẹp tóc ngôi sao",
+   "file": "bo-suu-tap/trung-thu-03.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "level": 1,
+   "price": 150,
+   "variants": [
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.66,
+     "y": 0.1903,
+     "w": 0.4327
+    },
+    "nu": {
+     "x": 0.66,
+     "y": 0.2203,
+     "w": 0.4327
+    }
+   }
+  },
+  {
+   "id": "trung-thu-04",
+   "name": "Đèn ông sao",
+   "file": "bo-suu-tap/trung-thu-04.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "level": 1,
+   "price": 150,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.7708,
+     "y": 0.6907,
+     "w": 0.3431
+    },
+    "nu": {
+     "x": 0.7703,
+     "y": 0.6953,
+     "w": 0.3431
+    }
+   },
+   "file_hold": "bo-suu-tap/trung-thu-04.webp",
+   "hands": [
+    "phai",
+    "trai"
+   ],
+   "mirror": true
+  },
+  {
+   "id": "trung-thu-05",
+   "name": "Đèn cá chép",
+   "file": "bo-suu-tap/trung-thu-05.webp",
+   "slot": "cam_tay",
+   "rarity": "rare",
+   "level": 2,
+   "price": 400,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.6914,
+     "y": 0.7102,
+     "w": 0.4958
+    },
+    "nu": {
+     "x": 0.6909,
+     "y": 0.7138,
+     "w": 0.4958
+    }
+   },
+   "file_hold": "bo-suu-tap/trung-thu-05.webp",
+   "hands": [
+    "phai",
+    "trai"
+   ],
+   "mirror": true
+  },
+  {
+   "id": "trung-thu-06",
+   "name": "Đèn thỏ ngọc",
+   "file": "bo-suu-tap/trung-thu-06.webp",
+   "slot": "cam_tay",
+   "rarity": "rare",
+   "level": 2,
+   "price": 400,
+   "variants": [
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.7203,
+     "y": 0.7168,
+     "w": 0.4397
+    },
+    "nu": {
+     "x": 0.7198,
+     "y": 0.72,
+     "w": 0.4397
+    }
+   },
+   "file_hold": "bo-suu-tap/trung-thu-06.webp",
+   "hands": [
+    "phai",
+    "trai"
+   ],
+   "mirror": true
+  },
+  {
+   "id": "trung-thu-07",
+   "name": "Bánh trung thu",
+   "file": "bo-suu-tap/trung-thu-07.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "level": 1,
+   "price": 150,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.7705,
+     "y": 0.7368,
+     "w": 0.342
+    },
+    "nu": {
+     "x": 0.77,
+     "y": 0.739,
+     "w": 0.342
+    }
+   },
+   "file_hold": "bo-suu-tap/trung-thu-07.webp",
+   "hands": [
+    "phai",
+    "trai"
+   ],
+   "mirror": true
+  },
+  {
+   "id": "trung-thu-08",
+   "name": "Tò he gà trống",
+   "file": "bo-suu-tap/trung-thu-08.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "level": 2,
+   "price": 150,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.7919,
+     "y": 0.7127,
+     "w": 0.2975
+    },
+    "nu": {
+     "x": 0.7914,
+     "y": 0.7161,
+     "w": 0.2975
+    }
+   },
+   "file_hold": "bo-suu-tap/trung-thu-08.webp",
+   "hands": [
+    "phai",
+    "trai"
+   ],
+   "mirror": true
+  },
+  {
+   "id": "trung-thu-09",
+   "name": "Túi đeo hông trăng",
+   "file": "bo-suu-tap/trung-thu-09.webp",
+   "slot": "deo",
+   "rarity": "common",
+   "level": 2,
+   "price": 150,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.7,
+     "y": 0.795,
+     "w": 0.3082
+    },
+    "nu": {
+     "x": 0.7,
+     "y": 0.795,
+     "w": 0.3082
+    }
+   }
+  },
+  {
+   "id": "trung-thu-10",
+   "name": "Balo bánh nướng",
+   "file": "bo-suu-tap/trung-thu-10.webp",
+   "slot": "sau_lung",
+   "rarity": "rare",
+   "level": 3,
+   "price": 400,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.5012,
+     "y": 0.64,
+     "w": 1.0318
+    },
+    "nu": {
+     "x": 0.5012,
+     "y": 0.64,
+     "w": 1.0318
+    }
+   }
+  },
+  {
+   "id": "trung-thu-11",
+   "name": "Trăng rằm",
+   "file": "bo-suu-tap/trung-thu-11.webp",
+   "slot": "hieu_ung",
+   "rarity": "rare",
+   "level": 3,
+   "price": 400,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.11,
+     "w": 0.92
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.11,
+     "w": 0.92
+    }
+   }
+  },
+  {
+   "id": "trung-thu-12",
+   "name": "Đèn trời",
+   "file": "bo-suu-tap/trung-thu-12.webp",
+   "slot": "hieu_ung",
+   "rarity": "common",
+   "level": 2,
+   "price": 150,
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.11,
+     "w": 0.92
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.11,
+     "w": 0.92
+    }
+   }
+  },
+  {
+   "id": "trung-thu-ao-01",
+   "name": "Áo chú Cuội",
+   "file": "bo-suu-tap/trung-thu-ao-01.webp",
+   "slot": "ao",
+   "rarity": "common",
+   "level": 1,
+   "price": 150,
+   "variants": [
+    "nam"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.735,
+     "w": 0.98
+    }
+   },
+   "body": {
+    "nam": {
+     "file": "than-ao/than-nam-trung-thu-ao-01.webp",
+     "file_nl": "than-ao/than-nam-khong-la-trung-thu-ao-01.webp",
+     "hand": [
+      0.791,
+      0.6932
+     ],
+     "hand_l": [
+      0.2413,
+      0.6943
+     ]
+    }
+   }
+  },
+  {
+   "id": "trung-thu-ao-02",
+   "name": "Bộ múa lân",
+   "file": "bo-suu-tap/trung-thu-ao-02.webp",
+   "slot": "ao",
+   "rarity": "legendary",
+   "level": 4,
+   "price": 1000,
+   "variants": [
+    "nam"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.735,
+     "w": 0.98
+    }
+   },
+   "body": {
+    "nam": {
+     "file": "than-ao/than-nam-trung-thu-ao-02.webp",
+     "file_nl": "than-ao/than-nam-khong-la-trung-thu-ao-02.webp",
+     "hand": [
+      0.8801,
+      0.7146
+     ]
+    }
+   }
+  },
+  {
+   "id": "trung-thu-ao-03",
+   "name": "Váy chị Hằng",
+   "file": "bo-suu-tap/trung-thu-ao-03.webp",
+   "slot": "ao",
+   "rarity": "legendary",
+   "level": 4,
+   "price": 1000,
+   "variants": [
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nu": {
+     "x": 0.5,
+     "y": 0.735,
+     "w": 0.98
+    }
+   },
+   "body": {
+    "nu": {
+     "file": "than-ao/than-nu-trung-thu-ao-03.webp",
+     "file_nl": "than-ao/than-nu-khong-la-trung-thu-ao-03.webp",
+     "hand": [
+      0.846,
+      0.6903
+     ]
+    }
+   }
+  },
+  {
+   "id": "trung-thu-ao-04",
+   "name": "Áo thỏ ngọc",
+   "file": "bo-suu-tap/trung-thu-ao-04.webp",
+   "slot": "ao",
+   "rarity": "rare",
+   "level": 2,
+   "price": 400,
+   "variants": [
+    "nu"
+   ],
+   "collection": "trung-thu",
+   "collection_name": "Trung thu",
+   "anchor": {
+    "nu": {
+     "x": 0.5,
+     "y": 0.735,
+     "w": 0.98
+    }
+   },
+   "body": {
+    "nu": {
+     "file": "than-ao/than-nu-trung-thu-ao-04.webp",
+     "file_nl": "than-ao/than-nu-khong-la-trung-thu-ao-04.webp",
+     "hand": [
+      0.8751,
+      0.6947
+     ]
+    }
+   }
   }
  ]
 }

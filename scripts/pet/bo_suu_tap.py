@@ -111,6 +111,21 @@ C = {
   ('Pháo giấy', 'hieu_ung', BOTH, 'common', 2, 'fx', None, ''),
   ('Bóng bay sao', 'hieu_ung', BOTH, 'rare', 3, 'fx', None, ''),
  ], [('Áo đấu đỏ', ['nam'], 'common', 1), ('Áo thủ môn', ['nam'], 'rare', 3), ('Váy cổ động', ['nu'], 'common', 1), ('Áo đấu trắng', ['nu'], 'rare', 2)]),
+ # 20/10 khuya: Trung thu (bán quanh rằm tháng 8 âm lịch)
+ 'trung-thu': ('Trung thu', [
+  ('Bờm tai thỏ', 'dau', BOTH, 'common', 1, 'band', .84, 'leaf'),
+  ('Mũ len trăng khuyết', 'dau', BOTH, 'common', 1, 'cap', .78, 'cover'),
+  ('Kẹp tóc ngôi sao', 'dau', ['nu'], 'common', 1, 'pin', None, ''),
+  ('Đèn ông sao', 'cam_tay', BOTH, 'common', 1, 'hold', 1.0, ''),
+  ('Đèn cá chép', 'cam_tay', BOTH, 'rare', 2, 'hold', 1.0, ''),
+  ('Đèn thỏ ngọc', 'cam_tay', ['nu'], 'rare', 2, 'hold', 1.0, ''),
+  ('Bánh trung thu', 'cam_tay', BOTH, 'common', 1, 'hold', 1.0, ''),
+  ('Tò he gà trống', 'cam_tay', BOTH, 'common', 2, 'hold', 1.0, ''),
+  ('Túi đeo hông trăng', 'deo', BOTH, 'common', 2, 'hip', None, ''),
+  ('Balo bánh nướng', 'sau_lung', BOTH, 'rare', 3, 'back', None, ''),
+  ('Trăng rằm', 'hieu_ung', BOTH, 'rare', 3, 'fx', None, ''),
+  ('Đèn trời', 'hieu_ung', BOTH, 'common', 2, 'fx', None, ''),
+ ], [('Áo chú Cuội', ['nam'], 'common', 1), ('Bộ múa lân', ['nam'], 'legendary', 4), ('Váy chị Hằng', ['nu'], 'legendary', 4), ('Áo thỏ ngọc', ['nu'], 'rare', 2)]),
 }
 PRICE = {'common': 150, 'rare': 400, 'legendary': 1000}
 out = []

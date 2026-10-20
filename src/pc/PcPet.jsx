@@ -316,7 +316,7 @@ function Settings({ d, onSaveCfg }) {
 
 // ============ Bộ sưu tập theo dịp (20/10, chủ dự án: chưa tới dịp thì khoá) ============
 // Lưu pet_config.collections; app (collectionStatus) và máy chủ (pet_col_open trong pet_buy) cùng đọc. Đồ đã mua vẫn mặc quanh năm.
-const COL_NAME = { noel: "Noel", tet: "Tết", "co-trang": "Cổ trang", halloween: "Halloween", "bong-da": "Bóng đá" };
+const COL_NAME = { noel: "Noel", tet: "Tết", "co-trang": "Cổ trang", halloween: "Halloween", "bong-da": "Bóng đá", "trung-thu": "Trung thu" };
 const MODES = [["season", "Theo dịp"], ["open", "Luôn mở"], ["closed", "Đóng"]];
 const toDM = (md) => (md ? `${md.slice(3, 5)}/${md.slice(0, 2)}` : "");
 const toMD = (dm) => { const m = String(dm).match(/^(\d{1,2})\/(\d{1,2})$/); return m ? `${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : null; };
@@ -361,10 +361,10 @@ function Cols({ d, onSaveCfg }) {
                 </span>
               </FormRow>
             )}
-            {k === "tet" && c.tet.mode === "season" && (
-              <FormRow label="Thời gian bán" hint="Tính theo mùng 1 Tết âm lịch từng năm" last>
+            {COL_DEFAULT[k].before != null && c[k].mode === "season" && (
+              <FormRow label="Thời gian bán" hint={k === "tet" ? "Tính theo mùng 1 Tết âm lịch từng năm" : "Tính theo rằm tháng 8 âm lịch từng năm"} last>
                 <span style={{ display: "inline-flex", gap: 8, alignItems: "center", fontSize: 13, fontWeight: 700, color: PC.t2 }}>
-                  Từ <Num v={c.tet.before} w={64} onChange={(v) => set("tet", { before: Number(v) || 0 })} testid="pc-pet-tet-before" /> ngày trước đến <Num v={c.tet.after} w={64} onChange={(v) => set("tet", { after: Number(v) || 0 })} testid="pc-pet-tet-after" /> ngày sau mùng 1
+                  Từ <Num v={c[k].before} w={64} onChange={(v) => set(k, { before: Number(v) || 0 })} testid={`pc-pet-${k}-before`} /> ngày trước đến <Num v={c[k].after} w={64} onChange={(v) => set(k, { after: Number(v) || 0 })} testid={`pc-pet-${k}-after`} /> ngày sau {k === "tet" ? "mùng 1" : "rằm"}
                 </span>
               </FormRow>
             )}

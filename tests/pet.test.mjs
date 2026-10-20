@@ -64,6 +64,14 @@ test("phòng theo dịp: Noel 15–31/12, Tết −10…+7 ngày quanh mùng 1",
   assert.equal(seasonOf("2026-11-01"), null);
 });
 
+test("bộ Trung thu: 21 ngày trước – 3 ngày sau rằm tháng 8", () => {
+  assert.deepEqual(collectionStatus("trung-thu", {}, "2026-10-20"), { open: false, label: "Mở bán 25/8 – 18/9" });
+  assert.equal(collectionStatus("trung-thu", {}, "2027-08-25").open, true);
+  assert.equal(collectionStatus("trung-thu", {}, "2027-09-18").open, true);
+  assert.equal(collectionStatus("trung-thu", {}, "2027-09-19").open, false);
+  assert.equal(seasonOf("2027-09-10"), "trung-thu");
+});
+
 test("bộ Bóng đá: mặc định đóng, admin mở", () => {
   assert.deepEqual(collectionStatus("bong-da", {}, "2026-10-20"), { open: false, label: "Tạm đóng" });
   assert.equal(collectionStatus("bong-da", { collections: { "bong-da": { mode: "open" } } }, "2026-10-20").open, true);

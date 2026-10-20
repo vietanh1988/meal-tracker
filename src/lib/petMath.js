@@ -85,6 +85,9 @@ export function itemStatus(it, { owned = [], level = 1, premium = false, variant
 // ---- Phòng theo dịp (20/10): Noel 15/12–31/12; Tết từ 10 ngày trước đến 7 ngày sau mùng 1 Tết âm lịch ----
 // Ngày mùng 1 Tết (dương lịch) — bảng cố định, thêm năm mới khi cần.
 export const TET_DAYS = ["2027-02-06", "2028-01-26", "2029-02-13", "2030-02-03", "2031-01-23", "2032-02-11", "2033-01-31", "2034-02-19", "2035-02-08", "2036-01-28"];
+// Rằm tháng 8 âm lịch (Trung thu, dương lịch) — bảng cố định
+export const TRUNG_THU_DAYS = ["2027-09-15", "2028-10-03", "2029-09-22", "2030-09-12", "2031-10-01", "2032-09-19", "2033-09-08", "2034-09-27", "2035-09-16", "2036-10-04"];
+const LUNAR = { tet: () => TET_DAYS, "trung-thu": () => TRUNG_THU_DAYS };
 const dayNum = (s) => Math.round(Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)) / 86400000);
 /** dateStr "YYYY-MM-DD" (giờ VN) → "noel" | "tet" | "halloween" | null — Halloween 20/10–31/10 */
 export function seasonOf(dateStr) {
@@ -94,6 +97,7 @@ export function seasonOf(dateStr) {
   if (md >= "10-20" && md <= "10-31") return "halloween";
   const d = dayNum(dateStr);
   for (const t of TET_DAYS) { const k = d - dayNum(t); if (k >= -10 && k <= 7) return "tet"; }
+  for (const t of TRUNG_THU_DAYS) { const k = d - dayNum(t); if (k >= -10 && k <= 2) return "trung-thu"; }
   return null;
 }
 
@@ -108,6 +112,7 @@ export const COL_DEFAULT = {
   halloween: { mode: "season", from: "10-15", to: "11-02" },
   // Bóng đá: theo mùa giải → mặc định ĐÓNG, admin bật "Luôn mở" hoặc đặt ngày khi có giải; đang bán thì phòng Pi đổi sang phòng bóng đá
   "bong-da": { mode: "closed", from: "11-15", to: "01-10" },
+  "trung-thu": { mode: "season", before: 21, after: 3 },
 };
 const fmtDM = (s) => `${+s.slice(8, 10)}/${+s.slice(5, 7)}`;
 const shift = (s, n) => new Date((dayNum(s) + n) * 86400000).toISOString().slice(0, 10);
@@ -117,10 +122,10 @@ export function collectionStatus(col, cfg = {}, dateStr) {
   if (c.mode === "open") return { open: true, label: "" };
   if (c.mode === "closed") return { open: false, label: "Tạm đóng" };
   if (!dateStr) return { open: false, label: "" };
-  if (col === "tet") {
+  if (LUNAR[col]) {
     const d = dayNum(dateStr);
-    const before = Number(c.before ?? 21), after = Number(c.after ?? 15);
-    for (const t of TET_DAYS) {
+    const before = Number(c.before ?? COL_DEFAULT[col].before), after = Number(c.after ?? COL_DEFAULT[col].after);
+    for (const t of LUNAR[col]()) {
       const k = d - dayNum(t);
       if (k >= -before && k <= after) return { open: true, label: `Bán tới ${fmtDM(shift(t, after))}` };
       if (k < -before) return { open: false, label: `Mở bán ${fmtDM(shift(t, -before))} – ${fmtDM(shift(t, after))}` };
