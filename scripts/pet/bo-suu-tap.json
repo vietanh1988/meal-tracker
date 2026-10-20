@@ -1,0 +1,1358 @@
+[
+ {
+  "id": "noel-01",
+  "name": "Mũ ông già Noel",
+  "file": "bo-suu-tap/noel-01.webp",
+  "slot": "dau",
+  "rarity": "rare",
+  "level": 2,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.4992,
+    "y": 0.1541,
+    "w": 0.8337
+   },
+   "nu": {
+    "x": 0.4992,
+    "y": 0.2104,
+    "w": 0.8337
+   }
+  },
+  "cover": true
+ },
+ {
+  "id": "noel-02",
+  "name": "Băng đô tuần lộc",
+  "file": "bo-suu-tap/noel-02.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.501,
+    "y": 0.2678,
+    "w": 0.9027,
+    "h": 0.2178
+   },
+   "nu": {
+    "x": 0.501,
+    "y": 0.2678,
+    "w": 0.9027,
+    "h": 0.2178
+   }
+  },
+  "behind_leaf": true
+ },
+ {
+  "id": "noel-03",
+  "name": "Mũ len Noel",
+  "file": "bo-suu-tap/noel-03.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.0973,
+    "w": 0.7842
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.1564,
+    "w": 0.7842
+   }
+  },
+  "cover": true
+ },
+ {
+  "id": "noel-04",
+  "name": "Băng đô nơ Noel",
+  "file": "bo-suu-tap/noel-04.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.2675,
+    "w": 0.8389,
+    "h": 0.2188
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.2675,
+    "w": 0.8389,
+    "h": 0.2188
+   }
+  },
+  "behind_leaf": true
+ },
+ {
+  "id": "noel-05",
+  "name": "Khăn len caro",
+  "file": "bo-suu-tap/noel-05.webp",
+  "slot": "deo",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.67,
+    "w": 0.5869
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.655,
+    "w": 0.6288
+   }
+  }
+ },
+ {
+  "id": "noel-06",
+  "name": "Khăn lông Noel",
+  "file": "bo-suu-tap/noel-06.webp",
+  "slot": "deo",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.6695,
+    "w": 0.5912
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.6545,
+    "w": 0.6334
+   }
+  }
+ },
+ {
+  "id": "noel-07",
+  "name": "Hộp quà Noel",
+  "file": "bo-suu-tap/noel-07.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.9605,
+    "y": 0.732,
+    "w": 0.4094
+   },
+   "nu": {
+    "x": 0.96,
+    "y": 0.7345,
+    "w": 0.4094
+   }
+  },
+  "file_hold": "bo-suu-tap/noel-07.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "noel-08",
+  "name": "Gậy kẹo Noel",
+  "file": "bo-suu-tap/noel-08.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.9145,
+    "y": 0.7207,
+    "w": 0.3373
+   },
+   "nu": {
+    "x": 0.914,
+    "y": 0.7238,
+    "w": 0.3373
+   }
+  },
+  "file_hold": "bo-suu-tap/noel-08.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "noel-09",
+  "name": "Chuông Noel",
+  "file": "bo-suu-tap/noel-09.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.9427,
+    "y": 0.7437,
+    "w": 0.3788
+   },
+   "nu": {
+    "x": 0.9422,
+    "y": 0.7457,
+    "w": 0.3788
+   }
+  },
+  "file_hold": "bo-suu-tap/noel-09.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "noel-10",
+  "name": "Túi quà Noel",
+  "file": "bo-suu-tap/noel-10.webp",
+  "slot": "sau_lung",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5014,
+    "y": 0.6427,
+    "w": 1.0583
+   },
+   "nu": {
+    "x": 0.5014,
+    "y": 0.6426,
+    "w": 1.0583
+   }
+  }
+ },
+ {
+  "id": "noel-11",
+  "name": "Tuyết rơi",
+  "file": "bo-suu-tap/noel-11.webp",
+  "slot": "hieu_ung",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "noel-12",
+  "name": "Sao Noel",
+  "file": "bo-suu-tap/noel-12.webp",
+  "slot": "hieu_ung",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "noel-ao-01",
+  "name": "Áo len tuần lộc",
+  "file": "bo-suu-tap/noel-ao-01.webp",
+  "slot": "ao",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-noel-ao-01.webp",
+    "file_nl": "than-ao/than-nam-khong-la-noel-ao-01.webp"
+   }
+  }
+ },
+ {
+  "id": "noel-ao-02",
+  "name": "Bộ ông già Noel",
+  "file": "bo-suu-tap/noel-ao-02.webp",
+  "slot": "ao",
+  "rarity": "legendary",
+  "level": 4,
+  "price": 1000,
+  "variants": [
+   "nam"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-noel-ao-02.webp",
+    "file_nl": "than-ao/than-nam-khong-la-noel-ao-02.webp"
+   }
+  }
+ },
+ {
+  "id": "noel-ao-03",
+  "name": "Váy Noel",
+  "file": "bo-suu-tap/noel-ao-03.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 2,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-noel-ao-03.webp",
+    "file_nl": "than-ao/than-nu-khong-la-noel-ao-03.webp"
+   }
+  }
+ },
+ {
+  "id": "noel-ao-04",
+  "name": "Áo choàng Noel",
+  "file": "bo-suu-tap/noel-ao-04.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "noel",
+  "collection_name": "Noel",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-noel-ao-04.webp",
+    "file_nl": "than-ao/than-nu-khong-la-noel-ao-04.webp"
+   }
+  }
+ },
+ {
+  "id": "tet-01",
+  "name": "Khăn đóng đỏ",
+  "file": "bo-suu-tap/tet-01.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.1814,
+    "w": 0.772
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.2364,
+    "w": 0.772
+   }
+  }
+ },
+ {
+  "id": "tet-02",
+  "name": "Băng đô hoa mai",
+  "file": "bo-suu-tap/tet-02.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.5009,
+    "y": 0.2675,
+    "w": 0.8871,
+    "h": 0.2201
+   },
+   "nu": {
+    "x": 0.5009,
+    "y": 0.2675,
+    "w": 0.8871,
+    "h": 0.2201
+   }
+  },
+  "behind_leaf": true
+ },
+ {
+  "id": "tet-03",
+  "name": "Nón lá",
+  "file": "bo-suu-tap/tet-03.webp",
+  "slot": "dau",
+  "rarity": "rare",
+  "level": 2,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.058,
+    "w": 1.0468
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.1085,
+    "w": 1.0468
+   }
+  },
+  "hide_leaf": true
+ },
+ {
+  "id": "tet-04",
+  "name": "Mũ lân",
+  "file": "bo-suu-tap/tet-04.webp",
+  "slot": "dau",
+  "rarity": "legendary",
+  "level": 4,
+  "price": 1000,
+  "variants": [
+   "nam"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.5011,
+    "y": 0.0351,
+    "w": 0.911
+   },
+   "nu": {
+    "x": 0.5011,
+    "y": 0.0953,
+    "w": 0.911
+   }
+  },
+  "hide_leaf": true
+ },
+ {
+  "id": "tet-05",
+  "name": "Bao lì xì",
+  "file": "bo-suu-tap/tet-05.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.9297,
+    "y": 0.7411,
+    "w": 0.3548
+   },
+   "nu": {
+    "x": 0.9292,
+    "y": 0.7431,
+    "w": 0.3548
+   }
+  },
+  "file_hold": "bo-suu-tap/tet-05.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "tet-06",
+  "name": "Cành mai",
+  "file": "bo-suu-tap/tet-06.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.9394,
+    "y": 0.7232,
+    "w": 0.373
+   },
+   "nu": {
+    "x": 0.9389,
+    "y": 0.7262,
+    "w": 0.373
+   }
+  },
+  "file_hold": "bo-suu-tap/tet-06.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "tet-07",
+  "name": "Lồng đèn đỏ",
+  "file": "bo-suu-tap/tet-07.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.9098,
+    "y": 0.8824,
+    "w": 0.3411
+   },
+   "nu": {
+    "x": 0.9093,
+    "y": 0.8775,
+    "w": 0.3411
+   }
+  },
+  "file_hold": "bo-suu-tap/tet-07.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "tet-08",
+  "name": "Bánh chưng",
+  "file": "bo-suu-tap/tet-08.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.9588,
+    "y": 0.7351,
+    "w": 0.3947
+   },
+   "nu": {
+    "x": 0.9583,
+    "y": 0.7375,
+    "w": 0.3947
+   }
+  },
+  "file_hold": "bo-suu-tap/tet-08.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "tet-09",
+  "name": "Hộp mứt Tết",
+  "file": "bo-suu-tap/tet-09.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 1.0091,
+    "y": 0.7432,
+    "w": 0.4994
+   },
+   "nu": {
+    "x": 1.0086,
+    "y": 0.7452,
+    "w": 0.4994
+   }
+  },
+  "file_hold": "bo-suu-tap/tet-09.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "tet-10",
+  "name": "Túi gấm đỏ",
+  "file": "bo-suu-tap/tet-10.webp",
+  "slot": "deo",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.7,
+    "y": 0.795,
+    "w": 0.319
+   },
+   "nu": {
+    "x": 0.7,
+    "y": 0.795,
+    "w": 0.319
+   }
+  }
+ },
+ {
+  "id": "tet-11",
+  "name": "Pháo hoa",
+  "file": "bo-suu-tap/tet-11.webp",
+  "slot": "hieu_ung",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "tet-12",
+  "name": "Hoa mai rơi",
+  "file": "bo-suu-tap/tet-12.webp",
+  "slot": "hieu_ung",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "tet-ao-01",
+  "name": "Áo dài gấm xanh",
+  "file": "bo-suu-tap/tet-ao-01.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 2,
+  "price": 400,
+  "variants": [
+   "nam"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-tet-ao-01.webp",
+    "file_nl": "than-ao/than-nam-khong-la-tet-ao-01.webp"
+   }
+  }
+ },
+ {
+  "id": "tet-ao-02",
+  "name": "Áo dài gấm đỏ",
+  "file": "bo-suu-tap/tet-ao-02.webp",
+  "slot": "ao",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-tet-ao-02.webp",
+    "file_nl": "than-ao/than-nam-khong-la-tet-ao-02.webp"
+   }
+  }
+ },
+ {
+  "id": "tet-ao-03",
+  "name": "Áo dài đỏ hoa mai",
+  "file": "bo-suu-tap/tet-ao-03.webp",
+  "slot": "ao",
+  "rarity": "common",
+  "level": 1,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-tet-ao-03.webp",
+    "file_nl": "than-ao/than-nu-khong-la-tet-ao-03.webp"
+   }
+  }
+ },
+ {
+  "id": "tet-ao-04",
+  "name": "Áo tứ thân vàng",
+  "file": "bo-suu-tap/tet-ao-04.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "tet",
+  "collection_name": "Tết",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-tet-ao-04.webp",
+    "file_nl": "than-ao/than-nu-khong-la-tet-ao-04.webp"
+   }
+  }
+ },
+ {
+  "id": "co-trang-01",
+  "name": "Mũ cánh chuồn",
+  "file": "bo-suu-tap/co-trang-01.webp",
+  "slot": "dau",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.1745,
+    "w": 1.0005
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.2298,
+    "w": 1.0005
+   }
+  },
+  "cover": true
+ },
+ {
+  "id": "co-trang-02",
+  "name": "Mũ miện vua",
+  "file": "bo-suu-tap/co-trang-02.webp",
+  "slot": "dau",
+  "rarity": "legendary",
+  "level": 5,
+  "price": 1000,
+  "variants": [
+   "nam"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.1621,
+    "w": 0.5469
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.206,
+    "w": 0.61
+   }
+  }
+ },
+ {
+  "id": "co-trang-03",
+  "name": "Mũ phượng",
+  "file": "bo-suu-tap/co-trang-03.webp",
+  "slot": "dau",
+  "rarity": "legendary",
+  "level": 5,
+  "price": 1000,
+  "variants": [
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.5007,
+    "y": 0.1117,
+    "w": 0.6924
+   },
+   "nu": {
+    "x": 0.5008,
+    "y": 0.1561,
+    "w": 0.7553
+   }
+  }
+ },
+ {
+  "id": "co-trang-04",
+  "name": "Trâm cài hoa sen",
+  "file": "bo-suu-tap/co-trang-04.webp",
+  "slot": "dau",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.66,
+    "y": 0.19,
+    "w": 0.4417
+   },
+   "nu": {
+    "x": 0.66,
+    "y": 0.22,
+    "w": 0.4417
+   }
+  }
+ },
+ {
+  "id": "co-trang-05",
+  "name": "Nón quai thao",
+  "file": "bo-suu-tap/co-trang-05.webp",
+  "slot": "dau",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.0405,
+    "w": 1.0946
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.0919,
+    "w": 1.0946
+   }
+  },
+  "hide_leaf": true
+ },
+ {
+  "id": "co-trang-06",
+  "name": "Quạt giấy",
+  "file": "bo-suu-tap/co-trang-06.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.9685,
+    "y": 0.7353,
+    "w": 0.5536
+   },
+   "nu": {
+    "x": 0.968,
+    "y": 0.7376,
+    "w": 0.5536
+   }
+  },
+  "file_hold": "bo-suu-tap/co-trang-06.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "co-trang-07",
+  "name": "Kiếm gỗ",
+  "file": "bo-suu-tap/co-trang-07.webp",
+  "slot": "cam_tay",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.913,
+    "y": 0.7404,
+    "w": 0.306
+   },
+   "nu": {
+    "x": 0.9125,
+    "y": 0.7425,
+    "w": 0.306
+   }
+  },
+  "file_hold": "bo-suu-tap/co-trang-07.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "co-trang-08",
+  "name": "Ô giấy đỏ",
+  "file": "bo-suu-tap/co-trang-08.webp",
+  "slot": "cam_tay",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.8975,
+    "y": 0.7166,
+    "w": 0.5875
+   },
+   "nu": {
+    "x": 0.897,
+    "y": 0.7199,
+    "w": 0.5875
+   }
+  },
+  "file_hold": "bo-suu-tap/co-trang-08.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "co-trang-09",
+  "name": "Cuộn thư tre",
+  "file": "bo-suu-tap/co-trang-09.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.9086,
+    "y": 0.7626,
+    "w": 0.3081
+   },
+   "nu": {
+    "x": 0.9081,
+    "y": 0.7636,
+    "w": 0.3081
+   }
+  },
+  "file_hold": "bo-suu-tap/co-trang-09.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "co-trang-10",
+  "name": "Bút lông",
+  "file": "bo-suu-tap/co-trang-10.webp",
+  "slot": "cam_tay",
+  "rarity": "common",
+  "level": 2,
+  "price": 150,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.8875,
+    "y": 0.7573,
+    "w": 0.2611
+   },
+   "nu": {
+    "x": 0.887,
+    "y": 0.7585,
+    "w": 0.2611
+   }
+  },
+  "file_hold": "bo-suu-tap/co-trang-10.webp",
+  "hands": [
+   "phai",
+   "trai"
+  ]
+ },
+ {
+  "id": "co-trang-11",
+  "name": "Cánh sen bay",
+  "file": "bo-suu-tap/co-trang-11.webp",
+  "slot": "hieu_ung",
+  "rarity": "rare",
+  "level": 4,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "co-trang-12",
+  "name": "Mây ngũ sắc",
+  "file": "bo-suu-tap/co-trang-12.webp",
+  "slot": "hieu_ung",
+  "rarity": "rare",
+  "level": 4,
+  "price": 400,
+  "variants": [
+   "nam",
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   },
+   "nu": {
+    "x": 0.5,
+    "y": 0.11,
+    "w": 0.92
+   }
+  }
+ },
+ {
+  "id": "co-trang-ao-01",
+  "name": "Áo giao lĩnh xanh",
+  "file": "bo-suu-tap/co-trang-ao-01.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nam"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-co-trang-ao-01.webp",
+    "file_nl": "than-ao/than-nam-khong-la-co-trang-ao-01.webp"
+   }
+  }
+ },
+ {
+  "id": "co-trang-ao-02",
+  "name": "Long bào",
+  "file": "bo-suu-tap/co-trang-ao-02.webp",
+  "slot": "ao",
+  "rarity": "legendary",
+  "level": 6,
+  "price": 1000,
+  "variants": [
+   "nam"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nam": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nam": {
+    "file": "than-ao/than-nam-co-trang-ao-02.webp",
+    "file_nl": "than-ao/than-nam-khong-la-co-trang-ao-02.webp"
+   }
+  }
+ },
+ {
+  "id": "co-trang-ao-03",
+  "name": "Áo nhật bình hồng",
+  "file": "bo-suu-tap/co-trang-ao-03.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 3,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-co-trang-ao-03.webp",
+    "file_nl": "than-ao/than-nu-khong-la-co-trang-ao-03.webp"
+   }
+  }
+ },
+ {
+  "id": "co-trang-ao-04",
+  "name": "Áo tấc xanh ngọc",
+  "file": "bo-suu-tap/co-trang-ao-04.webp",
+  "slot": "ao",
+  "rarity": "rare",
+  "level": 4,
+  "price": 400,
+  "variants": [
+   "nu"
+  ],
+  "collection": "co-trang",
+  "collection_name": "Cổ trang",
+  "anchor": {
+   "nu": {
+    "x": 0.5,
+    "y": 0.735,
+    "w": 0.98
+   }
+  },
+  "body": {
+   "nu": {
+    "file": "than-ao/than-nu-co-trang-ao-04.webp",
+    "file_nl": "than-ao/than-nu-khong-la-co-trang-ao-04.webp"
+   }
+  }
+ }
+]

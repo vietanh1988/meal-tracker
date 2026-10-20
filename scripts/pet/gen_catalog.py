@@ -116,6 +116,10 @@ for it in items:
     if it['id'] in ONLY_NAM: it['variants'] = ['nam']
     elif it['id'] in ONLY_NU: it['variants'] = ['nu']
 
+# bộ sưu tập Noel / Tết / Cổ trang (scripts/pet/bo_suu_tap.py → bo-suu-tap.json)
+import os
+if os.path.exists('scripts/pet/bo-suu-tap.json'): items += json.load(open('scripts/pet/bo-suu-tap.json'))
+
 catalog = {
   'bodies': {
     'nam': {'file': 'than/than-nam.webp', 'file_ao': 'than/than-nam-mac-ao.webp', 'w': 588, 'h': 900,

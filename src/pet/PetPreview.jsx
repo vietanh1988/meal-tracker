@@ -8,7 +8,7 @@ import { DK, DK_CSS, LT } from "../theme";
 import { TodayScreen } from "../mobile/TodayScreen";
 import { MeScreen } from "../mobile/MeScreen";
 import { mealRows } from "../lib/mobileView";
-import { PET_CSS } from "./PetAvatar";
+import { PET_CSS, PetAvatar } from "./PetAvatar";
 import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PetMeRow, PIc } from "./PetScreens";
 import { AppIcon } from "../mobile/icons";
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen } from "./PetTalk";
@@ -162,6 +162,21 @@ function Admin() {
 export default function PetPreview() {
   const pet = mockPet();
   let body;
+  if (S === "grid") { // soát ghép: mọi món của 1 bộ sưu tập trên từng bản
+    const col = q.get("col");
+    const list = Object.values(ITEMS).filter((it) => (col ? it.collection === col : true));
+    return (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: 6, background: "#EEF3FB", fontFamily: "sans-serif" }}>
+        <style>{PET_CSS}</style>
+        {list.flatMap((it) => it.variants.map((v) => (
+          <div key={it.id + v} style={{ width: 150, display: "flex", flexDirection: "column", alignItems: "center", background: "#FFFFFF", borderRadius: 10, padding: 4 }}>
+            <PetAvatar variant={v} size={200} still equipped={{ [it.slot]: it.id }} />
+            <span style={{ fontSize: 10, fontWeight: 700 }}>{it.name} · {v}</span>
+          </div>
+        )))}
+      </div>
+    );
+  }
   if (S === "admin") return <Admin />;
   if (S === "chat" || S === "chatout" || S === "chatthink") return <Shell><PetChatScreen pet={pet} msgs={S === "chatthink" ? CHAT[V].slice(0, 4) : CHAT[V]} left={S === "chatout" ? 0 : 3} max={5} state={S === "chatthink" ? "thinking" : S === "chat" ? "talking" : "idle"} /></Shell>;
   if (S === "week") return <Shell><PetWeekScreen pet={pet} w={WEEK(V)} /></Shell>;

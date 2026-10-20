@@ -63,7 +63,8 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
   const [eyes0, mouth] = face[variant];
   const eyes = blink && !flash ? BLINK[variant] : eyes0;
   const behindLeaf = Object.values(eq).some((it) => it.behind_leaf);
-  const sepLeaf = (live || behindLeaf) && !eq.dau?.cover; // lá là lớp riêng (để đung đưa / để đi sau món)
+  const hideLeaf = !!eq.dau?.hide_leaf; // nón rộng vành (nón lá, nón quai thao, mũ lân): giấu lá, không cắt đầu
+  const sepLeaf = (live || behindLeaf || hideLeaf) && !eq.dau?.cover; // lá là lớp riêng (để đung đưa / để đi sau món)
   const aoBody = eq.ao?.body?.[variant]; // 20/10: áo vẽ liền thân → mặc áo thì thay cả thân, không đặt ảnh áo rời
   const holdL = eq.cam_tay_trai, holdR = eq.cam_tay;
   const leaf = <Layer key="la" file={b.leaf.file} a={b.leaf} bw={bw} bh={bh} cls={live ? "pet-leaf" : undefined} imgStyle={{ transformOrigin: `${b.leaf.px * 100}% ${b.leaf.py * 100}%` }} />;
@@ -71,8 +72,8 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
   for (const L of catalog.layers) {
     if (L === "than") {
       const f = aoBody ? (sepLeaf ? aoBody.file_nl : aoBody.file) : sepLeaf ? (eq.ao ? b.file_ao_nl : b.file_nl) : (eq.ao ? b.file_ao : b.file);
-      layers.push(<Layer key="than" file={f} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? b.hat_cut : 0} />);
-      if (sepLeaf && !behindLeaf) layers.push(leaf);
+      layers.push(<Layer key="than" file={f} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? (eq.dau.cut?.[variant] ?? b.hat_cut) : 0} />);
+      if (sepLeaf && !behindLeaf && !hideLeaf) layers.push(leaf);
     }
     else if (L === "quai") { Object.values(eq).forEach((it) => (it.front || []).forEach((f, i) => layers.push(<Layer key={`quai${it.id}${i}`} file={f.file} a={f} bw={bw} bh={bh} />))); } // quai balo đè lên áo
     else if (L === "cam_tay") {
@@ -85,7 +86,7 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
         if (!holdL) layers.push(<Layer key="tay-trai" file={b.hand_l.file} a={b.hand_l} bw={bw} bh={bh} />);
         if (!holdR) layers.push(<Layer key="tay-phai" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />);
       }
-      if (behindLeaf && sepLeaf) layers.push(leaf); // băng đô / tai nghe đi sau cuống lá
+      if (behindLeaf && sepLeaf && !hideLeaf) layers.push(leaf); // băng đô / tai nghe đi sau cuống lá
     }
     else if (L === "mat") layers.push(<span key="mat" className={look ? (look < 0 ? "pet-look-l" : "pet-look-r") : undefined} style={{ position: "absolute", inset: 0, transition: "transform .35s ease" }}><Layer file={eyes} a={b.eyes} bw={bw} bh={bh} /></span>);
     else if (L === "mieng") {

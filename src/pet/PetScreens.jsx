@@ -232,7 +232,10 @@ const SLOT_NAME = { ...catalog.slots, cam_tay: "Tay phải", cam_tay_trai: "Tay 
 export function PetShopScreen({ pet, onBack, initialSlot = "all", preview, onBuy, onEquip, onPremium }) {
   const [slot, setSlot] = useState(initialSlot);
   const [pv, setPv] = useState(preview || null);
-  const list = catalog.items.filter((it) => it.variants.includes(pet.variant) && !it.hidden && !it.achievement && !pet.achievementIds.includes(it.id));
+  const [col, setCol] = useState("all"); // bộ sưu tập (Noel / Tết / Cổ trang) — mỗi bộ 1 mục riêng
+  const all = catalog.items.filter((it) => it.variants.includes(pet.variant) && !it.hidden && !it.achievement && !pet.achievementIds.includes(it.id));
+  const cols = [...new Map(all.filter((it) => it.collection).map((it) => [it.collection, it.collection_name])).entries()];
+  const list = all.filter((it) => col === "all" || (col === "thuong" ? !it.collection : it.collection === col));
   const counts = list.reduce((m, it) => ((m[it.slot] = (m[it.slot] || 0) + 1), m), {});
   const shown = list.filter((it) => slot === "all" || it.slot === slot).sort((a, b) => a.level - b.level || a.price - b.price);
   return (
@@ -242,6 +245,14 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", preview, onBuy
           <div style={{ margin: "12px 12px 0 12px", borderRadius: 18, padding: "12px 14px", background: "linear-gradient(135deg,#FDF2F8,#F5F3FF)", display: "flex", alignItems: "center", gap: 12 }}>
             <AppIcon color="#DB2777" size={40}>{PIc.crown(20)}</AppIcon>
             <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#831843", lineHeight: 1.4 }}>Đồ Hiếm và Huyền thoại dành cho Premium. Hạt bạn kiếm vẫn như nhau.</span>
+          </div>
+        )}
+        {cols.length > 0 && (
+          <div role="tablist" aria-label="Bộ sưu tập" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 12px 0 12px", scrollbarWidth: "none" }}>
+            {[["all", "Tất cả"], ["thuong", "Đồ thường"], ...cols].map(([k, l]) => {
+              const on = col === k;
+              return <button key={k} role="tab" aria-selected={on} data-testid={`pet-col-${k}`} onClick={() => { setCol(k); setSlot("all"); }} style={{ flexShrink: 0, height: 36, padding: "0 14px", borderRadius: 12, border: on ? "2px solid #007AFF" : "2px solid transparent", background: on ? "#EEF4FF" : "#FFFFFF", color: on ? "#0062F0" : "#334155", fontSize: 13, fontWeight: 900, fontFamily: "inherit" }}>{l}</button>;
+            })}
           </div>
         )}
         <Chips value={slot} onChange={setSlot} counts={counts} />
