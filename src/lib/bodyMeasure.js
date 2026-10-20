@@ -118,7 +118,7 @@ export function bodyInsight({ weightLog = [], rows = [], goalType }) {
   if (Math.abs(dKg) <= 0.4 && dWaist <= -1) return { tone: "good", text: `Cân gần như đứng yên ${weeks} tuần nhưng eo nhỏ đi ${fmt(dWaist)} cm — bạn đang giảm mỡ, giữ cơ. Cứ giữ cách ăn này 👍` };
   if (dKg < -0.4 && dWaist <= -1) return { tone: "good", text: `${weeks} tuần: giảm ${fmt(dKg)} kg, eo nhỏ đi ${fmt(dWaist)} cm — đang giảm đúng mỡ 👍` };
   if (g === "bulk" && dKg > 0.4 && dWaist >= 2) return { tone: "warn", text: `${weeks} tuần: tăng ${fmt(dKg)} kg nhưng eo to thêm ${fmt(dWaist)} cm — có thể đang tăng mỡ nhiều. Cân nhắc giảm bớt phần dư calo.` };
-  if (g !== "bulk" && dKg >= -0.4 && dWaist >= 1.5) return { tone: "warn", text: `${weeks} tuần: eo to thêm ${fmt(dWaist)} cm — xem lại lượng ăn và số bữa đã ghi.` };
+  if (g !== "bulk" && dKg >= -0.4 && dWaist >= 1.5) return { tone: "warn", text: `${weeks} tuần: eo to thêm ${fmt(dWaist)} cm — xem lại lượng ăn và số bữa đã ăn.` };
   return null;
 }
 

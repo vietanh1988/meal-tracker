@@ -112,7 +112,7 @@ test("Hôm nay: Ghi gợi ý hợp nhất 1 chạm ở thẻ đến giờ + Hoà
     await tap(apply); // 1 chạm — không mở sheet
     await expect(page.getByTestId("suggest-sheet")).toHaveCount(0);
     await waitDb(async () => { const r = await todayRow(); return ((r?.meals || []).find((m) => m.meal_id === mealId)?.items || []).length > 0 && (r.eaten_meals || []).includes(mealId); }, "ghi gợi ý 1 chạm + đã ăn");
-    await expect(page.getByTestId("toast")).toContainText("Đã ghi");
+    await expect(page.getByTestId("toast")).toContainText("Đã thêm");
     await tap(page.getByTestId("toast-action"));
     await waitDb(async () => !((await todayRow())?.meals || []).some((m) => m.meal_id === mealId && (m.items || []).length), "Hoàn tác xoá bữa vừa ghi");
   } finally {

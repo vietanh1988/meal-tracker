@@ -169,7 +169,7 @@ export function MenuScreen(p) {
             </>
           ) : (
             <>
-              <span style={{ fontSize: 13, opacity: 0.92, lineHeight: 1.5, position: "relative" }}>AI lên thực đơn dành cho tài khoản Dùng thử / Premium. Bạn vẫn dùng lại được thực đơn của mình{flags?.template_library ? " và thực đơn mẫu" : ""} bên dưới, hoặc ghi món bằng Tìm món.</span>
+              <span style={{ fontSize: 13, opacity: 0.92, lineHeight: 1.5, position: "relative" }}>AI lên thực đơn dành cho tài khoản Dùng thử / Premium. Bạn vẫn dùng lại được thực đơn của mình{flags?.template_library ? " và thực đơn mẫu" : ""} bên dưới, hoặc thêm món bằng Tìm món.</span>
               <button data-testid="menu-upgrade" onClick={() => openPage("plan")} style={{ ...fbtn("white", false, 48), position: "relative" }}>Xem gói cước</button>
             </>
           )}
@@ -376,7 +376,7 @@ export function MenuDayPage({ dayKey, profile, macro, todayLog, getWeeklyTemplat
   return (
     <div>
       <div style={body}>
-        <Summary title={`${row.long} · ${DT[row.dayType]}`} meals={row.meals} cal={row.cal} target={target} sub={`${row.meals.length} bữa · tự chép vào Hôm nay mỗi ${row.long} nếu sáng đó chưa ghi gì`} />
+        <Summary title={`${row.long} · ${DT[row.dayType]}`} meals={row.meals} cal={row.cal} target={target} sub={`${row.meals.length} bữa · tự chép vào Hôm nay mỗi ${row.long} nếu sáng đó chưa có món nào`} />
         {row.mismatch ? <Warn>Lưu cho {DT[row.tpl.day_type].toLowerCase()} — bấm Tính lại để khớp mục tiêu {DT[row.dayType].toLowerCase()}</Warn>
           : row.low ? <Warn>Thiếu nhiều so với mục tiêu — bấm Tính lại</Warn> : null}
         <MealsPreview meals={row.meals} />

@@ -98,7 +98,7 @@ function FoodPanel(p) {
           <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>kcal TB/ngày</span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6 }}>
-          {[["Đạt mục tiêu", `${sum.okCount} / ${sum.loggedCount} ngày`], ["Đã ghi", `${sum.loggedCount} / ${passed} ngày`], ["Mục tiêu", fmtInt(lineCal)]].map(([a, b]) => (
+          {[["Đạt mục tiêu", `${sum.okCount} / ${sum.loggedCount} ngày`], ["Ngày đã ăn", `${sum.loggedCount} / ${passed} ngày`], ["Mục tiêu", fmtInt(lineCal)]].map(([a, b]) => (
             <span key={a} style={{ borderRadius: 12, background: "#F1F5FB", padding: 8, display: "flex", flexDirection: "column", minWidth: 0 }}>
               <span style={{ fontSize: 11, color: "#64748B" }}>{a}</span><span style={{ fontSize: 15, fontWeight: 900, whiteSpace: "nowrap" }}>{b}</span>
             </span>
@@ -131,9 +131,9 @@ function FoodPanel(p) {
 
       {rows && listed.length === 0 && (
         <EmptyCard testid="diary-empty" style={{ margin: "10px 12px 0 12px" }} icon={Icon.plus(22)}
-          title={mode === "week" ? "Tuần này chưa ghi bữa nào" : "Tháng này chưa ghi bữa nào"}
-          sub="Ghi bữa ở Hôm nay hoặc bấm nút + ở giữa thanh dưới. Ngày đã ghi sẽ hiện ở đây kèm biểu đồ."
-          action={p.onLog ? "Ghi bữa ngay" : null} onAction={p.onLog} />
+          title={mode === "week" ? "Tuần này chưa có bữa đã ăn" : "Tháng này chưa có bữa đã ăn"}
+          sub="Thêm món ở Hôm nay hoặc bấm nút + ở giữa thanh dưới, ăn xong bấm Đã ăn. Ngày đã ăn sẽ hiện ở đây kèm biểu đồ."
+          action={p.onLog ? "Thêm món" : null} onAction={p.onLog} />
       )}
       {!rows && (
         <div aria-hidden="true" style={{ margin: "10px 12px 0 12px", ...ltCard, padding: "6px 14px" }}>

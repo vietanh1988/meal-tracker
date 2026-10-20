@@ -132,7 +132,7 @@ export function SaveWeekSheet({ dayType, gymDays, noEx, onSave, onClose }) {
         <AppIcon color={GREEN} size={40}>{Icon.redo(20)}</AppIcon>
         <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <span style={{ fontSize: 19, fontWeight: 900 }}>Lặp lại hằng tuần</span>
-          <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>Sáng thứ đó, nếu Hôm nay chưa ghi gì, app tự chép thực đơn này vào</span>
+          <span style={{ fontSize: 12, color: "#64748B", lineHeight: 1.4 }}>Sáng thứ đó, nếu Hôm nay chưa có món nào, app tự chép thực đơn này vào</span>
         </span>
       </div>
       <DayPicker isOk={(i) => typeOf(i) === dayType} days={days} dayTypeOf={noEx ? null : typeOf} onToggle={(i) => setDays(days.includes(i) ? days.filter((x) => x !== i) : [...days, i])} />

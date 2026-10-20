@@ -100,7 +100,7 @@ export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", on
 // ============ Tổng kết tuần (Chủ nhật) ============
 export function PetWeekScreen({ pet, w, onBack, onAI, aiBusy, onPremium }) {
   const tiles = [
-    ["Bữa đã ghi", `${w.meals} / ${w.mealsMax}`, "#007AFF"],
+    ["Bữa đã ăn", `${w.meals} / ${w.mealsMax}`, "#007AFF"],
     ["Ngày đủ nước", `${w.waterDays} / 7`, "#0891B2"],
     ["Chuỗi dài nhất", `${w.streak} ngày`, "#F97316"],
     ["Hạt kiếm được", fmt(w.seeds), "#16A34A"],

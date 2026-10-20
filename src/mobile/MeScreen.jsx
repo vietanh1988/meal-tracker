@@ -62,7 +62,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
   const planLabel = salesEnabled || isAdmin ? "Gói cước" : "Lượt AI";
 
   const share = async () => {
-    const data = { title: "Fipilot AI", text: "Ghi bữa ăn, tính macro và lên thực đơn với Fipilot AI", url: "https://app.fipilotai.com" };
+    const data = { title: "Fipilot AI", text: "Theo dõi bữa ăn, tính macro và lên thực đơn với Fipilot AI", url: "https://app.fipilotai.com" };
     try {
       if (navigator.share) { await navigator.share(data); return; }
       await navigator.clipboard.writeText(data.url);

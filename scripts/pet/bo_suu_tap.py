@@ -31,6 +31,7 @@ def hold(file, v, scale=1.0):
     lab, n = ndimage.label(blue); sz = ndimage.sum(blue, lab, range(1, n + 1)); m = lab == (np.argmax(sz) + 1)
     ys, xs = np.nonzero(m); fist = xs.max() - xs.min()
     hx_, hy_ = xs.mean() / im.width, ys.mean() / im.height
+    hx_ = 1 - hx_  # 20/10: ảnh bộ sưu tập vẽ bàn tay cho tay phía TRÁI màn hình → đặt ở tay phía phải thì lật ảnh (item.mirror)
     bw, bh = B[v]; hx, hy = HAND[v]
     wf = im.width / fist * 0.17 * scale; hf = wf * bw * im.height / im.width / bh
     return {'x': round(hx + (0.5 - hx_) * wf, 4), 'y': round(hy + (0.5 - hy_) * hf, 4), 'w': round(wf, 4)}
@@ -40,7 +41,7 @@ FX = {'x': 0.5, 'y': 0.11, 'w': 0.92}
 C = {
  'noel': ('Noel', [
   ('Mũ ông già Noel', 'dau', BOTH, 'rare', 2, 'cap', .80, 'cover'),
-  ('Băng đô tuần lộc', 'dau', BOTH, 'common', 1, 'band', (.115, .30, .78), 'leaf'),
+  ('Băng đô tuần lộc', 'dau', BOTH, 'common', 1, 'band', (.03, .31, .84), 'head'),
   ('Mũ len Noel', 'dau', ['nam'], 'common', 1, 'cap', .74, 'cover'),
   ('Băng đô nơ Noel', 'dau', ['nu'], 'common', 1, 'band', .80, 'leaf'),
   ('Khăn len caro', 'deo', ['nam'], 'common', 1, 'scarf', None, ''),
@@ -93,7 +94,7 @@ for col, (label, items, outfits) in C.items():
             elif kind == 'band': anc[v] = fitband(f, v, p[0], p[1], p[2]) if isinstance(p, tuple) else fitband(f, v, .165, .37, p)
             elif kind == 'crown': anc[v] = fitw(f, v, p[0] if v == 'nam' else p[1], p[2] if v == 'nam' else p[3])
             elif kind == 'pin': anc[v] = fitc(f, v, .19 if v == 'nam' else .22, .42, .66)
-            elif kind == 'scarf': anc[v] = fitw(f, v, .745 if v == 'nam' else .78, .60 if v == 'nam' else .58)  # quấn sát dưới cằm, rộng hơn thân
+            elif kind == 'scarf': anc[v] = fitw(f, v, .765 if v == 'nam' else .81, .70 if v == 'nam' else .58)  # quấn sát dưới cằm, rộng hơn thân
             elif kind == 'back': anc[v] = fitc(f, v, .64, 1.0)
             elif kind == 'cone': anc[v] = fitw(f, v, CONE[v] + p[1], p[0]) if isinstance(p, tuple) else fitw(f, v, CONE[v], p)  # quai thao: tua dài dưới vành → đáy ảnh thấp hơn vành  # nón rộng vành: vành ngang trán, cắt chỏm đầu cao hơn
             elif kind == 'lion': anc[v] = fitw(f, v, BRIM[v] + .05, p)  # đầu lân trùm xuống ngang lông mày
@@ -104,7 +105,8 @@ for col, (label, items, outfits) in C.items():
         if flag == 'cover': it['cover'] = True
         if flag == 'noleaf': it['hide_leaf'] = True
         if flag == 'leaf': it['behind_leaf'] = True
-        if slot == 'cam_tay': it['file_hold'] = f; it['hands'] = ['phai', 'trai']
+        if flag == 'head': it['behind_head'] = True  # vòng băng đi sau đầu, chỉ lộ cung + sừng trên đỉnh đầu
+        if slot == 'cam_tay': it['file_hold'] = f; it['hands'] = ['phai', 'trai']; it['mirror'] = True
         out.append(it)
     for j, (name, vs, rar, lv) in enumerate(outfits, 1):
         iid = f'{col}-ao-{j:02d}'

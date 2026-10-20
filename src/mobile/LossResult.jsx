@@ -46,7 +46,7 @@ export function LossResult({ weight, macro, measures = [], streak = 0, onWeigh, 
         ) : (
           <button onClick={onMeasure} data-testid="loss-waist-empty" style={{ ...ltCard, padding: 14, display: "flex", flexDirection: "column", gap: 8, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}><AppIcon name="progress" color="#0D9488" size={36} /><span style={{ fontSize: 12, color: "#64748B", fontWeight: 700 }}>Vòng eo</span><span style={{ fontSize: 14, fontWeight: 800, lineHeight: 1.35 }}>Đo eo để thấy mỡ giảm rõ hơn</span><span style={{ fontSize: 12, color: "#0062F0", fontWeight: 800 }}>+ Đo</span></button>
         )}
-        <div data-testid="loss-streak" style={{ ...ltCard, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}><AppIcon name="bolt" color="#EA580C" size={36} /><span style={{ fontSize: 12, color: "#64748B", fontWeight: 700 }}>Chuỗi ngày ghi</span><span style={{ fontSize: 22, fontWeight: 900 }}>{streak} ngày</span><span style={{ fontSize: 12, color: "#64748B" }}>{streak > 0 ? "liên tục" : "ghi bữa hôm nay để bắt đầu"}</span></div>
+        <div data-testid="loss-streak" style={{ ...ltCard, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}><AppIcon name="bolt" color="#EA580C" size={36} /><span style={{ fontSize: 12, color: "#64748B", fontWeight: 700 }}>Chuỗi ngày ghi</span><span style={{ fontSize: 22, fontWeight: 900 }}>{streak} ngày</span><span style={{ fontSize: 12, color: "#64748B" }}>{streak > 0 ? "liên tục" : "ăn xong bấm Đã ăn để bắt đầu"}</span></div>
       </div>
       <div style={secHead}><span style={secTitle}>Mốc của bạn</span></div>
       <div style={{ ...card, padding: 12, display: "flex", gap: 6 }}>

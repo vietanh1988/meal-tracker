@@ -29,7 +29,7 @@ export function RecapTodayCard({ r, onOpen, onHide }) {
         <button data-testid="recap-hide" onClick={onHide} aria-label="Ẩn tổng kết" style={{ width: 30, height: 30, borderRadius: 15, border: "none", background: "rgba(255,255,255,0.18)", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.close(14)}</button>
       </div>
       <div style={{ display: "flex", gap: 6, position: "relative" }}>
-        {[["Ghi bữa", `${r.loggedDays}/${r.days} ngày`], ["Chuỗi dài nhất", `${r.streak} ngày`], left].map(([a, b]) => (
+        {[["Ngày đã ăn", `${r.loggedDays}/${r.days} ngày`], ["Chuỗi dài nhất", `${r.streak} ngày`], left].map(([a, b]) => (
           <span key={a} style={{ flex: 1, minWidth: 0, borderRadius: 12, background: "rgba(255,255,255,0.16)", padding: "8px 10px", display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 11, opacity: 0.85 }}>{a}</span><span style={{ fontSize: 15, fontWeight: 900, whiteSpace: "nowrap" }}>{b}</span>
           </span>
@@ -102,7 +102,7 @@ function Thin({ r, onReminders }) {
       <div data-testid="recap-thin" style={{ ...card, marginTop: 14, padding: "22px 18px", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center" }}>
         <span aria-hidden="true" style={{ fontSize: 40 }}>🌱</span>
         <span style={{ fontSize: 19, fontWeight: 900 }}>{r.hasData ? "Bạn đã bắt đầu!" : "Tháng này chưa có dữ liệu"}</span>
-        <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.55 }}>Bạn ghi bữa <b>{r.loggedDays} ngày</b> và cân <b>{r.weighCount} lần</b>. Chưa đủ để thấy rõ kết quả — chỉ cần ghi đều và cân mỗi tuần là app tính được bạn thay đổi bao nhiêu.</span>
+        <span style={{ fontSize: 14, color: "#475569", lineHeight: 1.55 }}>Bạn có <b>{r.loggedDays} ngày</b> đã ăn và cân <b>{r.weighCount} lần</b>. Chưa đủ để thấy rõ kết quả — chỉ cần ghi đều và cân mỗi tuần là app tính được bạn thay đổi bao nhiêu.</span>
       </div>
       <div style={secT}>Để tháng sau rõ kết quả hơn</div>
       <div style={{ ...card, padding: "0 14px" }}>
@@ -139,7 +139,7 @@ export async function drawShareImage(r, { name, hideKg }) {
     const bw = ctx.measureText(big).width; ctx.font = `800 80px ${F}`; ctx.fillText("kg", 90 + bw, 530);
     if (!hideKg) { ctx.font = `600 46px ${F}`; ctx.globalAlpha = 0.9; ctx.fillText(`${nf(r.startKg)} → ${nf(r.endKg)} kg`, 80, 680); ctx.globalAlpha = 1; }
   } else { ctx.font = `900 120px ${F}`; ctx.fillText(`${r.loggedDays} ngày`, 70, 480); ctx.font = `600 46px ${F}`; ctx.fillText("ăn uống có kế hoạch", 80, 600); }
-  const tiles = [["📅", String(r.loggedDays), "ngày ghi bữa"], ["🔥", String(r.streak), "ngày liên tục"], ["🎯", String(r.okDays), "ngày đúng calo"]];
+  const tiles = [["📅", String(r.loggedDays), "ngày đã ăn"], ["🔥", String(r.streak), "ngày liên tục"], ["🎯", String(r.okDays), "ngày đúng calo"]];
   const tw = (W - 160 - 48) / 3;
   tiles.forEach(([ic, n, l], i) => {
     const x = 80 + i * (tw + 24), y = 900;
@@ -243,9 +243,9 @@ export function MonthRecapScreen({ month, today, getDailyLogs, weightLog, profil
             </div>
             <div style={secT}>{r.ongoing ? "Từ đầu tháng bạn đã làm" : "Tháng này bạn đã làm"}</div>
             <div style={{ ...card, padding: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              <Stat testid="recap-logged" ic="📅" a="Ngày ghi bữa" b={`${r.loggedDays}/${r.daysPassed}`} sub={r.ongoing ? "ngày tới hôm nay" : "ngày trong tháng"} />
+              <Stat testid="recap-logged" ic="📅" a="Ngày đã ăn" b={`${r.loggedDays}/${r.daysPassed}`} sub={r.ongoing ? "ngày tới hôm nay" : "ngày trong tháng"} />
               <Stat ic="🎯" a="Ngày đúng calo" b={`${r.okDays} ngày`} sub={r.target ? `mục tiêu ${ni(r.target)} kcal` : null} tone="#047857" />
-              <Stat testid="recap-streak" ic="🔥" a="Chuỗi dài nhất" b={`${r.streak} ngày`} sub="ghi bữa liên tục" tone="#EA580C" />
+              <Stat testid="recap-streak" ic="🔥" a="Chuỗi dài nhất" b={`${r.streak} ngày`} sub="liền đã ăn" tone="#EA580C" />
               <Stat ic="🍽️" a="Calo trung bình" b={ni(r.avgCal)} sub="kcal mỗi ngày có ghi" />
             </div>
             <div style={secT}>Cân nặng trong tháng</div>

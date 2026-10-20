@@ -527,7 +527,7 @@ Trả lời ĐÚNG JSON, không có text trước/sau:
                 if (onClose) onClose();
               } catch (e) {
                 console.error("Ghi bữa lỗi:", e);
-                alert("Có lỗi khi ghi bữa ăn. Thử lại sau.");
+                alert("Có lỗi khi lưu bữa ăn. Thử lại sau.");
               }
             };
 

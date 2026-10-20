@@ -105,7 +105,7 @@ export function RemindersScreen({ profile, setProfile, pushFeature, weightLog, c
       <span style={secT}>ĂN UỐNG</span>
       <div data-testid="rem-sec-food" style={box}>
         <div style={blk(false)}>
-          <Head testid="rem-meal" title="Nhắc ghi bữa" sub="Chỉ nhắc khi bữa đó chưa ghi" on={r.meal.on} onToggle={() => set("meal", { on: !r.meal.on })} />
+          <Head testid="rem-meal" title="Nhắc giờ ăn" sub="Chỉ nhắc khi bữa đó chưa bấm Đã ăn" on={r.meal.on} onToggle={() => set("meal", { on: !r.meal.on })} />
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", opacity: r.meal.on ? 1 : 0.6 }}>
             {r.meal.slots.map((s) => (
               <span key={s.meal} style={{ display: "inline-flex", alignItems: "center", gap: 2 }}>

@@ -61,7 +61,7 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
       {items.length === 0 ? (
         <div data-testid="notif-empty" style={{ ...box, padding: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
           <span style={{ fontSize: 15, fontWeight: 800 }}>Chưa có hoạt động nào</span>
-          <span style={{ fontSize: 13, color: DK.t2, lineHeight: 1.5 }}>Bật nhắc nhở để Fipilot báo bạn khi đến giờ ghi bữa hoặc đến ngày cân.</span>
+          <span style={{ fontSize: 13, color: DK.t2, lineHeight: 1.5 }}>Bật nhắc nhở để Fipilot báo bạn khi đến giờ ăn hoặc đến ngày cân.</span>
           <button onClick={openReminders} style={{ marginTop: 6, height: 40, padding: "0 16px", borderRadius: 12, border: "none", background: "#FFFFFF", fontFamily: "inherit", fontSize: 14, fontWeight: 800, color: "#0040E0" }}>Cài nhắc nhở</button>
         </div>
       ) : (

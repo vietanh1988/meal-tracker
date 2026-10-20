@@ -272,7 +272,7 @@ export function MobileApp(props) {
         await refresh(d);
       });
     };
-    showToast({ text: `Đã ghi ${label} vào ${mealName.toLowerCase()}${d === todayVN() ? "" : " " + friendlyDate(d).toLowerCase()}`, action: { label: "Hoàn tác", onClick: undo } });
+    showToast({ text: `Đã thêm ${label} vào ${mealName.toLowerCase()}${d === todayVN() ? "" : " " + friendlyDate(d).toLowerCase()}`, action: { label: "Hoàn tác", onClick: undo } });
     return true;
   });
 

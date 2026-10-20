@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       const delta = a0 && a1 && a0 !== a1 ? Math.round((Number(a1.kg) - Number(a0.kg)) * 10) / 10 : null;
       const kg = delta == null ? "" : delta < 0 ? `giảm ${Math.abs(delta).toLocaleString("vi-VN")} kg · ` : delta > 0 ? `tăng ${delta.toLocaleString("vi-VN")} kg · ` : "giữ cân · ";
       const name = await nameOf(uid);
-      await sendTo(uid, { title: `🎉 ${name} ơi, tổng kết ${label} đã có!`, body: ((b) => b.charAt(0).toUpperCase() + b.slice(1))(`${kg}ghi bữa ${n} ngày. Bấm xem kết quả & ảnh khoe thành tích.`), url: `/?recap=${pm}` });
+      await sendTo(uid, { title: `🎉 ${name} ơi, tổng kết ${label} đã có!`, body: ((b) => b.charAt(0).toUpperCase() + b.slice(1))(`${kg}${n} ngày đã ăn. Bấm xem kết quả & ảnh khoe thành tích.`), url: `/?recap=${pm}` });
     }
   };
   if (type === "monthly" || (type === "tick" && today.slice(8, 10) === "01" && now.hhmm === "08:00")) await monthly();

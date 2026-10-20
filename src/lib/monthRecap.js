@@ -41,22 +41,22 @@ function sayLine({ delta, startKg, weeks, mode }) {
   const rate = startKg ? (Math.abs(delta) / Math.max(weeks, 1)) / startKg * 100 : 0; // % cân / tuần
   const perW = r1(Math.abs(delta) / Math.max(weeks, 1)).toLocaleString("vi-VN");
   if (mode === "loss") {
-    if (delta >= 0.3) return { head: "Tháng này cân chưa xuống.", text: "Đừng nản — thường do ăn dư vài bữa hoặc ít ghi bữa. Tháng sau ghi đủ bữa, app sẽ chỉnh calo cho bạn." };
-    if (delta > -0.3) return { head: "Cân đang đứng.", text: "Giữ được là tốt, nhưng để giảm tiếp bạn cần ghi đủ bữa và ăn đúng thực đơn hơn một chút." };
+    if (delta >= 0.3) return { head: "Tháng này cân chưa xuống.", text: "Đừng nản — thường do ăn dư vài bữa hoặc bữa ăn chưa được bấm Đã ăn. Tháng sau bấm Đã ăn đủ bữa, app sẽ chỉnh calo cho bạn." };
+    if (delta > -0.3) return { head: "Cân đang đứng.", text: "Giữ được là tốt, nhưng để giảm tiếp bạn cần ăn đủ bữa, bấm Đã ăn và ăn đúng thực đơn hơn một chút." };
     if (rate > 1) return { head: "Giảm hơi nhanh.", text: `Bạn giảm khoảng ${perW} kg/tuần — nhanh hơn mức an toàn, dễ mất cơ và tăng lại. Đừng ăn thấp hơn thực đơn app gợi ý.` };
     if (rate >= 0.25) return { head: "Giảm đều và an toàn.", text: `Bạn giảm khoảng ${perW} kg mỗi tuần — đúng tốc độ an toàn (0,25–0,75% cân nặng/tuần), ít bị tăng lại.` };
-    return { head: "Đang giảm, chậm mà chắc.", text: `Khoảng ${perW} kg/tuần. Ghi đủ bữa hơn nữa là sẽ nhanh hơn.` };
+    return { head: "Đang giảm, chậm mà chắc.", text: `Khoảng ${perW} kg/tuần. Ăn đủ bữa và bấm Đã ăn đều hơn nữa là sẽ nhanh hơn.` };
   }
   if (mode === "gain") {
     if (delta <= 0) return { head: "Tháng này cân chưa lên.", text: "Để tăng cơ cần ăn đủ calo mỗi ngày — thử thêm 1 bữa phụ giàu đạm." };
     if (rate > 0.5) return { head: "Tăng hơi nhanh.", text: `Khoảng ${perW} kg/tuần — dễ tăng mỡ. Giữ calo đúng mục tiêu là đủ.` };
     return { head: "Tăng đều.", text: `Khoảng ${perW} kg/tuần — đúng nhịp tăng cơ sạch.` };
   }
-  return Math.abs(delta) <= 1 ? { head: "Giữ cân tốt.", text: "Cân của bạn dao động trong khoảng an toàn cả tháng." } : { head: "Cân thay đổi khá nhiều.", text: "Thử ghi bữa đều hơn để giữ cân ổn định." };
+  return Math.abs(delta) <= 1 ? { head: "Giữ cân tốt.", text: "Cân của bạn dao động trong khoảng an toàn cả tháng." } : { head: "Cân thay đổi khá nhiều.", text: "Thử ăn đều bữa hơn để giữ cân ổn định." };
 }
 
 function tipLine({ loggedDays, daysPassed, weighCount, avgCal, target, mode }) {
-  if (daysPassed && loggedDays / daysPassed < 0.6) return { icon: "✅", t: "Ghi bữa đều hơn", s: `Tháng này bạn ghi ${loggedDays}/${daysPassed} ngày. Chỉ cần bấm "Đã ăn" sau mỗi bữa — thực đơn có sẵn rồi.` };
+  if (daysPassed && loggedDays / daysPassed < 0.6) return { icon: "✅", t: "Ăn đều bữa hơn", s: `Tháng này bạn có ${loggedDays}/${daysPassed} ngày đã ăn. Chỉ cần bấm "Đã ăn" sau mỗi bữa — thực đơn có sẵn rồi.` };
   if (weighCount < 3) return { icon: "⚖️", t: "Cân mỗi tuần 1 lần", s: "Cân sáng thứ 2, trước khi ăn — app mới tính đúng tốc độ và chỉnh calo cho bạn." };
   if (mode === "loss" && target && avgCal > target * 1.08) return { icon: "🍽️", t: "Bớt 1 món phụ", s: `Trung bình bạn ăn ${avgCal.toLocaleString("vi-VN")} kcal/ngày, hơi cao hơn mục tiêu ${target.toLocaleString("vi-VN")}.` };
   if (mode === "gain" && target && avgCal < target * 0.92) return { icon: "🥛", t: "Thêm 1 bữa phụ", s: `Trung bình bạn ăn ${avgCal.toLocaleString("vi-VN")} kcal/ngày, thấp hơn mục tiêu ${target.toLocaleString("vi-VN")}.` };
@@ -84,7 +84,7 @@ export function monthRecap({ m, today, rows = [], prevRows = [], weightLog = [],
   const good = (a, b, better) => (a == null || b == null ? null : a === b ? null : better(a, b));
   const cmp = hasPrev ? [
     w.delta != null && pw.delta != null && { l: mode === "gain" ? "Cân tăng" : mode === "loss" ? "Cân giảm" : "Cân thay đổi", now: w.delta, prev: pw.delta, kind: "kg", better: good(w.delta, pw.delta, (a, b) => (mode === "gain" ? a > b : mode === "loss" ? a < b : Math.abs(a) < Math.abs(b))) },
-    { l: "Ngày ghi bữa", now: sum.loggedCount, prev: psum.loggedCount, kind: "n", better: good(sum.loggedCount, psum.loggedCount, (a, b) => a > b) },
+    { l: "Ngày đã ăn", now: sum.loggedCount, prev: psum.loggedCount, kind: "n", better: good(sum.loggedCount, psum.loggedCount, (a, b) => a > b) },
     sum.avg && psum.avg && target ? { l: "Calo trung bình", now: sum.avg, prev: psum.avg, kind: "cal", better: good(Math.abs(sum.avg - target), Math.abs(psum.avg - target), (a, b) => a < b) } : null,
     { l: "Ngày đúng calo", now: sum.okCount, prev: psum.okCount, kind: "n", better: good(sum.okCount, psum.okCount, (a, b) => a > b) },
   ].filter(Boolean) : [];
@@ -105,7 +105,7 @@ export function recapCardMonth(today) {
 }
 // Câu tiêu đề thẻ / ảnh: "Bạn đã giảm 2,4 kg"
 export function headline(r) {
-  if (r.delta == null) return `${r.label}: bạn ghi bữa ${r.loggedDays} ngày`;
+  if (r.delta == null) return `${r.label}: bạn có ${r.loggedDays} ngày đã ăn`;
   const v = Math.abs(r.delta).toLocaleString("vi-VN", { maximumFractionDigits: 1 });
   if (r.mode === "keep") return Math.abs(r.delta) <= 1 ? "Bạn giữ cân ổn định cả tháng" : `Cân bạn thay đổi ${v} kg`;
   if (r.delta < 0) return `Bạn đã giảm ${v} kg`;

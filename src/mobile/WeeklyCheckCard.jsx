@@ -27,7 +27,7 @@ const Btn = ({ children, primary, soft, onClick, testid }) => (
 export function WeeklyCheckCard({ check, target, onAct }) {
   if (!check) return null;
   const c = check;
-  const meals = { k: "Ghi bữa", v: `${c.mealDays}/7 ngày`, c: c.mealDays >= 4 ? GREEN : ORANGE };
+  const meals = { k: "Ngày đã ăn", v: `${c.mealDays}/7 ngày`, c: c.mealDays >= 4 ? GREEN : ORANGE };
   const k1 = (v) => Number(v).toFixed(1).replace(".", ",");
   const kgLine = c.kgFrom != null ? `${k1(c.kgFrom)} → ${k1(c.kgTo)} kg` : "";
   const goalStat = { k: "Mục tiêu", v: `−${kgW(c.target || 0)}` };
@@ -37,7 +37,7 @@ export function WeeklyCheckCard({ check, target, onAct }) {
     // 17/10: chỉ nói đúng thứ còn thiếu; đã cân hôm nay thì không mời cân nữa
     tone = "info"; title = "Chưa đủ dữ liệu để chỉnh";
     const weighOk = c.weighCount >= 2 && c.weighSpan >= 7;
-    if (c.need === "meals") body = <>7 ngày qua mới ghi bữa <b>{c.mealDays}/7 ngày</b>. Ghi ít nhất 4 ngày mỗi tuần thì app mới biết nên ăn thêm hay bớt — chưa vội chỉnh calo nhé.</>;
+    if (c.need === "meals") body = <>7 ngày qua mới có <b>{c.mealDays}/7 ngày</b> đã ăn. Bấm Đã ăn ít nhất 4 ngày mỗi tuần thì app mới biết nên ăn thêm hay bớt — chưa vội chỉnh calo nhé.</>;
     else if (c.need === "spread") body = <>Bạn đã cân {c.weighCount} lần nhưng mới trong <b>{c.weighSpan} ngày</b> — cân tiếp vào tuần sau để app so được 2 tuần rồi mới chỉnh calo.</>;
     else body = <>Mới có <b>{c.weighCount} lần cân</b> trong 2 tuần. Cân mỗi tuần 1 lần (sáng, trước khi ăn) thì app mới biết nên ăn thêm hay bớt.</>;
     stats = [{ k: "Cân (2 tuần)", v: c.weighCount >= 2 && c.weighSpan < 7 ? `${c.weighCount} lần · ${c.weighSpan} ngày` : `${c.weighCount} lần`, c: weighOk ? GREEN : ORANGE }, meals];
@@ -53,8 +53,8 @@ export function WeeklyCheckCard({ check, target, onAct }) {
     tone = "warn"; title = "Tuần này cân gần như đứng yên";
     const lossTxt = c.loss > 0 ? `chỉ giảm ${kgW(c.loss)}` : "chưa giảm";
     body = c.delta
-      ? <>Bạn chọn giảm <b>{kgW(c.target)}</b> nhưng 2 tuần qua {lossTxt} dù ghi bữa đều. Thử bớt <b>100 kcal/ngày</b> (khoảng nửa chén cơm) — mục tiêu mới {fmtInt(target - 100)} kcal.</>
-      : <>2 tuần qua {lossTxt}, nhưng mức ăn đã ở mức thấp nhất app cho phép — <b>đừng cắt thêm</b>. Đi bộ thêm 30 phút mỗi ngày và ghi bữa thật đủ (cả đồ uống, nước chấm) để giảm tiếp.</>;
+      ? <>Bạn chọn giảm <b>{kgW(c.target)}</b> nhưng 2 tuần qua {lossTxt} dù ăn đều bữa. Thử bớt <b>100 kcal/ngày</b> (khoảng nửa chén cơm) — mục tiêu mới {fmtInt(target - 100)} kcal.</>
+      : <>2 tuần qua {lossTxt}, nhưng mức ăn đã ở mức thấp nhất app cho phép — <b>đừng cắt thêm</b>. Đi bộ thêm 30 phút mỗi ngày và thêm đủ món đã ăn (cả đồ uống, nước chấm) để giảm tiếp.</>;
     stats = [kgStat, meals, goalStat];
     btns = c.delta
       ? <><Btn testid="checkin-keep" onClick={() => onAct("keep")}>Giữ như cũ</Btn><Btn testid="checkin-apply" primary onClick={() => onAct("apply")}>Bớt 100 kcal</Btn></>
@@ -64,8 +64,8 @@ export function WeeklyCheckCard({ check, target, onAct }) {
     tone = "warn"; title = "Tuần này cân chưa tăng";
     const gTxt = c.gain > 0.01 ? `chỉ tăng ${kgW(c.gain)}` : "chưa tăng";
     body = c.delta
-      ? <>Bạn đang tăng cơ nhưng 2 tuần qua {gTxt} dù ghi bữa đều — thường do vận động thêm (đi bộ, đá bóng…) hoặc ăn thiếu ở bữa không ghi. Thêm <b>100 kcal/ngày</b> (1 quả chuối + 1 hộp sữa chua) — mục tiêu mới {fmtInt(target + 100)} kcal.</>
-      : <>2 tuần qua {gTxt}, mức ăn đã cộng tối đa. Ghi đủ mọi bữa (cả bữa phụ, đồ uống) và ghi phần vận động thêm ở Hôm nay để app tính đúng.</>;
+      ? <>Bạn đang tăng cơ nhưng 2 tuần qua {gTxt} dù ăn đều bữa — thường do vận động thêm (đi bộ, đá bóng…) hoặc ăn thiếu ở bữa không ghi. Thêm <b>100 kcal/ngày</b> (1 quả chuối + 1 hộp sữa chua) — mục tiêu mới {fmtInt(target + 100)} kcal.</>
+      : <>2 tuần qua {gTxt}, mức ăn đã cộng tối đa. Thêm đủ mọi món đã ăn (cả bữa phụ, đồ uống) và ghi phần vận động thêm ở Hôm nay để app tính đúng.</>;
     stats = [kgStat, meals, { k: "Mục tiêu", v: `+${kgW(c.target || 0)}` }];
     btns = c.delta
       ? <><Btn testid="checkin-keep" onClick={() => onAct("keep")}>Giữ như cũ</Btn><Btn testid="checkin-apply" primary onClick={() => onAct("apply")}>Thêm 100 kcal</Btn></>

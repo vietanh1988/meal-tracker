@@ -15,7 +15,7 @@ test("Nhắc nhở: lưu cài đặt nhắc", async ({ browser }) => {
     await login(page);
     await nav("Tôi").click();
     await page.getByRole("button", { name: /Nhắc nhở/ }).click();
-    await expect(page.getByText("Nhắc ghi bữa")).toBeVisible();
+    await expect(page.getByText("Nhắc giờ ăn")).toBeVisible();
     await expect(page.getByTestId("rem-slot-trua")).toHaveText("Trưa 11:45");
     await page.screenshot({ path: "shots/nhac-nho.png", fullPage: true });
 
@@ -43,7 +43,7 @@ test("Nhắc nhở: lưu cài đặt nhắc", async ({ browser }) => {
     await waitDb(async () => (await rs()).weigh?.weekday === 2, "weigh.weekday = 2");
 
     // 17/10 (bản vẽ 124): 2 nhóm ĂN UỐNG · CƠ THỂ; "Cân & đo hằng tuần" có ô kèm nhắc đo số đo
-    await expect(page.getByTestId("rem-sec-food")).toContainText("Nhắc ghi bữa");
+    await expect(page.getByTestId("rem-sec-food")).toContainText("Nhắc giờ ăn");
     await expect(page.getByTestId("rem-sec-food")).toContainText("Nhắc uống nước");
     await expect(page.getByTestId("rem-sec-body")).toContainText("Cân & đo hằng tuần");
     await tap(page.getByTestId("rem-weigh-measure"));

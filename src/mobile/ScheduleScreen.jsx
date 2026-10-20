@@ -103,7 +103,7 @@ export function ScheduleScreen({ profile, setProfile, mealConfig, defaultConfig,
           );
         })}
       </div>
-      <p style={note}>Bấm vào giờ để đổi. Giờ dùng để chọn bữa tự động và nhắc nhở. Bữa đã ghi món trong ngày vẫn hiện dù đang tắt.</p>
+      <p style={note}>Bấm vào giờ để đổi. Giờ dùng để chọn bữa tự động và nhắc nhở. Bữa đã có món trong ngày vẫn hiện dù đang tắt.</p>
 
       <span style={label}>NƯỚC MỖI NGÀY</span>
       <div style={{ ...card, padding: 14, display: "flex", alignItems: "center", gap: 10 }}>

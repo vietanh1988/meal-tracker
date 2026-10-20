@@ -247,7 +247,7 @@ function MealRow({ r, last, now, onLog, onEdit, onToggleEaten, busy }) {
           <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: "nowrap" }}>{r.name}</span>
             {now ? <span style={{ fontSize: 12, fontWeight: 800, color: "#007AFF" }}>Đến giờ ăn</span>
-              : <span style={{ fontSize: 12, color: "#64748B" }}>{r.state === "missed" ? "Đã qua giờ · chưa ghi" : "Chưa ghi"}</span>}
+              : <span style={{ fontSize: 12, color: "#64748B" }}>{r.state === "missed" ? "Đã qua giờ · chưa ăn" : "Chưa ăn"}</span>}
           </span>
           {timeTag}
           {/* Giữ nút + cả ở bữa đang trên thẻ đến giờ (chủ dự án 16/10: phải thêm/sửa được ngay ở dòng bữa) */}

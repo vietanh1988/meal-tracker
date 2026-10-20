@@ -17,9 +17,9 @@ import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PIc } from
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen, petVariant } from "./PetTalk";
 
 const ACH = [
-  { key: "s7", label: "Chuỗi 7 ngày ghi bữa", item: "hieu-ung-05", max: 7, of: "streak" },
-  { key: "s30", label: "Chuỗi 30 ngày", item: "hieu-ung-06", max: 30, of: "streak" },
-  { key: "s100", label: "Chuỗi 100 ngày", item: "hieu-ung-17", max: 100, of: "streak" },
+  { key: "s7", label: "7 ngày liền đã ăn", item: "hieu-ung-05", max: 7, of: "streak" },
+  { key: "s30", label: "30 ngày liền đã ăn", item: "hieu-ung-06", max: 30, of: "streak" },
+  { key: "s100", label: "100 ngày liền đã ăn", item: "hieu-ung-17", max: 100, of: "streak" },
   { key: "w4", label: "Cân đủ 4 tuần liền", item: "hieu-ung-02", max: 4, of: "weeks" },
   { key: "water30", label: "Đủ nước 30 ngày", item: "hieu-ung-04", max: 30, of: "water" },
   { key: "goal", label: "Đạt cân mục tiêu, giữ 2 tuần", item: "doi-dau-11", max: 14, of: "goal" },
@@ -69,7 +69,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const tasks = ids.map((id) => {
       const done = keys.has(`meal:${today}:${id}`);
       const k = kcalOf(id);
-      return { key: id, meal: id, label: MEAL_LABEL[id] || "Ăn 1 bữa", sub: done ? `Đã ăn · ${Math.round(k)} kcal` : eatenIds.includes(id) && k < 100 ? "Bữa dưới 100 kcal chưa tính" : "Chưa ghi", pts: 10, done };
+      return { key: id, meal: id, label: MEAL_LABEL[id] || "Ăn 1 bữa", sub: done ? `Đã ăn · ${Math.round(k)} kcal` : eatenIds.includes(id) && k < 100 ? "Bữa dưới 100 kcal chưa tính" : "Chưa ăn", pts: 10, done };
     });
     const waterGoal = waterGoalMl(profile?.kg, log.day_type === "train", profile?.waterGoalMl);
     const fmtL = (ml) => String(Math.round(ml / 100) / 10).replace(".", ",");
@@ -78,7 +78,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     tasks.push(
       { key: "photo", label: "Chụp món", sub: keys.has(`photo:${today}`) ? "Đã chụp hôm nay" : "Chụp ảnh 1 bữa đã ăn", pts: 5, done: keys.has(`photo:${today}`), color: "#EA580C", icon: PIc.camera(18) },
       { key: "water", label: "Uống đủ nước", sub: `${fmtL(log.water_ml || 0)} / ${fmtL(waterGoal)} lít`, pts: 15, done: keys.has(`water:${today}`), color: "#0891B2", icon: ic(<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" />) },
-      { key: "full", label: "Ghi đủ mọi bữa", sub: `${eatenIds.length} / ${Math.max(3, ids.length)} bữa`, pts: 20, done: keys.has(`full:${today}`), color: "#007AFF", icon: PIc.list(18) },
+      { key: "full", label: "Ăn đủ mọi bữa", sub: `${eatenIds.length} / ${Math.max(3, ids.length)} bữa`, pts: 20, done: keys.has(`full:${today}`), color: "#007AFF", icon: PIc.list(18) },
       { key: "streak", label: `Chuỗi ${Math.max(st.streak || 0, 0)} ngày`, sub: "Từ ngày thứ 3 được thêm", pts: 10, done: keys.has(`streak:${today}`), color: "#F97316", icon: PIc.flame(18) },
       { key: "weigh", label: "Cân tuần này", sub: weighedWeek ? "Đã cân tuần này" : "Cân 1 lần trong tuần", pts: 20, done: weighedWeek && [...keys].some((k) => k.startsWith("weigh:")), color: "#64748B", icon: ic(<><rect x="3" y="4" width="18" height="16" rx="4" /><path d="M8 9a4 4 0 0 1 8 0M12 9l1.5-2" /></>) },
     );
@@ -145,7 +145,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   const numbers = () => {
     const t = targets || {}, e = eaten || {};
     const rest = (a, b) => Math.max(0, Math.round((Number(a) || 0) - (Number(b) || 0)));
-    return `Số thật hôm nay (${today}): đã ăn ${Math.round(e.cal || 0)}/${Math.round(t.cal || 0)} kcal, đạm ${Math.round(e.p || 0)}/${Math.round(t.p || 0)} g (còn thiếu ${rest(t.p, e.p)} g), tinh bột ${Math.round(e.c || 0)}/${Math.round(t.c || 0)} g, béo ${Math.round(e.f || 0)}/${Math.round(t.f || 0)} g; nước ${(view0?.waterMl || 0)}/${view0?.waterGoal || 0} ml; đã ghi ${view0?.logged || 0}/${view0?.mealsOn || 0} bữa; chuỗi ${view0?.streak || 0} ngày; ${log.day_type === "train" ? "hôm nay là ngày tập" : "hôm nay là ngày nghỉ"}.`;
+    return `Số thật hôm nay (${today}): đã ăn ${Math.round(e.cal || 0)}/${Math.round(t.cal || 0)} kcal, đạm ${Math.round(e.p || 0)}/${Math.round(t.p || 0)} g (còn thiếu ${rest(t.p, e.p)} g), tinh bột ${Math.round(e.c || 0)}/${Math.round(t.c || 0)} g, béo ${Math.round(e.f || 0)}/${Math.round(t.f || 0)} g; nước ${(view0?.waterMl || 0)}/${view0?.waterGoal || 0} ml; đã ăn ${view0?.logged || 0}/${view0?.mealsOn || 0} bữa; chuỗi ${view0?.streak || 0} ngày; ${log.day_type === "train" ? "hôm nay là ngày tập" : "hôm nay là ngày nghỉ"}.`;
   };
   const openChat = () => {
     if (!chat.length && view0) {
@@ -195,7 +195,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const down = thisW && prevW ? Math.round((prevW.kg - thisW.kg) * 10) / 10 : 0;
     const v = variant;
     const next = [];
-    if (meals < days * view0.mealsOn) next.push("Ghi bữa tối trước 21:00");
+    if (meals < days * view0.mealsOn) next.push("Ăn tối xong bấm Đã ăn trước 21:00");
     if (waterDays < days) next.push(`Uống đủ nước thêm ${Math.min(7, days - waterDays)} ngày`);
     next.push(`Giữ chuỗi qua ${view0.streak >= 7 ? 14 : 7} ngày`);
     return {

@@ -56,7 +56,7 @@ export function lossStatus({ target, eaten, rows = [], nowMinutes = 0 }) {
   const nextFoods = next && next.state === "planned" && next.items?.length ? next.items.map((i) => i.display || i.food || i.name).filter(Boolean).slice(0, 2).join(", ") : null;
   if (t > 0 && e > t * 1.1) return { tone: "over", title: "Hôm nay hơi quá kế hoạch", sub: "Không sao — mai ăn như thực đơn là được, đừng bỏ bữa." };
   if (t > 0 && e > t) return { tone: "warn", title: "Hơi dư một chút", sub: open.length ? "Các bữa còn lại ăn nhẹ hơn là bù lại." : "Mai ăn như thực đơn là được." };
-  if (!open.length) return { tone: "ok", title: "Hôm nay đạt kế hoạch 👍", sub: e > 0 ? `Đã ăn ${Math.round(e).toLocaleString("vi-VN")} / ${Math.round(t).toLocaleString("vi-VN")} kcal — giữ vậy là giảm đều.` : "Ghi bữa để app theo dõi giúp bạn." };
+  if (!open.length) return { tone: "ok", title: "Hôm nay đạt kế hoạch 👍", sub: e > 0 ? `Đã ăn ${Math.round(e).toLocaleString("vi-VN")} / ${Math.round(t).toLocaleString("vi-VN")} kcal — giữ vậy là giảm đều.` : "Ăn xong bấm Đã ăn để app theo dõi giúp bạn." };
   if (e === 0) return { tone: "ok", title: "Bắt đầu ngày mới 💪", sub: nextFoods ? `${next.name}: ${nextFoods} — ăn theo thực đơn là đạt.` : `Hôm nay ăn khoảng ${Math.round(t).toLocaleString("vi-VN")} kcal là đúng kế hoạch.` };
   return { tone: "ok", title: "Đang đúng kế hoạch 👍", sub: nextFoods ? `${next.name} ăn ${nextFoods} như thực đơn là đạt.` : `Còn ${remain.toLocaleString("vi-VN")} kcal cho ${open.map((r) => r.name.toLowerCase()).join(", ")}.` };
 }

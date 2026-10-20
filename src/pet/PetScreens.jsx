@@ -54,8 +54,8 @@ function SeedPill({ n, dark }) {
 }
 // Câu theo tâm trạng, đúng giọng Pi nam / Pi nữ (chốt 20/10). Có pet.say (câu khen / nhắc theo việc thật, src/pet/lines.js) thì nói câu đó.
 const MOOD_TEXT = {
-  nam: { vui: "Hôm nay ghi đều tay, ngon lành!", cuoi: "Bộ này chất ghê, Pi thích!", ngu: "Pi ngủ gật rồi… ghi bữa đầu là Pi dậy liền.", hoi: "Tới giờ ăn rồi mà chưa thấy ghi bữa nào?", mung: "Ê bạn về rồi! Pi chờ mãi đó!" },
-  nu: { vui: "Hôm nay bạn ghi đều lắm, Pi vui ghê!", cuoi: "Bộ này xinh ghê, Pi thích lắm!", ngu: "Pi ngủ gật rồi… ghi bữa đầu để gọi Pi dậy nha.", hoi: "Đến giờ ăn rồi nè, bạn ghi bữa chưa?", mung: "A, bạn quay lại rồi! Pi nhớ bạn lắm!" },
+  nam: { vui: "Hôm nay ghi đều tay, ngon lành!", cuoi: "Bộ này chất ghê, Pi thích!", ngu: "Pi ngủ gật rồi… bạn ăn bữa đầu là Pi dậy liền.", hoi: "Tới giờ ăn rồi, bạn ăn chưa đó?", mung: "Ê bạn về rồi! Pi chờ mãi đó!" },
+  nu: { vui: "Hôm nay bạn ghi đều lắm, Pi vui ghê!", cuoi: "Bộ này xinh ghê, Pi thích lắm!", ngu: "Pi ngủ gật rồi… bạn ăn bữa đầu để gọi Pi dậy nha.", hoi: "Đến giờ ăn rồi nè, bạn ăn chưa?", mung: "A, bạn quay lại rồi! Pi nhớ bạn lắm!" },
 };
 export const moodText = (pet) => pet.say || (MOOD_TEXT[pet.variant] || MOOD_TEXT.nam)[pet.mood] || MOOD_TEXT.nam.vui;
 const sec = { padding: "20px 18px 10px 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 };
@@ -110,7 +110,7 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
           <AppIcon color="#F59E0B" size={44}>{PIc.trophy(22)}</AppIcon>
           <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 15, fontWeight: 900 }}>Tổng kết tuần {pet.week.range}</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{pet.week.meals} bữa đã ghi · {pet.week.waterDays} ngày đủ nước</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{pet.week.meals} bữa đã ăn · {pet.week.waterDays} ngày đủ nước</span>
           </span>
           {Icon.chev(16)}
         </button>
@@ -243,7 +243,8 @@ export function slotFor(it, equipped = {}) {
   if (equipped.cam_tay_trai === it.id) return "cam_tay_trai";
   return !equipped.cam_tay ? "cam_tay" : !equipped.cam_tay_trai ? "cam_tay_trai" : "cam_tay";
 }
-const SLOT_NAME = { ...catalog.slots, cam_tay: "Tay phải", cam_tay_trai: "Tay trái" };
+// 20/10: gọi tay theo Pi (Pi nhìn ra) — ô cam_tay nằm phía phải màn hình = tay TRÁI của Pi
+const SLOT_NAME = { ...catalog.slots, cam_tay: "Tay trái", cam_tay_trai: "Tay phải" };
 
 export function PetShopScreen({ pet, onBack, initialSlot = "all", preview, onBuy, onEquip, onPremium }) {
   const [slot, setSlot] = useState(initialSlot);
@@ -396,7 +397,7 @@ export function PetTodayCard({ pet, onOpen }) {
           </>
         ) : (
           <>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#475569", lineHeight: 1.4 }}>{pet.mood === "ngu" ? "Đang ngủ gật — ghi bữa đầu tiên để gọi dậy" : left > 0 ? `Còn ${left} việc hôm nay · +${pet.todayLeft} Hạt` : "Xong hết việc hôm nay!"}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#475569", lineHeight: 1.4 }}>{pet.mood === "ngu" ? "Đang ngủ gật — ăn xong bữa đầu bấm Đã ăn để gọi dậy" : left > 0 ? `Còn ${left} việc hôm nay · +${pet.todayLeft} Hạt` : "Xong hết việc hôm nay!"}</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 900, color: "#065F46" }}><Seed size={15} />{fmt(pet.seeds)} Hạt</span>
           </>
         )}

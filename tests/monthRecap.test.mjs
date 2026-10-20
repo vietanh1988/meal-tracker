@@ -26,14 +26,14 @@ test("monthRecap tháng 10 giảm cân", () => {
   assert.equal(r.days, 31); assert.equal(r.ongoing, false); assert.equal(r.thin, false);
   assert.equal(r.say.head, "Giảm đều và an toàn.");
   assert.equal(r.cmp[0].better, true); // giảm nhiều hơn tháng 9 (−1,6)
-  assert.equal(r.cmp.find((c) => c.l === "Ngày ghi bữa").better, true);
+  assert.equal(r.cmp.find((c) => c.l === "Ngày đã ăn").better, true);
   assert.equal(headline(r), "Bạn đã giảm 2,4 kg");
   assert.equal(r.kgLeft, 6.8); assert.equal(r.pct, 37);
 });
 test("monthRecap ít dữ liệu → thin", () => {
   const r = monthRecap({ m: "2026-10", today: "2026-10-20", rows: [day("2026-10-02", 1500)], weightLog: [{ logged_date: "2026-10-02", kg: 70 }], goalKg: 65, goalType: "cut", targetOf: () => 1600, target: 1600 });
   assert.equal(r.thin, true); assert.equal(r.ongoing, true); assert.equal(r.daysPassed, 20); assert.equal(r.delta, null);
-  assert.equal(r.tip.t, "Ghi bữa đều hơn");
+  assert.equal(r.tip.t, "Ăn đều bữa hơn");
 });
 test("tăng cơ: chữ tăng", () => {
   const rows = []; for (let i = 1; i <= 20; i++) rows.push(day(`2026-10-${String(i).padStart(2, "0")}`, 2500));
