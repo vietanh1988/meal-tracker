@@ -72,6 +72,8 @@ import { joinPresence } from "../lib/presence";
 import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel, menuReplaces, menuWrites } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId, mealTimesOf } from "../lib/dayPlan";
+import { usePetApp } from "../pet/PetApp";
+import { PET_CSS } from "../pet/PetAvatar";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
 import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekDates, MEAL_SHORT, fmtKg, fmtDec, fmtInt } from "../lib/mobileView";
 
@@ -556,6 +558,7 @@ export function MobileApp(props) {
 
   const renderPage = (l) => {
     const sec = l.sec;
+    if (sec === "pet" || String(sec).startsWith("pet_")) return petApp.page(sec);
     if (MENU_PAGE_TITLE[sec]) return (
       <SubPage title={sec === "menu_day" ? `Lặp lại · ${({ thu_2: "Thứ Hai", thu_3: "Thứ Ba", thu_4: "Thứ Tư", thu_5: "Thứ Năm", thu_6: "Thứ Sáu", thu_7: "Thứ Bảy", cn: "Chủ nhật" })[l.key] || ""}` : MENU_PAGE_TITLE[sec]} onBack={closeLayer}>
         {sec === "menu_day" && <MenuDayPage dayKey={l.key} {...menuProps} />}
@@ -703,6 +706,15 @@ export function MobileApp(props) {
       Mục tiêu đã cập nhật: {Math.round(macroBanner.prev)} → {Math.round(macroBanner.now)} kcal ({macroBanner.diff > 0 ? "+" : ""}{Math.round(macroBanner.diff)})
     </div>
   ) : null;
+
+  // ---------- Fipilot Pet (20/10): thẻ Pi trên Hôm nay + các màn Pi. Cờ "pet" tắt thì chỉ admin thấy để thử ----------
+  const petIds = idsFor(today);
+  const petApp = usePetApp({
+    flagOn: !!flags.pet, isAdmin, user, profile, ud, today, minutes: now.minutes,
+    mealIds: petIds, mealTimes: mealTimesOf(profile.mealTimes), eaten: eatenOfDay(ud.todayLog), targets: targetsOf(macroFor(today), dayTypeOf(profile, today)),
+    recentRows, weightLog, appSettings, showToast,
+    openPage: (sec) => openLayer({ type: "page", sec }), closeLayer, openPremium: () => openLayer({ type: "page", sec: "plan" }),
+  });
 
   // ---------- Kiểm tra tuần (bản vẽ 127) + khách không tập (bản vẽ 128) ----------
   const noEx = (profile.exerciseType || "gym") === "none";
@@ -862,7 +874,7 @@ export function MobileApp(props) {
 
   return (
     <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : LT.base, color: "#0F172A", minHeight: "100vh" }}>
-      <style>{MOBILE_CSS + DK_CSS}</style>
+      <style>{MOBILE_CSS + DK_CSS + (petApp.on ? PET_CSS : "")}</style>
       {/* Thanh giờ iPhone (16/10, chủ dự án chốt): KHÔNG phủ màu riêng — trong suốt, hiện đúng nền phía sau
           (chưa cuộn = header Hôm nay / nền tab; đã cuộn = nội dung, iOS tự làm mờ). Bỏ dải che 14/10. */}
       <style>{HEADER_CSS}</style>
@@ -879,7 +891,7 @@ export function MobileApp(props) {
       <main key={tab} data-anim="1" aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd" : undefined} style={{ animation: "fpmTabIn .2s ease", position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
-            nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={banner} busy={busy}
+            nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={<>{banner}{date === today && petApp.card}</>} busy={busy}
             waterMl={Number(day?.water_ml) || 0} addWater={(ml) => { if (ml > 0) trackDaily("water"); return ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; }); }} waterGoalOverride={profile.waterGoalMl}
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}

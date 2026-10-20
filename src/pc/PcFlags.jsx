@@ -26,6 +26,7 @@ const GROUPS = [
   { title: "Khác", items: [
     { key: "push", label: "Thông báo đẩy", desc: "Nhắc bữa, nhắc cân, báo cáo tuần, admin gửi thủ công", who: "User đã bật thông báo" },
     { key: "template_library", label: "Thực đơn mẫu", desc: "Hiện mục Thực đơn mẫu ở tab Thực đơn", who: "Mọi user" },
+    { key: "pet", label: "Thú cưng Pi", desc: "Thẻ Pi trên Hôm nay, Hạt, cửa hàng, tủ đồ, Hỏi Pi, tổng kết tuần", who: "Mọi user · tắt thì chỉ admin thấy để thử" },
   ] },
 ];
 const ALL = GROUPS.flatMap((g) => g.items);

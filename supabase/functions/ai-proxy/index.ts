@@ -120,15 +120,21 @@ async function verifyUser(req: Request) {
 // hiệu request không qua UI chuẩn (tự soạn request bypass) → từ chối
 // thẳng, không cho gọi AI. Trước đây feature "lạ" bị bỏ qua im lặng
 // (kind=null → allowed:true) — đây chính là khe hở để né mọi quota.
-const KNOWN_FEATURES = new Set(["menu_gen", "chat", "macro_lookup", "weight_advice", "ping_test", "photo_macro"]);
+// 20/10 Fipilot Pet: pet_chat = Hỏi Pi (tính như AI chat, cùng lượt theo gói); pet_week = Pi viết nhận xét tuần (chỉ gói trả phí, không trừ lượt khách).
+const KNOWN_FEATURES = new Set(["menu_gen", "chat", "macro_lookup", "weight_advice", "ping_test", "photo_macro", "pet_chat", "pet_week"]);
 
 async function checkAndConsumeQuotaServer(admin: any, userId: string, feature: string | null) {
   if (!feature || !KNOWN_FEATURES.has(feature)) {
     return { allowed: false, message: "Yêu cầu không hợp lệ." };
   }
   const FEATURE_TO_KIND: Record<string, string> = {
-    menu_gen: "menu", chat: "chat", macro_lookup: "macro", photo_macro: "photo",
+    menu_gen: "menu", chat: "chat", macro_lookup: "macro", photo_macro: "photo", pet_chat: "chat",
   };
+  if (feature === "pet_week") {
+    const { data: pw } = await admin.from("profiles").select("tier,is_admin").eq("id", userId).single();
+    if (pw?.is_admin || (pw?.tier && pw.tier !== "free")) return { allowed: true };
+    return { allowed: false, message: "Nhận xét tuần của Pi dành cho gói Premium." };
+  }
   const kind = FEATURE_TO_KIND[feature] || null;
   if (!kind) return { allowed: true }; // weight_advice/ping_test — hợp lệ nhưng chưa có quota
 

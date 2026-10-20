@@ -12,6 +12,7 @@ const FLAG_DEFS = [
   { key: "registration_enabled", label: "📝 Cho phép đăng ký mới", desc: "Tắt tạm khi cần dừng nhận user mới (bảo trì, quá tải...)", default: true },
   { key: "template_library", label: "📚 Kho mẫu", desc: "Hiện tab Kho mẫu trong Bữa ăn + sidebar. TẮT = ẩn hoàn toàn", default: false },
   { key: "photo_macro", label: "📸 Photo Macro Checker", desc: "Chụp ảnh bữa ăn → AI nhận diện → xem calo nhanh. Mobile only. Giới hạn lượt trong admin AI settings.", default: false },
+  { key: "pet", label: "Thú cưng Pi", desc: "Thẻ Pi trên Hôm nay, Hạt, cửa hàng, tủ đồ, Hỏi Pi. TẮT = chỉ admin thấy để thử.", default: false },
 ];
 
 // Đọc/ghi appSettings.feature_flags (JSON), dùng chung cơ chế saveSetting() như các trang khác.

@@ -14,6 +14,7 @@ import { AppIcon } from "../mobile/icons";
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen } from "./PetTalk";
 import { say as sayLine } from "./lines";
 import { PcPet } from "../pc/PcPet";
+import { linesFrom } from "../hooks/usePet";
 import { SideNav, TopBar, PC_NAV } from "../pc/PcAdminShell";
 import { PC_CSS } from "../pc/pcUI";
 import { PC } from "../theme";
@@ -30,6 +31,7 @@ function mockPet() {
     : ["doi-dau-09", "doi-dau-07", "kinh-tai-nghe-07", "kinh-tai-nghe-06", "ao-roi-08", "ao-roi-09", "phu-kien-12", "phu-kien-10", "hieu-ung-11", "phu-kien-13", "hieu-ung-13", "phu-kien-15"];
   const equipped = nam ? { dau: "doi-dau-01", ao: "ao-roi-01", cam_tay: "phu-kien-03" } : { ao: "ao-roi-08", cam_tay: "phu-kien-12", hieu_ung: "hieu-ung-11" };
   return {
+    time: q.get("t") || "sang", trophies: ["hieu-ung-05", "doi-dau-11", "hieu-ung-02"],
     name: "Pi", variant: V, mood: q.get("mood") || "vui", bow: true, premium: q.get("premium") === "1",
     say: q.get("say") ? sayLine(q.get("say"), V, { streak: 3, level: 5, water: 2 }[q.get("say")]) : null,
     week: q.get("week") === "1" ? { range: "13 – 19/10", meals: 19, waterDays: 5 } : null,
@@ -136,7 +138,7 @@ const ADMIN = {
   week: { when: "Chủ nhật 19/10 · 19:00", sent: 1102, opened: 64, ai: 212 },
   achievement: ["hieu-ung-05", "hieu-ung-06", "hieu-ung-17", "hieu-ung-02", "hieu-ung-04", "doi-dau-11"], hidden: ["hieu-ung-09"],
   sold: { "ao-roi-01": 88, "ao-roi-02": 64, "ao-roi-03": 41, "ao-roi-04": 37, "ao-roi-05": 12, "ao-roi-06": 45, "ao-roi-07": 52, "ao-roi-08": 79, "ao-roi-09": 58, "ao-roi-10": 133, "ao-roi-11": 70, "ao-roi-12": 26, "ao-roi-13": 61, "doi-dau-01": 92, "doi-dau-02": 47, "doi-dau-03": 30, "doi-dau-04": 55 },
-  off: ["poke_sleep"], sample: { streak: 7, level: 5, water: 2 },
+  lines: linesFrom(null), off: ["poke_sleep"], sample: { streak: 7, level: 5, water: 2 },
   points: [["Ghi mỗi bữa", 10], ["Chụp món", 5], ["Uống đủ nước", 15], ["Ghi đủ mọi bữa", 20], ["Chuỗi ngày (từ ngày thứ 3)", 10], ["Cân tuần", 20]],
   prompt: {
     nam: "Bạn là Pi nam, bạn tập cùng của khách: hăng hái, lém lỉnh, hay rủ rê. Xưng Pi, gọi bạn. Trả lời tối đa 3 câu, dùng số thật trong nhật ký. Không chê, không dọa, không bàn béo gầy. Bệnh / thuốc: khuyên hỏi bác sĩ.",
@@ -161,7 +163,7 @@ export default function PetPreview() {
   const pet = mockPet();
   let body;
   if (S === "admin") return <Admin />;
-  if (S === "chat" || S === "chatout") return <Shell><PetChatScreen pet={pet} msgs={CHAT[V]} left={S === "chatout" ? 0 : 3} max={5} /></Shell>;
+  if (S === "chat" || S === "chatout" || S === "chatthink") return <Shell><PetChatScreen pet={pet} msgs={S === "chatthink" ? CHAT[V].slice(0, 4) : CHAT[V]} left={S === "chatout" ? 0 : 3} max={5} state={S === "chatthink" ? "thinking" : S === "chat" ? "talking" : "idle"} /></Shell>;
   if (S === "week") return <Shell><PetWeekScreen pet={pet} w={WEEK(V)} /></Shell>;
   if (S === "settings") return <Shell><PetSettingsScreen pet={pet} set={{ talk: true, perDay: 3, quietFrom: "22:30", quietTo: "07:00", push: false, week: true, weekAt: "19:00" }} /></Shell>;
   if (S === "entryB") body = <Shell tab="today"><EntryB pet={pet} /></Shell>;
@@ -169,7 +171,7 @@ export default function PetPreview() {
   else {
     const scr = S === "shop" || S === "tryon" ? <PetShopScreen pet={pet} preview={S === "tryon" ? (q.get("item") || (V === "nam" ? "doi-dau-04" : "doi-dau-08")) : null} />
       : S === "closet" ? <PetClosetScreen pet={pet} />
-      : <PetHomeScreen pet={pet} tasks={TASKS} />;
+      : <PetHomeScreen pet={pet} tasks={TASKS} onChat={() => {}} />;
     body = <Shell><EntryB pet={pet} />{scr}</Shell>;
   }
   return body;

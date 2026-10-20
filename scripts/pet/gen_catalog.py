@@ -85,9 +85,6 @@ ONLY_NAM = {'doi-dau-01', 'doi-dau-02', 'doi-dau-03', 'doi-dau-05', 'doi-dau-06'
 ONLY_NU = {'doi-dau-07', 'doi-dau-08', 'doi-dau-09', 'doi-dau-10', 'doi-dau-12', 'kinh-tai-nghe-06', 'kinh-tai-nghe-07', 'kinh-tai-nghe-09',
            'kinh-tai-nghe-10', 'phu-kien-09', 'phu-kien-10', 'phu-kien-11', 'phu-kien-12', 'phu-kien-13', 'phu-kien-14', 'phu-kien-15',
            'hieu-ung-11', 'hieu-ung-13'}
-for it in items:
-    if it['id'] in ONLY_NAM: it['variants'] = ['nam']
-    elif it['id'] in ONLY_NU: it['variants'] = ['nu']
 COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
 for it in items:
     if it['id'] in COVER: it['cover'] = True
@@ -113,6 +110,11 @@ for it in items:
     for v in it['variants']:
         a = default(it, v); a.update(over.get('all', {})); a.update(over.get(v, {}))
         it['anchor'][v] = a
+
+# chia kho theo bản SAU khi đã tính điểm đặt cho cả 2 thân → Quản trị đổi Nam / Nữ / Cả hai vẫn có điểm đặt
+for it in items:
+    if it['id'] in ONLY_NAM: it['variants'] = ['nam']
+    elif it['id'] in ONLY_NU: it['variants'] = ['nu']
 
 catalog = {
   'bodies': {
