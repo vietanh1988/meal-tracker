@@ -1,6 +1,9 @@
 // Phòng của Pi (20/10): không gian sau lưng Pi, đổi theo giờ VN (sáng / chiều / tối), màu theo bản (nam xanh, nữ hồng).
 // Kệ bên phải trưng đồ thành tích đã nhận; góc phải có thảm tập + tạ; góc trái chậu cây; tối thì bật đèn bàn.
-// Vẽ bằng SVG (nhẹ, nét mềm) — khi có ảnh phòng vẽ 3D (public/pet/khong-gian/phong-<giờ>-<bản>.webp) truyền `art` để thay nền.
+// 20/10: dùng ảnh phòng 3D (ChatGPT) public/pet/khong-gian/phong-<sang|chieu|toi>-<nam|nu>.webp (vuông). Ảnh đặt sao cho
+// tâm thảm tròn (79% chiều cao ảnh) nằm dưới chân Pi (cách đáy khung 26 px); kệ gỗ bên phải: tầng giữa (41%) bày đồ thành tích.
+// art={false} → nền SVG cũ (dự phòng).
+import { useLayoutEffect, useRef, useState } from "react";
 import { PET_BASE, ITEMS } from "./PetAvatar";
 
 /** giờ (0–23, giờ VN) → "sang" | "chieu" | "toi" */
@@ -13,7 +16,40 @@ const SKY = {
 };
 const ACC = { nam: { rug: ["#BFDBFE", "#93C5FD"], curtain: "#60A5FA", mat: "#3B82F6" }, nu: { rug: ["#FBCFE8", "#F9A8D4"], curtain: "#F472B6", mat: "#EC4899" } };
 
+const RUG_Y = 0.79, FEET = 26, SHELF = { left: 0.775, width: 0.2, bottom: 0.405, h: 0.075 };
 export function PetRoom({ time = "sang", variant = "nam", trophies = [], height = 280, art, children, testid = "pet-room" }) {
+  const ref = useRef(null);
+  const [w, setW] = useState(366);
+  useLayoutEffect(() => {
+    const el = ref.current; if (!el) return;
+    const upd = () => setW(el.clientWidth || 366);
+    upd();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(upd); ro.observe(el); return () => ro.disconnect();
+  }, []);
+  const img = art === false ? null : art || `khong-gian/phong-${time === "chieu" || time === "toi" ? time : "sang"}-${variant === "nu" ? "nu" : "nam"}.webp`;
+  if (img) {
+    const shelfItems = trophies.map((x) => ITEMS[x]).filter(Boolean).slice(0, 3);
+    const top = height - FEET - RUG_Y * w;
+    return (
+      <div ref={ref} data-testid={testid} data-time={time} style={{ position: "relative", height, borderRadius: 22, overflow: "hidden", background: time === "toi" ? "#1E2A55" : "#BFD7FF" }}>
+        <div aria-hidden="true" style={{ position: "absolute", left: 0, top, width: w, height: w }}>
+          <img src={PET_BASE + img} alt="" draggable="false" style={{ display: "block", width: "100%", height: "100%" }} />
+          {shelfItems.length > 0 && (
+            <span style={{ position: "absolute", left: `${SHELF.left * 100}%`, width: `${SHELF.width * 100}%`, top: `${(SHELF.bottom - SHELF.h) * 100}%`, height: `${SHELF.h * 100}%`, display: "flex", alignItems: "flex-end", justifyContent: "space-around" }}>
+              {shelfItems.map((it) => <img key={it.id} src={PET_BASE + it.file} alt="" title={it.name} style={{ height: "100%", maxWidth: "32%", objectFit: "contain", filter: "drop-shadow(0 2px 3px rgba(15,23,42,0.3))" }} />)}
+            </span>
+          )}
+        </div>
+        {children}
+      </div>
+    );
+  }
+  return <SvgRoom time={time} variant={variant} trophies={trophies} height={height} testid={testid}>{children}</SvgRoom>;
+}
+
+function SvgRoom({ time, variant, trophies, height, children, testid }) {
+  const art = null;
   const t = SKY[time] || SKY.sang;
   const a = ACC[variant] || ACC.nam;
   const night = time === "toi";
