@@ -76,7 +76,7 @@ def default(it, v):
 HOLD = json.load(open('scripts/pet/hands.json'))
 HOLD_SCALE = {'phu-kien-07': 1.5, 'phu-kien-15': 1.2}  # chùm bóng bay to hơn, hoa to hơn chút
 BODY_HAND = {'nam': (0.852, 0.7828, 588, 900), 'nu': (0.8515, 0.7828, 559, 900)}
-COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
+COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9, 10)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
 for it in items:
     if it['id'] in COVER: it['cover'] = True
     if it['slot'] == 'cam_tay':
