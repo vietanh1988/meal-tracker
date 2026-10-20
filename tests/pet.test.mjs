@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { levelOf, moodOf, eventsFor, pickEvent, weekStart, itemStatus } from "../src/lib/petMath.js";
+import { levelOf, moodOf, eventsFor, pickEvent, weekStart, itemStatus, seasonOf } from "../src/lib/petMath.js";
 
 test("cấp theo kinh nghiệm (300, +150 mỗi cấp, sau cấp 10 +1.500)", () => {
   assert.deepEqual(levelOf(0), { n: 1, from: 0, to: 300 });
@@ -45,4 +45,18 @@ test("trạng thái món ở cửa hàng", () => {
   assert.equal(itemStatus(it, { variant: "nam", level: 3, premium: false }), "premium");
   assert.equal(itemStatus(it, { variant: "nam", level: 3, premium: true }), "buy");
   assert.equal(itemStatus(it, { variant: "nam", owned: ["x"] }), "owned");
+});
+
+test("phòng theo dịp: Noel 15–31/12, Tết −10…+7 ngày quanh mùng 1", () => {
+  assert.equal(seasonOf("2026-12-14"), null);
+  assert.equal(seasonOf("2026-12-15"), "noel");
+  assert.equal(seasonOf("2026-12-31"), "noel");
+  assert.equal(seasonOf("2027-01-01"), null);
+  assert.equal(seasonOf("2027-01-26"), null);
+  assert.equal(seasonOf("2027-01-27"), "tet");
+  assert.equal(seasonOf("2027-02-06"), "tet");
+  assert.equal(seasonOf("2027-02-13"), "tet");
+  assert.equal(seasonOf("2027-02-14"), null);
+  assert.equal(seasonOf("2028-01-16"), "tet");
+  assert.equal(seasonOf("2026-10-20"), null);
 });

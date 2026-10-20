@@ -3,7 +3,7 @@
 // Điểm do máy chủ tính (pet_claim); ở đây chỉ dựng view-model hiển thị + gọi mua / mặc / lưu.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePet } from "../hooks/usePet";
-import { levelOf, moodOf, eventsFor, pickEvent, DAILY_CAP } from "../lib/petMath";
+import { levelOf, moodOf, eventsFor, pickEvent, DAILY_CAP, seasonOf } from "../lib/petMath";
 import { nowVNParts, weekdayVN, weekRange, addDays, diffDays } from "../lib/dateVN";
 import { waterGoalMl } from "../lib/dayPlan";
 import { authFetch } from "../lib/authFetch";
@@ -101,7 +101,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
       tasksLeft: left.length, todayLeft, level: { ...lv, nextUnlock }, owned, equipped: st.equipped || {},
       achievementIds: ACH.map((a) => a.item), achievements: ach, tasks, streak: st.streak || 0,
       trophies: owned.filter((id) => ITEMS[id]?.achievement || ACH.some((a) => a.item === id)),
-      time: roomTime(Math.floor(minutes / 60)), shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
+      time: roomTime(Math.floor(minutes / 60)), season: seasonOf(today), shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
       levelUp: (st.prevLevel || lv.n) < lv.n, waterGoal, waterMl: log.water_ml || 0, daysAway, logged, mealsOn: ids.length, times,
       week: weekdayVN() === 0 ? { range: `${wk.start.slice(8)}/${wk.start.slice(5, 7)} – ${wk.end.slice(8)}/${wk.end.slice(5, 7)}`, meals: 0, waterDays: 0 } : null,
       settings: { talk: true, perDay: cfg.perDay || 3, quietFrom: cfg.quietFrom || "22:30", quietTo: cfg.quietTo || "07:00", push: false, week: true, weekAt: "19:00", ...(st.settings || {}), off: cfg.off || [] },

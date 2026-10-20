@@ -76,7 +76,7 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
   };
   const heart = pet.variant === "nu" ? "hieu-ung/hieu-ung-11.webp" : "hieu-ung/hieu-ung-01.webp";
   return (
-    <PetRoom time={pet.time || "sang"} variant={pet.variant} trophies={pet.trophies || []} height={height}>
+    <PetRoom time={pet.time || "sang"} variant={pet.variant} season={pet.season} trophies={pet.trophies || []} height={height}>
       <span aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: 22, width: size * 0.62, height: 18, marginLeft: -(size * 0.31), borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
       <button type="button" data-testid="pet-tap" onClick={tap} aria-label={`Chạm vào ${pet.name}`} style={{ position: "absolute", left: "50%", bottom: 26, transform: "translateX(-50%)", border: "none", background: "transparent", padding: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
         <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} bow={pet.bow} size={Math.round(size * 0.9)} talking={talking} live={live} react={react} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />

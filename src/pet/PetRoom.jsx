@@ -17,7 +17,13 @@ const SKY = {
 const ACC = { nam: { rug: ["#BFDBFE", "#93C5FD"], curtain: "#60A5FA", mat: "#3B82F6" }, nu: { rug: ["#FBCFE8", "#F9A8D4"], curtain: "#F472B6", mat: "#EC4899" } };
 
 const RUG_Y = 0.79, FEET = 26, SHELF = { left: 0.775, width: 0.2, bottom: 0.405, h: 0.075 };
-export function PetRoom({ time = "sang", variant = "nam", trophies = [], height = 280, art, children, testid = "pet-room" }) {
+// Phòng theo dịp (20/10, ChatGPT): ảnh phong-<giờ>-<bản>-<dịp>.webp. Dịp nào chưa có ảnh cho bản đó → phòng thường.
+// rug: tâm thảm đo lại trên ảnh dịp (ChatGPT vẽ thảm thấp hơn ~1%).
+export const SEASON_ART = { noel: { nam: true }, tet: { nu: true } };
+const SEASON_RUG = { noel: 0.8, tet: 0.805 };
+// Noel: tất treo che tầng giữa kệ → đồ thành tích xuống tầng dưới (đáy 52,7%).
+const SEASON_SHELF = { noel: { ...SHELF, bottom: 0.527 } };
+export function PetRoom({ time = "sang", variant = "nam", season = null, trophies = [], height = 280, art, children, testid = "pet-room" }) {
   const ref = useRef(null);
   const [w, setW] = useState(366);
   useLayoutEffect(() => {
@@ -27,16 +33,19 @@ export function PetRoom({ time = "sang", variant = "nam", trophies = [], height 
     if (typeof ResizeObserver === "undefined") return;
     const ro = new ResizeObserver(upd); ro.observe(el); return () => ro.disconnect();
   }, []);
-  const img = art === false ? null : art || `khong-gian/phong-${time === "chieu" || time === "toi" ? time : "sang"}-${variant === "nu" ? "nu" : "nam"}.webp`;
+  const v = variant === "nu" ? "nu" : "nam";
+  const dip = season && SEASON_ART[season]?.[v] ? season : null;
+  const img = art === false ? null : art || `khong-gian/phong-${time === "chieu" || time === "toi" ? time : "sang"}-${v}${dip ? `-${dip}` : ""}.webp`;
   if (img) {
     const shelfItems = trophies.map((x) => ITEMS[x]).filter(Boolean).slice(0, 3);
-    const top = height - FEET - RUG_Y * w;
+    const sh = (dip && !art && SEASON_SHELF[dip]) || SHELF;
+    const top = height - FEET - (dip && !art ? SEASON_RUG[dip] : RUG_Y) * w;
     return (
-      <div ref={ref} data-testid={testid} data-time={time} style={{ position: "relative", height, borderRadius: 22, overflow: "hidden", background: time === "toi" ? "#1E2A55" : "#BFD7FF" }}>
+      <div ref={ref} data-testid={testid} data-time={time} data-season={dip || ""} style={{ position: "relative", height, borderRadius: 22, overflow: "hidden", background: time === "toi" ? "#1E2A55" : "#BFD7FF" }}>
         <div aria-hidden="true" style={{ position: "absolute", left: 0, top, width: w, height: w }}>
           <img src={PET_BASE + img} alt="" draggable="false" style={{ display: "block", width: "100%", height: "100%" }} />
           {shelfItems.length > 0 && (
-            <span style={{ position: "absolute", left: `${SHELF.left * 100}%`, width: `${SHELF.width * 100}%`, top: `${(SHELF.bottom - SHELF.h) * 100}%`, height: `${SHELF.h * 100}%`, display: "flex", alignItems: "flex-end", justifyContent: "space-around" }}>
+            <span style={{ position: "absolute", left: `${sh.left * 100}%`, width: `${sh.width * 100}%`, top: `${(sh.bottom - sh.h) * 100}%`, height: `${sh.h * 100}%`, display: "flex", alignItems: "flex-end", justifyContent: "space-around" }}>
               {shelfItems.map((it) => <img key={it.id} src={PET_BASE + it.file} alt="" title={it.name} style={{ height: "100%", maxWidth: "32%", objectFit: "contain", filter: "drop-shadow(0 2px 3px rgba(15,23,42,0.3))" }} />)}
             </span>
           )}
