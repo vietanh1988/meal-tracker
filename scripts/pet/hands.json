@@ -37,10 +37,12 @@
  },
  "phu-kien-06": {
   "file": "phu-kien/phu-kien-06-cam.webp",
-  "src_w": 415,
-  "src_h": 199,
-  "hand_x": 0.488,
-  "hand_y": 0.3367
+  "src_w": 237,
+  "src_h": 486,
+  "hand_x": 0.42,
+  "hand_y": 0.5,
+  "fist": 175,
+  "icon": true
  },
  "phu-kien-10": {
   "file": "phu-kien/phu-kien-10-cam.webp",

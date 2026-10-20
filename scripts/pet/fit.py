@@ -51,15 +51,19 @@ GRIP={3:(.13,.55),4:(.13,.55),5:(.14,.55),12:(.13,.55),6:(.30,.5),7:(.24,.85),10
 for i,(cw,gy) in GRIP.items():
     A[f'phu-kien-{i:02d}']={v:grip(f'phu-kien/phu-kien-{i:02d}.webp',v,cw,gy) for v in ('nam','nu')}
 # --- Đồ đội trên đầu không trùm (nơ, băng đô, vương miện): đáy món ngay trên lông mày, rộng theo đầu ---
-for i,(bn,bu,cn,cu) in {7:(.25,.30,.55,.58),10:(.275,.325,.62,.68),11:(.262,.312,.50,.56),12:(.262,.312,.50,.56)}.items():
+for i,(bn,bu,cn,cu) in {7:(.25,.30,.55,.58),10:(.305,.35,.62,.68),11:(.262,.312,.50,.56),12:(.262,.312,.50,.56)}.items():
     A[f'doi-dau-{i:02d}']={'nam':fitw(f'doi-dau/doi-dau-{i:02d}.webp','nam',bn,cn),'nu':fitw(f'doi-dau/doi-dau-{i:02d}.webp','nu',bu,cu)}
 # --- Kính: tâm tròng kính trùng tâm mắt, kính đủ rộng để ôm trọn 2 mắt ---
 EYE_C={'nam':.357,'nu':.412}; GW={'nam':.58,'nu':.62}
 for i in (1,2,3,6,7,8):
     A[f'kinh-tai-nghe-{i:02d}']={v:fitc(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp',v,EYE_C[v],GW[v]) for v in ('nam','nu')}
-# --- Tai nghe: chụp tai ôm 2 bầu má bên đầu, không lấn vào mắt; quai vòng qua đỉnh đầu ---
+# --- Tai nghe (vẽ lại 20/10, nhìn thẳng như đang đeo): quai sát đỉnh đầu dưới cuống lá, chụp tai ôm 2 bầu đầu ---
+def fittop(file,v,top,cw,cx=.5):
+    im=Image.open(f'{R}/{file}'); l,t,r,b=im.split()[3].point(lambda p:255 if p>40 else 0).getbbox()
+    bw,bh=B[v]; s=cw*bw/(r-l)
+    return {'x':round(cx+(im.width/2-(l+r)/2)*s/bw,4),'y':round((top*bh-t*s+im.height*s/2)/bh,4),'w':round(im.width*s/bw,4)}
 for i in (4,5,9,10):
-    A[f'kinh-tai-nghe-{i:02d}']={'nam':fitc(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nam',.40,.86),'nu':fitc(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nu',.45,.90)}
+    A[f'kinh-tai-nghe-{i:02d}']={'nam':fittop(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nam',.165,.90),'nu':fittop(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nu',.17,.94)}
 # --- Khăn: quấn ngay dưới cằm, trên vai (không trùm lên mặt) ---
 for f in ('ao-roi/ao-roi-07.webp','phu-kien/phu-kien-13.webp'):
     k=f.split('/')[1][:-5]

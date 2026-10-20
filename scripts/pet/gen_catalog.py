@@ -76,9 +76,9 @@ def default(it, v):
 # Đồ cầm tay vẽ kèm bàn tay đang nắm (ChatGPT 20/10): đặt tâm bàn tay trong ảnh trùng tâm bàn tay của thân.
 # Cỡ: 100 px trên tấm vẽ = 0,15 bề rộng thân (bàn tay vẽ lớn hơn tay thân một chút để che kín).
 HOLD = json.load(open('scripts/pet/hands.json'))
-HOLD_SCALE = {'phu-kien-07': 1.6, 'phu-kien-15': 1.3, 'phu-kien-03': 1.1, 'phu-kien-04': 1.1, 'phu-kien-05': 1.1, 'phu-kien-12': 1.1}  # chùm bóng bay to hơn, hoa to hơn chút
+HOLD_SCALE = {'phu-kien-06': 1.2, 'phu-kien-07': 1.6, 'phu-kien-15': 1.3, 'phu-kien-03': 1.1, 'phu-kien-04': 1.1, 'phu-kien-05': 1.1, 'phu-kien-12': 1.1}  # chùm bóng bay to hơn, hoa to hơn chút
 BODY_HAND = {'nam': (0.852, 0.7828, 588, 900), 'nu': (0.8515, 0.7828, 559, 900)}
-COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9, 10)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
+COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
 for it in items:
     if it['id'] in COVER: it['cover'] = True
     if it['id'] in QUAI:
