@@ -71,9 +71,21 @@ def default(it, v):
     if s == 'duoi_chan': return A(0.5, 0.965, 0.95)
     if s == 'cam_tay': return A(0.9, 0.74, 0.24)
     return A(0.85, 0.2 if v == 'nam' else 0.29, 0.28)
+# Đồ cầm tay vẽ kèm bàn tay đang nắm (ChatGPT 20/10): đặt tâm bàn tay trong ảnh trùng tâm bàn tay của thân.
+# Cỡ: 100 px trên tấm vẽ = 0,15 bề rộng thân (bàn tay vẽ lớn hơn tay thân một chút để che kín).
+HOLD = json.load(open('scripts/pet/hands.json'))
+HOLD_SCALE = {'phu-kien-07': 1.5, 'phu-kien-15': 1.2}  # chùm bóng bay to hơn, hoa to hơn chút
+BODY_HAND = {'nam': (0.852, 0.7828, 588, 900), 'nu': (0.8515, 0.7828, 559, 900)}
 COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
 for it in items:
     if it['id'] in COVER: it['cover'] = True
+    if it['id'] in HOLD:
+        hd = HOLD[it['id']]; it['file_hold'] = hd['file']; it['anchor'] = {}
+        for v in it['variants']:
+            hx, hy, bwp, bhp = BODY_HAND[v]
+            wf = hd['src_w'] / 100 * 0.15 * HOLD_SCALE.get(it['id'], 1); hf = wf * bwp * hd['src_h'] / hd['src_w'] / bhp
+            it['anchor'][v] = A(round(hx + (0.5 - hd['hand_x']) * wf, 4), round(hy + (0.5 - hd['hand_y']) * hf, 4), round(wf, 4))
+        continue
     over = ANCH.get(it['id'], {})
     it['anchor'] = {}
     for v in it['variants']:

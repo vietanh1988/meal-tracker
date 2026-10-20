@@ -26,7 +26,7 @@ def render(v, equip, mood=None, bow=True):
                 cut = round(oy + b['hat_cut'] * bh); body.paste((0, 0, 0, 0), (0, 0, body.width, cut))
             c.alpha_composite(body)
         elif L == 'tay':
-            if 'cam_tay' in equip: place(c, b['hand']['file'], b['hand'], bw, bh, ox, oy)
+            if 'cam_tay' in equip and not equip['cam_tay'].get('file_hold'): place(c, b['hand']['file'], b['hand'], bw, bh, ox, oy)
         elif L == 'mat': place(c, 'mat-doi/' + ('mat-doi-nam-01.webp' if v == 'nam' else 'mat-doi-nu-13.webp'), b['eyes'], bw, bh, ox, oy)
         elif L == 'mieng': place(c, 'mieng/mieng-to-01.webp', b['mouth'], bw, bh, ox, oy)
         elif L == 'bow':
@@ -34,7 +34,7 @@ def render(v, equip, mood=None, bow=True):
         elif L == 'tam_trang':
             if mood: m = cat['moods'][mood]; place(c, m['file'], m['anchor'][v], bw, bh, ox, oy)
         elif L in equip:
-            it = equip[L]; place(c, it['file'], it['anchor'][v], bw, bh, ox, oy)
+            it = equip[L]; place(c, it.get('file_hold', it['file']), it['anchor'][v], bw, bh, ox, oy)
     return c
 
 tiles = []

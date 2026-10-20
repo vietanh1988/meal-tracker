@@ -1,0 +1,65 @@
+{
+ "phu-kien-03": {
+  "file": "phu-kien/phu-kien-03-cam.webp",
+  "src_w": 218,
+  "src_h": 276,
+  "hand_x": 0.2661,
+  "hand_y": 0.5308
+ },
+ "phu-kien-04": {
+  "file": "phu-kien/phu-kien-04-cam.webp",
+  "src_w": 182,
+  "src_h": 308,
+  "hand_x": 0.2885,
+  "hand_y": 0.5812
+ },
+ "phu-kien-05": {
+  "file": "phu-kien/phu-kien-05-cam.webp",
+  "src_w": 185,
+  "src_h": 305,
+  "hand_x": 0.2351,
+  "hand_y": 0.582
+ },
+ "phu-kien-12": {
+  "file": "phu-kien/phu-kien-12-cam.webp",
+  "src_w": 186,
+  "src_h": 302,
+  "hand_x": 0.2984,
+  "hand_y": 0.6271
+ },
+ "phu-kien-06": {
+  "file": "phu-kien/phu-kien-06-cam.webp",
+  "src_w": 415,
+  "src_h": 199,
+  "hand_x": 0.488,
+  "hand_y": 0.3367
+ },
+ "phu-kien-10": {
+  "file": "phu-kien/phu-kien-10-cam.webp",
+  "src_w": 281,
+  "src_h": 298,
+  "hand_x": 0.5249,
+  "hand_y": 0.1544
+ },
+ "phu-kien-11": {
+  "file": "phu-kien/phu-kien-11-cam.webp",
+  "src_w": 296,
+  "src_h": 342,
+  "hand_x": 0.4324,
+  "hand_y": 0.1491
+ },
+ "phu-kien-15": {
+  "file": "phu-kien/phu-kien-15-cam.webp",
+  "src_w": 210,
+  "src_h": 370,
+  "hand_x": 0.2667,
+  "hand_y": 0.6946
+ },
+ "phu-kien-07": {
+  "file": "phu-kien/phu-kien-07-cam.webp",
+  "src_w": 295,
+  "src_h": 370,
+  "hand_x": 0.3847,
+  "hand_y": 0.7243
+ }
+}

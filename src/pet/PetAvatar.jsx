@@ -39,12 +39,12 @@ export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = 
   const layers = [];
   for (const L of catalog.layers) {
     if (L === "than") layers.push(<Layer key="than" file={eq.ao ? b.file_ao : b.file} a={{ x: 0.5, y: 0.5, w: 1, h: 1 }} bw={bw} bh={bh} clipTop={eq.dau?.cover ? b.hat_cut : 0} />);
-    else if (L === "tay") { if (eq.cam_tay) layers.push(<Layer key="tay" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />); } // tay vẽ đè lên đồ → trông như đang cầm
+    else if (L === "tay") { if (eq.cam_tay && !eq.cam_tay.file_hold) layers.push(<Layer key="tay" file={b.hand.file} a={b.hand} bw={bw} bh={bh} />); } // tay vẽ đè lên đồ → trông như đang cầm
     else if (L === "mat") layers.push(<Layer key="mat" file={eyes} a={b.eyes} bw={bw} bh={bh} />);
     else if (L === "mieng") layers.push(<Layer key="mieng" file={mouth} a={b.mouth} bw={bw} bh={bh} />);
     else if (L === "bow") { if (b.bow && bow && !eq.dau) layers.push(<Layer key="bow" file={b.bow.file} a={b.bow} bw={bw} bh={bh} />); }
     else if (L === "tam_trang") { const m = catalog.moods[MOOD_FX[mood]]; if (m) layers.push(<Layer key="mood" file={m.file} a={m.anchor[variant]} bw={bw} bh={bh} />); }
-    else if (eq[L]) layers.push(<Layer key={L} file={eq[L].file} a={eq[L].anchor[variant]} bw={bw} bh={bh} />);
+    else if (eq[L]) layers.push(<Layer key={L} file={eq[L].file_hold || eq[L].file} a={eq[L].anchor[variant]} bw={bw} bh={bh} />); // đồ cầm tay: ảnh kèm bàn tay đang nắm
   }
   return (
     <span role="img" aria-label={label || "Thú cưng"} data-testid="pet-avatar" style={{ position: "relative", display: "inline-block", width: bw, height: bh, flexShrink: 0 }}>
