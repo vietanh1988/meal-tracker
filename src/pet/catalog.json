@@ -1,0 +1,1627 @@
+{
+ "bodies": {
+  "nam": {
+   "file": "than/than-nam.webp",
+   "file_ao": "than/than-nam-mac-ao.webp",
+   "w": 588,
+   "h": 900,
+   "eyes": {
+    "x": 0.5,
+    "y": 0.345,
+    "w": 0.36
+   },
+   "mouth": {
+    "x": 0.5,
+    "y": 0.445,
+    "w": 0.12
+   }
+  },
+  "nu": {
+   "file": "than/than-nu.webp",
+   "file_ao": "than/than-nu-mac-ao.webp",
+   "w": 559,
+   "h": 900,
+   "eyes": {
+    "x": 0.5,
+    "y": 0.4,
+    "w": 0.4
+   },
+   "mouth": {
+    "x": 0.5,
+    "y": 0.5,
+    "w": 0.13
+   },
+   "bow": {
+    "file": "than/no-nu.webp",
+    "x": 0.55,
+    "y": 0.2,
+    "w": 0.55
+   }
+  }
+ },
+ "layers": [
+  "duoi_chan",
+  "sau_lung",
+  "than",
+  "ao",
+  "deo",
+  "mat",
+  "mieng",
+  "kinh",
+  "tai_nghe",
+  "bow",
+  "dau",
+  "cam_tay",
+  "hieu_ung",
+  "tam_trang"
+ ],
+ "slots": {
+  "dau": "Đội đầu",
+  "kinh": "Kính",
+  "tai_nghe": "Tai nghe",
+  "ao": "Áo",
+  "deo": "Khăn / túi",
+  "cam_tay": "Cầm tay",
+  "sau_lung": "Sau lưng",
+  "duoi_chan": "Dưới chân",
+  "hieu_ung": "Hiệu ứng"
+ },
+ "moods": {
+  "ngu": {
+   "file": "hieu-ung/hieu-ung-14.webp",
+   "anchor": {
+    "nam": {
+     "x": 0.84,
+     "y": 0.17,
+     "w": 0.26
+    },
+    "nu": {
+     "x": 0.86,
+     "y": 0.27,
+     "w": 0.26
+    }
+   }
+  },
+  "hoi": {
+   "file": "hieu-ung/hieu-ung-15.webp",
+   "anchor": {
+    "nam": {
+     "x": 0.86,
+     "y": 0.19,
+     "w": 0.18
+    },
+    "nu": {
+     "x": 0.88,
+     "y": 0.29000000000000004,
+     "w": 0.18
+    }
+   }
+  },
+  "gian": {
+   "file": "hieu-ung/hieu-ung-16.webp",
+   "anchor": {
+    "nam": {
+     "x": 0.82,
+     "y": 0.24,
+     "w": 0.22
+    },
+    "nu": {
+     "x": 0.84,
+     "y": 0.33999999999999997,
+     "w": 0.22
+    }
+   }
+  }
+ },
+ "items": [
+  {
+   "id": "ao-roi-01",
+   "name": "Áo khoác thể thao xanh",
+   "file": "ao-roi/ao-roi-01.webp",
+   "slot": "ao",
+   "rarity": "common",
+   "variants": [
+    "nam"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.805,
+     "w": 0.8,
+     "h": 0.38
+    }
+   }
+  },
+  {
+   "id": "ao-roi-02",
+   "name": "Áo khoác trắng",
+   "file": "ao-roi/ao-roi-02.webp",
+   "slot": "ao",
+   "rarity": "common",
+   "variants": [
+    "nam"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.805,
+     "w": 0.8,
+     "h": 0.38
+    }
+   }
+  },
+  {
+   "id": "ao-roi-03",
+   "name": "Áo hoodie xanh đậm",
+   "file": "ao-roi/ao-roi-03.webp",
+   "slot": "ao",
+   "rarity": "rare",
+   "variants": [
+    "nam"
+   ],
+   "level": 3,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.805,
+     "w": 0.8,
+     "h": 0.38
+    }
+   }
+  },
+  {
+   "id": "ao-roi-04",
+   "name": "Áo vest học sinh",
+   "file": "ao-roi/ao-roi-04.webp",
+   "slot": "ao",
+   "rarity": "rare",
+   "variants": [
+    "nam"
+   ],
+   "level": 3,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.8045,
+     "w": 0.8,
+     "h": 0.3811
+    }
+   }
+  },
+  {
+   "id": "ao-roi-05",
+   "name": "Bộ phi hành gia",
+   "file": "ao-roi/ao-roi-05.webp",
+   "slot": "ao",
+   "rarity": "legendary",
+   "variants": [
+    "nam"
+   ],
+   "level": 5,
+   "price": 1000,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.8055,
+     "w": 0.8,
+     "h": 0.381
+    }
+   }
+  },
+  {
+   "id": "ao-roi-06",
+   "name": "Áo phao xanh",
+   "file": "ao-roi/ao-roi-06.webp",
+   "slot": "ao",
+   "rarity": "rare",
+   "variants": [
+    "nam"
+   ],
+   "level": 3,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.8045,
+     "w": 0.8,
+     "h": 0.3811
+    }
+   }
+  },
+  {
+   "id": "ao-roi-07",
+   "name": "Khăn len xanh",
+   "file": "ao-roi/ao-roi-07.webp",
+   "slot": "deo",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.64,
+     "w": 0.6
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.64,
+     "w": 0.6
+    }
+   }
+  },
+  {
+   "id": "ao-roi-08",
+   "name": "Áo hoodie hồng",
+   "file": "ao-roi/ao-roi-08.webp",
+   "slot": "ao",
+   "rarity": "common",
+   "variants": [
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nu": {
+     "x": 0.5009,
+     "y": 0.795,
+     "w": 0.8463
+    }
+   }
+  },
+  {
+   "id": "ao-roi-09",
+   "name": "Áo khoác kem",
+   "file": "ao-roi/ao-roi-09.webp",
+   "slot": "ao",
+   "rarity": "common",
+   "variants": [
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nu": {
+     "x": 0.5009,
+     "y": 0.795,
+     "w": 0.9016
+    }
+   }
+  },
+  {
+   "id": "ao-roi-10",
+   "name": "Váy vàng",
+   "file": "ao-roi/ao-roi-10.webp",
+   "slot": "ao",
+   "rarity": "rare",
+   "variants": [
+    "nu"
+   ],
+   "level": 3,
+   "price": 400,
+   "anchor": {
+    "nu": {
+     "x": 0.5,
+     "y": 0.795,
+     "w": 0.8719
+    }
+   }
+  },
+  {
+   "id": "ao-roi-11",
+   "name": "Váy trắng nơ",
+   "file": "ao-roi/ao-roi-11.webp",
+   "slot": "ao",
+   "rarity": "rare",
+   "variants": [
+    "nu"
+   ],
+   "level": 4,
+   "price": 400,
+   "anchor": {
+    "nu": {
+     "x": 0.5,
+     "y": 0.7956,
+     "w": 0.8482
+    }
+   }
+  },
+  {
+   "id": "ao-roi-12",
+   "name": "Váy tím công chúa",
+   "file": "ao-roi/ao-roi-12.webp",
+   "slot": "ao",
+   "rarity": "legendary",
+   "variants": [
+    "nu"
+   ],
+   "level": 6,
+   "price": 1000,
+   "anchor": {
+    "nu": {
+     "x": 0.5,
+     "y": 0.795,
+     "w": 0.8257
+    }
+   }
+  },
+  {
+   "id": "ao-roi-13",
+   "name": "Áo khoác hồng tim",
+   "file": "ao-roi/ao-roi-13.webp",
+   "slot": "ao",
+   "rarity": "common",
+   "variants": [
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nu": {
+     "x": 0.5009,
+     "y": 0.795,
+     "w": 0.8513
+    }
+   }
+  },
+  {
+   "id": "doi-dau-01",
+   "name": "Mũ lưỡi trai xanh",
+   "file": "doi-dau/doi-dau-01.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-02",
+   "name": "Mũ lưỡi trai đen",
+   "file": "doi-dau/doi-dau-02.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-03",
+   "name": "Mũ lưỡi trai xanh trắng",
+   "file": "doi-dau/doi-dau-03.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-04",
+   "name": "Mũ tai bèo be",
+   "file": "doi-dau/doi-dau-04.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-05",
+   "name": "Mũ tai bèo xanh rêu",
+   "file": "doi-dau/doi-dau-05.webp",
+   "slot": "dau",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-06",
+   "name": "Mũ lưỡi trai đen trắng",
+   "file": "doi-dau/doi-dau-06.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-07",
+   "name": "Nơ hồng to",
+   "file": "doi-dau/doi-dau-07.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 1,
+   "price": 100,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.62
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.62
+    }
+   }
+  },
+  {
+   "id": "doi-dau-08",
+   "name": "Mũ rơm hoa",
+   "file": "doi-dau/doi-dau-08.webp",
+   "slot": "dau",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-09",
+   "name": "Mũ lưỡi trai hồng",
+   "file": "doi-dau/doi-dau-09.webp",
+   "slot": "dau",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 2,
+   "price": 120,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-10",
+   "name": "Băng đô tai mèo",
+   "file": "doi-dau/doi-dau-10.webp",
+   "slot": "dau",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.8
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.19,
+     "w": 0.8
+    }
+   }
+  },
+  {
+   "id": "doi-dau-11",
+   "name": "Vương miện vàng",
+   "file": "doi-dau/doi-dau-11.webp",
+   "slot": "dau",
+   "rarity": "legendary",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 6,
+   "price": 1000,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.135,
+     "w": 0.66
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.66
+    }
+   }
+  },
+  {
+   "id": "doi-dau-12",
+   "name": "Vương miện hồng ngọc",
+   "file": "doi-dau/doi-dau-12.webp",
+   "slot": "dau",
+   "rarity": "legendary",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 7,
+   "price": 1000,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.135,
+     "w": 0.66
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.165,
+     "w": 0.66
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-01",
+   "name": "Kính tròn đen",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-01.webp",
+   "slot": "kinh",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 2,
+   "price": 120,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.345,
+     "w": 0.52
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.4,
+     "w": 0.56
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-02",
+   "name": "Kính râm đen",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-02.webp",
+   "slot": "kinh",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 2,
+   "price": 120,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.345,
+     "w": 0.52
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.4,
+     "w": 0.56
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-03",
+   "name": "Kính râm xanh",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-03.webp",
+   "slot": "kinh",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 2,
+   "price": 120,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.345,
+     "w": 0.52
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.4,
+     "w": 0.56
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-04",
+   "name": "Tai nghe xanh",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-04.webp",
+   "slot": "tai_nghe",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.36,
+     "w": 1.06
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.36,
+     "w": 1.06
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-05",
+   "name": "Tai nghe đen",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-05.webp",
+   "slot": "tai_nghe",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.36,
+     "w": 1.06
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.36,
+     "w": 1.06
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-06",
+   "name": "Kính tim hồng",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-06.webp",
+   "slot": "kinh",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.345,
+     "w": 0.52
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.4,
+     "w": 0.56
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-07",
+   "name": "Kính tròn hồng",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-07.webp",
+   "slot": "kinh",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 2,
+   "price": 120,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.345,
+     "w": 0.52
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.4,
+     "w": 0.56
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-08",
+   "name": "Kính râm nâu",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-08.webp",
+   "slot": "kinh",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 2,
+   "price": 120,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.345,
+     "w": 0.52
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.4,
+     "w": 0.56
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-09",
+   "name": "Tai nghe hồng",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-09.webp",
+   "slot": "tai_nghe",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.36,
+     "w": 1.06
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.36,
+     "w": 1.06
+    }
+   }
+  },
+  {
+   "id": "kinh-tai-nghe-10",
+   "name": "Tai nghe tai mèo",
+   "file": "kinh-tai-nghe/kinh-tai-nghe-10.webp",
+   "slot": "tai_nghe",
+   "rarity": "legendary",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 8,
+   "price": 1000,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.36,
+     "w": 1.06
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.36,
+     "w": 1.06
+    }
+   }
+  },
+  {
+   "id": "phu-kien-01",
+   "name": "Balo xanh",
+   "file": "phu-kien/phu-kien-01.webp",
+   "slot": "sau_lung",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 6,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.86,
+     "y": 0.63,
+     "w": 0.46
+    },
+    "nu": {
+     "x": 0.86,
+     "y": 0.63,
+     "w": 0.46
+    }
+   }
+  },
+  {
+   "id": "phu-kien-02",
+   "name": "Túi đeo hông",
+   "file": "phu-kien/phu-kien-02.webp",
+   "slot": "deo",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 3,
+   "price": 150,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.79,
+     "w": 0.44
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.79,
+     "w": 0.44
+    }
+   }
+  },
+  {
+   "id": "phu-kien-03",
+   "name": "Bình nước nhỏ",
+   "file": "phu-kien/phu-kien-03.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 3,
+   "price": 150,
+   "anchor": {
+    "nam": {
+     "x": 0.89,
+     "y": 0.76,
+     "w": 0.14
+    },
+    "nu": {
+     "x": 0.89,
+     "y": 0.76,
+     "w": 0.14
+    }
+   }
+  },
+  {
+   "id": "phu-kien-04",
+   "name": "Bình nước xanh",
+   "file": "phu-kien/phu-kien-04.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 3,
+   "price": 150,
+   "anchor": {
+    "nam": {
+     "x": 0.89,
+     "y": 0.76,
+     "w": 0.14
+    },
+    "nu": {
+     "x": 0.89,
+     "y": 0.76,
+     "w": 0.14
+    }
+   }
+  },
+  {
+   "id": "phu-kien-05",
+   "name": "Bình giữ nhiệt",
+   "file": "phu-kien/phu-kien-05.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 3,
+   "price": 150,
+   "anchor": {
+    "nam": {
+     "x": 0.89,
+     "y": 0.76,
+     "w": 0.14
+    },
+    "nu": {
+     "x": 0.89,
+     "y": 0.76,
+     "w": 0.14
+    }
+   }
+  },
+  {
+   "id": "phu-kien-06",
+   "name": "Quả tạ",
+   "file": "phu-kien/phu-kien-06.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 3,
+   "price": 150,
+   "anchor": {
+    "nam": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    },
+    "nu": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    }
+   }
+  },
+  {
+   "id": "phu-kien-07",
+   "name": "Chùm bóng xanh",
+   "file": "phu-kien/phu-kien-07.webp",
+   "slot": "cam_tay",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 6,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    },
+    "nu": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    }
+   }
+  },
+  {
+   "id": "phu-kien-08",
+   "name": "Ván trượt xanh",
+   "file": "phu-kien/phu-kien-08.webp",
+   "slot": "duoi_chan",
+   "rarity": "legendary",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 8,
+   "price": 1000,
+   "anchor": {
+    "nam": {
+     "x": 0.52,
+     "y": 0.955,
+     "w": 0.78
+    },
+    "nu": {
+     "x": 0.52,
+     "y": 0.955,
+     "w": 0.78
+    }
+   }
+  },
+  {
+   "id": "phu-kien-09",
+   "name": "Balo hồng",
+   "file": "phu-kien/phu-kien-09.webp",
+   "slot": "sau_lung",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 6,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.86,
+     "y": 0.63,
+     "w": 0.46
+    },
+    "nu": {
+     "x": 0.86,
+     "y": 0.63,
+     "w": 0.46
+    }
+   }
+  },
+  {
+   "id": "phu-kien-10",
+   "name": "Túi xách hồng",
+   "file": "phu-kien/phu-kien-10.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 3,
+   "price": 150,
+   "anchor": {
+    "nam": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    },
+    "nu": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    }
+   }
+  },
+  {
+   "id": "phu-kien-11",
+   "name": "Giỏ hoa",
+   "file": "phu-kien/phu-kien-11.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 180,
+   "anchor": {
+    "nam": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    },
+    "nu": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    }
+   }
+  },
+  {
+   "id": "phu-kien-12",
+   "name": "Bình nước hồng",
+   "file": "phu-kien/phu-kien-12.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 180,
+   "anchor": {
+    "nam": {
+     "x": 0.89,
+     "y": 0.76,
+     "w": 0.14
+    },
+    "nu": {
+     "x": 0.89,
+     "y": 0.76,
+     "w": 0.14
+    }
+   }
+  },
+  {
+   "id": "phu-kien-13",
+   "name": "Khăn quàng hồng",
+   "file": "phu-kien/phu-kien-13.webp",
+   "slot": "deo",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 180,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.64,
+     "w": 0.6
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.64,
+     "w": 0.6
+    }
+   }
+  },
+  {
+   "id": "phu-kien-14",
+   "name": "Ván trượt hồng",
+   "file": "phu-kien/phu-kien-14.webp",
+   "slot": "duoi_chan",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 6,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.52,
+     "y": 0.955,
+     "w": 0.78
+    },
+    "nu": {
+     "x": 0.52,
+     "y": 0.955,
+     "w": 0.78
+    }
+   }
+  },
+  {
+   "id": "phu-kien-15",
+   "name": "Bông hoa",
+   "file": "phu-kien/phu-kien-15.webp",
+   "slot": "cam_tay",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 180,
+   "anchor": {
+    "nam": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    },
+    "nu": {
+     "x": 0.9,
+     "y": 0.74,
+     "w": 0.24
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-01",
+   "name": "Tim xanh",
+   "file": "hieu-ung/hieu-ung-01.webp",
+   "slot": "hieu_ung",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 180,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-02",
+   "name": "Ngôi sao",
+   "file": "hieu-ung/hieu-ung-02.webp",
+   "slot": "hieu_ung",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 4,
+   "price": 180,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-03",
+   "name": "Lấp lánh",
+   "file": "hieu-ung/hieu-ung-03.webp",
+   "slot": "hieu_ung",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 7,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-04",
+   "name": "Tia nước",
+   "file": "hieu-ung/hieu-ung-04.webp",
+   "slot": "hieu_ung",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 200,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-05",
+   "name": "Đồng xu",
+   "file": "hieu-ung/hieu-ung-05.webp",
+   "slot": "hieu_ung",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 7,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-06",
+   "name": "Cúp vàng",
+   "file": "hieu-ung/hieu-ung-06.webp",
+   "slot": "hieu_ung",
+   "rarity": "legendary",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 9,
+   "price": 1000,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-07",
+   "name": "Vòng nước",
+   "file": "hieu-ung/hieu-ung-07.webp",
+   "slot": "hieu_ung",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 200,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 0.985,
+     "w": 0.95
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 0.985,
+     "w": 0.95
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-08",
+   "name": "Mây trắng",
+   "file": "hieu-ung/hieu-ung-08.webp",
+   "slot": "hieu_ung",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 200,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 1.03,
+     "w": 0.95
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 1.03,
+     "w": 0.95
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-09",
+   "name": "Mây bông",
+   "file": "hieu-ung/hieu-ung-09.webp",
+   "slot": "hieu_ung",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 200,
+   "anchor": {
+    "nam": {
+     "x": 0.5,
+     "y": 1.03,
+     "w": 0.95
+    },
+    "nu": {
+     "x": 0.5,
+     "y": 1.03,
+     "w": 0.95
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-10",
+   "name": "Gió mát",
+   "file": "hieu-ung/hieu-ung-10.webp",
+   "slot": "hieu_ung",
+   "rarity": "common",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 5,
+   "price": 200,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-11",
+   "name": "Tim hồng",
+   "file": "hieu-ung/hieu-ung-11.webp",
+   "slot": "hieu_ung",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 7,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-13",
+   "name": "Hoa anh đào",
+   "file": "hieu-ung/hieu-ung-13.webp",
+   "slot": "hieu_ung",
+   "rarity": "rare",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 7,
+   "price": 400,
+   "anchor": {
+    "nam": {
+     "x": 0.85,
+     "y": 0.2,
+     "w": 0.28
+    },
+    "nu": {
+     "x": 0.85,
+     "y": 0.29,
+     "w": 0.28
+    }
+   }
+  },
+  {
+   "id": "hieu-ung-17",
+   "name": "Cầu vồng",
+   "file": "hieu-ung/hieu-ung-17.webp",
+   "slot": "hieu_ung",
+   "rarity": "legendary",
+   "variants": [
+    "nam",
+    "nu"
+   ],
+   "level": 10,
+   "price": 1000,
+   "anchor": {
+    "nam": {
+     "x": 0.18,
+     "y": 0.16,
+     "w": 0.42
+    },
+    "nu": {
+     "x": 0.14,
+     "y": 0.26,
+     "w": 0.42
+    }
+   }
+  }
+ ]
+}

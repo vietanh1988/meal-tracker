@@ -5,10 +5,14 @@ import { ErrorBoundary } from "./ErrorBoundary.jsx";
 // 18/10: báo cho script cứu màn trắng ở index.html biết JS đã chạy được
 try { window.__fpBooted = true; } catch (e) { /* */ }
 
+// Trang xem bản vẽ Fipilot Pet — CHỈ khi chạy dev (bản build prod bỏ hẳn nhánh này)
+const PetPreview = import.meta.env.DEV && typeof location !== "undefined" && location.pathname.startsWith("/__pet")
+  ? React.lazy(() => import("./pet/PetPreview.jsx")) : null;
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      {PetPreview ? <React.Suspense fallback={null}><PetPreview /></React.Suspense> : <App />}
     </ErrorBoundary>
   </React.StrictMode>
 );
