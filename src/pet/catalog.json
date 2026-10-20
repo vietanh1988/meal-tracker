@@ -1027,8 +1027,8 @@
   },
   {
    "id": "phu-kien-03",
-   "name": "Bình nước nhỏ",
-   "file": "phu-kien/phu-kien-03.webp",
+   "name": "Chai nước suối",
+   "file": "phu-kien/phu-kien-03-cam.webp",
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
@@ -1044,21 +1044,21 @@
    "file_hold": "phu-kien/phu-kien-03-cam.webp",
    "anchor": {
     "nam": {
-     "x": 0.9285,
-     "y": 0.7745,
-     "w": 0.327
+     "x": 0.852,
+     "y": 0.7639,
+     "w": 0.2132
     },
     "nu": {
-     "x": 0.928,
-     "y": 0.7749,
-     "w": 0.327
+     "x": 0.8515,
+     "y": 0.7648,
+     "w": 0.2132
     }
    }
   },
   {
    "id": "phu-kien-04",
-   "name": "Bình nước xanh",
-   "file": "phu-kien/phu-kien-04.webp",
+   "name": "Bình thể thao xanh",
+   "file": "phu-kien/phu-kien-04-cam.webp",
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
@@ -1074,21 +1074,21 @@
    "file_hold": "phu-kien/phu-kien-04-cam.webp",
    "anchor": {
     "nam": {
-     "x": 0.9097,
-     "y": 0.7583,
-     "w": 0.273
+     "x": 0.8584,
+     "y": 0.7453,
+     "w": 0.2132
     },
     "nu": {
-     "x": 0.9092,
-     "y": 0.7595,
-     "w": 0.273
+     "x": 0.8579,
+     "y": 0.7472,
+     "w": 0.2132
     }
    }
   },
   {
    "id": "phu-kien-05",
-   "name": "Bình giữ nhiệt",
-   "file": "phu-kien/phu-kien-05.webp",
+   "name": "Bình giữ nhiệt inox",
+   "file": "phu-kien/phu-kien-05-cam.webp",
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
@@ -1104,14 +1104,14 @@
    "file_hold": "phu-kien/phu-kien-05-cam.webp",
    "anchor": {
     "nam": {
-     "x": 0.9255,
-     "y": 0.7583,
-     "w": 0.2775
+     "x": 0.8638,
+     "y": 0.7629,
+     "w": 0.2356
     },
     "nu": {
-     "x": 0.925,
-     "y": 0.7595,
-     "w": 0.2775
+     "x": 0.8633,
+     "y": 0.7638,
+     "w": 0.2356
     }
    }
   },
@@ -1135,20 +1135,20 @@
    "anchor": {
     "nam": {
      "x": 0.8595,
-     "y": 0.8146,
-     "w": 0.6225
+     "y": 0.8147,
+     "w": 0.6227
     },
     "nu": {
      "x": 0.859,
      "y": 0.8131,
-     "w": 0.6225
+     "w": 0.6227
     }
    }
   },
   {
    "id": "phu-kien-07",
    "name": "Chùm bóng xanh",
-   "file": "phu-kien/phu-kien-07.webp",
+   "file": "phu-kien/phu-kien-07-cam.webp",
    "slot": "cam_tay",
    "rarity": "rare",
    "variants": [
@@ -1164,14 +1164,14 @@
    "file_hold": "phu-kien/phu-kien-07-cam.webp",
    "anchor": {
     "nam": {
-     "x": 0.9285,
-     "y": 0.6608,
-     "w": 0.6638
+     "x": 0.8746,
+     "y": 0.763,
+     "w": 0.4524
     },
     "nu": {
-     "x": 0.928,
-     "y": 0.6668,
-     "w": 0.6638
+     "x": 0.8741,
+     "y": 0.764,
+     "w": 0.4524
     }
    }
   },
@@ -1245,13 +1245,13 @@
    "anchor": {
     "nam": {
      "x": 0.8415,
-     "y": 0.8837,
-     "w": 0.4215
+     "y": 0.8838,
+     "w": 0.4216
     },
     "nu": {
      "x": 0.841,
      "y": 0.8788,
-     "w": 0.4215
+     "w": 0.4216
     }
    }
   },
@@ -1276,19 +1276,19 @@
     "nam": {
      "x": 0.882,
      "y": 0.9004,
-     "w": 0.444
+     "w": 0.4441
     },
     "nu": {
      "x": 0.8815,
      "y": 0.8946,
-     "w": 0.444
+     "w": 0.4441
     }
    }
   },
   {
    "id": "phu-kien-12",
-   "name": "Bình nước hồng",
-   "file": "phu-kien/phu-kien-12.webp",
+   "name": "Bình giữ nhiệt hồng",
+   "file": "phu-kien/phu-kien-12-cam.webp",
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
@@ -1304,14 +1304,14 @@
    "file_hold": "phu-kien/phu-kien-12-cam.webp",
    "anchor": {
     "nam": {
-     "x": 0.9082,
-     "y": 0.7452,
-     "w": 0.279
+     "x": 0.8564,
+     "y": 0.739,
+     "w": 0.2197
     },
     "nu": {
-     "x": 0.9077,
-     "y": 0.747,
-     "w": 0.279
+     "x": 0.8559,
+     "y": 0.7412,
+     "w": 0.2197
     }
    }
   },
@@ -1367,8 +1367,8 @@
   },
   {
    "id": "phu-kien-15",
-   "name": "Bông hoa",
-   "file": "phu-kien/phu-kien-15.webp",
+   "name": "Hoa cúc trắng",
+   "file": "phu-kien/phu-kien-15-cam.webp",
    "slot": "cam_tay",
    "rarity": "common",
    "variants": [
@@ -1384,14 +1384,14 @@
    "file_hold": "phu-kien/phu-kien-15-cam.webp",
    "anchor": {
     "nam": {
-     "x": 0.9402,
-     "y": 0.6981,
-     "w": 0.378
+     "x": 0.8576,
+     "y": 0.7271,
+     "w": 0.2796
     },
     "nu": {
-     "x": 0.9397,
-     "y": 0.7023,
-     "w": 0.378
+     "x": 0.8571,
+     "y": 0.7299,
+     "w": 0.2796
     }
    }
   },

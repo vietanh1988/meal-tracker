@@ -12,8 +12,8 @@ NAMES = {
              'Nơ hồng to','Mũ rơm hoa','Mũ lưỡi trai hồng','Băng đô tai mèo','Vương miện vàng','Vương miện hồng ngọc'],
  'kinh-tai-nghe': ['Kính tròn đen','Kính râm đen','Kính râm xanh','Tai nghe xanh','Tai nghe đen','Kính tim hồng','Kính tròn hồng',
                    'Kính râm nâu','Tai nghe hồng','Tai nghe tai mèo'],
- 'phu-kien': ['Balo xanh','Túi đeo hông','Bình nước nhỏ','Bình nước xanh','Bình giữ nhiệt','Quả tạ','Chùm bóng xanh','Ván trượt xanh',
-              'Balo hồng','Túi xách hồng','Giỏ hoa','Bình nước hồng','Khăn quàng hồng','Ván trượt hồng','Bông hoa'],
+ 'phu-kien': ['Balo xanh','Túi đeo hông','Chai nước suối','Bình thể thao xanh','Bình giữ nhiệt inox','Quả tạ','Chùm bóng xanh','Ván trượt xanh',
+              'Balo hồng','Túi xách hồng','Giỏ hoa','Bình giữ nhiệt hồng','Khăn quàng hồng','Ván trượt hồng','Hoa cúc trắng'],
  'hieu-ung': ['Tim xanh','Ngôi sao','Lấp lánh','Tia nước','Đồng xu','Cúp vàng','Vòng nước','Mây trắng','Mây bông','Gió mát','Tim hồng',
               None,'Hoa anh đào',None,None,None,'Cầu vồng'],
 }
@@ -74,7 +74,7 @@ def default(it, v):
 # Đồ cầm tay vẽ kèm bàn tay đang nắm (ChatGPT 20/10): đặt tâm bàn tay trong ảnh trùng tâm bàn tay của thân.
 # Cỡ: 100 px trên tấm vẽ = 0,15 bề rộng thân (bàn tay vẽ lớn hơn tay thân một chút để che kín).
 HOLD = json.load(open('scripts/pet/hands.json'))
-HOLD_SCALE = {'phu-kien-07': 1.5, 'phu-kien-15': 1.2}  # chùm bóng bay to hơn, hoa to hơn chút
+HOLD_SCALE = {'phu-kien-07': 1.6, 'phu-kien-15': 1.3, 'phu-kien-03': 1.1, 'phu-kien-04': 1.1, 'phu-kien-05': 1.1, 'phu-kien-12': 1.1}  # chùm bóng bay to hơn, hoa to hơn chút
 BODY_HAND = {'nam': (0.852, 0.7828, 588, 900), 'nu': (0.8515, 0.7828, 559, 900)}
 COVER = {f'doi-dau-{i:02d}' for i in (1, 2, 3, 4, 5, 6, 8, 9, 10)}  # mũ trùm kín đỉnh đầu → ẩn lá + chỏm đầu dưới mũ
 for it in items:
@@ -83,9 +83,10 @@ for it in items:
         it['hands'] = ['phai', 'trai']   # luật 20/10: mọi đồ cầm tay cầm được ở tay trái hoặc tay phải, cả nam lẫn nữ; tay trái dùng ảnh lật ngang
     if it['id'] in HOLD:
         hd = HOLD[it['id']]; it['file_hold'] = hd['file']; it['anchor'] = {}
+        if hd.get('icon'): it['file'] = hd['file']  # bản vẽ lại 20/10 khác món cũ → ô cửa hàng dùng luôn ảnh cầm
         for v in it['variants']:
             hx, hy, bwp, bhp = BODY_HAND[v]
-            wf = hd['src_w'] / 100 * 0.15 * HOLD_SCALE.get(it['id'], 1); hf = wf * bwp * hd['src_h'] / hd['src_w'] / bhp
+            wf = hd['src_w'] / hd.get('fist', 113.3) * 0.17 * HOLD_SCALE.get(it['id'], 1); hf = wf * bwp * hd['src_h'] / hd['src_w'] / bhp
             it['anchor'][v] = A(round(hx + (0.5 - hd['hand_x']) * wf, 4), round(hy + (0.5 - hd['hand_y']) * hf, 4), round(wf, 4))
         continue
     over = ANCH.get(it['id'], {})
