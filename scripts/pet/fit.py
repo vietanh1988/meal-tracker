@@ -57,5 +57,12 @@ for i,(bn,bu,cn,cu) in {7:(.25,.30,.55,.58),10:(.275,.325,.62,.68),11:(.262,.312
 EYE_C={'nam':.357,'nu':.412}; GW={'nam':.58,'nu':.62}
 for i in (1,2,3,6,7,8):
     A[f'kinh-tai-nghe-{i:02d}']={v:fitc(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp',v,EYE_C[v],GW[v]) for v in ('nam','nu')}
+# --- Tai nghe: chụp tai ôm 2 bầu má bên đầu, không lấn vào mắt; quai vòng qua đỉnh đầu ---
+for i in (4,5,9,10):
+    A[f'kinh-tai-nghe-{i:02d}']={'nam':fitc(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nam',.40,.86),'nu':fitc(f'kinh-tai-nghe/kinh-tai-nghe-{i:02d}.webp','nu',.45,.90)}
+# --- Khăn: quấn ngay dưới cằm, trên vai (không trùm lên mặt) ---
+for f in ('ao-roi/ao-roi-07.webp','phu-kien/phu-kien-13.webp'):
+    k=f.split('/')[1][:-5]
+    A[k]={'nam':fitc(f,'nam',.67,.56),'nu':fitc(f,'nu',.655,.60)}
 json.dump(A,open('scripts/pet/anchors.json','w'),indent=1)
 print(A)
