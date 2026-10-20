@@ -176,12 +176,23 @@ export function PcWebAi({ top, showToast, user, go }) {
     showToast?.({ text: `Đã xếp hàng ${rows.length} bài. Bài đầu bắt đầu trong khoảng 1 phút.` });
     if (ym !== todayVN().slice(0, 7)) setYm(todayVN().slice(0, 7)); else load();
   };
-  const cancel = async (j) => { await supabase.from("web_ai_jobs").update({ status: "canceled", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", j.id); load(); };
+  // Huỷ: ghi lại bước đang làm (canceledAt) để "Chạy lại" đi tiếp đúng bước, không viết lại từ đầu
+  const cancel = async (j) => {
+    const { data } = await supabase.from("web_ai_jobs").select("state").eq("id", j.id).single();
+    const state = { ...(data?.state || {}), ...(j.status !== "queued" ? { canceledAt: j.status } : {}) };
+    await supabase.from("web_ai_jobs").update({ status: "canceled", state, finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", j.id); load();
+  };
+  // Viết lại (lỗi) / Chạy lại (đã huỷ): về đúng bước dừng; bài huỷ trước khi có canceledAt thì lấy bước cuối trong tiến trình
   const retry = async (j) => {
     const { data } = await supabase.from("web_ai_jobs").select("state").eq("id", j.id).single();
-    const back = data?.state?.failedAt || "queued";
-    await supabase.from("web_ai_jobs").update({ status: back, attempts: 0, error: null, finished_at: null, locked_until: null, updated_at: new Date().toISOString() }).eq("id", j.id);
-    showToast?.({ text: "Đã đưa lại vào hàng chờ, chạy tiếp từ bước bị lỗi." }); load();
+    const st = data?.state || {};
+    const lastLog = [...(st.log || [])].reverse().map((l) => l.s).find((x) => OPEN.includes(x));
+    const back = (j.status === "canceled" ? st.canceledAt || lastLog : st.failedAt) || "queued";
+    const { canceledAt: _c, ...rest } = st;
+    const { error } = await supabase.from("web_ai_jobs").update({ status: back, state: rest, attempts: 0, error: null, finished_at: null, locked_until: null, updated_at: new Date().toISOString() }).eq("id", j.id);
+    if (error) return showToast?.({ text: "Chưa chạy lại được: " + error.message, tone: "red" });
+    const capNow = Number(cfg?.daily_cap_usd) > 0 && today >= Number(cfg.daily_cap_usd);
+    showToast?.({ text: capNow ? "Đã đưa lại vào hàng chờ. Hôm nay đã chạm trần tiền nên 0h mới chạy tiếp (hoặc nâng trần)." : back === "queued" ? "Đã đưa lại vào hàng chờ." : `Đã đưa lại vào hàng chờ, chạy tiếp từ bước "${(STEPS.find(([k]) => k === back) || [, back])[1]}".` }); load();
   };
   // "Đăng" ở bảng: mở đủ bài (chuyên mục + thẻ) → kiểm đủ chỗ → lưu như nút Đăng của trình soạn (điểm SEO, lịch sử, IndexNow)
   const publish = async (j) => {
@@ -339,7 +350,8 @@ export function PcWebAi({ top, showToast, user, go }) {
                       if (j.status === "done" && j.post?.status === "published") [stName, stTone] = ["Đã đăng", "green"];
                       if (j.status === "done" && j.post?.status === "scheduled") [stName, stTone] = [`Hẹn ${vnTime(j.post.published_at)}`, "blue"];
                       if (j.status === "done" && j.post?.status === "trash") [stName, stTone] = ["Bài đã xoá", "gray"];
-                      const run = OPEN.includes(j.status) && j.status !== "queued";
+                      const run = OPEN.includes(j.status) && j.status !== "queued" && !capHit;
+                      if (capHit && OPEN.includes(j.status)) [stName, stTone] = [j.status === "queued" ? "Chờ tới 0h" : "Tạm dừng · chạm trần", "amber"]; // máy chủ không chạy bước mới khi đã chạm trần
                       const td = { padding: "9px 7px", borderBottom: `1px solid ${PC.rowLine}`, whiteSpace: "nowrap" };
                       const num = { ...td, textAlign: "right" };
                       const cost = Number(j.cost_text) + Number(j.cost_img);
@@ -358,7 +370,7 @@ export function PcWebAi({ top, showToast, user, go }) {
                             {j.status === "done" && j.post_id && j.post?.status !== "trash" && <button type="button" data-testid="web-ai-preview" onClick={() => preview(j)} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>Xem trước</button>}
                             {j.status === "done" && j.post_id && j.post?.status !== "trash" && <button type="button" data-testid="web-ai-relink" disabled={!!busy} onClick={() => relink(j)} title="AI chọn chỗ gắn link nội bộ (không sửa chữ); bài đã đăng thì gắn thêm link từ 1-2 bài cũ cùng chủ đề sang" style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>{busy === "l-" + j.id ? "Đang gắn…" : "Gắn link"}</button>}
                             {j.status === "done" && j.post_id && j.post?.status !== "trash" && <button type="button" className="pc-lnk" data-testid="web-ai-open" onClick={() => openPost(j.post_id)} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>Mở bài ›</button>}
-                            {j.status === "error" && <button type="button" data-testid="web-ai-retry" onClick={() => retry(j)} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>Viết lại</button>}
+                            {["error", "canceled"].includes(j.status) && <button type="button" data-testid="web-ai-retry" onClick={() => retry(j)} title={j.status === "canceled" ? "Chạy tiếp từ bước đã huỷ (phần đã viết giữ nguyên)" : "Chạy tiếp từ bước bị lỗi"} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>{j.status === "canceled" ? "Chạy lại" : "Viết lại"}</button>}
                             {OPEN.includes(j.status) && <button type="button" data-testid="web-ai-cancel" onClick={async () => { if (j.status === "queued" || (await appConfirm("Bài đang viết dở. Huỷ thì phần đã tốn không lấy lại được. Huỷ bài này?"))) cancel(j); }} style={{ border: 0, background: "none", color: PC.softFg, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", fontSize: 12.5 }}>Huỷ</button>}
                           </span></td>
                         </tr>

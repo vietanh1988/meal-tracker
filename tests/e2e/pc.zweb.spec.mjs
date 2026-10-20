@@ -61,6 +61,10 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await expect.poll(async () => (await rest("web_ai_config?id=eq.1&select=data"))[0].data).toMatchObject({ publish: "schedule", sched_times: ["07:30", "20:00"] });
     await page.getByTestId("web-ai-cancel").first().click();
     await expect(page.locator("[data-testid=web-ai-row][data-status=canceled]")).toHaveCount(1);
+    // Bài đã huỷ có nút "Chạy lại" → về hàng chờ (huỷ khi đang xếp hàng thì về lại "queued")
+    await page.locator("[data-testid=web-ai-row][data-status=canceled]").getByTestId("web-ai-retry").click();
+    await expect(page.locator("[data-testid=web-ai-row][data-status=canceled]")).toHaveCount(0);
+    await expect.poll(async () => (await rest("web_ai_jobs?keyword=like.e2e*&status=eq.queued&select=id")).length).toBe(2);
     await page.getByTestId("web-ai-rules-edit").click();
     await expect(page.getByTestId("web-ai-rules-text")).toHaveValue(/QUY TẮC BẮT BUỘC/);
     await page.keyboard.press("Escape");
