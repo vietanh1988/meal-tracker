@@ -158,6 +158,33 @@ def _fitTop(file, v, top, cw):  # mép trên khăn ngay dưới miệng (khăn d
 for it in items:
     if it['id'] in ('ao-roi-07', 'phu-kien-13'):
         it['anchor'] = {'nam': _fitTop(it['file'], 'nam', .535, .66), 'nu': _fitTop(it['file'], 'nu', .595, .58)}
+# 20/10 (chủ dự án: mũ đội lệch, mũ Noel như bị cắt đầu): mũ canh giữa theo VÀNH MŨ (đáy mũ) chứ không theo cả khung ảnh —
+# quả bông mũ Noel, lưỡi trai chìa sang một bên làm khung ảnh lệch → mũ lệch, phần đầu đã cắt chỏm lộ ra bên kia.
+# Mũ lưỡi trai: lấy tâm phần chỏm (15–50% chiều cao) vì lưỡi trai nằm ở đáy. Tâm đầu Pi đo từ thân gốc (y 0,30).
+HEAD_X = {'nam': 0.523, 'nu': 0.516}
+CAPS = {'doi-dau-01', 'doi-dau-02', 'doi-dau-03', 'doi-dau-06', 'doi-dau-09'}
+def _brim_cx(file, cap):
+    from PIL import Image as _I
+    import numpy as _np
+    al = _np.array(_I.open(f'public/pet/{file}').convert('RGBA'))[..., 3] > 40
+    ys, xs = _np.nonzero(al); t, b = ys.min(), ys.max(); h = b - t
+    lo, hi = (t + 0.15 * h, t + 0.5 * h) if cap else (b - 0.15 * h, b)
+    sel = (ys >= lo) & (ys <= hi)
+    return (xs[sel].min() + xs[sel].max()) / 2 / al.shape[1]
+for it in items:
+    if it['slot'] != 'dau' or it.get('behind_head') or any(w in it['name'] for w in ('Trâm', 'Kẹp')): continue
+    try: cx = _brim_cx(it['file'], it['id'] in CAPS or it['id'] == 'doi-dau-08')  # 08: vành trước chìa lệch → canh theo thân mũ
+    except Exception: continue
+    for v, a in (it.get('anchor') or {}).items():
+        if not a or 'w' not in a: continue
+        a['x'] = round(a['x'] + HEAD_X.get(v, .52) - (a['x'] - a['w'] / 2 + cx * a['w']), 4)
+        if it['id'] in CAPS:  # lưỡi trai trước nhỏ so với đầu Pi → to thêm 10%, giữ nguyên đáy vành
+            from PIL import Image as _I
+            iw, ih = _I.open(f"public/pet/{it['file']}").size
+            bw, bh = {'nam': (588, 900), 'nu': (559, 900)}[v]
+            hh = a['w'] * bw * ih / iw / bh
+            a['w'] = round(a['w'] * 1.1, 4); a['y'] = round(a['y'] - hh * 0.05, 4)
+            a['x'] = round(a['x'] + (cx - 0.5) * a['w'] * 0.1 / 1.1, 4)
 # 20/10: áo liền thân vẽ tay ở chỗ khác thân gốc → dò tâm bàn tay (màu da Pi) trong ảnh thân mặc áo, đồ cầm tay dời theo
 import numpy as np
 from PIL import Image

@@ -9,7 +9,7 @@ from scipy import ndimage
 R = 'public/pet'
 B = {'nam': (588, 900), 'nu': (559, 900)}
 BRIM = {'nam': 0.322, 'nu': 0.37}
-CONE = {'nam': 0.27, 'nu': 0.31}
+CONE = {'nam': 0.27, 'nu': 0.385}  # 20/10: nón lá Pi nữ trước nổi trên đầu → hạ vành
 HAND = {'nam': (0.852, 0.7828), 'nu': (0.8515, 0.7828)}
 BOTH = ['nam', 'nu']
 
@@ -72,7 +72,7 @@ C = {
   ('Mũ miện vua', 'dau', ['nam'], 'legendary', 5, 'crown', (.262, .312, .52, .58), ''),
   ('Mũ phượng', 'dau', ['nu'], 'legendary', 5, 'crown', (.262, .312, .66, .72), ''),
   ('Trâm cài hoa sen', 'dau', ['nu'], 'common', 2, 'pin', None, ''),
-  ('Nón quai thao', 'dau', ['nu'], 'rare', 3, 'cone', (1.04, .19), 'noleaf'),
+  ('Nón quai thao', 'dau', ['nu'], 'rare', 3, 'cone', (1.04, .045), 'noleaf'),
   ('Quạt giấy', 'cam_tay', BOTH, 'common', 2, 'hold', 1.1, ''),
   ('Kiếm gỗ', 'cam_tay', ['nam'], 'rare', 3, 'hold', 1.0, ''),
   ('Ô giấy đỏ', 'cam_tay', ['nu'], 'rare', 3, 'hold', 1.1, ''),
