@@ -3,7 +3,7 @@
 // Điểm do máy chủ tính (pet_claim); ở đây chỉ dựng view-model hiển thị + gọi mua / mặc / lưu.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePet } from "../hooks/usePet";
-import { levelOf, moodOf, eventsFor, pickEvent, DAILY_CAP, seasonOf } from "../lib/petMath";
+import { levelOf, moodOf, eventsFor, pickEvent, DAILY_CAP, seasonOf, collectionStatus, COL_DEFAULT } from "../lib/petMath";
 import { nowVNParts, weekdayVN, weekRange, addDays, diffDays } from "../lib/dateVN";
 import { waterGoalMl } from "../lib/dayPlan";
 import { authFetch } from "../lib/authFetch";
@@ -78,7 +78,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     tasks.push(
       { key: "photo", label: "Chụp món", sub: keys.has(`photo:${today}`) ? "Đã chụp hôm nay" : "Chụp ảnh 1 bữa đã ăn", pts: 5, done: keys.has(`photo:${today}`), color: "#EA580C", icon: PIc.camera(18) },
       { key: "water", label: "Uống đủ nước", sub: `${fmtL(log.water_ml || 0)} / ${fmtL(waterGoal)} lít`, pts: 15, done: keys.has(`water:${today}`), color: "#0891B2", icon: ic(<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" />) },
-      { key: "full", label: "Ăn đủ mọi bữa", sub: `${eatenIds.length} / ${Math.max(3, ids.length)} bữa`, pts: 20, done: keys.has(`full:${today}`), color: "#007AFF", icon: PIc.list(18) },
+      { key: "full", label: "Ăn từ 3 bữa trở lên", sub: `${eatenIds.length} bữa đã ăn hôm nay`, pts: 20, done: keys.has(`full:${today}`), color: "#007AFF", icon: PIc.list(18) },
       { key: "streak", label: `Chuỗi ${Math.max(st.streak || 0, 0)} ngày`, sub: "Từ ngày thứ 3 được thêm", pts: 10, done: keys.has(`streak:${today}`), color: "#F97316", icon: PIc.flame(18) },
       { key: "weigh", label: "Cân tuần này", sub: weighedWeek ? "Đã cân tuần này" : "Cân 1 lần trong tuần", pts: 20, done: weighedWeek && [...keys].some((k) => k.startsWith("weigh:")), color: "#64748B", icon: ic(<><rect x="3" y="4" width="18" height="16" rx="4" /><path d="M8 9a4 4 0 0 1 8 0M12 9l1.5-2" /></>) },
     );
@@ -103,8 +103,10 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
       trophies: owned.filter((id) => ITEMS[id]?.achievement || ACH.some((a) => a.item === id)),
       time: roomTime(Math.floor(minutes / 60)), season: seasonOf(today), shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
       levelUp: (st.prevLevel || lv.n) < lv.n, waterGoal, waterMl: log.water_ml || 0, daysAway, logged, mealsOn: ids.length, times,
-      week: weekdayVN() === 0 ? { range: `${wk.start.slice(8)}/${wk.start.slice(5, 7)} – ${wk.end.slice(8)}/${wk.end.slice(5, 7)}`, meals: 0, waterDays: 0 } : null,
-      settings: { talk: true, perDay: cfg.perDay || 3, quietFrom: cfg.quietFrom || "22:30", quietTo: cfg.quietTo || "07:00", push: false, week: true, weekAt: "19:00", ...(st.settings || {}), off: cfg.off || [] },
+      week: weekdayVN() === 0 && cfg.week !== false ? { range: `${wk.start.slice(8)}/${wk.start.slice(5, 7)} – ${wk.end.slice(8)}/${wk.end.slice(5, 7)}`, meals: 0, waterDays: 0 } : null,
+      // 20/10 (chủ dự án): khách không chỉnh — Pi nói / số câu / giờ yên lặng / tổng kết tuần do Quản trị quyết (pet_config)
+      settings: { talk: cfg.talk !== false, perDay: cfg.perDay || 3, quietFrom: cfg.quietFrom || "22:30", quietTo: cfg.quietTo || "07:00", week: cfg.week !== false, weekAt: "19:00", off: cfg.off || [] },
+      cols: Object.fromEntries(Object.keys(COL_DEFAULT).map((k) => [k, collectionStatus(k, cfg, today)])),
     };
   }, [st, variant, premium, log, mealIds, mealTimes, minutes, today, recentRows, weightLog, profile?.kg, profile?.waterGoalMl, cfg]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -136,7 +138,6 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   const toastErr = (r) => { if (r && !r.ok) showToast?.({ text: r.error || "Chưa lưu được, thử lại" }); return r; };
   const buy = useCallback(async (it) => pet.buy(it.id), [pet]);
   const equip = useCallback(async (slot, id) => toastErr(await pet.equip(slot, id)), [pet]); // eslint-disable-line react-hooks/exhaustive-deps
-  const saveSet = useCallback(async (patch) => toastErr(await pet.save({ settings: patch })), [pet]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- Hỏi Pi ----
   const [chat, setChat] = useState([]);
@@ -232,7 +233,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onBow={(b) => pet.save({ bow: b }).then(toastErr)} />;
     if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onBack={closeLayer} onPremium={openPremium} />;
     if (sec === "pet_week") return weekData ? <PetWeekScreen pet={view} w={weekData} onBack={closeLayer} onAI={writeWeek} aiBusy={weekBusy} onPremium={openPremium} /> : null;
-    if (sec === "pet_settings") return <PetSettingsScreen pet={view} set={view.settings} onBack={closeLayer} onChange={saveSet} onRename={rename} />;
+    if (sec === "pet_settings") return <PetSettingsScreen pet={view} onBack={closeLayer} onRename={rename} />;
     return null;
   };
   return { on, card, page, view, error: pet.error };

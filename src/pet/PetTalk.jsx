@@ -4,7 +4,7 @@
 //  - PetWeekScreen: Tổng kết tuần Chủ nhật — số máy tính + câu soạn sẵn cho mọi khách; Premium thêm nhận xét AI.
 //  - PetSettingsScreen: tên, bản, Pi khen và nhắc (số câu / ngày, giờ yên lặng), tổng kết tuần.
 import { useEffect, useRef, useState } from "react";
-import { SubPage, Icon, GRAD_BLUE, Seg } from "../mobile/ui";
+import { SubPage, GRAD_BLUE } from "../mobile/ui";
 
 /** Bản Pi theo hồ sơ: profile.gender "female" → "nu", còn lại "nam" */
 export const petVariant = (profile) => (profile?.gender === "female" ? "nu" : "nam");
@@ -161,15 +161,6 @@ export function PetWeekScreen({ pet, w, onBack, onAI, aiBusy, onPremium }) {
 }
 
 // ============ Cài đặt Pi ============
-// Công tắc nền sáng (Toggle của app là bản nền tối: tắt thì gần như trong suốt trên nền trắng)
-function Toggle({ on, label, testid, onClick }) {
-  return (
-    <button type="button" role="switch" aria-checked={!!on} aria-label={label} data-testid={testid} onClick={onClick}
-      style={{ width: 52, height: 32, borderRadius: 16, border: "none", background: on ? "#00C896" : "#CBD5E1", position: "relative", padding: 0, flexShrink: 0, cursor: "pointer", transition: "background .15s" }}>
-      <span style={{ position: "absolute", top: 3, left: on ? 23 : 3, width: 26, height: 26, borderRadius: 13, background: "#FFFFFF", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }} />
-    </button>
-  );
-}
 function Row({ title, sub, right, last, testid }) {
   return (
     <div data-testid={testid} style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 58, padding: "8px 0", borderBottom: last ? "none" : `1px solid ${LT.line}`, boxSizing: "border-box" }}>
@@ -181,11 +172,9 @@ function Row({ title, sub, right, last, testid }) {
     </div>
   );
 }
-export function PetSettingsScreen({ pet, set, onBack, onChange, onRename }) {
-  const ch = (patch) => onChange?.(patch);
-  const val = (t) => <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 14, fontWeight: 700, color: "#64748B" }}>{t}{Icon.chev(16)}</span>;
+export function PetSettingsScreen({ pet, onBack, onRename }) {
   return (
-    <SubPage title={`Cài đặt ${pet.name}`} onBack={onBack}>
+    <SubPage title={`Đổi tên ${pet.name}`} onBack={onBack}>
       <div data-testid="pet-settings">
         <span style={secT}>Bạn đồng hành</span>
         <div style={{ ...card, padding: "0 14px" }}>
@@ -193,22 +182,7 @@ export function PetSettingsScreen({ pet, set, onBack, onChange, onRename }) {
           <Row title="Bản Pi" sub="Theo giới tính trong hồ sơ của bạn. Đổi giới tính ở Hồ sơ thì Pi đổi theo, đồ đã mua vẫn giữ." right={<span style={{ fontSize: 14, fontWeight: 700, color: "#64748B" }}>{pet.variant === "nu" ? "Pi nữ" : "Pi nam"}</span>} last testid="pet-set-variant" />
         </div>
 
-        <span style={secT}>Pi khen và nhắc</span>
-        <div style={{ ...card, padding: "0 14px" }}>
-          <Row title="Pi khen và nhắc" sub="Câu soạn sẵn theo việc thật: đủ bữa, chuỗi ngày, uống nước…" right={<Toggle on={set.talk} label="Pi khen và nhắc" testid="pet-set-talk" onClick={() => ch({ talk: !set.talk })} />} />
-          <div style={{ padding: "12px 0", display: "flex", flexDirection: "column", gap: 8, borderBottom: `1px solid ${LT.line}` }}>
-            <span style={{ fontSize: 15, fontWeight: 700 }}>Tối đa mỗi ngày</span>
-            <Seg ariaLabel="Số câu mỗi ngày" value={set.perDay} onChange={(v) => ch({ perDay: v })} opts={[{ value: 2, label: "2 câu" }, { value: 3, label: "3 câu" }, { value: 5, label: "5 câu" }]} />
-          </div>
-          <Row title="Giờ yên lặng" sub="Pi không nhắc trong khoảng này" right={val(`${set.quietFrom} – ${set.quietTo}`)} />
-          <Row title="Báo trên điện thoại" sub="Gửi câu nhắc ra màn hình khoá khi chưa mở app" right={<Toggle on={set.push} label="Báo trên điện thoại" testid="pet-set-push" onClick={() => ch({ push: !set.push })} />} last />
-        </div>
-
-        <span style={secT}>Tổng kết tuần</span>
-        <div style={{ ...card, padding: "0 14px" }}>
-          <Row title="Tổng kết Chủ nhật" sub={`Mỗi Chủ nhật lúc ${set.weekAt}${pet.premium ? " · có nhận xét AI" : ""}`} right={<Toggle on={set.week} label="Tổng kết Chủ nhật" testid="pet-set-week" onClick={() => ch({ week: !set.week })} />} last />
-        </div>
-        <span style={{ display: "block", padding: "10px 20px 0 20px", fontSize: 12, color: "#64748B", lineHeight: 1.45 }}>Câu Pi tự khen không tốn lượt AI. Chỉ khi bạn hỏi Pi mới dùng lượt AI của gói.</span>
+        <span style={{ display: "block", padding: "10px 20px 0 20px", fontSize: 12, color: "#64748B", lineHeight: 1.45 }}>Pi tự khen và nhắc theo việc bạn làm trong ngày, không tốn lượt AI. Chỉ khi bạn hỏi Pi mới dùng lượt AI của gói.</span>
         <div style={{ height: 28 }} />
       </div>
     </SubPage>

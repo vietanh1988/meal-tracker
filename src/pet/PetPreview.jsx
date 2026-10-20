@@ -12,6 +12,7 @@ import { PET_CSS, PetAvatar } from "./PetAvatar";
 import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PetMeRow, PIc } from "./PetScreens";
 import { AppIcon } from "../mobile/icons";
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen } from "./PetTalk";
+import { COL_DEFAULT, collectionStatus } from "../lib/petMath";
 import { say as sayLine } from "./lines";
 import { PcPet } from "../pc/PcPet";
 import { linesFrom } from "../hooks/usePet";
@@ -38,10 +39,11 @@ function mockPet() {
     seeds: 1240, xp: 1620, today: 55, tasksLeft: 3, todayLeft: 45,
     level: { n: 4, from: 1350, to: 2100, nextUnlock: 5 },
     owned, equipped,
+    cols: Object.fromEntries(Object.keys(COL_DEFAULT).map((k) => [k, collectionStatus(k, {}, q.get("date") || "2026-10-20")])),
     achievementIds: ["hieu-ung-05", "hieu-ung-06", "hieu-ung-17", "hieu-ung-02", "hieu-ung-04", "doi-dau-11"],
     achievements: [
-      { key: "s7", label: "Chuỗi 7 ngày ghi bữa", item: ITEMS["hieu-ung-05"], done: true },
-      { key: "s30", label: "Chuỗi 30 ngày", item: ITEMS["hieu-ung-06"], cur: 12, max: 30 },
+      { key: "s7", label: "7 ngày liền đã ăn", item: ITEMS["hieu-ung-05"], done: true },
+      { key: "s30", label: "30 ngày liền đã ăn", item: ITEMS["hieu-ung-06"], cur: 12, max: 30 },
       { key: "goal", label: "Đạt cân mục tiêu, giữ 2 tuần", item: ITEMS["doi-dau-11"], cur: 4, max: 9 },
     ],
   };
@@ -50,10 +52,10 @@ const ic = (d) => <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24
 const TASKS = [
   { key: "sang", meal: "sang", label: "Ăn bữa sáng", sub: "Đã ăn · 420 kcal", pts: 10, done: true },
   { key: "trua", meal: "trua", label: "Ăn bữa trưa", sub: "Đã ăn · 610 kcal", pts: 10, done: true },
-  { key: "toi", meal: "toi", label: "Ăn bữa tối", sub: "Chưa ghi", pts: 10, done: false },
+  { key: "toi", meal: "toi", label: "Ăn bữa tối", sub: "Chưa ăn", pts: 10, done: false },
   { key: "photo", label: "Chụp món", sub: "Đã chụp bữa trưa", pts: 5, done: true, color: "#EA580C", icon: PIc.camera(18) },
   { key: "water", label: "Uống đủ nước", sub: "1,6 / 2,1 lít", pts: 15, done: false, color: "#0891B2", icon: ic(<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z" />) },
-  { key: "full", label: "Ghi đủ mọi bữa", sub: "2 / 3 bữa", pts: 20, done: false, color: "#007AFF", icon: PIc.list(18) },
+  { key: "full", label: "Ăn từ 3 bữa trở lên", sub: "2 bữa đã ăn hôm nay", pts: 20, done: false, color: "#007AFF", icon: PIc.list(18) },
   { key: "streak", label: "Chuỗi 5 ngày", sub: "Từ ngày thứ 3 được thêm", pts: 10, done: true, color: "#F97316", icon: PIc.flame(18) },
   { key: "weigh", label: "Cân tuần này", sub: "Đã cân thứ Hai", pts: 20, done: true, color: "#64748B", icon: ic(<><rect x="3" y="4" width="18" height="16" rx="4" /><path d="M8 9a4 4 0 0 1 8 0M12 9l1.5-2" /></>) },
 ];
@@ -139,7 +141,7 @@ const ADMIN = {
   achievement: ["hieu-ung-05", "hieu-ung-06", "hieu-ung-17", "hieu-ung-02", "hieu-ung-04", "doi-dau-11"], hidden: ["hieu-ung-09"],
   sold: { "ao-roi-01": 88, "ao-roi-02": 64, "ao-roi-03": 41, "ao-roi-04": 37, "ao-roi-05": 12, "ao-roi-06": 45, "ao-roi-07": 52, "ao-roi-08": 79, "ao-roi-09": 58, "ao-roi-10": 133, "ao-roi-11": 70, "ao-roi-12": 26, "ao-roi-13": 61, "doi-dau-01": 92, "doi-dau-02": 47, "doi-dau-03": 30, "doi-dau-04": 55 },
   lines: linesFrom(null), off: ["poke_sleep"], sample: { streak: 7, level: 5, water: 2 },
-  points: [["Ghi mỗi bữa", 10], ["Chụp món", 5], ["Uống đủ nước", 15], ["Ghi đủ mọi bữa", 20], ["Chuỗi ngày (từ ngày thứ 3)", 10], ["Cân tuần", 20]],
+  points: [["Ăn mỗi bữa", 10], ["Chụp món", 5], ["Uống đủ nước", 15], ["Ăn từ 3 bữa trở lên", 20], ["Chuỗi ngày (từ ngày thứ 3)", 10], ["Cân tuần", 20]],
   prompt: {
     nam: "Bạn là Pi nam, bạn tập cùng của khách: hăng hái, lém lỉnh, hay rủ rê. Xưng Pi, gọi bạn. Trả lời tối đa 3 câu, dùng số thật trong nhật ký. Không chê, không dọa, không bàn béo gầy. Bệnh / thuốc: khuyên hỏi bác sĩ.",
     nu: "Bạn là Pi nữ, bạn thân của khách: dịu dàng, quan tâm, hay dặn dò. Xưng Pi, gọi bạn. Trả lời tối đa 3 câu, dùng số thật trong nhật ký. Không chê, không dọa, không bàn béo gầy. Bệnh / thuốc: khuyên hỏi bác sĩ.",
@@ -184,7 +186,7 @@ export default function PetPreview() {
   if (S === "entryB") body = <Shell tab="today"><EntryB pet={pet} /></Shell>;
   else if (S === "entryA") body = <Shell dark tab="me"><EntryA pet={pet} /></Shell>;
   else {
-    const scr = S === "shop" || S === "tryon" ? <PetShopScreen pet={pet} preview={S === "tryon" ? (q.get("item") || (V === "nam" ? "doi-dau-04" : "doi-dau-08")) : null} />
+    const scr = S === "shop" || S === "tryon" ? <PetShopScreen pet={pet} initialCol={q.get("col") || "all"} preview={S === "tryon" ? (q.get("item") || (V === "nam" ? "doi-dau-04" : "doi-dau-08")) : null} />
       : S === "closet" ? <PetClosetScreen pet={pet} />
       : <PetHomeScreen pet={pet} tasks={TASKS} onChat={() => {}} />;
     body = <Shell><EntryB pet={pet} />{scr}</Shell>;

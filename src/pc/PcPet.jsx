@@ -10,6 +10,8 @@ import { applyItemRows, linesFrom } from "../hooks/usePet";
 import { Switch } from "./PcFlags";
 import { PetAvatar, ITEMS, catalog } from "../pet/PetAvatar";
 import { EVENTS, VOICE } from "../pet/lines";
+import { COL_DEFAULT, collectionStatus } from "../lib/petMath";
+import { todayVN } from "../lib/dateVN";
 
 const RAR = { common: ["Phổ thông", "gray"], rare: ["Hiếm", "blue"], legendary: ["Huyền thoại", "amber"] };
 const VAR = (it) => (it.variants.length === 2 ? ["Chung", "gray"] : it.variants[0] === "nam" ? ["Nam", "blue"] : ["Nữ", "violet"]);
@@ -18,7 +20,7 @@ const lbl = { fontSize: 12, fontWeight: 800, color: PC.t3 };
 const field = { width: "100%", height: 36, borderRadius: 10, background: "#FFFFFF", border: `1px solid ${PC.field}`, padding: "0 12px", fontSize: 13, fontWeight: 600, fontFamily: "inherit", color: PC.t1, boxSizing: "border-box" };
 
 function Tabs({ value, onChange }) {
-  const T = [["overview", "Tổng quan"], ["items", "Kho đồ"], ["lines", "Câu Pi nói"], ["settings", "Cài đặt"]];
+  const T = [["overview", "Tổng quan"], ["items", "Kho đồ"], ["cols", "Bộ sưu tập"], ["lines", "Câu Pi nói"], ["settings", "Cài đặt"]];
   return (
     <div role="tablist" aria-label="Thú cưng Pi" style={{ display: "flex", gap: 6, padding: 4, borderRadius: 12, background: "#E9EEF7" }}>
       {T.map(([k, l]) => {
@@ -255,8 +257,8 @@ function FormRow({ label, hint, children, last }) {
   );
 }
 const Num = ({ v, unit, w = 110, onChange, testid }) => <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><input data-testid={testid} className="pc-num" inputMode="numeric" value={v} onChange={(e) => onChange?.(e.target.value.replace(/\D/g, ""))} readOnly={!onChange} style={{ ...field, width: w, fontWeight: 800 }} />{unit && <span style={{ fontSize: 12, color: PC.t3, fontWeight: 700 }}>{unit}</span>}</span>;
-const PT_LABEL = [["meal", "Ghi mỗi bữa (≥ 100 kcal)"], ["photo", "Chụp món"], ["water", "Uống đủ nước (≥ 80% mục tiêu)"], ["full_day", "Ghi đủ mọi bữa (≥ 3 bữa)"], ["streak", "Chuỗi ngày (từ ngày thứ 3)"], ["weigh", "Cân tuần"]];
-export const PET_CFG_DEFAULT = { points: { meal: 10, photo: 5, full_day: 20, water: 15, weigh: 20, streak: 10 }, cap: 120, perDay: 3, gapH: 24, quietFrom: "22:30", quietTo: "07:00", ask: true, weekAI: true, off: [], prompt: {} };
+const PT_LABEL = [["meal", "Ăn mỗi bữa (≥ 100 kcal)"], ["photo", "Chụp món"], ["water", "Uống đủ nước (≥ 80% mục tiêu)"], ["full_day", "Ăn từ 3 bữa trở lên"], ["streak", "Chuỗi ngày (từ ngày thứ 3)"], ["weigh", "Cân tuần"]];
+export const PET_CFG_DEFAULT = { points: { meal: 10, photo: 5, full_day: 20, water: 15, weigh: 20, streak: 10 }, cap: 120, talk: true, perDay: 3, gapH: 24, quietFrom: "22:30", quietTo: "07:00", ask: true, week: true, weekAI: true, off: [], prompt: {} };
 function Settings({ d, onSaveCfg }) {
   const [c, setC] = useState(() => ({ ...PET_CFG_DEFAULT, ...(d.cfg || {}), points: { ...PET_CFG_DEFAULT.points, ...(d.cfg?.points || {}) }, prompt: { nam: d.prompt?.nam || "", nu: d.prompt?.nu || "", ...(d.cfg?.prompt || {}) } }));
   const [busy, setBusy] = useState(false);
@@ -277,8 +279,9 @@ function Settings({ d, onSaveCfg }) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <Card>
-          <CardHead title="Pi khen và nhắc" sub="Câu soạn sẵn · 0 đồng AI" />
-          <FormRow label="Mặc định mỗi ngày" hint="Khách tự chọn 2 / 3 / 5 câu"><Num v={c.perDay} unit="câu" onChange={(v) => setC({ ...c, perDay: Number(v) || 0 })} /></FormRow>
+          <CardHead title="Pi khen và nhắc" sub="Câu soạn sẵn · 0 đồng AI · áp cho mọi khách (khách không tự chỉnh)" />
+          <FormRow label="Bật Pi khen và nhắc"><Switch on={c.talk !== false} label="Bật Pi khen và nhắc" onClick={() => setC({ ...c, talk: c.talk === false })} /></FormRow>
+          <FormRow label="Tối đa mỗi ngày"><Num v={c.perDay} unit="câu" onChange={(v) => setC({ ...c, perDay: Number(v) || 0 })} /></FormRow>
           <FormRow label="Một việc không nói lại trong"><Num v={c.gapH} unit="giờ" onChange={(v) => setC({ ...c, gapH: Number(v) || 0 })} /></FormRow>
           <FormRow label="Giờ yên lặng mặc định" last><span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}><input className="pc-num" value={c.quietFrom} onChange={(e) => setC({ ...c, quietFrom: e.target.value })} style={{ ...field, width: 90, fontWeight: 800 }} /><span style={{ color: PC.t3 }}>–</span><input className="pc-num" value={c.quietTo} onChange={(e) => setC({ ...c, quietTo: e.target.value })} style={{ ...field, width: 90, fontWeight: 800 }} /></span></FormRow>
         </Card>
@@ -295,11 +298,74 @@ function Settings({ d, onSaveCfg }) {
         </Card>
         <Card>
           <CardHead title="Tổng kết tuần" sub="Hiện trong app ngày Chủ nhật" />
+          <FormRow label="Hiện tổng kết tuần"><Switch on={c.week !== false} label="Hiện tổng kết tuần" onClick={() => setC({ ...c, week: c.week === false })} /></FormRow>
           <FormRow label="Nhận xét AI cho Premium" hint="Tính vào chi phí AI · không trừ lượt khách" last><Switch on={c.weekAI} label="Nhận xét AI cho Premium" onClick={() => setC({ ...c, weekAI: !c.weekAI })} /></FormRow>
         </Card>
       </div>
     </div>
     <span style={{ display: "flex", justifyContent: "flex-end" }}><Btn kind="blue" testid="pc-pet-cfg-save" disabled={busy || !onSaveCfg} onClick={save}>{busy ? "Đang lưu…" : "Lưu cài đặt"}</Btn></span>
+    </div>
+  );
+}
+
+// ============ Bộ sưu tập theo dịp (20/10, chủ dự án: chưa tới dịp thì khoá) ============
+// Lưu pet_config.collections; app (collectionStatus) và máy chủ (pet_col_open trong pet_buy) cùng đọc. Đồ đã mua vẫn mặc quanh năm.
+const COL_NAME = { noel: "Noel", tet: "Tết", "co-trang": "Cổ trang" };
+const MODES = [["season", "Theo dịp"], ["open", "Luôn mở"], ["closed", "Đóng"]];
+const toDM = (md) => (md ? `${md.slice(3, 5)}/${md.slice(0, 2)}` : "");
+const toMD = (dm) => { const m = String(dm).match(/^(\d{1,2})\/(\d{1,2})$/); return m ? `${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : null; };
+function Cols({ d, onSaveCfg }) {
+  const [c, setC] = useState(() => Object.fromEntries(Object.keys(COL_DEFAULT).map((k) => [k, { ...COL_DEFAULT[k], ...((d.cfg?.collections || {})[k] || {}) }])));
+  const [dm, setDm] = useState(() => ({ from: toDM(c.noel.from), to: toDM(c.noel.to) }));
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  const set = (k, patch) => setC((x) => ({ ...x, [k]: { ...x[k], ...patch } }));
+  const today = todayVN();
+  const save = async () => {
+    const from = toMD(dm.from), to = toMD(dm.to);
+    if (c.noel.mode === "season" && (!from || !to)) { setErr("Ngày Noel ghi dạng ngày/tháng, ví dụ 1/12"); return; }
+    setErr(null); setBusy(true);
+    await onSaveCfg?.({ ...PET_CFG_DEFAULT, ...(d.cfg || {}), collections: { ...c, noel: { ...c.noel, ...(from && to ? { from, to } : {}) } } });
+    setBusy(false);
+  };
+  const count = (k) => catalog.items.filter((it) => it.collection === k).length;
+  return (
+    <div data-testid="pc-pet-cols" style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 860 }}>
+      {Object.keys(COL_DEFAULT).map((k) => {
+        const preview = collectionStatus(k, { collections: { [k]: k === "noel" ? { ...c.noel, from: toMD(dm.from) || c.noel.from, to: toMD(dm.to) || c.noel.to } : c[k] } }, today);
+        return (
+          <Card key={k}>
+            <CardHead title={`Bộ ${COL_NAME[k]}`} sub={`${count(k)} món · hôm nay: ${preview.open ? "đang mở bán" : "đang khoá"}${preview.label ? ` · ${preview.label.toLowerCase()}` : ""}`} right={<Pill tone={preview.open ? "green" : "gray"}>{preview.open ? "Đang bán" : "Đang khoá"}</Pill>} />
+            <FormRow label="Mở bán" hint="Đóng / ngoài dịp: khách vẫn xem, mặc thử; chưa mua được" last={c[k].mode !== "season" || k === "co-trang"}>
+              <span role="radiogroup" aria-label={`Mở bán bộ ${COL_NAME[k]}`} style={{ display: "inline-flex", gap: 4, padding: 3, borderRadius: 10, background: "#E9EEF7" }}>
+                {MODES.filter(([m]) => k !== "co-trang" || m !== "season").map(([m, l]) => {
+                  const on = c[k].mode === m;
+                  return <button key={m} role="radio" aria-checked={on} data-testid={`pc-pet-col-${k}-${m}`} onClick={() => set(k, { mode: m })} className="pc-btn" style={{ height: 30, padding: "0 14px", borderRadius: 8, border: "none", background: on ? "#FFFFFF" : "transparent", color: on ? PC.t1 : PC.t3, fontSize: 13, fontWeight: on ? 900 : 700, fontFamily: "inherit", cursor: "pointer", boxShadow: on ? "0 1px 2px rgba(15,23,42,0.08)" : "none" }}>{l}</button>;
+                })}
+              </span>
+            </FormRow>
+            {k === "noel" && c.noel.mode === "season" && (
+              <FormRow label="Thời gian bán" hint="Mỗi năm · qua năm mới được (VD 1/12 → 6/1)" last>
+                <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                  <input data-testid="pc-pet-noel-from" className="pc-num" value={dm.from} onChange={(e) => setDm({ ...dm, from: e.target.value })} placeholder="1/12" style={{ ...field, width: 90, fontWeight: 800 }} />
+                  <span style={{ color: PC.t3 }}>–</span>
+                  <input data-testid="pc-pet-noel-to" className="pc-num" value={dm.to} onChange={(e) => setDm({ ...dm, to: e.target.value })} placeholder="6/1" style={{ ...field, width: 90, fontWeight: 800 }} />
+                </span>
+              </FormRow>
+            )}
+            {k === "tet" && c.tet.mode === "season" && (
+              <FormRow label="Thời gian bán" hint="Tính theo mùng 1 Tết âm lịch từng năm" last>
+                <span style={{ display: "inline-flex", gap: 8, alignItems: "center", fontSize: 13, fontWeight: 700, color: PC.t2 }}>
+                  Từ <Num v={c.tet.before} w={64} onChange={(v) => set("tet", { before: Number(v) || 0 })} testid="pc-pet-tet-before" /> ngày trước đến <Num v={c.tet.after} w={64} onChange={(v) => set("tet", { after: Number(v) || 0 })} testid="pc-pet-tet-after" /> ngày sau mùng 1
+                </span>
+              </FormRow>
+            )}
+          </Card>
+        );
+      })}
+      <span style={{ fontSize: 12, color: PC.t3, lineHeight: 1.5 }}>Phòng của Pi đổi theo dịp riêng (Noel 15–31/12, Tết 10 ngày trước – 7 ngày sau mùng 1), không phụ thuộc lịch bán. Ẩn / hiện từng món ở tab Kho đồ.</span>
+      {err && <span role="alert" style={{ fontSize: 13, fontWeight: 700, color: "#DC2626" }}>{err}</span>}
+      <span style={{ display: "flex", justifyContent: "flex-end" }}><Btn kind="blue" testid="pc-pet-cols-save" disabled={busy || !onSaveCfg} onClick={save}>{busy ? "Đang lưu…" : "Lưu lịch bán"}</Btn></span>
     </div>
   );
 }
@@ -312,6 +378,7 @@ export function PcPet({ top, tab = "overview", data, sel, varFilter, onSaveItem,
       <div style={{ padding: 24 }}>
         {t === "overview" && <Overview d={data} />}
         {t === "items" && <Items d={data} sel={sel} varFilter={varFilter} onSave={onSaveItem} />}
+        {t === "cols" && <Cols d={data} onSaveCfg={onSaveCfg} />}
         {t === "lines" && <Lines d={data} sel={sel && EVENTS.some((e) => e.key === sel) ? sel : undefined} onSaveLines={onSaveLines} onToggle={onToggleLine} />}
         {t === "settings" && <Settings d={data} onSaveCfg={onSaveCfg} />}
       </div>

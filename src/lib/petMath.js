@@ -95,3 +95,38 @@ export function seasonOf(dateStr) {
   for (const t of TET_DAYS) { const k = d - dayNum(t); if (k >= -10 && k <= 7) return "tet"; }
   return null;
 }
+
+// ---- Bộ sưu tập theo dịp (20/10, chủ dự án: chưa đến dịp thì khoá) ----
+// Quản trị › Thú cưng Pi › Bộ sưu tập lưu ở pet_config.collections; hàm SQL public.pet_col_open dùng cùng luật (mua trên máy chủ).
+// mode: "season" (mở theo dịp) | "open" (luôn mở) | "closed" (đóng). Noel: from / to dạng "MM-DD" (qua năm được, VD 12-01 → 01-06).
+// Tết: before / after = số ngày trước / sau mùng 1 Tết (TET_DAYS).
+export const COL_DEFAULT = {
+  noel: { mode: "season", from: "12-01", to: "01-06" },
+  tet: { mode: "season", before: 21, after: 15 },
+  "co-trang": { mode: "open" },
+};
+const fmtDM = (s) => `${+s.slice(8, 10)}/${+s.slice(5, 7)}`;
+const shift = (s, n) => new Date((dayNum(s) + n) * 86400000).toISOString().slice(0, 10);
+/** → { open, label } — label: "Mở bán 1/12 – 6/1" (đang mở: "Bán tới 6/1") để hiện trên Cửa hàng */
+export function collectionStatus(col, cfg = {}, dateStr) {
+  const c = { ...(COL_DEFAULT[col] || { mode: "open" }), ...((cfg.collections || {})[col] || {}) };
+  if (c.mode === "open") return { open: true, label: "" };
+  if (c.mode === "closed") return { open: false, label: "Tạm đóng" };
+  if (!dateStr) return { open: false, label: "" };
+  if (col === "tet") {
+    const d = dayNum(dateStr);
+    const before = Number(c.before ?? 21), after = Number(c.after ?? 15);
+    for (const t of TET_DAYS) {
+      const k = d - dayNum(t);
+      if (k >= -before && k <= after) return { open: true, label: `Bán tới ${fmtDM(shift(t, after))}` };
+      if (k < -before) return { open: false, label: `Mở bán ${fmtDM(shift(t, -before))} – ${fmtDM(shift(t, after))}` };
+    }
+    return { open: false, label: "Chưa có lịch" };
+  }
+  const md = dateStr.slice(5, 10), from = c.from || "12-01", to = c.to || "12-31";
+  const open = from <= to ? md >= from && md <= to : md >= from || md <= to;
+
+  const dm = (m) => `${+m.slice(3, 5)}/${+m.slice(0, 2)}`;
+  if (open) return { open: true, label: `Bán tới ${dm(to)}` };
+  return { open: false, label: `Mở bán ${dm(from)} – ${dm(to)}` };
+}

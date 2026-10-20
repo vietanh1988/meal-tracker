@@ -98,10 +98,20 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
           <span style={{ position: "absolute", left: 14, right: 14, top: 14, display: "flex", justifyContent: "center" }}>
             <span style={{ maxWidth: 280, background: "#FFFFFF", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center" }}>{moodText(pet)}</span>
           </span>
-          {/* 20/10: nút Hỏi Pi (chat AI giọng Pi) + Cài đặt Pi (tên, bản, Pi nói chuyện, tổng kết tuần) */}
-          {onChat && <button data-testid="pet-open-chat" onClick={onChat} className="tap" style={{ position: "absolute", left: 12, bottom: 12, height: 40, padding: "0 14px 0 10px", borderRadius: 20, border: "none", background: "rgba(255,255,255,0.92)", color: "#0062F0", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, fontFamily: "inherit", boxShadow: "0 4px 10px rgba(30,64,175,0.12)" }}>{PIc.chat(18)}Hỏi Pi</button>}
-          <button data-testid="pet-open-settings" onClick={onSettings} aria-label="Cài đặt Pi" className="tap" style={{ position: "absolute", right: 12, bottom: 12, width: 40, height: 40, borderRadius: 20, border: "none", background: "rgba(255,255,255,0.92)", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(30,64,175,0.12)" }}>{PIc.gear(18)}</button>
+          {/* 20/10 (chủ dự án): bỏ cài đặt của khách (admin quyết ở Quản trị) → chỉ còn nút đổi tên Pi */}
+          <button data-testid="pet-open-settings" onClick={onSettings} aria-label={`Đổi tên ${pet.name}`} className="tap" style={{ position: "absolute", right: 12, bottom: 12, width: 40, height: 40, borderRadius: 20, border: "none", background: "rgba(255,255,255,0.92)", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(30,64,175,0.12)" }}>{PIc.edit(18)}</button>
         </Stage>
+      </div>
+
+      {/* 20/10 (chủ dự án): Cửa hàng · Tủ đồ · Hỏi Pi đưa lên ngay dưới phòng của Pi */}
+      <div data-testid="pet-actions" style={{ display: "grid", gridTemplateColumns: `repeat(${onChat ? 3 : 2}, minmax(0, 1fr))`, gap: 8, margin: "10px 12px 0 12px" }}>
+        {[["pet-open-shop", "Cửa hàng", pet.shopLine || "Đồ mới theo cấp", "#EA580C", PIc.shop(22), onShop], ["pet-open-closet", "Tủ đồ", `${pet.owned.length} món của bạn`, "#0891B2", PIc.closet(22), onCloset], ...(onChat ? [["pet-open-chat", "Hỏi Pi", "Chat với Pi", "#007AFF", PIc.chat(22), onChat]] : [])].map(([id, t, sub, c, ic, fn]) => (
+          <button key={id} data-testid={id} onClick={fn} className="tap" style={{ ...ltCard, borderRadius: 18, padding: "12px 6px 10px 6px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, border: "none", fontFamily: "inherit", color: "#0F172A", minWidth: 0 }}>
+            <AppIcon color={c} size={42}>{ic}</AppIcon>
+            <span style={{ fontSize: 14, fontWeight: 900, lineHeight: 1.2 }}>{t}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", lineHeight: 1.25, textAlign: "center", maxWidth: "100%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sub}</span>
+          </button>
+        ))}
       </div>
 
       {/* Chủ nhật: tổng kết tuần (mọi khách; Premium có thêm nhận xét AI) */}
@@ -151,15 +161,6 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
       </div>
       <span style={{ display: "block", padding: "8px 20px 0 20px", fontSize: 12, color: "#64748B", lineHeight: 1.45 }}>Việc xong trong ngày là được cộng Hạt ngay. Ghi bù ngày cũ vẫn lưu nhật ký nhưng không ra Hạt.</span>
 
-      {/* Cửa hàng / Tủ đồ */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "16px 12px 0 12px" }}>
-        {[["pet-open-shop", "Cửa hàng", pet.shopLine || "Đồ mới theo cấp", "#EA580C", PIc.shop(24), onShop], ["pet-open-closet", "Tủ đồ", `${pet.owned.length} món của bạn`, "#0891B2", PIc.closet(24), onCloset]].map(([id, t, s, c, ic, fn]) => (
-          <button key={id} data-testid={id} onClick={fn} className="tap" style={{ ...ltCard, padding: 14, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
-            <AppIcon color={c} size={44}>{ic}</AppIcon>
-            <span style={{ display: "flex", flexDirection: "column" }}><span style={{ fontSize: 16, fontWeight: 900 }}>{t}</span><span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{s}</span></span>
-          </button>
-        ))}
-      </div>
 
       {/* Đồ thành tích */}
       <div style={sec}><span style={secT}>Đồ thành tích</span><span style={{ fontSize: 12, fontWeight: 700, color: "#64748B" }}>Không bán · ai cũng nhận được</span></div>
@@ -187,15 +188,16 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
 // ============ Ô món (cửa hàng / tủ đồ) ============
 function ItemCard({ it, state, onClick, equipped }) {
   const r = RARITY[it.rarity];
-  const locked = state.kind === "level" || state.kind === "premium";
+  const locked = state.kind === "level" || state.kind === "premium" || state.kind === "season";
   return (
     <button data-testid={`pet-item-${it.id}`} onClick={onClick} className="tap" style={{ position: "relative", ...ltCard, borderRadius: 18, padding: "10px 8px 10px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, border: equipped ? "2px solid #007AFF" : "2px solid transparent", fontFamily: "inherit", color: "#0F172A", minWidth: 0, boxSizing: "border-box" }}>
       <span style={{ alignSelf: "flex-start", fontSize: 10, fontWeight: 800, color: r.color, background: r.bg, padding: "2px 7px", borderRadius: 6 }}>{r.label}</span>
-      <span style={{ width: "100%", height: 70, display: "flex", alignItems: "center", justifyContent: "center", filter: state.kind === "level" ? "grayscale(1)" : "none", opacity: state.kind === "level" ? 0.45 : 1 }}><ItemImg item={it} size={66} /></span>
+      <span style={{ width: "100%", height: 70, display: "flex", alignItems: "center", justifyContent: "center", filter: state.kind === "level" || state.kind === "season" ? "grayscale(1)" : "none", opacity: state.kind === "level" || state.kind === "season" ? 0.45 : 1 }}><ItemImg item={it} size={66} /></span>
       <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.25, textAlign: "center", minHeight: 30, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{it.name}</span>
       {state.kind === "owned" && <span style={{ fontSize: 12, fontWeight: 800, color: equipped ? "#007AFF" : "#047857", display: "inline-flex", alignItems: "center", gap: 4 }}>{Icon.check(13, 3)}{equipped ? "Đang mặc" : "Đã có"}</span>}
       {state.kind === "buy" && <span style={{ fontSize: 13, fontWeight: 900, color: "#065F46", display: "inline-flex", alignItems: "center", gap: 4 }}><Seed size={14} />{fmt(it.price)}</span>}
       {state.kind === "level" && <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B", display: "inline-flex", alignItems: "center", gap: 4 }}>{PIc.lock(13)}Mở ở cấp {it.level}</span>}
+      {state.kind === "season" && <span style={{ fontSize: 11, fontWeight: 800, color: "#64748B", display: "inline-flex", alignItems: "center", gap: 4, textAlign: "center", lineHeight: 1.25 }}>{PIc.lock(12)}{(state.label || "Chưa mở bán").replace("Mở bán ", "Mở ")}</span>}
       {state.kind === "premium" && <span style={{ fontSize: 12, fontWeight: 800, color: "#DB2777", display: "inline-flex", alignItems: "center", gap: 4 }}>{PIc.crown(13)}Premium</span>}
       {locked && <span aria-hidden="true" style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: 11, background: state.kind === "premium" ? "#FCE7F3" : "#F1F5F9", color: state.kind === "premium" ? "#DB2777" : "#64748B", display: "flex", alignItems: "center", justifyContent: "center" }}>{PIc.lock(12)}</span>}
     </button>
@@ -203,6 +205,8 @@ function ItemCard({ it, state, onClick, equipped }) {
 }
 export function itemState(it, pet) {
   if (pet.owned.includes(it.id)) return { kind: "owned" };
+  const cs = it.collection && pet.cols?.[it.collection]; // 20/10: bộ theo dịp chưa tới ngày → khoá (đồ đã mua vẫn mặc quanh năm)
+  if (cs && !cs.open) return { kind: "season", label: cs.label };
   if (it.level > pet.level.n) return { kind: "level" };
   if (it.rarity !== "common" && !pet.premium) return { kind: "premium" };
   return { kind: "buy" };
@@ -224,12 +228,12 @@ function Chips({ value, onChange, counts }) {
   );
 }
 // bộ sưu tập: 1 thanh chia đều kiểu iOS (nền nhạt, mục đang chọn là ô trắng nổi chữ xanh)
-function ColTabs({ value, onChange, tabs }) {
+function ColTabs({ value, onChange, tabs, locked = {} }) {
   return (
     <div role="tablist" aria-label="Bộ sưu tập" style={{ margin: "12px 12px 0 12px", display: "flex", padding: 3, gap: 2, borderRadius: 14, background: "rgba(15,23,42,0.06)" }}>
       {tabs.map(([k, l]) => {
         const on = value === k;
-        return <button key={k} type="button" role="tab" aria-selected={on} data-testid={`pet-col-${k}`} onClick={() => onChange(k)} style={{ flex: 1, minWidth: 0, height: 34, padding: "0 4px", borderRadius: 11, border: "none", background: on ? "#FFFFFF" : "transparent", color: on ? "#0062F0" : "#475569", fontSize: 13, fontWeight: on ? 900 : 700, fontFamily: "inherit", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: on ? "0 2px 6px rgba(15,23,42,0.12)" : "none", transition: "background .15s, color .15s" }}>{l}</button>;
+        return <button key={k} type="button" role="tab" aria-selected={on} data-testid={`pet-col-${k}`} onClick={() => onChange(k)} style={{ flex: 1, minWidth: 0, height: 34, padding: "0 4px", borderRadius: 11, border: "none", background: on ? "#FFFFFF" : "transparent", color: on ? "#0062F0" : "#475569", fontSize: 13, fontWeight: on ? 900 : 700, fontFamily: "inherit", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", boxShadow: on ? "0 2px 6px rgba(15,23,42,0.12)" : "none", transition: "background .15s, color .15s", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 3 }}>{locked[k] && <span aria-label="chưa mở bán" style={{ display: "inline-flex", opacity: 0.7 }}>{PIc.lock(11)}</span>}{l}</button>;
       })}
     </div>
   );
@@ -246,10 +250,10 @@ export function slotFor(it, equipped = {}) {
 // 20/10: gọi tay theo Pi (Pi nhìn ra) — ô cam_tay nằm phía phải màn hình = tay TRÁI của Pi
 const SLOT_NAME = { ...catalog.slots, cam_tay: "Tay trái", cam_tay_trai: "Tay phải" };
 
-export function PetShopScreen({ pet, onBack, initialSlot = "all", preview, onBuy, onEquip, onPremium }) {
+export function PetShopScreen({ pet, onBack, initialSlot = "all", initialCol = "all", preview, onBuy, onEquip, onPremium }) {
   const [slot, setSlot] = useState(initialSlot);
   const [pv, setPv] = useState(preview || null);
-  const [col, setCol] = useState("all"); // bộ sưu tập (Noel / Tết / Cổ trang) — mỗi bộ 1 mục riêng
+  const [col, setCol] = useState(initialCol); // bộ sưu tập (Noel / Tết / Cổ trang) — mỗi bộ 1 mục riêng
   const all = catalog.items.filter((it) => it.variants.includes(pet.variant) && !it.hidden && !it.achievement && !pet.achievementIds.includes(it.id));
   const cols = [...new Map(all.filter((it) => it.collection).map((it) => [it.collection, it.collection_name])).entries()];
   const list = all.filter((it) => col === "all" || (col === "thuong" ? !it.collection : it.collection === col));
@@ -264,7 +268,13 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", preview, onBuy
             <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#831843", lineHeight: 1.4 }}>Đồ Hiếm và Huyền thoại dành cho Premium. Hạt bạn kiếm vẫn như nhau.</span>
           </div>
         )}
-        {cols.length > 0 && <ColTabs value={col} onChange={(k) => { setCol(k); setSlot("all"); }} tabs={[["all", "Tất cả"], ["thuong", "Thường"], ...cols]} />}
+        {cols.length > 0 && <ColTabs value={col} onChange={(k) => { setCol(k); setSlot("all"); }} tabs={[["all", "Tất cả"], ["thuong", "Thường"], ...cols]} locked={Object.fromEntries(cols.map(([k]) => [k, pet.cols?.[k] && !pet.cols[k].open]))} />}
+        {pet.cols?.[col] && (
+          <div data-testid="pet-col-note" style={{ margin: "10px 12px 0 12px", borderRadius: 14, padding: "10px 12px", background: pet.cols[col].open ? "#ECFDF5" : "#F1F5F9", display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ color: pet.cols[col].open ? "#047857" : "#64748B", display: "flex" }}>{pet.cols[col].open ? PIc.shop(18) : PIc.lock(18)}</span>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: pet.cols[col].open ? "#065F46" : "#334155", lineHeight: 1.4 }}>{pet.cols[col].open ? (pet.cols[col].label ? `Đang mở bán · ${pet.cols[col].label.toLowerCase()}` : "Đang mở bán") : `${pet.cols[col].label || "Chưa mở bán"}. Xem và mặc thử được, tới dịp mới mua được. Đồ đã mua mặc được quanh năm.`}</span>
+          </div>
+        )}
         <Chips value={slot} onChange={setSlot} counts={counts} />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, padding: "8px 12px 0 12px" }}>
           {shown.map((it) => <ItemCard key={it.id} it={it} state={itemState(it, pet)} equipped={Object.values(pet.equipped).includes(it.id)} onClick={() => setPv(it.id)} />)}
@@ -315,6 +325,8 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
         {err && <span data-testid="pet-tryon-error" role="alert" style={{ display: "block", marginTop: 10, fontSize: 13, fontWeight: 700, color: "#DC2626" }}>{err}</span>}
         {st.kind === "owned" ? (
           <button data-testid="pet-wear" onClick={wearNow} style={{ ...big, background: GRAD_BLUE }}>{phase === "bought" ? "Mua xong! Mặc luôn" : Object.values(pet.equipped).includes(it.id) ? "Đang mặc" : "Mặc món này"}</button>
+        ) : st.kind === "season" ? (
+          <button data-testid="pet-buy" disabled style={{ ...big, background: "#CBD5E1", color: "#334155" }}>{PIc.lock(18)}{st.label || "Chưa mở bán"}</button>
         ) : st.kind === "premium" ? (
           <button data-testid="pet-premium" onClick={onPremium} style={{ ...big, background: "linear-gradient(135deg,#EC4899,#DB2777)" }}>{PIc.crown(18)}Dùng Premium để mua</button>
         ) : (

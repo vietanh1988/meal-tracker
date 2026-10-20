@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { levelOf, moodOf, eventsFor, pickEvent, weekStart, itemStatus, seasonOf } from "../src/lib/petMath.js";
+import { levelOf, moodOf, eventsFor, pickEvent, weekStart, itemStatus, seasonOf, collectionStatus } from "../src/lib/petMath.js";
 
 test("cấp theo kinh nghiệm (300, +150 mỗi cấp, sau cấp 10 +1.500)", () => {
   assert.deepEqual(levelOf(0), { n: 1, from: 0, to: 300 });
@@ -59,4 +59,18 @@ test("phòng theo dịp: Noel 15–31/12, Tết −10…+7 ngày quanh mùng 1",
   assert.equal(seasonOf("2027-02-14"), null);
   assert.equal(seasonOf("2028-01-16"), "tet");
   assert.equal(seasonOf("2026-10-20"), null);
+});
+
+test("bộ sưu tập theo dịp: Noel 1/12–6/1, Tết −21…+15 ngày, Cổ trang luôn mở, admin đổi được", () => {
+  assert.deepEqual(collectionStatus("noel", {}, "2026-10-20"), { open: false, label: "Mở bán 1/12 – 6/1" });
+  assert.equal(collectionStatus("noel", {}, "2026-12-01").open, true);
+  assert.equal(collectionStatus("noel", {}, "2027-01-06").open, true);
+  assert.equal(collectionStatus("noel", {}, "2027-01-07").open, false);
+  assert.deepEqual(collectionStatus("tet", {}, "2026-10-20"), { open: false, label: "Mở bán 16/1 – 21/2" });
+  assert.equal(collectionStatus("tet", {}, "2027-01-16").open, true);
+  assert.equal(collectionStatus("tet", {}, "2027-02-22").open, false);
+  assert.equal(collectionStatus("co-trang", {}, "2026-10-20").open, true);
+  assert.equal(collectionStatus("noel", { collections: { noel: { mode: "open" } } }, "2026-10-20").open, true);
+  assert.equal(collectionStatus("co-trang", { collections: { "co-trang": { mode: "closed" } } }, "2026-10-20").open, false);
+  assert.equal(collectionStatus("noel", { collections: { noel: { from: "10-15" } } }, "2026-10-20").open, true);
 });
