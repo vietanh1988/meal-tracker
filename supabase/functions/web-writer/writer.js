@@ -387,6 +387,33 @@ async function backlinks(admin, cfg, post, uid) {
   return out;
 }
 
+// Đăng các bài nháp AI đã viết (máy chủ gọi bằng mã bí mật lịch chạy, khi chủ dự án không ngồi máy): làm đúng như nút Đăng
+// ở màn AI viết bài = kiểm đủ điều kiện, chuyển đã đăng + lưu lịch sử, báo IndexNow, gắn link từ bài cũ sang. Mỗi lần tối đa max bài (cũ trước).
+async function publishDrafts(admin, cfg, { since, max = 3 } = {}) {
+  const { data: jobs } = await admin.from("web_ai_jobs").select("id,post_id,state,created_by,finished_at").eq("status", "done").gte("created_at", since).order("finished_at", { ascending: true }).limit(100);
+  const out = [];
+  for (const j of jobs || []) {
+    if (out.filter((x) => x.ok).length >= max) break;
+    if (!j.post_id) continue;
+    const { data: p } = await admin.from("web_posts").select("*").eq("id", j.post_id).maybeSingle();
+    if (!p || p.status !== "draft") continue;
+    const terms = ((await admin.from("web_post_terms").select("term_id").eq("post_id", p.id)).data || []).map((t) => t.term_id);
+    const ready = postReady({ ...p, terms });
+    if (!ready.ok) { out.push({ slug: p.slug, ok: false, miss: ready.miss }); continue; }
+    const now = new Date().toISOString();
+    const { error } = await admin.from("web_posts").update({ status: "published", published_at: now, updated_at: now, updated_by: j.created_by }).eq("id", p.id).eq("status", "draft");
+    if (error) throw new Error("Đăng bài: " + error.message);
+    const row = { ...p, status: "published", published_at: now, updated_at: now, terms };
+    await admin.from("web_revisions").insert({ post_id: p.id, snapshot: row, reason: "publish", created_by: j.created_by }).then(() => {}, () => {});
+    await pingIndexNow(admin, `/${p.slug}`);
+    let back = [];
+    if (cfg.backlinks) { try { back = await backlinks(admin, cfg, row, j.created_by); } catch (_e) { /* link ngược lỗi không chặn đăng */ } }
+    await admin.from("web_ai_jobs").update({ state: { ...(j.state || {}), published: { status: "published", at: now, note: "" }, backlinks: back } }).eq("id", j.id);
+    out.push({ slug: p.slug, ok: true, back: back.length });
+  }
+  return out;
+}
+
 // Trần tiền mỗi ngày (giờ VN): đã tốn hôm nay ≥ trần thì không chạy bước mới
 async function spentToday(admin) {
   const vn = new Date(Date.now() + 7 * 3600e3); const start = new Date(Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - 7 * 3600e3).toISOString();
@@ -436,6 +463,12 @@ async function handle(req) {
       const { data: ok } = await admin.rpc("web_writer_cron_ok", { p: String(body.secret || "") });
       if (!ok) return json(req, { error: "Unauthorized" }, 403);
       return json(req, await tick());
+    }
+    if (body.action === "publish_drafts") {
+      const { data: ok } = await admin.rpc("web_writer_cron_ok", { p: String(body.secret || "") });
+      if (!ok) return json(req, { error: "Unauthorized" }, 403);
+      const since = String(body.since || ""); if (!/^\d{4}-\d{2}-\d{2}/.test(since)) return json(req, { error: "Thiếu since." }, 400);
+      return json(req, { ok: true, done: await publishDrafts(admin, await config(admin), { since, max: Math.min(5, Number(body.max) || 3) }) });
     }
     const user = await adminUser(req, admin);
     if (!user) return json(req, { error: "Chỉ quản trị viên." }, 403);

@@ -326,3 +326,26 @@ test("bài nhập sẵn vào thẳng bước soát: máy lập bảng calo + đ�
   assert.ok(j.state.review.issues.some((x) => /thieu-link/.test(x)));
   assert.equal(j.state.linkStats.home, 1); assert.equal(j.state.linkStats.cat, 1);
 });
+
+test("publish_drafts: mã bí mật sai → 403; đúng → bài nháp AI đủ điều kiện được đăng + lưu lịch sử + ghi vào việc", async () => {
+  const { w, tables } = setup();
+  for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  const j = tables.web_ai_jobs[0];
+  assert.equal(j.status, "done");
+  assert.equal((await w.handle(req({ action: "publish_drafts", secret: "sai", since: "2000-01-01" }))).status, 403);
+  assert.equal((await w.handle(req({ action: "publish_drafts", secret: "s3cret" }))).status, 400);
+  const post = tables.web_posts.find((p) => p.id === j.post_id);
+  if (!post.cover_url) post.cover_url = "https://x/a.jpg";
+  for (const b of post.blocks) if (b.type === "img" && !b.url) b.url = "https://x/b.jpg";
+  const before = (tables.web_revisions || []).length;
+  const d = await (await w.handle(req({ action: "publish_drafts", secret: "s3cret", since: "2000-01-01" }))).json();
+  const ok = d.done.filter((x) => x.ok);
+  if (ok.length) {
+    assert.equal(post.status, "published");
+    assert.ok(post.published_at);
+    assert.equal(tables.web_revisions.length, before + 1);
+    assert.equal(j.state.published.status, "published");
+  } else assert.ok(d.done[0].miss.length, JSON.stringify(d)); // bài mẫu thiếu thẻ thì phải nói thiếu gì, không đăng
+  const d2 = await (await w.handle(req({ action: "publish_drafts", secret: "s3cret", since: "2000-01-01" }))).json();
+  assert.equal(d2.done.filter((x) => x.ok).length, 0); // chạy lại không đăng lại
+});
