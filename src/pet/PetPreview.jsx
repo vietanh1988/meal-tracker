@@ -165,15 +165,15 @@ export default function PetPreview() {
   const pet = mockPet();
   let body;
   if (S === "grid") { // soát ghép: mọi món của 1 bộ sưu tập trên từng bản
-    const col = q.get("col");
-    const list = Object.values(ITEMS).filter((it) => (col ? it.collection === col : true));
+    const col = q.get("col"), slot = q.get("slot");
+    const list = Object.values(ITEMS).filter((it) => (col ? it.collection === col : true) && (slot ? slot.split(",").includes(it.slot) : true));
     return (
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: 6, background: "#EEF3FB", fontFamily: "sans-serif" }}>
         <style>{PET_CSS}</style>
         {list.flatMap((it) => it.variants.map((v) => (
           <div key={it.id + v} style={{ width: 150, display: "flex", flexDirection: "column", alignItems: "center", background: "#FFFFFF", borderRadius: 10, padding: 4 }}>
             <PetAvatar variant={v} size={200} still equipped={{ [it.slot]: it.id }} />
-            <span style={{ fontSize: 10, fontWeight: 700 }}>{it.name} · {v}</span>
+            <span style={{ fontSize: 10, fontWeight: 700 }}>{it.id} · {v}</span>
           </div>
         )))}
       </div>
