@@ -148,14 +148,14 @@ const ADMIN = {
   },
 };
 function Admin() {
-  const nav = [...PC_NAV.slice(0, 4), { group: "THÚ CƯNG", items: [{ id: "pet", label: "Thú cưng Pi" }] }, ...PC_NAV.slice(4)];
+  const nav = PC_NAV.some((g) => g.items.some((x) => x.id === "pet")) ? PC_NAV : [...PC_NAV.slice(0, 4), { group: "THÚ CƯNG", items: [{ id: "pet", label: "Thú cưng Pi" }] }, ...PC_NAV.slice(4)];
   const top = (right, title, sub) => <TopBar title={title} sub={sub} right={right} onOpenApp={() => {}} />;
   return (
     <div className="pc-root" style={{ minHeight: "100vh", background: PC.bg, fontFamily: "-apple-system, 'system-ui', Inter, 'Segoe UI', Roboto, Arial, sans-serif", color: PC.t1 }}>
       <style>{PC_CSS}</style>
       <SideNav section="pet" go={() => {}} counts={{ orders: 3, feedback: 2 }} isSuperAdmin user={{ email: "vietanh@fipilot" }} profile={{ adminRole: "super" }} mini={false} onToggle={() => {}} nav={nav} />
       <main style={{ marginLeft: PC.sideW, minWidth: 0 }}>
-        <PcPet top={top} tab={q.get("tab") || "overview"} data={ADMIN} sel={q.get("sel") || (q.get("tab") === "lines" ? "streak" : "ao-roi-10")} varFilter={q.get("vf") || "all"} />
+        <PcPet top={top} tab={q.get("tab") || "overview"} data={ADMIN} sel={q.get("sel") || (q.get("tab") === "lines" ? "streak" : "ao-roi-10")} varFilter={q.get("vf") || "all"} onSavePlace={async () => true} onCopy={() => {}} />
       </main>
     </div>
   );

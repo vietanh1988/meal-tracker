@@ -12,6 +12,7 @@ import { PetAvatar, ITEMS, catalog } from "../pet/PetAvatar";
 import { EVENTS, VOICE } from "../pet/lines";
 import { COL_DEFAULT, collectionStatus } from "../lib/petMath";
 import { todayVN } from "../lib/dateVN";
+import { PlaceEditor, RedrawBox, canPlace } from "./PcPetPlace";
 
 const RAR = { common: ["Phổ thông", "gray"], rare: ["Hiếm", "blue"], legendary: ["Huyền thoại", "amber"] };
 const VAR = (it) => (it.variants.length === 2 ? ["Chung", "gray"] : it.variants[0] === "nam" ? ["Nam", "blue"] : ["Nữ", "violet"]);
@@ -105,7 +106,9 @@ function Overview({ d }) {
 // ============ Kho đồ ============
 const ICOLS = "minmax(150px, 1fr) 52px 86px 36px 56px 54px 80px";
 const canVar = (it, v) => !!(it.anchor?.[v] || it.body?.[v]);
-function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave }) {
+function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onSavePlace, onCopy }) {
+  const [placing, setPlacing] = useState(null);
+  const [, refresh] = useState(0);
   const [sel, setSel] = useState(sel0);
   const [vf, setVf] = useState(vf0);
   const [slotF, setSlotF] = useState("all");
@@ -122,6 +125,9 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave }) {
   const save = async (patch) => { if (!onSave || !it) return; setBusy(true); await onSave(it.id, { ...f, ...patch }); setBusy(false); };
   const vKey = f ? (f.variants.length === 2 ? "chung" : f.variants[0]) : "nam";
   return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <RedrawBox items={catalog.items.filter((x) => x.redraw)} onCopy={onCopy} />
+    {placing && <PlaceEditor it={placing} onClose={() => { setPlacing(null); refresh((k) => k + 1); }} onSave={onSavePlace} />}
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 340px", gap: 16, alignItems: "start" }}>
       <Card style={{ minWidth: 0 }}>
         <CardHead title={`${list.length} món`} sub={`Pi nam ${catalog.items.filter((x) => x.variants.join() === "nam").length} món riêng · Pi nữ ${catalog.items.filter((x) => x.variants.join() === "nu").length} món riêng · ${catalog.items.filter((x) => x.variants.length === 2).length} món chung (đồ thành tích là đồ chung)`} />
@@ -140,7 +146,7 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave }) {
             <span style={cell}>{x.level}</span>
             <b style={{ ...cell, textAlign: "right" }}>{x.achievement ? "—" : vnInt(x.price)}</b>
             <span style={{ ...cell, textAlign: "right" }}>{x.achievement ? "—" : vnInt(d.sold[x.id] || 0)}</span>
-            <span><Pill tone={st(x)[1]}>{st(x)[0]}</Pill></span>
+            <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}><Pill tone={st(x)[1]}>{st(x)[0]}</Pill>{x.redraw && <Pill tone="amber">Vẽ lại</Pill>}</span>
           </button>
         ))}
         <div style={{ padding: "10px 16px", fontSize: 12, color: PC.t3, display: "flex", alignItems: "center", gap: 10 }}>Hiện {Math.min(n, list.length)} / {list.length} món{n < list.length && <Btn kind="soft" onClick={() => setN((k) => k + 30)}>Xem thêm</Btn>}</div>
@@ -179,8 +185,12 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave }) {
             <Btn kind="blue" style={{ flex: 1 }} testid="pc-pet-save" disabled={busy || !onSave} onClick={() => save()}>{busy ? "Đang lưu…" : "Lưu món"}</Btn>
             <Btn kind="light" testid="pc-pet-hide" disabled={busy || !onSave || it.achievement} onClick={() => { setF({ ...f, hidden: !f.hidden }); save({ hidden: !f.hidden }); }}>{f.hidden ? "Mở bán lại" : "Ẩn khỏi cửa hàng"}</Btn>
           </span>
+          {canPlace(it)
+            ? <Btn kind="soft" testid="pc-pet-place-open" disabled={!onSavePlace} onClick={() => setPlacing(it)}>Chỉnh vị trí trên Pi (kéo thả)</Btn>
+            : <span style={{ fontSize: 11.5, color: PC.t4 }}>{it.slot === "ao" ? "Áo vẽ liền thân: không chỉnh vị trí, sai thì vẽ lại." : "Món này không đặt trên người Pi."}</span>}
         </div>
       </Card>)}
+    </div>
     </div>
   );
 }
@@ -378,14 +388,14 @@ function Cols({ d, onSaveCfg }) {
   );
 }
 
-export function PcPet({ top, tab = "overview", data, sel, varFilter, onSaveItem, onSaveLines, onToggleLine, onSaveCfg }) {
+export function PcPet({ top, tab = "overview", data, sel, varFilter, onSaveItem, onSavePlace, onCopy, onSaveLines, onToggleLine, onSaveCfg }) {
   const [t, setT] = useState(tab);
   return (
     <div data-testid="pc-pet">
       {top(<Tabs value={t} onChange={setT} />, "Thú cưng Pi", "Kho đồ theo Pi nam / Pi nữ, câu Pi nói, Hạt và cấp")}
       <div style={{ padding: 24 }}>
         {t === "overview" && <Overview d={data} />}
-        {t === "items" && <Items d={data} sel={sel} varFilter={varFilter} onSave={onSaveItem} />}
+        {t === "items" && <Items d={data} sel={sel} varFilter={varFilter} onSave={onSaveItem} onSavePlace={onSavePlace} onCopy={onCopy} />}
         {t === "cols" && <Cols d={data} onSaveCfg={onSaveCfg} />}
         {t === "lines" && <Lines d={data} sel={sel && EVENTS.some((e) => e.key === sel) ? sel : undefined} onSaveLines={onSaveLines} onToggle={onToggleLine} />}
         {t === "settings" && <Settings d={data} onSaveCfg={onSaveCfg} />}
@@ -430,6 +440,12 @@ export function PcPetPage({ top, appSettings, saveSetting, showToast }) {
         if (error) { showToast?.(`Chưa lưu được: ${error.message}`); return; }
         applyItemRows([{ id, ...f, achievement: ITEMS[id].achievement }]); showToast?.("Đã lưu món"); setNonce((n) => n + 1);
       }}
+      onSavePlace={async (id, f) => {
+        const { error } = await supabase.from("pet_items").update({ place: f.place, redraw: f.redraw, redraw_note: f.redraw_note, updated_at: new Date().toISOString() }).eq("id", id);
+        if (error) { showToast?.(/place|redraw/.test(error.message) ? "Chưa lưu được: cần chạy SQL 20261021090000_pet_place.sql trên máy chủ" : `Chưa lưu được: ${error.message}`); return false; }
+        showToast?.("Đã lưu vị trí"); return true;
+      }}
+      onCopy={(ok) => showToast?.(ok ? "Đã chép lệnh vẽ lại" : "Chưa chép được, bôi đen ô lệnh để chép")}
       onSaveLines={async (ev, v) => {
         const del = await supabase.from("pet_lines").delete().eq("event", ev);
         if (del.error) { showToast?.(`Chưa lưu được: ${del.error.message}`); return; }

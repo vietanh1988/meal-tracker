@@ -28,7 +28,8 @@ function Layer({ file, a, bw, bh, clipTop, flip, cls, imgStyle }) {
   const tf = [];
   if (a.h) { const h = a.h * bh; Object.assign(style, { top: a.y * bh - h / 2, height: h }); }
   else { Object.assign(style, { top: a.y * bh, height: "auto" }); tf.push("translateY(-50%)"); }
-  if (flip) tf.push("scaleX(-1)");
+  if (a.r) tf.push(`rotate(${a.r}deg)`); // 21/10: Quản trị › Chỉnh vị trí — xoay (độ), lật ngang
+  if (!!flip !== !!a.fx) tf.push("scaleX(-1)");
   if (tf.length) style.transform = tf.join(" ");
   // cls (hiệu ứng động: lá đung đưa, zZ trôi…) đặt ở ảnh bên trong để không đè transform canh vị trí của khung ngoài
   if (cls) return <span style={{ ...style, display: "block" }}><img src={PET_BASE + file} alt="" draggable="false" className={cls} style={{ display: "block", width: "100%", height: a.h ? "100%" : "auto", ...imgStyle }} /></span>;
@@ -38,7 +39,7 @@ const BLINK = { nam: "mat-doi/mat-doi-nam-07.webp", nu: "mat-doi/mat-doi-nu-19.w
 // tay trái: dùng ảnh cầm tay phải lật ngang, dời điểm đặt từ tâm bàn tay phải sang tâm bàn tay trái
 function leftAnchor(a, b) {
   const [rx, ry] = [b.hand.x, b.hand.y], [lx, ly] = b.hand_left;
-  return { ...a, x: lx - (a.x - rx), y: a.y + (ly - ry) };
+  return { ...a, x: lx - (a.x - rx), y: a.y + (ly - ry), r: a.r ? -a.r : a.r };
 }
 
 // 20/10: áo liền thân vẽ bàn tay ở chỗ khác thân gốc (catalog body.hand / hand_l, dò từ ảnh) → dời đồ cầm tay theo tay của áo
@@ -49,6 +50,15 @@ function shiftHand(a, base, to) {
 
 /** size = chiều cao thân (px). equipped = { slot: itemId } (cam_tay = tay phải, cam_tay_trai = tay trái). mood: vui | cuoi | ngu | hoi | mung.
  *  live: chớp mắt, đảo mắt, lá đung đưa, tâm trạng động (spec §6). talking: miệng mấp máy. react: đổi số → nảy + cười tít 1,2 giây. */
+// điểm đặt đang hiện của 1 món (đã dời theo tay của áo liền thân nếu là đồ cầm tay phải) — dùng cho khung kéo ở Quản trị
+export function shownAnchor(it, variant, aoId) {
+  const b = catalog.bodies[variant], a = it.anchor?.[variant];
+  if (!a) return null;
+  if (it.slot !== "cam_tay") return a;
+  const ao = aoId ? ITEMS[aoId]?.body?.[variant] : null;
+  return shiftHand(a, b.hand, ao?.hand);
+}
+
 export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", bow = true, size = 220, still = false, label, talking = false, live = false, react = 0 }) {
   const b = catalog.bodies[variant];
   const bh = size, bw = (size * b.w) / b.h;

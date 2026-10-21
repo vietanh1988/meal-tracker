@@ -13,6 +13,22 @@ export function applyItemRows(rows) {
     const it = ITEMS[r.id];
     if (!it) continue;
     Object.assign(it, { name: r.name, rarity: r.rarity, price: r.price, level: r.level, hidden: !!r.hidden, achievement: !!r.achievement });
+    // 21/10: Quản trị › Chỉnh vị trí — pet_items.place = { nam: {x,y,w,h?,r?,fx?,cut?}, nu: {...}, behind_head? } đè lên điểm đặt gốc của catalog
+    if (!it._anchor0) { it._anchor0 = JSON.parse(JSON.stringify(it.anchor || {})); it._cut0 = it.cut ? { ...it.cut } : null; it._bh0 = !!it.behind_head; }
+    if (r.place !== undefined || r.redraw !== undefined) {
+      const pl = r.place || {};
+      it.anchor = JSON.parse(JSON.stringify(it._anchor0));
+      it.cut = it._cut0 ? { ...it._cut0 } : undefined;
+      for (const v of ["nam", "nu"]) {
+        const o = pl[v];
+        if (!o || !it.anchor[v]) continue;
+        const { cut, ...a } = o;
+        it.anchor[v] = { ...it.anchor[v], ...a };
+        if (cut != null) it.cut = { ...(it.cut || {}), [v]: cut };
+      }
+      it.behind_head = pl.behind_head ?? it._bh0;
+      it.redraw = !!r.redraw; it.redraw_note = r.redraw_note || "";
+    }
     const vs = (r.variants || []).filter((v) => it.anchor?.[v] || it.body?.[v]);
     if (vs.length) it.variants = vs;
   }
@@ -64,7 +80,7 @@ export function usePet(userId, enabled) {
     let off = false;
     (async () => {
       const [it, ln] = await Promise.all([
-        supabase.from("pet_items").select("id,name,rarity,price,level,variants,achievement,hidden"),
+        supabase.from("pet_items").select("*"),
         supabase.from("pet_lines").select("event,variant,text,sort"),
       ]);
       if (off) return;
