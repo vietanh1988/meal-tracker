@@ -102,6 +102,20 @@ test("scaleItem: macro theo gram mới", () => {
   assert.equal(s.qty_display, undefined);
   assert.equal(V.scaleItem(it, 200).qty_display, "chén đầy");
   assert.equal(V.scaleItem(it, 0).cal, 0);
+  // 21/10: xoá trắng ô gram rồi gõ lại → nhân từ số gốc, không nhân từ số đã làm tròn
+  let x = { food: "Phở lạ", gram: 300, cal: 450, p: 20, c: 60, f: 10, source: "cache" };
+  for (const g of [0, 2, 20, 200]) x = V.scaleItem(x, g);
+  assert.deepEqual([x.cal, x.p, x.c, x.f], [300, 13.3, 40, 6.7]);
+  assert.equal(V.exactItems([x])[0]._base, undefined);
+});
+
+test("exactItem: món kho cùng gram luôn ra cùng số (21/10: trứng 200 g từng ra 300 / 310 / 311)", () => {
+  const a = V.exactItem({ food: "trứng gà luộc", gram: 200, cal: 300, p: 30, c: 0, f: 20, source: "localDB" });
+  const b = V.scaleItem({ food: "trứng gà luộc", gram: 150, cal: 233, p: 19, c: 1.9, f: 16, source: "localDB" }, 200);
+  assert.deepEqual([a.cal, a.p, a.c, a.f], [310, 25.2, 2.2, 21.2]);
+  assert.deepEqual([b.cal, b.p, b.c, b.f], [310, 25.2, 2.2, 21.2]);
+  const m = V.exactItem({ food: "món tự nhập", gram: 200, cal: 123, p: 1, c: 2, f: 3, source: "manual" });
+  assert.equal(m.cal, 123); // món không phải của kho giữ nguyên
 });
 
 test("weightSummary + deltaGood", () => {

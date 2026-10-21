@@ -106,3 +106,12 @@ test("ô tìm Ghi bữa: nhận ra gõ cả bữa (113b)", async () => {
   assert.equal(mine["bánh khọt"].cal, 130);
   assert.equal(mine["bánh khọt"].gram, 100);
 });
+
+test("21/10: '4 trứng 200g' / '4 quả trứng 200g' lấy gram ghi cuối, số đầu là số cái", () => {
+  for (const t of ["4 trứng 200g", "4 quả trứng 200g", "4 trứng 200 gam"]) {
+    const [it] = resolveAll(t, {});
+    assert.equal(it.food, "trứng gà luộc", t);
+    assert.equal(it.gram, 200, t);
+    assert.equal(it.cal, 310, t);
+  }
+});

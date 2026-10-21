@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { inferPatternFromItems } from "../lib/aiMenuService";
 import { MEAL_PATTERNS } from "../mealPatterns";
 import { todayVN, addDays } from "../lib/dateVN";
+import { exactItems } from "../lib/mobileView";
 import { setMeal, mergeIntoMeal, toggleEatenIn, applyMenu, dayRowPayload, toSlots, hasItems, mealKey, MEAL_NAMES } from "../lib/mealMath";
 
 const defaultStructure = {
@@ -283,7 +284,7 @@ export function useUserData(userId) {
     if (!userId) return { ok: false, error: "no user" };
     const logDate = date || todayStr();
     const isToday = logDate === todayStr();
-    const safeItems = Array.isArray(items) ? items : [];
+    const safeItems = Array.isArray(items) ? exactItems(items) : []; // 21/10: món kho luôn đúng số kho theo gram
     const extra = { ...(opts.extra || {}) };
     let bucketRes = { error: null };
 
@@ -353,7 +354,7 @@ export function useUserData(userId) {
     if (!userId || !template || !template.meals) return { ok: false, error: "no template" };
     const logDate = date || todayStr();
     const dayType = template.day_type === "rest" ? "rest" : "train";
-    const tplMeals = (template.meals || []).filter(m => m && m.meal_id && Array.isArray(m.items) && m.items.length > 0);
+    const tplMeals = (template.meals || []).filter(m => m && m.meal_id && Array.isArray(m.items) && m.items.length > 0).map(m => ({ ...m, items: exactItems(m.items) }));
 
     if (logDate === todayStr()) {
       tplMeals.forEach(m => updateMealsState(m.meal_id, dayType, m.items, { composite: !!m.composite, pattern: m.pattern || null }));

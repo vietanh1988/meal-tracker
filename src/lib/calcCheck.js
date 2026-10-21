@@ -13,7 +13,7 @@ const r1 = (x) => Math.round((Number(x) || 0) * 10) / 10;
 
 function normUnit(u) {
   const x = String(u || "").toLowerCase();
-  if (x === "gram" || x === "gr") return "g";
+  if (x === "gram" || x === "gr" || x === "gam") return "g";
   if (x === "kg") return "kg";
   if (x === "lít" || x === "l") return "lít";
   if (x === "chiếc") return "cái";
@@ -46,6 +46,9 @@ export function parseFoodLine(raw) {
       s = m[1].trim();
     }
   }
+  // 21/10: "4 trứng 200g" / "4 quả trứng 200g": số đầu là số cái, gram ghi cuối mới là khẩu phần → lấy gram (trước đây không nhận ra món)
+  const tail = s.match(/^(.*?)\s+(\d+(?:[.,]\d+)?)\s*(g|gr|gram|gam|ml|kg)$/i);
+  if (tail && tail[1] && qty != null) { qty = Number(tail[2].replace(",", ".")); unit = normUnit(tail[3]); s = tail[1].trim(); }
   // "1 tô" chưa có đơn vị đứng sau số nhưng có ở đầu tên: "tô phở" (VD "một tô phở")
   if (!unit) {
     const u = s.match(new RegExp(`^(${UNIT_RE})\\s+(.*)$`, "i"));

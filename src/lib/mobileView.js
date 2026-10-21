@@ -239,19 +239,33 @@ export function dedupeByName(items) {
   return out;
 }
 
-// Đổi gram 1 món: macro nhân theo tỉ lệ gram mới / gram cũ
+// 21/10: món của kho (source localDB, đúng tên mã trong kho) luôn tính lại từ số / 100 g của kho theo gram —
+// trước đây số nhân dần từ lần làm tròn trước (bữa cũ, gợi ý, đổi gram) nên cùng "trứng gà luộc 200 g" mỗi hôm ra 300 / 310 / 311 kcal.
+export function exactItem(it) {
+  if (!it || it.source !== "localDB") return it;
+  const key = String(it.food || "").toLowerCase().trim(), g = Number(it.gram);
+  if (!key || !(g > 0)) return it;
+  const r = lookupLocalFood(key, g);
+  if (!r || r.name !== key) return it; // chỉ món khớp đúng tên mã (không phải ước tính theo cách chế biến)
+  if (it.cal === r.cal && (it.p ?? it.protein) === r.protein && (it.c ?? it.carb) === r.carb && (it.f ?? it.fat) === r.fat) return it;
+  const { protein, carb, fat, ...rest } = it; // eslint-disable-line no-unused-vars
+  return { ...rest, cal: r.cal, p: r.protein, c: r.carb, f: r.fat, fiber: r.fiber };
+}
+export const exactItems = (items) => (Array.isArray(items) ? items.map((it) => { const { _base, ...x } = it || {}; return exactItem(it && it._base ? x : it); }) : items); // eslint-disable-line no-unused-vars
+
+// Đổi gram 1 món: món kho tính lại từ kho; món khác nhân theo tỉ lệ gram mới / gram cũ.
+// Ô gram bị xoá trắng (gram 0) giữ số gốc ở _base để gõ lại không nhân từ 0 (trước đây xoá rồi gõ lại "200" → số macro sai hẳn).
 export function scaleItem(item, newGram) {
   const g = Math.max(0, Math.round(Number(newGram) || 0));
-  const old = Number(item.gram) || 0;
-  if (!old || old === g) return { ...item, gram: g };
-  const r = g / old;
+  const { qty_display, _base, ...rest0 } = item; // eslint-disable-line no-unused-vars
+  // luôn nhân từ số gốc lúc bắt đầu sửa (_base), không nhân từ số đã làm tròn của lần gõ trước
+  const base = _base || (Number(item.gram) > 0 ? { gram: Number(item.gram), cal: item.cal, p: item.p ?? item.protein, c: item.c ?? item.carb, f: item.f ?? item.fat, fiber: item.fiber } : null);
+  if (g === Number(item.gram)) return exactItem(item);
+  if (!g) return { ...rest0, gram: 0, cal: 0, p: 0, c: 0, f: 0, fiber: 0, ...(base ? { _base: base } : {}) };
+  if (!base) return exactItem({ ...rest0, gram: g });
+  const r = g / base.gram;
   const r1 = (x) => Math.round((Number(x) || 0) * r * 10) / 10;
-  const { qty_display, ...rest } = item;
-  return {
-    ...rest, gram: g,
-    p: r1(item.p ?? item.protein), c: r1(item.c ?? item.carb), f: r1(item.f ?? item.fat), fiber: r1(item.fiber),
-    cal: Math.round((Number(item.cal) || 0) * r),
-  };
+  return exactItem({ ...rest0, gram: g, p: r1(base.p), c: r1(base.c), f: r1(base.f), fiber: r1(base.fiber), cal: Math.round((Number(base.cal) || 0) * r), _base: base });
 }
 
 export const itemName = (it) => String(it?.display || it?.food || it?.name || "Món").trim();

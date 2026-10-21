@@ -242,7 +242,7 @@ export function LogMealSheet(p) {
                   <button onClick={() => setTrayItem(k, (x) => stepItem(x, -1))} aria-label={`Bớt ${itemName(it)}`} style={stepBtn}>−</button>
                   <label style={{ width: 64, height: 36, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", gap: 2, fontSize: 14, fontWeight: 800 }}>
                     <span style={SR}>Gram {itemName(it).toLowerCase()}</span>
-                    <input type="number" inputMode="numeric" value={Math.round(it.gram) || ""} onChange={(e) => { const g = Math.min(3000, Math.max(0, Number(e.target.value) || 0)); setTrayItem(k, (x) => (g ? scaleItem(x, g) : { ...x, gram: 0 })); }}
+                    <input type="number" inputMode="numeric" value={Math.round(it.gram) || ""} onChange={(e) => { const g = Math.min(3000, Math.max(0, Number(e.target.value) || 0)); setTrayItem(k, (x) => scaleItem(x, g)); }}
                       style={{ width: 38, border: "none", background: "transparent", textAlign: "right", fontFamily: "inherit", fontSize: 16, fontWeight: 800, color: "#0F172A", outline: "none", padding: 0 }} />
                     <span style={{ fontSize: 12, color: "#0062F0" }}>g</span>
                   </label>
