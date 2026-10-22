@@ -2,7 +2,7 @@
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
   imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable, linkTargets, linkStats,
-  caloHints, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk, sourcesFromResearch,
+  caloHints, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk, sourcesFromResearch, sourcesBlocks, reviseUnits, revisePrompt, parseRevise, applyRevise, hasSources,
   relinkUnits, relinkPrompt, parseRelink, applyRelink, backlinkCandidates,
 } from "./aiWrite.js";
 
@@ -417,6 +417,54 @@ async function publishDrafts(admin, cfg, { since, max = 3 } = {}) {
   return out;
 }
 
+// ---- Soát lại bài CŨ (23/10, chủ dự án duyệt "bài nào cũ làm hết, cả bài chưa đăng"): lịch chạy gọi mỗi phút, mỗi lần 1 bước của 1 bài.
+// Bước 1 tra web lấy nguồn có link (seo.rev.stage = "revise") → bước 2 AI chỉ trả đoạn cần sửa (tốc độ giảm theo app, thực đơn mẫu
+// không dưới sàn, nguồn mơ hồ) + máy gắn mục Nguồn tham khảo → seo.rev.stage = "done". Lưu bản lịch sử trước khi ghi (khôi phục được).
+async function reviseSpentToday(admin) {
+  const vn = new Date(Date.now() + 7 * 3600e3); const start = new Date(Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - 7 * 3600e3).toISOString();
+  const { data } = await admin.from("ai_usage_log").select("cost_usd").eq("feature", "web_revise").gte("created_at", start);
+  return (data || []).reduce((t, r) => t + Number(r.cost_usd || 0), 0);
+}
+async function reviseNext(admin, cfg) {
+  if (Number(cfg.daily_cap_usd) > 0 && (await spentToday(admin)) + (await reviseSpentToday(admin)) >= Number(cfg.daily_cap_usd)) return { paused: "cap" };
+  const { data: rows } = await admin.from("web_posts").select("id,slug,title,status,blocks,seo,primary_term,published_at").eq("kind", "post").in("status", ["published", "scheduled", "draft"]).order("published_at", { ascending: true, nullsFirst: false }).limit(500);
+  const post = (rows || []).find((p) => !(p.seo?.rev?.v === 2 && p.seo.rev.stage === "done"));
+  if (!post) return { idle: true };
+  const model = cfg.model, prov = providerOf(model), keys = await keysFor(admin, cfg, prov);
+  const rev = post.seo?.rev?.v === 2 ? post.seo.rev : { v: 2, stage: "research" };
+  const saveSeo = async (patch) => { const seo = { ...(post.seo || {}), rev: { ...rev, ...patch } }; const { error } = await admin.from("web_posts").update({ seo }).eq("id", post.id); if (error) throw new Error("Lưu: " + error.message); };
+  const fail = async (e) => { const n = (rev.fails || 0) + 1; await saveSeo({ fails: n, error: String(e?.message || e).slice(0, 300), ...(n >= 3 ? { stage: "done", gaveUp: true } : {}) }); return { slug: post.slug, error: String(e?.message || e) }; };
+  try {
+    if (rev.stage === "research") {
+      const r = await llm(prov, keys, { model, maxTokens: 1400, search: 4, system: "Bạn là biên tập viên dinh dưỡng, tra web kiểm số liệu. Chỉ trả ghi chú đúng khuôn.", messages: [{ role: "user", content: researchPrompt({ keyword: post.seo?.keyword || post.title, notes: "Bài đã viết xong, cần nguồn có link gốc cho các số liệu chính (nhu cầu calo, tốc độ giảm cân an toàn, sàn calo, số liệu sức khỏe nhóm đối tượng) để soát lại bài." }) }] });
+      const cost = textCost(model, r.inTok, r.outTok) + (r.searches || 0) * 0.01;
+      await logUsage(admin, null, prov, model, r.inTok, r.outTok, cost, "web_revise");
+      await saveSeo({ stage: "revise", research: r.text.trim().slice(0, 6000), cost: cost, fails: 0, error: null });
+      return { slug: post.slug, stage: "research" };
+    }
+    // bước 2: sửa đúng chỗ
+    let list = [];
+    try { const rr = await fetch(CALO_API, { signal: AbortSignal.timeout(8000) }); if (rr.ok) list = await rr.json(); } catch (_e) { /* bỏ qua */ }
+    const units = reviseUnits(post.blocks || []);
+    const text = units.map((u) => u.text).join(" ");
+    const foods = foodTable(pickFoods(Array.isArray(list) ? list : [], `${post.title} ${text}`).filter((f) => text.toLowerCase().includes(String(f.n).toLowerCase())));
+    const r = await llm(prov, keys, { model, maxTokens: 6000, system: "Bạn là biên tập viên soát bài dinh dưỡng tiếng Việt. Chỉ trả đúng khuôn.", messages: [{ role: "user", content: revisePrompt({ title: post.title, units, research: rev.research || "", foods }) }] });
+    const cost = textCost(model, r.inTok, r.outTok);
+    await logUsage(admin, null, prov, model, r.inTok, r.outTok, cost, "web_revise");
+    const res = /^\s*KHÔNG CẦN SỬA\s*$/im.test(r.text) ? { blocks: post.blocks, changed: [], skipped: [] } : applyRevise(post.blocks || [], units, parseRevise(r.text));
+    const src = hasSources(res.blocks) ? [] : sourcesFromResearch(rev.research || "");
+    const blocks = [...res.blocks, ...sourcesBlocks(src)];
+    const now = new Date().toISOString();
+    if (res.changed.length || src.length) {
+      await admin.from("web_revisions").insert({ post_id: post.id, snapshot: { ...post, seo: post.seo }, reason: "ai", created_by: null }).then(() => {}, () => {});
+      const { error } = await admin.from("web_posts").update({ blocks, updated_at: now, seo: { ...(post.seo || {}), rev: { v: 2, stage: "done", at: now, changed: res.changed, skipped: res.skipped, sources: src.length, cost: (rev.cost || 0) + cost } } }).eq("id", post.id);
+      if (error) throw new Error("Lưu bài: " + error.message);
+      if (post.status === "published") await pingIndexNow(admin, `/${post.slug}`);
+    } else await saveSeo({ stage: "done", at: now, changed: [], skipped: res.skipped, sources: 0, cost: (rev.cost || 0) + cost, research: undefined });
+    return { slug: post.slug, stage: "done", changed: res.changed.length, skipped: res.skipped.length, sources: src.length };
+  } catch (e) { return await fail(e); }
+}
+
 // Trần tiền mỗi ngày (giờ VN): đã tốn hôm nay ≥ trần thì không chạy bước mới
 async function spentToday(admin) {
   const vn = new Date(Date.now() + 7 * 3600e3); const start = new Date(Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate()) - 7 * 3600e3).toISOString();
@@ -466,6 +514,11 @@ async function handle(req) {
       const { data: ok } = await admin.rpc("web_writer_cron_ok", { p: String(body.secret || "") });
       if (!ok) return json(req, { error: "Unauthorized" }, 403);
       return json(req, await tick());
+    }
+    if (body.action === "revise_next") { // lịch chạy soát lại bài cũ (mã bí mật như tick)
+      const { data: ok } = await admin.rpc("web_writer_cron_ok", { p: String(body.secret || "") });
+      if (!ok) return json(req, { error: "Unauthorized" }, 403);
+      return json(req, await reviseNext(admin, await config(admin)));
     }
     if (body.action === "publish_drafts") {
       const { data: ok } = await admin.rpc("web_writer_cron_ok", { p: String(body.secret || "") });

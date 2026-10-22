@@ -106,6 +106,82 @@ export function sourcesFromResearch(research = "") {
 const escHtml = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 export const sourcesBlocks = (list) => (list?.length ? [{ type: "h", level: 2, text: "Nguồn tham khảo" }, { type: "list", ordered: false, items: list.map((x) => `<a href="${escHtml(x.url)}" target="_blank" rel="noopener">${escHtml(x.name)}</a>`) }] : []);
 
+// ---- Soát lại bài CŨ (23/10, chủ dự án duyệt): sửa đúng chỗ, không viết lại bài ----
+// Máy tách bài thành các đoạn / dòng danh sách / dòng bảng có số; AI chỉ trả lại những đoạn cần sửa (giữ link [chữ](đường dẫn) đúng như cũ).
+// Máy kiểm: đoạn mới phải giữ đủ link cũ, dài 50-180% đoạn cũ, dòng bảng đúng số cột; sai thì bỏ, giữ đoạn cũ.
+const unesc = (t) => String(t).replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+export function htmlToMd(h) {
+  return unesc(String(h || "").replace(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, (_, u, t) => `[${t.replace(/<[^>]+>/g, "")}](${u})`)
+    .replace(/<\/?(b|strong)\b[^>]*>/gi, "**").replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, "")).replace(/\*\*\s*\*\*/g, "").replace(/\s+/g, " ").trim();
+}
+export function mdToHtml(md, allow = new Set()) {
+  const keep = [];
+  const raw = String(md || "").replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => { if (!allow.has(u)) return t; keep.push([u, t]); return `\u0001${keep.length - 1}\u0002`; });
+  return esc(raw.replace(/[—–]/g, ",")).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\s+/g, " ").trim()
+    .replace(/\u0001(\d+)\u0002/g, (_, i) => `<a href="${esc(keep[i][0])}">${esc(keep[i][1])}</a>`);
+}
+const hrefsOf = (md) => [...String(md).matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]);
+export function reviseUnits(blocks = []) {
+  const out = [];
+  blocks.forEach((b, bi) => {
+    if (["p", "quote", "tip"].includes(b?.type) && b.html) out.push({ n: out.length + 1, bi, kind: "p", text: htmlToMd(b.html) });
+    else if (b?.type === "list") (b.items || []).forEach((it, ii) => typeof it === "string" && out.push({ n: out.length + 1, bi, ii, kind: "li", text: htmlToMd(it) }));
+    else if (b?.type === "table") (b.rows || []).forEach((r, ri) => out.push({ n: out.length + 1, bi, ri, kind: "row", cols: r.length, head: (b.head || []).map(htmlToMd).join(" | "), text: r.map(htmlToMd).join(" | ") }));
+    else if (b?.type === "faq") (b.items || []).forEach((x, qi) => x?.a && out.push({ n: out.length + 1, bi, qi, kind: "faq", text: htmlToMd(x.a) }));
+  });
+  return out;
+}
+export function revisePrompt({ title = "", units = [], research = "", foods = "" } = {}) {
+  return [
+    `Bài "${title}" đã đăng. Việc của bạn: SOÁT và chỉ SỬA ĐÚNG CHỖ các đoạn vi phạm luật dưới đây. Không viết lại đoạn đúng, không đổi văn phong, không thêm đoạn mới.`,
+    `Luật cần soát:
+1. Tốc độ giảm cân: app khuyên 0,25-0,75% cân nặng mỗi tuần (chậm 0,25%, vừa 0,5%, nhanh 0,75%; người 60 kg khoảng 0,15-0,45 kg/tuần). Câu nêu mức khác (ví dụ 0,5-1 kg/tuần của NHS / NIH / CDC) làm mức khuyên chính thì sửa: đưa mức của app lên làm mức khuyên, mức của nguồn ngoài giữ kèm tên nguồn và một vế giải thích ngắn (app chọn mức thấp hơn để dễ giữ cơ và giữ được lâu). Câu chỉ nói cân dao động do nước thì để nguyên.
+2. Thực đơn mẫu / ngày mẫu / bảng thực đơn: tổng kcal mỗi ngày phải khớp mục tiêu bài nêu (lệch tối đa 5%) và không dưới sàn 1200 kcal (nữ) / 1500 kcal (nam) hoặc sàn bài đã nêu. Thiếu thì tăng khẩu phần món có sẵn (dùng đúng số bảng calo app nếu món có trong bảng), sửa luôn dòng tổng. Ví dụ cố tình cho thấy ngày ăn thiếu thì thêm vế nói rõ đây là ví dụ thiếu.
+3. Nguồn mơ hồ ("nhiều tài liệu", "các chuyên gia", "nghiên cứu cho thấy" không tên): ghi đích danh tổ chức / tài liệu theo GHI CHÚ TRA CỨU; không có thì viết lại câu ở mức chắc chắn, bỏ số.
+4. Chữ dính (thiếu dấu cách giữa chữ và số), dấu gạch dài (—, –): sửa.`,
+    `Giữ nguyên mọi link dạng [chữ](đường dẫn) và mọi **chữ đậm** đang có trong đoạn được sửa. Dòng bảng (kind row) trả đúng số cột, cột cách nhau bằng " | ".`,
+    `Trả lời đúng khuôn, mỗi đoạn sửa 2 dòng, không thêm gì khác:
+@<số đoạn>
+<đoạn đã sửa>
+Không có gì cần sửa thì trả đúng 1 dòng: KHÔNG CẦN SỬA`,
+    foods && `BẢNG CALO APP (món | khẩu phần | gram | kcal | đạm | tinh bột | béo):\n${foods}`,
+    research && `GHI CHÚ TRA CỨU:\n${research}`,
+    `CÁC ĐOẠN (số. [loại] nội dung; dòng bảng có kèm tiêu đề cột):\n${units.map((u) => `${u.n}. [${u.kind}] ${u.kind === "row" ? `(cột: ${u.head}) ` : ""}${u.text}`).join("\n")}`,
+  ].filter(Boolean).join("\n\n");
+}
+export function parseRevise(text) {
+  const out = new Map(); let cur = null, buf = [];
+  const flush = () => { if (cur != null) { const t = buf.join(" ").trim(); if (t) out.set(cur, t); } cur = null; buf = []; };
+  for (const line of String(text || "").split("\n")) {
+    const m = line.match(/^\s*@\s*(\d+)\s*$/);
+    if (m) { flush(); cur = Number(m[1]); continue; }
+    if (cur != null) buf.push(line.trim());
+  }
+  flush();
+  return out;
+}
+export function applyRevise(blocks, units, edits) {
+  const nb = JSON.parse(JSON.stringify(blocks || []));
+  const changed = [], skipped = [];
+  for (const u of units) {
+    const t = edits.get(u.n); if (!t || t === u.text) continue;
+    const need = hrefsOf(u.text), have = new Set(hrefsOf(t));
+    const r = t.length / Math.max(1, u.text.length);
+    if (need.some((h) => !have.has(h)) || r < 0.5 || r > 1.8) { skipped.push(u.n); continue; }
+    const allow = new Set(need);
+    if (u.kind === "row") {
+      const cs = t.split("|").map((c) => c.trim());
+      if (cs.length !== u.cols) { skipped.push(u.n); continue; }
+      nb[u.bi].rows[u.ri] = cs.map((c) => mdToHtml(c, allow));
+    } else if (u.kind === "li") nb[u.bi].items[u.ii] = mdToHtml(t, allow);
+    else if (u.kind === "faq") nb[u.bi].items[u.qi] = { ...nb[u.bi].items[u.qi], a: mdToHtml(t, allow).replace(/<[^>]+>/g, "") };
+    else nb[u.bi].html = mdToHtml(t, allow);
+    changed.push({ n: u.n, before: u.text.slice(0, 300), after: t.slice(0, 300) });
+  }
+  return { blocks: nb, changed, skipped };
+}
+export const hasSources = (blocks = []) => blocks.some((b) => b?.type === "h" && /nguồn tham khảo/i.test(String(b.text || "")));
+
 // ---- Soát bài (bước sau khi viết): 1 lượt AI đọc bài + ghi chú tra cứu + bảng calo app, liệt kê lỗi → AI viết sửa đúng chỗ ----
 // Máy gợi ý trước: câu nhắc món có trong bảng app mà số kcal khác mọi khẩu phần của app (chỉ là gợi ý cho bước soát, không tự sửa)
 export function caloHints(md, foods = "") {

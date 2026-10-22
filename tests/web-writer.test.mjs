@@ -24,7 +24,7 @@ function fakeDb(tables, rpcs) {
     };
     const b = {
       select() { return b; }, insert(p) { op = "insert"; payload = p; return b; }, update(p) { op = "update"; payload = p; return b; },
-      eq(c, v) { f.push((r) => r[c] === v); return b; }, neq(c, v) { f.push((r) => r[c] !== v); return b; }, gte(c, v) { f.push((r) => r[c] >= v); return b; },
+      eq(c, v) { f.push((r) => r[c] === v); return b; }, in(c, v) { f.push((r) => v.includes(r[c])); return b; }, neq(c, v) { f.push((r) => r[c] !== v); return b; }, gte(c, v) { f.push((r) => r[c] >= v); return b; },
       like(c, v) { const p = v.replace(/%$/, ""); f.push((r) => String(r[c]).startsWith(p)); return b; },
       order(c, o = {}) { ord = { c, asc: o.ascending !== false }; return b; }, limit(n) { lim = n; return b; },
       single() { single = true; return b; }, maybeSingle() { single = true; return b; },
@@ -60,6 +60,7 @@ function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "
       const body = JSON.parse(opt.body); calls.claude.push(body);
       if (/biên tập viên SEO/.test(body.system || "")) { calls.relink = [...(calls.relink || []), body.messages[0].content]; return new Response(JSON.stringify({ content: [{ type: "text", text: typeof relink === "function" ? relink(body.messages[0].content) : relink }], stop_reason: "end_turn", usage: { input_tokens: 1500, output_tokens: 60 } })); }
       if (/soát bài/.test(body.system || "")) { calls.review = (calls.review || 0) + 1; return new Response(JSON.stringify({ content: [{ type: "text", text: review }], stop_reason: "end_turn", usage: { input_tokens: 2000, output_tokens: 100 } })); }
+      if (body.tools && /soát lại bài/.test(body.messages[0].content)) return new Response(JSON.stringify({ content: [{ type: "text", text: "Số liệu đã kiểm:\n- Giảm 0,5-1 kg/tuần (nguồn: NHS Losing weight | https://www.nhs.uk/live-well/healthy-weight/managing-your-weight/losing-weight/)\n- Bài báo (nguồn: báo X | https://vnexpress.net/x)" }], stop_reason: "end_turn", usage: { input_tokens: 2000, output_tokens: 300, server_tool_use: { web_search_requests: 2 } } }));
       if (body.tools) return new Response(JSON.stringify({ content: [{ type: "text", text: "Để tôi tra." }, { type: "server_tool_use" }, { type: "web_search_tool_result" }, { type: "text", text: "Chuyên mục: thuc-don\nÝ định tìm kiếm: chọn món sáng.\nSố liệu đã kiểm:\n- Trứng 6g đạm (nguồn: USDA)" }], stop_reason: "end_turn", usage: { input_tokens: 3000, output_tokens: 400, server_tool_use: { web_search_requests: 2 } } }));
       if (writes) { const x = writes[chunk++]; return new Response(JSON.stringify({ content: [{ type: "text", text: x.text }], stop_reason: x.stop || "end_turn", usage: { input_tokens: 1000, output_tokens: 1000 } })); }
       // Bài viết chia 2 đoạn: đoạn 1 dừng vì max_tokens
@@ -348,4 +349,29 @@ test("publish_drafts: mã bí mật sai → 403; đúng → bài nháp AI đủ 
   } else assert.ok(d.done[0].miss.length, JSON.stringify(d)); // bài mẫu thiếu thẻ thì phải nói thiếu gì, không đăng
   const d2 = await (await w.handle(req({ action: "publish_drafts", secret: "s3cret", since: "2000-01-01" }))).json();
   assert.equal(d2.done.filter((x) => x.ok).length, 0); // chạy lại không đăng lại
+});
+
+
+test("revise_next: soát lại bài cũ — tra nguồn có link → AI chỉ trả đoạn sai → máy sửa đúng chỗ, giữ link, gắn Nguồn tham khảo, lưu lịch sử; xong thì bỏ qua", async () => {
+  const review = "@2\nApp khuyên giảm 0,25-0,75% cân nặng mỗi tuần; NHS nêu 0,5-1 kg/tuần, xem [bảng calo](/bang-calo).\n@3\nTổng | 1.260\n@4\nđoạn mất link";
+  const { w, tables, calls } = setup({ review });
+  tables.web_posts.push({ id: "o1", kind: "post", status: "scheduled", slug: "cu", title: "Bài cũ", seo: { keyword: "giảm cân" }, published_at: "2026-10-25T00:00:00Z",
+    blocks: [{ type: "p", html: "Sapo." }, { type: "p", html: "Giảm 0,5-1 kg/tuần là an toàn, xem <a href=\"/bang-calo\">bảng calo</a>." }, { type: "table", head: ["Bữa", "kcal"], rows: [["Tổng", "1.050"]] }, { type: "list", items: ["Một ý có <a href=\"/x\">link</a>"] }] });
+  assert.equal((await w.handle(req({ action: "revise_next", secret: "sai" }))).status, 403);
+  const r1 = await (await w.handle(req({ action: "revise_next", secret: "s3cret" }))).json();
+  assert.equal(r1.stage, "research");
+  const r2 = await (await w.handle(req({ action: "revise_next", secret: "s3cret" }))).json();
+  assert.equal(r2.stage, "done", JSON.stringify(r2));
+  const p = tables.web_posts.find((x) => x.id === "o1");
+  assert.match(p.blocks[1].html, /0,25-0,75%.*<a href="\/bang-calo">bảng calo<\/a>/);
+  assert.deepEqual(p.blocks[2].rows[0], ["Tổng", "1.260"]);
+  assert.equal(p.blocks[3].items[0], 'Một ý có <a href="/x">link</a>'); // mất link → giữ đoạn cũ
+  const h = p.blocks.findIndex((b) => b.type === "h" && b.text === "Nguồn tham khảo");
+  assert.ok(h > 0); assert.equal(p.blocks[h + 1].items.length, 1); assert.match(p.blocks[h + 1].items[0], /nhs\.uk/); // báo không thuộc danh sách uy tín → bỏ
+  assert.equal(p.seo.rev.stage, "done"); assert.equal(p.seo.keyword, "giảm cân");
+  assert.ok(tables.web_revisions.some((x) => x.post_id === "o1"));
+  assert.ok(tables.ai_usage_log.filter((l) => l.feature === "web_revise").length === 2);
+  const r3 = await (await w.handle(req({ action: "revise_next", secret: "s3cret" }))).json();
+  assert.ok(r3.idle);
+  assert.ok(calls.claude.some((c) => /Tốc độ giảm cân: app khuyên/.test(c.messages[0].content)));
 });
