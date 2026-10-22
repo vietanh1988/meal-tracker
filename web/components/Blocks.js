@@ -4,8 +4,9 @@ import { imgAttrs } from "@/lib/img";
 import { appLink } from "@/lib/site";
 import { fillTrial } from "@/lib/plans";
 import CaloBox from "./CaloBox";
+import { tidy, tidyText } from "@/lib/typo";
 
-const H = ({ html, as: T = "p", ...r }) => <T {...r} dangerouslySetInnerHTML={{ __html: clean(html) }} />;
+const H = ({ html, as: T = "p", ...r }) => <T {...r} dangerouslySetInnerHTML={{ __html: clean(tidy(html)) }} />;
 
 export default function Blocks({ blocks, s, toc, slug }) {
   // %bai% trong link nút / hộp mời app (khối dùng lại) = đường dẫn bài đang hiện
@@ -25,17 +26,17 @@ export default function Blocks({ blocks, s, toc, slug }) {
           case "youtube": return /^[\w-]{6,20}$/.test(b.id || "") ? <div key={i} className="yt"><iframe src={`https://www.youtube-nocookie.com/embed/${b.id}`} title={b.title || "Video"} loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture" allowFullScreen /></div> : null;
           case "table": return (
             <div key={i} className="card" style={{ overflowX: "auto", padding: 0 }}>
-              <table><thead><tr>{(b.head || []).map((h, k) => <th key={k}>{h}</th>)}</tr></thead><tbody>{(b.rows || []).map((r, k) => <tr key={k}>{r.map((c, j) => <H key={j} as="td" html={c} />)}</tr>)}</tbody></table>
+              <table><thead><tr>{(b.head || []).map((h, k) => <th key={k}>{tidyText(h)}</th>)}</tr></thead><tbody>{(b.rows || []).map((r, k) => <tr key={k}>{r.map((c, j) => <H key={j} as="td" html={c} />)}</tr>)}</tbody></table>
             </div>
           );
           case "calo": return <CaloBox key={i} fd={b._food} por={b._portion} />;
           case "calo_table": return (
             <div key={i} className="card" style={{ overflowX: "auto", padding: 0 }}>
               <table><thead><tr><th>Món</th><th>Khẩu phần</th><th style={{ textAlign: "right" }}>Calo (kcal)</th><th style={{ textAlign: "right" }}>Đạm (g)</th></tr></thead>
-                <tbody>{(b._rows || []).map(({ fd, por }) => <tr key={fd.key}><td><a href={`/calo/${fd.slug}`}>{fd.name}</a></td><td>{por ? `${por.name} ${por.gram} g` : "100 g"}</td><td style={{ textAlign: "right" }}>{por ? por.cal : fd.per100.cal}</td><td style={{ textAlign: "right" }}>{String(por ? por.p : fd.per100.p).replace(".", ",")}</td></tr>)}</tbody></table>
+                <tbody>{(b._rows || []).map(({ fd, por }) => <tr key={fd.key}><td><a href={`/calo/${fd.slug}`}>{fd.name}</a></td><td>{por ? `${por.name} ${por.gram}\u00a0g` : "100\u00a0g"}</td><td style={{ textAlign: "right" }}>{por ? por.cal : fd.per100.cal}</td><td style={{ textAlign: "right" }}>{String(por ? por.p : fd.per100.p).replace(".", ",")}</td></tr>)}</tbody></table>
             </div>
           );
-          case "faq": return <div key={i} style={{ display: "flex", flexDirection: "column", gap: 10 }}>{b.title && <h2 id={b.id || (i ? `hoi-dap-${i}` : "hoi-dap")}>{b.title}</h2>}{(b.items || []).map((x, k) => <details key={k} className="faq" open={k === 0}><summary>{fillTrial(x.q, s?.plan)}</summary><p>{fillTrial(x.a, s?.plan)}</p></details>)}</div>;
+          case "faq": return <div key={i} style={{ display: "flex", flexDirection: "column", gap: 10 }}>{b.title && <h2 id={b.id || (i ? `hoi-dap-${i}` : "hoi-dap")}>{b.title}</h2>}{(b.items || []).map((x, k) => <details key={k} className="faq" open={k === 0}><summary>{tidyText(fillTrial(x.q, s?.plan))}</summary><p>{tidyText(fillTrial(x.a, s?.plan))}</p></details>)}</div>;
           case "app": return (
             <aside key={i} className="card" style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", background: "linear-gradient(90deg,#EEF4FF,#F8FBFF)", borderColor: "#DCE7FF" }}>
               <img className="th" src={b.image || "/img/bowl-1.jpg"} alt={b.title || b.button || "Món ăn"} width={58} height={58} loading="lazy" style={{ width: 58, height: 58 }} />

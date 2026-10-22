@@ -12,6 +12,7 @@ export function safeUrl(u, fb = "#") {
   if (/^\/\/|^\\/.test(d) && !/^https?:/.test(d)) return raw.startsWith("//") ? "https:" + raw : fb;
   return raw;
 }
+const TRUSTED = /(^|\.)(who\.int|nih\.gov|cdc\.gov|fda\.gov|usda\.gov|nhs\.uk|nice\.org\.uk|efsa\.europa\.eu|harvard\.edu|mayoclinic\.org|clevelandclinic\.org|heart\.org|diabetes\.org|eatright\.org|acog\.org|viendinhduong\.vn|moh\.gov\.vn|vncdc\.gov\.vn|thelancet\.com|bmj\.com|nejm\.org|nature\.com|sciencedirect\.com|academic\.oup\.com|jamanetwork\.com|wiley\.com|springer\.com|frontiersin\.org|mdpi\.com|fao\.org|unicef\.org|app\.fipilotai\.com)$/;
 export function clean(html) {
   let s = String(html || "");
   // bỏ cả nội dung bên trong script/style/iframe…, rồi bỏ thẻ lẻ còn sót
@@ -29,6 +30,9 @@ export function clean(html) {
       if (["href", "src", "alt", "title", "target", "rel", "class", "id", "width", "height", "loading", "colspan", "rowspan"].includes(key)) keep.push(`${key}="${v}"`);
     });
     if (t === "a" && keep.some((k) => k.startsWith('target="_blank"')) && !keep.some((k) => k.startsWith("rel="))) keep.push('rel="noopener"');
+    // 23/10: link ra web ngoài không thuộc danh sách nguồn uy tín → thêm nofollow
+    if (t === "a") { const h = (keep.find((k) => k.startsWith("href=")) || "").slice(6, -1); const host = (h.match(/^https?:\/\/([^/?#]+)/i) || [])[1]?.toLowerCase().replace(/^www\./, "");
+      if (host && !/(^|\.)fipilotai\.com$/.test(host) && !TRUSTED.test(host)) { const i = keep.findIndex((k) => k.startsWith("rel=")); if (i < 0) keep.push('rel="nofollow noopener"'); else if (!/nofollow/.test(keep[i])) keep[i] = keep[i].replace(/"$/, ' nofollow"'); } }
     return `<${t}${keep.length ? " " + keep.join(" ") : ""}${t === "br" || t === "img" || t === "hr" ? " /" : ""}>`;
   });
   return s;

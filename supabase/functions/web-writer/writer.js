@@ -2,7 +2,7 @@
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
   imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable, linkTargets, linkStats,
-  caloHints, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk,
+  caloHints, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk, sourcesFromResearch,
   relinkUnits, relinkPrompt, parseRelink, applyRelink, backlinkCandidates,
 } from "./aiWrite.js";
 
@@ -306,7 +306,7 @@ async function step(admin, job, cfg, t0) {
     const a = parseArticle(st.final);
     const imgs = st.imgs || [];
     const author = (await admin.from("web_authors").select("id").order("created_at").limit(1)).data?.[0]?.id || null;
-    const post = articleToPost(a, { keyword: job.keyword, termId: job.term_id, authorId: author, imgs: imgs.length ? { cover: imgs[0], inline: imgs.slice(1) } : null, links: st.links || null });
+    const post = articleToPost(a, { keyword: job.keyword, termId: job.term_id, authorId: author, imgs: imgs.length ? { cover: imgs[0], inline: imgs.slice(1) } : null, links: st.links || null, sources: sourcesFromResearch(st.research || "") });
     const base = post.slug || slugOf(job.keyword) || "bai-viet-ai";
     const taken = new Set(((await admin.from("web_posts").select("slug").like("slug", `${base}%`)).data || []).map((r) => r.slug));
     let slug = base, n = 2; while (taken.has(slug)) slug = `${base}-${n++}`;

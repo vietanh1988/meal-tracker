@@ -4,7 +4,7 @@ import SecHead from "@/components/SecHead";
 import Blocks from "@/components/Blocks";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
-import { getSettings, alt } from "@/lib/site";
+import { getSettings, alt, withOg } from "@/lib/site";
 import { getPostBySlug } from "@/lib/content";
 import { prepare } from "@/lib/blocks";
 import { allFoods } from "@/lib/foods";
@@ -16,7 +16,7 @@ export const revalidate = 300;
 const H1 = "Fipilot AI giúp người Việt giảm cân bằng chính món mình ăn hằng ngày";
 export async function generateMetadata() {
   const p = await getPostBySlug("gioi-thieu");
-  return { title: p?.seo?.title || "Giới thiệu Fipilot AI", description: p?.seo?.desc || p?.excerpt || H1, alternates: alt("/gioi-thieu") };
+  return withOg({ title: p?.seo?.title || "Giới thiệu Fipilot AI", description: p?.seo?.desc || p?.excerpt || H1, alternates: alt("/gioi-thieu") }, typeof s !== "undefined" ? s : undefined);
 }
 
 export default async function About() {

@@ -3,11 +3,11 @@ import PageHead from "@/components/PageHead";
 import JsonLd from "@/components/JsonLd";
 import Icon from "@/components/Icon";
 import ContactForm from "@/components/ContactForm";
-import { getSettings, alt } from "@/lib/site";
+import { getSettings, alt, withOg } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
 
 export const revalidate = 300;
-export const metadata = { title: "Liên hệ", description: "Cần hỗ trợ? Nhắn cho Fipilot AI qua email, Zalo hoặc form — thường trả lời trong ngày làm việc.", alternates: alt("/lien-he") };
+export const metadata = withOg({ title: "Liên hệ", description: "Cần hỗ trợ? Nhắn cho Fipilot AI qua email, Zalo hoặc form — thường trả lời trong ngày làm việc.", alternates: alt("/lien-he") });
 
 export default async function Contact() {
   const s = await getSettings();

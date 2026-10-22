@@ -80,7 +80,7 @@ export default async function Footer({ s, menus }) {
         <div aria-hidden="true" className="watermark" style={{ position: "relative", marginTop: 10, textAlign: "center", fontSize: 168, fontWeight: 900, lineHeight: 1, background: "linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", whiteSpace: "nowrap", userSelect: "none" }}>Fipilot AI</div>
         <div style={{ position: "relative", background: "rgba(0,0,0,.18)" }}>
           <div className="wrap fbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 52, fontSize: 12, color: "rgba(255,255,255,.55)" }}>
-            <span>{(f.copyright || "© %year% Fipilot AI").replace(/%(year|nam)%/g, year)} · fipilotai.com</span><span>{f.note}</span>
+            <span>{(f.copyright || "© %year% Fipilot AI").replace(/%(year|nam)%/g, year)} · fipilotai.com · <a href="/phuong-phap-du-lieu" style={{ color: "inherit", textDecoration: "underline" }}>Cách tính calo</a></span><span>{f.note}</span>
             <a href="#top" className="only-pc" style={{ height: 32, padding: "0 12px", borderRadius: 10, background: "rgba(255,255,255,.08)", display: "inline-flex", alignItems: "center", gap: 6, color: "#fff", fontWeight: 700 }}>↑ Lên đầu trang</a>
           </div>
         </div>

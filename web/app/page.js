@@ -7,13 +7,16 @@ import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import Phone from "@/components/Phone";
 import { imgAttrs } from "@/lib/img";
-import { getSettings, appLink, alt } from "@/lib/site";
+import { getSettings, appLink, alt, withOg } from "@/lib/site";
 import { latestPosts, catOf, fmtDate, readMin } from "@/lib/content";
 import { getFood, mainPortion } from "@/lib/foods";
 import { orgGraph, websiteGraph, appGraph, faqGraph, ld, schemaOn } from "@/lib/schema";
 
 export const revalidate = 60;
-export const metadata = { alternates: alt("/") };
+export async function generateMetadata() {
+  const s = await getSettings();
+  return withOg({ title: { absolute: `${s.site.name} — ${s.site.tagline}, thực đơn đúng calo` }, description: "Giảm cân bằng món Việt quen thuộc. App tự lên thực đơn đúng calo mỗi ngày — phở, bún, cơm tấm vẫn ăn được.", alternates: alt("/") }, s);
+}
 // Bản vẽ trang chủ 19/10 (theo ảnh ChatGPT, giữ decor): ảnh món nhìn từ trên (public/img/home), số calo lấy từ kho món app
 const DISH = { "phở bò": "pho-bo", "cơm gà": "com-ga", "bún chả": "bun-cha", "bún bò huế": "bun-bo-hue", "bánh mì trứng": "banh-mi-trung", "sữa chua": "sua-chua" };
 const dimg = (k) => `/img/home/${DISH[k] || "pho-bo"}.webp`;

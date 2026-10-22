@@ -2,14 +2,14 @@
 import PageHead from "@/components/PageHead";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
-import { getSettings, appLink, alt } from "@/lib/site";
+import { getSettings, appLink, alt, withOg } from "@/lib/site";
 import { vnd, fillTrial, premiumPoints, LIMIT_NAME, limitText } from "@/lib/plans";
 import { breadcrumb, faqGraph, ld, schemaOn, appGraph } from "@/lib/schema";
 
 export const revalidate = 300;
 export async function generateMetadata() {
   const s = await getSettings(); const m = s.plan?.month;
-  return { title: "Bảng giá", description: `Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium${m ? ` từ ${vnd(m.per)}/tháng` : ""} thêm nhiều lượt AI chụp ảnh tính calo, hỏi AI${s.plan?.trial ? ` — dùng thử ${s.plan.trial} ngày, không cần thẻ` : ""}.`, alternates: alt("/bang-gia") };
+  return withOg({ title: "Bảng giá", description: `Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium${m ? ` từ ${vnd(m.per)}/tháng` : ""} thêm nhiều lượt AI chụp ảnh tính calo, hỏi AI${s.plan?.trial ? ` — dùng thử ${s.plan.trial} ngày, không cần thẻ` : ""}.`, alternates: alt("/bang-gia") }, typeof s !== "undefined" ? s : undefined);
 }
 const ROWS = [["Thực đơn món Việt tự lên mỗi ngày", 1, 1], ["Đổi món giữ gần bằng calo", 1, 1], ["Ghi bữa, nhắc giờ ăn", 1, 1], ["Theo dõi cân, tổng kết tháng", 1, 1]];
 const FAQ = [{ q: "Hết %trial% ngày dùng thử có tự trừ tiền không?", a: "Không. Hết dùng thử app tự về gói Miễn phí, bạn chọn nâng cấp mới phải trả." }];

@@ -7,9 +7,13 @@ const LIVE = "status=in.(published,scheduled)";
 
 export const readMin = (w) => Math.max(1, Math.round((w || 0) / 220));
 
+// 23/10: bài hẹn giờ viết xong trước ngày đăng → ngày sửa (updated_at) sớm hơn ngày đăng. Ngày "Cập nhật", meta modified_time,
+// schema dateModified, sitemap lastmod đều lấy max(ngày sửa, ngày đăng) — một nguồn, không bao giờ trước ngày đăng.
+export const modifiedOf = (p) => { const a = p?.updated_at, b = p?.published_at; if (!a) return b || null; if (!b) return a; return new Date(a) > new Date(b) ? a : b; };
 export async function getPostBySlug(slug) {
   const r = await q(`web_posts?slug=eq.${enc(slug)}&${LIVE}&select=${POST_COLS}&limit=1`);
-  return r?.[0] || null;
+  const p = r?.[0] || null;
+  return p ? { ...p, updated_at: modifiedOf(p) } : null;
 }
 
 export async function latestPosts({ limit = 12, offset = 0, termId = null, authorId = null, exclude = [] } = {}) {

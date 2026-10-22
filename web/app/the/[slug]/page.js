@@ -1,4 +1,4 @@
-import { alt, getSettings } from "@/lib/site";
+import { alt, getSettings, withOg } from "@/lib/site";
 import Sticky from "@/components/Sticky";
 // Thẻ (139e/f) — mặc định không cho Google lập chỉ mục (trang mỏng)
 import { notFound } from "next/navigation";
@@ -10,7 +10,7 @@ export const revalidate = 60;
 export async function generateMetadata({ params }) {
   const t = await getTerm("tag", params.slug);
   if (!t) return {};
-  return { title: `Thẻ: ${t.name}`, robots: { index: t.seo?.index === true, follow: true }, alternates: alt(`/the/${t.slug}`) };
+  return withOg({ title: `Thẻ: ${t.name}`, robots: { index: t.seo?.index === true, follow: true }, alternates: alt(`/the/${t.slug}`) }, typeof s !== "undefined" ? s : undefined);
 }
 export default async function Tag({ params }) {
   const t = await getTerm("tag", params.slug);

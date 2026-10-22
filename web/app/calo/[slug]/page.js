@@ -4,7 +4,7 @@ import Crumb from "@/components/Crumb";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import Portions from "@/components/Portions";
-import { getSettings, appLink, alt, ogBase } from "@/lib/site";
+import { getSettings, appLink, alt, ogBase, withOg } from "@/lib/site";
 import { caloBySlug, caloFoods } from "@/lib/calo";
 import { q, enc } from "@/lib/sb";
 import { mainPortion } from "@/lib/foods";
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }) {
   const s = await getSettings();
   const fd = r.food, por = mainPortion(fd);
   const desc = `${por ? `${por.name.charAt(0).toUpperCase() + por.name.slice(1)} ${fd.name.toLowerCase()} (${por.gram} g) khoảng ${por.cal} kcal. ` : ""}100 g ${fd.name.toLowerCase()} có ${fd.per100.cal} kcal, đạm ${vn(fd.per100.p)} g, tinh bột ${vn(fd.per100.c)} g, chất béo ${vn(fd.per100.f)} g. Cách ăn khi giảm cân.`;
-  return { title: `${fd.name} bao nhiêu calo?`, description: desc.slice(0, 160), alternates: alt(`/calo/${fd.slug}`), robots: { index: !r.page?.noindex, follow: true }, openGraph: { ...ogBase(s), ...(r.page?.image_url ? { images: [{ url: r.page.image_url }] } : {}) } };
+  return withOg({ title: `${fd.name} bao nhiêu calo?`, description: desc.slice(0, 160), alternates: alt(`/calo/${fd.slug}`), robots: { index: !r.page?.noindex, follow: true }, openGraph: { ...ogBase(s), ...(r.page?.image_url ? { images: [{ url: r.page.image_url }] } : {}) } }, typeof s !== "undefined" ? s : undefined);
 }
 
 export default async function Calo({ params }) {
@@ -61,6 +61,7 @@ export default async function Calo({ params }) {
               <span style={{ width: 30, height: 30, borderRadius: 15, background: V.dot, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, flexShrink: 0 }}>{V.i}</span>
               <span style={{ display: "flex", flexDirection: "column", gap: 4 }}><b style={{ fontSize: 18, color: V.c }}>Ăn {fd.name.toLowerCase()} khi giảm cân: {V.t}</b><span style={{ fontSize: 15.5, lineHeight: 1.6, color: "#334155" }}>{V.l[0]}<br />{V.l[1]}</span></span>
             </div>
+            <p className="o2" style={{ fontSize: 14, lineHeight: 1.6, color: "#475569", margin: 0 }}>Số liệu theo kho món Fipilot AI (Viện Dinh dưỡng, đối chiếu USDA) · <a href="/phuong-phap-du-lieu">Cách tính và khẩu phần</a></p>
             {faq.length > 0 && <div className="o5 calofaq" style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 28 }}><h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Câu hỏi thường gặp</h2>{faq.map((x, i) => <details key={i} className="faq" open={i === 0}><summary>{x.q}</summary><p>{x.a}</p></details>)}</div>}
           </div>
           <div className="calo-side" style={{ width: 360, display: "flex", flexDirection: "column", gap: 20 }}>

@@ -110,3 +110,33 @@ test("chuyên mục dưới 3 bài: tự chưa cho lập chỉ mục, trừ khi 
   assert.equal(catIndexable({ seo: { index_thin: true } }, 1), true);
   assert.equal(catIndexable({ seo: { noindex: true, index_thin: true } }, 9), false);
 });
+
+// 23/10: chữ dính số + số/đơn vị không xuống dòng; link nội bộ tự gắn; ngày sửa không trước ngày đăng
+import { tidy } from "../lib/typo.js";
+import { autoLink } from "../lib/autolink.js";
+import { modifiedOf } from "../lib/content.js";
+import { withOg } from "../lib/site.js";
+test("tidy: tách chữ dính số, giữ 21h30 / B12, nối số + đơn vị bằng dấu cách không ngắt", () => {
+  assert.equal(tidy("mức tối thiểu1.800 kcal/ngày"), "mức tối thiểu 1.800 kcal/ngày");
+  assert.equal(tidy("ăn lúc 21h30, vitamin B12"), "ăn lúc 21h30, vitamin B12");
+  assert.equal(tidy('<a href="/a-1">Gỏi cuốn (60 g)</a>'), '<a href="/a-1">Gỏi cuốn (60 g)</a>');
+});
+test("autoLink: gắn link tới bài đã lên, bỏ đoạn mở bài, tiêu đề, link sẵn có và chính bài", () => {
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const mk = (k, href) => ({ href, re: new RegExp(`(^|[^\\p{L}\\p{N}])(${esc(k)})(?=$|[^\\p{L}\\p{N}])`, "iu") });
+  const T = [mk("giảm cân sau sinh", "/giam-can-sau-sinh"), mk("bảng calo món việt", "/bang-calo"), mk("giảm cân cho nữ", "/giam-can-cho-nu")];
+  const out = autoLink([{ type: "p", html: "Mở bài giảm cân sau sinh." }, { type: "h", text: "Giảm cân sau sinh" }, { type: "p", html: "Xem bảng calo món Việt và bài giảm cân sau sinh, giảm cân cho nữ." }], T, "/giam-can-cho-nu");
+  assert.equal(out[0].html, "Mở bài giảm cân sau sinh.");
+  assert.ok(out[2].html.includes('<a href="/bang-calo">bảng calo món Việt</a>'));
+  assert.ok(out[2].html.includes('<a href="/giam-can-sau-sinh">giảm cân sau sinh</a>'));
+  assert.ok(!out[2].html.includes('href="/giam-can-cho-nu"'));
+});
+test("modifiedOf: bài hẹn giờ không báo ngày sửa trước ngày đăng", () => {
+  assert.equal(modifiedOf({ updated_at: "2026-10-20T00:00:00Z", published_at: "2026-10-22T00:00:00Z" }), "2026-10-22T00:00:00Z");
+  assert.equal(modifiedOf({ updated_at: "2026-10-23T00:00:00Z", published_at: "2026-10-22T00:00:00Z" }), "2026-10-23T00:00:00Z");
+});
+test("withOg: đủ og:url / title / description / ảnh + twitter ảnh lớn", () => {
+  const m = withOg({ title: "Bảng calo", description: "Mô tả", alternates: { canonical: "/bang-calo" } });
+  assert.equal(m.openGraph.url, "/bang-calo"); assert.equal(m.openGraph.title, "Bảng calo"); assert.equal(m.openGraph.locale, "vi_VN");
+  assert.ok(m.openGraph.images.length); assert.equal(m.twitter.card, "summary_large_image");
+});

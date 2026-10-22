@@ -26,7 +26,7 @@ export default function Calc({ full = false, appUrl = "https://app.fipilotai.com
   const num = (k, unit, min, max) => (
     <span style={{ position: "relative", display: "block" }}>
       <input type="number" inputMode="decimal" min={min} max={max} value={v[k]} onChange={set(k)} style={box} />
-      {unit && <i style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontStyle: "normal", fontSize: full ? 14 : 13, fontWeight: 600, color: "#64748B", pointerEvents: "none" }}>{unit}</i>}
+      {unit && <i style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontStyle: "normal", fontSize: full ? 14 : 13, fontWeight: 700, color: "#475569", pointerEvents: "none" }}>{unit}</i>}
     </span>
   );
   const kcal = r ? r.calTarget : null;

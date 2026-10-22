@@ -4,7 +4,7 @@ import Crumb from "@/components/Crumb";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
 import { PostList } from "@/components/PostCard";
-import { getSettings, siteUrl, alt } from "@/lib/site";
+import { getSettings, siteUrl, alt, withOg } from "@/lib/site";
 import { getAuthor, latestPosts } from "@/lib/content";
 import { breadcrumb, ld, schemaOn, orgGraph } from "@/lib/schema";
 import { appAuthor } from "@/lib/appdata";
@@ -18,7 +18,7 @@ const social = (u) => { const m = SOC.find(([re]) => re.test(u)); if (m) return 
 export async function generateMetadata({ params }) {
   const a = await findAuthor(params.slug);
   if (!a) return {};
-  return { title: a.name, description: a.bio?.slice(0, 158) || `Các bài viết của ${a.name} trên Fipilot AI`, alternates: alt(`/tac-gia/${a.slug}`) };
+  return withOg({ title: a.name, description: a.bio?.slice(0, 158) || `Các bài viết của ${a.name} trên Fipilot AI`, alternates: alt(`/tac-gia/${a.slug}`) }, typeof s !== "undefined" ? s : undefined);
 }
 export default async function Author({ params }) {
   const a = await findAuthor(params.slug);

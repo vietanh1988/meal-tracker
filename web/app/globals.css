@@ -143,7 +143,7 @@ main.home{overflow-x:clip}@media(max-width:720px){.lf6{display:none}}
 .h-hero{position:relative;overflow:hidden;background:#EEF3F8;padding:72px 0 88px}.h-hero-c{padding-bottom:150px}
 .h-bg{position:absolute;inset:0;background:var(--hbg) right 30%/cover no-repeat}
 .h-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(243,247,252,.96) 0%,rgba(243,247,252,.82) 32%,rgba(243,247,252,0) 58%),linear-gradient(180deg,rgba(243,246,251,0) 70%,#F3F6FB 100%)}
-.dc{position:absolute;pointer-events:none;filter:drop-shadow(0 12px 16px rgba(20,60,30,.18))}
+.dc{position:absolute;pointer-events:none;height:auto;filter:drop-shadow(0 12px 16px rgba(20,60,30,.18))}
 
 
 .lf1{width:120px;left:-34px;top:92px;transform:rotate(-38deg)}.lf2{width:92px;left:-30px;bottom:150px;transform:rotate(18deg);filter:blur(1.2px) drop-shadow(0 12px 16px rgba(20,60,30,.18))}

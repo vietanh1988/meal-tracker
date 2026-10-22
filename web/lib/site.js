@@ -45,3 +45,11 @@ export function titleOf(s, t) { return (s?.site?.title_tpl || "%title% | %site%"
 
 // canonical + hreflang (web chỉ tiếng Việt: vi-VN + x-default trỏ cùng địa chỉ)
 export const alt = (path) => ({ canonical: path, languages: { "vi-VN": path, "x-default": path } });
+// 23/10: mọi loại trang đủ og:url / og:title / og:description / og:type / og:image / site_name / locale + Twitter ảnh lớn.
+// Trang tự khai openGraph (bài viết, trang calo) thì giữ phần riêng, chỉ bù chỗ thiếu.
+export function withOg(m, s) {
+  const title = typeof m.title === "string" ? m.title : m.title?.absolute || undefined;
+  const url = m.alternates?.canonical;
+  const og = { ...ogBase(s), ...(title ? { title } : {}), ...(m.description ? { description: m.description } : {}), ...(url ? { url } : {}), ...(m.openGraph || {}) };
+  return { ...m, openGraph: og, twitter: { card: "summary_large_image", ...(og.title ? { title: og.title } : {}), ...(og.description ? { description: og.description } : {}), images: (og.images || []).map((x) => x.url || x), ...(m.twitter || {}) } };
+}

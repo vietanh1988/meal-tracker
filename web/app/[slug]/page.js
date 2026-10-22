@@ -10,9 +10,10 @@ import LegalToc from "@/components/LegalToc";
 import PostToc from "@/components/PostToc";
 import { legalPages, legalToBlocks, vnDateIso } from "@/lib/appdata";
 import PostCard from "@/components/PostCard";
-import { getSettings, siteUrl, appLink, alt, ogBase } from "@/lib/site";
+import { getSettings, siteUrl, appLink, alt, ogBase, withOg } from "@/lib/site";
 import { getPostBySlug, latestPosts, postsByIds, catOf, fmtDate, readMin } from "@/lib/content";
 import { prepare, toc as mkToc, faqs } from "@/lib/blocks";
+import { linkTargets, autoLink } from "@/lib/autolink";
 import { textOf } from "@/lib/sanitize";
 import { orgGraph, articleGraph, breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
@@ -38,13 +39,13 @@ export async function generateMetadata({ params }) {
   const seo = p.seo || {};
   const desc = seo.desc || p.excerpt || textOf((p.blocks || []).find((b) => b.type === "p")?.html).slice(0, 158);
   const robots = { index: !seo.noindex, follow: !seo.nofollow };
-  return {
+  return withOg({
     title: seo.title ? { absolute: seo.title } : p.title,
     description: desc,
     alternates: alt(seo.canonical || `/${p.slug}`),
     robots,
-    openGraph: { ...ogBase(s), type: p.kind === "post" ? "article" : "website", title: seo.og_title || seo.title || p.title, description: desc, url: `/${p.slug}`, ...(seo.og_image || p.cover_url ? { images: [{ url: seo.og_image || p.cover_url }] } : {}), publishedTime: p.published_at, modifiedTime: p.updated_at },
-  };
+    openGraph: { ...ogBase(s), type: p.kind === "post" ? "article" : "website", title: seo.og_title || seo.title || p.title, description: desc, url: `/${p.slug}`, ...(seo.og_image || p.cover_url ? { images: [{ url: seo.og_image || p.cover_url }] } : {}), publishedTime: p.published_at, modifiedTime: p.updated_at, ...(p.kind === "post" && catOf(p) ? { section: catOf(p).name, tags: (p.terms || []).filter((t) => t.kind === "tag").map((t) => t.name) } : {}) },
+  }, s);
 }
 
 export default async function Page({ params }) {
@@ -54,6 +55,7 @@ export default async function Page({ params }) {
   if (!p) notFound();
   const s = await getSettings();
   let blocks = await prepare(p.blocks);
+  if (p.kind === "post" && !p.seo?.no_autolink) blocks = autoLink(blocks, await linkTargets(), `/${p.slug}`); // 23/10: link nội bộ tự gắn khi bài đích đã lên
   // Trang Điều khoản / Chính sách (139w): đánh số mục "1. 2. …" nếu chưa gõ số
   if (p.kind === "page" && p.template === "legal") { let n = 0; blocks = blocks.map((b) => (b?.type === "h" && (b.level || 2) === 2 ? (n++, /^\s*\d/.test(textOf(b.text)) ? b : { ...b, text: `${n}. ${b.text}` }) : b)); }
   const t = mkToc(blocks);

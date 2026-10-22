@@ -3,13 +3,13 @@ import { notFound } from "next/navigation";
 import PageHead from "@/components/PageHead";
 import Sticky from "@/components/Sticky";
 import { PostList, Pager } from "@/components/PostCard";
-import { getSettings, alt } from "@/lib/site";
+import { getSettings, alt, withOg } from "@/lib/site";
 import { latestPosts, countPosts, allTerms } from "@/lib/content";
 
 export const revalidate = 60;
 export async function generateMetadata({ searchParams }) {
   const page = Math.max(1, +searchParams?.trang || 1);
-  return { title: "Bài viết về giảm cân bằng món Việt", description: "Calo từng món, thực đơn mẫu và kiến thức ăn uống — viết dễ hiểu, áp dụng được ngay.", alternates: alt(page > 1 ? `/bai-viet?trang=${page}` : "/bai-viet") };
+  return withOg({ title: "Bài viết về giảm cân bằng món Việt", description: "Calo từng món, thực đơn mẫu và kiến thức ăn uống — viết dễ hiểu, áp dụng được ngay.", alternates: alt(page > 1 ? `/bai-viet?trang=${page}` : "/bai-viet") }, typeof s !== "undefined" ? s : undefined);
 }
 export default async function Blog({ searchParams }) {
   const s = await getSettings();

@@ -18,6 +18,8 @@ QUY TẮC BẮT BUỘC
 6a. MỘT SỐ CHÍNH CHO MỖI MÓN: món có trong bảng app thì số app là số chính, dùng ĐÚNG số đó ở mọi chỗ (sapo, thân bài, bảng, FAQ). Số của nguồn khác chỉ nêu khi giải thích vì sao chênh (tô to hơn, nhiều nước béo, thêm quẩy...), tối đa 1 nguồn khác, ghi rõ khẩu phần của nguồn đó. Không rải nhiều khoảng số khác nhau cho cùng một món.
 6b. SỐ NÀO CŨNG CÓ NGUỒN CÓ TÊN: mọi con số ngoài bảng app (nhu cầu calo, natri, khối lượng tăng giảm, calo món ăn kèm...) phải có trong ghi chú tra cứu kèm tên tổ chức / tài liệu, hoặc là kiến thức phổ biến của WHO / Bộ Y tế / Viện Dinh dưỡng. Không có thì bỏ số đó, viết định tính. Cấm nguồn mơ hồ: "nhiều trang dinh dưỡng", "thực tế", "theo các chuyên gia", "nghiên cứu cho thấy" không tên. Hai số khác nhau cho cùng một thứ thì phải nói vì sao khác.
 6c. SO SÁNH PHẢI KHỚP BẢNG: câu so sánh trong sapo / thân bài ("ngang một bữa cơm", "ít hơn bún bò") phải đúng với số trong bảng của chính bài.
+6e. THỰC ĐƠN MẪU / NGÀY MẪU: ghi khẩu phần từng món, tổng kcal mỗi ngày phải khớp mục tiêu bài nêu (lệch tối đa 5%) và KHÔNG dưới sàn bài đã nêu (mặc định 1200 kcal nữ / 1500 kcal nam); thiếu thì tăng khẩu phần hoặc đưa bữa phụ vào thực đơn chính, không để "thêm món phụ cho đủ". Ví dụ cố tình cho thấy một ngày ăn thiếu thì nói rõ ngay câu đó là ví dụ thiếu.
+6f. TỐC ĐỘ GIẢM CÂN DÙNG MỨC CỦA APP: 0,25-0,75% cân nặng mỗi tuần (chậm 0,25%, vừa 0,5%, nhanh 0,75%; người 60 kg giảm khoảng 0,15-0,45 kg/tuần). Mức của nguồn khác (ví dụ NIH 0,5-1 kg/tuần) chỉ nêu kèm câu giải thích vì sao app chọn mức thấp hơn. Sàn calo 1200 kcal nữ / 1500 kcal nam.
 6d. KHÔNG KHUYÊN ĐIỀU KHÔNG CÓ SỐ: lời khuyên kiểu "chọn X vì ít calo hơn" chỉ viết khi bài có số của X; không có số thì nói đúng mức chắc chắn hoặc bỏ.
 7. Chủ đề sức khỏe (YMYL): không hứa kết quả, không khuyên nhịn đói cực đoan, nêu khi nào nên hỏi bác sĩ hoặc chuyên gia dinh dưỡng. Tách nhóm đối tượng cho đúng, không gộp chung một dòng: người có bệnh nền (cao huyết áp, thận, tim mạch, tiểu đường, gan) · phụ nữ mang thai hoặc cho con bú · trẻ em và người dưới 18 tuổi (nhu cầu dinh dưỡng riêng, không áp dụng mức ăn kiêng người lớn). Không đưa mức calo dưới 1200 kcal/ngày cho nữ hoặc 1500 kcal/ngày cho nam mà không có giám sát y tế.
 8. Nhắc Fipilot AI tối đa 1-2 lần, ở nửa sau bài, giọng hướng dẫn (ví dụ dùng app để ghi bữa và xem calo còn lại), không tự khen, không hard-sell.
@@ -78,10 +80,30 @@ Chuyên mục: <mã chuyên mục, chỉ khi được yêu cầu chọn>
 Ý định tìm kiếm: <1 câu>
 Dàn ý H2: <5-8 dòng, mỗi dòng 1 H2>
 Số liệu đã kiểm:
-- <số liệu cụ thể> (nguồn: <tên tổ chức / tài liệu>)`,
+- <số liệu cụ thể> (nguồn: <tên tài liệu, cơ quan, năm> | <URL trang gốc đã mở được>)
+Chỉ ghi URL thật của trang đã đọc (không đoán đường dẫn).`,
   ].filter(Boolean).join("\n\n");
 }
 export const pickCategory = (notes, cats = []) => { const m = String(notes || "").match(/^\s*Chuyên mục:\s*([a-z0-9-]+)/im); return m ? cats.find((c) => c.slug === m[1]) || null : null; };
+
+// ---- Nguồn tham khảo (23/10): máy lấy từ ghi chú tra cứu (tên + URL trang AI đã đọc khi tra web), không cho AI tự bịa link ----
+// Chỉ nhận trang của cơ quan / tạp chí uy tín; mục "Nguồn tham khảo" gắn ở cuối bài, link mở tab mới.
+export const SOURCE_OK = /(^|\.)(who\.int|nih\.gov|cdc\.gov|fda\.gov|usda\.gov|nal\.usda\.gov|ncbi\.nlm\.nih\.gov|pubmed\.ncbi\.nlm\.nih\.gov|nhs\.uk|nice\.org\.uk|efsa\.europa\.eu|harvard\.edu|mayoclinic\.org|clevelandclinic\.org|heart\.org|diabetes\.org|eatright\.org|acog\.org|viendinhduong\.vn|moh\.gov\.vn|vncdc\.gov\.vn|thelancet\.com|bmj\.com|nejm\.org|nature\.com|sciencedirect\.com|academic\.oup\.com|jamanetwork\.com|wiley\.com|springer\.com|frontiersin\.org|mdpi\.com|fao\.org|unicef\.org)$/i;
+export function sourcesFromResearch(research = "") {
+  const out = [], seen = new Set();
+  for (const line of String(research || "").split("\n")) {
+    const m = line.match(/nguồn:\s*([^|()]+?)\s*\|\s*(https?:\/\/[^\s)]+)/i) || line.match(/\(([^()|]{4,140}?)[\s,:-]*(https?:\/\/[^\s)]+)\)/);
+    if (!m) continue;
+    const name = m[1].replace(/^\s*nguồn:\s*/i, "").trim().replace(/[,;:\s]+$/, ""), url = m[2].replace(/[.,;]+$/, "");
+    let host = ""; try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { continue; }
+    if (!SOURCE_OK.test(host) || seen.has(url) || !name) continue;
+    seen.add(url); out.push({ name: name.slice(0, 160), url });
+    if (out.length >= 8) break;
+  }
+  return out;
+}
+const escHtml = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+export const sourcesBlocks = (list) => (list?.length ? [{ type: "h", level: 2, text: "Nguồn tham khảo" }, { type: "list", ordered: false, items: list.map((x) => `<a href="${escHtml(x.url)}" target="_blank" rel="noopener">${escHtml(x.name)}</a>`) }] : []);
 
 // ---- Soát bài (bước sau khi viết): 1 lượt AI đọc bài + ghi chú tra cứu + bảng calo app, liệt kê lỗi → AI viết sửa đúng chỗ ----
 // Máy gợi ý trước: câu nhắc món có trong bảng app mà số kcal khác mọi khẩu phần của app (chỉ là gợi ý cho bước soát, không tự sửa)
@@ -110,7 +132,7 @@ export function reviewPrompt({ article = "", research = "", foods = "", hints = 
 3. khuyen-khong-so: lời khuyên chọn món / cách ăn dựa trên so sánh mà bài không có số chứng minh.
 4. van-dich: câu dịch, danh từ hoá ("sự ..."), "mặc định", "biến X thành", "phụ thuộc vào việc", câu lủng củng, nhiều đoạn mở cùng một kiểu câu.
 5. doi-tuong: gộp nhóm đối tượng sai (ví dụ trẻ dưới 18 tuổi chung với người bệnh thận), lời khuyên y tế quá đà.
-6. sai-su-that: điều sai với kiến thức dinh dưỡng phổ biến.`,
+6. sai-su-that: điều sai với kiến thức dinh dưỡng phổ biến; thực đơn mẫu / ngày mẫu cộng ra dưới sàn calo bài nêu (1200 nữ / 1500 nam) hoặc lệch mục tiêu bài nêu quá 5% mà không nói là ví dụ thiếu; tốc độ giảm cân khác mức 0,25-0,75% cân nặng/tuần của app mà không giải thích.`,
     `Trả lời đúng khuôn, mỗi lỗi 1 dòng, tối đa 15 dòng:
 - [loại] "trích NGUYÊN VĂN đoạn lỗi (ngắn)" => cách sửa cụ thể (số đúng lấy từ đâu, hoặc bỏ, hoặc câu viết lại)
 Chỉ ghi lỗi chắc chắn cần sửa, không ghi chỗ đã đúng (không ghi dòng kiểu \"khớp\", \"giữ nguyên\"), không bắt bỏ số ước tính hợp lý. Ít lỗi thật hơn nhiều lỗi vụn.
@@ -331,8 +353,8 @@ export function articleIssues(a, blocks, { inlineImages = null } = {}) {
 }
 
 // Kết quả AI → bài nháp. imgs: { cover: {url, alt}, inline: [{url, alt}] } (ảnh đã vẽ / dùng lại)
-export function articleToPost(a, { keyword = "", termId = null, authorId = null, kind = "post", imgs = null, links = null } = {}) {
-  const blocks = mdToBlocks(a.md, { links });
+export function articleToPost(a, { keyword = "", termId = null, authorId = null, kind = "post", imgs = null, links = null, sources = null } = {}) {
+  const blocks = [...mdToBlocks(a.md, { links }), ...sourcesBlocks(sources)];
   let k = 0;
   if (imgs?.inline?.length) for (const b of blocks) if (b.type === "img" && imgs.inline[k]) { const g = imgs.inline[k++]; if (g?.url) { b.url = g.url; if (g.alt) b.alt = g.alt; } }
   return {
