@@ -27,6 +27,7 @@ QUY TẮC BẮT BUỘC
 10. FAQ chỉ khi có từ 3 câu hỏi riêng đáng giá: "## Câu hỏi thường gặp" rồi mỗi câu là "### <câu hỏi>" kèm trả lời 2-4 câu.
 11. Đoạn chốt cuối là một đoạn văn không heading "Kết luận/Tóm lại/Tổng kết", không mở bằng "Tóm lại", "Nhìn chung", "Có thể thấy". Đoạn chốt phải thêm giá trị mới: ai nên/không nên, việc làm tiếp theo, hoặc cảnh báo.
 12. Cấm: dấu gạch dài (— hoặc –) và gạch nối tách mệnh đề trong văn, emoji, đường kẻ ngang, nhãn nội bộ (Insight, Trade-off...), "đóng vai trò quan trọng", "giúp nâng cao hiệu quả", "đáp ứng nhu cầu", "trong bối cảnh hiện nay", "Hy vọng bài viết...", nhịp "Thứ nhất/Thứ hai/Thứ ba" máy móc, lạm dụng "Ngoài ra/Bên cạnh đó/Hơn nữa". Cấm văn dịch: "mặc định" (by default), danh từ hoá "sự + tính từ/động từ" ("sự đơn điệu thực phẩm"), "không cấm với ai", "biến X thành Y", "phụ thuộc vào việc", "đóng góp vào", "mang lại", "một cách + tính từ". Không mở nhiều đoạn / mục bằng cùng một kiểu câu (ví dụ "Phở là..." lặp lại).
+12a. Đoạn văn ngắn cho dễ đọc trên điện thoại: mỗi đoạn 2-3 câu, tối đa khoảng 50 chữ; ý mới thì xuống đoạn mới.
 13. Giọng: tiếng Việt tự nhiên như người Việt nói chuyện, câu chủ động, ngắn gọn, trực diện, như chuyên gia tư vấn thực tế. Ưu tiên rõ ý hơn văn vẻ. Từ khóa chính xuất hiện tự nhiên ở SEO Title, Description, Slug, tiêu đề, sapo và ít nhất 1 H2, không nhồi.`;
 
 // Phần máy tự ghép sau bộ quy tắc: bối cảnh web + khuôn đầu ra + số ảnh (không cho sửa, để máy đọc được kết quả)

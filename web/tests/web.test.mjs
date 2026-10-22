@@ -140,3 +140,11 @@ test("withOg: đủ og:url / title / description / ảnh + twitter ảnh lớn",
   assert.equal(m.openGraph.url, "/bang-calo"); assert.equal(m.openGraph.title, "Bảng calo"); assert.equal(m.openGraph.locale, "vi_VN");
   assert.ok(m.openGraph.images.length); assert.equal(m.twitter.card, "summary_large_image");
 });
+import { splitLong } from "../lib/paras.js";
+test("splitLong: đoạn dài chia thành đoạn 2-3 câu, giữ đoạn mở bài và link", () => {
+  const long = Array.from({ length: 6 }, (_, i) => `Câu số ${i + 1} nói về bữa ăn và calo trong ngày của mẹ sau sinh khá dài.`).join(" ") + ' Xem <a href="/bang-calo">bảng calo. Món Việt</a> nhé.';
+  const out = splitLong([{ type: "p", html: "Mở bài." }, { type: "p", html: long }]);
+  assert.equal(out[0].html, "Mở bài.");
+  assert.ok(out.length >= 3);
+  assert.ok(out.some((b) => b.html.includes('<a href="/bang-calo">bảng calo. Món Việt</a>')));
+});
