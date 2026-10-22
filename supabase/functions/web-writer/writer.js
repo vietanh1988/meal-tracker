@@ -428,18 +428,20 @@ async function reviseSpentToday(admin) {
 async function reviseNext(admin, cfg) {
   if (Number(cfg.daily_cap_usd) > 0 && (await spentToday(admin)) + (await reviseSpentToday(admin)) >= Number(cfg.daily_cap_usd)) return { paused: "cap" };
   const { data: rows } = await admin.from("web_posts").select("id,slug,title,status,blocks,seo,primary_term,published_at").eq("kind", "post").in("status", ["published", "scheduled", "draft"]).order("published_at", { ascending: true, nullsFirst: false }).limit(500);
-  const post = (rows || []).find((p) => !(p.seo?.rev?.v === 2 && p.seo.rev.stage === "done"));
+  const fresh = (p) => p.seo?.rev?.lock && Date.now() - new Date(p.seo.rev.lock).getTime() < 180_000; // đang có lần chạy khác làm bài này (bước AI lâu hơn 1 phút)
+  const post = (rows || []).find((p) => !(p.seo?.rev?.v === 2 && p.seo.rev.stage === "done") && !fresh(p));
   if (!post) return { idle: true };
   const model = cfg.model, prov = providerOf(model), keys = await keysFor(admin, cfg, prov);
   const rev = post.seo?.rev?.v === 2 ? post.seo.rev : { v: 2, stage: "research" };
   const saveSeo = async (patch) => { const seo = { ...(post.seo || {}), rev: { ...rev, ...patch } }; const { error } = await admin.from("web_posts").update({ seo }).eq("id", post.id); if (error) throw new Error("Lưu: " + error.message); };
-  const fail = async (e) => { const n = (rev.fails || 0) + 1; await saveSeo({ fails: n, error: String(e?.message || e).slice(0, 300), ...(n >= 3 ? { stage: "done", gaveUp: true } : {}) }); return { slug: post.slug, error: String(e?.message || e) }; };
+  const fail = async (e) => { const n = (rev.fails || 0) + 1; await saveSeo({ lock: null, fails: n, error: String(e?.message || e).slice(0, 300), ...(n >= 3 ? { stage: "done", gaveUp: true } : {}) }); return { slug: post.slug, error: String(e?.message || e) }; };
+  await saveSeo({ lock: new Date().toISOString() }); rev.lock = new Date().toISOString();
   try {
     if (rev.stage === "research") {
       const r = await llm(prov, keys, { model, maxTokens: 1400, search: 4, system: "Bạn là biên tập viên dinh dưỡng, tra web kiểm số liệu. Chỉ trả ghi chú đúng khuôn.", messages: [{ role: "user", content: researchPrompt({ keyword: post.seo?.keyword || post.title, notes: "Bài đã viết xong, cần nguồn có link gốc cho các số liệu chính (nhu cầu calo, tốc độ giảm cân an toàn, sàn calo, số liệu sức khỏe nhóm đối tượng) để soát lại bài." }) }] });
       const cost = textCost(model, r.inTok, r.outTok) + (r.searches || 0) * 0.01;
       await logUsage(admin, null, prov, model, r.inTok, r.outTok, cost, "web_revise");
-      await saveSeo({ stage: "revise", research: r.text.trim().slice(0, 6000), cost: cost, fails: 0, error: null });
+      await saveSeo({ stage: "revise", research: r.text.trim().slice(0, 6000), cost: cost, fails: 0, error: null, lock: null });
       return { slug: post.slug, stage: "research" };
     }
     // bước 2: sửa đúng chỗ
@@ -457,10 +459,10 @@ async function reviseNext(admin, cfg) {
     const now = new Date().toISOString();
     if (res.changed.length || src.length) {
       await admin.from("web_revisions").insert({ post_id: post.id, snapshot: { ...post, seo: post.seo }, reason: "ai", created_by: null }).then(() => {}, () => {});
-      const { error } = await admin.from("web_posts").update({ blocks, updated_at: now, seo: { ...(post.seo || {}), rev: { v: 2, stage: "done", at: now, changed: res.changed, skipped: res.skipped, sources: src.length, cost: (rev.cost || 0) + cost } } }).eq("id", post.id);
+      const { error } = await admin.from("web_posts").update({ blocks, updated_at: now, seo: { ...(post.seo || {}), rev: { v: 2, stage: "done", lock: null, at: now, changed: res.changed, skipped: res.skipped, sources: src.length, cost: (rev.cost || 0) + cost } } }).eq("id", post.id);
       if (error) throw new Error("Lưu bài: " + error.message);
       if (post.status === "published") await pingIndexNow(admin, `/${post.slug}`);
-    } else await saveSeo({ stage: "done", at: now, changed: [], skipped: res.skipped, sources: 0, cost: (rev.cost || 0) + cost, research: undefined });
+    } else await saveSeo({ stage: "done", lock: null, at: now, changed: [], skipped: res.skipped, sources: 0, cost: (rev.cost || 0) + cost, research: undefined });
     return { slug: post.slug, stage: "done", changed: res.changed.length, skipped: res.skipped.length, sources: src.length };
   } catch (e) { return await fail(e); }
 }
