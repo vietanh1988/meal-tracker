@@ -14,6 +14,7 @@ import { COL_DEFAULT, collectionStatus } from "../lib/petMath";
 import { todayVN } from "../lib/dateVN";
 import { PlaceEditor, RedrawBox, canPlace } from "./PcPetPlace";
 import { PetRoom } from "../pet/PetRoom";
+import { RUG } from "../pi/piCatalog";
 import { RoomTimes } from "../pet/PetScreens";
 
 const RAR = { common: ["Phổ thông", "gray"], rare: ["Hiếm", "blue"], legendary: ["Huyền thoại", "amber"] };
@@ -108,7 +109,7 @@ function Overview({ d }) {
 // ============ Kho đồ ============
 const ICOLS = "minmax(150px, 1fr) 52px 86px 36px 56px 54px 80px";
 const canVar = (it, v) => it.variants.includes(v) || !!(it.anchor?.[v] || it.body?.[v]); // 23/10: bộ mới không cần điểm đặt
-function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onSavePlace, onCopy }) {
+function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onSavePlace, onCopy, onSaveCfg }) {
   const [placing, setPlacing] = useState(null);
   const [, refresh] = useState(0);
   const [sel, setSel] = useState(sel0);
@@ -127,6 +128,9 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
   const save = async (patch) => { if (!onSave || !it) return; setBusy(true); await onSave(it.id, { ...f, ...patch }); setBusy(false); };
   const vKey = f ? (f.variants.length === 2 ? "chung" : f.variants[0]) : "nam";
   const [tv, setTv] = useState(null); // 23/10: phòng — "xem thử giờ" sáng / trưa / tối (null = theo giờ máy)
+  const [floor, setFloor] = useState(null); // 24/10: chỗ Pi đứng của phòng đang xem (null = theo đã lưu / mặc định)
+  const [floorBusy, setFloorBusy] = useState(false);
+  useEffect(() => { setFloor(ITEMS[sel]?.slot === "phong" ? d.cfg?.floorY?.[ITEMS[sel].ev] ?? null : null); }, [sel, d.cfg?.floorY]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <RedrawBox items={catalog.items.filter((x) => x.redraw)} onCopy={onCopy} />
@@ -161,13 +165,21 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
         <CardHead title={it.name} sub={`${it.id} · ${catalog.slots[it.slot]}`} right={<Pill tone={st(it)[1]}>{st(it)[0]}</Pill>} />
         {it.slot === "phong" && it.times ? (
           <div data-testid="pc-pet-room" style={{ margin: "0 16px", display: "flex", flexDirection: "column", gap: 4 }}>
-            <PetRoom variant="nam" season={it.ev} height={240} forceTime={tv || undefined} testid="pc-pet-room-view">
-              <span style={{ position: "absolute", left: "50%", bottom: 26, transform: "translateX(-50%)", display: "flex", gap: 10, alignItems: "flex-end" }}>
+            <PetRoom variant="nam" season={it.ev} height={240} forceTime={tv || undefined} testid="pc-pet-room-view" floorY={floor ?? undefined}>
+              <span aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: "calc(var(--pi-feet, 26px) - 7px)", width: 260, height: 18, marginLeft: -130, borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
+              <span style={{ position: "absolute", left: "50%", bottom: "var(--pi-feet, 26px)", transform: "translateX(-50%)", display: "flex", gap: 10, alignItems: "flex-end" }}>
                 <PetAvatar variant="nam" size={150} still /><PetAvatar variant="nu" size={150} still />
               </span>
             </PetRoom>
             <span style={{ fontSize: 11.5, fontWeight: 800, color: PC.t3, marginTop: 6 }}>XEM THỬ GIỜ {tv ? "" : "· đang theo giờ máy"}</span>
             <RoomTimes it={it} value={tv} onChange={setTv} testid="pc-pet-room-times" />
+            {/* 24/10 pi_full mục 2: chỉnh chỗ Pi đứng (tâm thảm, phần chiều cao ảnh phòng) cho từng phòng */}
+            <span style={{ fontSize: 11.5, fontWeight: 800, color: PC.t3, marginTop: 8 }}>CHỖ PI ĐỨNG (TÂM THẢM) · {Math.round((floor ?? RUG[it.ev]?.[1] ?? 0.8) * 100)}% chiều cao ảnh</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <input data-testid="pc-pet-floor" type="range" min="0.6" max="0.95" step="0.005" value={floor ?? RUG[it.ev]?.[1] ?? 0.8} onChange={(e) => setFloor(Number(e.target.value))} style={{ flex: 1 }} aria-label="Chỗ Pi đứng" />
+              <Btn kind="soft" disabled={floor == null} onClick={() => setFloor(null)}>Mặc định</Btn>
+              <Btn kind="blue" testid="pc-pet-floor-save" disabled={!onSaveCfg || floorBusy} onClick={async () => { setFloorBusy(true); const fy = { ...((d.cfg || {}).floorY || {}) }; if (floor == null) delete fy[it.ev]; else fy[it.ev] = Math.round(floor * 1000) / 1000; await onSaveCfg?.({ ...PET_CFG_DEFAULT, ...(d.cfg || {}), floorY: fy }); setFloorBusy(false); }}>{floorBusy ? "Đang lưu…" : "Lưu chỗ đứng"}</Btn>
+            </span>
           </div>
         ) : (
         <div style={{ margin: "0 16px", borderRadius: 12, background: "radial-gradient(circle at 50% 40%, #FFFFFF 0%, #EAF4FF 55%, #D6E8FF 100%)", height: 190, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 18, paddingBottom: 10 }}>
@@ -410,7 +422,7 @@ export function PcPet({ top, tab = "overview", data, sel, varFilter, onSaveItem,
       {top(<Tabs value={t} onChange={setT} />, "Thú cưng Pi", "Kho đồ theo Pi nam / Pi nữ, câu Pi nói, Hạt và cấp")}
       <div style={{ padding: 24 }}>
         {t === "overview" && <Overview d={data} />}
-        {t === "items" && <Items d={data} sel={sel} varFilter={varFilter} onSave={onSaveItem} onSavePlace={onSavePlace} onCopy={onCopy} />}
+        {t === "items" && <Items d={data} sel={sel} varFilter={varFilter} onSave={onSaveItem} onSavePlace={onSavePlace} onCopy={onCopy} onSaveCfg={onSaveCfg} />}
         {t === "cols" && <Cols d={data} onSaveCfg={onSaveCfg} />}
         {t === "lines" && <Lines d={data} sel={sel && EVENTS.some((e) => e.key === sel) ? sel : undefined} onSaveLines={onSaveLines} onToggle={onToggleLine} />}
         {t === "settings" && <Settings d={data} onSaveCfg={onSaveCfg} />}

@@ -28,13 +28,19 @@ function PiFace({ variant, size = 30 }) {
     </span>
   );
 }
-export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", onSend, onPremium }) {
+export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", onSend, onSpoken, onPremium }) {
   const [text, setText] = useState("");
-  const send = (t) => { const v = (t ?? text).trim(); if (!v || state === "thinking") return; onSend?.(v); setText(""); };
+  const [focus, setFocus] = useState(false);
+  const busy = state === "thinking" || state === "sleep";
+  const send = (t) => { const v = (t ?? text).trim(); if (!v || busy) return; onSend?.(v); setText(""); };
   const endRef = useRef(null);
   useEffect(() => { endRef.current?.scrollIntoView?.({ block: "end" }); }, [msgs.length, state]);
   // state: idle | thinking (đang chờ AI: mặt "?", 3 chấm) | talking (vừa trả lời: miệng mấp máy vài giây)
   const lastPi = [...msgs].reverse().find((m) => m.role !== "user");
+  // 24/10 pi_full mục 4: Pi NÓI câu vừa trả lời (khẩu hình + giọng thu sẵn nếu có) · đang gõ → Pi NGHE (nghiêng đầu, gật)
+  const speech = state === "talking" && lastPi?.key ? { key: lastPi.key, text: lastPi.text, audio: lastPi.audio || null, expr: lastPi.expr, giong: lastPi.giong } : null;
+  const listening = focus && !!text.trim() && state === "idle";
+  useEffect(() => { if (state !== "talking") return undefined; const t = setTimeout(() => onSpoken?.(), 15000); return () => clearTimeout(t); }, [state, lastPi?.key]); // eslint-disable-line react-hooks/exhaustive-deps
   const out = left <= 0;
   const chips = ["Tối nay ăn gì?", "Hôm nay còn thiếu gì?", "Khen Pi đi"];
   return (
@@ -52,11 +58,11 @@ export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", on
           ) : (
             <>
               <div style={{ display: "flex", gap: 6, padding: "10px 12px 6px 12px", overflowX: "auto" }}>
-                {chips.map((c) => <button key={c} type="button" onClick={() => send(c)} disabled={state === "thinking"} style={{ height: 34, padding: "0 12px", borderRadius: 17, border: "none", display: "flex", alignItems: "center", fontSize: 13, fontWeight: 700, fontFamily: "inherit", color: "#0062F0", background: "#EEF4FF", whiteSpace: "nowrap", flexShrink: 0 }}>{c}</button>)}
+                {chips.map((c) => <button key={c} type="button" onClick={() => send(c)} disabled={busy} style={{ height: 34, padding: "0 12px", borderRadius: 17, border: "none", display: "flex", alignItems: "center", fontSize: 13, fontWeight: 700, fontFamily: "inherit", color: "#0062F0", background: "#EEF4FF", whiteSpace: "nowrap", flexShrink: 0 }}>{c}</button>)}
               </div>
               <div style={{ display: "flex", gap: 8, padding: "4px 12px 4px 12px", alignItems: "center" }}>
-                <input data-testid="pet-chat-input" value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") send(); }} maxLength={300} placeholder={`Nhắn cho ${pet.name}…`} aria-label={`Nhắn cho ${pet.name}`} style={{ flex: 1, height: 46, padding: "0 16px", borderRadius: 23, border: "none", background: "#F1F5F9", fontSize: 16, outline: "none", fontFamily: "inherit", minWidth: 0 }} />
-                <button data-testid="pet-chat-send" onClick={() => send()} disabled={state === "thinking" || !text.trim()} aria-label="Gửi" style={{ opacity: state === "thinking" || !text.trim() ? 0.5 : 1, width: 46, height: 46, borderRadius: 23, border: "none", background: GRAD_BLUE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{PIc.send(20)}</button>
+                <input data-testid="pet-chat-input" value={text} disabled={state === "sleep"} onFocus={() => setFocus(true)} onBlur={() => setFocus(false)} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") send(); }} maxLength={300} placeholder={state === "sleep" ? `${pet.name} đang ngủ một lát…` : `Nhắn cho ${pet.name}…`} aria-label={`Nhắn cho ${pet.name}`} style={{ flex: 1, height: 46, padding: "0 16px", borderRadius: 23, border: "none", background: "#F1F5F9", fontSize: 16, outline: "none", fontFamily: "inherit", minWidth: 0 }} />
+                <button data-testid="pet-chat-send" onClick={() => send()} disabled={busy || !text.trim()} aria-label="Gửi" style={{ opacity: busy || !text.trim() ? 0.5 : 1, width: 46, height: 46, borderRadius: 23, border: "none", background: GRAD_BLUE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{PIc.send(20)}</button>
               </div>
             </>
           )}
@@ -65,7 +71,7 @@ export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", on
       </div>}>
       {/* Phòng của Pi dính trên cùng: Pi nghe / nghĩ / nói */}
       <div data-testid="pet-chat-room" data-state={state} style={{ position: "sticky", top: 0, zIndex: 2, padding: "10px 12px 8px 12px", background: "linear-gradient(180deg,#E8F1FF 85%,rgba(232,241,255,0))" }}>
-        <Stage pet={{ ...pet, mood: state === "thinking" ? "hoi" : pet.mood === "ngu" ? "vui" : pet.mood }} height={210} size={150} talking={state === "talking"}>
+        <Stage pet={{ ...pet, mood: state === "sleep" ? "ngu" : state === "thinking" ? "hoi" : pet.mood === "ngu" ? "vui" : pet.mood }} height={210} size={150} speech={speech} listening={listening} onSpeakEnd={onSpoken}>
           <span style={{ position: "absolute", left: 12, right: 12, top: 12, display: "flex", justifyContent: "center" }}>
             {state === "thinking"
               ? <span aria-label={`${pet.name} đang nghĩ`} style={{ ...bubble, padding: "11px 16px" }}><span className="pet-dot" /><span className="pet-dot" /><span className="pet-dot" /></span>

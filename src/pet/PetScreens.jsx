@@ -69,7 +69,7 @@ const card = { margin: "0 12px", ...ltCard };
 // 21/10 (chủ dự án): phòng theo CHỦ ĐỀ khách chọn — món "Phòng <bộ>" đang dùng ở Tủ đồ; không chọn = phòng thường (không tự đổi theo ngày)
 // 23/10: bộ mới — phòng theo sự kiện (ev), ảnh theo buổi do PetRoom tự chọn
 export const roomOf = (pet) => { const r = ITEMS[pet?.equipped?.phong]; return r && r.slot === "phong" && r.variants.includes(pet.variant) ? r.ev || r.collection : null; };
-export function Stage({ pet, height = 260, children, size = 210, talking, live = true, forceTime }) {
+export function Stage({ pet, height = 260, children, size = 210, talking, live = true, forceTime, speech = null, listening = false, onSpeakEnd }) {
   // 20/10: Pi đứng trong phòng của Pi (PetRoom: đổi theo giờ, kệ đồ thành tích, màu theo bản).
   // Pi "sống": chớp mắt, đảo mắt, lá đung đưa, thở; chạm vào Pi → nảy + cười tít + tim bay (chạm lúc ngủ: mở mắt rồi ngủ tiếp).
   const [react, setReact] = useState(0);
@@ -83,10 +83,11 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
   };
   const heart = pet.variant === "nu" ? "hieu-ung/hieu-ung-11.webp" : "hieu-ung/hieu-ung-01.webp";
   return (
-    <PetRoom time={pet.time || "sang"} variant={pet.variant} season={roomOf(pet)} trophies={[]} height={height} forceTime={forceTime}>
-      <span aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: 22, width: size * 0.62, height: 18, marginLeft: -(size * 0.31), borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
-      <button type="button" data-testid="pet-tap" onClick={tap} aria-label={`Chạm vào ${pet.name}`} style={{ position: "absolute", left: "50%", bottom: 26, transform: "translateX(-50%)", border: "none", background: "transparent", padding: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-        <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={Math.round(size * 0.9)} talking={talking} live={live} react={react} night={forceTime ? forceTime === "toi" : lateNight(new Date().getHours())} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
+    <PetRoom time={pet.time || "sang"} variant={pet.variant} season={roomOf(pet)} trophies={[]} height={height} forceTime={forceTime} floorY={pet.floorY?.[roomOf(pet)]}>
+      {/* bóng elip mờ ngay dưới chân Pi; chân Pi đứng đúng tâm thảm (--pi-feet do PetRoom tính) */}
+      <span aria-hidden="true" data-testid="pet-shadow" style={{ position: "absolute", left: "50%", bottom: "calc(var(--pi-feet, 26px) - 7px)", width: size * 0.62, height: 18, marginLeft: -(size * 0.31), borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
+      <button type="button" data-testid="pet-tap" onClick={tap} aria-label={`Chạm vào ${pet.name}`} style={{ position: "absolute", left: "50%", bottom: "var(--pi-feet, 26px)", transform: "translateX(-50%)", border: "none", background: "transparent", padding: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
+        <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={Math.round(size * 0.9)} talking={talking} speech={speech} listening={listening} onSpeakEnd={onSpeakEnd} live={live} react={react} night={forceTime ? forceTime === "toi" : lateNight(new Date().getHours())} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
       </button>
       {hearts.map((h) => <img key={h.id} src={PET_BASE + heart} alt="" aria-hidden="true" className="pet-heart" style={{ position: "absolute", left: `calc(50% + ${h.dx}px)`, bottom: size * 0.55, width: 26, marginLeft: -13, animationDelay: `${h.d}ms`, pointerEvents: "none" }} />)}
       {children}
@@ -96,14 +97,20 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
 
 // ============ Màn Thú cưng ============
 export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, onSettings, onWeek }) {
+  const [speech, setSpeech] = useState(null);
   const lv = pet.level;
   const pct = Math.min(100, ((pet.xp - lv.from) / (lv.to - lv.from)) * 100);
   return (
     <SubPage title={pet.name} subtitle={`Cấp ${lv.n} · ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}`} onBack={onBack} right={<SeedPill n={pet.seeds} />}>
       <div data-testid="pet-home" style={{ padding: "12px 12px 0 12px" }}>
-        <Stage pet={pet}>
+        <Stage pet={pet} speech={speech} onSpeakEnd={() => setSpeech(null)}>
           <span style={{ position: "absolute", left: 14, right: 14, top: 14, display: "flex", justifyContent: "center" }}>
-            <span style={{ maxWidth: 280, background: "#FFFFFF", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center" }}>{moodText(pet)}</span>
+            {/* 24/10 pi_full mục 4–5: bấm câu → Pi nói (khẩu hình; câu có file thu sẵn thì phát giọng), mặt theo "mat" của câu */}
+            <button type="button" data-testid="pet-say-play" onClick={() => { const l = pet.sayLine; setSpeech({ key: Date.now(), text: l?.text || moodText(pet), audio: l?.audio || null, expr: l?.mat, giong: l?.giong }); }} aria-label={`Nghe ${pet.name} nói`}
+              style={{ maxWidth: 280, background: "#FFFFFF", border: "none", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center", fontFamily: "inherit", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <span>{moodText(pet)}</span>
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={speech ? "#007AFF" : "#94A3B8"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>
+            </button>
           </span>
           {/* 20/10 (chủ dự án): bỏ cài đặt của khách (admin quyết ở Quản trị) → chỉ còn nút đổi tên Pi */}
           <button data-testid="pet-open-settings" onClick={onSettings} aria-label={`Đổi tên ${pet.name}`} className="tap" style={{ position: "absolute", right: 12, bottom: 12, width: 40, height: 40, borderRadius: 20, border: "none", background: "rgba(255,255,255,0.92)", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(30,64,175,0.12)" }}>{PIc.edit(18)}</button>

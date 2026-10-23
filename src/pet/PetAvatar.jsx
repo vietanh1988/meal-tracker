@@ -27,9 +27,9 @@ const MOOD_FACE = { vui: null, cuoi: "cuoilon", ngu: "ngu", hoi: "suynghi", gian
 export const faceOf = (mood, pick, hour = nowVNParts().hour) => MOOD_FACE[mood] || pickFace(pick, hour);
 
 /** size = chiều cao Pi (px). equipped = { slot: itemId }. mood: vui | cuoi | ngu | hoi | gian | mung; face = biểu cảm khách chọn.
- *  live: thở + chớp mắt · talking: miệng mấp máy · react: đổi số → nhún + cười */
-export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", face, size = 220, still = false, label, talking = false, live = false, react = 0, night = false, hour }) {
-  return <PiPet gender={variant} expression={faceOf(mood, face, hour)} equipped={equipped} height={size} still={still} live={live} talking={talking} react={react} night={night} label={label || "Thú cưng"} />;
+ *  live: thở + chớp mắt · talking: miệng mấp máy · react: đổi số → nhún + cười · speech: { text, audio, expr, giong, key } nói 1 câu · listening: đang nghe */
+export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", face, size = 220, still = false, label, talking = false, live = false, react = 0, night = false, hour, speech = null, listening = false, onSpeakEnd }) {
+  return <PiPet gender={variant} expression={faceOf(mood, face, hour)} equipped={equipped} height={size} still={still} live={live} talking={talking} speech={speech} listening={listening} onSpeakEnd={onSpeakEnd} react={react} night={night} label={label || "Thú cưng"} />;
 }
 
 // giữ cho màn Quản trị cũ (Chỉnh vị trí): bộ mới không cần điểm đặt

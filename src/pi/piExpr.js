@@ -82,5 +82,17 @@ export const pi = {
     return true;
   },
   subscribe(fn) { subs.add(fn); return () => subs.delete(fn); },
+  // 24/10 pi_full mục 4: Pi nói — text (chữ, để khớp khẩu hình) + audio (URL mp3, tuỳ có). Trả Promise xong khi nói hết.
+  // opts: { expr: mặt khi nói (thẻ [expr] của AI / "mat" của câu thoại), giong: nhãn giọng (cường độ miệng) }
+  speak(text, audio, opts = {}) {
+    if (!speakSubs.size) return Promise.resolve(false);
+    return Promise.all([...speakSubs].map((fn) => fn({ text: String(text || ""), audio: audio || null, ...opts }))).then(() => true);
+  },
+  /** đang nghe người dùng (gõ / nói): nghiêng đầu 5°, mắt suy nghĩ, gật nhẹ */
+  listen(on = true) { listening = !!on; for (const fn of listenSubs) fn(listening); },
+  onSpeak(fn) { speakSubs.add(fn); return () => speakSubs.delete(fn); },
+  onListen(fn) { listenSubs.add(fn); fn(listening); return () => listenSubs.delete(fn); },
 };
+const speakSubs = new Set(), listenSubs = new Set();
+let listening = false;
 if (typeof window !== "undefined") window.pi = pi;

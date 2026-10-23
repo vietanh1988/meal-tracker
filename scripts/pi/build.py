@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """23/10 — Đưa bộ ảnh Pi (Muse AI, pi_assets_clean.zip) vào app. Chạy lại mỗi khi có bộ ảnh mới:
     python3 scripts/pi/build.py <thư mục pi_assets_clean>
+24/10: dùng bộ pi_full (pi_assets_clean mới: thêm body/pi_la.webp, eyes/, mouths/).
 Bộ ảnh ĐÃ làm sạch vệt xanh / viền thừa sẵn (README của bộ) → script KHÔNG xử lý lại ảnh đồ / mặt / thân, chỉ:
   - chép body/, faces/, items/ (WebP 768x768, chân Pi tại 384,720) vào public/pi/ giữ nguyên đường dẫn;
   - phòng: thu về rộng 768 (giữ tỉ lệ 2:3) cho nhẹ;
@@ -35,7 +36,7 @@ def put(rel, src=None, im=None, q=82):
     return os.path.getsize(p)
 
 total = 0
-for d in ("body", "faces"):
+for d in ("body", "faces", "eyes", "mouths"):  # 24/10 pi_full: eyes/ + mouths/ cho lúc Pi nói
     for dp, _, fs in os.walk(os.path.join(SRC, d)):
         for f in fs:
             if f.endswith(".webp"):
@@ -43,6 +44,16 @@ for d in ("body", "faces"):
 
 body = np.asarray(Image.open(os.path.join(SRC, cat["body"])).convert("RGBA"))
 solid = body[..., 3] > 200
+# 24/10 pi_full: lá là lớp riêng (body/pi_la.webp) vẽ đè lên mũ + đung đưa → thân trong app bỏ phần lá (khỏi lộ lá gốc khi lá lắc)
+LEAF = None
+if cat.get("leaves") and os.path.exists(os.path.join(SRC, cat["leaves"])):
+    LEAF = np.asarray(Image.open(os.path.join(SRC, cat["leaves"])).convert("RGBA"))
+    lm = LEAF[..., 3] > 200  # chỉ chỗ lá phủ kín (mép lá giữ ở thân → không hở khe ở gốc lá dưới mũ)
+    nb = body.copy(); nb[lm, 3] = 0
+    total += put("body/pi_than.webp", im=Image.fromarray(nb), q=90)
+    body_noleaf = nb
+else:
+    body_noleaf = body
 yy, xx = np.mgrid[0:N, 0:N]
 ys, xs = np.where(solid)
 bbox = [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
@@ -66,7 +77,7 @@ def raised_arm(a):
     return None
 
 for side, zone in (("trai", arm_l), ("phai", arm_r)):
-    b2 = body.copy(); zz = cv2.dilate(zone.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+    b2 = body_noleaf.copy(); zz = cv2.dilate(zone.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
     b2[zz & (yy > ARM_Y[0] + 8 * K), 3] = 0
     total += put(f"body/pi_than_khong_tay_{side}.webp", im=Image.fromarray(b2), q=86)
 
@@ -87,6 +98,16 @@ for it in cat["items"]:
     iid = f"{it['ev']}-{it['g']}-{m.group(3)}{m.group(4)}"
     total += put(it["file"], src=s)
     im = Image.open(s).convert("RGBA")
+    if it["slot"] == "dau" and LEAF is not None:
+        # 24/10: ảnh mũ còn viền lá cũ mờ (nét mảnh alpha < 100 đứng RỜI, không dính nét đậm) quanh chỗ lá → bỏ đúng các điểm đó
+        a = np.asarray(im).copy(); al = a[..., 3]
+        solid_n = cv2.dilate((al >= 200).astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+        ghost = (al > 0) & (al < 100) & ~solid_n & (yy < 330)
+        n_, lab_, st_, _ = cv2.connectedComponentsWithStats((al > 0).astype(np.uint8), 8)  # chấm rời < 40px phía trên đầu
+        for k_ in range(1, n_):
+            if st_[k_, 4] < 40 and st_[k_, 1] < 330: ghost |= lab_ == k_
+        if ghost.any():
+            a[ghost, 3] = 0; im = Image.fromarray(a); total += put(it["file"], im=im, q=90)
     bb = im.getbbox()
     if not bb: print("ảnh rỗng", it["file"]); continue
     pad = 10
@@ -113,9 +134,35 @@ man = {
     "v": 2, "canvas": N, "feet": cat.get("anchor_feet", [N / 2, N * 0.9375]), "bbox": bbox, "room": [ROOM_W, ROOM_W * 3 // 2],
     "events": {k: v["name"] for k, v in cat["events"].items()},
     "slots": cat["slots"],
-    "order": ["lung", "than", "giay", "ao", "dau_pi", "co", "mat_pi", "mat", "toc", "dau", "gang", "tay"],
+    # 24/10 pi_full: mieng = miệng khi nói (mat_pi lúc đó là mắt không miệng), la = lá đè lên mũ
+    "order": ["lung", "than", "giay", "ao", "dau_pi", "co", "mat_pi", "mieng", "mat", "toc", "dau", "la", "gang", "tay"],
+    "visemes": sorted(f[:-5] for f in os.listdir(os.path.join(SRC, "mouths", "nam"))) if os.path.isdir(os.path.join(SRC, "mouths")) else [],
+    "leaf": bool(LEAF is not None),
+    # món chờ vẽ lại theo catalog (redo: "do_halloween_nu_ao04 (…)") → app không bán
+    "redo": [re.sub(r"^do_(\w+?)_(nam|nu)_([a-z]+\d+).*$", r"\1-\2-\3", r.split(" ")[0]) for r in cat.get("redo", [])],
     "faces": cat["faces"]["list"], "rooms": rooms, "items": items,
 }
+# 24/10 pi_full mục 4–5: giọng thu sẵn (voice/samples/<nam|nu>/<id>.mp3 + index.json) và bộ câu thoại (game/pi_chat_lines.json)
+PKG = os.path.dirname(os.path.abspath(SRC))
+vidx = os.path.join(PKG, "voice", "samples", "index.json")
+if os.path.exists(vidx):
+    ids = []
+    for row in json.load(open(vidx, encoding="utf-8")):
+        ok = True
+        for g in ("nam", "nu"):
+            f = os.path.join(PKG, "voice", "samples", g, f"{row['id']}.mp3")
+            if os.path.exists(f): total += put(f"voice/{g}/{row['id']}.mp3", src=f)
+            else: ok = False; print("thiếu giọng", g, row["id"])
+        if ok: ids.append(row["id"])
+    json.dump({"ids": sorted(ids)}, open(os.path.join(ROOT, "src", "pi", "voice.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print(f"giọng thu sẵn: {len(ids)} câu x 2 bản")
+lines_src = os.path.join(PKG, "game", "pi_chat_lines.json")
+if os.path.exists(lines_src):
+    shutil.copyfile(lines_src, os.path.join(ROOT, "src", "pi", "chatLines.json"))
+persona = os.path.join(PKG, "game", "pi_persona_prompt.md")
+if os.path.exists(persona):
+    shutil.copyfile(persona, os.path.join(ROOT, "src", "pi", "persona.md"))
+
 os.makedirs(os.path.dirname(MAN), exist_ok=True)
 json.dump(man, open(MAN, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print(f"{len(items)} món ({sum(1 for x in items if x.get('arm'))} ẩn tay gốc), {sum(len(v) for v in rooms.values())} phòng, thân {bbox}, ảnh {total/1024/1024:.1f} MB")

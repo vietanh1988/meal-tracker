@@ -38,7 +38,7 @@ const SEASON_RUG = { noel: 0.8, tet: 0.805, halloween: 0.843, "bong-da": 0.815 }
 // Noel: tất treo che tầng giữa kệ → đồ thành tích xuống tầng dưới (đáy 52,7%).
 // Halloween (ảnh ngang 1536×1024 cắt vuông quanh thảm): kệ sát mép phải, tầng giữa trống ở đáy 51,5%.
 const SEASON_SHELF = { noel: { ...SHELF, bottom: 0.527 }, halloween: { left: 0.81, width: 0.18, bottom: 0.515, h: 0.07 }, "bong-da": { left: 0.6, width: 0.2, bottom: 0.48, h: 0.08 } };
-export function PetRoom({ time = "sang", variant = "nam", season = null, trophies = [], height = 280, art, children, testid = "pet-room", forceTime }) {
+export function PetRoom({ time = "sang", variant = "nam", season = null, trophies = [], height = 280, art, children, testid = "pet-room", forceTime, floorY }) {
   const t3 = useRoomTime(forceTime);
   const ref = useRef(null);
   const [w, setW] = useState(366);
@@ -52,10 +52,13 @@ export function PetRoom({ time = "sang", variant = "nam", season = null, trophie
   const v = variant === "nu" ? "nu" : "nam";
   // 23/10: phòng bộ mới (Muse AI) — ảnh dọc 2:3 theo sự kiện + buổi (sáng 5–11, trưa 11–17, tối 17–5); Pi đứng giữa thảm
   if (season && EV_NAME[season] && art !== false) {
-    const [rx, ry] = RUG[season] || [0.5, 0.8];
-    const iw = w * 1.12, ih = iw * 1.5, top = Math.min(0, height - FEET - ry * ih); // rộng hơn khung 12% để dời thảm vào giữa mà không hở mép
+    // 24/10 pi_full mục 2: floorY = tâm thảm (phần chiều cao ảnh phòng) — Quản trị chỉnh từng phòng (pet_config.floorY), mặc định số đo thảm (RUG)
+    const [rx, ry0] = RUG[season] || [0.5, 0.8];
+    const ry = Number.isFinite(floorY) ? floorY : ry0;
+    const iw = w * 1.12, ih = iw * 1.5, top = Math.max(height - ih, Math.min(0, height - FEET - ry * ih)); // rộng hơn khung 12% để dời thảm vào giữa mà không hở mép
+    const feet = Math.max(8, Math.round(height - (top + ry * ih))); // ảnh hết chỗ dời → chân Pi theo đúng tâm thảm (không đứng lơ lửng ngoài thảm)
     return (
-      <div ref={ref} data-testid={testid} data-time={t3} data-season={season} style={{ position: "relative", height, borderRadius: 22, overflow: "hidden", background: t3 === "toi" ? "#1E2A55" : "#F2E6D3" }}>
+      <div ref={ref} data-testid={testid} data-time={t3} data-season={season} data-floor={ry} style={{ position: "relative", height, borderRadius: 22, overflow: "hidden", background: t3 === "toi" ? "#1E2A55" : "#F2E6D3", "--pi-feet": `${feet}px` }}>
         {/* 3 ảnh sáng / trưa / tối chồng sẵn, đổi buổi mờ dần 1 giây */}
         {ROOM_TIMES.map((tt) => <img key={tt} aria-hidden="true" data-room-time={tt} src={roomFile(season, tt)} alt="" draggable="false" decoding="async" style={{ position: "absolute", left: Math.min(0, Math.max(w - iw, w / 2 - rx * iw)), top, width: iw, height: ih, display: "block", opacity: tt === t3 ? 1 : 0, transition: "opacity 1s ease" }} />)}
         {children}

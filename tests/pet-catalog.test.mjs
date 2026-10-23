@@ -37,7 +37,7 @@ test("ô hợp lệ, mã không trùng, mỗi bản chỉ mặc đồ của bả
   assert.deepEqual(man.items.filter((it) => !slots.has(it.slot)).map((it) => it.id), []);
   assert.equal(new Set(man.items.map((it) => it.id)).size, man.items.length);
   assert.deepEqual(man.items.filter((it) => !["nam", "nu"].includes(it.g)).map((it) => it.id), []);
-  assert.deepEqual(man.order, ["lung", "than", "giay", "ao", "dau_pi", "co", "mat_pi", "mat", "toc", "dau", "gang", "tay"]);
+  assert.deepEqual(man.order, ["lung", "than", "giay", "ao", "dau_pi", "co", "mat_pi", "mieng", "mat", "toc", "dau", "la", "gang", "tay"]); // 24/10 pi_full: miệng khi nói, lá đè mũ
 });
 
 test("23/10 mặc áo vẫn giữ cằm: lớp đầu gốc (pi_dau.webp, cùng khung 768) đè lên áo, dưới khăn cổ và mặt", () => {
@@ -97,4 +97,47 @@ test("23/10 mỗi món Phòng đủ 3 ảnh theo giờ (sáng / trưa / tối), 
   assert.match(room, /setInterval\(tick, 60_000\)/);
   assert.match(room, /transition: "opacity 1s ease"/);
   assert.match(room, /new Date\(\)\.getHours\(\)/);
+});
+
+test("24/10 pi_full: lớp lá riêng (đè mũ, đung đưa), mắt không miệng + 7 miệng khi nói, món redo không bán", () => {
+  assert.equal(man.leaf, true);
+  assert.deepEqual(webpSize(`${P}body/pi_la.webp`), [man.canvas, man.canvas]);
+  assert.deepEqual([...man.visemes].sort(), ["he", "meu", "ngam", "ngu", "o", "to", "vua"]);
+  const miss = [];
+  for (const g of ["nam", "nu"]) {
+    for (const f of man.faces) if (!existsSync(`${P}eyes/${g}/${f}.webp`)) miss.push(`eyes/${g}/${f}`);
+    for (const v of man.visemes) if (!existsSync(`${P}mouths/${g}/${v}.webp`)) miss.push(`mouths/${g}/${v}`);
+  }
+  assert.deepEqual(miss, []);
+  const o = man.order;
+  assert.ok(o.indexOf("dau") < o.indexOf("la") && o.indexOf("mat_pi") < o.indexOf("mieng") && o.indexOf("mieng") < o.indexOf("mat"));
+  const fit = JSON.parse(readFileSync("src/pi/fit.json", "utf8"));
+  for (const id of man.redo) assert.ok(fit.bad[id], `${id} (redo) phải nằm trong danh sách chờ vẽ lại`);
+  const pet = readFileSync("src/pi/PiPet.jsx", "utf8");
+  assert.match(pet, /if \(L === "la"\)/); assert.match(pet, /if \(L === "mieng"\)/);
+  assert.match(pet, /@keyframes piLeaf\{0%,100%\{transform:rotate\(-2\.5deg\)\}50%\{transform:rotate\(2\.5deg\)\}\}/);
+  assert.match(pet, /@keyframes piTalk\{0%,100%\{transform:rotate\(-3deg\)\}50%\{transform:rotate\(3deg\)\}\}/);
+  assert.match(pet, /\.pi-talk\{animation:piTalk 1\.6s/);
+  assert.match(pet, /rotate\(5deg\)/); // nghe: nghiêng đầu 5°
+});
+
+test("24/10 giọng thu sẵn: mỗi id có đủ mp3 Pi nam + Pi nữ; câu thoại có id đó tồn tại", () => {
+  const v = JSON.parse(readFileSync("src/pi/voice.json", "utf8"));
+  const lines = JSON.parse(readFileSync("src/pi/chatLines.json", "utf8"));
+  const ids = new Set(lines.nhom.flatMap((g) => g.cau.map((c) => c.id)));
+  assert.ok(v.ids.length >= 30);
+  for (const id of v.ids) { assert.ok(ids.has(id), id); for (const g of ["nam", "nu"]) assert.ok(existsSync(`public/pi/voice/${g}/${id}.mp3`), `${g}/${id}`); }
+});
+
+test("24/10 phòng: chân Pi theo floorY (Quản trị chỉnh), có bóng dưới chân; chat: chửi / chán nản trả câu soạn sẵn, không gọi AI", () => {
+  const room = readFileSync("src/pet/PetRoom.jsx", "utf8"), scr = readFileSync("src/pet/PetScreens.jsx", "utf8"), app = readFileSync("src/pet/PetApp.jsx", "utf8"), pc = readFileSync("src/pc/PcPet.jsx", "utf8");
+  assert.match(room, /"--pi-feet": `\$\{feet\}px`/);
+  assert.match(scr, /floorY=\{pet\.floorY\?\.\[roomOf\(pet\)\]\}/);
+  assert.match(scr, /bottom: "var\(--pi-feet, 26px\)"/);
+  assert.match(pc, /data-testid="pc-pet-floor"/);
+  // chửi / chán nản xử lý TRƯỚC khi gọi AI
+  const i1 = app.indexOf("if (isSadSelf(text))"), i2 = app.indexOf("const lvl = insultLevel(text)"), i3 = app.indexOf('authFetch("ai-proxy", { provider, model, system, messages, maxTokens: 400, feature: "pet_chat" })');
+  assert.ok(i1 > 0 && i2 > i1 && i3 > i2);
+  assert.match(app, /writeSS\("fp_pi_soft", "1"\)/);
+  assert.match(app, /import PERSONA from "\.\.\/pi\/persona\.md\?raw"/);
 });

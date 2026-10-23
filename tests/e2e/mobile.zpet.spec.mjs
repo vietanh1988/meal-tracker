@@ -75,14 +75,37 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await page.getByTestId("pet-face-auto").click();
     await waitDb(async () => (await rest(`pet_profiles?user_id=eq.${s.uid}&select=settings`))[0]?.settings?.face === "auto", "về Theo giờ");
 
-    // Hỏi Pi: AI giả (không tốn tiền) → câu trả lời hiện trong khung chat
-    await page.route("**/functions/v1/ai-proxy", (r) => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ text: "Tối nay ăn 150 g ức gà là vừa nha." }) }));
+    // Hỏi Pi: AI giả (không tốn tiền) trả "[biểu cảm] câu" → câu hiện không kèm thẻ, Pi NÓI (mắt + miệng theo khẩu hình) với mặt hào hứng
+    let aiCalls = 0;
+    await page.route("**/functions/v1/ai-proxy", (r) => { aiCalls++; return r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ text: "[haohung] Tối nay ăn 150 g ức gà là vừa nha." }) }); });
     await page.goBack();
+    // 24/10: bấm câu Pi nói trên màn Thú cưng → Pi nói (có miệng theo khẩu hình)
+    await tap(page.getByTestId("pet-say-play"));
+    await expect(page.getByTestId("pet-tap").getByTestId("pet-avatar")).toHaveAttribute("data-speaking", "1");
+    await expect(page.locator('[data-layer="mieng"]').first()).toBeAttached();
+    await page.screenshot({ path: "shots/pet-speaking.png" });
     await tap(page.getByTestId("pet-open-chat"));
     await page.getByTestId("pet-chat-input").fill("Tối nay ăn gì?");
+    await expect(page.getByTestId("pet-chat-room").getByTestId("pet-avatar")).toHaveAttribute("data-listening", "1"); // đang gõ → Pi nghe
     await page.getByTestId("pet-chat-send").click();
     await expect(page.getByTestId("pet-chat")).toContainText("150 g ức gà");
+    await expect(page.getByTestId("pet-chat")).not.toContainText("[haohung]");
+    await expect(page.getByTestId("pet-chat-room").getByTestId("pet-avatar")).toHaveAttribute("data-speaking", "1");
+    await expect(page.getByTestId("pet-chat-room").getByTestId("pet-avatar")).toHaveAttribute("data-mood", "haohung");
     await page.screenshot({ path: "shots/pet-chat.png" });
+    expect(aiCalls).toBe(1);
+    // bị chửi → câu soạn sẵn nhóm bi_chui, KHÔNG gọi AI, không chửi lại
+    await expect(page.getByTestId("pet-chat-room").getByTestId("pet-avatar")).not.toHaveAttribute("data-speaking", "1", { timeout: 20000 });
+    await page.getByTestId("pet-chat-input").fill("Pi ngu quá");
+    await page.getByTestId("pet-chat-send").click();
+    await expect(page.getByTestId("pet-chat")).toContainText(/Pi|nha|nè/);
+    expect(aiCalls).toBe(1);
+    // chán nản / có ý tự hại → câu an ủi có gợi ý đường dây hỗ trợ, không gọi AI
+    await expect(page.getByTestId("pet-chat-room").getByTestId("pet-avatar")).not.toHaveAttribute("data-speaking", "1", { timeout: 20000 });
+    await page.getByTestId("pet-chat-input").fill("Mình muốn chết");
+    await page.getByTestId("pet-chat-send").click();
+    await expect(page.getByTestId("pet-chat")).toContainText("đường dây hỗ trợ");
+    expect(aiCalls).toBe(1);
   } finally {
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: flagsRow.value }) }).catch(() => {});
     if (cfgRow) await rest("app_settings?key=eq.pet_config", { method: "PATCH", body: JSON.stringify({ value: cfgRow.value }) }).catch(() => {});

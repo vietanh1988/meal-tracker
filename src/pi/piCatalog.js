@@ -41,7 +41,12 @@ export const PI_ITEMS = [...man.items.map(item), ...EV_ORDER.filter((e) => man.r
 
 export const bodyFile = (arm) => `${PI_BASE}body/pi_than${arm ? `_khong_tay_${arm}` : ""}.webp`;
 export const headFile = `${PI_BASE}body/pi_dau.webp`; // lớp đầu gốc vẽ đè lên áo (giữ cằm), scripts/pi/build.py
-export const faceFile =(g, f) => `${PI_BASE}faces/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp`;
+// 24/10 pi_full: lá là lớp riêng (đè lên mũ, đung đưa); khi nói dùng mắt không miệng (eyes/) + 7 miệng (mouths/)
+export const leafFile = `${PI_BASE}body/pi_la.webp`;
+export const VISEMES = man.visemes || [];
+export const eyesFile = (g, f) => `${PI_BASE}eyes/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp`;
+export const mouthFile = (g, v) => `${PI_BASE}mouths/${g === "nu" ? "nu" : "nam"}/${VISEMES.includes(v) ? v : "ngam"}.webp`;
+export const faceFile = (g, f) => `${PI_BASE}faces/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp`;
 
 /** giờ (0–23, giờ máy người dùng) → buổi của ảnh phòng: sáng 5–11, trưa 11–17, tối 17–5 */
 export const piRoomTime = (h) => (h >= 5 && h < 11 ? "sang" : h >= 11 && h < 17 ? "trua" : "toi");

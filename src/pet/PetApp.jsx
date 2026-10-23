@@ -12,6 +12,11 @@ import { aiQuota } from "../lib/aiQuota";
 import { pickAiProvider, pickAiModelFromSettings } from "../lib/aiProvider";
 import { ITEMS, catalog } from "./PetAvatar";
 import { EV, VOICE } from "./lines";
+import { pickLine, lineById, remember, greetGroup, EVENT_GROUP, insultLevel, insultMuc, isSadSelf, isSelfHarm, SULK_MS } from "../pi/piBank";
+import { parseTagged } from "../pi/piLipsync.js";
+import { voiceUrl } from "../pi/piVoice.js";
+import { pi } from "../pi/piExpr";
+import PERSONA from "../pi/persona.md?raw";
 import { roomTime } from "./PetRoom";
 import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PIc } from "./PetScreens";
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen, petVariant } from "./PetTalk";
@@ -29,6 +34,8 @@ const toMin = (t) => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(t || "")); re
 const ic = (d) => <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
 const fill = (t, so) => String(t || "").replace("{so}", so ?? "");
 const readLS = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? d; } catch (e) { return d; } };
+const readSS = (k) => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
+const writeSS = (k, v) => { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { /* */ } };
 const writeLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* */ } };
 
 const PROMPT = {
@@ -42,6 +49,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   const pet = usePet(user?.id, on);
   const st = pet.state;
   const variant = petVariant(profile);
+  const userName = user?.user_metadata?.username || user?.email?.split("@")[0] || "bạn"; // {ten} trong câu thoại Pi
   const premium = !!profile?.tier && profile.tier !== "free";
   // 20/10: sau 0:00 khi app đang mở, todayLog có thể còn là của hôm qua → chỉ dùng khi đúng ngày
   const log = ud?.todayLog && (!ud.todayLog.log_date || ud.todayLog.log_date === today) ? ud.todayLog : {};
@@ -113,6 +121,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
       week: weekdayVN() === 0 && cfg.week !== false ? { range: `${wk.start.slice(8)}/${wk.start.slice(5, 7)} – ${wk.end.slice(8)}/${wk.end.slice(5, 7)}`, meals: 0, waterDays: 0 } : null,
       // 20/10 (chủ dự án): khách không chỉnh — Pi nói / số câu / giờ yên lặng / tổng kết tuần do Quản trị quyết (pet_config)
       settings: { talk: cfg.talk !== false, perDay: cfg.perDay || 3, quietFrom: cfg.quietFrom || "22:30", quietTo: cfg.quietTo || "07:00", week: cfg.week !== false, weekAt: "19:00", off: cfg.off || [] },
+      floorY: cfg.floorY || {}, // 24/10: tâm thảm từng phòng (Quản trị chỉnh), PetRoom đặt chân Pi tại đó
       cols: Object.fromEntries(Object.keys(COL_DEFAULT).map((k) => [k, collectionStatus(k, cfg, today)])),
     };
   }, [st, variant, premium, log, mealIds, mealTimes, minutes, today, recentRows, weightLog, profile?.kg, profile?.waterGoalMl, cfg]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -129,19 +138,32 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     // câu đã chọn hôm nay cho việc còn đúng thì giữ nguyên (không đổi câu mỗi lần vẽ lại)
     const quiet0 = [toMin(vm.settings.quietFrom) ?? 1350, toMin(vm.settings.quietTo) ?? 420];
     const inQuiet = quiet0[0] > quiet0[1] ? minutes >= quiet0[0] || minutes < quiet0[1] : minutes >= quiet0[0] && minutes < quiet0[1];
-    if (ls.cur && ls.day === today && evs.some((e) => e.key === ls.cur.key) && !(vm.settings.off || []).includes(ls.cur.key) && !inQuiet) { setSayNow(ls.cur.text); return; }
-    const prio = Object.fromEntries(Object.values(EV).map((e) => [e.key, e.prio]));
+    if (ls.cur && ls.day === today && (evs.some((e) => e.key === ls.cur.key) || ls.cur.key === "greet") && !(vm.settings.off || []).includes(ls.cur.key) && !inQuiet && !readSS("fp_pi_soft")) { setSayNow(ls.cur); return; }
+    // 24/10 pi_full mục 5: đang trong phiên Pi an ủi (khách vừa chán nản / chê bản thân) → tắt đùa + tắt nhắc
+    if (readSS("fp_pi_soft")) { setSayNow(null); return; }
+    const g0 = greetGroup(Math.floor(minutes / 60));
+    if (g0) evs.push({ key: "greet" }); // chào theo giờ mở app (ưu tiên thấp nhất)
+    const prio = { ...Object.fromEntries(Object.values(EV).map((e) => [e.key, e.prio])), greet: 20 };
     const quiet = [toMin(vm.settings.quietFrom) ?? 1350, toMin(vm.settings.quietTo) ?? 420];
     const e = pickEvent(evs, { prio, said, nowMs: Date.now(), saidToday, perDay: vm.settings.perDay || 3, gapH: cfg.gapH || 24, minutes, quiet, off: vm.settings.off || [] });
     if (!e) { setSayNow(null); return; }
-    const arr = pet.lines[e.key]?.[variant] || [];
-    if (!arr.length) { setSayNow(null); return; }
-    const text = fill(arr[(ls.rot?.[e.key] || 0) % arr.length], e.so);
-    writeLS(saidKey, { said: { ...said, [e.key]: Date.now() }, day: today, n: saidToday + 1, cur: { key: e.key, text }, rot: { ...(ls.rot || {}), [e.key]: (ls.rot?.[e.key] || 0) + 1 } });
-    setSayNow(text);
+    // câu: bộ câu Muse (src/pi/chatLines.json) theo nhóm của việc, không lặp câu trong 7 ngày; việc không có nhóm thì dùng câu Quản trị (pet_lines)
+    const grp = e.key === "greet" ? g0 : EVENT_GROUP[e.key];
+    const now = Date.now();
+    const glasses = Math.ceil(Math.max(0, (vm.waterGoal || 0) - (vm.waterMl || 0)) / 250);
+    const vars = { ten: userName, so_ngay: vm.streak || null, cap: vm.level?.n, ml: vm.waterGoal ? Math.max(0, vm.waterGoal - vm.waterMl) || null : null, so_nhiem_vu: vm.tasksLeft || null,
+      kcal_con_lai: targets?.cal ? Math.max(0, Math.round((targets.cal || 0) - (eaten?.cal || 0))) : null, x: vm.tasks ? vm.tasks.filter((t) => t.done).length : null, y: vm.tasks?.length || null };
+    let line = grp ? pickLine(grp, { vars, history: ls.hist || {}, now }) : null;
+    if (!line) {
+      const arr = pet.lines[e.key]?.[variant] || [];
+      if (!arr.length) { setSayNow(null); return; }
+      line = { text: fill(arr[(ls.rot?.[e.key] || 0) % arr.length], e.so ?? (e.key === "water" ? glasses : undefined)) };
+    }
+    writeLS(saidKey, { said: { ...said, [e.key]: now }, day: today, n: saidToday + 1, cur: { key: e.key, ...line }, rot: { ...(ls.rot || {}), [e.key]: (ls.rot?.[e.key] || 0) + 1 }, hist: remember(ls.hist || {}, line.id, now) });
+    setSayNow(line);
   }, [vm?.logged, vm?.streak, vm?.level?.n, vm?.waterMl, vm?.settings?.talk, pet.lines, today, Math.floor(minutes / 30), appSettings?.pet_config]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const view0 = vm ? { ...vm, say: sayNow } : null;
+  const view0 = vm ? { ...vm, say: sayNow?.text || null, sayLine: sayNow ? { ...sayNow, audio: voiceUrl(sayNow.id, variant) } : null } : null;
 
   // ---- hành động ----
   const toastErr = (r) => { if (r && !r.ok) showToast?.({ text: r.error || "Chưa lưu được, thử lại" }); return r; };
@@ -170,23 +192,53 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     ]).then(([a, b]) => { const q = aiQuota(a.data, b.data).find((x) => x.key === "chat"); if (q) setQuota({ left: isAdmin ? q.limit : Math.max(0, q.limit - q.used), max: q.limit }); }).catch(() => {});
     openPage("pet_chat");
   };
+  // 24/10 pi_full mục 4–5: Pi trả lời — chửi / chán nản xử lý bằng câu soạn sẵn (không gọi AI, không tính lượt), còn lại AI theo prompt nhân vật của Muse
+  const sess = useRef({ n: 0, heavy: 0 });
+  const histKey = saidKey;
+  const lineHist = () => readLS(histKey, {}).hist || {};
+  const keepHist = (id) => { const ls = readLS(histKey, {}); writeLS(histKey, { ...ls, hist: remember(ls.hist || {}, id, Date.now()) }); };
+  const replyLine = (l, extra = {}) => {
+    if (!l) return false;
+    keepHist(l.id);
+    setChat((c) => [...c, { role: "pi", text: l.text, expr: l.mat, giong: l.giong, audio: voiceUrl(l.id, variant), key: Date.now(), ...extra }]);
+    setChatState(extra.sleep ? "sleep" : "talking");
+    return true;
+  };
   const send = async (text) => {
+    if (chatState === "sleep") return;
     const next = [...chat, { role: "user", text }];
-    setChat(next); setChatState("thinking");
+    setChat(next);
+    const now = Date.now(), vars = { ten: userName };
+    if (isSadSelf(text)) { // ưu tiên cao nhất: dịu dàng, tắt đùa + tắt nhắc nhiệm vụ trong phiên
+      writeSS("fp_pi_soft", "1");
+      const l = isSelfHarm(text) ? lineById("BUON-03", vars) : pickLine("buon_ban_than", { vars, history: lineHist(), now });
+      replyLine(l || pickLine("buon_ban_than", { vars, now }));
+      return;
+    }
+    const lvl = insultLevel(text);
+    if (lvl) { // bị chửi: không chửi lại; mức theo số lần trong phiên, mức 3 → Pi ngủ, im 90 s
+      sess.current.n += 1; if (lvl === 2) sess.current.heavy += 1;
+      const muc = insultMuc(sess.current.n, sess.current.heavy);
+      const l = pickLine("bi_chui", { vars, history: lineHist(), now, muc });
+      if (muc === 3) { replyLine(l, { sleep: true }); setTimeout(() => { setChatState((s) => (s === "sleep" ? "idle" : s)); sess.current = { n: 0, heavy: 0 }; }, SULK_MS); return; }
+      replyLine(l); return;
+    }
+    setChatState("thinking");
     const provider = pickAiProvider(appSettings);
     const model = pickAiModelFromSettings(appSettings, provider);
-    const system = `${cfg.prompt?.[variant] || PROMPT[variant]} ${RULES}\n${numbers()}\nTên của bạn là ${view0?.name || "Pi"}.`;
-    const messages = next.filter((m) => m.ai || m.role === "user").slice(-8).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text }));
+    const persona = cfg.prompt?.[variant] || `${PERSONA}\nBạn đang là Pi ${variant === "nu" ? "nữ (giọng bé gái ngọt ngào)" : "nam (giọng bé trai tinh nghịch)"}.`;
+    const system = `${persona}\nTên người dùng ({ten}): ${userName}. Tên Pi: ${view0?.name || "Pi"}. Không dùng emoji, không markdown. Tiền tệ trong app là Hạt (không phải điểm).\n${numbers()}`;
+    const messages = next.filter((m) => m.ai || m.role === "user").slice(-8).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? m.text : `[${m.expr || "vui"}] ${m.text}` }));
     let data;
     try { data = await authFetch("ai-proxy", { provider, model, system, messages, maxTokens: 400, feature: "pet_chat" }); } catch (e) { data = { error: "Mạng chập chờn, thử lại nhé." }; }
     if (data?.quotaExceeded) { setQuota((q) => ({ ...q, left: 0 })); setChat((c) => [...c, { role: "pi", text: variant === "nu" ? "Hôm nay hết lượt hỏi rồi nè, mai mình nói tiếp nha." : "Hết lượt hỏi hôm nay rồi, mai chiến tiếp nha!" }]); setChatState("idle"); return; }
-    const reply = String(data?.text || "").trim();
-    if (!reply) { setChat((c) => [...c, { role: "pi", text: data?.error || "Pi chưa nghe rõ, bạn hỏi lại nhé." }]); setChatState("idle"); return; }
-    setChat((c) => [...c, { role: "pi", ai: true, text: reply }]);
+    const tag = parseTagged(String(data?.text || "").trim()); // "[haohung] Oa giỏi quá" → mặt + câu
+    if (!tag.text) { setChat((c) => [...c, { role: "pi", text: data?.error || "Pi chưa nghe rõ, bạn hỏi lại nhé." }]); setChatState("idle"); return; }
+    setChat((c) => [...c, { role: "pi", ai: true, text: tag.text, expr: tag.expr, giong: tag.giong, key: Date.now() }]);
     setQuota((q) => (q.left != null ? { ...q, left: Math.max(0, q.left - 1) } : q));
     setChatState("talking");
-    setTimeout(() => setChatState((s) => (s === "talking" ? "idle" : s)), Math.min(4000, 800 + reply.length * 35));
   };
+  const spoken = () => setChatState((s) => (s === "talking" ? "idle" : s));
 
   // ---- Tổng kết tuần ----
   const [weekAI, setWeekAI] = useState(() => readLS(`fp_pet_week_${user?.id}`, null));
@@ -240,7 +292,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} />;
     if (sec === "pet_shop") return <PetShopScreen pet={view} onBack={closeLayer} onBuy={buy} onEquip={equip} onPremium={openPremium} />;
     if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onFace={(f) => pet.save({ settings: { face: f } }).then(toastErr)} />;
-    if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onBack={closeLayer} onPremium={openPremium} />;
+    if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onSpoken={spoken} onBack={closeLayer} onPremium={openPremium} />;
     if (sec === "pet_week") return weekData ? <PetWeekScreen pet={view} w={weekData} onBack={closeLayer} onAI={cfg.weekAI === false ? undefined : writeWeek} aiBusy={weekBusy} onPremium={openPremium} /> : null;
     if (sec === "pet_settings") return <PetSettingsScreen pet={view} onBack={closeLayer} onRename={rename} />;
     return null;

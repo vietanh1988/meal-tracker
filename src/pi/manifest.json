@@ -42,11 +42,26 @@
   "dau_pi",
   "co",
   "mat_pi",
+  "mieng",
   "mat",
   "toc",
   "dau",
+  "la",
   "gang",
   "tay"
+ ],
+ "visemes": [
+  "he",
+  "meu",
+  "ngam",
+  "ngu",
+  "o",
+  "to",
+  "vua"
+ ],
+ "leaf": true,
+ "redo": [
+  "halloween-nu-ao04"
  ],
  "faces": [
   "vui",

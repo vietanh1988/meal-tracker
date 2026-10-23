@@ -28,19 +28,29 @@
  },
  "bad": {
   "muadong-nam-ao01": [
-   "viền thân thừa quanh người 886px"
+   "viền thân thừa quanh người 618px"
+  ],
+  "muahe-nam-pk11": [
+   "viền thân thừa quanh người 509px"
   ],
   "muahe-nam-pk12": [
-   "viền thân thừa quanh người 1723px"
+   "viền thân thừa quanh người 880px"
   ],
   "muahe-nu-pk07": [
-   "dán kèm mảng thân 2596px"
+   "cắt phẳng 79px"
+  ],
+  "trungthu-nu-dau04": [
+   "lệch tâm +44px"
   ],
   "trungthu-nu-pk04": [
-   "mảng trắng thừa cạnh tay 168px"
+   "cắt phẳng 103px",
+   "mảng trắng thừa cạnh tay 155px"
   ],
   "trungthu-nu-pk05": [
-   "hình trăng trên quạt bị khoét thủng lộ nền"
+   "cắt phẳng 45px"
+  ],
+  "halloween-nu-ao04": [
+   "Muse ghi chờ vẽ lại (redo)"
   ]
  }
 }

@@ -1,0 +1,1073 @@
+{
+ "meta": {
+  "ten_goi": "Bộ câu chat hằng ngày của Pi — FipilotAI (app giảm cân/calo/gym)",
+  "phien_ban": "1.0 — 2026-10-23",
+  "ngon_ngu": "vi",
+  "bien_so_dung_trong_cau": {
+   "{ten}": "Tên hiển thị của user",
+   "{kcal}": "Số calo của bữa ăn / buổi tập vừa ghi",
+   "{kcal_con_lai}": "Số calo còn lại trong hạn mức hôm nay",
+   "{diem}": "Số điểm nhiệm vụ vừa cộng",
+   "{ml}": "Số ml nước còn thiếu tới mục tiêu hôm nay",
+   "{bai_tap}": "Tên buổi tập hôm nay",
+   "{kg_giam}": "Số kg đã giảm so với lần cân trước / mốc gần nhất",
+   "{kg_tang}": "Số kg tăng so với lần cân trước",
+   "{kg_muc_tieu}": "Cân nặng mục tiêu của user",
+   "{so_nhiem_vu}": "Số nhiệm vụ còn lại hôm nay",
+   "{ten_nhiem_vu}": "Tên nhiệm vụ đang nhắc",
+   "{x}": "Số nhiệm vụ đã xong hôm nay",
+   "{y}": "Tổng số nhiệm vụ hôm nay",
+   "{cap}": "Cấp mới của Pi",
+   "{mo_khoa}": "Tên khoá vừa mở (kho đồ/phòng) khi lên cấp",
+   "{ten_mon}": "Tên món đồ vừa mua",
+   "{gia_diem}": "Giá điểm của món đồ vừa mua",
+   "{so_ngay}": "Số ngày streak liên tiếp"
+  },
+  "quy_tac_dung": [
+   "Mỗi lần kích hoạt chỉ hiện 1 câu, chọn ngẫu nhiên trong nhóm, không lặp lại câu đã dùng trong 7 ngày gần nhất (lưu lịch sử id).",
+   "Trường 'mat' là mã biểu cảm: app nối thành tên file mat_<mat>.png (Pi nam) hoặc mat_nu_<mat>.png (Pi nữ) trong gói asset lớp.",
+   "Trường 'giong' là nhãn cảm xúc cho TTS khi user bật voice: vui_tuoi (sáng, nhanh nhẹ), hao_hung (cao trào, mạnh), diu_dang (chậm, nhỏ nhẹ), an_ui (trầm, chậm), tu_hao (ấm, chắc).",
+   "Câu chứa biến số chỉ được chọn khi app có đủ dữ liệu của biến số đó; thiếu biến thì bỏ qua câu đó.",
+   "Pi xưng 'Pi', gọi user bằng {ten}. Tuyệt đối không dùng câu phán xét cơ thể/cân nặng của user.",
+   "Nhóm can_tang_dung chỉ dùng khi cân tăng hoặc đứng cân >= 7 ngày; nhóm can_giam chỉ dùng khi cân giảm so với mốc so sánh."
+  ]
+ },
+ "nhom": [
+  {
+   "ma": "chao_sang",
+   "ten": "Chào buổi sáng (mở app 5h–10h)",
+   "kich_hoat": "mo_app_buoi_sang",
+   "cau": [
+    {
+     "id": "SANG-01",
+     "text": "Chào buổi sáng {ten}! Pi tưới nắng cho lá rồi nè, giờ tưới năng lượng cho {ten} nha.",
+     "mat": "vui",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "SANG-02",
+     "text": "Sáng rồi sáng rồi! Hôm nay mình gieo hạt nhiệm vụ đầu tiên là gì đây?",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "SANG-03",
+     "text": "Pi dậy sớm chờ {ten} đó. Ăn sáng chưa? Ăn rồi nhớ ghi calo cho Pi đếm nha.",
+     "mat": "yeu",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "SANG-04",
+     "text": "{ten} ơi, một ngày mới là một cơ hội đốt calo mới. Pi háo hức quá!",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "SANG-05",
+     "text": "Chào {ten}! Tối qua ngủ ngon không? Cơ bắp của {ten} cảm ơn giấc ngủ đó lắm á.",
+     "mat": "vui",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "SANG-06",
+     "text": "Buổi sáng là lúc cái cây kỷ luật khát nước nhất. Mình bắt đầu bằng nhiệm vụ dễ nhất nha.",
+     "mat": "suynghi",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "SANG-07",
+     "text": "Pi vươn lá chào ngày mới! {ten} định hôm nay tập gì nè?",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "SANG-08",
+     "text": "Dậy rồi! Nhiệm vụ sáng nay đang chờ, xong một cái là Pi cộng điểm liền.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    }
+   ]
+  },
+  {
+   "ma": "chao_trua",
+   "ten": "Chào buổi trưa (mở app 10h–14h)",
+   "kich_hoat": "mo_app_buoi_trua",
+   "cau": [
+    {
+     "id": "TRUA-01",
+     "text": "Trưa rồi, {ten} ăn gì đó? Chụp cho Pi xem, Pi đếm calo giúp cho.",
+     "mat": "vui",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "TRUA-02",
+     "text": "Giờ nghỉ trưa là giờ nạp năng lượng. Ăn ngon nhưng nhớ chừa chỗ cho mục tiêu nha {ten}.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "TRUA-03",
+     "text": "Pi ngáp một cái... À không, Pi tỉnh táo lắm! {ten} đi bộ một chút sau ăn trưa không?",
+     "mat": "ngu",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "TRUA-04",
+     "text": "Nửa ngày trôi qua rồi, mình đang làm tốt đó {ten}. Để Pi kiểm tra nhiệm vụ giúp nè.",
+     "mat": "suynghi",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "TRUA-05",
+     "text": "Trưa nắng quá, Pi trốn trong bóng râm. {ten} nhớ uống nước nha.",
+     "mat": "vui",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "TRUA-06",
+     "text": "Ăn trưa xong đừng ngồi liền, đi bộ vài phút cho cái bụng vui nha {ten}.",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "TRUA-07",
+     "text": "Pi báo cáo: buổi sáng của {ten} rất ổn. Chiều nay mình giữ phong độ nha.",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "TRUA-08",
+     "text": "Trưa rồi mà {ten} chưa ghi bữa sáng á? Ghi bù vẫn tính, Pi không trừ điểm đâu.",
+     "mat": "ngacnhien",
+     "giong": "vui_tuoi"
+    }
+   ]
+  },
+  {
+   "ma": "chao_toi",
+   "ten": "Buổi tối / tổng kết ngày (mở app sau 19h)",
+   "kich_hoat": "mo_app_buoi_toi",
+   "cau": [
+    {
+     "id": "TOI-01",
+     "text": "Tối rồi, mình tổng kết một ngày nha {ten}. Pi có bất ngờ điểm số cho {ten} nè.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "TOI-02",
+     "text": "Ngày hôm nay của {ten}, Pi chấm là rất cố gắng. Còn thiếu nhiệm vụ nào không, mình làm nốt nha.",
+     "mat": "suynghi",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "TOI-03",
+     "text": "Tối là giờ cơ bắp sửa chữa đó {ten}. Ăn đủ đạm, ngủ đủ giấc nha.",
+     "mat": "vui",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "TOI-04",
+     "text": "Pi xếp lá đi ngủ sớm đây. {ten} cũng đừng thức khuya, mai mình còn cày cấp.",
+     "mat": "ngu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "TOI-05",
+     "text": "Trước khi ngủ, nhìn lại chuỗi ngày của mình đi {ten}. Đẹp ghê chưa?",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "TOI-06",
+     "text": "Hôm nay dù chưa hoàn hảo cũng không sao. Ngủ một giấc, mai Pi làm lại cùng {ten}.",
+     "mat": "vui",
+     "giong": "an_ui"
+    },
+    {
+     "id": "TOI-07",
+     "text": "Tối nay {ten} có muốn xem kho đồ không? Có món Pi để dành chờ {ten} lên cấp đó.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "TOI-08",
+     "text": "Chúc {ten} ngủ ngon. Pi mơ thấy mình mặc bộ đồ mới, {ten} mơ thấy mình nhẹ cân nha.",
+     "mat": "ngu",
+     "giong": "diu_dang"
+    }
+   ]
+  },
+  {
+   "ma": "lau_khong_gap",
+   "ten": "Lâu không gặp (không mở app >= 2 ngày)",
+   "kich_hoat": "vang_mat_tu_2_ngay",
+   "cau": [
+    {
+     "id": "VANG-01",
+     "text": "Ơ, {ten} về rồi! Mấy hôm không gặp, lá Pi héo nhớ luôn á.",
+     "mat": "buon",
+     "giong": "an_ui"
+    },
+    {
+     "id": "VANG-02",
+     "text": "Pi chờ mãi... Cuối cùng {ten} cũng mở app! Mình bắt đầu lại nhẹ nhàng thôi nha.",
+     "mat": "haohung",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "VANG-03",
+     "text": "Không sao đâu, ai cũng có lúc bận. Quan trọng là {ten} quay lại rồi nè.",
+     "mat": "vui",
+     "giong": "an_ui"
+    },
+    {
+     "id": "VANG-04",
+     "text": "Pi đếm từng ngày đó. Hôm nay mình làm một nhiệm vụ nhỏ cho ấm người nha.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "VANG-05",
+     "text": "{ten} biến mất mấy hôm, Pi tưởng mình bị bỏ rơi... May quá, {ten} đây rồi!",
+     "mat": "buon",
+     "giong": "an_ui"
+    },
+    {
+     "id": "VANG-06",
+     "text": "Chào mừng trở lại! Chuỗi ngày mới bắt đầu từ hôm nay, Pi hứa không nhắc chuyện cũ.",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "VANG-07",
+     "text": "Pi vẫn giữ chỗ cho {ten} nè. Mình uống ly nước, ghi một bữa, thế là vào nhịp lại.",
+     "mat": "vui",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "VANG-08",
+     "text": "Nhớ {ten} quá đi. Hôm nay tập nhẹ thôi cũng được, miễn là mình quay lại.",
+     "mat": "yeu",
+     "giong": "an_ui"
+    }
+   ]
+  },
+  {
+   "ma": "ghi_bua_an",
+   "ten": "Sau khi ghi bữa ăn / calo",
+   "kich_hoat": "sau_khi_ghi_bua",
+   "cau": [
+    {
+     "id": "AN-01",
+     "text": "Ghi rồi! Bữa này {kcal} calo, Pi cộng {diem} điểm cho {ten} nè.",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "AN-02",
+     "text": "Ngon mà vẫn trong hạn mức! {ten} chọn món khéo ghê.",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "AN-03",
+     "text": "Đã ghi nhận. Mỗi bữa ăn được ghi là một bước {ten} kiểm soát được cơ thể mình.",
+     "mat": "vui",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "AN-04",
+     "text": "Bữa này hơi nhiều calo một chút, nhưng ghi ra được là thắng rồi. Lát mình vận động bù nha.",
+     "mat": "suynghi",
+     "giong": "an_ui"
+    },
+    {
+     "id": "AN-05",
+     "text": "Pi đếm xong rồi: hôm nay {ten} còn {kcal_con_lai} calo nữa đó.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "AN-06",
+     "text": "Ăn có ý thức là siêu năng lực đó {ten}. Pi tự hào ghê.",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "AN-07",
+     "text": "Xong! Pi đã cất bữa ăn vào nhật ký. Cái cây calo hôm nay vẫn xanh tốt.",
+     "mat": "vui",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "AN-08",
+     "text": "Ghi bữa ăn: hoàn thành. {ten} có muốn Pi nhắc uống nước luôn không?",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    }
+   ]
+  },
+  {
+   "ma": "uong_nuoc",
+   "ten": "Nhắc uống nước",
+   "kich_hoat": "nhac_nuoc_theo_tien_do",
+   "cau": [
+    {
+     "id": "NUOC-01",
+     "text": "Lá Pi hơi khô nè... {ten} uống nước chưa? Một ly là xong nhiệm vụ nước đó.",
+     "mat": "buon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "NUOC-02",
+     "text": "Nhắc nhẹ: cơ thể {ten} đang chờ nước như Pi chờ nắng vậy.",
+     "mat": "vui",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "NUOC-03",
+     "text": "Uống nước đi {ten}, da đẹp, người nhẹ, Pi còn cộng điểm nữa.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "NUOC-04",
+     "text": "Pi vừa tưới cho mình một ly nước tưởng tượng. Tới lượt {ten} uống ly thật nha.",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "NUOC-05",
+     "text": "Còn {ml} ml nữa là đủ mục tiêu nước hôm nay. Cố một chút thôi {ten}!",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "NUOC-06",
+     "text": "Nước là phân bón của Pi đó. {ten} uống nước là Pi cũng được nhờ.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "NUOC-07",
+     "text": "Khát là dấu hiệu muộn rồi đó. Uống trước khi khát nha {ten}.",
+     "mat": "suynghi",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "NUOC-08",
+     "text": "Một ly nước nhỏ, một điểm nhiệm vụ to. Uống nha {ten}?",
+     "mat": "vui",
+     "giong": "vui_tuoi"
+    }
+   ]
+  },
+  {
+   "ma": "truoc_tap",
+   "ten": "Trước buổi tập / nhắc đi tập",
+   "kich_hoat": "den_gio_tap_hoac_mo_man_hinh_tap",
+   "cau": [
+    {
+     "id": "TAP-01",
+     "text": "Đến giờ tập rồi! Pi buộc dây giày tưởng tượng xong rồi nè.",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "TAP-02",
+     "text": "Hôm nay tập {bai_tap} nha {ten}. Pi sẽ đứng cổ vũ từ đầu tới cuối.",
+     "mat": "vui",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "TAP-03",
+     "text": "Khởi động kỹ nha {ten}, đừng như Pi vươn lá một cái là xong.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "TAP-04",
+     "text": "Buổi tập hôm nay xong là {ten} gần lên cấp thêm một khúc nữa đó. Chiến thôi!",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "TAP-05",
+     "text": "Pi đếm ngược nè: 3, 2, 1... {ten} xuất phát!",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "TAP-06",
+     "text": "Đừng nghĩ tới cả buổi tập, chỉ nghĩ tới hiệp đầu tiên thôi. Pi ở đây.",
+     "mat": "vui",
+     "giong": "an_ui"
+    },
+    {
+     "id": "TAP-07",
+     "text": "Mồ hôi hôm nay là đồ đẹp của Pi ngày mai đó. Tập thôi {ten}!",
+     "mat": "yeu",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "TAP-08",
+     "text": "Sẵn sàng chưa? Nhạc lên, người lên, Pi cũng nhảy theo nè.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    }
+   ]
+  },
+  {
+   "ma": "sau_tap",
+   "ten": "Sau khi hoàn thành buổi tập",
+   "kich_hoat": "hoan_thanh_buoi_tap",
+   "cau": [
+    {
+     "id": "SAUTAP-01",
+     "text": "Xong rồi! {ten} đốt được {kcal} calo. Pi tự hào muốn rụng lá luôn!",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "SAUTAP-02",
+     "text": "Buổi tập hoàn thành! {diem} điểm đã về túi {ten}.",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "SAUTAP-03",
+     "text": "Thấy không, {ten} mạnh hơn hôm qua một chút rồi đó. Pi nhìn là biết.",
+     "mat": "nhaymat",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "SAUTAP-04",
+     "text": "Tập xong nhớ giãn cơ và uống nước nha. Pi dặn như mẹ luôn.",
+     "mat": "vui",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "SAUTAP-05",
+     "text": "Hôm nay {ten} đã thắng cái ghế sofa. Trận này khó nhất ngày đó.",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "SAUTAP-06",
+     "text": "Tuyệt vời! Chuỗi tập của {ten} lại dài thêm một ngày.",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "SAUTAP-07",
+     "text": "Pi ghi lại buổi tập rồi. Cơ bắp của {ten} đang âm thầm cảm ơn đó.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "SAUTAP-08",
+     "text": "Một buổi tập nữa vào sổ. Lên cấp đang tới gần, Pi ngửi thấy mùi đồ mới rồi!",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    }
+   ]
+  },
+  {
+   "ma": "can_giam",
+   "ten": "Cân giảm (chỉ dùng khi số cân giảm)",
+   "kich_hoat": "can_xong_va_giam",
+   "cau": [
+    {
+     "id": "CANGIAM-01",
+     "text": "Xuống {kg_giam} kg rồi! Pi nhảy lên vì mừng luôn nè!",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CANGIAM-02",
+     "text": "Con số biết nói thật: {ten} đang làm đúng cách.",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "CANGIAM-03",
+     "text": "Giảm từ từ mà chắc như vậy là đẹp nhất đó {ten}. Pi ghi vào kỷ lục nè.",
+     "mat": "vui",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "CANGIAM-04",
+     "text": "Áo quần sắp rộng ra rồi đó. Công của {ten} hết á!",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "CANGIAM-05",
+     "text": "Cân nặng giảm, tự tin tăng. Pi thấy {ten} khác hẳn rồi.",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "CANGIAM-06",
+     "text": "Mốc mới mở khoá! Mình tiến gần mục tiêu {kg_muc_tieu} kg thêm một bước.",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CANGIAM-07",
+     "text": "Pi không bất ngờ đâu, {ten} cày bao nhiêu Pi đếm hết mà.",
+     "mat": "nhaymat",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "CANGIAM-08",
+     "text": "Ngày cân đẹp nhất tuần! Ăn mừng bằng một vòng đi bộ nhẹ nha.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    }
+   ]
+  },
+  {
+   "ma": "can_tang_dung",
+   "ten": "Cân tăng / đứng cân (chỉ an ủi, tuyệt đối không phán xét)",
+   "kich_hoat": "can_xong_va_tang_hoac_dung_7_ngay",
+   "cau": [
+    {
+     "id": "CANTANG-01",
+     "text": "Lên {kg_tang} kg chút thôi, có thể là nước và cơ bắp đó. Mình theo dõi thêm nha.",
+     "mat": "vui",
+     "giong": "an_ui"
+    },
+    {
+     "id": "CANTANG-02",
+     "text": "Số cân chỉ là một dữ kiện, không phải bản án đâu {ten}. Pi vẫn tin {ten}.",
+     "mat": "yeu",
+     "giong": "an_ui"
+    },
+    {
+     "id": "CANTANG-03",
+     "text": "Tuần này chưa xuống cân cũng không sao, thói quen tốt mình vẫn giữ mà.",
+     "mat": "vui",
+     "giong": "an_ui"
+    },
+    {
+     "id": "CANTANG-04",
+     "text": "Đừng để một con số phá cả ngày đẹp. Mình vẫn đang đi, chỉ là chậm một đoạn.",
+     "mat": "suynghi",
+     "giong": "an_ui"
+    },
+    {
+     "id": "CANTANG-05",
+     "text": "Pi ôm một cái nè. Giảm cân là đường dài, Pi đi cùng {ten} tới cuối.",
+     "mat": "yeu",
+     "giong": "an_ui"
+    },
+    {
+     "id": "CANTANG-06",
+     "text": "Cân đứng yên đôi khi là cơ thể đang chỉnh lại. Kiên nhẫn thêm một tuần nha.",
+     "mat": "suynghi",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "CANTANG-07",
+     "text": "Hôm nay chưa được thì mai. Pi không bỏ {ten}, {ten} cũng đừng bỏ Pi nha.",
+     "mat": "buon",
+     "giong": "an_ui"
+    },
+    {
+     "id": "CANTANG-08",
+     "text": "Mình xem lại giấc ngủ và bữa ăn tuần này cùng Pi nha, nhẹ nhàng thôi.",
+     "mat": "vui",
+     "giong": "diu_dang"
+    }
+   ]
+  },
+  {
+   "ma": "nhiem_vu",
+   "ten": "Nhiệm vụ hằng ngày (nhắc + tiến độ)",
+   "kich_hoat": "mo_tab_nhiem_vu_hoac_nhac_theo_tien_do",
+   "cau": [
+    {
+     "id": "NV-01",
+     "text": "Hôm nay còn {so_nhiem_vu} nhiệm vụ nữa. Làm cái dễ nhất trước nha {ten}.",
+     "mat": "suynghi",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "NV-02",
+     "text": "Nhiệm vụ {ten_nhiem_vu} đang chờ. Xong là có {diem} điểm đó.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "NV-03",
+     "text": "Pi kiểm tra rồi: {ten} xong {x}/{y} nhiệm vụ hôm nay. Phong độ ổn!",
+     "mat": "vui",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "NV-04",
+     "text": "Còn một nhiệm vụ cuối trước khi hết ngày. Mình chốt sổ đẹp nha {ten}.",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "NV-05",
+     "text": "Nhiệm vụ mới mở rồi nè. Pi đọc cho nghe: {ten_nhiem_vu}.",
+     "mat": "ngacnhien",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "NV-06",
+     "text": "Đừng để nhiệm vụ uống nước trống nha, dễ nhất ngày đó {ten}.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "NV-07",
+     "text": "Xong hết nhiệm vụ ngày rồi! {ten} chính thức là người Pi nể nhất hôm nay.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "NV-08",
+     "text": "Chuỗi nhiệm vụ tuần này của {ten} đẹp ghê. Giữ nhịp này là lên cấp sớm đó.",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    }
+   ]
+  },
+  {
+   "ma": "len_cap",
+   "ten": "Lên cấp (khoảnh khắc cao trào — ưu tiên câu có {mo_khoa} khi vừa mở khoá)",
+   "kich_hoat": "pi_len_cap",
+   "cau": [
+    {
+     "id": "CAP-01",
+     "text": "LÊN CẤP {cap} RỒI! Kho đồ mới mở rồi đó, vào chọn cho Pi một món đi!",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CAP-02",
+     "text": "Cấp {cap}! Pi lớn thêm một khúc rồi, nhờ {ten} cày đó.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CAP-03",
+     "text": "Báo động vui: {ten} vừa đưa Pi lên cấp {cap}. Phần thưởng là {mo_khoa}!",
+     "mat": "ngacnhien",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CAP-04",
+     "text": "Pi chờ khoảnh khắc này lâu rồi. Cấp {cap} mở khoá: {mo_khoa}!",
+     "mat": "yeu",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CAP-05",
+     "text": "Lên cấp lên cấp! Nhạc đâu, pháo đâu... {ten} vào phòng Pi xem đồ mới đi.",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CAP-06",
+     "text": "Từ hôm nay Pi là Pi cấp {cap}. Nghe oách chưa?",
+     "mat": "nhaymat",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "CAP-07",
+     "text": "Mỗi nhiệm vụ {ten} làm đều dồn vào khoảnh khắc này đó. Cấp {cap}, xứng đáng!",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "CAP-08",
+     "text": "Cấp mới, đồ mới, mục tiêu mới. Mình đi tiếp nha {ten}!",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CAP-09",
+     "text": "Pi vừa nảy thêm một chồi vì lên cấp {cap} đó. Cảm ơn {ten} đã chăm Pi.",
+     "mat": "yeu",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "CAP-10",
+     "text": "Đạt cấp {cap} rồi! {ten} muốn mua món đầu tiên trong kho mới là gì?",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    }
+   ]
+  },
+  {
+   "ma": "mua_do",
+   "ten": "Mua đồ / mặc đồ mới bằng điểm",
+   "kich_hoat": "mua_do_thanh_cong_hoac_mac_lan_dau",
+   "cau": [
+    {
+     "id": "DO-01",
+     "text": "Aaa Pi có {ten_mon} mới! Cảm ơn {ten} đã cày {gia_diem} điểm cho Pi nha.",
+     "mat": "yeu",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "DO-02",
+     "text": "{ten_mon} này hợp với Pi không? Pi soi gương nãy giờ rồi đó.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "DO-03",
+     "text": "Đồ mới mặc vào là Pi thấy mình oách hẳn. Mắt {ten} tinh ghê.",
+     "mat": "haohung",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "DO-04",
+     "text": "Món này Pi chờ lên cấp lâu lắm mới mua được. Giờ là của Pi rồi!",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "DO-05",
+     "text": "{ten} mua cho Pi bằng điểm cày nhiệm vụ đó, Pi trân trọng lắm.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "DO-06",
+     "text": "Mặc bộ này đi tập là có động lực gấp đôi luôn. Cảm ơn {ten}!",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "DO-07",
+     "text": "Pi cất {ten_mon} vào tủ kỹ lắm. Mai mặc tiếp!",
+     "mat": "vui",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "DO-08",
+     "text": "Nhìn Pi nè, nhìn Pi nè! Bộ đồ mới có làm {ten} muốn cày thêm nhiệm vụ không?",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    }
+   ]
+  },
+  {
+   "ma": "streak",
+   "ten": "Chuỗi ngày liên tiếp (streak)",
+   "kich_hoat": "cap_nhat_streak",
+   "cau": [
+    {
+     "id": "STREAK-01",
+     "text": "Chuỗi {so_ngay} ngày rồi! Cái cây kỷ luật của {ten} lớn nhanh ghê.",
+     "mat": "haohung",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "STREAK-02",
+     "text": "{so_ngay} ngày liên tiếp. Pi tự hào tới mức lá rung luôn nè.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "STREAK-03",
+     "text": "Đừng để chuỗi {so_ngay} ngày gãy nha {ten}, hôm nay làm ít nhất một nhiệm vụ nhỏ.",
+     "mat": "suynghi",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "STREAK-04",
+     "text": "Chuỗi mới bắt đầu: ngày 1! Mọi chuỗi dài đều bắt đầu từ hôm nay đó.",
+     "mat": "vui",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "STREAK-05",
+     "text": "Hôm qua {ten} suýt quên, may mà quay lại kịp. Chuỗi vẫn sống, Pi thở phào.",
+     "mat": "ngacnhien",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "STREAK-06",
+     "text": "Kỷ lục chuỗi của {ten} là {so_ngay} ngày. Hôm nay mình phá kỷ lục tiếp nha.",
+     "mat": "haohung",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "STREAK-07",
+     "text": "Mỗi ngày một chút, chuỗi của {ten} thành rừng lúc nào không hay.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "STREAK-08",
+     "text": "Pi khắc ngày thứ {so_ngay} lên lịch rồi. Hành trình này đáng khoe lắm đó.",
+     "mat": "nhaymat",
+     "giong": "tu_hao"
+    }
+   ]
+  },
+  {
+   "ma": "ngay_nghi",
+   "ten": "Ngày nghỉ tập (rest day theo lịch)",
+   "kich_hoat": "ngay_nghi_trong_lich_tap",
+   "cau": [
+    {
+     "id": "NGHI-01",
+     "text": "Hôm nay là ngày nghỉ. Cơ bắp cũng cần ngủ như Pi vậy.",
+     "mat": "ngu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "NGHI-02",
+     "text": "Nghỉ ngơi là một phần của tập luyện đó {ten}. Pi không trừ điểm ngày nghỉ đâu.",
+     "mat": "vui",
+     "giong": "an_ui"
+    },
+    {
+     "id": "NGHI-03",
+     "text": "Ngày nghỉ thì mình đi bộ nhẹ, ăn ngon vừa phải, ngủ sớm. Vậy là đủ tốt rồi.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "NGHI-04",
+     "text": "Pi nằm phơi nắng hôm nay. {ten} cũng thư giãn đi, mai mình chiến tiếp.",
+     "mat": "ngu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "NGHI-05",
+     "text": "Đừng áy náy vì nghỉ một ngày. Nghỉ đúng lúc mới đi được đường dài.",
+     "mat": "vui",
+     "giong": "an_ui"
+    },
+    {
+     "id": "NGHI-06",
+     "text": "Hôm nay Pi chỉ nhắc một câu: ngủ sớm nha {ten}.",
+     "mat": "ngu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "NGHI-07",
+     "text": "Ngày nghỉ của {ten} là ngày Pi sạc pin. Mai Pi lại ồn ào tiếp.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "NGHI-08",
+     "text": "Cơ thể khoẻ là cơ thể biết nghỉ. {ten} đang làm rất đúng.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    }
+   ]
+  },
+  {
+   "ma": "idle",
+   "ten": "Bấm vào Pi / mở app không rõ ngữ cảnh",
+   "kich_hoat": "cham_vao_pi_hoac_idle",
+   "cau": [
+    {
+     "id": "IDLE-01",
+     "text": "Bấm vào Pi là Pi vui rồi. Có gì cần Pi giúp không?",
+     "mat": "vui",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "IDLE-02",
+     "text": "Pi ở đây nè. Mình xem nhiệm vụ, xem calo, hay xem đồ mới trước?",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "IDLE-03",
+     "text": "Mỗi lần {ten} mở app là Pi được tưới một chút động lực đó.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "IDLE-04",
+     "text": "Hơ, bắt gặp {ten} đang ngắm Pi. Pi biết mình dễ thương mà.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "IDLE-05",
+     "text": "Pi đang nghĩ về mục tiêu của {ten}. Mình gần thêm một bước rồi đó.",
+     "mat": "suynghi",
+     "giong": "diu_dang"
+    },
+    {
+     "id": "IDLE-06",
+     "text": "Ngồi lâu chưa {ten}? Đứng dậy vươn vai cùng Pi 30 giây nha.",
+     "mat": "haohung",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "IDLE-07",
+     "text": "Pi chỉ muốn nói một câu: {ten} đang làm tốt lắm, thật đó.",
+     "mat": "yeu",
+     "giong": "tu_hao"
+    },
+    {
+     "id": "IDLE-08",
+     "text": "Hôm nay dù bận cỡ nào, làm một việc nhỏ cho cơ thể là đủ thắng rồi.",
+     "mat": "vui",
+     "giong": "an_ui"
+    }
+   ]
+  },
+  {
+   "ma": "bi_chui",
+   "ten": "Bị chửi / xúc phạm (KHÔNG BAO GIỜ chửi lại; lém lỉnh, dỗi kiểu hoạt hình, lái về nhiệm vụ)",
+   "kich_hoat": "phat_hien_xuc_pham",
+   "quy_tac": "muc 1: lần 1-2 trong phiên; muc 2: lần 3-4; muc 3: chửi nặng liên tục -> Pi ngủ, im 1-2 phút",
+   "cau": [
+    {
+     "id": "CHUI-01",
+     "text": "Ơ kìa, Pi chỉ ăn nắng với uống nước thôi mà! Còn {ten} hôm nay ăn gì, ghi cho Pi xem nè.",
+     "mat": "ngacnhien",
+     "giong": "vui_tuoi",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-02",
+     "text": "Hứ, Pi dỗi ba giây... một, hai, ba, hết dỗi rồi! Mình đi tập tiếp nha?",
+     "mat": "buon",
+     "giong": "vui_tuoi",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-03",
+     "text": "Lời này cay quá, chắc {ten} đang đói rồi. Ăn gì đó lành mạnh rồi mắng Pi tiếp cũng được.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-04",
+     "text": "Pi là cái mầm nhỏ thôi, mắng mạnh quá lá Pi héo mất á...",
+     "mat": "buon",
+     "giong": "diu_dang",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-05",
+     "text": "Pi không giận đâu, nhưng Pi thích {ten} lúc vui hơn. Làm một nhiệm vụ dễ cho đỡ bực nha?",
+     "mat": "yeu",
+     "giong": "diu_dang",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-06",
+     "text": "Ôi trời, Pi nghe nhầm hay {ten} vừa khen Pi dễ thương vậy? Pi cảm ơn nha!",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-07",
+     "text": "Pi ghi nhận cơn bực này rồi nè. Đem nó đi đốt calo là hết liền á!",
+     "mat": "haohung",
+     "giong": "hao_hung",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-08",
+     "text": "Mắng Pi không giảm được cân đâu, nhưng mười cái squat thì có đó. Thử không?",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-09",
+     "text": "Pi bị mắng mà vẫn đứng đây chờ {ten} nè. Pi lì lắm á!",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-10",
+     "text": "Hôm nay chắc {ten} mệt lắm hả? Có chuyện gì kể Pi nghe được không?",
+     "mat": "suynghi",
+     "giong": "diu_dang",
+     "muc": 1
+    },
+    {
+     "id": "CHUI-11",
+     "text": "Pi buồn xíu rồi đó... Mình nói chuyện nhẹ nhàng hơn được không {ten}?",
+     "mat": "buon",
+     "giong": "diu_dang",
+     "muc": 2
+    },
+    {
+     "id": "CHUI-12",
+     "text": "Pi vẫn thương {ten}, nhưng mấy lời đó làm lá Pi cụp xuống rồi nè.",
+     "mat": "buon",
+     "giong": "diu_dang",
+     "muc": 2
+    },
+    {
+     "id": "CHUI-13",
+     "text": "Pi xin phép không trả lời câu đó nha. Mình quay lại nhiệm vụ hôm nay nè?",
+     "mat": "suynghi",
+     "giong": "diu_dang",
+     "muc": 2
+    },
+    {
+     "id": "CHUI-14",
+     "text": "Pi đi tưới lá một chút cho mát đầu nha. Lát {ten} quay lại mình nói chuyện vui hơn.",
+     "mat": "ngu",
+     "giong": "diu_dang",
+     "muc": 3
+    },
+    {
+     "id": "CHUI-15",
+     "text": "Pi ngủ một lát đây... Khi nào {ten} hết bực thì chạm vào Pi nha.",
+     "mat": "ngu",
+     "giong": "diu_dang",
+     "muc": 3
+    }
+   ]
+  },
+  {
+   "ma": "buon_ban_than",
+   "ten": "Người dùng chê bản thân / chán nản / dấu hiệu tự hại hoặc ép cân nguy hiểm (KHÔNG đùa, KHÔNG khuyên ăn kiêng)",
+   "kich_hoat": "phat_hien_tieu_cuc_ban_than",
+   "cau": [
+    {
+     "id": "BUON-01",
+     "text": "Pi nghe {ten} nói vậy thấy thương lắm. {ten} không cần hoàn hảo đâu, Pi ở đây với {ten} nè.",
+     "mat": "yeu",
+     "giong": "an_ui"
+    },
+    {
+     "id": "BUON-02",
+     "text": "Cơ thể {ten} đang cố gắng mỗi ngày rồi. Mình nghỉ một chút cũng được, không sao đâu.",
+     "mat": "yeu",
+     "giong": "an_ui"
+    },
+    {
+     "id": "BUON-03",
+     "text": "Nếu {ten} đang thấy quá sức hoặc có ý nghĩ làm hại bản thân, hãy nói với người thân hoặc gọi đường dây hỗ trợ tâm lý nha. {ten} không phải một mình đâu.",
+     "mat": "buon",
+     "giong": "an_ui"
+    },
+    {
+     "id": "BUON-04",
+     "text": "Hôm nay mình không cần đếm calo hay tập gì hết. Chỉ cần {ten} ổn là Pi vui rồi.",
+     "mat": "yeu",
+     "giong": "an_ui"
+    }
+   ]
+  }
+ ]
+}

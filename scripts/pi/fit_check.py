@@ -128,13 +128,16 @@ def check(it):
     return out
 
 # 24/10 duyệt bằng mắt (bộ pi_fix_30): OK = báo nhầm (vật vốn có cạnh thẳng đứng); BAD = lỗi máy không bắt được
-EYE_OK = {"tet-nam-pk08": "cuộn thư dựng đứng", "muahe-nu-pk05": "ly thẳng thành"}
-EYE_BAD = {"trungthu-nu-pk05": "hình trăng trên quạt bị khoét thủng lộ nền"}
+# (24/10: bộ pi_full thay 234 món → duyệt mắt lại từ đầu; ghi vào đây món nào duyệt xong)
+EYE_OK = {"tet-nam-pk08": "cuộn thư dựng đứng (bản fix_30 đã duyệt)", "muahe-nu-pk05": "ly thẳng thành (bản fix_30 đã duyệt)"}
+EYE_BAD = {}
 res = {}
 for it in man["items"]:
     r = [] if it["id"] in EYE_OK else check(it)
     if it["id"] in EYE_BAD: r = r + [EYE_BAD[it["id"]]]
     if r: res[it["id"]] = r
+for rid in man.get("redo", []):  # catalog của Muse ghi món chờ vẽ lại
+    res.setdefault(rid, []).append("Muse ghi chờ vẽ lại (redo)")
 geo = {"neck": neck, "head_top": HEAD_Y, "head_w": int(HW), "eyes": EYES}
 json.dump({"geo": {k: (v if k != "eyes" else {g: [[round(x), round(y)] for x, y in e] for g, e in v.items()}) for k, v in geo.items()}, "bad": res},
           open(os.path.join(ROOT, "src", "pi", "fit.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
