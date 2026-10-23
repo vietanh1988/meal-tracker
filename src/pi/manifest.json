@@ -1,0 +1,2531 @@
+{
+ "v": 2,
+ "canvas": 768,
+ "feet": [
+  384,
+  720
+ ],
+ "bbox": [
+  219,
+  120,
+  550,
+  720
+ ],
+ "room": [
+  768,
+  1152
+ ],
+ "events": {
+  "giangsinh": "Giáng sinh",
+  "tet": "Tết Việt Nam",
+  "muadong": "Mùa đông",
+  "muahe": "Mùa hè",
+  "halloween": "Halloween",
+  "trungthu": "Trung thu"
+ },
+ "slots": {
+  "ao": "Áo/váy",
+  "dau": "Đội đầu",
+  "mat": "Kính/mặt nạ",
+  "co": "Cổ",
+  "tay": "Cầm tay",
+  "gang": "Găng tay",
+  "lung": "Đeo lưng",
+  "toc": "Kẹp tóc",
+  "giay": "Giày"
+ },
+ "order": [
+  "lung",
+  "than",
+  "giay",
+  "ao",
+  "co",
+  "mat_pi",
+  "mat",
+  "toc",
+  "dau",
+  "gang",
+  "tay"
+ ],
+ "faces": [
+  "vui",
+  "cuoilon",
+  "nhaymat",
+  "haohung",
+  "ngacnhien",
+  "yeu",
+  "suynghi",
+  "buon",
+  "ngu"
+ ],
+ "rooms": {
+  "tet": [
+   "sang",
+   "trua",
+   "toi"
+  ],
+  "trungthu": [
+   "sang",
+   "trua",
+   "toi"
+  ],
+  "halloween": [
+   "sang",
+   "trua",
+   "toi"
+  ],
+  "giangsinh": [
+   "sang",
+   "trua",
+   "toi"
+  ],
+  "muadong": [
+   "sang",
+   "trua",
+   "toi"
+  ],
+  "muahe": [
+   "sang",
+   "trua",
+   "toi"
+  ]
+ },
+ "items": [
+  {
+   "id": "giangsinh-nam-ao01",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo len đỏ hoạ tiết tuần lộc",
+   "file": "items/giangsinh/do_giangsinh_nam_ao01.webp"
+  },
+  {
+   "id": "giangsinh-nam-ao02",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Bộ đồ ông già Noel áo đỏ viền lông trắng, đai đen khoá vàng",
+   "file": "items/giangsinh/do_giangsinh_nam_ao02.webp"
+  },
+  {
+   "id": "giangsinh-nam-ao03",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo phao xanh lá hoạ tiết bông tuyết",
+   "file": "items/giangsinh/do_giangsinh_nam_ao03.webp"
+  },
+  {
+   "id": "giangsinh-nam-ao04",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo hoodie trắng in cây thông",
+   "file": "items/giangsinh/do_giangsinh_nam_ao04.webp"
+  },
+  {
+   "id": "giangsinh-nam-ao05",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo vest đỏ thắt nơ xanh dự tiệc",
+   "file": "items/giangsinh/do_giangsinh_nam_ao05.webp"
+  },
+  {
+   "id": "giangsinh-nam-dau01",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ ông già Noel đỏ quả bông trắng",
+   "file": "items/giangsinh/do_giangsinh_nam_dau01.webp"
+  },
+  {
+   "id": "giangsinh-nam-dau02",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ len có sừng tuần lộc",
+   "file": "items/giangsinh/do_giangsinh_nam_dau02.webp"
+  },
+  {
+   "id": "giangsinh-nam-dau03",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ len xanh lá quả bông đỏ",
+   "file": "items/giangsinh/do_giangsinh_nam_dau03.webp"
+  },
+  {
+   "id": "giangsinh-nam-dau04",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ yêu tinh xanh lá có chuông",
+   "file": "items/giangsinh/do_giangsinh_nam_dau04.webp"
+  },
+  {
+   "id": "giangsinh-nam-dau05",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Băng đô sừng tuần lộc",
+   "file": "items/giangsinh/do_giangsinh_nam_dau05.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk01",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính hình bông tuyết",
+   "file": "items/giangsinh/do_giangsinh_nam_pk01.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk02",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính tròn gọng đỏ",
+   "file": "items/giangsinh/do_giangsinh_nam_pk02.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk03",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "co",
+   "name": "Khăn len sọc đỏ xanh lá",
+   "file": "items/giangsinh/do_giangsinh_nam_pk03.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk04",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "co",
+   "name": "Nơ cổ đỏ",
+   "file": "items/giangsinh/do_giangsinh_nam_pk04.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk05",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "co",
+   "name": "Vòng cổ chuông lục lạc",
+   "file": "items/giangsinh/do_giangsinh_nam_pk05.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk06",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm kẹo gậy",
+   "file": "items/giangsinh/do_giangsinh_nam_pk06.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk07",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm hộp quà",
+   "file": "items/giangsinh/do_giangsinh_nam_pk07.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "giangsinh-nam-pk08",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm cốc ca cao nóng",
+   "file": "items/giangsinh/do_giangsinh_nam_pk08.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "giangsinh-nam-pk09",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm quả châu thông",
+   "file": "items/giangsinh/do_giangsinh_nam_pk09.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "giangsinh-nam-pk10",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "gang",
+   "name": "Găng tay len đỏ",
+   "file": "items/giangsinh/do_giangsinh_nam_pk10.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk11",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Túi quà ông già Noel đeo lưng",
+   "file": "items/giangsinh/do_giangsinh_nam_pk11.webp"
+  },
+  {
+   "id": "giangsinh-nam-pk12",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Ba lô người tuyết",
+   "file": "items/giangsinh/do_giangsinh_nam_pk12.webp"
+  },
+  {
+   "id": "giangsinh-nam-giay01",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Ủng đỏ viền lông trắng",
+   "file": "items/giangsinh/do_giangsinh_nam_giay01.webp"
+  },
+  {
+   "id": "giangsinh-nam-giay02",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày len xanh lá",
+   "file": "items/giangsinh/do_giangsinh_nam_giay02.webp"
+  },
+  {
+   "id": "giangsinh-nam-giay03",
+   "ev": "giangsinh",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Dép bông hình tuần lộc",
+   "file": "items/giangsinh/do_giangsinh_nam_giay03.webp"
+  },
+  {
+   "id": "giangsinh-nu-ao01",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy Noel đỏ viền lông trắng, nơ trước ngực",
+   "file": "items/giangsinh/do_giangsinh_nu_ao01.webp"
+  },
+  {
+   "id": "giangsinh-nu-ao02",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy công chúa tuyết trắng ánh bạc",
+   "file": "items/giangsinh/do_giangsinh_nu_ao02.webp"
+  },
+  {
+   "id": "giangsinh-nu-ao03",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo len hồng hoạ tiết kẹo gậy kèm chân váy đỏ",
+   "file": "items/giangsinh/do_giangsinh_nu_ao03.webp"
+  },
+  {
+   "id": "giangsinh-nu-ao04",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo choàng đỏ viền lông có nút gỗ",
+   "file": "items/giangsinh/do_giangsinh_nu_ao04.webp"
+  },
+  {
+   "id": "giangsinh-nu-ao05",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy yếm xanh lá hoạ tiết hộp quà",
+   "file": "items/giangsinh/do_giangsinh_nu_ao05.webp"
+  },
+  {
+   "id": "giangsinh-nu-dau01",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ Noel đỏ thắt nơ hồng",
+   "file": "items/giangsinh/do_giangsinh_nu_dau01.webp"
+  },
+  {
+   "id": "giangsinh-nu-dau02",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô sừng tuần lộc gắn hoa",
+   "file": "items/giangsinh/do_giangsinh_nu_dau02.webp"
+  },
+  {
+   "id": "giangsinh-nu-dau03",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Vương miện bông tuyết bạc",
+   "file": "items/giangsinh/do_giangsinh_nu_dau03.webp"
+  },
+  {
+   "id": "giangsinh-nu-dau04",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ len trắng tai thỏ",
+   "file": "items/giangsinh/do_giangsinh_nu_dau04.webp"
+  },
+  {
+   "id": "giangsinh-nu-dau05",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô nơ đỏ chuông vàng",
+   "file": "items/giangsinh/do_giangsinh_nu_dau05.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk01",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính hình ngôi sao vàng",
+   "file": "items/giangsinh/do_giangsinh_nu_pk01.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk02",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính tim hồng",
+   "file": "items/giangsinh/do_giangsinh_nu_pk02.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk03",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "co",
+   "name": "Khăn len trắng quả bông",
+   "file": "items/giangsinh/do_giangsinh_nu_pk03.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk04",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "co",
+   "name": "Vòng cổ ngọc trai chuông nhỏ",
+   "file": "items/giangsinh/do_giangsinh_nu_pk04.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk05",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "co",
+   "name": "Nơ cổ nhung đỏ",
+   "file": "items/giangsinh/do_giangsinh_nu_pk05.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk06",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm kẹo gậy hồng",
+   "file": "items/giangsinh/do_giangsinh_nu_pk06.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk07",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm hộp quà nơ hồng",
+   "file": "items/giangsinh/do_giangsinh_nu_pk07.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "giangsinh-nu-pk08",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm đũa thần bông tuyết",
+   "file": "items/giangsinh/do_giangsinh_nu_pk08.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk09",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm bánh gừng",
+   "file": "items/giangsinh/do_giangsinh_nu_pk09.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk10",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "gang",
+   "name": "Găng tay lông trắng",
+   "file": "items/giangsinh/do_giangsinh_nu_pk10.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk11",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "lung",
+   "name": "Đôi cánh thiên thần nhỏ",
+   "file": "items/giangsinh/do_giangsinh_nu_pk11.webp"
+  },
+  {
+   "id": "giangsinh-nu-pk12",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "toc",
+   "name": "Kẹp tóc bông tuyết",
+   "file": "items/giangsinh/do_giangsinh_nu_pk12.webp"
+  },
+  {
+   "id": "giangsinh-nu-giay01",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Ủng trắng lông xù",
+   "file": "items/giangsinh/do_giangsinh_nu_giay01.webp"
+  },
+  {
+   "id": "giangsinh-nu-giay02",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Giày búp bê đỏ thắt nơ",
+   "file": "items/giangsinh/do_giangsinh_nu_giay02.webp"
+  },
+  {
+   "id": "giangsinh-nu-giay03",
+   "ev": "giangsinh",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Dép bông hồng tai thỏ",
+   "file": "items/giangsinh/do_giangsinh_nu_giay03.webp"
+  },
+  {
+   "id": "tet-nam-ao01",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo dài nam đỏ hoạ tiết rồng vàng",
+   "file": "items/tet/do_tet_nam_ao01.webp"
+  },
+  {
+   "id": "tet-nam-ao02",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo dài nam xanh ngọc hoạ tiết chữ Thọ",
+   "file": "items/tet/do_tet_nam_ao02.webp"
+  },
+  {
+   "id": "tet-nam-ao03",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo bà ba nâu kèm khăn rằn",
+   "file": "items/tet/do_tet_nam_ao03.webp"
+  },
+  {
+   "id": "tet-nam-ao04",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo the đen trơn kiểu truyền thống",
+   "file": "items/tet/do_tet_nam_ao04.webp"
+  },
+  {
+   "id": "tet-nam-ao05",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo sơ mi đỏ in hoa mai vàng",
+   "file": "items/tet/do_tet_nam_ao05.webp"
+  },
+  {
+   "id": "tet-nam-dau01",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Khăn đóng đỏ",
+   "file": "items/tet/do_tet_nam_dau01.webp"
+  },
+  {
+   "id": "tet-nam-dau02",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Khăn đóng xanh ngọc",
+   "file": "items/tet/do_tet_nam_dau02.webp"
+  },
+  {
+   "id": "tet-nam-dau03",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Nón lá",
+   "file": "items/tet/do_tet_nam_dau03.webp"
+  },
+  {
+   "id": "tet-nam-dau04",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ lân đỏ vàng",
+   "file": "items/tet/do_tet_nam_dau04.webp"
+  },
+  {
+   "id": "tet-nam-dau05",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Băng đô đỏ chữ Phúc",
+   "file": "items/tet/do_tet_nam_dau05.webp"
+  },
+  {
+   "id": "tet-nam-pk01",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính tròn gọng vàng kiểu cổ",
+   "file": "items/tet/do_tet_nam_pk01.webp"
+  },
+  {
+   "id": "tet-nam-pk02",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "co",
+   "name": "Dây chuyền đồng tiền vàng",
+   "file": "items/tet/do_tet_nam_pk02.webp"
+  },
+  {
+   "id": "tet-nam-pk03",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "co",
+   "name": "Khăn rằn quàng cổ",
+   "file": "items/tet/do_tet_nam_pk03.webp"
+  },
+  {
+   "id": "tet-nam-pk04",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "co",
+   "name": "Nơ cổ đỏ chữ Lộc",
+   "file": "items/tet/do_tet_nam_pk04.webp"
+  },
+  {
+   "id": "tet-nam-pk05",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm bao lì xì",
+   "file": "items/tet/do_tet_nam_pk05.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "tet-nam-pk06",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm cành mai vàng",
+   "file": "items/tet/do_tet_nam_pk06.webp"
+  },
+  {
+   "id": "tet-nam-pk07",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm bánh chưng",
+   "file": "items/tet/do_tet_nam_pk07.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "tet-nam-pk08",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm câu đối đỏ",
+   "file": "items/tet/do_tet_nam_pk08.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "tet-nam-pk09",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm quạt giấy đỏ",
+   "file": "items/tet/do_tet_nam_pk09.webp"
+  },
+  {
+   "id": "tet-nam-pk10",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm pháo giấy trang trí",
+   "file": "items/tet/do_tet_nam_pk10.webp"
+  },
+  {
+   "id": "tet-nam-pk11",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Túi gấm đỏ đeo chéo",
+   "file": "items/tet/do_tet_nam_pk11.webp"
+  },
+  {
+   "id": "tet-nam-pk12",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính đỏ hình chữ Phúc",
+   "file": "items/tet/do_tet_nam_pk12.webp"
+  },
+  {
+   "id": "tet-nam-giay01",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Hài đỏ thêu rồng",
+   "file": "items/tet/do_tet_nam_giay01.webp"
+  },
+  {
+   "id": "tet-nam-giay02",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày vải đen truyền thống",
+   "file": "items/tet/do_tet_nam_giay02.webp"
+  },
+  {
+   "id": "tet-nam-giay03",
+   "ev": "tet",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Dép mộc gỗ",
+   "file": "items/tet/do_tet_nam_giay03.webp"
+  },
+  {
+   "id": "tet-nu-ao01",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo dài đỏ thêu hoa mai vàng",
+   "file": "items/tet/do_tet_nu_ao01.webp"
+  },
+  {
+   "id": "tet-nu-ao02",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo dài hồng phấn thêu hoa đào",
+   "file": "items/tet/do_tet_nu_ao02.webp"
+  },
+  {
+   "id": "tet-nu-ao03",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo yếm đỏ kèm váy lụa",
+   "file": "items/tet/do_tet_nu_ao03.webp"
+  },
+  {
+   "id": "tet-nu-ao04",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo dài cách tân vàng hoạ tiết sen",
+   "file": "items/tet/do_tet_nu_ao04.webp"
+  },
+  {
+   "id": "tet-nu-ao05",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo tứ thân nâu kèm thắt lưng xanh",
+   "file": "items/tet/do_tet_nu_ao05.webp"
+  },
+  {
+   "id": "tet-nu-dau01",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Khăn vấn vàng",
+   "file": "items/tet/do_tet_nu_dau01.webp"
+  },
+  {
+   "id": "tet-nu-dau02",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mấn đội đầu đỏ kiểu cổ",
+   "file": "items/tet/do_tet_nu_dau02.webp"
+  },
+  {
+   "id": "tet-nu-dau03",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Nón lá thắt quai lụa hồng",
+   "file": "items/tet/do_tet_nu_dau03.webp"
+  },
+  {
+   "id": "tet-nu-dau04",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô hoa đào",
+   "file": "items/tet/do_tet_nu_dau04.webp"
+  },
+  {
+   "id": "tet-nu-dau05",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Cài tóc hoa mai lớn",
+   "file": "items/tet/do_tet_nu_dau05.webp"
+  },
+  {
+   "id": "tet-nu-pk01",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính tim đỏ",
+   "file": "items/tet/do_tet_nu_pk01.webp"
+  },
+  {
+   "id": "tet-nu-pk02",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "co",
+   "name": "Vòng cổ ngọc bích",
+   "file": "items/tet/do_tet_nu_pk02.webp"
+  },
+  {
+   "id": "tet-nu-pk03",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "co",
+   "name": "Dây chuyền hoa sen vàng",
+   "file": "items/tet/do_tet_nu_pk03.webp"
+  },
+  {
+   "id": "tet-nu-pk04",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "co",
+   "name": "Khăn lụa hồng",
+   "file": "items/tet/do_tet_nu_pk04.webp"
+  },
+  {
+   "id": "tet-nu-pk05",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm bao lì xì hồng",
+   "file": "items/tet/do_tet_nu_pk05.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "tet-nu-pk06",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm cành đào",
+   "file": "items/tet/do_tet_nu_pk06.webp"
+  },
+  {
+   "id": "tet-nu-pk07",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm giỏ mứt Tết",
+   "file": "items/tet/do_tet_nu_pk07.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "tet-nu-pk08",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm quạt lụa thêu hoa",
+   "file": "items/tet/do_tet_nu_pk08.webp"
+  },
+  {
+   "id": "tet-nu-pk09",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm đèn lồng đỏ nhỏ",
+   "file": "items/tet/do_tet_nu_pk09.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "tet-nu-pk10",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm khay bánh mứt",
+   "file": "items/tet/do_tet_nu_pk10.webp"
+  },
+  {
+   "id": "tet-nu-pk11",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "lung",
+   "name": "Túi gấm vàng đeo chéo",
+   "file": "items/tet/do_tet_nu_pk11.webp"
+  },
+  {
+   "id": "tet-nu-pk12",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "toc",
+   "name": "Trâm cài tóc hoa mai",
+   "file": "items/tet/do_tet_nu_pk12.webp"
+  },
+  {
+   "id": "tet-nu-giay01",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Hài thêu hoa đỏ",
+   "file": "items/tet/do_tet_nu_giay01.webp"
+  },
+  {
+   "id": "tet-nu-giay02",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Guốc mộc sơn hoa",
+   "file": "items/tet/do_tet_nu_giay02.webp"
+  },
+  {
+   "id": "tet-nu-giay03",
+   "ev": "tet",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Giày búp bê vàng thêu sen",
+   "file": "items/tet/do_tet_nu_giay03.webp"
+  },
+  {
+   "id": "muadong-nam-ao01",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo phao xanh navy có mũ viền lông",
+   "file": "items/muadong/do_muadong_nam_ao01.webp"
+  },
+  {
+   "id": "muadong-nam-ao02",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo khoác dạ be cài khuy",
+   "file": "items/muadong/do_muadong_nam_ao02.webp"
+  },
+  {
+   "id": "muadong-nam-ao03",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo len cổ lọ xám hoạ tiết vặn thừng",
+   "file": "items/muadong/do_muadong_nam_ao03.webp"
+  },
+  {
+   "id": "muadong-nam-ao04",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo hoodie nỉ xanh rêu",
+   "file": "items/muadong/do_muadong_nam_ao04.webp"
+  },
+  {
+   "id": "muadong-nam-ao05",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo khoác lông cừu nâu",
+   "file": "items/muadong/do_muadong_nam_ao05.webp"
+  },
+  {
+   "id": "muadong-nam-dau01",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ len xám quả bông",
+   "file": "items/muadong/do_muadong_nam_dau01.webp"
+  },
+  {
+   "id": "muadong-nam-dau02",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ lông có che tai kiểu phi công",
+   "file": "items/muadong/do_muadong_nam_dau02.webp"
+  },
+  {
+   "id": "muadong-nam-dau03",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ beret nâu",
+   "file": "items/muadong/do_muadong_nam_dau03.webp"
+  },
+  {
+   "id": "muadong-nam-dau04",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Bịt tai lông đen",
+   "file": "items/muadong/do_muadong_nam_dau04.webp"
+  },
+  {
+   "id": "muadong-nam-dau05",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ len sọc xanh trắng",
+   "file": "items/muadong/do_muadong_nam_dau05.webp"
+  },
+  {
+   "id": "muadong-nam-pk01",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "co",
+   "name": "Khăn len kẻ caro đỏ",
+   "file": "items/muadong/do_muadong_nam_pk01.webp"
+  },
+  {
+   "id": "muadong-nam-pk02",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "co",
+   "name": "Khăn len xám dài",
+   "file": "items/muadong/do_muadong_nam_pk02.webp"
+  },
+  {
+   "id": "muadong-nam-pk03",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính tròn gọng đen",
+   "file": "items/muadong/do_muadong_nam_pk03.webp"
+  },
+  {
+   "id": "muadong-nam-pk04",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính trượt tuyết",
+   "file": "items/muadong/do_muadong_nam_pk04.webp"
+  },
+  {
+   "id": "muadong-nam-pk05",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "gang",
+   "name": "Găng tay len xám",
+   "file": "items/muadong/do_muadong_nam_pk05.webp"
+  },
+  {
+   "id": "muadong-nam-pk06",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm cốc trà nóng bốc khói",
+   "file": "items/muadong/do_muadong_nam_pk06.webp"
+  },
+  {
+   "id": "muadong-nam-pk07",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm túi sưởi tay",
+   "file": "items/muadong/do_muadong_nam_pk07.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muadong-nam-pk08",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm quả cầu tuyết",
+   "file": "items/muadong/do_muadong_nam_pk08.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muadong-nam-pk09",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm khoai lang nướng",
+   "file": "items/muadong/do_muadong_nam_pk09.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muadong-nam-pk10",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm ván trượt tuyết nhỏ",
+   "file": "items/muadong/do_muadong_nam_pk10.webp"
+  },
+  {
+   "id": "muadong-nam-pk11",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Ba lô len nâu",
+   "file": "items/muadong/do_muadong_nam_pk11.webp"
+  },
+  {
+   "id": "muadong-nam-pk12",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Áo choàng len khoác vai",
+   "file": "items/muadong/do_muadong_nam_pk12.webp"
+  },
+  {
+   "id": "muadong-nam-giay01",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày boot da nâu",
+   "file": "items/muadong/do_muadong_nam_giay01.webp"
+  },
+  {
+   "id": "muadong-nam-giay02",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Ủng đi tuyết xám",
+   "file": "items/muadong/do_muadong_nam_giay02.webp"
+  },
+  {
+   "id": "muadong-nam-giay03",
+   "ev": "muadong",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Dép lông trong nhà xanh",
+   "file": "items/muadong/do_muadong_nam_giay03.webp"
+  },
+  {
+   "id": "muadong-nu-ao01",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo phao hồng có mũ viền lông",
+   "file": "items/muadong/do_muadong_nu_ao01.webp"
+  },
+  {
+   "id": "muadong-nu-ao02",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo khoác dạ đỏ đô thắt đai",
+   "file": "items/muadong/do_muadong_nu_ao02.webp"
+  },
+  {
+   "id": "muadong-nu-ao03",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy len trắng cổ lọ",
+   "file": "items/muadong/do_muadong_nu_ao03.webp"
+  },
+  {
+   "id": "muadong-nu-ao04",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo cardigan len xanh mint kèm chân váy",
+   "file": "items/muadong/do_muadong_nu_ao04.webp"
+  },
+  {
+   "id": "muadong-nu-ao05",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo khoác lông xù kem",
+   "file": "items/muadong/do_muadong_nu_ao05.webp"
+  },
+  {
+   "id": "muadong-nu-dau01",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ len hồng tai mèo",
+   "file": "items/muadong/do_muadong_nu_dau01.webp"
+  },
+  {
+   "id": "muadong-nu-dau02",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Bịt tai lông trắng",
+   "file": "items/muadong/do_muadong_nu_dau02.webp"
+  },
+  {
+   "id": "muadong-nu-dau03",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ beret đỏ",
+   "file": "items/muadong/do_muadong_nu_dau03.webp"
+  },
+  {
+   "id": "muadong-nu-dau04",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ len kem quả bông to",
+   "file": "items/muadong/do_muadong_nu_dau04.webp"
+  },
+  {
+   "id": "muadong-nu-dau05",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô len đan hoa",
+   "file": "items/muadong/do_muadong_nu_dau05.webp"
+  },
+  {
+   "id": "muadong-nu-pk01",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "co",
+   "name": "Khăn len hồng quả bông",
+   "file": "items/muadong/do_muadong_nu_pk01.webp"
+  },
+  {
+   "id": "muadong-nu-pk02",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "co",
+   "name": "Khăn lông trắng",
+   "file": "items/muadong/do_muadong_nu_pk02.webp"
+  },
+  {
+   "id": "muadong-nu-pk03",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính tròn gọng vàng hồng",
+   "file": "items/muadong/do_muadong_nu_pk03.webp"
+  },
+  {
+   "id": "muadong-nu-pk04",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính trượt tuyết hồng",
+   "file": "items/muadong/do_muadong_nu_pk04.webp"
+  },
+  {
+   "id": "muadong-nu-pk05",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "gang",
+   "name": "Găng tay len hồng tai mèo",
+   "file": "items/muadong/do_muadong_nu_pk05.webp"
+  },
+  {
+   "id": "muadong-nu-pk06",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm cốc sô cô la nóng",
+   "file": "items/muadong/do_muadong_nu_pk06.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muadong-nu-pk07",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm túi sưởi hình gấu",
+   "file": "items/muadong/do_muadong_nu_pk07.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muadong-nu-pk08",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm quả cầu tuyết lấp lánh",
+   "file": "items/muadong/do_muadong_nu_pk08.webp"
+  },
+  {
+   "id": "muadong-nu-pk09",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm bó hoa khô",
+   "file": "items/muadong/do_muadong_nu_pk09.webp"
+  },
+  {
+   "id": "muadong-nu-pk10",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm gấu bông nhỏ",
+   "file": "items/muadong/do_muadong_nu_pk10.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muadong-nu-pk11",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "lung",
+   "name": "Ba lô lông xù trắng",
+   "file": "items/muadong/do_muadong_nu_pk11.webp"
+  },
+  {
+   "id": "muadong-nu-pk12",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "toc",
+   "name": "Kẹp tóc nơ len",
+   "file": "items/muadong/do_muadong_nu_pk12.webp"
+  },
+  {
+   "id": "muadong-nu-giay01",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Boot lông hồng",
+   "file": "items/muadong/do_muadong_nu_giay01.webp"
+  },
+  {
+   "id": "muadong-nu-giay02",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Boot da đỏ đô",
+   "file": "items/muadong/do_muadong_nu_giay02.webp"
+  },
+  {
+   "id": "muadong-nu-giay03",
+   "ev": "muadong",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Dép lông trong nhà trắng tai thỏ",
+   "file": "items/muadong/do_muadong_nu_giay03.webp"
+  },
+  {
+   "id": "muahe-nam-ao01",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo sơ mi hoa Hawaii xanh",
+   "file": "items/muahe/do_muahe_nam_ao01.webp"
+  },
+  {
+   "id": "muahe-nam-ao02",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo ba lỗ thể thao cam kèm quần short",
+   "file": "items/muahe/do_muahe_nam_ao02.webp"
+  },
+  {
+   "id": "muahe-nam-ao03",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo phông trắng in quả dứa",
+   "file": "items/muahe/do_muahe_nam_ao03.webp"
+  },
+  {
+   "id": "muahe-nam-ao04",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo cứu hộ đỏ",
+   "file": "items/muahe/do_muahe_nam_ao04.webp"
+  },
+  {
+   "id": "muahe-nam-ao05",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Bộ đồ bơi kẻ sọc xanh trắng",
+   "file": "items/muahe/do_muahe_nam_ao05.webp"
+  },
+  {
+   "id": "muahe-nam-dau01",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ rơm vành rộng",
+   "file": "items/muahe/do_muahe_nam_dau01.webp"
+  },
+  {
+   "id": "muahe-nam-dau02",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ lưỡi trai đội ngược màu cam",
+   "file": "items/muahe/do_muahe_nam_dau02.webp"
+  },
+  {
+   "id": "muahe-nam-dau03",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ tai bèo xanh",
+   "file": "items/muahe/do_muahe_nam_dau03.webp"
+  },
+  {
+   "id": "muahe-nam-dau04",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Băng đô thể thao trắng",
+   "file": "items/muahe/do_muahe_nam_dau04.webp"
+  },
+  {
+   "id": "muahe-nam-dau05",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Kính lặn đeo trên trán",
+   "file": "items/muahe/do_muahe_nam_dau05.webp"
+  },
+  {
+   "id": "muahe-nam-pk01",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính râm đen",
+   "file": "items/muahe/do_muahe_nam_pk01.webp"
+  },
+  {
+   "id": "muahe-nam-pk02",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính râm tráng gương xanh",
+   "file": "items/muahe/do_muahe_nam_pk02.webp"
+  },
+  {
+   "id": "muahe-nam-pk03",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "co",
+   "name": "Vòng cổ hoa Hawaii",
+   "file": "items/muahe/do_muahe_nam_pk03.webp"
+  },
+  {
+   "id": "muahe-nam-pk04",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "co",
+   "name": "Dây chuyền vỏ sò",
+   "file": "items/muahe/do_muahe_nam_pk04.webp"
+  },
+  {
+   "id": "muahe-nam-pk05",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm trái dừa có ống hút",
+   "file": "items/muahe/do_muahe_nam_pk05.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muahe-nam-pk06",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm kem ốc quế",
+   "file": "items/muahe/do_muahe_nam_pk06.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muahe-nam-pk07",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm ván lướt sóng nhỏ",
+   "file": "items/muahe/do_muahe_nam_pk07.webp"
+  },
+  {
+   "id": "muahe-nam-pk08",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm súng nước",
+   "file": "items/muahe/do_muahe_nam_pk08.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muahe-nam-pk09",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm xô cát và xẻng",
+   "file": "items/muahe/do_muahe_nam_pk09.webp"
+  },
+  {
+   "id": "muahe-nam-pk10",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm quả bóng chuyền bãi biển",
+   "file": "items/muahe/do_muahe_nam_pk10.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muahe-nam-pk11",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Phao bơi vịt vàng đeo quanh bụng",
+   "file": "items/muahe/do_muahe_nam_pk11.webp"
+  },
+  {
+   "id": "muahe-nam-pk12",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Ba lô chống nước xanh",
+   "file": "items/muahe/do_muahe_nam_pk12.webp"
+  },
+  {
+   "id": "muahe-nam-giay01",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Dép tông xanh",
+   "file": "items/muahe/do_muahe_nam_giay01.webp"
+  },
+  {
+   "id": "muahe-nam-giay02",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày sandal nâu",
+   "file": "items/muahe/do_muahe_nam_giay02.webp"
+  },
+  {
+   "id": "muahe-nam-giay03",
+   "ev": "muahe",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày lười vải trắng",
+   "file": "items/muahe/do_muahe_nam_giay03.webp"
+  },
+  {
+   "id": "muahe-nu-ao01",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy hoa nhí vàng hai dây",
+   "file": "items/muahe/do_muahe_nu_ao01.webp"
+  },
+  {
+   "id": "muahe-nu-ao02",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo croptop kèm chân váy jean",
+   "file": "items/muahe/do_muahe_nu_ao02.webp"
+  },
+  {
+   "id": "muahe-nu-ao03",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy maxi đi biển trắng",
+   "file": "items/muahe/do_muahe_nu_ao03.webp"
+  },
+  {
+   "id": "muahe-nu-ao04",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Bộ đồ bơi chấm bi hồng có bèo",
+   "file": "items/muahe/do_muahe_nu_ao04.webp"
+  },
+  {
+   "id": "muahe-nu-ao05",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy yếm xanh in dưa hấu",
+   "file": "items/muahe/do_muahe_nu_ao05.webp"
+  },
+  {
+   "id": "muahe-nu-dau01",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ rơm thắt nơ hồng",
+   "file": "items/muahe/do_muahe_nu_dau01.webp"
+  },
+  {
+   "id": "muahe-nu-dau02",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ cói vành rộng hoa",
+   "file": "items/muahe/do_muahe_nu_dau02.webp"
+  },
+  {
+   "id": "muahe-nu-dau03",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô hoa nhiệt đới",
+   "file": "items/muahe/do_muahe_nu_dau03.webp"
+  },
+  {
+   "id": "muahe-nu-dau04",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ tai bèo vàng",
+   "file": "items/muahe/do_muahe_nu_dau04.webp"
+  },
+  {
+   "id": "muahe-nu-dau05",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Kẹp tóc ngôi sao biển",
+   "file": "items/muahe/do_muahe_nu_dau05.webp"
+  },
+  {
+   "id": "muahe-nu-pk01",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính râm tim hồng",
+   "file": "items/muahe/do_muahe_nu_pk01.webp"
+  },
+  {
+   "id": "muahe-nu-pk02",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính râm gọng trắng to",
+   "file": "items/muahe/do_muahe_nu_pk02.webp"
+  },
+  {
+   "id": "muahe-nu-pk03",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "co",
+   "name": "Vòng cổ hoa nhiệt đới",
+   "file": "items/muahe/do_muahe_nu_pk03.webp"
+  },
+  {
+   "id": "muahe-nu-pk04",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "co",
+   "name": "Dây chuyền ngọc trai biển",
+   "file": "items/muahe/do_muahe_nu_pk04.webp"
+  },
+  {
+   "id": "muahe-nu-pk05",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm ly nước ép dưa hấu",
+   "file": "items/muahe/do_muahe_nu_pk05.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muahe-nu-pk06",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm kem que",
+   "file": "items/muahe/do_muahe_nu_pk06.webp"
+  },
+  {
+   "id": "muahe-nu-pk07",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm quạt cầm tay",
+   "file": "items/muahe/do_muahe_nu_pk07.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muahe-nu-pk08",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm ô che nắng nhỏ",
+   "file": "items/muahe/do_muahe_nu_pk08.webp"
+  },
+  {
+   "id": "muahe-nu-pk09",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm giỏ cói",
+   "file": "items/muahe/do_muahe_nu_pk09.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "muahe-nu-pk10",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm vỏ sò lớn",
+   "file": "items/muahe/do_muahe_nu_pk10.webp"
+  },
+  {
+   "id": "muahe-nu-pk11",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "lung",
+   "name": "Phao bơi kỳ lân",
+   "file": "items/muahe/do_muahe_nu_pk11.webp"
+  },
+  {
+   "id": "muahe-nu-pk12",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "toc",
+   "name": "Hoa dâm bụt cài tóc",
+   "file": "items/muahe/do_muahe_nu_pk12.webp"
+  },
+  {
+   "id": "muahe-nu-giay01",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Dép tông hoa",
+   "file": "items/muahe/do_muahe_nu_giay01.webp"
+  },
+  {
+   "id": "muahe-nu-giay02",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Sandal quai hồng",
+   "file": "items/muahe/do_muahe_nu_giay02.webp"
+  },
+  {
+   "id": "muahe-nu-giay03",
+   "ev": "muahe",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Giày cói đế xuồng",
+   "file": "items/muahe/do_muahe_nu_giay03.webp"
+  },
+  {
+   "id": "halloween-nam-ao01",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo choàng ma cà rồng đen lót đỏ",
+   "file": "items/halloween/do_halloween_nam_ao01.webp"
+  },
+  {
+   "id": "halloween-nam-ao02",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Bộ đồ bí ngô cam",
+   "file": "items/halloween/do_halloween_nam_ao02.webp"
+  },
+  {
+   "id": "halloween-nam-ao03",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Bộ đồ bộ xương đen in xương trắng",
+   "file": "items/halloween/do_halloween_nam_ao03.webp"
+  },
+  {
+   "id": "halloween-nam-ao04",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo choàng phù thuỷ tím sao vàng",
+   "file": "items/halloween/do_halloween_nam_ao04.webp"
+  },
+  {
+   "id": "halloween-nam-ao05",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Bộ đồ xác ướp quấn băng",
+   "file": "items/halloween/do_halloween_nam_ao05.webp"
+  },
+  {
+   "id": "halloween-nam-dau01",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ phù thuỷ đen",
+   "file": "items/halloween/do_halloween_nam_dau01.webp"
+  },
+  {
+   "id": "halloween-nam-dau02",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ hình bí ngô",
+   "file": "items/halloween/do_halloween_nam_dau02.webp"
+  },
+  {
+   "id": "halloween-nam-dau03",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Băng đô sừng quỷ đỏ",
+   "file": "items/halloween/do_halloween_nam_dau03.webp"
+  },
+  {
+   "id": "halloween-nam-dau04",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Băng đô tai dơi",
+   "file": "items/halloween/do_halloween_nam_dau04.webp"
+  },
+  {
+   "id": "halloween-nam-dau05",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ trùm đầu ma trắng",
+   "file": "items/halloween/do_halloween_nam_dau05.webp"
+  },
+  {
+   "id": "halloween-nam-pk01",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Mặt nạ che mắt đen",
+   "file": "items/halloween/do_halloween_nam_pk01.webp"
+  },
+  {
+   "id": "halloween-nam-pk02",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính tròn bí ngô",
+   "file": "items/halloween/do_halloween_nam_pk02.webp"
+  },
+  {
+   "id": "halloween-nam-pk03",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "co",
+   "name": "Nơ cổ dơi đen",
+   "file": "items/halloween/do_halloween_nam_pk03.webp"
+  },
+  {
+   "id": "halloween-nam-pk04",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "co",
+   "name": "Vòng cổ răng nanh",
+   "file": "items/halloween/do_halloween_nam_pk04.webp"
+  },
+  {
+   "id": "halloween-nam-pk05",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm giỏ bí ngô đựng kẹo",
+   "file": "items/halloween/do_halloween_nam_pk05.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "halloween-nam-pk06",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm đèn lồng bí ngô",
+   "file": "items/halloween/do_halloween_nam_pk06.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "halloween-nam-pk07",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm chổi phù thuỷ",
+   "file": "items/halloween/do_halloween_nam_pk07.webp"
+  },
+  {
+   "id": "halloween-nam-pk08",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm đinh ba đồ chơi",
+   "file": "items/halloween/do_halloween_nam_pk08.webp"
+  },
+  {
+   "id": "halloween-nam-pk09",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm kẹo mút xoắn",
+   "file": "items/halloween/do_halloween_nam_pk09.webp"
+  },
+  {
+   "id": "halloween-nam-pk10",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm cây đũa xương",
+   "file": "items/halloween/do_halloween_nam_pk10.webp"
+  },
+  {
+   "id": "halloween-nam-pk11",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Đôi cánh dơi",
+   "file": "items/halloween/do_halloween_nam_pk11.webp"
+  },
+  {
+   "id": "halloween-nam-pk12",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Áo choàng ngắn tím",
+   "file": "items/halloween/do_halloween_nam_pk12.webp"
+  },
+  {
+   "id": "halloween-nam-giay01",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày nhọn phù thuỷ đen",
+   "file": "items/halloween/do_halloween_nam_giay01.webp"
+  },
+  {
+   "id": "halloween-nam-giay02",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Ủng bí ngô cam",
+   "file": "items/halloween/do_halloween_nam_giay02.webp"
+  },
+  {
+   "id": "halloween-nam-giay03",
+   "ev": "halloween",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày xương trắng",
+   "file": "items/halloween/do_halloween_nam_giay03.webp"
+  },
+  {
+   "id": "halloween-nu-ao01",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy phù thuỷ tím đen viền ren",
+   "file": "items/halloween/do_halloween_nu_ao01.webp"
+  },
+  {
+   "id": "halloween-nu-ao02",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy bí ngô cam xoè",
+   "file": "items/halloween/do_halloween_nu_ao02.webp"
+  },
+  {
+   "id": "halloween-nu-ao03",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy mèo đen có đuôi",
+   "file": "items/halloween/do_halloween_nu_ao03.webp"
+  },
+  {
+   "id": "halloween-nu-ao04",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy ma trắng bồng bềnh",
+   "file": "items/halloween/do_halloween_nu_ao04.webp"
+  },
+  {
+   "id": "halloween-nu-ao05",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo choàng cô bé quàng khăn đỏ",
+   "file": "items/halloween/do_halloween_nu_ao05.webp"
+  },
+  {
+   "id": "halloween-nu-dau01",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Mũ phù thuỷ tím nơ cam",
+   "file": "items/halloween/do_halloween_nu_dau01.webp"
+  },
+  {
+   "id": "halloween-nu-dau02",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô tai mèo đen",
+   "file": "items/halloween/do_halloween_nu_dau02.webp"
+  },
+  {
+   "id": "halloween-nu-dau03",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô sừng quỷ hồng",
+   "file": "items/halloween/do_halloween_nu_dau03.webp"
+  },
+  {
+   "id": "halloween-nu-dau04",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Vương miện nhện bạc",
+   "file": "items/halloween/do_halloween_nu_dau04.webp"
+  },
+  {
+   "id": "halloween-nu-dau05",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô bí ngô nhỏ",
+   "file": "items/halloween/do_halloween_nu_dau05.webp"
+  },
+  {
+   "id": "halloween-nu-pk01",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Mặt nạ ren tím",
+   "file": "items/halloween/do_halloween_nu_pk01.webp"
+  },
+  {
+   "id": "halloween-nu-pk02",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính mắt mèo",
+   "file": "items/halloween/do_halloween_nu_pk02.webp"
+  },
+  {
+   "id": "halloween-nu-pk03",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "co",
+   "name": "Vòng cổ nhện bạc",
+   "file": "items/halloween/do_halloween_nu_pk03.webp"
+  },
+  {
+   "id": "halloween-nu-pk04",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "co",
+   "name": "Nơ cổ cam chấm bi",
+   "file": "items/halloween/do_halloween_nu_pk04.webp"
+  },
+  {
+   "id": "halloween-nu-pk05",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm giỏ bí ngô hồng",
+   "file": "items/halloween/do_halloween_nu_pk05.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "halloween-nu-pk06",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm đũa phép ngôi sao",
+   "file": "items/halloween/do_halloween_nu_pk06.webp"
+  },
+  {
+   "id": "halloween-nu-pk07",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm chổi phù thuỷ nhỏ",
+   "file": "items/halloween/do_halloween_nu_pk07.webp"
+  },
+  {
+   "id": "halloween-nu-pk08",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm quả táo độc đỏ",
+   "file": "items/halloween/do_halloween_nu_pk08.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "halloween-nu-pk09",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm kẹo bông tím",
+   "file": "items/halloween/do_halloween_nu_pk09.webp"
+  },
+  {
+   "id": "halloween-nu-pk10",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm gấu bông mèo đen",
+   "file": "items/halloween/do_halloween_nu_pk10.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "halloween-nu-pk11",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "lung",
+   "name": "Đôi cánh dơi tím",
+   "file": "items/halloween/do_halloween_nu_pk11.webp"
+  },
+  {
+   "id": "halloween-nu-pk12",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "toc",
+   "name": "Kẹp tóc dơi",
+   "file": "items/halloween/do_halloween_nu_pk12.webp"
+  },
+  {
+   "id": "halloween-nu-giay01",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Giày nhọn tím khoá bạc",
+   "file": "items/halloween/do_halloween_nu_giay01.webp"
+  },
+  {
+   "id": "halloween-nu-giay02",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Ủng mèo đen",
+   "file": "items/halloween/do_halloween_nu_giay02.webp"
+  },
+  {
+   "id": "halloween-nu-giay03",
+   "ev": "halloween",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Giày búp bê cam nơ đen",
+   "file": "items/halloween/do_halloween_nu_giay03.webp"
+  },
+  {
+   "id": "trungthu-nam-ao01",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo dài trẻ em vàng hoạ tiết đèn lồng",
+   "file": "items/trungthu/do_trungthu_nam_ao01.webp"
+  },
+  {
+   "id": "trungthu-nam-ao02",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Bộ đồ chú Cuội áo nâu quần xanh",
+   "file": "items/trungthu/do_trungthu_nam_ao02.webp"
+  },
+  {
+   "id": "trungthu-nam-ao03",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo bà ba đỏ",
+   "file": "items/trungthu/do_trungthu_nam_ao03.webp"
+  },
+  {
+   "id": "trungthu-nam-ao04",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Bộ đồ múa lân đỏ vàng",
+   "file": "items/trungthu/do_trungthu_nam_ao04.webp"
+  },
+  {
+   "id": "trungthu-nam-ao05",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "ao",
+   "name": "Áo phông in thỏ ngọc và trăng",
+   "file": "items/trungthu/do_trungthu_nam_ao05.webp"
+  },
+  {
+   "id": "trungthu-nam-dau01",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Đầu lân đội đầu đỏ vàng",
+   "file": "items/trungthu/do_trungthu_nam_dau01.webp"
+  },
+  {
+   "id": "trungthu-nam-dau02",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ chú Cuội nâu",
+   "file": "items/trungthu/do_trungthu_nam_dau02.webp"
+  },
+  {
+   "id": "trungthu-nam-dau03",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Băng đô tai thỏ trắng",
+   "file": "items/trungthu/do_trungthu_nam_dau03.webp"
+  },
+  {
+   "id": "trungthu-nam-dau04",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Mũ đèn lồng đỏ",
+   "file": "items/trungthu/do_trungthu_nam_dau04.webp"
+  },
+  {
+   "id": "trungthu-nam-dau05",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "dau",
+   "name": "Khăn xếp vàng",
+   "file": "items/trungthu/do_trungthu_nam_dau05.webp"
+  },
+  {
+   "id": "trungthu-nam-pk01",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm đèn ông sao đỏ",
+   "file": "items/trungthu/do_trungthu_nam_pk01.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "trungthu-nam-pk02",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm đèn lồng cá chép",
+   "file": "items/trungthu/do_trungthu_nam_pk02.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "trungthu-nam-pk03",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm bánh nướng",
+   "file": "items/trungthu/do_trungthu_nam_pk03.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "trungthu-nam-pk04",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm bánh dẻo",
+   "file": "items/trungthu/do_trungthu_nam_pk04.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "trungthu-nam-pk05",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm trống lân",
+   "file": "items/trungthu/do_trungthu_nam_pk05.webp"
+  },
+  {
+   "id": "trungthu-nam-pk06",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm mặt nạ giấy ông địa",
+   "file": "items/trungthu/do_trungthu_nam_pk06.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "trungthu-nam-pk07",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "tay",
+   "name": "Cầm chong chóng giấy",
+   "file": "items/trungthu/do_trungthu_nam_pk07.webp"
+  },
+  {
+   "id": "trungthu-nam-pk08",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "mat",
+   "name": "Kính tròn trăng vàng",
+   "file": "items/trungthu/do_trungthu_nam_pk08.webp"
+  },
+  {
+   "id": "trungthu-nam-pk09",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "co",
+   "name": "Vòng cổ thỏ ngọc",
+   "file": "items/trungthu/do_trungthu_nam_pk09.webp"
+  },
+  {
+   "id": "trungthu-nam-pk10",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "co",
+   "name": "Khăn quàng đỏ",
+   "file": "items/trungthu/do_trungthu_nam_pk10.webp"
+  },
+  {
+   "id": "trungthu-nam-pk11",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Túi đựng bánh đeo chéo",
+   "file": "items/trungthu/do_trungthu_nam_pk11.webp"
+  },
+  {
+   "id": "trungthu-nam-pk12",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "lung",
+   "name": "Cái gậy chú Cuội đeo lưng",
+   "file": "items/trungthu/do_trungthu_nam_pk12.webp"
+  },
+  {
+   "id": "trungthu-nam-giay01",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày vải đỏ",
+   "file": "items/trungthu/do_trungthu_nam_giay01.webp"
+  },
+  {
+   "id": "trungthu-nam-giay02",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Dép gỗ",
+   "file": "items/trungthu/do_trungthu_nam_giay02.webp"
+  },
+  {
+   "id": "trungthu-nam-giay03",
+   "ev": "trungthu",
+   "g": "nam",
+   "slot": "giay",
+   "name": "Giày vải vàng thêu mây",
+   "file": "items/trungthu/do_trungthu_nam_giay03.webp"
+  },
+  {
+   "id": "trungthu-nu-ao01",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy chị Hằng trắng dải lụa hồng",
+   "file": "items/trungthu/do_trungthu_nu_ao01.webp"
+  },
+  {
+   "id": "trungthu-nu-ao02",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo dài trẻ em đỏ hoạ tiết hoa",
+   "file": "items/trungthu/do_trungthu_nu_ao02.webp"
+  },
+  {
+   "id": "trungthu-nu-ao03",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy thỏ ngọc trắng hồng",
+   "file": "items/trungthu/do_trungthu_nu_ao03.webp"
+  },
+  {
+   "id": "trungthu-nu-ao04",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Áo yếm vàng kèm váy lụa",
+   "file": "items/trungthu/do_trungthu_nu_ao04.webp"
+  },
+  {
+   "id": "trungthu-nu-ao05",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "ao",
+   "name": "Váy cam thêu đèn lồng",
+   "file": "items/trungthu/do_trungthu_nu_ao05.webp"
+  },
+  {
+   "id": "trungthu-nu-dau01",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Vương miện mặt trăng chị Hằng",
+   "file": "items/trungthu/do_trungthu_nu_dau01.webp"
+  },
+  {
+   "id": "trungthu-nu-dau02",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô tai thỏ hồng",
+   "file": "items/trungthu/do_trungthu_nu_dau02.webp"
+  },
+  {
+   "id": "trungthu-nu-dau03",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Trâm hoa sen cài tóc",
+   "file": "items/trungthu/do_trungthu_nu_dau03.webp"
+  },
+  {
+   "id": "trungthu-nu-dau04",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Băng đô đèn lồng nhỏ",
+   "file": "items/trungthu/do_trungthu_nu_dau04.webp"
+  },
+  {
+   "id": "trungthu-nu-dau05",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "dau",
+   "name": "Khăn voan hồng",
+   "file": "items/trungthu/do_trungthu_nu_dau05.webp"
+  },
+  {
+   "id": "trungthu-nu-pk01",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm đèn lồng hoa sen",
+   "file": "items/trungthu/do_trungthu_nu_pk01.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "trungthu-nu-pk02",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm đèn ông sao hồng",
+   "file": "items/trungthu/do_trungthu_nu_pk02.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "trungthu-nu-pk03",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm bánh nướng hình thỏ",
+   "file": "items/trungthu/do_trungthu_nu_pk03.webp"
+  },
+  {
+   "id": "trungthu-nu-pk04",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm thỏ bông trắng",
+   "file": "items/trungthu/do_trungthu_nu_pk04.webp"
+  },
+  {
+   "id": "trungthu-nu-pk05",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm quạt giấy vẽ trăng",
+   "file": "items/trungthu/do_trungthu_nu_pk05.webp",
+   "arm": "trai"
+  },
+  {
+   "id": "trungthu-nu-pk06",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm giỏ hoa quả",
+   "file": "items/trungthu/do_trungthu_nu_pk06.webp"
+  },
+  {
+   "id": "trungthu-nu-pk07",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "tay",
+   "name": "Cầm mặt nạ giấy thỏ",
+   "file": "items/trungthu/do_trungthu_nu_pk07.webp"
+  },
+  {
+   "id": "trungthu-nu-pk08",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "mat",
+   "name": "Kính tim vàng",
+   "file": "items/trungthu/do_trungthu_nu_pk08.webp"
+  },
+  {
+   "id": "trungthu-nu-pk09",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "co",
+   "name": "Vòng cổ trăng khuyết",
+   "file": "items/trungthu/do_trungthu_nu_pk09.webp"
+  },
+  {
+   "id": "trungthu-nu-pk10",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "co",
+   "name": "Dải lụa hồng quàng vai",
+   "file": "items/trungthu/do_trungthu_nu_pk10.webp"
+  },
+  {
+   "id": "trungthu-nu-pk11",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "lung",
+   "name": "Dải lụa bay chị Hằng",
+   "file": "items/trungthu/do_trungthu_nu_pk11.webp"
+  },
+  {
+   "id": "trungthu-nu-pk12",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "toc",
+   "name": "Kẹp tóc thỏ ngọc",
+   "file": "items/trungthu/do_trungthu_nu_pk12.webp"
+  },
+  {
+   "id": "trungthu-nu-giay01",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Hài thêu hoa trắng",
+   "file": "items/trungthu/do_trungthu_nu_giay01.webp"
+  },
+  {
+   "id": "trungthu-nu-giay02",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Giày búp bê hồng thỏ",
+   "file": "items/trungthu/do_trungthu_nu_giay02.webp"
+  },
+  {
+   "id": "trungthu-nu-giay03",
+   "ev": "trungthu",
+   "g": "nu",
+   "slot": "giay",
+   "name": "Guốc gỗ sơn hoa",
+   "file": "items/trungthu/do_trungthu_nu_giay03.webp"
+  }
+ ]
+}

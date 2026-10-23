@@ -5,6 +5,7 @@
 // art={false} → nền SVG cũ (dự phòng).
 import { useLayoutEffect, useRef, useState } from "react";
 import { PET_BASE, ITEMS } from "./PetAvatar";
+import { EV_NAME, RUG, roomFile, piRoomTime } from "../pi/piCatalog";
 
 /** giờ (0–23, giờ VN) → "sang" | "chieu" | "toi" */
 export const roomTime = (h) => (h >= 5 && h < 16 ? "sang" : h >= 16 && h < 19 ? "chieu" : "toi");
@@ -24,7 +25,7 @@ const SEASON_RUG = { noel: 0.8, tet: 0.805, halloween: 0.843, "bong-da": 0.815 }
 // Noel: tất treo che tầng giữa kệ → đồ thành tích xuống tầng dưới (đáy 52,7%).
 // Halloween (ảnh ngang 1536×1024 cắt vuông quanh thảm): kệ sát mép phải, tầng giữa trống ở đáy 51,5%.
 const SEASON_SHELF = { noel: { ...SHELF, bottom: 0.527 }, halloween: { left: 0.81, width: 0.18, bottom: 0.515, h: 0.07 }, "bong-da": { left: 0.6, width: 0.2, bottom: 0.48, h: 0.08 } };
-export function PetRoom({ time = "sang", variant = "nam", season = null, trophies = [], height = 280, art, children, testid = "pet-room" }) {
+export function PetRoom({ time = "sang", hour, variant = "nam", season = null, trophies = [], height = 280, art, children, testid = "pet-room" }) {
   const ref = useRef(null);
   const [w, setW] = useState(366);
   useLayoutEffect(() => {
@@ -35,6 +36,18 @@ export function PetRoom({ time = "sang", variant = "nam", season = null, trophie
     const ro = new ResizeObserver(upd); ro.observe(el); return () => ro.disconnect();
   }, []);
   const v = variant === "nu" ? "nu" : "nam";
+  // 23/10: phòng bộ mới (Muse AI) — ảnh dọc 2:3 theo sự kiện + buổi (sáng 5–11, trưa 11–17, tối 17–5); Pi đứng giữa thảm
+  if (season && EV_NAME[season] && art !== false) {
+    const t3 = piRoomTime(hour ?? (time === "toi" ? 20 : time === "chieu" ? 16 : 9));
+    const [rx, ry] = RUG[season] || [0.5, 0.8];
+    const iw = w * 1.12, ih = iw * 1.5, top = Math.min(0, height - FEET - ry * ih); // rộng hơn khung 12% để dời thảm vào giữa mà không hở mép
+    return (
+      <div ref={ref} data-testid={testid} data-time={t3} data-season={season} style={{ position: "relative", height, borderRadius: 22, overflow: "hidden", background: t3 === "toi" ? "#1E2A55" : "#F2E6D3" }}>
+        <img aria-hidden="true" src={roomFile(season, t3)} alt="" draggable="false" decoding="async" style={{ position: "absolute", left: Math.min(0, Math.max(w - iw, w / 2 - rx * iw)), top, width: iw, height: ih, display: "block" }} />
+        {children}
+      </div>
+    );
+  }
   const dip = season && SEASON_ART[season]?.[v] ? season : null;
   const img = art === false ? null : art || `khong-gian/phong-${time === "chieu" || time === "toi" ? time : "sang"}-${v}${dip ? `-${dip}` : ""}.webp`;
   if (img) {

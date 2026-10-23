@@ -26,13 +26,14 @@ const S = q.get("s") || "home";
 const V = q.get("v") === "nu" ? "nu" : "nam";
 
 function mockPet() {
-  const nam = V === "nam";
-  const owned = nam
-    ? ["doi-dau-01", "doi-dau-02", "kinh-tai-nghe-01", "kinh-tai-nghe-02", "ao-roi-01", "ao-roi-02", "phu-kien-03", "phu-kien-06", "hieu-ung-02", "ao-roi-07", "hieu-ung-01", "phu-kien-04"]
-    : ["doi-dau-09", "doi-dau-07", "kinh-tai-nghe-07", "kinh-tai-nghe-06", "ao-roi-08", "ao-roi-09", "phu-kien-12", "phu-kien-10", "hieu-ung-11", "phu-kien-13", "hieu-ung-13", "phu-kien-15"];
-  const equipped = nam ? { dau: "doi-dau-01", ao: "ao-roi-01", cam_tay: "phu-kien-03" } : { ao: "ao-roi-08", cam_tay: "phu-kien-12", hieu_ung: "hieu-ung-11" };
+  // 23/10: bộ Pi mới — mặc 1 bộ của sự kiện ?ev= (mặc định Tết cho nam, Mùa hè cho nữ): áo + cổ + kính + cầm tay + phòng
+  const ev = q.get("ev") || (V === "nam" ? "tet" : "muahe");
+  const mine = Object.values(ITEMS).filter((it) => !it.legacy && it.ev === ev && (it.slot === "phong" || it.variants.includes(V)));
+  const first = (slot) => mine.find((it) => it.slot === slot)?.id;
+  const owned = [...mine.map((it) => it.id), "hieu-ung-05", "hieu-ung-02"];
+  const equipped = Object.fromEntries(["ao", "co", "mat", "tay", "phong"].map((s) => [s, first(s)]).filter(([, id]) => id));
   return {
-    time: q.get("t") || "sang", trophies: ["hieu-ung-05", "doi-dau-11", "hieu-ung-02"],
+    time: q.get("t") || "sang", hour: q.get("h") ? Number(q.get("h")) : 9, face: q.get("face") || "vui", trophies: ["hieu-ung-05", "doi-dau-11", "hieu-ung-02"],
     name: "Pi", variant: V, mood: q.get("mood") || "vui", bow: true, premium: q.get("premium") === "1",
     say: q.get("say") ? sayLine(q.get("say"), V, { streak: 3, level: 5, water: 2 }[q.get("say")]) : null,
     week: q.get("week") === "1" ? { range: "13 – 19/10", meals: 19, waterDays: 5 } : null,

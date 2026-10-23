@@ -29,7 +29,8 @@ export function applyItemRows(rows) {
       it.behind_head = pl.behind_head ?? it._bh0;
       it.redraw = !!r.redraw; it.redraw_note = r.redraw_note || "";
     }
-    const vs = (r.variants || []).filter((v) => it.anchor?.[v] || it.body?.[v]);
+    // 23/10: bộ Pi mới không có điểm đặt → bản Pi theo pet_items (chỉ trong số bản có ảnh của món)
+    const vs = (r.variants || []).filter((v) => (it.anchor || it.body ? it.anchor?.[v] || it.body?.[v] : (it._v0 ||= [...it.variants]).includes(v)));
     if (vs.length) it.variants = vs;
   }
 }

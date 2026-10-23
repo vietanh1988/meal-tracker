@@ -1,0 +1,109 @@
+#!/usr/bin/env python3
+"""23/10 — Đưa bộ ảnh Pi (Muse AI, pi_assets_clean.zip) vào app. Chạy lại mỗi khi có bộ ảnh mới:
+    python3 scripts/pi/build.py <thư mục pi_assets_clean>
+Bộ ảnh ĐÃ làm sạch vệt xanh / viền thừa sẵn (README của bộ) → script KHÔNG xử lý lại ảnh đồ / mặt / thân, chỉ:
+  - chép body/, faces/, items/ (WebP 768x768, chân Pi tại 384,720) vào public/pi/ giữ nguyên đường dẫn;
+  - phòng: thu về rộng 768 (giữ tỉ lệ 2:3) cho nhẹ;
+  - icon từng món: cắt vùng có hình, vuông 160 (public/pi/icon/<mã>.webp);
+  - đồ cầm tay (ô tay / gang) có vẽ cánh tay giơ lên → ghi "arm": "trai" | "phai" và sinh thân đã ẩn cánh tay gốc bên đó
+    (public/pi/body/pi_than_khong_tay_<bên>.webp) để khỏi thành 2 tay;
+  - sinh src/pi/manifest.json cho app.
+"""
+import json, os, re, shutil, sys
+import numpy as np
+import cv2
+from PIL import Image
+
+SRC = sys.argv[1]
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT = os.path.join(ROOT, "public", "pi")
+MAN = os.path.join(ROOT, "src", "pi", "manifest.json")
+ICON_PX, ROOM_W = 160, 768
+EVENTS = ["tet", "trungthu", "halloween", "giangsinh", "muadong", "muahe"]
+TIMES = ["sang", "trua", "toi"]
+
+cat = json.load(open(os.path.join(SRC, "pi_catalog.json"), encoding="utf-8"))
+N = cat.get("canvas", [768, 768])[0]
+K = N / 1024
+if os.path.isdir(OUT): shutil.rmtree(OUT)
+os.makedirs(OUT)
+
+def put(rel, src=None, im=None, q=82):
+    p = os.path.join(OUT, rel); os.makedirs(os.path.dirname(p), exist_ok=True)
+    if src: shutil.copyfile(src, p)
+    else: im.save(p, "WEBP", quality=q, method=4)
+    return os.path.getsize(p)
+
+total = 0
+for d in ("body", "faces"):
+    for dp, _, fs in os.walk(os.path.join(SRC, d)):
+        for f in fs:
+            if f.endswith(".webp"):
+                s = os.path.join(dp, f); total += put(os.path.relpath(s, SRC), src=s)
+
+body = np.asarray(Image.open(os.path.join(SRC, cat["body"])).convert("RGBA"))
+solid = body[..., 3] > 200
+yy, xx = np.mgrid[0:N, 0:N]
+ys, xs = np.where(solid)
+bbox = [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
+# cánh tay gốc của thân (đo trên khung 1024 rồi quy về khung hiện tại)
+ARM_Y = (630 * K, 845 * K)
+arm_l = solid & (xx < 383 * K) & (yy >= ARM_Y[0]) & (yy <= ARM_Y[1])
+arm_r = solid & (xx > 648 * K) & (yy >= ARM_Y[0]) & (yy <= ARM_Y[1])
+
+def blue_mask(rgb):
+    hsv = cv2.cvtColor(np.ascontiguousarray(rgb), cv2.COLOR_RGB2HSV)
+    return (hsv[..., 0] >= 95) & (hsv[..., 0] <= 125) & (hsv[..., 1] > 0.25 * 255)
+
+def raised_arm(a):
+    """cánh tay giơ lên: món che phần lớn vùng tay gốc nhưng ở đó gần như không còn da xanh, da xanh lại nằm ngoài thân"""
+    skin = (a[..., 3] > 128) & blue_mask(a[..., :3])
+    for side, zone in (("trai", arm_l), ("phai", arm_r)):
+        if ((a[..., 3] > 128) & zone).sum() < 0.25 * zone.sum(): continue
+        if (skin & zone).sum() < 0.3 * zone.sum() and (skin & ~zone & ~solid).sum() > 800 * K * K: return side
+    return None
+
+for side, zone in (("trai", arm_l), ("phai", arm_r)):
+    b2 = body.copy(); zz = cv2.dilate(zone.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+    b2[zz & (yy > ARM_Y[0] + 8 * K), 3] = 0
+    total += put(f"body/pi_than_khong_tay_{side}.webp", im=Image.fromarray(b2), q=86)
+
+items = []
+for it in cat["items"]:
+    s = os.path.join(SRC, it["file"])
+    if not os.path.exists(s): print("thiếu", it["file"]); continue
+    m = re.search(r"do_(\w+?)_(nam|nu)_([a-z]+)(\d+)\.webp$", it["file"])
+    iid = f"{it['ev']}-{it['g']}-{m.group(3)}{m.group(4)}"
+    total += put(it["file"], src=s)
+    im = Image.open(s).convert("RGBA")
+    bb = im.getbbox()
+    if not bb: print("ảnh rỗng", it["file"]); continue
+    pad = 10
+    crop = im.crop((max(0, bb[0] - pad), max(0, bb[1] - pad), min(N, bb[2] + pad), min(N, bb[3] + pad)))
+    sq_n = max(crop.size); sq = Image.new("RGBA", (sq_n, sq_n), (0, 0, 0, 0)); sq.alpha_composite(crop, ((sq_n - crop.size[0]) // 2, (sq_n - crop.size[1]) // 2))
+    total += put(f"icon/{iid}.webp", im=sq.resize((ICON_PX, ICON_PX), Image.LANCZOS))
+    row = {"id": iid, "ev": it["ev"], "g": it["g"], "slot": it["slot"], "name": it["name"], "file": it["file"]}
+    if it["slot"] in ("tay", "gang"):
+        side = raised_arm(np.asarray(im))
+        if side: row["arm"] = side
+    items.append(row)
+
+rooms = {}
+for ev in EVENTS:
+    for t in TIMES:
+        p = os.path.join(SRC, "rooms", f"phong_{ev}_{t}.webp")
+        if not os.path.exists(p): print("thiếu phòng", ev, t); continue
+        im = Image.open(p).convert("RGB")
+        total += put(f"rooms/phong_{ev}_{t}.webp", im=im.resize((ROOM_W, round(im.size[1] * ROOM_W / im.size[0])), Image.LANCZOS), q=78)
+        rooms.setdefault(ev, []).append(t)
+
+man = {
+    "v": 2, "canvas": N, "feet": cat.get("anchor_feet", [N / 2, N * 0.9375]), "bbox": bbox, "room": [ROOM_W, ROOM_W * 3 // 2],
+    "events": {k: v["name"] for k, v in cat["events"].items()},
+    "slots": cat["slots"],
+    "order": ["lung", "than", "giay", "ao", "co", "mat_pi", "mat", "toc", "dau", "gang", "tay"],
+    "faces": cat["faces"]["list"], "rooms": rooms, "items": items,
+}
+os.makedirs(os.path.dirname(MAN), exist_ok=True)
+json.dump(man, open(MAN, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+print(f"{len(items)} món ({sum(1 for x in items if x.get('arm'))} ẩn tay gốc), {sum(len(v) for v in rooms.values())} phòng, thân {bbox}, ảnh {total/1024/1024:.1f} MB")

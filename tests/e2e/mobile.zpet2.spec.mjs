@@ -41,13 +41,13 @@ test("Thú cưng Pi: khách thường — cờ tắt không thấy, cờ bật t
       // bộ Halloween (20/10 tối): có thanh bộ sưu tập, bấm vào thấy dòng lịch bán
       await tap(page.getByTestId("pet-col-halloween"));
       await expect(page.getByTestId("pet-col-note")).toBeVisible();
-      await expect(page.getByTestId("pet-shop").getByText("Mũ bí ngô")).toBeVisible();
-      // Bóng đá (mặc định đóng) + Trung thu (chưa tới rằm): xem được, có dòng chưa mở bán
-      for (const k of ["bong-da", "trung-thu"]) {
+      await expect(page.getByTestId("pet-shop").getByText("Mũ hình bí ngô")).toBeVisible();
+      // 23/10 bộ Pi mới: Trung thu + Mùa hè: xem được, có dòng lịch bán
+      for (const k of ["mua-he", "trung-thu"]) {
         await tap(page.getByTestId(`pet-col-${k}`));
         await expect(page.getByTestId("pet-col-note")).toBeVisible();
       }
-      await expect(page.getByTestId("pet-shop").getByText("Đèn ông sao")).toBeVisible();
+      await expect(page.getByTestId("pet-shop").getByText("Cầm đèn ông sao đỏ")).toBeVisible();
       await page.screenshot({ path: "shots/pet-user-gym.png" });
       await ctx.close(); }
 

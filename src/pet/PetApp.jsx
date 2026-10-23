@@ -108,7 +108,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
       tasksLeft: left.length, todayLeft, level: { ...lv, nextUnlock }, owned, equipped: st.equipped || {},
       achievementIds: ACH.map((a) => a.item), achievements: ach, tasks, streak: st.streak || 0,
       trophies: owned.filter((id) => ITEMS[id]?.achievement || ACH.some((a) => a.item === id)),
-      time: roomTime(Math.floor(minutes / 60)), shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
+      time: roomTime(Math.floor(minutes / 60)), hour: Math.floor(minutes / 60), face: st.settings?.face || "vui", // 23/10: biểu cảm khách chọn ở Tủ đồ shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
       levelUp: (st.prevLevel || lv.n) < lv.n, waterGoal, waterMl: log.water_ml || 0, daysAway, logged, mealsOn: ids.length, times,
       week: weekdayVN() === 0 && cfg.week !== false ? { range: `${wk.start.slice(8)}/${wk.start.slice(5, 7)} – ${wk.end.slice(8)}/${wk.end.slice(5, 7)}`, meals: 0, waterDays: 0 } : null,
       // 20/10 (chủ dự án): khách không chỉnh — Pi nói / số câu / giờ yên lặng / tổng kết tuần do Quản trị quyết (pet_config)
@@ -239,7 +239,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (!view) return null;
     if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} />;
     if (sec === "pet_shop") return <PetShopScreen pet={view} onBack={closeLayer} onBuy={buy} onEquip={equip} onPremium={openPremium} />;
-    if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onBow={(b) => pet.save({ bow: b }).then(toastErr)} />;
+    if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onFace={(f) => pet.save({ settings: { face: f } }).then(toastErr)} />;
     if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onBack={closeLayer} onPremium={openPremium} />;
     if (sec === "pet_week") return weekData ? <PetWeekScreen pet={view} w={weekData} onBack={closeLayer} onAI={cfg.weekAI === false ? undefined : writeWeek} aiBusy={weekBusy} onPremium={openPremium} /> : null;
     if (sec === "pet_settings") return <PetSettingsScreen pet={view} onBack={closeLayer} onRename={rename} />;

@@ -54,7 +54,7 @@ function CardHead({ title, sub, right }) {
     </div>
   );
 }
-const Thumb = ({ it, s = 30 }) => <span style={{ width: s + 6, height: s + 6, borderRadius: 9, background: "#F4F7FC", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><img src={`/pet/${it.file}`} alt="" style={{ maxWidth: s, maxHeight: s, objectFit: "contain" }} /></span>;
+const Thumb = ({ it, s = 30 }) => <span style={{ width: s + 6, height: s + 6, borderRadius: 9, background: "#F4F7FC", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><img src={it.icon || `/pet/${it.file}`} alt="" style={{ maxWidth: s, maxHeight: s, objectFit: "contain" }} /></span>;
 
 // ============ Tổng quan ============
 function Overview({ d }) {
@@ -105,7 +105,7 @@ function Overview({ d }) {
 
 // ============ Kho đồ ============
 const ICOLS = "minmax(150px, 1fr) 52px 86px 36px 56px 54px 80px";
-const canVar = (it, v) => !!(it.anchor?.[v] || it.body?.[v]);
+const canVar = (it, v) => it.variants.includes(v) || !!(it.anchor?.[v] || it.body?.[v]); // 23/10: bộ mới không cần điểm đặt
 function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onSavePlace, onCopy }) {
   const [placing, setPlacing] = useState(null);
   const [, refresh] = useState(0);
@@ -187,7 +187,7 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
           </span>
           {canPlace(it)
             ? <Btn kind="soft" testid="pc-pet-place-open" disabled={!onSavePlace} onClick={() => setPlacing(it)}>Chỉnh vị trí trên Pi (kéo thả)</Btn>
-            : <span style={{ fontSize: 11.5, color: PC.t4 }}>{it.slot === "ao" ? "Áo vẽ liền thân: không chỉnh vị trí, sai thì vẽ lại." : "Món này không đặt trên người Pi."}</span>}
+            : <span style={{ fontSize: 11.5, color: PC.t4 }}>Bộ Pi mới (23/10): ảnh món đã đặt sẵn đúng chỗ trên thân, không cần chỉnh vị trí; sai thì vẽ lại.</span>}
         </div>
       </Card>)}
     </div>
@@ -326,7 +326,7 @@ function Settings({ d, onSaveCfg }) {
 
 // ============ Bộ sưu tập theo dịp (20/10, chủ dự án: chưa tới dịp thì khoá) ============
 // Lưu pet_config.collections; app (collectionStatus) và máy chủ (pet_col_open trong pet_buy) cùng đọc. Đồ đã mua vẫn mặc quanh năm.
-const COL_NAME = { noel: "Noel", tet: "Tết", "co-trang": "Cổ trang", halloween: "Halloween", "bong-da": "Bóng đá", "trung-thu": "Trung thu" };
+const COL_NAME = { noel: "Giáng sinh", tet: "Tết", "co-trang": "Cổ trang", halloween: "Halloween", "bong-da": "Bóng đá", "trung-thu": "Trung thu", "mua-dong": "Mùa đông", "mua-he": "Mùa hè" };
 const MODES = [["season", "Theo dịp"], ["open", "Luôn mở"], ["closed", "Đóng"]];
 const toDM = (md) => (md ? `${md.slice(3, 5)}/${md.slice(0, 2)}` : "");
 const toMD = (dm) => { const m = String(dm).match(/^(\d{1,2})\/(\d{1,2})$/); return m ? `${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : null; };

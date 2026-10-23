@@ -8,10 +8,13 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
   const page = await ctx.newPage();
   const s = S();
   const flagsRow = (await rest("app_settings?key=eq.feature_flags&select=value"))[0];
+  const cfgRow = (await rest("app_settings?key=eq.pet_config&select=value"))[0]; // 23/10: mở bán bộ Halloween trong bài (lịch bán theo dịp)
+  const cfg0 = cfgRow?.value ? (typeof cfgRow.value === "string" ? JSON.parse(cfgRow.value) : cfgRow.value) : {};
   const before = await todayRow();
   let weightId = null;
   try {
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: JSON.stringify({ ...JSON.parse(flagsRow.value), pet: true }) }) });
+    await rest("app_settings?on_conflict=key", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify({ key: "pet_config", value: JSON.stringify({ ...cfg0, collections: { ...(cfg0.collections || {}), halloween: { mode: "open" } } }) }) });
     // hôm nay: 4 bữa ≥ 100 kcal đã ăn (1 món chụp) + nước đủ + đã cân → 4×10 + 5 + 20 + 15 + 20 = 100 Hạt
     const meals = ["sang", "trua", "phu_chieu", "toi"].map((id, i) => ({ meal_id: id, meal_name: id, items: [{ food: "Món thử", gram: 200, cal: 300 + i * 10, p: 20, c: 30, f: 8, ...(i === 1 ? { source: "photo" } : {}) }] }));
     await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" },
@@ -32,7 +35,7 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await expect(page.getByTestId("pet-home")).toBeVisible();
     await expect(page.getByTestId("pet-today")).toContainText(`+${sum}`);
     await page.getByTestId("pet-tap").click(); // chạm Pi → nảy + cười tít
-    await expect(page.getByTestId("pet-tap").getByTestId("pet-avatar")).toHaveAttribute("data-mood", "cuoi");
+    await expect(page.getByTestId("pet-tap").getByTestId("pet-avatar")).toHaveAttribute("data-mood", "cuoilon"); // 23/10: Pi bộ mới — chạm vào thì nhún + cười lớn
 
     // tải lại: không cộng trùng
     await page.reload();
@@ -40,18 +43,19 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await page.waitForTimeout(1500);
     expect((await ledger()).length).toBe(rows.length);
 
-    // mua Mũ lưỡi trai đen (Phổ thông, cấp 1, 100 Hạt, đồ Pi nam)
+    // 23/10: mua Mũ phù thuỷ đen (bộ Halloween, Phổ thông, cấp 1, 150 Hạt, đồ Pi nam)
     await tap(page.getByTestId("pet-today-card"));
     await tap(page.getByTestId("pet-open-shop"));
     await expect(page.getByTestId("pet-shop")).toBeVisible();
-    await expect(page.getByTestId("pet-item-doi-dau-07")).toHaveCount(0); // nơ hồng là đồ Pi nữ → không có ở Pi nam
-    await tap(page.getByTestId("pet-item-doi-dau-02"));
+    await expect(page.getByTestId("pet-item-halloween-nu-dau01")).toHaveCount(0); // đồ Pi nữ → không có ở Pi nam
+    await tap(page.getByTestId("pet-item-halloween-nam-dau01"));
     await page.getByTestId("pet-buy").click();
     await expect(page.getByTestId("pet-wear")).toContainText("Mặc luôn");
     await page.getByTestId("pet-wear").click();
-    await waitDb(async () => (await rest(`pet_equipped?user_id=eq.${s.uid}&slot=eq.dau&select=item_id`))[0]?.item_id === "doi-dau-02", "đã mặc mũ");
+    await waitDb(async () => (await rest(`pet_equipped?user_id=eq.${s.uid}&slot=eq.dau&select=item_id`))[0]?.item_id === "halloween-nam-dau01", "đã mặc mũ");
+    await expect(page.locator('[data-layer="dau"]').first()).toHaveAttribute("src", /halloween\/do_halloween_nam_dau01\.webp$/);
     const prof = (await rest(`pet_profiles?user_id=eq.${s.uid}&select=balance`))[0];
-    expect(prof.balance).toBe(sum - 100);
+    expect(prof.balance).toBe(sum - 150);
     await page.screenshot({ path: "shots/pet-shop.png" });
 
     // tải lại vẫn đang mặc; tủ đồ tháo được
@@ -73,6 +77,8 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await page.screenshot({ path: "shots/pet-chat.png" });
   } finally {
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: flagsRow.value }) }).catch(() => {});
+    if (cfgRow) await rest("app_settings?key=eq.pet_config", { method: "PATCH", body: JSON.stringify({ value: cfgRow.value }) }).catch(() => {});
+    else await rest("app_settings?key=eq.pet_config", { method: "DELETE" }).catch(() => {});
     if (weightId) await rest(`weight_logs?id=eq.${weightId}`, { method: "DELETE" }).catch(() => {});
     if (before) await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify({ user_id: s.uid, log_date: s.today, day_type: before.day_type, meals: before.meals, eaten_meals: before.eaten_meals, water_ml: before.water_ml }) }).catch(() => {});
     else await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" }).catch(() => {});

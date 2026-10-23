@@ -113,6 +113,9 @@ export const COL_DEFAULT = {
   // Bóng đá: theo mùa giải → mặc định ĐÓNG, admin bật "Luôn mở" hoặc đặt ngày khi có giải; đang bán thì phòng Pi đổi sang phòng bóng đá
   "bong-da": { mode: "closed", from: "11-15", to: "01-10" },
   "trung-thu": { mode: "season", before: 21, after: 3 },
+  // 23/10: bộ Pi mới (Muse AI) thêm Mùa đông / Mùa hè
+  "mua-dong": { mode: "season", from: "12-01", to: "02-28" },
+  "mua-he": { mode: "season", from: "05-01", to: "08-31" },
 };
 const fmtDM = (s) => `${+s.slice(8, 10)}/${+s.slice(5, 7)}`;
 const shift = (s, n) => new Date((dayNum(s) + n) * 86400000).toISOString().slice(0, 10);
