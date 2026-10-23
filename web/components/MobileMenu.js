@@ -1,5 +1,5 @@
 "use client";
-// Menu mobile: nút 3 gạch ↔ dấu X, khung menu trượt xuống + mờ nền, từng dòng hiện lần lượt. Bấm nền / link / Esc là đóng, mở thì khoá cuộn trang.
+// Menu mobile (23/10 chủ dự án: nút to hơn cho dễ chạm — 48x48, nền xám nhạt): nút 3 gạch ↔ dấu X, khung menu trượt xuống + mờ nền, từng dòng hiện lần lượt. Bấm nền / link / Esc là đóng, mở thì khoá cuộn trang.
 import { useEffect, useState } from "react";
 
 const la = (it) => { const rel = [it.new_tab && "noopener", it.nofollow && "nofollow"].filter(Boolean).join(" "); return { ...(it.new_tab ? { target: "_blank" } : {}), ...(rel ? { rel } : {}), ...(it.title ? { title: it.title } : {}) }; };
@@ -42,13 +42,13 @@ export default function MobileMenu({ items = [] }) {
       <style dangerouslySetInnerHTML={{ __html: `
 .mm{display:none}
 @media(max-width:720px){.mm{display:block}}
-.mm-btn{position:relative;z-index:3;width:40px;height:40px;border:0;border-radius:12px;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:background .2s;-webkit-tap-highlight-color:transparent}
-.mm-btn:active{background:#EEF4FF}
-.mm-btn span{display:block;width:20px;height:2px;border-radius:2px;background:#0F172A;transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .2s,background .2s}
+.mm-btn{position:relative;z-index:3;width:48px;height:48px;border:0;border-radius:14px;background:#F1F5F9;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;transition:background .2s;-webkit-tap-highlight-color:transparent}
+.mm-btn:active{background:#E8F1FF}
+.mm-btn span{display:block;width:24px;height:2.5px;border-radius:2px;background:#0F172A;transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .2s,background .2s}
 .mm.on .mm-btn span{background:#0062F0}
-.mm.on .mm-btn span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.mm.on .mm-btn span:nth-child(1){transform:translateY(8.5px) rotate(45deg)}
 .mm.on .mm-btn span:nth-child(2){opacity:0;transform:scaleX(.3)}
-.mm.on .mm-btn span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mm.on .mm-btn span:nth-child(3){transform:translateY(-8.5px) rotate(-45deg)}
 .mm-bg{position:fixed;left:0;right:0;top:56px;bottom:0;background:rgba(15,23,42,.38);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .3s}
 .mm.on .mm-bg{opacity:1;pointer-events:auto}
 .mm-panel{position:absolute;left:0;right:0;top:56px;max-height:calc(100dvh - 56px);overflow-y:auto;overscroll-behavior:contain;background:#fff;border-radius:0 0 20px 20px;box-shadow:0 18px 40px rgba(15,23,42,.16);padding:6px 16px 18px;transform:translateY(-12px);opacity:0;visibility:hidden;clip-path:inset(0 0 100% 0);transition:transform .34s cubic-bezier(.2,.8,.2,1),opacity .24s,clip-path .38s cubic-bezier(.2,.8,.2,1),visibility 0s .38s}
