@@ -77,3 +77,17 @@ test("23/10 soát từng món (scripts/pi/fit_check.py → src/pi/fit.json): mó
   assert.match(scr, /!it\.broken/); // cửa hàng không bán món chờ vẽ lại
   assert.match(readFileSync("src/pi/piCatalog.js", "utf8"), /fit\.bad\[x\.id\] \? \{ broken: true, redraw: true/);
 });
+
+test("23/10 mỗi món Phòng đủ 3 ảnh theo giờ (sáng / trưa / tối), ảnh đại diện = bản trưa, đổi buổi theo giờ máy + mờ dần 1s", () => {
+  const miss = [];
+  for (const ev of Object.keys(man.events)) for (const t of ["sang", "trua", "toi"]) {
+    if (!(man.rooms[ev] || []).includes(t)) miss.push(`manifest thiếu ${ev}/${t}`);
+    if (!existsSync(`${P}rooms/phong_${ev}_${t}.webp`)) miss.push(`thiếu rooms/phong_${ev}_${t}.webp`);
+  }
+  assert.deepEqual(miss, []);
+  const cat = readFileSync("src/pi/piCatalog.js", "utf8"), room = readFileSync("src/pet/PetRoom.jsx", "utf8");
+  assert.match(cat, /const pic = times\.trua \|\| times\.sang \|\| times\.toi;/);
+  assert.match(room, /setInterval\(tick, 60_000\)/);
+  assert.match(room, /transition: "opacity 1s ease"/);
+  assert.match(room, /new Date\(\)\.getHours\(\)/);
+});

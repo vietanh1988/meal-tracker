@@ -24,17 +24,25 @@ const item = (x, i) => ({
   file: `${PI_BASE}${x.file}`, icon: `${PI_BASE}icon/${x.id}.webp`, arm: x.arm || null, src: x.file,
   ...(fit.bad[x.id] ? { broken: true, redraw: true, redraw_note: fit.bad[x.id].join("; ") } : {}),
 });
-const room = (ev, i) => ({
-  id: `phong-${ev}`, name: `Phòng ${EV_NAME[ev]}`, slot: "phong", ev, collection: ev, variants: ["nam", "nu"],
-  rarity: "common", price: PRICE.phong, level: 1, achievement: false, hidden: false, sort: 1000 + i,
-  file: `${PI_BASE}rooms/phong_${ev}_sang.webp`, icon: `${PI_BASE}rooms/phong_${ev}_sang.webp`, times: man.rooms[ev] || [],
-});
+// 23/10: mỗi món Phòng có đủ 3 ảnh theo giờ (times: sang / trua / toi → đúng file rooms/phong_<chude>_<giờ>.webp).
+// Ảnh đại diện (cửa hàng, quản trị) = bản trưa. Thiếu bản nào thì times[giờ] = null (test báo).
+export const ROOM_TIMES = ["sang", "trua", "toi"];
+export const TIME_NAME = { sang: "Sáng", trua: "Trưa", toi: "Tối" };
+const room = (ev, i) => {
+  const times = Object.fromEntries(ROOM_TIMES.map((t) => [t, (man.rooms[ev] || []).includes(t) ? `${PI_BASE}rooms/phong_${ev}_${t}.webp` : null]));
+  const pic = times.trua || times.sang || times.toi;
+  return {
+    id: `phong-${ev}`, name: `Phòng ${EV_NAME[ev]}`, slot: "phong", ev, collection: ev, variants: ["nam", "nu"],
+    rarity: "common", price: PRICE.phong, level: 1, achievement: false, hidden: false, sort: 1000 + i,
+    file: pic, icon: pic, times,
+  };
+};
 export const PI_ITEMS = [...man.items.map(item), ...EV_ORDER.filter((e) => man.rooms[e]?.length).map(room)];
 
 export const bodyFile = (arm) => `${PI_BASE}body/pi_than${arm ? `_khong_tay_${arm}` : ""}.webp`;
 export const faceFile = (g, f) => `${PI_BASE}faces/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp`;
 
-/** giờ VN (0–23) → buổi của ảnh phòng: sáng 5–11, trưa 11–17, tối 17–5 */
+/** giờ (0–23, giờ máy người dùng) → buổi của ảnh phòng: sáng 5–11, trưa 11–17, tối 17–5 */
 export const piRoomTime = (h) => (h >= 5 && h < 11 ? "sang" : h >= 11 && h < 17 ? "trua" : "toi");
 export const roomFile = (ev, t) => `${PI_BASE}rooms/phong_${ev}_${(man.rooms[ev] || []).includes(t) ? t : (man.rooms[ev] || ["sang"])[0]}.webp`;
 // tâm thảm trên ảnh phòng (phần rộng / cao ảnh) — đo trên 6 ảnh phòng 23/10; Pi đứng giữa thảm

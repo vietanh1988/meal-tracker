@@ -13,6 +13,8 @@ import { EVENTS, VOICE } from "../pet/lines";
 import { COL_DEFAULT, collectionStatus } from "../lib/petMath";
 import { todayVN } from "../lib/dateVN";
 import { PlaceEditor, RedrawBox, canPlace } from "./PcPetPlace";
+import { PetRoom } from "../pet/PetRoom";
+import { RoomTimes } from "../pet/PetScreens";
 
 const RAR = { common: ["Phổ thông", "gray"], rare: ["Hiếm", "blue"], legendary: ["Huyền thoại", "amber"] };
 const VAR = (it) => (it.variants.length === 2 ? ["Chung", "gray"] : it.variants[0] === "nam" ? ["Nam", "blue"] : ["Nữ", "violet"]);
@@ -124,6 +126,7 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
   const [busy, setBusy] = useState(false);
   const save = async (patch) => { if (!onSave || !it) return; setBusy(true); await onSave(it.id, { ...f, ...patch }); setBusy(false); };
   const vKey = f ? (f.variants.length === 2 ? "chung" : f.variants[0]) : "nam";
+  const [tv, setTv] = useState(null); // 23/10: phòng — "xem thử giờ" sáng / trưa / tối (null = theo giờ máy)
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <RedrawBox items={catalog.items.filter((x) => x.redraw)} onCopy={onCopy} />
@@ -156,6 +159,17 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
       {it && f && (
       <Card testid="pc-pet-edit" style={{ position: "sticky", top: 84 }}>
         <CardHead title={it.name} sub={`${it.id} · ${catalog.slots[it.slot]}`} right={<Pill tone={st(it)[1]}>{st(it)[0]}</Pill>} />
+        {it.slot === "phong" && it.times ? (
+          <div data-testid="pc-pet-room" style={{ margin: "0 16px", display: "flex", flexDirection: "column", gap: 4 }}>
+            <PetRoom variant="nam" season={it.ev} height={240} forceTime={tv || undefined} testid="pc-pet-room-view">
+              <span style={{ position: "absolute", left: "50%", bottom: 26, transform: "translateX(-50%)", display: "flex", gap: 10, alignItems: "flex-end" }}>
+                <PetAvatar variant="nam" size={150} still /><PetAvatar variant="nu" size={150} still />
+              </span>
+            </PetRoom>
+            <span style={{ fontSize: 11.5, fontWeight: 800, color: PC.t3, marginTop: 6 }}>XEM THỬ GIỜ {tv ? "" : "· đang theo giờ máy"}</span>
+            <RoomTimes it={it} value={tv} onChange={setTv} testid="pc-pet-room-times" />
+          </div>
+        ) : (
         <div style={{ margin: "0 16px", borderRadius: 12, background: "radial-gradient(circle at 50% 40%, #FFFFFF 0%, #EAF4FF 55%, #D6E8FF 100%)", height: 190, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 18, paddingBottom: 10 }}>
           {["nam", "nu"].map((v) => { const yes = f.variants.includes(v); return (
             <span key={v} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, opacity: yes ? 1 : 0.35, filter: yes ? "none" : "grayscale(1)" }}>
@@ -163,6 +177,7 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
               <span style={{ fontSize: 11, fontWeight: 800, color: PC.t3 }}>{v === "nam" ? "Pi nam" : "Pi nữ"}{yes ? "" : " · không có"}</span>
             </span>); })}
         </div>
+        )}
         <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
           <label style={{ display: "flex", flexDirection: "column", gap: 6 }}><span style={lbl}>Tên hiển thị</span><input data-testid="pc-pet-name" className="pc-input" value={f.name} maxLength={40} onChange={(e) => setF({ ...f, name: e.target.value })} style={field} /></label>
           <span style={{ display: "flex", flexDirection: "column", gap: 6 }}>

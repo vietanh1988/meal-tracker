@@ -8,7 +8,7 @@ import { AppIcon, MealIcon, IC_COLOR, mix } from "../mobile/icons";
 import { LT, ltCard, DK, dkCard } from "../theme";
 import { PetAvatar, ItemImg, ITEMS, catalog, PET_BASE } from "./PetAvatar";
 import { PetRoom } from "./PetRoom";
-import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile } from "../pi/piCatalog";
+import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile, ROOM_TIMES, TIME_NAME } from "../pi/piCatalog";
 import { lateNight } from "../pi/piExpr";
 
 const fmt = (n) => Math.round(n).toLocaleString("vi-VN");
@@ -67,7 +67,7 @@ const card = { margin: "0 12px", ...ltCard };
 // 21/10 (chủ dự án): phòng theo CHỦ ĐỀ khách chọn — món "Phòng <bộ>" đang dùng ở Tủ đồ; không chọn = phòng thường (không tự đổi theo ngày)
 // 23/10: bộ mới — phòng theo sự kiện (ev), ảnh theo buổi do PetRoom tự chọn
 export const roomOf = (pet) => { const r = ITEMS[pet?.equipped?.phong]; return r && r.slot === "phong" && r.variants.includes(pet.variant) ? r.ev || r.collection : null; };
-export function Stage({ pet, height = 260, children, size = 210, talking, live = true }) {
+export function Stage({ pet, height = 260, children, size = 210, talking, live = true, forceTime }) {
   // 20/10: Pi đứng trong phòng của Pi (PetRoom: đổi theo giờ, kệ đồ thành tích, màu theo bản).
   // Pi "sống": chớp mắt, đảo mắt, lá đung đưa, thở; chạm vào Pi → nảy + cười tít + tim bay (chạm lúc ngủ: mở mắt rồi ngủ tiếp).
   const [react, setReact] = useState(0);
@@ -81,10 +81,10 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
   };
   const heart = pet.variant === "nu" ? "hieu-ung/hieu-ung-11.webp" : "hieu-ung/hieu-ung-01.webp";
   return (
-    <PetRoom time={pet.time || "sang"} hour={pet.hour} variant={pet.variant} season={roomOf(pet)} trophies={[]} height={height}>
+    <PetRoom time={pet.time || "sang"} variant={pet.variant} season={roomOf(pet)} trophies={[]} height={height} forceTime={forceTime}>
       <span aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: 22, width: size * 0.62, height: 18, marginLeft: -(size * 0.31), borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
       <button type="button" data-testid="pet-tap" onClick={tap} aria-label={`Chạm vào ${pet.name}`} style={{ position: "absolute", left: "50%", bottom: 26, transform: "translateX(-50%)", border: "none", background: "transparent", padding: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-        <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} size={Math.round(size * 0.9)} talking={talking} live={live} react={react} night={lateNight(pet.hour ?? 12)} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
+        <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} size={Math.round(size * 0.9)} talking={talking} live={live} react={react} night={forceTime ? forceTime === "toi" : lateNight(new Date().getHours())} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
       </button>
       {hearts.map((h) => <img key={h.id} src={PET_BASE + heart} alt="" aria-hidden="true" className="pet-heart" style={{ position: "absolute", left: `calc(50% + ${h.dx}px)`, bottom: size * 0.55, width: 26, marginLeft: -13, animationDelay: `${h.d}ms`, pointerEvents: "none" }} />)}
       {children}
@@ -293,6 +293,7 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
   const r = RARITY[it.rarity];
   const [phase, setPhase] = useState("try"); // try | busy | bought
   const [err, setErr] = useState(null);
+  const [tv, setTv] = useState(null); // phòng: xem thử buổi sáng / trưa / tối
   const st = phase === "bought" ? { kind: "owned" } : itemState(it, pet);
   const after = pet.seeds - it.price;
   const slot = slotFor(it, pet.equipped, pet.variant);
@@ -316,8 +317,9 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
           <button data-testid="pet-tryon-close" onClick={onClose} aria-label="Đóng" style={{ width: 40, height: 40, borderRadius: 20, border: "none", background: LT.soft, color: "#475569", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.close(18)}</button>
         </div>
         <div style={{ marginTop: 12 }}>
-          <Stage pet={{ ...pet, equipped: { ...pet.equipped, [slot]: it.id }, mood: "cuoi" }} height={250} size={200} />
+          <Stage pet={{ ...pet, equipped: { ...pet.equipped, [slot]: it.id }, mood: "cuoi" }} height={250} size={200} forceTime={tv || undefined} />
         </div>
+        {it.slot === "phong" && it.times && <RoomTimes it={it} value={tv} onChange={setTv} />}
         {phase !== "bought" && (
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 13, fontWeight: 700, color: "#64748B" }}>
             <span>Bạn có <b style={{ color: "#065F46" }}>{fmt(pet.seeds)} Hạt</b></span>
@@ -339,6 +341,25 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
         {phase === "bought" && <button data-testid="pet-later" onClick={onClose} style={{ ...big, marginTop: 8, background: LT.soft, color: "#334155", height: 44 }}>Để sau</button>}
         <span style={{ display: "block", textAlign: "center", marginTop: 8, fontSize: 12, color: "#64748B" }}>{it.slot === "phong" ? "Mua 1 lần, dùng mãi · chọn / bỏ ở Tủ đồ." : `Mua 1 lần, mặc mãi. Đồ này chỉ dành cho ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}.`}</span>
       </div>
+    </div>
+  );
+}
+
+// 23/10: phòng có 3 bản theo giờ — 3 ô nhỏ Sáng / Trưa / Tối, bấm để xem thử (bấm lại = theo giờ máy)
+export function RoomTimes({ it, value, onChange, testid = "pet-room-times" }) {
+  return (
+    <div data-testid={testid} style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8, marginTop: 10 }}>
+      {ROOM_TIMES.map((t) => {
+        const on = value === t;
+        return (
+          <button key={t} type="button" data-testid={`${testid}-${t}`} aria-pressed={on} onClick={() => onChange?.(on ? null : t)} disabled={!it.times[t]}
+            style={{ padding: 4, borderRadius: 12, border: on ? "2px solid #007AFF" : "2px solid transparent", background: on ? "#EAF1FF" : LT.soft, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontFamily: "inherit", cursor: "pointer" }}>
+            {it.times[t] ? <img src={it.times[t]} alt={`${it.name} buổi ${TIME_NAME[t].toLowerCase()}`} loading="lazy" style={{ width: "100%", aspectRatio: "1.5", objectFit: "cover", objectPosition: "50% 75%", borderRadius: 9, display: "block" }} />
+              : <span style={{ width: "100%", aspectRatio: "1.5", borderRadius: 9, background: "#FEE2E2", color: "#B91C1C", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>Thiếu ảnh</span>}
+            <span style={{ fontSize: 12, fontWeight: 800, color: on ? "#007AFF" : "#334155" }}>{TIME_NAME[t]}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

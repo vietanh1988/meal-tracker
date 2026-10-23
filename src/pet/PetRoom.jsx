@@ -3,9 +3,22 @@
 // 20/10: dùng ảnh phòng 3D (ChatGPT) public/pet/khong-gian/phong-<sang|chieu|toi>-<nam|nu>.webp (vuông). Ảnh đặt sao cho
 // tâm thảm tròn (79% chiều cao ảnh) nằm dưới chân Pi (cách đáy khung 26 px); kệ gỗ bên phải: tầng giữa (41%) bày đồ thành tích.
 // art={false} → nền SVG cũ (dự phòng).
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { PET_BASE, ITEMS } from "./PetAvatar";
-import { EV_NAME, RUG, roomFile, piRoomTime } from "../pi/piCatalog";
+import { EV_NAME, RUG, roomFile, piRoomTime, ROOM_TIMES } from "../pi/piCatalog";
+
+// 23/10 (chủ dự án): buổi của phòng theo giờ MÁY người dùng, tự đổi khi qua mốc (soát mỗi phút). forceTime: Quản trị "xem thử giờ".
+export function useRoomTime(forceTime) {
+  const [t, setT] = useState(() => piRoomTime(new Date().getHours()));
+  useEffect(() => {
+    if (forceTime) return;
+    const tick = () => setT(piRoomTime(new Date().getHours()));
+    tick();
+    const iv = setInterval(tick, 60_000);
+    return () => clearInterval(iv);
+  }, [forceTime]);
+  return forceTime || t;
+}
 
 /** giờ (0–23, giờ VN) → "sang" | "chieu" | "toi" */
 export const roomTime = (h) => (h >= 5 && h < 16 ? "sang" : h >= 16 && h < 19 ? "chieu" : "toi");
@@ -25,7 +38,8 @@ const SEASON_RUG = { noel: 0.8, tet: 0.805, halloween: 0.843, "bong-da": 0.815 }
 // Noel: tất treo che tầng giữa kệ → đồ thành tích xuống tầng dưới (đáy 52,7%).
 // Halloween (ảnh ngang 1536×1024 cắt vuông quanh thảm): kệ sát mép phải, tầng giữa trống ở đáy 51,5%.
 const SEASON_SHELF = { noel: { ...SHELF, bottom: 0.527 }, halloween: { left: 0.81, width: 0.18, bottom: 0.515, h: 0.07 }, "bong-da": { left: 0.6, width: 0.2, bottom: 0.48, h: 0.08 } };
-export function PetRoom({ time = "sang", hour, variant = "nam", season = null, trophies = [], height = 280, art, children, testid = "pet-room" }) {
+export function PetRoom({ time = "sang", variant = "nam", season = null, trophies = [], height = 280, art, children, testid = "pet-room", forceTime }) {
+  const t3 = useRoomTime(forceTime);
   const ref = useRef(null);
   const [w, setW] = useState(366);
   useLayoutEffect(() => {
@@ -38,12 +52,12 @@ export function PetRoom({ time = "sang", hour, variant = "nam", season = null, t
   const v = variant === "nu" ? "nu" : "nam";
   // 23/10: phòng bộ mới (Muse AI) — ảnh dọc 2:3 theo sự kiện + buổi (sáng 5–11, trưa 11–17, tối 17–5); Pi đứng giữa thảm
   if (season && EV_NAME[season] && art !== false) {
-    const t3 = piRoomTime(hour ?? (time === "toi" ? 20 : time === "chieu" ? 16 : 9));
     const [rx, ry] = RUG[season] || [0.5, 0.8];
     const iw = w * 1.12, ih = iw * 1.5, top = Math.min(0, height - FEET - ry * ih); // rộng hơn khung 12% để dời thảm vào giữa mà không hở mép
     return (
       <div ref={ref} data-testid={testid} data-time={t3} data-season={season} style={{ position: "relative", height, borderRadius: 22, overflow: "hidden", background: t3 === "toi" ? "#1E2A55" : "#F2E6D3" }}>
-        <img aria-hidden="true" src={roomFile(season, t3)} alt="" draggable="false" decoding="async" style={{ position: "absolute", left: Math.min(0, Math.max(w - iw, w / 2 - rx * iw)), top, width: iw, height: ih, display: "block" }} />
+        {/* 3 ảnh sáng / trưa / tối chồng sẵn, đổi buổi mờ dần 1 giây */}
+        {ROOM_TIMES.map((tt) => <img key={tt} aria-hidden="true" data-room-time={tt} src={roomFile(season, tt)} alt="" draggable="false" decoding="async" style={{ position: "absolute", left: Math.min(0, Math.max(w - iw, w / 2 - rx * iw)), top, width: iw, height: ih, display: "block", opacity: tt === t3 ? 1 : 0, transition: "opacity 1s ease" }} />)}
         {children}
       </div>
     );
