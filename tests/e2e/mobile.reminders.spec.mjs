@@ -19,11 +19,13 @@ test("Nhắc nhở: lưu cài đặt nhắc", async ({ browser }) => {
     await expect(page.getByTestId("rem-slot-trua")).toHaveText("Trưa 11:45");
     await page.screenshot({ path: "shots/nhac-nho.png", fullPage: true });
 
-    // Bật nhắc nước, đổi mỗi 3 giờ
+    // 23/10: nhắc nước mặc định bật (mỗi 3 giờ, 10:30-16:30) → tắt rồi bật lại, đổi mỗi 1 giờ
+    await tap(page.getByTestId("rem-water"));
+    await waitDb(async () => (await rs()).water?.on === false, "water.on = false");
     await tap(page.getByTestId("rem-water"));
     await waitDb(async () => (await rs()).water?.on === true, "water.on");
     await tap(page.getByTestId("rem-water-every"));
-    await waitDb(async () => (await rs()).water?.every === 3, "water.every = 3");
+    await waitDb(async () => (await rs()).water?.every === 1, "water.every = 1");
 
     // Đổi giờ nhắc tối 20:00
     await tap(page.getByTestId("rem-slot-toi"));
@@ -46,6 +48,9 @@ test("Nhắc nhở: lưu cài đặt nhắc", async ({ browser }) => {
     await expect(page.getByTestId("rem-sec-food")).toContainText("Nhắc giờ ăn");
     await expect(page.getByTestId("rem-sec-food")).toContainText("Nhắc uống nước");
     await expect(page.getByTestId("rem-sec-body")).toContainText("Cân & đo hằng tuần");
+    // 23/10: "kèm đo" mặc định bật → tắt rồi bật lại
+    await tap(page.getByTestId("rem-weigh-measure"));
+    await waitDb(async () => (await rs()).weigh?.measure === false, "weigh.measure = false");
     await tap(page.getByTestId("rem-weigh-measure"));
     await waitDb(async () => (await rs()).weigh?.measure === true, "weigh.measure = true");
     await expect(page.getByTestId("rem-weigh-measure")).toHaveAttribute("aria-checked", "true");

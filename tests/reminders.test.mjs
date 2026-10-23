@@ -16,8 +16,8 @@ test("normalizeReminders: bỏ giờ sai, bữa lạ, bữa trùng; sắp theo g
 
 test("normalizeReminders: cân & nước sai → mặc định", () => {
   const r = R.normalizeReminders({ weigh: { on: false, weekday: 9, time: "25:00" }, water: { on: true, every: 5, from: "20:00", to: "08:00" } });
-  assert.deepEqual(r.weigh, { on: false, weekday: 0, time: "07:00", measure: false });
-  assert.deepEqual(r.water, { on: true, every: 2, from: "08:00", to: "20:00" });
+  assert.deepEqual(r.weigh, { on: false, weekday: 0, time: "07:00", measure: true });
+  assert.deepEqual(r.water, { on: true, every: 3, from: "10:30", to: "16:30" });
 });
 
 test("defaultSlotTime: +15 phút, qua nửa đêm", () => {
@@ -34,7 +34,7 @@ test("dueReminders: bữa đã ghi thì không nhắc", () => {
   const s = { meal: { on: true, slots: [{ meal: "trua", time: "11:45" }] }, weigh: { on: true, weekday: 0, time: "07:00" }, water: { on: true, every: 2, from: "08:00", to: "20:00" } };
   assert.deepEqual(R.dueReminders(s, { hhmm: "11:45", weekday: 2 }), [{ type: "meal", meal: "trua" }]);
   assert.deepEqual(R.dueReminders(s, { hhmm: "11:45", weekday: 2, loggedMeals: ["trua"] }), []);
-  assert.deepEqual(R.dueReminders(s, { hhmm: "07:00", weekday: 0 }), [{ type: "weigh", measure: false }]);
+  assert.deepEqual(R.dueReminders(s, { hhmm: "07:00", weekday: 0 }), [{ type: "weigh", measure: true }]); // 23/10: chưa lưu measure → mặc định kèm đo
   assert.deepEqual(R.dueReminders(s, { hhmm: "07:00", weekday: 1 }), []);
   assert.deepEqual(R.dueReminders(s, { hhmm: "10:00", weekday: 1 }), [{ type: "water" }]);
   assert.deepEqual(R.dueReminders({ ...s, meal: { on: false, slots: s.meal.slots } }, { hhmm: "11:45", weekday: 2 }), []);
@@ -50,6 +50,14 @@ test("reminders.js: cùng danh sách bữa với mealMath, bản chép cho edge 
 
 test("cân & đo: weigh.measure giữ khi lưu, dueReminders báo kèm đo (17/10)", () => {
   assert.equal(R.normalizeReminders({ weigh: { on: true, measure: true } }).weigh.measure, true);
-  assert.equal(R.normalizeReminders({}).weigh.measure, false);
+  assert.equal(R.normalizeReminders({}).weigh.measure, true);
   assert.deepEqual(R.dueReminders({ weigh: { on: true, weekday: 6, time: "07:00", measure: true } }, { hhmm: "07:00", weekday: 6 }), [{ type: "weigh", measure: true }]);
+});
+
+test("23/10: mặc định bật nhắc nước 3 lần/ngày + cân & đo; khách đã lưu tắt thì giữ tắt", () => {
+  const d = R.normalizeReminders({});
+  assert.equal(d.water.on, true); assert.deepEqual(R.waterTimes(d.water), ["10:30", "13:30", "16:30"]);
+  assert.equal(d.weigh.measure, true);
+  assert.equal(R.normalizeReminders({ water: { on: false }, weigh: { measure: false } }).water.on, false);
+  assert.equal(R.normalizeReminders({ weigh: { measure: false } }).weigh.measure, false);
 });

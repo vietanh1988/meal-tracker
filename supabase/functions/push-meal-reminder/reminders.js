@@ -2,8 +2,8 @@
 // Dạng lưu:
 // {
 //   meal:  { on: true,  slots: [{ meal: "trua", time: "11:45" }, …] },   // chỉ nhắc khi bữa đó chưa ghi
-//   weigh: { on: true,  weekday: 0, time: "07:00", measure: false },       // weekday 0 = T2 … 6 = CN (như gymDays); measure = kèm nhắc đo số đo (17/10)
-//   water: { on: false, every: 2, from: "08:00", to: "20:00" }             // mỗi `every` giờ trong khung
+//   weigh: { on: true,  weekday: 0, time: "07:00", measure: true },        // weekday 0 = T2 … 6 = CN (như gymDays); measure = kèm nhắc đo số đo (17/10)
+//   water: { on: true, every: 3, from: "10:30", to: "16:30" }              // mỗi `every` giờ trong khung (23/10: mặc định bật, 3 lần/ngày; đủ nước thì không nhắc)
 // }
 // Server: edge function push-meal-reminder (type "tick", cron mỗi phút) gọi dueReminders theo giờ VN.
 // Không import file khác: file này được chép nguyên sang supabase/functions/push-meal-reminder/ (test kiểm tra 2 bản giống nhau)
@@ -15,8 +15,8 @@ export const WATER_EVERY = [1, 2, 3];
 
 export const DEFAULT_REMINDERS = {
   meal: { on: true, slots: [{ meal: "trua", time: "11:45" }, { meal: "toi", time: "19:30" }] },
-  weigh: { on: true, weekday: 0, time: "07:00", measure: false },
-  water: { on: false, every: 2, from: "08:00", to: "20:00" },
+  weigh: { on: true, weekday: 0, time: "07:00", measure: true }, // 23/10: mặc định "Cân & đo" cho mọi khách, ai không thích tự tắt
+  water: { on: true, every: 3, from: "10:30", to: "16:30" }, // 23/10: mặc định bật, 10:30 · 13:30 · 16:30; khách đã tự lưu tắt thì giữ tắt
 };
 
 const t = (v, d) => (typeof v === "string" && HHMM.test(v) ? v : d);
@@ -39,8 +39,8 @@ export function normalizeReminders(raw) {
   if (toMin(to) <= toMin(from)) { from = D.water.from; to = D.water.to; }
   return {
     meal: { on: m.on !== undefined ? !!m.on : D.meal.on, slots },
-    weigh: { on: w.on !== undefined ? !!w.on : D.weigh.on, weekday: Number.isInteger(w.weekday) && w.weekday >= 0 && w.weekday <= 6 ? w.weekday : D.weigh.weekday, time: t(w.time, D.weigh.time), measure: !!w.measure },
-    water: { on: !!wa.on, every: WATER_EVERY.includes(wa.every) ? wa.every : D.water.every, from, to },
+    weigh: { on: w.on !== undefined ? !!w.on : D.weigh.on, weekday: Number.isInteger(w.weekday) && w.weekday >= 0 && w.weekday <= 6 ? w.weekday : D.weigh.weekday, time: t(w.time, D.weigh.time), measure: w.measure !== undefined ? !!w.measure : D.weigh.measure },
+    water: { on: wa.on !== undefined ? !!wa.on : D.water.on, every: WATER_EVERY.includes(wa.every) ? wa.every : D.water.every, from, to },
   };
 }
 
