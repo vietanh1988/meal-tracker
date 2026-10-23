@@ -7,7 +7,8 @@
   - mảng thân dán kèm: da xanh của Pi nằm trong ảnh món ngoài chỗ được phép (đầu / bụng) ≥ 2500px
   - đội đầu: lệch tâm ngang · mũ không ôm đầu (viền đầu phía trên vành mũ lộ xanh > 55%)
   - kính / mặt nạ: không ôm 2 mắt · lệch tâm
-  - cổ: không nằm ở vùng cổ · giày: đáy giày cách chân > 14px
+  - cổ: không nằm ở vùng cổ · giày: đáy giày cách chân > 14px, cắt phẳng ≥ 60px
+  - đeo lưng / áo: viền thân thừa (nét mảnh bám ngoài bóng thân) > 450px
 """
 import json, os, re, sys
 import numpy as np, cv2
@@ -35,6 +36,8 @@ _hsv = cv2.cvtColor(np.ascontiguousarray(body[..., :3]), cv2.COLOR_RGB2HSV)
 green = (_hsv[..., 0] > 35) & (_hsv[..., 0] < 90)
 HEAD_Y = int(np.argmax([(solid[y] & ~green[y]).sum() > 0.6 * HW for y in range(N)]))  # đỉnh đầu tròn (dưới lá)
 head = solid & ~green & (yy < neck) & (yy >= HEAD_Y - 12)
+NEAR = (cv2.dilate(solid.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))) > 0) & ~solid
+K13 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (13, 13))
 HEAD_IN = cv2.erode(head.astype(np.uint8), np.ones((41, 41), np.uint8)) > 0
 
 def blue_mask(rgb):
@@ -82,7 +85,12 @@ def check(it):
     s = it["slot"]
     # mép cắt thẳng đứng: đồ cầm tay ≥ 40px (mép mảng thân dán kèm / vật bị cắt); món khác ≥ 95px; đồ đeo lưng nằm sau thân → bỏ qua
     cut = straight_cut(a) if s != "lung" else 0
-    if cut >= (40 if s in ("tay", "gang", "toc") else 95): out.append(f"cắt phẳng {cut}px")
+    if cut >= (40 if s in ("tay", "gang", "toc") else 60 if s == "giay" else 95): out.append(f"cắt phẳng {cut}px")
+    # viền thân thừa: nét mảnh (< 13px) bám sát ngoài bóng thân (≤ 7px) — bản sao viền thân vẽ lẫn, lộ ra quanh người
+    if s in ("lung", "ao"):
+        a8 = al.astype(np.uint8)
+        thin = (a8 > 0) & (cv2.morphologyEx(a8, cv2.MORPH_OPEN, K13) == 0) & NEAR
+        if thin.sum() > 450: out.append(f"viền thân thừa quanh người {int(thin.sum())}px")
     skin = al & blue_mask(a) & solid
     if s in ("tay", "gang"):
         arm = solid & ((xx < 0.374 * N) | (xx > 0.633 * N)) & (yy >= 0.615 * N) & (yy <= 0.825 * N)

@@ -39,6 +39,9 @@
   "giangsinh-nam-pk06": [
    "cắt phẳng 49px"
   ],
+  "giangsinh-nam-pk12": [
+   "viền thân thừa quanh người 472px"
+  ],
   "giangsinh-nu-pk09": [
    "cắt phẳng 63px"
   ],
@@ -61,11 +64,23 @@
   "tet-nam-pk10": [
    "cắt phẳng 52px"
   ],
+  "tet-nam-pk11": [
+   "viền thân thừa quanh người 657px"
+  ],
   "tet-nu-pk06": [
    "cắt phẳng 46px"
   ],
   "tet-nu-pk10": [
    "cắt phẳng 170px"
+  ],
+  "tet-nu-giay02": [
+   "cắt phẳng 70px"
+  ],
+  "muadong-nam-ao01": [
+   "viền thân thừa quanh người 479px"
+  ],
+  "muadong-nam-ao03": [
+   "viền thân thừa quanh người 627px"
   ],
   "muadong-nam-dau01": [
    "mũ không ôm đầu (che viền đầu 22%)"
@@ -85,8 +100,14 @@
   "muadong-nu-pk10": [
    "cắt phẳng 60px"
   ],
+  "muadong-nu-pk11": [
+   "viền thân thừa quanh người 532px"
+  ],
   "muahe-nam-pk08": [
    "cắt phẳng 104px"
+  ],
+  "muahe-nam-pk12": [
+   "viền thân thừa quanh người 685px"
   ],
   "muahe-nu-dau04": [
    "mũ không ôm đầu (che viền đầu 38%)"
@@ -106,11 +127,26 @@
   "muahe-nu-pk12": [
    "cắt phẳng 42px"
   ],
+  "halloween-nam-ao01": [
+   "viền thân thừa quanh người 778px"
+  ],
+  "halloween-nam-ao04": [
+   "viền thân thừa quanh người 729px"
+  ],
   "halloween-nam-dau01": [
    "mũ không ôm đầu (che viền đầu 15%)"
   ],
   "halloween-nam-pk04": [
    "lệch tâm +30px"
+  ],
+  "halloween-nam-pk12": [
+   "viền thân thừa quanh người 1080px"
+  ],
+  "halloween-nu-ao01": [
+   "viền thân thừa quanh người 1043px"
+  ],
+  "halloween-nu-ao03": [
+   "viền thân thừa quanh người 463px"
   ],
   "halloween-nu-ao04": [
    "cắt phẳng 100px"
@@ -137,6 +173,12 @@
   ],
   "trungthu-nam-pk06": [
    "cắt phẳng 75px"
+  ],
+  "trungthu-nam-pk11": [
+   "viền thân thừa quanh người 575px"
+  ],
+  "trungthu-nam-pk12": [
+   "viền thân thừa quanh người 642px"
   ],
   "trungthu-nu-pk03": [
    "cắt phẳng 127px"
