@@ -12,13 +12,14 @@ const r4 = (n) => Math.round(n * 10000) / 10000;
 const lbl = { fontSize: 12, fontWeight: 800, color: PC.t3 };
 export const canPlace = (it) => it && it.slot !== "ao" && it.slot !== "phong" && !!(it.anchor?.nam || it.anchor?.nu);
 
-// lệnh nhờ ChatGPT vẽ lại các món đánh dấu "Cần vẽ lại" — vẽ Pi ĐANG ĐEO món để món khớp sẵn dáng, rồi Claude tách món ra
+// 23/10: lệnh nhờ Muse AI vẽ lại các món bộ Pi mới bị soát ra lỗi (scripts/pi/fit_check.py → src/pi/fit.json) hoặc admin đánh dấu "Cần vẽ lại"
 export function redrawPrompt(items) {
-  const rows = items.map((it, i) => `${i + 1}. ${it.name} (${catalog.slots[it.slot]}; ${it.variants.map((v) => (v === "nam" ? "Pi nam" : "Pi nữ")).join(" + ")})${it.redraw_note ? ` — lỗi cần sửa: ${it.redraw_note}` : ""}`);
+  const rows = items.map((it, i) => `${i + 1}. ${it.src || it.id} — ${it.name} (${catalog.slots[it.slot]})${it.redraw_note ? ` — lỗi: ${it.redraw_note}` : ""}`);
   return [
-    "Vẽ lại các món đồ dưới đây cho nhân vật Pi (giọt nước xanh, mầm 2 lá trên đỉnh, mắt to xanh thẫm, má hồng — giữ y hệt ảnh Pi gốc đính kèm, cùng tư thế đứng thẳng nhìn thẳng, cùng cỡ).",
-    "Mỗi món: 1 ảnh Pi ĐANG ĐEO / CẦM món đó, món ôm đúng dáng đầu / thân / tay của Pi, không che mắt (trừ kính), không đổi mặt Pi.",
-    "Phong cách 3D bóng như ảnh gốc, nền một màu #FF00FF phẳng, không bóng đổ trên nền, ảnh vuông 1024×1024, mỗi món 1 ảnh riêng (không ghép nhiều món vào 1 ảnh).",
+    "Bộ pi_assets_clean còn các món dưới đây ghép lệch với body/pi_than.webp. Làm lại đúng các file này, giữ tên file, khung 768x768, nền trong suốt, chân Pi tại (384,720), vẽ trên đúng thân pi_than.",
+    "Yêu cầu: (1) chỉ còn món đồ (đồ cầm tay: vật + bàn tay đang nắm, cánh tay nếu giơ lên) — KHÔNG dán kèm mảng đầu / bụng / thân Pi nào; (2) vật vẽ trọn, không bị cắt phẳng ở mép nào;",
+    "(3) mũ / đội đầu ôm trọn đầu Pi, không lộ đầu xanh hai bên phía trên vành; (4) vòng cổ / dây chuyền ở giữa cổ; (5) kiểm bằng cách chồng lên body/pi_than.webp + faces/<nam|nu>/vui.webp: không thấy đường nối hay mảng xanh khác màu.",
+    "Gửi lại zip chỉ gồm các file này, đúng cấu trúc items/<sukien>/.",
     "",
     ...rows,
   ].join("\n");

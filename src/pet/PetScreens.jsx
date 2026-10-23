@@ -254,7 +254,7 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", initialCol = "
   const [slot, setSlot] = useState(initialSlot);
   const [pv, setPv] = useState(preview || null);
   const [col, setCol] = useState(initialCol); // bộ sưu tập (Noel / Tết / Cổ trang) — mỗi bộ 1 mục riêng
-  const all = catalog.items.filter((it) => it.variants.includes(pet.variant) && !it.hidden && !it.achievement && !it.legacy && !pet.achievementIds.includes(it.id));
+  const all = catalog.items.filter((it) => it.variants.includes(pet.variant) && !it.hidden && !it.broken && !it.achievement && !it.legacy && !pet.achievementIds.includes(it.id)); // 23/10: món ghép lệch (src/pi/fit.json) chờ vẽ lại, chưa bán
   const cols = [...new Map(all.filter((it) => it.collection).map((it) => [it.collection, it.collection_name])).entries()]
     .sort((a, b) => (pet.cols?.[b[0]]?.open ? 1 : 0) - (pet.cols?.[a[0]]?.open ? 1 : 0)); // bộ đang bán đứng trước
   const list = all.filter((it) => col === "all" || (col === "thuong" ? !it.collection : it.collection === col));

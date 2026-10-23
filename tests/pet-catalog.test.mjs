@@ -67,3 +67,13 @@ test("phòng theo món đang dùng (không tự đổi theo ngày), ảnh theo b
     assert.equal(piRoomTime(16), "trua"); assert.equal(piRoomTime(17), "toi"); assert.equal(piRoomTime(4), "toi");
   }
 });
+
+test("23/10 soát từng món (scripts/pi/fit_check.py → src/pi/fit.json): món lỗi có thật, không bán, nằm trong lệnh vẽ lại", () => {
+  const fit = JSON.parse(readFileSync("src/pi/fit.json", "utf8"));
+  const ids = new Set(man.items.map((it) => it.id));
+  assert.deepEqual(Object.keys(fit.bad).filter((id) => !ids.has(id)), []);
+  assert.ok(fit.geo.neck > 400 && fit.geo.neck < 560 && fit.geo.head_top > 150);
+  const scr = readFileSync("src/pet/PetScreens.jsx", "utf8");
+  assert.match(scr, /!it\.broken/); // cửa hàng không bán món chờ vẽ lại
+  assert.match(readFileSync("src/pi/piCatalog.js", "utf8"), /fit\.bad\[x\.id\] \? \{ broken: true, redraw: true/);
+});

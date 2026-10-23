@@ -27,7 +27,7 @@ export function applyItemRows(rows) {
         if (cut != null) it.cut = { ...(it.cut || {}), [v]: cut };
       }
       it.behind_head = pl.behind_head ?? it._bh0;
-      it.redraw = !!r.redraw; it.redraw_note = r.redraw_note || "";
+      it.redraw = !!r.redraw || !!it.broken; it.redraw_note = r.redraw_note || (it.broken ? it._fit_note ||= it.redraw_note : "") || ""; // 23/10: món soát ra lỗi (fit.json) luôn ở danh sách vẽ lại
     }
     // 23/10: bộ Pi mới không có điểm đặt → bản Pi theo pet_items (chỉ trong số bản có ảnh của món)
     const vs = (r.variants || []).filter((v) => (it.anchor || it.body ? it.anchor?.[v] || it.body?.[v] : (it._v0 ||= [...it.variants]).includes(v)));

@@ -2,6 +2,7 @@
 // Mọi ảnh cùng khung vuông 768 (chân Pi tại 384,720), đã đặt đúng chỗ trên thân và đã làm sạch → chồng đủ khung theo thứ tự lớp.
 // Tên / giá / độ hiếm / cấp / ẩn: Quản trị sửa ở bảng pet_items (usePet → applyItemRows đè lên đây).
 import man from "./manifest.json";
+import fit from "./fit.json"; // scripts/pi/fit_check.py: món ghép lệch / dán kèm mảng thân → chờ vẽ lại, không bán
 
 export const PI_BASE = "/pi/";
 export const PI_MANIFEST = man;
@@ -20,7 +21,8 @@ export const PRICE = { giay: 80, toc: 100, gang: 100, co: 100, mat: 120, tay: 15
 const item = (x, i) => ({
   id: x.id, name: x.name, slot: x.slot, ev: x.ev, collection: x.ev, variants: [x.g],
   rarity: "common", price: PRICE[x.slot] ?? 100, level: 1, achievement: false, hidden: false, sort: i,
-  file: `${PI_BASE}${x.file}`, icon: `${PI_BASE}icon/${x.id}.webp`, arm: x.arm || null,
+  file: `${PI_BASE}${x.file}`, icon: `${PI_BASE}icon/${x.id}.webp`, arm: x.arm || null, src: x.file,
+  ...(fit.bad[x.id] ? { broken: true, redraw: true, redraw_note: fit.bad[x.id].join("; ") } : {}),
 });
 const room = (ev, i) => ({
   id: `phong-${ev}`, name: `Phòng ${EV_NAME[ev]}`, slot: "phong", ev, collection: ev, variants: ["nam", "nu"],
