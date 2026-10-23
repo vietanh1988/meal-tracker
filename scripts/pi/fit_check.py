@@ -129,8 +129,24 @@ def check(it):
 
 # 24/10 duyệt bằng mắt (bộ pi_fix_30): OK = báo nhầm (vật vốn có cạnh thẳng đứng); BAD = lỗi máy không bắt được
 # (24/10: bộ pi_full thay 234 món → duyệt mắt lại từ đầu; ghi vào đây món nào duyệt xong)
-EYE_OK = {"tet-nam-pk08": "cuộn thư dựng đứng (bản fix_30 đã duyệt)", "muahe-nu-pk05": "ly thẳng thành (bản fix_30 đã duyệt)"}
-EYE_BAD = {}
+EYE_OK = {"trungthu-nu-dau04": "dây đèn lồng vốn lệch 1 bên (soát mắt 24/10)", "tet-nam-pk08": "cuộn thư dựng đứng (bản fix_30 đã duyệt)", "muahe-nu-pk05": "ly thẳng thành (bản fix_30 đã duyệt)"}
+EYE_BAD = {  # 24/10 soát mắt từng món ở cỡ lớn (sau khi dọn nét thừa)
+    "muahe-nam-pk07": "ván lướt bị cắt thẳng mép phải",
+    "trungthu-nam-pk01": "đèn ông sao bị cắt thẳng mép phải",
+    "trungthu-nu-pk07": "mặt nạ thỏ bị cắt thẳng mép phải",
+    "trungthu-nu-pk03": "bánh thỏ bị cắt mép phải",
+    "muadong-nam-pk08": "quả cầu tuyết bị cắt mép trái",
+    "trungthu-nu-pk06": "giỏ trái cây có mảng trắng trong quai",
+    "halloween-nam-pk05": "giỏ kẹo có mảng trắng trong quai",
+    "halloween-nam-pk06": "đèn bí ngô có mảng trắng trên quai",
+    "tet-nu-pk06": "cành đào gãy, mẩu cành rơi trên bụng",
+    "halloween-nu-pk07": "chổi gãy đôi, cán rời",
+    "halloween-nu-pk10": "mèo đen viền lởm chởm, lẫn nét thừa",
+    "muahe-nam-pk11": "phao vịt bị cắt thẳng mép trên phải",
+    "halloween-nam-pk11": "cánh dơi bị cắt thẳng mép phải",
+    "halloween-nu-pk11": "cánh dơi bị cắt thẳng mép phải",
+    "muahe-nu-pk11": "phao kỳ lân có viền thân thừa bên trái",
+}
 res = {}
 for it in man["items"]:
     r = [] if it["id"] in EYE_OK else check(it)

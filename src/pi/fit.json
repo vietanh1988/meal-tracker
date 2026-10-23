@@ -27,11 +27,21 @@
   }
  },
  "bad": {
+  "tet-nu-pk06": [
+   "cành đào gãy, mẩu cành rơi trên bụng"
+  ],
   "muadong-nam-ao01": [
    "viền thân thừa quanh người 618px"
   ],
+  "muadong-nam-pk08": [
+   "quả cầu tuyết bị cắt mép trái"
+  ],
+  "muahe-nam-pk07": [
+   "ván lướt bị cắt thẳng mép phải"
+  ],
   "muahe-nam-pk11": [
-   "viền thân thừa quanh người 509px"
+   "viền thân thừa quanh người 509px",
+   "phao vịt bị cắt thẳng mép trên phải"
   ],
   "muahe-nam-pk12": [
    "viền thân thừa quanh người 880px"
@@ -39,8 +49,32 @@
   "muahe-nu-pk07": [
    "cắt phẳng 79px"
   ],
-  "trungthu-nu-dau04": [
-   "lệch tâm +44px"
+  "muahe-nu-pk11": [
+   "phao kỳ lân có viền thân thừa bên trái"
+  ],
+  "halloween-nam-pk05": [
+   "giỏ kẹo có mảng trắng trong quai"
+  ],
+  "halloween-nam-pk06": [
+   "đèn bí ngô có mảng trắng trên quai"
+  ],
+  "halloween-nam-pk11": [
+   "cánh dơi bị cắt thẳng mép phải"
+  ],
+  "halloween-nu-pk07": [
+   "chổi gãy đôi, cán rời"
+  ],
+  "halloween-nu-pk10": [
+   "mèo đen viền lởm chởm, lẫn nét thừa"
+  ],
+  "halloween-nu-pk11": [
+   "cánh dơi bị cắt thẳng mép phải"
+  ],
+  "trungthu-nam-pk01": [
+   "đèn ông sao bị cắt thẳng mép phải"
+  ],
+  "trungthu-nu-pk03": [
+   "bánh thỏ bị cắt mép phải"
   ],
   "trungthu-nu-pk04": [
    "cắt phẳng 103px",
@@ -48,6 +82,12 @@
   ],
   "trungthu-nu-pk05": [
    "cắt phẳng 45px"
+  ],
+  "trungthu-nu-pk06": [
+   "giỏ trái cây có mảng trắng trong quai"
+  ],
+  "trungthu-nu-pk07": [
+   "mặt nạ thỏ bị cắt thẳng mép phải"
   ],
   "halloween-nu-ao04": [
    "Muse ghi chờ vẽ lại (redo)"

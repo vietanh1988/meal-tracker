@@ -14,6 +14,8 @@ import json, os, re, shutil, sys
 import numpy as np
 import cv2
 from PIL import Image
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from clean_tay import clean as clean_tay
 
 SRC = sys.argv[1]
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -98,6 +100,9 @@ for it in cat["items"]:
     iid = f"{it['ev']}-{it['g']}-{m.group(3)}{m.group(4)}"
     total += put(it["file"], src=s)
     im = Image.open(s).convert("RGBA")
+    if it["slot"] in ("tay", "gang"):
+        a_, n_ = clean_tay(np.asarray(im), body[..., 3] > 128)
+        if n_ >= 40: im = Image.fromarray(a_); total += put(it["file"], im=im, q=90)
     if it["slot"] == "dau" and LEAF is not None:
         # 24/10: ảnh mũ còn viền lá cũ mờ (nét mảnh alpha < 100 đứng RỜI, không dính nét đậm) quanh chỗ lá → bỏ đúng các điểm đó
         a = np.asarray(im).copy(); al = a[..., 3]
