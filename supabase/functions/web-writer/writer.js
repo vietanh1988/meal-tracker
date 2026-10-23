@@ -173,7 +173,8 @@ async function storeImage(admin, im, name, alt, uid, by) {
 async function convertImages(admin, { budget = 90_000, limit = 60 } = {}) {
   if (!webp) return { error: "Chưa có bộ mã WebP" };
   const t0 = Date.now();
-  const { data: rows } = await admin.from("web_media").select("id,path,url,alt,width,height,sizes").like("path", "%.jpg").order("created_at", { ascending: true }).limit(limit);
+  const { data: rows, error: le } = await admin.from("web_media").select("path,url,alt,width,height,sizes").like("path", "%.jpg").order("created_at", { ascending: true }).limit(limit);
+  if (le) return { error: "Đọc Thư viện ảnh: " + le.message }; // web_media không có cột id: khoá là path
   if (!rows?.length) return { done: true, converted: 0, left: 0 };
   const { data: posts } = await admin.from("web_posts").select("id,blocks,cover_url,seo");
   const fitW = async (img0, maxKB) => { let b = null; for (let q = 80; q >= 50; q -= 10) { b = new Uint8Array(await webp(img0.bitmap, img0.width, img0.height, q)); if (b.length <= maxKB * 1024) return b; } return b; };
@@ -204,7 +205,7 @@ async function convertImages(admin, { budget = 90_000, limit = 60 } = {}) {
         if (p.seo?.og_image === m.url) p.seo = { ...p.seo, og_image: url };
         touched.get(p.id).after = p;
       }
-      const { error: me } = await admin.from("web_media").update({ path, url, name: path.split("/").pop(), width: img.width, height: img.height, size: main.length, sizes }).eq("id", m.id);
+      const { error: me } = await admin.from("web_media").update({ path, url, name: path.split("/").pop(), width: img.width, height: img.height, size: main.length, sizes }).eq("path", m.path);
       if (me) throw new Error("Thư viện ảnh: " + me.message);
       converted++;
     } catch (e) { fails.push(`${m.path}: ${String(e?.message || e).slice(0, 120)}`); if (/WebP|wasm|webp/i.test(String(e))) break; }
@@ -215,7 +216,7 @@ async function convertImages(admin, { budget = 90_000, limit = 60 } = {}) {
     const { error } = await admin.from("web_posts").update({ blocks: x.after.blocks, cover_url: x.after.cover_url, seo: x.after.seo }).eq("id", id);
     if (error) fails.push(`bài ${id}: ${error.message}`);
   }
-  const { count } = await admin.from("web_media").select("id", { count: "exact", head: true }).like("path", "%.jpg");
+  const { count } = await admin.from("web_media").select("path", { count: "exact", head: true }).like("path", "%.jpg");
   return { converted, posts: touched.size, left: count ?? null, fails: fails.slice(0, 5) };
 }
 

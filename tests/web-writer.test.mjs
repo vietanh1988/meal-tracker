@@ -407,7 +407,7 @@ test("23/10 đổi ảnh cũ JPEG 1200 → WebP 800 + 400, thay link trong bài 
   const Image = { decode: async () => fake(1200, 800), RESIZE_AUTO: -1 };
   const { w, tables, db } = setup({ Image, webp: async () => new Uint8Array(3000) });
   const old = "https://fipilotai.com/anh/2026/10/pho-bia-abc12_1200w.jpg";
-  tables.web_media = [{ id: "m1", path: "img/2026/10/pho-bia-abc12_1200w.jpg", url: old, width: 1200, height: 800, sizes: [400, 800], created_at: "1" }];
+  tables.web_media = [{ path: "img/2026/10/pho-bia-abc12_1200w.jpg", url: old, width: 1200, height: 800, sizes: [400, 800], created_at: "1" }];
   tables.web_posts = [{ id: "p1", cover_url: old, seo: { og_image: old }, blocks: [{ type: "img", url: old, alt: "phở" }, { type: "p", html: "x" }] }, { id: "p2", cover_url: "khác", seo: {}, blocks: [] }];
   const r = await (await w.handle(req({ action: "convert_images", secret: "s3cret" }))).json();
   assert.equal(r.converted, 1, JSON.stringify(r));
