@@ -98,6 +98,8 @@ export function addInfographics(blocks, post = {}) {
 
 // Chiều cao ảnh theo số dòng (rộng cố định 1200)
 export const infoHeight = (sp) => {
-  const per = sp.kind === "bars" ? (sp.macro ? 78 : 62) : sp.kind === "pair" ? 92 : 74;
-  return 250 + sp.rows.length * per + (sp.total ? 70 : 0) + (sp.kind === "pair" || sp.macro ? 36 : 0);
+  const hasSub = sp.rows.some((x) => x.sub);
+  const per = sp.kind === "bars" ? (sp.macro ? 80 : hasSub ? 74 : 56) : sp.kind === "pair" ? 80 : hasSub ? 92 : 70;
+  const title = String(sp.title || "").length > 46 ? 48 : 0; // tiêu đề 2 dòng
+  return 260 + title + sp.rows.length * per + (sp.total ? 80 : 0) + (sp.kind === "pair" || sp.macro ? 40 : 0);
 };

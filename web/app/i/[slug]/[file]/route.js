@@ -60,7 +60,7 @@ function Menu({ sp }) {
           <div style={{ width: 14, height: 14, borderRadius: 7, background: [C.blue, C.mint, C.violet, C.sky][i % 4] }} />
           <Col style={{ flex: 1 }}>
             <div style={{ fontSize: 26, fontWeight: 700, color: C.ink }}>{clip(x.name, 30)}</div>
-            {x.sub && <div style={{ fontSize: 19, color: C.t2 }}>{clip(x.sub, 80)}</div>}
+            {x.sub && <div style={{ fontSize: 19, color: C.t2 }}>{clip(x.sub, 62)}</div>}
           </Col>
           <div style={{ fontSize: 28, fontWeight: 800, color: C.deep }}>{`${fmtV(x.kcal)} kcal`}</div>
         </Row>
@@ -93,7 +93,7 @@ function Pair({ sp }) {
         </Row>
       ))}
       {sp.total && (
-        <Row style={{ justifyContent: "space-between", marginTop: 8, padding: "14px 20px", borderRadius: 16, background: C.ink, color: "#FFFFFF", fontSize: 24, fontWeight: 700 }}>
+        <Row style={{ justifyContent: "space-between", alignItems: "center", marginTop: 8, padding: "14px 20px", borderRadius: 16, background: C.ink, color: "#FFFFFF", fontSize: 24, fontWeight: 700 }}>
           <div>Cả ngày</div>
           <div>{`${fmtV(sp.total.a)} → ${fmtV(sp.total.b)} kcal (bớt ≈ ${fmtN((sp.total.a.lo + sp.total.a.hi) / 2 - (sp.total.b.lo + sp.total.b.hi) / 2)})`}</div>
         </Row>
