@@ -2011,8 +2011,10 @@ export function lookupLocalFood(nameVN, gram, opts) {
 // ============================================================
 // SCALE: apply gram + cooking modifier
 // ============================================================
-function scaleFood(base, foodKey, gram, cookKey0, rawBase) {
+function scaleFood(base0, foodKey, gram, cookKey0, rawBase) {
   let cookKey = cookKey0;
+  // Nguyên liệu đã "nấu sẵn theo tên hiện" (bake bên dưới) giữ số sống ở .raw: ghép cách nấu khác / công thức thì tính từ số sống
+  const base = base0.raw && (cookKey0 || rawBase) ? { ...base0, ...base0.raw, form: "raw" } : base0;
   const g = gram===0?0:(gram||100);
   const r = g / 100;
 
@@ -2037,6 +2039,7 @@ function scaleFood(base, foodKey, gram, cookKey0, rawBase) {
   // 23/10: nguyên liệu sống mà tên hiện là món đã nấu ("ức gà" hiện "Ức gà áp chảo", "ba chỉ" hiện "Ba chỉ luộc")
   // → tính số theo đúng cách nấu đó (trước đây hiện "đã nấu" mà số vẫn là đồ sống: thiếu ~30% đạm / calo)
   if (!cookKey && base.form === "raw" && !rawBase) cookKey = displayMethod(foodKey);
+  if (base0.raw && !cookKey0 && !rawBase) cookKey = null; // đã nấu sẵn đúng cách nấu của tên hiện
   // 23/10: cách nấu trong METHODS → hệ số thành phẩm + dầu / đường (cookMethods.js)
   const cooked = cookKey && METHODS[cookKey] ? cookPer100(base, foodKey, cookKey) : null;
   if (cooked) {
@@ -2734,4 +2737,19 @@ export function isStandaloneDish(foodKey) {
   }
   LOCAL_KEYS.length = 0; LOCAL_KEYS.push(...Object.keys(LOCAL_FOODS).sort((a, b) => b.length - a.length));
   _canon = null;
+}
+
+// 23/10: nguyên liệu sống mà tên hiện là món đã nấu ("ức gà" → "Ức gà áp chảo") — ghi thẳng số ĐÃ NẤU vào kho
+// để mọi chỗ đọc LOCAL_FOODS trực tiếp (thực đơn AI, tự lên thực đơn, gợi ý món, chặn gram…) cùng 1 số với Ghi bữa.
+// Số sống giữ ở .raw (công thức món, ghép cách nấu khác vẫn tính từ số sống).
+{
+  for (const k of Object.keys(LOCAL_FOODS)) {
+    const v = LOCAL_FOODS[k];
+    const m = displayMethod(k);
+    if (!m) continue;
+    const c = cookPer100(v, k, m);
+    if (!c) continue;
+    v.raw = { p: v.p, c: v.c, f: v.f, cal: v.cal, fiber: v.fiber || 0 };
+    Object.assign(v, { p: +c.p.toFixed(1), c: +c.c.toFixed(1), f: +c.f.toFixed(1), fiber: +c.fiber.toFixed(1), cal: Math.round(c.cal), form: "cooked", cooked_as: m });
+  }
 }

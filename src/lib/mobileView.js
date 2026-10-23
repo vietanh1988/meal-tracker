@@ -207,6 +207,8 @@ export function searchFoods(query, foodCache, limit = 20) {
   }
   // 23/10: nguyên liệu + cách nấu chưa có sẵn món ("thịt heo rim", "cá quả kho tộ", "gà rang gừng") → ghép từ nguyên liệu trong kho
   const combos = methodCombos(query, qf, out);
+  // Gõ đúng tên 1 nguyên liệu ("thịt heo", "cá lóc", "rau muống") → gợi thêm các cách nấu hay gặp ở cuối danh sách
+  if (!combos.length) combos.push(...methodSuggestions(qf, out));
   for (const name of Object.keys(foodCache || {})) {
     if (seen.has(name)) continue;
     const s = score(form(name));
@@ -254,6 +256,34 @@ function methodCombos(query, qf, found) {
   if (!bases.length && !exact) for (const it of idx) if (it.raw && fld(it).startsWith(baseQ + " ") && bases.length < 3) add(it.key);
   return bases.slice(0, 4).map((b, i) => (b ? { key: `${b} ${m.name}`, s: exact ? 1.5 + i * 0.01 : 0.5 + i * 0.01, len: b.length, src: "combo", base: b, method: m.name } : null)).filter(Boolean);
 }
+// Cách nấu hay gặp theo nhóm nguyên liệu (thứ tự = thứ tự gợi ý)
+const COMMON_METHODS = {
+  meat: ["luộc", "kho", "rim", "xào", "rang", "nướng", "chiên", "hấp"],
+  fish: ["kho", "chiên", "hấp", "nướng", "sốt cà", "kho tộ"],
+  shell: ["hấp", "luộc", "rang", "xào", "rim", "nướng"],
+  egg: ["luộc", "chiên", "hấp"],
+  veg: ["luộc", "xào", "xào tỏi"],
+  tofu: ["chiên", "sốt cà", "hấp", "kho"],
+};
+const SHELL_RE = /^(tôm|tép|mực|bạch tuộc|cua|ghẹ|ngao|nghêu|sò|ốc|hến|hàu|trai)/;
+function methodSuggestions(qf, found) {
+  const idx = localIndex();
+  const fld = (it) => (qf.plain ? it.plainC : it.canon);
+  const hit = idx.find((it) => fld(it) === qf.text && (LOCAL_FOODS[it.key]?.form === "raw" || LOCAL_FOODS[it.key]?.raw || it.key === "đậu phụ"));
+  if (!hit) return [];
+  const v = LOCAL_FOODS[hit.key];
+  const grp = hit.key === "đậu phụ" ? "tofu" : ["poultry", "beef", "pork"].includes(v.cat) ? "meat" : v.cat === "seafood" ? (SHELL_RE.test(hit.key) ? "shell" : "fish") : v.cat === "egg_dairy" && /^trứng/.test(hit.key) ? "egg" : v.cat === "veg" ? "veg" : null;
+  if (!grp) return [];
+  const have = new Set(found.map((x) => canonFood(x.key)));
+  const out = [];
+  for (const m of COMMON_METHODS[grp]) {
+    const c = `${canonFood(hit.key)} ${canonFood(m)}`;
+    if (have.has(c) || (v.cooked_as && v.cooked_as === m)) continue;
+    out.push({ key: `${hit.key} ${m}`, s: 6 + out.length * 0.01, len: hit.key.length, src: "combo", base: hit.key, method: m });
+  }
+  return out;
+}
+
 function comboItem(base, method) {
   const name = `${base} ${method}`;
   const p = defaultPortion(base);

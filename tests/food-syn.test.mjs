@@ -28,9 +28,10 @@ test("23/10 các tên cùng món dùng chung 1 bộ số", () => {
 });
 
 test("23/10 số nguyên liệu theo Bảng thành phần thực phẩm VN 2007 (Viện Dinh dưỡng)", () => {
-  assert.deepEqual([LOCAL_FOODS["trứng gà"].cal, LOCAL_FOODS["trứng gà"].p], [166, 14.8]); // 9001
-  assert.deepEqual([LOCAL_FOODS["thịt lợn nạc"].cal, LOCAL_FOODS["thịt lợn nạc"].p], [139, 19]); // 7017
-  assert.equal(LOCAL_FOODS["ba chỉ"].cal, 260); // 7018 nửa nạc nửa mỡ (trước: 518 theo ba chỉ Mỹ)
+  const raw = (k) => LOCAL_FOODS[k].raw || LOCAL_FOODS[k]; // nguyên liệu hiện tên đã nấu: số sống giữ ở .raw
+  assert.deepEqual([raw("trứng gà").cal, raw("trứng gà").p], [166, 14.8]); // 9001
+  assert.deepEqual([raw("thịt lợn nạc").cal, raw("thịt lợn nạc").p], [139, 19]); // 7017
+  assert.equal(raw("ba chỉ").cal, 260); // 7018 nửa nạc nửa mỡ (trước: 518 theo ba chỉ Mỹ)
   assert.equal(LOCAL_FOODS["bánh phở"].cal, 143); // 1013
   assert.equal(LOCAL_FOODS["ba chỉ"].ref, "vdd:7018");
 });
@@ -54,4 +55,17 @@ test("23/10 tên hiện là món đã nấu thì số là món đã nấu (ức 
   assert.ok(r.protein > 28, `ức gà áp chảo phải ~30 g đạm / 100 g (đang ${r.protein})`);
   assert.equal(canonFood("lườn gà"), canonFood("ức gà"));
   assert.equal(canonKeyOf("thit ga"), "thịt gà");
+});
+
+test("23/10 thực đơn (đọc LOCAL_FOODS thẳng) và Ghi bữa (lookupLocalFood) ra cùng 1 số", () => {
+  for (const k of ["ức gà", "thịt heo", "ba chỉ", "cá basa", "trứng gà", "rau muống"]) {
+    const r = lookupLocalFood(k, 100);
+    assert.equal(LOCAL_FOODS[k].cal, r.cal, k);
+  }
+  assert.ok(lookupLocalFood("ức gà nướng", 100).cal < 200, "ghép cách nấu khác tính từ số sống, không nấu chồng");
+});
+
+test("23/10 gõ tên nguyên liệu → gợi thêm cách nấu", () => {
+  const r = searchFoods("cá lóc", {}, 30).map((x) => x.display.toLowerCase());
+  assert.ok(r.some((d) => d.includes("chiên")) && r.some((d) => d.includes("hấp")), r.join(", "));
 });
