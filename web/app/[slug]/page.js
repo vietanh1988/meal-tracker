@@ -15,6 +15,7 @@ import { getPostBySlug, latestPosts, postsByIds, catOf, fmtDate, readMin } from 
 import { prepare, toc as mkToc, faqs } from "@/lib/blocks";
 import { linkTargets, autoLink } from "@/lib/autolink";
 import { splitLong } from "@/lib/paras";
+import { fixSources } from "@/lib/sources";
 import { textOf } from "@/lib/sanitize";
 import { orgGraph, articleGraph, breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
@@ -56,6 +57,7 @@ export default async function Page({ params }) {
   if (!p) notFound();
   const s = await getSettings();
   let blocks = await prepare(p.blocks);
+  if (p.kind === "post") blocks = fixSources(blocks); // 23/10: "Nguồn tham khảo" chỉ giữ / thêm đúng tổ chức được trích trong bài
   if (p.kind === "post") blocks = splitLong(blocks); // 23/10: đoạn dài quá 55 chữ chia thành đoạn 2-3 câu cho dễ đọc trên điện thoại
   if (p.kind === "post" && !p.seo?.no_autolink) blocks = autoLink(blocks, await linkTargets(), `/${p.slug}`); // 23/10: link nội bộ tự gắn khi bài đích đã lên
   // Trang Điều khoản / Chính sách (139w): đánh số mục "1. 2. …" nếu chưa gõ số
