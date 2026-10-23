@@ -60,7 +60,9 @@ def raised_arm(a):
     skin = (a[..., 3] > 128) & blue_mask(a[..., :3])
     for side, zone in (("trai", arm_l), ("phai", arm_r)):
         if ((a[..., 3] > 128) & zone).sum() < 0.25 * zone.sum(): continue
-        if (skin & zone).sum() < 0.3 * zone.sum() and (skin & ~zone & ~solid).sum() > 800 * K * K: return side
+        # 23/10 (bộ sạch + pi_fix_53): món tay đã vẽ khớp lên tay gốc → ẩn tay gốc lại lộ lỗ / mất tay (soát mắt 25 món: không ẩn đẹp hơn).
+        # Chỉ ẩn khi món vẽ phủ gần kín vùng tay gốc (≥ 85%) và có cánh tay mới bên ngoài thân.
+        if ((a[..., 3] > 128) & zone).sum() >= 0.85 * zone.sum() and (skin & zone).sum() < 0.3 * zone.sum() and (skin & ~zone & ~solid).sum() > 800 * K * K: return side
     return None
 
 for side, zone in (("trai", arm_l), ("phai", arm_r)):
@@ -93,7 +95,8 @@ for it in cat["items"]:
     total += put(f"icon/{iid}.webp", im=sq.resize((ICON_PX, ICON_PX), Image.LANCZOS))
     row = {"id": iid, "ev": it["ev"], "g": it["g"], "slot": it["slot"], "name": it["name"], "file": it["file"]}
     if it["slot"] in ("tay", "gang"):
-        side = raised_arm(np.asarray(im))
+        # 23/10: TẮT ẩn tay gốc — soát mắt 25 món của bộ sạch: món tay vẽ khớp tay gốc, ẩn đi chỉ lộ lỗ / mất tay. Giữ hàm để dùng lại nếu bộ sau vẽ tay giơ lên thật.
+        side = raised_arm(np.asarray(im)) if os.environ.get("PI_HIDE_ARM") else None
         if side: row["arm"] = side
     items.append(row)
 

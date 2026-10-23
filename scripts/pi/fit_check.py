@@ -5,7 +5,8 @@
 Đo trên khung 768 (chân Pi y=720), thân public/pi/body/pi_than.webp, mặt public/pi/faces/<bản>/vui.webp:
   - cắt phẳng: mép thẳng đứng ≥ 40px ở đồ cầm tay (mép mảng thân dán kèm / vật bị cắt), ≥ 95px ở món khác
   - mảng thân dán kèm: da xanh của Pi nằm trong ảnh món ngoài chỗ được phép (đầu / bụng) ≥ 2500px
-  - đội đầu: lệch tâm ngang · mũ không ôm đầu (viền đầu phía trên vành mũ lộ xanh > 55%)
+  - đội đầu: lệch tâm ngang · mũ không ôm đầu (viền đầu phía trên vành mũ che < 10%; 23/10 hạ từ 45%: mũ nhỏ đội đỉnh đầu kiểu chibi là đúng, soát mắt 8 món đã vẽ lại)
+  - đồ cầm tay: mảng trắng tinh phẳng ≥ 100px đè lên thân (chỗ cắt bàn tay để sót)
   - kính / mặt nạ: không ôm 2 mắt · lệch tâm
   - cổ: không nằm ở vùng cổ · giày: đáy giày cách chân > 14px, cắt phẳng ≥ 60px
   - đeo lưng / áo: viền thân thừa (nét mảnh bám ngoài bóng thân) > 450px
@@ -97,6 +98,11 @@ def check(it):
         arm = cv2.dilate(arm.astype(np.uint8), np.ones((11, 11), np.uint8)) > 0
         c = int((skin & ~arm).sum())
         if c > 2500: out.append(f"dán kèm mảng thân {c}px")
+        # 23/10 (soát bộ pi_fix_53): Muse cắt chỗ bàn tay rồi để lại mảng TRẮNG TINH phẳng đè lên thân cạnh tay
+        wt = (a[..., 3] > 200) & (s == "tay") & (a[..., :3].min(-1) >= 253)
+        n, lab, st, _ = cv2.connectedComponentsWithStats(wt.astype(np.uint8), 8)
+        wp = [int(st[k, 4]) for k in range(1, n) if st[k, 4] >= 100 and solid[lab == k].mean() > 0.5]
+        if wp: out.append(f"mảng trắng thừa cạnh tay {max(wp)}px")
     if s in ("dau",):
         if abs(cx - CX) > 0.05 * HW * 1.2 and (x1 - x0) > 0.5 * HW: out.append(f"lệch tâm {cx - CX:+.0f}px")
         # mũ / băng đô: so với vùng đầu (thân trừ lá) phía trên vành (hàng thấp nhất món còn che cột giữa).
@@ -108,7 +114,7 @@ def check(it):
             ring = R & ~HEAD_IN
             cov = (al & R).sum() / max(1, R.sum()); ec = (al & ring).sum() / max(1, ring.sum())
             band_type = re.search(r"^(vương miện|băng đô|vòng|kẹp|cài|nơ|dây)", it["name"], re.I)  # đeo quanh / trên đầu, không trùm
-            if cov > 0.3 and ec < 0.45 and not band_type: out.append(f"mũ không ôm đầu (che viền đầu {ec:.0%})")
+            if cov > 0.3 and ec < 0.10 and not band_type: out.append(f"mũ không ôm đầu (che viền đầu {ec:.0%})")
     if s == "mat":
         ok = all(x0 - 4 <= ex <= x1 + 4 and y0 - 4 <= ey <= y1 + 4 for ex, ey in EYES[it["g"]])
         if not ok: out.append("không ôm 2 mắt")

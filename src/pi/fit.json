@@ -27,167 +27,95 @@
   }
  },
  "bad": {
-  "giangsinh-nam-dau01": [
-   "mũ không ôm đầu (che viền đầu 30%)"
-  ],
-  "giangsinh-nam-dau03": [
-   "mũ không ôm đầu (che viền đầu 29%)"
-  ],
-  "giangsinh-nam-dau04": [
-   "mũ không ôm đầu (che viền đầu 12%)"
-  ],
-  "giangsinh-nam-pk06": [
-   "cắt phẳng 49px"
-  ],
-  "giangsinh-nam-pk12": [
-   "viền thân thừa quanh người 472px"
+  "giangsinh-nu-pk07": [
+   "mảng trắng thừa cạnh tay 161px"
   ],
   "giangsinh-nu-pk09": [
-   "cắt phẳng 63px"
-  ],
-  "tet-nam-pk02": [
-   "lệch tâm +32px"
-  ],
-  "tet-nam-pk05": [
-   "cắt phẳng 154px"
-  ],
-  "tet-nam-pk06": [
-   "cắt phẳng 51px",
-   "dán kèm mảng thân 2540px"
+   "mảng trắng thừa cạnh tay 350px"
   ],
   "tet-nam-pk08": [
    "cắt phẳng 69px"
   ],
   "tet-nam-pk09": [
-   "cắt phẳng 109px"
+   "mảng trắng thừa cạnh tay 173px"
   ],
-  "tet-nam-pk10": [
-   "cắt phẳng 52px"
-  ],
-  "tet-nam-pk11": [
-   "viền thân thừa quanh người 657px"
-  ],
-  "tet-nu-pk06": [
-   "cắt phẳng 46px"
-  ],
-  "tet-nu-pk10": [
-   "cắt phẳng 170px"
-  ],
-  "tet-nu-giay02": [
-   "cắt phẳng 70px"
+  "tet-nu-pk05": [
+   "mảng trắng thừa cạnh tay 232px"
   ],
   "muadong-nam-ao01": [
-   "viền thân thừa quanh người 479px"
+   "viền thân thừa quanh người 941px"
   ],
-  "muadong-nam-ao03": [
-   "viền thân thừa quanh người 627px"
+  "muadong-nam-pk07": [
+   "mảng trắng thừa cạnh tay 318px"
   ],
-  "muadong-nam-dau01": [
-   "mũ không ôm đầu (che viền đầu 22%)"
+  "muadong-nam-pk08": [
+   "mảng trắng thừa cạnh tay 100px"
   ],
-  "muadong-nam-pk09": [
-   "cắt phẳng 166px"
-  ],
-  "muadong-nu-dau04": [
-   "mũ không ôm đầu (che viền đầu 45%)"
-  ],
-  "muadong-nu-pk07": [
-   "cắt phẳng 207px"
+  "muadong-nu-pk08": [
+   "mảng trắng thừa cạnh tay 675px"
   ],
   "muadong-nu-pk09": [
-   "cắt phẳng 116px"
+   "mảng trắng thừa cạnh tay 871px"
   ],
   "muadong-nu-pk10": [
-   "cắt phẳng 60px"
+   "mảng trắng thừa cạnh tay 528px"
   ],
-  "muadong-nu-pk11": [
-   "viền thân thừa quanh người 532px"
+  "muahe-nam-pk06": [
+   "mảng trắng thừa cạnh tay 235px"
   ],
   "muahe-nam-pk08": [
-   "cắt phẳng 104px"
+   "mảng trắng thừa cạnh tay 1197px"
+  ],
+  "muahe-nam-pk09": [
+   "mảng trắng thừa cạnh tay 564px"
   ],
   "muahe-nam-pk12": [
-   "viền thân thừa quanh người 685px"
-  ],
-  "muahe-nu-dau04": [
-   "mũ không ôm đầu (che viền đầu 38%)"
+   "viền thân thừa quanh người 661px"
   ],
   "muahe-nu-pk05": [
    "cắt phẳng 42px"
   ],
   "muahe-nu-pk07": [
-   "cắt phẳng 110px"
+   "mảng trắng thừa cạnh tay 662px"
   ],
   "muahe-nu-pk08": [
-   "cắt phẳng 106px"
+   "mảng trắng thừa cạnh tay 4464px"
   ],
-  "muahe-nu-pk10": [
-   "cắt phẳng 153px"
+  "muahe-nu-pk09": [
+   "mảng trắng thừa cạnh tay 426px"
   ],
-  "muahe-nu-pk12": [
-   "cắt phẳng 42px"
+  "halloween-nam-pk07": [
+   "mảng trắng thừa cạnh tay 664px"
   ],
-  "halloween-nam-ao01": [
-   "viền thân thừa quanh người 778px"
+  "halloween-nam-pk09": [
+   "mảng trắng thừa cạnh tay 886px"
   ],
-  "halloween-nam-ao04": [
-   "viền thân thừa quanh người 729px"
-  ],
-  "halloween-nam-dau01": [
-   "mũ không ôm đầu (che viền đầu 15%)"
-  ],
-  "halloween-nam-pk04": [
-   "lệch tâm +30px"
-  ],
-  "halloween-nam-pk12": [
-   "viền thân thừa quanh người 1080px"
-  ],
-  "halloween-nu-ao01": [
-   "viền thân thừa quanh người 1043px"
-  ],
-  "halloween-nu-ao03": [
-   "viền thân thừa quanh người 463px"
-  ],
-  "halloween-nu-ao04": [
-   "cắt phẳng 100px"
-  ],
-  "halloween-nu-dau01": [
-   "mũ không ôm đầu (che viền đầu 16%)"
-  ],
-  "halloween-nu-pk06": [
-   "cắt phẳng 46px",
-   "dán kèm mảng thân 2635px"
+  "halloween-nu-pk05": [
+   "mảng trắng thừa cạnh tay 147px"
   ],
   "halloween-nu-pk09": [
-   "cắt phẳng 109px"
+   "mảng trắng thừa cạnh tay 1080px"
   ],
-  "halloween-nu-pk10": [
-   "cắt phẳng 123px"
+  "trungthu-nam-pk04": [
+   "mảng trắng thừa cạnh tay 329px"
   ],
-  "trungthu-nam-dau04": [
-   "mũ không ôm đầu (che viền đầu 33%)"
+  "trungthu-nam-pk05": [
+   "mảng trắng thừa cạnh tay 262px"
   ],
-  "trungthu-nam-pk03": [
-   "cắt phẳng 73px",
-   "dán kèm mảng thân 2563px"
+  "trungthu-nam-pk07": [
+   "mảng trắng thừa cạnh tay 3802px"
   ],
-  "trungthu-nam-pk06": [
-   "cắt phẳng 75px"
-  ],
-  "trungthu-nam-pk11": [
-   "viền thân thừa quanh người 575px"
-  ],
-  "trungthu-nam-pk12": [
-   "viền thân thừa quanh người 642px"
-  ],
-  "trungthu-nu-pk03": [
-   "cắt phẳng 127px"
+  "trungthu-nu-pk02": [
+   "mảng trắng thừa cạnh tay 216px"
   ],
   "trungthu-nu-pk04": [
-   "cắt phẳng 185px"
+   "mảng trắng thừa cạnh tay 168px"
   ],
   "trungthu-nu-pk05": [
-   "cắt phẳng 110px"
+   "mảng trắng thừa cạnh tay 1162px"
+  ],
+  "trungthu-nu-pk06": [
+   "mảng trắng thừa cạnh tay 260px"
   ]
  }
 }
