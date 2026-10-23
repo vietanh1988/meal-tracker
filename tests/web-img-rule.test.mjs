@@ -5,13 +5,14 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 const lib = readFileSync("src/pc/web/webLib.js", "utf8");
 const writer = readFileSync("supabase/functions/web-writer/writer.js", "utf8");
-test("IMG_RULE: ảnh thường rộng ≤ 1200, ≤ 150 KB; bản nhỏ 400/800 ≤ 40/90 KB", () => {
-  assert.match(lib, /IMG_RULE = \{ maxW: 1200, maxH: 1600, maxKB: 150, small: \{ 400: 40, 800: 90 \}/);
+test("23/10 IMG_RULE: ảnh trong bài rộng ≤ 800, WebP ≤ 90 KB; bản nhỏ 400 ≤ 40 KB", () => {
+  assert.match(lib, /IMG_RULE = \{ maxW: 800, maxH: 1600, maxKB: 90, small: \{ 400: 40 \}/);
 });
-test("viết bài AI nén ảnh theo cùng luật", () => {
-  assert.match(writer, /img\.width > 1200/);
-  assert.match(writer, /fit\(img, 150\)/);
-  assert.match(writer, /\[\[400, 40\], \[800, 90\]\]/);
+test("23/10 viết bài AI nén ảnh theo cùng luật, lưu WebP (lỗi bộ mã thì JPEG)", () => {
+  assert.match(writer, /img\.width > 800/);
+  assert.match(writer, /fitW\(img, 90\)/);
+  assert.match(writer, /const rules = \[\[400, 40\]\]/);
+  assert.match(readFileSync("supabase/functions/web-writer/index.ts", "utf8"), /@jsquash\/webp/);
 });
 test("tải ảnh lên luôn qua toWebp có trần KB (không lưu ảnh gốc to)", () => {
   const api = readFileSync("src/pc/web/webApi.js", "utf8");

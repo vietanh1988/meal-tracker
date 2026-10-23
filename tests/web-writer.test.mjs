@@ -40,7 +40,7 @@ const ARTICLE = ["SEO Title: Bữa sáng giảm cân với món Việt dễ làm
   "**Bữa sáng giảm cân nên có đạm, rau và ít tinh bột tinh chế.** " + "Chữ ".repeat(120), "", "## Nên ăn gì?", "Trứng và bánh mì nguyên cám.", "", "[chèn ảnh ở đây: alt ảnh \"đĩa trứng luộc và bánh mì nguyên cám buổi sáng\"]", "", "## Bao nhiêu calo?", "Khoảng 350 đến 450 kcal.", "", "| Món | Calo |", "|---|---|", "| Phở gà | 400 |", "", "## Sai lầm hay gặp", "Bỏ bữa sáng.", "", "Ghi bữa sáng trên [Fipilot AI](/) và đọc thêm [thực đơn giảm cân](/chu-de/thuc-don) hoặc [mẹo giảm cân](/chu-de/giam-can).", "",
   "Image Prompts:", "1. A bowl of Vietnamese chicken pho with herbs", "2. Boiled eggs and whole wheat bread on a plate"].join("\n");
 
-function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "KHÔNG CÓ LỖI", relink = "KHÔNG CÓ" } = {}) {
+function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "KHÔNG CÓ LỖI", relink = "KHÔNG CÓ", Image: Img = null, webp = null } = {}) {
   const tables = {
     web_ai_config: [{ id: 1, data: { searches: 2, img_inline: 1, ...cfg } }],
     app_settings: [{ key: "claude_key", value: "sk-ant-test-xxxxxxxxxxxxxxxxxxxxxxxx" }, { key: "fal_key", value: "fal-test-xxxxxxxxxxxxxxxxxxxx" }],
@@ -73,8 +73,8 @@ function setup({ cfg = {}, media = [], text = ARTICLE, writes = null, review = "
     if (String(url).includes("fal.media")) return new Response(new Uint8Array([1, 2, 3]));
     throw new Error("fetch lạ " + url);
   };
-  const Image = { decode: async () => { throw new Error("không giải mã trong test"); } };
-  const w = makeWriter({ db: () => db, Image, fetch });
+  const Image = Img || { decode: async () => { throw new Error("không giải mã trong test"); } };
+  const w = makeWriter({ db: () => db, Image, fetch, webp });
   return { w, tables, calls, db };
 }
 
@@ -385,4 +385,19 @@ test("23/10 bộ viết bài: mục Nguồn tham khảo chỉ giữ tổ chức 
   const items = post.blocks.find((b) => b.type === "list" && b.items.join(" ").includes("http")).items.join(" ");
   assert.ok(items.includes("art-20046508") && !items.includes("fda.gov"), items);
   assert.equal(post.seo.src_v, 1);
+});
+
+test("23/10 ảnh AI lưu WebP rộng 800 + bản 400 (lỗi bộ mã WebP thì JPEG cùng cỡ)", async () => {
+  const fake = (w, h) => ({ width: w, height: h, bitmap: new Uint8ClampedArray(4), resize(nw) { const k = nw / this.width; this.width = nw; this.height = Math.round(this.height * k); return this; }, clone() { return fake(this.width, this.height); }, encodeJPEG: async () => new Uint8Array(1000) });
+  const Image = { decode: async () => fake(1536, 1024), RESIZE_AUTO: -1 };
+  const sizes = [];
+  const { w, tables, db } = setup({ Image, webp: async (_b, width) => { sizes.push(width); return new Uint8Array(2000); } });
+  for (let i = 0; i < 8 && tables.web_ai_jobs[0].status !== "done"; i++) await w.handle(req({ action: "tick", secret: "s3cret" }));
+  assert.match(tables.web_posts[0].cover_url, /-bia-[a-z0-9]+_800w\.webp$/);
+  assert.ok(db.uploads.some((p) => /_400w\.webp$/.test(p)));
+  assert.ok(sizes.includes(800) && sizes.includes(400) && !sizes.some((x) => x > 800));
+  const m = tables.web_media[0]; assert.equal(m.width, 800); assert.deepEqual(m.sizes, [400]);
+  const r = setup({ Image, webp: async () => { throw new Error("wasm"); } });
+  for (let i = 0; i < 8 && r.tables.web_ai_jobs[0].status !== "done"; i++) await r.w.handle(req({ action: "tick", secret: "s3cret" }));
+  assert.match(r.tables.web_posts[0].cover_url, /_800w\.jpg$/);
 });

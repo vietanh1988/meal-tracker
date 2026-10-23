@@ -160,7 +160,7 @@ export async function searchLinks(q) {
   return [...posts.map((p) => ({ icon: p.kind === "page" ? "📄" : "📝", t: p.title, url: `/${p.slug}` })), ...terms.map((t) => ({ icon: "📁", t: `Chuyên mục ${t.name}`, url: `/chu-de/${t.slug}` }))];
 }
 
-// Tải ảnh lên kho 'web': tự đổi WebP theo IMG_RULE (webLib) + bản nhỏ 400/800 (cho srcset), tên không dấu <ten>-<ma>_<rong>w.webp; ghi web_media
+// Tải ảnh lên kho 'web': tự đổi WebP theo IMG_RULE (webLib, 23/10: rộng 800) + bản nhỏ 400 (cho srcset), tên không dấu <ten>-<ma>_<rong>w.webp; ghi web_media
 // (ảnh cũ trước 21/10 còn bản 1200 — SIZES giữ để xoá đủ bản)
 export const SIZES = [400, 800, 1200];
 const SMALL = Object.keys(IMG_RULE.small).map(Number);

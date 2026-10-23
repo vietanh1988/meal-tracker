@@ -24,7 +24,11 @@ export default function Blocks({ blocks, s, toc, slug }) {
           case "img": return b.url ? <figure key={i}><img {...imgAttrs(b.url)} alt={b.alt || b.caption || ""} width={b.width} height={b.height} loading="lazy" decoding="async" />{b.caption && <figcaption>{b.caption}</figcaption>}</figure> : null;
           case "gallery": return <div key={i} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 10 }}>{(b.images || []).map((im, k) => <img key={k} src={im.url} alt={im.alt || im.caption || ""} loading="lazy" decoding="async" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12 }} />)}</div>;
           case "youtube": return /^[\w-]{6,20}$/.test(b.id || "") ? <div key={i} className="yt"><iframe src={`https://www.youtube-nocookie.com/embed/${b.id}`} title={b.title || "Video"} loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture" allowFullScreen /></div> : null;
-          case "info": return <figure key={i} className="info"><img src={b.src} alt={b.alt} width={b.width} height={b.height} loading="lazy" decoding="async" style={{ width: "100%", height: "auto", borderRadius: 14, border: "1px solid #E2E8F0" }} />{b.caption && <figcaption>{b.caption}</figcaption>}</figure>;
+          case "info": { // 23/10: infographic PNG → WebP 400 / 800 qua bộ tối ưu ảnh của Next (Vercel)
+            const o = (w) => `/_next/image?url=${encodeURIComponent(b.src)}&w=${w}&q=80`;
+            const hh = Math.round(((b.height || 800) * 800) / (b.width || 1200));
+            return <figure key={i} className="info"><img src={o(800)} srcSet={`${o(400)} 400w, ${o(800)} 800w`} sizes="(max-width: 720px) 100vw, 760px" alt={b.alt} width={800} height={hh} loading="lazy" decoding="async" style={{ width: "100%", height: "auto", borderRadius: 14, border: "1px solid #E2E8F0" }} />{b.caption && <figcaption>{b.caption}</figcaption>}</figure>;
+          }
           case "table": return (
             <div key={i} className="card" style={{ overflowX: "auto", padding: 0 }}>
               <table><thead><tr>{(b.head || []).map((h, k) => <th key={k}>{tidyText(h)}</th>)}</tr></thead><tbody>{(b.rows || []).map((r, k) => <tr key={k}>{r.map((c, j) => <H key={j} as="td" html={c} />)}</tr>)}</tbody></table>

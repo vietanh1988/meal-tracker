@@ -123,7 +123,8 @@ export function htmlToBlocks(html, parse) {
 //   ảnh thường (bài, bìa, thẻ…): rộng ≤ 1200 px, cao ≤ 1600 px, bản chính ≤ 150 KB; bản nhỏ 400 / 800 px ≤ 40 / 90 KB
 //   ảnh nền banner trang chủ (big): rộng ≤ 1920 px, ≤ 250 KB
 //   chất lượng WebP hạ dần 0,82 → 0,5 tới khi vừa; vẫn quá thì thu nhỏ 15% rồi thử lại
-export const IMG_RULE = { maxW: 1200, maxH: 1600, maxKB: 150, small: { 400: 40, 800: 90 }, big: { maxW: 1920, maxH: 1600, maxKB: 250 } };
+// 23/10 (chủ dự án): ảnh trong bài rộng 800 là đủ (cột bài ~760 px), WebP ≤ 90 KB + bản 400 ≤ 40 KB; ảnh lớn (banner) giữ "big"
+export const IMG_RULE = { maxW: 800, maxH: 1600, maxKB: 90, small: { 400: 40 }, big: { maxW: 1920, maxH: 1600, maxKB: 250 } };
 export async function toWebp(file, max = IMG_RULE.maxW, q = 0.82, { maxH = IMG_RULE.maxH, maxKB = IMG_RULE.maxKB } = {}) {
   const bmp = await createImageBitmap(file);
   let k = Math.min(1, max / bmp.width, maxH / bmp.height);

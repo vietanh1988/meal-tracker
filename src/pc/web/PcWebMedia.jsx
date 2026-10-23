@@ -1,5 +1,5 @@
 // Quản trị PC › WEB & BÀI VIẾT › Thư viện ảnh (bản vẽ 138e).
-// Ảnh tải lên tự nén WebP theo IMG_RULE (rộng ≤1200, ≤150 KB) + bản nhỏ 400/800 (web dùng srcset), tên không dấu; link ảnh trên tên miền fipilotai.com/anh/…
+// Ảnh tải lên tự nén WebP theo IMG_RULE (rộng ≤800, ≤90 KB) + bản nhỏ 400 (web dùng srcset), tên không dấu; link ảnh trên tên miền fipilotai.com/anh/…
 // Thông tin ảnh ở bảng web_media (mô tả alt, chú thích, gốc / sau nén, người tải). "Đang dùng ở" = quét bài, trang, trang calo, tác giả, cài đặt web.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../lib/supabase";

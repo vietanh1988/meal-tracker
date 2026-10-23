@@ -7,7 +7,7 @@ import {
 } from "./aiWrite.js";
 import { fixSources } from "./sources.js";
 
-export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
+export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "", webp = null }) {
 const ENV_CLAUDE = envClaude;
 
 const ORIGINS = ["https://app.fipilotai.com", "https://fipilotai.com", "https://www.fipilotai.com", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173"];
@@ -135,23 +135,34 @@ async function storeImage(admin, im, name, alt, uid, by) {
   const now = new Date(Date.now() + 7 * 3600e3); // giờ VN cho thư mục năm/tháng
   const base = `img/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${slugOf(name).slice(0, 60) || "anh-ai"}-${Date.now().toString(36).slice(-5)}`;
   const put = async (path, b, type) => { const { error } = await admin.storage.from("web").upload(path, b, { contentType: type, cacheControl: "31536000", upsert: false }); if (error) throw new Error("Lưu ảnh: " + error.message); };
-  // Đổi về JPEG theo LUẬT CỠ ẢNH WEB (src/pc/web/webLib.js IMG_RULE, 21/10): rộng ≤ 1200, cao ≤ 1600, bản chính ≤ 150 KB,
-  // bản nhỏ 400 / 800 ≤ 40 / 90 KB (tên _<rộng>w → web tự ghép srcset). Chất lượng hạ dần 82 → 50. Không giải mã được thì lưu nguyên ảnh.
-  const fit = async (img0, maxKB) => { for (let q = 82; q >= 50; q -= 8) { const b = await img0.encodeJPEG(q); if (b.length <= maxKB * 1024) return b; } return await img0.encodeJPEG(45); };
-  let main = null, w = null, h = null; const small = [];
+  // LUẬT CỠ ẢNH WEB (src/pc/web/webLib.js IMG_RULE, 23/10): rộng ≤ 800, cao ≤ 1600, WebP bản chính ≤ 90 KB, bản nhỏ 400 ≤ 40 KB
+  // (tên _<rộng>w → web tự ghép srcset). Chất lượng hạ dần 80 → 50. Bộ mã WebP (webp) do index.ts nạp; lỗi thì lưu JPEG cùng cỡ.
+  // Không giải mã được ảnh thì lưu nguyên ảnh.
+  const fitJ = async (img0, maxKB) => { for (let q = 82; q >= 50; q -= 8) { const b = await img0.encodeJPEG(q); if (b.length <= maxKB * 1024) return b; } return await img0.encodeJPEG(45); };
+  const fitW = async (img0, maxKB) => { let b = null; for (let q = 80; q >= 50; q -= 10) { b = new Uint8Array(await webp(img0.bitmap, img0.width, img0.height, q)); if (b.length <= maxKB * 1024) return b; } return b; };
+  let main = null, w = null, h = null, kind = "jpg"; const small = [];
   try {
     const img = await Image.decode(im.bytes);
-    const ow = img.width;
-    if (img.width > 1200) img.resize(1200, Image.RESIZE_AUTO);
+    if (img.width > 800) img.resize(800, Image.RESIZE_AUTO);
     if (img.height > 1600) img.resize(Image.RESIZE_AUTO, 1600);
     w = img.width; h = img.height;
-    main = /jpe?g/.test(im.mime) && ow === w && im.bytes.length <= 150 * 1024 ? im.bytes : await fit(img, 150); // JPEG gốc vừa cỡ, đủ nhẹ thì giữ nguyên
-    for (const [sw, kb] of [[400, 40], [800, 90]]) if (sw < w) small.push([sw, await fit(img.clone().resize(sw, Image.RESIZE_AUTO), kb)]);
+    const rules = [[400, 40]];
+    if (webp) {
+      try {
+        main = await fitW(img, 90); kind = "webp";
+        for (const [sw, kb] of rules) if (sw < w) small.push([sw, await fitW(img.clone().resize(sw, Image.RESIZE_AUTO), kb)]);
+      } catch (_e) { main = null; small.length = 0; kind = "jpg"; }
+    }
+    if (!main) {
+      main = await fitJ(img, 90);
+      for (const [sw, kb] of rules) if (sw < w) small.push([sw, await fitJ(img.clone().resize(sw, Image.RESIZE_AUTO), kb)]);
+    }
   } catch (_e) { main = null; small.length = 0; }
-  const ext = main ? "jpg" : (im.mime.split("/")[1] || "png").replace("jpeg", "jpg");
-  const path = main && small.length ? `${base}_${w}w.jpg` : `${base}.${ext}`;
-  await put(path, main || im.bytes, main ? "image/jpeg" : im.mime);
-  for (const [sw, b] of small) await put(`${base}_${sw}w.jpg`, b, "image/jpeg");
+  const type = kind === "webp" ? "image/webp" : "image/jpeg";
+  const ext = main ? kind : (im.mime.split("/")[1] || "png").replace("jpeg", "jpg");
+  const path = main && small.length ? `${base}_${w}w.${kind}` : `${base}.${ext}`;
+  await put(path, main || im.bytes, main ? type : im.mime);
+  for (const [sw, b] of small) await put(`${base}_${sw}w.${kind}`, b, type);
   const url = PUB + path.replace(/^img\//, "");
   await admin.from("web_media").insert({ path, url, name: path.split("/").pop(), alt: alt || null, width: w, height: h, size: (main || im.bytes).length, sizes: small.map((x) => x[0]), orig_name: `AI vẽ (${by})`, uploader: "AI viết bài", created_by: uid }).then(() => {}, () => {});
   return url;
