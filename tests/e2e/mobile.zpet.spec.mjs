@@ -35,7 +35,7 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await expect(page.getByTestId("pet-home")).toBeVisible();
     await expect(page.getByTestId("pet-today")).toContainText(`+${sum}`);
     await page.getByTestId("pet-tap").click(); // chạm Pi → nảy + cười tít
-    await expect(page.getByTestId("pet-tap").getByTestId("pet-avatar")).toHaveAttribute("data-mood", /^(cuoilon|nhaymat|haohung)$/); // 23/10: chạm → nhún + cười lớn / nháy mắt / hào hứng (ngẫu nhiên)
+    await expect(page.getByTestId("pet-tap").getByTestId("pet-avatar")).toHaveAttribute("data-mood", /^(cuoilon|nhaymat|haohung|ngacnhien)$/); // 23/10: chạm → nhún + cười lớn / nháy mắt / hào hứng (ngẫu nhiên); CI chạy sau 22h30 Pi đang ngủ → ngacnhien
 
     // tải lại: không cộng trùng
     await page.reload();
