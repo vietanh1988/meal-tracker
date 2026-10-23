@@ -10,7 +10,8 @@ export const revalidate = 60;
 export async function generateMetadata({ params }) {
   const t = await getTerm("tag", params.slug);
   if (!t) return {};
-  return withOg({ title: `Thẻ: ${t.name}`, robots: { index: t.seo?.index === true, follow: true }, alternates: alt(`/the/${t.slug}`) }, typeof s !== "undefined" ? s : undefined);
+  // 23/10: thẻ có SEO title / mô tả riêng (Quản trị › Chuyên mục & thẻ) thì dùng, không thì "Thẻ: tên"
+  return withOg({ title: t.seo?.title || `Thẻ: ${t.name}`, description: t.seo?.desc || t.description?.slice(0, 158) || undefined, robots: { index: t.seo?.index === true, follow: true }, alternates: alt(`/the/${t.slug}`) }, typeof s !== "undefined" ? s : undefined);
 }
 export default async function Tag({ params }) {
   const t = await getTerm("tag", params.slug);
