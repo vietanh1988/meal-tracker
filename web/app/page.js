@@ -102,8 +102,12 @@ export default async function Home() {
     <main className="home">
       <JsonLd data={ld(orgGraph(s), websiteGraph(s), schemaOn(s, "home") ? appGraph(s) : null, faqGraph(FAQ, s))} />
       <section className={`h-hero${order[0] === "calc" ? " h-hero-c" : ""}`} style={{ "--hbg": `url(${H.bg || "/img/home/hero-bg.webp"})`, "--hbgm": `url(${H.bg_m || H.bg || "/img/home/hero-bg-900.webp"})` }}>
+        {/* 23/10 PageSpeed điện thoại LCP 5 s: ảnh nền banner là nền CSS → trình duyệt chỉ thấy sau khi đọc CSS; báo tải sớm, mỗi cỡ màn 1 ảnh */}
+        <link rel="preload" as="image" href={H.bg_m || H.bg || "/img/home/hero-bg-900.webp"} media="(max-width: 720px)" fetchPriority="high" />
+        <link rel="preload" as="image" href={H.bg || "/img/home/hero-bg.webp"} media="(min-width: 721px)" fetchPriority="high" />
         <span className="h-bg" aria-hidden="true" />
-        <img className="dc lf1" src="/img/home/la-hung.webp" alt="" aria-hidden="true" width={120} height={98} /><img className="dc lf2" src="/img/home/chanh-xanh.webp" alt="" aria-hidden="true" width={92} height={92} />
+        {/* lá / chanh trang trí: tải sau, không tranh băng thông với ảnh chính (chanh ẩn trên điện thoại → không tải) */}
+        <img className="dc lf1" src="/img/home/la-hung.webp" alt="" aria-hidden="true" width={120} height={98} loading="lazy" decoding="async" fetchPriority="low" /><img className="dc lf2" src="/img/home/chanh-xanh.webp" alt="" aria-hidden="true" width={92} height={92} loading="lazy" decoding="async" fetchPriority="low" />
         <div className="wrap h-in">
           <div className="h-l">
             {H.badge && <span className="pill" style={{ alignSelf: "flex-start" }}>{H.badge}</span>}
