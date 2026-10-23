@@ -123,7 +123,7 @@ export default async function Home() {
         </div>
       </section>
       {order.map((id) => SEC[id])}
-      <Sticky s={s} ref_="home-sticky" />
+      <Sticky s={s} ref_="home-sticky" after=".h-btn" />
       <span className="h-end" />
     </main>
   );
