@@ -95,7 +95,7 @@ export function sourcesFromResearch(research = "") {
   for (const line of String(research || "").split("\n")) {
     const m = line.match(/nguồn:\s*([^|()]+?)\s*\|\s*(https?:\/\/[^\s)]+)/i) || line.match(/\(([^()|]{4,140}?)[\s,:-]*(https?:\/\/[^\s)]+)\)/);
     if (!m) continue;
-    const name = m[1].replace(/^\s*nguồn:\s*/i, "").trim().replace(/[,;:\s]+$/, ""), url = m[2].replace(/[.,;]+$/, "");
+    const name = m[1].replace(/^\s*nguồn:\s*/i, "").replace(/[,;]?\s*(trang|url|link)?\s*(đã|mới)\s*(đọc|mở|xem)[^,;]*$/i, "").trim().replace(/[,;:\s]+$/, ""), url = m[2].replace(/[.,;]+$/, "");
     let host = ""; try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { continue; }
     if (!SOURCE_OK.test(host) || seen.has(url) || !name) continue;
     seen.add(url); out.push({ name: name.slice(0, 160), url });
