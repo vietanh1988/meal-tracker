@@ -420,3 +420,15 @@ test("23/10 đổi ảnh cũ JPEG 1200 → WebP 800 + 400, thay link trong bài 
   assert.equal(tables.web_revisions.at(-1).snapshot.cover_url, old);
   assert.equal((await w.handle(req({ action: "convert_images", secret: "sai" }))).status, 403);
 });
+
+test("23/10 lần đổi ảnh bị ngắt giữa chừng (ảnh đã WebP, bài còn link JPEG) → lần sau vẫn thay link", async () => {
+  const { w, tables } = setup({ Image: { decode: async () => { throw new Error("x"); } }, webp: async () => new Uint8Array(10) });
+  tables.web_media = [{ path: "img/2026/10/a-abc_800w.webp", url: "https://fipilotai.com/anh/2026/10/a-abc_800w.webp", created_at: "1" }];
+  tables.web_posts = [{ id: "p1", cover_url: "https://fipilotai.com/anh/2026/10/a-abc_1200w.jpg", seo: {}, blocks: [{ type: "img", url: "https://fipilotai.com/anh/2026/10/a-abc_1200w.jpg" }, { type: "img", url: "https://fipilotai.com/anh/2026/10/khac_1200w.jpg" }] }];
+  const r = await (await w.handle(req({ action: "convert_images", secret: "s3cret" }))).json();
+  assert.equal(r.posts, 1);
+  const p = tables.web_posts[0];
+  assert.equal(p.cover_url, "https://fipilotai.com/anh/2026/10/a-abc_800w.webp");
+  assert.equal(p.blocks[0].url, "https://fipilotai.com/anh/2026/10/a-abc_800w.webp");
+  assert.equal(p.blocks[1].url, "https://fipilotai.com/anh/2026/10/khac_1200w.jpg"); // ảnh chưa đổi giữ nguyên
+});

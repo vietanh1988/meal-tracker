@@ -168,20 +168,17 @@ async function storeImage(admin, im, name, alt, uid, by) {
   return url;
 }
 
-// 23/10 (chủ dự án): đổi ảnh cũ JPEG 1200 sang chuẩn mới WebP 800 + 400, thay link trong bài / ảnh đại diện / Thư viện ảnh.
-// Không gọi AI. Giữ nguyên file JPEG cũ (khôi phục được). Mỗi lần gọi chạy tới ~90 giây; lỗi bộ mã WebP thì dừng, không đổi gì.
-async function convertImages(admin, { budget = 90_000, limit = 60 } = {}) {
+// 23/10 (chủ dự án): đổi ảnh cũ JPEG 1200 sang WebP 800 + 400, thay link trong bài / ảnh đại diện / ảnh chia sẻ.
+// Không gọi AI. Giữ nguyên file JPEG cũ (khôi phục được). Máy chủ hàm giới hạn CPU mỗi lần gọi → mỗi lần chỉ đổi vài ảnh,
+// lịch chạy gọi lặp. Bước 2 (thay link) tính lại từ mọi ảnh đã là WebP, nên lần gọi bị ngắt giữa chừng thì lần sau vẫn thay đủ.
+async function convertImages(admin, { limit = 3 } = {}) {
   if (!webp) return { error: "Chưa có bộ mã WebP" };
-  const t0 = Date.now();
   const { data: rows, error: le } = await admin.from("web_media").select("path,url,alt,width,height,sizes").like("path", "%.jpg").order("created_at", { ascending: true }).limit(limit);
   if (le) return { error: "Đọc Thư viện ảnh: " + le.message }; // web_media không có cột id: khoá là path
-  if (!rows?.length) return { done: true, converted: 0, left: 0 };
-  const { data: posts } = await admin.from("web_posts").select("id,blocks,cover_url,seo");
   const fitW = async (img0, maxKB) => { let b = null; for (let q = 80; q >= 50; q -= 10) { b = new Uint8Array(await webp(img0.bitmap, img0.width, img0.height, q)); if (b.length <= maxKB * 1024) return b; } return b; };
   const put = async (path, b) => { const { error } = await admin.storage.from("web").upload(path, b, { contentType: "image/webp", cacheControl: "31536000", upsert: true }); if (error) throw new Error("Lưu ảnh: " + error.message); };
-  const touched = new Map(); let converted = 0; const fails = [];
-  for (const m of rows) {
-    if (Date.now() - t0 > budget) break;
+  let converted = 0; const fails = [];
+  for (const m of rows || []) {
     try {
       const { data: blob, error } = await admin.storage.from("web").download(m.path);
       if (error || !blob) throw new Error("Tải ảnh: " + (error?.message || "trống"));
@@ -195,29 +192,31 @@ async function convertImages(admin, { budget = 90_000, limit = 60 } = {}) {
       const sizes = [];
       if (img.width > 400) { await put(`${base}_400w.webp`, await fitW(img.clone().resize(400, Image.RESIZE_AUTO), 40)); sizes.push(400); }
       const url = PUB + path.replace(/^img\//, "");
-      // thay link: ảnh đại diện, ảnh chia sẻ, khối ảnh (so nguyên link cũ)
-      for (const p of posts || []) {
-        const s = JSON.stringify({ b: p.blocks, c: p.cover_url, o: p.seo?.og_image || null });
-        if (!s.includes(m.url)) continue;
-        if (!touched.has(p.id)) touched.set(p.id, { before: { blocks: p.blocks, cover_url: p.cover_url, seo: p.seo } });
-        p.blocks = JSON.parse(JSON.stringify(p.blocks || []).split(m.url).join(url));
-        if (p.cover_url === m.url) p.cover_url = url;
-        if (p.seo?.og_image === m.url) p.seo = { ...p.seo, og_image: url };
-        touched.get(p.id).after = p;
-      }
       const { error: me } = await admin.from("web_media").update({ path, url, name: path.split("/").pop(), width: img.width, height: img.height, size: main.length, sizes }).eq("path", m.path);
       if (me) throw new Error("Thư viện ảnh: " + me.message);
       converted++;
-    } catch (e) { fails.push(`${m.path}: ${String(e?.message || e).slice(0, 120)}`); if (/WebP|wasm|webp/i.test(String(e))) break; }
+    } catch (e) { fails.push(`${m.path}: ${String(e?.message || e).slice(0, 120)}`); break; }
   }
-  for (const [id, x] of touched) {
-    if (!x.after) continue;
-    await admin.from("web_revisions").insert({ post_id: id, snapshot: { id, ...x.before }, reason: "update", created_by: null }).then(() => {}, () => {});
-    const { error } = await admin.from("web_posts").update({ blocks: x.after.blocks, cover_url: x.after.cover_url, seo: x.after.seo }).eq("id", id);
-    if (error) fails.push(`bài ${id}: ${error.message}`);
+  // Bước 2: link JPEG cũ (…_1200w.jpg hoặc ….jpg) của ảnh đã là WebP → link WebP mới
+  const { data: done } = await admin.from("web_media").select("url").like("path", "%.webp");
+  const map = new Map();
+  for (const d of done || []) { const b = String(d.url).replace(/_\d{2,4}w\.webp$/, ""); if (b !== d.url) { map.set(`${b}_1200w.jpg`, d.url); map.set(`${b}.jpg`, d.url); } }
+  const { data: posts } = await admin.from("web_posts").select("id,blocks,cover_url,seo");
+  let fixedPosts = 0;
+  for (const p of posts || []) {
+    let s = JSON.stringify({ blocks: p.blocks, cover_url: p.cover_url, og: p.seo?.og_image ?? null });
+    if (!/\/anh\/[^"]+\.jpg/.test(s)) continue;
+    const before = s;
+    s = s.replace(/https:\/\/fipilotai\.com\/anh\/[^"\s]+?\.jpg/g, (u) => map.get(u) || u);
+    if (s === before) continue;
+    const x = JSON.parse(s);
+    await admin.from("web_revisions").insert({ post_id: p.id, snapshot: { id: p.id, blocks: p.blocks, cover_url: p.cover_url, seo: p.seo }, reason: "update", created_by: null }).then(() => {}, () => {});
+    const seo = x.og !== (p.seo?.og_image ?? null) ? { ...(p.seo || {}), og_image: x.og } : p.seo;
+    const { error } = await admin.from("web_posts").update({ blocks: x.blocks, cover_url: x.cover_url, seo }).eq("id", p.id);
+    if (error) fails.push(`bài ${p.id}: ${error.message}`); else fixedPosts++;
   }
   const { count } = await admin.from("web_media").select("path", { count: "exact", head: true }).like("path", "%.jpg");
-  return { converted, posts: touched.size, left: count ?? null, fails: fails.slice(0, 5) };
+  return { converted, posts: fixedPosts, left: count ?? null, fails: fails.slice(0, 5) };
 }
 
 // Báo Bing / Cốc Cốc link mới (bật ở Cài đặt SEO › IndexNow), giống nút Đăng trong trình soạn
