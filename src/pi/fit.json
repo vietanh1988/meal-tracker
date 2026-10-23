@@ -27,95 +27,20 @@
   }
  },
  "bad": {
-  "giangsinh-nu-pk07": [
-   "mảng trắng thừa cạnh tay 161px"
-  ],
-  "giangsinh-nu-pk09": [
-   "mảng trắng thừa cạnh tay 350px"
-  ],
-  "tet-nam-pk08": [
-   "cắt phẳng 69px"
-  ],
-  "tet-nam-pk09": [
-   "mảng trắng thừa cạnh tay 173px"
-  ],
-  "tet-nu-pk05": [
-   "mảng trắng thừa cạnh tay 232px"
-  ],
   "muadong-nam-ao01": [
-   "viền thân thừa quanh người 941px"
-  ],
-  "muadong-nam-pk07": [
-   "mảng trắng thừa cạnh tay 318px"
-  ],
-  "muadong-nam-pk08": [
-   "mảng trắng thừa cạnh tay 100px"
-  ],
-  "muadong-nu-pk08": [
-   "mảng trắng thừa cạnh tay 675px"
-  ],
-  "muadong-nu-pk09": [
-   "mảng trắng thừa cạnh tay 871px"
-  ],
-  "muadong-nu-pk10": [
-   "mảng trắng thừa cạnh tay 528px"
-  ],
-  "muahe-nam-pk06": [
-   "mảng trắng thừa cạnh tay 235px"
-  ],
-  "muahe-nam-pk08": [
-   "mảng trắng thừa cạnh tay 1197px"
-  ],
-  "muahe-nam-pk09": [
-   "mảng trắng thừa cạnh tay 564px"
+   "viền thân thừa quanh người 886px"
   ],
   "muahe-nam-pk12": [
-   "viền thân thừa quanh người 661px"
-  ],
-  "muahe-nu-pk05": [
-   "cắt phẳng 42px"
+   "viền thân thừa quanh người 1723px"
   ],
   "muahe-nu-pk07": [
-   "mảng trắng thừa cạnh tay 662px"
-  ],
-  "muahe-nu-pk08": [
-   "mảng trắng thừa cạnh tay 4464px"
-  ],
-  "muahe-nu-pk09": [
-   "mảng trắng thừa cạnh tay 426px"
-  ],
-  "halloween-nam-pk07": [
-   "mảng trắng thừa cạnh tay 664px"
-  ],
-  "halloween-nam-pk09": [
-   "mảng trắng thừa cạnh tay 886px"
-  ],
-  "halloween-nu-pk05": [
-   "mảng trắng thừa cạnh tay 147px"
-  ],
-  "halloween-nu-pk09": [
-   "mảng trắng thừa cạnh tay 1080px"
-  ],
-  "trungthu-nam-pk04": [
-   "mảng trắng thừa cạnh tay 329px"
-  ],
-  "trungthu-nam-pk05": [
-   "mảng trắng thừa cạnh tay 262px"
-  ],
-  "trungthu-nam-pk07": [
-   "mảng trắng thừa cạnh tay 3802px"
-  ],
-  "trungthu-nu-pk02": [
-   "mảng trắng thừa cạnh tay 216px"
+   "dán kèm mảng thân 2596px"
   ],
   "trungthu-nu-pk04": [
    "mảng trắng thừa cạnh tay 168px"
   ],
   "trungthu-nu-pk05": [
-   "mảng trắng thừa cạnh tay 1162px"
-  ],
-  "trungthu-nu-pk06": [
-   "mảng trắng thừa cạnh tay 260px"
+   "hình trăng trên quạt bị khoét thủng lộ nền"
   ]
  }
 }

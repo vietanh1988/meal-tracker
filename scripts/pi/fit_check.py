@@ -127,9 +127,13 @@ def check(it):
         if abs(y1 - FEET) > 14: out.append(f"đáy giày cách chân {y1 - FEET:+.0f}px")
     return out
 
+# 24/10 duyệt bằng mắt (bộ pi_fix_30): OK = báo nhầm (vật vốn có cạnh thẳng đứng); BAD = lỗi máy không bắt được
+EYE_OK = {"tet-nam-pk08": "cuộn thư dựng đứng", "muahe-nu-pk05": "ly thẳng thành"}
+EYE_BAD = {"trungthu-nu-pk05": "hình trăng trên quạt bị khoét thủng lộ nền"}
 res = {}
 for it in man["items"]:
-    r = check(it)
+    r = [] if it["id"] in EYE_OK else check(it)
+    if it["id"] in EYE_BAD: r = r + [EYE_BAD[it["id"]]]
     if r: res[it["id"]] = r
 geo = {"neck": neck, "head_top": HEAD_Y, "head_w": int(HW), "eyes": EYES}
 json.dump({"geo": {k: (v if k != "eyes" else {g: [[round(x), round(y)] for x, y in e] for g, e in v.items()}) for k, v in geo.items()}, "bad": res},
