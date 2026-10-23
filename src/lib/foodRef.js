@@ -193,4 +193,16 @@ export const VN_NEW = {
   "tương bần": [86, 4.3, 0.7, 15.7, 0, "13020", "sauce", "liquid"],
   "nước ép cà chua": [19, 0.8, 0.6, 2.6, 0.4, "14007", "drink", "liquid"],
   "sữa chua không đường": [61, 3.3, 3.7, 3.6, 0, "10004", "egg_dairy", "liquid"],
+  "cá": [100, 19.7, 2.3, 0, 0, "8024", "seafood", "raw"], // "cá" không nói loại → cá rô phi (cá nước ngọt phổ biến)
+  "thịt chó": [230, 18, 17.6, 0, 0, "7009", "beef", "raw"],
+  "ruốc": [369, 46.6, 20.3, 0, 0, "7074", "processed", "cooked"],
+  "chà bông": [369, 46.6, 20.3, 0, 0, "7074", "processed", "cooked"],
+  "chim cút": [192, 19.6, 12.1, 0, 0, "", "poultry", "raw"], // USDA FDC 172420 quail meat+skin raw (bảng VN không có)
+  "mắm ruốc": [73, 14.8, 1.5, 0, 0, "13011", "sauce", "liquid"],
+};
+
+// Sửa tay món / nước chấm có số sai rõ (không có trong bảng VN): [kcal, đạm, béo, tinh bột, xơ, lý do]
+export const FIX = {
+  "mỡ hành": [455, 0.7, 50, 2.2, 0.5, "hành lá + dầu ăn 1:1 (trước 100 kcal)"],
+  "nước mắm pha": [40, 1.5, 0, 8.5, 0, "nước mắm : đường : chanh : nước ≈ 1 : 1 : 1 : 4"],
 };

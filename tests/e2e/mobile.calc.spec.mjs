@@ -23,8 +23,8 @@ test("Kiểm tra calo: kho món + AI tính món lạ → ghi vào bữa tối", 
   await tap(page.getByTestId("log-tab-calc"));
   await page.getByTestId("calc-text").fill("1 tô phở bò, 2 quả trứng gà luộc");
   await tap(page.getByTestId("calc-run"));
-  // phở bò tô vừa 400 g = 340 kcal; 2 trứng 100 g = 155 kcal → 495, không gọi AI
-  await expect(page.getByTestId("calc-total")).toHaveAttribute("data-value", "495");
+  // phở bò tô vừa 400 g = 340 kcal; 2 trứng 100 g = 166 kcal (bảng Viện Dinh dưỡng, 23/10) → 506, không gọi AI
+  await expect(page.getByTestId("calc-total")).toHaveAttribute("data-value", "506");
   expect(aiCalls).toBe(0);
   // tăng trứng 2 → 3 quả: +77/78 kcal
   await tap(page.getByRole("button", { name: /^Tăng Trứng/ }));
@@ -141,12 +141,12 @@ test("Nút + giữa: menu 3 lựa chọn, gõ cả bữa ở ô tìm ra thẻ t�
     await expect(page.getByTestId("log-tab-hint")).toBeVisible();
     await search.fill("1 tô phở bò, 2 quả trứng gà luộc");
     await expect(page.getByTestId("log-smart")).toBeVisible();
-    await expect(page.getByTestId("log-smart-title")).toHaveAttribute("data-cal", "495");
-    await expect(page.getByTestId("log-smart-title")).toContainText("495 kcal cho 2 món");
+    await expect(page.getByTestId("log-smart-title")).toHaveAttribute("data-cal", "506");
+    await expect(page.getByTestId("log-smart-title")).toContainText("506 kcal cho 2 món");
     await expect(page.getByTestId("log-manual")).toHaveCount(0);
     await page.screenshot({ path: "shots/ghi-bua-the-tinh-calo.png" });
     await tap(page.getByTestId("log-smart"));
-    await expect(page.getByTestId("calc-total")).toHaveAttribute("data-value", "495");
+    await expect(page.getByTestId("calc-total")).toHaveAttribute("data-value", "506");
     expect(aiCalls).toBe(0);
     await expect(page.getByTestId("calc-save")).toHaveAttribute("data-primary", "1");
     await page.getByTestId("calc-close").click();

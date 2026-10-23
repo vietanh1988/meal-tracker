@@ -58,7 +58,7 @@ export const METHODS = {
 };
 
 // Từ cách nấu viết khác → tên chuẩn ở METHODS (đã qua bỏ dấu ở chỗ gọi nếu cần)
-export const METHOD_ALIAS = { "rán": "chiên", "rán giòn": "chiên giòn", "chiên bột": "tẩm bột chiên", "lăn bột chiên": "tẩm bột chiên", "luộc chín": "luộc", "kho tàu": "kho trứng", "kho mặn": "kho", "nướng than": "nướng", "nướng mọi": "nướng", "áp chảo bơ": "áp chảo", "hầm nhừ": "hầm", "xào lăn": "xào", "rang sả": "rang", "chưng": "hấp", "đồ": "hấp", "rim đường": "rim" };
+export const METHOD_ALIAS = { "rán": "chiên", "rán giòn": "chiên giòn", "chiên bột": "tẩm bột chiên", "lăn bột chiên": "tẩm bột chiên", "luộc chín": "luộc", "kho tàu": "kho trứng", "kho mặn": "kho", "nướng than": "nướng", "nướng mọi": "nướng", "áp chảo bơ": "áp chảo", "hầm nhừ": "hầm", "xào lăn": "xào", "rang sả": "rang", "chưng": "hấp", "đồ": "hấp", "rim đường": "rim", "rang cháy": "rang", "rang cháy cạnh": "rang", "ram": "rim", "ram mặn": "rim mặn", "thui": "nướng", "tái": "luộc", "chần": "luộc", "nhúng": "luộc" };
 
 const GROUP = { poultry: "meat", beef: "meat", pork: "meat", seafood: "fish", egg_dairy: "egg" };
 const SHELL = /^(tôm|tép|mực|bạch tuộc|cua|ghẹ|ngao|nghêu|sò|ốc|hến|hàu|trai|tôm hùm)/;

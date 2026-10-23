@@ -3,7 +3,7 @@
 import { MEAL_ORDER, MEAL_NAMES, mealKey, sumItems, eatenTotals, hasItems, mealLabel } from "./mealMath.js";
 import { mealTimesOf } from "./dayPlan.js";
 import { addDays, weekRange, weekdayOf, isGymDate, diffDays, fmtVN } from "./dateVN.js";
-import { LOCAL_FOODS, UNIT_MAP, lookupLocalFood, getFoodDisplay } from "./localFoodDB.js";
+import { LOCAL_FOODS, UNIT_MAP, lookupLocalFood, getFoodDisplay, baseCandidates } from "./localFoodDB.js";
 import { canonFood, canonPlain, queryForm } from "./foodSyn.js";
 import { findMethodAny, METHODS } from "./cookMethods.js";
 
@@ -242,10 +242,17 @@ function methodCombos(query, qf, found) {
   const idx = localIndex();
   const fld = (it) => (qf.plain ? it.plainC : it.canon);
   const bases = [], seenC = new Set(found.map((x) => canonFood(x.key)));
-  const add = (k) => { const c = canonFood(k); if (seenC.has(`${c} ${canonFood(m.name)}`) || bases.some((b) => canonFood(b) === c)) return; bases.push(k); };
-  for (const cand of [baseQ, qf.plain ? `thit ${baseQ}` : `thịt ${baseQ}`]) for (const it of idx) if (fld(it) === cand) add(it.key);
+  const add = (k) => {
+    const c = canonFood(k), combo = `${c} ${canonFood(m.name)}`;
+    // kho đã có đúng món đó (VD "thịt heo luộc") → đưa món đó lên đầu thay vì ghép
+    if (seenC.has(combo)) { for (const x of found) if (canonFood(x.key) === combo) x.s = Math.min(x.s, 0.4); bases.push(null); return; }
+    if (bases.some((b) => b && canonFood(b) === c)) return;
+    bases.push(k);
+  };
+  // "thịt" = thịt heo, "gà" = thịt gà, "cải" = rau cải… (baseCandidates); so theo đúng dạng chữ khách gõ
+  for (const cand of baseCandidates(baseQ).map((x) => (qf.plain ? canonPlain(x) : canonFood(x)))) for (const it of idx) if (fld(it) === cand) add(it.key);
   if (!bases.length && !exact) for (const it of idx) if (it.raw && fld(it).startsWith(baseQ + " ") && bases.length < 3) add(it.key);
-  return bases.slice(0, 4).map((b, i) => ({ key: `${b} ${m.name}`, s: exact ? 1.5 + i * 0.01 : 0.5 + i * 0.01, len: b.length, src: "combo", base: b, method: m.name }));
+  return bases.slice(0, 4).map((b, i) => (b ? { key: `${b} ${m.name}`, s: exact ? 1.5 + i * 0.01 : 0.5 + i * 0.01, len: b.length, src: "combo", base: b, method: m.name } : null)).filter(Boolean);
 }
 function comboItem(base, method) {
   const name = `${base} ${method}`;

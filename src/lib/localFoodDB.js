@@ -5,7 +5,8 @@
 
 import { cookPer100, findMethod, findMethodAny, METHODS } from "./cookMethods.js";
 import { canonFood, canonPlain, hasDiacritics } from "./foodSyn.js";
-import { VN_REF, VN_NEW } from "./foodRef.js";
+import { VN_REF, VN_NEW, FIX } from "./foodRef.js";
+import { DISHES, BROTH } from "./foodDishes.js";
 
 // Cooking modifiers — thay đổi macro khi chế biến (per 100g)
 // 23/10: cách nấu có trong cookMethods.METHODS (luộc, xào, kho, rim, chiên…) tính theo hệ số thành phẩm + dầu / đường
@@ -1724,11 +1725,12 @@ export const LOCAL_FOODS = {
 for (const [k, [cal, p, f, c, fiber, code, cat, form]] of Object.entries(VN_NEW)) {
   if (!LOCAL_FOODS[k]) LOCAL_FOODS[k] = { p, c, f, cal, fiber, form, cat, region: "vn", ...(code ? { ref: `vdd:${code}` } : {}) };
 }
+for (const [k, [cal, p, f, c, fiber, why]] of Object.entries(FIX)) { const v = LOCAL_FOODS[k]; if (v) Object.assign(v, { p, c, f, cal, fiber, ref: `fix:${why}` }); }
 for (const [k, [cal, p, f, c, fiber, code]] of Object.entries(VN_REF)) {
   const v = LOCAL_FOODS[k];
-  if (v) Object.assign(v, { p, c, f, cal, fiber, ref: `vdd:${code}` });
+  if (v) Object.assign(v, { p, c, f, cal, fiber, ref: `vdd:${code}` }, code === "1023" || code === "7059" ? { form: "cooked" } : {}); // ngô nếp luộc, tiết luộc: số trong bảng là đã nấu
 }
-{
+function unifySynonyms() {
   // Nhóm tên cùng món: mã có số Viện DD đứng đầu, không thì mã khai trước trong kho
   const groups = new Map();
   for (const k of Object.keys(LOCAL_FOODS)) { const c = canonFood(k); if (!groups.has(c)) groups.set(c, []); groups.get(c).push(k); }
@@ -1739,6 +1741,7 @@ for (const [k, [cal, p, f, c, fiber, code]] of Object.entries(VN_REF)) {
     for (const k of ks) if (k !== main) Object.assign(LOCAL_FOODS[k], { p: m.p, c: m.c, f: m.f, cal: m.cal, fiber: m.fiber, ...(m.ref ? { ref: m.ref } : {}), same_as: main });
   }
 }
+unifySynonyms();
 
 // 23/10: món "<nguyên liệu thịt / cá / trứng> + <cách nấu>" trong kho (gà luộc, cá lóc kho, thịt heo rim…) tính lại từ nguyên liệu
 // theo cookMethods — trước đây số ước tay nên cùng 1 món ra 2 số (thịt heo rim 190 kcal, thịt heo + rim tính ra gần gấp đôi).
@@ -1748,16 +1751,17 @@ for (const [k, [cal, p, f, c, fiber, code]] of Object.entries(VN_REF)) {
   const SKIP = new Set(["hầm", "nấu canh", "gỏi", "nộm", "trộn", "nấu", "tần"]);
   const STEW = new Set(["bò kho", "gà kho sả gừng nước"]); // bò kho kiểu Nam = món nước (ăn với bánh mì): số gồm cả nước kho
   for (const [k, v] of Object.entries(LOCAL_FOODS)) {
-    if (v.form === "raw" || v.ref || v.same_as || STEW.has(k)) continue;
+    if (v.form === "raw" || (v.ref && !v.same_as) || STEW.has(k)) continue;
     const m = findMethod(k);
     if (!m || !METHODS[m.name] || SKIP.has(m.name)) continue;
     const rest = ` ${k} `.replace(` ${m.word} `, " ").trim();
-    const b = [rest, `thịt ${rest}`].find((x) => x && x !== k && LOCAL_FOODS[x] && LOCAL_FOODS[x].form === "raw" && MEATY.has(LOCAL_FOODS[x].cat));
+    const b = baseCandidates(rest).find((x) => x && x !== k && LOCAL_FOODS[x] && LOCAL_FOODS[x].form === "raw" && MEATY.has(LOCAL_FOODS[x].cat));
     if (!b) continue;
     const c = cookPer100(LOCAL_FOODS[b], b, m.name);
     if (!c) continue;
     Object.assign(v, { p: +c.p.toFixed(1), c: +c.c.toFixed(1), f: +c.f.toFixed(1), fiber: +c.fiber.toFixed(1), cal: Math.round(c.cal), ref: `calc:${b}+${m.name}` });
   }
+  unifySynonyms();
 }
 
 export const UNIT_MAP = {
@@ -1911,6 +1915,14 @@ function buildCanon() {
 }
 // Mã trong kho cho 1 tên (tên khác / vùng miền / gõ không dấu); không chắc thì null
 function CANON_INDEX() { if (!_canon) buildCanon(); return { get: (c) => _canon.get(c) }; }
+// Nguyên liệu khi khách gọi tắt: "thịt" = thịt heo, "gà" = thịt gà, "cải" = rau cải, "sườn" = sườn heo
+export function baseCandidates(rest) {
+  const r = String(rest || "").trim();
+  if (!r) return [];
+  if (r === "thịt" || r === "thit") return ["thịt heo"];
+  if (r === "trứng" || r === "trung") return ["trứng gà"];
+  return [r, `thịt ${r}`, `thit ${r}`, `rau ${r}`, `${r} heo`];
+}
 export function canonKeyOf(name) {
   const l = String(name || "").toLowerCase().trim();
   if (!l) return null;
@@ -1940,7 +1952,7 @@ export function lookupLocalFood(nameVN, gram) {
   if (mm) {
     const rest = (hasDiacritics(lower) ? ` ${lower} `.replace(` ${mm.word} `, " ") : ` ${canonPlain(lower)} `.replace(` ${mm.plainWord} `, " ")).trim();
     // "gà rang gừng" → nguyên liệu "gà" = "thịt gà" (không để rơi xuống khớp "gừng")
-    const baseKey = [rest, `thịt ${rest}`, `thit ${rest}`].map((x) => canonKeyOf(x)).find(Boolean);
+    const baseKey = baseCandidates(rest).map((x) => canonKeyOf(x)).find(Boolean);
     if (baseKey) return scaleFood(LOCAL_FOODS[baseKey], baseKey, gram, mm.name);
   }
 
@@ -2696,4 +2708,29 @@ export const STANDALONE_DISHES = new Set([
 
 export function isStandaloneDish(foodKey) {
   return STANDALONE_DISHES.has((foodKey || "").toLowerCase().trim());
+}
+
+
+// ============================================================
+// 23/10: MÓN VIỆT BỔ SUNG (foodDishes.js) — tính số / 100 g từ công thức, nguyên liệu lấy từ kho (đã theo bảng Viện Dinh dưỡng)
+// ============================================================
+{
+  for (const [name, cat, units, parts] of DISHES) {
+    if (LOCAL_FOODS[name]) continue;
+    let g = 0, p = 0, c = 0, f = 0, cal = 0, fiber = 0, ok = true;
+    for (const [part, gram] of parts) {
+      g += gram;
+      if (part === "nước") continue;
+      if (part === "nước dùng") { p += BROTH.p * gram / 100; c += BROTH.c * gram / 100; f += BROTH.f * gram / 100; cal += BROTH.cal * gram / 100; continue; }
+      const r = lookupLocalFood(part, gram);
+      if (!r) { ok = false; break; }
+      p += r.protein; c += r.carb; f += r.fat; cal += r.cal; fiber += r.fiber;
+    }
+    if (!ok || !g) continue;
+    const k = 100 / g;
+    LOCAL_FOODS[name] = { p: +(p * k).toFixed(1), c: +(c * k).toFixed(1), f: +(f * k).toFixed(1), cal: Math.round(cal * k), fiber: +(fiber * k).toFixed(1), form: "composite", cat, region: "vn", ref: "recipe" };
+    if (units && !UNIT_MAP[name]) UNIT_MAP[name] = units.map(([n, gram]) => ({ name: n, gram }));
+  }
+  LOCAL_KEYS.length = 0; LOCAL_KEYS.push(...Object.keys(LOCAL_FOODS).sort((a, b) => b.length - a.length));
+  _canon = null;
 }
