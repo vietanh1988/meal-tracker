@@ -40,7 +40,8 @@ const room = (ev, i) => {
 export const PI_ITEMS = [...man.items.map(item), ...EV_ORDER.filter((e) => man.rooms[e]?.length).map(room)];
 
 export const bodyFile = (arm) => `${PI_BASE}body/pi_than${arm ? `_khong_tay_${arm}` : ""}.webp`;
-export const faceFile = (g, f) => `${PI_BASE}faces/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp`;
+export const headFile = `${PI_BASE}body/pi_dau.webp`; // lớp đầu gốc vẽ đè lên áo (giữ cằm), scripts/pi/build.py
+export const faceFile =(g, f) => `${PI_BASE}faces/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp`;
 
 /** giờ (0–23, giờ máy người dùng) → buổi của ảnh phòng: sáng 5–11, trưa 11–17, tối 17–5 */
 export const piRoomTime = (h) => (h >= 5 && h < 11 ? "sang" : h >= 11 && h < 17 ? "trua" : "toi");

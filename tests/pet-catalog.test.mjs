@@ -37,7 +37,14 @@ test("ô hợp lệ, mã không trùng, mỗi bản chỉ mặc đồ của bả
   assert.deepEqual(man.items.filter((it) => !slots.has(it.slot)).map((it) => it.id), []);
   assert.equal(new Set(man.items.map((it) => it.id)).size, man.items.length);
   assert.deepEqual(man.items.filter((it) => !["nam", "nu"].includes(it.g)).map((it) => it.id), []);
-  assert.deepEqual(man.order, ["lung", "than", "giay", "ao", "co", "mat_pi", "mat", "toc", "dau", "gang", "tay"]);
+  assert.deepEqual(man.order, ["lung", "than", "giay", "ao", "dau_pi", "co", "mat_pi", "mat", "toc", "dau", "gang", "tay"]);
+});
+
+test("23/10 mặc áo vẫn giữ cằm: lớp đầu gốc (pi_dau.webp, cùng khung 768) đè lên áo, dưới khăn cổ và mặt", () => {
+  assert.ok(existsSync(`${P}body/pi_dau.webp`));
+  assert.deepEqual(webpSize(`${P}body/pi_dau.webp`), [man.canvas, man.canvas]);
+  const o = man.order; assert.ok(o.indexOf("ao") < o.indexOf("dau_pi") && o.indexOf("dau_pi") < o.indexOf("co"));
+  assert.match(readFileSync("src/pi/PiPet.jsx", "utf8"), /L === "dau_pi"\) return eq\.ao \? img\(L, headFile\)/);
 });
 
 test("đồ cầm tay có cánh tay giơ lên → thân ẩn đúng 1 bên tay (không bị 2 tay)", () => {

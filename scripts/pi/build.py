@@ -68,6 +68,15 @@ for side, zone in (("trai", arm_l), ("phai", arm_r)):
     b2[zz & (yy > ARM_Y[0] + 8 * K), 3] = 0
     total += put(f"body/pi_than_khong_tay_{side}.webp", im=Image.fromarray(b2), q=86)
 
+# 23/10 (chủ dự án: "mặc áo vào lỗi, không có nọng cằm"): ảnh áo của Muse vẽ đè một mảng da lên phần dưới đầu → mất bóng cằm.
+# Sinh lớp "đầu" = thân gốc trong hình elip của đầu (đo trên thân: tâm 384,362 · bán trục 166 x 143 ở khung 768, đáy cằm y≈505),
+# vẽ ĐÈ lên áo (dưới khăn cổ / mặt) → cằm luôn là cằm gốc, cổ áo nằm dưới cằm. Không sửa ảnh món.
+HEAD_E = (512 * K, 483 * K, 221 * K, 191 * K)
+ell = (((xx - HEAD_E[0]) / HEAD_E[2]) ** 2 + ((yy - HEAD_E[1]) / HEAD_E[3]) ** 2 <= 1).astype(np.float32)
+ell = cv2.GaussianBlur(ell, (0, 0), 2)
+head = body.copy(); head[..., 3] = (body[..., 3] * ell).astype(np.uint8)
+total += put("body/pi_dau.webp", im=Image.fromarray(head), q=86)
+
 items = []
 for it in cat["items"]:
     s = os.path.join(SRC, it["file"])
@@ -101,7 +110,7 @@ man = {
     "v": 2, "canvas": N, "feet": cat.get("anchor_feet", [N / 2, N * 0.9375]), "bbox": bbox, "room": [ROOM_W, ROOM_W * 3 // 2],
     "events": {k: v["name"] for k, v in cat["events"].items()},
     "slots": cat["slots"],
-    "order": ["lung", "than", "giay", "ao", "co", "mat_pi", "mat", "toc", "dau", "gang", "tay"],
+    "order": ["lung", "than", "giay", "ao", "dau_pi", "co", "mat_pi", "mat", "toc", "dau", "gang", "tay"],
     "faces": cat["faces"]["list"], "rooms": rooms, "items": items,
 }
 os.makedirs(os.path.dirname(MAN), exist_ok=True)

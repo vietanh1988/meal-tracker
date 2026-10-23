@@ -3,7 +3,7 @@
 // Hiệu ứng: thở (scaleY ±1,2%, gốc ở chân) · mặc đồ: món rơi xuống nảy rồi Pi phản ứng (biểu cảm tự động, src/pi/piExpr.js) · chạm: Pi nhún.
 // Đồ cầm tay có vẽ cánh tay giơ lên (manifest arm) → dùng thân đã ẩn cánh tay gốc bên đó (không bị 2 tay). Ảnh tải sẵn để không nháy.
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PI_ITEMS, PI_MANIFEST, LAYER_ORDER, bodyFile, faceFile, preload, FACES } from "./piCatalog";
+import { PI_ITEMS, PI_MANIFEST, LAYER_ORDER, bodyFile, headFile, faceFile, preload, FACES } from "./piCatalog";
 import { equipReaction, tapReaction, idleBase, shownFace, canBlink, pi } from "./piExpr";
 export { pi };
 
@@ -62,7 +62,7 @@ export function PiPet({ gender = "nam", expression = "vui", equipped = {}, heigh
 
   // tải sẵn: thân, 9 mặt của bản này, đồ đang mặc
   useEffect(() => {
-    preload([bodyFile(null), ...FACES.map((f) => faceFile(g, f)), ...Object.values(eq).map((it) => it.file), ...Object.values(eq).filter((it) => it.arm).map((it) => bodyFile(it.arm))]);
+    preload([bodyFile(null), headFile, ...FACES.map((f) => faceFile(g, f)), ...Object.values(eq).map((it) => it.file), ...Object.values(eq).filter((it) => it.arm).map((it) => bodyFile(it.arm))]);
   }, [g, eq]);
 
   // mặc / tháo đồ → món rơi xuống + phản ứng
@@ -127,6 +127,7 @@ export function PiPet({ gender = "nam", expression = "vui", equipped = {}, heigh
       </span>;
   const layers = LAYER_ORDER.map((L) => {
     if (L === "than") return img(L, bodyFile(arm));
+    if (L === "dau_pi") return eq.ao ? img(L, headFile) : null; // đầu gốc đè lên áo → giữ cằm (ảnh áo hay vẽ đè mảng da lên cằm)
     if (L === "mat_pi") return faceLayer; // luôn hiện: trên áo / cổ, dưới kính / mũ
     const it = eq[L];
     return it ? img(L, it.file, drop === L ? "pi-drop" : undefined) : null;
