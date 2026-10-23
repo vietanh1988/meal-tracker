@@ -10,7 +10,8 @@ import { getSettings, getMenu, siteUrl, ogBase } from "@/lib/site";
 // Font y hệt app: thứ tự -apple-system, "system-ui", Inter, "Inter Fallback", "Segoe UI", Roboto, … (globals.css).
 // Máy Apple dùng San Francisco; Windows / Android dùng Inter — tải từ chính fipilotai.com (next/font, chỉ bộ chữ Việt + Latin,
 // 1 file biến thiên mọi độ đậm), không chờ Google Fonts nên chữ hiện ngay. Bỏ Roboto (đứng sau Inter, gần như không dùng tới).
-const inter = Inter({ subsets: ["latin", "vietnamese"], display: "swap", variable: "--font-inter" });
+// 23/10 PageSpeed: Android dùng system-ui (Roboto), Apple dùng San Francisco → chỉ Windows cần Inter. Bỏ preload để điện thoại không tải 58 KB phông không dùng.
+const inter = Inter({ subsets: ["latin", "vietnamese"], display: "swap", variable: "--font-inter", preload: false });
 
 export async function generateMetadata() {
   const s = await getSettings();

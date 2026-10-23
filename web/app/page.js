@@ -57,7 +57,7 @@ export default async function Home() {
     </Fragment>,
     feats: <Fragment key="feats">
       <section className="wrap h-sec">
-        <img className="dc lf5" src="/img/home/canh-hung.webp" alt="" aria-hidden="true" width={120} height={84} loading="lazy" /><img className="dc lf6" src="/img/home/ot.webp" alt="" aria-hidden="true" width={40} height={90} loading="lazy" />
+        <img className="dc lf5" src="/img/home/canh-hung.webp" srcSet="/img/home/canh-hung-160.webp 160w, /img/home/canh-hung.webp 240w" sizes="(max-width: 720px) 80px, 120px" alt="" aria-hidden="true" width={120} height={84} loading="lazy" /><img className="dc lf6" src="/img/home/ot.webp" alt="" aria-hidden="true" width={40} height={90} loading="lazy" />
         <div className="h-head"><span className="eye">{T.feats_eye}</span><h2 className="h2">{T.feats_title}</h2></div>
         <div className="h-feats">
           <div className="h-feat f1"><h3>{T.feat1_t}</h3><span className="fsub">{T.feat1_x}</span>
@@ -107,7 +107,7 @@ export default async function Home() {
         <link rel="preload" as="image" href={H.bg || "/img/home/hero-bg.webp"} media="(min-width: 721px)" fetchPriority="high" />
         <span className="h-bg" aria-hidden="true" />
         {/* lá / chanh trang trí: tải sau, không tranh băng thông với ảnh chính (chanh ẩn trên điện thoại → không tải) */}
-        <img className="dc lf1" src="/img/home/la-hung.webp" alt="" aria-hidden="true" width={120} height={98} loading="lazy" decoding="async" fetchPriority="low" /><img className="dc lf2" src="/img/home/chanh-xanh.webp" alt="" aria-hidden="true" width={92} height={92} loading="lazy" decoding="async" fetchPriority="low" />
+        <img className="dc lf1" src="/img/home/la-hung.webp" srcSet="/img/home/la-hung-140.webp 140w, /img/home/la-hung.webp 240w" sizes="(max-width: 720px) 70px, 120px" alt="" aria-hidden="true" width={120} height={98} loading="lazy" decoding="async" fetchPriority="low" /><img className="dc lf2" src="/img/home/chanh-xanh.webp" alt="" aria-hidden="true" width={92} height={92} loading="lazy" decoding="async" fetchPriority="low" />
         <div className="wrap h-in">
           <div className="h-l">
             {H.badge && <span className="pill" style={{ alignSelf: "flex-start" }}>{H.badge}</span>}
