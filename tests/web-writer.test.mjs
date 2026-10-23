@@ -25,7 +25,7 @@ function fakeDb(tables, rpcs) {
     const b = {
       select() { return b; }, insert(p) { op = "insert"; payload = p; return b; }, update(p) { op = "update"; payload = p; return b; },
       eq(c, v) { f.push((r) => r[c] === v); return b; }, in(c, v) { f.push((r) => v.includes(r[c])); return b; }, neq(c, v) { f.push((r) => r[c] !== v); return b; }, gte(c, v) { f.push((r) => r[c] >= v); return b; },
-      like(c, v) { const p = v.replace(/%$/, ""); f.push((r) => String(r[c]).startsWith(p)); return b; },
+      like(c, v) { if (/^%/.test(v) && !/%$/.test(v)) { const s = v.slice(1); f.push((r) => String(r[c]).endsWith(s)); return b; } const p = v.replace(/%$/, ""); f.push((r) => String(r[c]).startsWith(p)); return b; },
       order(c, o = {}) { ord = { c, asc: o.ascending !== false }; return b; }, limit(n) { lim = n; return b; },
       single() { single = true; return b; }, maybeSingle() { single = true; return b; },
       then(res, rej) { try { return Promise.resolve({ data: run(), error: null }).then(res, rej); } catch (e) { return Promise.reject(e).then(res, rej); } },
@@ -33,7 +33,7 @@ function fakeDb(tables, rpcs) {
     return b;
   };
   const uploads = [];
-  return { uploads, from: q, rpc: async (n, a) => ({ data: rpcs[n](a), error: null }), storage: { from: () => ({ upload: async (path) => { uploads.push(path); return { error: null }; } }) }, auth: { getUser: async () => ({ data: { user: { id: "u1" } } }) } };
+  return { uploads, from: q, rpc: async (n, a) => ({ data: rpcs[n](a), error: null }), storage: { from: () => ({ upload: async (path) => { uploads.push(path); return { error: null }; }, download: async () => ({ data: new Blob([new Uint8Array([1, 2, 3])]), error: null }) }) }, auth: { getUser: async () => ({ data: { user: { id: "u1" } } }) } };
 }
 
 const ARTICLE = ["SEO Title: Bữa sáng giảm cân với món Việt dễ làm mỗi ngày", "SEO Description: Gợi ý bữa sáng giảm cân với món Việt quen thuộc, đủ đạm và rau, kèm bảng calo ước tính để bạn chọn món nhanh mỗi sáng.", "Slug: bua-sang-giam-can", "Excerpt: Ăn sáng đủ đạm giúp no lâu.", "Thẻ: bữa sáng, Món Việt, #giảm cân", "Ảnh bìa: bát phở gà ít bánh nhiều rau cho bữa sáng giảm cân", "Full Article:", "Tiêu đề bài viết: Bữa sáng giảm cân với món Việt",
@@ -400,4 +400,23 @@ test("23/10 ảnh AI lưu WebP rộng 800 + bản 400 (lỗi bộ mã WebP thì 
   const r = setup({ Image, webp: async () => { throw new Error("wasm"); } });
   for (let i = 0; i < 8 && r.tables.web_ai_jobs[0].status !== "done"; i++) await r.w.handle(req({ action: "tick", secret: "s3cret" }));
   assert.match(r.tables.web_posts[0].cover_url, /_800w\.jpg$/);
+});
+
+test("23/10 đổi ảnh cũ JPEG 1200 → WebP 800 + 400, thay link trong bài / ảnh đại diện, giữ bản lịch sử", async () => {
+  const fake = (w, h) => ({ width: w, height: h, bitmap: new Uint8ClampedArray(4), resize(nw) { const k = nw / this.width; this.width = nw; this.height = Math.round(this.height * k); return this; }, clone() { return fake(this.width, this.height); }, encodeJPEG: async () => new Uint8Array(1000) });
+  const Image = { decode: async () => fake(1200, 800), RESIZE_AUTO: -1 };
+  const { w, tables, db } = setup({ Image, webp: async () => new Uint8Array(3000) });
+  const old = "https://fipilotai.com/anh/2026/10/pho-bia-abc12_1200w.jpg";
+  tables.web_media = [{ id: "m1", path: "img/2026/10/pho-bia-abc12_1200w.jpg", url: old, width: 1200, height: 800, sizes: [400, 800], created_at: "1" }];
+  tables.web_posts = [{ id: "p1", cover_url: old, seo: { og_image: old }, blocks: [{ type: "img", url: old, alt: "phở" }, { type: "p", html: "x" }] }, { id: "p2", cover_url: "khác", seo: {}, blocks: [] }];
+  const r = await (await w.handle(req({ action: "convert_images", secret: "s3cret" }))).json();
+  assert.equal(r.converted, 1, JSON.stringify(r));
+  const nu = "https://fipilotai.com/anh/2026/10/pho-bia-abc12_800w.webp";
+  const p = tables.web_posts[0];
+  assert.equal(p.cover_url, nu); assert.equal(p.seo.og_image, nu); assert.equal(p.blocks[0].url, nu);
+  assert.equal(tables.web_posts[1].cover_url, "khác");
+  assert.deepEqual(db.uploads.slice(-2), ["img/2026/10/pho-bia-abc12_800w.webp", "img/2026/10/pho-bia-abc12_400w.webp"]);
+  assert.equal(tables.web_media[0].url, nu); assert.equal(tables.web_media[0].width, 800); assert.deepEqual(tables.web_media[0].sizes, [400]);
+  assert.equal(tables.web_revisions.at(-1).snapshot.cover_url, old);
+  assert.equal((await w.handle(req({ action: "convert_images", secret: "sai" }))).status, 403);
 });
