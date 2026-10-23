@@ -1,7 +1,7 @@
 // 23/10 — biểu cảm tự động của Pi (src/pi/piExpr.js)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { equipReaction, tapReaction, idleBase, shownFace, canBlink, fullSet, lateNight, pi, TAP_FACES } from "../src/pi/piExpr.js";
+import { equipReaction, tapReaction, idleBase, shownFace, canBlink, fullSet, lateNight, pi, TAP_FACES, timeFace, pickFace, TIME_FACES, FACE_LIST } from "../src/pi/piExpr.js";
 
 const it = (id, slot, ev) => ({ id, slot, ev });
 
@@ -49,4 +49,14 @@ test("pi.react(mặt, ms) gửi tới mọi Pi đang hiện; mặt lạ bị b�
   off();
   pi.react("buon", 800);
   assert.deepEqual(got, [{ steps: [{ face: "yeu", ms: 1500 }], hop: true }]);
+});
+
+test("24/10 mặt nền theo giờ VN khi khách chưa chọn (auto): đủ 24 giờ, mỗi giờ 1 mặt có thật", () => {
+  for (let h = 0; h < 24; h++) assert.ok(FACE_LIST.includes(timeFace(h)), `giờ ${h}`);
+  assert.equal(TIME_FACES.reduce((n, [a, b]) => n + (b - a), 0), 24); // không hở, không chồng
+  assert.equal(timeFace(6), "nhaymat"); assert.equal(timeFace(10), "vui"); assert.equal(timeFace(12), "haohung");
+  assert.equal(timeFace(15), "vui"); assert.equal(timeFace(18), "cuoilon"); assert.equal(timeFace(21), "yeu");
+  assert.equal(timeFace(22), "suynghi"); assert.equal(timeFace(3), "ngu");
+  assert.equal(pickFace("auto", 18), "cuoilon"); assert.equal(pickFace(undefined, 6), "nhaymat");
+  assert.equal(pickFace("buon", 18), "buon"); // khách chọn mặt cụ thể → giữ
 });

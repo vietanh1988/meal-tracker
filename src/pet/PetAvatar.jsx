@@ -3,7 +3,9 @@
 // để các màn Thú cưng / Cửa hàng / Tủ đồ / Quản trị dùng tiếp. Đồ cũ (bản vẽ 20/10) không còn mặc / bán; chỉ giữ ảnh đồ thành tích để trưng.
 import oldCatalog from "./catalog.json";
 import { PiPet, PI_CSS } from "../pi/PiPet";
-export { pi } from "../pi/piExpr"; // pi.react("yeu", 1500) — nơi khác (chat, gym, mục tiêu) gọi để Pi phản ứng
+export { pi } from "../pi/piExpr";
+import { pickFace } from "../pi/piExpr";
+import { nowVNParts } from "../lib/dateVN"; // pi.react("yeu", 1500) — nơi khác (chat, gym, mục tiêu) gọi để Pi phản ứng
 import { PI_ITEMS, SLOT_NAME, EV_ORDER, EV_NAME } from "../pi/piCatalog";
 
 export const PET_BASE = "/pet/";
@@ -21,12 +23,13 @@ export const catalog = { items, slots: SLOT_NAME, events: EV_NAME, evOrder: EV_O
 
 // tâm trạng (src/lib/petMath.js moodOf) → biểu cảm của bộ mới. "vui" = biểu cảm khách chọn ở Tủ đồ (mặc định vui)
 const MOOD_FACE = { vui: null, cuoi: "cuoilon", ngu: "ngu", hoi: "suynghi", gian: "buon", mung: "haohung" };
-export const faceOf = (mood, pick) => MOOD_FACE[mood] || pick || "vui";
+// 24/10: face = "auto" (mặc định) → mặt theo giờ VN (src/pi/piExpr.js timeFace); chọn mặt cụ thể ở Tủ đồ thì giữ mặt đó
+export const faceOf = (mood, pick, hour = nowVNParts().hour) => MOOD_FACE[mood] || pickFace(pick, hour);
 
 /** size = chiều cao Pi (px). equipped = { slot: itemId }. mood: vui | cuoi | ngu | hoi | gian | mung; face = biểu cảm khách chọn.
  *  live: thở + chớp mắt · talking: miệng mấp máy · react: đổi số → nhún + cười */
-export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", face, size = 220, still = false, label, talking = false, live = false, react = 0, night = false }) {
-  return <PiPet gender={variant} expression={faceOf(mood, face)} equipped={equipped} height={size} still={still} live={live} talking={talking} react={react} night={night} label={label || "Thú cưng"} />;
+export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", face, size = 220, still = false, label, talking = false, live = false, react = 0, night = false, hour }) {
+  return <PiPet gender={variant} expression={faceOf(mood, face, hour)} equipped={equipped} height={size} still={still} live={live} talking={talking} react={react} night={night} label={label || "Thú cưng"} />;
 }
 
 // giữ cho màn Quản trị cũ (Chỉnh vị trí): bộ mới không cần điểm đặt

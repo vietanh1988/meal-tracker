@@ -67,6 +67,14 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await page.getByTestId("pet-unequip-giay").click();
     await waitDb(async () => (await rest(`pet_equipped?user_id=eq.${s.uid}&slot=eq.giay&select=item_id`)).length === 0, "đã tháo giày");
 
+    // 24/10: biểu cảm mặc định "Theo giờ"; chọn mặt cụ thể thì lưu, bấm lại "Theo giờ" là về tự đổi
+    await expect(page.getByTestId("pet-face-auto")).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("pet-face-buon").click();
+    await waitDb(async () => (await rest(`pet_profiles?user_id=eq.${s.uid}&select=settings`))[0]?.settings?.face === "buon", "đã chọn mặt buồn");
+    await expect(page.getByTestId("pet-face-buon")).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("pet-face-auto").click();
+    await waitDb(async () => (await rest(`pet_profiles?user_id=eq.${s.uid}&select=settings`))[0]?.settings?.face === "auto", "về Theo giờ");
+
     // Hỏi Pi: AI giả (không tốn tiền) → câu trả lời hiện trong khung chat
     await page.route("**/functions/v1/ai-proxy", (r) => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ text: "Tối nay ăn 150 g ức gà là vừa nha." }) }));
     await page.goBack();

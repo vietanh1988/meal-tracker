@@ -51,6 +51,26 @@ export function shownFace({ base, reaction, now }) {
   return reaction && reaction.until > now ? reaction.face : base;
 }
 
+// 24/10 (chủ dự án: "biểu cảm mặc định phải theo thời điểm"): khách chưa chọn mặt (hoặc chọn "Theo giờ") → mặt nền đổi theo giờ VN.
+// Luật ăn uống / ngủ của app (moodOf: ngủ sau 22h30, nhắc ăn, mừng quay lại) vẫn đè lên trước.
+export const AUTO_FACE = "auto";
+export const TIME_FACES = [
+  [5, 9, "nhaymat"],   // sáng sớm: nháy mắt chào ngày mới
+  [9, 11, "vui"],
+  [11, 13, "haohung"], // trưa: hào hứng giờ ăn
+  [13, 17, "vui"],
+  [17, 20, "cuoilon"], // chiều tối: cười lớn sau giờ tập
+  [20, 22, "yeu"],     // tối: thư thả, đáng yêu
+  [22, 24, "suynghi"], // khuya: ngái ngủ (sau 22h30 moodOf cho ngủ)
+  [0, 5, "ngu"],
+];
+export function timeFace(hour) {
+  const h = ((Math.floor(Number(hour)) % 24) + 24) % 24;
+  return (TIME_FACES.find(([a, b]) => h >= a && h < b) || [0, 0, "vui"])[2];
+}
+/** mặt nền: khách chọn 1 mặt cụ thể thì giữ; "auto" / chưa chọn thì theo giờ */
+export const pickFace = (pick, hour) => (pick && pick !== AUTO_FACE && FACE_LIST.includes(pick) ? pick : timeFace(hour));
+
 export const canBlink = (face) => BLINK_FACES.includes(face);
 
 // ---- pi.react(expression, ms): nơi khác (chat, gym, mục tiêu) gọi để Pi phản ứng — mọi Pi đang hiện đều nhận ----
