@@ -4,6 +4,7 @@
 // Hàm thuần (trừ aiCalc), có test: tests/calc-check.test.mjs
 import { lookupLocalFood, LOCAL_FOODS, UNIT_MAP, getFoodDisplay } from "./localFoodDB.js";
 import { estimateGram } from "./usdaService.js";
+import { canonFood, foodEq, keyForm, queryForm } from "./foodSyn.js";
 import { stripVN, defaultPortion, scaleItem } from "./mobileView.js";
 
 const NUM_WORDS = { "một": 1, "hai": 2, "ba": 3, "bốn": 4, "năm": 5, "sáu": 6, "nửa": 0.5, "rưỡi": 1.5 };
@@ -95,8 +96,9 @@ const fmtQty = (q) => String(Math.round(q * 10) / 10).replace(".", ",");
 
 // Các từ trong tên gõ vào phải nằm trong tên món tìm được (tránh "bánh bao xá xíu" → "bánh bao")
 function covers(query, matchedName) {
-  const have = new Set(stripVN(matchedName).split(/[\s()]+/).filter(Boolean));
-  return stripVN(query).split(" ").filter(Boolean).every((w) => have.has(w));
+  const qf = queryForm(query);
+  const have = new Set(keyForm(matchedName.replace(/[()]/g, " "), qf.plain).split(/\s+/).filter(Boolean));
+  return qf.text.split(" ").filter(Boolean).every((w) => have.has(w));
 }
 
 // 1 dòng → món định dạng daily_logs (source localDB/cache) hoặc {unknown:true, near}
@@ -121,9 +123,10 @@ export function resolveEntry(entry0, foodCache) {
 
 function resolveEntry1(entry0, foodCache) {
   const entry = ALIAS[entry0.name] ? { ...entry0, name: ALIAS[entry0.name] } : entry0;
-  const plain = stripVN(entry.name);
-  const cacheKey = Object.keys(foodCache || {}).find((k) => stripVN(k) === plain);
-  const localKey = LOCAL_FOODS[entry.name] ? entry.name : Object.keys(LOCAL_FOODS).find((k) => stripVN(k) === plain);
+  // 23/10: so theo tên chuẩn (foodSyn): "thịt lợn rim" = "thịt heo rim", "nem rán" = "chả giò", gõ không dấu vẫn khớp
+  const qf = queryForm(entry.name), plain = qf.text;
+  const cacheKey = Object.keys(foodCache || {}).find((k) => keyForm(k, qf.plain) === plain);
+  const localKey = LOCAL_FOODS[entry.name] ? entry.name : Object.keys(LOCAL_FOODS).find((k) => keyForm(k, qf.plain) === plain);
   if (localKey) {
     const gram = gramOf(entry, localKey);
     const r = lookupLocalFood(localKey, gram);
@@ -144,7 +147,7 @@ function resolveEntry1(entry0, foodCache) {
   }
   // Tên chung hay gõ mà kho chỉ có bản cụ thể ("bún bò" → "bún bò huế", "cơm tấm" → "cơm tấm sườn…"):
   // lấy món ngắn nhất bắt đầu bằng đúng tên đó (16/10, trước đây rơi về "bún" 436 kcal)
-  const longer = Object.keys(LOCAL_FOODS).filter((k) => stripVN(k).startsWith(plain + " ")).sort((a, b) => a.length - b.length)[0];
+  const longer = Object.keys(LOCAL_FOODS).filter((k) => keyForm(k, qf.plain).startsWith(plain + " ")).sort((a, b) => a.length - b.length)[0];
   if (longer) {
     const g = gramOf(entry, longer);
     const rr = lookupLocalFood(longer, g);
@@ -159,7 +162,7 @@ function resolveEntry1(entry0, foodCache) {
       const r2 = lookupLocalFood(entry.name, g2) || r;
       // Không có đúng món trong kho, tính từ món gốc + cách chế biến ("thịt lợn" + xào): giữ ĐÚNG tên người dùng gõ
       // (trước đây ghép tên hiển thị → "Thịt lợn luộc xào", "Trứng luộc rán") và đánh dấu Ước tính, không phải "Kho món"
-      const estimated = stripVN(matched) !== plain;
+      const estimated = !foodEq(entry.name, matched);
       if (estimated) return { ...toItem(entry, entry.name, entry.name, g2, r2, "estimate"), base: matched, cook: r2.cook || null };
       return toItem(entry, entry.name, getFoodDisplay(matched), g2, r2, "localDB");
     }

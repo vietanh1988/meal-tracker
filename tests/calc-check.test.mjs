@@ -18,10 +18,10 @@ test("phở bò 1 tô = 400 g từ kho; trứng 2 quả = 100 g", () => {
   assert.equal(r[0].gram, 400);
   assert.equal(r[0].cal, 340);
   assert.equal(r[1].gram, 100);
-  assert.equal(r[1].cal, 155);
+  assert.equal(r[1].cal, 166); // 23/10: trứng gà theo bảng Viện Dinh dưỡng (9001: 166 kcal / 100 g)
   assert.equal(r[1].qty_display, "2 quả");
   const s = sumCheck(r);
-  assert.equal(s.cal, 495);
+  assert.equal(s.cal, 506);
 });
 
 test("món lạ không khớp đủ từ → unknown (mời AI), có món gần đúng", () => {
@@ -112,6 +112,6 @@ test("21/10: '4 trứng 200g' / '4 quả trứng 200g' lấy gram ghi cuối, s�
     const [it] = resolveAll(t, {});
     assert.equal(it.food, "trứng gà luộc", t);
     assert.equal(it.gram, 200, t);
-    assert.equal(it.cal, 310, t);
+    assert.equal(it.cal, 332, t);
   }
 });

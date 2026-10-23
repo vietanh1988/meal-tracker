@@ -3,7 +3,13 @@
 // Ưu tiên cao nhất: localDB → USDA (raw only) → AI fallback
 // ============================================================
 
+import { cookPer100, findMethod, findMethodAny, METHODS } from "./cookMethods.js";
+import { canonFood, canonPlain, hasDiacritics } from "./foodSyn.js";
+import { VN_REF, VN_NEW } from "./foodRef.js";
+
 // Cooking modifiers — thay đổi macro khi chế biến (per 100g)
+// 23/10: cách nấu có trong cookMethods.METHODS (luộc, xào, kho, rim, chiên…) tính theo hệ số thành phẩm + dầu / đường
+// (cookPer100); bảng dưới chỉ còn dùng cho sấy / khô / muối / dầm / ngâm / sống.
 export const COOK_MODIFIERS = {
   // Không thay đổi
   "sống": {p:0, c:0, f:0, cal:0},
@@ -1711,6 +1717,49 @@ export const LOCAL_FOODS = {
 // PhotoMacroChecker + MealsTab dùng cho dropdown "Chọn nhanh"
 // Code cũ không đọc field này → không phá gì
 // ============================================================
+// ============================================================
+// 23/10: SỐ CHUẨN — Bảng thành phần thực phẩm VN 2007 (Viện Dinh dưỡng) cho nguyên liệu có trong bảng (foodRef.js),
+// thêm nguyên liệu Việt còn thiếu, rồi cho các tên cùng món (foodSyn: lợn/heo, nem rán/chả giò…) dùng chung 1 bộ số.
+// ============================================================
+for (const [k, [cal, p, f, c, fiber, code, cat, form]] of Object.entries(VN_NEW)) {
+  if (!LOCAL_FOODS[k]) LOCAL_FOODS[k] = { p, c, f, cal, fiber, form, cat, region: "vn", ...(code ? { ref: `vdd:${code}` } : {}) };
+}
+for (const [k, [cal, p, f, c, fiber, code]] of Object.entries(VN_REF)) {
+  const v = LOCAL_FOODS[k];
+  if (v) Object.assign(v, { p, c, f, cal, fiber, ref: `vdd:${code}` });
+}
+{
+  // Nhóm tên cùng món: mã có số Viện DD đứng đầu, không thì mã khai trước trong kho
+  const groups = new Map();
+  for (const k of Object.keys(LOCAL_FOODS)) { const c = canonFood(k); if (!groups.has(c)) groups.set(c, []); groups.get(c).push(k); }
+  for (const ks of groups.values()) {
+    if (ks.length < 2) continue;
+    const main = ks.find((k) => LOCAL_FOODS[k].ref) || ks[0];
+    const m = LOCAL_FOODS[main];
+    for (const k of ks) if (k !== main) Object.assign(LOCAL_FOODS[k], { p: m.p, c: m.c, f: m.f, cal: m.cal, fiber: m.fiber, ...(m.ref ? { ref: m.ref } : {}), same_as: main });
+  }
+}
+
+// 23/10: món "<nguyên liệu thịt / cá / trứng> + <cách nấu>" trong kho (gà luộc, cá lóc kho, thịt heo rim…) tính lại từ nguyên liệu
+// theo cookMethods — trước đây số ước tay nên cùng 1 món ra 2 số (thịt heo rim 190 kcal, thịt heo + rim tính ra gần gấp đôi).
+// Bỏ qua món có nước dùng / nhiều rau đi kèm (hầm, nấu canh, gỏi, nộm, trộn): số / 100 g gồm cả phần đó.
+{
+  const MEATY = new Set(["poultry", "beef", "pork", "seafood", "egg_dairy"]);
+  const SKIP = new Set(["hầm", "nấu canh", "gỏi", "nộm", "trộn", "nấu", "tần"]);
+  const STEW = new Set(["bò kho", "gà kho sả gừng nước"]); // bò kho kiểu Nam = món nước (ăn với bánh mì): số gồm cả nước kho
+  for (const [k, v] of Object.entries(LOCAL_FOODS)) {
+    if (v.form === "raw" || v.ref || v.same_as || STEW.has(k)) continue;
+    const m = findMethod(k);
+    if (!m || !METHODS[m.name] || SKIP.has(m.name)) continue;
+    const rest = ` ${k} `.replace(` ${m.word} `, " ").trim();
+    const b = [rest, `thịt ${rest}`].find((x) => x && x !== k && LOCAL_FOODS[x] && LOCAL_FOODS[x].form === "raw" && MEATY.has(LOCAL_FOODS[x].cat));
+    if (!b) continue;
+    const c = cookPer100(LOCAL_FOODS[b], b, m.name);
+    if (!c) continue;
+    Object.assign(v, { p: +c.p.toFixed(1), c: +c.c.toFixed(1), f: +c.f.toFixed(1), fiber: +c.fiber.toFixed(1), cal: Math.round(c.cal), ref: `calc:${b}+${m.name}` });
+  }
+}
+
 export const UNIT_MAP = {
   // Trứng
   "trứng gà":       [{name:"1 quả", gram:50}, {name:"2 quả", gram:100}, {name:"3 quả", gram:150}],
@@ -1850,6 +1899,25 @@ export function getUnits(foodKey) {
   return UNIT_MAP[key] || null;
 }
 const LOCAL_KEYS = Object.keys(LOCAL_FOODS).sort((a, b) => b.length - a.length);
+// Tên chuẩn (foodSyn.canonFood) → mã trong kho; mã dài / có trước giữ chỗ khi 2 mã ra cùng tên chuẩn
+let _canon = null, _plain = null;
+function buildCanon() {
+  _canon = new Map(); _plain = new Map();
+  for (const k of Object.keys(LOCAL_FOODS)) {
+    const c = canonFood(k), p = canonPlain(k);
+    if (!_canon.has(c)) _canon.set(c, k);
+    if (!_plain.has(p)) _plain.set(p, k); else if (_plain.get(p) !== k && canonFood(_plain.get(p)) !== c) _plain.set(p, null); // không dấu mà 2 món khác nhau ("bo kho" / "bo kho") → không đoán
+  }
+}
+// Mã trong kho cho 1 tên (tên khác / vùng miền / gõ không dấu); không chắc thì null
+function CANON_INDEX() { if (!_canon) buildCanon(); return { get: (c) => _canon.get(c) }; }
+export function canonKeyOf(name) {
+  const l = String(name || "").toLowerCase().trim();
+  if (!l) return null;
+  if (LOCAL_FOODS[l]) return l;
+  if (!_canon) buildCanon();
+  return hasDiacritics(l) ? _canon.get(canonFood(l)) || null : _plain.get(canonPlain(l)) || null;
+}
 const COOK_KEYS = Object.keys(COOK_MODIFIERS).sort((a, b) => b.length - a.length);
 
 // ============================================================
@@ -1863,6 +1931,17 @@ export function lookupLocalFood(nameVN, gram) {
   // 1. Exact match — fastest, most accurate
   if (LOCAL_FOODS[lower]) {
     return scaleFood(LOCAL_FOODS[lower], lower, gram, null);
+  }
+  // 1b. 23/10: tên gọi khác / vùng miền ("thịt lợn rim" = "thịt heo rim", "nem rán" = "chả giò")
+  const canonKey = canonKeyOf(lower);
+  if (canonKey) return scaleFood(LOCAL_FOODS[canonKey], canonKey, gram, null);
+  // 1c. nguyên liệu + cách nấu ("thịt heo rim", "cá lóc kho tộ"): tách cách nấu, phần còn lại khớp đúng 1 nguyên liệu trong kho
+  const mm = findMethodAny(lower);
+  if (mm) {
+    const rest = (hasDiacritics(lower) ? ` ${lower} `.replace(` ${mm.word} `, " ") : ` ${canonPlain(lower)} `.replace(` ${mm.plainWord} `, " ")).trim();
+    // "gà rang gừng" → nguyên liệu "gà" = "thịt gà" (không để rơi xuống khớp "gừng")
+    const baseKey = [rest, `thịt ${rest}`, `thit ${rest}`].map((x) => canonKeyOf(x)).find(Boolean);
+    if (baseKey) return scaleFood(LOCAL_FOODS[baseKey], baseKey, gram, mm.name);
   }
 
   // 2. Find food base with priority matching:
@@ -1904,7 +1983,9 @@ export function lookupLocalFood(nameVN, gram) {
 
   // Find cooking method in remaining text
   const remaining = lower.replace(foodKey, "").trim();
-  for (const ck of COOK_KEYS) {
+  const m2 = findMethod(remaining) || findMethod(lower);
+  if (m2 && METHODS[m2.name]) cookKey = m2.name;
+  if (!cookKey) for (const ck of COOK_KEYS) {
     if (remaining.includes(ck) || lower.includes(ck)) {
       cookKey = ck;
       break;
@@ -1917,7 +1998,8 @@ export function lookupLocalFood(nameVN, gram) {
 // ============================================================
 // SCALE: apply gram + cooking modifier
 // ============================================================
-function scaleFood(base, foodKey, gram, cookKey) {
+function scaleFood(base, foodKey, gram, cookKey0) {
+  let cookKey = cookKey0;
   const g = gram===0?0:(gram||100);
   const r = g / 100;
 
@@ -1939,8 +2021,14 @@ function scaleFood(base, foodKey, gram, cookKey) {
   let cal = base.cal;
   let fiber = base.fiber || 0;
 
-  // Apply cooking modifier (per 100g)
-  if (mod) {
+  // 23/10: nguyên liệu sống mà tên hiện là món đã nấu ("ức gà" hiện "Ức gà áp chảo", "ba chỉ" hiện "Ba chỉ luộc")
+  // → tính số theo đúng cách nấu đó (trước đây hiện "đã nấu" mà số vẫn là đồ sống: thiếu ~30% đạm / calo)
+  if (!cookKey && base.form === "raw") cookKey = displayMethod(foodKey);
+  // 23/10: cách nấu trong METHODS → hệ số thành phẩm + dầu / đường (cookMethods.js)
+  const cooked = cookKey && METHODS[cookKey] ? cookPer100(base, foodKey, cookKey) : null;
+  if (cooked) {
+    p = cooked.p; c = cooked.c; f = cooked.f; cal = cooked.cal; fiber = cooked.fiber;
+  } else if (mod) {
     if (mod.note === "multiply_3x") {
       // Sấy khô: macro × 3 (mất 70% nước) — đúng vật lý cho MỌI loại thực
       // phẩm (rau/trái cây sấy khô cũng cô đặc mạnh do mất nước gần hết),
@@ -2564,6 +2652,18 @@ const DISPLAY_MAP = {
   "bánh chuối nướng": "Bánh chuối nướng", "bánh da lợn": "Bánh da lợn",
   "kem dừa": "Kem dừa", "yogurt đông lạnh": "Yogurt đông lạnh",
 };
+
+// Cách nấu nằm trong tên hiển thị của 1 nguyên liệu sống (chỉ thịt / cá / trứng — rau luộc, khoai luộc số gần như không đổi)
+const COOKED_CATS = new Set(["poultry", "beef", "pork", "seafood", "egg_dairy"]);
+export function displayMethod(foodKey) {
+  const key = (foodKey || "").toLowerCase().trim();
+  const v = LOCAL_FOODS[key];
+  if (!v || v.form !== "raw" || !COOKED_CATS.has(v.cat) || !DISPLAY_MAP[key]) return null;
+  const shown = DISPLAY_MAP[key].toLowerCase();
+  if (shown.includes(key) && shown.trim() === key) return null;
+  const m = findMethod(shown);
+  return m && METHODS[m.name] ? m.name : null;
+}
 
 export function getFoodDisplay(foodKey) {
   const key = (foodKey || "").toLowerCase().trim();

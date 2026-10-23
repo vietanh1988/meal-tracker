@@ -4,6 +4,8 @@ import { MEAL_ORDER, MEAL_NAMES, mealKey, sumItems, eatenTotals, hasItems, mealL
 import { mealTimesOf } from "./dayPlan.js";
 import { addDays, weekRange, weekdayOf, isGymDate, diffDays, fmtVN } from "./dateVN.js";
 import { LOCAL_FOODS, UNIT_MAP, lookupLocalFood, getFoodDisplay } from "./localFoodDB.js";
+import { canonFood, canonPlain, queryForm } from "./foodSyn.js";
+import { findMethodAny, METHODS } from "./cookMethods.js";
 
 // Nhãn thứ trên dải ngày (bản vẽ: Hai Ba Tư Năm Sáu Bảy CN)
 const WD_STRIP = ["CN", "Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy"];
@@ -153,7 +155,8 @@ export const stripVN = (s) => String(s || "").toLowerCase().normalize("NFD").rep
 
 let _index = null;
 function localIndex() {
-  if (!_index) _index = Object.keys(LOCAL_FOODS).map((k) => ({ key: k, plain: stripVN(k) }));
+  // 23/10: so theo tên chuẩn (foodSyn) — "thịt lợn" = "thịt heo", "nem rán" = "chả giò", "lạc" = "đậu phộng"…
+  if (!_index) _index = Object.keys(LOCAL_FOODS).map((k) => ({ key: k, canon: canonFood(k), plainC: canonPlain(k), raw: LOCAL_FOODS[k]?.form === "raw" }));
   return _index;
 }
 
@@ -183,7 +186,9 @@ export function itemFromCache(name, v) {
 
 // Kết quả tìm: khớp đầu chuỗi trước, rồi khớp từ, rồi chứa; không dấu vẫn tìm được
 export function searchFoods(query, foodCache, limit = 20) {
-  const q = stripVN(query);
+  const qf = queryForm(query); // gõ có dấu → so bản có dấu; không dấu → so bản không dấu
+  const q = qf.text;
+  const form = (name) => (qf.plain ? canonPlain(name) : canonFood(name));
   if (q.length < 1) return [];
   // Khớp theo từ (16/10): "thịt gà xào" không có nguyên cụm vẫn ra "gà xào sả ớt" — đủ mọi từ (4) hoặc thiếu 1 từ khi gõ ≥ 3 từ (5)
   const words = q.split(/\s+/).filter((w) => w.length >= 2);
@@ -196,17 +201,26 @@ export function searchFoods(query, foodCache, limit = 20) {
   const score = (plain) => (plain === q ? 0 : plain.startsWith(q) ? 1 : plain.includes(" " + q) ? 2 : plain.includes(q) ? 3 : byWords(plain));
   const seen = new Set();
   const out = [];
-  for (const { key, plain } of localIndex()) {
-    const s = score(plain);
+  for (const { key, canon, plainC } of localIndex()) {
+    const s = score(qf.plain ? plainC : canon);
     if (s < 9) { out.push({ key, s, len: key.length, src: "local" }); seen.add(key); }
   }
+  // 23/10: nguyên liệu + cách nấu chưa có sẵn món ("thịt heo rim", "cá quả kho tộ", "gà rang gừng") → ghép từ nguyên liệu trong kho
+  const combos = methodCombos(query, qf, out);
   for (const name of Object.keys(foodCache || {})) {
     if (seen.has(name)) continue;
-    const s = score(stripVN(name));
+    const s = score(form(name));
     if (s < 9) out.push({ key: name, s: s + 0.5, len: name.length, src: "cache" });
   }
+  out.push(...combos);
+  // Tên khác cùng món (lạc / đậu phộng, ngô / bắp, nem rán / chả giò): chỉ giữ 1 dòng, ưu tiên mã đúng chữ khách gõ
+  const typed = stripVN(query);
+  for (const o of out) if (stripVN(o.key) === typed || stripVN(o.key).startsWith(typed + " ")) o.s -= 0.2;
   out.sort((a, b) => a.s - b.s || a.len - b.len || a.key.localeCompare(b.key, "vi"));
-  const items = out.slice(0, limit * 2).map(({ key, src }) => {
+  const seenCanon = new Set();
+  for (let i = 0; i < out.length; i++) { if (out[i].src === "cache") continue; const c = canonFood(out[i].key); if (seenCanon.has(c)) { out.splice(i, 1); i--; } else seenCanon.add(c); }
+  const items = out.slice(0, limit * 2).map(({ key, src, base, method }) => {
+    if (src === "combo") return comboItem(base, method);
     if (src === "local") {
       const p = defaultPortion(key);
       return itemFromLocal(key, p.gram, p.label);
@@ -214,6 +228,32 @@ export function searchFoods(query, foodCache, limit = 20) {
     return itemFromCache(key, foodCache[key]);
   }).filter(Boolean);
   return dedupeByName(items).slice(0, limit);
+}
+
+// Gõ "<nguyên liệu> <cách nấu>" mà kho chưa có đúng món đó: tìm nguyên liệu (tên chuẩn khớp hẳn, hoặc thêm "thịt ")
+// rồi tính theo cách nấu (cookMethods: hệ số thành phẩm + dầu / đường). Món có sẵn trong kho vẫn đứng trước.
+function methodCombos(query, qf, found) {
+  const m = findMethodAny(query);
+  if (!m || !METHODS[m.name]) return [];
+  const mw = qf.plain ? canonPlain(m.word) : canonFood(m.word);
+  const baseQ = ` ${qf.text} `.replace(` ${mw} `, " ").replace(/\s+/g, " ").trim();
+  if (!baseQ || baseQ.length < 2) return [];
+  const exact = found.some((x) => x.s === 0);
+  const idx = localIndex();
+  const fld = (it) => (qf.plain ? it.plainC : it.canon);
+  const bases = [], seenC = new Set(found.map((x) => canonFood(x.key)));
+  const add = (k) => { const c = canonFood(k); if (seenC.has(`${c} ${canonFood(m.name)}`) || bases.some((b) => canonFood(b) === c)) return; bases.push(k); };
+  for (const cand of [baseQ, qf.plain ? `thit ${baseQ}` : `thịt ${baseQ}`]) for (const it of idx) if (fld(it) === cand) add(it.key);
+  if (!bases.length && !exact) for (const it of idx) if (it.raw && fld(it).startsWith(baseQ + " ") && bases.length < 3) add(it.key);
+  return bases.slice(0, 4).map((b, i) => ({ key: `${b} ${m.name}`, s: exact ? 1.5 + i * 0.01 : 0.5 + i * 0.01, len: b.length, src: "combo", base: b, method: m.name }));
+}
+function comboItem(base, method) {
+  const name = `${base} ${method}`;
+  const p = defaultPortion(base);
+  const g = p.label ? p.gram : 100;
+  const r = lookupLocalFood(name, g);
+  if (!r) return null;
+  return { food: name, display: name.charAt(0).toUpperCase() + name.slice(1), gram: r.gram, unit: "g", ...(p.label ? { qty_display: p.label } : {}), p: r.protein, c: r.carb, f: r.fat, fiber: r.fiber, cal: r.cal, source: "localDB" };
 }
 
 // Trùng tên hiển thị (16/10): kho có nhiều mã cùng hiện 1 tên ("thịt lợn"/"thịt lợn nạc" → "Thịt lợn luộc",
