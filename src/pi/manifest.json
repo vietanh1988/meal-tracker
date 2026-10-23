@@ -428,8 +428,7 @@
    "g": "nu",
    "slot": "tay",
    "name": "Cầm hộp quà nơ hồng",
-   "file": "items/giangsinh/do_giangsinh_nu_pk07.webp",
-   "arm": "trai"
+   "file": "items/giangsinh/do_giangsinh_nu_pk07.webp"
   },
   {
    "id": "giangsinh-nu-pk08",
@@ -630,8 +629,7 @@
    "g": "nam",
    "slot": "tay",
    "name": "Cầm bánh chưng",
-   "file": "items/tet/do_tet_nam_pk07.webp",
-   "arm": "trai"
+   "file": "items/tet/do_tet_nam_pk07.webp"
   },
   {
    "id": "tet-nam-pk08",
@@ -1044,8 +1042,7 @@
    "g": "nam",
    "slot": "tay",
    "name": "Cầm quả cầu tuyết",
-   "file": "items/muadong/do_muadong_nam_pk08.webp",
-   "arm": "trai"
+   "file": "items/muadong/do_muadong_nam_pk08.webp"
   },
   {
    "id": "muadong-nam-pk09",
@@ -1062,7 +1059,8 @@
    "g": "nam",
    "slot": "tay",
    "name": "Cầm ván trượt tuyết nhỏ",
-   "file": "items/muadong/do_muadong_nam_pk10.webp"
+   "file": "items/muadong/do_muadong_nam_pk10.webp",
+   "arm": "trai"
   },
   {
    "id": "muadong-nam-pk11",
@@ -1434,8 +1432,7 @@
    "g": "nam",
    "slot": "tay",
    "name": "Cầm kem ốc quế",
-   "file": "items/muahe/do_muahe_nam_pk06.webp",
-   "arm": "trai"
+   "file": "items/muahe/do_muahe_nam_pk06.webp"
   },
   {
    "id": "muahe-nam-pk07",
@@ -1460,7 +1457,8 @@
    "g": "nam",
    "slot": "tay",
    "name": "Cầm xô cát và xẻng",
-   "file": "items/muahe/do_muahe_nam_pk09.webp"
+   "file": "items/muahe/do_muahe_nam_pk09.webp",
+   "arm": "trai"
   },
   {
    "id": "muahe-nam-pk10",
@@ -1468,8 +1466,7 @@
    "g": "nam",
    "slot": "tay",
    "name": "Cầm quả bóng chuyền bãi biển",
-   "file": "items/muahe/do_muahe_nam_pk10.webp",
-   "arm": "trai"
+   "file": "items/muahe/do_muahe_nam_pk10.webp"
   },
   {
    "id": "muahe-nam-pk11",
@@ -2059,8 +2056,7 @@
    "g": "nu",
    "slot": "tay",
    "name": "Cầm quả táo độc đỏ",
-   "file": "items/halloween/do_halloween_nu_pk08.webp",
-   "arm": "trai"
+   "file": "items/halloween/do_halloween_nu_pk08.webp"
   },
   {
    "id": "halloween-nu-pk09",
@@ -2214,8 +2210,7 @@
    "g": "nam",
    "slot": "tay",
    "name": "Cầm đèn lồng cá chép",
-   "file": "items/trungthu/do_trungthu_nam_pk02.webp",
-   "arm": "trai"
+   "file": "items/trungthu/do_trungthu_nam_pk02.webp"
   },
   {
    "id": "trungthu-nam-pk03",
@@ -2232,8 +2227,7 @@
    "g": "nam",
    "slot": "tay",
    "name": "Cầm bánh dẻo",
-   "file": "items/trungthu/do_trungthu_nam_pk04.webp",
-   "arm": "trai"
+   "file": "items/trungthu/do_trungthu_nam_pk04.webp"
   },
   {
    "id": "trungthu-nam-pk05",

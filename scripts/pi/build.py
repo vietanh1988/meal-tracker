@@ -107,3 +107,7 @@ man = {
 os.makedirs(os.path.dirname(MAN), exist_ok=True)
 json.dump(man, open(MAN, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print(f"{len(items)} món ({sum(1 for x in items if x.get('arm'))} ẩn tay gốc), {sum(len(v) for v in rooms.values())} phòng, thân {bbox}, ảnh {total/1024/1024:.1f} MB")
+
+# 23/10 (chủ dự án): mỗi lần ghép bộ ảnh là soát khớp TỪNG món với thân luôn (món lỗi → src/pi/fit.json, app tạm không bán)
+import subprocess
+subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "pi", "fit_check.py")], check=True)

@@ -39,26 +39,6 @@
   "giangsinh-nam-pk06": [
    "cắt phẳng 49px"
   ],
-  "giangsinh-nam-pk08": [
-   "cắt phẳng 163px",
-   "dán kèm mảng thân 3803px"
-  ],
-  "giangsinh-nam-pk09": [
-   "cắt phẳng 111px",
-   "dán kèm mảng thân 6212px"
-  ],
-  "giangsinh-nu-pk06": [
-   "cắt phẳng 97px",
-   "dán kèm mảng thân 2718px"
-  ],
-  "giangsinh-nu-pk07": [
-   "cắt phẳng 98px",
-   "dán kèm mảng thân 4848px"
-  ],
-  "giangsinh-nu-pk08": [
-   "cắt phẳng 51px",
-   "dán kèm mảng thân 3160px"
-  ],
   "giangsinh-nu-pk09": [
    "cắt phẳng 63px"
   ],
@@ -72,13 +52,8 @@
    "cắt phẳng 51px",
    "dán kèm mảng thân 2540px"
   ],
-  "tet-nam-pk07": [
-   "cắt phẳng 110px",
-   "dán kèm mảng thân 3211px"
-  ],
   "tet-nam-pk08": [
-   "cắt phẳng 69px",
-   "dán kèm mảng thân 5420px"
+   "cắt phẳng 69px"
   ],
   "tet-nam-pk09": [
    "cắt phẳng 109px"
@@ -86,20 +61,8 @@
   "tet-nam-pk10": [
    "cắt phẳng 52px"
   ],
-  "tet-nu-pk05": [
-   "cắt phẳng 80px",
-   "dán kèm mảng thân 4169px"
-  ],
   "tet-nu-pk06": [
    "cắt phẳng 46px"
-  ],
-  "tet-nu-pk08": [
-   "cắt phẳng 184px",
-   "dán kèm mảng thân 2702px"
-  ],
-  "tet-nu-pk09": [
-   "cắt phẳng 92px",
-   "dán kèm mảng thân 5785px"
   ],
   "tet-nu-pk10": [
    "cắt phẳng 170px"
@@ -107,36 +70,14 @@
   "muadong-nam-dau01": [
    "mũ không ôm đầu (che viền đầu 22%)"
   ],
-  "muadong-nam-pk06": [
-   "dán kèm mảng thân 3452px"
-  ],
-  "muadong-nam-pk07": [
-   "cắt phẳng 40px",
-   "dán kèm mảng thân 5350px"
-  ],
-  "muadong-nam-pk08": [
-   "cắt phẳng 102px",
-   "dán kèm mảng thân 4050px"
-  ],
   "muadong-nam-pk09": [
    "cắt phẳng 166px"
-  ],
-  "muadong-nam-pk10": [
-   "dán kèm mảng thân 5766px"
   ],
   "muadong-nu-dau04": [
    "mũ không ôm đầu (che viền đầu 45%)"
   ],
-  "muadong-nu-pk06": [
-   "cắt phẳng 82px",
-   "dán kèm mảng thân 4188px"
-  ],
   "muadong-nu-pk07": [
    "cắt phẳng 207px"
-  ],
-  "muadong-nu-pk08": [
-   "cắt phẳng 53px",
-   "dán kèm mảng thân 5874px"
   ],
   "muadong-nu-pk09": [
    "cắt phẳng 116px"
@@ -144,44 +85,20 @@
   "muadong-nu-pk10": [
    "cắt phẳng 60px"
   ],
-  "muahe-nam-pk06": [
-   "dán kèm mảng thân 5427px"
-  ],
-  "muahe-nam-pk07": [
-   "cắt phẳng 41px",
-   "dán kèm mảng thân 6298px"
-  ],
   "muahe-nam-pk08": [
    "cắt phẳng 104px"
-  ],
-  "muahe-nam-pk09": [
-   "cắt phẳng 52px",
-   "dán kèm mảng thân 6468px"
-  ],
-  "muahe-nam-pk10": [
-   "cắt phẳng 123px",
-   "dán kèm mảng thân 2762px"
   ],
   "muahe-nu-dau04": [
    "mũ không ôm đầu (che viền đầu 38%)"
   ],
   "muahe-nu-pk05": [
-   "cắt phẳng 82px",
-   "dán kèm mảng thân 4734px"
-  ],
-  "muahe-nu-pk06": [
-   "cắt phẳng 53px",
-   "dán kèm mảng thân 3462px"
+   "cắt phẳng 42px"
   ],
   "muahe-nu-pk07": [
    "cắt phẳng 110px"
   ],
   "muahe-nu-pk08": [
    "cắt phẳng 106px"
-  ],
-  "muahe-nu-pk09": [
-   "cắt phẳng 80px",
-   "dán kèm mảng thân 4661px"
   ],
   "muahe-nu-pk10": [
    "cắt phẳng 153px"
@@ -195,51 +112,15 @@
   "halloween-nam-pk04": [
    "lệch tâm +30px"
   ],
-  "halloween-nam-pk05": [
-   "cắt phẳng 150px",
-   "dán kèm mảng thân 3542px"
-  ],
-  "halloween-nam-pk06": [
-   "cắt phẳng 75px",
-   "dán kèm mảng thân 4695px"
-  ],
-  "halloween-nam-pk07": [
-   "cắt phẳng 145px",
-   "dán kèm mảng thân 3620px"
-  ],
-  "halloween-nam-pk08": [
-   "cắt phẳng 54px",
-   "dán kèm mảng thân 4675px"
-  ],
-  "halloween-nam-pk09": [
-   "cắt phẳng 74px",
-   "dán kèm mảng thân 4395px"
-  ],
-  "halloween-nam-pk10": [
-   "cắt phẳng 64px",
-   "dán kèm mảng thân 3990px"
-  ],
   "halloween-nu-ao04": [
    "cắt phẳng 100px"
   ],
   "halloween-nu-dau01": [
    "mũ không ôm đầu (che viền đầu 16%)"
   ],
-  "halloween-nu-pk05": [
-   "cắt phẳng 119px",
-   "dán kèm mảng thân 3176px"
-  ],
   "halloween-nu-pk06": [
    "cắt phẳng 46px",
    "dán kèm mảng thân 2635px"
-  ],
-  "halloween-nu-pk07": [
-   "cắt phẳng 73px",
-   "dán kèm mảng thân 3778px"
-  ],
-  "halloween-nu-pk08": [
-   "cắt phẳng 41px",
-   "dán kèm mảng thân 5927px"
   ],
   "halloween-nu-pk09": [
    "cắt phẳng 109px"
@@ -250,40 +131,12 @@
   "trungthu-nam-dau04": [
    "mũ không ôm đầu (che viền đầu 33%)"
   ],
-  "trungthu-nam-pk01": [
-   "cắt phẳng 86px",
-   "dán kèm mảng thân 3468px"
-  ],
-  "trungthu-nam-pk02": [
-   "cắt phẳng 82px",
-   "dán kèm mảng thân 3381px"
-  ],
   "trungthu-nam-pk03": [
    "cắt phẳng 73px",
    "dán kèm mảng thân 2563px"
   ],
-  "trungthu-nam-pk04": [
-   "cắt phẳng 76px",
-   "dán kèm mảng thân 3726px"
-  ],
-  "trungthu-nam-pk05": [
-   "cắt phẳng 55px",
-   "dán kèm mảng thân 3105px"
-  ],
   "trungthu-nam-pk06": [
    "cắt phẳng 75px"
-  ],
-  "trungthu-nam-pk07": [
-   "cắt phẳng 107px",
-   "dán kèm mảng thân 3289px"
-  ],
-  "trungthu-nu-pk01": [
-   "cắt phẳng 57px",
-   "dán kèm mảng thân 4000px"
-  ],
-  "trungthu-nu-pk02": [
-   "cắt phẳng 54px",
-   "dán kèm mảng thân 4884px"
   ],
   "trungthu-nu-pk03": [
    "cắt phẳng 127px"
@@ -293,13 +146,6 @@
   ],
   "trungthu-nu-pk05": [
    "cắt phẳng 110px"
-  ],
-  "trungthu-nu-pk06": [
-   "dán kèm mảng thân 4590px"
-  ],
-  "trungthu-nu-pk07": [
-   "cắt phẳng 48px",
-   "dán kèm mảng thân 2806px"
   ]
  }
 }
