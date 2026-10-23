@@ -39,4 +39,4 @@ export async function middleware(req) {
   return NextResponse.redirect(new URL(dest + search, req.url), hit.code === 302 ? 302 : 301);
 }
 
-export const config = { matcher: ["/((?!_next/|_vercel/|api/|img/|anh/|favicon|icon|apple-|manifest|logo-|og-image|sitemap.xml|robots.txt|llms.txt).*)"] };
+export const config = { matcher: ["/((?!_next/|_vercel/|api/|img/|anh/|i/|favicon|icon|apple-|manifest|logo-|og-image|sitemap.xml|robots.txt|llms.txt).*)"] };
