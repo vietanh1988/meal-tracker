@@ -484,7 +484,9 @@ async function cleanSources(admin) {
     const next = fixSources(p.blocks || []);
     const seo = { ...(p.seo || {}), src_v: 1 };
     if (JSON.stringify(next) !== JSON.stringify(p.blocks || [])) {
-      await admin.from("web_revisions").insert({ post_id: p.id, snapshot: p, reason: "sources", created_by: null }).then(() => {}, () => {});
+      // reason chỉ nhận giá trị trong CHECK của web_revisions ("sources" bị từ chối) → dùng "update"; không lưu được bản lịch sử thì không sửa bài
+      const { error: re } = await admin.from("web_revisions").insert({ post_id: p.id, snapshot: p, reason: "update", created_by: null });
+      if (re) return { checked: (rows || []).length, fixed, error: "Lưu bản lịch sử: " + re.message };
       const { error } = await admin.from("web_posts").update({ blocks: next, seo, updated_at: new Date().toISOString() }).eq("id", p.id);
       if (!error) fixed++;
     } else await admin.from("web_posts").update({ seo }).eq("id", p.id);
