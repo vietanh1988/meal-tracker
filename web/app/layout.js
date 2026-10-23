@@ -48,8 +48,10 @@ export default async function RootLayout({ children }) {
     <html lang="vi" className={inter.variable}>
       <head>
         {/* GA4 + mã <head> tuỳ ý in thẳng vào HTML (không chèn bằng JS sau khi tải) → Google "Kiểm tra thẻ" và bot đọc được. async nên không làm chậm trang */}
-        {ga4 && <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4}`} />}
-        {ga4 && <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());if(/(^|\\.)fipilotai\\.com$/.test(location.hostname))gtag('config','${ga4}');` }} />}
+        {/* 23/10: Search Console đã xác minh bằng thẻ HTML → gtag.js (178 KB) không cần nằm sẵn trong <head>. Lệnh gtag vẫn ghi ngay vào dataLayer;
+            file gtag.js tải sau khi trang hiện xong (load + 1,5 s) hoặc ngay khi khách chạm / cuộn — không giành mạng với nội dung (PageSpeed điện thoại).
+            Cài đặt SEO › Mã theo dõi tắt "Chỉ chạy mã đo sau khi trang đã hiện xong" (lazy = false) thì tải ngay như cũ. */}
+        {ga4 && <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());if(/(^|\\.)fipilotai\\.com$/.test(location.hostname)){gtag('config','${ga4}');(function(){var d=0;function go(){if(d)return;d=1;var g=document.createElement('script');g.async=1;g.src='https://www.googletagmanager.com/gtag/js?id=${ga4}';document.head.appendChild(g)}${t.lazy === false ? "go()" : "['touchstart','scroll','keydown','mousemove'].forEach(function(e){addEventListener(e,go,{once:true,passive:true})});function w(){setTimeout(go,1500)}document.readyState==='complete'?w():addEventListener('load',w)"}})()}` }} />}
         {headTags(t.head, ga4)}
       </head>
       <body>
