@@ -9,6 +9,7 @@ import { LT, ltCard, DK, dkCard } from "../theme";
 import { PetAvatar, ItemImg, ITEMS, catalog, PET_BASE } from "./PetAvatar";
 import { PetRoom } from "./PetRoom";
 import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile } from "../pi/piCatalog";
+import { lateNight } from "../pi/piExpr";
 
 const fmt = (n) => Math.round(n).toLocaleString("vi-VN");
 export const RARITY = {
@@ -83,7 +84,7 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
     <PetRoom time={pet.time || "sang"} hour={pet.hour} variant={pet.variant} season={roomOf(pet)} trophies={[]} height={height}>
       <span aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: 22, width: size * 0.62, height: 18, marginLeft: -(size * 0.31), borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
       <button type="button" data-testid="pet-tap" onClick={tap} aria-label={`Chạm vào ${pet.name}`} style={{ position: "absolute", left: "50%", bottom: 26, transform: "translateX(-50%)", border: "none", background: "transparent", padding: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-        <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} size={Math.round(size * 0.9)} talking={talking} live={live} react={react} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
+        <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} size={Math.round(size * 0.9)} talking={talking} live={live} react={react} night={lateNight(pet.hour ?? 12)} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
       </button>
       {hearts.map((h) => <img key={h.id} src={PET_BASE + heart} alt="" aria-hidden="true" className="pet-heart" style={{ position: "absolute", left: `calc(50% + ${h.dx}px)`, bottom: size * 0.55, width: 26, marginLeft: -13, animationDelay: `${h.d}ms`, pointerEvents: "none" }} />)}
       {children}
