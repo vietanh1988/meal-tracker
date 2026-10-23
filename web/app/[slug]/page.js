@@ -83,7 +83,7 @@ export default async function Page({ params }) {
           {long && t.length > 0 && <aside className="only-pc" style={{ width: 300, flexShrink: 0, position: "sticky", top: 90 }}><LegalToc t={t} /></aside>}
         </div>
         <Sticky s={s} ref_={`page-${p.slug}`} />
-        <style dangerouslySetInnerHTML={{ __html: `.legal .prose{gap:20px}.legal .prose h2{font-size:26px;line-height:normal;margin-top:12px}.legal .prose h2:first-child{margin-top:0}.legal .prose p,.legal .prose li{max-width:720px}.legal .prose>div>*+*{margin-top:14px}.legal .prose ul,.legal .prose ol{padding-left:22px;display:flex;flex-direction:column;gap:6px}@media(max-width:720px){.art{padding:20px!important}.lg-up{font-size:16px!important}.lg-w{flex-direction:column;gap:16px!important;padding-top:24px!important}.lg-w>article{width:100%}.lg-mt{display:block;align-self:flex-start;max-width:100%}.legal .prose h2{font-size:22px}}` }} />
+        <style dangerouslySetInnerHTML={{ __html: `.legal .prose{gap:20px}.legal .prose h2{font-size:26px;line-height:normal;margin-top:12px}.legal .prose h2:first-child{margin-top:0}.legal .prose p,.legal .prose li{max-width:720px}.legal .prose>div>*+*{margin-top:14px}.legal .prose ul,.legal .prose ol{padding-left:22px;display:flex;flex-direction:column;gap:6px}@media(max-width:720px){.art{padding:20px!important}.art-flat{padding:0!important}.lg-up{font-size:16px!important}.lg-w{flex-direction:column;gap:16px!important;padding-top:24px!important}.lg-w>article{width:100%}.lg-mt{display:block;align-self:flex-start;max-width:100%}.legal .prose h2{font-size:22px}}` }} />
       </main>
     );
   }
@@ -94,10 +94,10 @@ export default async function Page({ params }) {
   if (rel.length < 3) rel = [...rel, ...(await latestPosts({ limit: 4, termId: cat?.id || null, exclude: [p.id, ...rel.map((x) => x.id)] }))].slice(0, 3);
   const a = p.author;
   return (
-    <main>
+    <main style={{ background: "#FFFFFF" }}>{/* 23/10: thân bài không khung (nền trắng cả trang cho thoáng), chỉ cột bên giữ khung */}
       <JsonLd data={ld(...graphs)} />
-      <div className="wrap postwrap" style={{ paddingTop: 40, paddingBottom: 52, display: "flex", gap: 32, alignItems: "flex-start" }}>
-        <div className="card art" style={{ flex: 1, minWidth: 0, padding: "48px 56px" }}>
+      <div className="wrap postwrap" style={{ paddingTop: 40, paddingBottom: 52, display: "flex", gap: 48, alignItems: "flex-start" }}>
+        <div className="art art-flat" style={{ flex: 1, minWidth: 0, padding: "8px 0 0 0" }}>
           <article style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <Crumb items={crumbs.slice(0, -1)} last />
             <h1 className="h1">{p.title}</h1>
@@ -146,7 +146,7 @@ export default async function Page({ params }) {
         </aside>
       </div>
       <Sticky s={s} ref_={`post-${p.slug}`} />
-      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.art{padding:20px!important}.cover{height:230px!important}.postwrap{padding-top:20px!important;padding-bottom:40px!important}.rel{gap:6px!important;margin-top:32px!important;padding-top:28px!important}.rel-h{font-size:22px!important;margin-bottom:8px}}` }} />
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.art{padding:20px!important}.art-flat{padding:0!important}.cover{height:230px!important}.postwrap{padding-top:20px!important;padding-bottom:40px!important}.rel{gap:6px!important;margin-top:32px!important;padding-top:28px!important}.rel-h{font-size:22px!important;margin-bottom:8px}}` }} />
     </main>
   );
 }
