@@ -1,3 +1,4 @@
+import { fixSources } from "./sources.js";
 // AI viết bài cho web (Quản trị › WEB · NỘI DUNG › AI viết bài).
 // Bộ quy tắc = bản rút gọn của "Skillstystemcontent v2.4.5" cho Fipilot (sửa được ở màn AI viết bài; "Về bản gốc" = RULES_DEFAULT).
 // Hàm thuần, KHÔNG import gì: file này được chép y nguyên sang supabase/functions/web-writer/aiWrite.js (test so khớp 2 bản).
@@ -431,14 +432,15 @@ export function articleIssues(a, blocks, { inlineImages = null } = {}) {
 
 // Kết quả AI → bài nháp. imgs: { cover: {url, alt}, inline: [{url, alt}] } (ảnh đã vẽ / dùng lại)
 export function articleToPost(a, { keyword = "", termId = null, authorId = null, kind = "post", imgs = null, links = null, sources = null } = {}) {
-  const blocks = [...mdToBlocks(a.md, { links }), ...sourcesBlocks(sources)];
+  // 23/10: danh sách nguồn chỉ giữ / thêm tổ chức được trích trong thân bài
+  const blocks = fixSources([...mdToBlocks(a.md, { links }), ...sourcesBlocks(sources)]);
   let k = 0;
   if (imgs?.inline?.length) for (const b of blocks) if (b.type === "img" && imgs.inline[k]) { const g = imgs.inline[k++]; if (g?.url) { b.url = g.url; if (g.alt) b.alt = g.alt; } }
   return {
     id: null, kind, title: a.title, slug: a.slug, status: "draft", blocks, excerpt: a.excerpt || "",
     cover_url: imgs?.cover?.url || "", cover_alt: imgs?.cover?.alt || a.cover || (blocks.find((b) => b.type === "img") || {}).alt || "", author_id: authorId, primary_term: termId,
     pinned: false, related: { mode: "auto", ids: [] }, published_at: null, terms: termId ? [termId] : [], template: null,
-    seo: { title: a.seoTitle || "", desc: a.seoDesc || "", keyword: String(keyword || "").trim(), ai: true },
+    seo: { title: a.seoTitle || "", desc: a.seoDesc || "", keyword: String(keyword || "").trim(), ai: true, src_v: 1 },
   };
 }
 

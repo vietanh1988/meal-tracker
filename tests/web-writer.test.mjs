@@ -375,3 +375,14 @@ test("revise_next: soát lại bài cũ — tra nguồn có link → AI chỉ tr
   assert.ok(r3.idle);
   assert.ok(calls.claude.some((c) => /Tốc độ giảm cân: app khuyên/.test(c.messages[0].content)));
 });
+
+test("23/10 bộ viết bài: mục Nguồn tham khảo chỉ giữ tổ chức được trích trong bài; bản chép sources.js / aiWrite.js y hệt", async () => {
+  const { readFileSync } = await import("node:fs");
+  assert.equal(readFileSync("src/pc/web/sources.js", "utf8"), readFileSync("supabase/functions/web-writer/sources.js", "utf8"));
+  assert.equal(readFileSync("src/pc/web/aiWrite.js", "utf8"), readFileSync("supabase/functions/web-writer/aiWrite.js", "utf8"));
+  const { articleToPost } = await import("../src/pc/web/aiWrite.js");
+  const post = articleToPost({ title: "T", slug: "t", md: "Theo Mayo Clinic, người trên 40 tuổi mất cơ dần.\n\n## Kết luận\n\nĐi chậm." }, { sources: [{ name: "Estimated Daily Calorie Needs", url: "https://www.fda.gov/x" }, { name: "Mayo Clinic: Metabolism", url: "https://www.mayoclinic.org/healthy-lifestyle/weight-loss/in-depth/metabolism/art-20046508" }] });
+  const items = post.blocks.find((b) => b.type === "list" && b.items.join(" ").includes("http")).items.join(" ");
+  assert.ok(items.includes("art-20046508") && !items.includes("fda.gov"), items);
+  assert.equal(post.seo.src_v, 1);
+});

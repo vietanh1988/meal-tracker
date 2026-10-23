@@ -5,6 +5,7 @@ import {
   caloHints, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk, sourcesFromResearch, sourcesBlocks, reviseUnits, revisePrompt, parseRevise, applyRevise, hasSources,
   relinkUnits, relinkPrompt, parseRelink, applyRelink, backlinkCandidates,
 } from "./aiWrite.js";
+import { fixSources } from "./sources.js";
 
 export function makeWriter({ db, Image, fetch = globalThis.fetch, envClaude = "" }) {
 const ENV_CLAUDE = envClaude;
@@ -455,7 +456,7 @@ async function reviseNext(admin, cfg) {
     await logUsage(admin, null, prov, model, r.inTok, r.outTok, cost, "web_revise");
     const res = /^\s*KHÔNG CẦN SỬA\s*$/im.test(r.text) ? { blocks: post.blocks, changed: [], skipped: [] } : applyRevise(post.blocks || [], units, parseRevise(r.text));
     const src = hasSources(res.blocks) ? [] : sourcesFromResearch(rev.research || "");
-    const blocks = [...res.blocks, ...sourcesBlocks(src)];
+    const blocks = fixSources([...res.blocks, ...sourcesBlocks(src)]);
     const now = new Date().toISOString();
     if (res.changed.length || src.length) {
       await admin.from("web_revisions").insert({ post_id: post.id, snapshot: { ...post, seo: post.seo }, reason: "ai", created_by: null }).then(() => {}, () => {});
@@ -474,8 +475,26 @@ async function spentToday(admin) {
   return (data || []).reduce((s, r) => s + Number(r.cost_text) + Number(r.cost_img), 0);
 }
 
+// 23/10: dọn mục "Nguồn tham khảo" đã lưu của bài cũ cho khớp nguồn trích trong thân bài (không gọi AI).
+// Mỗi phút 15 bài chưa có seo.src_v; đổi thì lưu bản lịch sử trước, rồi đánh dấu src_v = 1.
+async function cleanSources(admin) {
+  const { data: rows } = await admin.from("web_posts").select("id,slug,status,title,blocks,seo,excerpt").eq("kind", "post").is("seo->src_v", null).limit(15);
+  let fixed = 0;
+  for (const p of rows || []) {
+    const next = fixSources(p.blocks || []);
+    const seo = { ...(p.seo || {}), src_v: 1 };
+    if (JSON.stringify(next) !== JSON.stringify(p.blocks || [])) {
+      await admin.from("web_revisions").insert({ post_id: p.id, snapshot: p, reason: "sources", created_by: null }).then(() => {}, () => {});
+      const { error } = await admin.from("web_posts").update({ blocks: next, seo, updated_at: new Date().toISOString() }).eq("id", p.id);
+      if (!error) fixed++;
+    } else await admin.from("web_posts").update({ seo }).eq("id", p.id);
+  }
+  return { checked: (rows || []).length, fixed };
+}
+
 async function tick() {
   const admin = db(); const t0 = Date.now();
+  try { await cleanSources(admin); } catch (_e) { /* không chặn hàng chờ viết bài */ }
   const cfg = await config(admin);
   if (await spentToday(admin) >= Number(cfg.daily_cap_usd || 0) && Number(cfg.daily_cap_usd) > 0) return { paused: "cap" };
   const { data } = await admin.rpc("web_ai_claim");
