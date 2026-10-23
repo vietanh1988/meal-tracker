@@ -76,6 +76,8 @@ export const DISHES = [
   ["cải xào thịt bò", "veg", [["đĩa", 250]], [["rau cải xào", 170], ["thịt bò xào", 80]]],
   ["su hào xào", "veg", [["đĩa", 200]], [["su hào xào", 100]]],
   // ===== Ăn vặt, chè, đồ uống =====
+  ["bánh chuối hấp", "starch", [["miếng", 80]], [["chuối", 50], ["bột năng", 15], ["nước cốt dừa", 10], ["đường", 10], ["nước", 15]]],
+  ["bánh chuối chiên", "starch", [["cái", 70]], [["chuối", 55], ["bột mì", 20], ["dầu ăn", 10], ["đường", 5], ["nước", 10]]],
   ["chè ba màu", "drink", [["cốc", 300]], [["đậu xanh nấu", 50], ["đậu đỏ nấu", 50], ["thạch rau câu", 40], ["nước cốt dừa", 30], ["đường", 30], ["nước", 100]]],
   ["chè sen", "drink", [["bát", 250]], [["hạt sen", 70], ["đường", 30], ["nước", 150]]],
   ["chè lam", "starch", [["miếng", 40]], [["gạo nếp", 45], ["đường", 30], ["lạc", 10], ["gừng", 2], ["nước", 13]]],

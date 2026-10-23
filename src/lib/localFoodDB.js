@@ -1749,7 +1749,7 @@ unifySynonyms();
 {
   const MEATY = new Set(["poultry", "beef", "pork", "seafood", "egg_dairy"]);
   const SKIP = new Set(["hầm", "nấu canh", "gỏi", "nộm", "trộn", "nấu", "tần"]);
-  const STEW = new Set(["bò kho", "gà kho sả gừng nước"]); // bò kho kiểu Nam = món nước (ăn với bánh mì): số gồm cả nước kho
+  const STEW = new Set(["bò kho", "gà kho sả gừng nước", "heo quay", "heo quay giòn bì"]); // heo quay: thịt ba chỉ có bì, giữ số cũ // bò kho kiểu Nam = món nước (ăn với bánh mì): số gồm cả nước kho
   for (const [k, v] of Object.entries(LOCAL_FOODS)) {
     if (v.form === "raw" || (v.ref && !v.same_as) || STEW.has(k)) continue;
     const m = findMethod(k);
@@ -1936,17 +1936,18 @@ const COOK_KEYS = Object.keys(COOK_MODIFIERS).sort((a, b) => b.length - a.length
 // LOOKUP: search localDB with cooking modifier support
 // Returns null if not found
 // ============================================================
-export function lookupLocalFood(nameVN, gram) {
+export function lookupLocalFood(nameVN, gram, opts) {
+  const rawBase = !!(opts && opts.raw); // công thức món: nguyên liệu tính theo dạng sống (không theo tên hiện "đã nấu")
   const lower = (nameVN || "").toLowerCase().trim();
   if (!lower) return null;
 
   // 1. Exact match — fastest, most accurate
   if (LOCAL_FOODS[lower]) {
-    return scaleFood(LOCAL_FOODS[lower], lower, gram, null);
+    return scaleFood(LOCAL_FOODS[lower], lower, gram, null, rawBase);
   }
   // 1b. 23/10: tên gọi khác / vùng miền ("thịt lợn rim" = "thịt heo rim", "nem rán" = "chả giò")
   const canonKey = canonKeyOf(lower);
-  if (canonKey) return scaleFood(LOCAL_FOODS[canonKey], canonKey, gram, null);
+  if (canonKey) return scaleFood(LOCAL_FOODS[canonKey], canonKey, gram, null, rawBase);
   // 1c. nguyên liệu + cách nấu ("thịt heo rim", "cá lóc kho tộ"): tách cách nấu, phần còn lại khớp đúng 1 nguyên liệu trong kho
   const mm = findMethodAny(lower);
   if (mm) {
@@ -2010,7 +2011,7 @@ export function lookupLocalFood(nameVN, gram) {
 // ============================================================
 // SCALE: apply gram + cooking modifier
 // ============================================================
-function scaleFood(base, foodKey, gram, cookKey0) {
+function scaleFood(base, foodKey, gram, cookKey0, rawBase) {
   let cookKey = cookKey0;
   const g = gram===0?0:(gram||100);
   const r = g / 100;
@@ -2035,7 +2036,7 @@ function scaleFood(base, foodKey, gram, cookKey0) {
 
   // 23/10: nguyên liệu sống mà tên hiện là món đã nấu ("ức gà" hiện "Ức gà áp chảo", "ba chỉ" hiện "Ba chỉ luộc")
   // → tính số theo đúng cách nấu đó (trước đây hiện "đã nấu" mà số vẫn là đồ sống: thiếu ~30% đạm / calo)
-  if (!cookKey && base.form === "raw") cookKey = displayMethod(foodKey);
+  if (!cookKey && base.form === "raw" && !rawBase) cookKey = displayMethod(foodKey);
   // 23/10: cách nấu trong METHODS → hệ số thành phẩm + dầu / đường (cookMethods.js)
   const cooked = cookKey && METHODS[cookKey] ? cookPer100(base, foodKey, cookKey) : null;
   if (cooked) {
@@ -2716,13 +2717,13 @@ export function isStandaloneDish(foodKey) {
 // ============================================================
 {
   for (const [name, cat, units, parts] of DISHES) {
-    if (LOCAL_FOODS[name]) continue;
+    if (LOCAL_FOODS[name] || canonKeyOf(name)) continue; // đã có dưới tên khác (bánh giày = bánh dày)
     let g = 0, p = 0, c = 0, f = 0, cal = 0, fiber = 0, ok = true;
     for (const [part, gram] of parts) {
       g += gram;
       if (part === "nước") continue;
       if (part === "nước dùng") { p += BROTH.p * gram / 100; c += BROTH.c * gram / 100; f += BROTH.f * gram / 100; cal += BROTH.cal * gram / 100; continue; }
-      const r = lookupLocalFood(part, gram);
+      const r = lookupLocalFood(part, gram, { raw: true });
       if (!r) { ok = false; break; }
       p += r.protein; c += r.carb; f += r.fat; cal += r.cal; fiber += r.fiber;
     }

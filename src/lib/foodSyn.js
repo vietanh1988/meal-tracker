@@ -11,12 +11,12 @@ const PHRASES = [
   ["nem cuốn", "gỏi cuốn"], ["bánh đa nem", "bánh tráng"], ["bánh tráng cuốn", "bánh tráng cuốn"],
   ["cơm rang", "cơm chiên"], ["giò lụa", "chả lụa"], ["chà bông", "ruốc"],
   ["tàu hũ nước đường", "tào phớ"], ["tàu phớ", "tào phớ"], ["đậu hũ nước đường", "tào phớ"],
-  ["hủ tíu", "hủ tiếu"], ["hủ tíu", "hủ tiếu"], ["phở cuốn", "phở cuốn"],
+  ["hủ tíu", "hủ tiếu"], ["phở cuốn", "phở cuốn"],
   ["bánh mỳ", "bánh mì"], ["mỳ", "mì"], ["mì tôm", "mì gói"], ["mì ăn liền", "mì gói"],
   ["cà phê sữa đá", "cà phê sữa"], ["cafe", "cà phê"], ["cà fê", "cà phê"], ["cf", "cà phê"],
   ["sinh tố", "sinh tố"], ["smoothie", "sinh tố"],
   ["bún tươi", "bún"], ["bún rối", "bún"], ["cháo lòng lợn", "cháo lòng heo"], ["bún cá rô đồng", "bún cá rô"],
-  ["bánh chuối", "bánh chuối nướng"], ["bánh chuối nướng", "bánh chuối nướng"], ["bánh giầy", "bánh dày"], ["bánh giày", "bánh dày"],
+  ["bánh giầy", "bánh dày"], ["bánh giày", "bánh dày"],
   ["sốt cà chua", "sốt cà"], ["xốt cà chua", "sốt cà"], ["xốt", "sốt"], ["bê thui", "bê thui"], ["thịt bê thui", "bê thui"],
   ["cơm tấm sườn nướng", "cơm tấm sườn"], ["miến lươn xào", "miến lươn"],
   ["da ua", "sữa chua"], ["dau ua", "sữa chua"], ["yaourt", "sữa chua"], ["yogurt", "sữa chua"], ["yoghurt", "sữa chua"],
@@ -30,8 +30,9 @@ const PHRASES = [
   // rau củ quả, hạt
   ["bí ngô", "bí đỏ"], ["bí rợ", "bí đỏ"], ["ngô", "bắp"],
   ["sắn dây", "sắn dây"], ["củ sắn", "củ sắn"], ["sắn", "khoai mì"],
-  ["khổ qua", "mướp đắng"], ["dứa", "thơm"], ["vừng", "mè"],
-  ["đậu phộng", "lạc"], ["đậu hũ", "đậu phụ"], ["tàu hũ", "đậu phụ"], ["đậu khuôn", "đậu phụ"],
+  ["khổ qua", "mướp đắng"], ["dứa", "thơm"], ["khóm", "thơm"], ["vừng", "mè"],
+  ["đỗ tương", "đậu nành"], ["đậu tương", "đậu nành"], ["vịt xiêm", "ngan"], ["mùng tơi", "mồng tơi"], ["rau mồng tơi", "mồng tơi"], ["bí đao", "bí xanh"], ["chuối già", "chuối tiêu"], ["nước lèo", "nước dùng"],
+  ["đậu phộng", "lạc"], ["đậu hũ", "đậu phụ"], ["tàu hũ chiên", "đậu phụ chiên"], ["tàu hũ non", "đậu phụ non"], ["đậu khuôn", "đậu phụ"],
   ["súp lơ xanh", "bông cải xanh"], ["súp lơ trắng", "bông cải trắng"], ["súp lơ", "bông cải trắng"], ["bông cải", "bông cải"],
   ["giá đỗ", "giá đậu"], ["đỗ", "đậu"], ["đậu que", "đậu cô ve"],
   ["rau diếp", "xà lách"], ["xà lách xoong", "cải xoong"],
@@ -43,7 +44,7 @@ const PHRASES = [
   ["khoai sọ", "khoai môn"], ["khoai từ", "khoai mỡ"],
   ["xì dầu", "nước tương"], ["mì chính", "bột ngọt"],
   // cách chế biến
-  ["rán", "chiên"], ["chiên giòn", "chiên giòn"], ["ốp lết", "ốp la"],
+  ["rán", "chiên"], ["chiên giòn", "chiên giòn"],
 ];
 
 const strip = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/\s+/g, " ").trim();
@@ -51,7 +52,7 @@ export const hasDiacritics = (s) => strip(s) !== String(s || "").toLowerCase().r
 
 const RULES = PHRASES.map(([from, to]) => ({ from: ` ${from} `, to: ` ${to} ` })).sort((a, b) => b.from.length - a.from.length);
 // Bản không dấu: chỉ luật mà bỏ dấu vẫn không trùng nghĩa ("thit lon" → "thit heo"; KHÔNG áp "lon" đứng một mình vì trùng "lon bia")
-const PLAIN_RULES = PHRASES.filter(([from]) => from.includes(" ") || ["ngô", "dứa", "vừng", "sắn", "mỳ", "rán", "bằm", "lợn", "khổ qua", "đậu phộng", "xì dầu"].includes(from))
+const PLAIN_RULES = PHRASES.filter(([from]) => from.includes(" ") || ["sắn", "mỳ", "rán", "bằm", "khổ qua", "đậu phộng", "xì dầu"].includes(from))
   .map(([from, to]) => ({ from: ` ${strip(from)} `, to: ` ${strip(to)} ` })).sort((a, b) => b.from.length - a.from.length);
 
 function applyRules(text, rules) {

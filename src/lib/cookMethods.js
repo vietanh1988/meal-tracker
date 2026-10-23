@@ -52,13 +52,13 @@ export const METHODS = {
   "nấu":        { y: { meat: 0.80, fish: 0.85, shell: 0.85, egg: 1 }, oil: 1 },
   "um":         { y: { meat: 0.78, fish: 0.85, shell: 0.85, egg: 1 }, oil: 2, sugar: 1 },
   "nấu canh":   { y: { meat: 0.85, fish: 0.90, shell: 0.90, egg: 1 } },
-  "trộn":       { y: {}, oil: 2, sugar: 2 },
-  "gỏi":        { y: {}, oil: 1, sugar: 3 },
-  "nộm":        { y: {}, oil: 1, sugar: 3 },
+  "trộn":       { y: { meat: 0.75, fish: 0.85, shell: 0.85, egg: 1 }, oil: 2, sugar: 2 },
+  "gỏi":        { y: { meat: 0.75, fish: 0.85, shell: 0.85, egg: 1 }, oil: 1, sugar: 3 },
+  "nộm":        { y: { meat: 0.75, fish: 0.85, shell: 0.85, egg: 1 }, oil: 1, sugar: 3 },
 };
 
 // Từ cách nấu viết khác → tên chuẩn ở METHODS (đã qua bỏ dấu ở chỗ gọi nếu cần)
-export const METHOD_ALIAS = { "rán": "chiên", "rán giòn": "chiên giòn", "chiên bột": "tẩm bột chiên", "lăn bột chiên": "tẩm bột chiên", "luộc chín": "luộc", "kho tàu": "kho trứng", "kho mặn": "kho", "nướng than": "nướng", "nướng mọi": "nướng", "áp chảo bơ": "áp chảo", "hầm nhừ": "hầm", "xào lăn": "xào", "rang sả": "rang", "chưng": "hấp", "đồ": "hấp", "rim đường": "rim", "rang cháy": "rang", "rang cháy cạnh": "rang", "ram": "rim", "ram mặn": "rim mặn", "thui": "nướng", "tái": "luộc", "chần": "luộc", "nhúng": "luộc" };
+export const METHOD_ALIAS = { "rán": "chiên", "rán giòn": "chiên giòn", "chiên bột": "tẩm bột chiên", "lăn bột chiên": "tẩm bột chiên", "luộc chín": "luộc", "kho tàu": "kho trứng", "kho mặn": "kho", "nướng than": "nướng", "nướng mọi": "nướng", "áp chảo bơ": "áp chảo", "hầm nhừ": "hầm", "xào lăn": "xào", "rang sả": "rang", "rim đường": "rim", "rang cháy": "rang", "rang cháy cạnh": "rang", "ram": "rim", "ram mặn": "rim mặn", "thui": "nướng", "tái": "luộc", "chần": "luộc", "nhúng": "luộc" };
 
 const GROUP = { poultry: "meat", beef: "meat", pork: "meat", seafood: "fish", egg_dairy: "egg" };
 const SHELL = /^(tôm|tép|mực|bạch tuộc|cua|ghẹ|ngao|nghêu|sò|ốc|hến|hàu|trai|tôm hùm)/;
@@ -80,7 +80,8 @@ export function cookPer100(base, key, m) {
   // Mỡ chảy ra khi nấu tỉ lệ với độ béo của miếng thịt (đối chiếu cặp sống / chín của USDA: gà cả da 215 → quay 239, luộc 219;
   // ức gà nạc gần như không mất mỡ). L = phần mỡ mất tối đa của cách nấu; thịt càng béo (tới 15 g / 100 g) càng mất nhiều.
   const L = M.fatLoss ?? (/^(luộc|hấp|hầm|nấu|tần|nướng|quay|áp chảo)/.test(m) ? 0.4 : /^(chiên|xào)/.test(m) ? 0.25 : 0.15);
-  const fatKeep = plant ? 1 : (M.fatKeep || 1) * (1 - L * Math.min(1, (base.f || 0) / 15));
+  // trứng không chảy mỡ khi nấu (USDA trứng luộc 155 / sống 143)
+  const fatKeep = plant || grp === "egg" ? 1 : (M.fatKeep || 1) * (1 - L * Math.min(1, (base.f || 0) / 15));
   const oil = M.oil || 0, sugar = M.sugar || 0, flour = M.flour || 0, carb = M.carb || 0;
   const fRaw = (base.f || 0) * fatKeep;
   const lostFatKcal = 9 * (base.f || 0) * (1 - fatKeep);
