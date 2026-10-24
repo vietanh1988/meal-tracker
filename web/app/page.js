@@ -2,7 +2,7 @@
 import { Fragment } from "react";
 import Calc from "@/components/Calc";
 import { HOME_HERO, HOME_SECTIONS, HOME_FAQ, HOME_TEXT } from "@/lib/home";
-import { fillTrial, vnd, premiumPoints } from "@/lib/plans";
+import { fillTrial, vnd, premiumPoints, trialName, trialSub, trialPoints } from "@/lib/plans";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import Phone from "@/components/Phone";
@@ -75,8 +75,8 @@ export default async function Home() {
         <div>
           <div className="h-head"><span className="eye">{T.price_eye}</span><h2 className="h2">{T.price_title}</h2></div>
           <div className="h-plans">
-            <div className="h-plan"><span className="pn">{pr.free?.name || "Miễn phí"}</span><b className="pp">0đ</b>{["Thực đơn tự lên mỗi ngày", "Đổi món, ghi bữa, nhắc giờ", "Tổng kết tháng"].map((x) => <span key={x} className="ck2"><i>✓</i>{x}</span>)}<a className="btn b2" href={appLink(s, "home-free")} style={{ marginTop: "auto" }}>Bắt đầu miễn phí</a></div>
-            <div className="h-plan hi"><span className="ptag">Phổ biến</span><span className="pn">{pr.premium?.name || "Premium"}</span><b className="pp">{P.month ? vnd(P.month.per) : "Liên hệ"}{P.month && <small> / tháng</small>}</b>{premiumPoints(P).filter((x) => !/^Chỉ từ/.test(x)).map((x) => <span key={x} className="ck2"><i>✓</i>{x}</span>)}{P.cheapest && P.cheapest.m > 1 && <span className="psave">Chỉ từ {vnd(P.cheapest.per)} / tháng khi mua {P.cheapest.m} tháng</span>}<a className="btn b1" href={appLink(s, "home-premium")} style={{ marginTop: "auto" }}>{P.trial ? `Dùng thử ${P.trial} ngày` : "Nâng cấp Premium"}</a></div>
+            <div className="h-plan"><span className="pn">{trialName(P, pr)}</span><b className="pp">0đ</b><span className="mut" style={{ fontSize: 13.5 }}>{trialSub(P)}</span>{trialPoints(P).map((x) => <span key={x} className="ck2"><i>✓</i>{x}</span>)}<a className="btn b2" href={appLink(s, "home-free")} style={{ marginTop: "auto" }}>{trialName(P, pr)}</a></div>
+            <div className="h-plan hi"><span className="ptag">Phổ biến</span><span className="pn">{pr.premium?.name || "Premium"}</span><b className="pp">{P.month ? vnd(P.month.per) : "Liên hệ"}{P.month && <small> / tháng</small>}</b>{premiumPoints(P).filter((x) => !/^Chỉ từ/.test(x)).map((x) => <span key={x} className="ck2"><i>✓</i>{x}</span>)}{P.cheapest && P.cheapest.m > 1 && <span className="psave">Chỉ từ {vnd(P.cheapest.per)} / tháng khi mua {P.cheapest.m} tháng</span>}<a className="btn b1" href={appLink(s, "home-premium")} style={{ marginTop: "auto" }}>Nâng cấp Premium</a></div>
           </div>
         </div>
         <div>

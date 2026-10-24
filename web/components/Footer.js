@@ -7,6 +7,7 @@ import Icon from "./Icon";
 import { appLink } from "@/lib/site";
 import { getFood, mainPortion, porName } from "@/lib/foods";
 
+export const DISCLAIMER = "Fipilot AI là trang blog tin tức và chia sẻ kiến thức, không phải trang web y tế. Nội dung chỉ mang tính tham khảo, không thay thế chẩn đoán, điều trị hay tư vấn của bác sĩ. Số calo và dinh dưỡng là ước tính từ kho món của Fipilot AI, có thể chênh lệch tuỳ cách nấu và khẩu phần. Người có bệnh lý, đang mang thai, cho con bú, dưới 18 tuổi hoặc muốn thay đổi chế độ ăn lớn nên hỏi ý kiến bác sĩ / chuyên gia dinh dưỡng trước khi áp dụng.";
 const COLS = [["footer_1", "Chủ đề", "grid", "#38BDF8"], ["footer_2", "Fipilot AI", "star", "#FBBF24"], ["footer_3", "Chính sách", "shield", "#4ADE80"]];
 const head = { display: "flex", alignItems: "center", gap: 8, fontSize: 11.5, fontWeight: 800, letterSpacing: ".1em", color: "rgba(255,255,255,.55)" };
 const sq = (bg, col) => ({ width: 24, height: 24, borderRadius: 7, background: bg, color: col, display: "inline-flex", alignItems: "center", justifyContent: "center" });
@@ -77,6 +78,15 @@ export default async function Footer({ s, menus }) {
             </nav>
           ))}
         </div>
+        {/* 25/10 (chủ dự án chốt): khối Lưu ý — web là blog tin tức, không phải trang y tế (Cài đặt › Chân trang › disclaimer để trống = chữ mặc định) */}
+        {f.show_disclaimer !== false && (
+          <div className="wrap" style={{ position: "relative", marginTop: 28 }}>
+            <div data-testid="web-disclaimer" style={{ padding: "16px 18px", borderRadius: 14, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.12)", display: "flex", gap: 12, fontSize: 13, lineHeight: 1.65, color: "rgba(255,255,255,.72)" }}>
+              <span aria-hidden="true" style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 8, background: "rgba(251,191,36,.16)", color: "#FBBF24", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900 }}>!</span>
+              <span><b style={{ color: "#fff" }}>Lưu ý:</b> {f.disclaimer || DISCLAIMER}</span>
+            </div>
+          </div>
+        )}
         <div aria-hidden="true" className="watermark" style={{ position: "relative", marginTop: 10, textAlign: "center", fontSize: 168, fontWeight: 900, lineHeight: 1, background: "linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", whiteSpace: "nowrap", userSelect: "none" }}>Fipilot AI</div>
         <div style={{ position: "relative", background: "rgba(0,0,0,.18)" }}>
           <div className="wrap fbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 52, fontSize: 12, color: "rgba(255,255,255,.55)" }}>

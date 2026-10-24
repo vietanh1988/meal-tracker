@@ -3,7 +3,7 @@ import PageHead from "@/components/PageHead";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
 import { getSettings, appLink, alt, withOg } from "@/lib/site";
-import { vnd, fillTrial, premiumPoints, LIMIT_NAME, limitText } from "@/lib/plans";
+import { vnd, fillTrial, premiumPoints, LIMIT_NAME, limitText, trialName, trialSub, trialPoints } from "@/lib/plans";
 import { breadcrumb, faqGraph, ld, schemaOn, appGraph } from "@/lib/schema";
 
 export const revalidate = 300;
@@ -22,11 +22,12 @@ export default async function Price() {
   const aiRows = (P.limits || []).filter((x) => x.free != null || x.premium != null).map((x) => [LIMIT_NAME[x.k][0], limitText(x.free, LIMIT_NAME[x.k][1]), limitText(x.premium, LIMIT_NAME[x.k][1])]);
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng giá", path: "/bang-gia" }];
   const tick = (v) => (v ? <span className="chk" style={{ width: 22, height: 22, borderRadius: 11 }} aria-label="Có">✓</span> : <span style={{ color: "#CBD5E1", fontSize: 18 }} aria-label="Không">—</span>);
-  const plans = [[pr.free?.name || "Miễn phí", "0đ", "", "Cho người mới bắt đầu", ["Thực đơn tự lên mỗi ngày", "Đổi món 1 chạm", "Ghi bữa, nhắc giờ ăn", "Theo dõi cân, tổng kết tháng"], "Bắt đầu miễn phí", false], [pr.premium?.name || "Premium", P.month ? vnd(P.month.per) : "Liên hệ", P.month ? " / tháng" : "", P.trial ? `Dùng thử ${P.trial} ngày, không cần thẻ` : "Mở khoá nhiều lượt AI hơn", premiumPoints(P), P.trial ? `Dùng thử ${P.trial} ngày` : "Nâng cấp Premium", true]];
+  // 25/10 (chủ dự án chốt bản vẽ): thẻ đầu = gói dùng thử đủ chức năng (số ngày = app); Premium nút "Nâng cấp Premium"
+  const plans = [[trialName(P, pr), "0đ", "", trialSub(P), trialPoints(P), trialName(P, pr), false], [pr.premium?.name || "Premium", P.month ? vnd(P.month.per) : "Liên hệ", P.month ? " / tháng" : "", "Nhiều lượt AI hơn, dùng lâu dài", premiumPoints(P), "Nâng cấp Premium", true]];
   return (
     <main>
       <JsonLd data={ld(breadcrumb(s, crumbs), faqGraph(faq, s), schemaOn(s, "price") ? appGraph(s) : null)} />
-      <PageHead eye="Bảng giá" h1="Bắt đầu miễn phí, nâng cấp khi cần" sub="Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI." crumb={crumbs} />
+      <PageHead eye="Bảng giá" h1={P.trial ? `Dùng thử ${P.trial} ngày, nâng cấp khi cần` : "Bắt đầu miễn phí, nâng cấp khi cần"} sub={P.trial ? `Dùng thử đủ mọi chức năng trong ${P.trial} ngày, không cần thẻ. Hết dùng thử, app tự về gói Miễn phí — chỉ trả tiền khi bạn chọn nâng cấp.` : "Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI."} crumb={crumbs} />
       <div className="wrap pricew" style={{ paddingTop: 48, maxWidth: 960 }}>
         <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.pricew{padding-top:28px!important}.plans{gap:20px!important}.plan{padding:24px!important}.plan-p{font-size:36px!important}.cmp-c{width:90px!important}.durs{padding:18px!important}.durs-g{grid-template-columns:1fr 1fr!important;gap:16px 10px!important}.cmp-t{font-size:15px!important}}` }} />
         <div className="grid2 plans" style={{ gap: 28 }}>

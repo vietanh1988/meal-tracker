@@ -148,3 +148,18 @@ test("splitLong: đoạn dài chia thành đoạn 2-3 câu, giữ đoạn mở b
   assert.ok(out.length >= 3);
   assert.ok(out.some((b) => b.html.includes('<a href="/bang-calo">bảng calo. Món Việt</a>')));
 });
+
+test("25/10: thẻ gói đầu = dùng thử đủ chức năng theo số ngày của app; không có dùng thử thì về Miễn phí", async () => {
+  const { trialName, trialSub, trialPoints, premiumPoints } = await import("../lib/plans.js");
+  const P = { trial: 30, limits: [] };
+  assert.equal(trialName(P), "Dùng thử 30 ngày");
+  assert.match(trialSub(P), /Gói trial đủ chức năng · 30 ngày/);
+  assert.equal(trialPoints(P)[0], "Toàn bộ tính năng Premium trong 30 ngày");
+  assert.equal(premiumPoints(P)[0], "Mọi thứ của gói dùng thử");
+  assert.equal(trialName({ trial: 0 }, { free: { name: "Miễn phí" } }), "Miễn phí");
+});
+test("25/10: chân trang có khối Lưu ý — blog tin tức, không phải trang y tế", async () => {
+  const src = (await import("node:fs")).readFileSync(new URL("../components/Footer.js", import.meta.url), "utf8");
+  assert.match(src, /không phải trang web y tế/);
+  assert.match(src, /data-testid="web-disclaimer"/);
+});

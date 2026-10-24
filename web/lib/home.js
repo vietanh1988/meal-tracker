@@ -26,7 +26,7 @@ export const HOME_TEXT_FIELDS = {
     ["feat1_t", "Thẻ 1 · tên", "Thực đơn tự lên mỗi ngày"], ["feat1_x", "Thẻ 1 · mô tả", "Sáng phở, trưa cơm gà, tối bún chả — đúng calo cho bạn."],
     ["feat2_t", "Thẻ 2 · tên", "Không thích món nào? Đổi 1 chạm"], ["feat2_x", "Thẻ 2 · mô tả", "Gợi ý món giữ bữa gần bằng calo."], ["feat2_tip", "Thẻ 2 · dòng nhắc", "Bấm Đổi ở món bất kỳ → app gợi ý món khác giữ bữa gần bằng calo"],
     ["feat3_t", "Thẻ 3 · tên", "Thấy rõ kết quả mỗi tháng"], ["feat3_x", "Thẻ 3 · mô tả", "Kg đã giảm, ngày ghi bữa, so tháng trước."]],
-  pricing: [["price_eye", "Bảng giá · dòng nhỏ", "Bảng giá"], ["price_title", "Bảng giá · tiêu đề", "Bắt đầu miễn phí"], ["faq_eye", "Hỏi đáp · dòng nhỏ", "Hỏi đáp"], ["faq_title", "Hỏi đáp · tiêu đề", "Câu hỏi thường gặp"]],
+  pricing: [["price_eye", "Bảng giá · dòng nhỏ", "Bảng giá"], ["price_title", "Bảng giá · tiêu đề", "Dùng thử %trial% ngày"], ["faq_eye", "Hỏi đáp · dòng nhỏ", "Hỏi đáp"], ["faq_title", "Hỏi đáp · tiêu đề", "Câu hỏi thường gặp"]],
   posts: [["posts_eye", "Dòng nhỏ trên tiêu đề", "Blog"], ["posts_title", "Tiêu đề", "Bài viết mới"], ["posts_all", "Chữ link xem hết", "Xem tất cả →"]],
 };
 export const HOME_TEXT = Object.fromEntries(Object.values(HOME_TEXT_FIELDS).flat().map(([k, , d]) => [k, d]));

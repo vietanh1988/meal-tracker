@@ -25,10 +25,17 @@ export const limitText = (n, per) => (n == null ? "—" : n <= 0 ? null : `${n.t
 // Ý chính gói Premium (trang chủ, bảng giá): số lượt AI thật của app + giá rẻ nhất theo tháng
 export function premiumPoints(plan) {
   const L = Object.fromEntries((plan?.limits || []).map((x) => [x.k, x.premium]));
-  const out = ["Mọi thứ của gói Miễn phí"];
+  const out = [plan?.trial ? "Mọi thứ của gói dùng thử" : "Mọi thứ của gói Miễn phí"];
   if (L.photo > 0) out.push(`Chụp ảnh tính calo ${L.photo.toLocaleString("vi-VN")} lần / tháng`);
   if (L.chat > 0) out.push(`Hỏi AI về ăn uống ${L.chat.toLocaleString("vi-VN")} lần / ngày`);
   if (L.menu > 0) out.push(`AI lên thực đơn theo ý ${L.menu.toLocaleString("vi-VN")} lần / ngày`);
   if (plan?.cheapest && plan.cheapest.m > 1) out.push(`Chỉ từ ${vnd(plan.cheapest.per)} / tháng khi mua ${plan.cheapest.m} tháng`);
   return out;
 }
+
+// 25/10 (chủ dự án chốt): thẻ gói đầu trên web = gói dùng thử đủ chức năng (có ngày dùng thử) — không có thì về gói Miễn phí
+export const trialName = (plan, pr) => (plan?.trial ? `Dùng thử ${plan.trial} ngày` : pr?.free?.name || "Miễn phí");
+export const trialSub = (plan) => (plan?.trial ? `Gói trial đủ chức năng · ${plan.trial} ngày · không cần thẻ` : "Cho người mới bắt đầu");
+export const trialPoints = (plan) => (plan?.trial
+  ? [`Toàn bộ tính năng Premium trong ${plan.trial} ngày`, "Thực đơn món Việt tự lên mỗi ngày, đổi món 1 chạm", "Chụp ảnh tính calo, hỏi AI", "Ghi bữa, nhắc giờ ăn, theo dõi cân, tổng kết tháng", `Hết ${plan.trial} ngày tự về gói Miễn phí, không tự trừ tiền`]
+  : ["Thực đơn tự lên mỗi ngày", "Đổi món 1 chạm", "Ghi bữa, nhắc giờ ăn", "Theo dõi cân, tổng kết tháng"]);
