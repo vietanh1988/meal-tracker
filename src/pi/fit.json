@@ -40,17 +40,11 @@
    "mép mũ cắt phẳng ngang 211px",
    "thủng quanh gốc lá 1975px"
   ],
-  "giangsinh-nam-pk02": [
-   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
-  ],
   "giangsinh-nam-pk03": [
    "mép dưới cắt phẳng ngang 78px (khung ảnh cắt cụt)"
   ],
   "giangsinh-nu-dau04": [
    "thủng quanh gốc lá 2325px"
-  ],
-  "giangsinh-nu-pk01": [
-   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
   ],
   "giangsinh-nu-pk03": [
    "mép dưới cắt phẳng ngang 84px (khung ảnh cắt cụt)"
@@ -69,14 +63,8 @@
   "tet-nam-pk03": [
    "mép dưới cắt phẳng ngang 85px (khung ảnh cắt cụt)"
   ],
-  "tet-nam-giay02": [
-   "giày đen tách nền lỗi: viền trắng răng cưa, cổ giày thủng lộ chân (soát mắt 24/10)"
-  ],
   "tet-nu-pk04": [
    "mép dưới cắt phẳng ngang 34px (khung ảnh cắt cụt)"
-  ],
-  "tet-nu-pk12": [
-   "mép dưới cắt phẳng ngang 98px (khung ảnh cắt cụt)"
   ],
   "muadong-nam-dau05": [
    "mép mũ cắt phẳng ngang 35px"
@@ -86,9 +74,6 @@
   ],
   "muadong-nam-pk02": [
    "mép dưới cắt phẳng ngang 72px (khung ảnh cắt cụt)"
-  ],
-  "muadong-nam-pk04": [
-   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
   ],
   "muadong-nu-dau01": [
    "mép mũ cắt phẳng ngang 207px",
@@ -104,16 +89,10 @@
    "mép dưới cắt phẳng ngang 141px (khung ảnh cắt cụt)"
   ],
   "muadong-nu-pk08": [
-   "quả cầu tuyết bị xé nửa trái, mất viền + đế, tay rời quả cầu (soát mắt 24/10)"
-  ],
-  "muadong-nu-pk12": [
-   "mép dưới cắt phẳng ngang 39px (khung ảnh cắt cụt)"
+   "dán kèm mảng thân 2846px"
   ],
   "muahe-nam-dau03": [
    "thủng quanh gốc lá 472px"
-  ],
-  "muahe-nam-pk02": [
-   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
   ],
   "muahe-nam-pk12": [
    "viền thân thừa quanh người 868px",
@@ -125,21 +104,9 @@
   "halloween-nam-dau01": [
    "thủng quanh gốc lá 2478px"
   ],
-  "halloween-nam-pk02": [
-   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
-  ],
-  "halloween-nam-giay01": [
-   "giày đen tách nền lỗi: viền trắng răng cưa, cổ giày thủng lộ chân (soát mắt 24/10)"
-  ],
-  "halloween-nu-giay02": [
-   "giày đen tách nền lỗi: viền trắng răng cưa, cổ giày thủng lộ chân (soát mắt 24/10)"
-  ],
   "trungthu-nam-dau01": [
    "mép mũ cắt phẳng ngang 40px",
    "thủng quanh gốc lá 2326px"
-  ],
-  "trungthu-nam-pk09": [
-   "mép dưới cắt phẳng ngang 56px (khung ảnh cắt cụt)"
   ],
   "trungthu-nam-pk10": [
    "mép dưới cắt phẳng ngang 59px (khung ảnh cắt cụt)"
@@ -149,9 +116,6 @@
   ],
   "trungthu-nu-pk10": [
    "mép dưới cắt phẳng ngang 30px (khung ảnh cắt cụt)"
-  ],
-  "trungthu-nu-pk12": [
-   "mép dưới cắt phẳng ngang 68px (khung ảnh cắt cụt)"
   ]
  }
 }
