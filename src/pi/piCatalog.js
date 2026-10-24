@@ -24,7 +24,7 @@ export const PRICE = { giay: 80, toc: 100, gang: 100, co: 100, mat: 120, tay: 15
 const item = (x, i) => ({
   id: x.id, name: x.name, slot: x.slot, ev: x.ev, collection: x.ev, variants: [x.g],
   rarity: "common", price: PRICE[x.slot] ?? 100, level: 1, achievement: false, hidden: false, sort: i,
-  file: `${PI_BASE}${x.file}${PI_VER}`, icon: `${PI_BASE}icon/${x.id}.webp${PI_VER}`, arm: x.arm || null, src: x.file, c: x.c || [384, 384], ...(x.tf0 ? { tf: x.tf0, tf0: x.tf0 } : {}), // 24/10: mũ tự canh vừa đầu (Quản trị chỉnh tay thì đè)
+  file: `${PI_BASE}${x.file}${PI_VER}`, icon: `${PI_BASE}icon/${x.id}.webp${PI_VER}`, arm: x.arm || null, cover: !!x.cover, src: x.file, c: x.c || [384, 384], ...(x.tf0 ? { tf: x.tf0, tf0: x.tf0 } : {}), // 24/10: mũ tự canh vừa đầu (Quản trị chỉnh tay thì đè)
   ...(fit.bad[x.id] ? { broken: true, redraw: true, redraw_note: fit.bad[x.id].join("; ") } : {}),
 });
 // 23/10: mỗi món Phòng có đủ 3 ảnh theo giờ (times: sang / trua / toi → đúng file rooms/phong_<chude>_<giờ>.webp).

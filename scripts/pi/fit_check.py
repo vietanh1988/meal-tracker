@@ -166,7 +166,7 @@ def check(it):
 
 # 24/10 duyệt bằng mắt (bộ pi_fix_30): OK = báo nhầm (vật vốn có cạnh thẳng đứng); BAD = lỗi máy không bắt được
 # (24/10: bộ pi_full thay 234 món → duyệt mắt lại từ đầu; ghi vào đây món nào duyệt xong)
-EYE_OK = {"muadong-nam-pk08": "quả cầu kính xanh nhạt (báo nhầm mảng thân)", "muahe-nam-pk11": "phao vịt ôm sát người (báo nhầm viền thân)", "trungthu-nu-pk04": "thỏ bông vốn màu trắng (báo nhầm mảng trắng)", "trungthu-nu-dau04": "dây đèn lồng vốn lệch 1 bên (soát mắt 24/10)", "tet-nam-pk08": "cuộn thư dựng đứng (bản fix_30 đã duyệt)", "muahe-nu-pk05": "ly thẳng thành (bản fix_30 đã duyệt)", "muadong-nu-pk08": "bàn tay cầm quả cầu (bản Muse vẽ lại 24/10, thân cụt tay) — báo nhầm mảng thân"}
+EYE_OK = {"muadong-nam-pk08": "quả cầu kính xanh nhạt (báo nhầm mảng thân)", "muahe-nam-pk11": "phao vịt ôm sát người (báo nhầm viền thân)", "trungthu-nu-pk04": "thỏ bông vốn màu trắng (báo nhầm mảng trắng)", "trungthu-nu-dau04": "dây đèn lồng vốn lệch 1 bên (soát mắt 24/10)", "tet-nam-pk08": "cuộn thư dựng đứng (bản fix_30 đã duyệt)", "muahe-nu-pk05": "ly thẳng thành (bản fix_30 đã duyệt)", "giangsinh-nam-dau01": "mũ Noel vẽ riêng 24/10, duyệt ghép (chóp nhọn → báo nhầm thủng / mép vành cong)", "muahe-nam-dau03": "mũ tai bèo vẽ riêng 24/10, duyệt ghép (vành cong báo nhầm)", "muadong-nu-dau01": "len tai mèo vẽ riêng 24/10, duyệt ghép (khe giữa 2 tai báo nhầm thủng)", "muadong-nu-pk08": "bàn tay cầm quả cầu (bản Muse vẽ lại 24/10, thân cụt tay) — báo nhầm mảng thân"}
 # 24/10 tối: Muse vẽ lại kính / giày đen / quả cầu tuyết nữ / kẹp tóc / vòng ngọc → đã duyệt mắt, bỏ khỏi EYE_BAD
 EYE_BAD = {"muahe-nam-pk12": "balo vẽ kèm bản sao viền thân xanh vụn quanh người (chờ bản vẽ lại pi_fix_balo)"}  # 24/10 duyệt mắt
 res = {}

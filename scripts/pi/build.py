@@ -89,6 +89,8 @@ for side in ("trai", "phai"):
 # món vẽ cánh tay riêng (giơ lên / bưng ra trước) KHÔNG đè tay gốc → dùng thân bỏ tay bên đó. Soát mắt 24/10 từng món ứng viên
 # (da xanh ngoài thân ≥ 1000px, phủ vùng tay gốc < 40%); món không vẽ bàn tay (đũa phép, xẻng, chong chóng) giữ tay gốc.
 # 24/10 soát từng món: vệt lá cũ sót xa gốc lá (vùng rộng; KHÔNG áp chung vì vòng hoa có lá thật)
+# 24/10 tối (chủ dự án chốt): món Muse vẽ RIÊNG trên nền trong suốt → chỉ đặt đè lên, KHÔNG chạy bộ cắt lá / vụn (cắt nhầm mũ xanh lá)
+STANDALONE = {"giangsinh-nam-dau01", "muahe-nam-dau03", "muahe-nu-dau01", "muadong-nu-dau01"}
 SHOE_SCALE = {"tet-nu-giay02": 0.66}
 LEAF_WIDE = {"giangsinh-nam-dau05", "trungthu-nam-dau03", "muahe-nam-dau05", "trungthu-nu-dau02"}
 ARM_HIDE = {"giangsinh-nam-pk07": "trai", "muadong-nam-pk08": "trai", "muadong-nu-pk08": "trai", "muahe-nam-pk05": "trai",
@@ -146,7 +148,7 @@ for it in cat["items"]:
     if it["slot"] in ("ao", "co", "lung", "mat") and LEAF is not None:  # 24/10: mắt (kính) còn viền đầu mờ quanh mặt  # 24/10 (pi_fix_6): áo / cổ / lưng cũng còn chấm mờ lơ lửng
         _a, _g = fix_hat(np.asarray(im), LEAF[..., 3])
         if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
-    if it["slot"] in ("dau", "toc") and LEAF is not None:  # 24/10: kẹp tóc cũng còn viền lá ma / lá vẽ đúp
+    if it["slot"] in ("dau", "toc") and LEAF is not None and iid not in STANDALONE:  # 24/10: kẹp tóc cũng còn viền lá ma / lá vẽ đúp
         _a, _g = fix_hat(np.asarray(im), LEAF[..., 3], leaf=True, wide=iid in LEAF_WIDE)
         if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
     bb = im.getbbox()
@@ -160,6 +162,8 @@ for it in cat["items"]:
     if iid in SHOE_SCALE:  # 24/10 soát từng món: guốc vẽ to gấp đôi chân → thu nhỏ quanh tâm, giữ đáy chạm chân
         _s = SHOE_SCALE[iid]; _cy = row["c"][1]; _yb = bb[3]
         row["tf0"] = {"x": 0, "y": round(_yb - (_cy + (_yb - _cy) * _s)), "s": _s, "w": 1, "h": 1, "r": 0, "fx": False}
+    if it["slot"] == "dau" and not re.search(r"^(vương miện|băng đô|vòng|kẹp|cài|nơ|dây|trâm|bờm|bịt tai|kính)", it["name"], re.I):
+        row["cover"] = True  # 24/10 (chủ dự án): mũ / nón trùm đầu → app ẩn hẳn lá
     if it["slot"] == "dau":  # 24/10: tự canh cỡ / vị trí mũ trùm cho vừa đầu (tf0)
         _tf = hat_tf(np.asarray(im), body[..., 3], it["name"], row["c"])
         if _tf: row["tf0"] = _tf

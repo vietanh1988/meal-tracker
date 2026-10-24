@@ -27,9 +27,6 @@
   }
  },
  "bad": {
-  "giangsinh-nam-dau01": [
-   "thủng quanh gốc lá 883px"
-  ],
   "giangsinh-nam-dau02": [
    "thủng quanh gốc lá 3298px"
   ],
@@ -75,10 +72,6 @@
   "muadong-nam-pk02": [
    "mép dưới cắt phẳng ngang 72px (khung ảnh cắt cụt)"
   ],
-  "muadong-nu-dau01": [
-   "mép mũ cắt phẳng ngang 207px",
-   "thủng quanh gốc lá 1706px"
-  ],
   "muadong-nu-dau04": [
    "thủng quanh gốc lá 2892px"
   ],
@@ -88,15 +81,9 @@
   "muadong-nu-pk02": [
    "mép dưới cắt phẳng ngang 141px (khung ảnh cắt cụt)"
   ],
-  "muahe-nam-dau03": [
-   "thủng quanh gốc lá 472px"
-  ],
   "muahe-nam-pk12": [
    "viền thân thừa quanh người 868px",
    "balo vẽ kèm bản sao viền thân xanh vụn quanh người (chờ bản vẽ lại pi_fix_balo)"
-  ],
-  "muahe-nu-dau01": [
-   "mép mũ cắt phẳng ngang 29px"
   ],
   "halloween-nam-dau01": [
    "thủng quanh gốc lá 2478px"
