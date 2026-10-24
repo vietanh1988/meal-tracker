@@ -31,7 +31,7 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     await expect(box).toBeVisible();
     await page.getByTestId("pc-pet-place-y").fill("12");
     await page.getByTestId("pc-pet-place-s").fill("130");
-    await expect(box.locator('[data-layer="dau"]').first()).toHaveAttribute("style", /translate\(0\.00px, [0-9.]+px\).*scale\(1\.3, 1\.3\)/);
+    await expect(box.locator('[data-layer="dau"]').first()).toHaveAttribute("style", /translate\(0(\.0+)?px, [0-9.]+px\).*scale\(1\.3, 1\.3\)/);
     await page.getByTestId("pc-pet-place-box").focus();
     await page.keyboard.press("ArrowRight");
     await expect(page.getByTestId("pc-pet-place-x")).toHaveValue("1");
