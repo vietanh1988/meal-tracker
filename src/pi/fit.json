@@ -28,20 +28,32 @@
  },
  "bad": {
   "giangsinh-nam-dau01": [
-   "thủng quanh gốc lá 889px"
+   "thủng quanh gốc lá 883px"
   ],
   "giangsinh-nam-dau02": [
-   "thủng quanh gốc lá 3289px"
+   "thủng quanh gốc lá 3298px"
   ],
   "giangsinh-nam-dau03": [
-   "thủng quanh gốc lá 2516px"
+   "thủng quanh gốc lá 2648px"
   ],
   "giangsinh-nam-dau04": [
    "mép mũ cắt phẳng ngang 211px",
-   "thủng quanh gốc lá 1866px"
+   "thủng quanh gốc lá 1975px"
+  ],
+  "giangsinh-nam-pk02": [
+   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
+  ],
+  "giangsinh-nam-pk03": [
+   "mép dưới cắt phẳng ngang 78px (khung ảnh cắt cụt)"
   ],
   "giangsinh-nu-dau04": [
-   "thủng quanh gốc lá 2316px"
+   "thủng quanh gốc lá 2325px"
+  ],
+  "giangsinh-nu-pk01": [
+   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
+  ],
+  "giangsinh-nu-pk03": [
+   "mép dưới cắt phẳng ngang 84px (khung ảnh cắt cụt)"
   ],
   "tet-nam-dau01": [
    "mép mũ cắt phẳng ngang 29px",
@@ -49,39 +61,97 @@
   ],
   "tet-nam-dau03": [
    "mép mũ cắt phẳng ngang 56px",
-   "thủng quanh gốc lá 2554px"
+   "thủng quanh gốc lá 2587px"
   ],
   "tet-nam-dau04": [
-   "thủng quanh gốc lá 3424px"
+   "thủng quanh gốc lá 2823px"
+  ],
+  "tet-nam-pk03": [
+   "mép dưới cắt phẳng ngang 85px (khung ảnh cắt cụt)"
+  ],
+  "tet-nam-giay02": [
+   "giày đen tách nền lỗi: viền trắng răng cưa, cổ giày thủng lộ chân (soát mắt 24/10)"
+  ],
+  "tet-nu-pk04": [
+   "mép dưới cắt phẳng ngang 34px (khung ảnh cắt cụt)"
+  ],
+  "tet-nu-pk12": [
+   "mép dưới cắt phẳng ngang 98px (khung ảnh cắt cụt)"
   ],
   "muadong-nam-dau05": [
    "mép mũ cắt phẳng ngang 35px"
   ],
+  "muadong-nam-pk01": [
+   "mép dưới cắt phẳng ngang 81px (khung ảnh cắt cụt)"
+  ],
+  "muadong-nam-pk02": [
+   "mép dưới cắt phẳng ngang 72px (khung ảnh cắt cụt)"
+  ],
+  "muadong-nam-pk04": [
+   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
+  ],
   "muadong-nu-dau01": [
    "mép mũ cắt phẳng ngang 207px",
-   "thủng quanh gốc lá 1509px"
+   "thủng quanh gốc lá 1706px"
   ],
   "muadong-nu-dau04": [
-   "thủng quanh gốc lá 3289px"
+   "thủng quanh gốc lá 2892px"
+  ],
+  "muadong-nu-pk01": [
+   "mép dưới cắt phẳng ngang 73px (khung ảnh cắt cụt)"
+  ],
+  "muadong-nu-pk02": [
+   "mép dưới cắt phẳng ngang 141px (khung ảnh cắt cụt)"
+  ],
+  "muadong-nu-pk08": [
+   "quả cầu tuyết bị xé nửa trái, mất viền + đế, tay rời quả cầu (soát mắt 24/10)"
+  ],
+  "muadong-nu-pk12": [
+   "mép dưới cắt phẳng ngang 39px (khung ảnh cắt cụt)"
   ],
   "muahe-nam-dau03": [
-   "thủng quanh gốc lá 1590px"
+   "thủng quanh gốc lá 472px"
+  ],
+  "muahe-nam-pk02": [
+   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
   ],
   "muahe-nam-pk12": [
-   "viền thân thừa quanh người 1210px"
+   "viền thân thừa quanh người 868px",
+   "balo vẽ kèm bản sao viền thân xanh vụn quanh người (chờ bản vẽ lại pi_fix_balo)"
   ],
   "muahe-nu-dau01": [
    "mép mũ cắt phẳng ngang 29px"
   ],
   "halloween-nam-dau01": [
-   "thủng quanh gốc lá 2459px"
+   "thủng quanh gốc lá 2478px"
+  ],
+  "halloween-nam-pk02": [
+   "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
+  ],
+  "halloween-nam-giay01": [
+   "giày đen tách nền lỗi: viền trắng răng cưa, cổ giày thủng lộ chân (soát mắt 24/10)"
+  ],
+  "halloween-nu-giay02": [
+   "giày đen tách nền lỗi: viền trắng răng cưa, cổ giày thủng lộ chân (soát mắt 24/10)"
   ],
   "trungthu-nam-dau01": [
    "mép mũ cắt phẳng ngang 40px",
-   "thủng quanh gốc lá 2319px"
+   "thủng quanh gốc lá 2326px"
+  ],
+  "trungthu-nam-pk09": [
+   "mép dưới cắt phẳng ngang 56px (khung ảnh cắt cụt)"
+  ],
+  "trungthu-nam-pk10": [
+   "mép dưới cắt phẳng ngang 59px (khung ảnh cắt cụt)"
   ],
   "trungthu-nu-dau05": [
    "mép mũ cắt phẳng ngang 79px"
+  ],
+  "trungthu-nu-pk10": [
+   "mép dưới cắt phẳng ngang 30px (khung ảnh cắt cụt)"
+  ],
+  "trungthu-nu-pk12": [
+   "mép dưới cắt phẳng ngang 68px (khung ảnh cắt cụt)"
   ]
  }
 }

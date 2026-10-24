@@ -97,6 +97,8 @@ def check(it):
     if s in ("lung", "ao"):
         a8 = al.astype(np.uint8)
         thin = (a8 > 0) & (cv2.morphologyEx(a8, cv2.MORPH_OPEN, K13) == 0) & NEAR
+        if s == "lung":  # 24/10: build.py lấp khe thân–đồ lưng bằng màu viền Pi (tối, liền thân) → không tính là viền thừa
+            thin &= ~(a[..., :3].astype(int).mean(-1) < 80)
         if thin.sum() > 450: out.append(f"viền thân thừa quanh người {int(thin.sum())}px")
     skin = al & blue_mask(a) & solid
     if s in ("tay", "gang"):
@@ -148,6 +150,16 @@ def check(it):
         cy = (y0 + y1) / 2
         if not (neck - 50 <= cy <= neck + 110): out.append(f"không ở cổ (giữa y={cy:.0f}, cổ {neck})")
         if abs(cx - CX) > 0.08 * HW: out.append(f"lệch tâm {cx - CX:+.0f}px")
+    if s in ("co", "toc"):
+        # 24/10 (soát từng món): Muse cắt khung ảnh → khăn / vòng cổ cụt ngang tại y≈596, kẹp tóc cụt ngang tại y≈258 (mất đuôi khăn, nửa kẹp)
+        o = (a[..., 3] > 200); e = o[:-1, :] & ~o[1:, :]
+        lo, hi, th = (588, 602, 25) if s == "co" else (250, 266, 35)
+        mx = 0
+        for y in range(lo, hi):
+            run = 0
+            for v in e[y]:
+                run = run + 1 if v else 0; mx = max(mx, run)
+        if mx >= th: out.append(f"mép dưới cắt phẳng ngang {mx}px (khung ảnh cắt cụt)")
     if s == "giay":
         if abs(y1 - FEET) > 14: out.append(f"đáy giày cách chân {y1 - FEET:+.0f}px")
     return out
@@ -155,7 +167,12 @@ def check(it):
 # 24/10 duyệt bằng mắt (bộ pi_fix_30): OK = báo nhầm (vật vốn có cạnh thẳng đứng); BAD = lỗi máy không bắt được
 # (24/10: bộ pi_full thay 234 món → duyệt mắt lại từ đầu; ghi vào đây món nào duyệt xong)
 EYE_OK = {"muadong-nam-pk08": "quả cầu kính xanh nhạt (báo nhầm mảng thân)", "muahe-nam-pk11": "phao vịt ôm sát người (báo nhầm viền thân)", "trungthu-nu-pk04": "thỏ bông vốn màu trắng (báo nhầm mảng trắng)", "trungthu-nu-dau04": "dây đèn lồng vốn lệch 1 bên (soát mắt 24/10)", "tet-nam-pk08": "cuộn thư dựng đứng (bản fix_30 đã duyệt)", "muahe-nu-pk05": "ly thẳng thành (bản fix_30 đã duyệt)"}
-EYE_BAD = {}  # 24/10 duyệt mắt pi_fix_5
+_GIAY = "giày đen tách nền lỗi: viền trắng răng cưa, cổ giày thủng lộ chân (soát mắt 24/10)"
+_TRONG = "tròng kính vẽ đè mảng da + mắt cũ lệch chỗ, che mắt thật (soát mắt 24/10)"
+EYE_BAD = {"muadong-nu-pk08": "quả cầu tuyết bị xé nửa trái, mất viền + đế, tay rời quả cầu (soát mắt 24/10)",
+           "giangsinh-nam-pk02": _TRONG, "giangsinh-nu-pk01": _TRONG, "muahe-nam-pk02": _TRONG, "halloween-nam-pk02": _TRONG, "muadong-nam-pk04": _TRONG,
+           "halloween-nam-giay01": _GIAY, "halloween-nu-giay02": _GIAY, "tet-nam-giay02": _GIAY,
+           "muahe-nam-pk12": "balo vẽ kèm bản sao viền thân xanh vụn quanh người (chờ bản vẽ lại pi_fix_balo)"}  # 24/10 duyệt mắt
 res = {}
 for it in man["items"]:
     r = [] if it["id"] in EYE_OK else check(it)

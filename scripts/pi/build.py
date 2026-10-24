@@ -82,10 +82,15 @@ def raised_arm(a):
 
 # 24/10 (chủ dự án: hộp quà ra 2 tay): thân bỏ 1 tay cắt theo nếp tay + vẽ lại viền (scripts/pi/armless.py), không cắt thẳng
 from armless import armless
+from arm_gap import fill_gap
+ARMLESS = {side: armless(body_noleaf, side) for side in ("trai", "phai")}
 for side in ("trai", "phai"):
-    total += put(f"body/pi_than_khong_tay_{side}.webp", im=Image.fromarray(armless(body_noleaf, side)), q=88)
+    total += put(f"body/pi_than_khong_tay_{side}.webp", im=Image.fromarray(ARMLESS[side]), q=88)
 # món vẽ cánh tay riêng (giơ lên / bưng ra trước) KHÔNG đè tay gốc → dùng thân bỏ tay bên đó. Soát mắt 24/10 từng món ứng viên
 # (da xanh ngoài thân ≥ 1000px, phủ vùng tay gốc < 40%); món không vẽ bàn tay (đũa phép, xẻng, chong chóng) giữ tay gốc.
+# 24/10 soát từng món: vệt lá cũ sót xa gốc lá (vùng rộng; KHÔNG áp chung vì vòng hoa có lá thật)
+SHOE_SCALE = {"tet-nu-giay02": 0.66}
+LEAF_WIDE = {"giangsinh-nam-dau05", "trungthu-nam-dau03", "muahe-nam-dau05", "trungthu-nu-dau02"}
 ARM_HIDE = {"giangsinh-nam-pk07": "trai", "muadong-nam-pk08": "trai", "muadong-nu-pk08": "trai", "muahe-nam-pk05": "trai",
             "muahe-nam-pk10": "trai", "halloween-nam-pk08": "trai", "halloween-nu-pk08": "trai", "trungthu-nam-pk04": "trai", "trungthu-nam-pk06": "trai"}
 
@@ -111,11 +116,38 @@ for it in cat["items"]:
     if it["slot"] in ("tay", "gang") or iid in CLEAN_STRAY_EXTRA:
         a_, n_ = clean_tay(np.asarray(im), (body[..., 3] > 128) if iid not in CLEAN_STRAY_EXTRA else (body[..., 3] > -1))
         if n_ >= 40: im = Image.fromarray(a_); total += put(it["file"], im=im, q=90)
-    if it["slot"] in ("ao", "co", "lung") and LEAF is not None:  # 24/10 (pi_fix_6): áo / cổ / lưng cũng còn chấm mờ lơ lửng
+    if it["slot"] in ("tay", "gang"):  # 24/10 soát từng món: mẩu da xanh rời nằm dưới tầm tay (chổi halloween-nam-pk07 lòi mẩu cạnh chân)
+        _a = np.asarray(im).copy(); _n, _lab, _st, _ = cv2.connectedComponentsWithStats((_a[..., 3] > 60).astype(np.uint8), 8)
+        _big = _st[1:, 4].max() if _n > 1 else 0; _rm = np.zeros(_a.shape[:2], bool)
+        for _k in range(1, _n):
+            if _st[_k, 4] < min(1500, _big) and _st[_k, 1] * N / 768 >= 640 * N / 768 and blue_mask(_a[..., :3])[_lab == _k].mean() > 0.8: _rm |= _lab == _k
+        if _rm.any():
+            _rm = cv2.dilate(_rm.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0; _a[_rm, 3] = 0; im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
+    if it["slot"] == "giay":  # 24/10 soát từng món: giày tối màu tách nền lỗi → viền trắng răng cưa + mảng da chân dán đè cổ giày
+        _a = np.asarray(im).copy(); _op = _a[..., 3] > 100
+        if _op.any() and np.median(_a[_op][:, :3].astype(int).mean(-1)) < 80:
+            _hsv = cv2.cvtColor(np.ascontiguousarray(_a[..., :3]), cv2.COLOR_RGB2HSV)
+            _empty = (_a[..., 3] < 60).astype(np.uint8)
+            _edge = cv2.dilate(_empty, np.ones((7, 7), np.uint8)) > 0
+            _wh = (_a[..., 3] > 0) & (_hsv[..., 1] < 50) & (_hsv[..., 2] > 150) & _edge
+            _sk = (_a[..., 3] > 0) & blue_mask(_a[..., :3]) & (_hsv[..., 2] > 170) & (body[..., 3] > 200)   # da chân (xanh SÁNG; xanh navy tối là bóng da giày) dán kèm: thân thật nằm ngay dưới → bỏ cho lộ chân thật
+            _rm = _wh | _sk
+            if _rm.sum() > 50:
+                _a[_rm, 3] = 0; im = Image.fromarray(_a); total += put(it["file"], im=im, q=90); print("làm sạch giày", iid, int(_wh.sum()), int(_sk.sum()))
+    if it["slot"] == "lung":  # 24/10 soát từng món: đồ lưng khoét rộng hơn thân (áo choàng len) → khe hở lộ nền ôm quanh người; lấp khe hẹp bằng màu viền Pi
+        _a = np.asarray(im).copy(); _b = body[..., 3] > 128
+        _U = ((_a[..., 3] > 100) | _b).astype(np.uint8)
+        _C = cv2.morphologyEx(_U, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))) > 0
+        _band = (cv2.dilate(_b.astype(np.uint8), np.ones((15, 15), np.uint8)) > 0) & ~_b
+        _gap = _C & ~(_U > 0) & _band
+        if _gap.sum() > 150:
+            _lum = body[..., :3].astype(int).mean(-1); _a[_gap, :3] = np.median(body[(body[..., 3] > 200) & (_lum < 70)][:, :3], 0).astype(np.uint8); _a[_gap, 3] = 255
+            im = Image.fromarray(_a); total += put(it["file"], im=im, q=90); print("lấp khe lưng", iid, int(_gap.sum()))
+    if it["slot"] in ("ao", "co", "lung", "mat") and LEAF is not None:  # 24/10: mắt (kính) còn viền đầu mờ quanh mặt  # 24/10 (pi_fix_6): áo / cổ / lưng cũng còn chấm mờ lơ lửng
         _a, _g = fix_hat(np.asarray(im), LEAF[..., 3])
         if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
-    if it["slot"] == "dau" and LEAF is not None:
-        _a, _g = fix_hat(np.asarray(im), LEAF[..., 3], leaf=True)
+    if it["slot"] in ("dau", "toc") and LEAF is not None:  # 24/10: kẹp tóc cũng còn viền lá ma / lá vẽ đúp
+        _a, _g = fix_hat(np.asarray(im), LEAF[..., 3], leaf=True, wide=iid in LEAF_WIDE)
         if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
     bb = im.getbbox()
     if not bb: print("ảnh rỗng", it["file"]); continue
@@ -125,13 +157,19 @@ for it in cat["items"]:
     total += put(f"icon/{iid}.webp", im=sq.resize((ICON_PX, ICON_PX), Image.LANCZOS))
     row = {"id": iid, "ev": it["ev"], "g": it["g"], "slot": it["slot"], "name": it["name"], "file": it["file"],
            "c": [round((bb[0] + bb[2]) / 2), round((bb[1] + bb[3]) / 2)]}  # 24/10: tâm món (gốc xoay / phóng khi Quản trị chỉnh vị trí)
+    if iid in SHOE_SCALE:  # 24/10 soát từng món: guốc vẽ to gấp đôi chân → thu nhỏ quanh tâm, giữ đáy chạm chân
+        _s = SHOE_SCALE[iid]; _cy = row["c"][1]; _yb = bb[3]
+        row["tf0"] = {"x": 0, "y": round(_yb - (_cy + (_yb - _cy) * _s)), "s": _s, "w": 1, "h": 1, "r": 0, "fx": False}
     if it["slot"] == "dau":  # 24/10: tự canh cỡ / vị trí mũ trùm cho vừa đầu (tf0)
         _tf = hat_tf(np.asarray(im), body[..., 3], it["name"], row["c"])
         if _tf: row["tf0"] = _tf
     if it["slot"] in ("tay", "gang"):
         # 23/10: TẮT ẩn tay gốc — soát mắt 25 món của bộ sạch: món tay vẽ khớp tay gốc, ẩn đi chỉ lộ lỗ / mất tay. Giữ hàm để dùng lại nếu bộ sau vẽ tay giơ lên thật.
         side = ARM_HIDE.get(iid) or (raised_arm(np.asarray(im)) if os.environ.get("PI_HIDE_ARM") else None)
-        if side: row["arm"] = side
+        if side:
+            row["arm"] = side
+            _a, _n = fill_gap(np.asarray(im), ARMLESS[side], side)  # lấp khe hở giữa tay của món và vai thân cụt tay
+            if _n: total += put(it["file"], im=Image.fromarray(_a), q=90)
     items.append(row)
 
 rooms = {}

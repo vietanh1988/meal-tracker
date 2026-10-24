@@ -207,7 +207,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_dau03.webp",
    "c": [
     384,
-    261
+    262
    ],
    "tf0": {
     "x": 1,
@@ -261,7 +261,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_pk01.webp",
    "c": [
     386,
-    368
+    361
    ]
   },
   {
@@ -273,7 +273,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_pk02.webp",
    "c": [
     386,
-    366
+    360
    ]
   },
   {
@@ -382,7 +382,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_pk11.webp",
    "c": [
     384,
-    458
+    436
    ]
   },
   {
@@ -394,7 +394,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_pk12.webp",
    "c": [
     384,
-    502
+    414
    ]
   },
   {
@@ -535,7 +535,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_dau03.webp",
    "c": [
     376,
-    238
+    240
    ]
   },
   {
@@ -592,7 +592,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_pk02.webp",
    "c": [
     386,
-    358
+    360
    ]
   },
   {
@@ -700,7 +700,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_pk11.webp",
    "c": [
     384,
-    376
+    358
    ]
   },
   {
@@ -711,8 +711,8 @@
    "name": "Kẹp tóc bông tuyết",
    "file": "items/giangsinh/do_giangsinh_nu_pk12.webp",
    "c": [
-    369,
-    188
+    450,
+    190
    ]
   },
   {
@@ -907,7 +907,7 @@
    "file": "items/tet/do_tet_nam_pk01.webp",
    "c": [
     386,
-    350
+    358
    ]
   },
   {
@@ -1026,8 +1026,8 @@
    "name": "Túi gấm đỏ đeo chéo",
    "file": "items/tet/do_tet_nam_pk11.webp",
    "c": [
-    389,
-    528
+    388,
+    437
    ]
   },
   {
@@ -1039,7 +1039,7 @@
    "file": "items/tet/do_tet_nam_pk12.webp",
    "c": [
     386,
-    362
+    358
    ]
   },
   {
@@ -1207,7 +1207,7 @@
    "file": "items/tet/do_tet_nu_pk01.webp",
    "c": [
     386,
-    371
+    372
    ]
   },
   {
@@ -1326,8 +1326,8 @@
    "name": "Túi gấm vàng đeo chéo",
    "file": "items/tet/do_tet_nu_pk11.webp",
    "c": [
-    378,
-    488
+    384,
+    436
    ]
   },
   {
@@ -1338,8 +1338,8 @@
    "name": "Trâm cài tóc hoa mai",
    "file": "items/tet/do_tet_nu_pk12.webp",
    "c": [
-    396,
-    190
+    431,
+    194
    ]
   },
   {
@@ -1364,7 +1364,16 @@
    "c": [
     384,
     663
-   ]
+   ],
+   "tf0": {
+    "x": 0,
+    "y": 20,
+    "s": 0.66,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "tet-nu-giay03",
@@ -1557,7 +1566,7 @@
    "name": "Kính tròn gọng đen",
    "file": "items/muadong/do_muadong_nam_pk03.webp",
    "c": [
-    386,
+    390,
     374
    ]
   },
@@ -1570,7 +1579,7 @@
    "file": "items/muadong/do_muadong_nam_pk04.webp",
    "c": [
     386,
-    373
+    370
    ]
   },
   {
@@ -1655,7 +1664,7 @@
    "file": "items/muadong/do_muadong_nam_pk11.webp",
    "c": [
     384,
-    538
+    429
    ]
   },
   {
@@ -1667,7 +1676,7 @@
    "file": "items/muadong/do_muadong_nam_pk12.webp",
    "c": [
     384,
-    504
+    431
    ]
   },
   {
@@ -1820,7 +1829,7 @@
    "file": "items/muadong/do_muadong_nu_dau04.webp",
    "c": [
     385,
-    230
+    232
    ],
    "tf0": {
     "x": 0,
@@ -1877,7 +1886,7 @@
    "file": "items/muadong/do_muadong_nu_pk03.webp",
    "c": [
     386,
-    381
+    380
    ]
   },
   {
@@ -1889,7 +1898,7 @@
    "file": "items/muadong/do_muadong_nu_pk04.webp",
    "c": [
     386,
-    370
+    366
    ]
   },
   {
@@ -1974,7 +1983,7 @@
    "file": "items/muadong/do_muadong_nu_pk11.webp",
    "c": [
     384,
-    546
+    414
    ]
   },
   {
@@ -1985,8 +1994,8 @@
    "name": "Kẹp tóc nơ len",
    "file": "items/muadong/do_muadong_nu_pk12.webp",
    "c": [
-    378,
-    192
+    442,
+    195
    ]
   },
   {
@@ -2138,8 +2147,8 @@
    "name": "Băng đô thể thao trắng",
    "file": "items/muahe/do_muahe_nam_dau04.webp",
    "c": [
-    384,
-    245
+    385,
+    241
    ]
   },
   {
@@ -2163,7 +2172,7 @@
    "file": "items/muahe/do_muahe_nam_pk01.webp",
    "c": [
     386,
-    360
+    358
    ]
   },
   {
@@ -2174,8 +2183,8 @@
    "name": "Kính râm tráng gương xanh",
    "file": "items/muahe/do_muahe_nam_pk02.webp",
    "c": [
-    386,
-    358
+    389,
+    366
    ]
   },
   {
@@ -2297,7 +2306,7 @@
    "file": "items/muahe/do_muahe_nam_pk12.webp",
    "c": [
     384,
-    495
+    436
    ]
   },
   {
@@ -2483,7 +2492,7 @@
    "file": "items/muahe/do_muahe_nu_pk01.webp",
    "c": [
     386,
-    373
+    378
    ]
   },
   {
@@ -2614,7 +2623,7 @@
    "name": "Hoa dâm bụt cài tóc",
    "file": "items/muahe/do_muahe_nu_pk12.webp",
    "c": [
-    312,
+    271,
     222
    ]
   },
@@ -2809,8 +2818,8 @@
    "name": "Mặt nạ che mắt đen",
    "file": "items/halloween/do_halloween_nam_pk01.webp",
    "c": [
-    386,
-    373
+    390,
+    369
    ]
   },
   {
@@ -2822,7 +2831,7 @@
    "file": "items/halloween/do_halloween_nam_pk02.webp",
    "c": [
     386,
-    374
+    361
    ]
   },
   {
@@ -2931,7 +2940,7 @@
    "file": "items/halloween/do_halloween_nam_pk11.webp",
    "c": [
     384,
-    487
+    395
    ]
   },
   {
@@ -2943,7 +2952,7 @@
    "file": "items/halloween/do_halloween_nam_pk12.webp",
    "c": [
     384,
-    564
+    414
    ]
   },
   {
@@ -3107,8 +3116,8 @@
    "name": "Băng đô bí ngô nhỏ",
    "file": "items/halloween/do_halloween_nu_dau05.webp",
    "c": [
-    402,
-    255
+    384,
+    244
    ]
   },
   {
@@ -3120,7 +3129,7 @@
    "file": "items/halloween/do_halloween_nu_pk01.webp",
    "c": [
     386,
-    374
+    364
    ]
   },
   {
@@ -3132,7 +3141,7 @@
    "file": "items/halloween/do_halloween_nu_pk02.webp",
    "c": [
     386,
-    370
+    362
    ]
   },
   {
@@ -3241,7 +3250,7 @@
    "file": "items/halloween/do_halloween_nu_pk11.webp",
    "c": [
     384,
-    447
+    357
    ]
   },
   {
@@ -3373,7 +3382,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau02.webp",
    "c": [
     384,
-    262
+    260
    ]
   },
   {
@@ -3396,7 +3405,7 @@
    "name": "Mũ đèn lồng đỏ",
    "file": "items/trungthu/do_trungthu_nam_dau04.webp",
    "c": [
-    399,
+    382,
     254
    ]
   },
@@ -3409,7 +3418,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau05.webp",
    "c": [
     384,
-    276
+    282
    ]
   },
   {
@@ -3543,7 +3552,7 @@
    "file": "items/trungthu/do_trungthu_nam_pk11.webp",
    "c": [
     384,
-    557
+    421
    ]
   },
   {
@@ -3555,7 +3564,7 @@
    "file": "items/trungthu/do_trungthu_nam_pk12.webp",
    "c": [
     384,
-    428
+    407
    ]
   },
   {
@@ -3687,7 +3696,7 @@
    "file": "items/trungthu/do_trungthu_nu_dau03.webp",
    "c": [
     384,
-    239
+    241
    ]
   },
   {
@@ -3807,7 +3816,7 @@
    "file": "items/trungthu/do_trungthu_nu_pk08.webp",
    "c": [
     386,
-    374
+    380
    ]
   },
   {
@@ -3843,7 +3852,7 @@
    "file": "items/trungthu/do_trungthu_nu_pk11.webp",
    "c": [
     386,
-    490
+    381
    ]
   },
   {
@@ -3854,8 +3863,8 @@
    "name": "Kẹp tóc thỏ ngọc",
    "file": "items/trungthu/do_trungthu_nu_pk12.webp",
    "c": [
-    386,
-    192
+    396,
+    214
    ]
   },
   {
@@ -3895,5 +3904,5 @@
    ]
   }
  ],
- "ver": "810436cfb0"
+ "ver": "2950a10878"
 }
