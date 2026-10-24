@@ -20,6 +20,11 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     const edit = page.getByTestId("pc-pet-edit");
     await expect(edit).toContainText("Mũ phù thuỷ đen");
     await expect(edit.locator('[data-layer="dau"]').first()).toHaveAttribute("src", /do_halloween_nam_dau01\.webp\?v=[0-9a-f]{10}$/);
+    // 24/10: mũ phù thuỷ đen đang chờ vẽ lại → ghi "Chờ vẽ lại" (không ghi Đang bán); Pi xem thử mặt vui nhìn thẳng; khung xem thử ghim khi cuộn
+    await expect(page.getByTestId(`pc-pet-row-${ID}`)).toContainText("Chờ vẽ lại");
+    await expect(page.getByTestId(`pc-pet-row-${ID}`)).not.toContainText("Đang bán");
+    await expect(edit.locator('[data-testid="pet-avatar"]').first()).toHaveAttribute("data-mood", "vui");
+    expect(await edit.evaluate((e) => getComputedStyle(e).position)).toBe("sticky");
     await page.getByTestId("pc-pet-price").fill("170");
     await page.screenshot({ path: "shots/pc-pet-items.png" });
     await page.getByTestId("pc-pet-save").click();
