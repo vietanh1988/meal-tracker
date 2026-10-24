@@ -29,6 +29,7 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     await page.getByTestId("pc-pet-place-open").click();
     const box = page.getByTestId("pc-pet-place");
     await expect(box).toBeVisible();
+    await page.getByTestId("pc-pet-place-x").fill("0"); // 24/10: mũ có vị trí tự canh (tf0) → đặt lại từ 0
     await page.getByTestId("pc-pet-place-y").fill("12");
     await page.getByTestId("pc-pet-place-s").fill("130");
     await expect(box.locator('[data-layer="dau"]').first()).toHaveAttribute("style", /translate\(0(\.0+)?px, [0-9.]+px\).*scale\(1\.3, 1\.3\)/);
