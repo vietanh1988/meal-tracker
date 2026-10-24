@@ -5,6 +5,7 @@
 // 24/10 pi_full mục 4 — NÓI: pi.speak(text, audio) → mắt không miệng (eyes/) + miệng theo âm tiết (src/pi/piLipsync.js), có audio thì
 // khớp theo biên độ, thân lắc ±3° chu kỳ 1,6 s, nhún theo biên độ, lá trễ 120 ms. NGHE (pi.listen / prop listening): nghiêng đầu 5°, mắt suy nghĩ, gật nhẹ.
 import { useEffect, useMemo, useRef, useState } from "react";
+import { layerOrder } from "./layerOrder";
 import { PI_ITEMS, PI_MANIFEST, LAYER_ORDER, bodyFile, headFile, faceFile, eyesFile, mouthFile, leafFile, preload, FACES, VISEMES } from "./piCatalog";
 import { equipReaction, tapReaction, idleBase, shownFace, canBlink, pi } from "./piExpr";
 import { timeline, audioOnsets, textOnsets, visemeAt, restMouth, parseTagged } from "./piLipsync.js";
@@ -224,12 +225,13 @@ export function PiPet({ gender = "nam", expression = "vui", equipped = {}, heigh
     : <span key="mieng" data-layer="mieng" data-viseme={mouth} style={{ ...box, display: "block" }}>
         {VISEMES.map((v) => <img key={v} src={mouthFile(g, v)} alt="" draggable="false" style={{ ...box, opacity: v === mouth ? 1 : 0 }} />)}
       </span>;
-  const layers = LAYER_ORDER.map((L) => {
+  // 24/10 (chủ dự án: "đội mũ nón thì đè mẹ lá đi cho đỡ lỗi"): có món ô Đầu → lá xếp DƯỚI mũ (mũ trùm che lá; vương miện / băng đô vẫn lộ lá)
+  const layers = layerOrder(eq, LAYER_ORDER).map((L) => {
     if (L === "than") return img(L, bodyFile(arm));
     if (L === "dau_pi") return eq.ao ? img(L, headFile) : null; // đầu gốc đè lên áo → giữ cằm (ảnh áo hay vẽ đè mảng da lên cằm)
     if (L === "mat_pi") return faceLayer; // luôn hiện: trên áo / cổ, dưới kính / mũ
     if (L === "mieng") return mouthLayer;
-    if (L === "la") return PI_MANIFEST.leaf ? img(L, leafFile, still ? undefined : speaking ? "pi-leaf pi-leaf-talk" : "pi-leaf", { transformOrigin: LEAF_ORIGIN }) : null; // lá đè lên mũ, đung đưa
+    if (L === "la") return PI_MANIFEST.leaf ? img(L, leafFile, still ? undefined : speaking ? "pi-leaf pi-leaf-talk" : "pi-leaf", { transformOrigin: LEAF_ORIGIN }) : null; // lá đung đưa; đội mũ thì nằm dưới mũ
     const it = eq[L];
     if (!it) return null;
     // 24/10: Quản trị › Chỉnh vị trí — tf = { x, y (px khung 768), s (cỡ), w (rộng), r (độ), fx (lật) }, gốc tại tâm món
