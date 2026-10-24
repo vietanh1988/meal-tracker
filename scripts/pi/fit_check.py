@@ -76,6 +76,12 @@ def straight_cut(a):
             best = max(best, mx)
     return best
 
+_lp = os.path.join(B, "body", "pi_la.webp")
+LEAF = rd("body/pi_la.webp")[..., 3] if os.path.exists(_lp) else None
+if LEAF is not None:
+    LEAF_IN = LEAF > 60
+    LEAF_NEAR = cv2.dilate(LEAF_IN.astype(np.uint8), np.ones((31, 31), np.uint8)) > 0
+
 def check(it):
     a = rd(it["file"]); al = a[..., 3] > 128
     ys, xs = np.where(al)
@@ -115,6 +121,25 @@ def check(it):
             cov = (al & R).sum() / max(1, R.sum()); ec = (al & ring).sum() / max(1, ring.sum())
             band_type = re.search(r"^(vương miện|băng đô|vòng|kẹp|cài|nơ|dây)", it["name"], re.I)  # đeo quanh / trên đầu, không trùm
             if cov > 0.3 and ec < 0.10 and not band_type: out.append(f"mũ không ôm đầu (che viền đầu {ec:.0%})")
+    if s == "dau":
+        # 24/10 (chủ dự án gửi ảnh mũ lân cắt phẳng ngang má): mép NGANG thẳng ≥ 40px ở phần mũ dưới trán (y > 300)
+        o = (a[..., 3] > 200)
+        e = o[:-1, :] & ~o[1:, :]           # hết mũ ngay hàng dưới
+        mx = 0
+        for y in range(300, min(N - 1, 560)):
+            run = 0
+            for v in e[y]:
+                run = run + 1 if v else 0; mx = max(mx, run)
+        if mx >= 28: out.append(f"mép mũ cắt phẳng ngang {mx}px")
+        # lỗ hở quanh gốc lá: trong bóng mũ, sát lá, mà trong suốt (lộ da xanh dưới lá)
+        band_type = re.search(r"^(vương miện|băng đô|vòng|kẹp|cài|nơ|dây|bịt tai|trâm|khăn voan|kính)", it["name"], re.I)
+        if not band_type and LEAF is not None:
+            solid8 = o.astype(np.uint8)
+            if solid8.sum() > 800:
+                cs, _ = cv2.findContours(solid8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                hull = np.zeros_like(solid8); cv2.fillPoly(hull, [cv2.convexHull(np.vstack(cs))], 1)
+                hole = (hull > 0) & ~(a[..., 3] > 60) & LEAF_NEAR & ~LEAF_IN
+                if hole.sum() > 250: out.append(f"thủng quanh gốc lá {int(hole.sum())}px")
     if s == "mat":
         ok = all(x0 - 4 <= ex <= x1 + 4 and y0 - 4 <= ey <= y1 + 4 for ex, ey in EYES[it["g"]])
         if not ok: out.append("không ôm 2 mắt")

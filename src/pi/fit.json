@@ -27,9 +27,80 @@
   }
  },
  "bad": {
+  "giangsinh-nam-dau01": [
+   "thủng quanh gốc lá 2599px"
+  ],
+  "giangsinh-nam-dau02": [
+   "thủng quanh gốc lá 9322px"
+  ],
+  "giangsinh-nam-dau03": [
+   "thủng quanh gốc lá 321px"
+  ],
+  "giangsinh-nam-dau04": [
+   "mép mũ cắt phẳng ngang 29px",
+   "thủng quanh gốc lá 2961px"
+  ],
+  "giangsinh-nu-dau04": [
+   "thủng quanh gốc lá 5057px"
+  ],
+  "tet-nam-dau01": [
+   "mép mũ cắt phẳng ngang 34px"
+  ],
+  "tet-nam-dau03": [
+   "mép mũ cắt phẳng ngang 51px",
+   "thủng quanh gốc lá 358px"
+  ],
+  "tet-nam-dau04": [
+   "mép mũ cắt phẳng ngang 33px",
+   "thủng quanh gốc lá 1481px"
+  ],
+  "muadong-nam-dau02": [
+   "mép mũ cắt phẳng ngang 48px"
+  ],
+  "muadong-nam-dau04": [
+   "mép mũ cắt phẳng ngang 60px"
+  ],
+  "muadong-nam-dau05": [
+   "mép mũ cắt phẳng ngang 35px"
+  ],
+  "muadong-nu-dau01": [
+   "thủng quanh gốc lá 734px"
+  ],
+  "muadong-nu-dau02": [
+   "mép mũ cắt phẳng ngang 74px"
+  ],
+  "muadong-nu-dau04": [
+   "mép mũ cắt phẳng ngang 35px",
+   "thủng quanh gốc lá 406px"
+  ],
+  "muahe-nam-dau02": [
+   "mép mũ cắt phẳng ngang 37px"
+  ],
+  "muahe-nam-dau03": [
+   "thủng quanh gốc lá 722px"
+  ],
   "muahe-nam-pk12": [
    "viền thân thừa quanh người 728px",
    "ba lô vẫn còn viền thân Pi thừa bên phải, kéo xuống dưới chân"
+  ],
+  "muahe-nu-dau01": [
+   "mép mũ cắt phẳng ngang 40px"
+  ],
+  "muahe-nu-dau02": [
+   "mép mũ cắt phẳng ngang 69px"
+  ],
+  "muahe-nu-dau04": [
+   "mép mũ cắt phẳng ngang 46px"
+  ],
+  "halloween-nam-dau01": [
+   "mép mũ cắt phẳng ngang 79px",
+   "thủng quanh gốc lá 1465px"
+  ],
+  "trungthu-nam-dau01": [
+   "thủng quanh gốc lá 1640px"
+  ],
+  "trungthu-nu-dau05": [
+   "mép mũ cắt phẳng ngang 79px"
   ]
  }
 }
