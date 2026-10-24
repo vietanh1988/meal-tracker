@@ -47,7 +47,7 @@ test("Thú cưng Pi: khách thường — cờ tắt không thấy, cờ bật t
         await tap(page.getByTestId(`pet-col-${k}`));
         await expect(page.getByTestId("pet-col-note")).toBeVisible();
       }
-      await expect(page.getByTestId("pet-shop").getByText("Đầu lân đội đầu đỏ vàng")).toBeVisible(); // 24/10: đèn ông sao chờ vẽ lại (không bán) → kiểm món đang bán
+      await expect(page.getByTestId("pet-shop").getByText("Áo dài trẻ em vàng hoạ tiết đèn lồng")).toBeVisible(); // 24/10: đèn ông sao chờ vẽ lại (không bán) → kiểm món đang bán
       await page.screenshot({ path: "shots/pet-user-gym.png" });
       await ctx.close(); }
 
