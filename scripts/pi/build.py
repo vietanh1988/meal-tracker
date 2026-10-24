@@ -113,7 +113,8 @@ for it in cat["items"]:
     crop = im.crop((max(0, bb[0] - pad), max(0, bb[1] - pad), min(N, bb[2] + pad), min(N, bb[3] + pad)))
     sq_n = max(crop.size); sq = Image.new("RGBA", (sq_n, sq_n), (0, 0, 0, 0)); sq.alpha_composite(crop, ((sq_n - crop.size[0]) // 2, (sq_n - crop.size[1]) // 2))
     total += put(f"icon/{iid}.webp", im=sq.resize((ICON_PX, ICON_PX), Image.LANCZOS))
-    row = {"id": iid, "ev": it["ev"], "g": it["g"], "slot": it["slot"], "name": it["name"], "file": it["file"]}
+    row = {"id": iid, "ev": it["ev"], "g": it["g"], "slot": it["slot"], "name": it["name"], "file": it["file"],
+           "c": [round((bb[0] + bb[2]) / 2), round((bb[1] + bb[3]) / 2)]}  # 24/10: tâm món (gốc xoay / phóng khi Quản trị chỉnh vị trí)
     if it["slot"] in ("tay", "gang"):
         # 23/10: TẮT ẩn tay gốc — soát mắt 25 món của bộ sạch: món tay vẽ khớp tay gốc, ẩn đi chỉ lộ lỗ / mất tay. Giữ hàm để dùng lại nếu bộ sau vẽ tay giơ lên thật.
         side = raised_arm(np.asarray(im)) if os.environ.get("PI_HIDE_ARM") else None

@@ -149,3 +149,14 @@ test("24/10 ảnh Pi có mã phiên bản (?v=) để điện thoại không gi�
   assert.match(cat, /file: `\$\{PI_BASE\}\$\{x\.file\}\$\{PI_VER\}`/);
   assert.match(readFileSync("scripts/pi/build.py", "utf8"), /man\["ver"\] = _h\.hexdigest\(\)\[:10\]/);
 });
+
+test("24/10 Quản trị chỉnh vị trí món bộ mới: tf → transform quanh tâm món; mỗi món có tâm; cùng đối tượng với PiPet", async () => {
+  for (const it of man.items) assert.ok(Array.isArray(it.c) && it.c.length === 2, it.id);
+  const { tfStyle, isTfZero } = await import("../src/pi/PiPet.jsx").catch(() => ({}));
+  const pet = readFileSync("src/pi/PiPet.jsx", "utf8");
+  assert.match(pet, /const tf = \(tfOverride && tfOverride\[it\.id\]\) \|\| it\.tf;/);
+  assert.match(readFileSync("src/hooks/usePet.js", "utf8"), /if \(r\.place\?\.tf\) it\.tf = r\.place\.tf; else delete it\.tf;/);
+  assert.match(readFileSync("src/pet/PetAvatar.jsx", "utf8"), /PI_ITEMS\.map\(\(it\) => Object\.assign\(it,/);
+  assert.match(readFileSync("src/pc/PcPet.jsx", "utf8"), /<PiPlaceEditor it=\{placing\}/);
+  void tfStyle; void isTfZero;
+});

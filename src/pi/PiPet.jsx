@@ -12,6 +12,13 @@ import { playNow, loadRms } from "./piVoice.js";
 export { pi };
 
 export const PI_ITEM = Object.fromEntries(PI_ITEMS.map((it) => [it.id, it]));
+/** vị trí Quản trị chỉnh → CSS transform của lớp ảnh (khung S px; x, y tính theo khung 768) */
+export function tfStyle(tf, c = [384, 384], S = 768) {
+  const k = S / CV, s = Number(tf.s) || 1, w = Number(tf.w) || 1;
+  const t = `translate(${((Number(tf.x) || 0) * k).toFixed(2)}px, ${((Number(tf.y) || 0) * k).toFixed(2)}px) rotate(${Number(tf.r) || 0}deg) scale(${s * w * (tf.fx ? -1 : 1)}, ${s})`;
+  return { transform: t, transformOrigin: `${(c[0] / CV) * 100}% ${(c[1] / CV) * 100}%` };
+}
+export const isTfZero = (tf) => !tf || (!Number(tf.x) && !Number(tf.y) && (Number(tf.s) || 1) === 1 && (Number(tf.w) || 1) === 1 && !Number(tf.r) && !tf.fx);
 // khung ảnh: thân Pi nằm trong manifest.bbox (768: x 219–550, y 120–720, chân tại y 720) → phần thừa quanh thân (khung ngoài ôm sát Pi)
 const [BX0, BY0, BX1, BY1] = PI_MANIFEST.bbox, CV = PI_MANIFEST.canvas;
 export const PI_FRAME = { left: BX0 / CV, right: 1 - BX1 / CV, top: BY0 / CV, bottom: 1 - BY1 / CV };
@@ -62,7 +69,7 @@ function startSpeech({ text, audio, el, giong }, onFrame) {
  *  23/10 biểu cảm tự động (src/pi/piExpr.js): mặc món mới haohung 0,4 s → cuoilon 1 s (Halloween: ngacnhien) + nhún · đủ bộ: yeu 1,5 s
  *  · tháo: ngacnhien 0,6 s · chạm: cuoilon | nhaymat | haohung 1 s (đang ngủ: ngacnhien 0,5 s) · idle 30 s suynghi, 2 phút ngu
  *  · chớp mắt 3–5 s (ngu 120 ms, chỉ khi đang vui / haohung) · pi.react(mặt, ms) từ nơi khác · đổi mặt mờ dần 80 ms, 9 mặt tải sẵn */
-export function PiPet({ gender = "nam", expression = "vui", equipped = {}, height = 220, live = false, still = false, react = 0, talking = false, speech = null, listening: listenProp = false, night = false, label, dropIn = true, onSpeakEnd }) {
+export function PiPet({ gender = "nam", expression = "vui", equipped = {}, height = 220, live = false, still = false, react = 0, talking = false, speech = null, listening: listenProp = false, night = false, label, dropIn = true, onSpeakEnd, tfOverride = null }) {
   const g = gender === "nu" ? "nu" : "nam";
   const eq = useMemo(() => shown(equipped, g), [equipped, g]);
   const S = height / (1 - PI_FRAME.top - PI_FRAME.bottom); // cạnh khung ảnh
@@ -208,7 +215,10 @@ export function PiPet({ gender = "nam", expression = "vui", equipped = {}, heigh
     if (L === "mieng") return mouthLayer;
     if (L === "la") return PI_MANIFEST.leaf ? img(L, leafFile, still ? undefined : speaking ? "pi-leaf pi-leaf-talk" : "pi-leaf", { transformOrigin: LEAF_ORIGIN }) : null; // lá đè lên mũ, đung đưa
     const it = eq[L];
-    return it ? img(L, it.file, drop === L ? "pi-drop" : undefined) : null;
+    if (!it) return null;
+    // 24/10: Quản trị › Chỉnh vị trí — tf = { x, y (px khung 768), s (cỡ), w (rộng), r (độ), fx (lật) }, gốc tại tâm món
+    const tf = (tfOverride && tfOverride[it.id]) || it.tf;
+    return img(L, it.file, drop === L ? "pi-drop" : undefined, tf ? tfStyle(tf, it.c, S) : undefined);
   });
   const motion = still ? undefined : speaking ? "pi-talk" : listening ? "pi-listen" : undefined;
   return (

@@ -17,7 +17,7 @@ const trophies = oldCatalog.items.filter((it) => TROPHY_IDS.includes(it.id)).map
   id: it.id, name: it.name, slot: "thanh_tich", rarity: it.rarity, price: 0, level: 1, variants: ["nam", "nu"], achievement: true, hidden: false,
   legacy: true, icon: PET_BASE + it.file, file: PET_BASE + it.file,
 }));
-const items = [...PI_ITEMS.map((it) => ({ ...it, collection: EV_COL[it.ev] || null, collection_name: EV_NAME[it.ev] })), ...trophies];
+const items = [...PI_ITEMS.map((it) => Object.assign(it, { collection: EV_COL[it.ev] || null, collection_name: EV_NAME[it.ev] })), ...trophies]; // 24/10: cùng đối tượng với PiPet (vị trí Quản trị chỉnh hiện ngay)
 export const ITEMS = Object.fromEntries(items.map((it) => [it.id, it]));
 export const catalog = { items, slots: SLOT_NAME, events: EV_NAME, evOrder: EV_ORDER };
 

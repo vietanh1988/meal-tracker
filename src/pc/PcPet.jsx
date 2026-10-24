@@ -13,6 +13,7 @@ import { EVENTS, VOICE } from "../pet/lines";
 import { COL_DEFAULT, collectionStatus } from "../lib/petMath";
 import { todayVN } from "../lib/dateVN";
 import { PlaceEditor, RedrawBox, canPlace } from "./PcPetPlace";
+import { PiPlaceEditor } from "./PcPiPlace";
 import { PetRoom } from "../pet/PetRoom";
 import { RUG } from "../pi/piCatalog";
 import { RoomTimes } from "../pet/PetScreens";
@@ -134,7 +135,9 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
     <RedrawBox items={catalog.items.filter((x) => x.redraw)} onCopy={onCopy} />
-    {placing && <PlaceEditor it={placing} onClose={() => { setPlacing(null); refresh((k) => k + 1); }} onSave={onSavePlace} />}
+    {placing && (canPlace(placing)
+      ? <PlaceEditor it={placing} onClose={() => { setPlacing(null); refresh((k) => k + 1); }} onSave={onSavePlace} />
+      : <PiPlaceEditor it={placing} onClose={() => { setPlacing(null); refresh((k) => k + 1); }} onSave={onSavePlace} />)}
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 340px", gap: 16, alignItems: "start" }}>
       <Card style={{ minWidth: 0 }}>
         <CardHead title={`${list.length} món`} sub={`Pi nam ${catalog.items.filter((x) => x.variants.join() === "nam").length} món riêng · Pi nữ ${catalog.items.filter((x) => x.variants.join() === "nu").length} món riêng · ${catalog.items.filter((x) => x.variants.length === 2).length} món chung (đồ thành tích là đồ chung)`} />
@@ -212,9 +215,8 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
             <Btn kind="blue" style={{ flex: 1 }} testid="pc-pet-save" disabled={busy || !onSave} onClick={() => save()}>{busy ? "Đang lưu…" : "Lưu món"}</Btn>
             <Btn kind="light" testid="pc-pet-hide" disabled={busy || !onSave || it.achievement} onClick={() => { setF({ ...f, hidden: !f.hidden }); save({ hidden: !f.hidden }); }}>{f.hidden ? "Mở bán lại" : "Ẩn khỏi cửa hàng"}</Btn>
           </span>
-          {canPlace(it)
-            ? <Btn kind="soft" testid="pc-pet-place-open" disabled={!onSavePlace} onClick={() => setPlacing(it)}>Chỉnh vị trí trên Pi (kéo thả)</Btn>
-            : <span style={{ fontSize: 11.5, color: PC.t4 }}>Bộ Pi mới (23/10): ảnh món đã đặt sẵn đúng chỗ trên thân, không cần chỉnh vị trí; sai thì vẽ lại.</span>}
+          {/* 24/10: bộ Pi mới cũng chỉnh được vị trí (dời / phóng / kéo rộng / xoay / lật) — src/pc/PcPiPlace.jsx */}
+          {it.slot !== "phong" && !it.legacy && <Btn kind="soft" testid="pc-pet-place-open" disabled={!onSavePlace} onClick={() => setPlacing(it)}>Chỉnh vị trí trên Pi (kéo thả){it.tf ? " · đã chỉnh" : ""}</Btn>}
         </div>
       </Card>)}
     </div>
