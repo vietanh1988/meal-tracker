@@ -73,9 +73,9 @@ export function speakTTS(text, { g = "nam", giong, maxMs = 20000 } = {}) {
   let onWord = null, okS, okE;
   const started = new Promise((r) => { okS = r; }), ended = new Promise((r) => { okE = r; });
   u.onstart = () => okS(performance.now());
-  u.onend = () => okE(); u.onerror = () => { okS(performance.now()); okE(); };
+  u.onend = () => okE("end"); u.onerror = () => { okS(performance.now()); okE("error"); }; // lỗi (máy không có giọng) → PiPet quay về khẩu hình theo chữ
   u.onboundary = (e) => { if (onWord && (e.name === "word" || e.name == null)) onWord(e.charIndex); };
-  try { s.cancel(); s.speak(u); } catch { okS(performance.now()); okE(); }
+  try { s.cancel(); s.speak(u); } catch { okS(performance.now()); okE("error"); }
   setTimeout(() => okS(performance.now()), 1500); // máy không báo onstart → vẫn chạy khẩu hình
   setTimeout(() => okE(), maxMs); // máy không báo onend (một số trình duyệt) → vẫn dừng
   return { started, ended, onWord: (fn) => { onWord = fn; }, stop: () => { try { s.cancel(); } catch { /* */ } okE(); } };

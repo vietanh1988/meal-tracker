@@ -53,7 +53,7 @@ function startSpeech({ text, audio, el, giong, g }, onFrame) {
     const now = () => (el && !el.paused && el.currentTime > 0 ? el.currentTime * 1000 : performance.now() - t0 + shift);
     if (el && audio) loadRms(audio).then((r) => { if (stopped) return; rms = r.rms; hop = r.hop; tl = timeline(text, { ...audioOnsets(text, r.rms, r.hop), giong }); }).catch(() => {});
     const ended = el ? new Promise((ok) => { el.addEventListener("ended", ok, { once: true }); el.addEventListener("error", ok, { once: true }); }) : tts ? tts.ended : null;
-    let fin = false; ended?.then(() => { fin = true; });
+    let fin = false; ended?.then((r) => { if (r === "error" && tts) { tts = null; t0 = performance.now(); shift = 0; } else fin = true; }); // máy không đọc được → khẩu hình theo chữ
     await new Promise((ok) => {
       const step = () => {
         if (stopped) return ok();
