@@ -54,6 +54,11 @@ if cat.get("leaves") and os.path.exists(os.path.join(SRC, cat["leaves"])):
     LEAF = np.asarray(Image.open(os.path.join(SRC, cat["leaves"])).convert("RGBA"))
     lm = LEAF[..., 3] > 200  # chỉ chỗ lá phủ kín (mép lá giữ ở thân → không hở khe ở gốc lá dưới mũ)
     nb = body.copy(); nb[lm, 3] = 0
+    # 24/10 (mũ trùm đầu ẩn hẳn lá): viền lá mờ còn sót trên thân lộ ra thành bóng lá trắng → bỏ mọi điểm KHÔNG phải da / viền xanh của đầu trong vùng lá
+    _hsv = cv2.cvtColor(np.ascontiguousarray(body[..., :3]), cv2.COLOR_RGB2HSV)
+    _head = (_hsv[..., 0] >= 95) & (_hsv[..., 0] <= 130) & (_hsv[..., 1] > 60)
+    _zone = cv2.dilate((LEAF[..., 3] > 0).astype(np.uint8), np.ones((7, 7), np.uint8)) > 0
+    nb[_zone & ~_head, 3] = 0
     total += put("body/pi_than.webp", im=Image.fromarray(nb), q=90)
     body_noleaf = nb
 else:
