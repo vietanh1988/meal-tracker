@@ -34,6 +34,7 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await tap(card);
     await expect(page.getByTestId("pet-home")).toBeVisible();
     await expect(page.getByTestId("pet-today")).toContainText(`+${sum}`);
+    await expect(page.getByTestId("pet-balance").locator('svg[data-seed="coin"]')).toBeAttached(); // 24/10: tiền = đồng Hạt vàng (phương án B)
     // 24/10: kéo quá đầu màn phụ → nảy cao su kiểu iOS, thả tay bật về
     const pull = await page.getByTestId("subpage-scroll").last().evaluate(async (sc) => {
       sc.scrollTop = 0; const inner = sc.firstElementChild;

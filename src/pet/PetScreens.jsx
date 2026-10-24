@@ -2,7 +2,7 @@
 // Bản vẽ đợt chuẩn bị 20/10: dựng từ khối thật của app (SubPage, ltCard, LT/DK, AppIcon, Icon) với dữ liệu truyền vào.
 // Luật đã chốt 20/10 (backlog "Fipilot Pet"): điểm chỉ tính hôm nay; Phổ thông ai cũng mua, Hiếm / Huyền thoại chỉ Premium;
 // mở đồ theo cấp; đồ thành tích không bán; tâm trạng không bán; trần 120 Hạt/ngày.
-import { useState } from "react";
+import { useId, useState } from "react";
 import { SubPage, Icon, GRAD_BLUE, DkIcon } from "../mobile/ui";
 import { AppIcon, MealIcon, IC_COLOR, mix } from "../mobile/icons";
 import { LT, ltCard, DK, dkCard } from "../theme";
@@ -23,11 +23,18 @@ export const RARITY = {
 const PET_C = "#0EA5E9";   // màu riêng mục Thú cưng (xanh giọt nước)
 const SEED_C = "#16A34A";  // màu Hạt
 
-// Icon Hạt (mầm lá) — nét như bộ icon app
+// Icon Hạt — 24/10 (chủ dự án chốt phương án B): đồng vàng in mầm lá Pi, nhìn ra ngay là tiền mua đồ.
+// color: chỉ dùng để làm XÁM (việc chưa xong) — màu khác vẫn vẽ đồng vàng.
 export function Seed({ size = 16, color = SEED_C }) {
+  const id = "sd" + useId().replace(/[^a-zA-Z0-9]/g, ""), off = color === "#94A3B8";
   return (
-    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 21v-7" /><path d="M12 14c0-4 2.5-7 8-7 0 4.5-3 7-8 7z" /><path d="M12 15c0-3.2-2-5.5-6.5-5.5 0 3.6 2.4 5.5 6.5 5.5z" />
+    <svg aria-hidden="true" data-seed="coin" width={size} height={size} viewBox="0 0 64 64" style={off ? { filter: "grayscale(1)", opacity: 0.55, flexShrink: 0 } : { flexShrink: 0 }}>
+      <defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE27A" /><stop offset="1" stopColor="#F2A100" /></linearGradient></defs>
+      <circle cx="32" cy="32" r="28" fill={`url(#${id})`} stroke="#9A5B00" strokeWidth="4" />
+      {size >= 24 && <circle cx="32" cy="32" r="21" fill="none" stroke="#C98400" strokeWidth="2.5" />}
+      <path d="M32 46 V30" stroke="#2F7D32" strokeWidth="5" strokeLinecap="round" />
+      <path d="M32 32 C24 32 19 27 19 20 C27 20 32 24 32 32Z" fill="#4CAF50" stroke="#2F7D32" strokeWidth={size >= 24 ? 2.5 : 0} />
+      <path d="M32 30 C40 30 45 25 45 18 C37 18 32 22 32 30Z" fill="#66BB6A" stroke="#2F7D32" strokeWidth={size >= 24 ? 2.5 : 0} />
     </svg>
   );
 }
@@ -52,8 +59,8 @@ export const PIc = {
 
 function SeedPill({ n, dark }) {
   return (
-    <span data-testid="pet-balance" style={{ display: "inline-flex", alignItems: "center", gap: 5, height: 32, padding: "0 12px 0 9px", borderRadius: 16, background: dark ? "rgba(255,255,255,0.12)" : "#ECFDF3", color: dark ? "#FFFFFF" : "#065F46", fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
-      <Seed size={17} color={dark ? "#4ADE9B" : SEED_C} />{fmt(n)}
+    <span data-testid="pet-balance" style={{ display: "inline-flex", alignItems: "center", gap: 5, height: 32, padding: "0 12px 0 9px", borderRadius: 16, background: dark ? "rgba(255,255,255,0.12)" : "#FEF3C7", color: dark ? "#FFFFFF" : "#92400E", fontSize: 14, fontWeight: 900, whiteSpace: "nowrap" }}>
+      <Seed size={18} />{fmt(n)}
     </span>
   );
 }
@@ -169,7 +176,7 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
               <span style={{ fontSize: 14, fontWeight: 800, color: t.done ? "#0F172A" : "#334155" }}>{t.label}</span>
               {t.sub && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{t.sub}</span>}
             </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 14, fontWeight: 900, color: t.done ? "#047857" : "#94A3B8" }}><Seed size={15} color={t.done ? SEED_C : "#94A3B8"} />+{t.pts}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 14, fontWeight: 900, color: t.done ? "#B45309" : "#94A3B8" }}><Seed size={15} color={t.done ? SEED_C : "#94A3B8"} />+{t.pts}</span>
             <span aria-label={t.done ? "Xong" : "Chưa"} style={{ width: 26, height: 26, borderRadius: 13, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: t.done ? "#059669" : "transparent", border: t.done ? "none" : "2px solid #94A3B8", color: "#FFFFFF", boxSizing: "border-box" }}>{t.done && Icon.check(14, 3)}</span>
           </div>
         ))}
@@ -210,7 +217,7 @@ function ItemCard({ it, state, onClick, equipped, variant }) {
       <span style={{ width: "100%", height: 70, display: "flex", alignItems: "center", justifyContent: "center", filter: state.kind === "level" || state.kind === "season" ? "grayscale(1)" : "none", opacity: state.kind === "level" || state.kind === "season" ? 0.45 : 1 }}><ItemImg item={it} size={66} variant={variant} /></span>
       <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.25, textAlign: "center", minHeight: 30, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{it.name}</span>
       {state.kind === "owned" && <span style={{ fontSize: 12, fontWeight: 800, color: equipped ? "#007AFF" : "#047857", display: "inline-flex", alignItems: "center", gap: 4 }}>{Icon.check(13, 3)}{equipped ? "Đang mặc" : "Đã có"}</span>}
-      {state.kind === "buy" && <span style={{ fontSize: 13, fontWeight: 900, color: "#065F46", display: "inline-flex", alignItems: "center", gap: 4 }}><Seed size={14} />{fmt(it.price)}</span>}
+      {state.kind === "buy" && <span style={{ fontSize: 13, fontWeight: 900, color: "#92400E", display: "inline-flex", alignItems: "center", gap: 4 }}><Seed size={14} />{fmt(it.price)}</span>}
       {state.kind === "level" && <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B", display: "inline-flex", alignItems: "center", gap: 4 }}>{PIc.lock(13)}Mở ở cấp {it.level}</span>}
       {state.kind === "season" && <span style={{ fontSize: 11, fontWeight: 800, color: "#64748B", display: "inline-flex", alignItems: "center", gap: 4, textAlign: "center", lineHeight: 1.25 }}>{PIc.lock(12)}{(state.label || "Chưa mở bán").replace("Mở bán ", "Mở ")}</span>}
       {state.kind === "premium" && <span style={{ fontSize: 12, fontWeight: 800, color: "#DB2777", display: "inline-flex", alignItems: "center", gap: 4 }}>{PIc.crown(13)}Premium</span>}
@@ -528,7 +535,7 @@ export function PetTodayCard({ pet, onOpen }) {
         ) : (
           <>
             <span style={{ fontSize: 13, fontWeight: 600, color: "#475569", lineHeight: 1.4 }}>{pet.mood === "ngu" ? "Đang ngủ gật — ăn xong bữa đầu bấm Đã ăn để gọi dậy" : left > 0 ? `Còn ${left} việc hôm nay · +${pet.todayLeft} Hạt` : "Xong hết việc hôm nay!"}</span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 900, color: "#065F46" }}><Seed size={15} />{fmt(pet.seeds)} Hạt</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 900, color: "#92400E" }}><Seed size={15} />{fmt(pet.seeds)} Hạt</span>
           </>
         )}
       </span>
