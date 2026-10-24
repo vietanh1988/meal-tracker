@@ -14,11 +14,11 @@ export { pi };
 export const PI_ITEM = Object.fromEntries(PI_ITEMS.map((it) => [it.id, it]));
 /** vị trí Quản trị chỉnh → CSS transform của lớp ảnh (khung S px; x, y tính theo khung 768) */
 export function tfStyle(tf, c = [384, 384], S = 768) {
-  const k = S / CV, s = Number(tf.s) || 1, w = Number(tf.w) || 1;
-  const t = `translate(${((Number(tf.x) || 0) * k).toFixed(2)}px, ${((Number(tf.y) || 0) * k).toFixed(2)}px) rotate(${Number(tf.r) || 0}deg) scale(${s * w * (tf.fx ? -1 : 1)}, ${s})`;
+  const k = S / CV, s = Number(tf.s) || 1, w = Number(tf.w) || 1, h = Number(tf.h) || 1;
+  const t = `translate(${((Number(tf.x) || 0) * k).toFixed(2)}px, ${((Number(tf.y) || 0) * k).toFixed(2)}px) rotate(${Number(tf.r) || 0}deg) scale(${s * w * (tf.fx ? -1 : 1)}, ${s * h})`;
   return { transform: t, transformOrigin: `${(c[0] / CV) * 100}% ${(c[1] / CV) * 100}%` };
 }
-export const isTfZero = (tf) => !tf || (!Number(tf.x) && !Number(tf.y) && (Number(tf.s) || 1) === 1 && (Number(tf.w) || 1) === 1 && !Number(tf.r) && !tf.fx);
+export const isTfZero = (tf) => !tf || (!Number(tf.x) && !Number(tf.y) && (Number(tf.s) || 1) === 1 && (Number(tf.w) || 1) === 1 && (Number(tf.h) || 1) === 1 && !Number(tf.r) && !tf.fx);
 // khung ảnh: thân Pi nằm trong manifest.bbox (768: x 219–550, y 120–720, chân tại y 720) → phần thừa quanh thân (khung ngoài ôm sát Pi)
 const [BX0, BY0, BX1, BY1] = PI_MANIFEST.bbox, CV = PI_MANIFEST.canvas;
 export const PI_FRAME = { left: BX0 / CV, right: 1 - BX1 / CV, top: BY0 / CV, bottom: 1 - BY1 / CV };

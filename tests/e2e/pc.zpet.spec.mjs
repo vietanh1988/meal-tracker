@@ -35,6 +35,17 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     await page.getByTestId("pc-pet-place-box").focus();
     await page.keyboard.press("ArrowRight");
     await expect(page.getByTestId("pc-pet-place-x")).toHaveValue("1");
+    // kéo chấm góc dưới phải ra ngoài → cỡ tăng; nút − Nhỏ giảm 5%; ô Cao
+    const se = page.getByTestId("pc-pet-place-se"); await expect(se).toBeVisible();
+    const hb = await se.boundingBox();
+    await page.mouse.move(hb.x + 7, hb.y + 7); await page.mouse.down(); await page.mouse.move(hb.x + 47, hb.y + 47, { steps: 5 }); await page.mouse.up();
+    expect(Number(await page.getByTestId("pc-pet-place-s").inputValue())).toBeGreaterThan(130);
+    await page.getByTestId("pc-pet-place-s").fill("130");
+    await page.getByTestId("pc-pet-place-bigger").click(); await expect(page.getByTestId("pc-pet-place-s")).toHaveValue("135");
+    await page.getByTestId("pc-pet-place-smaller").click(); await expect(page.getByTestId("pc-pet-place-s")).toHaveValue("130");
+    await page.getByTestId("pc-pet-place-h").fill("110");
+    await expect(box.locator('[data-layer="dau"]').first()).toHaveAttribute("style", /scale\(1\.3, 1\.43\d*\)/);
+    await page.getByTestId("pc-pet-place-h").fill("100");
     await page.screenshot({ path: "shots/pc-pet-place.png" });
     await page.getByTestId("pc-pet-place-save").click();
     await expect(box).toBeHidden();

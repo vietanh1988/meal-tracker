@@ -9,7 +9,7 @@ import { PiPet, isTfZero } from "../pi/PiPet";
 import { FACES, FACE_NAME } from "../pi/piCatalog";
 import { applyItemRows } from "../hooks/usePet";
 
-const ZERO = { x: 0, y: 0, s: 1, w: 1, r: 0, fx: false };
+const ZERO = { x: 0, y: 0, s: 1, w: 1, h: 1, r: 0, fx: false };
 const r2 = (n) => Math.round(n * 100) / 100;
 const PREVIEW = 420; // chiều cao Pi trong khung chỉnh (px)
 
@@ -26,10 +26,19 @@ export function PiPlaceEditor({ it, onClose, onSave }) {
   // khung 768 → px trên màn: Pi cao PREVIEW ứng với bbox thân (y 120–720 = 600px khung)
   const k = PREVIEW / 600;
 
-  const down = (e) => {
-    e.preventDefault(); boxRef.current?.focus();
-    drag.current = { x: e.clientX, y: e.clientY, t: tf };
-    const mv = (ev) => { const d = drag.current; if (!d) return; set({ x: Math.round(d.t.x + (ev.clientX - d.x) / k), y: Math.round(d.t.y + (ev.clientY - d.y) / k) }); };
+  // 24/10 (chủ dự án: "phải chỉnh cả kích thước"): kéo thân món = dời; kéo chấm góc = phóng / thu (giữ tỉ lệ), chấm cạnh = kéo rộng / cao
+  const down = (e, mode = "move") => {
+    e.preventDefault(); e.stopPropagation(); boxRef.current?.focus();
+    drag.current = { x: e.clientX, y: e.clientY, t: tf, mode };
+    const mv = (ev) => {
+      const d = drag.current; if (!d) return;
+      const dx = (ev.clientX - d.x) / k, dy = (ev.clientY - d.y) / k;
+      if (d.mode === "move") return set({ x: Math.round(d.t.x + dx), y: Math.round(d.t.y + dy) });
+      const bw = Math.max(40, it._bw || 200), bh = Math.max(40, it._bh || 200);
+      if (d.mode === "s") return set({ s: r2(Math.min(3, Math.max(0.3, d.t.s * (1 + (dx + dy) / (bw + bh))))) });
+      if (d.mode === "w") return set({ w: r2(Math.min(3, Math.max(0.3, d.t.w * (1 + (2 * dx) / bw)))) });
+      if (d.mode === "h") return set({ h: r2(Math.min(3, Math.max(0.3, (d.t.h || 1) * (1 + (2 * dy) / bh)))) });
+    };
     const up = () => { drag.current = null; window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up); };
     window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
   };
@@ -40,11 +49,26 @@ export function PiPlaceEditor({ it, onClose, onSave }) {
     if (e.key === "+" || e.key === "=") set({ s: r2(tf.s + 0.01) });
     if (e.key === "-") set({ s: r2(Math.max(0.3, tf.s - 0.01)) });
   };
+  const wheel = (e) => { e.preventDefault(); set({ s: r2(Math.min(3, Math.max(0.3, tf.s * (e.deltaY < 0 ? 1.03 : 1 / 1.03)))) }); };
+  // khung bao món (để vẽ chấm kéo): đo vùng có hình của ảnh món một lần
+  const [bb, setBb] = useState(null);
+  useEffect(() => {
+    const im = new Image(); im.crossOrigin = "anonymous";
+    im.onload = () => {
+      try {
+        const c = document.createElement("canvas"); c.width = c.height = 192; const x = c.getContext("2d"); x.drawImage(im, 0, 0, 192, 192);
+        const d = x.getImageData(0, 0, 192, 192).data; let x0 = 192, y0 = 192, x1 = 0, y1 = 0;
+        for (let i = 0; i < 192 * 192; i++) if (d[i * 4 + 3] > 40) { const px = i % 192, py = (i / 192) | 0; x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); }
+        if (x1 > x0) { const b = [x0 * 4, y0 * 4, (x1 + 1) * 4, (y1 + 1) * 4]; it._bw = b[2] - b[0]; it._bh = b[3] - b[1]; setBb(b); }
+      } catch { /* */ }
+    };
+    im.src = it.file;
+  }, [it]);
   useEffect(() => { const esc = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", esc); return () => window.removeEventListener("keydown", esc); }, [onClose]);
 
   const save = async () => {
     setBusy(true);
-    const place = isTfZero(tf) ? {} : { tf: { x: tf.x, y: tf.y, s: r2(tf.s), w: r2(tf.w), r: tf.r, fx: !!tf.fx } };
+    const place = isTfZero(tf) ? {} : { tf: { x: tf.x, y: tf.y, s: r2(tf.s), w: r2(tf.w), h: r2(tf.h || 1), r: tf.r, fx: !!tf.fx } };
     const ok = await onSave(it.id, { place, redraw, redraw_note: redraw ? note.trim() : "" });
     setBusy(false);
     if (ok) { applyItemRows([{ id: it.id, name: it.name, rarity: it.rarity, price: it.price, level: it.level, hidden: it.hidden, achievement: it.achievement, variants: it.variants, place, redraw, redraw_note: redraw ? note.trim() : "" }]); onClose(true); }
@@ -64,8 +88,11 @@ export function PiPlaceEditor({ it, onClose, onSave }) {
         {/* khung Pi: kéo món để dời; phím mũi tên dời 1px (Shift: 10px), +/- đổi cỡ */}
         <div ref={boxRef} tabIndex={0} onKeyDown={key} data-testid="pc-pet-place-box" onPointerDown={down}
           style={{ position: "relative", minHeight: PREVIEW + 60, background: "repeating-conic-gradient(#EEF2F7 0% 25%, #FFFFFF 0% 50%) 50% / 24px 24px", borderRadius: "18px 0 0 18px", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 24, cursor: "move", outline: "none", touchAction: "none" }}>
-          <span style={{ position: "absolute", left: 14, top: 12, fontSize: 12, fontWeight: 700, color: PC.t3 }}>Kéo món để dời · ← → ↑ ↓ dời 1px (Shift 10px) · + / − đổi cỡ</span>
-          <PiPet gender={g} expression={face} equipped={{ [it.slot]: it.id }} height={PREVIEW} still tfOverride={{ [it.id]: tf }} label={`Pi mặc ${it.name}`} />
+          <span style={{ position: "absolute", left: 14, top: 12, right: 14, fontSize: 12, fontWeight: 700, color: PC.t3 }}>Kéo món để dời · kéo chấm GÓC để phóng to / thu nhỏ · chấm CẠNH kéo rộng / cao · lăn chuột đổi cỡ · ← → ↑ ↓ dời 1px</span>
+          <span style={{ position: "relative", display: "inline-block" }} onWheel={wheel}>
+            <PiPet gender={g} expression={face} equipped={{ [it.slot]: it.id }} height={PREVIEW} still tfOverride={{ [it.id]: tf }} label={`Pi mặc ${it.name}`} />
+            {bb && <Handles bb={bb} tf={tf} c={it.c || [384, 384]} k={k} onDown={down} />}
+          </span>
         </div>
         <div style={{ padding: 18, display: "flex", flexDirection: "column", gap: 12 }}>
           <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -77,6 +104,11 @@ export function PiPlaceEditor({ it, onClose, onSave }) {
             {num("Dọc", tf.y, (n) => set({ y: Math.round(n) }), 1, "pc-pet-place-y", "px")}
             {num("Cỡ", Math.round(tf.s * 100), (n) => n > 0 && set({ s: r2(n / 100) }), 1, "pc-pet-place-s", "%")}
             {num("Rộng", Math.round(tf.w * 100), (n) => n > 0 && set({ w: r2(n / 100) }), 1, "pc-pet-place-w", "%")}
+            {num("Cao", Math.round((tf.h || 1) * 100), (n) => n > 0 && set({ h: r2(n / 100) }), 1, "pc-pet-place-h", "%")}
+            <span style={{ display: "flex", alignItems: "flex-end", gap: 6 }}>
+              <Btn kind="light" testid="pc-pet-place-smaller" style={{ flex: 1 }} onClick={() => set({ s: r2(Math.max(0.3, tf.s - 0.05)) })}>− Nhỏ</Btn>
+              <Btn kind="light" testid="pc-pet-place-bigger" style={{ flex: 1 }} onClick={() => set({ s: r2(Math.min(3, tf.s + 0.05)) })}>+ To</Btn>
+            </span>
           </span>
           <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ fontSize: 11.5, fontWeight: 800, color: PC.t3 }}>Xoay ({tf.r}°)</span>
@@ -99,5 +131,25 @@ export function PiPlaceEditor({ it, onClose, onSave }) {
         </div>
       </div>
     </div>
+  );
+}
+
+/** khung bao + 8 chấm kéo đè lên món (theo đúng vị trí / cỡ đang chỉnh, gốc phóng = tâm món) */
+function Handles({ bb, tf, c, k, onDown }) {
+  const s = tf.s || 1, sx = s * (tf.w || 1), sy = s * (tf.h || 1);
+  const map = (x, y) => [(c[0] + (x - c[0]) * sx + (tf.x || 0) - 219) * k, (c[1] + (y - c[1]) * sy + (tf.y || 0) - 120) * k];
+  const [l, t] = map(bb[0], bb[1]), [r, b] = map(bb[2], bb[3]);
+  const L = Math.min(l, r), R = Math.max(l, r), T = Math.min(t, b), B = Math.max(t, b);
+  const dot = (x, y, mode, cur, tid) => <span key={tid} data-testid={tid} onPointerDown={(e) => onDown(e, mode)} style={{ position: "absolute", left: x - 7, top: y - 7, width: 14, height: 14, borderRadius: 4, background: "#FFFFFF", border: "2px solid #2563EB", cursor: cur, boxShadow: "0 1px 4px rgba(15,23,42,0.3)", touchAction: "none" }} />;
+  return (
+    <span style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+      <span style={{ position: "absolute", left: L, top: T, width: R - L, height: B - T, border: "1.5px dashed #2563EB", borderRadius: 4, pointerEvents: "auto", cursor: "move" }} onPointerDown={(e) => onDown(e, "move")} data-testid="pc-pet-place-frame" />
+      <span style={{ pointerEvents: "auto" }}>
+        {dot(L, T, "s", "nwse-resize", "pc-pet-place-nw")}{dot(R, T, "s", "nesw-resize", "pc-pet-place-ne")}
+        {dot(L, B, "s", "nesw-resize", "pc-pet-place-sw")}{dot(R, B, "s", "nwse-resize", "pc-pet-place-se")}
+        {dot(R, (T + B) / 2, "w", "ew-resize", "pc-pet-place-e")}{dot(L, (T + B) / 2, "w", "ew-resize", "pc-pet-place-wl")}
+        {dot((L + R) / 2, B, "h", "ns-resize", "pc-pet-place-sh")}{dot((L + R) / 2, T, "h", "ns-resize", "pc-pet-place-nh")}
+      </span>
+    </span>
   );
 }
