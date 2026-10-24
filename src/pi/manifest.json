@@ -60,9 +60,7 @@
   "vua"
  ],
  "leaf": true,
- "redo": [
-  "halloween-nu-ao04"
- ],
+ "redo": [],
  "faces": [
   "vui",
   "cuoilon",
@@ -2508,5 +2506,5 @@
    "file": "items/trungthu/do_trungthu_nu_giay03.webp"
   }
  ],
- "ver": "915a35216c"
+ "ver": "a874bd08ac"
 }
