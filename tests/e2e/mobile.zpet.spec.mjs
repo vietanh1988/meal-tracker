@@ -31,6 +31,21 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     expect(sum).toBeGreaterThanOrEqual(100); // + chuỗi ngày nếu các bài trước đã ghi đủ 3 ngày liền
     await expect(card).toContainText(String(sum));
 
+    // 24/10: tab chính (cuộn cả trang) cũng nảy cao su, khoảng hở trên tô màu header (--pull-top)
+    const pullTab = await page.getByTestId("tab-main").evaluate(async (m) => {
+      window.scrollTo(0, 0);
+      const t = (y) => new Touch({ identifier: 2, target: m, clientX: 200, clientY: y });
+      m.dispatchEvent(new TouchEvent("touchstart", { touches: [t(300)], bubbles: true }));
+      m.dispatchEvent(new TouchEvent("touchmove", { touches: [t(310)], bubbles: true }));
+      m.dispatchEvent(new TouchEvent("touchmove", { touches: [t(500)], bubbles: true }));
+      const during = m.style.transform, pullTop = getComputedStyle(m, "::before").backgroundColor;
+      m.dispatchEvent(new TouchEvent("touchend", { touches: [], bubbles: true }));
+      await new Promise((r) => setTimeout(r, 700));
+      return { during, after: m.style.transform, pullTop };
+    });
+    expect(parseFloat(pullTab.during.slice(11))).toBeGreaterThan(40);
+    expect(pullTab.after).toBe("");
+    expect(pullTab.pullTop).not.toBe("rgba(0, 0, 0, 0)");
     await tap(card);
     await expect(page.getByTestId("pet-home")).toBeVisible();
     await expect(page.getByTestId("pet-today")).toContainText(`+${sum}`);
@@ -40,6 +55,7 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
       sc.scrollTop = 0; const inner = sc.firstElementChild;
       const t = (y) => new Touch({ identifier: 1, target: sc, clientX: 200, clientY: y });
       sc.dispatchEvent(new TouchEvent("touchstart", { touches: [t(200)], bubbles: true }));
+      sc.dispatchEvent(new TouchEvent("touchmove", { touches: [t(210)], bubbles: true }));
       sc.dispatchEvent(new TouchEvent("touchmove", { touches: [t(420)], bubbles: true }));
       const during = inner.style.transform;
       sc.dispatchEvent(new TouchEvent("touchend", { touches: [], bubbles: true }));

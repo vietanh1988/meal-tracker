@@ -14,6 +14,7 @@ export const MOBILE_CSS = `
 .fpm input[type=search]::-webkit-search-cancel-button,.fpm input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
 .fpm button,.fpm a,.fpm [role=button]{-webkit-tap-highlight-color:transparent;cursor:pointer;touch-action:manipulation}
 .fpm [role=dialog]{overscroll-behavior:contain}
+.fpm main.fpm-pull::before{content:"";position:absolute;left:50%;width:100vw;transform:translateX(-50%);bottom:100%;height:100vh;background:var(--pull-top,transparent);pointer-events:none}
 .fpm button:disabled{cursor:default;opacity:.55}
 .fpm button:not(:disabled):active,.fpm a:active,.fpm .tap:active{transform:scale(.97)}
 .fpm button,.fpm a,.fpm .tap{transition:transform .08s ease,background-color .15s ease,box-shadow .15s ease}
@@ -174,49 +175,65 @@ export function useEdgeBack(onBack) {
 // Trang ngoài đã khoá nảy (16/10, tránh lộ dải nền) → tự làm: dịch nội dung theo công thức cao su iOS (1 − 1/(x·0,55/h + 1))·h,
 // thả tay thì bật về; cuộn quán tính chạm đầu / cuối cũng nảy nhẹ. Chỉ transform lúc đang nảy, xong xoá hẳn (không xô phần tử cố định).
 export const rubber = (x, h) => Math.sign(x) * (1 - 1 / ((Math.abs(x) * 0.55) / Math.max(1, h) + 1)) * h;
+// Lõi nảy dùng chung: src = nơi nghe chạm / cuộn (vùng cuộn hoặc window), el = khối được dịch, top / end / h = đang ở đầu / cuối, chiều cao.
+function bindRubber(src, el, { top, end, h, skip, scrollTop }) {
+  if (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches) return () => {};
+  let y0 = null, x0 = 0, off = 0, touching = false, lastT = 0, lastY = scrollTop(), v = 0, anim = null, dir = null;
+  const set = (y, ease) => {
+    el.style.transition = ease ? `transform ${ease}` : "none";
+    el.style.transform = y ? `translateY(${y.toFixed(1)}px)` : "";
+    el.dataset.rubber = y ? "1" : "";
+  };
+  const settle = () => {
+    if (!off) return;
+    off = 0; set(0, ".5s cubic-bezier(.2,.9,.25,1)");
+    clearTimeout(anim); anim = setTimeout(() => { el.style.transition = ""; el.style.transform = ""; }, 520);
+  };
+  const start = (e) => {
+    if (e.touches.length !== 1 || (skip && skip(e.target))) { y0 = null; return; }
+    touching = true; clearTimeout(anim); y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; dir = null;
+  };
+  const move = (e) => {
+    if (y0 == null || e.touches.length !== 1) return;
+    const y = e.touches[0].clientY, d = y - y0;
+    if (!dir) { const ax = Math.abs(e.touches[0].clientX - x0), ay = Math.abs(d); if (ax < 6 && ay < 6) return; dir = ax > ay ? "x" : "y"; }
+    if (dir !== "y") return;                                          // vuốt ngang (lướt thẻ, vuốt mép quay lại) → không nảy
+    if ((d > 0 && top()) || (d < 0 && end())) { off = rubber(d, h()); set(off); }
+    else { if (off) { off = 0; set(0); } y0 = y; }
+  };
+  const fin = () => { touching = false; y0 = null; settle(); };
+  const scroll = () => {
+    const t = performance.now(), dt = t - lastT || 16, st = scrollTop();
+    v = (st - lastY) / dt; lastT = t; lastY = st;
+    if (touching || off) return;
+    if ((v < -0.4 && top()) || (v > 0.4 && end())) {   // quán tính chạm mép → nảy nhẹ theo tốc độ
+      const a = Math.min(48, Math.abs(v) * 22) * (v < 0 ? 1 : -1);
+      off = a; set(a, ".14s ease-out"); clearTimeout(anim); anim = setTimeout(settle, 140);
+    }
+  };
+  const ev = [["touchstart", start], ["touchmove", move], ["touchend", fin], ["touchcancel", fin], ["scroll", scroll]];
+  for (const [k, f] of ev) src.addEventListener(k, f, { passive: true });
+  return () => { clearTimeout(anim); el.style.transform = ""; el.style.transition = ""; for (const [k, f] of ev) src.removeEventListener(k, f); };
+}
 export function useRubberBand(scRef, inRef) {
   useEffect(() => {
     const sc = scRef.current, el = inRef.current;
-    if (!sc || !el || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
-    let y0 = null, off = 0, touching = false, lastT = 0, lastY = sc.scrollTop, v = 0, anim = null;
-    const set = (y, ease) => {
-      el.style.transition = ease ? `transform ${ease}` : "none";
-      el.style.transform = y ? `translateY(${y.toFixed(1)}px)` : "";
-      el.dataset.rubber = y ? "1" : "";
-    };
-    const settle = () => {
-      if (!off) return;
-      off = 0; set(0, ".5s cubic-bezier(.2,.9,.25,1)");
-      clearTimeout(anim); anim = setTimeout(() => { el.style.transition = ""; el.style.transform = ""; }, 520);
-    };
-    const atTop = () => sc.scrollTop <= 0, atEnd = () => sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1;
-    const start = (e) => { touching = true; clearTimeout(anim); y0 = e.touches[0].clientY; };
-    const move = (e) => {
-      if (y0 == null || e.touches.length !== 1) return;
-      const y = e.touches[0].clientY, d = y - y0;
-      if ((d > 0 && atTop()) || (d < 0 && atEnd())) { off = rubber(d, sc.clientHeight); set(off); }
-      else { if (off) { off = 0; set(0); } y0 = y; }
-    };
-    const end = () => { touching = false; y0 = null; settle(); };
-    const scroll = () => {
-      const t = performance.now(), dt = t - lastT || 16;
-      v = (sc.scrollTop - lastY) / dt; lastT = t; lastY = sc.scrollTop;
-      if (touching || off) return;
-      if ((v < -0.4 && atTop()) || (v > 0.4 && atEnd())) {   // quán tính chạm mép → nảy nhẹ theo tốc độ
-        const a = Math.min(48, Math.abs(v) * 22) * (v < 0 ? 1 : -1);
-        off = a; set(a, ".14s ease-out"); clearTimeout(anim); anim = setTimeout(settle, 140);
-      }
-    };
-    sc.addEventListener("touchstart", start, { passive: true });
-    sc.addEventListener("touchmove", move, { passive: true });
-    sc.addEventListener("touchend", end, { passive: true });
-    sc.addEventListener("touchcancel", end, { passive: true });
-    sc.addEventListener("scroll", scroll, { passive: true });
-    return () => {
-      clearTimeout(anim); el.style.transform = ""; el.style.transition = "";
-      for (const [k, f] of [["touchstart", start], ["touchmove", move], ["touchend", end], ["touchcancel", end], ["scroll", scroll]]) sc.removeEventListener(k, f);
-    };
+    if (!sc || !el) return;
+    return bindRubber(sc, el, { top: () => sc.scrollTop <= 0, end: () => sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1, h: () => sc.clientHeight, scrollTop: () => sc.scrollTop });
   }, [scRef, inRef]);
+}
+// 24/10: 4 tab chính cuộn cả trang (window) → nảy khối <main>; bỏ qua chạm trong hộp thoại / màn phụ / tấm trượt (chúng tự cuộn).
+// Khoảng hở phía trên khi kéo xuống được tô màu header của tab (main::before, biến --pull-top) → không lộ dải nền nhạt (lỗi 16/10).
+export function useWindowRubber(mainRef, on = true, key) {
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!on || !el || typeof window === "undefined") return;
+    const de = document.documentElement;
+    return bindRubber(window, el, {
+      top: () => (window.scrollY || 0) <= 0, end: () => (window.scrollY || 0) + window.innerHeight >= de.scrollHeight - 1, h: () => window.innerHeight,
+      scrollTop: () => window.scrollY || 0, skip: (t) => !!(t && t.closest && t.closest('[role=dialog],[data-testid=subpage],[data-no-rubber]')) || !el.contains(t),
+    });
+  }, [mainRef, on, key]);
 }
 
 export function SubPage({ title, subtitle, onBack, right, children, footer, bg = LT.bg, dark }) {

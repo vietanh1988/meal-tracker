@@ -6,7 +6,7 @@ import { useMyFoods } from "../hooks/useMyFoods";
 import { useBodyMeasure } from "../hooks/useBodyMeasure";
 import { MeasureSheet } from "./MeasureSheet";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE } from "./ui";
+import { MOBILE_CSS, FONT, BottomNav, SubPage, Toast, NAV_SPACE, useWindowRubber } from "./ui";
 import { DK, DK_CSS, LT } from "../theme";
 import { readUser, writeUser } from "../lib/userStore";
 import { TodayScreen } from "./TodayScreen";
@@ -872,6 +872,8 @@ export function MobileApp(props) {
     ? <SnackCard remain={snackRemain} onPick={(sn) => putItems(today, "toi", sn.items, false, sn.name.toLowerCase(), "snack")} onSkip={() => { writeUser("fp_snack_skip", user?.id, today); setSnackSkip(today); }} />
     : null;
 
+  const mainRef = useRef(null);
+  useWindowRubber(mainRef, !top, tab); // 24/10: nảy cao su kiểu iOS ở 4 tab chính
   return (
     <div className="fpm" style={{ fontFamily: FONT, background: tab === "me" ? DK.base : LT.base, color: "#0F172A", minHeight: "100vh" }}>
       <style>{MOBILE_CSS + DK_CSS + (petApp.on ? PET_CSS : "")}</style>
@@ -888,7 +890,7 @@ export function MobileApp(props) {
         Mất kết nối — dữ liệu có thể chưa cập nhật</div>}
 
       {/* 18/10: đổi tab hiện mờ dần (chỉ độ mờ — không transform để không xô lệch phần tử cố định bên trong), thay vì nhảy ngay */}
-      <main key={tab} data-anim="1" aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd" : undefined} style={{ animation: "fpmTabIn .2s ease", position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
+      <main ref={mainRef} data-testid="tab-main" key={tab} data-anim="1" aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd fpm-pull" : "fpm-pull"} style={{ "--pull-top": tab === "today" ? HDR_TOP.blue : tab === "me" ? DK.base : LT.base, animation: "fpmTabIn .2s ease", position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
             nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={<>{banner}{date === today && petApp.card}</>} busy={busy}
