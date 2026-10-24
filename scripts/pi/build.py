@@ -93,6 +93,8 @@ ell = cv2.GaussianBlur(ell, (0, 0), 2)
 head = body.copy(); head[..., 3] = (body[..., 3] * ell).astype(np.uint8)
 total += put("body/pi_dau.webp", im=Image.fromarray(head), q=86)
 
+# 24/10 soát mắt: món (không phải đồ cầm tay) còn nét viền lơ lửng dính vào món → dọn như đồ cầm tay (cả ngoài thân)
+CLEAN_STRAY_EXTRA = {"muadong-nam-ao01"}
 items = []
 for it in cat["items"]:
     s = os.path.join(SRC, it["file"])
@@ -101,9 +103,12 @@ for it in cat["items"]:
     iid = f"{it['ev']}-{it['g']}-{m.group(3)}{m.group(4)}"
     total += put(it["file"], src=s)
     im = Image.open(s).convert("RGBA")
-    if it["slot"] in ("tay", "gang"):
-        a_, n_ = clean_tay(np.asarray(im), body[..., 3] > 128)
+    if it["slot"] in ("tay", "gang") or iid in CLEAN_STRAY_EXTRA:
+        a_, n_ = clean_tay(np.asarray(im), (body[..., 3] > 128) if iid not in CLEAN_STRAY_EXTRA else (body[..., 3] > -1))
         if n_ >= 40: im = Image.fromarray(a_); total += put(it["file"], im=im, q=90)
+    if it["slot"] in ("ao", "co", "lung") and LEAF is not None:  # 24/10 (pi_fix_6): áo / cổ / lưng cũng còn chấm mờ lơ lửng
+        _a, _g = fix_hat(np.asarray(im), LEAF[..., 3])
+        if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
     if it["slot"] == "dau" and LEAF is not None:
         _a, _g = fix_hat(np.asarray(im), LEAF[..., 3])
         if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)

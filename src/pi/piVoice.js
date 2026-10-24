@@ -43,3 +43,40 @@ export function loadRms(url) {
   p.catch(() => cache.delete(url));
   return p;
 }
+
+// ---- 24/10 (chủ dự án: "làm trước thử coi") — câu không có file ghi âm (AI trả lời, câu có tên / số): đọc bằng giọng tiếng Việt
+// có sẵn trên máy (Web Speech API, iPhone có giọng "Linh"). Miễn phí, không gọi API; giọng máy, chưa phải Mẫu D (chờ ElevenLabs — BACKLOG).
+const synth = () => (typeof window !== "undefined" && window.speechSynthesis && typeof SpeechSynthesisUtterance !== "undefined" ? window.speechSynthesis : null);
+let viVoice;
+function pickVi() {
+  const s = synth(); if (!s) return null;
+  const vs = s.getVoices().filter((v) => /^vi/i.test(v.lang));
+  return vs.find((v) => /linh/i.test(v.name)) || vs.find((v) => v.localService) || vs[0] || null;
+}
+if (synth()) { viVoice = pickVi(); synth().addEventListener?.("voiceschanged", () => { viVoice = pickVi(); }); }
+/** máy có giọng tiếng Việt? (chưa tải xong danh sách giọng thì coi là có, iPhone tải chậm) */
+export const ttsReady = () => !!synth() && (viVoice !== null || synth().getVoices().length === 0);
+/** gọi NGAY trong lúc khách bấm (Gửi / chạm câu): iPhone chỉ cho đọc khi lần đầu được mở bằng thao tác bấm */
+export function primeTTS() {
+  const s = synth(); if (!s) return;
+  try { const u = new SpeechSynthesisUtterance(" "); u.volume = 0; u.lang = "vi-VN"; s.speak(u); } catch { /* */ }
+}
+// giọng Pi: cao + hơi nhanh cho dễ thương (nữ cao hơn nam); theo nhãn giọng chậm / nhanh
+const TTS_RATE = { diu_dang: 0.92, an_ui: 0.88, hao_hung: 1.1 };
+/** đọc text → { started: Promise, ended: Promise, onWord(fn(charIndex)), stop() }; không có giọng → null */
+export function speakTTS(text, { g = "nam", giong, maxMs = 20000 } = {}) {
+  const s = synth(); if (!s || !String(text || "").trim()) return null;
+  viVoice = viVoice || pickVi();
+  const u = new SpeechSynthesisUtterance(String(text));
+  u.lang = "vi-VN"; if (viVoice) u.voice = viVoice;
+  u.rate = TTS_RATE[giong] || 1.02; u.pitch = g === "nu" ? 1.6 : 1.4; u.volume = 1;
+  let onWord = null, okS, okE;
+  const started = new Promise((r) => { okS = r; }), ended = new Promise((r) => { okE = r; });
+  u.onstart = () => okS(performance.now());
+  u.onend = () => okE(); u.onerror = () => { okS(performance.now()); okE(); };
+  u.onboundary = (e) => { if (onWord && (e.name === "word" || e.name == null)) onWord(e.charIndex); };
+  try { s.cancel(); s.speak(u); } catch { okS(performance.now()); okE(); }
+  setTimeout(() => okS(performance.now()), 1500); // máy không báo onstart → vẫn chạy khẩu hình
+  setTimeout(() => okE(), maxMs); // máy không báo onend (một số trình duyệt) → vẫn dừng
+  return { started, ended, onWord: (fn) => { onWord = fn; }, stop: () => { try { s.cancel(); } catch { /* */ } okE(); } };
+}

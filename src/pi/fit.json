@@ -27,27 +27,16 @@
   }
  },
  "bad": {
-  "muadong-nam-ao01": [
-   "viền thân thừa quanh người 886px",
-   "áo phao trong suốt, lộ thân xanh xuyên qua áo"
-  ],
-  "muadong-nam-pk08": [
-   "quả cầu tuyết có lỗ thủng bên trong"
-  ],
   "muahe-nam-pk12": [
-   "viền thân thừa quanh người 1757px",
-   "ba lô còn viền thân Pi 2 bên"
-  ],
-  "muahe-nu-pk07": [
-   "dán kèm mảng thân 6584px",
-   "quạt che mất mắt trái"
+   "viền thân thừa quanh người 739px",
+   "ba lô vẫn vẽ thừa 1 bóng thân Pi phía sau"
   ],
   "muahe-nu-pk11": [
-   "viền thân thừa quanh người 567px",
-   "phao kỳ lân vẽ thừa 1 bóng thân Pi phía sau"
+   "viền thân thừa quanh người 657px",
+   "phao kỳ lân vẫn vẽ thừa 1 bóng thân Pi phía sau"
   ],
   "trungthu-nu-pk05": [
-   "quạt trăng còn lỗ thủng hình trăng"
+   "quạt trăng vẫn thủng lỗ hình trăng"
   ]
  }
 }

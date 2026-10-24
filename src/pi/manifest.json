@@ -114,7 +114,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_ao01.webp",
    "c": [
     384,
-    586
+    584
    ]
   },
   {
@@ -126,7 +126,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_ao02.webp",
    "c": [
     384,
-    558
+    583
    ]
   },
   {
@@ -138,7 +138,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_ao03.webp",
    "c": [
     384,
-    584
+    582
    ]
   },
   {
@@ -150,7 +150,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_ao04.webp",
    "c": [
     384,
-    562
+    566
    ]
   },
   {
@@ -162,7 +162,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_ao05.webp",
    "c": [
     384,
-    532
+    540
    ]
   },
   {
@@ -269,8 +269,8 @@
    "name": "Nơ cổ đỏ",
    "file": "items/giangsinh/do_giangsinh_nam_pk04.webp",
    "c": [
-    365,
-    536
+    366,
+    535
    ]
   },
   {
@@ -354,7 +354,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_pk11.webp",
    "c": [
     384,
-    450
+    458
    ]
   },
   {
@@ -366,7 +366,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_pk12.webp",
    "c": [
     384,
-    504
+    502
    ]
   },
   {
@@ -414,7 +414,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_ao01.webp",
    "c": [
     384,
-    560
+    582
    ]
   },
   {
@@ -438,7 +438,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_ao03.webp",
    "c": [
     384,
-    560
+    584
    ]
   },
   {
@@ -450,7 +450,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_ao04.webp",
    "c": [
     386,
-    558
+    559
    ]
   },
   {
@@ -462,7 +462,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_ao05.webp",
    "c": [
     386,
-    559
+    558
    ]
   },
   {
@@ -558,7 +558,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_pk03.webp",
    "c": [
     386,
-    528
+    529
    ]
   },
   {
@@ -569,8 +569,8 @@
    "name": "Vòng cổ ngọc trai chuông nhỏ",
    "file": "items/giangsinh/do_giangsinh_nu_pk04.webp",
    "c": [
-    406,
-    522
+    409,
+    536
    ]
   },
   {
@@ -581,8 +581,8 @@
    "name": "Nơ cổ nhung đỏ",
    "file": "items/giangsinh/do_giangsinh_nu_pk05.webp",
    "c": [
-    382,
-    533
+    384,
+    532
    ]
   },
   {
@@ -654,7 +654,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_pk11.webp",
    "c": [
     384,
-    416
+    376
    ]
   },
   {
@@ -714,7 +714,7 @@
    "file": "items/tet/do_tet_nam_ao01.webp",
    "c": [
     384,
-    587
+    586
    ]
   },
   {
@@ -726,7 +726,7 @@
    "file": "items/tet/do_tet_nam_ao02.webp",
    "c": [
     384,
-    560
+    590
    ]
   },
   {
@@ -738,7 +738,7 @@
    "file": "items/tet/do_tet_nam_ao03.webp",
    "c": [
     384,
-    568
+    592
    ]
   },
   {
@@ -762,7 +762,7 @@
    "file": "items/tet/do_tet_nam_ao05.webp",
    "c": [
     384,
-    560
+    593
    ]
   },
   {
@@ -858,7 +858,7 @@
    "file": "items/tet/do_tet_nam_pk03.webp",
    "c": [
     386,
-    522
+    534
    ]
   },
   {
@@ -870,7 +870,7 @@
    "file": "items/tet/do_tet_nam_pk04.webp",
    "c": [
     386,
-    536
+    528
    ]
   },
   {
@@ -953,7 +953,7 @@
    "name": "Túi gấm đỏ đeo chéo",
    "file": "items/tet/do_tet_nam_pk11.webp",
    "c": [
-    388,
+    389,
     528
    ]
   },
@@ -1014,7 +1014,7 @@
    "file": "items/tet/do_tet_nu_ao01.webp",
    "c": [
     384,
-    559
+    560
    ]
   },
   {
@@ -1038,7 +1038,7 @@
    "file": "items/tet/do_tet_nu_ao03.webp",
    "c": [
     384,
-    560
+    592
    ]
   },
   {
@@ -1050,7 +1050,7 @@
    "file": "items/tet/do_tet_nu_ao04.webp",
    "c": [
     384,
-    588
+    586
    ]
   },
   {
@@ -1062,7 +1062,7 @@
    "file": "items/tet/do_tet_nu_ao05.webp",
    "c": [
     384,
-    559
+    558
    ]
   },
   {
@@ -1146,7 +1146,7 @@
    "file": "items/tet/do_tet_nu_pk02.webp",
    "c": [
     362,
-    537
+    535
    ]
   },
   {
@@ -1158,7 +1158,7 @@
    "file": "items/tet/do_tet_nu_pk03.webp",
    "c": [
     384,
-    520
+    521
    ]
   },
   {
@@ -1170,7 +1170,7 @@
    "file": "items/tet/do_tet_nu_pk04.webp",
    "c": [
     386,
-    530
+    536
    ]
   },
   {
@@ -1253,8 +1253,8 @@
    "name": "Túi gấm vàng đeo chéo",
    "file": "items/tet/do_tet_nu_pk11.webp",
    "c": [
-    384,
-    480
+    378,
+    488
    ]
   },
   {
@@ -1313,8 +1313,8 @@
    "name": "Áo phao xanh navy có mũ viền lông",
    "file": "items/muadong/do_muadong_nam_ao01.webp",
    "c": [
-    384,
-    507
+    387,
+    544
    ]
   },
   {
@@ -1325,7 +1325,7 @@
    "name": "Áo khoác dạ be cài khuy",
    "file": "items/muadong/do_muadong_nam_ao02.webp",
    "c": [
-    385,
+    384,
     580
    ]
   },
@@ -1338,7 +1338,7 @@
    "file": "items/muadong/do_muadong_nam_ao03.webp",
    "c": [
     384,
-    574
+    570
    ]
   },
   {
@@ -1350,7 +1350,7 @@
    "file": "items/muadong/do_muadong_nam_ao04.webp",
    "c": [
     384,
-    547
+    566
    ]
   },
   {
@@ -1361,7 +1361,7 @@
    "name": "Áo khoác lông cừu nâu",
    "file": "items/muadong/do_muadong_nam_ao05.webp",
    "c": [
-    384,
+    385,
     558
    ]
   },
@@ -1433,8 +1433,8 @@
    "name": "Khăn len kẻ caro đỏ",
    "file": "items/muadong/do_muadong_nam_pk01.webp",
    "c": [
-    384,
-    523
+    386,
+    526
    ]
   },
   {
@@ -1518,7 +1518,7 @@
    "file": "items/muadong/do_muadong_nam_pk08.webp",
    "c": [
     256,
-    464
+    465
    ]
   },
   {
@@ -1553,7 +1553,7 @@
    "name": "Ba lô len nâu",
    "file": "items/muadong/do_muadong_nam_pk11.webp",
    "c": [
-    385,
+    384,
     538
    ]
   },
@@ -1566,7 +1566,7 @@
    "file": "items/muadong/do_muadong_nam_pk12.webp",
    "c": [
     384,
-    460
+    504
    ]
   },
   {
@@ -1614,7 +1614,7 @@
    "file": "items/muadong/do_muadong_nu_ao01.webp",
    "c": [
     384,
-    532
+    533
    ]
   },
   {
@@ -1626,7 +1626,7 @@
    "file": "items/muadong/do_muadong_nu_ao02.webp",
    "c": [
     384,
-    571
+    572
    ]
   },
   {
@@ -1637,8 +1637,8 @@
    "name": "Váy len trắng cổ lọ",
    "file": "items/muadong/do_muadong_nu_ao03.webp",
    "c": [
-    385,
-    561
+    384,
+    584
    ]
   },
   {
@@ -1650,7 +1650,7 @@
    "file": "items/muadong/do_muadong_nu_ao04.webp",
    "c": [
     384,
-    559
+    558
    ]
   },
   {
@@ -1662,7 +1662,7 @@
    "file": "items/muadong/do_muadong_nu_ao05.webp",
    "c": [
     384,
-    548
+    567
    ]
   },
   {
@@ -1733,7 +1733,7 @@
    "name": "Khăn len hồng quả bông",
    "file": "items/muadong/do_muadong_nu_pk01.webp",
    "c": [
-    386,
+    385,
     528
    ]
   },
@@ -1913,7 +1913,7 @@
    "name": "Áo sơ mi hoa Hawaii xanh",
    "file": "items/muahe/do_muahe_nam_ao01.webp",
    "c": [
-    383,
+    382,
     531
    ]
   },
@@ -1926,7 +1926,7 @@
    "file": "items/muahe/do_muahe_nam_ao02.webp",
    "c": [
     384,
-    561
+    584
    ]
   },
   {
@@ -1937,8 +1937,8 @@
    "name": "Áo phông trắng in quả dứa",
    "file": "items/muahe/do_muahe_nam_ao03.webp",
    "c": [
-    382,
-    539
+    383,
+    559
    ]
   },
   {
@@ -1950,7 +1950,7 @@
    "file": "items/muahe/do_muahe_nam_ao04.webp",
    "c": [
     384,
-    552
+    564
    ]
   },
   {
@@ -1962,7 +1962,7 @@
    "file": "items/muahe/do_muahe_nam_ao05.webp",
    "c": [
     384,
-    558
+    559
    ]
   },
   {
@@ -2057,8 +2057,8 @@
    "name": "Vòng cổ hoa Hawaii",
    "file": "items/muahe/do_muahe_nam_pk03.webp",
    "c": [
-    394,
-    523
+    393,
+    528
    ]
   },
   {
@@ -2154,7 +2154,7 @@
    "file": "items/muahe/do_muahe_nam_pk11.webp",
    "c": [
     384,
-    420
+    419
    ]
   },
   {
@@ -2166,7 +2166,7 @@
    "file": "items/muahe/do_muahe_nam_pk12.webp",
    "c": [
     384,
-    454
+    420
    ]
   },
   {
@@ -2213,8 +2213,8 @@
    "name": "Váy hoa nhí vàng hai dây",
    "file": "items/muahe/do_muahe_nu_ao01.webp",
    "c": [
-    383,
-    559
+    382,
+    558
    ]
   },
   {
@@ -2226,7 +2226,7 @@
    "file": "items/muahe/do_muahe_nu_ao02.webp",
    "c": [
     384,
-    553
+    562
    ]
   },
   {
@@ -2250,7 +2250,7 @@
    "file": "items/muahe/do_muahe_nu_ao04.webp",
    "c": [
     381,
-    540
+    539
    ]
   },
   {
@@ -2262,7 +2262,7 @@
    "file": "items/muahe/do_muahe_nu_ao05.webp",
    "c": [
     382,
-    558
+    559
    ]
   },
   {
@@ -2369,8 +2369,8 @@
    "name": "Dây chuyền ngọc trai biển",
    "file": "items/muahe/do_muahe_nu_pk04.webp",
    "c": [
-    382,
-    534
+    386,
+    536
    ]
   },
   {
@@ -2405,8 +2405,8 @@
    "name": "Cầm quạt cầm tay",
    "file": "items/muahe/do_muahe_nu_pk07.webp",
    "c": [
-    268,
-    452
+    166,
+    532
    ]
   },
   {
@@ -2526,7 +2526,7 @@
    "file": "items/halloween/do_halloween_nam_ao02.webp",
    "c": [
     384,
-    560
+    586
    ]
   },
   {
@@ -2538,7 +2538,7 @@
    "file": "items/halloween/do_halloween_nam_ao03.webp",
    "c": [
     384,
-    592
+    594
    ]
   },
   {
@@ -2561,8 +2561,8 @@
    "name": "Bộ đồ xác ướp quấn băng",
    "file": "items/halloween/do_halloween_nam_ao05.webp",
    "c": [
-    384,
-    559
+    385,
+    560
    ]
   },
   {
@@ -2669,7 +2669,7 @@
    "name": "Vòng cổ răng nanh",
    "file": "items/halloween/do_halloween_nam_pk04.webp",
    "c": [
-    384,
+    392,
     522
    ]
   },
@@ -2754,7 +2754,7 @@
    "file": "items/halloween/do_halloween_nam_pk11.webp",
    "c": [
     384,
-    486
+    487
    ]
   },
   {
@@ -2766,7 +2766,7 @@
    "file": "items/halloween/do_halloween_nam_pk12.webp",
    "c": [
     384,
-    566
+    564
    ]
   },
   {
@@ -2838,7 +2838,7 @@
    "file": "items/halloween/do_halloween_nu_ao03.webp",
    "c": [
     386,
-    588
+    591
    ]
   },
   {
@@ -2849,8 +2849,8 @@
    "name": "Váy ma trắng bồng bềnh",
    "file": "items/halloween/do_halloween_nu_ao04.webp",
    "c": [
-    385,
-    566
+    384,
+    567
    ]
   },
   {
@@ -2957,7 +2957,7 @@
    "name": "Vòng cổ nhện bạc",
    "file": "items/halloween/do_halloween_nu_pk03.webp",
    "c": [
-    386,
+    385,
     538
    ]
   },
@@ -2969,7 +2969,7 @@
    "name": "Nơ cổ cam chấm bi",
    "file": "items/halloween/do_halloween_nu_pk04.webp",
    "c": [
-    382,
+    384,
     506
    ]
   },
@@ -3054,7 +3054,7 @@
    "file": "items/halloween/do_halloween_nu_pk11.webp",
    "c": [
     384,
-    446
+    447
    ]
   },
   {
@@ -3114,7 +3114,7 @@
    "file": "items/trungthu/do_trungthu_nam_ao01.webp",
    "c": [
     384,
-    558
+    557
    ]
   },
   {
@@ -3126,7 +3126,7 @@
    "file": "items/trungthu/do_trungthu_nam_ao02.webp",
    "c": [
     384,
-    560
+    593
    ]
   },
   {
@@ -3138,7 +3138,7 @@
    "file": "items/trungthu/do_trungthu_nam_ao03.webp",
    "c": [
     384,
-    559
+    560
    ]
   },
   {
@@ -3162,7 +3162,7 @@
    "file": "items/trungthu/do_trungthu_nam_ao05.webp",
    "c": [
     386,
-    583
+    593
    ]
   },
   {
@@ -3342,7 +3342,7 @@
    "file": "items/trungthu/do_trungthu_nam_pk10.webp",
    "c": [
     386,
-    534
+    535
    ]
   },
   {
@@ -3366,7 +3366,7 @@
    "file": "items/trungthu/do_trungthu_nam_pk12.webp",
    "c": [
     384,
-    429
+    428
    ]
   },
   {
@@ -3414,7 +3414,7 @@
    "file": "items/trungthu/do_trungthu_nu_ao01.webp",
    "c": [
     384,
-    559
+    560
    ]
   },
   {
@@ -3426,7 +3426,7 @@
    "file": "items/trungthu/do_trungthu_nu_ao02.webp",
    "c": [
     384,
-    560
+    588
    ]
   },
   {
@@ -3438,7 +3438,7 @@
    "file": "items/trungthu/do_trungthu_nu_ao03.webp",
    "c": [
     384,
-    558
+    554
    ]
   },
   {
@@ -3450,7 +3450,7 @@
    "file": "items/trungthu/do_trungthu_nu_ao04.webp",
    "c": [
     384,
-    586
+    593
    ]
   },
   {
@@ -3630,7 +3630,7 @@
    "file": "items/trungthu/do_trungthu_nu_pk09.webp",
    "c": [
     386,
-    522
+    540
    ]
   },
   {
@@ -3642,7 +3642,7 @@
    "file": "items/trungthu/do_trungthu_nu_pk10.webp",
    "c": [
     384,
-    534
+    536
    ]
   },
   {
@@ -3706,5 +3706,5 @@
    ]
   }
  ],
- "ver": "a874bd08ac"
+ "ver": "09a75618c0"
 }

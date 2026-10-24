@@ -9,7 +9,7 @@ import { LT, ltCard, DK, dkCard } from "../theme";
 import { PetAvatar, ItemImg, ITEMS, catalog, PET_BASE } from "./PetAvatar";
 import { PetRoom } from "./PetRoom";
 import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile, ROOM_TIMES, TIME_NAME } from "../pi/piCatalog";
-import { playNow } from "../pi/piVoice.js";
+import { playNow, primeTTS } from "../pi/piVoice.js";
 import { nowVNParts } from "../lib/dateVN";
 import { AUTO_FACE, timeFace } from "../pi/piExpr";
 import { lateNight } from "../pi/piExpr";
@@ -107,7 +107,7 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
         <Stage pet={pet} speech={speech} onSpeakEnd={() => setSpeech(null)}>
           <span style={{ position: "absolute", left: 14, right: 14, top: 14, display: "flex", justifyContent: "center" }}>
             {/* 24/10 pi_full mục 4–5: bấm câu → Pi nói (khẩu hình; câu có file thu sẵn thì phát giọng), mặt theo "mat" của câu */}
-            <button type="button" data-testid="pet-say-play" onClick={() => { const l = pet.sayLine; const el = playNow(l?.audio); setSpeech({ key: Date.now(), text: l?.text || moodText(pet), audio: l?.audio || null, el, expr: l?.mat, giong: l?.giong }); }} aria-label={`Nghe ${pet.name} nói`}
+            <button type="button" data-testid="pet-say-play" onClick={() => { const l = pet.sayLine; const el = playNow(l?.audio); if (!el) primeTTS(); setSpeech({ key: Date.now(), text: l?.text || moodText(pet), audio: l?.audio || null, el, expr: l?.mat, giong: l?.giong }); }} aria-label={`Nghe ${pet.name} nói`}
               style={{ maxWidth: 280, background: "#FFFFFF", border: "none", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center", fontFamily: "inherit", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
               <span>{moodText(pet)}</span>
               <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={speech ? "#007AFF" : "#94A3B8"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>

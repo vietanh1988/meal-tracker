@@ -7,8 +7,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PI_ITEMS, PI_MANIFEST, LAYER_ORDER, bodyFile, headFile, faceFile, eyesFile, mouthFile, leafFile, preload, FACES, VISEMES } from "./piCatalog";
 import { equipReaction, tapReaction, idleBase, shownFace, canBlink, pi } from "./piExpr";
-import { timeline, audioOnsets, visemeAt, restMouth, parseTagged } from "./piLipsync.js";
-import { playNow, loadRms } from "./piVoice.js";
+import { timeline, audioOnsets, textOnsets, visemeAt, restMouth, parseTagged } from "./piLipsync.js";
+import { playNow, loadRms, speakTTS, ttsReady } from "./piVoice.js";
 export { pi };
 
 export const PI_ITEM = Object.fromEntries(PI_ITEMS.map((it) => [it.id, it]));
@@ -36,30 +36,46 @@ const shown = (equipped, gender) => {
 
 /** chạy 1 câu nói: dòng thời gian miệng + (tuỳ) tiếng. el = thẻ <audio> đã phát sẵn lúc khách bấm (piVoice.playNow);
  *  không có el mà có audio thì tự phát (có thể bị iPhone chặn → chỉ khẩu hình). onFrame({ v, level }) mỗi khung hình; trả { done, stop } */
-function startSpeech({ text, audio, el, giong }, onFrame) {
-  let stopped = false, raf = 0;
+function startSpeech({ text, audio, el, giong, g }, onFrame) {
+  let stopped = false, raf = 0, tts = null;
   if (!el && audio) el = playNow(audio);
+  // 24/10: không có file ghi âm → giọng tiếng Việt của máy (piVoice.speakTTS), miệng bám theo từng chữ máy đang đọc
+  if (!el && ttsReady()) tts = speakTTS(text, { g, giong, maxMs: textOnsets(text, giong).end * 1.8 + 2500 });
   const done = (async () => {
     let tl = timeline(text, { giong }), rms = null, hop = 10;
-    const t0 = performance.now();
-    const now = () => (el && !el.paused && el.currentTime > 0 ? el.currentTime * 1000 : performance.now() - t0);
+    let t0 = performance.now(), shift = 0;
+    if (tts) {
+      t0 = await Promise.race([tts.started, new Promise((r) => setTimeout(() => r(performance.now()), 1500))]);
+      // chữ thứ i máy bắt đầu đọc → kéo đồng hồ khẩu hình về đúng mốc âm tiết của chữ đó
+      const starts = wordStarts(text), on = textOnsets(text, giong).onsets;
+      tts.onWord((ci) => { let i = 0; while (i + 1 < starts.length && starts[i + 1].ci <= ci) i++; const target = on[starts[i]?.syl ?? 0]; if (target != null) shift = target - (performance.now() - t0); });
+    }
+    const now = () => (el && !el.paused && el.currentTime > 0 ? el.currentTime * 1000 : performance.now() - t0 + shift);
     if (el && audio) loadRms(audio).then((r) => { if (stopped) return; rms = r.rms; hop = r.hop; tl = timeline(text, { ...audioOnsets(text, r.rms, r.hop), giong }); }).catch(() => {});
-    const ended = el ? new Promise((ok) => { el.addEventListener("ended", ok, { once: true }); el.addEventListener("error", ok, { once: true }); }) : null;
+    const ended = el ? new Promise((ok) => { el.addEventListener("ended", ok, { once: true }); el.addEventListener("error", ok, { once: true }); }) : tts ? tts.ended : null;
     let fin = false; ended?.then(() => { fin = true; });
     await new Promise((ok) => {
       const step = () => {
         if (stopped) return ok();
         const t = now(), end = tl.length ? tl[tl.length - 1].t : 0;
-        const level = rms ? Math.min(1, (rms[Math.floor(t / hop)] || 0) * 4) : 0;
-        onFrame({ v: visemeAt(tl, t), level });
-        const playing = el && !el.paused && !el.ended && !el.dataset.blocked;
-        if ((fin || !playing) && t > end + 30) return ok();
+        const level = rms ? Math.min(1, (rms[Math.floor(t / hop)] || 0) * 4) : tts && !fin ? 0.35 + 0.25 * Math.sin(t / 90) : 0;
+        // máy đọc chậm hơn dự tính: hết dòng khẩu hình mà máy chưa đọc xong → mấp máy vừa / hé tới khi xong
+        const v = tts && !fin && t > end - 120 ? (Math.floor(t / 160) % 2 ? "vua" : "he") : visemeAt(tl, t);
+        onFrame({ v: fin && tts ? "ngam" : v, level });
+        const playing = (el && !el.paused && !el.ended && !el.dataset.blocked) || (tts && !fin);
+        if ((fin || !playing) && t > (tts ? 0 : end + 30)) return ok();
         raf = requestAnimationFrame(step);
       };
       step();
     });
   })();
-  return { done, stop: () => { stopped = true; cancelAnimationFrame(raf); try { el?.pause(); } catch { /* */ } } };
+  return { done, stop: () => { stopped = true; cancelAnimationFrame(raf); try { el?.pause(); } catch { /* */ } tts?.stop(); } };
+}
+/** vị trí chữ trong câu → âm tiết thứ mấy (để bám theo sự kiện "đọc tới chữ" của máy) */
+function wordStarts(text) {
+  const out = []; let syl = 0;
+  for (const m of String(text).matchAll(/[0-9A-Za-zÀ-ỹđĐ]+/g)) { out.push({ ci: m.index, syl }); syl += /^\d/.test(m[0]) ? m[0].length : 1; }
+  return out;
 }
 
 /** gender: nam | nu · expression: biểu cảm nền (base: khách chọn ở Tủ đồ / tâm trạng app) — vui | cuoilon | nhaymat | haohung | ngacnhien | yeu | suynghi | buon | ngu
@@ -138,7 +154,7 @@ export function PiPet({ gender = "nam", expression = "vui", equipped = {}, heigh
     const expr = sp.expr || tag.expr || null, giong = sp.giong || tag.giong || null;
     touch();
     let lastV = null;
-    const h = startSpeech({ text: tag.text, audio: sp.audio, el: sp.el, giong }, ({ v, level }) => {
+    const h = startSpeech({ text: tag.text, audio: sp.audio, el: sp.el, giong, g }, ({ v, level }) => {
       if (v !== lastV) { lastV = v; setSay({ v, expr }); }
       if (bobRef.current) bobRef.current.style.transform = `scale(${1 + level * 0.035}, ${1 - level * 0.02 + level * 0.05})`; // nhún theo biên độ
     });

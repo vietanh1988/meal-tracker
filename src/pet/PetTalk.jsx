@@ -4,6 +4,7 @@
 //  - PetWeekScreen: Tổng kết tuần Chủ nhật — số máy tính + câu soạn sẵn cho mọi khách; Premium thêm nhận xét AI.
 //  - PetSettingsScreen: tên, bản, Pi khen và nhắc (số câu / ngày, giờ yên lặng), tổng kết tuần.
 import { useEffect, useRef, useState } from "react";
+import { primeTTS } from "../pi/piVoice.js";
 import { SubPage, GRAD_BLUE } from "../mobile/ui";
 
 /** Bản Pi theo hồ sơ: profile.gender "female" → "nu", còn lại "nam" */
@@ -32,7 +33,7 @@ export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", on
   const [text, setText] = useState("");
   const [focus, setFocus] = useState(false);
   const busy = state === "thinking" || state === "sleep";
-  const send = (t) => { const v = (t ?? text).trim(); if (!v || busy) return; onSend?.(v); setText(""); };
+  const send = (t) => { const v = (t ?? text).trim(); if (!v || busy) return; primeTTS(); onSend?.(v); setText(""); }; // 24/10: mở giọng đọc của máy ngay lúc bấm (iPhone)
   const endRef = useRef(null);
   useEffect(() => { endRef.current?.scrollIntoView?.({ block: "end" }); }, [msgs.length, state]);
   // state: idle | thinking (đang chờ AI: mặt "?", 3 chấm) | talking (vừa trả lời: miệng mấp máy vài giây)
@@ -66,6 +67,7 @@ export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", on
               </div>
             </>
           )}
+          <span data-testid="pet-chat-tts" style={{ display: "block", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#94A3B8", padding: "2px 0 0 0" }}>Pi đọc câu trả lời bằng giọng của máy · bật tiếng điện thoại để nghe</span>
           <span data-testid="pet-chat-left" style={{ display: "block", textAlign: "center", fontSize: 11, fontWeight: 700, color: out ? "#DB2777" : "#64748B", padding: "4px 0 0 0" }}>{max != null ? `Còn ${left} / ${max} lượt hỏi AI hôm nay · ` : out ? "Hết lượt hỏi AI hôm nay · " : "Dùng lượt AI chat của gói · "}câu Pi tự khen không tính lượt</span>
         </div>
       </div>}>
