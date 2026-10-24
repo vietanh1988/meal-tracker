@@ -12,9 +12,9 @@ import { aiQuota } from "../lib/aiQuota";
 import { pickAiProvider, pickAiModelFromSettings } from "../lib/aiProvider";
 import { ITEMS, catalog } from "./PetAvatar";
 import { EV, VOICE } from "./lines";
-import { pickLine, lineById, remember, greetGroup, EVENT_GROUP, insultLevel, insultMuc, isSadSelf, isSelfHarm, SULK_MS } from "../pi/piBank";
+import { GROUPS, pickLine, lineById, remember, greetGroup, EVENT_GROUP, insultLevel, insultMuc, isSadSelf, isSelfHarm, SULK_MS } from "../pi/piBank";
 import { parseTagged } from "../pi/piLipsync.js";
-import { voiceUrl } from "../pi/piVoice.js";
+import { voiceUrl, playNow, VOICE_IDS } from "../pi/piVoice.js";
 import { pi } from "../pi/piExpr";
 import PERSONA from "../pi/persona.md?raw";
 import { roomTime } from "./PetRoom";
@@ -163,7 +163,15 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     setSayNow(line);
   }, [vm?.logged, vm?.streak, vm?.level?.n, vm?.waterMl, vm?.settings?.talk, pet.lines, today, Math.floor(minutes / 30), appSettings?.pet_config]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const view0 = vm ? { ...vm, say: sayNow?.text || null, sayLine: sayNow ? { ...sayNow, audio: voiceUrl(sayNow.id, variant) } : null } : null;
+  // 24/10: không có câu theo việc → 1 câu "idle" có giọng thu sẵn (đổi theo ngày) để bấm vào Pi nói thành tiếng
+  const idleLine = useMemo(() => {
+    const ids = (GROUPS.idle?.cau || []).filter((c) => VOICE_IDS.includes(c.id) && !/\{/.test(c.text));
+    if (!ids.length) return null;
+    const c = ids[Number(today.replace(/-/g, "")) % ids.length];
+    return { id: c.id, text: c.text, mat: c.mat, giong: c.giong };
+  }, [today]);
+  const line0 = sayNow || (vm && vm.mood === "vui" ? idleLine : null);
+  const view0 = vm ? { ...vm, say: line0?.text || null, sayLine: line0 ? { ...line0, audio: voiceUrl(line0.id, variant) } : null } : null;
 
   // ---- hành động ----
   const toastErr = (r) => { if (r && !r.ok) showToast?.({ text: r.error || "Chưa lưu được, thử lại" }); return r; };
@@ -200,7 +208,9 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   const replyLine = (l, extra = {}) => {
     if (!l) return false;
     keepHist(l.id);
-    setChat((c) => [...c, { role: "pi", text: l.text, expr: l.mat, giong: l.giong, audio: voiceUrl(l.id, variant), key: Date.now(), ...extra }]);
+    const audio = voiceUrl(l.id, variant);
+    const el = playNow(audio); // phát ngay trong lúc khách bấm Gửi (iPhone chặn phát tiếng sau đó)
+    setChat((c) => [...c, { role: "pi", text: l.text, expr: l.mat, giong: l.giong, audio, el, key: Date.now(), ...extra }]);
     setChatState(extra.sleep ? "sleep" : "talking");
     return true;
   };

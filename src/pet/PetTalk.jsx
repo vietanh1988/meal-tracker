@@ -38,7 +38,7 @@ export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", on
   // state: idle | thinking (đang chờ AI: mặt "?", 3 chấm) | talking (vừa trả lời: miệng mấp máy vài giây)
   const lastPi = [...msgs].reverse().find((m) => m.role !== "user");
   // 24/10 pi_full mục 4: Pi NÓI câu vừa trả lời (khẩu hình + giọng thu sẵn nếu có) · đang gõ → Pi NGHE (nghiêng đầu, gật)
-  const speech = state === "talking" && lastPi?.key ? { key: lastPi.key, text: lastPi.text, audio: lastPi.audio || null, expr: lastPi.expr, giong: lastPi.giong } : null;
+  const speech = state === "talking" && lastPi?.key ? { key: lastPi.key, text: lastPi.text, audio: lastPi.audio || null, el: lastPi.el || null, expr: lastPi.expr, giong: lastPi.giong } : null;
   const listening = focus && !!text.trim() && state === "idle";
   useEffect(() => { if (state !== "talking") return undefined; const t = setTimeout(() => onSpoken?.(), 15000); return () => clearTimeout(t); }, [state, lastPi?.key]); // eslint-disable-line react-hooks/exhaustive-deps
   const out = left <= 0;

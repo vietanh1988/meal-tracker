@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PI_ITEMS, PI_MANIFEST, LAYER_ORDER, bodyFile, headFile, faceFile, eyesFile, mouthFile, leafFile, preload, FACES, VISEMES } from "./piCatalog";
 import { equipReaction, tapReaction, idleBase, shownFace, canBlink, pi } from "./piExpr";
 import { timeline, audioOnsets, visemeAt, restMouth, parseTagged } from "./piLipsync.js";
-import { loadVoice, playVoice } from "./piVoice.js";
+import { playNow, loadRms } from "./piVoice.js";
 export { pi };
 
 export const PI_ITEM = Object.fromEntries(PI_ITEMS.map((it) => [it.id, it]));
@@ -27,34 +27,32 @@ const shown = (equipped, gender) => {
   return out;
 };
 
-/** chạy 1 câu nói: dòng thời gian miệng + (tuỳ) phát audio. onFrame({ v, level }) mỗi khung hình; trả { done, stop } */
-function startSpeech({ text, audio, giong }, onFrame) {
-  let stopped = false, raf = 0, player = null;
+/** chạy 1 câu nói: dòng thời gian miệng + (tuỳ) tiếng. el = thẻ <audio> đã phát sẵn lúc khách bấm (piVoice.playNow);
+ *  không có el mà có audio thì tự phát (có thể bị iPhone chặn → chỉ khẩu hình). onFrame({ v, level }) mỗi khung hình; trả { done, stop } */
+function startSpeech({ text, audio, el, giong }, onFrame) {
+  let stopped = false, raf = 0;
+  if (!el && audio) el = playNow(audio);
   const done = (async () => {
-    let tl = null, level = () => 0;
-    if (audio) {
-      try {
-        const { buffer, rms, hop } = await loadVoice(audio);
-        if (stopped) return;
-        tl = timeline(text, { ...audioOnsets(text, rms, hop), giong });
-        player = playVoice(buffer); level = player.level;
-      } catch { tl = null; } // tải / phát lỗi (tự phát bị chặn…) → khẩu hình theo chữ, không tiếng
-    }
-    if (!tl) tl = timeline(text, { giong });
-    const t0 = player ? player.start : performance.now(), end = tl.length ? tl[tl.length - 1].t : 0;
+    let tl = timeline(text, { giong }), rms = null, hop = 10;
+    const t0 = performance.now();
+    const now = () => (el && !el.paused && el.currentTime > 0 ? el.currentTime * 1000 : performance.now() - t0);
+    if (el && audio) loadRms(audio).then((r) => { if (stopped) return; rms = r.rms; hop = r.hop; tl = timeline(text, { ...audioOnsets(text, r.rms, r.hop), giong }); }).catch(() => {});
+    const ended = el ? new Promise((ok) => { el.addEventListener("ended", ok, { once: true }); el.addEventListener("error", ok, { once: true }); }) : null;
+    let fin = false; ended?.then(() => { fin = true; });
     await new Promise((ok) => {
       const step = () => {
         if (stopped) return ok();
-        const t = performance.now() - t0;
-        onFrame({ v: visemeAt(tl, t), level: player ? level() : 0 });
-        if (t > end + 30) return ok();
+        const t = now(), end = tl.length ? tl[tl.length - 1].t : 0;
+        const level = rms ? Math.min(1, (rms[Math.floor(t / hop)] || 0) * 4) : 0;
+        onFrame({ v: visemeAt(tl, t), level });
+        const playing = el && !el.paused && !el.ended && !el.dataset.blocked;
+        if ((fin || !playing) && t > end + 30) return ok();
         raf = requestAnimationFrame(step);
       };
       step();
     });
-    if (player) await Promise.race([player.done, new Promise((ok) => setTimeout(ok, 400))]);
   })();
-  return { done, stop: () => { stopped = true; cancelAnimationFrame(raf); player?.stop(); } };
+  return { done, stop: () => { stopped = true; cancelAnimationFrame(raf); try { el?.pause(); } catch { /* */ } } };
 }
 
 /** gender: nam | nu · expression: biểu cảm nền (base: khách chọn ở Tủ đồ / tâm trạng app) — vui | cuoilon | nhaymat | haohung | ngacnhien | yeu | suynghi | buon | ngu
@@ -133,7 +131,7 @@ export function PiPet({ gender = "nam", expression = "vui", equipped = {}, heigh
     const expr = sp.expr || tag.expr || null, giong = sp.giong || tag.giong || null;
     touch();
     let lastV = null;
-    const h = startSpeech({ text: tag.text, audio: sp.audio, giong }, ({ v, level }) => {
+    const h = startSpeech({ text: tag.text, audio: sp.audio, el: sp.el, giong }, ({ v, level }) => {
       if (v !== lastV) { lastV = v; setSay({ v, expr }); }
       if (bobRef.current) bobRef.current.style.transform = `scale(${1 + level * 0.035}, ${1 - level * 0.02 + level * 0.05})`; // nhún theo biên độ
     });

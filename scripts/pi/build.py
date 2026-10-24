@@ -16,6 +16,7 @@ import cv2
 from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from clean_tay import clean as clean_tay
+from fix_hat import fix_hat
 
 SRC = sys.argv[1]
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -104,15 +105,8 @@ for it in cat["items"]:
         a_, n_ = clean_tay(np.asarray(im), body[..., 3] > 128)
         if n_ >= 40: im = Image.fromarray(a_); total += put(it["file"], im=im, q=90)
     if it["slot"] == "dau" and LEAF is not None:
-        # 24/10: ảnh mũ còn viền lá cũ mờ (nét mảnh alpha < 100 đứng RỜI, không dính nét đậm) quanh chỗ lá → bỏ đúng các điểm đó
-        a = np.asarray(im).copy(); al = a[..., 3]
-        solid_n = cv2.dilate((al >= 200).astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
-        ghost = (al > 0) & (al < 100) & ~solid_n & (yy < 330)
-        n_, lab_, st_, _ = cv2.connectedComponentsWithStats((al > 0).astype(np.uint8), 8)  # chấm rời < 40px phía trên đầu
-        for k_ in range(1, n_):
-            if st_[k_, 4] < 40 and st_[k_, 1] < 330: ghost |= lab_ == k_
-        if ghost.any():
-            a[ghost, 3] = 0; im = Image.fromarray(a); total += put(it["file"], im=im, q=90)
+        _a, _g = fix_hat(np.asarray(im), LEAF[..., 3])
+        if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
     bb = im.getbbox()
     if not bb: print("ảnh rỗng", it["file"]); continue
     pad = 10
