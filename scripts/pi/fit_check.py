@@ -134,6 +134,8 @@ EYE_BAD = {  # 24/10 duyệt mắt bộ pi_fix_6
     "muahe-nam-pk12": "ba lô vẫn vẽ thừa 1 bóng thân Pi phía sau",
     "muahe-nu-pk11": "phao kỳ lân vẫn vẽ thừa 1 bóng thân Pi phía sau",
     "trungthu-nu-pk05": "quạt trăng vẫn thủng lỗ hình trăng",
+    "muadong-nam-dau05": "mũ len sọc (bộ 60 mũ) khoét thủng mảng trên mặt",
+    "halloween-nam-dau01": "mũ phù thuỷ (bộ 60 mũ) vành che mất mắt trái",
 }
 res = {}
 for it in man["items"]:

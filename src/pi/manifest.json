@@ -174,7 +174,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_dau01.webp",
    "c": [
     384,
-    198
+    262
    ]
   },
   {
@@ -185,8 +185,8 @@
    "name": "Mũ len có sừng tuần lộc",
    "file": "items/giangsinh/do_giangsinh_nam_dau02.webp",
    "c": [
-    385,
-    218
+    384,
+    260
    ]
   },
   {
@@ -198,7 +198,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_dau03.webp",
    "c": [
     384,
-    212
+    263
    ]
   },
   {
@@ -209,8 +209,8 @@
    "name": "Mũ yêu tinh xanh lá có chuông",
    "file": "items/giangsinh/do_giangsinh_nam_dau04.webp",
    "c": [
-    386,
-    185
+    384,
+    254
    ]
   },
   {
@@ -221,8 +221,8 @@
    "name": "Băng đô sừng tuần lộc",
    "file": "items/giangsinh/do_giangsinh_nam_dau05.webp",
    "c": [
-    386,
-    212
+    384,
+    249
    ]
   },
   {
@@ -474,7 +474,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_dau01.webp",
    "c": [
     384,
-    225
+    274
    ]
   },
   {
@@ -485,8 +485,8 @@
    "name": "Băng đô sừng tuần lộc gắn hoa",
    "file": "items/giangsinh/do_giangsinh_nu_dau02.webp",
    "c": [
-    386,
-    221
+    384,
+    262
    ]
   },
   {
@@ -497,8 +497,8 @@
    "name": "Vương miện bông tuyết bạc",
    "file": "items/giangsinh/do_giangsinh_nu_dau03.webp",
    "c": [
-    386,
-    242
+    376,
+    238
    ]
   },
   {
@@ -510,7 +510,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_dau04.webp",
    "c": [
     384,
-    226
+    282
    ]
   },
   {
@@ -522,7 +522,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_dau05.webp",
    "c": [
     384,
-    250
+    268
    ]
   },
   {
@@ -774,7 +774,7 @@
    "file": "items/tet/do_tet_nam_dau01.webp",
    "c": [
     384,
-    223
+    300
    ]
   },
   {
@@ -786,7 +786,7 @@
    "file": "items/tet/do_tet_nam_dau02.webp",
    "c": [
     384,
-    226
+    294
    ]
   },
   {
@@ -798,7 +798,7 @@
    "file": "items/tet/do_tet_nam_dau03.webp",
    "c": [
     384,
-    226
+    288
    ]
   },
   {
@@ -810,7 +810,7 @@
    "file": "items/tet/do_tet_nam_dau04.webp",
    "c": [
     384,
-    226
+    306
    ]
   },
   {
@@ -822,7 +822,7 @@
    "file": "items/tet/do_tet_nam_dau05.webp",
    "c": [
     384,
-    264
+    272
    ]
   },
   {
@@ -1074,7 +1074,7 @@
    "file": "items/tet/do_tet_nu_dau01.webp",
    "c": [
     384,
-    228
+    287
    ]
   },
   {
@@ -1085,8 +1085,8 @@
    "name": "Mấn đội đầu đỏ kiểu cổ",
    "file": "items/tet/do_tet_nu_dau02.webp",
    "c": [
-    385,
-    222
+    384,
+    290
    ]
   },
   {
@@ -1097,8 +1097,8 @@
    "name": "Nón lá thắt quai lụa hồng",
    "file": "items/tet/do_tet_nu_dau03.webp",
    "c": [
-    384,
-    212
+    385,
+    371
    ]
   },
   {
@@ -1110,7 +1110,7 @@
    "file": "items/tet/do_tet_nu_dau04.webp",
    "c": [
     384,
-    256
+    262
    ]
   },
   {
@@ -1121,8 +1121,8 @@
    "name": "Cài tóc hoa mai lớn",
    "file": "items/tet/do_tet_nu_dau05.webp",
    "c": [
-    380,
-    224
+    384,
+    261
    ]
   },
   {
@@ -1374,7 +1374,7 @@
    "file": "items/muadong/do_muadong_nam_dau01.webp",
    "c": [
     384,
-    202
+    272
    ]
   },
   {
@@ -1386,7 +1386,7 @@
    "file": "items/muadong/do_muadong_nam_dau02.webp",
    "c": [
     384,
-    221
+    309
    ]
   },
   {
@@ -1397,8 +1397,8 @@
    "name": "Mũ beret nâu",
    "file": "items/muadong/do_muadong_nam_dau03.webp",
    "c": [
-    388,
-    218
+    382,
+    236
    ]
   },
   {
@@ -1409,8 +1409,8 @@
    "name": "Bịt tai lông đen",
    "file": "items/muadong/do_muadong_nam_dau04.webp",
    "c": [
-    386,
-    247
+    384,
+    305
    ]
   },
   {
@@ -1422,7 +1422,7 @@
    "file": "items/muadong/do_muadong_nam_dau05.webp",
    "c": [
     384,
-    228
+    276
    ]
   },
   {
@@ -1674,7 +1674,7 @@
    "file": "items/muadong/do_muadong_nu_dau01.webp",
    "c": [
     384,
-    229
+    278
    ]
   },
   {
@@ -1685,8 +1685,8 @@
    "name": "Bịt tai lông trắng",
    "file": "items/muadong/do_muadong_nu_dau02.webp",
    "c": [
-    386,
-    250
+    384,
+    314
    ]
   },
   {
@@ -1697,8 +1697,8 @@
    "name": "Mũ beret đỏ",
    "file": "items/muadong/do_muadong_nu_dau03.webp",
    "c": [
-    384,
-    212
+    376,
+    216
    ]
   },
   {
@@ -1709,8 +1709,8 @@
    "name": "Mũ len kem quả bông to",
    "file": "items/muadong/do_muadong_nu_dau04.webp",
    "c": [
-    384,
-    216
+    385,
+    264
    ]
   },
   {
@@ -1722,7 +1722,7 @@
    "file": "items/muadong/do_muadong_nu_dau05.webp",
    "c": [
     384,
-    262
+    278
    ]
   },
   {
@@ -1973,8 +1973,8 @@
    "name": "Mũ rơm vành rộng",
    "file": "items/muahe/do_muahe_nam_dau01.webp",
    "c": [
-    386,
-    226
+    384,
+    310
    ]
   },
   {
@@ -1985,8 +1985,8 @@
    "name": "Mũ lưỡi trai đội ngược màu cam",
    "file": "items/muahe/do_muahe_nam_dau02.webp",
    "c": [
-    385,
-    222
+    384,
+    278
    ]
   },
   {
@@ -1998,7 +1998,7 @@
    "file": "items/muahe/do_muahe_nam_dau03.webp",
    "c": [
     384,
-    224
+    316
    ]
   },
   {
@@ -2010,7 +2010,7 @@
    "file": "items/muahe/do_muahe_nam_dau04.webp",
    "c": [
     384,
-    222
+    245
    ]
   },
   {
@@ -2022,7 +2022,7 @@
    "file": "items/muahe/do_muahe_nam_dau05.webp",
    "c": [
     384,
-    222
+    225
    ]
   },
   {
@@ -2273,8 +2273,8 @@
    "name": "Mũ rơm thắt nơ hồng",
    "file": "items/muahe/do_muahe_nu_dau01.webp",
    "c": [
-    385,
-    221
+    384,
+    303
    ]
   },
   {
@@ -2285,8 +2285,8 @@
    "name": "Mũ cói vành rộng hoa",
    "file": "items/muahe/do_muahe_nu_dau02.webp",
    "c": [
-    386,
-    225
+    384,
+    316
    ]
   },
   {
@@ -2297,8 +2297,8 @@
    "name": "Băng đô hoa nhiệt đới",
    "file": "items/muahe/do_muahe_nu_dau03.webp",
    "c": [
-    386,
-    236
+    384,
+    282
    ]
   },
   {
@@ -2310,7 +2310,7 @@
    "file": "items/muahe/do_muahe_nu_dau04.webp",
    "c": [
     384,
-    206
+    278
    ]
   },
   {
@@ -2321,8 +2321,8 @@
    "name": "Kẹp tóc ngôi sao biển",
    "file": "items/muahe/do_muahe_nu_dau05.webp",
    "c": [
-    456,
-    223
+    450,
+    226
    ]
   },
   {
@@ -2574,7 +2574,7 @@
    "file": "items/halloween/do_halloween_nam_dau01.webp",
    "c": [
     384,
-    198
+    276
    ]
   },
   {
@@ -2585,8 +2585,8 @@
    "name": "Mũ hình bí ngô",
    "file": "items/halloween/do_halloween_nam_dau02.webp",
    "c": [
-    384,
-    226
+    385,
+    251
    ]
   },
   {
@@ -2598,7 +2598,7 @@
    "file": "items/halloween/do_halloween_nam_dau03.webp",
    "c": [
     384,
-    246
+    272
    ]
   },
   {
@@ -2609,8 +2609,8 @@
    "name": "Băng đô tai dơi",
    "file": "items/halloween/do_halloween_nam_dau04.webp",
    "c": [
-    386,
-    218
+    384,
+    262
    ]
   },
   {
@@ -2621,8 +2621,8 @@
    "name": "Mũ trùm đầu ma trắng",
    "file": "items/halloween/do_halloween_nam_dau05.webp",
    "c": [
-    384,
-    226
+    386,
+    320
    ]
   },
   {
@@ -2874,7 +2874,7 @@
    "file": "items/halloween/do_halloween_nu_dau01.webp",
    "c": [
     384,
-    225
+    284
    ]
   },
   {
@@ -2886,7 +2886,7 @@
    "file": "items/halloween/do_halloween_nu_dau02.webp",
    "c": [
     384,
-    251
+    274
    ]
   },
   {
@@ -2898,7 +2898,7 @@
    "file": "items/halloween/do_halloween_nu_dau03.webp",
    "c": [
     384,
-    250
+    256
    ]
   },
   {
@@ -2910,7 +2910,7 @@
    "file": "items/halloween/do_halloween_nu_dau04.webp",
    "c": [
     384,
-    218
+    224
    ]
   },
   {
@@ -2921,8 +2921,8 @@
    "name": "Băng đô bí ngô nhỏ",
    "file": "items/halloween/do_halloween_nu_dau05.webp",
    "c": [
-    384,
-    205
+    402,
+    255
    ]
   },
   {
@@ -3174,7 +3174,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau01.webp",
    "c": [
     384,
-    226
+    279
    ]
   },
   {
@@ -3186,7 +3186,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau02.webp",
    "c": [
     384,
-    221
+    262
    ]
   },
   {
@@ -3198,7 +3198,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau03.webp",
    "c": [
     384,
-    204
+    262
    ]
   },
   {
@@ -3209,8 +3209,8 @@
    "name": "Mũ đèn lồng đỏ",
    "file": "items/trungthu/do_trungthu_nam_dau04.webp",
    "c": [
-    384,
-    206
+    399,
+    254
    ]
   },
   {
@@ -3222,7 +3222,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau05.webp",
    "c": [
     384,
-    226
+    276
    ]
   },
   {
@@ -3473,8 +3473,8 @@
    "name": "Vương miện mặt trăng chị Hằng",
    "file": "items/trungthu/do_trungthu_nu_dau01.webp",
    "c": [
-    386,
-    246
+    384,
+    234
    ]
   },
   {
@@ -3486,7 +3486,7 @@
    "file": "items/trungthu/do_trungthu_nu_dau02.webp",
    "c": [
     384,
-    210
+    259
    ]
   },
   {
@@ -3498,7 +3498,7 @@
    "file": "items/trungthu/do_trungthu_nu_dau03.webp",
    "c": [
     384,
-    232
+    239
    ]
   },
   {
@@ -3509,8 +3509,8 @@
    "name": "Băng đô đèn lồng nhỏ",
    "file": "items/trungthu/do_trungthu_nu_dau04.webp",
    "c": [
-    428,
-    223
+    384,
+    260
    ]
   },
   {
@@ -3521,8 +3521,8 @@
    "name": "Khăn voan hồng",
    "file": "items/trungthu/do_trungthu_nu_dau05.webp",
    "c": [
-    368,
-    228
+    384,
+    336
    ]
   },
   {
@@ -3706,5 +3706,5 @@
    ]
   }
  ],
- "ver": "09a75618c0"
+ "ver": "fe156ec0cf"
 }

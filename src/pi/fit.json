@@ -27,6 +27,9 @@
   }
  },
  "bad": {
+  "muadong-nam-dau05": [
+   "mũ len sọc (bộ 60 mũ) khoét thủng mảng trên mặt"
+  ],
   "muahe-nam-pk12": [
    "viền thân thừa quanh người 739px",
    "ba lô vẫn vẽ thừa 1 bóng thân Pi phía sau"
@@ -34,6 +37,9 @@
   "muahe-nu-pk11": [
    "viền thân thừa quanh người 657px",
    "phao kỳ lân vẫn vẽ thừa 1 bóng thân Pi phía sau"
+  ],
+  "halloween-nam-dau01": [
+   "mũ phù thuỷ (bộ 60 mũ) vành che mất mắt trái"
   ],
   "trungthu-nu-pk05": [
    "quạt trăng vẫn thủng lỗ hình trăng"

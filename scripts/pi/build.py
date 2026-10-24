@@ -110,7 +110,7 @@ for it in cat["items"]:
         _a, _g = fix_hat(np.asarray(im), LEAF[..., 3])
         if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
     if it["slot"] == "dau" and LEAF is not None:
-        _a, _g = fix_hat(np.asarray(im), LEAF[..., 3])
+        _a, _g = fix_hat(np.asarray(im), LEAF[..., 3], leaf=True)
         if _g: im = Image.fromarray(_a); total += put(it["file"], im=im, q=90)
     bb = im.getbbox()
     if not bb: print("ảnh rỗng", it["file"]); continue
