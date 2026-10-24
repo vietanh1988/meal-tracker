@@ -34,6 +34,21 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await tap(card);
     await expect(page.getByTestId("pet-home")).toBeVisible();
     await expect(page.getByTestId("pet-today")).toContainText(`+${sum}`);
+    // 24/10: kéo quá đầu màn phụ → nảy cao su kiểu iOS, thả tay bật về
+    const pull = await page.getByTestId("subpage-scroll").last().evaluate(async (sc) => {
+      sc.scrollTop = 0; const inner = sc.firstElementChild;
+      const t = (y) => new Touch({ identifier: 1, target: sc, clientX: 200, clientY: y });
+      sc.dispatchEvent(new TouchEvent("touchstart", { touches: [t(200)], bubbles: true }));
+      sc.dispatchEvent(new TouchEvent("touchmove", { touches: [t(420)], bubbles: true }));
+      const during = inner.style.transform;
+      sc.dispatchEvent(new TouchEvent("touchend", { touches: [], bubbles: true }));
+      await new Promise((r) => setTimeout(r, 700));
+      return { during, after: inner.style.transform };
+    });
+    expect(pull.during).toMatch(/^translateY\((\d+(\.\d)?)px\)$/);
+    expect(parseFloat(pull.during.slice(11))).toBeGreaterThan(40);
+    expect(parseFloat(pull.during.slice(11))).toBeLessThan(220); // kéo 220px → dịch ít hơn (cao su)
+    expect(pull.after).toBe("");
     await page.getByTestId("pet-tap").click(); // chạm Pi → nảy + cười tít
     await expect(page.getByTestId("pet-tap").getByTestId("pet-avatar")).toHaveAttribute("data-mood", /^(cuoilon|nhaymat|haohung|ngacnhien)$/); // 23/10: chạm → nhún + cười lớn / nháy mắt / hào hứng (ngẫu nhiên); CI chạy sau 22h30 Pi đang ngủ → ngacnhien
 

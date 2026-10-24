@@ -170,9 +170,60 @@ export function useEdgeBack(onBack) {
   return { ref, back, edge: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel: onTouchEnd } };
 }
 
+// 24/10 (chủ dự án: "vuốt hết màn nó nảy như app iOS"): nảy cao su khi kéo quá đầu / cuối vùng cuộn của màn phụ.
+// Trang ngoài đã khoá nảy (16/10, tránh lộ dải nền) → tự làm: dịch nội dung theo công thức cao su iOS (1 − 1/(x·0,55/h + 1))·h,
+// thả tay thì bật về; cuộn quán tính chạm đầu / cuối cũng nảy nhẹ. Chỉ transform lúc đang nảy, xong xoá hẳn (không xô phần tử cố định).
+export const rubber = (x, h) => Math.sign(x) * (1 - 1 / ((Math.abs(x) * 0.55) / Math.max(1, h) + 1)) * h;
+export function useRubberBand(scRef, inRef) {
+  useEffect(() => {
+    const sc = scRef.current, el = inRef.current;
+    if (!sc || !el || (typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+    let y0 = null, off = 0, touching = false, lastT = 0, lastY = sc.scrollTop, v = 0, anim = null;
+    const set = (y, ease) => {
+      el.style.transition = ease ? `transform ${ease}` : "none";
+      el.style.transform = y ? `translateY(${y.toFixed(1)}px)` : "";
+      el.dataset.rubber = y ? "1" : "";
+    };
+    const settle = () => {
+      if (!off) return;
+      off = 0; set(0, ".5s cubic-bezier(.2,.9,.25,1)");
+      clearTimeout(anim); anim = setTimeout(() => { el.style.transition = ""; el.style.transform = ""; }, 520);
+    };
+    const atTop = () => sc.scrollTop <= 0, atEnd = () => sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 1;
+    const start = (e) => { touching = true; clearTimeout(anim); y0 = e.touches[0].clientY; };
+    const move = (e) => {
+      if (y0 == null || e.touches.length !== 1) return;
+      const y = e.touches[0].clientY, d = y - y0;
+      if ((d > 0 && atTop()) || (d < 0 && atEnd())) { off = rubber(d, sc.clientHeight); set(off); }
+      else { if (off) { off = 0; set(0); } y0 = y; }
+    };
+    const end = () => { touching = false; y0 = null; settle(); };
+    const scroll = () => {
+      const t = performance.now(), dt = t - lastT || 16;
+      v = (sc.scrollTop - lastY) / dt; lastT = t; lastY = sc.scrollTop;
+      if (touching || off) return;
+      if ((v < -0.4 && atTop()) || (v > 0.4 && atEnd())) {   // quán tính chạm mép → nảy nhẹ theo tốc độ
+        const a = Math.min(48, Math.abs(v) * 22) * (v < 0 ? 1 : -1);
+        off = a; set(a, ".14s ease-out"); clearTimeout(anim); anim = setTimeout(settle, 140);
+      }
+    };
+    sc.addEventListener("touchstart", start, { passive: true });
+    sc.addEventListener("touchmove", move, { passive: true });
+    sc.addEventListener("touchend", end, { passive: true });
+    sc.addEventListener("touchcancel", end, { passive: true });
+    sc.addEventListener("scroll", scroll, { passive: true });
+    return () => {
+      clearTimeout(anim); el.style.transform = ""; el.style.transition = "";
+      for (const [k, f] of [["touchstart", start], ["touchmove", move], ["touchend", end], ["touchcancel", end], ["scroll", scroll]]) sc.removeEventListener(k, f);
+    };
+  }, [scRef, inRef]);
+}
+
 export function SubPage({ title, subtitle, onBack, right, children, footer, bg = LT.bg, dark }) {
   useLockScroll(true);
   const eb = useEdgeBack(onBack);
+  const scRef = useRef(null), inRef = useRef(null);
+  useRubberBand(scRef, inRef);
   return (
     <div ref={eb.ref} {...eb.edge} data-anim="1" data-testid="subpage" className={dark ? "fpm fpd" : "fpm"} data-dark={dark ? "1" : undefined} style={{ position: "fixed", inset: 0, zIndex: 120, background: dark ? DK.bg : bg, display: "flex", flexDirection: "column", fontFamily: FONT, color: dark ? DK.t1 : "#0F172A", animation: "fpmSlideIn .28s cubic-bezier(.2,.8,.2,1)", boxShadow: "-10px 0 30px rgba(0,0,0,0.18)" }}>
       <div style={{ flexShrink: 0, background: dark ? "transparent" : "rgba(255,255,255,0.6)", WebkitBackdropFilter: dark ? undefined : "blur(14px)", backdropFilter: dark ? undefined : "blur(14px)", borderBottom: dark ? `1px solid ${DK.line}` : "1px solid rgba(30,64,175,0.08)", paddingTop: "env(safe-area-inset-top, 0px)" }}>
@@ -185,8 +236,8 @@ export function SubPage({ title, subtitle, onBack, right, children, footer, bg =
           {right}
         </div>
       </div>
-      <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div>
+      <div ref={scRef} data-testid="subpage-scroll" style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "none" }}>
+        <div ref={inRef} style={{ maxWidth: 560, margin: "0 auto" }}>{children}</div>
       </div>
       {footer}
     </div>

@@ -13,10 +13,13 @@ export const PET_BASE = "/pet/";
 export const EV_COL = { giangsinh: "noel", tet: "tet", halloween: "halloween", trungthu: "trung-thu", muadong: "mua-dong", muahe: "mua-he" };
 // đồ thành tích cũ (nhận theo chuỗi / cân / nước / đạt cân) — chỉ trưng ở danh sách thành tích, không mặc
 const TROPHY_IDS = ["hieu-ung-02", "hieu-ung-04", "hieu-ung-05", "hieu-ung-06", "hieu-ung-17", "doi-dau-11"];
-const trophies = oldCatalog.items.filter((it) => TROPHY_IDS.includes(it.id)).map((it) => ({
-  id: it.id, name: it.name, slot: "thanh_tich", rarity: it.rarity, price: 0, level: 1, variants: ["nam", "nu"], achievement: true, hidden: false,
-  legacy: true, icon: PET_BASE + it.file, file: PET_BASE + it.file,
-}));
+// 24/10 (chủ dự án: "trên thì lá dưới thì đồng xu"): tiền mua đồ chỉ có Hạt — huy hiệu 7 ngày không dùng hình đồng xu $ nữa,
+// giữ mã hieu-ung-05 (ai đã nhận vẫn còn), đổi hình sang Lấp lánh (hieu-ung-03) + tên mới (bảng pet_items cũng đổi tên).
+const TROPHY_LOOK = { "hieu-ung-05": { name: "Lấp lánh vàng", file: "hieu-ung/hieu-ung-03.webp" } };
+const trophies = oldCatalog.items.filter((it) => TROPHY_IDS.includes(it.id)).map((it) => {
+  const lk = TROPHY_LOOK[it.id] || {}, f = PET_BASE + (lk.file || it.file);
+  return { id: it.id, name: lk.name || it.name, slot: "thanh_tich", rarity: it.rarity, price: 0, level: 1, variants: ["nam", "nu"], achievement: true, hidden: false, legacy: true, icon: f, file: f };
+});
 const items = [...PI_ITEMS.map((it) => Object.assign(it, { collection: EV_COL[it.ev] || null, collection_name: EV_NAME[it.ev] })), ...trophies]; // 24/10: cùng đối tượng với PiPet (vị trí Quản trị chỉnh hiện ngay)
 export const ITEMS = Object.fromEntries(items.map((it) => [it.id, it]));
 export const catalog = { items, slots: SLOT_NAME, events: EV_NAME, evOrder: EV_ORDER };
