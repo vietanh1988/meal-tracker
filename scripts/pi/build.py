@@ -80,10 +80,14 @@ def raised_arm(a):
         if ((a[..., 3] > 128) & zone).sum() >= 0.85 * zone.sum() and (skin & zone).sum() < 0.3 * zone.sum() and (skin & ~zone & ~solid).sum() > 800 * K * K: return side
     return None
 
-for side, zone in (("trai", arm_l), ("phai", arm_r)):
-    b2 = body_noleaf.copy(); zz = cv2.dilate(zone.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
-    b2[zz & (yy > ARM_Y[0] + 8 * K), 3] = 0
-    total += put(f"body/pi_than_khong_tay_{side}.webp", im=Image.fromarray(b2), q=86)
+# 24/10 (chủ dự án: hộp quà ra 2 tay): thân bỏ 1 tay cắt theo nếp tay + vẽ lại viền (scripts/pi/armless.py), không cắt thẳng
+from armless import armless
+for side in ("trai", "phai"):
+    total += put(f"body/pi_than_khong_tay_{side}.webp", im=Image.fromarray(armless(body_noleaf, side)), q=88)
+# món vẽ cánh tay riêng (giơ lên / bưng ra trước) KHÔNG đè tay gốc → dùng thân bỏ tay bên đó. Soát mắt 24/10 từng món ứng viên
+# (da xanh ngoài thân ≥ 1000px, phủ vùng tay gốc < 40%); món không vẽ bàn tay (đũa phép, xẻng, chong chóng) giữ tay gốc.
+ARM_HIDE = {"giangsinh-nam-pk07": "trai", "muadong-nam-pk08": "trai", "muadong-nu-pk08": "trai", "muahe-nam-pk05": "trai",
+            "muahe-nam-pk10": "trai", "halloween-nam-pk08": "trai", "halloween-nu-pk08": "trai", "trungthu-nam-pk04": "trai", "trungthu-nam-pk06": "trai"}
 
 # 23/10 (chủ dự án: "mặc áo vào lỗi, không có nọng cằm"): ảnh áo của Muse vẽ đè một mảng da lên phần dưới đầu → mất bóng cằm.
 # Sinh lớp "đầu" = thân gốc trong hình elip của đầu (đo trên thân: tâm 384,362 · bán trục 166 x 143 ở khung 768, đáy cằm y≈505),
@@ -126,7 +130,7 @@ for it in cat["items"]:
         if _tf: row["tf0"] = _tf
     if it["slot"] in ("tay", "gang"):
         # 23/10: TẮT ẩn tay gốc — soát mắt 25 món của bộ sạch: món tay vẽ khớp tay gốc, ẩn đi chỉ lộ lỗ / mất tay. Giữ hàm để dùng lại nếu bộ sau vẽ tay giơ lên thật.
-        side = raised_arm(np.asarray(im)) if os.environ.get("PI_HIDE_ARM") else None
+        side = ARM_HIDE.get(iid) or (raised_arm(np.asarray(im)) if os.environ.get("PI_HIDE_ARM") else None)
         if side: row["arm"] = side
     items.append(row)
 
