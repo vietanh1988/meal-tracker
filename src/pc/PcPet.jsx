@@ -122,7 +122,8 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
   const list = catalog.items.filter((it) => (vf === "all" || (vf === "chung" ? it.variants.length === 2 : it.variants.length === 1 && it.variants[0] === vf))
     && (slotF === "all" || it.slot === slotF) && (rar === "all" || it.rarity === rar) && (!qs || it.name.toLowerCase().includes(qs.toLowerCase())));
   const it = ITEMS[sel] || list[0];
-  const st = (x) => (x.achievement || d.achievement.includes(x.id) ? ["Thành tích", "amber"] : x.hidden || d.hidden.includes(x.id) ? ["Đang ẩn", "gray"] : ["Đang bán", "green"]);
+  // 24/10 (chủ dự án: "nón vẫn đầy lỗi" — món chờ vẽ lại vẫn ghi Đang bán): món lỗi / chờ vẽ lại không lên cửa hàng → ghi "Chờ vẽ lại"
+  const st = (x) => (x.achievement || d.achievement.includes(x.id) ? ["Thành tích", "amber"] : x.broken || x.redraw ? ["Chờ vẽ lại", "amber"] : x.hidden || d.hidden.includes(x.id) ? ["Đang ẩn", "gray"] : ["Đang bán", "green"]);
   const [f, setF] = useState(null);
   useEffect(() => { if (it) setF({ name: it.name, rarity: it.rarity, level: it.level, price: it.price, variants: [...it.variants], hidden: !!it.hidden }); }, [it?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const [busy, setBusy] = useState(false);
@@ -156,22 +157,22 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
             <span style={cell}>{x.level}</span>
             <b style={{ ...cell, textAlign: "right" }}>{x.achievement ? "—" : vnInt(x.price)}</b>
             <span style={{ ...cell, textAlign: "right" }}>{x.achievement ? "—" : vnInt(d.sold[x.id] || 0)}</span>
-            <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}><Pill tone={st(x)[1]}>{st(x)[0]}</Pill>{x.redraw && <Pill tone="amber">Vẽ lại</Pill>}</span>
+            <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}><Pill tone={st(x)[1]}>{st(x)[0]}</Pill></span>
           </button>
         ))}
         <div style={{ padding: "10px 16px", fontSize: 12, color: PC.t3, display: "flex", alignItems: "center", gap: 10 }}>Hiện {Math.min(n, list.length)} / {list.length} món{n < list.length && <Btn kind="soft" onClick={() => setN((k) => k + 30)}>Xem thêm</Btn>}</div>
       </Card>
 
-      {/* Ngăn sửa món */}
+      {/* Ngăn sửa món — 24/10: ghim khung xem thử (thẻ không cao quá màn hình, tự cuộn bên trong) để không trượt theo khi kéo danh sách */}
       {it && f && (
-      <Card testid="pc-pet-edit" style={{ position: "sticky", top: 84 }}>
+      <Card testid="pc-pet-edit" style={{ position: "sticky", top: 84, maxHeight: "calc(100vh - 100px)", overflowY: "auto", overscrollBehavior: "contain" }}>
         <CardHead title={it.name} sub={`${it.id} · ${catalog.slots[it.slot]}`} right={<Pill tone={st(it)[1]}>{st(it)[0]}</Pill>} />
         {it.slot === "phong" && it.times ? (
           <div data-testid="pc-pet-room" style={{ margin: "0 16px", display: "flex", flexDirection: "column", gap: 4 }}>
             <PetRoom variant="nam" season={it.ev} height={240} forceTime={tv || undefined} testid="pc-pet-room-view" floorY={floor ?? undefined}>
               <span aria-hidden="true" style={{ position: "absolute", left: "50%", bottom: "calc(var(--pi-feet, 26px) - 7px)", width: 260, height: 18, marginLeft: -130, borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
               <span style={{ position: "absolute", left: "50%", bottom: "var(--pi-feet, 26px)", transform: "translateX(-50%)", display: "flex", gap: 10, alignItems: "flex-end" }}>
-                <PetAvatar variant="nam" size={150} still /><PetAvatar variant="nu" size={150} still />
+                <PetAvatar variant="nam" size={150} still face="vui" /><PetAvatar variant="nu" size={150} still face="vui" />
               </span>
             </PetRoom>
             <span style={{ fontSize: 11.5, fontWeight: 800, color: PC.t3, marginTop: 6 }}>XEM THỬ GIỜ {tv ? "" : "· đang theo giờ máy"}</span>
@@ -188,7 +189,7 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
         <div style={{ margin: "0 16px", borderRadius: 12, background: "radial-gradient(circle at 50% 40%, #FFFFFF 0%, #EAF4FF 55%, #D6E8FF 100%)", height: 190, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 18, paddingBottom: 10 }}>
           {["nam", "nu"].map((v) => { const yes = f.variants.includes(v); return (
             <span key={v} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, opacity: yes ? 1 : 0.35, filter: yes ? "none" : "grayscale(1)" }}>
-              <PetAvatar variant={v} size={140} still equipped={yes && canVar(it, v) ? { [it.slot]: it.id } : {}} />
+              <PetAvatar variant={v} size={140} still face="vui" equipped={yes && canVar(it, v) ? { [it.slot]: it.id } : {}} />{/* 24/10: mặt vui nhìn thẳng (không theo giờ) để soát đồ */}
               <span style={{ fontSize: 11, fontWeight: 800, color: PC.t3 }}>{v === "nam" ? "Pi nam" : "Pi nữ"}{yes ? "" : " · không có"}</span>
             </span>); })}
         </div>
