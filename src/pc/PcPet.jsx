@@ -186,7 +186,7 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
             </span>
           </div>
         ) : (
-        <div style={{ margin: "0 16px", borderRadius: 12, background: "radial-gradient(circle at 50% 40%, #FFFFFF 0%, #EAF4FF 55%, #D6E8FF 100%)", height: 190, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 18, paddingBottom: 10 }}>
+        <div data-testid="pc-pet-preview" style={{ position: "sticky", top: 0, zIndex: 2, margin: "0 16px", borderRadius: 12, background: "radial-gradient(circle at 50% 40%, #FFFFFF 0%, #EAF4FF 55%, #D6E8FF 100%)", height: 190, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 18, paddingBottom: 10 }}>
           {["nam", "nu"].map((v) => { const yes = f.variants.includes(v); return (
             <span key={v} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, opacity: yes ? 1 : 0.35, filter: yes ? "none" : "grayscale(1)" }}>
               <PetAvatar variant={v} size={140} still face="vui" equipped={yes && canVar(it, v) ? { [it.slot]: it.id } : {}} />{/* 24/10: mặt vui nhìn thẳng (không theo giờ) để soát đồ */}
