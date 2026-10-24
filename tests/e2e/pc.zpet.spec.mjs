@@ -19,7 +19,7 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     await page.getByTestId(`pc-pet-row-${ID}`).click();
     const edit = page.getByTestId("pc-pet-edit");
     await expect(edit).toContainText("Mũ phù thuỷ đen");
-    await expect(edit.locator('[data-layer="dau"]').first()).toHaveAttribute("src", /do_halloween_nam_dau01\.webp$/);
+    await expect(edit.locator('[data-layer="dau"]').first()).toHaveAttribute("src", /do_halloween_nam_dau01\.webp\?v=[0-9a-f]{10}$/);
     await page.getByTestId("pc-pet-price").fill("170");
     await page.screenshot({ path: "shots/pc-pet-items.png" });
     await page.getByTestId("pc-pet-save").click();

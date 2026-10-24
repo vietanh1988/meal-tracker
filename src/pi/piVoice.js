@@ -1,10 +1,11 @@
 // 24/10 — Phát tiếng Pi + đo biên độ (trình duyệt). Không gọi AI: chỉ phát file mp3 thu sẵn (public/pi/voice/<nam|nu>/<id>.mp3,
 // danh mục src/pi/voice.json). Câu động / chat tự do chưa có tiếng (chờ API giọng — BACKLOG), chỉ khẩu hình theo chữ.
 import voice from "./voice.json";
+import man from "./manifest.json";
 
 export const VOICE_BASE = "/pi/voice/";
 /** id câu thoại có file thu sẵn cho bản này → URL, không có → null */
-export const voiceUrl = (id, g) => (id && voice.ids.includes(id) ? `${VOICE_BASE}${g === "nu" ? "nu" : "nam"}/${id}.mp3` : null);
+export const voiceUrl = (id, g) => (id && voice.ids.includes(id) ? `${VOICE_BASE}${g === "nu" ? "nu" : "nam"}/${id}.mp3${man.ver ? `?v=${man.ver}` : ""}` : null);
 
 let ctx = null;
 const getCtx = () => {

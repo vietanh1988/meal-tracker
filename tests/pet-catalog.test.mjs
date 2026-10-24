@@ -141,3 +141,11 @@ test("24/10 phòng: chân Pi theo floorY (Quản trị chỉnh), có bóng dư�
   assert.match(app, /writeSS\("fp_pi_soft", "1"\)/);
   assert.match(app, /import PERSONA from "\.\.\/pi\/persona\.md\?raw"/);
 });
+
+test("24/10 ảnh Pi có mã phiên bản (?v=) để điện thoại không giữ ảnh cũ trùng tên", () => {
+  assert.match(man.ver, /^[0-9a-f]{10}$/);
+  const cat = readFileSync("src/pi/piCatalog.js", "utf8");
+  assert.doesNotMatch(cat, /\.webp`/); // mọi đường dẫn .webp đều gắn ${PI_VER}
+  assert.match(cat, /file: `\$\{PI_BASE\}\$\{x\.file\}\$\{PI_VER\}`/);
+  assert.match(readFileSync("scripts/pi/build.py", "utf8"), /man\["ver"\] = _h\.hexdigest\(\)\[:10\]/);
+});

@@ -168,6 +168,13 @@ persona = os.path.join(PKG, "game", "pi_persona_prompt.md")
 if os.path.exists(persona):
     shutil.copyfile(persona, os.path.join(ROOT, "src", "pi", "persona.md"))
 
+# 24/10: mã phiên bản bộ ảnh = băm nội dung mọi file trong public/pi → app gắn ?v= vào đường dẫn (điện thoại không giữ ảnh cũ trùng tên)
+import hashlib
+_h = hashlib.sha1()
+for _dp, _, _fs in sorted(os.walk(OUT)):
+    for _f in sorted(_fs):
+        _h.update(_f.encode()); _h.update(open(os.path.join(_dp, _f), "rb").read())
+man["ver"] = _h.hexdigest()[:10]
 os.makedirs(os.path.dirname(MAN), exist_ok=True)
 json.dump(man, open(MAN, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print(f"{len(items)} món ({sum(1 for x in items if x.get('arm'))} ẩn tay gốc), {sum(len(v) for v in rooms.values())} phòng, thân {bbox}, ảnh {total/1024/1024:.1f} MB")

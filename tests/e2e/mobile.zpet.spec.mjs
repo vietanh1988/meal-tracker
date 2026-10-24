@@ -53,7 +53,7 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await expect(page.getByTestId("pet-wear")).toContainText("Mặc luôn");
     await page.getByTestId("pet-wear").click();
     await waitDb(async () => (await rest(`pet_equipped?user_id=eq.${s.uid}&slot=eq.giay&select=item_id`))[0]?.item_id === "halloween-nam-giay01", "đã mặc giày");
-    await expect(page.locator('[data-layer="giay"]').first()).toHaveAttribute("src", /halloween\/do_halloween_nam_giay01\.webp$/);
+    await expect(page.locator('[data-layer="giay"]').first()).toHaveAttribute("src", /halloween\/do_halloween_nam_giay01\.webp\?v=[0-9a-f]{10}$/);
     const prof = (await rest(`pet_profiles?user_id=eq.${s.uid}&select=balance`))[0];
     expect(prof.balance).toBe(sum - 80);
     await page.screenshot({ path: "shots/pet-shop.png" });
