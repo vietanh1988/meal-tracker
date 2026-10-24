@@ -265,6 +265,8 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", initialCol = "
   const [slot, setSlot] = useState(initialSlot);
   const [pv, setPv] = useState(preview || null);
   const [col, setCol] = useState(initialCol); // bộ sưu tập (Noel / Tết / Cổ trang) — mỗi bộ 1 mục riêng
+  // 24/10 (chủ dự án: "mặc thử nhiều đồ 1 lúc, khỏi phải out ra chọn món khác"): đồ đang thử giữ lại khi đổi món, cho tới khi đóng
+  const [trial, setTrial] = useState({}); // { ô: mã món }
   const all = catalog.items.filter((it) => it.variants.includes(pet.variant) && !it.hidden && !it.broken && !it.redraw && !it.achievement && !it.legacy && !pet.achievementIds.includes(it.id)); // 23/10: món ghép lệch (src/pi/fit.json) chờ vẽ lại, chưa bán; 24/10: Quản trị đánh dấu "Cần vẽ lại" cũng không bán
   const cols = [...new Map(all.filter((it) => it.collection).map((it) => [it.collection, it.collection_name])).entries()]
     .sort((a, b) => (pet.cols?.[b[0]]?.open ? 1 : 0) - (pet.cols?.[a[0]]?.open ? 1 : 0)); // bộ đang bán đứng trước
@@ -293,13 +295,13 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", initialCol = "
         </div>
         <div style={{ height: 28 }} />
       </div>
-      {pv && ITEMS[pv] && <TryOnSheet pet={pet} it={ITEMS[pv]} onClose={() => setPv(null)} onBuy={onBuy} onEquip={onEquip} onPremium={onPremium} />}
+      {pv && ITEMS[pv] && <TryOnSheet pet={pet} it={ITEMS[pv]} list={shown} trial={trial} setTrial={setTrial} onPick={setPv} onClose={() => { setPv(null); setTrial({}); }} onBuy={onBuy} onEquip={onEquip} onPremium={onPremium} />}
     </SubPage>
   );
 }
 
 // Sheet mặc thử + mua → mua xong hỏi "Mặc luôn?" (mặc định có)
-export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
+export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium, list = [], trial = {}, setTrial, onPick }) {
   const r = RARITY[it.rarity];
   const [phase, setPhase] = useState("try"); // try | busy | bought
   const [err, setErr] = useState(null);
@@ -307,6 +309,21 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
   const st = phase === "bought" ? { kind: "owned" } : itemState(it, pet);
   const after = pet.seeds - it.price;
   const slot = slotFor(it, pet.equipped, pet.variant);
+  // 24/10: thử nhiều món — Pi mặc đồ đang mặc + mọi món đang thử + món đang xem; chọn món khác ở dải dưới không cần đóng sheet
+  const multi = !!setTrial && it.slot !== "phong";
+  const trialItems = Object.entries(trial).filter(([s0, id]) => s0 !== slot && ITEMS[id]).map(([, id]) => ITEMS[id]);
+  const pick = (x) => { if (!multi || x.id === it.id) return; setTrial((t) => ({ ...t, [slot]: it.id })); setPhase("try"); setErr(null); onPick?.(x.id); };
+  const unTry = (s0) => setTrial((t) => { const n = { ...t }; delete n[s0]; return n; });
+  const toBuy = [it, ...trialItems].filter((x) => itemState(x, pet).kind === "buy");
+  const total = toBuy.reduce((n, x) => n + x.price, 0);
+  const buyAll = async () => {
+    setPhase("busy"); setErr(null);
+    for (const x of toBuy) { const res = await onBuy?.(x); if (res && !res.ok) { setErr(`${x.name}: ${res.error}`); setPhase("try"); return; } }
+    for (const x of [it, ...trialItems]) await onEquip?.(slotFor(x), x.id);
+    setTrial({}); onClose?.();
+  };
+  const strip = multi ? list.filter((x) => x.slot !== "phong") : [];
+  const idx = strip.findIndex((x) => x.id === it.id);
   const wearNow = async () => { const res = await onEquip?.(slot, it.id); if (res && !res.ok) setErr(res.error); else onClose?.(); };
   const buy = async () => {
     setPhase("busy"); setErr(null);
@@ -327,8 +344,38 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
           <button data-testid="pet-tryon-close" onClick={onClose} aria-label="Đóng" style={{ width: 40, height: 40, borderRadius: 20, border: "none", background: LT.soft, color: "#475569", display: "flex", alignItems: "center", justifyContent: "center" }}>{Icon.close(18)}</button>
         </div>
         <div style={{ marginTop: 12 }}>
-          <Stage pet={{ ...pet, equipped: { ...pet.equipped, [slot]: it.id }, mood: "cuoi" }} height={250} size={200} forceTime={tv || undefined} />
+          <Stage pet={{ ...pet, equipped: { ...pet.equipped, ...(multi ? Object.fromEntries(trialItems.map((x) => [x.slot, x.id])) : {}), [slot]: it.id }, mood: "cuoi" }} height={250} size={200} forceTime={tv || undefined} />
         </div>
+        {multi && trialItems.length > 0 && (
+          <div data-testid="pet-trial" style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10, alignItems: "center" }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B" }}>Đang thử thêm:</span>
+            {trialItems.map((x) => (
+              <button key={x.id} type="button" data-testid={`pet-trial-${x.id}`} onClick={() => unTry(x.slot)} aria-label={`Bỏ thử ${x.name}`}
+                style={{ height: 30, padding: "0 6px 0 4px", borderRadius: 15, border: "none", background: "#EAF1FF", display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800, color: "#1D4ED8", fontFamily: "inherit" }}>
+                <ItemImg item={x} size={22} />{catalog.slots[x.slot]}<span aria-hidden="true" style={{ fontSize: 14, marginLeft: 2 }}>×</span>
+              </button>
+            ))}
+            <button type="button" data-testid="pet-trial-clear" onClick={() => setTrial({})} style={{ height: 30, padding: "0 10px", borderRadius: 15, border: "none", background: "#F1F5F9", fontSize: 12, fontWeight: 800, color: "#475569", fontFamily: "inherit" }}>Bỏ thử hết</button>
+          </div>
+        )}
+        {strip.length > 1 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
+            <button type="button" data-testid="pet-tryon-prev" aria-label="Món trước" disabled={idx <= 0} onClick={() => pick(strip[idx - 1])} style={{ width: 32, height: 56, borderRadius: 10, border: "none", background: "#F1F5F9", color: "#334155", fontSize: 18, fontWeight: 900, opacity: idx <= 0 ? 0.35 : 1, flexShrink: 0 }}>‹</button>
+            <div className="pet-noscroll" data-testid="pet-tryon-strip" style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", flex: 1 }}>
+              {strip.map((x) => {
+                const on = x.id === it.id, kept = trial[x.slot] === x.id;
+                return (
+                  <button key={x.id} type="button" data-testid={`pet-tryon-pick-${x.id}`} aria-pressed={on} onClick={() => pick(x)} title={x.name}
+                    ref={on ? (el) => el?.scrollIntoView?.({ block: "nearest", inline: "center" }) : undefined}
+                    style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 12, border: on ? "2px solid #007AFF" : kept ? "2px solid #93C5FD" : "2px solid transparent", background: on ? "#EAF1FF" : LT.soft, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
+                    <ItemImg item={x} size={42} />
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" data-testid="pet-tryon-next" aria-label="Món sau" disabled={idx < 0 || idx >= strip.length - 1} onClick={() => pick(strip[idx + 1])} style={{ width: 32, height: 56, borderRadius: 10, border: "none", background: "#F1F5F9", color: "#334155", fontSize: 18, fontWeight: 900, opacity: idx >= strip.length - 1 ? 0.35 : 1, flexShrink: 0 }}>›</button>
+          </div>
+        )}
         {it.slot === "phong" && it.times && <RoomTimes it={it} value={tv} onChange={setTv} />}
         {phase !== "bought" && (
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 13, fontWeight: 700, color: "#64748B" }}>
@@ -348,8 +395,13 @@ export function TryOnSheet({ pet, it, onClose, onBuy, onEquip, onPremium }) {
             {phase === "busy" ? "Đang mua…" : st.kind === "level" ? <>{PIc.lock(18)}Mở ở cấp {it.level}</> : after < 0 ? `Còn thiếu ${fmt(-after)} Hạt` : <>Mua · <Seed size={18} color="#FFFFFF" />{fmt(it.price)}</>}
           </button>
         )}
+        {multi && trialItems.length > 0 && phase !== "bought" && (
+          toBuy.length > 1
+            ? <button data-testid="pet-buy-all" onClick={buyAll} disabled={phase === "busy" || total > pet.seeds} style={{ ...big, marginTop: 8, height: 46, background: "#0F766E", opacity: total > pet.seeds ? 0.6 : 1 }}>{total > pet.seeds ? `Mua cả bộ thiếu ${fmt(total - pet.seeds)} Hạt` : <>Mua cả bộ đang thử ({toBuy.length} món) · <Seed size={16} color="#FFFFFF" />{fmt(total)}</>}</button>
+            : <button data-testid="pet-wear-all" onClick={buyAll} disabled={phase === "busy"} style={{ ...big, marginTop: 8, height: 46, background: "#0F766E" }}>{toBuy.length ? <>Mua món này + mặc cả bộ · <Seed size={16} color="#FFFFFF" />{fmt(total)}</> : "Mặc cả bộ đang thử"}</button>
+        )}
         {phase === "bought" && <button data-testid="pet-later" onClick={onClose} style={{ ...big, marginTop: 8, background: LT.soft, color: "#334155", height: 44 }}>Để sau</button>}
-        <span style={{ display: "block", textAlign: "center", marginTop: 8, fontSize: 12, color: "#64748B" }}>{it.slot === "phong" ? "Mua 1 lần, dùng mãi · chọn / bỏ ở Tủ đồ." : `Mua 1 lần, mặc mãi. Đồ này chỉ dành cho ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}.`}</span>
+        <span style={{ display: "block", textAlign: "center", marginTop: 8, fontSize: 12, color: "#64748B" }}>{it.slot === "phong" ? "Mua 1 lần, dùng mãi · chọn / bỏ ở Tủ đồ." : multi ? "Chạm món ở dải trên để thử thêm · món vừa xem được giữ trên Pi." : `Mua 1 lần, mặc mãi. Đồ này chỉ dành cho ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}.`}</span>
       </div>
     </div>
   );

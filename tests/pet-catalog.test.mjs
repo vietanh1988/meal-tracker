@@ -155,7 +155,7 @@ test("24/10 Quản trị chỉnh vị trí món bộ mới: tf → transform qua
   const { tfStyle, isTfZero } = await import("../src/pi/PiPet.jsx").catch(() => ({}));
   const pet = readFileSync("src/pi/PiPet.jsx", "utf8");
   assert.match(pet, /const tf = \(tfOverride && tfOverride\[it\.id\]\) \|\| it\.tf;/);
-  assert.match(readFileSync("src/hooks/usePet.js", "utf8"), /if \(r\.place\?\.tf\) it\.tf = r\.place\.tf; else delete it\.tf;/);
+  assert.match(readFileSync("src/hooks/usePet.js", "utf8"), /if \(r\.place\?\.tf\) it\.tf = r\.place\.tf; else if \(it\.tf0\) it\.tf = it\.tf0; else delete it\.tf;/);
   assert.match(readFileSync("src/pet/PetAvatar.jsx", "utf8"), /PI_ITEMS\.map\(\(it\) => Object\.assign\(it,/);
   assert.match(readFileSync("src/pc/PcPet.jsx", "utf8"), /<PiPlaceEditor it=\{placing\}/);
   void tfStyle; void isTfZero;

@@ -17,6 +17,7 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from clean_tay import clean as clean_tay
 from fix_hat import fix_hat
+from hat_fit import hat_tf
 
 SRC = sys.argv[1]
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -120,6 +121,9 @@ for it in cat["items"]:
     total += put(f"icon/{iid}.webp", im=sq.resize((ICON_PX, ICON_PX), Image.LANCZOS))
     row = {"id": iid, "ev": it["ev"], "g": it["g"], "slot": it["slot"], "name": it["name"], "file": it["file"],
            "c": [round((bb[0] + bb[2]) / 2), round((bb[1] + bb[3]) / 2)]}  # 24/10: tâm món (gốc xoay / phóng khi Quản trị chỉnh vị trí)
+    if it["slot"] == "dau":  # 24/10: tự canh cỡ / vị trí mũ trùm cho vừa đầu (tf0)
+        _tf = hat_tf(np.asarray(im), body[..., 3], it["name"], row["c"])
+        if _tf: row["tf0"] = _tf
     if it["slot"] in ("tay", "gang"):
         # 23/10: TẮT ẩn tay gốc — soát mắt 25 món của bộ sạch: món tay vẽ khớp tay gốc, ẩn đi chỉ lộ lỗ / mất tay. Giữ hàm để dùng lại nếu bộ sau vẽ tay giơ lên thật.
         side = raised_arm(np.asarray(im)) if os.environ.get("PI_HIDE_ARM") else None

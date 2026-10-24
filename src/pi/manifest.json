@@ -175,7 +175,16 @@
    "c": [
     384,
     262
-   ]
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -47,
+    "s": 1.084,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "giangsinh-nam-dau02",
@@ -186,7 +195,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_dau02.webp",
    "c": [
     384,
-    260
+    257
    ]
   },
   {
@@ -198,8 +207,17 @@
    "file": "items/giangsinh/do_giangsinh_nam_dau03.webp",
    "c": [
     384,
-    263
-   ]
+    261
+   ],
+   "tf0": {
+    "x": 1,
+    "y": -31,
+    "s": 1.109,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "giangsinh-nam-dau04",
@@ -211,7 +229,16 @@
    "c": [
     384,
     254
-   ]
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -49,
+    "s": 1.325,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "giangsinh-nam-dau05",
@@ -475,7 +502,16 @@
    "c": [
     384,
     274
-   ]
+   ],
+   "tf0": {
+    "x": 1,
+    "y": -14,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "giangsinh-nu-dau02",
@@ -510,8 +546,17 @@
    "file": "items/giangsinh/do_giangsinh_nu_dau04.webp",
    "c": [
     384,
-    282
-   ]
+    270
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -19,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "giangsinh-nu-dau05",
@@ -774,8 +819,17 @@
    "file": "items/tet/do_tet_nam_dau01.webp",
    "c": [
     384,
-    300
-   ]
+    278
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -12,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "tet-nam-dau02",
@@ -798,8 +852,17 @@
    "file": "items/tet/do_tet_nam_dau03.webp",
    "c": [
     384,
-    288
-   ]
+    259
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -13,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "tet-nam-dau04",
@@ -810,8 +873,17 @@
    "file": "items/tet/do_tet_nam_dau04.webp",
    "c": [
     384,
-    306
-   ]
+    314
+   ],
+   "tf0": {
+    "x": 3,
+    "y": -10,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "tet-nam-dau05",
@@ -1375,7 +1447,16 @@
    "c": [
     384,
     272
-   ]
+   ],
+   "tf0": {
+    "x": 1,
+    "y": -40,
+    "s": 1.117,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "muadong-nam-dau02",
@@ -1386,8 +1467,17 @@
    "file": "items/muadong/do_muadong_nam_dau02.webp",
    "c": [
     384,
-    309
-   ]
+    376
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -13,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "muadong-nam-dau03",
@@ -1410,7 +1500,7 @@
    "file": "items/muadong/do_muadong_nam_dau04.webp",
    "c": [
     384,
-    305
+    316
    ]
   },
   {
@@ -1423,7 +1513,16 @@
    "c": [
     384,
     318
-   ]
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -12,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "muadong-nam-pk01",
@@ -1674,7 +1773,7 @@
    "file": "items/muadong/do_muadong_nu_dau01.webp",
    "c": [
     384,
-    278
+    255
    ]
   },
   {
@@ -1686,7 +1785,7 @@
    "file": "items/muadong/do_muadong_nu_dau02.webp",
    "c": [
     384,
-    314
+    337
    ]
   },
   {
@@ -1699,7 +1798,16 @@
    "c": [
     376,
     216
-   ]
+   ],
+   "tf0": {
+    "x": 7,
+    "y": -10,
+    "s": 1.139,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "muadong-nu-dau04",
@@ -1710,8 +1818,17 @@
    "file": "items/muadong/do_muadong_nu_dau04.webp",
    "c": [
     385,
-    264
-   ]
+    230
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -12,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "muadong-nu-dau05",
@@ -1986,7 +2103,7 @@
    "file": "items/muahe/do_muahe_nam_dau02.webp",
    "c": [
     384,
-    278
+    284
    ]
   },
   {
@@ -1998,8 +2115,17 @@
    "file": "items/muahe/do_muahe_nam_dau03.webp",
    "c": [
     384,
-    316
-   ]
+    311
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -22,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "muahe-nam-dau04",
@@ -2275,7 +2401,16 @@
    "c": [
     384,
     303
-   ]
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -13,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "muahe-nu-dau02",
@@ -2286,7 +2421,7 @@
    "file": "items/muahe/do_muahe_nu_dau02.webp",
    "c": [
     384,
-    316
+    334
    ]
   },
   {
@@ -2310,8 +2445,17 @@
    "file": "items/muahe/do_muahe_nu_dau04.webp",
    "c": [
     384,
-    278
-   ]
+    297
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -43,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "muahe-nu-dau05",
@@ -2574,8 +2718,17 @@
    "file": "items/halloween/do_halloween_nam_dau01.webp",
    "c": [
     385,
-    244
-   ]
+    242
+   ],
+   "tf0": {
+    "x": -1,
+    "y": -13,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "halloween-nam-dau02",
@@ -2587,7 +2740,16 @@
    "c": [
     385,
     251
-   ]
+   ],
+   "tf0": {
+    "x": 0,
+    "y": -7,
+    "s": 1.0,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "halloween-nam-dau03",
@@ -2623,7 +2785,16 @@
    "c": [
     386,
     320
-   ]
+   ],
+   "tf0": {
+    "x": -2,
+    "y": 1,
+    "s": 1.099,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "halloween-nam-pk01",
@@ -2875,7 +3046,16 @@
    "c": [
     384,
     284
-   ]
+   ],
+   "tf0": {
+    "x": 1,
+    "y": -63,
+    "s": 1.309,
+    "w": 1,
+    "h": 1,
+    "r": 0,
+    "fx": false
+   }
   },
   {
    "id": "halloween-nu-dau02",
@@ -3174,7 +3354,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau01.webp",
    "c": [
     384,
-    279
+    248
    ]
   },
   {
@@ -3522,7 +3702,7 @@
    "file": "items/trungthu/do_trungthu_nu_dau05.webp",
    "c": [
     384,
-    336
+    358
    ]
   },
   {
@@ -3706,5 +3886,5 @@
    ]
   }
  ],
- "ver": "795c9d5f95"
+ "ver": "5ccca7fbe8"
 }

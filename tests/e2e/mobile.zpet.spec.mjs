@@ -48,7 +48,17 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await tap(page.getByTestId("pet-open-shop"));
     await expect(page.getByTestId("pet-shop")).toBeVisible();
     await expect(page.getByTestId("pet-item-halloween-nu-giay01")).toHaveCount(0); // đồ Pi nữ → không có ở Pi nam
-    await tap(page.getByTestId("pet-item-halloween-nam-giay01"));
+    // 24/10: thử nhiều món 1 lúc — mở áo, chạm giày ở dải dưới → Pi mặc cả áo + giày, áo nằm trong "Đang thử thêm"
+    await tap(page.getByTestId("pet-item-halloween-nam-ao02"));
+    const tryon = page.getByTestId("pet-tryon");
+    await expect(tryon.locator('[data-layer="ao"]').first()).toBeAttached();
+    await tryon.getByTestId("pet-tryon-pick-halloween-nam-giay01").click();
+    await expect(tryon.getByTestId("pet-trial-halloween-nam-ao02")).toBeVisible();
+    await expect(tryon.locator('[data-layer="ao"]').first()).toHaveAttribute("src", /do_halloween_nam_ao02/);
+    await expect(tryon.locator('[data-layer="giay"]').first()).toHaveAttribute("src", /do_halloween_nam_giay01/);
+    await page.screenshot({ path: "shots/pet-tryon-multi.png" });
+    await tryon.getByTestId("pet-trial-clear").click();
+    await expect(tryon.getByTestId("pet-trial")).toHaveCount(0);
     await page.getByTestId("pet-buy").click();
     await expect(page.getByTestId("pet-wear")).toContainText("Mặc luôn");
     await page.getByTestId("pet-wear").click();
