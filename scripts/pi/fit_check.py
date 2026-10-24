@@ -130,13 +130,7 @@ def check(it):
 # 24/10 duyệt bằng mắt (bộ pi_fix_30): OK = báo nhầm (vật vốn có cạnh thẳng đứng); BAD = lỗi máy không bắt được
 # (24/10: bộ pi_full thay 234 món → duyệt mắt lại từ đầu; ghi vào đây món nào duyệt xong)
 EYE_OK = {"muadong-nam-pk08": "quả cầu kính xanh nhạt (báo nhầm mảng thân)", "muahe-nam-pk11": "phao vịt ôm sát người (báo nhầm viền thân)", "trungthu-nu-pk04": "thỏ bông vốn màu trắng (báo nhầm mảng trắng)", "trungthu-nu-dau04": "dây đèn lồng vốn lệch 1 bên (soát mắt 24/10)", "tet-nam-pk08": "cuộn thư dựng đứng (bản fix_30 đã duyệt)", "muahe-nu-pk05": "ly thẳng thành (bản fix_30 đã duyệt)"}
-EYE_BAD = {  # 24/10 duyệt mắt bộ pi_fix_6
-    "muahe-nam-pk12": "ba lô vẫn vẽ thừa 1 bóng thân Pi phía sau",
-    "muahe-nu-pk11": "phao kỳ lân vẫn vẽ thừa 1 bóng thân Pi phía sau",
-    "trungthu-nu-pk05": "quạt trăng vẫn thủng lỗ hình trăng",
-    "muadong-nam-dau05": "mũ len sọc (bộ 60 mũ) khoét thủng mảng trên mặt",
-    "halloween-nam-dau01": "mũ phù thuỷ (bộ 60 mũ) vành che mất mắt trái",
-}
+EYE_BAD = {"muahe-nam-pk12": "ba lô vẫn còn viền thân Pi thừa bên phải, kéo xuống dưới chân"}  # 24/10 duyệt mắt pi_fix_5
 res = {}
 for it in man["items"]:
     r = [] if it["id"] in EYE_OK else check(it)
