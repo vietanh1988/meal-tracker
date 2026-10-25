@@ -50,7 +50,9 @@ test("23/10 mặc áo vẫn giữ cằm: lớp đầu gốc (pi_dau.webp, cùng 
 test("đồ cầm tay ẩn tay gốc chỉ khi món phủ kín vùng tay; ẩn thì đúng 1 bên (không bị 2 tay)", () => {
   const arm = man.items.filter((it) => it.arm);
   // 23/10 pi_fix_53: món tay đã vẽ khớp tay gốc → thường KHÔNG ẩn tay (ẩn lộ lỗ); món nào ẩn thì phải đúng 1 bên
-  assert.deepEqual(arm.filter((it) => !["tay", "gang"].includes(it.slot) || !["trai", "phai"].includes(it.arm)).map((it) => it.id), []);
+  // 25/10: "dautrai" / "dauphai" = thân cụt đầu tay (món vẽ riêng có bàn tay Pi ở đầu tay buông) — file thân phải có
+  assert.deepEqual(arm.filter((it) => !["tay", "gang"].includes(it.slot) || !["trai", "phai", "dautrai", "dauphai"].includes(it.arm)).map((it) => it.id), []);
+  for (const s of ["trai", "phai", "dautrai", "dauphai"]) assert.ok(existsSync(`public/pi/body/pi_than_khong_tay_${s}.webp`), s);
   const pet = readFileSync("src/pi/PiPet.jsx", "utf8");
   assert.match(pet, /bodyFile\(arm\)/);
 });

@@ -174,9 +174,25 @@ EYE_BAD = {}  # 24/10 duyệt mắt
 import re as _re
 _SA = set(_re.findall(r'"([a-z]+-n[au]m?-[a-z]+\d+)"', _re.search(r"STANDALONE = \{([^}]*)\}", open(os.path.join(os.path.dirname(__file__), "build.py"), encoding="utf-8").read()).group(1)))
 for _i in _SA: EYE_OK.setdefault(_i, "món vẽ riêng 25/10, duyệt ghép bằng mắt")
+# 25/10 (chủ dự án: "đừng ghép xong thừa tay"): món dùng thân cụt đầu tay (arm = dau<bên>) — bàn tay vẽ phải che kín mép cắt (y 560–564)
+_TIPY = 560
+def tip_cover(it):
+    side = it["arm"][3:]; cut = rd(f"body/pi_than_khong_tay_dau{side}.webp")[..., 3] > 40
+    arm = (body[..., 3] > 40) & ~cut
+    edge = arm & (yy >= _TIPY) & (yy < _TIPY + 5)
+    if not edge.any(): return []
+    a = rd(it["file"])[..., 3] > 128
+    c = (edge & a).sum() / edge.sum()
+    return [] if c >= 0.95 else [f"bàn tay vẽ không che kín chỗ cắt đầu tay ({c:.0%} < 95%) — thừa tay / hở tay"]
+def extra_hand(it):  # món vẽ riêng có bàn tay xanh mà thân giữ nguyên tay → 2 tay
+    if it["slot"] not in ("tay", "gang") or it.get("arm"): return []
+    a = rd(it["file"]); sk = (a[..., 3] > 128) & blue_mask(a[..., :3])
+    return [f"có bàn tay vẽ ({int(sk.sum())}px) nhưng không nằm ở đầu tay buông → thừa tay"] if it["id"] in _SA and sk.sum() > 600 else []
 res = {}
 for it in man["items"]:
     r = [] if it["id"] in EYE_OK else check(it)
+    if (it.get("arm") or "").startswith("dau"): r = r + tip_cover(it)
+    r = r + extra_hand(it)
     if it["id"] in EYE_BAD: r = r + [EYE_BAD[it["id"]]]
     if r: res[it["id"]] = r
 for rid in man.get("redo", []):  # catalog của Muse ghi món chờ vẽ lại

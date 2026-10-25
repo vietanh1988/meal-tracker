@@ -91,6 +91,16 @@ from arm_gap import fill_gap
 ARMLESS = {side: armless(body_noleaf, side) for side in ("trai", "phai")}
 for side in ("trai", "phai"):
     total += put(f"body/pi_than_khong_tay_{side}.webp", im=Image.fromarray(ARMLESS[side]), q=88)
+# 25/10 (chủ dự án: "ghép xong thừa tay"): thân CỤT ĐẦU TAY — giữ cánh tay, bỏ đoạn đầu tay từ y=TIP_Y (khung 768) trở xuống.
+# Món cầm tay vẽ riêng có bàn tay Pi đặt ở đầu tay buông → app dùng thân này (arm = "dau<bên>"), bàn tay vẽ nối vào chỗ cắt → hết 2 tay.
+# fit_check.py soát bàn tay vẽ che kín mép cắt (≥ 95%), hở → món vào fit.json (chưa bán).
+TIP_Y = 560
+ARM_PIX = {side: (body_noleaf[..., 3] > 40) & (ARMLESS[side][..., 3] <= 40) for side in ("trai", "phai")}
+_yy = np.mgrid[0:body_noleaf.shape[0], 0:body_noleaf.shape[1]][0]
+TIP = {side: ARM_PIX[side] & (_yy * 768 // body_noleaf.shape[0] >= TIP_Y) for side in ("trai", "phai")}
+for side in ("trai", "phai"):
+    _cut = body_noleaf.copy(); _cut[TIP[side], 3] = 0
+    total += put(f"body/pi_than_khong_tay_dau{side}.webp", im=Image.fromarray(_cut), q=88)
 # món vẽ cánh tay riêng (giơ lên / bưng ra trước) KHÔNG đè tay gốc → dùng thân bỏ tay bên đó. Soát mắt 24/10 từng món ứng viên
 # (da xanh ngoài thân ≥ 1000px, phủ vùng tay gốc < 40%); món không vẽ bàn tay (đũa phép, xẻng, chong chóng) giữ tay gốc.
 # 24/10 soát từng món: vệt lá cũ sót xa gốc lá (vùng rộng; KHÔNG áp chung vì vòng hoa có lá thật)
@@ -180,6 +190,11 @@ for it in cat["items"]:
         if _tf: row["tf0"] = _tf
     if it["slot"] in ("tay", "gang"):
         # 23/10: TẮT ẩn tay gốc — soát mắt 25 món của bộ sạch: món tay vẽ khớp tay gốc, ẩn đi chỉ lộ lỗ / mất tay. Giữ hàm để dùng lại nếu bộ sau vẽ tay giơ lên thật.
+        if iid in STANDALONE:  # 25/10: món vẽ riêng — bàn tay Pi vẽ ở đầu tay buông → thân cụt đầu tay bên đó
+            _a = np.asarray(im); _sk = (_a[..., 3] > 128) & blue_mask(_a[..., :3])
+            for _sd in ("trai", "phai"):
+                _z = cv2.dilate(TIP[_sd].astype(np.uint8), np.ones((15, 15), np.uint8)) > 0
+                if (_sk & _z).sum() * 768 * 768 // (_a.shape[0] * _a.shape[1]) >= 300: row["arm"] = "dau" + _sd; break
         side = None if iid in STANDALONE else ARM_HIDE.get(iid) or (raised_arm(np.asarray(im)) if os.environ.get("PI_HIDE_ARM") else None)
         if side:
             row["arm"] = side
