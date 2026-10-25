@@ -81,8 +81,8 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     expect(parseFloat(pull.during.slice(11))).toBeLessThan(220); // kéo 220px → dịch ít hơn (cao su)
     expect(pull.after).toBe("");
     await page.getByTestId("pet-tap").click(); // chạm Pi → nảy + cười tít
-    // 26/10: chạm Pi → Pi NÓI câu hiện tại (như bấm nút loa); Pi đang ngủ (CI sau 22h30) thì chỉ phản ứng mặt
-    await expect.poll(async () => { const a = page.getByTestId("pet-tap").getByTestId("pet-avatar"); return (await a.getAttribute("data-speaking")) === "1" || /^(cuoilon|nhaymat|haohung|ngacnhien)$/.test((await a.getAttribute("data-mood")) || ""); }, { timeout: 5_000 }).toBe(true); // 23/10: chạm → nhún + cười lớn / nháy mắt / hào hứng (ngẫu nhiên); CI chạy sau 22h30 Pi đang ngủ → ngacnhien
+    // 26/10: chạm Pi → Pi NÓI câu hiện tại (như bấm nút loa), kể cả lúc Pi ngủ (nói câu ngủ gật)
+    await expect(page.getByTestId("pet-tap").getByTestId("pet-avatar")).toHaveAttribute("data-speaking", "1", { timeout: 5_000 });
 
     // tải lại: không cộng trùng
     await page.reload();

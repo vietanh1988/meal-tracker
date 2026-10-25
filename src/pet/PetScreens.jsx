@@ -114,7 +114,7 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
   return (
     <SubPage title={pet.name} subtitle={`Cấp ${lv.n} · ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}`} onBack={onBack} right={<SeedPill n={pet.seeds} />}>
       <div data-testid="pet-home" style={{ padding: "12px 12px 0 12px" }}>
-        <Stage pet={pet} speech={speech} onSpeakEnd={() => setSpeech(null)} onTap={() => { if (!speech && pet.mood !== "ngu") sayNow(); }}>
+        <Stage pet={pet} speech={speech} onSpeakEnd={() => setSpeech(null)} onTap={() => { if (!speech) sayNow(); }}>
           <span style={{ position: "absolute", left: 14, right: 14, top: 14, display: "flex", justifyContent: "center" }}>
             {/* 24/10 pi_full mục 4–5: bấm câu → Pi nói (khẩu hình; câu có file thu sẵn thì phát giọng), mặt theo "mat" của câu */}
             <button type="button" data-testid="pet-say-play" onClick={sayNow} aria-label={`Nghe ${pet.name} nói`}
