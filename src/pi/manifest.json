@@ -1461,7 +1461,7 @@
    "file": "items/muadong/do_muadong_nam_pk01.webp",
    "c": [
     386,
-    526
+    556
    ]
   },
   {
@@ -1764,8 +1764,8 @@
    "name": "Khăn len hồng quả bông",
    "file": "items/muadong/do_muadong_nu_pk01.webp",
    "c": [
-    385,
-    528
+    384,
+    557
    ]
   },
   {
@@ -3759,5 +3759,5 @@
    ]
   }
  ],
- "ver": "dfb2dea178"
+ "ver": "4ee4b36a65"
 }
