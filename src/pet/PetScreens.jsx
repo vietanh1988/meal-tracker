@@ -78,7 +78,7 @@ const card = { margin: "0 12px", ...ltCard };
 // 23/10: bộ mới — phòng theo sự kiện (ev), ảnh theo buổi do PetRoom tự chọn
 // 25/10 (chủ dự án): phòng MIỄN PHÍ theo khung cảnh — tự đổi theo dịp / mùa (sceneOf, giờ VN), không bán ở Cửa hàng
 export const roomOf = () => sceneOf(todayVN()); // (pet.today là số Hạt hôm nay, không phải ngày)
-export function Stage({ pet, height = 260, children, size = 210, talking, live = true, forceTime, speech = null, listening = false, onSpeakEnd }) {
+export function Stage({ pet, height = 260, children, size = 210, talking, live = true, forceTime, speech = null, listening = false, onSpeakEnd, onTap }) {
   // 20/10: Pi đứng trong phòng của Pi (PetRoom: đổi theo giờ, kệ đồ thành tích, màu theo bản).
   // Pi "sống": chớp mắt, đảo mắt, lá đung đưa, thở; chạm vào Pi → nảy + cười tít + tim bay (chạm lúc ngủ: mở mắt rồi ngủ tiếp).
   const [react, setReact] = useState(0);
@@ -89,6 +89,7 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
     setHearts((h) => [...h, ...[0, 1, 2, 3].map((i) => ({ id: `${id}-${i}`, dx: (Math.random() - 0.5) * 90, d: i * 70 }))]);
     setTimeout(() => setHearts((h) => h.filter((x) => !x.id.startsWith(String(id)))), 1300);
     try { navigator.vibrate?.(10); } catch (e) { /* */ }
+    onTap?.(); // 26/10 (chủ dự án: "chạm vô Pi không tự nói, phải chạm nút loa"): chạm Pi → Pi nói câu hiện tại (gọi ngay trong lúc bấm — iPhone mới cho phát tiếng)
   };
   const heart = pet.variant === "nu" ? "hieu-ung/hieu-ung-11.webp" : "hieu-ung/hieu-ung-01.webp";
   return (
@@ -107,15 +108,16 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
 // ============ Màn Thú cưng ============
 export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, onSettings, onWeek }) {
   const [speech, setSpeech] = useState(null);
+  const sayNow = () => { const l = pet.sayLine; const el = playNow(l?.audio); if (!el) primeTTS(); setSpeech({ key: Date.now(), text: l?.text || moodText(pet), audio: l?.audio || null, el, expr: l?.mat, giong: l?.giong }); };
   const lv = pet.level;
   const pct = Math.min(100, ((pet.xp - lv.from) / (lv.to - lv.from)) * 100);
   return (
     <SubPage title={pet.name} subtitle={`Cấp ${lv.n} · ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}`} onBack={onBack} right={<SeedPill n={pet.seeds} />}>
       <div data-testid="pet-home" style={{ padding: "12px 12px 0 12px" }}>
-        <Stage pet={pet} speech={speech} onSpeakEnd={() => setSpeech(null)}>
+        <Stage pet={pet} speech={speech} onSpeakEnd={() => setSpeech(null)} onTap={() => { if (!speech && pet.mood !== "ngu") sayNow(); }}>
           <span style={{ position: "absolute", left: 14, right: 14, top: 14, display: "flex", justifyContent: "center" }}>
             {/* 24/10 pi_full mục 4–5: bấm câu → Pi nói (khẩu hình; câu có file thu sẵn thì phát giọng), mặt theo "mat" của câu */}
-            <button type="button" data-testid="pet-say-play" onClick={() => { const l = pet.sayLine; const el = playNow(l?.audio); if (!el) primeTTS(); setSpeech({ key: Date.now(), text: l?.text || moodText(pet), audio: l?.audio || null, el, expr: l?.mat, giong: l?.giong }); }} aria-label={`Nghe ${pet.name} nói`}
+            <button type="button" data-testid="pet-say-play" onClick={sayNow} aria-label={`Nghe ${pet.name} nói`}
               style={{ maxWidth: 280, background: "#FFFFFF", border: "none", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center", fontFamily: "inherit", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
               <span>{moodText(pet)}</span>
               <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={speech ? "#007AFF" : "#94A3B8"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>
