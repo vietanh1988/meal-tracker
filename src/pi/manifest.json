@@ -2109,10 +2109,9 @@
    "name": "Cầm trái dừa có ống hút",
    "file": "items/muahe/do_muahe_nam_pk05.webp",
    "c": [
-    202,
-    435
-   ],
-   "arm": "trai"
+    262,
+    518
+   ]
   },
   {
    "id": "muahe-nam-pk06",
@@ -3068,8 +3067,8 @@
    "name": "Cầm kẹo bông tím",
    "file": "items/halloween/do_halloween_nu_pk09.webp",
    "c": [
-    242,
-    422
+    210,
+    534
    ]
   },
   {
@@ -3752,5 +3751,5 @@
    ]
   }
  ],
- "ver": "25f14e947a"
+ "ver": "02101c2e7e"
 }
