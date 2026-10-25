@@ -160,7 +160,7 @@ function Items({ d, sel: sel0 = "ao-roi-10", varFilter: vf0 = "all", onSave, onS
             <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}><Pill tone={st(x)[1]}>{st(x)[0]}</Pill></span>
           </button>
         ))}
-        <div style={{ padding: "10px 16px", fontSize: 12, color: PC.t3, display: "flex", alignItems: "center", gap: 10 }}>Hiện {Math.min(n, list.length)} / {list.length} món{n < list.length && <Btn kind="soft" onClick={() => setN((k) => k + 30)}>Xem thêm</Btn>}</div>
+        <div style={{ padding: "10px 16px", fontSize: 12, color: PC.t3, display: "flex", alignItems: "center", gap: 10 }}>Hiện {Math.min(n, list.length)} / {list.length} món{n < list.length && <Btn kind="soft" testid="pc-pet-more" onClick={() => setN((k) => k + 30)}>Xem thêm</Btn>}</div>
       </Card>
 
       {/* Ngăn sửa món — 24/10: ghim khung xem thử (thẻ không cao quá màn hình, tự cuộn bên trong) để không trượt theo khi kéo danh sách */}
