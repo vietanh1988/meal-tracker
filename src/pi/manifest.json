@@ -1003,7 +1003,7 @@
    "file": "items/tet/do_tet_nam_giay02.webp",
    "c": [
     384,
-    682
+    703
    ]
   },
   {
@@ -1915,7 +1915,7 @@
    "file": "items/muadong/do_muadong_nu_giay02.webp",
    "c": [
     384,
-    680
+    688
    ]
   },
   {
@@ -3129,7 +3129,7 @@
    "file": "items/halloween/do_halloween_nu_giay02.webp",
    "c": [
     384,
-    668
+    688
    ]
   },
   {
@@ -3752,5 +3752,5 @@
    ]
   }
  ],
- "ver": "8e495645af"
+ "ver": "25f14e947a"
 }
