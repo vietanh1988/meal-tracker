@@ -396,8 +396,8 @@
    "name": "Giày len xanh lá",
    "file": "items/giangsinh/do_giangsinh_nam_giay02.webp",
    "c": [
-    384,
-    680
+    382,
+    694
    ]
   },
   {
@@ -409,7 +409,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_giay03.webp",
    "c": [
     384,
-    680
+    696
    ]
   },
   {
@@ -686,8 +686,8 @@
    "name": "Ủng trắng lông xù",
    "file": "items/giangsinh/do_giangsinh_nu_giay01.webp",
    "c": [
-    384,
-    680
+    382,
+    694
    ]
   },
   {
@@ -698,8 +698,8 @@
    "name": "Giày búp bê đỏ thắt nơ",
    "file": "items/giangsinh/do_giangsinh_nu_giay02.webp",
    "c": [
-    384,
-    680
+    382,
+    702
    ]
   },
   {
@@ -711,7 +711,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_giay03.webp",
    "c": [
     384,
-    680
+    666
    ]
   },
   {
@@ -991,7 +991,7 @@
    "file": "items/tet/do_tet_nam_giay01.webp",
    "c": [
     384,
-    680
+    698
    ]
   },
   {
@@ -1014,8 +1014,8 @@
    "name": "Dép mộc gỗ",
    "file": "items/tet/do_tet_nam_giay03.webp",
    "c": [
-    385,
-    680
+    384,
+    704
    ]
   },
   {
@@ -1293,8 +1293,8 @@
    "name": "Hài thêu hoa đỏ",
    "file": "items/tet/do_tet_nu_giay01.webp",
    "c": [
-    384,
-    680
+    382,
+    702
    ]
   },
   {
@@ -1306,17 +1306,8 @@
    "file": "items/tet/do_tet_nu_giay02.webp",
    "c": [
     384,
-    663
-   ],
-   "tf0": {
-    "x": 0,
-    "y": 20,
-    "s": 0.66,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+    699
+   ]
   },
   {
    "id": "tet-nu-giay03",
@@ -1326,8 +1317,8 @@
    "name": "Giày búp bê vàng thêu sen",
    "file": "items/tet/do_tet_nu_giay03.webp",
    "c": [
-    384,
-    680
+    382,
+    702
    ]
   },
   {
@@ -1607,8 +1598,8 @@
    "name": "Giày boot da nâu",
    "file": "items/muadong/do_muadong_nam_giay01.webp",
    "c": [
-    384,
-    680
+    382,
+    694
    ]
   },
   {
@@ -1619,8 +1610,8 @@
    "name": "Ủng đi tuyết xám",
    "file": "items/muadong/do_muadong_nam_giay02.webp",
    "c": [
-    385,
-    680
+    382,
+    694
    ]
   },
   {
@@ -1632,7 +1623,7 @@
    "file": "items/muadong/do_muadong_nam_giay03.webp",
    "c": [
     384,
-    680
+    698
    ]
   },
   {
@@ -1911,8 +1902,8 @@
    "name": "Boot lông hồng",
    "file": "items/muadong/do_muadong_nu_giay01.webp",
    "c": [
-    384,
-    680
+    382,
+    694
    ]
   },
   {
@@ -1936,7 +1927,7 @@
    "file": "items/muadong/do_muadong_nu_giay03.webp",
    "c": [
     384,
-    680
+    692
    ]
   },
   {
@@ -2217,7 +2208,7 @@
    "file": "items/muahe/do_muahe_nam_giay01.webp",
    "c": [
     384,
-    680
+    702
    ]
   },
   {
@@ -2229,7 +2220,7 @@
    "file": "items/muahe/do_muahe_nam_giay02.webp",
    "c": [
     384,
-    680
+    702
    ]
   },
   {
@@ -2520,7 +2511,7 @@
    "file": "items/muahe/do_muahe_nu_giay01.webp",
    "c": [
     384,
-    680
+    698
    ]
   },
   {
@@ -2544,7 +2535,7 @@
    "file": "items/muahe/do_muahe_nu_giay03.webp",
    "c": [
     384,
-    680
+    705
    ]
   },
   {
@@ -2835,8 +2826,8 @@
    "name": "Ủng bí ngô cam",
    "file": "items/halloween/do_halloween_nam_giay02.webp",
    "c": [
-    384,
-    680
+    382,
+    694
    ]
   },
   {
@@ -2848,7 +2839,7 @@
    "file": "items/halloween/do_halloween_nam_giay03.webp",
    "c": [
     384,
-    680
+    698
    ]
   },
   {
@@ -3125,8 +3116,8 @@
    "name": "Giày nhọn tím khoá bạc",
    "file": "items/halloween/do_halloween_nu_giay01.webp",
    "c": [
-    384,
-    680
+    382,
+    702
    ]
   },
   {
@@ -3149,8 +3140,8 @@
    "name": "Giày búp bê cam nơ đen",
    "file": "items/halloween/do_halloween_nu_giay03.webp",
    "c": [
-    384,
-    680
+    382,
+    702
    ]
   },
   {
@@ -3432,7 +3423,7 @@
    "file": "items/trungthu/do_trungthu_nam_giay01.webp",
    "c": [
     384,
-    680
+    696
    ]
   },
   {
@@ -3444,7 +3435,7 @@
    "file": "items/trungthu/do_trungthu_nam_giay02.webp",
    "c": [
     384,
-    680
+    702
    ]
   },
   {
@@ -3456,7 +3447,7 @@
    "file": "items/trungthu/do_trungthu_nam_giay03.webp",
    "c": [
     384,
-    680
+    698
    ]
   },
   {
@@ -3733,7 +3724,7 @@
    "file": "items/trungthu/do_trungthu_nu_giay01.webp",
    "c": [
     384,
-    680
+    705
    ]
   },
   {
@@ -3744,8 +3735,8 @@
    "name": "Giày búp bê hồng thỏ",
    "file": "items/trungthu/do_trungthu_nu_giay02.webp",
    "c": [
-    384,
-    680
+    382,
+    702
    ]
   },
   {
@@ -3757,9 +3748,9 @@
    "file": "items/trungthu/do_trungthu_nu_giay03.webp",
    "c": [
     384,
-    680
+    702
    ]
   }
  ],
- "ver": "b8575ce54a"
+ "ver": "712fb8bf22"
 }
