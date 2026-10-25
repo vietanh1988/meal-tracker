@@ -226,7 +226,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_dau05.webp",
    "c": [
     384,
-    249
+    270
    ]
   },
   {
@@ -492,7 +492,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_dau02.webp",
    "c": [
     384,
-    262
+    256
    ]
   },
   {
@@ -1135,8 +1135,8 @@
    "name": "Cài tóc hoa mai lớn",
    "file": "items/tet/do_tet_nu_dau05.webp",
    "c": [
-    384,
-    261
+    382,
+    222
    ]
   },
   {
@@ -2044,8 +2044,8 @@
    "name": "Băng đô thể thao trắng",
    "file": "items/muahe/do_muahe_nam_dau04.webp",
    "c": [
-    385,
-    241
+    384,
+    282
    ]
   },
   {
@@ -3246,7 +3246,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau03.webp",
    "c": [
     384,
-    262
+    242
    ]
   },
   {
@@ -3537,8 +3537,8 @@
    "name": "Băng đô tai thỏ hồng",
    "file": "items/trungthu/do_trungthu_nu_dau02.webp",
    "c": [
-    384,
-    259
+    387,
+    234
    ]
   },
   {
@@ -3759,5 +3759,5 @@
    ]
   }
  ],
- "ver": "40ead4539a"
+ "ver": "dfb2dea178"
 }
