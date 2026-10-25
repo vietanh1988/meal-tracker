@@ -187,7 +187,7 @@
    "file": "items/giangsinh/do_giangsinh_nam_dau02.webp",
    "c": [
     384,
-    257
+    205
    ],
    "cover": true
   },
@@ -200,18 +200,9 @@
    "file": "items/giangsinh/do_giangsinh_nam_dau03.webp",
    "c": [
     384,
-    262
+    226
    ],
-   "cover": true,
-   "tf0": {
-    "x": 1,
-    "y": -31,
-    "s": 1.109,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "giangsinh-nam-dau04",
@@ -221,19 +212,10 @@
    "name": "Mũ yêu tinh xanh lá có chuông",
    "file": "items/giangsinh/do_giangsinh_nam_dau04.webp",
    "c": [
-    384,
-    254
+    412,
+    178
    ],
-   "cover": true,
-   "tf0": {
-    "x": 0,
-    "y": -49,
-    "s": 1.325,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "giangsinh-nam-dau05",
@@ -497,18 +479,9 @@
    "file": "items/giangsinh/do_giangsinh_nu_dau01.webp",
    "c": [
     384,
-    274
+    167
    ],
-   "cover": true,
-   "tf0": {
-    "x": 1,
-    "y": -14,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "giangsinh-nu-dau02",
@@ -543,18 +516,9 @@
    "file": "items/giangsinh/do_giangsinh_nu_dau04.webp",
    "c": [
     384,
-    270
+    169
    ],
-   "cover": true,
-   "tf0": {
-    "x": 0,
-    "y": -19,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "giangsinh-nu-dau05",
@@ -817,18 +781,9 @@
    "file": "items/tet/do_tet_nam_dau01.webp",
    "c": [
     384,
-    278
+    252
    ],
-   "cover": true,
-   "tf0": {
-    "x": 0,
-    "y": -12,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "tet-nam-dau02",
@@ -839,7 +794,7 @@
    "file": "items/tet/do_tet_nam_dau02.webp",
    "c": [
     384,
-    294
+    252
    ],
    "cover": true
   },
@@ -854,7 +809,6 @@
     384,
     259
    ],
-   "cover": true,
    "tf0": {
     "x": 0,
     "y": -13,
@@ -874,18 +828,9 @@
    "file": "items/tet/do_tet_nam_dau04.webp",
    "c": [
     384,
-    314
+    238
    ],
-   "cover": true,
-   "tf0": {
-    "x": 3,
-    "y": -10,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "tet-nam-dau05",
@@ -1148,7 +1093,7 @@
    "file": "items/tet/do_tet_nu_dau01.webp",
    "c": [
     384,
-    287
+    222
    ],
    "cover": true
   },
@@ -1161,7 +1106,7 @@
    "file": "items/tet/do_tet_nu_dau02.webp",
    "c": [
     384,
-    290
+    241
    ],
    "cover": true
   },
@@ -1173,8 +1118,8 @@
    "name": "Nón lá thắt quai lụa hồng",
    "file": "items/tet/do_tet_nu_dau03.webp",
    "c": [
-    385,
-    371
+    384,
+    299
    ],
    "cover": true
   },
@@ -1460,18 +1405,9 @@
    "file": "items/muadong/do_muadong_nam_dau01.webp",
    "c": [
     384,
-    272
+    203
    ],
-   "cover": true,
-   "tf0": {
-    "x": 1,
-    "y": -40,
-    "s": 1.117,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "muadong-nam-dau02",
@@ -1482,18 +1418,9 @@
    "file": "items/muadong/do_muadong_nam_dau02.webp",
    "c": [
     384,
-    376
+    312
    ],
-   "cover": true,
-   "tf0": {
-    "x": 0,
-    "y": -13,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "muadong-nam-dau03",
@@ -1503,8 +1430,8 @@
    "name": "Mũ beret nâu",
    "file": "items/muadong/do_muadong_nam_dau03.webp",
    "c": [
-    382,
-    236
+    384,
+    241
    ],
    "cover": true
   },
@@ -1529,18 +1456,9 @@
    "file": "items/muadong/do_muadong_nam_dau05.webp",
    "c": [
     384,
-    318
+    251
    ],
-   "cover": true,
-   "tf0": {
-    "x": 0,
-    "y": -12,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "muadong-nam-pk01",
@@ -1816,19 +1734,10 @@
    "name": "Mũ beret đỏ",
    "file": "items/muadong/do_muadong_nu_dau03.webp",
    "c": [
-    376,
-    216
+    384,
+    230
    ],
-   "cover": true,
-   "tf0": {
-    "x": 7,
-    "y": -10,
-    "s": 1.139,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "muadong-nu-dau04",
@@ -1838,19 +1747,10 @@
    "name": "Mũ len kem quả bông to",
    "file": "items/muadong/do_muadong_nu_dau04.webp",
    "c": [
-    385,
-    232
+    384,
+    192
    ],
-   "cover": true,
-   "tf0": {
-    "x": 0,
-    "y": -12,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "muadong-nu-dau05",
@@ -2115,8 +2015,7 @@
    "c": [
     384,
     310
-   ],
-   "cover": true
+   ]
   },
   {
    "id": "muahe-nam-dau02",
@@ -2126,8 +2025,8 @@
    "name": "Mũ lưỡi trai đội ngược màu cam",
    "file": "items/muahe/do_muahe_nam_dau02.webp",
    "c": [
-    384,
-    284
+    407,
+    248
    ],
    "cover": true
   },
@@ -2433,8 +2332,7 @@
    "c": [
     384,
     334
-   ],
-   "cover": true
+   ]
   },
   {
    "id": "muahe-nu-dau03",
@@ -2459,7 +2357,6 @@
     384,
     297
    ],
-   "cover": true,
    "tf0": {
     "x": 0,
     "y": -43,
@@ -2733,7 +2630,6 @@
     385,
     242
    ],
-   "cover": true,
    "tf0": {
     "x": -1,
     "y": -13,
@@ -2752,19 +2648,10 @@
    "name": "Mũ hình bí ngô",
    "file": "items/halloween/do_halloween_nam_dau02.webp",
    "c": [
-    385,
-    251
+    384,
+    236
    ],
-   "cover": true,
-   "tf0": {
-    "x": 0,
-    "y": -7,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "halloween-nam-dau03",
@@ -2798,19 +2685,10 @@
    "name": "Mũ trùm đầu ma trắng",
    "file": "items/halloween/do_halloween_nam_dau05.webp",
    "c": [
-    386,
-    320
+    384,
+    326
    ],
-   "cover": true,
-   "tf0": {
-    "x": -2,
-    "y": 1,
-    "s": 1.099,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "halloween-nam-pk01",
@@ -3064,7 +2942,6 @@
     384,
     284
    ],
-   "cover": true,
    "tf0": {
     "x": 1,
     "y": -63,
@@ -3374,8 +3251,7 @@
    "c": [
     384,
     248
-   ],
-   "cover": true
+   ]
   },
   {
    "id": "trungthu-nam-dau02",
@@ -3386,7 +3262,7 @@
    "file": "items/trungthu/do_trungthu_nam_dau02.webp",
    "c": [
     384,
-    260
+    226
    ],
    "cover": true
   },
@@ -3410,8 +3286,8 @@
    "name": "Mũ đèn lồng đỏ",
    "file": "items/trungthu/do_trungthu_nam_dau04.webp",
    "c": [
-    382,
-    254
+    384,
+    237
    ],
    "cover": true
   },
@@ -3423,8 +3299,8 @@
    "name": "Khăn xếp vàng",
    "file": "items/trungthu/do_trungthu_nam_dau05.webp",
    "c": [
-    384,
-    282
+    386,
+    245
    ],
    "cover": true
   },
@@ -3727,7 +3603,7 @@
    "file": "items/trungthu/do_trungthu_nu_dau05.webp",
    "c": [
     384,
-    358
+    331
    ],
    "cover": true
   },
@@ -3912,5 +3788,5 @@
    ]
   }
  ],
- "ver": "a9d14d0eaa"
+ "ver": "5c77b10b9f"
 }

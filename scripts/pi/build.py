@@ -95,7 +95,8 @@ for side in ("trai", "phai"):
 # (da xanh ngoài thân ≥ 1000px, phủ vùng tay gốc < 40%); món không vẽ bàn tay (đũa phép, xẻng, chong chóng) giữ tay gốc.
 # 24/10 soát từng món: vệt lá cũ sót xa gốc lá (vùng rộng; KHÔNG áp chung vì vòng hoa có lá thật)
 # 24/10 tối (chủ dự án chốt): món Muse vẽ RIÊNG trên nền trong suốt → chỉ đặt đè lên, KHÔNG chạy bộ cắt lá / vụn (cắt nhầm mũ xanh lá)
-STANDALONE = {"giangsinh-nam-dau01", "muahe-nam-dau03", "muahe-nu-dau01", "muadong-nu-dau01"}
+STANDALONE = {  # 25/10: mũ vẽ riêng đã duyệt ghép (mũ trùm đầu → ẩn lá)
+              "giangsinh-nam-dau01", "giangsinh-nam-dau02", "giangsinh-nam-dau03", "giangsinh-nam-dau04", "giangsinh-nu-dau01", "giangsinh-nu-dau04", "halloween-nam-dau02", "halloween-nam-dau05", "muadong-nam-dau01", "muadong-nam-dau02", "muadong-nam-dau03", "muadong-nam-dau05", "muadong-nu-dau01", "muadong-nu-dau03", "muadong-nu-dau04", "muahe-nam-dau02", "muahe-nam-dau03", "muahe-nu-dau01", "tet-nam-dau01", "tet-nam-dau02", "tet-nam-dau04", "tet-nu-dau01", "tet-nu-dau02", "tet-nu-dau03", "trungthu-nam-dau02", "trungthu-nam-dau04", "trungthu-nam-dau05", "trungthu-nu-dau05"}
 SHOE_SCALE = {"tet-nu-giay02": 0.66}
 LEAF_WIDE = {"giangsinh-nam-dau05", "trungthu-nam-dau03", "muahe-nam-dau05", "trungthu-nu-dau02"}
 ARM_HIDE = {"giangsinh-nam-pk07": "trai", "muadong-nam-pk08": "trai", "muadong-nu-pk08": "trai", "muahe-nam-pk05": "trai",
@@ -167,9 +168,9 @@ for it in cat["items"]:
     if iid in SHOE_SCALE:  # 24/10 soát từng món: guốc vẽ to gấp đôi chân → thu nhỏ quanh tâm, giữ đáy chạm chân
         _s = SHOE_SCALE[iid]; _cy = row["c"][1]; _yb = bb[3]
         row["tf0"] = {"x": 0, "y": round(_yb - (_cy + (_yb - _cy) * _s)), "s": _s, "w": 1, "h": 1, "r": 0, "fx": False}
-    if it["slot"] == "dau" and not re.search(r"^(vương miện|băng đô|vòng|kẹp|cài|nơ|dây|trâm|bờm|bịt tai|kính)", it["name"], re.I):
-        row["cover"] = True  # 24/10 (chủ dự án): mũ / nón trùm đầu → app ẩn hẳn lá
-    if it["slot"] == "dau":  # 24/10: tự canh cỡ / vị trí mũ trùm cho vừa đầu (tf0)
+    if it["slot"] == "dau" and iid in STANDALONE and not re.search(r"^(vương miện|băng đô|vòng|kẹp|cài|nơ|dây|trâm|bờm|bịt tai|kính)", it["name"], re.I):
+        row["cover"] = True  # 24/10: CHỈ mũ vẽ riêng (STANDALONE) trùm đầu → app ẩn hẳn lá; mũ cũ khoét chỗ lá → giữ lá đè lên (ẩn lá lộ mép khoét)
+    if it["slot"] == "dau" and iid not in STANDALONE:  # 24/10: tự canh cỡ / vị trí mũ trùm cho vừa đầu (tf0); mũ vẽ riêng đã đúng chỗ → không canh
         _tf = hat_tf(np.asarray(im), body[..., 3], it["name"], row["c"])
         if _tf: row["tf0"] = _tf
     if it["slot"] in ("tay", "gang"):

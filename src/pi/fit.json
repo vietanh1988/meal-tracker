@@ -27,35 +27,15 @@
   }
  },
  "bad": {
-  "giangsinh-nam-dau02": [
-   "thủng quanh gốc lá 3298px"
-  ],
-  "giangsinh-nam-dau03": [
-   "thủng quanh gốc lá 2648px"
-  ],
-  "giangsinh-nam-dau04": [
-   "mép mũ cắt phẳng ngang 211px",
-   "thủng quanh gốc lá 1975px"
-  ],
   "giangsinh-nam-pk03": [
    "mép dưới cắt phẳng ngang 78px (khung ảnh cắt cụt)"
-  ],
-  "giangsinh-nu-dau04": [
-   "thủng quanh gốc lá 2325px"
   ],
   "giangsinh-nu-pk03": [
    "mép dưới cắt phẳng ngang 84px (khung ảnh cắt cụt)"
   ],
-  "tet-nam-dau01": [
-   "mép mũ cắt phẳng ngang 29px",
-   "thủng quanh gốc lá 419px"
-  ],
   "tet-nam-dau03": [
    "mép mũ cắt phẳng ngang 56px",
    "thủng quanh gốc lá 2587px"
-  ],
-  "tet-nam-dau04": [
-   "thủng quanh gốc lá 2823px"
   ],
   "tet-nam-pk03": [
    "mép dưới cắt phẳng ngang 85px (khung ảnh cắt cụt)"
@@ -63,17 +43,11 @@
   "tet-nu-pk04": [
    "mép dưới cắt phẳng ngang 34px (khung ảnh cắt cụt)"
   ],
-  "muadong-nam-dau05": [
-   "mép mũ cắt phẳng ngang 35px"
-  ],
   "muadong-nam-pk01": [
    "mép dưới cắt phẳng ngang 81px (khung ảnh cắt cụt)"
   ],
   "muadong-nam-pk02": [
    "mép dưới cắt phẳng ngang 72px (khung ảnh cắt cụt)"
-  ],
-  "muadong-nu-dau04": [
-   "thủng quanh gốc lá 2892px"
   ],
   "muadong-nu-pk01": [
    "mép dưới cắt phẳng ngang 73px (khung ảnh cắt cụt)"
@@ -94,9 +68,6 @@
   ],
   "trungthu-nam-pk10": [
    "mép dưới cắt phẳng ngang 59px (khung ảnh cắt cụt)"
-  ],
-  "trungthu-nu-dau05": [
-   "mép mũ cắt phẳng ngang 79px"
   ],
   "trungthu-nu-pk10": [
    "mép dưới cắt phẳng ngang 30px (khung ảnh cắt cụt)"

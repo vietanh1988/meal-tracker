@@ -4,20 +4,16 @@ import { readFileSync } from "node:fs";
 import { layerOrder } from "../src/pi/layerOrder.js";
 const man = JSON.parse(readFileSync("src/pi/manifest.json", "utf8")), order = man.order;
 
-test("mũ trùm đầu → không có lá", () => {
+test("mũ vẽ riêng trùm đầu (cover) → không có lá", () => {
   assert.ok(!layerOrder({ dau: { cover: true } }, order).includes("la"));
 });
-test("vương miện / băng đô → lá ngay dưới món", () => {
-  const o = layerOrder({ dau: { cover: false } }, order);
-  assert.equal(o.indexOf("la") + 1, o.indexOf("dau"));
-});
-test("không đội gì → giữ thứ tự manifest", () => {
+test("mũ cũ / băng đô / không đội → giữ thứ tự manifest (lá đè lên)", () => {
+  assert.deepEqual(layerOrder({ dau: { cover: false } }, order), order);
   assert.deepEqual(layerOrder({ ao: {} }, order), order);
   assert.deepEqual(layerOrder(null, order), order);
 });
-test("manifest: mũ trùm có cover, băng đô / vương miện thì không", () => {
+test("manifest: chỉ mũ vẽ riêng có cover, băng đô / vương miện không bao giờ", () => {
   const dau = man.items.filter((x) => x.slot === "dau");
-  assert.ok(dau.filter((x) => x.cover).length >= 30);
-  for (const x of dau) if (/^(vương miện|băng đô)/i.test(x.name)) assert.ok(!x.cover, x.id);
-  for (const x of dau) if (/^(mũ|nón)/i.test(x.name)) assert.ok(x.cover, x.id);
+  for (const x of dau) if (/^(vương miện|băng đô|kẹp|cài|trâm)/i.test(x.name)) assert.ok(!x.cover, x.id);
+  for (const id of ["giangsinh-nam-dau01", "muahe-nam-dau03", "muahe-nu-dau01", "muadong-nu-dau01"]) assert.ok(dau.find((x) => x.id === id)?.cover, id);
 });
