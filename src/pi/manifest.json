@@ -2005,9 +2005,10 @@
    "name": "Mũ rơm vành rộng",
    "file": "items/muahe/do_muahe_nam_dau01.webp",
    "c": [
-    384,
-    310
-   ]
+    386,
+    250
+   ],
+   "cover": true
   },
   {
    "id": "muahe-nam-dau02",
@@ -2323,8 +2324,9 @@
    "file": "items/muahe/do_muahe_nu_dau02.webp",
    "c": [
     384,
-    334
-   ]
+    247
+   ],
+   "cover": true
   },
   {
    "id": "muahe-nu-dau03",
@@ -3757,5 +3759,5 @@
    ]
   }
  ],
- "ver": "a5d977343a"
+ "ver": "40ead4539a"
 }
