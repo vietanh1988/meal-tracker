@@ -807,17 +807,9 @@
    "file": "items/tet/do_tet_nam_dau03.webp",
    "c": [
     384,
-    259
+    238
    ],
-   "tf0": {
-    "x": 0,
-    "y": -13,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "tet-nam-dau04",
@@ -2355,17 +2347,9 @@
    "file": "items/muahe/do_muahe_nu_dau04.webp",
    "c": [
     384,
-    297
+    238
    ],
-   "tf0": {
-    "x": 0,
-    "y": -43,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "muahe-nu-dau05",
@@ -2627,18 +2611,10 @@
    "name": "Mũ phù thuỷ đen",
    "file": "items/halloween/do_halloween_nam_dau01.webp",
    "c": [
-    385,
-    242
+    388,
+    185
    ],
-   "tf0": {
-    "x": -1,
-    "y": -13,
-    "s": 1.0,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "halloween-nam-dau02",
@@ -2939,18 +2915,10 @@
    "name": "Mũ phù thuỷ tím nơ cam",
    "file": "items/halloween/do_halloween_nu_dau01.webp",
    "c": [
-    384,
-    284
+    390,
+    205
    ],
-   "tf0": {
-    "x": 1,
-    "y": -63,
-    "s": 1.309,
-    "w": 1,
-    "h": 1,
-    "r": 0,
-    "fx": false
-   }
+   "cover": true
   },
   {
    "id": "halloween-nu-dau02",
@@ -3250,8 +3218,9 @@
    "file": "items/trungthu/do_trungthu_nam_dau01.webp",
    "c": [
     384,
-    248
-   ]
+    238
+   ],
+   "cover": true
   },
   {
    "id": "trungthu-nam-dau02",
@@ -3788,5 +3757,5 @@
    ]
   }
  ],
- "ver": "5c77b10b9f"
+ "ver": "a5d977343a"
 }

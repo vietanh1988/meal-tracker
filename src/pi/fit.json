@@ -33,10 +33,6 @@
   "giangsinh-nu-pk03": [
    "mép dưới cắt phẳng ngang 84px (khung ảnh cắt cụt)"
   ],
-  "tet-nam-dau03": [
-   "mép mũ cắt phẳng ngang 56px",
-   "thủng quanh gốc lá 2587px"
-  ],
   "tet-nam-pk03": [
    "mép dưới cắt phẳng ngang 85px (khung ảnh cắt cụt)"
   ],
@@ -58,13 +54,6 @@
   "muahe-nam-pk12": [
    "viền thân thừa quanh người 868px",
    "balo vẽ kèm bản sao viền thân xanh vụn quanh người (chờ bản vẽ lại pi_fix_balo)"
-  ],
-  "halloween-nam-dau01": [
-   "thủng quanh gốc lá 2478px"
-  ],
-  "trungthu-nam-dau01": [
-   "mép mũ cắt phẳng ngang 40px",
-   "thủng quanh gốc lá 2326px"
   ],
   "trungthu-nam-pk10": [
    "mép dưới cắt phẳng ngang 59px (khung ảnh cắt cụt)"
