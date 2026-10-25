@@ -87,7 +87,8 @@ export default async function Footer({ s, menus }) {
             </div>
           </div>
         )}
-        <div aria-hidden="true" className="watermark" style={{ position: "relative", marginTop: 10, textAlign: "center", fontSize: 168, fontWeight: 900, lineHeight: 1, background: "linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", whiteSpace: "nowrap", userSelect: "none" }}>Fipilot AI</div>
+        {/* 25/10 (chủ dự án: "footer thừa dưới nhiều"): chữ chìm 168 → 112px, dòng 0.86 → phần đáy thấp ~45% */}
+        <div aria-hidden="true" className="watermark" style={{ position: "relative", marginTop: 22, marginBottom: -4, textAlign: "center", fontSize: 112, fontWeight: 900, lineHeight: 0.86, background: "linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0))", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", whiteSpace: "nowrap", userSelect: "none" }}>Fipilot AI</div>
         <div style={{ position: "relative", background: "rgba(0,0,0,.18)" }}>
           <div className="wrap fbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 52, fontSize: 12, color: "rgba(255,255,255,.55)" }}>
             <span>{(f.copyright || "© %year% Fipilot AI").replace(/%(year|nam)%/g, year)} · fipilotai.com · <a href="/phuong-phap-du-lieu" style={{ color: "inherit", textDecoration: "underline" }}>Cách tính calo</a></span><span>{f.note}</span>
@@ -139,7 +140,7 @@ export default async function Footer({ s, menus }) {
  .fc-d{font-size:11.5px;gap:0}.fc-u::after{content:" · "}
  .fchip-all{justify-content:center;border-radius:12px;border:1px dashed rgba(124,194,255,.4);height:48px}
  .fcols{margin-top:26px!important;padding-top:24px!important;grid-template-columns:1fr 1fr!important;gap:24px!important}.fbrand{grid-column:1/-1}
- .watermark{margin-top:18px!important;font-size:64px!important}
+ .watermark{margin-top:16px!important;font-size:56px!important}
  .fbar{flex-direction:column;align-items:flex-start!important;gap:6px;height:auto!important;padding:14px 16px!important}
 }` }} />
     </div>

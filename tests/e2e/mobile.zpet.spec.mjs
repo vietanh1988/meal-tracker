@@ -37,6 +37,8 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     expect(look.h).toBeGreaterThanOrEqual(132);
     expect(look.pi).toBe(156);
     expect(new Set(look.lefts).size).toBe(1);
+    // 25/10: nền thẻ = phòng theo khung cảnh (miễn phí, tự đổi theo dịp / mùa)
+    await expect(card.getByTestId("pet-today-room")).toHaveAttribute("data-scene", /^(tet|trungthu|halloween|giangsinh|muadong|muahe)$/);
     const ledger = () => rest(`pet_ledger?user_id=eq.${s.uid}&amount=gt.0&select=key,amount`);
     const rows = await waitDb(async () => { const r = await ledger(); return r.length >= 8 ? r : null; }, "đủ 8 dòng Hạt");
     const sum = rows.reduce((a, r) => a + r.amount, 0);
@@ -92,6 +94,8 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await tap(page.getByTestId("pet-open-shop"));
     await expect(page.getByTestId("pet-shop")).toBeVisible();
     await expect(page.getByTestId("pet-item-halloween-nu-giay01")).toHaveCount(0); // đồ Pi nữ → không có ở Pi nam
+    await expect(page.getByTestId("pet-slot-phong")).toHaveCount(0); // 25/10: phòng miễn phí theo khung cảnh, không bán
+    await expect(page.getByTestId("pet-item-phong-halloween")).toHaveCount(0);
     // 24/10: thử nhiều món 1 lúc — mở áo, chạm giày ở dải dưới → Pi mặc cả áo + giày, áo nằm trong "Đang thử thêm"
     await tap(page.getByTestId("pet-item-halloween-nam-ao02"));
     const tryon = page.getByTestId("pet-tryon");

@@ -107,3 +107,17 @@ test("tuần ISO khớp máy chủ (IYYY-WIW)", () => {
   assert.equal(isoWeek("2027-01-01"), "2026-W53");
   assert.equal(isoWeek("2024-12-30"), "2025-W01");
 });
+
+// 25/10: phòng Pi miễn phí theo khung cảnh (dịp → phòng dịp; ngoài dịp → mùa)
+test("sceneOf: phòng theo dịp / mùa", async () => {
+  const { sceneOf } = await import("../src/lib/petMath.js");
+  assert.equal(sceneOf("2026-10-25"), "halloween");
+  assert.equal(sceneOf("2026-12-20"), "giangsinh");
+  assert.equal(sceneOf("2027-02-06"), "tet");
+  assert.equal(sceneOf("2027-09-14"), "trungthu");
+  assert.equal(sceneOf("2026-11-10"), "muadong");
+  assert.equal(sceneOf("2027-01-05"), "muadong");
+  assert.equal(sceneOf("2027-06-01"), "muahe");
+  assert.equal(sceneOf("2027-04-01"), "muahe");
+  assert.equal(sceneOf(""), "muahe");
+});

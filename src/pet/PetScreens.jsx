@@ -8,9 +8,10 @@ import { AppIcon, MealIcon, IC_COLOR, mix } from "../mobile/icons";
 import { LT, ltCard, DK, dkCard } from "../theme";
 import { PetAvatar, ItemImg, ITEMS, catalog, PET_BASE } from "./PetAvatar";
 import { PetRoom } from "./PetRoom";
-import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile, ROOM_TIMES, TIME_NAME } from "../pi/piCatalog";
+import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile, ROOM_TIMES, TIME_NAME, roomFile, piRoomTime } from "../pi/piCatalog";
 import { playNow, primeTTS } from "../pi/piVoice.js";
-import { nowVNParts } from "../lib/dateVN";
+import { nowVNParts, todayVN } from "../lib/dateVN";
+import { sceneOf } from "../lib/petMath";
 import { AUTO_FACE, timeFace } from "../pi/piExpr";
 import { lateNight } from "../pi/piExpr";
 
@@ -74,9 +75,9 @@ const sec = { padding: "20px 18px 10px 18px", display: "flex", alignItems: "base
 const secT = { fontSize: 17, fontWeight: 900, letterSpacing: -0.2 };
 const card = { margin: "0 12px", ...ltCard };
 
-// 21/10 (chủ dự án): phòng theo CHỦ ĐỀ khách chọn — món "Phòng <bộ>" đang dùng ở Tủ đồ; không chọn = phòng thường (không tự đổi theo ngày)
 // 23/10: bộ mới — phòng theo sự kiện (ev), ảnh theo buổi do PetRoom tự chọn
-export const roomOf = (pet) => { const r = ITEMS[pet?.equipped?.phong]; return r && r.slot === "phong" && r.variants.includes(pet.variant) ? r.ev || r.collection : null; };
+// 25/10 (chủ dự án): phòng MIỄN PHÍ theo khung cảnh — tự đổi theo dịp / mùa (sceneOf, giờ VN), không bán ở Cửa hàng
+export const roomOf = (pet) => sceneOf(pet?.today || todayVN());
 export function Stage({ pet, height = 260, children, size = 210, talking, live = true, forceTime, speech = null, listening = false, onSpeakEnd }) {
   // 20/10: Pi đứng trong phòng của Pi (PetRoom: đổi theo giờ, kệ đồ thành tích, màu theo bản).
   // Pi "sống": chớp mắt, đảo mắt, lá đung đưa, thở; chạm vào Pi → nảy + cười tít + tim bay (chạm lúc ngủ: mở mắt rồi ngủ tiếp).
@@ -274,7 +275,7 @@ export function PetShopScreen({ pet, onBack, initialSlot = "all", initialCol = "
   const [col, setCol] = useState(initialCol); // bộ sưu tập (Noel / Tết / Cổ trang) — mỗi bộ 1 mục riêng
   // 24/10 (chủ dự án: "mặc thử nhiều đồ 1 lúc, khỏi phải out ra chọn món khác"): đồ đang thử giữ lại khi đổi món, cho tới khi đóng
   const [trial, setTrial] = useState({}); // { ô: mã món }
-  const all = catalog.items.filter((it) => it.variants.includes(pet.variant) && !it.hidden && !it.broken && !it.redraw && !it.achievement && !it.legacy && !pet.achievementIds.includes(it.id)); // 23/10: món ghép lệch (src/pi/fit.json) chờ vẽ lại, chưa bán; 24/10: Quản trị đánh dấu "Cần vẽ lại" cũng không bán
+  const all = catalog.items.filter((it) => it.slot !== "phong" && it.variants.includes(pet.variant) && !it.hidden && !it.broken && !it.redraw && !it.achievement && !it.legacy && !pet.achievementIds.includes(it.id)); // 23/10: món ghép lệch (src/pi/fit.json) chờ vẽ lại, chưa bán; 24/10: Quản trị đánh dấu "Cần vẽ lại" cũng không bán
   const cols = [...new Map(all.filter((it) => it.collection).map((it) => [it.collection, it.collection_name])).entries()]
     .sort((a, b) => (pet.cols?.[b[0]]?.open ? 1 : 0) - (pet.cols?.[a[0]]?.open ? 1 : 0)); // bộ đang bán đứng trước
   const list = all.filter((it) => col === "all" || (col === "thuong" ? !it.collection : it.collection === col));
@@ -520,7 +521,8 @@ export function PetTodayCard({ pet, onOpen }) {
     // 25/10 (chủ dự án chốt bản B): Pi to ~1,7 lần (cao 156, khung 118 × ≥132, thấy tới bụng, phần dưới cắt ở mép thẻ),
     // khung Pi giãn theo chiều cao chữ; tên / câu nói / dòng việc thẳng một mép trái; mũi tên một cột 12px bên phải.
     <button data-testid="pet-today-card" onClick={onOpen} className="tap" style={{ margin: "14px 12px 0 12px", width: "calc(100% - 24px)", ...ltCard, padding: "0 10px 0 0", display: "flex", alignItems: "center", gap: 8, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A", overflow: "hidden", boxSizing: "border-box", minHeight: 132, position: "relative" }}>
-      <span aria-hidden="true" style={{ position: "absolute", left: -30, top: -20, width: 190, height: 190, borderRadius: "50%", background: "radial-gradient(circle, #E0ECFF 0, rgba(255,255,255,0) 70%)", pointerEvents: "none" }} />
+      {/* 25/10 (chủ dự án duyệt): nền = phòng Pi đang ở (theo dịp / mùa + buổi), mờ 42%, tan dần sang phần chữ */}
+      <span aria-hidden="true" data-testid="pet-today-room" data-scene={roomOf(pet)} style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "62%", backgroundImage: `url(${roomFile(roomOf(pet), piRoomTime(pet.hour ?? nowVNParts().hour))})`, backgroundSize: "cover", backgroundPosition: "center 62%", opacity: piRoomTime(pet.hour ?? nowVNParts().hour) === "toi" ? 0.55 : 0.42, WebkitMaskImage: "linear-gradient(90deg, #000 35%, transparent)", maskImage: "linear-gradient(90deg, #000 35%, transparent)", pointerEvents: "none" }} />
       <span data-testid="pet-today-av" style={{ width: 118, alignSelf: "stretch", minHeight: 132, position: "relative", flexShrink: 0, overflow: "hidden" }}>
         <span style={{ position: "absolute", left: "50%", top: 12, transform: "translateX(-50%)" }}><PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={156} still /></span>
       </span>
@@ -532,7 +534,7 @@ export function PetTodayCard({ pet, onOpen }) {
         {pet.say ? (
           <>
             {/* 20/10: Pi nói 1 câu khen / nhắc theo việc thật (kho câu src/pet/lines.js, đúng giọng nam / nữ) */}
-            <span data-testid="pet-say" style={{ position: "relative", alignSelf: "flex-start", maxWidth: "100%", background: "#EEF4FF", color: "#0F172A", fontSize: 13, fontWeight: 700, lineHeight: "18px", padding: "8px 10px", borderRadius: "4px 14px 14px 14px", boxSizing: "border-box" }}>{pet.say}</span>
+            <span data-testid="pet-say" style={{ position: "relative", alignSelf: "flex-start", maxWidth: "100%", background: "rgba(238,244,255,0.94)", color: "#0F172A", fontSize: 13, fontWeight: 700, lineHeight: "18px", padding: "8px 10px", borderRadius: "4px 14px 14px 14px", boxSizing: "border-box" }}>{pet.say}</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#64748B" }}>{left > 0 ? `Còn ${left} việc · +${pet.todayLeft}` : "Xong việc hôm nay"}<span aria-hidden="true">·</span><Seed size={13} /><b style={{ color: "#065F46" }}>{fmt(pet.seeds)}</b></span>
           </>
         ) : (

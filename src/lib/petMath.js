@@ -101,6 +101,18 @@ export function seasonOf(dateStr) {
   return null;
 }
 
+// ---- Phòng Pi theo khung cảnh (25/10, chủ dự án: "phòng là free theo khung cảnh, ko để ở store bán") ----
+// Đúng dịp (seasonOf) → phòng dịp đó; ngoài dịp → mùa: tháng 11–2 phòng Mùa đông, tháng 3–10 phòng Mùa hè.
+// Mã trả về = tên bộ trong src/pi/manifest.json (rooms/phong_<mã>_<buổi>.webp).
+const SCENE_EV = { noel: "giangsinh", tet: "tet", halloween: "halloween", "trung-thu": "trungthu" };
+export function sceneOf(dateStr) {
+  if (!dateStr || dateStr.length < 10) return "muahe";
+  const s = seasonOf(dateStr);
+  if (s && SCENE_EV[s]) return SCENE_EV[s];
+  const mo = +dateStr.slice(5, 7);
+  return mo >= 11 || mo <= 2 ? "muadong" : "muahe";
+}
+
 // ---- Bộ sưu tập theo dịp (20/10, chủ dự án: chưa đến dịp thì khoá) ----
 // Quản trị › Thú cưng Pi › Bộ sưu tập lưu ở pet_config.collections; hàm SQL public.pet_col_open dùng cùng luật (mua trên máy chủ).
 // mode: "season" (mở theo dịp) | "open" (luôn mở) | "closed" (đóng). Noel: from / to dạng "MM-DD" (qua năm được, VD 12-01 → 01-06).
