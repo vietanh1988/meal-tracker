@@ -27,33 +27,12 @@
   }
  },
  "bad": {
-  "giangsinh-nam-pk03": [
-   "mép dưới cắt phẳng ngang 78px (khung ảnh cắt cụt)"
-  ],
   "giangsinh-nu-pk03": [
    "mép dưới cắt phẳng ngang 84px (khung ảnh cắt cụt)"
-  ],
-  "tet-nam-pk03": [
-   "mép dưới cắt phẳng ngang 85px (khung ảnh cắt cụt)"
-  ],
-  "tet-nu-pk04": [
-   "mép dưới cắt phẳng ngang 34px (khung ảnh cắt cụt)"
-  ],
-  "muadong-nam-pk02": [
-   "mép dưới cắt phẳng ngang 72px (khung ảnh cắt cụt)"
-  ],
-  "muadong-nu-pk02": [
-   "mép dưới cắt phẳng ngang 141px (khung ảnh cắt cụt)"
   ],
   "muahe-nam-pk12": [
    "viền thân thừa quanh người 868px",
    "balo vẽ kèm bản sao viền thân xanh vụn quanh người (chờ bản vẽ lại pi_fix_balo)"
-  ],
-  "trungthu-nam-pk10": [
-   "mép dưới cắt phẳng ngang 59px (khung ảnh cắt cụt)"
-  ],
-  "trungthu-nu-pk10": [
-   "mép dưới cắt phẳng ngang 30px (khung ảnh cắt cụt)"
   ]
  }
 }
