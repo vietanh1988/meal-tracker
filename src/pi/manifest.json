@@ -384,8 +384,8 @@
    "name": "Ủng đỏ viền lông trắng",
    "file": "items/giangsinh/do_giangsinh_nam_giay01.webp",
    "c": [
-    384,
-    680
+    382,
+    694
    ]
   },
   {
@@ -3761,5 +3761,5 @@
    ]
   }
  ],
- "ver": "4bc934c7b5"
+ "ver": "b1a6bf2ca5"
 }
