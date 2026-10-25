@@ -25,6 +25,12 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     await expect(page.getByTestId(`pc-pet-row-${ID}`)).not.toContainText("Đang bán");
     await expect(edit.locator('[data-testid="pet-avatar"]').first()).toHaveAttribute("data-mood", "vui");
     expect(await edit.evaluate((e) => getComputedStyle(e).position)).toBe("sticky");
+    // 25/10 (chủ dự án: cuộn danh sách thì 2 Pi trôi mất): body overflow-x:hidden làm sticky vô hiệu → cuộn thật rồi đo vị trí
+    await page.mouse.move(400, 500); await page.mouse.wheel(0, 900); await page.waitForTimeout(400);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
+    const top = await edit.evaluate((e) => e.getBoundingClientRect().top);
+    expect(top).toBeGreaterThan(60); expect(top).toBeLessThan(120);
+    await page.mouse.wheel(0, -2000);
     await page.getByTestId("pc-pet-price").fill("170");
     await page.screenshot({ path: "shots/pc-pet-items.png" });
     await page.getByTestId("pc-pet-save").click();
