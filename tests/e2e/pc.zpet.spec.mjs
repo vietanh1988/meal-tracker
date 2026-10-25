@@ -31,10 +31,11 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     const top = await edit.evaluate((e) => e.getBoundingClientRect().top);
     expect(top).toBeGreaterThan(60); expect(top).toBeLessThan(120);
     await page.mouse.wheel(0, -2000);
-    // món còn chờ vẽ lại (ba lô chống nước) ghi "Chờ vẽ lại", không ghi Đang bán
-    await page.getByTestId("pc-pet-search").fill("ba lô chống nước");
-    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Chờ vẽ lại");
-    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).not.toContainText("Đang bán");
+    // 25/10: balo chống nước → túi đeo chéo ở ô Túi, đang bán
+    await page.getByTestId("pc-pet-search").fill("chống nước");
+    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Túi chống nước xanh đeo chéo");
+    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Túi ·");
+    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Đang bán");
     await page.getByTestId("pc-pet-search").fill("phù thuỷ đen");
     await page.getByTestId(`pc-pet-row-${ID}`).click();
     await page.getByTestId("pc-pet-price").fill("170");

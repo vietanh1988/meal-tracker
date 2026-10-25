@@ -37,7 +37,7 @@ test("ô hợp lệ, mã không trùng, mỗi bản chỉ mặc đồ của bả
   assert.deepEqual(man.items.filter((it) => !slots.has(it.slot)).map((it) => it.id), []);
   assert.equal(new Set(man.items.map((it) => it.id)).size, man.items.length);
   assert.deepEqual(man.items.filter((it) => !["nam", "nu"].includes(it.g)).map((it) => it.id), []);
-  assert.deepEqual(man.order, ["lung", "than", "giay", "ao", "dau_pi", "co", "mat_pi", "mieng", "mat", "toc", "dau", "la", "gang", "tay"]); // 24/10 pi_full: miệng khi nói, lá đè mũ
+  assert.deepEqual(man.order, ["lung", "than", "giay", "ao", "dau_pi", "tui", "co", "mat_pi", "mieng", "mat", "toc", "dau", "la", "gang", "tay"]); // 24/10 pi_full: miệng khi nói, lá đè mũ
 });
 
 test("23/10 mặc áo vẫn giữ cằm: lớp đầu gốc (pi_dau.webp, cùng khung 768) đè lên áo, dưới khăn cổ và mặt", () => {
@@ -159,4 +159,14 @@ test("24/10 Quản trị chỉnh vị trí món bộ mới: tf → transform qua
   assert.match(readFileSync("src/pet/PetAvatar.jsx", "utf8"), /PI_ITEMS\.map\(\(it\) => Object\.assign\(it,/);
   assert.match(readFileSync("src/pc/PcPet.jsx", "utf8"), /<PiPlaceEditor it=\{placing\}/);
   void tfStyle; void isTfZero;
+});
+
+test("25/10: ô Túi — 6 balo / túi đeo lưng chuyển sang ô Túi, vẽ trên áo dưới khăn; hàm pet_equip nhận ô tui", () => {
+  const ids = ["giangsinh-nam-pk12", "muadong-nam-pk11", "trungthu-nam-pk11", "tet-nam-pk11", "tet-nu-pk11", "muahe-nam-pk12"];
+  for (const id of ids) assert.equal(man.items.find((x) => x.id === id)?.slot, "tui", id);
+  assert.equal(man.slots.tui, "Túi");
+  assert.ok(man.order.indexOf("ao") < man.order.indexOf("tui") && man.order.indexOf("tui") < man.order.indexOf("co"));
+  const mig = readFileSync("supabase/migrations/20261025150000_pet_o_tui.sql", "utf8");
+  assert.match(mig, /'lung','tui','phong'/);
+  assert.match(mig, /update public\.pet_equipped set slot = 'tui'/);
 });
