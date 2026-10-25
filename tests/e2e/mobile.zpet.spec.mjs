@@ -25,6 +25,18 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     await login(page);
     const card = page.getByTestId("pet-today-card");
     await expect(card).toBeVisible({ timeout: 15_000 });
+    // 25/10 bản B: Pi to (cao 156) trong khung 118 × ≥132; chữ trong thẻ thẳng một mép trái
+    const look = await card.evaluate((c) => {
+      const av = c.querySelector('[data-testid="pet-today-av"]').getBoundingClientRect();
+      const pi = c.querySelector('[data-testid="pet-avatar"]').getBoundingClientRect();
+      const col = c.querySelector('[data-testid="pet-today-av"]').nextElementSibling;
+      const lefts = [...col.children].map((e) => Math.round(e.getBoundingClientRect().left));
+      return { w: Math.round(av.width), h: Math.round(av.height), pi: Math.round(pi.height), card: Math.round(c.getBoundingClientRect().height), lefts };
+    });
+    expect(look.w).toBe(118);
+    expect(look.h).toBeGreaterThanOrEqual(132);
+    expect(look.pi).toBe(156);
+    expect(new Set(look.lefts).size).toBe(1);
     const ledger = () => rest(`pet_ledger?user_id=eq.${s.uid}&amount=gt.0&select=key,amount`);
     const rows = await waitDb(async () => { const r = await ledger(); return r.length >= 8 ? r : null; }, "đủ 8 dòng Hạt");
     const sum = rows.reduce((a, r) => a + r.amount, 0);

@@ -517,11 +517,14 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onF
 export function PetTodayCard({ pet, onOpen }) {
   const left = pet.tasksLeft;
   return (
-    <button data-testid="pet-today-card" onClick={onOpen} className="tap" style={{ margin: "14px 12px 0 12px", width: "calc(100% - 24px)", ...ltCard, padding: "0 14px 0 6px", display: "flex", alignItems: "center", gap: 6, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A", overflow: "hidden", boxSizing: "border-box", minHeight: 104 }}>
-      <span style={{ width: 92, height: 104, position: "relative", flexShrink: 0, overflow: "hidden" }}>
-        <span style={{ position: "absolute", left: "50%", top: 6, transform: "translateX(-50%)" }}><PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={120} still /></span>
+    // 25/10 (chủ dự án chốt bản B): Pi to ~1,7 lần (cao 156, khung 118 × ≥132, thấy tới bụng, phần dưới cắt ở mép thẻ),
+    // khung Pi giãn theo chiều cao chữ; tên / câu nói / dòng việc thẳng một mép trái; mũi tên một cột 12px bên phải.
+    <button data-testid="pet-today-card" onClick={onOpen} className="tap" style={{ margin: "14px 12px 0 12px", width: "calc(100% - 24px)", ...ltCard, padding: "0 10px 0 0", display: "flex", alignItems: "center", gap: 8, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A", overflow: "hidden", boxSizing: "border-box", minHeight: 132, position: "relative" }}>
+      <span aria-hidden="true" style={{ position: "absolute", left: -30, top: -20, width: 190, height: 190, borderRadius: "50%", background: "radial-gradient(circle, #E0ECFF 0, rgba(255,255,255,0) 70%)", pointerEvents: "none" }} />
+      <span data-testid="pet-today-av" style={{ width: 118, alignSelf: "stretch", minHeight: 132, position: "relative", flexShrink: 0, overflow: "hidden" }}>
+        <span style={{ position: "absolute", left: "50%", top: 12, transform: "translateX(-50%)" }}><PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={156} still /></span>
       </span>
-      <span style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1, minWidth: 0 }}>
+      <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6, flex: 1, minWidth: 0, padding: "14px 0", position: "relative" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 16, fontWeight: 900 }}>{pet.name}</span>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", background: "#F3EEFF", padding: "2px 7px", borderRadius: 6 }}>Cấp {pet.level.n}</span>
@@ -529,7 +532,7 @@ export function PetTodayCard({ pet, onOpen }) {
         {pet.say ? (
           <>
             {/* 20/10: Pi nói 1 câu khen / nhắc theo việc thật (kho câu src/pet/lines.js, đúng giọng nam / nữ) */}
-            <span data-testid="pet-say" style={{ position: "relative", alignSelf: "flex-start", maxWidth: "100%", background: "#EEF4FF", color: "#0F172A", fontSize: 13, fontWeight: 700, lineHeight: 1.4, padding: "7px 11px", borderRadius: "4px 14px 14px 14px", boxSizing: "border-box" }}>{pet.say}</span>
+            <span data-testid="pet-say" style={{ position: "relative", alignSelf: "flex-start", maxWidth: "100%", background: "#EEF4FF", color: "#0F172A", fontSize: 13, fontWeight: 700, lineHeight: "18px", padding: "8px 10px", borderRadius: "4px 14px 14px 14px", boxSizing: "border-box" }}>{pet.say}</span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: "#64748B" }}>{left > 0 ? `Còn ${left} việc · +${pet.todayLeft}` : "Xong việc hôm nay"}<span aria-hidden="true">·</span><Seed size={13} /><b style={{ color: "#065F46" }}>{fmt(pet.seeds)}</b></span>
           </>
         ) : (
@@ -539,7 +542,7 @@ export function PetTodayCard({ pet, onOpen }) {
           </>
         )}
       </span>
-      {Icon.chev(16)}
+      <span style={{ width: 14, flexShrink: 0, display: "flex", justifyContent: "center", color: "#94A3B8", position: "relative" }}>{Icon.chev(16)}</span>
     </button>
   );
 }
