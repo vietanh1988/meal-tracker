@@ -14,12 +14,12 @@ export const EV_NAME = man.events;
 // thứ tự chồng (dưới → trên); "than" = thân Pi, "mat_pi" = mặt (biểu cảm)
 export const LAYER_ORDER = man.order;
 export const SLOT_NAME = { ...man.slots, phong: "Phòng" };
-export const SLOT_ORDER = ["ao", "dau", "giay", "co", "mat", "toc", "tay", "gang", "lung", "phong"];
+export const SLOT_ORDER = ["ao", "dau", "giay", "co", "tui", "mat", "toc", "tay", "gang", "lung", "phong"]; // 25/10: ô Túi (đeo chéo)
 export const FACES = man.faces; // vui, cuoilon, nhaymat, haohung, ngacnhien, yeu, suynghi, buon, ngu
 export const FACE_NAME = { vui: "Vui", cuoilon: "Cười lớn", nhaymat: "Nháy mắt", haohung: "Hào hứng", ngacnhien: "Ngạc nhiên", yeu: "Yêu", suynghi: "Suy nghĩ", buon: "Buồn", ngu: "Ngủ" };
 
 // giá mặc định theo ô (Hạt) — Quản trị đổi được từng món
-export const PRICE = { giay: 80, toc: 100, gang: 100, co: 100, mat: 120, tay: 150, dau: 150, lung: 200, ao: 250, phong: 400 };
+export const PRICE = { giay: 80, toc: 100, gang: 100, co: 100, mat: 120, tay: 150, dau: 150, lung: 200, tui: 200, ao: 250, phong: 400 };
 
 const item = (x, i) => ({
   id: x.id, name: x.name, slot: x.slot, ev: x.ev, collection: x.ev, variants: [x.g],

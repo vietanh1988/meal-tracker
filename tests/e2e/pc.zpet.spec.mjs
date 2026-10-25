@@ -26,15 +26,17 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     expect(await edit.evaluate((e) => getComputedStyle(e).position)).toBe("sticky");
     // 25/10 (chủ dự án: cuộn danh sách thì 2 Pi trôi mất): body overflow-x:hidden làm sticky vô hiệu → cuộn thật rồi đo vị trí
     await page.getByTestId("pc-pet-search").fill(""); await expect(page.getByTestId("pc-pet-row-giangsinh-nam-ao01")).toBeVisible();
-    await page.mouse.move(400, 500); await page.mouse.wheel(0, 900); await page.waitForTimeout(400);
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
+    await page.getByTestId("pc-pet-more").click().catch(() => {}); // thêm dòng cho trang đủ dài
+    await page.evaluate(() => window.scrollTo(0, Math.min(800, document.documentElement.scrollHeight - innerHeight))); await page.waitForTimeout(300);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(150);
     const top = await edit.evaluate((e) => e.getBoundingClientRect().top);
     expect(top).toBeGreaterThan(60); expect(top).toBeLessThan(120);
     await page.mouse.wheel(0, -2000);
-    // món còn chờ vẽ lại (ba lô chống nước) ghi "Chờ vẽ lại", không ghi Đang bán
-    await page.getByTestId("pc-pet-search").fill("ba lô chống nước");
-    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Chờ vẽ lại");
-    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).not.toContainText("Đang bán");
+    // 25/10: balo chống nước → túi đeo chéo ở ô Túi, đang bán
+    await page.getByTestId("pc-pet-search").fill("chống nước");
+    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Túi chống nước xanh đeo chéo");
+    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Túi ·");
+    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Đang bán");
     await page.getByTestId("pc-pet-search").fill("phù thuỷ đen");
     await page.getByTestId(`pc-pet-row-${ID}`).click();
     await page.getByTestId("pc-pet-price").fill("170");

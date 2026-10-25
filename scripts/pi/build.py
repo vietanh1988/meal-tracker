@@ -95,8 +95,8 @@ for side in ("trai", "phai"):
 # (da xanh ngoài thân ≥ 1000px, phủ vùng tay gốc < 40%); món không vẽ bàn tay (đũa phép, xẻng, chong chóng) giữ tay gốc.
 # 24/10 soát từng món: vệt lá cũ sót xa gốc lá (vùng rộng; KHÔNG áp chung vì vòng hoa có lá thật)
 # 24/10 tối (chủ dự án chốt): món Muse vẽ RIÊNG trên nền trong suốt → chỉ đặt đè lên, KHÔNG chạy bộ cắt lá / vụn (cắt nhầm mũ xanh lá)
-STANDALONE = {  # 25/10: mũ vẽ riêng đã duyệt ghép (mũ trùm đầu → ẩn lá)
-              "giangsinh-nam-dau01", "giangsinh-nam-dau02", "giangsinh-nam-dau03", "giangsinh-nam-dau04", "giangsinh-nu-dau01", "giangsinh-nu-dau04", "halloween-nam-dau02", "halloween-nam-dau05", "muadong-nam-dau01", "muadong-nam-dau02", "muadong-nam-dau03", "muadong-nam-dau05", "muadong-nu-dau01", "muadong-nu-dau03", "muadong-nu-dau04", "muahe-nam-dau02", "muahe-nam-dau03", "muahe-nu-dau01", "tet-nam-dau01", "tet-nam-dau02", "tet-nam-dau04", "tet-nu-dau01", "tet-nu-dau02", "tet-nu-dau03", "trungthu-nam-dau02", "trungthu-nam-dau04", "trungthu-nam-dau05", "trungthu-nu-dau05", "halloween-nam-dau01", "halloween-nu-dau01", "muahe-nu-dau04", "tet-nam-dau03", "trungthu-nam-dau01", "muahe-nam-dau01", "muahe-nu-dau02", "giangsinh-nam-dau05", "giangsinh-nu-dau02", "muahe-nam-dau04", "tet-nu-dau05", "trungthu-nam-dau03", "trungthu-nu-dau02", "muadong-nam-pk01", "muadong-nu-pk01", "giangsinh-nam-pk03", "halloween-nam-pk04", "muadong-nam-pk02", "muadong-nu-pk02", "tet-nam-pk03", "tet-nu-pk04", "trungthu-nam-pk09", "trungthu-nam-pk10", "trungthu-nu-pk10"}
+STANDALONE = {  # 25/10: món vẽ riêng đã duyệt ghép
+              "giangsinh-nam-dau01", "giangsinh-nam-dau02", "giangsinh-nam-dau03", "giangsinh-nam-dau04", "giangsinh-nam-dau05", "giangsinh-nam-pk03", "giangsinh-nam-pk12", "giangsinh-nu-dau01", "giangsinh-nu-dau02", "giangsinh-nu-dau04", "giangsinh-nu-pk03", "halloween-nam-dau01", "halloween-nam-dau02", "halloween-nam-dau05", "halloween-nam-pk04", "halloween-nu-dau01", "muadong-nam-dau01", "muadong-nam-dau02", "muadong-nam-dau03", "muadong-nam-dau05", "muadong-nam-pk01", "muadong-nam-pk02", "muadong-nam-pk11", "muadong-nu-dau01", "muadong-nu-dau03", "muadong-nu-dau04", "muadong-nu-pk01", "muadong-nu-pk02", "muahe-nam-dau01", "muahe-nam-dau02", "muahe-nam-dau03", "muahe-nam-dau04", "muahe-nam-pk12", "muahe-nu-dau01", "muahe-nu-dau02", "muahe-nu-dau04", "tet-nam-dau01", "tet-nam-dau02", "tet-nam-dau03", "tet-nam-dau04", "tet-nam-pk03", "tet-nam-pk11", "tet-nu-dau01", "tet-nu-dau02", "tet-nu-dau03", "tet-nu-dau05", "tet-nu-pk04", "tet-nu-pk11", "trungthu-nam-dau01", "trungthu-nam-dau02", "trungthu-nam-dau03", "trungthu-nam-dau04", "trungthu-nam-dau05", "trungthu-nam-pk09", "trungthu-nam-pk10", "trungthu-nam-pk11", "trungthu-nu-dau02", "trungthu-nu-dau05", "trungthu-nu-pk10"}
 SHOE_SCALE = {"tet-nu-giay02": 0.66}
 LEAF_WIDE = {"giangsinh-nam-dau05", "trungthu-nam-dau03", "muahe-nam-dau05", "trungthu-nu-dau02"}
 ARM_HIDE = {"giangsinh-nam-pk07": "trai", "muadong-nam-pk08": "trai", "muadong-nu-pk08": "trai", "muahe-nam-pk05": "trai",
@@ -114,11 +114,16 @@ total += put("body/pi_dau.webp", im=Image.fromarray(head), q=86)
 # 24/10 soát mắt: món (không phải đồ cầm tay) còn nét viền lơ lửng dính vào món → dọn như đồ cầm tay (cả ngoài thân)
 CLEAN_STRAY_EXTRA = {"muadong-nam-ao01"}
 items = []
+# 25/10 (chủ dự án chốt): balo / túi đeo lưng → ô "Túi" đeo chéo, vẽ đè lên áo (Pi luôn quay mặt trước, đồ sau lưng chỉ lộ vài mẩu)
+TUI = {"giangsinh-nam-pk12": "Túi người tuyết đeo chéo", "muadong-nam-pk11": "Túi len nâu đeo chéo", "trungthu-nam-pk11": None,
+       "tet-nam-pk11": None, "tet-nu-pk11": None, "muahe-nam-pk12": "Túi chống nước xanh đeo chéo"}
 for it in cat["items"]:
     s = os.path.join(SRC, it["file"])
     if not os.path.exists(s): print("thiếu", it["file"]); continue
     m = re.search(r"do_(\w+?)_(nam|nu)_([a-z]+)(\d+)\.webp$", it["file"])
     iid = f"{it['ev']}-{it['g']}-{m.group(3)}{m.group(4)}"
+    if iid in TUI:
+        it = {**it, "slot": "tui", **({"name": TUI[iid]} if TUI[iid] else {})}
     total += put(it["file"], src=s)
     im = Image.open(s).convert("RGBA")
     if it["slot"] in ("tay", "gang") or iid in CLEAN_STRAY_EXTRA:
@@ -194,9 +199,9 @@ for ev in EVENTS:
 man = {
     "v": 2, "canvas": N, "feet": cat.get("anchor_feet", [N / 2, N * 0.9375]), "bbox": bbox, "room": [ROOM_W, ROOM_W * 3 // 2],
     "events": {k: v["name"] for k, v in cat["events"].items()},
-    "slots": cat["slots"],
+    "slots": {**cat["slots"], "tui": "Túi"},
     # 24/10 pi_full: mieng = miệng khi nói (mat_pi lúc đó là mắt không miệng), la = lá đè lên mũ
-    "order": ["lung", "than", "giay", "ao", "dau_pi", "co", "mat_pi", "mieng", "mat", "toc", "dau", "la", "gang", "tay"],
+    "order": ["lung", "than", "giay", "ao", "dau_pi", "tui", "co", "mat_pi", "mieng", "mat", "toc", "dau", "la", "gang", "tay"],
     "visemes": sorted(f[:-5] for f in os.listdir(os.path.join(SRC, "mouths", "nam"))) if os.path.isdir(os.path.join(SRC, "mouths")) else [],
     "leaf": bool(LEAF is not None),
     # món chờ vẽ lại theo catalog (redo: "do_halloween_nu_ao04 (…)") → app không bán

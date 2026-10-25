@@ -26,13 +26,5 @@
    ]
   }
  },
- "bad": {
-  "giangsinh-nu-pk03": [
-   "mép dưới cắt phẳng ngang 84px (khung ảnh cắt cụt)"
-  ],
-  "muahe-nam-pk12": [
-   "viền thân thừa quanh người 868px",
-   "balo vẽ kèm bản sao viền thân xanh vụn quanh người (chờ bản vẽ lại pi_fix_balo)"
-  ]
- }
+ "bad": {}
 }

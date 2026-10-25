@@ -32,7 +32,8 @@
   "gang": "Găng tay",
   "lung": "Đeo lưng",
   "toc": "Kẹp tóc",
-  "giay": "Giày"
+  "giay": "Giày",
+  "tui": "Túi"
  },
  "order": [
   "lung",
@@ -40,6 +41,7 @@
   "giay",
   "ao",
   "dau_pi",
+  "tui",
   "co",
   "mat_pi",
   "mieng",
@@ -366,12 +368,12 @@
    "id": "giangsinh-nam-pk12",
    "ev": "giangsinh",
    "g": "nam",
-   "slot": "lung",
-   "name": "Ba lô người tuyết",
+   "slot": "tui",
+   "name": "Túi người tuyết đeo chéo",
    "file": "items/giangsinh/do_giangsinh_nam_pk12.webp",
    "c": [
-    384,
-    414
+    390,
+    568
    ]
   },
   {
@@ -565,7 +567,7 @@
    "file": "items/giangsinh/do_giangsinh_nu_pk03.webp",
    "c": [
     386,
-    529
+    558
    ]
   },
   {
@@ -960,12 +962,12 @@
    "id": "tet-nam-pk11",
    "ev": "tet",
    "g": "nam",
-   "slot": "lung",
+   "slot": "tui",
    "name": "Túi gấm đỏ đeo chéo",
    "file": "items/tet/do_tet_nam_pk11.webp",
    "c": [
-    388,
-    437
+    390,
+    568
    ]
   },
   {
@@ -1263,12 +1265,12 @@
    "id": "tet-nu-pk11",
    "ev": "tet",
    "g": "nu",
-   "slot": "lung",
+   "slot": "tui",
    "name": "Túi gấm vàng đeo chéo",
    "file": "items/tet/do_tet_nu_pk11.webp",
    "c": [
-    384,
-    436
+    388,
+    568
    ]
   },
   {
@@ -1577,12 +1579,12 @@
    "id": "muadong-nam-pk11",
    "ev": "muadong",
    "g": "nam",
-   "slot": "lung",
-   "name": "Ba lô len nâu",
+   "slot": "tui",
+   "name": "Túi len nâu đeo chéo",
    "file": "items/muadong/do_muadong_nam_pk11.webp",
    "c": [
-    384,
-    429
+    396,
+    564
    ]
   },
   {
@@ -2198,12 +2200,12 @@
    "id": "muahe-nam-pk12",
    "ev": "muahe",
    "g": "nam",
-   "slot": "lung",
-   "name": "Ba lô chống nước xanh",
+   "slot": "tui",
+   "name": "Túi chống nước xanh đeo chéo",
    "file": "items/muahe/do_muahe_nam_pk12.webp",
    "c": [
-    384,
-    436
+    396,
+    564
    ]
   },
   {
@@ -3401,12 +3403,12 @@
    "id": "trungthu-nam-pk11",
    "ev": "trungthu",
    "g": "nam",
-   "slot": "lung",
+   "slot": "tui",
    "name": "Túi đựng bánh đeo chéo",
    "file": "items/trungthu/do_trungthu_nam_pk11.webp",
    "c": [
-    384,
-    421
+    396,
+    568
    ]
   },
   {
@@ -3759,5 +3761,5 @@
    ]
   }
  ],
- "ver": "f19b358df1"
+ "ver": "4bc934c7b5"
 }
