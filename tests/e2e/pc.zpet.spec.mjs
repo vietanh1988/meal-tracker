@@ -21,16 +21,22 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
     await expect(edit).toContainText("Mũ phù thuỷ đen");
     await expect(edit.locator('[data-layer="dau"]').first()).toHaveAttribute("src", /do_halloween_nam_dau01\.webp\?v=[0-9a-f]{10}$/);
     // 24/10: mũ phù thuỷ đen đang chờ vẽ lại → ghi "Chờ vẽ lại" (không ghi Đang bán); Pi xem thử mặt vui nhìn thẳng; khung xem thử ghim khi cuộn
-    await expect(page.getByTestId(`pc-pet-row-${ID}`)).toContainText("Chờ vẽ lại");
-    await expect(page.getByTestId(`pc-pet-row-${ID}`)).not.toContainText("Đang bán");
+    await expect(page.getByTestId(`pc-pet-row-${ID}`)).toContainText("Đang bán"); // 25/10: mũ phù thuỷ đen đã vẽ lại đạt → bán lại
     await expect(edit.locator('[data-testid="pet-avatar"]').first()).toHaveAttribute("data-mood", "vui");
     expect(await edit.evaluate((e) => getComputedStyle(e).position)).toBe("sticky");
     // 25/10 (chủ dự án: cuộn danh sách thì 2 Pi trôi mất): body overflow-x:hidden làm sticky vô hiệu → cuộn thật rồi đo vị trí
+    await page.getByTestId("pc-pet-search").fill(""); await expect(page.getByTestId("pc-pet-row-giangsinh-nam-ao01")).toBeVisible();
     await page.mouse.move(400, 500); await page.mouse.wheel(0, 900); await page.waitForTimeout(400);
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
     const top = await edit.evaluate((e) => e.getBoundingClientRect().top);
     expect(top).toBeGreaterThan(60); expect(top).toBeLessThan(120);
     await page.mouse.wheel(0, -2000);
+    // món còn chờ vẽ lại (ba lô chống nước) ghi "Chờ vẽ lại", không ghi Đang bán
+    await page.getByTestId("pc-pet-search").fill("ba lô chống nước");
+    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).toContainText("Chờ vẽ lại");
+    await expect(page.getByTestId("pc-pet-row-muahe-nam-pk12")).not.toContainText("Đang bán");
+    await page.getByTestId("pc-pet-search").fill("phù thuỷ đen");
+    await page.getByTestId(`pc-pet-row-${ID}`).click();
     await page.getByTestId("pc-pet-price").fill("170");
     await page.screenshot({ path: "shots/pc-pet-items.png" });
     await page.getByTestId("pc-pet-save").click();
