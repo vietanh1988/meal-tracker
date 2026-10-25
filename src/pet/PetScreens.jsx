@@ -77,7 +77,7 @@ const card = { margin: "0 12px", ...ltCard };
 
 // 23/10: bộ mới — phòng theo sự kiện (ev), ảnh theo buổi do PetRoom tự chọn
 // 25/10 (chủ dự án): phòng MIỄN PHÍ theo khung cảnh — tự đổi theo dịp / mùa (sceneOf, giờ VN), không bán ở Cửa hàng
-export const roomOf = (pet) => sceneOf(pet?.today || todayVN());
+export const roomOf = () => sceneOf(todayVN()); // (pet.today là số Hạt hôm nay, không phải ngày)
 export function Stage({ pet, height = 260, children, size = 210, talking, live = true, forceTime, speech = null, listening = false, onSpeakEnd }) {
   // 20/10: Pi đứng trong phòng của Pi (PetRoom: đổi theo giờ, kệ đồ thành tích, màu theo bản).
   // Pi "sống": chớp mắt, đảo mắt, lá đung đưa, thở; chạm vào Pi → nảy + cười tít + tim bay (chạm lúc ngủ: mở mắt rồi ngủ tiếp).

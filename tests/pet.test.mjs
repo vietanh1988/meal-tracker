@@ -120,4 +120,5 @@ test("sceneOf: phòng theo dịp / mùa", async () => {
   assert.equal(sceneOf("2027-06-01"), "muahe");
   assert.equal(sceneOf("2027-04-01"), "muahe");
   assert.equal(sceneOf(""), "muahe");
+  assert.equal(sceneOf(120), "muahe"); // không phải ngày → không vỡ (lỗi CI 25/10: pet.today là số Hạt)
 });

@@ -106,7 +106,7 @@ export function seasonOf(dateStr) {
 // Mã trả về = tên bộ trong src/pi/manifest.json (rooms/phong_<mã>_<buổi>.webp).
 const SCENE_EV = { noel: "giangsinh", tet: "tet", halloween: "halloween", "trung-thu": "trungthu" };
 export function sceneOf(dateStr) {
-  if (!dateStr || dateStr.length < 10) return "muahe";
+  if (typeof dateStr !== "string" || dateStr.length < 10) return "muahe";
   const s = seasonOf(dateStr);
   if (s && SCENE_EV[s]) return SCENE_EV[s];
   const mo = +dateStr.slice(5, 7);
