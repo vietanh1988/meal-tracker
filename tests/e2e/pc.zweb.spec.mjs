@@ -268,3 +268,42 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: prof?.is_admin ?? false, admin_role: prof?.admin_role ?? null }) });
   }
 });
+
+// 26/10: trang giới thiệu (mẫu "landing", trang /pi, /huong-dan): gõ "/" chèn khối Đầu trang lớn + Bước hướng dẫn, điền ô, lưu nháp → DB có khối lp_*
+test("Quản trị web: trang giới thiệu landing", async ({ page }) => {
+  const s = S();
+  const [prof] = await rest(`profiles?id=eq.${s.uid}&select=is_admin,admin_role`);
+  await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: true, admin_role: "super" }) });
+  const errs = [];
+  page.on("pageerror", (e) => errs.push(e.message));
+  const slug = "e2e-gioi-thieu-pi";
+  try {
+    await login(page);
+    await page.getByTestId("pc-open-admin").click();
+    await page.getByTestId("pc-nav-web_pages").click();
+    await page.getByTestId("web-post-new").click();
+    await page.getByTestId("web-ed-title").fill("E2E giới thiệu Pi");
+    await page.getByTestId("web-ed-slug-edit").click();
+    await page.getByTestId("web-ed-slug").fill(slug);
+    await page.getByTestId("web-ed-slug").press("Enter");
+    await page.getByTestId("web-ed-p").first().click();
+    await page.keyboard.type("/dau trang");
+    await page.getByTestId("web-slash-lp_hero").click();
+    await expect(page.getByTestId("web-blk-lp_hero")).toBeVisible();
+    await page.getByTestId("web-lp_hero-title").fill("Gặp *Pi*|ăn đúng");
+    await page.getByTestId("web-lp_hero-chips-add").click();
+    await page.getByTestId("web-ed-template").selectOption("landing");
+    await page.screenshot({ path: "shots/pc-web-landing.png", fullPage: true });
+    await page.getByTestId("web-ed-draft").click();
+    await expect(page.getByTestId("pc-toast")).toBeVisible();
+    await expect.poll(async () => (await rest(`web_posts?slug=eq.${slug}&select=template,blocks`))[0]?.template).toBe("landing");
+    const [p] = await rest(`web_posts?slug=eq.${slug}&select=template,blocks`);
+    const hero = p.blocks.find((b) => b.type === "lp_hero");
+    expect(hero.title).toBe("Gặp *Pi*|ăn đúng");
+    expect(hero.chips.length).toBe(1);
+    expect(errs, errs.join("\n")).toEqual([]);
+  } finally {
+    await rest(`web_posts?slug=like.e2e-*`, { method: "DELETE" }).catch(() => {});
+    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: prof?.is_admin ?? false, admin_role: prof?.admin_role ?? null }) });
+  }
+});

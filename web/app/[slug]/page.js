@@ -4,6 +4,7 @@ import { imgAttrs, srcSet } from "@/lib/img";
 import { preload } from "react-dom";
 import Crumb from "@/components/Crumb";
 import Blocks from "@/components/Blocks";
+import Landing from "@/components/Landing";
 import JsonLd from "@/components/JsonLd";
 import Sticky from "@/components/Sticky";
 import LegalToc from "@/components/LegalToc";
@@ -77,6 +78,10 @@ export default async function Page({ params }) {
   const vids = blocks.filter((b) => b?.type === "video" && b.url && b.poster).map((b) => ({ "@type": "VideoObject", name: b.title || p.title, description: b.caption || p.seo?.desc || p.excerpt || p.title, thumbnailUrl: new URL(b.poster, siteUrl(s)).href, contentUrl: new URL(b.url, siteUrl(s)).href, uploadDate: p.published_at || p.updated_at, ...(b.duration ? { duration: b.duration } : {}) }));
   const graphs = [off.has("BreadcrumbList") ? null : breadcrumb(s, crumbs), p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? articleGraph(s, p, path) : null, p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? orgGraph(s) : null, off.has("FAQPage") ? null : faqGraph(fq, s), firstCalo && !off.has("NutritionInformation") && schemaOn(s, "calo") ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...vids, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
 
+  // 26/10: mẫu "landing" (trang /pi, /huong-dan): khối lp_* hết bề ngang, không khung bài, không tiêu đề trang (H1 nằm trong khối đầu trang)
+  if (p.kind === "page" && p.template === "landing") return (
+    <main className="lp-page"><JsonLd data={ld(...graphs)} /><Landing blocks={blocks} s={s} toc={t} slug={p.slug} /><Sticky s={s} ref_={`page-${p.slug}`} /></main>
+  );
   if (p.kind === "page") {
     const long = p.template === "legal" || p.template === "guide"; // 26/10: "guide" = trang hướng dẫn có mục lục, không đánh số mục
     return (

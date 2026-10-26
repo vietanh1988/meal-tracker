@@ -10,6 +10,7 @@ import { clean, youtubeId, slugify } from "./webLib";
 import { uploadImage } from "./webApi";
 import { MediaPick } from "./MediaPick";
 import { authFetch } from "../../lib/authFetch";
+import LpEdit from "./LpEdit";
 
 // Chữ trong trình soạn = tỉ lệ chữ bài trên web (đoạn 18/1,75 · H2 28/1,3 · H3 22/1,35), thu nhỏ cho khung soạn
 const P = { fontSize: 17, lineHeight: 1.7, color: "#1E293B", margin: 0, outline: "none", minHeight: 29 };
@@ -211,7 +212,7 @@ export function OtherBlock({ b, set, showToast, slug, postId }) {
       </Box>
     ); }
     case "html": return <Box label="ĐOẠN HTML · web lọc bỏ mã chạy (script)"><Ta v={b.html} on={(v) => set({ html: v })} ph="<p>…</p>" h={120} mono /></Box>;
-    default: return null;
+    default: return /^lp_/.test(b.type) ? <LpEdit b={b} set={set} showToast={showToast} /> : null;
   }
 }
 
