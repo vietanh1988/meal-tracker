@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, openAdmin, rest, S } from "./helpers.mjs";
+import { login, openPcAdmin, rest, S } from "./helpers.mjs";
 
 // Quản trị PC › WEB & BÀI VIẾT (bản vẽ 138a/b/h): viết bài mới (gõ "/" chèn H2, Enter tách đoạn, chuyên mục, thẻ),
 // Đăng → kiểm DB (bài, khối, chuyên mục/thẻ, 1 bản lịch sử); danh sách hiện bài → bỏ vào thùng rác; thêm / xoá chuyên mục.
@@ -13,7 +13,7 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
   const slug = "e2e-com-tam-bao-nhieu-calo";
   try {
     await login(page);
-    await openAdmin(page);
+    await openPcAdmin(page);
     await expect(page.getByTestId("pc-admin")).toBeVisible();
     await expect(page.getByTestId("pc-nav-ic-web_posts").locator("svg")).toHaveCount(1);
     await page.getByTestId("pc-nav-web_posts").click();
@@ -280,7 +280,7 @@ test("Quản trị web: trang giới thiệu landing", async ({ page }) => {
   const still = async (step) => { await page.waitForTimeout(300); await page.screenshot({ path: `shots/pc-web-landing-${step}.png` }); await expect(page.getByTestId("web-ed-title"), `trình soạn còn mở sau bước ${step} · ${errs.join(" | ")}`).toBeVisible({ timeout: 3000 }); };
   try {
     await login(page);
-    await openAdmin(page);
+    await openPcAdmin(page);
     await expect(page.getByTestId("pc-admin")).toBeVisible();
     await page.getByTestId("pc-nav-web_pages").click();
     await expect(page.getByTestId("pc-page-web_pages")).toBeVisible();

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, openAdmin, rest, S, waitDb } from "./helpers.mjs";
+import { login, openPcAdmin, rest, S, waitDb } from "./helpers.mjs";
 
 // 23/10: Pi bộ mới (Muse AI) — Quản trị PC › Thú cưng Pi › Kho đồ: tìm món mới, xem Pi mặc thử, đổi giá → lưu pet_items.
 // 24/10 (chủ dự án): bộ mới cũng chỉnh được vị trí trên Pi (dời / cỡ / rộng / xoay) → pet_items.place.tf
@@ -11,7 +11,7 @@ test("Quản trị PC: kho đồ Pi bộ mới — tìm, xem mặc thử, đổi
   const [row0] = await rest(`pet_items?id=eq.${ID}&select=price,place,redraw,redraw_note`);
   try {
     await login(page);
-    await openAdmin(page);
+    await openPcAdmin(page);
     await expect(page.getByTestId("pc-admin")).toBeVisible();
     await page.getByTestId("pc-nav-pet").click();
     await page.getByTestId("pc-pet-tab-items").click();

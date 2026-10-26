@@ -291,8 +291,8 @@ main.home{overflow-x:clip}@media(max-width:720px){.lf6{display:none}}
 .g-way i{font-style:normal;flex-shrink:0;width:28px;height:28px;border-radius:14px;background:#fff;color:var(--b);font-weight:900;display:flex;align-items:center;justify-content:center}
 @media(max-width:900px){.lp-hero .wrap,.lp-row,.g-step{grid-template-columns:1fr;gap:28px}.lp-row.rev .lp-media,.g-step.rev .lp-media{order:0}.lp-steps{grid-template-columns:1fr 1fr}.lp-h1{font-size:34px}.lp-sub{font-size:17px}.lp-hero{padding:32px 0 44px}.lp-chip{font-size:13px;padding:8px 10px}.c1{left:-6px}.c2{right:-6px}.lp-head-w{padding-top:56px}.lp-txt h3,.g-step h2{font-size:24px}.g-step{padding:24px 20px;border-radius:22px}.lp-media .shot{width:46%}.lp-moods{grid-template-columns:repeat(2,1fr)}.lp-troph,.lp-troph.c4{grid-template-columns:1fr 1fr}.lp-art2 .shot+.shot{margin-top:28px}.lp-btn{height:50px;font-size:16px}}
 @media(max-width:900px){ /* 26/10 chủ dự án: mobile — hàng nút 12 bước vuốt ngang 1 dòng, ảnh đầu trang nhỏ lại, thẻ Hạt 1 cột */
-.g-nav{flex-wrap:nowrap;overflow-x:auto;margin:20px -24px 0;padding:0 24px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.g-nav::-webkit-scrollbar{display:none}.g-nav a{flex-shrink:0;white-space:nowrap}
+.g-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}.g-nav a{height:40px;padding:0 10px 0 6px;font-size:13.5px;border-radius:12px;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis} /* 26/10 chủ dự án chốt bản A: 12 nút 2 cột, đủ trong 1 màn, không trượt */
 .lp-hero .wrap>*{min-width:0}.lp-art2 .shot{width:40%;max-width:170px}.lp-art2 .shot+.shot{margin-top:28px}
 .lp-steps{grid-template-columns:1fr;gap:12px}.lp-step{display:grid;grid-template-columns:36px 1fr;column-gap:14px;row-gap:6px;padding:18px;border-radius:18px}.lp-step .num{grid-row:1/span 3}.lp-step b{font-size:17px}.lp-step .pts{white-space:nowrap;justify-self:start;margin-top:4px}
 }
-@media(max-width:720px){.g-nav{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}}
+@media(max-width:720px){.lp-art2{display:none}} /* mobile: ẩn 2 ảnh đầu trang Hướng dẫn để tiêu đề + 12 nút gọn 1 màn */

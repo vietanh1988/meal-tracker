@@ -119,7 +119,7 @@ export async function openAdmin(page) {
 
 // 26/10: PC — bấm "Vào Quản trị ›". Quyền admin app đọc lúc mở (profiles.is_admin, sau app_settings): trên CI có lúc chậm / lỡ
 // → chờ tới 10 s, chưa có thì tải lại trang 1 lần (đăng nhập giữ nguyên) rồi bấm.
-export async function openAdmin(page) {
+export async function openPcAdmin(page) {
   const btn = page.getByTestId("pc-open-admin");
   try { await btn.waitFor({ state: "visible", timeout: 10_000 }); }
   catch (e) { await page.reload(); await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 }); await btn.waitFor({ state: "visible", timeout: 15_000 }); }
