@@ -117,7 +117,8 @@ HAND = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hand
 GRIP = {"muadong-nam-pk06", "muadong-nam-pk08", "giangsinh-nu-pk07", "muadong-nam-pk09", "muadong-nu-pk09", "muahe-nu-pk08", "tet-nam-pk06", "tet-nam-pk05", "giangsinh-nu-pk08", "muahe-nam-pk09", "tet-nam-pk09", "tet-nam-pk10", "trungthu-nam-pk07"}
 SHOE_SCALE = {}  # 25/10: guốc tet-nu-giay02 vẽ lại đúng cỡ
 LEAF_WIDE = {"giangsinh-nam-dau05", "trungthu-nam-dau03", "muahe-nam-dau05", "trungthu-nu-dau02"}
-ARM_HIDE = {"giangsinh-nam-pk07": "trai", "muadong-nam-pk08": "trai", "muadong-nu-pk08": "trai", "muahe-nam-pk05": "trai",
+ARM_HIDE = {"muadong-nu-pk08": "trai", "muahe-nam-pk10": "trai", "tet-nu-pk05": "trai", "trungthu-nam-pk04": "trai", "trungthu-nam-pk06": "trai", "muadong-nam-pk07": "trai", "muadong-nu-pk10": "trai", "trungthu-nam-pk03": "trai", "muahe-nu-pk07": "trai",  # 26/10 chủ dự án "để ý mấy cái 2 tay": món vẽ tay giơ cầm + tay gốc buông = 2 tay → ẩn tay gốc
+            "giangsinh-nam-pk07": "trai", "muadong-nam-pk08": "trai", "muadong-nu-pk08": "trai", "muahe-nam-pk05": "trai",
             "muahe-nam-pk10": "trai", "halloween-nam-pk08": "trai", "halloween-nu-pk08": "trai", "trungthu-nam-pk04": "trai", "trungthu-nam-pk06": "trai"}
 
 # 23/10 (chủ dự án: "mặc áo vào lỗi, không có nọng cằm"): ảnh áo của Muse vẽ đè một mảng da lên phần dưới đầu → mất bóng cằm.
