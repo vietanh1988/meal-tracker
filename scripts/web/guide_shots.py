@@ -21,12 +21,12 @@ PICK = {
     "pi-man": ("pet-speaking", (0, 1), [(0.0, 0.11, 1.0, 0.2)]), "pi-cua-hang": ("pet-tryon-multi", (0, 1), []), "pi-tu-do": ("pet-closet", (0, 1), []),
     "pi-hoi": ("pet-chat", (0, 1), []), "pi-the": ("pet-user-gym", (0, 0.62), [(0.03, 0.015, 0.36, 0.04)]),
 }
-W = 360
+W = 600  # 26/10: hiện rộng tới 300 px trên PC → ảnh gấp đôi cho nét
 def out(name, im):
     p = os.path.join(OUT, name + ".webp")
     for q in (80, 72, 64, 56, 48):
         im.save(p, quality=q, method=6)
-        if os.path.getsize(p) <= 60 * 1024: break
+        if os.path.getsize(p) <= 90 * 1024: break
     print(name, im.size, os.path.getsize(p) // 1024, "KB")
 for name, (src, (a, b), blur) in PICK.items():
     f = os.path.join(SRC, src + ".png")
@@ -36,8 +36,9 @@ for name, (src, (a, b), blur) in PICK.items():
         box = tuple(round(v) for v in (x0 * im.width, y0 * im.height, x1 * im.width, y1 * im.height))
         im.paste(im.crop(box).filter(ImageFilter.GaussianBlur(14)), box[:2])
     im = im.crop((0, round(a * im.height), im.width, round(b * im.height)))
+    im = im.crop((0, 0, im.width, min(im.height, round(im.width * 844 / 390))))  # 26/10: ảnh chụp cả trang (dài) → cắt đúng 1 màn điện thoại
     im = im.resize((W, round(im.height * W / im.width)), Image.LANCZOS)
-    m = Image.new("L", im.size, 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, im.width - 1, im.height - 1), 26, fill=255)
+    m = Image.new("L", im.size, 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, im.width - 1, im.height - 1), 44, fill=255)
     c = Image.new("RGBA", im.size, (0, 0, 0, 0)); c.paste(im, (0, 0), m)
-    ImageDraw.Draw(c).rounded_rectangle((0, 0, im.width - 1, im.height - 1), 26, outline=(214, 223, 236, 255), width=2)
+    ImageDraw.Draw(c).rounded_rectangle((0, 0, im.width - 1, im.height - 1), 44, outline=(214, 223, 236, 255), width=3)
     out(name, c)
