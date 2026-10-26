@@ -133,24 +133,54 @@ def frame(T):
     touch(bg, T)
     return bg
 
+SR = 44100
+def sfx(kind):
+    """tiếng hiệu ứng tự sinh (không dùng file ngoài) → wav 16 bit"""
+    import random, struct, wave
+    p = os.path.join(OUT, f"sfx_{kind}.wav")
+    if os.path.exists(p): return p
+    def tone(f0, f1, dur, vol, dec, harm=(1,)):
+        out = []; ph = 0
+        for i in range(int(SR * dur)):
+            t = i / SR; f = f0 + (f1 - f0) * t / dur; ph += 2 * math.pi * f / SR
+            env = min(1, t / 0.004) * math.exp(-t * dec)
+            out.append(vol * env * sum(math.sin(ph * h) / h for h in harm))
+        return out
+    def mixs(*parts):
+        n = max(off + len(x) for off, x in parts); o = [0.0] * n
+        for off, x in parts:
+            for i, v in enumerate(x): o[off + i] += v
+        return o
+    ms = lambda t: int(SR * t)
+    rnd = random.Random(7)
+    if kind == "tap": x = mixs((0, [0.5 * rnd.uniform(-1, 1) * math.exp(-i / SR * 260) for i in range(ms(0.03))]), (0, tone(1800, 1200, 0.04, 0.35, 90)))
+    elif kind == "tick": x = mixs((0, tone(880, 900, 0.09, 0.45, 30, (1, 2))), (ms(0.07), tone(1320, 1340, 0.16, 0.45, 22, (1, 2))))
+    elif kind == "water": x = mixs((0, tone(900, 280, 0.14, 0.6, 18)), (ms(0.05), tone(1400, 700, 0.08, 0.25, 30)))
+    elif kind == "coin": x = mixs((0, tone(1976, 1976, 0.12, 0.4, 25, (1, 3))), (ms(0.08), tone(2637, 2637, 0.4, 0.45, 9, (1, 3))))
+    elif kind == "buy": x = mixs((0, [0.4 * rnd.uniform(-1, 1) * math.exp(-i / SR * 40) for i in range(ms(0.12))]), (ms(0.06), tone(1568, 1568, 0.15, 0.4, 20, (1, 3))), (ms(0.14), tone(2093, 2093, 0.18, 0.4, 16, (1, 3))), (ms(0.22), tone(2637, 2637, 0.5, 0.45, 7, (1, 3))))
+    elif kind == "sparkle": x = mixs(*[(ms(k * 0.07), tone(f, f, 0.35, 0.3, 10, (1, 2))) for k, f in enumerate([1319, 1568, 1976, 2637, 3136])])
+    else: x = tone(260, 720, 0.28, 0.55, 8, (1, 2))  # boing khi chạm Pi
+    with wave.open(p, "wb") as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
+        w.writeframes(b"".join(struct.pack("<h", max(-32767, min(32767, int(v * 32767)))) for v in x))
+    return p
+
 def main():
     fr = os.path.join(OUT, "frames4"); shutil.rmtree(fr, ignore_errors=True); os.makedirs(fr)
     for k in range(int(TOTAL * FPS)): frame(k / FPS).convert("RGB").save(os.path.join(fr, f"{k:05d}.jpg"), quality=90)
     frame(34.6).convert("RGB").save(os.path.join(OUT, "pi-nuoi-poster.jpg"), quality=88)
     K.TOTAL = TOTAL; K.music(os.path.join(OUT, "nhac4.wav"))
-    ins, flt = ["-i", os.path.join(OUT, "nhac4.wav")], ["[1:a]volume=0.5[m]"]
+    ins, flt = ["-i", os.path.join(OUT, "nhac4.wav")], ["[1:a]volume=0.35[m]"]
     for k, (g, i, t0) in enumerate(VOICE):
         ins += ["-i", V.P + f"voice/{g}/{i}.mp3"]; flt.append(f"[{k + 2}:a]adelay={int(t0 * 1000)}|{int(t0 * 1000)},volume=1.6[a{k}]")
-    nv = len(VOICE); coins = [c[0] for c in COINS]
-    for j, t0 in enumerate(coins):
-        ins += ["-f", "lavfi", "-t", "0.35", "-i", "sine=frequency=1568:sample_rate=44100"]
-        flt.append(f"[{nv + 2 + j}:a]volume=0.25,afade=t=out:st=0.02:d=0.33,adelay={int(t0 * 1000)}|{int(t0 * 1000)}[c{j}]")
-    taps = [t for t, _ in TAPXY]
-    for j, t0 in enumerate(taps):
-        ins += ["-f", "lavfi", "-t", "0.06", "-i", "sine=frequency=700:sample_rate=44100"]
-        flt.append(f"[{nv + 2 + len(coins) + j}:a]volume=0.25,afade=t=out:st=0:d=0.06,adelay={int(t0 * 1000)}|{int(t0 * 1000)}[k{j}]")
-    srcs = "[m]" + "".join(f"[a{k}]" for k in range(nv)) + "".join(f"[c{j}]" for j in range(len(coins))) + "".join(f"[k{j}]" for j in range(len(taps)))
-    mix = srcs + f"amix=inputs={1 + nv + len(coins) + len(taps)}:normalize=0,atrim=0:{TOTAL}[aout]"
+    nv = len(VOICE)
+    # hiệu ứng tiếng (26/10, chủ dự án: "tích vào nước phải có tiếng"): chạm, tích Đã ăn, cốc nước, đồng Hạt, mua, mặc đồ, chạm Pi
+    ev = [(t, "tap") for t, _ in TAPXY] + [(5.05, "tick"), (11.45, "water"), (12.15, "water"), (12.85, "water"), (19.05, "tick"),
+          (35.95, "buy"), (37.45, "sparkle"), (40.25, "boing")] + [(c[0], "coin") for c in COINS]
+    for j, (t0, kind) in enumerate(ev):
+        ins += ["-i", sfx(kind)]; flt.append(f"[{nv + 2 + j}:a]adelay={int(t0 * 1000)}|{int(t0 * 1000)}[e{j}]")
+    srcs = "[m]" + "".join(f"[a{k}]" for k in range(nv)) + "".join(f"[e{j}]" for j in range(len(ev)))
+    mix = srcs + f"amix=inputs={1 + nv + len(ev)}:normalize=0,atrim=0:{TOTAL}[aout]"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", os.path.join(fr, "%05d.jpg"), *ins, "-filter_complex", ";".join(flt) + ";" + mix,
                     "-map", "0:v", "-map", "[aout]", "-c:v", "libx264", "-preset", "slow", "-crf", "26", "-pix_fmt", "yuv420p", "-movflags", "+faststart",
                     "-c:a", "aac", "-b:a", "112k", "-t", str(TOTAL), os.path.join(OUT, "pi-nuoi.mp4")], check=True)
