@@ -1520,9 +1520,10 @@
    "name": "Cầm cốc trà nóng bốc khói",
    "file": "items/muadong/do_muadong_nam_pk06.webp",
    "c": [
-    250,
-    488
-   ]
+    266,
+    556
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "muadong-nam-pk07",
@@ -1544,10 +1545,10 @@
    "name": "Cầm quả cầu tuyết",
    "file": "items/muadong/do_muadong_nam_pk08.webp",
    "c": [
-    256,
-    465
+    266,
+    528
    ],
-   "arm": "trai"
+   "arm": "dautrai"
   },
   {
    "id": "muadong-nam-pk09",
@@ -3771,5 +3772,5 @@
    ]
   }
  ],
- "ver": "085ced0767"
+ "ver": "570c71f53d"
 }
