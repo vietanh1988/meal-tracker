@@ -24,6 +24,8 @@ export default function Blocks({ blocks, s, toc, slug }) {
           case "img": return b.url ? <figure key={i}><img {...imgAttrs(b.url)} alt={b.alt || b.caption || ""} width={b.width} height={b.height} loading="lazy" decoding="async" />{b.caption && <figcaption>{b.caption}</figcaption>}</figure> : null;
           case "gallery": return <div key={i} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 10 }}>{(b.images || []).map((im, k) => <img key={k} src={im.url} alt={im.alt || im.caption || ""} loading="lazy" decoding="async" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 12 }} />)}</div>;
           case "youtube": return /^[\w-]{6,20}$/.test(b.id || "") ? <div key={i} className="yt"><iframe src={`https://www.youtube-nocookie.com/embed/${b.id}`} title={b.title || "Video"} loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture" allowFullScreen /></div> : null;
+          case "video": { const u = safeUrl(b.url || ""); if (!u || !/\.(mp4|webm)(\?|$)/i.test(u)) return null; // 26/10: video tải lên (.mp4), dọc thì rộng tối đa 360
+            return <figure key={i} className={`vid${b.vertical ? " vid-v" : ""}`}><video src={u} poster={b.poster ? safeUrl(b.poster) : undefined} controls playsInline preload="metadata" title={b.title || "Video"} />{b.caption && <figcaption>{b.caption}</figcaption>}</figure>; }
           case "info": { // 23/10: infographic PNG → WebP 400 / 800 qua bộ tối ưu ảnh của Next (Vercel)
             const o = (w) => `/_next/image?url=${encodeURIComponent(b.src)}&w=${w}&q=80`;
             const hh = Math.round(((b.height || 800) * 800) / (b.width || 1200));

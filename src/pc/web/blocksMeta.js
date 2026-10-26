@@ -1,11 +1,11 @@
 // Danh mục khối của trình soạn (menu "/" bản vẽ 138b, 4 nhóm) + khối trống mặc định.
 export const BLOCK_GROUPS = [
   ["VĂN BẢN", [["p", "¶", "Đoạn văn", "doan van"], ["h2", "H", "Tiêu đề H2", "tieu de h2 heading"], ["h3", "H", "Tiêu đề H3", "tieu de h3"], ["h4", "H", "Tiêu đề H4", "tieu de h4"], ["list", "⋮≡", "Danh sách chấm", "danh sach cham list"], ["olist", "1≡", "Danh sách số", "danh sach so"], ["quote", "❝", "Trích dẫn", "trich dan quote"], ["tip", "💡", "Hộp mẹo / lưu ý", "hop meo luu y tip"], ["html", "</>", "Đoạn HTML", "doan html code"]]],
-  ["ẢNH & VIDEO", [["img", "🖼", "Ảnh · tự nén WebP", "anh hinh image"], ["gallery", "▤", "Bộ ảnh (gallery)", "bo anh gallery"], ["youtube", "▶", "Video YouTube", "video youtube"]]],
+  ["ẢNH & VIDEO", [["img", "🖼", "Ảnh · tự nén WebP", "anh hinh image"], ["gallery", "▤", "Bộ ảnh (gallery)", "bo anh gallery"], ["youtube", "▶", "Video YouTube", "video youtube"], ["video", "🎬", "Video tải lên (.mp4)", "video mp4 tai len"]]],
   ["BỐ CỤC", [["cols", "▥", "Chia 2–3 cột", "chia cot columns"], ["button", "⬭", "Nút bấm", "nut bam button"], ["hr", "—", "Đường kẻ / khoảng trống", "duong ke khoang trong"], ["toc", "☷", "Mục lục tự động", "muc luc toc"]]],
   ["RIÊNG FIPILOT", [["calo", "🍜", "Khối calo 1 món", "khoi calo mon"], ["calo_table", "▦", "Bảng calo nhiều món", "bang calo nhieu mon"], ["faq", "?", "Hỏi đáp (tự sinh schema FAQ)", "hoi dap faq"], ["app", "📱", "Hộp mời mở app", "hop moi mo app"], ["table", "≣", "Bảng so sánh", "bang so sanh table"]]],
 ];
-export const BLOCK_NAME = { p: "Đoạn văn", h: "Tiêu đề", list: "Danh sách", quote: "Trích dẫn", tip: "Hộp mẹo", html: "HTML", img: "Ảnh", gallery: "Bộ ảnh", youtube: "Video", cols: "Cột", button: "Nút bấm", hr: "Đường kẻ", toc: "Mục lục", calo: "Calo món", calo_table: "Bảng calo", faq: "Hỏi đáp", app: "Mời mở app", table: "Bảng", ref: "Khối dùng lại" };
+export const BLOCK_NAME = { p: "Đoạn văn", h: "Tiêu đề", list: "Danh sách", quote: "Trích dẫn", tip: "Hộp mẹo", html: "HTML", img: "Ảnh", gallery: "Bộ ảnh", youtube: "Video", video: "Video", cols: "Cột", button: "Nút bấm", hr: "Đường kẻ", toc: "Mục lục", calo: "Calo món", calo_table: "Bảng calo", faq: "Hỏi đáp", app: "Mời mở app", table: "Bảng", ref: "Khối dùng lại" };
 let seq = 0;
 export const key = () => `b${Date.now().toString(36)}${(seq++).toString(36)}`;
 export function newBlock(t) {
@@ -17,6 +17,7 @@ export function newBlock(t) {
     case "img": return { _k: k, type: "img", url: "", alt: "", caption: "" };
     case "gallery": return { _k: k, type: "gallery", images: [] };
     case "youtube": return { _k: k, type: "youtube", id: "", title: "" };
+    case "video": return { _k: k, type: "video", url: "", poster: "", title: "", caption: "", vertical: true };
     case "cols": return { _k: k, type: "cols", cols: ["", ""] };
     case "button": return { _k: k, type: "button", label: "Dùng thử miễn phí", url: "https://app.fipilotai.com/?ref=post-button", style: "solid", align: "left" };
     case "calo": return { _k: k, type: "calo", food: "", portion: "" };

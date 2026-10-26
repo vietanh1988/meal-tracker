@@ -148,7 +148,7 @@ export function PcWebPosts({ top, showToast, user, appSettings, saveSetting, kin
                       </span>
                     </span>
                   </span>
-                  <span style={cell}>{kind === "page" ? (r.template === "legal" ? "Điều khoản" : "Mặc định") : (catName[r.primary_term] || r.terms.map((t) => catName[t]).filter(Boolean)[0] || "—")}</span>
+                  <span style={cell}>{kind === "page" ? (r.template === "legal" ? "Điều khoản" : r.template === "guide" ? "Hướng dẫn" : "Mặc định") : (catName[r.primary_term] || r.terms.map((t) => catName[t]).filter(Boolean)[0] || "—")}</span>
                   <span><Score n={r.seo?.score} /></span>
                   <span><Pill tone={tone}>{st}</Pill></span>
                   <span style={{ ...cell, fontSize: 12, color: PC.t2 }}>{d}</span>

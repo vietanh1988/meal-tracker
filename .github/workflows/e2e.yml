@@ -91,6 +91,9 @@ jobs:
       - name: Cài Chromium cho Playwright
         run: npx playwright install --with-deps chromium
 
+      - name: Cài phông Inter (ảnh chụp màn giống máy thật, dùng cho trang Hướng dẫn trên web)
+        run: sudo apt-get install -y -qq fonts-inter >/dev/null || true
+
       - name: E2E
         run: |
           set -o pipefail
