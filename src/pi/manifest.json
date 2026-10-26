@@ -336,9 +336,10 @@
    "name": "Cầm quả châu thông",
    "file": "items/giangsinh/do_giangsinh_nam_pk09.webp",
    "c": [
-    256,
-    521
-   ]
+    266,
+    618
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "giangsinh-nam-pk10",
@@ -2785,9 +2786,10 @@
    "name": "Cầm kẹo mút xoắn",
    "file": "items/halloween/do_halloween_nam_pk09.webp",
    "c": [
-    241,
-    466
-   ]
+    265,
+    540
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "halloween-nam-pk10",
@@ -3101,9 +3103,10 @@
    "name": "Cầm gấu bông mèo đen",
    "file": "items/halloween/do_halloween_nu_pk10.webp",
    "c": [
-    265,
-    494
-   ]
+    266,
+    552
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "halloween-nu-pk11",
@@ -3777,5 +3780,5 @@
    ]
   }
  ],
- "ver": "6cb04dd39a"
+ "ver": "b9b3a80ae0"
 }
