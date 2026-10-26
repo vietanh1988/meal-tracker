@@ -39,6 +39,9 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     expect(new Set(look.lefts).size).toBe(1);
     // 25/10: nền thẻ = phòng theo khung cảnh (miễn phí, tự đổi theo dịp / mùa)
     await expect(card.getByTestId("pet-today-room")).toHaveAttribute("data-scene", /^(tet|trungthu|halloween|giangsinh|muadong|muahe)$/);
+    // 26/10: đúng dịp lễ có hoạ tiết góc, ngày thường (mùa đông / mùa hè) không có
+    const scene = await card.getByTestId("pet-today-room").getAttribute("data-scene");
+    await expect(card.getByTestId("pet-today-decor")).toHaveCount(["muadong", "muahe"].includes(scene) ? 0 : 1);
     const ledger = () => rest(`pet_ledger?user_id=eq.${s.uid}&amount=gt.0&select=key,amount`);
     const rows = await waitDb(async () => { const r = await ledger(); return r.length >= 8 ? r : null; }, "đủ 8 dòng Hạt");
     const sum = rows.reduce((a, r) => a + r.amount, 0);

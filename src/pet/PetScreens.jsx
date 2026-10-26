@@ -8,7 +8,7 @@ import { AppIcon, MealIcon, IC_COLOR, mix } from "../mobile/icons";
 import { LT, ltCard, DK, dkCard } from "../theme";
 import { PetAvatar, ItemImg, ITEMS, catalog, PET_BASE } from "./PetAvatar";
 import { PetRoom } from "./PetRoom";
-import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile, ROOM_TIMES, TIME_NAME, roomFile, piRoomTime } from "../pi/piCatalog";
+import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile, ROOM_TIMES, TIME_NAME, roomFile, piRoomTime, PI_BASE, PI_VER } from "../pi/piCatalog";
 import { playNow, primeTTS } from "../pi/piVoice.js";
 import { nowVNParts, todayVN } from "../lib/dateVN";
 import { sceneOf } from "../lib/petMath";
@@ -518,6 +518,7 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onF
 
 // ============ Chỗ vào B: thẻ trên Hôm nay ============
 // 26/10 (chủ dự án: "sao không mờ dần mà trắng hếu"): phòng phủ CẢ thẻ, đậm bên Pi rồi nhạt dần sang phải (còn ~30%), không cắt trắng
+const DECOR = ["tet", "trungthu", "halloween", "giangsinh"];
 const FADE = "linear-gradient(90deg, #000 0%, #000 28%, rgba(0,0,0,.45) 60%, rgba(0,0,0,.3) 100%)";
 export function PetTodayCard({ pet, onOpen }) {
   const left = pet.tasksLeft;
@@ -527,6 +528,8 @@ export function PetTodayCard({ pet, onOpen }) {
     <button data-testid="pet-today-card" onClick={onOpen} className="tap" style={{ margin: "14px 12px 0 12px", width: "calc(100% - 24px)", ...ltCard, padding: "0 10px 0 0", display: "flex", alignItems: "center", gap: 8, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A", overflow: "hidden", boxSizing: "border-box", minHeight: 132, position: "relative" }}>
       {/* 25/10 (chủ dự án duyệt): nền = phòng Pi đang ở (theo dịp / mùa + buổi), mờ 50% (tối 55%), nhạt dần sang phần chữ */}
       <span aria-hidden="true" data-testid="pet-today-room" data-scene={roomOf(pet)} style={{ position: "absolute", inset: 0, backgroundImage: `url(${roomFile(roomOf(pet), piRoomTime(pet.hour ?? nowVNParts().hour))})`, backgroundSize: "cover", backgroundPosition: "center 62%", opacity: piRoomTime(pet.hour ?? nowVNParts().hour) === "toi" ? 0.55 : 0.5, WebkitMaskImage: FADE, maskImage: FADE, pointerEvents: "none" }} />
+      {/* 26/10 (chủ dự án duyệt): đúng dịp lễ thì có 1 hoạ tiết nhỏ ở góc trên phải (public/pi/decor, scripts/pi/decor.py); ngày thường không có */}
+      {DECOR.includes(roomOf(pet)) && <img data-testid="pet-today-decor" data-decor={roomOf(pet)} src={`${PI_BASE}decor/${roomOf(pet)}.webp${PI_VER}`} alt="" aria-hidden="true" draggable="false" style={{ position: "absolute", right: 6, top: 4, width: 34, height: "auto", transform: "rotate(12deg)", pointerEvents: "none" }} />}
       <span data-testid="pet-today-av" style={{ width: 118, alignSelf: "stretch", minHeight: 132, position: "relative", flexShrink: 0, overflow: "hidden" }}>
         <span style={{ position: "absolute", left: "50%", top: 12, transform: "translateX(-50%)" }}><PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={156} still /></span>
       </span>
