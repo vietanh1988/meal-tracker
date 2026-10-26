@@ -123,7 +123,9 @@ export function OtherBlock({ b, set, showToast, slug, postId }) {
     case "gallery": return (
       <Box label="BỘ ẢNH">
         <span style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{(b.images || []).map((im, i) => <span key={i} style={{ position: "relative", display: "flex", flexDirection: "column", gap: 4, width: 120 }}><img src={im.url} alt={im.alt || ""} style={{ width: 120, height: 96, borderRadius: 10, objectFit: "cover" }} /><input value={im.alt || ""} onChange={(e) => set({ images: b.images.map((x, k) => (k === i ? { ...x, alt: e.target.value } : x)) })} placeholder="Mô tả ảnh (alt)" className="pc-input" data-testid="web-blk-gal-alt" style={{ ...inpStyle(28), fontSize: 11.5, padding: "0 8px", borderColor: im.alt ? undefined : "#FCA5A5" }} /><button type="button" aria-label="Bỏ ảnh" onClick={() => set({ images: b.images.filter((_, k) => k !== i) })} style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: 11, border: 0, background: "rgba(15,23,42,.6)", color: "#FFF", cursor: "pointer" }}>×</button></span>)}</span>
-        <Upload showToast={showToast} name={slug} label="+ Thêm ảnh" onDone={(r) => set({ images: [...(b.images || []), { url: r.url, alt: "" }] })} />
+        <Upload showToast={showToast} name={slug} label="+ Thêm ảnh" onDone={(r) => set({ images: [...(b.images || []), { url: r.url, alt: "", width: r.width, height: r.height }] })} />
+        <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13 }}><input type="checkbox" checked={b.shape === "phone"} onChange={(e) => set({ shape: e.target.checked ? "phone" : undefined })} data-testid="web-blk-gal-phone" /> Ảnh màn hình điện thoại (giữ nguyên tỉ lệ, có chú thích dưới ảnh)</label>
+        {b.shape === "phone" && (b.images || []).map((im, i) => <In key={i} v={im.caption} on={(v) => set({ images: b.images.map((x, k) => (k === i ? { ...x, caption: v } : x)) })} ph={`Chú thích ảnh ${i + 1}`} />)}
       </Box>
     );
     case "youtube": { const id = b.id; return (
