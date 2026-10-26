@@ -90,7 +90,8 @@ test("Ảnh màn thật cho video nuôi Pi", async ({ browser }) => {
     await expect(page.getByTestId("pet-wear")).toBeVisible();
     await shot("v13-da-mua", ["pet-wear"]);
     await page.getByTestId("pet-wear").click();
-    await page.waitForTimeout(1500);
+    const slot = item.replace("pet-item-", "").split("-")[2].replace(/\d+$/, "");
+    await waitDb(async () => (await rest(`pet_equipped?user_id=eq.${s.uid}&slot=eq.${slot}&select=item_id`))[0]?.item_id === item.replace("pet-item-", ""), "đã mặc món vừa mua");
     // 6 · Chạm Pi, Pi nói
     await page.reload();
     await tap(page.getByTestId("pet-today-card"));
@@ -105,6 +106,7 @@ test("Ảnh màn thật cho video nuôi Pi", async ({ browser }) => {
   } finally {
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: flagsRow.value }) });
     await rest(`weight_logs?user_id=eq.${s.uid}&logged_date=gte.${s.today}`, { method: "DELETE" }).catch(() => {});
+    await rest(`pet_equipped?user_id=eq.${s.uid}`, { method: "DELETE" }).catch(() => {});
     if (before) await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify(before) }).catch(() => {});
     await ctx.close();
   }

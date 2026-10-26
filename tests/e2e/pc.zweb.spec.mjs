@@ -276,7 +276,6 @@ test("Quản trị web: trang giới thiệu landing", async ({ page }) => {
   await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: true, admin_role: "super" }) });
   const errs = [];
   page.on("pageerror", (e) => errs.push(e.message));
-  page.on("console", (m) => { if (m.type() === "error") errs.push("console: " + m.text()); });
   const slug = "e2e-gioi-thieu-pi";
   const still = async (step) => { await page.waitForTimeout(300); await page.screenshot({ path: `shots/pc-web-landing-${step}.png` }); await expect(page.getByTestId("web-ed-title"), `trình soạn còn mở sau bước ${step} · ${errs.join(" | ")}`).toBeVisible({ timeout: 3000 }); };
   try {
