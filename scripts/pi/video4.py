@@ -18,10 +18,10 @@ W, H, FPS = K.W, K.H, K.FPS
 F, ease, back = K.F, K.ease, K.back
 BLUE = K.BLUE
 # điện thoại: màn 390 × 844 (điểm CSS) thu về cao 640
-KS = 640 / 844
-SW, SH = round(390 * KS), 640
+KS = 680 / 844
+SW, SH = round(390 * KS), 680
 PW, PH = SW + 24, SH + 24
-PX, PY = 884, 28
+PX, PY = 880, 8
 SX, SY = PX + 12, PY + 12
 
 SHOT = {}
