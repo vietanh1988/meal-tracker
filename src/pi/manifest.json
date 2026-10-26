@@ -614,9 +614,10 @@
    "name": "Cầm hộp quà nơ hồng",
    "file": "items/giangsinh/do_giangsinh_nu_pk07.webp",
    "c": [
-    245,
-    490
-   ]
+    266,
+    552
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "giangsinh-nu-pk08",
@@ -3770,5 +3771,5 @@
    ]
   }
  ],
- "ver": "af4630f907"
+ "ver": "085ced0767"
 }

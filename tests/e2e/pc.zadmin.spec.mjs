@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S } from "./helpers.mjs";
+import { login, openAdmin, rest, S } from "./helpers.mjs";
 
 // Quản trị PC (bản vẽ 117–119): Super Admin bấm "Vào Quản trị" → mở từng mục thanh bên, không lỗi trang,
 // chụp ảnh từng trang; mở ngăn chi tiết 1 người dùng; mở dòng sửa 1 món trong Kho thực phẩm (không lưu).
@@ -19,7 +19,7 @@ test("Quản trị PC: thanh bên đủ mục, mở từng trang, ngăn người
   await page.route("**/rest/v1/rpc/admin_get_user_detail*", (r) => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{ ...other, admin_notes: "", meal_days_logged: 3, weight_weeks_logged: 1 }]) }));
   try {
     await login(page);
-    await page.getByTestId("pc-open-admin").click();
+    await openAdmin(page);
     await expect(page.getByTestId("pc-admin")).toBeVisible();
     await expect(page.getByTestId("pc-home")).toBeVisible();
     await expect(page.getByTestId("pc-me")).toContainText("Super Admin");
@@ -83,7 +83,7 @@ test("Quản trị PC: thanh bên đủ mục, mở từng trang, ngăn người
     await page.reload();
     // Tải lại: chờ app dựng xong (đăng nhập lại từ phiên lưu có thể chậm trên CI); nếu về khung điện thoại thì vào lại Quản trị
     await expect(page.getByTestId("pc-sidebar").or(page.getByTestId("pc-open-admin"))).toBeVisible({ timeout: 25_000 });
-    if (await page.getByTestId("pc-open-admin").isVisible()) await page.getByTestId("pc-open-admin").click();
+    if (await page.getByTestId("pc-open-admin").isVisible()) await openAdmin(page);
     await expect(page.getByTestId("pc-sidebar")).toHaveAttribute("data-mini", "1");
     await page.getByTestId("pc-side-toggle").click();
     await expect(page.getByTestId("pc-sidebar")).toHaveAttribute("data-mini", "0");

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login, rest, S } from "./helpers.mjs";
+import { login, openAdmin, rest, S } from "./helpers.mjs";
 
 // 19/10: thanh bên Quản trị PC — bấm tên nhóm để thu gọn / mở, nhớ sau khi tải lại; nhóm chứa trang đang mở không thu được.
 test("Quản trị PC: thu gọn / mở nhóm thanh bên, nhớ theo máy", async ({ page }) => {
@@ -8,7 +8,7 @@ test("Quản trị PC: thu gọn / mở nhóm thanh bên, nhớ theo máy", asyn
   await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: true, admin_role: "super" }) });
   try {
     await login(page);
-    await page.getByTestId("pc-open-admin").click();
+    await openAdmin(page);
     await expect(page.getByTestId("pc-admin")).toBeVisible();
     await page.getByTestId("pc-nav-home").click();
     // Mặc định mở hết
