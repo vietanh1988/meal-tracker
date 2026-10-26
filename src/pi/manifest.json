@@ -626,9 +626,10 @@
    "name": "Cầm đũa thần bông tuyết",
    "file": "items/giangsinh/do_giangsinh_nu_pk08.webp",
    "c": [
-    249,
-    502
-   ]
+    266,
+    540
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "giangsinh-nu-pk09",
@@ -945,9 +946,10 @@
    "name": "Cầm quạt giấy đỏ",
    "file": "items/tet/do_tet_nam_pk09.webp",
    "c": [
-    272,
-    452
-   ]
+    232,
+    541
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "tet-nam-pk10",
@@ -957,9 +959,10 @@
    "name": "Cầm pháo giấy trang trí",
    "file": "items/tet/do_tet_nam_pk10.webp",
    "c": [
-    240,
-    449
-   ]
+    230,
+    571
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "tet-nam-pk11",
@@ -2166,9 +2169,10 @@
    "name": "Cầm xô cát và xẻng",
    "file": "items/muahe/do_muahe_nam_pk09.webp",
    "c": [
-    242,
-    568
-   ]
+    236,
+    582
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "muahe-nam-pk10",
@@ -3361,9 +3365,10 @@
    "name": "Cầm chong chóng giấy",
    "file": "items/trungthu/do_trungthu_nam_pk07.webp",
    "c": [
-    256,
-    410
-   ]
+    265,
+    542
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "trungthu-nam-pk08",
@@ -3765,5 +3770,5 @@
    ]
   }
  ],
- "ver": "6cddb900e2"
+ "ver": "af4630f907"
 }
