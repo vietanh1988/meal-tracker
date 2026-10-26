@@ -11,7 +11,7 @@ PI = [
   "images": [{"url": "/img/pi/pi-nam-nu.webp", "alt": "Pi nam và Pi nữ trong phòng mùa hè"}],
   "chips": [{"icon": "coin", "title": "+10 Hạt", "sub": "Đã ăn bữa sáng"}, {"icon": "🔥", "title": "7 ngày liền", "sub": "Chuỗi đang giữ"}, {"icon": "⭐", "title": "Cấp 3", "sub": "Mở thêm đồ mới"}]},
  {"type": "lp_head", "eye": "Xem nhanh", "title": "Nuôi Pi trong 1 phút", "sub": "Video hướng dẫn: làm gì để có Hạt, mua đồ, lên cấp."},
- {"type": "video", "url": "/video/pi-nuoi.mp4", "poster": "/video/pi-nuoi.webp", "title": "Nuôi Pi thế nào? Hướng dẫn 1 phút", "caption": "", "vertical": False, "duration": "PT54S"},
+ {"type": "video", "url": "/video/pi-nuoi.mp4", "poster": "/video/pi-nuoi.webp", "title": "Nuôi Pi thế nào? Hướng dẫn 1 phút", "caption": "", "vertical": False, "duration": "PT51S"},
  {"type": "lp_head", "eye": "Nhận Hạt", "title": "Làm việc tốt mỗi ngày, Pi nhận Hạt", "sub": "Hạt cộng ngay khi bạn làm xong, không cần bấm nhận."},
  {"type": "lp_cards", "items": [C("Ăn xong, chạm Đã ăn", "Mỗi bữa từ 100 kcal. Ăn từ 3 bữa được thêm 20.", "+10 / bữa"), C("Uống đủ nước", "Chạm cốc nước ở màn Hôm nay tới khi đủ mục tiêu.", "+15"), C("Cân tuần này", "Cân 1 lần trong tuần, nhập ở thẻ Cân nặng màn Hôm nay.", "+20 / tuần"), C("Giữ chuỗi ngày", "Từ ngày thứ 3 liền có ăn, mỗi ngày giữ chuỗi được thêm. Chụp món được thêm 5.", "+10")],
   "note": "Mỗi ngày tối đa <b>120 Hạt</b>. Chỉ tính việc làm đúng ngày, ghi bù ngày cũ không ra Hạt."},
