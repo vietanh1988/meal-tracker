@@ -8,7 +8,7 @@ import { appConfirm } from "../../lib/dialog";
 import { Btn, Pill, Card, SearchBox, FilterSelect, ErrorBox, Loading, headRow, bodyRow, cell, fmtDT } from "../pcUI";
 import { Check, Score, Lnk, Modal, Field, inpStyle, BLUE } from "./webUI";
 import { supabase } from "../../lib/supabase";
-import { STATUS, slugify } from "./webLib";
+import { STATUS, slugify, liveStatus } from "./webLib";
 import { listPosts, listTerms, setStatus, deleteForever, duplicatePost, slugType } from "./webApi";
 import { PcWebEditor } from "./PcWebEditor";
 import { PcWebPageBuilder } from "./PcWebPageBuilder";
@@ -126,7 +126,7 @@ export function PcWebPosts({ top, showToast, user, appSettings, saveSetting, kin
             </div>
             {list.length === 0 && <div style={{ padding: 28, textAlign: "center", color: PC.t3, fontSize: 13 }}>{rows.length === 0 ? `Chưa có ${noun} nào. Bấm “${kind === "page" ? "Thêm trang mới" : "Viết bài mới"}” để bắt đầu.` : "Không có kết quả khớp bộ lọc."}</div>}
             {list.map((r, i) => {
-              const [st, tone] = STATUS[r.status] || STATUS.draft;
+              const [st, tone] = STATUS[liveStatus(r)] || STATUS.draft;
               const on = sel.includes(r.id);
               const d = r.status === "published" || r.status === "scheduled" ? fullDT(r.published_at) : ago(r.updated_at);
               return (

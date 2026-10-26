@@ -14,7 +14,7 @@ import { supabase } from "../../lib/supabase";
 import { appConfirm } from "../../lib/dialog";
 import { Btn, Pill, Card, ErrorBox, Loading, fmtDT, secLbl } from "../pcUI";
 import { Check, Tog, Radio, Score, Tabs, Field, Count, SideBox, Modal, Lnk, inpStyle, BLUE } from "./webUI";
-import { STATUS, slugify, seoChecks, fullTitle, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
+import { STATUS, liveStatus, slugify, seoChecks, fullTitle, scoreLabel, wordCount, readMin, headings, images, htmlToBlocks, htmlToBlocksFp, blocksToHtml, clean } from "./webLib";
 import { getPost, listTerms, termCounts, createTerm, ensureAuthor, freeSlug, savePost, listRevisions, redirectsTo, searchLinks, listPosts, setStatus, uploadImage, slugType, getSite } from "./webApi";
 import { authFetch } from "../../lib/authFetch";
 import { BLOCK_GROUPS, BLOCK_NAME, newBlock, isText, withKeys, forSave } from "./blocksMeta";
@@ -273,7 +273,7 @@ export function PcWebEditor({ top, id, kind = "post", user, appSettings, showToa
 
   const sc = seoChecks({ ...post, blocks: post.blocks }, site);
   const words = wordCount(post.blocks), hs = headings(post.blocks), imgs = images(post.blocks);
-  const [stName, stTone] = STATUS[post.status] || STATUS.draft;
+  const [stName, stTone] = STATUS[liveStatus(post)] || STATUS.draft;
   const isLive = post.status === "published" || post.status === "scheduled";
   const sub = saving ? "Đang lưu…" : dirty ? "Có thay đổi chưa lưu · Ctrl+S để lưu" : savedAt ? `Đã lưu lúc ${savedAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}${revCount ? ` · Bản sửa thứ ${revCount}` : ""}` : post.id ? `Sửa lần cuối ${fmtDT(post.updated_at)}${revCount ? ` · ${revCount} bản trong lịch sử` : ""}` : `${kind === "page" ? "Trang" : "Bài"} mới · chưa lưu`;
   const catTree = [...cats.filter((c) => !c.parent_id), ...[]].flatMap((c) => [c, ...cats.filter((x) => x.parent_id === c.id).map((x) => ({ ...x, _sub: true }))]);

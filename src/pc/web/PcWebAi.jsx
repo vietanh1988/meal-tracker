@@ -14,7 +14,7 @@ import { todayVN } from "../../lib/dateVN";
 import { Btn, Pill, Card, ErrorBox, Loading, vnInt } from "../pcUI";
 import { Modal, Tog, inpStyle } from "./webUI";
 import { listTerms, getPost, savePost, getSite } from "./webApi";
-import { seoChecks, clean } from "./webLib";
+import { seoChecks, clean, liveStatus } from "./webLib";
 import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE, estText, estReview, providerOf, postReady, nextSlot } from "./aiWrite";
 import { PROVIDERS, MODELS as AI_MODELS, DEFAULT_MODEL } from "../../lib/aiModels";
 
@@ -347,8 +347,8 @@ export function PcWebAi({ top, showToast, user, go }) {
                     {jobs.length > 0 && !shownJobs.length && <tr><td colSpan={6} style={{ padding: 20, textAlign: "center", color: PC.t3 }}>Không có bài nào ở mục lọc này.</td></tr>}
                     {shownJobs.map((j) => {
                       let [stName, stTone] = ST[j.status] || ST.queued;
-                      if (j.status === "done" && j.post?.status === "published") [stName, stTone] = ["Đã đăng", "green"];
-                      if (j.status === "done" && j.post?.status === "scheduled") [stName, stTone] = [`Hẹn ${vnTime(j.post.published_at)}`, "blue"];
+                      if (j.status === "done" && liveStatus(j.post) === "published") [stName, stTone] = ["Đã đăng", "green"];
+                      if (j.status === "done" && liveStatus(j.post) === "scheduled") [stName, stTone] = [`Hẹn ${vnTime(j.post.published_at)}`, "blue"];
                       if (j.status === "done" && j.post?.status === "trash") [stName, stTone] = ["Bài đã xoá", "gray"];
                       const run = OPEN.includes(j.status) && j.status !== "queued" && !capHit;
                       if (capHit && OPEN.includes(j.status)) [stName, stTone] = [j.status === "queued" ? "Chờ tới 0h" : "Tạm dừng · chạm trần", "amber"]; // máy chủ không chạy bước mới khi đã chạm trần

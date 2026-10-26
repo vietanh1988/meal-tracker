@@ -4,6 +4,8 @@ import { slugify } from "../../../web/lib/slug.js";
 import { clean } from "../../../web/lib/sanitize.js";
 export { slugify, clean };
 
+// 26/10: bài Hẹn giờ đã tới giờ = web đã hiện → coi là Đã đăng (lịch web_publish_due đổi trạng thái mỗi 5 phút)
+export const liveStatus = (p) => (p?.status === "scheduled" && p.published_at && new Date(p.published_at) <= new Date() ? "published" : p?.status);
 export const STATUS = { published: ["Đã đăng", "green"], scheduled: ["Hẹn giờ", "blue"], draft: ["Bản nháp", "gray"], trash: ["Thùng rác", "red"] };
 
 const strip = (h) => String(h || "").replace(/<\/?(b|strong|i|em|u|s|a|span|mark|sup|sub|code|small)\b[^>]*>/gi, "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
