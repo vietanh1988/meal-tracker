@@ -895,9 +895,10 @@
    "name": "Cầm bao lì xì",
    "file": "items/tet/do_tet_nam_pk05.webp",
    "c": [
-    281,
+    256,
     534
-   ]
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "tet-nam-pk06",
@@ -907,9 +908,10 @@
    "name": "Cầm cành mai vàng",
    "file": "items/tet/do_tet_nam_pk06.webp",
    "c": [
-    240,
-    496
-   ]
+    226,
+    538
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "tet-nam-pk07",
@@ -1551,9 +1553,10 @@
    "name": "Cầm khoai lang nướng",
    "file": "items/muadong/do_muadong_nam_pk09.webp",
    "c": [
-    255,
-    462
-   ]
+    257,
+    561
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "muadong-nam-pk10",
@@ -1857,9 +1860,10 @@
    "name": "Cầm bó hoa khô",
    "file": "items/muadong/do_muadong_nu_pk09.webp",
    "c": [
-    258,
-    490
-   ]
+    265,
+    538
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "muadong-nu-pk10",
@@ -2454,9 +2458,10 @@
    "name": "Cầm ô che nắng nhỏ",
    "file": "items/muahe/do_muahe_nu_pk08.webp",
    "c": [
-    256,
-    457
-   ]
+    250,
+    534
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "muahe-nu-pk09",
@@ -3760,5 +3765,5 @@
    ]
   }
  ],
- "ver": "3cdd6910dd"
+ "ver": "6cddb900e2"
 }
