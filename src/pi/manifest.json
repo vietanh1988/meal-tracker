@@ -311,10 +311,10 @@
    "name": "Cầm hộp quà",
    "file": "items/giangsinh/do_giangsinh_nam_pk07.webp",
    "c": [
-    173,
-    442
+    264,
+    548
    ],
-   "arm": "trai"
+   "arm": "dautrai"
   },
   {
    "id": "giangsinh-nam-pk08",
@@ -638,9 +638,10 @@
    "name": "Cầm bánh gừng",
    "file": "items/giangsinh/do_giangsinh_nu_pk09.webp",
    "c": [
-    249,
-    452
-   ]
+    290,
+    565
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "giangsinh-nu-pk10",
@@ -1502,7 +1503,7 @@
    "file": "items/muadong/do_muadong_nam_pk05.webp",
    "c": [
     384,
-    570
+    574
    ]
   },
   {
@@ -1562,9 +1563,10 @@
    "name": "Cầm ván trượt tuyết nhỏ",
    "file": "items/muadong/do_muadong_nam_pk10.webp",
    "c": [
-    260,
-    544
-   ]
+    258,
+    602
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "muadong-nam-pk11",
@@ -1829,9 +1831,10 @@
    "name": "Cầm túi sưởi hình gấu",
    "file": "items/muadong/do_muadong_nu_pk07.webp",
    "c": [
-    261,
-    500
-   ]
+    260,
+    548
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "muadong-nu-pk08",
@@ -2134,9 +2137,10 @@
    "name": "Cầm ván lướt sóng nhỏ",
    "file": "items/muahe/do_muahe_nam_pk07.webp",
    "c": [
-    254,
-    552
-   ]
+    265,
+    596
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "muahe-nam-pk08",
@@ -2486,8 +2490,8 @@
    "name": "Phao bơi kỳ lân",
    "file": "items/muahe/do_muahe_nu_pk11.webp",
    "c": [
-    384,
-    338
+    393,
+    386
    ]
   },
   {
@@ -3031,9 +3035,10 @@
    "name": "Cầm đũa phép ngôi sao",
    "file": "items/halloween/do_halloween_nu_pk06.webp",
    "c": [
-    255,
-    494
-   ]
+    254,
+    542
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "halloween-nu-pk07",
@@ -3055,10 +3060,10 @@
    "name": "Cầm quả táo độc đỏ",
    "file": "items/halloween/do_halloween_nu_pk08.webp",
    "c": [
-    259,
-    533
+    250,
+    532
    ],
-   "arm": "trai"
+   "arm": "dautrai"
   },
   {
    "id": "halloween-nu-pk09",
@@ -3068,8 +3073,8 @@
    "name": "Cầm kẹo bông tím",
    "file": "items/halloween/do_halloween_nu_pk09.webp",
    "c": [
-    210,
-    534
+    250,
+    546
    ],
    "arm": "dautrai"
   },
@@ -3604,9 +3609,10 @@
    "name": "Cầm bánh nướng hình thỏ",
    "file": "items/trungthu/do_trungthu_nu_pk03.webp",
    "c": [
-    256,
-    448
-   ]
+    266,
+    541
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "trungthu-nu-pk04",
@@ -3628,9 +3634,10 @@
    "name": "Cầm quạt giấy vẽ trăng",
    "file": "items/trungthu/do_trungthu_nu_pk05.webp",
    "c": [
-    256,
-    449
-   ]
+    225,
+    534
+   ],
+   "arm": "dautrai"
   },
   {
    "id": "trungthu-nu-pk06",
@@ -3701,7 +3708,7 @@
    "file": "items/trungthu/do_trungthu_nu_pk11.webp",
    "c": [
     386,
-    381
+    324
    ]
   },
   {
@@ -3753,5 +3760,5 @@
    ]
   }
  ],
- "ver": "351254a01e"
+ "ver": "3cdd6910dd"
 }

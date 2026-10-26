@@ -185,7 +185,7 @@ def tip_cover(it):
     c = (edge & a).sum() / edge.sum()
     return [] if c >= 0.95 else [f"bàn tay vẽ không che kín chỗ cắt đầu tay ({c:.0%} < 95%) — thừa tay / hở tay"]
 def extra_hand(it):  # món vẽ riêng có bàn tay xanh mà thân giữ nguyên tay → 2 tay
-    if it["slot"] not in ("tay", "gang") or it.get("arm"): return []
+    if it["slot"] != "tay" or it.get("arm"): return []  # găng trùm đầu tay gốc → không xét
     a = rd(it["file"]); sk = (a[..., 3] > 128) & blue_mask(a[..., :3])
     return [f"có bàn tay vẽ ({int(sk.sum())}px) nhưng không nằm ở đầu tay buông → thừa tay"] if it["id"] in _SA and sk.sum() > 600 else []
 res = {}
