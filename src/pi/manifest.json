@@ -2773,10 +2773,10 @@
    "name": "Cầm đinh ba đồ chơi",
    "file": "items/halloween/do_halloween_nam_pk08.webp",
    "c": [
-    250,
-    496
+    258,
+    529
    ],
-   "arm": "trai"
+   "arm": "dautrai"
   },
   {
    "id": "halloween-nam-pk09",
@@ -2786,8 +2786,8 @@
    "name": "Cầm kẹo mút xoắn",
    "file": "items/halloween/do_halloween_nam_pk09.webp",
    "c": [
-    265,
-    540
+    266,
+    541
    ],
    "arm": "dautrai"
   },
@@ -3104,7 +3104,7 @@
    "file": "items/halloween/do_halloween_nu_pk10.webp",
    "c": [
     266,
-    552
+    550
    ],
    "arm": "dautrai"
   },
@@ -3780,5 +3780,5 @@
    ]
   }
  ],
- "ver": "b9b3a80ae0"
+ "ver": "50eb3d39bd"
 }
