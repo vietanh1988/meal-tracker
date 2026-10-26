@@ -1,5 +1,5 @@
 // Khối nội dung của bài (trình soạn Quản trị › Soạn bài ghi blocks JSON).
-// p · h · list · quote · tip · img · gallery · youtube · table · calo · calo_table · faq · app · button · hr · toc · html · ref
+// p · h · list · quote · tip · img · gallery · youtube · video · table · calo · calo_table · faq · app · button · hr · toc · html · ref
 import { slugify } from "./slug.js";
 import { textOf } from "./sanitize.js";
 import { getBlocksById } from "./content.js";

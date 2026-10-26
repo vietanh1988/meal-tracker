@@ -133,6 +133,16 @@ export function OtherBlock({ b, set, showToast, slug, postId }) {
         <In v={b.title} on={(v) => set({ title: v })} ph="Tên video (cho người dùng trình đọc màn hình)" />
       </Box>
     ); }
+    case "video": return ( // 26/10: video .mp4 (VD video giới thiệu Pi ở /video/…) — dán link; ảnh bìa chọn như ảnh thường
+      <Box label="VIDEO .MP4" testid="web-blk-video">
+        <In v={b.url} on={(v) => set({ url: v.trim() })} ph="Đường dẫn video .mp4, VD: /video/pi-gioi-thieu.mp4" testid="web-blk-video-url" />
+        {b.url ? <video src={b.url} poster={b.poster || undefined} controls playsInline preload="metadata" style={{ width: b.vertical ? 220 : 360, borderRadius: 12, background: "#000" }} /> : <span style={{ fontSize: 12, color: PC.t4 }}>Chưa có video.</span>}
+        <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}><span style={{ fontSize: 12.5, color: PC.t3 }}>Ảnh bìa:</span><Upload name={slug} showToast={showToast} onDone={(r) => set({ poster: r.url })} label={b.poster ? "Thay ảnh bìa" : "Chọn ảnh bìa"} /><LibBtn onPick={(r) => set({ poster: r.url })} /><In v={b.poster} on={(v) => set({ poster: v })} ph="hoặc dán đường dẫn ảnh" w={260} /></span>
+        <In v={b.title} on={(v) => set({ title: v })} ph="Tên video (Google + trình đọc màn hình)" testid="web-blk-video-title" />
+        <In v={b.caption} on={(v) => set({ caption: v })} ph="Chú thích dưới video (không bắt buộc)" />
+        <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13 }}><input type="checkbox" checked={!!b.vertical} onChange={(e) => set({ vertical: e.target.checked })} /> Video dọc (điện thoại 9:16)</label>
+      </Box>
+    );
     case "cols": return (
       <Box label={`CHIA ${b.cols.length} CỘT`}>
         <div style={{ display: "grid", gridTemplateColumns: `repeat(${b.cols.length},1fr)`, gap: 12 }}>{b.cols.map((c, i) => <Rich key={i} html={c} onChange={(v) => set({ cols: b.cols.map((x, k) => (k === i ? v : x)) })} placeholder={`Cột ${i + 1}`} style={{ background: "#FFF", borderRadius: 10, padding: 10, fontSize: 14.5 }} />)}</div>

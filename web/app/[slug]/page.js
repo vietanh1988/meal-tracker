@@ -73,10 +73,12 @@ export default async function Page({ params }) {
   const custom = p.seo?.schema && typeof p.seo.schema === "object" ? p.seo.schema : null;
   // Quản trị › Sửa bài › Schema: tắt từng loại schema tự sinh
   const off = new Set(p.seo?.schema_off || []);
-  const graphs = [off.has("BreadcrumbList") ? null : breadcrumb(s, crumbs), p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? articleGraph(s, p, path) : null, p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? orgGraph(s) : null, off.has("FAQPage") ? null : faqGraph(fq, s), firstCalo && !off.has("NutritionInformation") && schemaOn(s, "calo") ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
+  // 26/10: khối video .mp4 → schema VideoObject (Google hiện video trong kết quả tìm)
+  const vids = blocks.filter((b) => b?.type === "video" && b.url && b.poster).map((b) => ({ "@type": "VideoObject", name: b.title || p.title, description: b.caption || p.seo?.desc || p.excerpt || p.title, thumbnailUrl: new URL(b.poster, siteUrl(s)).href, contentUrl: new URL(b.url, siteUrl(s)).href, uploadDate: p.published_at || p.updated_at, ...(b.duration ? { duration: b.duration } : {}) }));
+  const graphs = [off.has("BreadcrumbList") ? null : breadcrumb(s, crumbs), p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? articleGraph(s, p, path) : null, p.kind === "post" && !off.has("Article") && schemaOn(s, "post") ? orgGraph(s) : null, off.has("FAQPage") ? null : faqGraph(fq, s), firstCalo && !off.has("NutritionInformation") && schemaOn(s, "calo") ? foodGraph(s, firstCalo._food, firstCalo._portion, path) : null, ...vids, ...(custom ? [].concat(custom["@graph"] || custom) : [])];
 
   if (p.kind === "page") {
-    const long = p.template === "legal";
+    const long = p.template === "legal" || p.template === "guide"; // 26/10: "guide" = trang hướng dẫn có mục lục, không đánh số mục
     return (
       <main>
         <JsonLd data={ld(...graphs)} />
