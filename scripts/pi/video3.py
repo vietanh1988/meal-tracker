@@ -38,7 +38,21 @@ def mouth(T):
         if t0 <= T < t0 + VD[(g, i)] - 0.15: return V.VISEMES[int((T - t0) / 0.11) % len(V.VISEMES)]
     return None
 HAT = "muahe-nam-dau03"
-def outfit(T): return ["muahe-nam-ao01"] + ([HAT] if T >= 31.6 else [])
+def outfit(T): return [HAT] if T >= 31.6 else []
+# 26/10: 24 tư thế Pi do Muse vẽ (scripts/pi/poses/<nam|nu>_<tư thế>.webp, cùng khung 768 với Pi app: chân y=720)
+POSES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "poses")
+_pose = {}
+def pose(name, hat=False):
+    k = (name, hat)
+    if k not in _pose:
+        im = Image.open(os.path.join(POSES, f"nam_{name}.webp")).convert("RGBA")
+        if hat: im.alpha_composite(V.L(V.IT[HAT]["file"]))  # chỉ tư thế đầu đứng thẳng (đầu trùng khung app) mới đội được mũ
+        _pose[k] = im
+    return _pose[k]
+# Pi lớn bên trái theo việc đang làm; ngoài các khoảng này dùng Pi app (mặc mũ, nhép miệng theo giọng)
+POSE_T = [(3, 4.6, "bam-dien-thoai"), (4.6, 10, "an-com"), (10, 12.9, "bam-dien-thoai"), (12.9, 16, "uong-nuoc"), (16, 21, "dung-can"),
+          (21, 23.4, "chi-tay"), (23.4, 26, "an-mung"), (30, 31.6, "bam-dien-thoai"), (38, 42, "om-tim")]
+def pose_at(T): return next((n for a, b, n in POSE_T if a <= T < b), None)
 
 def touch(bg, T):
     """ngón tay chạm: vòng tròn hiện trước 0,35 s, ấn xuống, gợn sóng lan ra"""
@@ -192,7 +206,7 @@ def frame(T):
     if T < 3:  # mở đầu
         bg = K.grad((236, 244, 255), (205, 222, 255)); t = T
         dy = -(1 - ease(t / 0.7)) * 520 if t < 0.7 else -abs(math.sin((t - 0.7) * math.pi * 2.2)) * 26 * max(0, 1 - (t - 0.7) / 0.9)
-        K.put_pi(bg, K.pi_img("nam", "haohung", ["muahe-nam-ao01"]), 820, 670, 520, dy, bob)
+        K.put_pi(bg, pose("vay-tay"), 820, 670, 520, dy, bob)
         K.title(bg, ["Nuôi Pi", "thế nào?"], t - 0.4, x=90, y=200, size=86)
         return bg
     if 26 <= T < 30:  # bảng Hạt
@@ -205,7 +219,7 @@ def frame(T):
             y = 34 + k * 80; d.rounded_rectangle((26, y, 554, y + 66), 16, fill=(255, 251, 235)); d.text((50, y + 33), l, font=F("Bold", 24), fill=NAVY, anchor="lm")
             c.alpha_composite(K.seed_coin(34, 0), (430, y + 16)); d.text((474, y + 33), v, font=F("Black", 26), fill=(146, 64, 14), anchor="lm")
         K.place_card(bg, c, xy, a)
-        K.put_pi(bg, K.pi_img("nam", "cuoilon", outfit(T)), 330, 700, 330, -abs(math.sin(t * math.pi * 1.6)) * 20, bob)
+        K.put_pi(bg, pose("om-hat"), 330, 700, 330, -abs(math.sin(t * math.pi * 1.6)) * 20, bob)
         return bg
     if T >= 48.5:  # kết
         return K.scene(10, T - 48.5, T)
@@ -217,7 +231,8 @@ def frame(T):
     jump = 0
     for t0 in (5.0, 12.9, 18.6, 23.4, 35.0):
         if t0 <= T < t0 + 0.6: jump = -math.sin((T - t0) / 0.6 * math.pi) * 60
-    K.put_pi(bg, K.pi_img("nam", face, outfit(T), m), 420, 700, 380, jump, bob)
+    pn = pose_at(T)
+    K.put_pi(bg, pose(pn, T >= 31.6) if pn else K.pi_img("nam", face, outfit(T), m), 420, 700, 380, jump, bob)
     step_title(bg, T)
     ph, pill = phone_layer(T)
     a = ease((T - 3) / 0.5) if T < 3.5 else 1
