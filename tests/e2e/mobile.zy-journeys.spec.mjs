@@ -189,6 +189,7 @@ test("J6 · đánh dấu đã ăn / sửa gram / xoá món đã ghi", async ({ b
   await j.act("bấm ✓ ở dòng Bữa sáng", () => tap(page.getByTestId("eat-sang")));
   await waitDb(async () => (await todayRow())?.eaten_meals?.includes("sang"), "J6: đã ăn bữa sáng");
   await j.act("bấm dòng Bữa sáng → Sửa bữa", () => tap(page.getByTestId("meal-foods-sang")));
+  await page.waitForTimeout(900); // 26/10: chờ khung sửa bữa trượt lên xong rồi mới chụp (ảnh trang Hướng dẫn)
   await j.shot("sua-bua");
   await j.act("sửa gram phở bò = 200", () => page.getByLabel("Gram phở bò").fill("200"));
   await j.act("bấm Lưu", () => tap(page.getByRole("button", { name: "Lưu", exact: true })));
