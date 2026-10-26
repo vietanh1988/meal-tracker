@@ -215,7 +215,7 @@ function ItemCard({ it, state, onClick, equipped, variant }) {
   const r = RARITY[it.rarity];
   const locked = state.kind === "level" || state.kind === "premium" || state.kind === "season";
   return (
-    <button data-testid={`pet-item-${it.id}`} onClick={onClick} className="tap" style={{ position: "relative", ...ltCard, borderRadius: 18, padding: "10px 8px 10px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, border: equipped ? "2px solid #007AFF" : "2px solid transparent", fontFamily: "inherit", color: "#0F172A", minWidth: 0, boxSizing: "border-box" }}>
+    <button data-testid={`pet-item-${it.id}`} data-state={state.kind} data-price={it.price} onClick={onClick} className="tap" style={{ position: "relative", ...ltCard, borderRadius: 18, padding: "10px 8px 10px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, border: equipped ? "2px solid #007AFF" : "2px solid transparent", fontFamily: "inherit", color: "#0F172A", minWidth: 0, boxSizing: "border-box" }}>
       <span style={{ alignSelf: "flex-start", fontSize: 10, fontWeight: 800, color: r.color, background: r.bg, padding: "2px 7px", borderRadius: 6 }}>{r.label}</span>
       <span style={{ width: "100%", height: 70, display: "flex", alignItems: "center", justifyContent: "center", filter: state.kind === "level" || state.kind === "season" ? "grayscale(1)" : "none", opacity: state.kind === "level" || state.kind === "season" ? 0.45 : 1 }}><ItemImg item={it} size={66} variant={variant} /></span>
       <span style={{ fontSize: 12, fontWeight: 800, lineHeight: 1.25, textAlign: "center", minHeight: 30, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{it.name}</span>

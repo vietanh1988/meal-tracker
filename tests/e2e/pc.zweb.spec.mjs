@@ -276,7 +276,9 @@ test("Quản trị web: trang giới thiệu landing", async ({ page }) => {
   await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ is_admin: true, admin_role: "super" }) });
   const errs = [];
   page.on("pageerror", (e) => errs.push(e.message));
+  page.on("console", (m) => { if (m.type() === "error") errs.push("console: " + m.text()); });
   const slug = "e2e-gioi-thieu-pi";
+  const still = async (step) => { await page.waitForTimeout(300); await page.screenshot({ path: `shots/pc-web-landing-${step}.png` }); await expect(page.getByTestId("web-ed-title"), `trình soạn còn mở sau bước ${step} · ${errs.join(" | ")}`).toBeVisible({ timeout: 3000 }); };
   try {
     await login(page);
     await page.getByTestId("pc-open-admin").click();
@@ -289,13 +291,18 @@ test("Quản trị web: trang giới thiệu landing", async ({ page }) => {
     await page.getByTestId("web-ed-slug-edit").click();
     await page.getByTestId("web-ed-slug").fill(slug);
     await page.getByTestId("web-ed-slug").press("Enter");
+    await still("1-slug");
     await page.getByTestId("web-ed-p").first().click();
     await page.keyboard.type("/dau trang");
     await page.getByTestId("web-slash-lp_hero").click();
+    await still("2-slash");
     await expect(page.getByTestId("web-blk-lp_hero")).toBeVisible();
     await page.getByTestId("web-lp_hero-title").fill("Gặp *Pi*|ăn đúng");
+    await still("3-title");
     await page.getByTestId("web-lp_hero-chips-add").click();
+    await still("4-chip");
     await page.getByTestId("web-ed-template").selectOption("landing");
+    await still("5-template");
     await page.screenshot({ path: "shots/pc-web-landing.png", fullPage: true });
     await page.getByTestId("web-ed-draft").click();
     await expect(page.getByTestId("pc-toast")).toBeVisible();

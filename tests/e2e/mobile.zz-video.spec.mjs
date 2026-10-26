@@ -26,7 +26,7 @@ test("Ảnh màn thật cho video nuôi Pi", async ({ browser }) => {
     await rest(`pet_ledger?user_id=eq.${s.uid}&day=eq.${s.today}`, { method: "DELETE" });
     await rest(`pet_ledger?user_id=eq.${s.uid}&key=like.weigh:*`, { method: "DELETE" });
     await rest(`weight_logs?user_id=eq.${s.uid}&logged_date=gte.${s.today}`, { method: "DELETE" });
-    await rest(`pet_profiles?user_id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ balance: 160 }) });
+    await rest(`pet_profiles?user_id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ balance: 300 }) });
     const meals = [{ meal_id: "sang", meal_name: "Bữa sáng", items: [{ food: "Phở bò", gram: 500, cal: 420, p: 25, c: 55, f: 10 }] }, { meal_id: "trua", meal_name: "Bữa trưa", items: [{ food: "Cơm gà", gram: 400, cal: 560, p: 35, c: 70, f: 14 }] }];
     await rest("daily_logs?on_conflict=user_id,log_date", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" },
       body: JSON.stringify({ user_id: s.uid, log_date: s.today, day_type: before?.day_type || "train", meals, eaten_meals: [], water_ml: 0 }) });
@@ -45,9 +45,10 @@ test("Ảnh màn thật cho video nuôi Pi", async ({ browser }) => {
     // 2 · Uống đủ nước: chạm cốc tới khi đủ
     await page.getByTestId("water-cup-next").evaluate((e) => e.scrollIntoView({ block: "center" }));
     await shot("v04-nuoc", ["water-cup-next", "water-count"]);
-    for (let k = 0; k < 20 && !(await ledger("water:")).length; k++) {
-      if (!(await page.getByTestId("water-cup-next").count())) break;
-      await page.getByTestId("water-cup-next").click(); await page.waitForTimeout(700);
+    for (let k = 0; k < 20; k++) {
+      const [f, n] = ((await page.getByTestId("water-count").innerText()).match(/\d+/g) || []).map(Number);
+      if ((n && f >= n) || !(await page.getByTestId("water-cup-next").count())) break; // đủ mục tiêu thì dừng chạm
+      await page.getByTestId("water-cup-next").click(); await page.waitForTimeout(500);
       if (k === 0) await shot("v05-nuoc-cham", ["water-cup-next", "water-count"]);
     }
     await waitDb(async () => (await ledger("water:")).length >= 1, "Hạt nước");
@@ -76,7 +77,9 @@ test("Ảnh màn thật cho video nuôi Pi", async ({ browser }) => {
     await tap(page.getByTestId("pet-open-shop"));
     await expect(page.getByTestId("pet-shop")).toBeVisible();
     await page.waitForTimeout(1000);
-    const item = await page.locator('[data-testid^="pet-item-"]').evaluateAll((els) => els.map((e) => e.dataset.testid).find((t) => /-nam-(dau|ao)\d/.test(t)) || els[0]?.dataset.testid);
+    // món mua được ngay (đủ cấp, Phổ thông, bộ đang bán, chưa có, đủ Hạt) — ưu tiên đồ đội đầu cho dễ thấy
+    const item = await page.locator('[data-testid^="pet-item-"][data-state="buy"]').evaluateAll((els) => { const ok = els.filter((e) => +e.dataset.price <= 300).map((e) => e.dataset.testid); return ok.find((t) => /-dau\d/.test(t)) || ok.find((t) => /-ao\d/.test(t)) || ok[0]; });
+    expect(item, "có món mua được").toBeTruthy();
     await page.getByTestId(item).evaluate((e) => e.scrollIntoView({ block: "center" }));
     await shot("v11-shop", [item, "pet-balance"]);
     await tap(page.getByTestId(item));
