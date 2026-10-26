@@ -183,7 +183,7 @@ def phone_layer(T, a=1.0):
     f.paste(s, (12, 12), mk); d.rounded_rectangle((PW / 2 - 48, 22, PW / 2 + 48, 46), 12, fill=(24, 28, 40))
     return f, (SX + pill[0], SY + pill[1])
 
-STEPS = [(3, 10, 1, ["Ăn xong bữa,", "chạm Đã ăn"], "+10 Hạt mỗi bữa"), (10, 16, 2, ["Uống đủ nước"], "+15 Hạt"), (16, 21, 3, ["Cân nặng"], "+20 Hạt"),
+STEPS = [(3, 10, 1, ["Ăn xong bữa,", "chạm Đã ăn"], "+10 Hạt mỗi bữa"), (10, 16, 2, ["Uống đủ nước"], "+15 Hạt"), (16, 21, 3, ["Cân tuần này"], "+20 Hạt mỗi tuần"),
          (21, 26, 4, ["Giữ chuỗi ngày"], "+10 Hạt · nhận đồ thành tích"), (30, 38, 5, ["Dùng Hạt", "mua đồ cho Pi"], "Mặc thử trước, ưng thì mua"),
          (38, 42, 6, ["Pi lên cấp,", "mở đồ mới"], "Hạt nhận được = kinh nghiệm"), (42, 48.5, 7, ["Chạm vào Pi,", "Pi nói chuyện"], "Pi khen việc tốt bạn làm")]
 
@@ -213,7 +213,7 @@ def frame(T):
         bg = K.grad((255, 236, 180), (252, 196, 90), radial=True); t = T - 26
         K.title(bg, ["Mỗi ngày", "tối đa 120 Hạt"], t - 0.1, x=70, y=60, size=64)
         c, xy, a = K.card(bg, (640, 110, 1220, 640), t - 0.3); d = ImageDraw.Draw(c)
-        rows = [("Ăn một bữa (từ 100 kcal)", "+10"), ("Chụp ảnh món ăn", "+5"), ("Ăn từ 3 bữa trở lên", "+20"), ("Uống đủ nước", "+15"), ("Cân nặng", "+20"), ("Giữ chuỗi ngày đã ăn", "+10")]
+        rows = [("Ăn một bữa (từ 100 kcal)", "+10"), ("Chụp ảnh món ăn", "+5"), ("Ăn từ 3 bữa trở lên", "+20"), ("Uống đủ nước", "+15"), ("Cân 1 lần trong tuần", "+20"), ("Giữ chuỗi ngày đã ăn", "+10")]
         for k, (l, v) in enumerate(rows):
             if t < 0.5 + k * 0.18: continue
             y = 34 + k * 80; d.rounded_rectangle((26, y, 554, y + 66), 16, fill=(255, 251, 235)); d.text((50, y + 33), l, font=F("Bold", 24), fill=NAVY, anchor="lm")

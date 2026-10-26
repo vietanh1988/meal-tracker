@@ -280,7 +280,10 @@ test("Quản trị web: trang giới thiệu landing", async ({ page }) => {
   try {
     await login(page);
     await page.getByTestId("pc-open-admin").click();
+    await expect(page.getByTestId("pc-admin")).toBeVisible();
     await page.getByTestId("pc-nav-web_pages").click();
+    await expect(page.getByTestId("pc-page-web_pages")).toBeVisible();
+    await expect(page.getByText("Đang tải…")).toHaveCount(0, { timeout: 15000 }); // danh sách tải xong rồi mới mở trình soạn (tải xong muộn làm đóng trình soạn)
     await page.getByTestId("web-post-new").click();
     await page.getByTestId("web-ed-title").fill("E2E giới thiệu Pi");
     await page.getByTestId("web-ed-slug-edit").click();
