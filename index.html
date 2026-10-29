@@ -25,16 +25,18 @@
     <meta property="og:locale" content="vi_VN" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-    <script>window.ChartJS=window.Chart;</script>
+    <!-- 30/10: phông + Chart.js KHÔNG chặn vẽ màn đầu (trước đây mở app bằng mạng điện thoại: màn đen vài giây chờ 2 file này) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet" /></noscript>
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" onload="window.ChartJS=window.Chart;window.dispatchEvent(new Event('fp-chartjs'))"></script>
     <title>Fipilot AI - AI Nutrition Coach</title>
     <style>html,body{margin:0;padding:0;overflow-x:hidden;overflow-x:clip;width:100%;font-family:-apple-system,"system-ui",Inter,"Inter Fallback","Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji"}*{box-sizing:border-box;font-family:inherit}::-webkit-scrollbar{width:0;height:0;background:transparent}*{scrollbar-width:none;-ms-overflow-style:none}</style>
     <!-- Google Analytics: chỉ chạy trên app.fipilotai.com thật — bỏ qua máy test (CI Playwright, localhost, bản xem trước Vercel) để không đếm khống -->
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}(function(){if(location.hostname!=="app.fipilotai.com"||navigator.webdriver)return;var s=document.createElement("script");s.async=1;s.src="https://www.googletagmanager.com/gtag/js?id=G-QVTVFXG59E";document.head.appendChild(s);gtag('js',new Date());gtag('config','G-QVTVFXG59E');})();</script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- 30/10: màn chờ vẽ sẵn trong HTML (giống app-splash của App.jsx) → mở app thấy ngay logo, không màn đen chờ tải JS; React thay khi chạy -->
+    <div id="root"><div id="fp-boot" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:100vh;background:linear-gradient(180deg,#0050E6 0%,#01346A 60%,#001C38 100%);color:#fff;font-family:-apple-system,'system-ui',Inter,Roboto,sans-serif"><style>@keyframes fpSpin{to{transform:rotate(360deg)}}</style><img src="/logo.png" alt="" width="72" height="72" style="width:72px;height:72px;border-radius:20px;object-fit:cover;box-shadow:0 12px 30px rgba(0,0,0,.3)" /><span style="font-size:18px;font-weight:900;letter-spacing:.02em">Fipilot AI</span><span style="width:26px;height:26px;border-radius:13px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:fpSpin .9s linear infinite;box-sizing:border-box"></span></div></div>
     <!-- 18/10: cứu máy kẹt màn trắng (bản cũ trong bộ nhớ đệm trỏ tới file JS đã mất): 12 s chưa chạy được app
          → gỡ service worker + xoá bộ nhớ đệm + tải lại 1 lần (main.jsx đặt window.__fpBooted = true) -->
     <script>

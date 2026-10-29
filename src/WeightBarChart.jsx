@@ -20,6 +20,9 @@ export function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
   const yRange0=data0.length>0?Math.ceil(Math.max(...allVals0))+1-(Math.floor(Math.min(...allVals0))-1):4;
   const chartH=mob?(yRange0>6?220:190):(yRange0>6?280:240);
 
+  // 30/10: Chart.js tải không chặn (async trong index.html) → chưa có thì chờ sự kiện fp-chartjs rồi vẽ
+  const [cjReady,setCjReady]=useState(()=>!!window.ChartJS);
+  useEffect(()=>{if(cjReady)return;const on=()=>setCjReady(true);if(window.Chart){window.ChartJS=window.Chart;setCjReady(true);}window.addEventListener("fp-chartjs",on);return()=>window.removeEventListener("fp-chartjs",on);},[cjReady]);
   useEffect(()=>{
     if(!canvasRef.current||visibleLog.length<1||!window.ChartJS)return;
     if(chartRef.current)chartRef.current.destroy();
@@ -122,7 +125,7 @@ export function WeightBarChart({weightLog,goalKg,goalType,startKg,mob}){
     });
 
     return()=>{if(chartRef.current)chartRef.current.destroy();};
-  },[weightLog,goalKg,goalType,startKg,mob,chartPage]);
+  },[weightLog,goalKg,goalType,startKg,mob,chartPage,cjReady]);
 
   return <div>
     <div style={{position:"relative",width:"100%",height:chartH}}>

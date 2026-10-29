@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import { AppDialogHost } from "./lib/dialog";
 import { supabase } from "./lib/supabase";
 import { calcMacro, defaultProfile } from "./calcMacro";
@@ -14,7 +14,8 @@ import { useWeightLog } from "./hooks/useWeightLog";
 import { useUserData } from "./hooks/useUserData";
 import { useAppSettings } from "./hooks/useAppSettings";
 import { PcPhoneFrame } from "./pc/PcPhoneFrame";
-import { PcAdminShell } from "./pc/PcAdminShell";
+// 30/10: Quản trị PC tải riêng (chỉ admin mở) — bớt nặng file JS chính, điện thoại mở app nhanh hơn
+const PcAdminShell = lazy(() => import("./pc/PcAdminShell").then((m) => ({ default: m.PcAdminShell })));
 import { todayVN, isGymDate, templateKeyOf } from "./lib/dateVN";
 import { setTrackUser } from "./lib/track";
 
@@ -140,7 +141,7 @@ export default function App(){
     const adminP={todayLog,updateWeight,removeDayMeal,moveDayMeal,weightLog,setWeightLog,addWeight,deleteWeight,resetWeights,profile,setProfile:wrappedSetProfile,macro,saveMealToCloud,saveFoodCache,deleteFoodCache,getMeals,foodCache,appSettings,isAdmin,saveSetting,weeklyTemplates,saveWeeklyTemplate,getWeeklyTemplate,deleteWeeklyTemplate,defaultTemplates,saveDefaultTemplate,deleteDefaultTemplate,applyTemplate,refreshDefaultTemplates,weeklyBundles,saveWeeklyBundle,deleteWeeklyBundle,refreshWeeklyBundles,user,signOut,getMealHistory,getDailyLogs};
     return <>
       <AppDialogHost/>
-      <PcAdminShell adminP={adminP} user={user} profile={profile} appSettings={appSettings} saveSetting={saveSetting} onOpenApp={()=>setPcMode("app")}/>
+      <Suspense fallback={splash}><PcAdminShell adminP={adminP} user={user} profile={profile} appSettings={appSettings} saveSetting={saveSetting} onOpenApp={()=>setPcMode("app")}/></Suspense>
     </>;
   }
   // Khách (và admin chưa vào Quản trị): app điện thoại trong khung giữa màn (MobileApp tự gắn AppDialogHost)
