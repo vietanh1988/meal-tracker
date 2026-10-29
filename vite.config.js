@@ -10,6 +10,7 @@ export default defineConfig({
       srcDir: "src",
       filename: "sw.js",
       registerType: "autoUpdate",
+      injectRegister: "script-defer", // 30/10: registerSW.js không chặn vẽ màn đầu
       includeAssets: ["favicon.ico", "icon-192.png", "icon-512.png"],
       manifest: {
         name: "Fipilot AI - AI Nutrition Coach",
