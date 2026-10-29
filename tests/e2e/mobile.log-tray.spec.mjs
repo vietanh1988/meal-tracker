@@ -87,3 +87,62 @@ test("Ghi bữa: món lạ tự nhập calo ngay trong sheet → giỏ → ghi",
     await ctx.close();
   }
 });
+
+// 30/10 (chủ dự án: "gặp món không có phải tính lại calo thì mất hết món đã thêm"): giỏ có món → Để AI tính mở ĐÈ lên sheet,
+// kết quả THÊM VÀO GIỎ (giỏ giữ món cũ, món mới tô xanh), ghi 1 lần; bấm ✕ khi giỏ còn món → hỏi Ghi / Ở lại / Bỏ giỏ.
+test("Ghi bữa: giỏ có món + món lạ → AI tính → thêm vào giỏ, không mất món cũ", async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on("pageerror", (e) => errs.push(e.message));
+  const s = S();
+  const before = await todayRow();
+  await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" });
+  await rest(`user_foods?user_id=eq.${s.uid}`, { method: "DELETE" });
+  try {
+    await login(page);
+    await page.route("**/functions/v1/ai-proxy", (route) => route.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
+    await openLogFor(page, "toi");
+    const search = page.getByPlaceholder(/Tìm món/);
+    await search.fill("cơm trắng");
+    await tap(page.getByTestId("log-add").first());
+    await expect(page.getByTestId("log-tray-row")).toHaveCount(1);
+    // đang tìm món lạ: giỏ gọn 1 dòng, vẫn thấy số món
+    await search.fill("bánh khọt cô ba qwz");
+    await expect(page.getByTestId("log-manual")).toBeVisible();
+    await expect(page.getByTestId("log-tray")).toHaveAttribute("data-collapsed", "1");
+    await expect(page.getByTestId("log-tray-head")).toContainText("1 món");
+    await page.screenshot({ path: "shots/gio-mon-la.png" });
+    await tap(page.getByTestId("log-calc-q"));
+    // Kiểm tra calo mở đè: ghi chú giỏ, nút Thêm vào giỏ, không có chọn bữa / ngày
+    await expect(page.getByTestId("tray-note")).toContainText("1 món");
+    await expect(page.getByTestId("calc-meal")).toHaveCount(0);
+    await tap(page.getByTestId("calc-manual-0"));
+    await page.getByTestId("calc-manual-cal").fill("300");
+    await tap(page.getByTestId("calc-manual-use"));
+    await expect(page.getByTestId("calc-save")).toContainText("Thêm vào giỏ · 300 kcal");
+    await page.screenshot({ path: "shots/gio-ai-tinh.png" });
+    await tap(page.getByTestId("calc-save"));
+    // quay về sheet: giỏ 2 món, món mới tô xanh
+    await expect(page.getByTestId("log-tray-row")).toHaveCount(2);
+    await expect(page.locator('[data-testid="log-tray-row"][data-fresh="1"]')).toHaveCount(1);
+    await expect(page.getByTestId("log-tray-save")).toContainText("Ghi 2 món");
+    await page.screenshot({ path: "shots/gio-them-moi.png" });
+    // ✕ khi giỏ còn món → hỏi; Ở lại thì sheet còn nguyên
+    await tap(page.getByTestId("log-close"));
+    await expect(page.getByTestId("choose-stay")).toBeVisible();
+    await page.screenshot({ path: "shots/gio-hoi-dong.png" });
+    await tap(page.getByTestId("choose-stay"));
+    await expect(page.getByTestId("log-tray-row")).toHaveCount(2);
+    await tap(page.getByTestId("log-tray-save"));
+    await waitDb(async () => {
+      const m = ((await todayRow())?.meals || []).find((x) => x.meal_id === "toi");
+      return m && m.items.length === 2 && m.items.some((i) => i.source === "manual" && i.cal === 300) && m.items.some((i) => /cơm trắng/i.test(i.food || ""));
+    }, "ghi 2 món (món giỏ + món AI tính) 1 lần");
+    expect(errs, errs.join("\n")).toEqual([]);
+  } finally {
+    await rest(`daily_logs?user_id=eq.${s.uid}&log_date=eq.${s.today}`, { method: "DELETE" });
+    if (before) await rest("daily_logs", { method: "POST", body: JSON.stringify(before) });
+    await ctx.close();
+  }
+});

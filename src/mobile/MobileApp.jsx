@@ -386,6 +386,9 @@ export function MobileApp(props) {
   const logLayer = layers.find((l) => l.type === "log");
   const editLayer = layers.find((l) => l.type === "edit");
   const [pendingPick, setPendingPick] = useState(null);
+  // 30/10: món AI tính / chụp ảnh mở từ Ghi bữa khi giỏ đang có món → trả về giỏ của sheet Ghi bữa (không ghi thẳng, không mất món cũ)
+  const [trayIn, setTrayIn] = useState(null);
+  const toTray = (items) => { setTrayIn({ items, n: Date.now() }); showToast({ text: items.length === 1 ? `Đã thêm ${itemName(items[0])} vào giỏ` : `Đã thêm ${items.length} món vào giỏ` }); return true; };
   const dateOptions = Array.from({ length: 7 }, (_, i) => addDays(today, -i)).map((d) => ({ value: d, label: friendlyDate(d, today) }));
   const weeklyFor = (d, mealId) => {
     const tpl = ud.getWeeklyTemplate ? ud.getWeeklyTemplate(templateKeyOf(d)) : null;
@@ -419,10 +422,11 @@ export function MobileApp(props) {
     return <LogMealSheet date={l.date} onDate={(d) => { updateLog({ date: d }); if (d !== today && !dayCache[d]) loadDay(d); }} mealId={mealId} onMeal={(id) => updateLog({ mealId: id })}
       mealIds={ids} dateOptions={dateOptions} recentMeals={recentMeals} frequent={frequent} foodCache={calcFoodCache}
       onClose={closeLayer} aiOn={!!flags.ai_macro} saveMine={saveMyFoods}
-      onPhoto={flags.photo_macro ? () => replaceTop({ type: "photo", mealId: l.mealId }) : null}
+      onPhoto={flags.photo_macro ? (tray) => (tray && tray.n ? openLayer({ type: "photo", mealId, date: l.date, tray }) : replaceTop({ type: "photo", mealId: l.mealId })) : null}
       onAI={aiAccess.usable && l.date === today ? () => replaceTop(quickAILayer()) : null}
       weekly={weeklyFor(l.date, mealId)}
-      onCalc={(text, auto) => replaceTop({ type: "calc", text: text || "", auto: !!auto, date: l.date, mealId })}
+      incoming={trayIn}
+      onCalc={(text, auto, tray) => (tray && tray.n ? openLayer({ type: "calc", text: text || "", auto: !!auto, date: l.date, mealId, tray }) : replaceTop({ type: "calc", text: text || "", auto: !!auto, date: l.date, mealId }))}
       onAddItems={async (items) => { const ok = await putItems(l.date, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`); if (ok !== false) closeLayer(); return ok; }}
       suggestions={sg.list} suggestTarget={sg.target} />;
   };
@@ -972,8 +976,8 @@ export function MobileApp(props) {
               dayInfo={{ target: targetsOf(macroFor(l.date), dayTypeOf(profile, l.date)).cal, eaten: eatenOfDay(dayOf(l.date)).cal }}
               mealIds={idsFor(l.date).length ? idsFor(l.date) : ["sang", "trua", "toi"]} initialMeal={l.mealId} date={l.date} dateOptions={dateOptions.some((o) => o.value === l.date) ? dateOptions : [{ value: l.date, label: fmtVN(l.date) }, ...dateOptions]}
               savePending={savePendingFoodCache} saveMine={saveMyFoods} onClose={closeLayer}
-              pickTitle={l.pick ? MEAL_NAMES[l.mealId] : null} viewFirst={!!l.viewFirst}
-              onSave={l.pick
+              pickTitle={l.pick ? MEAL_NAMES[l.mealId] : null} viewFirst={!!l.viewFirst} tray={l.tray || null}
+              onSave={l.tray ? (d, mealId, items) => toTray(items) : l.pick
                 // Từ Sửa bữa › Thêm món: món AI tính đưa về bản nháp Sửa bữa (chưa lưu), như chọn món trong kho
                 ? (d, mealId, items) => { setPendingPick({ items, n: Date.now() }); return true; }
                 : (d, mealId, items) => putItems(d, mealId, items, false, items.length === 1 ? itemName(items[0]).toLowerCase() : `${items.length} món`, "calc")} />
@@ -993,11 +997,12 @@ export function MobileApp(props) {
             onDelete={async (d) => { const ok = await deleteMeasure(d); if (ok) showToast({ text: "Đã xoá lần đo" }); return ok; }} onClose={closeLayer} />}
           {l.type === "weight" && <WeightSheet today={today} weightLog={weightLog} profileKg={profile.kg} goalKg={weight.goalKg} startKg={weight.startKg}
             onSave={saveWeightToday} onClose={closeLayer} onChart={l.fromGoals ? null : openWeightChart} />}
-          {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} mealIds={idsFor(today)} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} onSave={(d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`, "photo")} />}
+          {l.type === "photo" && <PhotoScreen initialMeal={l.mealId} mealIds={idsFor(today)} appSettings={appSettings} photoCtx={photoCtx} foodCache={ud.foodCache} dateOptions={dateOptions} onClose={closeLayer} tray={l.tray || null}
+            onSave={l.tray ? (d, mealId, items) => toTray(items) : (d, mealId, items) => putItems(d, mealId, items, false, `${items.length} món từ ảnh`, "photo")} />}
         </div>
       ))}
 
-      <Toast toast={toast} bottom={has("edit") ? 100 : 90} />
+      <Toast toast={toast} bottom={has("edit") ? 100 : 90} top={top && top.type === "log" ? 104 : null} />{/* 30/10: đang mở Ghi bữa → báo ở trên, không che giỏ */}
       {!top && <PWAInstallPrompt ready={hasLogged} />}
     </div>
   );

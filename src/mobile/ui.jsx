@@ -262,10 +262,10 @@ export function SubPage({ title, subtitle, onBack, right, children, footer, bg =
 }
 
 // Thông báo nhỏ nổi phía trên thanh dưới, có nút hành động (Hoàn tác / Sửa)
-export function Toast({ toast, bottom = 90 }) {
+export function Toast({ toast, bottom = 90, top = null }) {
   if (!toast) return null;
   return (
-    <div role="status" data-testid="toast" style={{ position: "fixed", left: "50%", bottom: `calc(${bottom}px + env(safe-area-inset-bottom, 0px))`, transform: "translate(-50%,0)", zIndex: 300, width: "calc(100% - 24px)", maxWidth: 520, background: "#0F172A", color: "#FFFFFF", borderRadius: 14, padding: "10px 8px 10px 14px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 8px 24px rgba(15,23,42,0.25)", animation: "fpmToast .18s ease", boxSizing: "border-box", fontFamily: FONT }}>
+    <div role="status" data-testid="toast" style={{ position: "fixed", left: "50%", ...(top != null ? { top: `calc(${top}px + env(safe-area-inset-top, 0px))` } : { bottom: `calc(${bottom}px + env(safe-area-inset-bottom, 0px))` }), transform: "translate(-50%,0)", zIndex: 300, width: "calc(100% - 24px)", maxWidth: 520, background: "#0F172A", color: "#FFFFFF", borderRadius: 14, padding: "10px 8px 10px 14px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 8px 24px rgba(15,23,42,0.25)", animation: "fpmToast .18s ease", boxSizing: "border-box", fontFamily: FONT }}>
       {/^Đã /.test(toast.text || "") && <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 11, background: "#00C896", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.check(13, 3)}</span>}
       <span style={{ flex: 1, fontSize: 13, fontWeight: 600, lineHeight: 1.35 }}>{toast.text}</span>
       {toast.action && <button data-testid="toast-action" onClick={toast.action.onClick} style={{ height: 36, padding: "0 12px", borderRadius: 10, border: "none", background: "rgba(255,255,255,0.14)", color: "#FFFFFF", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>{toast.action.label}</button>}

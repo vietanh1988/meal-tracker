@@ -39,6 +39,14 @@ export function appConfirm(message, opts = {}) {
   });
 }
 
+// 30/10: hộp nhiều lựa chọn (nút xếp dọc) — trả về id nút bấm, chạm nền = null
+//   await appChoose("…", { title, buttons: [{ id: "save", label: "Ghi", kind: "primary" }, { id: "stay", label: "Ở lại" }, { id: "drop", label: "Bỏ", kind: "danger" }] })
+export function appChoose(message, opts = {}) {
+  return new Promise(resolve => {
+    enqueue({ type: "choose", message, title: opts.title || "Chọn", buttons: opts.buttons || [], resolve });
+  });
+}
+
 export function AppDialogHost() {
   const [current, setCurrent] = useState(null);
   const [pending, setPending] = useState([]);
@@ -68,7 +76,7 @@ export function AppDialogHost() {
   const dangerColor = "#DC2626";
 
   return (
-    <div onClick={() => close(isConfirm ? false : undefined)}
+    <div onClick={() => close(isConfirm ? false : current.type === "choose" ? null : undefined)}
       style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" data-testid="app-dialog"
         style={{ background: "#fff", borderRadius: 18, width: "100%", maxWidth: 360, padding: "20px 18px 14px", boxShadow: "0 20px 50px rgba(0,0,0,0.25)", fontFamily: "inherit", textAlign: "center" }}>
@@ -79,7 +87,16 @@ export function AppDialogHost() {
         <div style={{ fontSize: 14, color: C.t2, lineHeight: 1.5, whiteSpace: "pre-wrap", marginBottom: 16 }}>
           {current.message}
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        {current.type === "choose" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {current.buttons.map((b) => (
+              <button key={b.id} data-testid={`choose-${b.id}`} onClick={() => close(b.id)}
+                style={{ height: 46, borderRadius: 12, border: "none", background: b.kind === "primary" ? C.primary : b.kind === "danger" ? "#FEE2E2" : "#F1F5F9", color: b.kind === "primary" ? "#fff" : b.kind === "danger" ? dangerColor : C.t1, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                {b.label}
+              </button>
+            ))}
+          </div>
+        ) : <div style={{ display: "flex", gap: 8 }}>
           {isConfirm && (
             <button autoFocus data-testid="confirm-cancel" onClick={() => close(false)}
               style={{ flex: 1, height: 46, borderRadius: 12, border: "none", background: "#F1F5F9", color: C.t1, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
@@ -90,7 +107,7 @@ export function AppDialogHost() {
             style={{ flex: 1, height: 46, borderRadius: 12, border: "none", background: isConfirm && current.danger ? dangerColor : C.primary, color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
             {isConfirm ? current.confirmText : "OK"}
           </button>
-        </div>
+        </div>}
       </div>
     </div>
   );

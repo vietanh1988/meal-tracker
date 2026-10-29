@@ -10,6 +10,7 @@ import { MEAL_NAMES, MEAL_ORDER } from "../lib/mealMath";
 import { currentMealId } from "../lib/dayPlan";
 import { nowVNParts, addDays, todayVN } from "../lib/dateVN";
 import { SubPage, Icon, GRAD_ORANGE } from "./ui";
+import { TrayNote } from "./CalcCheckScreen";
 import { portionOf, stepPortion, setPortion, toggleUnit, hasUnit } from "../lib/portion";
 
 const sum = (items) => items.reduce((a, i) => ({ cal: a.cal + (Number(i.cal) || 0), p: a.p + (Number(i.p) || 0), c: a.c + (Number(i.c) || 0), f: a.f + (Number(i.f) || 0) }), { cal: 0, p: 0, c: 0, f: 0 });
@@ -37,7 +38,7 @@ function QtyInput({ value, onCommit, onStart, onEnd, testid, style, ...rest }) {
   );
 }
 
-export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodCache, dateOptions, onSave, onClose }) {
+export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodCache, dateOptions, onSave, onClose, tray = null }) {
   const [img, setImg] = useState(null);
   const [stage, setStage] = useState("capture"); // capture | loading | edit
   const [items, setItems] = useState([]);
@@ -91,17 +92,17 @@ export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodC
   const footer = stage === "edit" ? (
     <div style={{ flexShrink: 0, background: "rgba(255,255,255,0.94)", borderTop: "1px solid rgba(30,64,175,0.08)", padding: "10px 12px calc(env(safe-area-inset-bottom, 0px) + 12px) 12px" }}>
       <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ display: "flex", gap: 8 }}>
+        {!tray && <div style={{ display: "flex", gap: 8 }}>
           <select data-testid="photo-meal" aria-label="Bữa" value={meal} onChange={(e) => setMeal(e.target.value)} style={pill}>
             {mealList.map((id) => <option key={id} value={id}>{MEAL_NAMES[id]}</option>)}
           </select>
           <select data-testid="photo-date" aria-label="Ngày" value={date} onChange={(e) => setDate(e.target.value)} style={pill}>
             {(dateOptions || [{ value: todayVN(), label: "Hôm nay" }]).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
-        </div>
+        </div>}
         <button data-testid="photo-save" disabled={!items.length || busy} onClick={save}
           style={{ height: 52, borderRadius: 14, border: "none", background: items.length ? GRAD_ORANGE : "#E2E8F0", color: items.length ? "#FFFFFF" : "#64748B", fontFamily: "inherit", fontSize: 16, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-          {items.length && !busy ? Icon.check(18, 2.8) : null}{busy ? "Đang lưu…" : `Ghi vào ${MEAL_NAMES[meal].toLowerCase()}`}
+          {items.length && !busy ? Icon.check(18, 2.8) : null}{busy ? "Đang lưu…" : tray ? `Thêm vào giỏ · ${fmtInt(total.cal)} kcal` : `Ghi vào ${MEAL_NAMES[meal].toLowerCase()}`}
         </button>
       </div>
     </div>
@@ -157,6 +158,7 @@ export function PhotoScreen({ initialMeal, mealIds, appSettings, photoCtx, foodC
 
       {stage === "edit" && (
         <div style={{ padding: "12px 12px 16px 12px", display: "flex", flexDirection: "column", gap: 12 }}>
+          {tray && <TrayNote tray={tray} style={{ margin: 0 }} />}
           <div style={{ position: "relative" }}>
             {img && <img src={img} alt="Ảnh bữa ăn" style={{ width: "100%", height: 150, objectFit: "cover", borderRadius: 20, display: "block" }} />}
             <button onClick={() => cam.current?.click()} style={{ position: "absolute", right: 10, bottom: 10, height: 34, padding: "0 12px", borderRadius: 10, border: "none", background: "rgba(15,23,42,0.7)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6 }}>{Icon.camera(15)} Chụp lại</button>

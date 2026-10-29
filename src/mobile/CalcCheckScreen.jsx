@@ -17,7 +17,9 @@ const sel = { height: 42, padding: "0 12px", borderRadius: 12, border: "none", b
 const stepBtn = { width: 32, height: 32, borderRadius: 10, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 18, fontWeight: 800, padding: 0, flexShrink: 0, fontFamily: "inherit" };
 const tag = (ai) => ({ fontSize: 11, fontWeight: 800, color: ai ? "#6D28D9" : "#00A67E", background: ai ? "rgba(124,58,237,0.1)" : "rgba(0,200,150,0.1)", padding: "2px 6px", borderRadius: 6, marginLeft: 4, whiteSpace: "nowrap" });
 
-export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, frequent, aiEnabled, userId, appSettings, dayInfo, mealIds, initialMeal, date, dateOptions, onSave, savePending, saveMine, onClose, pickTitle, viewFirst = false }) {
+export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, frequent, aiEnabled, userId, appSettings, dayInfo, mealIds, initialMeal, date, dateOptions, onSave, savePending, saveMine, onClose, pickTitle, viewFirst = false, tray = null }) {
+  // 30/10: mở từ Ghi bữa khi giỏ đang có món → kết quả THÊM VÀO GIỎ (không ghi thẳng, không mất món cũ)
+  if (tray && !pickTitle) pickTitle = `giỏ ${tray.meal}`;
   const [text, setText] = useState(initialText);
   const [rows, setRows] = useState(() => (autoRun && initialText.trim() ? resolveAll(initialText, foodCache) : null));
   const [aiBusy, setAiBusy] = useState(false);
@@ -137,8 +139,8 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
       </div>}
       <div style={{ display: "flex", gap: 8 }}>
         {/* Mở từ nút + › Kiểm tra calo (bản vẽ 116): "Chỉ xem" là nút chính, "Ghi vào …" là nút phụ */}
-        <button data-testid="calc-close" data-primary={vf ? "1" : undefined} onClick={onClose} style={{ flex: vf ? 1.4 : 1, height: 52, borderRadius: 14, border: "none", ...(vf ? { background: CY, color: "#FFFFFF", fontWeight: 900 } : { background: "#EEF4FF", color: "#0F172A", fontWeight: 800 }), fontFamily: "inherit", fontSize: 15 }}>{pickTitle ? "Huỷ" : "Chỉ xem"}</button>
-        <button data-testid="calc-save" data-primary={vf ? undefined : "1"} disabled={!canSave || busy} onClick={save} style={{ flex: vf ? 1 : 2, height: 52, borderRadius: 14, border: "none", ...(!canSave ? { background: "#E2E8F0", color: "#64748B" } : vf ? { background: "#EEF4FF", color: "#0062F0" } : { background: CY, color: "#FFFFFF" }), fontFamily: "inherit", fontSize: 15, fontWeight: vf ? 800 : 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: "0 10px" }}>{busy ? "Đang lưu…" : pickTitle ? `Thêm vào ${String(pickTitle).toLowerCase()}` : `Ghi vào ${(MEAL_NAMES[meal] || "bữa").toLowerCase()}`}</button>
+        <button data-testid="calc-close" data-primary={vf ? "1" : undefined} onClick={onClose} style={{ flex: vf ? 1.4 : 1, height: 52, borderRadius: 14, border: "none", ...(vf ? { background: CY, color: "#FFFFFF", fontWeight: 900 } : { background: "#EEF4FF", color: "#0F172A", fontWeight: 800 }), fontFamily: "inherit", fontSize: 15 }}>{tray ? "Huỷ, quay lại giỏ" : pickTitle ? "Huỷ" : "Chỉ xem"}</button>
+        <button data-testid="calc-save" data-primary={vf ? undefined : "1"} disabled={!canSave || busy} onClick={save} style={{ flex: vf ? 1 : 2, height: 52, borderRadius: 14, border: "none", ...(!canSave ? { background: "#E2E8F0", color: "#64748B" } : vf ? { background: "#EEF4FF", color: "#0062F0" } : { background: CY, color: "#FFFFFF" }), fontFamily: "inherit", fontSize: 15, fontWeight: vf ? 800 : 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", padding: "0 10px" }}>{busy ? "Đang lưu…" : tray ? `+ Thêm vào giỏ · ${fmtInt(total.cal)} kcal` : pickTitle ? `Thêm vào ${String(pickTitle).toLowerCase()}` : `Ghi vào ${(MEAL_NAMES[meal] || "bữa").toLowerCase()}`}</button>
       </div>
       {unknown.length > 0 && <span style={{ fontSize: 12, color: "#B45309", textAlign: "center" }}>Còn {unknown.length} món chưa có calo — AI tính, tự nhập calo hoặc chọn món gần đúng trước khi ghi.</span>}
     </div>
@@ -148,6 +150,7 @@ export function CalcCheckScreen({ initialText = "", autoRun = false, foodCache, 
   return (
     <SubPage title="Kiểm tra calo" subtitle={`${rows.length} món${nAI ? ` · ${nAI} món AI tính` : ""}`} onBack={onClose} footer={footer}
       right={<button data-testid="calc-edit" onClick={() => setRows(null)} style={{ height: 36, padding: "0 12px", marginRight: 4, borderRadius: 18, border: "none", background: "#EEF4FF", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#0062F0" }}>Sửa chữ</button>}>
+      {tray && <TrayNote tray={tray} />}
       <div style={{ margin: "12px 12px 0 12px", borderRadius: 20, padding: 14, background: CY, color: "#FFFFFF", display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
           <span data-testid="calc-total" data-value={total.cal} style={{ fontSize: 30, fontWeight: 900 }}>{fmtInt(total.cal)}</span>
@@ -243,5 +246,15 @@ export function NumField({ label, unit, value, onChange, testid, autoFocus, stro
         <span style={{ fontSize: 12, fontWeight: 700, color: "#0062F0" }}>{unit}</span>
       </span>
     </label>
+  );
+}
+
+// 30/10: dòng nhắc "giỏ đang có N món, kết quả sẽ thêm vào giỏ" (Kiểm tra calo / Chụp ảnh mở từ Ghi bữa)
+export function TrayNote({ tray, style }) {
+  const names = (tray.names || []).slice(0, 3).join(", ") + ((tray.names || []).length > 3 ? "…" : "");
+  return (
+    <div data-testid="tray-note" style={{ margin: "12px 12px 0 12px", ...style, borderRadius: 14, background: "#EEF4FF", border: "1px solid #BFD4FF", padding: "10px 12px", fontSize: 13, lineHeight: 1.45, color: "#0B3B91" }}>
+      Giỏ {tray.meal} đang có <b>{tray.n} món</b>{names ? ` (${names})` : ""}. Món ở đây sẽ <b>thêm vào giỏ</b>, không mất món cũ.
+    </div>
   );
 }

@@ -11,6 +11,13 @@ import { stepItem, mealEntries, resolveAll, sumCheck, parseFoodLine, gramOf, man
 import { NumField } from "./CalcCheckScreen";
 import { fmtVN } from "../lib/dateVN";
 import { MEAL_NAMES } from "../lib/mealMath";
+import { appChoose } from "../lib/dialog";
+
+// 30/10 (chủ dự án: "gặp món không có phải tính calo thì mất hết món đã thêm"): giỏ giữ trên máy theo ngày ghi
+// (tắt app / vuốt đóng / sang AI tính rồi quay lại vẫn còn), ghi xong hoặc bấm Bỏ giỏ mới xoá.
+const TRAY_KEY = "fp_log_tray";
+const readTray = (date) => { try { const v = JSON.parse(sessionStorage.getItem(TRAY_KEY) || "null"); return v && v.date === date && Date.now() - (v.t || 0) < 12 * 3600e3 && Array.isArray(v.tray) ? v : null; } catch (e) { return null; } };
+const writeTray = (v) => { try { if (v) sessionStorage.setItem(TRAY_KEY, JSON.stringify({ ...v, t: Date.now() })); else sessionStorage.removeItem(TRAY_KEY); } catch (e) { /* */ } };
 
 // 16/10 (bản vẽ 82–83): nút bữa / + nền xanh nhạt không viền, "Ăn lại" thành khối riêng, khối Kiểm tra calo tím nhạt bỏ viền chấm.
 const chip = (on) => ({ flexShrink: 0, height: 36, padding: "0 12px", borderRadius: 12, border: "none", background: on ? "#0062F0" : "#EEF4FF", fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 600, color: on ? "#FFFFFF" : "#334155", whiteSpace: "nowrap" });
@@ -56,8 +63,29 @@ export function LogMealSheet(p) {
   };
 
   // Giỏ món (16/10): bấm + nhiều món, chỉnh gram từng món rồi ghi 1 lần (trước đây mỗi món ghi 1 lần / Sửa bữa phải mở lại sheet từng món)
-  const [tray, setTray] = useState([]);
+  const saved0 = useRef(pickMode ? null : readTray(date));
+  const [tray, setTray] = useState(() => saved0.current?.tray || []);
   const [saving, setSaving] = useState(false);
+  const [fresh, setFresh] = useState({}); // món vừa thêm từ AI tính / chụp ảnh → tô xanh "Mới thêm"
+  const [openTray, setOpenTray] = useState(false); // đang tìm: giỏ gọn 1 dòng, bấm Xem để mở
+  // giỏ khôi phục mà thuộc bữa khác → chọn lại đúng bữa đó
+  useEffect(() => { const sv = saved0.current; if (sv && sv.mealId && sv.mealId !== mealId && p.onMeal && (mealIds || []).includes(sv.mealId)) p.onMeal(sv.mealId); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!pickMode) writeTray(tray.length ? { date, mealId, tray } : null); }, [tray, date, mealId, pickMode]);
+  // Món AI tính / chụp ảnh trả về (MobileApp đặt p.incoming = { items, n }) → nối vào giỏ, không mất món cũ
+  const seenIn = useRef(p.incoming?.n || 0);
+  useEffect(() => {
+    const inc = p.incoming;
+    if (!inc || !inc.n || inc.n === seenIn.current) return;
+    seenIn.current = inc.n;
+    const ks = {};
+    setTray((t) => {
+      const next = [...t];
+      (inc.items || []).forEach((it) => { const k = `${it.food}|${itemName(it)}`; ks[k] = true; const i = next.findIndex((x) => x.k === k); if (i >= 0) next[i] = { k, it }; else next.push({ k, it }); });
+      return next;
+    });
+    setFresh(ks); setOpenTray(true); setQ("");
+    const tm = setTimeout(() => setFresh({}), 6000); timers.current.push(tm);
+  }, [p.incoming]); // eslint-disable-line react-hooks/exhaustive-deps
   const keyOf = (it) => `${it.food}|${itemName(it)}`;
   const inTray = (it) => tray.some((t) => t.k === keyOf(it));
   // Thêm xong: ô tìm tự xoá chữ, giữ con trỏ để gõ món tiếp (bản vẽ 113)
@@ -90,16 +118,34 @@ export function LogMealSheet(p) {
       const mine = mineEntries(items);
       if (p.saveMine && Object.keys(mine).length) p.saveMine(mine);
       const ok = pickMode ? await p.onPickMany(items) : await p.onAddItems(items);
-      if (ok !== false) setTray([]);
+      if (ok !== false) { setTray([]); writeTray(null); }
     } finally { setSaving(false); }
   };
 
   const sw = useSwipeClose(onClose);
+  const mealLow = String(MEAL_NAMES[mealId] || "bữa").toLowerCase();
+  const trayShut = !!q.trim() && !openTray && !Object.keys(fresh).length;
+  const trayInfo = () => ({ n: tray.length, names: tray.map((x) => capFirst(itemName(x.it))), meal: mealLow });
+  // Bấm ✕ / chạm nền khi giỏ còn món → hỏi trước (vuốt đóng / nút quay lại: giỏ vẫn giữ, mở lại là còn)
+  const askClose = async () => {
+    if (pickMode || !tray.length) return sw.close();
+    const r = await appChoose(`${tray.map((x) => capFirst(itemName(x.it))).join(", ")} · ${fmtInt(trayCal)} kcal. Ghi luôn vào ${mealLow} hay bỏ?`, { title: `Giỏ còn ${tray.length} món chưa ghi`,
+      buttons: [{ id: "save", label: `Ghi ${tray.length} món vào ${mealLow}`, kind: "primary" }, { id: "stay", label: "Ở lại tìm tiếp" }, { id: "drop", label: "Bỏ giỏ", kind: "danger" }] });
+    if (r === "save") return saveTray();
+    if (r === "drop") { setTray([]); writeTray(null); sw.close(); }
+  };
+  const goAI = async () => {
+    if (tray.length) {
+      const r = await appChoose(`Mở AI gợi ý sẽ đóng màn Ghi bữa. ${tray.length} món trong giỏ vẫn được giữ, mở lại Ghi bữa là còn.`, { title: "Mở AI gợi ý thực đơn?", buttons: [{ id: "go", label: "Mở AI gợi ý", kind: "primary" }, { id: "stay", label: "Ở lại" }] });
+      if (r !== "go") return;
+    }
+    p.onAI();
+  };
   const list = results || (frequent || []).map((f) => f.item);
   const shortName = (id) => MEAL_SHORT[id] || id;
 
   return (
-    <div className="fpm" onClick={sw.close} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.5)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
+    <div className="fpm" onClick={askClose} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.5)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
       <div ref={sw.ref} {...sw.swipe} role="dialog" aria-modal="true" aria-label={pickMode ? "Thêm món" : "Ghi bữa"} onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, top: "max(96px, calc(env(safe-area-inset-top, 0px) + 56px))", bottom: 0, maxWidth: 560, margin: "0 auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px 0 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease" }}>
         <SheetHandle />
@@ -115,7 +161,7 @@ export function LogMealSheet(p) {
               </select>
             </label>
           )}
-          <button onClick={sw.close} aria-label="Đóng" style={{ width: 40, height: 40, borderRadius: 20, background: "#F1F5F9", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", border: "none", padding: 0 }}>{Icon.close(18)}</button>
+          <button data-testid="log-close" onClick={askClose} aria-label="Đóng" style={{ width: 40, height: 40, borderRadius: 20, background: "#F1F5F9", color: "#0F172A", display: "flex", alignItems: "center", justifyContent: "center", border: "none", padding: 0 }}>{Icon.close(18)}</button>
         </div>
 
         {!pickMode && (mealIds.length <= 5 ? (
@@ -130,7 +176,7 @@ export function LogMealSheet(p) {
           ))}
 
         {!pickMode && p.onCalc && (<>
-          <Seg mode="tab" ariaLabel="Cách ghi" value="search" onChange={() => p.onCalc(q, false)} opts={[{ value: "search", label: "Tìm từng món" }, { value: "calc", label: "Tính calo cả bữa", testid: "log-tab-calc" }]} />
+          <Seg mode="tab" ariaLabel="Cách ghi" value="search" onChange={() => p.onCalc(q, false, trayInfo())} opts={[{ value: "search", label: "Tìm từng món" }, { value: "calc", label: "Tính calo cả bữa", testid: "log-tab-calc" }]} />
           <span data-testid="log-tab-hint" style={{ display: "block", margin: "-6px 0 0 0", padding: "0 4px", fontSize: 12, color: "#64748B", flexShrink: 0 }}>Chọn món trong kho, chỉnh gram — hoặc gõ cả bữa ở tab bên cạnh.</span>
         </>)}
 
@@ -138,23 +184,23 @@ export function LogMealSheet(p) {
           <span style={{ color: "#64748B", display: "flex" }}>{Icon.search(18)}</span>
           <label style={{ flex: 1, display: "flex", minWidth: 0 }}>
             <span style={SR}>Tìm món</span>
-            <input ref={inputRef} type="search" enterKeyHint="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={tray.length ? "Tìm món tiếp theo…" : "Tìm món: phở, cơm tấm, ức gà…"}
+            <input ref={inputRef} type="search" enterKeyHint="search" value={q} onChange={(e) => { setQ(e.target.value); if (!q) setOpenTray(false); }} placeholder={tray.length ? "Tìm món tiếp theo…" : "Tìm món: phở, cơm tấm, ức gà…"}
               style={{ flex: 1, minWidth: 0, height: 40, border: "none", background: "transparent", fontFamily: "inherit", fontSize: 16, color: "#0F172A", outline: "none" }} />
           </label>
           {q && <button onClick={clearSearch} aria-label="Xoá ô tìm" style={{ width: 32, height: 32, border: "none", background: "transparent", color: "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>{Icon.close(16)}</button>}
-          {p.onPhoto && <button onClick={p.onPhoto} aria-label="Chụp ảnh món ăn" style={{ width: 40, height: 40, borderRadius: 12, border: "none", background: GRAD_ORANGE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>{Icon.camera(20)}</button>}
+          {p.onPhoto && <button data-testid="log-photo" onClick={() => p.onPhoto(trayInfo())} aria-label="Chụp ảnh món ăn" style={{ width: 40, height: 40, borderRadius: 12, border: "none", background: GRAD_ORANGE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0 }}>{Icon.camera(20)}</button>}
         </div>
 
         {!pickMode && !results && (p.onAI || p.weekly) && (
           <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
-            {p.onAI && <button onClick={p.onAI} style={{ height: 36, padding: "0 12px", borderRadius: 999, border: "none", background: "rgba(124,58,237,0.10)", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#6D28D9", display: "flex", alignItems: "center", gap: 6 }}>{Icon.sparkle(14)}AI gợi ý</button>}
+            {p.onAI && <button data-testid="log-ai" onClick={goAI} style={{ height: 36, padding: "0 12px", borderRadius: 999, border: "none", background: "rgba(124,58,237,0.10)", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#6D28D9", display: "flex", alignItems: "center", gap: 6 }}>{Icon.sparkle(14)}AI gợi ý</button>}
             {p.weekly && <button data-testid="log-weekly" onClick={() => { addManyToTray(p.weekly.items); flash("weekly"); }} className="chip-hover" style={{ height: 36, padding: "0 12px", borderRadius: 999, border: "none", background: done.weekly ? "rgba(5,150,105,0.14)" : "rgba(0,166,126,0.10)", fontFamily: "inherit", fontSize: 13, fontWeight: 800, color: "#047857" }}>{done.weekly ? "Đã thêm vào giỏ" : `Từ thực đơn tuần · ${fmtInt(p.weekly.cal)}`}</button>}
           </div>
         )}
 
         <div style={{ flex: 1, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", margin: "0 -12px", padding: tray.length ? "0 12px 12px 12px" : "0 12px calc(20px + env(safe-area-inset-bottom, 0px)) 12px" }}>
           {smart && (
-            <button data-testid="log-smart" onClick={() => p.onCalc(q, true)} style={{ width: "100%", margin: "0 0 4px 0", padding: 12, borderRadius: 16, border: "none", background: "linear-gradient(135deg,rgba(14,159,192,0.12),rgba(3,105,161,0.08))", display: "flex", alignItems: "center", gap: 10, fontFamily: "inherit", color: "#0F172A", textAlign: "left", boxSizing: "border-box" }}>
+            <button data-testid="log-smart" onClick={() => p.onCalc(q, true, trayInfo())} style={{ width: "100%", margin: "0 0 4px 0", padding: 12, borderRadius: 16, border: "none", background: "linear-gradient(135deg,rgba(14,159,192,0.12),rgba(3,105,161,0.08))", display: "flex", alignItems: "center", gap: 10, fontFamily: "inherit", color: "#0F172A", textAlign: "left", boxSizing: "border-box" }}>
               <span style={{ width: 40, height: 40, borderRadius: 12, background: CY, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.calc(18)}</span>
               <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
                 <span data-testid="log-smart-title" data-cal={smart.cal} style={{ fontSize: 14, fontWeight: 800 }}>{smart.unknown ? `${smart.n} món · ${smart.unknown} món chưa có calo` : `≈ ${fmtInt(smart.cal)} kcal cho ${smart.n} món`}</span>
@@ -220,7 +266,7 @@ export function LogMealSheet(p) {
               <button data-testid="log-manual-add" disabled={!manPreview} onClick={addManual} style={{ height: 46, borderRadius: 14, border: "none", ...(manPreview ? { background: CY, color: "#FFFFFF" } : { background: "#E2E8F0", color: "#64748B" }), fontFamily: "inherit", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{Icon.plus(16, 2.6)}{manPreview ? `Thêm vào giỏ · ${fmtInt(manPreview.cal)} kcal` : "Nhập calo để thêm vào giỏ"}</button>
               {p.onCalc && p.aiOn && <>
                 <div aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: 8, color: "#94A3B8", fontSize: 12 }}><span style={{ flex: 1, height: 1, background: "#E2E8F0" }} />hoặc<span style={{ flex: 1, height: 1, background: "#E2E8F0" }} /></div>
-                <button data-testid="log-calc-q" onClick={() => p.onCalc(q, true)} style={{ height: 44, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#5B21B6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{Icon.sparkle(16)}Để AI tính · 1 lượt</button>
+                <button data-testid="log-calc-q" onClick={() => p.onCalc(q, true, trayInfo())} style={{ height: 44, borderRadius: 14, border: "none", background: "linear-gradient(135deg,#7C3AED,#5B21B6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>{Icon.sparkle(16)}Để AI tính · 1 lượt</button>
               </>}
               <span style={{ fontSize: 11, color: "#64748B", textAlign: "center" }}>Món tự nhập chỉ lưu cho bạn.{p.onPhoto && !(p.onCalc && p.aiOn) ? " Hoặc chụp ảnh món để AI nhận diện." : ""}</span>
             </div>
@@ -231,12 +277,18 @@ export function LogMealSheet(p) {
         </div>
 
         {tray.length > 0 && (
-          <div data-testid="log-tray" style={{ flexShrink: 0, margin: "0 -16px", padding: "10px 16px calc(env(safe-area-inset-bottom, 0px) + 12px) 16px", background: "#FFFFFF", borderTop: "1px solid #EEF2FA", boxShadow: "0 -8px 24px rgba(15,23,42,0.06)", display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ maxHeight: "34vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+          <div data-testid="log-tray" data-collapsed={trayShut ? "1" : undefined} style={{ flexShrink: 0, margin: "0 -16px", padding: "10px 16px calc(env(safe-area-inset-bottom, 0px) + 12px) 16px", background: "#FFFFFF", borderTop: "1px solid #EEF2FA", boxShadow: "0 -8px 24px rgba(15,23,42,0.06)", display: "flex", flexDirection: "column", gap: 8 }}>
+            {/* 30/10: tiêu đề giỏ luôn hiện; đang tìm món → giỏ gọn 1 dòng (bấm Xem để mở) để thẻ kết quả / Không thấy món đủ chỗ */}
+            <button data-testid="log-tray-head" onClick={() => setOpenTray((v) => (trayShut ? true : !v))} aria-expanded={!trayShut}
+              style={{ display: "flex", alignItems: "center", gap: 6, height: 28, padding: 0, border: "none", background: "transparent", fontFamily: "inherit", color: "#0F172A", textAlign: "left" }}>
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 800 }}>Giỏ {mealLow} · {tray.length} món · {fmtInt(trayCal)} kcal</span>
+              <span style={{ fontSize: 12.5, fontWeight: 800, color: "#0062F0", display: "flex", alignItems: "center", gap: 2 }}>{trayShut ? "Xem" : "Thu gọn"}<span style={{ display: "flex", transform: trayShut ? "rotate(180deg)" : "none" }}>{Icon.down(14)}</span></span>
+            </button>
+            {!trayShut && <div style={{ maxHeight: "34vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
               {tray.map(({ k, it }) => (
-                <div key={k} data-testid="log-tray-row" style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 48 }}>
+                <div key={k} data-testid="log-tray-row" data-fresh={fresh[k] ? "1" : undefined} style={{ display: "flex", alignItems: "center", gap: 6, minHeight: 48, ...(fresh[k] ? { background: "#ECFDF5", borderRadius: 12, margin: "0 -8px", padding: "0 8px", transition: "background .4s" } : {}) }}>
                   <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{capFirst(itemName(it))}</span>
+                    <span style={{ fontSize: 14, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{capFirst(itemName(it))}{fresh[k] && <span style={{ marginLeft: 6, fontSize: 10.5, fontWeight: 800, color: "#047857", background: "#D1FAE5", borderRadius: 6, padding: "2px 6px" }}>Mới thêm</span>}</span>
                     <span style={{ fontSize: 12, color: "#64748B" }}>{fmtInt(it.cal)} kcal{it.qty_display ? ` · ${it.qty_display}` : ""}</span>
                   </span>
                   <button onClick={() => setTrayItem(k, (x) => stepItem(x, -1))} aria-label={`Bớt ${itemName(it)}`} style={stepBtn}>−</button>
@@ -250,10 +302,10 @@ export function LogMealSheet(p) {
                   <button onClick={() => setTray((t) => t.filter((x) => x.k !== k))} aria-label={`Bỏ ${itemName(it)}`} style={{ ...stepBtn, background: "transparent", color: "#94A3B8" }}>{Icon.close(14)}</button>
                 </div>
               ))}
-            </div>
+            </div>}
             <button data-testid="log-tray-save" disabled={saving || tray.some((x) => !(x.it.gram > 0))} onClick={saveTray}
               style={{ height: 52, borderRadius: 16, border: "none", background: "linear-gradient(135deg,#1A7CFF,#0062F0,#0050E6)", color: "#FFFFFF", fontFamily: "inherit", fontSize: 16, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, opacity: saving ? 0.6 : 1 }}>
-              {Icon.check(18)} {pickMode ? `Thêm ${tray.length} món · ${fmtInt(trayCal)} kcal` : `Ghi ${tray.length} món vào ${String(MEAL_NAMES[mealId] || "bữa").toLowerCase()} · ${fmtInt(trayCal)} kcal`}
+              {Icon.check(18)} {pickMode ? `Thêm ${tray.length} món · ${fmtInt(trayCal)} kcal` : `Ghi ${tray.length} món vào ${mealLow} · ${fmtInt(trayCal)} kcal`}
             </button>
           </div>
         )}
