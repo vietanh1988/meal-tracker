@@ -662,6 +662,7 @@ export function MobileApp(props) {
         const u = new URL(url, window.location.origin);
         const t = u.searchParams.get("tab"), sg = u.searchParams.get("seg");
         if (t === "progress") { if (sg) setProgressSeg((s) => ({ seg: sg, n: s.n + 1 })); setTab("progress"); }
+        if (u.searchParams.get("pi") === "social") { setTab("today"); openLayer({ type: "page", sec: "pet_social" }); } // 30/10: thông báo bạn bè (kết bạn, thả tim, lời nhắn)
         const rc = u.searchParams.get("recap"); // 18/10: thông báo ngày 1 "Xem tổng kết tháng" → ?recap=YYYY-MM
         if (rc && /^\d{4}-(0[1-9]|1[0-2])$/.test(rc)) { setTab("today"); openLayer({ type: "recap", m: rc }); }
       } catch (e) { /* url lạ: bỏ qua */ }
@@ -669,7 +670,7 @@ export function MobileApp(props) {
     const fromPush = window.location.search.includes("from=push");
     // 18/10: mở app (1 lần/ngày) — ghi có phải mở từ thông báo không
     if (fromPush) track("notif_click"); trackDaily("app_open", fromPush ? { from: "push" } : null);
-    if (window.location.search.includes("tab=") || window.location.search.includes("recap=") || fromPush) { go(window.location.href); try { window.history.replaceState(null, "", window.location.pathname); } catch (e) { /* */ } }
+    if (window.location.search.includes("tab=") || window.location.search.includes("recap=") || window.location.search.includes("pi=") || fromPush) { go(window.location.href); try { window.history.replaceState(null, "", window.location.pathname); } catch (e) { /* */ } }
     const onMsg = (e) => { if (e.data?.type === "open-url" && e.data.url) { if (String(e.data.url).includes("from=push")) track("notif_click"); go(e.data.url); } };
     navigator.serviceWorker?.addEventListener?.("message", onMsg);
     return () => navigator.serviceWorker?.removeEventListener?.("message", onMsg);

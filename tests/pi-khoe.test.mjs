@@ -62,3 +62,11 @@ test("piLayers: cùng luật PiPet — đầu gốc khi mặc áo, mũ trùm b�
   assert.match(tfCss({ x: 10, y: -5, s: 1.1 }, [384, 384], 384).transform, /^translate\(5\.00px, -2\.50px\) rotate\(0deg\) scale\(1\.1, 1\.1\)$/);
   assert.equal(tfCss(null), null);
 });
+
+test("Lời nhắn chọn sẵn: app (src/pet/piNotes.js) y hệt máy chủ (pi_note_text)", async () => {
+  const { PI_NOTES } = await import("../src/pet/piNotes.js");
+  const sql = readFileSync(new URL("../supabase/migrations/20261030200000_pi_nhan_tin.sql", import.meta.url), "utf8");
+  const arr = /select \(array\[(.+?)\]\)\[p_i \+ 1\]/s.exec(sql)[1].match(/'([^']*)'/g).map((x) => x.slice(1, -1));
+  assert.deepEqual(PI_NOTES, arr);
+  assert.ok(PI_NOTES.length <= 8);
+});

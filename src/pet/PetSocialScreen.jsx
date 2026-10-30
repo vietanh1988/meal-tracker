@@ -16,6 +16,7 @@ import { Stage, PIc } from "./PetScreens";
 import { roomTime } from "./PetRoom";
 import { KhoePiSheet } from "./KhoePiSheet";
 import { piPageUrl } from "../pi/khoe";
+import { PI_NOTES } from "./piNotes";
 
 const card = { ...ltCard, margin: "0 12px" };
 const sub = { fontSize: 12, fontWeight: 600, color: "#64748B", lineHeight: 1.35 };
@@ -124,7 +125,7 @@ function BoardTab({ showToast }) {
 }
 
 // ---------- Tab Bạn bè ----------
-function FriendsTab({ data, reload, onRoom, showToast }) {
+function FriendsTab({ data, notes = [], reload, onRoom, showToast }) {
   const [code, setCode] = useState("");
   const [adding, setAdding] = useState(false);
   const [qr, setQr] = useState(false);
@@ -186,6 +187,17 @@ function FriendsTab({ data, reload, onRoom, showToast }) {
           <Btn small testid="friend-accept" onClick={() => answer(p.nick, true)} disabled={busy === p.nick}>Đồng ý</Btn>
         </div>
       ))}
+      {notes.length > 0 && (
+        <div data-testid="friend-notes" style={{ ...card, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B", padding: "12px 16px 4px" }}>Lời nhắn cho Pi của bạn</span>
+          {notes.slice(0, 5).map((n, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 16px", minHeight: 56, borderTop: i ? "1px solid #EEF2FA" : "none" }}>
+              <PiHead p={n} />
+              <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}><b style={{ fontSize: 14, fontWeight: 900 }}>{n.name}{n.new ? <span style={{ marginLeft: 6, fontSize: 11, color: "#E11D48" }}>● mới</span> : null}</b><span style={sub}>“{n.text}” · {dm(n.day)}</span></span>
+            </div>
+          ))}
+        </div>
+      )}
       {data.friends?.length > 0 && (
         <div data-testid="friend-challenge" style={{ ...card, padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={{ display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 14.5, fontWeight: 900 }}>Tuần này: {ch.goal} ngày đủ nước</b><span style={sub}>Còn {Math.max(0, ch.left)} ngày · cả nhóm đạt thì mỗi người +30 Hạt · bạn đang {ch.mine}/{ch.goal}</span></span>
@@ -262,8 +274,18 @@ function ShowTab({ pet, friends, onKhoe, showToast }) {
 // ---------- Phòng của bạn ----------
 function FriendRoom({ nick, onBack, showToast }) {
   const [r, setR] = useState(undefined);
-  const load = useCallback(async () => { const { data } = await supabase.rpc("pi_room", { p_nick: nick }); setR(data || null); }, [nick]);
+  const [sent, setSent] = useState(null); // số câu đã nhắn hôm nay (null = chưa nhắn)
+  const load = useCallback(async () => {
+    const [a, b] = await Promise.all([supabase.rpc("pi_room", { p_nick: nick }), supabase.rpc("pi_note_sent", { p_nick: nick })]);
+    setR(a.data || null); setSent(b.data ?? null);
+  }, [nick]);
   useEffect(() => { load(); }, [load]);
+  const note = async (i) => {
+    if (sent != null) return;
+    const { data } = await supabase.rpc("pi_note", { p_nick: nick, p_msg: i });
+    if (data?.ok) { setSent(i); track("pi_note"); showToast?.({ text: `Đã nhắn cho Pi của ${r.name}` }); }
+    else if (data?.why === "today") showToast?.({ text: "Hôm nay bạn đã nhắn rồi, mai nhắn tiếp nha" });
+  };
   const heart = async () => {
     const { data } = await supabase.rpc("pi_heart", { p_nick: nick });
     if (data?.ok) { showToast?.({ text: `Đã thả tim cho Pi của ${r.name}` }); load(); }
@@ -289,6 +311,15 @@ function FriendRoom({ nick, onBack, showToast }) {
               <b style={{ fontSize: 14, fontWeight: 900 }}>{r.streak} ngày</b><span style={{ fontSize: 11, fontWeight: 700, color: "#64748B" }}>liền chăm Pi</span>
             </div>
           </div>
+          <div data-testid="room-notes" style={{ ...card, padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B" }}>{sent != null ? "Hôm nay bạn đã nhắn" : `Nhắn cho Pi của ${r.name} (1 câu mỗi ngày)`}</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {PI_NOTES.map((t, i) => (sent == null || sent === i) && (
+                <button key={i} type="button" data-testid="room-note" aria-pressed={sent === i} onClick={() => note(i)} disabled={sent != null}
+                  style={{ height: 32, padding: "0 12px", borderRadius: 16, border: "none", fontFamily: "inherit", fontSize: 12.5, fontWeight: 800, background: sent === i ? "#0062F0" : "#EEF4FF", color: sent === i ? "#FFFFFF" : "#0062F0" }}>{t}</button>
+              ))}
+            </div>
+          </div>
         </>}
       </div>
     </SubPage>
@@ -300,8 +331,10 @@ export function PetSocialScreen({ pet, userId, onBack, showToast }) {
   const [friends, setFriends] = useState(null);
   const [room, setRoom] = useState(null);
   const [khoe, setKhoe] = useState(false);
+  const [notes, setNotes] = useState([]);
   const loadFriends = useCallback(async () => { const { data } = await supabase.rpc("pi_friends_list"); setFriends(data || { friends: [], incoming: [], outgoing: [] }); }, []);
   useEffect(() => { loadFriends(); track("social_open"); }, [loadFriends]);
+  useEffect(() => { if (tab === "friends") supabase.rpc("pi_notes_list").then(({ data }) => setNotes(data || [])); }, [tab]);
   const wk = weekRange(todayVN());
   const left = Math.max(0, diffDays(todayVN(), wk.end));
   if (room) return <FriendRoom nick={room} onBack={() => { setRoom(null); loadFriends(); }} showToast={showToast} />;
@@ -316,7 +349,7 @@ export function PetSocialScreen({ pet, userId, onBack, showToast }) {
           ))}
         </div>
         {tab === "rank" && <BoardTab showToast={showToast} />}
-        {tab === "friends" && <FriendsTab data={friends} reload={loadFriends} onRoom={setRoom} showToast={showToast} />}
+        {tab === "friends" && <FriendsTab data={friends} notes={notes} reload={loadFriends} onRoom={setRoom} showToast={showToast} />}
         {tab === "show" && <ShowTab pet={pet} friends={friends} onKhoe={() => setKhoe(true)} showToast={showToast} />}
       </div>
       {khoe && <KhoePiSheet pet={pet} userId={userId} showToast={showToast} onClose={() => setKhoe(false)} />}

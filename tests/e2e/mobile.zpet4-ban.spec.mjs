@@ -60,6 +60,11 @@ test("Bạn bè & Xếp hạng: bảng tuần, kết bạn bằng mã, thả tim
     await page.getByTestId("friend-open").click();
     await expect(page.getByTestId("friend-room")).toBeVisible();
     await expect(page.getByTestId("room-heart")).toBeDisabled();
+    // lời nhắn chọn sẵn: 1 câu / ngày
+    await page.getByTestId("room-note").nth(1).click();
+    await waitDb(async () => (await rest(`pi_notes?from_id=eq.${s.uid}&to_id=eq.${bId}&select=msg`))[0]?.msg === 1, "lời nhắn chọn sẵn");
+    await expect(page.getByTestId("room-note")).toHaveCount(1);
+    await expect(page.getByTestId("room-note")).toBeDisabled();
     await page.screenshot({ path: "shots/social-room.png" });
     await page.getByRole("button", { name: "Quay lại" }).last().click();
     await expect(page.getByTestId("pet-social")).toBeVisible();
