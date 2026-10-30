@@ -8,9 +8,8 @@ import { piLayers, tfCss } from "@/lib/app/piLayers.js";
 import { sceneOf } from "@/lib/app/petMath.js";
 import { todayVN, nowVNParts } from "@/lib/app/dateVN.js";
 
-export const revalidate = 60;
-export const dynamicParams = true;
-export async function generateStaticParams() { return []; }
+// 30/10: trang 500 trên prod — rpc() gọi fetch "no-store", không chạy được trong trang ISR → để trang luôn dựng mới mỗi lần mở (ít khách, cần số mới)
+export const dynamic = "force-dynamic";
 
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://veodsvojxjmjhtrlaieq.supabase.co";
 const appUrl = (s) => (s?.site?.app_url || "https://app.fipilotai.com").replace(/\/$/, "");
