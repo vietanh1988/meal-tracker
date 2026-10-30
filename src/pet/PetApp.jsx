@@ -19,6 +19,9 @@ import { pi } from "../pi/piExpr";
 import PERSONA from "../pi/persona.md?raw";
 import { roomTime } from "./PetRoom";
 import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PIc } from "./PetScreens";
+import { buildPiContext } from "../pi/chatContext.js";
+// 30/10: Pi ĐÃ có hồ sơ + nhật ký 30 ngày ở trên → tư vấn thẳng bằng số đó, không bảo người dùng gửi nhật ký
+const ADVICE = "Dữ liệu trên là hồ sơ và nhật ký thật của người dùng trong app; Pi xem được, KHÔNG được nói là không truy cập được lịch sử hay bảo người dùng gửi nhật ký. Khi người dùng hỏi nhận xét / tư vấn chế độ ăn: trả lời tối đa 4 câu ngắn (khoảng 80 từ), nêu 1–2 số thật cụ thể (ví dụ trung bình calo, đạm, món ăn nhiều), rồi 1–2 điều chỉnh làm được ngay bằng món quen của họ. Ngày không có trong nhật ký là chưa ghi, đừng đoán. Không nói về hình dáng cơ thể; vòng bụng chỉ nói theo số đo nếu có.";
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen, petVariant } from "./PetTalk";
 
 const ACH = [
@@ -44,7 +47,7 @@ const PROMPT = {
 };
 const RULES = "Xưng \"Pi\", gọi khách là \"bạn\". Trả lời tiếng Việt, tối đa 3 câu ngắn, không emoji, không markdown. Dùng số thật bên dưới khi có. Không chê, không dọa, không trách, không bàn béo gầy. Chuyện ngoài ăn uống tập luyện thì trả lời vui một câu rồi kéo về ăn tập. Hỏi về bệnh hoặc thuốc thì khuyên hỏi bác sĩ.";
 
-export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, mealIds = [], mealTimes = {}, eaten = {}, targets = {}, recentRows = [], weightLog = [], appSettings, showToast, openPage, closeLayer, openPremium }) {
+export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, mealIds = [], mealTimes = {}, eaten = {}, targets = {}, recentRows = [], weightLog = [], measures = [], appSettings, showToast, openPage, closeLayer, openPremium }) {
   const on = !!(flagOn || isAdmin) && !!user?.id;
   const pet = usePet(user?.id, on);
   const st = pet.state;
@@ -237,7 +240,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const provider = pickAiProvider(appSettings);
     const model = pickAiModelFromSettings(appSettings, provider);
     const persona = cfg.prompt?.[variant] || `${PERSONA}\nBạn đang là Pi ${variant === "nu" ? "nữ (giọng bé gái ngọt ngào)" : "nam (giọng bé trai tinh nghịch)"}.`;
-    const system = `${persona}\n${userName === "bạn" ? "Gọi người dùng là \"bạn\" (chưa biết tên thật)." : `Tên người dùng ({ten}): ${userName}.`} Tên Pi: ${view0?.name || "Pi"}. Không dùng emoji, không markdown. Tiền tệ trong app là Hạt (không phải điểm).\n${numbers()}`;
+    const system = `${persona}\n${userName === "bạn" ? "Gọi người dùng là \"bạn\" (chưa biết tên thật)." : `Tên người dùng ({ten}): ${userName}.`} Tên Pi: ${view0?.name || "Pi"}. Không dùng emoji, không markdown. Tiền tệ trong app là Hạt (không phải điểm).\n${numbers()}\n${buildPiContext({ profile, rows: recentRows, weightLog, measures, today, target: targets })}\n${ADVICE}`;
     const messages = next.filter((m) => m.ai || m.role === "user").slice(-8).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? m.text : `[${m.expr || "vui"}] ${m.text}` }));
     let data;
     try { data = await authFetch("ai-proxy", { provider, model, system, messages, maxTokens: 400, feature: "pet_chat" }); } catch (e) { data = { error: "Mạng chập chờn, thử lại nhé." }; }

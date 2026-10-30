@@ -716,7 +716,7 @@ export function MobileApp(props) {
   const petApp = usePetApp({
     flagOn: !!flags.pet, isAdmin, user, profile, ud, today, minutes: now.minutes,
     mealIds: petIds, mealTimes: mealTimesOf(profile.mealTimes), eaten: eatenOfDay(ud.todayLog), targets: targetsOf(macroFor(today), dayTypeOf(profile, today)),
-    recentRows, weightLog, appSettings, showToast,
+    recentRows, weightLog, measures, appSettings, showToast,
     openPage: (sec) => openLayer({ type: "page", sec }), closeLayer, openPremium: () => openLayer({ type: "page", sec: "plan" }),
   });
 
