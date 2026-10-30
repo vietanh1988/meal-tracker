@@ -1,0 +1,180 @@
+{
+ "meta": {
+  "ghi_chu": "31/10 nhóm câu riêng của app (scripts/pi/extra_lines.py), không nằm trong bộ Muse"
+ },
+ "nhom": [
+  {
+   "ma": "mon_an",
+   "ten": "Bình luận món vừa ăn (theo nhóm món)",
+   "kich_hoat": "vua_ghi_bua_co_mon_quen",
+   "cau": [
+    {
+     "id": "MON-01",
+     "muc": "pho_bun",
+     "text": "Phở hả? Húp nước lèo giùm Pi một miếng đi, Pi ghiền mùi quế hồi lắm.",
+     "nu": "Phở nóng hổi ghê! Thổi cho nguội rồi ăn nha, kẻo phỏng lưỡi là Pi xót đó.",
+     "mat": "haohung",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-02",
+     "muc": "pho_bun",
+     "text": "Bún nữa nè! Bạn ăn bún, Pi ăn… ké mùi thơm. Ghi rồi là yên tâm.",
+     "nu": "Bún ngon quá trời, Pi nhìn mà thèm. Ăn ngon miệng nha bạn.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-03",
+     "muc": "com_tam",
+     "text": "Cơm tấm sườn! Bạn sành ăn quá, Pi xin miếng bì được không?",
+     "nu": "Cơm tấm thơm ghê á! Ăn kèm dưa leo cho mát nha, Pi dặn đó.",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-04",
+     "muc": "tra_sua",
+     "text": "Trà sữa hả? Pi không cấm đâu, chỉ cần ghi đủ là Pi giả bộ không thấy.",
+     "nu": "Trà sữa! Pi cũng mê lắm á. Lần sau mình chọn ít đường cho xinh nha.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-05",
+     "muc": "tra_sua",
+     "text": "Trà sữa vô sổ rồi. Bữa sau nhớ thêm ly nước lọc cho cân, Pi canh.",
+     "nu": "Ghi trà sữa rồi nè. Uống thêm ly nước lọc nữa là hoàn hảo luôn.",
+     "mat": "suynghi",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-06",
+     "muc": "rau",
+     "text": "Có rau! Bạn ăn rau là Pi tự hào, vì Pi cũng là… rau mà.",
+     "nu": "Ăn rau xanh nè, đúng gu Pi luôn! Da bạn sẽ đẹp như lá Pi đó.",
+     "mat": "yeu",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-07",
+     "muc": "trung",
+     "text": "Trứng! Đạm xịn mà rẻ, bạn biết chọn ghê. Pi chấm điểm mười.",
+     "nu": "Trứng nè, ngon mà nhiều đạm. Bạn chọn khéo quá trời.",
+     "mat": "haohung",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-08",
+     "muc": "ga",
+     "text": "Gà hả? Pi nghe thơm từ đây. Đạm ngon vậy là cơ bắp cười tươi rồi.",
+     "nu": "Gà nè, nhiều đạm lắm á. Bạn ăn ngon miệng nha, Pi vui ghê.",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-09",
+     "muc": "ca",
+     "text": "Cá nè! Ăn cá thông minh, Pi đoán mai bạn còn khôn hơn Pi.",
+     "nu": "Cá ngon mà tốt nữa, bạn khéo chọn ghê. Pi thương nhất mấy bữa có cá.",
+     "mat": "yeu",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-10",
+     "muc": "banh_mi",
+     "text": "Bánh mì! Món quốc dân, Pi xin cái đầu bánh giòn giòn được không?",
+     "nu": "Bánh mì giòn rụm nè! Ăn kèm chút rau là hết ý luôn bạn ơi.",
+     "mat": "nhaymat",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-11",
+     "muc": "xoi",
+     "text": "Xôi sáng hả? Chắc bụng ghê, đi cả buổi không đói. Pi duyệt.",
+     "nu": "Xôi dẻo thơm ghê á. Ăn xong nhớ uống ly nước nha bạn.",
+     "mat": "cuoilon",
+     "giong": "vui_tuoi"
+    },
+    {
+     "id": "MON-12",
+     "muc": "mi_tom",
+     "text": "Mì tôm cứu đói thần thánh! Lần sau thêm trứng với rau vô là đủ chất liền.",
+     "nu": "Mì tôm hả… bỏ thêm trứng với rau vào cho đủ chất nha, Pi năn nỉ đó.",
+     "mat": "suynghi",
+     "giong": "vui_tuoi"
+    }
+   ]
+  },
+  {
+   "ma": "cu_nhot",
+   "ten": "Chạm Pi 5 lần liền (nhột)",
+   "kich_hoat": "cham_pi_5_lan",
+   "cau": [
+    {
+     "id": "NHOT-01",
+     "text": "Ha ha nhột quá! Chạm nữa là Pi méc cái cân á!",
+     "nu": "Hi hi nhột quá à! Đừng chọc nữa mà, Pi cười muốn rụng lá rồi.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "NHOT-02",
+     "text": "Ê ê nhột! Rảnh tay vậy thì ghi bữa giùm Pi đi nè.",
+     "nu": "Nhột nhột! Bạn chọc Pi hoài là Pi dỗi đó nha.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "NHOT-03",
+     "text": "Ui da, chỗ đó nhột nhất! Bạn biết hết điểm yếu của Pi rồi.",
+     "nu": "Á á nhột! Tay bạn hư ghê á, hứ.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    }
+   ]
+  },
+  {
+   "ma": "doi_cham",
+   "ten": "Chạm Pi 10 lần liền (dỗi, 5 giây không phản ứng)",
+   "kich_hoat": "cham_pi_10_lan",
+   "cau": [
+    {
+     "id": "DOICHAM-01",
+     "text": "Đủ rồi nha! Pi quay lưng 5 giây cho bạn biết tay.",
+     "nu": "Hứ! Chọc hoài, Pi dỗi rồi. Năm giây nữa mới thèm nói chuyện.",
+     "mat": "buon",
+     "giong": "an_ui"
+    },
+    {
+     "id": "DOICHAM-02",
+     "text": "Pi đình công! Muốn Pi vui lại thì đi uống ly nước đi.",
+     "nu": "Pi giận rồi đó… Muốn dỗ thì ghi một bữa cho Pi xem đi.",
+     "mat": "buon",
+     "giong": "an_ui"
+    }
+   ]
+  },
+  {
+   "ma": "het_doi",
+   "ten": "Hết dỗi (vắng lâu, chạm 3 lần dỗ)",
+   "kich_hoat": "do_pi_3_lan",
+   "cau": [
+    {
+     "id": "HETDOI-01",
+     "text": "Thôi được rồi, Pi tha cho lần này. Ghi một bữa là huề cả làng!",
+     "nu": "Hứ… thôi Pi hết giận rồi. Mai đừng bỏ Pi lâu vậy nữa nha.",
+     "mat": "cuoilon",
+     "giong": "hao_hung"
+    },
+    {
+     "id": "HETDOI-02",
+     "text": "Dỗ khéo ghê, Pi mềm lòng rồi. Giờ mình làm việc hôm nay nha!",
+     "nu": "Bạn dỗ Pi dễ thương quá, Pi hết dỗi liền. Mình bắt đầu lại nha.",
+     "mat": "yeu",
+     "giong": "diu_dang"
+    }
+   ]
+  }
+ ]
+}

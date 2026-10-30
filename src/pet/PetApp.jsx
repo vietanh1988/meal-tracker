@@ -12,6 +12,8 @@ import { aiQuota } from "../lib/aiQuota";
 import { pickAiProvider, pickAiModelFromSettings } from "../lib/aiProvider";
 import { ITEMS, catalog, setPiSkin } from "./PetAvatar";
 import { sfx } from "../lib/sfx";
+import { foodGroup } from "../pi/piMood";
+import { itemName } from "../lib/mobileView";
 import { isPink } from "../pi/piCatalog";
 import { EV, VOICE } from "./lines";
 import { GROUPS, piName, pickLine, lineById, remember, greetGroup, EVENT_GROUP, insultLevel, insultMuc, isSadSelf, isSelfHarm, SULK_MS } from "../pi/piBank";
@@ -186,7 +188,16 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const c = ids[Number(today.replace(/-/g, "")) % ids.length];
     return { id: c.id, text: c.text, mat: c.mat, giong: c.giong };
   }, [today]);
-  const line0 = sayNow || (vm && vm.mood === "vui" ? idleLine : null);
+  // 31/10 cá tính: bữa vừa ăn có món quen (phở, trà sữa, rau…) → Pi bình luận đúng món (src/pi/piMood.js, nhóm mon_an), thay câu chào / câu rảnh
+  const foodLine = useMemo(() => {
+    const last = (log.eaten_meals || []).slice(-1)[0];
+    const items = ((log.meals || []).find((m) => m.meal_id === last)?.items) || [];
+    const grp = last ? foodGroup(items.map(itemName)) : null;
+    if (!grp) return null;
+    const seed = [...`${today}${last}`].reduce((a, c) => a + c.charCodeAt(0), 0);
+    return pickLine("mon_an", { muc: grp, g: variant, vars: { ten: userName }, rnd: () => (seed % 97) / 97 });
+  }, [log, today, variant, userName]); // eslint-disable-line react-hooks/exhaustive-deps
+  const line0 = (foodLine && (!sayNow || /^(chao_|idle|ghi_bua_an)/.test(sayNow.ma || ""))) ? foodLine : sayNow || (vm && vm.mood === "vui" ? idleLine : null);
   const view0 = vm ? { ...vm, say: line0?.text || null, sayLine: line0 ? { ...line0, audio: voiceUrl(line0.id, variant) } : null } : null;
 
   // ---- hành động ----

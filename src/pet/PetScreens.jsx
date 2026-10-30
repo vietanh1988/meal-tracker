@@ -2,7 +2,7 @@
 // Bản vẽ đợt chuẩn bị 20/10: dựng từ khối thật của app (SubPage, ltCard, LT/DK, AppIcon, Icon) với dữ liệu truyền vào.
 // Luật đã chốt 20/10 (backlog "Fipilot Pet"): điểm chỉ tính hôm nay; Phổ thông ai cũng mua, Hiếm / Huyền thoại chỉ Premium;
 // mở đồ theo cấp; đồ thành tích không bán; tâm trạng không bán; trần 120 Hạt/ngày.
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { SubPage, Icon, GRAD_BLUE, DkIcon } from "../mobile/ui";
 import { AppIcon, MealIcon, IC_COLOR, mix } from "../mobile/icons";
 import { LT, ltCard, DK, dkCard } from "../theme";
@@ -16,6 +16,8 @@ import { AUTO_FACE, timeFace } from "../pi/piExpr";
 import { lateNight } from "../pi/piExpr";
 import { KhoePiSheet } from "./KhoePiSheet";
 import { sfx } from "../lib/sfx";
+import { tapKind, SULK_MS, awaySulk, FORGIVE_TAPS } from "../pi/piMood";
+import { pickLine } from "../pi/piBank";
 // 30/10: màu da Pi hồng (đo trên public/pi/hong/body/pi_than.webp) — nền ô mặt, chấm màu ở Tủ đồ
 export const PINK_SKIN = "#F58FBF";
 
@@ -87,13 +89,20 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
   // Pi "sống": chớp mắt, đảo mắt, lá đung đưa, thở; chạm vào Pi → nảy + cười tít + tim bay (chạm lúc ngủ: mở mắt rồi ngủ tiếp).
   const [react, setReact] = useState(0);
   const [hearts, setHearts] = useState([]);
+  // 31/10 cá tính: chạm liền 5 lần → nhột, 10 lần → dỗi (5 giây chạm không phản ứng) — src/pi/piMood.js
+  const taps = useRef([]), sulkTo = useRef(0);
   const tap = () => {
+    const now = Date.now();
+    if (now < sulkTo.current) return; // đang dỗi: lơ đi
+    taps.current = [...taps.current.slice(-12), now];
+    const t = tapKind(taps.current);
+    if (t.kind === "doi") { sulkTo.current = now + SULK_MS; taps.current = []; sfx("pop"); onTap?.(t); return; }
     setReact((n) => n + 1);
     const id = Date.now();
     setHearts((h) => [...h, ...[0, 1, 2, 3].map((i) => ({ id: `${id}-${i}`, dx: (Math.random() - 0.5) * 90, d: i * 70 }))]);
     setTimeout(() => setHearts((h) => h.filter((x) => !x.id.startsWith(String(id)))), 1300);
     sfx("boing"); // 31/10: tiếng lò xo + rung nhẹ
-    onTap?.(); // 26/10 (chủ dự án: "chạm vô Pi không tự nói, phải chạm nút loa"): chạm Pi → Pi nói câu hiện tại (gọi ngay trong lúc bấm — iPhone mới cho phát tiếng)
+    onTap?.(t); // 26/10 (chủ dự án: "chạm vô Pi không tự nói, phải chạm nút loa"): chạm Pi → Pi nói câu hiện tại (gọi ngay trong lúc bấm — iPhone mới cho phát tiếng)
   };
   const heart = pet.variant === "nu" ? "hieu-ung/hieu-ung-11.webp" : "hieu-ung/hieu-ung-01.webp";
   return (
@@ -113,18 +122,32 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
 export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, onSettings, onWeek, onSocial, userId, showToast }) {
   const [speech, setSpeech] = useState(null);
   const [khoe, setKhoe] = useState(false); // 30/10 Khoe Pi (bản vẽ màn 1–2)
+  // 31/10 cá tính Pi: vắng ≥ 2 ngày quay lại → Pi dỗi (mặt buồn) tới khi ghi 1 bữa hoặc chạm Pi 3 lần; chạm liền 5 lần nhột, 10 lần dỗi
+  const fKey = `fp_pi_forgive_${todayVN()}`;
+  const [forgive, setForgive] = useState(() => { try { return Number(sessionStorage.getItem(fKey)) || 0; } catch (e) { return 0; } });
+  const sulk = awaySulk({ daysAway: pet.daysAway, logged: pet.logged, forgiveTaps: forgive });
+  const say = (ma, expr) => { const l = pickLine(ma, { vars: { ten: "bạn" }, g: pet.variant, now: Date.now() }); if (!l) return; primeTTS(); setSpeech({ key: Date.now(), text: l.text, audio: null, el: null, expr: expr || l.mat, giong: l.giong }); };
+  const onPiTap = (t) => {
+    if (sulk) {
+      const n = forgive + 1; setForgive(n); try { sessionStorage.setItem(fKey, String(n)); } catch (e) { /* */ }
+      return n >= FORGIVE_TAPS ? say("het_doi") : say("lau_khong_gap", "buon");
+    }
+    if (t?.kind === "nhot") return say("cu_nhot", "cuoilon");
+    if (t?.kind === "doi") return say("doi_cham", "buon");
+    if (!speech) sayNow();
+  };
   const sayNow = () => { const l = pet.sayLine; const el = playNow(l?.audio); if (!el) primeTTS(); setSpeech({ key: Date.now(), text: l?.text || moodText(pet), audio: l?.audio || null, el, expr: l?.mat, giong: l?.giong }); };
   const lv = pet.level;
   const pct = Math.min(100, ((pet.xp - lv.from) / (lv.to - lv.from)) * 100);
   return (
     <SubPage title={pet.name} subtitle={`Cấp ${lv.n} · ${pet.variant === "nu" ? "Pi nữ" : "Pi nam"}`} onBack={onBack} right={<SeedPill n={pet.seeds} />}>
-      <div data-testid="pet-home" style={{ padding: "12px 12px 0 12px" }}>
-        <Stage pet={pet} speech={speech} onSpeakEnd={() => setSpeech(null)} onTap={() => { if (!speech) sayNow(); }}>
+      <div data-testid="pet-home" data-sulk={sulk ? "1" : undefined} style={{ padding: "12px 12px 0 12px" }}>
+        <Stage pet={sulk ? { ...pet, mood: "gian" } : pet} speech={speech} onSpeakEnd={() => setSpeech(null)} onTap={onPiTap}>
           <span style={{ position: "absolute", left: 14, right: 14, top: 14, display: "flex", justifyContent: "center" }}>
             {/* 24/10 pi_full mục 4–5: bấm câu → Pi nói (khẩu hình; câu có file thu sẵn thì phát giọng), mặt theo "mat" của câu */}
             <button type="button" data-testid="pet-say-play" onClick={sayNow} aria-label={`Nghe ${pet.name} nói`}
               style={{ maxWidth: 280, background: "#FFFFFF", border: "none", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center", fontFamily: "inherit", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
-              <span>{moodText(pet)}</span>
+              <span data-testid="pet-home-say">{speech?.text || moodText(pet)}</span>{/* 31/10: đang nói câu nhột / dỗi / hết dỗi thì hiện đúng câu đó */}
               <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={speech ? "#007AFF" : "#94A3B8"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>
             </button>
           </span>
