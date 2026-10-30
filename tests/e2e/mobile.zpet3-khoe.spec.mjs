@@ -25,6 +25,12 @@ test("Khoe Pi: sheet, lưu ảnh, trang web bật; mã mời: đăng ký thấy 
     await expect(page.getByTestId("khoe-sheet")).toBeVisible();
     await expect(page.getByTestId("khoe-preview")).toHaveAttribute("data-ready", "1", { timeout: 20_000 });
     await expect(page.getByTestId("khoe-opt-stats")).toHaveAttribute("aria-pressed", "true");
+    // 30/10 chủ dự án: sheet phải phủ trọn màn (không bị đầu trang màn Pi che, nút dưới không bị cắt)
+    const box = await page.getByTestId("khoe-sheet").boundingBox();
+    expect(box.y).toBeLessThan(60);
+    const sv = await page.getByTestId("khoe-save").boundingBox();
+    expect(sv.y + sv.height).toBeLessThanOrEqual(844);
+    expect(await page.evaluate(() => document.querySelector('[data-testid="khoe-sheet"]').parentElement.parentElement === document.body)).toBe(true);
     await page.screenshot({ path: "shots/khoe-sheet.png" });
     const dl = page.waitForEvent("download");
     await page.getByTestId("khoe-save").click();
