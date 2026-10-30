@@ -74,7 +74,7 @@ begin
   insert into public.pet_profiles (user_id) values (v_uid) on conflict do nothing;
   r := public.pi_share_ensure(v_uid);
   if p_device is not null and length(p_device) between 8 and 64 then update public.pi_share set device = p_device where user_id = v_uid and device is distinct from p_device; end if;
-  return jsonb_build_object('nick', r.nick, 'code', r.code, 'web_on', r.web_on, 'show_weight', r.show_weight,
+  return jsonb_build_object('nick', r.nick, 'code', r.code, 'web_on', r.web_on, 'show_weight', r.show_weight, 'folder', md5(v_uid::text),
     'invited', (select count(*) from public.pi_invites where inviter = v_uid),
     'rewarded', (select count(*) from public.pi_invites where inviter = v_uid and inviter_paid),
     'invited_by', (select p.name from public.pi_invites i join public.pet_profiles p on p.user_id = i.inviter where i.invitee = v_uid));
@@ -89,7 +89,7 @@ declare v_uid uuid := auth.uid();
 begin
   if v_uid is null then raise exception 'Chưa đăng nhập'; end if;
   perform public.pi_share_ensure(v_uid);
-  if p_og is not null and p_og !~ ('^' || v_uid::text || '/[a-z0-9-]+\.(jpg|png|webp)$') then raise exception 'Ảnh không hợp lệ'; end if;
+  if p_og is not null and p_og !~ ('^' || md5(v_uid::text) || '/[a-z0-9-]+\.(jpg|png|webp)$') then raise exception 'Ảnh không hợp lệ'; end if;
   update public.pi_share set web_on = coalesce(p_web_on, web_on), show_weight = coalesce(p_show_weight, show_weight), og = coalesce(p_og, og), updated_at = now() where user_id = v_uid;
   return public.pi_share_get(null);
 end $$;
@@ -166,15 +166,15 @@ $$;
 revoke all on function public.web_pi(text) from public;
 grant execute on function public.web_pi(text) to anon, authenticated;
 
--- kho ảnh xem trước trang Pi (og:image): mỗi khách chỉ ghi vào thư mục <user_id>/
+-- kho ảnh xem trước trang Pi (og:image): mỗi khách chỉ ghi vào thư mục md5(<user_id>)/ (link công khai không lộ mã tài khoản)
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('pi-share', 'pi-share', true, 600000, array['image/jpeg', 'image/png', 'image/webp']) on conflict (id) do nothing;
 drop policy if exists pi_share_read on storage.objects;
 drop policy if exists pi_share_ins on storage.objects;
 drop policy if exists pi_share_upd on storage.objects;
 create policy pi_share_read on storage.objects for select using (bucket_id = 'pi-share');
-create policy pi_share_ins on storage.objects for insert to authenticated with check (bucket_id = 'pi-share' and (storage.foldername(name))[1] = (select auth.uid())::text);
-create policy pi_share_upd on storage.objects for update to authenticated using (bucket_id = 'pi-share' and (storage.foldername(name))[1] = (select auth.uid())::text);
+create policy pi_share_ins on storage.objects for insert to authenticated with check (bucket_id = 'pi-share' and (storage.foldername(name))[1] = md5((select auth.uid())::text));
+create policy pi_share_upd on storage.objects for update to authenticated using (bucket_id = 'pi-share' and (storage.foldername(name))[1] = md5((select auth.uid())::text));
 
 -- Hạt mời / thưởng xếp hạng không tính vào trần / ngày, Hạt hôm nay, Hạt tuần
 create or replace function public.pet_state_json(p_uid uuid) returns jsonb

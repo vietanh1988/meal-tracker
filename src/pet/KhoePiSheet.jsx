@@ -68,7 +68,7 @@ export function KhoePiSheet({ pet, userId, onClose, showToast }) {
       const small = document.createElement("canvas"); small.width = 720; small.height = 1280;
       small.getContext("2d").drawImage(cv, 0, 0, 720, 1280);
       const jpg = await toBlob(small, "image/jpeg", 0.82);
-      const path = `${userId}/khoe.jpg`;
+      const path = `${share?.folder || "x"}/khoe.jpg`; // thư mục = md5(mã tài khoản), máy chủ cấp
       const up = await supabase.storage.from("pi-share").upload(path, jpg, { contentType: "image/jpeg", upsert: true, cacheControl: "300" });
       const { data } = await supabase.rpc("pi_share_set", { p_web_on: share?.web_on ? null : true, p_show_weight: null, p_og: up.error ? null : path });
       if (data) setShare(data);

@@ -30,7 +30,7 @@ test("Khoe Pi: sheet, lưu ảnh, trang web bật; mã mời: đăng ký thấy 
     await page.getByTestId("khoe-save").click();
     expect((await dl).suggestedFilename()).toMatch(/^pi-.+\.png$/);
     const share = await waitDb(async () => { const r = (await rest(`pi_share?user_id=eq.${s.uid}&select=nick,code,web_on,og`))[0]; return r?.web_on && r.og ? r : null; }, "trang Pi bật + ảnh xem trước", 15_000);
-    expect(share.og).toBe(`${s.uid}/khoe.jpg`);
+    expect(share.og).toMatch(/^[0-9a-f]{32}\/khoe\.jpg$/);
     await expect(page.getByTestId("khoe-web")).toContainText(`fipilotai.com/pi/${share.nick}`);
     // web_pi (khách chưa đăng nhập) đọc được trang Pi, không có user_id / email
     const pub = await fetch(`${s.url}/rest/v1/rpc/web_pi`, { method: "POST", headers: { apikey: s.anon, Authorization: `Bearer ${s.anon}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_nick: share.nick }) }).then((r) => r.json());
