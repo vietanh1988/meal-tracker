@@ -1,7 +1,6 @@
 {
  "ids": [
   "AN-04",
-  "AN-07",
   "CANGIAM-08",
   "CANTANG-03",
   "CANTANG-04",
@@ -10,25 +9,16 @@
   "CHUI-02",
   "CHUI-04",
   "CHUI-07",
-  "CHUI-08",
-  "CHUI-13",
   "DO-04",
   "IDLE-01",
-  "IDLE-02",
   "IDLE-08",
   "NGHI-01",
-  "NGHI-03",
   "NGHI-05",
-  "SANG-02",
-  "SANG-06",
-  "SANG-08",
   "SAUTAP-04",
   "SAUTAP-08",
-  "STREAK-04",
   "TAP-01",
   "TAP-06",
   "TAP-08",
-  "VANG-04",
   "VANG-06"
  ]
 }

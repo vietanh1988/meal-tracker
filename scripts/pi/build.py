@@ -251,6 +251,17 @@ if os.path.exists(vidx):
 lines_src = os.path.join(PKG, "game", "pi_chat_lines.json")
 if os.path.exists(lines_src):
     shutil.copyfile(lines_src, os.path.join(ROOT, "src", "pi", "chatLines.json"))
+# 30/10: sửa câu cho đúng app (scripts/pi/chat_fix.json: id → câu mới | null = bỏ); câu đổi chữ thì bỏ giọng thu sẵn
+_fixp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chat_fix.json")
+_fix = {k: v for k, v in json.load(open(_fixp, encoding="utf-8")).items() if not k.startswith("_")}
+_lp = os.path.join(ROOT, "src", "pi", "chatLines.json")
+_d = json.load(open(_lp, encoding="utf-8"))
+for _g in _d["nhom"]:
+    _g["cau"] = [{**c, "text": _fix[c["id"]]} if _fix.get(c["id"]) else c for c in _g["cau"] if not (c["id"] in _fix and _fix[c["id"]] is None)]
+json.dump(_d, open(_lp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+_vp = os.path.join(ROOT, "src", "pi", "voice.json")
+_v = json.load(open(_vp, encoding="utf-8")); _v["ids"] = [i for i in _v["ids"] if i not in _fix]
+json.dump(_v, open(_vp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 persona = os.path.join(PKG, "game", "pi_persona_prompt.md")
 if os.path.exists(persona):
     shutil.copyfile(persona, os.path.join(ROOT, "src", "pi", "persona.md"))

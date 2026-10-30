@@ -20,7 +20,22 @@ export function fillVars(text, vars = {}) {
     if (v === undefined || v === null || v === "") { miss = true; return ""; }
     return typeof v === "number" ? v.toLocaleString("vi-VN") : String(v);
   });
-  return miss ? null : out;
+  // 30/10: {ten} = "bạn" mà đứng đầu câu → viết hoa ("Bạn ơi…", "… rồi. Bạn …")
+  return miss ? null : out.replace(/(^|[.!?…]\s+)bạn/g, (_, a) => `${a}Bạn`);
+}
+
+/** 30/10 (chủ dự án: Pi nói máy móc): tên Pi gọi user. Tên tài khoản kiểu "vietanh1988", "e2e_tester" (có số, gạch dưới, @,
+ *  viết liền không dấu) nghe như máy → gọi "bạn". Tên thật có dấu / có khoảng trắng → giữ (3 chữ trở lên lấy 2 chữ cuối). */
+export function piName(...cands) {
+  for (const raw of cands) {
+    const n = String(raw || "").trim().replace(/\s+/g, " ");
+    if (!n || n.length > 30 || /[\d_@.]/.test(n)) continue;
+    const real = /\s/.test(n) || /[à-ỹđ]/i.test(n.normalize("NFC"));
+    if (!real) continue;
+    const w = n.split(" ").map((x) => x.charAt(0).toUpperCase() + x.slice(1));
+    return (w.length >= 3 ? w.slice(-2) : w).join(" ");
+  }
+  return "bạn";
 }
 
 /** chọn 1 câu của nhóm `ma`. history: { id: epochMs lần dùng gần nhất }. → { id, text, mat, giong, ma } hoặc null */

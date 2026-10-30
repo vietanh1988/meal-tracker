@@ -48,3 +48,27 @@ test("chán nản / tự hại / ép cân → nhận ra; câu bình thường kh
   for (const t of ["Hôm nay ăn gì?", "Tập ngực xong mệt", "Pi giỏi quá"]) assert.ok(!isSadSelf(t), t);
   assert.ok(pickLine("buon_ban_than", { vars: { ten: "An" }, now: 1 }));
 });
+
+test("30/10: tên Pi gọi — tên tài khoản kiểu máy → 'bạn', tên thật giữ, đầu câu viết hoa", async () => {
+  const { piName, fillVars } = await import("../src/pi/piLines.js");
+  assert.equal(piName("vietanh1988"), "bạn");
+  assert.equal(piName("e2e_tester"), "bạn");
+  assert.equal(piName("vietanh"), "bạn");
+  assert.equal(piName(null, "Nguyễn Việt Anh"), "Việt Anh");
+  assert.equal(piName("Linh"), "bạn");
+  assert.equal(piName("Thảo"), "Thảo");
+  assert.equal(fillVars("{ten} ơi, ngày mới rồi!", { ten: "bạn" }), "Bạn ơi, ngày mới rồi!");
+  assert.equal(fillVars("Tối rồi. {ten} ngủ sớm nha.", { ten: "bạn" }), "Tối rồi. Bạn ngủ sớm nha.");
+});
+
+test("30/10: bộ câu không còn chữ sai app (điểm, nhiệm vụ, kho đồ, cây kỷ luật)", async () => {
+  const fs = await import("node:fs");
+  const d = JSON.parse(fs.readFileSync(new URL("../src/pi/chatLines.json", import.meta.url), "utf8"));
+  const used = ["chao_sang", "chao_trua", "chao_toi", "lau_khong_gap", "ghi_bua_an", "uong_nuoc", "truoc_tap", "can_giam", "can_tang_dung", "nhiem_vu", "len_cap", "streak", "ngay_nghi", "idle", "bi_chui", "buon_ban_than", "mua_do"];
+  const bad = [];
+  for (const g of d.nhom) if (used.includes(g.ma)) for (const c of g.cau) if (/điểm|nhiệm vụ|kho đồ|cây kỷ luật|cây calo|gieo hạt|nhẹ cân|giảm được cân/i.test(c.text)) bad.push(`${c.id}: ${c.text}`);
+  assert.deepEqual(bad, []);
+  const voice = JSON.parse(fs.readFileSync(new URL("../src/pi/voice.json", import.meta.url), "utf8")).ids;
+  const fix = JSON.parse(fs.readFileSync(new URL("../scripts/pi/chat_fix.json", import.meta.url), "utf8"));
+  assert.deepEqual(voice.filter((id) => id in fix), []); // câu đã đổi chữ thì không phát giọng cũ
+});

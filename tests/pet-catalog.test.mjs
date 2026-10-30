@@ -127,7 +127,7 @@ test("24/10 giọng thu sẵn: mỗi id có đủ mp3 Pi nam + Pi nữ; câu tho
   const v = JSON.parse(readFileSync("src/pi/voice.json", "utf8"));
   const lines = JSON.parse(readFileSync("src/pi/chatLines.json", "utf8"));
   const ids = new Set(lines.nhom.flatMap((g) => g.cau.map((c) => c.id)));
-  assert.ok(v.ids.length >= 30);
+  assert.ok(v.ids.length >= 20); // 30/10: 10 câu đổi chữ (chat_fix.json) bỏ giọng cũ, chờ thu lại
   for (const id of v.ids) { assert.ok(ids.has(id), id); for (const g of ["nam", "nu"]) assert.ok(existsSync(`public/pi/voice/${g}/${id}.mp3`), `${g}/${id}`); }
 });
 

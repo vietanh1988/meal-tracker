@@ -12,7 +12,7 @@ import { aiQuota } from "../lib/aiQuota";
 import { pickAiProvider, pickAiModelFromSettings } from "../lib/aiProvider";
 import { ITEMS, catalog } from "./PetAvatar";
 import { EV, VOICE } from "./lines";
-import { GROUPS, pickLine, lineById, remember, greetGroup, EVENT_GROUP, insultLevel, insultMuc, isSadSelf, isSelfHarm, SULK_MS } from "../pi/piBank";
+import { GROUPS, piName, pickLine, lineById, remember, greetGroup, EVENT_GROUP, insultLevel, insultMuc, isSadSelf, isSelfHarm, SULK_MS } from "../pi/piBank";
 import { parseTagged } from "../pi/piLipsync.js";
 import { voiceUrl, playNow, VOICE_IDS } from "../pi/piVoice.js";
 import { pi } from "../pi/piExpr";
@@ -49,7 +49,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   const pet = usePet(user?.id, on);
   const st = pet.state;
   const variant = petVariant(profile);
-  const userName = user?.user_metadata?.username || user?.email?.split("@")[0] || "bạn"; // {ten} trong câu thoại Pi
+  const userName = piName(user?.user_metadata?.full_name, user?.user_metadata?.name, user?.user_metadata?.username); // {ten} trong câu thoại Pi — tên tài khoản kiểu "abc123" → "bạn" (30/10)
   const premium = !!profile?.tier && profile.tier !== "free";
   // 20/10: sau 0:00 khi app đang mở, todayLog có thể còn là của hôm qua → chỉ dùng khi đúng ngày
   const log = ud?.todayLog && (!ud.todayLog.log_date || ud.todayLog.log_date === today) ? ud.todayLog : {};
@@ -237,7 +237,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const provider = pickAiProvider(appSettings);
     const model = pickAiModelFromSettings(appSettings, provider);
     const persona = cfg.prompt?.[variant] || `${PERSONA}\nBạn đang là Pi ${variant === "nu" ? "nữ (giọng bé gái ngọt ngào)" : "nam (giọng bé trai tinh nghịch)"}.`;
-    const system = `${persona}\nTên người dùng ({ten}): ${userName}. Tên Pi: ${view0?.name || "Pi"}. Không dùng emoji, không markdown. Tiền tệ trong app là Hạt (không phải điểm).\n${numbers()}`;
+    const system = `${persona}\n${userName === "bạn" ? "Gọi người dùng là \"bạn\" (chưa biết tên thật)." : `Tên người dùng ({ten}): ${userName}.`} Tên Pi: ${view0?.name || "Pi"}. Không dùng emoji, không markdown. Tiền tệ trong app là Hạt (không phải điểm).\n${numbers()}`;
     const messages = next.filter((m) => m.ai || m.role === "user").slice(-8).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.role === "user" ? m.text : `[${m.expr || "vui"}] ${m.text}` }));
     let data;
     try { data = await authFetch("ai-proxy", { provider, model, system, messages, maxTokens: 400, feature: "pet_chat" }); } catch (e) { data = { error: "Mạng chập chờn, thử lại nhé." }; }
