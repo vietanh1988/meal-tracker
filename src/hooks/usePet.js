@@ -4,6 +4,7 @@
 // App KHÔNG gửi số điểm. Mặc hiện ngay trên máy, lưu sau; lỗi thì tự trả lại như cũ (luật hiệu ứng mặc đồ 20/10).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { deviceId, inviteCode, setInviteCode } from "../lib/device";
 import { ITEMS } from "../pet/PetAvatar";
 import { EVENTS } from "../pet/lines";
 
@@ -90,10 +91,34 @@ export function usePet(userId, enabled) {
       if (!it.error) applyItemRows(it.data);
       setItemsReady(true);
       setLines(linesFrom(ln.error ? null : ln.data));
-      claim();
+      await claim();
+      if (!off) invite();
     })();
     return () => { off = true; };
-  }, [enabled, userId, claim]);
+  }, [enabled, userId, claim]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
+  // 30/10 mã mời Pi: tài khoản mới có mã (link ?m= hoặc gõ ở Đăng ký) → nhận mã 1 lần; đã nhận thì mỗi lần mở app soát đủ 3 ngày chưa → +50 Hạt
+  const [inviteNote, setInviteNote] = useState(null); // { kind: "joined" | "rewarded", name }
+  const invite = useCallback(async () => {
+    const code = inviteCode();
+    if (code) {
+      const { data, error: e } = await supabase.rpc("pi_invite_use", { p_code: code, p_device: deviceId() });
+      if (!e && data) {
+        setInviteCode(null);
+        if (data.ok) { try { localStorage.setItem("fp_invited", "1"); } catch { /* */ } setInviteNote({ kind: "joined", name: data.name }); }
+      }
+    }
+    let flag = false; try { flag = localStorage.getItem("fp_invited") === "1"; } catch { /* */ }
+    if (!flag) return;
+    const { data, error: e } = await supabase.rpc("pi_invite_tick");
+    if (e || !data) return;
+    if (data.rewarded) {
+      try { localStorage.removeItem("fp_invited"); } catch { /* */ }
+      if (data.state) setState((s) => ({ ...s, ...data.state }));
+      setInviteNote({ kind: "rewarded" });
+    }
+  }, []);
 
   const buy = useCallback(async (id) => {
     const { data, error: e } = await supabase.rpc("pet_buy", { p_item: id });
@@ -118,5 +143,5 @@ export function usePet(userId, enabled) {
     return { ok: true };
   }, []);
 
-  return { state, lines, itemsReady, error, claim, buy, equip, save };
+  return { state, lines, itemsReady, error, claim, buy, equip, save, inviteNote, clearInviteNote: () => setInviteNote(null) };
 }

@@ -20,6 +20,7 @@ import PERSONA from "../pi/persona.md?raw";
 import { roomTime } from "./PetRoom";
 import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PIc } from "./PetScreens";
 import { buildPiContext } from "../pi/chatContext.js";
+import { journeyPct } from "../pi/khoe.js";
 // 30/10: Pi ĐÃ có hồ sơ + nhật ký 30 ngày ở trên → tư vấn thẳng bằng số đó, không bảo người dùng gửi nhật ký
 const ADVICE = "Dữ liệu trên là hồ sơ và nhật ký thật của người dùng trong app; Pi xem được, KHÔNG được nói là không truy cập được lịch sử hay bảo người dùng gửi nhật ký. Khi người dùng hỏi nhận xét / tư vấn chế độ ăn: trả lời tối đa 4 câu ngắn (khoảng 80 từ), nêu 1–2 số thật cụ thể (ví dụ trung bình calo, đạm, món ăn nhiều), rồi 1–2 điều chỉnh làm được ngay bằng món quen của họ. Ngày không có trong nhật ký là chưa ghi, đừng đoán. Không nói về hình dáng cơ thể; vòng bụng chỉ nói theo số đo nếu có.";
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen, petVariant } from "./PetTalk";
@@ -50,6 +51,13 @@ const RULES = "Xưng \"Pi\", gọi khách là \"bạn\". Trả lời tiếng Vi�
 export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, mealIds = [], mealTimes = {}, eaten = {}, targets = {}, recentRows = [], weightLog = [], measures = [], appSettings, showToast, openPage, closeLayer, openPremium }) {
   const on = !!(flagOn || isAdmin) && !!user?.id;
   const pet = usePet(user?.id, on);
+  // 30/10 mã mời: báo khách đã nhận mã / đã được 50 Hạt
+  useEffect(() => {
+    const n = pet.inviteNote;
+    if (!n) return;
+    showToast?.({ text: n.kind === "joined" ? `Đã nhận lời mời của ${n.name || "bạn bè"}: có 3 ngày bấm Đã ăn là cả hai được 50 Hạt` : "Bạn được 50 Hạt quà mời bạn bè" }, 4500);
+    pet.clearInviteNote();
+  }, [pet.inviteNote]); // eslint-disable-line react-hooks/exhaustive-deps
   const st = pet.state;
   const variant = petVariant(profile);
   const userName = piName(user?.user_metadata?.full_name, user?.user_metadata?.name, user?.user_metadata?.username); // {ten} trong câu thoại Pi — tên tài khoản kiểu "abc123" → "bạn" (30/10)
@@ -126,8 +134,10 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
       settings: { talk: cfg.talk !== false, perDay: cfg.perDay || 3, quietFrom: cfg.quietFrom || "22:30", quietTo: cfg.quietTo || "07:00", week: cfg.week !== false, weekAt: "19:00", off: cfg.off || [] },
       floorY: cfg.floorY || {}, // 24/10: tâm thảm từng phòng (Quản trị chỉnh), PetRoom đặt chân Pi tại đó
       cols: Object.fromEntries(Object.keys(COL_DEFAULT).map((k) => [k, collectionStatus(k, cfg, today)])),
+      // 30/10 Khoe Pi: sổ Hạt 7 ngày (đếm bữa / nước tuần này), ngày của Pi, % chặng đường cân (không có số kg)
+      keys: st.keys || [], day: st.day || today, journey: journeyPct({ weights: weightLog, goalType: profile?.goalType, goalKg: profile?.goalKg, today }),
     };
-  }, [st, variant, premium, log, mealIds, mealTimes, minutes, today, recentRows, weightLog, profile?.kg, profile?.waterGoalMl, cfg]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [st, variant, premium, log, mealIds, mealTimes, minutes, today, recentRows, weightLog, profile?.kg, profile?.waterGoalMl, profile?.goalType, profile?.goalKg, cfg]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- câu Pi nói lúc này (kho câu soạn sẵn, 0 đồng) ----
   const saidKey = `fp_pet_said_${user?.id}`;
@@ -302,7 +312,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   const card = on && view ? <PetTodayCard pet={view} onOpen={() => openPage("pet")} /> : null;
   const page = (sec) => {
     if (!view) return null;
-    if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} />;
+    if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} userId={user?.id} showToast={showToast} />;
     if (sec === "pet_shop") return <PetShopScreen pet={view} onBack={closeLayer} onBuy={buy} onEquip={equip} onPremium={openPremium} />;
     if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onFace={(f) => pet.save({ settings: { face: f } }).then(toastErr)} />;
     if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onSpoken={spoken} onBack={closeLayer} onPremium={openPremium} />;

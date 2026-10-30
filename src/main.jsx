@@ -2,8 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
+import { captureInvite } from "./lib/device.js";
 // 18/10: báo cho script cứu màn trắng ở index.html biết JS đã chạy được
 try { window.__fpBooted = true; } catch (e) { /* */ }
+// 30/10 mã mời Pi: link fipilotai.com/pi/<biệt danh> → app.fipilotai.com/?m=CODE → giữ mã tới khi tài khoản mới nhận
+captureInvite();
 
 // Trang xem bản vẽ Fipilot Pet — CHỈ khi chạy dev (bản build prod bỏ hẳn nhánh này)
 const PetPreview = import.meta.env.DEV && typeof location !== "undefined" && location.pathname.startsWith("/__pet")

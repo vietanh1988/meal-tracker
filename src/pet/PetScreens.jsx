@@ -14,6 +14,7 @@ import { nowVNParts, todayVN } from "../lib/dateVN";
 import { sceneOf } from "../lib/petMath";
 import { AUTO_FACE, timeFace } from "../pi/piExpr";
 import { lateNight } from "../pi/piExpr";
+import { KhoePiSheet } from "./KhoePiSheet";
 
 const fmt = (n) => Math.round(n).toLocaleString("vi-VN");
 export const RARITY = {
@@ -106,8 +107,9 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
 }
 
 // ============ Màn Thú cưng ============
-export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, onSettings, onWeek }) {
+export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, onSettings, onWeek, userId, showToast }) {
   const [speech, setSpeech] = useState(null);
+  const [khoe, setKhoe] = useState(false); // 30/10 Khoe Pi (bản vẽ màn 1–2)
   const sayNow = () => { const l = pet.sayLine; const el = playNow(l?.audio); if (!el) primeTTS(); setSpeech({ key: Date.now(), text: l?.text || moodText(pet), audio: l?.audio || null, el, expr: l?.mat, giong: l?.giong }); };
   const lv = pet.level;
   const pct = Math.min(100, ((pet.xp - lv.from) / (lv.to - lv.from)) * 100);
@@ -123,6 +125,12 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
               <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={speech ? "#007AFF" : "#94A3B8"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M11 5 6 9H3v6h3l5 4V5z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>
             </button>
           </span>
+          {/* 30/10 Khoe Pi: góc trái dưới phòng, đối xứng nút đổi tên */}
+          {userId && <button type="button" data-testid="khoe-open" onClick={() => setKhoe(true)} className="tap"
+            style={{ position: "absolute", left: 12, bottom: 12, height: 40, padding: "0 14px 0 10px", borderRadius: 20, border: "none", background: "rgba(255,255,255,0.94)", color: "#0F172A", fontFamily: "inherit", fontSize: 14, fontWeight: 900, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 6px 16px rgba(30,64,175,0.18)" }}>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" /><path d="M12 3v12" /><path d="m7 8 5-5 5 5" /></svg>
+            Khoe Pi
+          </button>}
           {/* 20/10 (chủ dự án): bỏ cài đặt của khách (admin quyết ở Quản trị) → chỉ còn nút đổi tên Pi */}
           <button data-testid="pet-open-settings" onClick={onSettings} aria-label={`Đổi tên ${pet.name}`} className="tap" style={{ position: "absolute", right: 12, bottom: 12, width: 40, height: 40, borderRadius: 20, border: "none", background: "rgba(255,255,255,0.92)", color: "#007AFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(30,64,175,0.12)" }}>{PIc.edit(18)}</button>
         </Stage>
@@ -206,6 +214,7 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
         ))}
       </div>
       <div style={{ height: 28 }} />
+      {khoe && <KhoePiSheet pet={pet} userId={userId} showToast={showToast} onClose={() => setKhoe(false)} />}
     </SubPage>
   );
 }

@@ -296,3 +296,26 @@ main.home{overflow-x:clip}@media(max-width:720px){.lf6{display:none}}
 .lp-steps{grid-template-columns:1fr;gap:12px}.lp-step{display:grid;grid-template-columns:36px 1fr;column-gap:14px;row-gap:6px;padding:18px;border-radius:18px}.lp-step .num{grid-row:1/span 3}.lp-step b{font-size:17px}.lp-step .pts{white-space:nowrap;justify-self:start;margin-top:4px}
 }
 @media(max-width:720px){.lp-art2{display:none}} /* mobile: ẩn 2 ảnh đầu trang Hướng dẫn để tiêu đề + 12 nút gọn 1 màn */
+
+/* 30/10 Trang Pi của khách (fipilotai.com/pi/<biệt danh>, bản vẽ Khoe Pi màn 4) — khung hẹp kiểu điện thoại, giữa màn ở máy tính */
+.pi-wrap{max-width:520px;padding-top:24px;padding-bottom:56px;display:flex;flex-direction:column;gap:12px}
+.pi-room{position:relative;height:360px;border-radius:24px;background-size:cover;background-position:center 30%;overflow:hidden}
+.pi-stack{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);display:block}
+.pi-stack img{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.pi-name{display:flex;flex-direction:column;gap:2px;padding:4px 4px 0}
+.pi-name h1{font-size:26px;line-height:1.2;font-weight:900;margin:0}
+.pi-name span{font-size:14px;font-weight:700;color:#64748B}
+.pi-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pi-stats div{background:#fff;border:1px solid #E6EDF8;border-radius:16px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.pi-stats b{font-size:22px;font-weight:900;color:#0062F0;font-variant-numeric:tabular-nums}
+.pi-stats span{font-size:12px;font-weight:700;color:#64748B;line-height:1.3}
+.pi-closet{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.pi-closet b{font-size:15px;font-weight:900}
+.pi-closet div{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.pi-closet img{width:100%;height:auto;aspect-ratio:1;object-fit:contain;background:#F1F5F9;border-radius:12px}
+.pi-cta{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.pi-cta .btn{width:100%}
+.pi-cta small{text-align:center;font-size:13px;color:#475569;font-weight:600;line-height:1.5}
+.pi-hide{padding:28px 24px;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center}
+.pi-hide b{font-size:20px}.pi-hide p{font-size:15px;color:#475569;line-height:1.6;margin:0}
+@media(max-width:720px){.pi-wrap{padding-top:14px}.pi-room{height:320px}.pi-closet div{grid-template-columns:repeat(4,minmax(0,1fr))}}

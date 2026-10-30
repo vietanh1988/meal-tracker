@@ -8,6 +8,8 @@ import { DK } from "./theme";
 import { Seg } from "./mobile/ui";
 import { parseContent, stripEmptyParagraphs } from "./TermsPage";
 import { parseFeatureFlags } from "./adminTabs/FeatureFlagsTab";
+import { inviteCode, setInviteCode } from "./lib/device";
+import { PetAvatar } from "./pet/PetAvatar";
 import { usernameFromEmail, usernameCandidate } from "./lib/onboardingCheck";
 
 // Lỗi Supabase Auth (tiếng Anh) → câu tiếng Việt dễ hiểu
@@ -45,7 +47,16 @@ export function LoginScreen({onLogin,appSettings}){
   const [forgotEmail,setForgotEmail]=useState("");
   const [forgotSent,setForgotSent]=useState(false);
   const [err,setErr]=useState("");
-  const [mode,setMode]=useState("login");
+  const [mode,setMode]=useState(()=>inviteCode()?"register":"login"); // 30/10: mở từ link mời → vào thẳng Đăng ký
+  // 30/10 mã mời Pi (link ?m=CODE hoặc tự gõ): xem trước ai mời (tên Pi + Pi đang mặc), lưu mã → tài khoản mới nhận ở usePet
+  const [inv,setInv]=useState(()=>inviteCode());
+  const [invInfo,setInvInfo]=useState(null);
+  useEffect(()=>{
+    setInviteCode(inv);
+    if(!inv||inv.length<4){setInvInfo(null);return;}
+    const t=setTimeout(async()=>{const {data}=await supabase.rpc("pi_code_info",{p_code:inv});setInvInfo(data||false);},400);
+    return()=>clearTimeout(t);
+  },[inv]);
   const [success,setSuccess]=useState("");
   const [saving,setSaving]=useState(false);
   const [termsModal,setTermsModal]=useState(null); // "tos" | "privacy" | null
@@ -144,9 +155,14 @@ export function LoginScreen({onLogin,appSettings}){
     footer={!reg&&<p style={{margin:"18px 24px 0 24px",textAlign:"center",fontSize:12,color:DK.t3,lineHeight:1.6}}>Tiếp tục nghĩa là bạn đồng ý với {termsLinks} của Fipilot AI.</p>}>
       {isInApp&&<Notice tone="bad">Bạn đang mở trong ứng dụng khác. Để đăng nhập và cài app, hãy mở bằng {browserName}. <button type="button" onClick={handleOpenBrowser} style={{...linkBtn,padding:0}}>Mở bằng {browserName}</button></Notice>}
       <Seg dark mode="tab" value={mode} onChange={(m)=>{setMode(m);setErr("");setSuccess("");}} opts={[{value:"login",label:"Đăng nhập",testid:"auth-tab-login"},{value:"register",label:"Đăng ký",testid:"auth-tab-register"}]} />
+      {reg&&invInfo&&<div data-testid="auth-invite" style={{display:"flex",alignItems:"center",gap:12,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.18)",borderRadius:18,padding:12}}>
+        <span style={{width:64,height:72,display:"flex",alignItems:"flex-end",justifyContent:"center",flexShrink:0}}><PetAvatar variant={invInfo.variant} equipped={invInfo.equipped||{}} size={70} still /></span>
+        <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}><span style={{fontSize:15,fontWeight:900,color:"#FFFFFF"}}>{invInfo.name} mời bạn nuôi Pi</span><span style={{fontSize:12.5,fontWeight:600,color:"#BFD4FF",lineHeight:1.4}}>Bạn có 3 ngày bấm Đã ăn là cả hai nhận 50 Hạt.</span></span>
+      </div>}
       {reg&&!registrationEnabled&&<Notice tone="bad">Hiện chưa nhận đăng ký tài khoản mới. Bạn quay lại sau nhé!</Notice>}
       {(!reg||registrationEnabled)&&<Field label="Email" hint={emailHint} hintTone={tone(emailStatus)}><input data-testid={reg?"auth-reg-email":"login-email"} type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder={reg?"ban@gmail.com":"ban@email.com"} style={inputStyle} onKeyDown={e=>e.key==="Enter"&&handleSubmit()}/></Field>}
       {(!reg||registrationEnabled)&&<Field label="Mật khẩu"><PasswordInput placeholder={reg?PASSWORD_HINT:"Mật khẩu"} testid={reg?"auth-reg-pass":"login-pass"} value={pass} onChange={setPass} onEnter={handleSubmit} autoComplete={reg?"new-password":"current-password"}/></Field>}
+      {reg&&registrationEnabled&&<Field label="Mã mời (không bắt buộc)" hint={inv&&invInfo===false?"Không thấy mã này":inv&&invInfo?"✓ Mã mời hợp lệ":null} hintTone={invInfo===false?"bad":invInfo?"ok":null}><input data-testid="auth-reg-invite" value={inv} onChange={(e)=>setInv(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,12))} placeholder="Ví dụ: CUTEO12" autoCapitalize="characters" autoComplete="off" style={inputStyle}/></Field>}
       {!reg&&<button data-testid="forgot-open" onClick={()=>{setMode("forgot");setErr("");setForgotEmail(email);}} style={{...linkBtn,alignSelf:"flex-end"}}>Quên mật khẩu?</button>}
       {canReg&&<p data-testid="reg-terms-note" style={{margin:"0 4px",fontSize:12,color:DK.t3,lineHeight:1.5}}>Bấm Đăng ký là bạn đồng ý {regTermsLinks}.</p>}
       {err&&<Notice tone="bad">{err}</Notice>}
