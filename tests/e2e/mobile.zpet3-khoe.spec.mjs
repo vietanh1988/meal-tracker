@@ -57,6 +57,7 @@ test("Khoe Pi: sheet, lưu ảnh, trang web bật; mã mời: đăng ký thấy 
     const inv = await waitDb(async () => (await rest(`pi_invites?invitee=eq.${bId}&select=inviter,rewarded_at`))[0], "nhận mã mời", 25_000);
     expect(inv.inviter).toBe(s.uid);
     expect(inv.rewarded_at).toBeNull();
+    await expect(p2.getByTestId("toast")).toContainText("Đã nhận lời mời", { timeout: 10_000 });
     // đủ 3 ngày có bữa đã ăn đúng ngày (dấu active của pet_claim) → mở lại app → cả hai +50 Hạt
     await rest("pet_ledger", { method: "POST", body: JSON.stringify([0, 1, 2].map((i) => { const d = new Date(`${s.today}T00:00:00Z`); d.setUTCDate(d.getUTCDate() - i - 1); const day = d.toISOString().slice(0, 10); return { user_id: bId, amount: 0, kind: "active", key: `active:${day}`, day }; })) });
     await p2.reload();

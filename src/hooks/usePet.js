@@ -103,10 +103,12 @@ export function usePet(userId, enabled) {
   const invite = useCallback(async () => {
     const code = inviteCode();
     if (code) {
+      try { localStorage.setItem("fp_invited", "1"); } catch { /* */ } // đặt trước: đóng app giữa chừng vẫn soát thưởng lần sau
       const { data, error: e } = await supabase.rpc("pi_invite_use", { p_code: code, p_device: deviceId() });
       if (!e && data) {
         setInviteCode(null);
-        if (data.ok) { try { localStorage.setItem("fp_invited", "1"); } catch { /* */ } setInviteNote({ kind: "joined", name: data.name }); }
+        if (data.ok || data.why === "used") { if (data.ok) setInviteNote({ kind: "joined", name: data.name }); }
+        else { try { localStorage.removeItem("fp_invited"); } catch { /* */ } }
       }
     }
     let flag = false; try { flag = localStorage.getItem("fp_invited") === "1"; } catch { /* */ }
