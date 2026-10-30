@@ -38,11 +38,13 @@ export function piName(...cands) {
   return "bạn";
 }
 
-/** chọn 1 câu của nhóm `ma`. history: { id: epochMs lần dùng gần nhất }. → { id, text, mat, giong, ma } hoặc null */
-export function pickLine(groups, ma, { vars = {}, history = {}, now = 0, rnd = Math.random, muc = null } = {}) {
+/** 31/10: câu theo Pi nam / nữ — c.nu = bản Pi nữ (scripts/pi/chat_v2.py), không có thì dùng c.text */
+export const lineText = (c, g) => (g === "nu" && c.nu ? c.nu : c.text);
+/** chọn 1 câu của nhóm `ma`. history: { id: epochMs lần dùng gần nhất }. g = "nam" | "nu". → { id, text, mat, giong, ma } hoặc null */
+export function pickLine(groups, ma, { vars = {}, history = {}, now = 0, rnd = Math.random, muc = null, g: gender = "nam" } = {}) {
   const g = groups[ma];
   if (!g) return null;
-  let pool = g.cau.filter((c) => (muc == null || c.muc == null || c.muc === muc)).map((c) => ({ ...c, filled: fillVars(c.text, vars) })).filter((c) => c.filled);
+  let pool = g.cau.filter((c) => (muc == null || c.muc == null || c.muc === muc)).map((c) => ({ ...c, filled: fillVars(lineText(c, gender), vars) })).filter((c) => c.filled);
   if (!pool.length) return null;
   const fresh = pool.filter((c) => !history[c.id] || now - history[c.id] >= REPEAT_DAYS * DAY);
   // hết câu mới trong 7 ngày → lấy câu dùng lâu nhất (vẫn không lặp câu vừa nói)
@@ -53,10 +55,10 @@ export function pickLine(groups, ma, { vars = {}, history = {}, now = 0, rnd = M
 }
 
 /** lấy đúng 1 câu theo id (VD BUON-03: gợi ý đường dây hỗ trợ khi có ý tự hại) */
-export function lineById(groups, id, vars = {}) {
+export function lineById(groups, id, vars = {}, gender = "nam") {
   for (const g of Object.values(groups)) {
     const c = g.cau.find((x) => x.id === id);
-    if (c) { const text = fillVars(c.text, vars); return text ? { id: c.id, text, mat: c.mat, giong: c.giong, ma: g.ma } : null; }
+    if (c) { const text = fillVars(lineText(c, gender), vars); return text ? { id: c.id, text, mat: c.mat, giong: c.giong, ma: g.ma } : null; }
   }
   return null;
 }

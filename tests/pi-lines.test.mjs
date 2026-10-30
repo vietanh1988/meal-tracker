@@ -66,9 +66,30 @@ test("30/10: bộ câu không còn chữ sai app (điểm, nhiệm vụ, kho đ�
   const d = JSON.parse(fs.readFileSync(new URL("../src/pi/chatLines.json", import.meta.url), "utf8"));
   const used = ["chao_sang", "chao_trua", "chao_toi", "lau_khong_gap", "ghi_bua_an", "uong_nuoc", "truoc_tap", "can_giam", "can_tang_dung", "nhiem_vu", "len_cap", "streak", "ngay_nghi", "idle", "bi_chui", "buon_ban_than", "mua_do"];
   const bad = [];
-  for (const g of d.nhom) if (used.includes(g.ma)) for (const c of g.cau) if (/điểm|nhiệm vụ|kho đồ|cây kỷ luật|cây calo|gieo hạt|nhẹ cân|giảm được cân/i.test(c.text)) bad.push(`${c.id}: ${c.text}`);
+  for (const g of d.nhom) if (used.includes(g.ma)) for (const c of g.cau) for (const t of [c.text, c.nu].filter(Boolean)) if (/điểm|nhiệm vụ|kho đồ|cây kỷ luật|cây calo|gieo hạt|nhẹ cân|giảm được cân/i.test(t)) bad.push(`${c.id}: ${t}`);
   assert.deepEqual(bad, []);
   const voice = JSON.parse(fs.readFileSync(new URL("../src/pi/voice.json", import.meta.url), "utf8")).ids;
   const fix = JSON.parse(fs.readFileSync(new URL("../scripts/pi/chat_fix.json", import.meta.url), "utf8"));
   assert.deepEqual(voice.filter((id) => id in fix), []); // câu đã đổi chữ thì không phát giọng cũ
+});
+
+test("31/10: câu Pi nam / Pi nữ — Pi nữ lấy bản nu, câu có giọng + câu buồn dùng chung, không chê cơ thể, biến app có đủ", async () => {
+  const fs = await import("node:fs");
+  const { linesIndex, pickLine, lineById, fillVars } = await import("../src/pi/piLines.js");
+  const d = JSON.parse(fs.readFileSync(new URL("../src/pi/chatLines.json", import.meta.url), "utf8"));
+  const voice = JSON.parse(fs.readFileSync(new URL("../src/pi/voice.json", import.meta.url), "utf8")).ids;
+  const G = linesIndex(d), all = d.nhom.flatMap((g) => g.cau);
+  // câu đã thu giọng và câu buồn (BUON) không có bản riêng (đổi chữ là lệch tiếng / không đùa lúc user buồn)
+  assert.deepEqual(all.filter((c) => c.nu && (voice.includes(c.id) || c.id.startsWith("BUON"))).map((c) => c.id), []);
+  assert.ok(all.filter((c) => c.nu).length >= 100);
+  const bad = [];
+  for (const c of all) for (const t of [c.text, c.nu].filter(Boolean)) {
+    if (/béo|mập|xấu|ục ịch|bụng bự|ăn ít thôi|nhịn ăn|bỏ bữa/i.test(t)) bad.push(`${c.id}: ${t}`);
+    for (const v of t.match(/\{([a-z_]+)\}/g) || []) if (c.nu && !["{ten}", "{so_ngay}", "{cap}", "{ml}", "{so_nhiem_vu}", "{kcal_con_lai}", "{x}", "{y}"].includes(v)) bad.push(`${c.id}: ${v}`);
+  }
+  assert.deepEqual(bad, []);
+  const c = all.find((x) => x.nu && x.id === "NUOC-01");
+  assert.equal(pickLine({ uong_nuoc: { ...G.uong_nuoc, cau: [c] } }, "uong_nuoc", { vars: { ten: "bạn" }, g: "nu" }).text, fillVars(c.nu, { ten: "bạn" }));
+  assert.equal(pickLine({ uong_nuoc: { ...G.uong_nuoc, cau: [c] } }, "uong_nuoc", { vars: { ten: "bạn" } }).text, fillVars(c.text, { ten: "bạn" }));
+  assert.equal(lineById(G, "BUON-03", { ten: "bạn" }, "nu").text, lineById(G, "BUON-03", { ten: "bạn" }, "nam").text);
 });

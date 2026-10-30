@@ -168,7 +168,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const glasses = Math.ceil(Math.max(0, (vm.waterGoal || 0) - (vm.waterMl || 0)) / 250);
     const vars = { ten: userName, so_ngay: vm.streak || null, cap: vm.level?.n, ml: vm.waterGoal ? Math.max(0, vm.waterGoal - vm.waterMl) || null : null, so_nhiem_vu: vm.tasksLeft || null,
       kcal_con_lai: targets?.cal ? Math.max(0, Math.round((targets.cal || 0) - (eaten?.cal || 0))) : null, x: vm.tasks ? vm.tasks.filter((t) => t.done).length : null, y: vm.tasks?.length || null };
-    let line = grp ? pickLine(grp, { vars, history: ls.hist || {}, now }) : null;
+    let line = grp ? pickLine(grp, { vars, history: ls.hist || {}, now, g: variant }) : null;
     if (!line) {
       const arr = pet.lines[e.key]?.[variant] || [];
       if (!arr.length) { setSayNow(null); return; }
@@ -236,15 +236,15 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const now = Date.now(), vars = { ten: userName };
     if (isSadSelf(text)) { // ưu tiên cao nhất: dịu dàng, tắt đùa + tắt nhắc nhiệm vụ trong phiên
       writeSS("fp_pi_soft", "1");
-      const l = isSelfHarm(text) ? lineById("BUON-03", vars) : pickLine("buon_ban_than", { vars, history: lineHist(), now });
-      replyLine(l || pickLine("buon_ban_than", { vars, now }));
+      const l = isSelfHarm(text) ? lineById("BUON-03", vars, variant) : pickLine("buon_ban_than", { vars, history: lineHist(), now, g: variant });
+      replyLine(l || pickLine("buon_ban_than", { vars, now, g: variant }));
       return;
     }
     const lvl = insultLevel(text);
     if (lvl) { // bị chửi: không chửi lại; mức theo số lần trong phiên, mức 3 → Pi ngủ, im 90 s
       sess.current.n += 1; if (lvl === 2) sess.current.heavy += 1;
       const muc = insultMuc(sess.current.n, sess.current.heavy);
-      const l = pickLine("bi_chui", { vars, history: lineHist(), now, muc });
+      const l = pickLine("bi_chui", { vars, history: lineHist(), now, muc, g: variant });
       if (muc === 3) { replyLine(l, { sleep: true }); setTimeout(() => { setChatState((s) => (s === "sleep" ? "idle" : s)); sess.current = { n: 0, heavy: 0 }; }, SULK_MS); return; }
       replyLine(l); return;
     }

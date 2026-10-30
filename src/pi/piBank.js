@@ -3,5 +3,5 @@ import bank from "./chatLines.json";
 import { linesIndex, pickLine as pick, lineById as byId } from "./piLines.js";
 export const GROUPS = linesIndex(bank);
 export const pickLine = (ma, opts) => pick(GROUPS, ma, opts);
-export const lineById = (id, vars) => byId(GROUPS, id, vars);
+export const lineById = (id, vars, g) => byId(GROUPS, id, vars, g);
 export * from "./piLines.js";
