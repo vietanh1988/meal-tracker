@@ -2,6 +2,7 @@
 // Xem trước ảnh 1080×1920 (src/pi/khoe.js) · chọn khung · 3 viên bật / tắt (Số liệu tuần · Tiến độ cân · Mã mời) · Lưu ảnh / Chia sẻ.
 // Lần đầu Lưu / Chia sẻ → bật trang fipilotai.com/pi/<biệt danh> (mã QR trên ảnh mở trang này) + tải ảnh xem trước (og) lên kho pi-share.
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Icon, FONT, GRAD_BLUE, useLockScroll, useSwipeClose, SheetHandle } from "../mobile/ui";
 import { supabase } from "../lib/supabase";
 import { track } from "../lib/track";
@@ -105,7 +106,9 @@ export function KhoePiSheet({ pet, userId, onClose, showToast }) {
     setBusy("");
   };
 
-  return (
+  // 30/10 (chủ dự án: tiêu đề sheet bị đầu trang màn Pi che, nút dưới bị cắt): màn phụ có transform → position fixed bám theo màn phụ.
+  // Đưa sheet ra thẳng <body> để phủ trọn màn hình.
+  return createPortal(
     <div className="fpm" onClick={sw.close} style={{ position: "fixed", inset: 0, zIndex: 150, background: "rgba(15,23,42,0.45)", fontFamily: FONT, color: "#0F172A", animation: "fpmFade .15s ease" }}>
       <div ref={sw.ref} {...sw.swipe} data-testid="khoe-sheet" role="dialog" aria-modal="true" aria-label="Khoe Pi" onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, bottom: 0, top: "calc(env(safe-area-inset-top, 0px) + 24px)", maxWidth: 560, margin: "0 auto", overflowY: "auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 18px) 16px", display: "flex", flexDirection: "column", gap: 12, boxSizing: "border-box", animation: "fpmSheetUp .2s ease" }}>
@@ -145,6 +148,7 @@ export function KhoePiSheet({ pet, userId, onClose, showToast }) {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
