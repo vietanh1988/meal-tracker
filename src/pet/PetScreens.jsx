@@ -107,7 +107,7 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
 }
 
 // ============ Màn Thú cưng ============
-export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, onSettings, onWeek, userId, showToast }) {
+export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, onSettings, onWeek, onSocial, userId, showToast }) {
   const [speech, setSpeech] = useState(null);
   const [khoe, setKhoe] = useState(false); // 30/10 Khoe Pi (bản vẽ màn 1–2)
   const sayNow = () => { const l = pet.sayLine; const el = playNow(l?.audio); if (!el) primeTTS(); setSpeech({ key: Date.now(), text: l?.text || moodText(pet), audio: l?.audio || null, el, expr: l?.mat, giong: l?.giong }); };
@@ -146,6 +146,18 @@ export function PetHomeScreen({ pet, tasks, onBack, onShop, onCloset, onChat, on
           </button>
         ))}
       </div>
+
+      {/* 30/10 Bạn bè & Xếp hạng (bản vẽ màn 6): ngay dưới hàng Cửa hàng · Tủ đồ · Hỏi Pi */}
+      {onSocial && (
+        <button data-testid="pet-open-social" onClick={onSocial} className="tap" style={{ ...card, width: "calc(100% - 24px)", marginTop: 12, padding: 16, display: "flex", alignItems: "center", gap: 12, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
+          <AppIcon color="#F59E0B" size={44}>{PIc.trophy(22)}</AppIcon>
+          <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 2 }}>
+            <span style={{ fontSize: 16, fontWeight: 900 }}>Bạn bè &amp; Xếp hạng</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Xếp hạng tuần · kết bạn bằng mã · Pi đẹp tuần</span>
+          </span>
+          {Icon.chev(16)}
+        </button>
+      )}
 
       {/* Chủ nhật: tổng kết tuần (mọi khách; Premium có thêm nhận xét AI) */}
       {pet.week && (
