@@ -110,13 +110,13 @@ function statsCard(ctx, stats) {
   ctx.textAlign = "left";
 }
 
-/** d: { frame, name, level, streak, variant, equipped, face, tf, man, base (vd "/pi/"), ver ("?v=…"), room (ảnh phòng hiện tại), evRoom, logo,
+/** d: { frame, name, level, streak, variant, color ("hong" | "xanh", 30/10), pink (src/pi/pink.json), pinkVer, equipped, face, tf, man, base (vd "/pi/"), ver ("?v=…"), room (ảnh phòng hiện tại), evRoom, logo,
  *       stats: { meals, water, owned }, journey (số % hoặc null), showStats, showJourney, showCode, code, nick, trophy (tên đồ thành tích mới nhất) } */
 export async function drawKhoe(d) {
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
   const ver = d.ver || "";
-  const layers = piLayers({ man: d.man, gender: d.variant, equipped: d.equipped, face: d.face, tf: d.tf }).map((L) => ({ ...L, src: L.src + ver }));
+  const layers = piLayers({ man: d.man, gender: d.variant, equipped: d.equipped, face: d.face, tf: d.tf, color: d.color, pink: d.pink }).map((L) => ({ ...L, src: L.src + (L.src.startsWith("hong/") ? (d.pinkVer || ver) : ver) }));
   const fr = d.frame;
   const statRow = [[String(d.stats.meals), "bữa đã ăn tuần này"], [`${d.stats.water}/7`, "ngày đủ nước"], d.showJourney && d.journey != null ? [`${d.journey}%`, "tới cân mục tiêu"] : [String(d.stats.owned), "món sưu tầm"]];
   if (fr.id === "thanh-tich") {

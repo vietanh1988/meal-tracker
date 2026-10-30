@@ -10,7 +10,8 @@ import { authFetch } from "../lib/authFetch";
 import { supabase } from "../lib/supabase";
 import { aiQuota } from "../lib/aiQuota";
 import { pickAiProvider, pickAiModelFromSettings } from "../lib/aiProvider";
-import { ITEMS, catalog } from "./PetAvatar";
+import { ITEMS, catalog, setPiSkin } from "./PetAvatar";
+import { isPink } from "../pi/piCatalog";
 import { EV, VOICE } from "./lines";
 import { GROUPS, piName, pickLine, lineById, remember, greetGroup, EVENT_GROUP, insultLevel, insultMuc, isSadSelf, isSelfHarm, SULK_MS } from "../pi/piBank";
 import { parseTagged } from "../pi/piLipsync.js";
@@ -128,7 +129,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
       tasksLeft: left.length, todayLeft, level: { ...lv, nextUnlock }, owned, equipped: st.equipped || {},
       achievementIds: ACH.map((a) => a.item), achievements: ach, tasks, streak: st.streak || 0,
       trophies: owned.filter((id) => ITEMS[id]?.achievement || ACH.some((a) => a.item === id)),
-      time: roomTime(Math.floor(minutes / 60)), hour: Math.floor(minutes / 60), face: st.settings?.face || "auto", // 23/10: biểu cảm khách chọn ở Tủ đồ; 24/10 chưa chọn = "auto" (theo giờ) shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
+      time: roomTime(Math.floor(minutes / 60)), hour: Math.floor(minutes / 60), face: st.settings?.face || "auto", color: st.settings?.color === "xanh" ? "xanh" : null, // 23/10: biểu cảm khách chọn ở Tủ đồ; 24/10 chưa chọn = "auto" (theo giờ) shopLine: newNow ? `${newNow} món ở cấp ${lv.n}` : "Đồ mới theo cấp",
       levelUp: (st.prevLevel || lv.n) < lv.n, waterGoal, waterMl: log.water_ml || 0, daysAway, logged, mealsOn: ids.length, times,
       week: weekdayVN() === 0 && cfg.week !== false ? { range: `${wk.start.slice(8)}/${wk.start.slice(5, 7)} – ${wk.end.slice(8)}/${wk.end.slice(5, 7)}`, meals: 0, waterDays: 0 } : null,
       // 20/10 (chủ dự án): khách không chỉnh — Pi nói / số câu / giờ yên lặng / tổng kết tuần do Quản trị quyết (pet_config)
@@ -292,6 +293,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     };
   }, [view0, recentRows, log, weightLog, today, weekAI, pet.lines, st?.week]); // eslint-disable-line react-hooks/exhaustive-deps
   const view = view0 ? { ...view0, week: view0.week && weekData ? { range: weekData.range, meals: weekData.meals, waterDays: weekData.waterDays } : null } : null;
+  setPiSkin(!!view && isPink(view.variant, view.color)); // 30/10: icon món ở Cửa hàng / Tủ đồ theo màu Pi của khách
   const writeWeek = async () => {
     if (!weekData) return;
     setWeekBusy(true);
@@ -315,7 +317,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (!view) return null;
     if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} onSocial={() => openPage("pet_social")} userId={user?.id} showToast={showToast} />;
     if (sec === "pet_shop") return <PetShopScreen pet={view} onBack={closeLayer} onBuy={buy} onEquip={equip} onPremium={openPremium} />;
-    if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onFace={(f) => pet.save({ settings: { face: f } }).then(toastErr)} />;
+    if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onFace={(f) => pet.save({ settings: { face: f } }).then(toastErr)} onColor={(c) => pet.save({ settings: { color: c } }).then(toastErr)} />;
     if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onSpoken={spoken} onBack={closeLayer} onPremium={openPremium} />;
     if (sec === "pet_week") return weekData ? <PetWeekScreen pet={view} w={weekData} onBack={closeLayer} onAI={cfg.weekAI === false ? undefined : writeWeek} aiBusy={weekBusy} onPremium={openPremium} /> : null;
     if (sec === "pet_social") return <PetSocialScreen pet={view} userId={user?.id} onBack={closeLayer} showToast={showToast} />;

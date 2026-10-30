@@ -156,7 +156,7 @@ export function LoginScreen({onLogin,appSettings}){
       {isInApp&&<Notice tone="bad">Bạn đang mở trong ứng dụng khác. Để đăng nhập và cài app, hãy mở bằng {browserName}. <button type="button" onClick={handleOpenBrowser} style={{...linkBtn,padding:0}}>Mở bằng {browserName}</button></Notice>}
       <Seg dark mode="tab" value={mode} onChange={(m)=>{setMode(m);setErr("");setSuccess("");}} opts={[{value:"login",label:"Đăng nhập",testid:"auth-tab-login"},{value:"register",label:"Đăng ký",testid:"auth-tab-register"}]} />
       {reg&&invInfo&&<div data-testid="auth-invite" style={{display:"flex",alignItems:"center",gap:12,background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.18)",borderRadius:18,padding:12}}>
-        <span style={{width:64,height:72,display:"flex",alignItems:"flex-end",justifyContent:"center",flexShrink:0}}><PetAvatar variant={invInfo.variant} equipped={invInfo.equipped||{}} size={70} still /></span>
+        <span style={{width:64,height:72,display:"flex",alignItems:"flex-end",justifyContent:"center",flexShrink:0}}><PetAvatar variant={invInfo.variant} color={invInfo.color} equipped={invInfo.equipped||{}} size={70} still /></span>
         <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}><span style={{fontSize:15,fontWeight:900,color:"#FFFFFF"}}>{invInfo.name} mời bạn nuôi Pi</span><span style={{fontSize:12.5,fontWeight:600,color:"#BFD4FF",lineHeight:1.4}}>Bạn có 3 ngày bấm Đã ăn là cả hai nhận 50 Hạt.</span></span>
       </div>}
       {reg&&!registrationEnabled&&<Notice tone="bad">Hiện chưa nhận đăng ký tài khoản mới. Bạn quay lại sau nhé!</Notice>}

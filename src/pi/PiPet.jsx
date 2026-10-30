@@ -6,7 +6,7 @@
 // khớp theo biên độ, thân lắc ±3° chu kỳ 1,6 s, nhún theo biên độ, lá trễ 120 ms. NGHE (pi.listen / prop listening): nghiêng đầu 5°, mắt suy nghĩ, gật nhẹ.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { layerOrder } from "./layerOrder";
-import { PI_ITEMS, PI_MANIFEST, LAYER_ORDER, bodyFile, headFile, faceFile, eyesFile, mouthFile, leafFile, preload, FACES, VISEMES } from "./piCatalog";
+import { PI_ITEMS, PI_MANIFEST, LAYER_ORDER, bodyFile, headOf, leafOf, itemFile, isPink, faceFile, eyesFile, mouthFile, preload, FACES, VISEMES } from "./piCatalog";
 import { equipReaction, tapReaction, idleBase, shownFace, canBlink, pi } from "./piExpr";
 import { timeline, audioOnsets, textOnsets, visemeAt, restMouth, parseTagged } from "./piLipsync.js";
 import { playNow, loadRms, speakTTS, ttsReady } from "./piVoice.js";
@@ -86,8 +86,9 @@ function wordStarts(text) {
  *  23/10 biểu cảm tự động (src/pi/piExpr.js): mặc món mới haohung 0,4 s → cuoilon 1 s (Halloween: ngacnhien) + nhún · đủ bộ: yeu 1,5 s
  *  · tháo: ngacnhien 0,6 s · chạm: cuoilon | nhaymat | haohung 1 s (đang ngủ: ngacnhien 0,5 s) · idle 30 s suynghi, 2 phút ngu
  *  · chớp mắt 3–5 s (ngu 120 ms, chỉ khi đang vui / haohung) · pi.react(mặt, ms) từ nơi khác · đổi mặt mờ dần 80 ms, 9 mặt tải sẵn */
-export function PiPet({ gender = "nam", expression = "vui", equipped = {}, height = 220, live = false, still = false, react = 0, talking = false, speech = null, listening: listenProp = false, night = false, label, dropIn = true, onSpeakEnd, tfOverride = null }) {
+export function PiPet({ gender = "nam", expression = "vui", equipped = {}, height = 220, live = false, still = false, react = 0, talking = false, speech = null, listening: listenProp = false, night = false, label, dropIn = true, onSpeakEnd, tfOverride = null, color = null }) {
   const g = gender === "nu" ? "nu" : "nam";
+  const hong = isPink(g, color); // 30/10: Pi nữ mặc định hồng (color = "xanh" → bộ xanh)
   const eq = useMemo(() => shown(equipped, g), [equipped, g]);
   const S = height / (1 - PI_FRAME.top - PI_FRAME.bottom); // cạnh khung ảnh
   const W = S * (1 - PI_FRAME.left - PI_FRAME.right);
@@ -126,9 +127,9 @@ export function PiPet({ gender = "nam", expression = "vui", equipped = {}, heigh
 
   // tải sẵn: thân, lá, 9 mặt của bản này, đồ đang mặc; khi sống thì tải luôn mắt + miệng (để nói không nháy)
   useEffect(() => {
-    preload([bodyFile(null), headFile, leafFile, ...FACES.map((f) => faceFile(g, f)), ...Object.values(eq).map((it) => it.file), ...Object.values(eq).filter((it) => it.arm).map((it) => bodyFile(it.arm))]);
-    if (active) preload([...FACES.map((f) => eyesFile(g, f)), ...VISEMES.map((v) => mouthFile(g, v))]);
-  }, [g, eq, active]);
+    preload([bodyFile(null, hong), headOf(hong), leafOf(hong), ...FACES.map((f) => faceFile(g, f, hong)), ...Object.values(eq).map((it) => itemFile(it, hong)), ...Object.values(eq).filter((it) => it.arm).map((it) => bodyFile(it.arm, hong))]);
+    if (active) preload([...FACES.map((f) => eyesFile(g, f, hong)), ...VISEMES.map((v) => mouthFile(g, v, hong))]);
+  }, [g, eq, active, hong]);
 
   // mặc / tháo đồ → món rơi xuống + phản ứng
   useEffect(() => {
@@ -217,30 +218,30 @@ export function PiPet({ gender = "nam", expression = "vui", equipped = {}, heigh
   // mặt: 9 ảnh chồng sẵn (đã tải), chỉ mặt đang hiện rõ — đổi mặt mờ dần 80 ms, không nháy. Đang nói: bộ mắt không miệng. Ô đứng yên chỉ vẽ 1 mặt.
   const faceSet = speaking ? eyesFile : faceFile;
   const faceLayer = still
-    ? img("mat_pi", faceFile(g, face))
+    ? img("mat_pi", faceFile(g, face, hong))
     : <span key="mat_pi" data-layer="mat_pi" data-face={face} data-speaking={speaking ? "1" : undefined} style={{ ...box, display: "block" }}>
-        {FACES.map((f) => <img key={f} src={faceSet(g, f)} alt="" draggable="false" style={{ ...box, opacity: f === face ? 1 : 0, transition: "opacity 80ms linear" }} />)}
+        {FACES.map((f) => <img key={f} src={faceSet(g, f, hong)} alt="" draggable="false" style={{ ...box, opacity: f === face ? 1 : 0, transition: "opacity 80ms linear" }} />)}
       </span>;
   const mouthLayer = !speaking || still ? null
     : <span key="mieng" data-layer="mieng" data-viseme={mouth} style={{ ...box, display: "block" }}>
-        {VISEMES.map((v) => <img key={v} src={mouthFile(g, v)} alt="" draggable="false" style={{ ...box, opacity: v === mouth ? 1 : 0 }} />)}
+        {VISEMES.map((v) => <img key={v} src={mouthFile(g, v, hong)} alt="" draggable="false" style={{ ...box, opacity: v === mouth ? 1 : 0 }} />)}
       </span>;
   // 24/10 (chủ dự án: "đội mũ nón thì đè mẹ lá đi cho đỡ lỗi"): có món ô Đầu → lá xếp DƯỚI mũ (mũ trùm che lá; vương miện / băng đô vẫn lộ lá)
   const layers = layerOrder(eq, LAYER_ORDER).map((L) => {
-    if (L === "than") return img(L, bodyFile(arm));
-    if (L === "dau_pi") return eq.ao ? img(L, headFile) : null; // đầu gốc đè lên áo → giữ cằm (ảnh áo hay vẽ đè mảng da lên cằm)
+    if (L === "than") return img(L, bodyFile(arm, hong));
+    if (L === "dau_pi") return eq.ao ? img(L, headOf(hong)) : null; // đầu gốc đè lên áo → giữ cằm (ảnh áo hay vẽ đè mảng da lên cằm)
     if (L === "mat_pi") return faceLayer; // luôn hiện: trên áo / cổ, dưới kính / mũ
     if (L === "mieng") return mouthLayer;
-    if (L === "la") return PI_MANIFEST.leaf ? img(L, leafFile, still ? undefined : speaking ? "pi-leaf pi-leaf-talk" : "pi-leaf", { transformOrigin: LEAF_ORIGIN }) : null; // lá đung đưa; đội mũ thì nằm dưới mũ
+    if (L === "la") return PI_MANIFEST.leaf ? img(L, leafOf(hong), still ? undefined : speaking ? "pi-leaf pi-leaf-talk" : "pi-leaf", { transformOrigin: LEAF_ORIGIN }) : null; // lá đung đưa; đội mũ thì nằm dưới mũ
     const it = eq[L];
     if (!it) return null;
     // 24/10: Quản trị › Chỉnh vị trí — tf = { x, y (px khung 768), s (cỡ), w (rộng), r (độ), fx (lật) }, gốc tại tâm món
     const tf = (tfOverride && tfOverride[it.id]) || it.tf;
-    return img(L, it.file, drop === L ? "pi-drop" : undefined, tf ? tfStyle(tf, it.c, S) : undefined);
+    return img(L, itemFile(it, hong), drop === L ? "pi-drop" : undefined, tf ? tfStyle(tf, it.c, S) : undefined);
   });
   const motion = still ? undefined : speaking ? "pi-talk" : listening ? "pi-listen" : undefined;
   return (
-    <span role="img" aria-label={label || "Pi"} data-testid="pet-avatar" data-mood={face} data-pi="2" data-speaking={speaking ? "1" : undefined} data-listening={listening ? "1" : undefined} style={{ position: "relative", display: "inline-block", width: W, height, flexShrink: 0 }}>
+    <span role="img" aria-label={label || "Pi"} data-testid="pet-avatar" data-color={hong ? "hong" : "xanh"} data-mood={face} data-pi="2" data-speaking={speaking ? "1" : undefined} data-listening={listening ? "1" : undefined} style={{ position: "relative", display: "inline-block", width: W, height, flexShrink: 0 }}>
       <span key={hop} className={hop && !still ? "pi-hop" : undefined} style={{ position: "absolute", inset: 0, transformOrigin: "50% 100%" }}>
         <span className={motion} style={{ position: "absolute", inset: 0, transformOrigin: "50% 100%" }}>
           <span ref={bobRef} style={{ position: "absolute", inset: 0, transformOrigin: "50% 100%", transition: "transform 60ms linear" }}>

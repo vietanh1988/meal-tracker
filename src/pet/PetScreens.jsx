@@ -8,13 +8,15 @@ import { AppIcon, MealIcon, IC_COLOR, mix } from "../mobile/icons";
 import { LT, ltCard, DK, dkCard } from "../theme";
 import { PetAvatar, ItemImg, ITEMS, catalog, PET_BASE } from "./PetAvatar";
 import { PetRoom } from "./PetRoom";
-import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile, ROOM_TIMES, TIME_NAME, roomFile, piRoomTime, PI_BASE, PI_VER } from "../pi/piCatalog";
+import { EV_ORDER, EV_NAME, SLOT_ORDER, FACES, FACE_NAME, faceFile, isPink, ROOM_TIMES, TIME_NAME, roomFile, piRoomTime, PI_BASE, PI_VER } from "../pi/piCatalog";
 import { playNow, primeTTS } from "../pi/piVoice.js";
 import { nowVNParts, todayVN } from "../lib/dateVN";
 import { sceneOf } from "../lib/petMath";
 import { AUTO_FACE, timeFace } from "../pi/piExpr";
 import { lateNight } from "../pi/piExpr";
 import { KhoePiSheet } from "./KhoePiSheet";
+// 30/10: màu da Pi hồng (đo trên public/pi/hong/body/pi_than.webp) — nền ô mặt, chấm màu ở Tủ đồ
+export const PINK_SKIN = "#F58FBF";
 
 const fmt = (n) => Math.round(n).toLocaleString("vi-VN");
 export const RARITY = {
@@ -98,7 +100,7 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
       {/* bóng elip mờ ngay dưới chân Pi; chân Pi đứng đúng tâm thảm (--pi-feet do PetRoom tính) */}
       <span aria-hidden="true" data-testid="pet-shadow" style={{ position: "absolute", left: "50%", bottom: "calc(var(--pi-feet, 26px) - 7px)", width: size * 0.62, height: 18, marginLeft: -(size * 0.31), borderRadius: "50%", background: "radial-gradient(closest-side, rgba(30,41,59,0.28), rgba(30,41,59,0))" }} />
       <button type="button" data-testid="pet-tap" onClick={tap} aria-label={`Chạm vào ${pet.name}`} style={{ position: "absolute", left: "50%", bottom: "var(--pi-feet, 26px)", transform: "translateX(-50%)", border: "none", background: "transparent", padding: 0, cursor: "pointer", WebkitTapHighlightColor: "transparent" }}>
-        <PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={Math.round(size * 0.9)} talking={talking} speech={speech} listening={listening} onSpeakEnd={onSpeakEnd} live={live} react={react} night={forceTime ? forceTime === "toi" : lateNight(new Date().getHours())} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
+        <PetAvatar variant={pet.variant} color={pet.color} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={Math.round(size * 0.9)} talking={talking} speech={speech} listening={listening} onSpeakEnd={onSpeakEnd} live={live} react={react} night={forceTime ? forceTime === "toi" : lateNight(new Date().getHours())} label={`${pet.name} đang ${pet.mood === "ngu" ? "ngủ" : "vui"}`} />
       </button>
       {hearts.map((h) => <img key={h.id} src={PET_BASE + heart} alt="" aria-hidden="true" className="pet-heart" style={{ position: "absolute", left: `calc(50% + ${h.dx}px)`, bottom: size * 0.55, width: 26, marginLeft: -13, animationDelay: `${h.d}ms`, pointerEvents: "none" }} />)}
       {children}
@@ -459,7 +461,7 @@ export function RoomTimes({ it, value, onChange, testid = "pet-room-times" }) {
 
 // ============ Màn Tủ đồ ============
 // 23/10 (bộ Pi mới): tab theo sự kiện · lọc theo ô · icon cắt từ chính ảnh đồ · tháo từng món / bỏ hết · chọn biểu cảm của Pi
-export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onFace }) {
+export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onFace, onColor }) {
   const [slot, setSlot] = useState(slot0);
   const [ev, setEv] = useState("all");
   const mine = pet.owned.map((id) => ITEMS[id]).filter((it) => it && !it.legacy && it.variants.includes(pet.variant));
@@ -476,18 +478,36 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onF
   const face = pet.face || AUTO_FACE;
   const nowFace = timeFace(pet.hour ?? nowVNParts().hour); // mặt "Theo giờ" lúc này
   const g = pet.variant === "nu" ? "nu" : "nam";
+  const hong = isPink(g, pet.color); // 30/10: Pi nữ mặc định hồng
+  const skinBg = hong ? PINK_SKIN : "#6EC1F7"; // nền ô mặt = màu da Pi
   return (
     <SubPage title="Tủ đồ" subtitle={`${mine.length} món · bấm để mặc / tháo`} onBack={onBack}>
       <div data-testid="pet-closet">
         <div style={{ padding: "12px 12px 0 12px" }}><Stage pet={pet} height={300} size={220} /></div>
+        {/* 30/10 Màu Pi (chỉ Pi nữ): Hồng (mặc định) / Xanh — đổi xong lưu ngay (pet_profiles.settings.color) */}
+        {g === "nu" && (
+          <div data-testid="pet-color" style={{ ...card, marginTop: 12, padding: "12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B" }}>MÀU PI</span>
+            <div role="radiogroup" aria-label="Màu Pi" style={{ display: "flex", gap: 8 }}>
+              {[["hong", "Hồng", PINK_SKIN], ["xanh", "Xanh", "#6EC1F7"]].map(([k, t, c]) => {
+                const on = (k === "hong") === hong;
+                return (
+                  <button key={k} type="button" role="radio" data-testid={`pet-color-${k}`} aria-checked={on} onClick={() => !on && onColor?.(k)} style={{ height: 36, padding: "0 14px 0 8px", display: "inline-flex", alignItems: "center", gap: 8, borderRadius: 18, border: on ? "2px solid #007AFF" : "2px solid transparent", background: on ? "#EAF1FF" : LT.soft, fontSize: 13, fontWeight: 800, color: on ? "#007AFF" : "#334155", fontFamily: "inherit", cursor: "pointer" }}>
+                    <span aria-hidden="true" style={{ width: 20, height: 20, borderRadius: 10, background: c, boxShadow: "inset 0 0 0 1.5px rgba(15,23,42,.18)" }} />{t}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {/* Biểu cảm */}
         <div style={{ ...card, marginTop: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B" }}>BIỂU CẢM</span>
           <div className="pet-noscroll" style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none" }}>
             {/* 24/10: "Theo giờ" = mặc định — sáng nháy mắt, trưa hào hứng, chiều tối cười lớn, tối đáng yêu… */}
             <button type="button" data-testid="pet-face-auto" aria-pressed={face === AUTO_FACE} onClick={() => onFace?.(AUTO_FACE)} style={{ flexShrink: 0, width: 64, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 0", borderRadius: 14, border: face === AUTO_FACE ? "2px solid #007AFF" : "2px solid transparent", background: face === AUTO_FACE ? "#EAF1FF" : LT.soft, fontFamily: "inherit", cursor: "pointer" }}>
-              <span aria-hidden="true" style={{ width: 48, height: 30, overflow: "hidden", position: "relative", borderRadius: 8, background: "#6EC1F7" }}>
-                <img src={faceFile(g, nowFace)} alt="" loading="lazy" style={{ position: "absolute", width: 116, height: 116, left: -34, top: -43 }} />
+              <span aria-hidden="true" style={{ width: 48, height: 30, overflow: "hidden", position: "relative", borderRadius: 8, background: skinBg }}>
+                <img src={faceFile(g, nowFace, hong)} alt="" loading="lazy" style={{ position: "absolute", width: 116, height: 116, left: -34, top: -43 }} />
                 <span style={{ position: "absolute", right: 2, bottom: 2, width: 13, height: 13, borderRadius: 7, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#007AFF" strokeWidth="3" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
                 </span>
@@ -498,9 +518,9 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onF
               const on = f === face;
               return (
                 <button key={f} type="button" data-testid={`pet-face-${f}`} aria-pressed={on} onClick={() => onFace?.(f)} style={{ flexShrink: 0, width: 64, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 0", borderRadius: 14, border: on ? "2px solid #007AFF" : "2px solid transparent", background: on ? "#EAF1FF" : LT.soft, fontFamily: "inherit", cursor: "pointer" }}>
-                  <span aria-hidden="true" style={{ width: 48, height: 30, overflow: "hidden", position: "relative", borderRadius: 8, background: "#6EC1F7" }}>
+                  <span aria-hidden="true" style={{ width: 48, height: 30, overflow: "hidden", position: "relative", borderRadius: 8, background: skinBg }}>
                     {/* mặt trong khung 1024: x 300–724, y 380–580 → phóng cho vừa ô */}
-                    <img src={faceFile(g, f)} alt="" loading="lazy" style={{ position: "absolute", width: 116, height: 116, left: -34, top: -43 }} />
+                    <img src={faceFile(g, f, hong)} alt="" loading="lazy" style={{ position: "absolute", width: 116, height: 116, left: -34, top: -43 }} />
                   </span>
                   <span style={{ fontSize: 11, fontWeight: 800, color: on ? "#007AFF" : "#334155", whiteSpace: "nowrap" }}>{FACE_NAME[f] || f}</span>
                 </button>
@@ -552,7 +572,7 @@ export function PetTodayCard({ pet, onOpen }) {
       {/* 26/10 (chủ dự án duyệt): đúng dịp lễ thì có 1 hoạ tiết nhỏ ở góc trên phải (public/pi/decor, scripts/pi/decor.py); ngày thường không có */}
       {DECOR.includes(roomOf(pet)) && <img data-testid="pet-today-decor" data-decor={roomOf(pet)} src={`${PI_BASE}decor/${roomOf(pet)}.webp${PI_VER}`} alt="" aria-hidden="true" draggable="false" style={{ position: "absolute", right: 6, top: 4, width: 34, height: "auto", transform: "rotate(12deg)", pointerEvents: "none" }} />}
       <span data-testid="pet-today-av" style={{ width: 118, alignSelf: "stretch", minHeight: 132, position: "relative", flexShrink: 0, overflow: "hidden" }}>
-        <span style={{ position: "absolute", left: "50%", top: 12, transform: "translateX(-50%)" }}><PetAvatar variant={pet.variant} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={156} still /></span>
+        <span style={{ position: "absolute", left: "50%", top: 12, transform: "translateX(-50%)" }}><PetAvatar variant={pet.variant} color={pet.color} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={156} still /></span>
       </span>
       <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6, flex: 1, minWidth: 0, padding: "14px 0", position: "relative" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>

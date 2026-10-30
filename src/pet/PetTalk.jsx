@@ -21,11 +21,11 @@ const secT = { display: "block", padding: "20px 20px 8px 20px", fontSize: 13, fo
 const bubble = { background: "#FFFFFF", borderRadius: 16, padding: "9px 13px", fontSize: 13, fontWeight: 700, color: "#334155", lineHeight: 1.4, boxShadow: "0 6px 16px rgba(30,64,175,0.12)", textAlign: "center" };
 
 // ============ Hỏi Pi (chat AI giọng Pi) ============
-function PiFace({ variant, size = 30 }) {
+function PiFace({ variant, color, size = 30 }) {
   // đầu Pi trong ô tròn (cắt nửa trên thân)
   return (
     <span aria-hidden="true" style={{ width: size, height: size, borderRadius: size / 2, overflow: "hidden", background: "#EAF4FF", flexShrink: 0, position: "relative", display: "block" }}>
-      <span style={{ position: "absolute", left: "50%", top: -size * 0.32, transform: "translateX(-50%)" }}><PetAvatar variant={variant} size={size * 2.5} still /></span>
+      <span style={{ position: "absolute", left: "50%", top: -size * 0.32, transform: "translateX(-50%)" }}><PetAvatar variant={variant} color={color} size={size * 2.5} still /></span>
     </span>
   );
 }
@@ -86,7 +86,7 @@ export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", on
           <div key={i} style={{ alignSelf: "flex-end", maxWidth: "80%", background: GRAD_BLUE, color: "#FFFFFF", padding: "10px 14px", borderRadius: 18, borderBottomRightRadius: 4, fontSize: 14, lineHeight: 1.55 }}>{m.text}</div>
         ) : (
           <div key={i} style={{ alignSelf: "flex-start", maxWidth: "88%", display: "flex", alignItems: "flex-end", gap: 6 }}>
-            <PiFace variant={pet.variant} />
+            <PiFace variant={pet.variant} color={pet.color} />
             <div style={{ background: "#FFFFFF", padding: "10px 14px", borderRadius: 18, borderBottomLeftRadius: 4, fontSize: 14, lineHeight: 1.55, color: "#0F172A" }}>
               <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 800, color: m.ai ? "#7C3AED" : "#0891B2", marginBottom: 3 }}>{m.ai ? <>{PIc.sparkle(11)}{pet.name} · AI</> : `${pet.name} · câu soạn sẵn`}</span>
               {m.text}
@@ -96,7 +96,7 @@ export function PetChatScreen({ pet, msgs, left, max, onBack, state = "idle", on
         <span ref={endRef} />
         {state === "thinking" && (
           <div data-testid="pet-chat-thinking" style={{ alignSelf: "flex-start", display: "flex", alignItems: "flex-end", gap: 6 }}>
-            <PiFace variant={pet.variant} />
+            <PiFace variant={pet.variant} color={pet.color} />
             <div style={{ background: "#FFFFFF", padding: "12px 16px", borderRadius: 18, borderBottomLeftRadius: 4 }}><span className="pet-dot" /><span className="pet-dot" /><span className="pet-dot" /></div>
           </div>
         )}

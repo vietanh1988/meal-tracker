@@ -4,6 +4,7 @@
 import { rpc } from "@/lib/sb";
 import { getSettings, ogBase } from "@/lib/site";
 import man from "@/lib/app/piManifest.json";
+import pink from "@/lib/app/piPink.json"; // 30/10 Pi hồng (Pi nữ mặc định hồng)
 import { piLayers, tfCss } from "@/lib/app/piLayers.js";
 import { sceneOf } from "@/lib/app/petMath.js";
 import { todayVN, nowVNParts } from "@/lib/app/dateVN.js";
@@ -43,7 +44,8 @@ export default async function PiPage({ params }) {
   const h = nowVNParts().hour, t = h >= 5 && h < 11 ? "sang" : h >= 11 && h < 17 ? "trua" : "toi";
   const roomT = (man.rooms[scene] || []).includes(t) ? t : (man.rooms[scene] || ["trua"])[0];
   const face = p.face && p.face !== "auto" && man.faces.includes(p.face) ? p.face : "cuoilon";
-  const layers = piLayers({ man, gender: p.variant, equipped: p.equipped || {}, face, tf: p.place || {} });
+  const layers = piLayers({ man, gender: p.variant, equipped: p.equipped || {}, face, tf: p.place || {}, color: p.color, pink });
+  const pv = pink.ver ? `?v=${pink.ver}` : v;
   const S = 300; // cạnh khung ảnh Pi (px)
   const items = (p.items || []).filter((id) => man.items.some((x) => x.id === id)).slice(0, 12);
   const join = `${app}/?m=${encodeURIComponent(p.code)}&ref=pi`;
@@ -51,7 +53,7 @@ export default async function PiPage({ params }) {
     <main className="wrap pi-wrap">
       <section className="pi-room" style={{ backgroundImage: `url(${base}rooms/phong_${scene}_${roomT}.webp${v})` }}>
         <span className="pi-stack" style={{ width: S, height: S }} role="img" aria-label={`Pi ${p.name}`}>
-          {layers.map((L) => <img key={L.key} src={base + L.src + v} alt="" width={S} height={S} style={tfCss(L.tf, L.c, S) || undefined} />)}
+          {layers.map((L) => <img key={L.key} src={base + L.src + (L.src.startsWith("hong/") ? pv : v)} alt="" width={S} height={S} style={tfCss(L.tf, L.c, S) || undefined} />)}
         </span>
       </section>
       <div className="pi-name"><h1>{p.name}</h1><span>Cấp {p.level} · {p.variant === "nu" ? "Pi nữ" : "Pi nam"}{p.streak >= 2 ? ` · ${p.streak} ngày liền chăm Pi` : ""}</span></div>

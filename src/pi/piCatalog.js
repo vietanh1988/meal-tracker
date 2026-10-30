@@ -2,7 +2,8 @@
 // Mọi ảnh cùng khung vuông 768 (chân Pi tại 384,720), đã đặt đúng chỗ trên thân và đã làm sạch → chồng đủ khung theo thứ tự lớp.
 // Tên / giá / độ hiếm / cấp / ẩn: Quản trị sửa ở bảng pet_items (usePet → applyItemRows đè lên đây).
 import man from "./manifest.json";
-import fit from "./fit.json"; // scripts/pi/fit_check.py: món ghép lệch / dán kèm mảng thân → chờ vẽ lại, không bán
+import fit from "./fit.json";
+import pink from "./pink.json"; // 30/10 Pi hồng (scripts/pi/pink.py): ảnh hồng ở /pi/hong/…, items = món nữ có bản hồng // scripts/pi/fit_check.py: món ghép lệch / dán kèm mảng thân → chờ vẽ lại, không bán
 
 export const PI_BASE = "/pi/";
 // 24/10 (chủ dự án xem trên điện thoại vẫn thấy mũ / giày lệch): ảnh mới trùng tên ảnh cũ → app cài trên điện thoại giữ ảnh cũ.
@@ -42,14 +43,28 @@ const room = (ev, i) => {
 };
 export const PI_ITEMS = [...man.items.map(item), ...EV_ORDER.filter((e) => man.rooms[e]?.length).map(room)];
 
-export const bodyFile = (arm) => `${PI_BASE}body/pi_than${arm ? `_khong_tay_${arm}` : ""}.webp${PI_VER}`;
+// 30/10 Pi hồng: Pi nữ mặc định hồng, chọn được Xanh ở Tủ đồ (pet_profiles.settings.color). hong = true → lấy ảnh /pi/hong/…
+export const PI_PINK = pink;
+export { isPink } from "./piLayers.js";
+const PI_VER_HONG = pink.ver ? `?v=${pink.ver}` : "";
+const PK_ITEMS = new Set(pink.items || []);
+const base = (hong) => (hong ? `${PI_BASE}hong/` : PI_BASE); // luôn đi kèm ver(hong) = PI_VER / PI_VER_HONG
+const ver = (hong) => (hong ? PI_VER_HONG : PI_VER);
+/** ảnh món theo màu Pi (món không có bản hồng → bản gốc) */
+export const itemFile = (it, hong) => (hong && it && PK_ITEMS.has(it.id) ? `${PI_BASE}hong/${it.src}${PI_VER_HONG}` : it?.file);
+export const itemIcon = (it, hong) => (hong && it && PK_ITEMS.has(it.id) ? `${PI_BASE}hong/icon/${it.id}.webp${PI_VER_HONG}` : it?.icon);
+export const bodyFile = (arm, hong = false) => `${base(hong)}body/pi_than${arm ? `_khong_tay_${arm}` : ""}.webp${ver(hong)}`;
+export const headOf = (hong) => `${base(hong)}body/pi_dau.webp${ver(hong)}`;
+export const leafOf = (hong) => `${base(hong)}body/pi_la.webp${ver(hong)}`;
 export const headFile = `${PI_BASE}body/pi_dau.webp${PI_VER}`; // lớp đầu gốc vẽ đè lên áo (giữ cằm), scripts/pi/build.py
 // 24/10 pi_full: lá là lớp riêng (đè lên mũ, đung đưa); khi nói dùng mắt không miệng (eyes/) + 7 miệng (mouths/)
 export const leafFile = `${PI_BASE}body/pi_la.webp${PI_VER}`;
 export const VISEMES = man.visemes || [];
-export const eyesFile = (g, f) => `${PI_BASE}eyes/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp${PI_VER}`;
-export const mouthFile = (g, v) => `${PI_BASE}mouths/${g === "nu" ? "nu" : "nam"}/${VISEMES.includes(v) ? v : "ngam"}.webp${PI_VER}`;
-export const faceFile = (g, f) => `${PI_BASE}faces/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp${PI_VER}`;
+// hong chỉ có bộ nữ (Pi nam luôn xanh)
+const hg = (g, hong) => !!hong && g === "nu";
+export const eyesFile = (g, f, hong) => `${base(hg(g, hong))}eyes/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp${ver(hg(g, hong))}`;
+export const mouthFile = (g, v, hong) => `${base(hg(g, hong))}mouths/${g === "nu" ? "nu" : "nam"}/${VISEMES.includes(v) ? v : "ngam"}.webp${ver(hg(g, hong))}`;
+export const faceFile = (g, f, hong) => `${base(hg(g, hong))}faces/${g === "nu" ? "nu" : "nam"}/${FACES.includes(f) ? f : "vui"}.webp${ver(hg(g, hong))}`;
 
 /** giờ (0–23, giờ máy người dùng) → buổi của ảnh phòng: sáng 5–11, trưa 11–17, tối 17–5 */
 export const piRoomTime = (h) => (h >= 5 && h < 11 ? "sang" : h >= 11 && h < 17 ? "trua" : "toi");

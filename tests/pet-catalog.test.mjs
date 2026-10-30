@@ -44,7 +44,7 @@ test("23/10 mặc áo vẫn giữ cằm: lớp đầu gốc (pi_dau.webp, cùng 
   assert.ok(existsSync(`${P}body/pi_dau.webp`));
   assert.deepEqual(webpSize(`${P}body/pi_dau.webp`), [man.canvas, man.canvas]);
   const o = man.order; assert.ok(o.indexOf("ao") < o.indexOf("dau_pi") && o.indexOf("dau_pi") < o.indexOf("co"));
-  assert.match(readFileSync("src/pi/PiPet.jsx", "utf8"), /L === "dau_pi"\) return eq\.ao \? img\(L, headFile\)/);
+  assert.match(readFileSync("src/pi/PiPet.jsx", "utf8"), /L === "dau_pi"\) return eq\.ao \? img\(L, headOf\(hong\)\)/);
 });
 
 test("đồ cầm tay ẩn tay gốc chỉ khi món phủ kín vùng tay; ẩn thì đúng 1 bên (không bị 2 tay)", () => {
@@ -54,7 +54,7 @@ test("đồ cầm tay ẩn tay gốc chỉ khi món phủ kín vùng tay; ẩn t
   assert.deepEqual(arm.filter((it) => !["tay", "gang"].includes(it.slot) || !["trai", "phai", "dautrai", "dauphai"].includes(it.arm)).map((it) => it.id), []);
   for (const s of ["trai", "phai", "dautrai", "dauphai"]) assert.ok(existsSync(`public/pi/body/pi_than_khong_tay_${s}.webp`), s);
   const pet = readFileSync("src/pi/PiPet.jsx", "utf8");
-  assert.match(pet, /bodyFile\(arm\)/);
+  assert.match(pet, /bodyFile\(arm, hong\)/);
 });
 
 test("mỗi món + mỗi phòng có dòng trong pet_items (migration), đồ cũ bị ẩn và hoàn Hạt", () => {

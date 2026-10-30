@@ -173,7 +173,7 @@ export default function PetPreview() {
         <style>{PET_CSS}</style>
         {list.flatMap((it) => it.variants.map((v) => (
           <div key={it.id + v} style={{ width: 150, display: "flex", flexDirection: "column", alignItems: "center", background: "#FFFFFF", borderRadius: 10, padding: 4 }}>
-            <PetAvatar variant={v} size={200} still equipped={{ [it.slot]: it.id }} />
+            <PetAvatar variant={v} color={q.get("color")} size={200} still equipped={{ [it.slot]: it.id }} />{/* 30/10: Pi nữ mặc định hồng, ?color=xanh xem bản xanh */}
             <span style={{ fontSize: 10, fontWeight: 700 }}>{it.id} · {v}</span>
           </div>
         )))}

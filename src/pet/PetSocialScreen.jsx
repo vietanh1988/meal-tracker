@@ -29,7 +29,7 @@ export function PiHead({ p, size = 40 }) {
   return (
     <span aria-hidden="true" style={{ position: "relative", width: size, height: size, borderRadius: size / 2, overflow: "hidden", background: "#DBEAFE", flexShrink: 0, display: "block" }}>
       <span style={{ position: "absolute", left: "50%", top: Math.round(size * 0.04), transform: "translateX(-50%)" }}>
-        <PetAvatar variant={p?.variant || "nam"} equipped={p?.equipped || {}} size={Math.round(size * 1.85)} still face="vui" />
+        <PetAvatar variant={p?.variant || "nam"} color={p?.color} equipped={p?.equipped || {}} size={Math.round(size * 1.85)} still face="vui" />
       </span>
     </span>
   );
@@ -243,7 +243,7 @@ function ShowTab({ pet, friends, onKhoe, showToast }) {
   return (
     <>
       <div style={{ ...card, padding: 16, display: "flex", alignItems: "center", gap: 12 }}>
-        <span style={{ width: 52, height: 60, display: "flex", alignItems: "flex-end", justifyContent: "center", flexShrink: 0 }}><PetAvatar variant={pet.variant} equipped={pet.equipped} size={60} still face="cuoilon" /></span>
+        <span style={{ width: 52, height: 60, display: "flex", alignItems: "flex-end", justifyContent: "center", flexShrink: 0 }}><PetAvatar variant={pet.variant} color={pet.color} equipped={pet.equipped} size={60} still face="cuoilon" /></span>
         <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 14, fontWeight: 900 }}>Khoe Pi lên Story</b><span style={sub}>Ảnh đẹp kèm mã mời, bạn vào nuôi cả hai được 50 Hạt</span></span>
         <Btn testid="show-khoe" onClick={onKhoe}>Khoe Pi</Btn>
       </div>
@@ -255,7 +255,7 @@ function ShowTab({ pet, friends, onKhoe, showToast }) {
             {d.entries.map((p) => (
               <button key={p.nick || "me"} type="button" data-testid={p.me ? "beauty-me" : "beauty-entry"} onClick={() => vote(p)} disabled={p.me || p.voted}
                 style={{ border: p.me ? "2px solid #FACC15" : "none", borderRadius: 14, padding: "6px 4px 8px", background: "linear-gradient(180deg,#3B1C6B,#7C2D12)", color: "#FFF", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, fontFamily: "inherit" }}>
-                <span style={{ height: 96, display: "flex", alignItems: "flex-end" }}><PetAvatar variant={p.variant} equipped={p.equipped} size={92} still face="vui" /></span>
+                <span style={{ height: 96, display: "flex", alignItems: "flex-end" }}><PetAvatar variant={p.variant} color={p.color} equipped={p.equipped} size={92} still face="vui" /></span>
                 <b style={{ fontSize: 12, fontWeight: 900, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.me ? "Bạn" : p.name}</b>
                 <span style={{ fontSize: 12, fontWeight: 900, color: p.voted ? "#FB7185" : "#FDA4AF" }}>♥ {p.votes}{p.voted ? " · đã bầu" : ""}</span>
               </button>

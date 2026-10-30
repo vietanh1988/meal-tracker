@@ -8,7 +8,7 @@ import { supabase } from "../lib/supabase";
 import { track } from "../lib/track";
 import { todayVN } from "../lib/dateVN";
 import { deviceId } from "../lib/device";
-import { PI_MANIFEST, PI_BASE, PI_VER, roomFile, piRoomTime } from "../pi/piCatalog";
+import { PI_PINK, PI_MANIFEST, PI_BASE, PI_VER, roomFile, piRoomTime } from "../pi/piCatalog";
 import { PI_ITEM } from "../pi/PiPet";
 import { faceOf } from "./PetAvatar";
 import { sceneOf } from "../lib/petMath";
@@ -44,7 +44,7 @@ export function KhoePiSheet({ pet, userId, onClose, showToast }) {
 
   const frame = frames.find((f) => f.id === sel) || frames[0];
   const base = {
-    name: pet.name, level: pet.level?.n || 1, streak: pet.streak || 0, variant: pet.variant, equipped: pet.equipped || {}, owned: pet.owned || [],
+    name: pet.name, level: pet.level?.n || 1, streak: pet.streak || 0, variant: pet.variant, color: pet.color, pink: PI_PINK, pinkVer: PI_PINK.ver ? `?v=${PI_PINK.ver}` : "", equipped: pet.equipped || {}, owned: pet.owned || [],
     face: ((f) => (f && f !== "ngu" ? f : "vui"))(faceOf(null, pet.face, pet.hour)), // ảnh khoe không để Pi ngủ
     tf: Object.fromEntries(Object.values(pet.equipped || {}).map((id) => [id, PI_ITEM[id]?.tf]).filter(([, t]) => t)),
     man: PI_MANIFEST, base: PI_BASE, ver: PI_VER, logo: "/logo.png",

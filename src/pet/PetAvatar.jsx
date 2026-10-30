@@ -6,7 +6,7 @@ import { PiPet, PI_CSS } from "../pi/PiPet";
 export { pi } from "../pi/piExpr";
 import { pickFace } from "../pi/piExpr";
 import { nowVNParts } from "../lib/dateVN"; // pi.react("yeu", 1500) — nơi khác (chat, gym, mục tiêu) gọi để Pi phản ứng
-import { PI_ITEMS, SLOT_NAME, EV_ORDER, EV_NAME } from "../pi/piCatalog";
+import { PI_ITEMS, SLOT_NAME, EV_ORDER, EV_NAME, itemIcon } from "../pi/piCatalog";
 
 export const PET_BASE = "/pet/";
 // sự kiện (bộ ảnh) → bộ sưu tập (lịch bán, src/lib/petMath.js COL_DEFAULT + SQL pet_col_open)
@@ -31,8 +31,8 @@ export const faceOf = (mood, pick, hour = nowVNParts().hour) => MOOD_FACE[mood] 
 
 /** size = chiều cao Pi (px). equipped = { slot: itemId }. mood: vui | cuoi | ngu | hoi | gian | mung; face = biểu cảm khách chọn.
  *  live: thở + chớp mắt · talking: miệng mấp máy · react: đổi số → nhún + cười · speech: { text, audio, expr, giong, key } nói 1 câu · listening: đang nghe */
-export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", face, size = 220, still = false, label, talking = false, live = false, react = 0, night = false, hour, speech = null, listening = false, onSpeakEnd }) {
-  return <PiPet gender={variant} expression={faceOf(mood, face, hour)} equipped={equipped} height={size} still={still} live={live} talking={talking} speech={speech} listening={listening} onSpeakEnd={onSpeakEnd} react={react} night={night} label={label || "Thú cưng"} />;
+export function PetAvatar({ variant = "nam", equipped = {}, mood = "vui", face, size = 220, still = false, label, talking = false, live = false, react = 0, night = false, hour, speech = null, listening = false, onSpeakEnd, color = null }) {
+  return <PiPet gender={variant} color={color} expression={faceOf(mood, face, hour)} equipped={equipped} height={size} still={still} live={live} talking={talking} speech={speech} listening={listening} onSpeakEnd={onSpeakEnd} react={react} night={night} label={label || "Thú cưng"} />;
 }
 
 // giữ cho màn Quản trị cũ (Chỉnh vị trí): bộ mới không cần điểm đặt
@@ -48,8 +48,11 @@ export const PET_CSS = `
 @media (prefers-reduced-motion: reduce){.pet-dot,.pet-heart{animation:none}}
 ${PI_CSS}`;
 
+// 30/10 Pi hồng: màu Pi của chính khách (usePet gọi setPiSkin) → icon món nữ có tay / viền da lấy bản hồng
+let SKIN_HONG = false;
+export const setPiSkin = (hong) => { SKIN_HONG = !!hong; };
 /** Ảnh 1 món (ô cửa hàng / tủ đồ): icon cắt sẵn vùng có hình */
 export function ItemImg({ item, size = 72 }) {
   if (!item) return null;
-  return <img src={item.icon || item.file} alt="" draggable="false" loading="lazy" decoding="async" style={{ maxWidth: size, maxHeight: size, width: item.slot === "phong" ? size : undefined, objectFit: item.slot === "phong" ? "cover" : "contain", borderRadius: item.slot === "phong" ? 10 : 0, display: "block" }} />;
+  return <img src={(SKIN_HONG && item.variants?.includes("nu") ? itemIcon(item, true) : item.icon) || item.file} alt="" draggable="false" loading="lazy" decoding="async" style={{ maxWidth: size, maxHeight: size, width: item.slot === "phong" ? size : undefined, objectFit: item.slot === "phong" ? "cover" : "contain", borderRadius: item.slot === "phong" ? 10 : 0, display: "block" }} />;
 }
