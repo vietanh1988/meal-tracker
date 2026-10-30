@@ -15,6 +15,7 @@ import { sceneOf } from "../lib/petMath";
 import { AUTO_FACE, timeFace } from "../pi/piExpr";
 import { lateNight } from "../pi/piExpr";
 import { KhoePiSheet } from "./KhoePiSheet";
+import { sfx } from "../lib/sfx";
 // 30/10: màu da Pi hồng (đo trên public/pi/hong/body/pi_than.webp) — nền ô mặt, chấm màu ở Tủ đồ
 export const PINK_SKIN = "#F58FBF";
 
@@ -91,7 +92,7 @@ export function Stage({ pet, height = 260, children, size = 210, talking, live =
     const id = Date.now();
     setHearts((h) => [...h, ...[0, 1, 2, 3].map((i) => ({ id: `${id}-${i}`, dx: (Math.random() - 0.5) * 90, d: i * 70 }))]);
     setTimeout(() => setHearts((h) => h.filter((x) => !x.id.startsWith(String(id)))), 1300);
-    try { navigator.vibrate?.(10); } catch (e) { /* */ }
+    sfx("boing"); // 31/10: tiếng lò xo + rung nhẹ
     onTap?.(); // 26/10 (chủ dự án: "chạm vô Pi không tự nói, phải chạm nút loa"): chạm Pi → Pi nói câu hiện tại (gọi ngay trong lúc bấm — iPhone mới cho phát tiếng)
   };
   const heart = pet.variant === "nu" ? "hieu-ung/hieu-ung-11.webp" : "hieu-ung/hieu-ung-01.webp";

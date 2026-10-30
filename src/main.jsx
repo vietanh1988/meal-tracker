@@ -3,10 +3,13 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import { ErrorBoundary } from "./ErrorBoundary.jsx";
 import { captureInvite } from "./lib/device.js";
+import { unlockSfx } from "./lib/sfx.js";
 // 18/10: báo cho script cứu màn trắng ở index.html biết JS đã chạy được
 try { window.__fpBooted = true; } catch (e) { /* */ }
 // 30/10 mã mời Pi: link fipilotai.com/pi/<biệt danh> → app.fipilotai.com/?m=CODE → giữ mã tới khi tài khoản mới nhận
 captureInvite();
+// 31/10: lần chạm đầu mở khoá tiếng (iPhone chỉ cho phát tiếng sau khi chạm) → tiếng được Hạt / lên cấp phát được về sau
+try { window.addEventListener("pointerdown", unlockSfx, { once: true, capture: true }); } catch (e) { /* */ }
 
 // Trang xem bản vẽ Fipilot Pet — CHỈ khi chạy dev (bản build prod bỏ hẳn nhánh này)
 const PetPreview = import.meta.env.DEV && typeof location !== "undefined" && location.pathname.startsWith("/__pet")

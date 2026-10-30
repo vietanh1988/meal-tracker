@@ -11,6 +11,7 @@ import { supabase } from "../lib/supabase";
 import { aiQuota } from "../lib/aiQuota";
 import { pickAiProvider, pickAiModelFromSettings } from "../lib/aiProvider";
 import { ITEMS, catalog, setPiSkin } from "./PetAvatar";
+import { sfx } from "../lib/sfx";
 import { isPink } from "../pi/piCatalog";
 import { EV, VOICE } from "./lines";
 import { GROUPS, piName, pickLine, lineById, remember, greetGroup, EVENT_GROUP, insultLevel, insultMuc, isSadSelf, isSelfHarm, SULK_MS } from "../pi/piBank";
@@ -190,8 +191,9 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
 
   // ---- hành động ----
   const toastErr = (r) => { if (r && !r.ok) showToast?.({ text: r.error || "Chưa lưu được, thử lại" }); return r; };
-  const buy = useCallback(async (it) => pet.buy(it.id), [pet]);
-  const equip = useCallback(async (slot, id) => toastErr(await pet.equip(slot, id)), [pet]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 31/10: mua xong "leng keng", mặc đồ "lấp lánh" (src/lib/sfx.js)
+  const buy = useCallback(async (it) => { const r = await pet.buy(it.id); if (!r || r.ok !== false) sfx("coin"); return r; }, [pet]);
+  const equip = useCallback(async (slot, id) => { const r = toastErr(await pet.equip(slot, id)); if (id && (!r || r.ok !== false)) sfx("sparkle"); return r; }, [pet]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- Hỏi Pi ----
   const [chat, setChat] = useState([]);
@@ -294,6 +296,16 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   }, [view0, recentRows, log, weightLog, today, weekAI, pet.lines, st?.week]); // eslint-disable-line react-hooks/exhaustive-deps
   const view = view0 ? { ...view0, week: view0.week && weekData ? { range: weekData.range, meals: weekData.meals, waterDays: weekData.waterDays } : null } : null;
   setPiSkin(!!view && isPink(view.variant, view.color)); // 30/10: icon món ở Cửa hàng / Tủ đồ theo màu Pi của khách
+  // 31/10: được thêm Hạt (máy chủ cộng sau khi bấm Đã ăn, uống đủ nước…) → "leng keng"; lên cấp → kèn (lần đầu tải trang không kêu)
+  const lastSeen = useRef(null);
+  useEffect(() => {
+    if (!vm) return;
+    const cur = { seeds: vm.seeds, lv: vm.level?.n || 1 }, prev = lastSeen.current;
+    lastSeen.current = cur;
+    if (!prev) return;
+    if (cur.lv > prev.lv) sfx("levelup");
+    else if (cur.seeds > prev.seeds) sfx("coin", { vibrate: false });
+  }, [vm?.seeds, vm?.level?.n]); // eslint-disable-line react-hooks/exhaustive-deps
   const writeWeek = async () => {
     if (!weekData) return;
     setWeekBusy(true);

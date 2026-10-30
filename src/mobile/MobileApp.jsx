@@ -2,6 +2,7 @@
 // thanh dưới Hôm nay · Thực đơn · (+) Ghi bữa · Tiến độ · Tôi, các lớp phủ
 // (Ghi bữa, Sửa bữa, Chụp ảnh, Fipilot AI, Thực đơn AI, màn phụ của Tôi).
 // Mọi ghi daily_logs đi qua useUserData (saveMealToCloud/toggleEaten/removeDayMeal/moveDayMeal/addWater/applyTemplate).
+import { sfx } from "../lib/sfx";
 import { useMyFoods } from "../hooks/useMyFoods";
 import { useBodyMeasure } from "../hooks/useBodyMeasure";
 import { MeasureSheet } from "./MeasureSheet";
@@ -272,13 +273,14 @@ export function MobileApp(props) {
         await refresh(d);
       });
     };
+    sfx("ting"); // 31/10: thêm món = đã ăn
     showToast({ text: `Đã thêm ${label} vào ${mealName.toLowerCase()}${d === todayVN() ? "" : " " + friendlyDate(d).toLowerCase()}`, action: { label: "Hoàn tác", onClick: undo } });
     return true;
   });
 
   const toggleEaten = async (mealId, v) => {
     if (v) track("meal_eaten", { meal: mealId });
-    if (v) { try { navigator.vibrate && navigator.vibrate(10); } catch (e) { /* iPhone không hỗ trợ: bỏ qua */ } } // rung nhẹ (Android)
+    if (v) sfx("ting"); // 31/10: "ting ting" + rung nhẹ (src/lib/sfx.js)
     setBusy(true);
     const res = await ud.toggleEaten(mealId, v, date);
     setBusy(false);
@@ -899,7 +901,7 @@ export function MobileApp(props) {
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
             nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={<>{banner}{date === today && petApp.card}</>} busy={busy}
-            waterMl={Number(day?.water_ml) || 0} addWater={(ml) => { if (ml > 0) trackDaily("water"); return ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; }); }} waterGoalOverride={profile.waterGoalMl}
+            waterMl={Number(day?.water_ml) || 0} addWater={(ml) => { if (ml > 0) { trackDaily("water"); sfx("bloop"); } return ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; }); }} waterGoalOverride={profile.waterGoalMl}
             onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}
             recap={recapCard} checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}

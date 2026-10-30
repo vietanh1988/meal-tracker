@@ -6,6 +6,8 @@ import { DK, dkCard, dkSec } from "../theme";
 import { fmtInt, fmtDec } from "../lib/mobileView";
 import { appConfirm, appAlert } from "../lib/dialog";
 import { normalizeReminders } from "../lib/reminders";
+import { useState } from "react";
+import { sfxOn, setSfx, sfx } from "../lib/sfx";
 
 const GYM_NAMES = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
 const GOAL = { bulk: "Tăng cơ", cut: "Giảm mỡ", maintain: "Giữ cân", recomp: "Recomp" };
@@ -25,6 +27,7 @@ const ICONS = {
   diary: ["#4F46E5", "rgba(79,70,229,0.1)", svg(<><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z" /><path d="M6 18a2 2 0 0 1 2-2h11M10 8h6M10 11h4" /></>)],
   logout: ["#DC2626", "rgba(220,38,38,0.1)", svg(<><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="M14 8l4 4-4 4M18 12H9" /></>)],
   coach: ["#7C3AED", "rgba(124,58,237,0.1)", svg(<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />)],
+  sound: ["#16A34A", "rgba(22,163,74,0.1)", svg(<><path d="M4 10v4h4l5 4V6L8 10z" /><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" /></>)],
   admin: ["#DC2626", "rgba(220,38,38,0.1)", svg(<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />)],
 };
 export function RowIcon({ name }) {
@@ -40,6 +43,20 @@ function Row({ icon, label, value, onClick, last, testid }) {
       <span style={{ flexShrink: 0, fontSize: 15, fontWeight: 600, whiteSpace: "nowrap" }}>{label}</span>
       <span style={{ flex: 1, minWidth: 0, textAlign: "right", fontSize: 12, color: DK.t3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{value || ""}</span>
       {Icon.chev(16, DK.chev)}
+    </button>
+  );
+}
+// 31/10: Âm thanh & rung (src/lib/sfx.js) — công tắc kiểu iPhone, đổi là lưu ngay trên máy
+function SoundRow({ last }) {
+  const [on, setOn] = useState(sfxOn());
+  const flip = () => { const v = !on; setSfx(v); setOn(v); if (v) sfx("ting"); };
+  return (
+    <button type="button" role="switch" aria-checked={on} data-testid="me-sound" onClick={flip} className="tap row-hover" style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", height: 54, boxSizing: "content-box", borderStyle: "solid", borderColor: DK.line, borderWidth: last ? 0 : "0 0 1px 0", background: "transparent", padding: 0, fontFamily: "inherit", color: DK.t1, textAlign: "left", cursor: "pointer" }}>
+      <RowIcon name="sound" />
+      <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 600, whiteSpace: "nowrap" }}>Âm thanh & rung</span>
+      <span aria-hidden="true" style={{ width: 51, height: 31, borderRadius: 16, flexShrink: 0, position: "relative", background: on ? "#34C759" : "rgba(255,255,255,0.22)", transition: "background .2s" }}>
+        <span style={{ position: "absolute", top: 2, left: on ? 22 : 2, width: 27, height: 27, borderRadius: 14, background: "#FFFFFF", boxShadow: "0 2px 6px rgba(0,0,0,0.25)", transition: "left .2s" }} />
+      </span>
     </button>
   );
 }
@@ -99,7 +116,8 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
         <Row icon="diary" testid="me-diary" label="Nhật ký ăn uống" value="Calo từng ngày" onClick={openDiary} />
         <Row icon="goals" testid="me-goals" label={loss ? "Mục tiêu & tốc độ giảm" : "Mục tiêu & macro"} value={goalVal} onClick={() => open("goals")} />
         <Row icon="schedule" testid="me-schedule" label={loss ? "Giờ ăn" : "Lịch tập & bữa"} value={loss ? mealInfo || "Giờ các bữa" : gym} onClick={() => open("schedule")} />
-        <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} last />
+        <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
+        <SoundRow last />
       </div>
 
       <Sec>AI & hỗ trợ</Sec>
