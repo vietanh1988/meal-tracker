@@ -1,3 +1,4 @@
+import { slugify } from "./slug.js";
 // Lấy bài / trang / chuyên mục / tác giả từ Supabase
 import { q, enc } from "./sb.js";
 
@@ -54,7 +55,10 @@ export async function getBlocksById(ids) {
 export async function searchPosts(term, limit = 12) {
   const s = String(term || "").replace(/[*,()%]/g, " ").trim();
   if (!s) return [];
-  return (await q(`web_posts?kind=eq.post&${LIVE}&or=(title.ilike.*${enc(s)}*,excerpt.ilike.*${enc(s)}*)&order=published_at.desc&limit=${limit}&select=${CARD_COLS}`, { revalidate: 30 })) || [];
+  // 31/10: gõ không dấu ("pho", "giam can") vẫn ra bài — so thêm với đường dẫn bài (slug không dấu)
+  const sl = slugify(s);
+  const or = [`title.ilike.*${enc(s)}*`, `excerpt.ilike.*${enc(s)}*`, ...(sl.length >= 2 ? [`slug.ilike.*${enc(sl)}*`] : [])].join(",");
+  return (await q(`web_posts?kind=eq.post&${LIVE}&or=(${or})&order=published_at.desc&limit=${limit}&select=${CARD_COLS}`, { revalidate: 30 })) || [];
 }
 export const catOf = (p) => (p?.terms || []).find((t) => t.id === p.primary_term) || (p?.terms || []).find((t) => t.kind === "category") || null;
 export const fmtDate = (iso) => { if (!iso) return ""; const d = new Date(iso); return d.toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric" }); };
