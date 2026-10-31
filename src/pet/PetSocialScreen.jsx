@@ -268,6 +268,11 @@ function ShowTab({ pet, friends, onKhoe, showToast }) {
     if (data?.ok) { track("pi_vote"); load(); }
   };
   const h = friends?.hearts;
+  // 31/10 (chủ dự án: "khoe lên web mà mò web không thấy chỗ đó"): trang Pi trên web chỉ mở bằng link / mã QR, không có ở menu web → hiện link ở đây
+  const [web, setWeb] = useState(null);
+  useEffect(() => { supabase.rpc("pi_share_get", { p_device: null }).then(({ data }) => setWeb(data || null)); }, []);
+  const url = web?.nick ? piPageUrl(web.nick) : "";
+  const copy = async () => { try { await navigator.clipboard.writeText(url); showToast?.({ text: "Đã chép link trang Pi" }); } catch (e) { showToast?.({ text: url }); } };
   return (
     <>
       <div style={{ ...card, padding: 16, display: "flex", alignItems: "center", gap: 12 }}>
@@ -275,6 +280,20 @@ function ShowTab({ pet, friends, onKhoe, showToast }) {
         <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 14, fontWeight: 900 }}>Khoe Pi lên Story</b><span style={sub}>Ảnh đẹp kèm mã mời, bạn vào nuôi cả hai được 50 Hạt</span></span>
         <Btn testid="show-khoe" onClick={onKhoe}>Khoe Pi</Btn>
       </div>
+      {web && (
+        <div data-testid="show-web" data-on={web.web_on ? "1" : "0"} style={{ ...card, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+          <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <b style={{ fontSize: 14, fontWeight: 900 }}>Trang Pi của bạn trên web</b>
+            <span style={{ ...sub, wordBreak: "break-all" }}>{web.web_on ? <>Đang mở: <b style={{ color: "#0F172A" }}>{url.replace(/^https?:\/\//, "")}</b> · chỉ ai có link hoặc quét mã QR trên ảnh khoe mới vào được, web không liệt kê</> : "Chưa mở. Bấm Khoe Pi rồi Lưu ảnh hoặc Chia sẻ là trang tự mở, bạn bè quét mã QR trên ảnh để xem."}</span>
+          </span>
+          {web.web_on && (
+            <div style={{ display: "flex", gap: 8 }}>
+              <a data-testid="show-web-open" href={url} target="_blank" rel="noopener noreferrer" style={{ height: 38, padding: "0 14px", borderRadius: 12, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 13.5, fontWeight: 900, display: "flex", alignItems: "center", textDecoration: "none" }}>Mở trang</a>
+              <Btn kind="soft" testid="show-web-copy" onClick={copy}>Chép link</Btn>
+            </div>
+          )}
+        </div>
+      )}
       <div data-testid="beauty" style={{ ...card, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
         <span style={{ display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 14.5, fontWeight: 900 }}>Pi đẹp tuần</b><span style={sub}>Còn {d?.left ?? 3} phiếu · chốt sáng thứ Hai · Pi nhiều tim nhất (từ 3 tim) được 100 Hạt</span></span>
         {d && d.entries.length <= 1 && <span style={sub}>Kết bạn để bình chọn Pi của nhau. Mỗi người 3 phiếu mỗi tuần, không tự bầu mình.</span>}
@@ -354,8 +373,8 @@ function FriendRoom({ nick, onBack, showToast }) {
   );
 }
 
-export function PetSocialScreen({ pet, userId, onBack, showToast }) {
-  const [tab, setTab] = useState("rank");
+export function PetSocialScreen({ pet, userId, onBack, showToast, initialTab }) {
+  const [tab, setTab] = useState(["rank", "friends", "show"].includes(initialTab) ? initialTab : "rank"); // 31/10: lối tắt / thông báo mở đúng tab
   const [friends, setFriends] = useState(null);
   const [room, setRoom] = useState(null);
   const [khoe, setKhoe] = useState(false);

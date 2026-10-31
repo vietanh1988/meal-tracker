@@ -11,3 +11,11 @@ export function notifKind(n) {
   if (q?.get("pi") === "social") return { kind: / nhắn cho Pi$/.test(String(n?.title || "")) ? "note" : "social", nick: null };
   return { kind: "other", nick: null };
 }
+
+// tab mở khi chạm thông báo: lời mời / đã kết bạn / lời nhắn → Bạn bè; tim → Xếp hạng
+export function socialTabOf(url) {
+  const k = notifKind({ url }).kind;
+  if (k === "req" || k === "friend") return "friends";
+  if (k === "heart") return "rank";
+  return "rank";
+}

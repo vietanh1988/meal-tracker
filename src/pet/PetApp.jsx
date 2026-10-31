@@ -357,14 +357,14 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
   };
   const onOnboard = (act) => { if (act === "weigh") onWeigh?.(); else if (act === "shop") openPage("pet_shop"); else onLog?.(); };
   const card = on && view ? <><PetTodayCard pet={view} onOpen={() => openPage("pet")} onboard={onb} onOnboard={onOnboard} />{askPush && <OnboardPushSheet variant={variant} onLater={closeAsk} onOn={turnOnPush} />}</> : null;
-  const page = (sec) => {
+  const page = (sec, l) => {
     if (!view) return null;
     if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} onSocial={() => openPage("pet_social")} userId={user?.id} showToast={showToast} />;
     if (sec === "pet_shop") return <PetShopScreen pet={view} onBack={closeLayer} onBuy={buy} onEquip={equip} onPremium={openPremium} />;
     if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onFace={(f) => pet.save({ settings: { face: f } }).then(toastErr)} onColor={(c) => pet.save({ settings: { color: c } }).then(toastErr)} />;
     if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onSpoken={spoken} onBack={closeLayer} onPremium={openPremium} />;
     if (sec === "pet_week") return weekData ? <PetWeekScreen pet={view} w={weekData} onBack={closeLayer} onAI={cfg.weekAI === false ? undefined : writeWeek} aiBusy={weekBusy} onPremium={openPremium} /> : null;
-    if (sec === "pet_social") return <PetSocialScreen pet={view} userId={user?.id} onBack={closeLayer} showToast={showToast} />;
+    if (sec === "pet_social") return <PetSocialScreen key={l?.tab || "rank"} initialTab={l?.tab} pet={view} userId={user?.id} onBack={closeLayer} showToast={showToast} />;
     if (sec === "pet_settings") return <PetSettingsScreen pet={view} onBack={closeLayer} onRename={rename} />;
     return null;
   };

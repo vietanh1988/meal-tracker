@@ -20,3 +20,10 @@ test("SQL tim / kết bạn: giới hạn, chuông, công tắc", () => {
   assert.match(sql, /stranger_req boolean not null default true/);
   assert.match(sql, /if v_n > 5 then return; end if;/); // trần đẩy về máy giữ nguyên
 });
+
+test("chạm thông báo mở đúng tab", async () => {
+  const { socialTabOf } = await import("../src/lib/notifKind.js");
+  assert.equal(socialTabOf("/?pi=social&req=meo-mun"), "friends");
+  assert.equal(socialTabOf("/?pi=social&friend=meo-mun"), "friends");
+  assert.equal(socialTabOf("/?pi=social&heart=meo-mun"), "rank");
+});

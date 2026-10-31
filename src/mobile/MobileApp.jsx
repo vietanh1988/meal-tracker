@@ -62,6 +62,8 @@ import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
 import PWAInstallPrompt from "../PWAInstallPrompt";
 import { useNotifications } from "../hooks/useNotifications";
 import { NotifToast } from "./NotifToast";
+import { socialTabOf } from "../lib/notifKind";
+import { PiShortcut } from "../pet/PiShortcut";
 import { NotificationsScreen, BellButton } from "./NotificationsScreen";
 import { AppDialogHost, appConfirm } from "../lib/dialog";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
@@ -565,7 +567,7 @@ export function MobileApp(props) {
 
   const renderPage = (l) => {
     const sec = l.sec;
-    if (sec === "pet" || String(sec).startsWith("pet_")) return petApp.page(sec);
+    if (sec === "pet" || String(sec).startsWith("pet_")) return petApp.page(sec, l);
     if (MENU_PAGE_TITLE[sec]) return (
       <SubPage title={sec === "menu_day" ? `Lặp lại · ${({ thu_2: "Thứ Hai", thu_3: "Thứ Ba", thu_4: "Thứ Tư", thu_5: "Thứ Năm", thu_6: "Thứ Sáu", thu_7: "Thứ Bảy", cn: "Chủ nhật" })[l.key] || ""}` : MENU_PAGE_TITLE[sec]} onBack={closeLayer}>
         {sec === "menu_day" && <MenuDayPage dayKey={l.key} {...menuProps} />}
@@ -665,7 +667,7 @@ export function MobileApp(props) {
         const u = new URL(url, window.location.origin);
         const t = u.searchParams.get("tab"), sg = u.searchParams.get("seg");
         if (t === "progress") { if (sg) setProgressSeg((s) => ({ seg: sg, n: s.n + 1 })); setTab("progress"); }
-        if (u.searchParams.get("pi") === "social") { setTab("today"); openLayer({ type: "page", sec: "pet_social" }); } // 30/10: thông báo bạn bè (kết bạn, thả tim, lời nhắn)
+        if (u.searchParams.get("pi") === "social") { setTab("today"); openLayer({ type: "page", sec: "pet_social", tab: socialTabOf(url) }); } // 30/10: thông báo bạn bè (kết bạn, thả tim, lời nhắn)
         const rc = u.searchParams.get("recap"); // 18/10: thông báo ngày 1 "Xem tổng kết tháng" → ?recap=YYYY-MM
         if (rc && /^\d{4}-(0[1-9]|1[0-2])$/.test(rc)) { setTab("today"); openLayer({ type: "recap", m: rc }); }
       } catch (e) { /* url lạ: bỏ qua */ }
@@ -895,7 +897,7 @@ export function MobileApp(props) {
       <AppDialogHost />
       <UpdatePopup appSettings={appSettings} />
       {/* 31/10: thông báo nổi khi đang mở app (tim, lời mời kết bạn…) — chạm mở Bạn bè & Xếp hạng */}
-      <NotifToast notif={notif} onOpen={(url) => { if (String(url || "").includes("pi=social")) { setTab("today"); openLayer({ type: "page", sec: "pet_social" }); } else openLayer({ type: "page", sec: "notifications" }); }} />
+      <NotifToast notif={notif} onOpen={(url) => { if (String(url || "").includes("pi=social")) { setTab("today"); openLayer({ type: "page", sec: "pet_social", tab: socialTabOf(url) }); } else openLayer({ type: "page", sec: "notifications" }); }} />
       {isOffline && <div role="status" data-testid="offline-bar" style={{ position: "sticky", top: 0, zIndex: 95, background: "#FEF3C7", padding: "calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px 16px", fontSize: 13, fontWeight: 600, color: "#92400E", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0" /><path d="M3 3l18 18" /></svg>
         Mất kết nối — dữ liệu có thể chưa cập nhật</div>}
@@ -914,6 +916,7 @@ export function MobileApp(props) {
             onPhotoBig={lossMode ? () => openPhoto(null) : null} focusBonus={focusBonus} goalSub={goalSub}
             onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
+            shortcut={petApp.on && petApp.view ? <PiShortcut pet={petApp.view} userId={user?.id} notif={notif} onGo={(d) => (d === "room" ? openLayer({ type: "page", sec: "pet" }) : openLayer({ type: "page", sec: "pet_social", tab: d === "khoe" ? "show" : d }))} /> : null}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}

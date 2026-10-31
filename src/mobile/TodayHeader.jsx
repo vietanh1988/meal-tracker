@@ -102,7 +102,7 @@ function StatCard({ icon, label, value, children }) {
 
 // planCard (bản vẽ 128): khách không tập → ô thứ 3 bỏ 'Ngày tập / Ngày nghỉ', thay bằng kế hoạch (VD Giảm 0,4 kg/tuần · còn 7 kg)
 // status (bản vẽ 131d, flow giảm cân): thay 4 ô macro bằng 1 dòng trả lời "Hôm nay mình ổn không?"
-export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, targets, dayType, planLine, planCard, goalSub, dayDone, status }) {
+export function TodayHeader({ date, today, onDate, weekDots, name, bell, shortcut, eaten, targets, dayType, planLine, planCard, goalSub, dayDone, status }) {
   const [y, m] = date.split("-");
   const remain = targets.cal - eaten.cal;
   const pct = targets.cal > 0 ? Math.min(100, Math.round((eaten.cal / targets.cal) * 100)) : 0;
@@ -121,6 +121,7 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, eaten, 
           <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.9, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Chào {name}</span>
           <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.2 }}>{MONTHS[Number(m) - 1]}, {y}</span>
         </span>
+        {shortcut}
         {bell}
       </div>
 
