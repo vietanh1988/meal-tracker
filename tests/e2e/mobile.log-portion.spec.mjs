@@ -1,3 +1,4 @@
+// (kho món: "trứng gà" hiện tên "Trứng luộc")
 // 31/10 (bản vẽ "Giỏ món theo đơn vị"): giỏ Ghi bữa hiện khẩu phần "1 quả" / "chén nhỏ", −/+ theo quả, chọn cỡ ở sheet, ✕ có Hoàn tác, ghi đúng gram.
 import { test, expect } from "@playwright/test";
 import { login, rest, S, waitDb, tap, todayRow, openLogFor } from "./helpers.mjs";
@@ -14,10 +15,10 @@ test("Ghi bữa theo đơn vị: 2 quả trứng + 1 chén vừa cơm", async ({
     await openLogFor(page, "toi");
     const search = page.getByPlaceholder(/Tìm món/);
     await search.fill("trứng gà");
-    await tap(page.getByRole("button", { name: "Thêm trứng gà", exact: true }));
-    const egg = page.getByTestId("log-tray-row").filter({ hasText: /Trứng gà/ });
+    await tap(page.getByRole("button", { name: "Thêm trứng luộc", exact: true }));
+    const egg = page.getByTestId("log-tray-row").filter({ hasText: /Trứng luộc/ });
     await expect(egg.getByTestId("log-portion")).toHaveAttribute("data-portion", "1 quả");
-    await egg.getByRole("button", { name: "Thêm phần trứng gà" }).click();
+    await egg.getByRole("button", { name: "Thêm phần trứng luộc" }).click();
     await expect(egg.getByTestId("log-portion")).toHaveAttribute("data-portion", "2 quả");
     await search.fill("cơm trắng");
     await tap(page.getByRole("button", { name: "Thêm cơm trắng", exact: true }));
@@ -29,7 +30,7 @@ test("Ghi bữa theo đơn vị: 2 quả trứng + 1 chén vừa cơm", async ({
     await expect(page.getByTestId("portion-sheet")).toHaveCount(0);
     await expect(rice.getByTestId("log-portion")).toHaveAttribute("data-portion", "1 chén vừa");
     // bỏ nhầm trứng → Hoàn tác
-    await egg.getByRole("button", { name: "Bỏ trứng gà" }).click();
+    await egg.getByRole("button", { name: /^Bỏ trứng luộc$/i }).click();
     await expect(page.getByTestId("log-tray-row")).toHaveCount(1);
     await page.getByTestId("log-tray-undo").getByRole("button", { name: "Hoàn tác" }).click();
     await expect(page.getByTestId("log-tray-row")).toHaveCount(2);
