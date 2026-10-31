@@ -61,6 +61,7 @@ import { LossResult } from "./LossResult";
 import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
 import PWAInstallPrompt from "../PWAInstallPrompt";
 import { useNotifications } from "../hooks/useNotifications";
+import { NotifToast } from "./NotifToast";
 import { NotificationsScreen, BellButton } from "./NotificationsScreen";
 import { AppDialogHost, appConfirm } from "../lib/dialog";
 import { parseFeatureFlags } from "../adminTabs/FeatureFlagsTab";
@@ -893,6 +894,8 @@ export function MobileApp(props) {
       <div aria-hidden="true" data-testid="page-bg" style={{ position: "fixed", inset: 0, zIndex: 0, background: tab === "me" ? DK.bg : LT.bg }} />
       <AppDialogHost />
       <UpdatePopup appSettings={appSettings} />
+      {/* 31/10: thông báo nổi khi đang mở app (tim, lời mời kết bạn…) — chạm mở Bạn bè & Xếp hạng */}
+      <NotifToast notif={notif} onOpen={(url) => { if (String(url || "").includes("pi=social")) { setTab("today"); openLayer({ type: "page", sec: "pet_social" }); } else openLayer({ type: "page", sec: "notifications" }); }} />
       {isOffline && <div role="status" data-testid="offline-bar" style={{ position: "sticky", top: 0, zIndex: 95, background: "#FEF3C7", padding: "calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px 16px", fontSize: 13, fontWeight: 600, color: "#92400E", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0" /><path d="M3 3l18 18" /></svg>
         Mất kết nối — dữ liệu có thể chưa cập nhật</div>}

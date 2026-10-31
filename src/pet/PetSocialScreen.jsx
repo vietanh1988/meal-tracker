@@ -17,6 +17,8 @@ import { roomTime } from "./PetRoom";
 import { KhoePiSheet } from "./KhoePiSheet";
 import { piPageUrl } from "../pi/khoe";
 import { PI_NOTES } from "./piNotes";
+import { sfx } from "../lib/sfx";
+import { PiCardSheet } from "./PiCardSheet";
 
 const card = { ...ltCard, margin: "0 12px" };
 const sub = { fontSize: 12, fontWeight: 600, color: "#64748B", lineHeight: 1.35 };
@@ -54,6 +56,15 @@ const Toggle = ({ on, onClick, testid, title, desc }) => (
   </button>
 );
 
+// 31/10 (bản vẽ "Thả tim người lạ…"): nút tim 36×36 bo 18; chưa thả #F1F5F9 / tim viền #94A3B8, đã thả #FFE4E6 / tim đặc #E11D48
+const HEART_D = "M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z";
+export const HeartBtn = ({ on, onClick, testid, label, size = 36 }) => (
+  <button type="button" data-testid={testid} aria-label={label} aria-pressed={!!on} onClick={onClick}
+    style={{ width: size, height: size, borderRadius: size / 2, border: "none", background: on ? "#FFE4E6" : "#F1F5F9", color: on ? "#E11D48" : "#94A3B8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, padding: 0 }}>
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24"><path d={HEART_D} fill={on ? "currentColor" : "none"} stroke="currentColor" strokeWidth={on ? 0 : 2.2} strokeLinejoin="round" /></svg>
+  </button>
+);
+
 function valueOf(kind, r) {
   if (kind === "cham") return `${fmt(r.value)} Hạt`;
   if (kind === "vandong") return `${fmt(r.value)} phút`;
@@ -66,7 +77,7 @@ function subOf(kind, r) {
 }
 
 // ---------- Tab Xếp hạng ----------
-function BoardTab({ showToast }) {
+function BoardTab({ showToast, onOpen }) {
   const [kind, setKind] = useState("cham");
   const [scope, setScope] = useState("all");
   const [d, setD] = useState(null);
@@ -79,12 +90,24 @@ function BoardTab({ showToast }) {
   }, [kind, scope]);
   useEffect(() => { setD(null); load(); }, [load]);
   const setOpt = async (k, v) => {
-    const { data, error } = await supabase.rpc("pi_board_set", { p_board_on: k === "board" ? v : null, p_show_weight: k === "weight" ? v : null });
+    const { data, error } = await supabase.rpc("pi_board_set", { p_board_on: k === "board" ? v : null, p_show_weight: k === "weight" ? v : null, p_stranger_req: k === "stranger" ? v : null });
     if (error) { showToast?.({ text: "Chưa lưu được, thử lại." }); return; }
-    setD((x) => ({ ...x, board_on: data.board_on, show_weight: data.show_weight }));
+    setD((x) => ({ ...x, board_on: data.board_on, show_weight: data.show_weight, stranger_req: data.stranger_req }));
     load();
   };
   const rows = d?.rows || [];
+  // 31/10: thả tim cho cả người lạ trên bảng (máy chủ giới hạn 20 người lạ / ngày)
+  const heart = async (r) => {
+    if (r.hearted) return;
+    setD((x) => ({ ...x, rows: x.rows.map((y) => (y.nick === r.nick ? { ...y, hearted: true } : y)) }));
+    const { data, error } = await supabase.rpc("pi_heart", { p_nick: r.nick });
+    if (error || !data?.ok) {
+      setD((x) => ({ ...x, rows: x.rows.map((y) => (y.nick === r.nick ? { ...y, hearted: false } : y)) }));
+      showToast?.({ text: data?.why === "limit" ? "Hôm nay bạn đã thả đủ 20 tim cho người lạ, mai thả tiếp nha" : "Chưa thả tim được, thử lại." });
+      return;
+    }
+    sfx("pop"); track("rank_heart");
+  };
   const meIn = rows.some((r) => r.me);
   const tip = kind === "cham" ? "Hạt kiếm đúng ngày từ thứ Hai: ăn đúng bữa, uống đủ nước, cân tuần. Top 3 được 50 / 30 / 20 Hạt sáng thứ Hai."
     : kind === "vandong" ? "Phút \"Vận động thêm\" ghi đúng ngày, tối đa 90 phút mỗi ngày. Top 3 được 50 / 30 / 20 Hạt sáng thứ Hai."
@@ -102,15 +125,19 @@ function BoardTab({ showToast }) {
         {!d && <span style={{ ...sub, padding: 16 }}>{err || "Đang tải…"}</span>}
         {d && !rows.length && <span style={{ ...sub, padding: 16 }}>{kind === "hanhtrinh" ? "Chưa ai khoe tiến độ cân tuần này. Bật \"Khoe tiến độ cân\" ở dưới để có tên trên bảng." : scope === "friends" ? "Chưa có bạn nào có số tuần này. Mời bạn ở tab Bạn bè." : "Tuần này chưa có ai. Bạn là người đầu tiên nha!"}</span>}
         {rows.map((r, i) => (
-          <div key={`${r.rank}-${i}`} data-testid={r.me ? "rank-me" : "rank-row"} style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 16px", minHeight: kind === "hanhtrinh" ? 64 : 56, background: r.me ? "#EEF4FF" : undefined, borderTop: i ? "1px solid #EEF2FA" : "none" }}>
+          <div key={`${r.rank}-${i}`} data-testid={r.me ? "rank-me" : "rank-row"} style={{ display: "flex", alignItems: "center", gap: 12, padding: !r.me && r.nick ? "0 12px 0 16px" : "0 16px", minHeight: kind === "hanhtrinh" ? 64 : 56, background: r.me ? "#EEF4FF" : undefined, borderTop: i ? "1px solid #EEF2FA" : "none" }}>
             <RankNum n={r.rank} />
+            {/* 31/10: chạm Pi / tên người khác → thẻ Pi (bạn bè → phòng Pi) */}
+            <button type="button" data-testid="rank-open" disabled={r.me || !r.nick} onClick={() => onOpen?.(r)} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 12, border: "none", background: "none", padding: 0, fontFamily: "inherit", textAlign: "left", color: "#0F172A", cursor: r.me || !r.nick ? "default" : "pointer" }}>
             <PiHead p={r} />
             <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
               <span style={{ fontSize: 15, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}{r.me ? " (bạn)" : ""}</span>
               <span style={{ ...sub, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{subOf(kind, r)}</span>
               {kind === "hanhtrinh" && <span style={{ display: "block", height: 6, borderRadius: 3, background: "#EEF2FA", marginTop: 4, overflow: "hidden" }}><span style={{ display: "block", height: "100%", width: `${Math.min(100, r.value)}%`, borderRadius: 3, background: "linear-gradient(90deg,#34D399,#059669)" }} /></span>}
             </span>
+            </button>
             <span style={{ fontSize: 15, fontWeight: 900, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", flexShrink: 0, ...(kind === "hanhtrinh" ? { color: "#047857" } : { color: "#92400E", background: "#FEF3C7", borderRadius: 12, padding: "3px 9px" }) }}>{valueOf(kind, r)}</span>
+            {!r.me && r.nick && <HeartBtn on={r.hearted} testid="rank-heart" label={`Thả tim cho ${r.name}`} onClick={() => heart(r)} />}
           </div>
         ))}
         {d?.me && !meIn && <div data-testid="rank-me" style={{ display: "flex", alignItems: "center", gap: 12, padding: "0 16px", minHeight: 56, background: "#EEF4FF", borderTop: "1px solid #EEF2FA" }}><RankNum n={d.me.rank} /><span style={{ flex: 1, fontSize: 15, fontWeight: 900 }}>Bạn</span><span style={{ fontSize: 15, fontWeight: 900 }}>{valueOf(kind, d.me)}</span></div>}
@@ -119,6 +146,7 @@ function BoardTab({ showToast }) {
         <span style={sub}>{tip}</span>
         {d && <Toggle testid="rank-opt-board" on={d.board_on} onClick={() => setOpt("board", !d.board_on)} title="Có tên trên bảng xếp hạng" desc="Tắt thì bạn vẫn thấy hạng của mình, người khác không thấy bạn" />}
         {d && <Toggle testid="rank-opt-weight" on={d.show_weight} onClick={() => setOpt("weight", !d.show_weight)} title="Khoe tiến độ cân" desc="Chỉ hiện % chặng đường tới cân mục tiêu, không bao giờ hiện số kg" />}
+        {d && <Toggle testid="rank-opt-stranger" on={d.stranger_req !== false} onClick={() => setOpt("stranger", d.stranger_req === false)} title="Cho người lạ xin kết bạn" desc="Tắt thì người lạ trên bảng chỉ thả tim được, không gửi lời mời" />}
       </div>
     </>
   );
@@ -332,6 +360,7 @@ export function PetSocialScreen({ pet, userId, onBack, showToast }) {
   const [room, setRoom] = useState(null);
   const [khoe, setKhoe] = useState(false);
   const [notes, setNotes] = useState([]);
+  const [cardNick, setCardNick] = useState(null); // 31/10: thẻ Pi người lạ
   const loadFriends = useCallback(async () => { const { data } = await supabase.rpc("pi_friends_list"); setFriends(data || { friends: [], incoming: [], outgoing: [] }); }, []);
   useEffect(() => { loadFriends(); track("social_open"); }, [loadFriends]);
   useEffect(() => { if (tab === "friends") supabase.rpc("pi_notes_list").then(({ data }) => setNotes(data || [])); }, [tab]);
@@ -348,11 +377,12 @@ export function PetSocialScreen({ pet, userId, onBack, showToast }) {
               style={{ height: 34, borderRadius: 9, border: "none", fontFamily: "inherit", fontSize: 13.5, fontWeight: 800, background: tab === k ? "#FFFFFF" : "transparent", color: tab === k ? "#0F172A" : "#475569", boxShadow: tab === k ? "0 1px 3px rgba(15,23,42,0.12)" : "none" }}>{t}</button>
           ))}
         </div>
-        {tab === "rank" && <BoardTab showToast={showToast} />}
+        {tab === "rank" && <BoardTab showToast={showToast} onOpen={(r) => (r.fr === "ok" ? setRoom(r.nick) : setCardNick(r.nick))} />}
         {tab === "friends" && <FriendsTab data={friends} notes={notes} reload={loadFriends} onRoom={setRoom} showToast={showToast} />}
         {tab === "show" && <ShowTab pet={pet} friends={friends} onKhoe={() => setKhoe(true)} showToast={showToast} />}
       </div>
       {khoe && <KhoePiSheet pet={pet} userId={userId} showToast={showToast} onClose={() => setKhoe(false)} />}
+      {cardNick && <PiCardSheet nick={cardNick} showToast={showToast} onClose={() => setCardNick(null)} onRoom={(n) => { setCardNick(null); setRoom(n); }} onChanged={loadFriends} />}
     </SubPage>
   );
 }

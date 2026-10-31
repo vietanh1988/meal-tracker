@@ -40,6 +40,7 @@ export function useNotifications(appSettings, userId) {
   const [createdAt, setCreatedAt] = useState(null);
   const [seen, setSeen] = useState(readSeen);
   const [ringing, setRinging] = useState(false);
+  const [toast, setToast] = useState(null); // 31/10: thông báo nổi khi đang mở app (tin mới nhất qua Realtime)
   const ringTimer = useRef(null);
 
   useEffect(() => {
@@ -62,6 +63,7 @@ export function useNotifications(appSettings, userId) {
       channel = supabase.channel(`notifications-${userId}-${Date.now()}`)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` }, (payload) => {
           setItems((prev) => [payload.new, ...prev].slice(0, 30));
+          setToast(payload.new);
           setRinging(true); playDing();
           clearTimeout(ringTimer.current);
           ringTimer.current = setTimeout(() => setRinging(false), 2000);
@@ -107,5 +109,11 @@ export function useNotifications(appSettings, userId) {
     }
   }, [items, updates, seen]);
 
-  return { items, updates, unread, ringing, markAllRead };
+  // đánh dấu 1 tin đã đọc (trả lời lời mời ngay ở thông báo nổi)
+  const markRead = useCallback(async (id) => {
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+    try { await supabase.from("notifications").update({ is_read: true }).eq("id", id); } catch (e) { /* */ }
+  }, []);
+
+  return { items, updates, unread, ringing, markAllRead, markRead, toast, clearToast: () => setToast(null) };
 }

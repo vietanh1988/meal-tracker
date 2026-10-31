@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 import { fmtVN, toVNDate } from "../lib/dateVN";
 import { UpdateFlow } from "./UpdatePopup";
 import { DK, dkCard } from "../theme";
+import { supabase } from "../lib/supabase";
+import { notifKind } from "../lib/notifKind";
+import { KindIcon, KIND_STYLE } from "./NotifToast";
 
 // Nền tối (bản vẽ 48)
 const lbl = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, fontWeight: 700, color: DK.t3, letterSpacing: "0.08em" };
@@ -66,18 +69,46 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
         </div>
       ) : (
         <div style={box}>
-          {items.map((n, i) => (
-            <button key={n.id} data-testid="notif-item" onClick={() => setOpen(open === n.id ? null : n.id)}
-              style={{ display: "flex", flexDirection: "column", gap: 2, width: "100%", padding: "12px 0", border: "none", borderBottom: i < items.length - 1 ? `1px solid ${DK.line}` : "none", background: "transparent", fontFamily: "inherit", textAlign: "left", color: DK.t1 }}>
-              <span style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
-                <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{n.title}</span>
-                <span style={{ fontSize: 11, color: DK.t3, whiteSpace: "nowrap" }}>{dateOf(n.created_at)}</span>
-              </span>
-              {n.body && <span style={{ fontSize: 13, color: DK.t2, lineHeight: 1.45, ...(open === n.id ? { whiteSpace: "pre-wrap" } : { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }) }}>{n.body}</span>}
-            </button>
-          ))}
+          {items.map((n, i) => <NotifRow key={n.id} n={n} last={i === items.length - 1} open={open === n.id} onToggle={() => setOpen(open === n.id ? null : n.id)} dateOf={dateOf} />)}
         </div>
       )}
+    </div>
+  );
+}
+
+// 31/10 (chốt bản vẽ "Thả tim người lạ, xin kết bạn, thông báo" khung 4): mỗi dòng có ô icon 36 theo loại (tim / lời mời / đã kết bạn / lời nhắn);
+// lời mời kết bạn có nút Đồng ý (trắng) / Từ chối (kính) h34 bo 10 ngay trong dòng; trả lời xong hiện "Đã kết bạn" / "Đã từ chối".
+function NotifRow({ n, last, open, onToggle, dateOf }) {
+  const k = notifKind(n);
+  const [, , bg, fg] = KIND_STYLE[k.kind] || KIND_STYLE.other;
+  const [ans, setAns] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const answer = async (yes) => {
+    if (busy) return;
+    setBusy(true);
+    const { data, error } = await supabase.rpc("pi_friend_answer", { p_nick: k.nick, p_accept: yes });
+    setBusy(false);
+    if (!error) setAns(data?.status === "ok" ? "ok" : yes ? "gone" : "no");
+  };
+  const btn = (pri) => ({ height: 34, padding: "0 14px", borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: 800, background: pri ? "#FFFFFF" : "rgba(255,255,255,0.12)", color: pri ? "#0040E0" : "#FFFFFF", opacity: busy ? 0.6 : 1 });
+  return (
+    <div data-testid="notif-item" data-kind={k.kind} role="button" tabIndex={0} onClick={onToggle} onKeyDown={(e) => { if (e.key === "Enter") onToggle(); }}
+      style={{ display: "flex", gap: 10, width: "100%", padding: "12px 0", borderBottom: last ? "none" : `1px solid ${DK.line}`, cursor: "pointer", boxSizing: "border-box" }}>
+      {!n.is_read && <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 4, background: "#60A5FA", marginTop: 6, flexShrink: 0, marginLeft: -4 }} />}
+      {k.kind !== "other" && <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 12, background: bg, color: fg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><KindIcon kind={k.kind} size={19} /></span>}
+      <span style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, minWidth: 0 }}>
+        <span style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{n.title}</span>
+          <span style={{ fontSize: 11, color: DK.t3, whiteSpace: "nowrap" }}>{dateOf(n.created_at)}</span>
+        </span>
+        {n.body && <span style={{ fontSize: 13, color: DK.t2, lineHeight: 1.45, ...(open ? { whiteSpace: "pre-wrap" } : { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }) }}>{n.body}</span>}
+        {k.kind === "req" && (ans
+          ? <span data-testid="notif-answered" style={{ fontSize: 13, fontWeight: 800, color: ans === "ok" ? DK.green : DK.t3, marginTop: 6 }}>{ans === "ok" ? "Đã kết bạn" : ans === "no" ? "Đã từ chối" : "Lời mời không còn"}</span>
+          : <span style={{ display: "flex", gap: 8, marginTop: 8 }} onClick={(e) => e.stopPropagation()}>
+              <button type="button" data-testid="notif-accept" disabled={busy} onClick={() => answer(true)} style={btn(true)}>Đồng ý</button>
+              <button type="button" data-testid="notif-decline" disabled={busy} onClick={() => answer(false)} style={btn(false)}>Từ chối</button>
+            </span>)}
+      </span>
     </div>
   );
 }
