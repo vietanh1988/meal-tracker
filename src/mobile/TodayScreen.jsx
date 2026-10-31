@@ -11,6 +11,8 @@ import { AppIcon, MealIcon, IC_COLOR, mix } from "./icons";
 import { waterGoalMl, cupsView, CUP_SIZES } from "../lib/dayPlan";
 import { fmtVN } from "../lib/dateVN";
 import { LT, ltCard } from "../theme";
+import { DayWarnCard } from "./DayWarnCard";
+import { dayWarnings } from "../lib/dayWarn";
 
 const WEEK_LBL = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 const CUP_KEY = "fp_cup_ml";
@@ -29,6 +31,9 @@ export function TodayScreen(p) {
   const allEaten = isToday && dayLoaded && rows.length > 0 && rows.every((r) => r.state === "eaten");
   const eatenCount = rows.filter((r) => r.state === "eaten").length;
   const w = p.weight;
+  // 31/10 (chốt bản vẽ "Cảnh báo ăn uống"): thẻ đủ bữa có cảnh báo vượt calo / macro / ăn dưới BMR; ngày cũ cũng hiện; ăn dở mà vượt → thẻ gọn trên thẻ bữa đến giờ
+  const pastDay = date < today && dayLoaded && eatenCount > 0;
+  const warn = dayLoaded && (allEaten || pastDay || isToday) ? dayWarnings({ eaten, targets, bmr: p.bmr || 0, train: dayType !== "rest", rows, done: allEaten || pastDay, isToday, nowMinutes, hasEaten: eatenCount > 0 }) : null;
 
   return (
     <div data-testid="today-body" style={{ minHeight: "100%" }}>
@@ -40,17 +45,10 @@ export function TodayScreen(p) {
       {isToday && p.walkTip}
       {isToday && p.activityAsk}
 
+      {warn && !warn.full && <DayWarnCard w={warn} onAct={p.onWarnAct} />}
       {/* ===== Thẻ bữa đang đến giờ ===== */}
       {focus && <FocusCard r={focus} {...p} />}
-      {allEaten && (
-        <div style={{ margin: "14px 12px 0 12px", ...ltCard, padding: 16, display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ width: 48, height: 48, borderRadius: 16, background: "rgba(0,200,150,0.12)", color: "#047857", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.check(24, 2.6)}</span>
-          <span style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#047857" }}>ĐÃ GHI ĐỦ BỮA</span>
-            <span style={{ fontSize: 16, fontWeight: 900 }}>{fmtInt(eaten.cal)} / {fmtInt(targets.cal)} kcal hôm nay</span>
-          </span>
-        </div>
-      )}
+      {warn && warn.full && (allEaten || pastDay) && <DayWarnCard w={warn} onAct={p.onWarnAct} />}
 
       {allEaten && p.snack}
 

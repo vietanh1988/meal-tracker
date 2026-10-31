@@ -914,6 +914,7 @@ export function MobileApp(props) {
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}
+            bmr={macroFor(date)?.bmr || 0} onWarnAct={(a) => { if (a === "snack") openLog(null, today); }}
             onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} onSwap={lossMode ? (id) => openSwap(date, id) : null} />
         )}
         {tab === "menu" && lossMode && (
