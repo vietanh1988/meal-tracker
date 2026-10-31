@@ -42,9 +42,11 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     // 26/10: đúng dịp lễ có hoạ tiết góc, ngày thường (mùa đông / mùa hè) không có
     const scene = await card.getByTestId("pet-today-room").getAttribute("data-scene");
     await expect(card.getByTestId("pet-today-decor")).toHaveCount(["muadong", "muahe"].includes(scene) ? 0 : 1);
-    const ledger = () => rest(`pet_ledger?user_id=eq.${s.uid}&amount=gt.0&select=key,amount`);
+    const ledger = () => rest(`pet_ledger?user_id=eq.${s.uid}&amount=gt.0&select=key,amount,kind`);
     const rows = await waitDb(async () => { const r = await ledger(); return r.length >= 8 ? r : null; }, "đủ 8 dòng Hạt");
     const sum = rows.reduce((a, r) => a + r.amount, 0);
+    // 31/10: Hạt làm quen (onboard) / mời vào ví nhưng không tính vào "Hạt hôm nay"
+    const daySum = rows.filter((r) => !["onboard", "invite", "rank", "admin"].includes(r.kind)).reduce((a, r) => a + r.amount, 0);
     expect(sum).toBeGreaterThanOrEqual(100); // + chuỗi ngày nếu các bài trước đã ghi đủ 3 ngày liền
     await expect(card).toContainText(String(sum));
 
@@ -65,7 +67,7 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     expect(pullTab.pullTop).not.toBe("rgba(0, 0, 0, 0)");
     await tap(card);
     await expect(page.getByTestId("pet-home")).toBeVisible();
-    await expect(page.getByTestId("pet-today")).toContainText(`+${sum}`);
+    await expect(page.getByTestId("pet-today")).toContainText(`+${daySum}`);
     await expect(page.getByTestId("pet-balance").locator('svg[data-seed="coin"]')).toBeAttached(); // 24/10: tiền = đồng Hạt vàng (phương án B)
     // 24/10: kéo quá đầu màn phụ → nảy cao su kiểu iOS, thả tay bật về
     const pull = await page.getByTestId("subpage-scroll").last().evaluate(async (sc) => {

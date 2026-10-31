@@ -721,6 +721,7 @@ export function MobileApp(props) {
     mealIds: petIds, mealTimes: mealTimesOf(profile.mealTimes), eaten: eatenOfDay(ud.todayLog), targets: targetsOf(macroFor(today), dayTypeOf(profile, today)),
     recentRows, weightLog, measures, appSettings, showToast,
     openPage: (sec) => openLayer({ type: "page", sec }), closeLayer, openPremium: () => openLayer({ type: "page", sec: "plan" }),
+    onLog: () => openLog(null, today), onWeigh: () => openWeigh(false),
   });
 
   // ---------- Kiểm tra tuần (bản vẽ 127) + khách không tập (bản vẽ 128) ----------

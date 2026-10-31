@@ -29,7 +29,7 @@ export async function blockAI(page) {
 export async function login(page) {
   const s = S();
   await blockAI(page);
-  await page.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); } catch (e) {} });
+  await page.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); localStorage.setItem("fp_onb_push", "1"); } catch (e) {} });
   await page.goto("/");
   await page.getByTestId("login-email").fill(s.email);
   await page.getByTestId("login-pass").fill(s.password);

@@ -32,7 +32,7 @@ test("Pi nữ hồng mặc định, đổi sang Xanh ở Tủ đồ; Pi nam khô
     await rest(`profiles?id=eq.${bId}`, { method: "PATCH", body: JSON.stringify({ onboarding_done: true, gender: "female", cm: 160, kg: 56, birth_year: 1995, goal_type: "cut", goal_kg: 52, exercise_type: "none", is_test: true }) });
     const c2 = await browser.newContext(ctxOpts);
     const p2 = await c2.newPage();
-    await p2.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); } catch (e) {} });
+    await p2.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); localStorage.setItem("fp_onb_push", "1"); } catch (e) {} });
     await p2.goto("/");
     await p2.getByTestId("auth-tab-login").click().catch(() => {});
     await p2.getByTestId("login-email").fill(email);

@@ -16,7 +16,7 @@ test("Onboarding: nhập số đo, chọn ngày tập, chặn mục tiêu ngư�
   page.on("pageerror", (e) => console.log("PAGE ERROR:", e.message));
   try {
     await blockAI(page);
-    await page.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); } catch (e) {} });
+    await page.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); localStorage.setItem("fp_onb_push", "1"); } catch (e) {} });
     await page.goto("/");
     await page.getByTestId("login-email").fill(s.email);
     await page.getByTestId("login-pass").fill(s.password);
@@ -119,7 +119,7 @@ test("Onboarding giảm cân: 3 màn rồi vào Hôm nay bản gọn", async ({ 
   page.on("pageerror", (e) => { errs.push(e.message); console.log("PAGE ERROR:", e.message); });
   try {
     await blockAI(page);
-    await page.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); } catch (e) {} });
+    await page.addInitScript(() => { try { localStorage.setItem("pwa_install_dismissed", String(Date.now())); localStorage.setItem("fp_onb_push", "1"); } catch (e) {} });
     await page.goto("/");
     await page.getByTestId("login-email").fill(s.email);
     await page.getByTestId("login-pass").fill(s.password);

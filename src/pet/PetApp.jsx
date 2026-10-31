@@ -26,6 +26,9 @@ import { PetHomeScreen, PetShopScreen, PetClosetScreen, PetTodayCard, PIc } from
 import { buildPiContext } from "../pi/chatContext.js";
 import { journeyPct } from "../pi/khoe.js";
 import { PetSocialScreen } from "./PetSocialScreen";
+import { onboardView, justFinishedFirst } from "../pi/onboard.js";
+import { isPushSupported, getPushStatus, enablePushNotifications } from "../pushNotifications";
+import { OnboardPushSheet } from "./OnboardPush";
 // 30/10: Pi ĐÃ có hồ sơ + nhật ký 30 ngày ở trên → tư vấn thẳng bằng số đó, không bảo người dùng gửi nhật ký
 const ADVICE = "Dữ liệu trên là hồ sơ và nhật ký thật của người dùng trong app; Pi xem được, KHÔNG được nói là không truy cập được lịch sử hay bảo người dùng gửi nhật ký. Khi người dùng hỏi nhận xét / tư vấn chế độ ăn: trả lời tối đa 4 câu ngắn (khoảng 80 từ), nêu 1–2 số thật cụ thể (ví dụ trung bình calo, đạm, món ăn nhiều), rồi 1–2 điều chỉnh làm được ngay bằng món quen của họ. Ngày không có trong nhật ký là chưa ghi, đừng đoán. Không nói về hình dáng cơ thể; vòng bụng chỉ nói theo số đo nếu có.";
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen, petVariant } from "./PetTalk";
@@ -53,7 +56,7 @@ const PROMPT = {
 };
 const RULES = "Xưng \"Pi\", gọi khách là \"bạn\". Trả lời tiếng Việt, tối đa 3 câu ngắn, không emoji, không markdown. Dùng số thật bên dưới khi có. Không chê, không dọa, không trách, không bàn béo gầy. Chuyện ngoài ăn uống tập luyện thì trả lời vui một câu rồi kéo về ăn tập. Hỏi về bệnh hoặc thuốc thì khuyên hỏi bác sĩ.";
 
-export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, mealIds = [], mealTimes = {}, eaten = {}, targets = {}, recentRows = [], weightLog = [], measures = [], appSettings, showToast, openPage, closeLayer, openPremium }) {
+export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, mealIds = [], mealTimes = {}, eaten = {}, targets = {}, recentRows = [], weightLog = [], measures = [], appSettings, showToast, openPage, closeLayer, openPremium, onLog, onWeigh }) {
   const on = !!(flagOn || isAdmin) && !!user?.id;
   const pet = usePet(user?.id, on);
   // 30/10 mã mời: báo khách đã nhận mã / đã được 50 Hạt
@@ -335,7 +338,25 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
 
   const rename = async (n) => toastErr(await pet.save({ name: String(n).trim().slice(0, 12) || "Pi" }));
 
-  const card = on && view ? <PetTodayCard pet={view} onOpen={() => openPage("pet")} /> : null;
+  // 31/10 (chốt bản B): 3 ngày làm quen — dải gắn đáy thẻ Pi; vừa xong việc 1 trong phiên → hỏi bật nhắc giờ ăn 1 lần
+  const onb = onboardView(st?.onboard);
+  const prevOnb = useRef(undefined);
+  const [askPush, setAskPush] = useState(false);
+  useEffect(() => {
+    const prev = prevOnb.current, next = st?.onboard;
+    if (st) prevOnb.current = next || null;
+    if (!justFinishedFirst(prev, next)) return;
+    if (readLS("fp_onb_push", 0) || !isPushSupported()) return;
+    getPushStatus().then((s) => { if (s === "default") setAskPush(true); }).catch(() => {});
+  }, [st?.onboard?.n]); // eslint-disable-line react-hooks/exhaustive-deps
+  const closeAsk = () => { writeLS("fp_onb_push", 1); setAskPush(false); };
+  const turnOnPush = async () => {
+    try { await enablePushNotifications(); showToast?.({ text: "Đã bật nhắc giờ ăn" }); }
+    catch (e) { showToast?.({ text: e?.message || "Chưa bật được thông báo" }); }
+    closeAsk();
+  };
+  const onOnboard = (act) => { if (act === "weigh") onWeigh?.(); else if (act === "shop") openPage("pet_shop"); else onLog?.(); };
+  const card = on && view ? <><PetTodayCard pet={view} onOpen={() => openPage("pet")} onboard={onb} onOnboard={onOnboard} />{askPush && <OnboardPushSheet variant={variant} onLater={closeAsk} onOn={turnOnPush} />}</> : null;
   const page = (sec) => {
     if (!view) return null;
     if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} onSocial={() => openPage("pet_social")} userId={user?.id} showToast={showToast} />;

@@ -585,12 +585,14 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onF
 // 26/10 (chủ dự án: "sao không mờ dần mà trắng hếu"): phòng phủ CẢ thẻ, đậm bên Pi rồi nhạt dần sang phải (còn ~30%), không cắt trắng
 const DECOR = ["tet", "trungthu", "halloween", "giangsinh"];
 const FADE = "linear-gradient(90deg, #000 0%, #000 28%, rgba(0,0,0,.45) 60%, rgba(0,0,0,.3) 100%)";
-export function PetTodayCard({ pet, onOpen }) {
+export function PetTodayCard({ pet, onOpen, onboard, onOnboard }) {
   const left = pet.tasksLeft;
   return (
     // 25/10 (chủ dự án chốt bản B): Pi to ~1,7 lần (cao 156, khung 118 × ≥132, thấy tới bụng, phần dưới cắt ở mép thẻ),
     // khung Pi giãn theo chiều cao chữ; tên / câu nói / dòng việc thẳng một mép trái; mũi tên một cột 12px bên phải.
-    <button data-testid="pet-today-card" onClick={onOpen} className="tap" style={{ margin: "14px 12px 0 12px", width: "calc(100% - 24px)", ...ltCard, padding: "0 10px 0 0", display: "flex", alignItems: "center", gap: 8, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A", overflow: "hidden", boxSizing: "border-box", minHeight: 132, position: "relative" }}>
+    // 31/10: khung ngoài giữ lề / bo của thẻ; dải "3 ngày làm quen" (OnboardStrip) gắn đáy thẻ, ngoài nút mở Pi
+    <div data-testid="pet-today-wrap" style={{ margin: "14px 12px 0 12px", ...ltCard, overflow: "hidden", position: "relative" }}>
+    <button data-testid="pet-today-card" onClick={onOpen} className="tap" style={{ width: "100%", background: "transparent", borderRadius: 0, padding: "0 10px 0 0", display: "flex", alignItems: "center", gap: 8, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A", overflow: "hidden", boxSizing: "border-box", minHeight: 132, position: "relative" }}>
       {/* 25/10 (chủ dự án duyệt): nền = phòng Pi đang ở (theo dịp / mùa + buổi), mờ 50% (tối 55%), nhạt dần sang phần chữ */}
       <span aria-hidden="true" data-testid="pet-today-room" data-scene={roomOf(pet)} style={{ position: "absolute", inset: 0, backgroundImage: `url(${roomFile(roomOf(pet), piRoomTime(pet.hour ?? nowVNParts().hour))})`, backgroundSize: "cover", backgroundPosition: "center 62%", opacity: piRoomTime(pet.hour ?? nowVNParts().hour) === "toi" ? 0.55 : 0.5, WebkitMaskImage: FADE, maskImage: FADE, pointerEvents: "none" }} />
       {/* 26/10 (chủ dự án duyệt): đúng dịp lễ thì có 1 hoạ tiết nhỏ ở góc trên phải (public/pi/decor, scripts/pi/decor.py); ngày thường không có */}
@@ -618,6 +620,44 @@ export function PetTodayCard({ pet, onOpen }) {
       </span>
       <span style={{ width: 14, flexShrink: 0, display: "flex", justifyContent: "center", color: "#94A3B8", position: "relative" }}>{Icon.chev(16)}</span>
     </button>
+    {onboard && <OnboardStrip ob={onboard} onGo={onOnboard} />}
+    </div>
+  );
+}
+
+// 31/10 (chủ dự án chốt bản B "Làm quen Pi trên màn Hôm nay"): dải gắn đáy thẻ Pi — viền trên 1px #EEF2FA, pad 8 12 10, khe 6.
+// Còn việc: dòng "Làm quen Pi · Ngày n/3" + 3 vạch tiến độ, dòng việc + chip Hạt + nút 32. Xong việc hôm nay: thu còn 1 dòng. Xong cả 3: ăn mừng + Cửa hàng.
+const ONB_BTN = { height: 32, padding: "0 12px", borderRadius: 12, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontSize: 13, fontWeight: 900, fontFamily: "inherit", display: "flex", alignItems: "center", flexShrink: 0, whiteSpace: "nowrap" };
+const OnbCheck = () => <span aria-hidden="true" style={{ width: 22, height: 22, borderRadius: 11, background: "#10B981", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.check(13, 3)}</span>;
+function OnboardStrip({ ob, onGo }) {
+  const base = { borderTop: "1px solid #EEF2FA", display: "flex", boxSizing: "border-box", position: "relative", background: "#FFFFFF" };
+  if (ob.kind === "done" || ob.kind === "party") {
+    const party = ob.kind === "party";
+    return (
+      <div data-testid="pet-onb" data-kind={ob.kind} data-n={party ? 3 : ob.n} style={{ ...base, padding: party ? "8px 12px" : "9px 12px", alignItems: "center", gap: 8, minHeight: party ? 48 : 0 }}>
+        <OnbCheck />
+        <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 800, color: "#065F46", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{party ? `Xong làm quen · +${ob.total} Hạt` : `Ngày ${ob.n}/3 xong · +${ob.pts} Hạt`}</span>
+        {party
+          ? <button type="button" data-testid="pet-onb-go" onClick={() => onGo?.("shop")} className="tap" style={ONB_BTN}>Cửa hàng</button>
+          : <span style={{ fontSize: 12, fontWeight: 700, color: "#64748B", flexShrink: 0 }}>Mai làm tiếp</span>}
+      </div>
+    );
+  }
+  const t = ob.task;
+  return (
+    <div data-testid="pet-onb" data-kind="task" data-n={ob.n} style={{ ...base, flexDirection: "column", gap: 6, padding: "8px 12px 10px 12px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 12, fontWeight: 800, color: "#6D28D9", whiteSpace: "nowrap" }}>Làm quen Pi · Ngày {ob.n}/3</span>
+        <span aria-hidden="true" style={{ display: "flex", gap: 4, flex: 1 }}>
+          {[1, 2, 3].map((i) => <span key={i} style={{ flex: 1, height: 5, borderRadius: 3, background: i < ob.n ? "#10B981" : i === ob.n ? "#0062F0" : "#E2E8F0" }} />)}
+        </span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 800, color: "#0F172A", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.title}</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, height: 24, padding: "0 8px 0 5px", borderRadius: 12, background: "#FEF3C7", color: "#92400E", fontSize: 12, fontWeight: 900, flexShrink: 0 }}><Seed size={12} />+{t.pts}</span>
+        <button type="button" data-testid="pet-onb-go" data-act={t.act} onClick={() => onGo?.(t.act)} className="tap" style={ONB_BTN}>{t.btn}</button>
+      </div>
+    </div>
   );
 }
 
