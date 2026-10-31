@@ -15,7 +15,8 @@ test("Bạn bè & Xếp hạng: bảng tuần, kết bạn bằng mã, thả tim
     bId = u.id;
     const code = `BIN${Date.now() % 100000}`.slice(0, 10), nick = `bin-${Date.now() % 100000}`;
     await rest("pet_profiles", { method: "POST", body: JSON.stringify({ user_id: bId, name: "Bin" }) });
-    await rest("pi_share", { method: "POST", body: JSON.stringify({ user_id: bId, nick, code }) });
+    // 31/10: Pi mới tự có biệt danh (trigger) → ghi đè biệt danh / mã để bài dùng giá trị biết trước
+    await rest("pi_share?on_conflict=user_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=representation" }, body: JSON.stringify({ user_id: bId, nick, code }) });
     await rest("pet_ledger", { method: "POST", body: JSON.stringify({ user_id: bId, amount: 30, kind: "meal", key: `meal:${s.today}:sang`, day: s.today }) });
 
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
