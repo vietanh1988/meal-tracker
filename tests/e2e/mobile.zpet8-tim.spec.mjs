@@ -76,6 +76,7 @@ test("Thả tim người lạ, xin kết bạn, trả lời lời mời ở chu�
     await expect(page.getByTestId("notif-accept")).toHaveCount(0);
     await waitDb(async () => (await rest(`notifications?user_id=eq.${s.uid}&url=like.*req=${b.nick}&select=id`)).length === 0, "máy chủ sửa dòng lời mời");
     await page.getByRole("button", { name: "Quay lại" }).last().click();
+    await expect(page.getByTestId("notif-item")).toHaveCount(0); // màn Thông báo đóng hẳn (hết hiệu ứng trượt) rồi mới chạm chuông
     await tap(page.getByTestId("bell"));
     await expect(page.getByTestId("notif-item").filter({ hasText: "Cáo Nhỏ đã là bạn của bạn" })).toBeVisible();
     await expect(page.getByTestId("notif-accept")).toHaveCount(0);
