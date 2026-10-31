@@ -21,8 +21,12 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     const page = await ctx.newPage();
     await login(page);
 
-    // 1 · chưa có giáo án → thẻ mời ở Hôm nay → chọn mẫu Đẩy · Kéo · Chân
-    await tap(page.getByTestId("wk-card-invite").getByText("Thêm lịch tập của bạn"));
+    // 1 · nút Tập luyện cạnh chuông (không có thẻ ở Hôm nay) → chưa có giáo án → chọn mẫu Đẩy · Kéo · Chân
+    await expect(page.getByTestId("wk-card-invite")).toHaveCount(0);
+    const [wb, bell] = [await page.getByTestId("wk-btn").boundingBox(), await page.getByTestId("bell").boundingBox()];
+    expect(Math.round(wb.width)).toBe(42);
+    expect(wb.x).toBeLessThan(bell.x);
+    await page.getByTestId("wk-btn").click();
     await expect(page.getByTestId("wk-plan-empty")).toBeVisible();
     await page.getByTestId("wk-tpl-day-keo-chan").click();
     await expect(page.getByTestId("wk-plan")).toBeVisible();
@@ -62,12 +66,11 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.getByTestId("wk-day-rest").click();
     await expect(page.getByTestId(`wk-day-${restDow}`)).toHaveAttribute("data-rest", "1");
     await waitDb(async () => { const g = (await rest(`profiles?id=eq.${s.uid}&select=gym_days`))[0]?.gym_days || []; return g.length === 6 && !g.includes(restDow); }, "Lịch tập bỏ ngày nghỉ", 15_000);
-    await page.getByRole("button", { name: "Quay lại" }).last().click();
 
-    // 4 · Hôm nay có thẻ Buổi tập → ghi 10 hiệp → Xong → +20 Hạt
+    // 4 · đầu tab Giáo án có thẻ Buổi tập hôm nay (nút Tập luyện có chấm tím) → ghi 10 hiệp → Xong → +20 Hạt
     await expect(page.getByTestId("wk-card")).toBeVisible({ timeout: 10_000 });
     await page.screenshot({ path: "shots/tap-hom-nay.png" });
-    await tap(page.getByTestId("wk-card-start"));
+    await page.getByTestId("wk-card-start").click();
     await expect(page.getByTestId("wk-session")).toBeVisible();
     const ticks = page.getByTestId("wk-set-tick");
     for (let k = 0; k < 10; k++) { await ticks.nth(k).scrollIntoViewIfNeeded(); await ticks.nth(k).click(); }
@@ -85,8 +88,11 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.screenshot({ path: "shots/tap-xong.png" });
     await page.getByTestId("wk-done-log").click();
     await expect(page.getByTestId("wk-log-row")).toHaveCount(1);
-    await page.getByRole("button", { name: "Quay lại" }).last().click();
+    await page.getByTestId("wk-tab-plan").click();
     await expect(page.getByTestId("wk-card-done")).toBeVisible();
+    await page.getByRole("button", { name: "Quay lại" }).last().click();
+    await expect(page.getByTestId("wk-btn")).toBeVisible();
+    await expect(page.getByTestId("wk-btn-dot")).toHaveCount(0); // đã tập xong hôm nay → hết chấm
     await ctx.close();
   } finally {
     await clean().catch(() => {});

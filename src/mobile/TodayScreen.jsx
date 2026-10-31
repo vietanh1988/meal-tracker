@@ -49,7 +49,6 @@ export function TodayScreen(p) {
       {/* ===== Thẻ bữa đang đến giờ ===== */}
       {focus && <FocusCard r={focus} {...p} />}
       {warn && warn.full && (allEaten || pastDay) && <DayWarnCard w={warn} onAct={p.onWarnAct} />}
-      {isToday && p.workoutCard}
 
       {allEaten && p.snack}
 

@@ -80,7 +80,7 @@ import { usePetApp } from "../pet/PetApp";
 import { useWorkout } from "../workout/useWorkout";
 import { supabase } from "../lib/supabase";
 import { WorkoutApp } from "../workout/WorkoutApp";
-import { WorkoutCard } from "../workout/WorkoutCard";
+import { WorkoutButton } from "../workout/WorkoutCard";
 import { PET_CSS } from "../pet/PetAvatar";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
 import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekDates, MEAL_SHORT, fmtKg, fmtDec, fmtInt } from "../lib/mobileView";
@@ -764,7 +764,6 @@ export function MobileApp(props) {
   const recapTargetOf = (d) => targetsOf(macroFor(d), dayTypeOf(profile, d)).cal;
   const recapM = recapCardMonth(today);
   const [recapHide, setRecapHide] = useState(() => readUser("fp_recap_hide", user?.id, null));
-  const [wkInviteHide, setWkInviteHide] = useState(() => readUser("fp_wk_invite_hide", user?.id, null));
   const [recapData, setRecapData] = useState(null);
   useEffect(() => {
     if (!recapM || recapHide === recapM || !ud.getDailyLogs) { setRecapData(null); return; }
@@ -926,13 +925,11 @@ export function MobileApp(props) {
             onPhotoBig={lossMode ? () => openPhoto(null) : null} focusBonus={focusBonus} goalSub={goalSub}
             onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
-            shortcut={petApp.on && petApp.view ? <PiShortcut pet={petApp.view} userId={user?.id} notif={notif} onGo={(d) => (d === "room" ? openLayer({ type: "page", sec: "pet" }) : openLayer({ type: "page", sec: "pet_social", tab: d === "khoe" ? "show" : d }))} /> : null}
+            shortcut={<><WorkoutButton w={workout} today={today} onOpen={() => openLayer({ type: "page", sec: "workout" })} />{petApp.on && petApp.view ? <PiShortcut pet={petApp.view} userId={user?.id} notif={notif} onGo={(d) => (d === "room" ? openLayer({ type: "page", sec: "pet" }) : openLayer({ type: "page", sec: "pet_social", tab: d === "khoe" ? "show" : d }))} /> : null}</>}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}
             bmr={macroFor(date)?.bmr || 0} onWarnAct={(a) => { if (a === "snack") openLog(null, today); }}
-            workoutCard={date === today ? <WorkoutCard w={workout} today={today} invite={!wkInviteHide} onHideInvite={() => { writeUser("fp_wk_invite_hide", user?.id, 1); setWkInviteHide(1); }}
-              onStart={(dp) => openLayer({ type: "page", sec: "workout", view: { k: "session", dayPlan: dp } })} onResume={(s) => openLayer({ type: "page", sec: "workout", view: { k: "session", id: s.id } })} onOpen={(t) => openLayer({ type: "page", sec: "workout", tab: t })} /> : null}
             onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} onSwap={lossMode ? (id) => openSwap(date, id) : null} />
         )}
         {tab === "menu" && lossMode && (

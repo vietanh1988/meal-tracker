@@ -10,6 +10,7 @@ import { weekRange, monthRange, todayVN, gymIdxOf, fmtVN, weekdayShort, addDays 
 import { TEMPLATES, buildPlan, defaultTpl, DOW, DOW_LONG, planDays, bestSet, lastSets, searchEx, move } from "./plan.js";
 import { exOf, unitOf, fmtKg, allExercises, ExArt, MuscleTile, MUSCLES, MUSCLE_NAME, MUSCLE_TONE, EQUIPS } from "./exLib.jsx";
 import { SessionScreen } from "./SessionScreen.jsx";
+import { WorkoutCard } from "./WorkoutCard.jsx";
 
 const card = { ...ltCard, margin: "0 12px", padding: 16, display: "flex", flexDirection: "column", gap: 10 };
 const sub = { fontSize: 12.5, color: "#64748B", lineHeight: 1.45 };
@@ -425,6 +426,8 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
           ))}
         </div>
         {!w.ready && <span style={{ ...sub, margin: "0 16px" }}>Đang tải…</span>}
+        {/* 01/11: thẻ Buổi tập hôm nay nằm ở đầu tab Giáo án (không để ở Hôm nay) */}
+        {w.ready && tab === "plan" && <WorkoutCard inApp w={w} today={today} onStart={(dp) => setView({ k: "session", dayPlan: dp })} onResume={(s) => setView({ k: "session", id: s.id })} onOpen={(t) => setTab(t)} />}
         {w.ready && tab === "plan" && <PlanTab w={w} profile={profile} loss={loss} showToast={showToast} onTpl={choose} onDay={(d) => setView({ k: "day", dow: d })} />}
         {w.ready && tab === "lib" && <LibraryTab w={w} onOpen={(e) => setView({ k: "ex", ex: e })} onAdd={(e) => setSheet({ k: "add", ex: e })} onCustom={() => setSheet({ k: "custom" })} />}
         {w.ready && tab === "log" && <LogTab w={w} plan={w.active} today={today} onOpen={(s) => setView({ k: "log", s })} onResume={(s) => setView({ k: "session", id: s.id })} />}

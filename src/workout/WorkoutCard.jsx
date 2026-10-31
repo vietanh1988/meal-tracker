@@ -7,11 +7,12 @@ import { sessionOfDate, planDays, setsDone } from "./plan.js";
 import { exOf } from "./exLib.jsx";
 
 const DB = <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12" /></svg>;
-const wrap = { margin: "14px 12px 0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 12 };
+const WRAP = { margin: "14px 12px 0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 12 };
 const tile = { width: 48, height: 48, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "linear-gradient(135deg,#7C3AED,#4F46E5)", color: "#FFFFFF" };
 
-export function WorkoutCard({ w, today, onStart, onOpen, onResume, invite, onHideInvite }) {
+export function WorkoutCard({ w, today, onStart, onOpen, onResume, invite, onHideInvite, inApp }) {
   if (!w?.ready) return null;
+  const wrap = inApp ? { ...WRAP, margin: "0 12px" } : WRAP;
   const plan = w.active;
   if (!plan) {
     if (!invite) return null;
@@ -55,10 +56,24 @@ export function WorkoutCard({ w, today, onStart, onOpen, onResume, invite, onHid
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {dp.items.slice(0, 6).map((x, i) => <span key={i} style={{ height: 28, padding: "0 10px", borderRadius: 14, background: "#EEF4FF", color: "#1E3A8A", fontSize: 12.5, fontWeight: 700, display: "flex", alignItems: "center" }}>{exOf(x.ex, w.custom).vi}</span>)}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: 8 }}>
-        <button type="button" data-testid="wk-card-manage" onClick={() => onOpen("plan")} style={{ height: 46, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 15, fontWeight: 800, fontFamily: "inherit" }}>Quản lý</button>
+      <div style={{ display: "grid", gridTemplateColumns: inApp ? "1fr" : "1fr 1.6fr", gap: 8 }}>
+        {!inApp && <button type="button" data-testid="wk-card-manage" onClick={() => onOpen("plan")} style={{ height: 46, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 15, fontWeight: 800, fontFamily: "inherit" }}>Quản lý</button>}
         <button type="button" data-testid="wk-card-start" onClick={() => (open ? onResume(open) : onStart(dp))} style={{ height: 46, borderRadius: 14, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 800, fontFamily: "inherit" }}>{open ? "Tiếp tục tập" : "Bắt đầu tập"}</button>
       </div>
     </div>
+  );
+}
+
+// 01/11 (chủ dự án: "đừng để ngoài màn hình, để cạnh lối tắt Pi ở gần chuông"): nút kính 42 (giống chuông) mở màn Tập luyện;
+// chấm tím khi hôm nay có buổi trong giáo án mà chưa tập xong.
+export function WorkoutButton({ w, today, onOpen }) {
+  const plan = w?.active;
+  const todo = !!(plan && sessionOfDate(plan, today) && !w.sessions.some((s) => s.day === today && s.ended_at));
+  return (
+    <button type="button" data-testid="wk-btn" aria-label={todo ? "Tập luyện, hôm nay có buổi tập" : "Tập luyện"} onClick={onOpen} className="fp-glass"
+      style={{ position: "relative", width: 42, height: 42, borderRadius: 21, padding: 0, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#FFFFFF" }}>
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12" /></svg>
+      {todo && <span data-testid="wk-btn-dot" style={{ position: "absolute", top: 0, right: 0, width: 12, height: 12, borderRadius: 6, background: "#A855F7", border: "2px solid #FFFFFF", boxSizing: "border-box" }} />}
+    </button>
   );
 }
