@@ -42,9 +42,16 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.getByTestId("wk-lib-search").fill("hit dat");
     const push = page.locator('[data-testid="wk-lib-row"][data-id="push-up"]');
     await expect(push).toBeVisible();
+    await expect(push.getByTestId("wk-photo")).toBeVisible();
     await push.getByRole("button").first().click();
     await expect(page.getByTestId("wk-ex-detail")).toBeVisible();
     await expect(page.getByTestId("wk-ex-en")).toHaveText("Push-up");
+    // ảnh người thật 2 khung tải được (không còn hình nét)
+    const big = page.getByTestId("wk-photo-big");
+    await expect(big).toBeVisible();
+    await expect.poll(() => big.locator("img").first().evaluate((i) => i.complete && i.naturalWidth > 0)).toBe(true);
+    await big.click();
+    await expect(big).toHaveAttribute("data-paused", "1");
     await page.screenshot({ path: "shots/tap-chi-tiet.png" });
     await page.getByTestId("wk-ex-add").click();
     await page.getByTestId("wk-addto-0").click();
@@ -63,6 +70,16 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.getByTestId("wk-tab-plan").click();
     await page.getByTestId(`wk-day-${restDow}`).click();
     await expect(page.getByTestId("wk-day-editor")).toBeVisible();
+    // thêm bài từ Thư viện trong Sửa buổi: Chọn bài mở đè, chọn xong quay lại vẫn còn bài vừa thêm
+    const nItems = await page.getByTestId("wk-day-item").count();
+    await page.getByTestId("wk-day-add").click();
+    await page.getByTestId("wk-lib-search").fill("plank");
+    await page.locator('[data-testid="wk-lib-row"][data-id="plank"]').getByTestId("wk-lib-add").click();
+    await expect(page.getByTestId("wk-day-editor")).toBeVisible();
+    await expect(page.getByTestId("wk-day-item")).toHaveCount(nItems + 1);
+    await page.getByTestId("wk-day-save").click();
+    await waitDb(async () => ((await rest(`workout_plans?user_id=eq.${s.uid}&active=is.true&select=days`))[0]?.days?.[String(restDow)]?.items || []).some((i) => i.ex === "plank"), "đã thêm Plank vào buổi");
+    await page.getByTestId(`wk-day-${restDow}`).click();
     await page.getByTestId("wk-day-rest").click();
     await expect(page.getByTestId(`wk-day-${restDow}`)).toHaveAttribute("data-rest", "1");
     await waitDb(async () => { const g = (await rest(`profiles?id=eq.${s.uid}&select=gym_days`))[0]?.gym_days || []; return g.length === 6 && !g.includes(restDow); }, "Lịch tập bỏ ngày nghỉ", 15_000);
@@ -76,6 +93,23 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     for (let k = 0; k < 10; k++) { await ticks.nth(k).scrollIntoViewIfNeeded(); await ticks.nth(k).click(); }
     await expect(page.locator('[data-testid="wk-set"][data-done="1"]')).toHaveCount(10);
     await expect(page.getByTestId("wk-rest")).toBeVisible();
+    // chạm ảnh bài → xem cách tập (không có nút Thêm), quay lại vẫn còn 10 hiệp đã tick
+    await page.getByTestId("wk-ses-photo").first().click();
+    await expect(page.getByTestId("wk-ex-detail")).toBeVisible();
+    await expect(page.getByTestId("wk-ex-add")).toHaveCount(0);
+    await page.getByRole("button", { name: "Quay lại" }).last().click();
+    await expect(page.getByTestId("wk-ex-detail")).toHaveCount(0);
+    await expect(page.locator('[data-testid="wk-set"][data-done="1"]')).toHaveCount(10);
+    // Đổi bài cuối: chọn bài khác, các hiệp đã tick giữ nguyên
+    const lastEx = page.getByTestId("wk-ses-ex").last();
+    const oldName = await lastEx.locator("b").first().textContent();
+    await lastEx.getByTestId("wk-ses-swap").click();
+    const firstPick = page.getByTestId("wk-lib-row").filter({ hasNotText: oldName }).first();
+    const newName = (await firstPick.locator("b").first().textContent()).trim();
+    await firstPick.getByTestId("wk-lib-add").click();
+    await expect(page.getByTestId("wk-session")).toBeVisible();
+    await expect(page.getByTestId("wk-ses-ex").last().locator("b").first()).toHaveText(newName);
+    await expect(page.locator('[data-testid="wk-set"][data-done="1"]')).toHaveCount(10);
     await page.getByTestId("wk-rest-skip").click();
     await page.screenshot({ path: "shots/tap-ghi-buoi.png" });
     await page.getByTestId("wk-ses-finish").click();

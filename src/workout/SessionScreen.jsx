@@ -7,14 +7,14 @@ import { ltCard } from "../theme";
 import { sfx } from "../lib/sfx";
 import { track } from "../lib/track";
 import { newSession, sessionOfDate, lastSets, setsDone, setsTotal, volume, minutesOf, newRecords } from "./plan.js";
-import { exOf, unitOf, hasKg, fmtKg } from "./exLib.jsx";
+import { exOf, unitOf, hasKg, fmtKg, ExPhoto } from "./exLib.jsx";
 import { PetAvatar } from "../pet/PetAvatar";
 
 const REST = 90;
 const num = (v) => { const n = Number(String(v).replace(",", ".")); return Number.isFinite(n) && n >= 0 ? n : 0; };
 const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-export function SessionScreen({ w, today, start, onBack, showToast, onReward, onLog, onPickSwap, pet }) {
+export function SessionScreen({ w, today, start, onBack, showToast, onReward, onLog, onPickSwap, onOpenEx, pet }) {
   const [s, setS] = useState(() => {
     const old = start?.id ? w.sessions.find((x) => x.id === start.id) : null;
     if (old) return JSON.parse(JSON.stringify(old));
@@ -89,7 +89,8 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
           const prev = lastSets(w.sessions.filter((x) => x.id !== s.id), it.ex);
           return (
             <div key={`${it.ex}-${i}`} data-testid="wk-ses-ex" style={{ ...ltCard, margin: "0 12px", padding: "12px 14px 8px" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <button type="button" data-testid="wk-ses-photo" aria-label={`Xem cách tập ${e.vi}`} onClick={() => onOpenEx?.(e)} style={{ border: "none", background: "none", padding: 0, borderRadius: 12, flexShrink: 0, display: "flex" }}><ExPhoto ex={e} /></button>
                 <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
                   <b style={{ fontSize: 15.5, fontWeight: 900 }}>{e.vi}</b>
                   {e.en && <span style={{ fontSize: 12.5, fontWeight: 600, color: "#64748B", fontStyle: "italic" }}>({e.en})</span>}

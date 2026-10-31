@@ -1,5 +1,7 @@
-// 01/11: tra cứu bài tập (bài có sẵn + bài khách tự thêm), đơn vị (lần / giây / phút), hình nét minh hoạ theo kiểu động tác (vẽ tay, không dùng hình có bản quyền).
+// 01/11: tra cứu bài tập (bài có sẵn + bài khách tự thêm), đơn vị (lần / giây / phút), ảnh động tác (ảnh người thật, bản quyền công cộng).
+import { useState } from "react";
 import { EX_BY_ID, EXERCISES, MUSCLES, EQUIPS } from "./exercises.js";
+import { EX_PHOTOS } from "./exPhotos.js";
 
 export { EXERCISES, MUSCLES, EQUIPS };
 export const MUSCLE_NAME = Object.fromEntries(MUSCLES);
@@ -29,28 +31,46 @@ export const hasKg = (ex) => !!ex && unitOf(ex) === "lần" && ex.equip !== "kho
 export const fmtKg = (n) => String(Math.round((Number(n) || 0) * 10) / 10).replace(".", ",");
 export const allExercises = (custom) => [...EXERCISES, ...(custom || []).map((c) => exOf(c.id, custom))];
 
-// hình nét: người que + dụng cụ, theo kiểu động tác
-const P = {
-  press: <><path d="M20 82h110M42 82v12M108 82v12" /><path d="M36 66h78" /><circle cx="48" cy="58" r="8" /><path d="M56 62c18 2 30 3 48 0" /><path d="M74 62V36M94 62V36" /><path d="M48 36h74M40 28v16M130 28v16" /></>,
-  fly: <><path d="M20 82h110" /><circle cx="75" cy="30" r="8" /><path d="M75 38v28M75 66l-12 16M75 66l12 16" /><path d="M75 46c-14 0-26-4-38-12M75 46c14 0 26-4 38-12" /><path d="M30 28v12M120 28v12" /></>,
-  row: <><path d="M20 90h110" /><circle cx="58" cy="30" r="8" /><path d="M62 38l26 18M88 56l4 34M88 56l-12 34" /><path d="M70 46l-6 22M80 52l-4 22" /><path d="M40 70h70M36 62v16M114 62v16" /></>,
-  pulldown: <><path d="M75 10v20M40 30h70" /><circle cx="75" cy="46" r="8" /><path d="M75 54v22M75 76l-14 14M75 76l14 14M60 66h30" /><path d="M75 58c-10-6-22-14-30-28M75 58c10-6 22-14 30-28" /></>,
-  pullup: <><path d="M30 14h90" /><circle cx="75" cy="34" r="8" /><path d="M75 42v30M75 72l-8 22M75 72l8 22" /><path d="M75 46c-10-6-18-18-22-32M75 46c10-6 18-18 22-32" /></>,
-  squat: <><path d="M20 94h110" /><path d="M40 30h70M34 22v16M116 22v16" /><circle cx="75" cy="20" r="8" /><path d="M75 28l-4 30M71 58l-20 6M51 64l4 30M71 58l18 6M89 64l-4 30" /></>,
-  lunge: <><path d="M20 94h110" /><circle cx="70" cy="22" r="8" /><path d="M70 30v30M70 60l-24 4M46 64l-4 30M70 60l24 14M94 74l18 20" /><path d="M58 40l-10 18M82 40l10 18" /></>,
-  hinge: <><path d="M20 94h110" /><circle cx="50" cy="32" r="8" /><path d="M56 38l40 10M96 48l-4 46M96 48l6 46" /><path d="M68 42l-2 34M80 46l-2 30M44 76h64M40 68v16M112 68v16" /></>,
-  curl: <><path d="M20 94h110" /><circle cx="75" cy="18" r="8" /><path d="M75 26v38M75 64l-10 30M75 64l10 30" /><path d="M75 34l-14 18 10-20M75 34l14 18-10-20" /><path d="M52 32h14M84 32h14" /></>,
-  extension: <><path d="M20 94h110" /><circle cx="75" cy="28" r="8" /><path d="M75 36v30M75 66l-10 28M75 66l10 28" /><path d="M75 42l-12-20 12-12M75 42l12-20-12-12" /><path d="M66 8h18" /></>,
-  raise: <><path d="M20 94h110" /><circle cx="75" cy="22" r="8" /><path d="M75 30v34M75 64l-10 30M75 64l10 30" /><path d="M75 38h-34M75 38h34" /><path d="M36 32v12M114 32v12" /></>,
-  calf: <><path d="M20 94h110M56 86h38" /><circle cx="75" cy="16" r="8" /><path d="M75 24v34M75 58l-6 28M75 58l6 28" /><path d="M75 32l-10 22M75 32l10 22" /></>,
-  core: <><path d="M20 90h110" /><circle cx="32" cy="70" r="8" /><path d="M40 72h56M96 72l18 18M52 72v18M64 72l-4 18" /></>,
-  cardio: <><path d="M20 94h110" /><circle cx="80" cy="20" r="8" /><path d="M78 28l-6 30M72 58l-18 12M54 70l-6 20M72 58l16 16M88 74l-4 20M76 36l-18 10M76 36l16 14" /></>,
+// 01/11 (chủ dự án: hình nét xấu, khó hiểu) → ảnh người thật 2 khung tự đổi 0,9 s như ảnh động; CSS chung chèn 1 lần
+const PH_CSS = ".fp-exph{position:relative;overflow:hidden;background:#E2E8F0;flex-shrink:0;display:block}"
+  + ".fp-exph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}"
+  + ".fp-exph img+img{animation:fpExSw 1.8s steps(1) infinite}.fp-exph[data-paused='1'] img+img{animation:none;opacity:0}"
+  + "@keyframes fpExSw{0%{opacity:0}50%{opacity:1}}"
+  + ".fp-exlb i{font-style:normal;height:24px;padding:0 9px;border-radius:12px;background:rgba(15,23,42,.62);color:#fff;font-size:11.5px;font-weight:800;display:flex;align-items:center}"
+  + ".fp-exlb i{animation:fpExHl 1.8s steps(1) infinite}.fp-exlb i+i{animation-delay:-.9s}"
+  + ".fp-exph[data-paused='1'] .fp-exlb i{animation:none}.fp-exph[data-paused='1'] .fp-exlb i:first-child{background:#0062F0}"
+  + "@keyframes fpExHl{0%{background:#0062F0}50%{background:rgba(15,23,42,.62)}}"
+  + "@media (prefers-reduced-motion: reduce){.fp-exph img+img,.fp-exlb i{animation:none}.fp-exph img+img{opacity:0}}";
+let cssOn = false;
+const ensureCss = () => {
+  if (cssOn || typeof document === "undefined") return;
+  cssOn = true;
+  const el = document.createElement("style"); el.setAttribute("data-fp", "exph"); el.textContent = PH_CSS; document.head.appendChild(el);
 };
-export function ExArt({ pattern, size = 150, color = "#0062F0" }) {
+/** bài này có ảnh người thật không (bài tự thêm thì không) */
+export const hasPhoto = (ex) => !!ex && !ex.custom && EX_PHOTOS.has(ex.id);
+/** ô thay ảnh khi bài không có ảnh: nền màu nhóm cơ + tên nhóm cơ */
+function NoPhoto({ ex, w, h, radius, big }) {
+  const [bg, fg] = MUSCLE_TONE[ex?.muscle] || ["#F1F5F9", "#475569"];
+  const name = MUSCLE_NAME[ex?.muscle] || "Bài của bạn";
+  return <span aria-hidden="true" data-testid="wk-nophoto" style={{ width: w, height: h, borderRadius: radius, background: bg, color: fg, fontSize: big ? 20 : name.length > 5 ? 10 : 11.5, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, textAlign: "center", lineHeight: 1.1, padding: 4, boxSizing: "border-box" }}>{name}</span>;
+}
+/** ảnh bài tập. Nhỏ (danh sách, đang tập): 64×48 bo 12, ảnh 128×96. To (chi tiết): rộng 100%, cao 230 bo 20, nhãn Bắt đầu / Kết thúc, chạm = dừng / chạy */
+export function ExPhoto({ ex, big = false, w = 64, h = 48, radius = 12 }) {
+  const [paused, setPaused] = useState(false);
+  ensureCss();
+  if (!hasPhoto(ex)) return <NoPhoto ex={ex} w={big ? "100%" : w} h={big ? 230 : h} radius={big ? 20 : radius} big={big} />;
+  const dir = big ? "/ex/" : "/ex/t/";
+  const imgs = [0, 1].map((f) => <img key={f} src={`${dir}${ex.id}-${f}.webp`} alt={f ? "" : `Động tác ${ex.vi}`} loading="lazy" decoding="async" draggable={false} />);
+  if (!big) return <span className="fp-exph" data-testid="wk-photo" style={{ width: w, height: h, borderRadius: radius }}>{imgs}</span>;
   return (
-    <svg aria-hidden="true" width={size} height={Math.round(size * 0.68)} viewBox="0 0 150 102">
-      <g fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">{P[pattern] || P.press}</g>
-    </svg>
+    <span className="fp-exph" data-testid="wk-photo-big" data-paused={paused ? "1" : "0"} role="button" tabIndex={0} aria-label={paused ? "Chạy ảnh động tác" : "Dừng ảnh động tác"}
+      onClick={() => setPaused((x) => !x)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPaused((x) => !x); } }}
+      style={{ width: "100%", height: 230, borderRadius: 20, cursor: "pointer" }}>
+      {imgs}
+      <span className="fp-exlb" style={{ position: "absolute", left: 10, bottom: 10, display: "flex", gap: 6 }}><i>Bắt đầu</i><i>Kết thúc</i></span>
+      <span aria-hidden="true" style={{ position: "absolute", right: 10, bottom: 10, width: 34, height: 34, borderRadius: 17, background: "rgba(15,23,42,0.62)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 900 }}>{paused ? "▶" : "❚❚"}</span>
+    </span>
   );
 }
 /** ô nhóm cơ 42 bo 13 (dòng danh sách) */

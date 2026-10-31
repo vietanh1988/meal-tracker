@@ -8,7 +8,7 @@ import { ltCard } from "../theme";
 import { track } from "../lib/track";
 import { weekRange, monthRange, todayVN, gymIdxOf, fmtVN, weekdayShort, addDays } from "../lib/dateVN";
 import { TEMPLATES, buildPlan, defaultTpl, DOW, DOW_LONG, planDays, bestSet, lastSets, searchEx, move } from "./plan.js";
-import { exOf, unitOf, fmtKg, allExercises, ExArt, MuscleTile, MUSCLES, MUSCLE_NAME, MUSCLE_TONE, EQUIPS } from "./exLib.jsx";
+import { exOf, unitOf, fmtKg, allExercises, ExPhoto, MUSCLES, MUSCLE_NAME, MUSCLE_TONE, EQUIPS } from "./exLib.jsx";
 import { SessionScreen } from "./SessionScreen.jsx";
 import { WorkoutCard } from "./WorkoutCard.jsx";
 
@@ -126,9 +126,9 @@ function LibraryTab({ w, onOpen, onAdd, onCustom, pickMode, pickMuscle }) {
       <div data-testid="wk-lib-list" style={{ ...ltCard, margin: "0 12px", padding: "0 14px" }}>
         {!list.length && <span style={{ ...sub, display: "block", padding: "16px 0" }}>Không thấy bài này. Bấm "Thêm bài của bạn" để tự thêm.</span>}
         {list.map((e, i) => (
-          <div key={e.id} data-testid="wk-lib-row" data-id={e.id} style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 66, padding: "8px 0", borderTop: i ? "1px solid #EEF2FA" : "none" }}>
+          <div key={e.id} data-testid="wk-lib-row" data-id={e.id} style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 72, padding: "8px 0", borderTop: i ? "1px solid #EEF2FA" : "none" }}>
             <button type="button" onClick={() => (pickMode ? onAdd(e) : onOpen(e))} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 12, border: "none", background: "none", padding: 0, fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
-              <MuscleTile muscle={e.muscle} />
+              <ExPhoto ex={e} />
               <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
                 {exLine(e)}
                 <span style={{ fontSize: 12, color: "#64748B" }}>{MUSCLE_NAME[e.muscle] || "Bài của bạn"} · {EQUIPS[e.equip] || "—"}{e.custom ? " · bài của bạn" : ""}</span>
@@ -263,7 +263,7 @@ function ExerciseDetail({ w, ex, onBack, onAdd }) {
   return (
     <SubPage title="Bài tập" onBack={onBack}>
       <div data-testid="wk-ex-detail" style={{ padding: "12px 0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
-        <div style={{ margin: "0 12px", height: 150, borderRadius: 20, background: "linear-gradient(135deg,#EEF4FF,#DCE7FF)", display: "flex", alignItems: "center", justifyContent: "center" }}><ExArt pattern={e.pattern} /></div>
+        <div style={{ margin: "0 12px" }}><ExPhoto ex={e} big /></div>
         <div style={{ margin: "0 16px", display: "flex", flexDirection: "column", gap: 2 }}>
           <b data-testid="wk-ex-vi" style={{ fontSize: 21, fontWeight: 900 }}>{e.vi}</b>
           {e.en && <span data-testid="wk-ex-en" style={{ fontSize: 14, fontStyle: "italic", color: "#64748B", fontWeight: 600 }}>{e.en}</span>}
@@ -287,7 +287,7 @@ function ExerciseDetail({ w, ex, onBack, onAdd }) {
             <div style={{ background: "#F8FAFC", borderRadius: 14, padding: 10, display: "flex", flexDirection: "column", gap: 2 }}><b data-testid="wk-ex-best" style={{ fontSize: 16, fontWeight: 900 }}>{best ? `${best.kg > 0 ? `${fmtKg(best.kg)} kg × ` : ""}${best.reps} ${u}` : "—"}</b><span style={{ fontSize: 11.5, color: "#64748B", fontWeight: 700 }}>Kỷ lục{best ? ` · ${fmtVN(best.day)}` : ""}</span></div>
             <div style={{ background: "#F8FAFC", borderRadius: 14, padding: 10, display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 16, fontWeight: 900 }}>{last ? `${last.length} × ${last[0].reps}${last[0].kg > 0 ? ` × ${fmtKg(last[0].kg)}` : ""}` : "—"}</b><span style={{ fontSize: 11.5, color: "#64748B", fontWeight: 700 }}>Lần gần nhất</span></div>
           </div>
-          <button type="button" data-testid="wk-ex-add" onClick={() => onAdd(e)} style={btn(true)}>+ Thêm vào buổi tập</button>
+          {onAdd && <button type="button" data-testid="wk-ex-add" onClick={() => onAdd(e)} style={btn(true)}>+ Thêm vào buổi tập</button>}
         </div>
       </div>
     </SubPage>
@@ -369,8 +369,9 @@ function DayEditor({ w, dow, onBack, onPick, showToast, syncDays }) {
 // ---------------- Màn chính ----------------
 export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBack, showToast, syncDays, onReward, pet }) {
   const [tab, setTab] = useState(initial?.tab || "plan");
-  const [view, setView] = useState(initial?.view || null); // { k: "day"|"ex"|"session"|"log"|"pick", ... }
+  const [view, setView] = useState(initial?.view || null); // { k: "day"|"ex"|"session"|"log", ... }
   const [sheet, setSheet] = useState(null);
+  const [over, setOver] = useState(null); // màn đè: { k: "pick", muscle } | { k: "ex", ex }
   const picker = useRef(null);
   useEffect(() => { track("workout_open", { tab }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -398,15 +399,28 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
     showToast?.({ text: r.ok ? `Đã thêm "${c.vi}" vào Thư viện` : "Chưa lưu được, thử lại." });
   };
 
-  if (view?.k === "session") return <SessionScreen w={w} today={today} start={view} onBack={() => setView(null)} showToast={showToast} onReward={onReward} pet={pet} onLog={() => { setView(null); setTab("log"); }} onPickSwap={(muscle, cb) => { picker.current = cb; setView({ k: "pick", muscle, back: view }); }} />;
-  if (view?.k === "pick") return (
-    <SubPage title="Chọn bài" onBack={() => setView(view.back || null)}>
+  // 01/11: Chọn bài / Xem bài mở ĐÈ lên màn đang dở (buổi đang tập, sửa buổi) — màn dưới không bị tháo ra nên không mất hiệp đã tick, bài vừa thêm, đồng hồ nghỉ
+  const pickOver = over?.k === "pick" && (
+    <SubPage title="Chọn bài" onBack={() => { picker.current = null; setOver(null); }}>
       <div style={{ padding: "12px 0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
-        <LibraryTab w={w} pickMode pickMuscle={view.muscle} onAdd={(e) => { const cb = picker.current; picker.current = null; setView(view.back || null); cb?.(e); }} />
+        <LibraryTab w={w} pickMode pickMuscle={over.muscle} onAdd={(e) => { const cb = picker.current; picker.current = null; setOver(null); cb?.(e); }} />
       </div>
     </SubPage>
   );
-  if (view?.k === "day") return <DayEditor key={view.dow} w={w} dow={view.dow} onBack={() => setView(null)} showToast={showToast} syncDays={syncDays} onPick={(cb) => { picker.current = cb; setView({ k: "pick", back: view }); }} />;
+  const exOver = over?.k === "ex" && <ExerciseDetail w={w} ex={over.ex} onBack={() => setOver(null)} />;
+  if (view?.k === "session") return (
+    <>
+      <SessionScreen w={w} today={today} start={view} onBack={() => setView(null)} showToast={showToast} onReward={onReward} pet={pet} onLog={() => { setView(null); setTab("log"); }}
+        onPickSwap={(muscle, cb) => { picker.current = cb; setOver({ k: "pick", muscle }); }} onOpenEx={(ex) => setOver({ k: "ex", ex })} />
+      {pickOver}{exOver}
+    </>
+  );
+  if (view?.k === "day") return (
+    <>
+      <DayEditor key={view.dow} w={w} dow={view.dow} onBack={() => setView(null)} showToast={showToast} syncDays={syncDays} onPick={(cb) => { picker.current = cb; setOver({ k: "pick" }); }} />
+      {pickOver}
+    </>
+  );
   if (view?.k === "ex") return (
     <>
       <ExerciseDetail w={w} ex={view.ex} onBack={() => setView(null)} onAdd={(e) => setSheet({ k: "add", ex: e })} />

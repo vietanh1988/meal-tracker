@@ -52,3 +52,16 @@ test("SQL tập luyện: RLS + GRANT, thưởng ≥ 10 hiệp 1 lần/ngày, V�
   assert.match(sql, /from public\.workout_sessions w/);
   for (const t of ["workout_plans", "workout_sessions", "user_exercises"]) assert.match(sql, new RegExp(`grant select, insert, update, delete on public\\.${t} to authenticated, service_role`));
 });
+
+test("ảnh bài tập: chỉ bài có trong thư viện, đủ 2 khung to + nhỏ trong public/ex", async () => {
+  const { EX_PHOTOS } = await import("../src/workout/exPhotos.js");
+  const { existsSync, statSync } = await import("node:fs");
+  assert.ok(EX_PHOTOS.size >= 110);
+  for (const id of EX_PHOTOS) {
+    assert.ok(EX_BY_ID[id], `ảnh của bài lạ: ${id}`);
+    for (const f of [`public/ex/${id}-0.webp`, `public/ex/${id}-1.webp`, `public/ex/t/${id}-0.webp`, `public/ex/t/${id}-1.webp`]) {
+      assert.ok(existsSync(f), `thiếu ${f}`);
+      assert.ok(statSync(f).size < 40_000, `ảnh nặng quá: ${f}`);
+    }
+  }
+});
