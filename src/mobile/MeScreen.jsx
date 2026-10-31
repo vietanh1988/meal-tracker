@@ -28,6 +28,7 @@ const ICONS = {
   logout: ["#DC2626", "rgba(220,38,38,0.1)", svg(<><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" /><path d="M14 8l4 4-4 4M18 12H9" /></>)],
   coach: ["#7C3AED", "rgba(124,58,237,0.1)", svg(<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />)],
   sound: ["#16A34A", "rgba(22,163,74,0.1)", svg(<><path d="M4 10v4h4l5 4V6L8 10z" /><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" /></>)],
+  workout: ["#7C3AED", "rgba(124,58,237,0.1)", svg(<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12" />)],
   admin: ["#DC2626", "rgba(220,38,38,0.1)", svg(<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z" />)],
 };
 export function RowIcon({ name }) {
@@ -63,7 +64,7 @@ function SoundRow({ last }) {
 const Sec = ({ children }) => <span style={dkSec}>{children}</span>;
 
 // loss (bản vẽ 134b, 18/10): khách giảm cân — chữ đời thường (bỏ "macro", "lịch tập"); mealInfo: "4 bữa · 7:00–19:30"
-export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, salesEnabled, signOut, bell, loss = false, mealInfo = null }) {
+export function MeScreen({ openWorkout, name, profile, macro, weight, isAdmin, appVersion, open, openDiary, openCoach, salesEnabled, signOut, bell, loss = false, mealInfo = null }) {
   const tier = profile?.tier || "free";
   const initials = (name || "?").replace(/[^A-Za-zÀ-ỹ0-9]/g, "").slice(0, 2).toUpperCase() || "?";
   const gym = (profile?.exerciseType || "gym") === "none" ? "Không tập" : (profile?.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
@@ -116,6 +117,7 @@ export function MeScreen({ name, profile, macro, weight, isAdmin, appVersion, op
         <Row icon="diary" testid="me-diary" label="Nhật ký ăn uống" value="Calo từng ngày" onClick={openDiary} />
         <Row icon="goals" testid="me-goals" label={loss ? "Mục tiêu & tốc độ giảm" : "Mục tiêu & macro"} value={goalVal} onClick={() => open("goals")} />
         <Row icon="schedule" testid="me-schedule" label={loss ? "Giờ ăn" : "Lịch tập & bữa"} value={loss ? mealInfo || "Giờ các bữa" : gym} onClick={() => open("schedule")} />
+        {openWorkout && <Row icon="workout" testid="me-workout" label="Tập luyện" value="Giáo án · bài tập · nhật ký" onClick={openWorkout} />}
         <Row icon="reminders" testid="me-reminders" label="Nhắc nhở" value={remVal} onClick={() => open("reminders")} />
         <SoundRow last />
       </div>

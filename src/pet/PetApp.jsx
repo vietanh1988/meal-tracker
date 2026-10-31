@@ -368,5 +368,5 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (sec === "pet_settings") return <PetSettingsScreen pet={view} onBack={closeLayer} onRename={rename} />;
     return null;
   };
-  return { on, card, page, view, error: pet.error };
+  return { on, card, page, view, error: pet.error, refresh: pet.claim };
 }

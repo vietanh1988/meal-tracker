@@ -71,7 +71,7 @@ function valueOf(kind, r) {
   return `${fmt(r.value)}%`;
 }
 function subOf(kind, r) {
-  if (kind === "vandong") return (r.sub || "").split(",").filter(Boolean).map((t) => actOf(t).label).join(", ") || `Cấp ${r.level}`;
+  if (kind === "vandong") return (r.sub || "").split(",").filter(Boolean).map((t) => (t === "gym" ? "Tập luyện" : actOf(t).label)).join(", ") || `Cấp ${r.level}`;
   if (kind === "hanhtrinh") return r.sub || "";
   return `Cấp ${r.level} · ${r.variant === "nu" ? "Pi nữ" : "Pi nam"}`;
 }

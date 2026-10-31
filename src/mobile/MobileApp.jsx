@@ -77,6 +77,10 @@ import { DEFAULT_MEAL_CONFIG } from "../mealConstants";
 import { MEAL_NAMES, MEAL_ORDER, mealKey, hasItems, mealLabel, menuReplaces, menuWrites } from "../lib/mealMath";
 import { recentEatenMeals, frequentItems, currentMealId, mealTimesOf } from "../lib/dayPlan";
 import { usePetApp } from "../pet/PetApp";
+import { useWorkout } from "../workout/useWorkout";
+import { supabase } from "../lib/supabase";
+import { WorkoutApp } from "../workout/WorkoutApp";
+import { WorkoutCard } from "../workout/WorkoutCard";
 import { PET_CSS } from "../pet/PetAvatar";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
 import { dayTypeOf, targetsOf, visibleMealIds, timelineIds, mealRows, eatenOfDay, weightSummary, itemName, weekDates, MEAL_SHORT, fmtKg, fmtDec, fmtInt } from "../lib/mobileView";
@@ -90,6 +94,7 @@ export function MobileApp(props) {
   const flags = parseFeatureFlags(appSettings);
   const aiAccess = getAIMenuAccess(profile, appSettings);
   const notif = useNotifications(appSettings, user?.id);
+  const workout = useWorkout(user?.id, !!user?.id); // 01/11: Tập luyện (giáo án · buổi tập · bài tự thêm)
   // Món lạ AI đã tính (chờ admin duyệt) — chính user dùng lại được ngay, không tốn lượt
   const { myPending, savePendingFoodCache } = usePendingFoodCache(user?.id, false);
   // Món tự nhập calo (16/10): lưu trên máy theo tài khoản, chỉ người đó thấy — không vào kho chung / hàng chờ duyệt
@@ -568,6 +573,10 @@ export function MobileApp(props) {
   const renderPage = (l) => {
     const sec = l.sec;
     if (sec === "pet" || String(sec).startsWith("pet_")) return petApp.page(sec, l);
+    // 01/11: Tập luyện — giáo án đổi ngày thì Lịch tập (ngày tập / nghỉ) đổi theo; tập xong Pi thưởng Hạt (máy chủ chấm)
+    if (sec === "workout") return <WorkoutApp w={workout} profile={profile} loss={lossMode} today={today} initial={{ tab: l.tab, view: l.view }} onBack={closeLayer} showToast={showToast} pet={petApp.view}
+      syncDays={(days) => { const d = [...new Set(days)].filter((x) => x >= 0 && x <= 6).sort((a, b) => a - b); const cur = [...(profileRef.current.gymDays || [])].sort((a, b) => a - b); if (d.length && d.join() !== cur.join()) setProfile({ ...profileRef.current, gymDays: d }); }}
+      onReward={async (id) => { const { data, error } = await supabase.rpc("pet_workout_claim", { p_session: id }); if (error) return { ok: false }; if (data?.ok) petApp.refresh?.(); return data; }} />;
     if (MENU_PAGE_TITLE[sec]) return (
       <SubPage title={sec === "menu_day" ? `Lặp lại · ${({ thu_2: "Thứ Hai", thu_3: "Thứ Ba", thu_4: "Thứ Tư", thu_5: "Thứ Năm", thu_6: "Thứ Sáu", thu_7: "Thứ Bảy", cn: "Chủ nhật" })[l.key] || ""}` : MENU_PAGE_TITLE[sec]} onBack={closeLayer}>
         {sec === "menu_day" && <MenuDayPage dayKey={l.key} {...menuProps} />}
@@ -755,6 +764,7 @@ export function MobileApp(props) {
   const recapTargetOf = (d) => targetsOf(macroFor(d), dayTypeOf(profile, d)).cal;
   const recapM = recapCardMonth(today);
   const [recapHide, setRecapHide] = useState(() => readUser("fp_recap_hide", user?.id, null));
+  const [wkInviteHide, setWkInviteHide] = useState(() => readUser("fp_wk_invite_hide", user?.id, null));
   const [recapData, setRecapData] = useState(null);
   useEffect(() => {
     if (!recapM || recapHide === recapM || !ud.getDailyLogs) { setRecapData(null); return; }
@@ -921,6 +931,8 @@ export function MobileApp(props) {
             suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}
             bmr={macroFor(date)?.bmr || 0} onWarnAct={(a) => { if (a === "snack") openLog(null, today); }}
+            workoutCard={date === today ? <WorkoutCard w={workout} today={today} invite={!wkInviteHide} onHideInvite={() => { writeUser("fp_wk_invite_hide", user?.id, 1); setWkInviteHide(1); }}
+              onStart={(dp) => openLayer({ type: "page", sec: "workout", view: { k: "session", dayPlan: dp } })} onResume={(s) => openLayer({ type: "page", sec: "workout", view: { k: "session", id: s.id } })} onOpen={(t) => openLayer({ type: "page", sec: "workout", tab: t })} /> : null}
             onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} onSwap={lossMode ? (id) => openSwap(date, id) : null} />
         )}
         {tab === "menu" && lossMode && (
@@ -944,7 +956,7 @@ export function MobileApp(props) {
             lossResult={lossMode ? <LossResult weight={weight} macro={macro} measures={measures || []} streak={streakDays([...recentRows, ...(ud.todayLog ? [ud.todayLog] : [])], today)} onWeigh={() => openWeigh(false)} onMeasure={() => openLayer({ type: "measure", date: today })} /> : null} />
         )}
         {tab === "me" && (
-          <MeScreen bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />} name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
+          <MeScreen openWorkout={() => openLayer({ type: "page", sec: "workout" })} bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />} name={name} profile={profile} macro={macro} weight={weight} isAdmin={isAdmin} appVersion={appSettings.app_version} signOut={signOut}
             loss={lossMode} mealInfo={(() => { const ids0 = idsFor(today); const mt = mealTimesOf(profile.mealTimes); const h = (t) => String(t || "").replace(/^0/, ""); return ids0.length ? `${ids0.length} bữa · ${h(mt[ids0[0]])}–${h(mt[ids0[ids0.length - 1]])}` : null; })()}
             openCoach={flags.ai_chat ? () => openLayer({ type: "coach" }) : null} salesEnabled={!!flags.sales_enabled}
             openDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
