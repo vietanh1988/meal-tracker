@@ -35,7 +35,7 @@ export function PiShortcut({ pet, userId, notif, onGo }) {
     setRank(data?.me?.rank ?? null);
   };
   const unreadSocial = (notif?.items || []).some((n) => !n.is_read && ["heart", "req", "friend"].includes(notifKind(n).kind));
-  useEffect(() => { loadInvites(); }, [userId, (notif?.items || []).length]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadInvites(); }, [userId, (notif?.items || []).map((n) => n.url).join("|")]); // eslint-disable-line react-hooks/exhaustive-deps
   const toggle = () => {
     if (open) { setOpen(false); return; }
     const r = btn.current?.getBoundingClientRect();

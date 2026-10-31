@@ -70,7 +70,15 @@ test("Thả tim người lạ, xin kết bạn, trả lời lời mời ở chu�
     await expect(item).toHaveAttribute("data-kind", "req");
     await page.screenshot({ path: "shots/thong-bao-loi-moi.png" });
     await item.getByTestId("notif-accept").click();
-    await expect(item.getByTestId("notif-answered")).toHaveText("Đã kết bạn");
+    // 01/11: trả lời xong → dòng đổi hẳn (hết nút), mở lại chuông không hiện lại nút Đồng ý
+    const done = page.getByTestId("notif-item").filter({ hasText: "Cáo Nhỏ đã là bạn của bạn" });
+    await expect(done).toHaveAttribute("data-kind", "friend", { timeout: 10_000 });
+    await expect(page.getByTestId("notif-accept")).toHaveCount(0);
+    await waitDb(async () => (await rest(`notifications?user_id=eq.${s.uid}&url=like.*req=${b.nick}&select=id`)).length === 0, "máy chủ sửa dòng lời mời");
+    await page.getByRole("button", { name: "Quay lại" }).last().click();
+    await tap(page.getByTestId("bell"));
+    await expect(page.getByTestId("notif-item").filter({ hasText: "Cáo Nhỏ đã là bạn của bạn" })).toBeVisible();
+    await expect(page.getByTestId("notif-accept")).toHaveCount(0);
     await waitDb(async () => (await rest(`pi_friends?a=eq.${lo2[0]}&b=eq.${lo2[1]}&select=status`))[0]?.status === "ok", "đã thành bạn");
     await waitDb(async () => (await rest(`notifications?user_id=eq.${b.id}&url=like.*friend=*&select=title`)).length === 1, "người xin được báo đã đồng ý");
     await ctx.close();

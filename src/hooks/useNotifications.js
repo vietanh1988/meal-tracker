@@ -115,5 +115,14 @@ export function useNotifications(appSettings, userId) {
     try { await supabase.from("notifications").update({ is_read: true }).eq("id", id); } catch (e) { /* */ }
   }, []);
 
-  return { items, updates, unread, ringing, markAllRead, markRead, toast, clearToast: () => setToast(null) };
+  // 01/11: trả lời lời mời xong → sửa luôn dòng trong danh sách đang giữ (khỏi hiện lại nút Đồng ý khi mở lại chuông); máy chủ cũng sửa dòng gốc (pi_req_done)
+  // tải lại danh sách (mở màn Thông báo): lời mời đã trả lời ở chỗ khác (tab Bạn bè, máy khác) hiện đúng trạng thái máy chủ
+  const reload = useCallback(async () => {
+    if (!userId) return;
+    const { data, error } = await supabase.from("notifications").select("id,title,body,url,is_read,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(30);
+    if (!error && data) setItems((prev) => data.map((n) => (prev.find((x) => x.id === n.id && x.is_read) ? { ...n, is_read: true } : n)));
+  }, [userId]);
+  const patch = useCallback((id, fields) => { setItems((prev) => prev.map((n) => (n.id === id ? { ...n, ...fields } : n))); }, []);
+
+  return { items, updates, unread, ringing, markAllRead, markRead, patch, reload, toast, clearToast: () => setToast(null) };
 }

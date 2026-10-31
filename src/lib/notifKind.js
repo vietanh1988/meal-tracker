@@ -19,3 +19,10 @@ export function socialTabOf(url) {
   if (k === "heart") return "rank";
   return "rank";
 }
+
+// dòng lời mời sau khi trả lời (giống máy chủ pi_req_done): hết req= → hết nút; ok = đã kết bạn
+export function answeredFields(n, nick, ok) {
+  const url = String(n?.url || "").replace(`&req=${nick}`, ok ? `&friend=${nick}` : "");
+  const who = String(n?.title || "").replace(/ muốn kết bạn$/, "");
+  return { url, is_read: true, title: ok ? `${who} đã là bạn của bạn` : `${who} đã xin kết bạn`, body: ok ? "Bạn đã đồng ý kết bạn" : "Bạn đã từ chối lời mời" };
+}

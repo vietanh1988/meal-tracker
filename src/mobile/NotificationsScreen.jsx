@@ -7,7 +7,7 @@ import { fmtVN, toVNDate } from "../lib/dateVN";
 import { UpdateFlow } from "./UpdatePopup";
 import { DK, dkCard } from "../theme";
 import { supabase } from "../lib/supabase";
-import { notifKind } from "../lib/notifKind";
+import { notifKind, answeredFields } from "../lib/notifKind";
 import { KindIcon, KIND_STYLE } from "./NotifToast";
 
 // Nền tối (bản vẽ 48)
@@ -29,7 +29,7 @@ export function BellButton({ count, ringing, onClick }) {
 export function NotificationsScreen({ notif, appVersion, openReminders }) {
   const [updating, setUpdating] = useState(false);
   const [open, setOpen] = useState(null);
-  useEffect(() => { notif.markAllRead(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { notif.markAllRead(); notif.reload?.(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const updates = [...notif.updates].reverse();
   const items = notif.items;
   const dateOf = (ts) => (ts ? fmtVN(toVNDate(new Date(ts)), true) : "");
@@ -69,7 +69,7 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
         </div>
       ) : (
         <div style={box}>
-          {items.map((n, i) => <NotifRow key={n.id} n={n} last={i === items.length - 1} open={open === n.id} onToggle={() => setOpen(open === n.id ? null : n.id)} dateOf={dateOf} />)}
+          {items.map((n, i) => <NotifRow key={n.id} n={n} last={i === items.length - 1} open={open === n.id} onToggle={() => setOpen(open === n.id ? null : n.id)} dateOf={dateOf} onPatch={(f) => notif.patch(n.id, f)} />)}
         </div>
       )}
     </div>
@@ -78,7 +78,7 @@ export function NotificationsScreen({ notif, appVersion, openReminders }) {
 
 // 31/10 (chốt bản vẽ "Thả tim người lạ, xin kết bạn, thông báo" khung 4): mỗi dòng có ô icon 36 theo loại (tim / lời mời / đã kết bạn / lời nhắn);
 // lời mời kết bạn có nút Đồng ý (trắng) / Từ chối (kính) h34 bo 10 ngay trong dòng; trả lời xong hiện "Đã kết bạn" / "Đã từ chối".
-function NotifRow({ n, last, open, onToggle, dateOf }) {
+function NotifRow({ n, last, open, onToggle, dateOf, onPatch }) {
   const k = notifKind(n);
   const [, , bg, fg] = KIND_STYLE[k.kind] || KIND_STYLE.other;
   const [ans, setAns] = useState(null);
@@ -88,7 +88,10 @@ function NotifRow({ n, last, open, onToggle, dateOf }) {
     setBusy(true);
     const { data, error } = await supabase.rpc("pi_friend_answer", { p_nick: k.nick, p_accept: yes });
     setBusy(false);
-    if (!error) setAns(data?.status === "ok" ? "ok" : yes ? "gone" : "no");
+    if (error) return;
+    const ok = data?.status === "ok";
+    setAns(ok ? "ok" : yes ? "gone" : "no");
+    setTimeout(() => onPatch?.(answeredFields(n, k.nick, ok)), 1200); // giữ chữ "Đã kết bạn" 1,2 giây rồi đổi hẳn dòng
   };
   const btn = (pri) => ({ height: 34, padding: "0 14px", borderRadius: 10, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: 800, background: pri ? "#FFFFFF" : "rgba(255,255,255,0.12)", color: pri ? "#0040E0" : "#FFFFFF", opacity: busy ? 0.6 : 1 });
   return (

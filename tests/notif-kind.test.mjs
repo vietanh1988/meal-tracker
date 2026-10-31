@@ -27,3 +27,14 @@ test("chạm thông báo mở đúng tab", async () => {
   assert.equal(socialTabOf("/?pi=social&friend=meo-mun"), "friends");
   assert.equal(socialTabOf("/?pi=social&heart=meo-mun"), "rank");
 });
+
+test("lời mời đã trả lời: hết req=, tiêu đề rõ", async () => {
+  const { answeredFields, notifKind: nk } = await import("../src/lib/notifKind.js");
+  const n = { url: "/?pi=social&from=push&req=meo-mun", title: "Mèo Mun muốn kết bạn" };
+  const ok = answeredFields(n, "meo-mun", true);
+  assert.equal(nk(ok).kind, "friend"); assert.equal(ok.title, "Mèo Mun đã là bạn của bạn");
+  const no = answeredFields(n, "meo-mun", false);
+  assert.equal(nk(no).kind, "social"); assert.equal(no.body, "Bạn đã từ chối lời mời");
+  const sql = readFileSync(new URL("../supabase/migrations/20261101001000_pi_loi_moi_da_tra_loi.sql", import.meta.url), "utf8");
+  assert.match(sql, /perform public\.pi_req_done\(v_uid, v_o, public\.pi_is_friend\(v_uid, v_o\)\);/);
+});

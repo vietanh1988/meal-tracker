@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "../lib/supabase";
-import { notifKind } from "../lib/notifKind";
+import { notifKind, answeredFields } from "../lib/notifKind";
 import { FONT, GRAD_BLUE } from "./ui";
 
 const S = (d, s = 22) => <svg aria-hidden="true" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
@@ -48,7 +48,7 @@ export function NotifToast({ notif, onOpen }) {
     setBusy(true);
     const { error } = await supabase.rpc("pi_friend_answer", { p_nick: k.nick, p_accept: true });
     setBusy(false);
-    if (!error) { setDone("ok"); notif.markRead(n.id); setTimeout(() => notif.clearToast(), 1500); }
+    if (!error) { setDone("ok"); notif.markRead(n.id); notif.patch?.(n.id, answeredFields(n, k.nick, true)); setTimeout(() => notif.clearToast(), 1500); }
   };
   const onStart = (e) => { y0.current = e.touches[0].clientY; };
   const onMove = (e) => { if (y0.current == null || !box.current) return; const dy = Math.min(0, e.touches[0].clientY - y0.current); box.current.style.transform = `translateY(${dy}px)`; };
