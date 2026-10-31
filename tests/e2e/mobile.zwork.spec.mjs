@@ -59,11 +59,12 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.getByRole("button", { name: "Quay lại" }).last().click();
     // bài tự thêm
     await page.getByTestId("wk-custom-open").click();
-    await page.getByTestId("wk-custom-vi").fill("Đẩy ngực máy Smith");
-    await page.getByTestId("wk-custom-en").fill("Smith Machine Press");
+    await page.getByTestId("wk-custom-vi").fill("Ép ngực máy tự chế");
+    await page.getByTestId("wk-custom-en").fill("Homemade Chest Press");
     await page.getByTestId("wk-custom-save").click();
-    await page.getByTestId("wk-lib-search").fill("smith");
-    await expect(page.getByTestId("wk-lib-row").filter({ hasText: "Đẩy ngực máy Smith" })).toBeVisible();
+    await page.getByTestId("wk-lib-search").fill("tu che");
+    await expect(page.getByTestId("wk-lib-row").filter({ hasText: "Ép ngực máy tự chế" })).toBeVisible();
+    await expect(page.getByTestId("wk-lib-row").filter({ hasText: "Ép ngực máy tự chế" }).getByTestId("wk-nophoto")).toBeVisible(); // bài tự thêm: ô nhóm cơ, không ảnh
     await waitDb(async () => (await rest(`user_exercises?user_id=eq.${s.uid}&select=vi`)).length === 1, "bài tự thêm lưu máy chủ");
 
     // 3 · sửa lịch: đặt 1 ngày thành ngày nghỉ → Lịch tập (gym_days) đổi theo
