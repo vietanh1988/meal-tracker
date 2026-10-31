@@ -26,11 +26,21 @@ PAD = 14; PW, PH = SW + 2 * PAD, SH + 2 * PAD
 PX, PY = (W - PW) // 2, 468
 SX, SY = PX + PAD, PY + PAD
 _shot = {}
+def rename(im):
+    """tài khoản test tên "e2e_tester" → "Minh Anh" ở dòng Chào (tô lại nền xanh theo 2 hàng điểm ảnh trên / dưới chữ)"""
+    a = np.asarray(im).astype(float).copy(); x0, x1, y0, y1 = 100, 262, 33, 59
+    top, bot = a[y0 - 2, x0:x1], a[y1 + 1, x0:x1]
+    for y in range(y0, y1): t = (y - y0) / (y1 - y0); a[y, x0:x1] = top * (1 - t) + bot * t
+    im = Image.fromarray(a.astype(np.uint8)); d = ImageDraw.Draw(im, "RGBA")
+    d.text((106, 32), "Minh Anh", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24), fill=(255, 255, 255, 232))
+    return im
 def shot(n):
     if n not in _shot:
         p = os.path.join(SRC, n + ".png")
         if os.path.exists(p):
-            im = Image.open(p).convert("RGB").resize((SW, SH), Image.LANCZOS); bx = json.load(open(os.path.join(SRC, n + ".json")))
+            im = Image.open(p).convert("RGB")
+            if n == "t01-home": im = rename(im)
+            im = im.resize((SW, SH), Image.LANCZOS); bx = json.load(open(os.path.join(SRC, n + ".json")))
         else:
             im = Image.new("RGB", (SW, SH), (226, 232, 240)); ImageDraw.Draw(im).text((SW / 2, SH / 2), n, font=F("Bold", 40), fill=(100, 116, 139), anchor="mm"); bx = {}
         _shot[n] = (im, bx)
@@ -190,11 +200,11 @@ def bubble(bg, T, x0, y0, x1, tail_x):
     bg.alpha_composite(sh.filter(ImageFilter.GaussianBlur(12)), (0, 8)); bg.alpha_composite(lay)
 
 def rank_glow(bg, T):
-    if not (29.6 <= T < 33.6): return
+    if not (31.4 <= T < 33.6): return
     b = shot("t13-rank")[1].get("rank-me")
     if not b: return
     x0, y0 = SX + b["x"] * KS, SY + b["y"] * KS; x1, y1 = x0 + b["width"] * KS, y0 + b["height"] * KS
-    p = 0.5 + 0.5 * math.sin((T - 29.6) * 6)
+    p = 0.5 + 0.5 * math.sin((T - 31.4) * 6)
     lay = Image.new("RGBA", bg.size, (0, 0, 0, 0)); ImageDraw.Draw(lay).rounded_rectangle((x0 - 6, y0 - 6, x1 + 6, y1 + 6), 18, outline=(249, 115, 22, round(140 + 115 * p)), width=7)
     bg.alpha_composite(lay)
 
