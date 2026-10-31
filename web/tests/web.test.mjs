@@ -163,3 +163,14 @@ test("25/10: chân trang có khối Lưu ý — blog tin tức, không phải tr
   assert.match(src, /không phải trang web y tế/);
   assert.match(src, /data-testid="web-disclaimer"/);
 });
+
+test("31/10 tìm ngay trên đầu trang: Nav dùng SearchBox (không còn link sang /tim-kiem), menu mobile mở khung tìm, có /api/tim", async () => {
+  const { readFileSync, existsSync } = await import("node:fs");
+  const nav = readFileSync(new URL("../components/Nav.js", import.meta.url), "utf8");
+  assert.match(nav, /<SearchBox \/>/);
+  assert.doesNotMatch(nav, /href="\/tim-kiem"/);
+  assert.match(readFileSync(new URL("../components/MobileMenu.js", import.meta.url), "utf8"), /fp:search/);
+  const sb = readFileSync(new URL("../components/SearchBox.js", import.meta.url), "utf8");
+  for (const k of ["/api/tim?q=", "fp:search", "web-search-input", "/tim-kiem?q=", "ArrowDown"]) assert.ok(sb.includes(k), k);
+  assert.ok(existsSync(new URL("../app/api/tim/route.js", import.meta.url)));
+});

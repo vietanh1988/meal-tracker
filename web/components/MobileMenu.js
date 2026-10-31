@@ -35,7 +35,7 @@ export default function MobileMenu({ items = [] }) {
             </div>
           );
         })}
-        <a href="/tim-kiem" className="mm-it mm-search" style={{ "--d": `${60 + 35 * n++}ms` }} onClick={close}>
+        <a href="/tim-kiem" className="mm-it mm-search" style={{ "--d": `${60 + 35 * n++}ms` }} onClick={(e) => { e.preventDefault(); close(); window.dispatchEvent(new Event("fp:search")); }}>{/* 31/10: mở khung tìm ngay tại trang */}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>Tìm món, bài viết
         </a>
       </nav>
