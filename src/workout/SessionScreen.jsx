@@ -37,7 +37,9 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
     return r;
   };
   useEffect(() => { if (!s.id) persist(s); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const change = (f) => setS((x) => { const y = f(JSON.parse(JSON.stringify(x))); clearTimeout(saveT.current); saveT.current = setTimeout(() => persist(y), 700); return y; });
+  // 01/11 (lỗi E2E bắt được: tick hiệp cuối rồi bấm Xong trong 0,7 giây → lần lưu chậm của thao tác trước ghi đè buổi đã xong, buổi vẫn "đang tập", Pi không thưởng)
+  // → buổi đã xong thì không lưu chậm nữa; bấm Xong huỷ lần lưu chậm đang chờ
+  const change = (f) => setS((x) => { const y = f(JSON.parse(JSON.stringify(x))); clearTimeout(saveT.current); saveT.current = setTimeout(() => { if (!sRef.current?.ended_at) persist(y); }, 700); return y; });
   // nghỉ giữa hiệp
   useEffect(() => {
     if (rest <= 0) return undefined;
@@ -54,7 +56,9 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
   const finish = async () => {
     const n = setsDone(s);
     if (!n) { setAsk(true); return; }
+    clearTimeout(saveT.current); saveT.current = null;
     const end = { ...s, ended_at: new Date().toISOString() };
+    sRef.current = end;
     const rec = newRecords(end, w.sessions).map((r) => ({ ...r, name: exOf(r.ex, w.custom).vi }));
     const r = await persist(end);
     if (!r.ok) { showToast?.({ text: "Chưa lưu được, kiểm tra mạng rồi thử lại." }); return; }
