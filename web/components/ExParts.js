@@ -5,7 +5,7 @@ import { MUSCLES, MUSCLE_SLUG, TEMPLATES, tplSessions, exById, countBy } from "@
 export function MuscleChips({ active }) {
   const n = countBy("muscle"), all = Object.values(n).reduce((a, b) => a + b, 0);
   return (
-    <nav className="chips" aria-label="Nhóm cơ" data-testid="ex-muscles">
+    <nav className="chips chips-wrap" aria-label="Nhóm cơ" data-testid="ex-muscles">
       <a className={`chip${active ? "" : " on"}`} href="/bai-tap" aria-current={active ? undefined : "page"}>Tất cả<em>{all}</em></a>
       {MUSCLES.filter(([k]) => n[k]).map(([k, t]) => <a key={k} className={`chip${active === k ? " on" : ""}`} href={`/bai-tap/nhom/${MUSCLE_SLUG[k]}`} aria-current={active === k ? "page" : undefined}>{t}<em>{n[k]}</em></a>)}
     </nav>

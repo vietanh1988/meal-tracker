@@ -47,7 +47,7 @@ export default async function PiBoard({ searchParams }) {
       <PageHead crumb={crumbs} eye={`Tuần ${ddmm(w0)} – ${ddmm(addDays(w0, 6))}${left ? ` · còn ${left} ngày` : " · ngày cuối"}`} h1="Bảng xếp hạng Pi tuần này"
         sub="Khách Fipilot AI nuôi Pi bằng việc ăn đúng bữa, uống đủ nước, tập luyện. Top 3 mỗi bảng nhận 50 / 30 / 20 Hạt vào sáng thứ Hai." />
       <div className="wrap" style={{ display: "flex", flexDirection: "column", gap: 20, paddingBottom: 8 }}>
-        <nav className="chips" aria-label="Chọn bảng" data-testid="prank-tabs">{BOARDS.map(([k, t]) => <a key={k} className={`chip${k === kind ? " on" : ""}`} href={k === "cham" ? "/pi/xep-hang" : `/pi/xep-hang?b=${k}`} aria-current={k === kind ? "page" : undefined}>{t}</a>)}</nav>
+        <nav className="chips chips-wrap" aria-label="Chọn bảng" data-testid="prank-tabs">{BOARDS.map(([k, t]) => <a key={k} className={`chip${k === kind ? " on" : ""}`} href={k === "cham" ? "/pi/xep-hang" : `/pi/xep-hang?b=${k}`} aria-current={k === kind ? "page" : undefined}>{t}</a>)}</nav>
         <div className="pbd">
           <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
             {!rows.length && <div className="card pempty" data-testid="prank-empty">{kind === "hanhtrinh" ? "Chưa ai khoe tiến độ cân tuần này." : "Tuần này chưa có Pi nào trên bảng. Bạn là người đầu tiên nha!"}</div>}

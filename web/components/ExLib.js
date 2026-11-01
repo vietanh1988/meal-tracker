@@ -25,7 +25,7 @@ export default function ExLib({ list, equips, per = 24, placeholder = "Ví dụ:
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div className="exsearch"><input className="inp" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} aria-label="Tìm bài tập" data-testid="ex-search" /></div>
-      <div className="chips exchip-s" role="group" aria-label="Lọc theo dụng cụ">
+      <div className="chips chips-wrap exchip-s" role="group" aria-label="Lọc theo dụng cụ">
         {equips.map(([k, t]) => <button key={k || "all"} type="button" className={`chip${eq === k ? " on" : ""}`} aria-pressed={eq === k} onClick={() => setEq(k)} data-testid={`ex-eq-${k || "all"}`}>{t}</button>)}
       </div>
       {(f || eq) && <p className="mut" style={{ fontSize: 15, margin: 0 }} data-testid="ex-count">{out.length} bài{f ? ` khớp “${q.trim()}”` : ""}</p>}
