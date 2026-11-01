@@ -1,7 +1,7 @@
 // 01/11: tra cứu bài tập (bài có sẵn + bài khách tự thêm), đơn vị (lần / giây / phút), ảnh động tác (ảnh người thật, bản quyền công cộng).
 import { useState } from "react";
 import { EX_BY_ID, EXERCISES, MUSCLES, EQUIPS } from "./exercises.js";
-import { EX_PHOTOS } from "./exPhotos.js";
+import { EX_PHOTOS, exPhotoQ } from "./exPhotos.js";
 
 export { EXERCISES, MUSCLES, EQUIPS };
 export const MUSCLE_NAME = Object.fromEntries(MUSCLES);
@@ -61,7 +61,7 @@ export function ExPhoto({ ex, big = false, w = 64, h = 48, radius = 12 }) {
   ensureCss();
   if (!hasPhoto(ex)) return <NoPhoto ex={ex} w={big ? "100%" : w} h={big ? 230 : h} radius={big ? 20 : radius} big={big} />;
   const dir = big ? "/ex/" : "/ex/t/";
-  const imgs = [0, 1].map((f) => <img key={f} src={`${dir}${ex.id}-${f}.webp`} alt={f ? "" : `Động tác ${ex.vi}`} loading="lazy" decoding="async" draggable={false} />);
+  const imgs = [0, 1].map((f) => <img key={f} src={`${dir}${ex.id}-${f}.webp${exPhotoQ(ex.id)}`} alt={f ? "" : `Động tác ${ex.vi}`} loading="lazy" decoding="async" draggable={false} />);
   if (!big) return <span className="fp-exph" data-testid="wk-photo" style={{ width: w, height: h, borderRadius: radius }}>{imgs}</span>;
   return (
     <span className="fp-exph" data-testid="wk-photo-big" data-paused={paused ? "1" : "0"} role="button" tabIndex={0} aria-label={paused ? "Chạy ảnh động tác" : "Dừng ảnh động tác"}

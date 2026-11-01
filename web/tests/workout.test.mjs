@@ -17,6 +17,7 @@ test("mỗi bài 1 link riêng theo tên Việt, không trùng; tạ đơn → t
 test("ảnh lấy từ app, bài không có ảnh trả null", () => {
   assert.deepEqual(photoUrls("barbell-back-squat"), ["https://app.fipilotai.com/ex/barbell-back-squat-0.webp", "https://app.fipilotai.com/ex/barbell-back-squat-1.webp"]);
   assert.equal(photoUrls("burpee"), null);
+  assert.ok(photoUrls("barbell-bench-press")[0].endsWith("-0.webp?v=2"), "ảnh đã vẽ lại có số phiên bản để máy khách tải ảnh mới");
 });
 test("giáo án mẫu đúng như app; bài nằm trong giáo án nào", () => {
   assert.equal(TEMPLATES.length, 4);

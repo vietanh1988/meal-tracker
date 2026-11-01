@@ -1,7 +1,7 @@
 // 01/11 (bản vẽ "Pi và Bài tập trên web"): Thư viện bài tập trên web đọc CHUNG dữ liệu với app (src/workout → lib/app/workout, chép lúc dựng).
 // Link theo tên Việt: "Gánh tạ" → /bai-tap/ganh-ta (trùng thì thêm -2). Ảnh lấy từ app (app.fipilotai.com/ex/…), không chép 2 bản.
 import { EXERCISES, EX_BY_ID, MUSCLES, EQUIPS } from "./app/workout/exercises.js";
-import { EX_PHOTOS } from "./app/workout/exPhotos.js";
+import { EX_PHOTOS, exPhotoQ } from "./app/workout/exPhotos.js";
 import { TEMPLATES, fold } from "./app/workout/plan.js";
 import { targetsOf } from "./app/workout/exTargets.js";
 export { targetsOf };
@@ -30,7 +30,7 @@ export const exById = (id) => EX_BY_ID[id] || null;
 export const exUrl = (id) => `/bai-tap/${exSlug(id)}`;
 export const hasPhoto = (id) => EX_PHOTOS.has(id);
 /** ảnh 2 khung: to 480 px · nhỏ 128×96 */
-export const photoUrls = (id, big = true) => (hasPhoto(id) ? [0, 1].map((f) => `${APP}/ex/${big ? "" : "t/"}${id}-${f}.webp`) : null);
+export const photoUrls = (id, big = true) => (hasPhoto(id) ? [0, 1].map((f) => `${APP}/ex/${big ? "" : "t/"}${id}-${f}.webp${exPhotoQ(id)}`) : null);
 
 export const countBy = (key) => EXERCISES.reduce((m, e) => { m[e[key]] = (m[e[key]] || 0) + 1; return m; }, {});
 

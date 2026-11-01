@@ -117,3 +117,10 @@ export const EX_PHOTOS = new Set([
   "upright-row",
   "walking-lunge",
 ]);
+
+// 01/11: ảnh đã thay bằng ảnh vẽ lại (người mới) → số phiên bản để máy khách tải ảnh mới (ảnh /ex/ được lưu đệm 30 ngày)
+// Thay ảnh bài nào thì tăng số của bài đó.
+export const EX_PHOTO_V = {
+  "barbell-bench-press": 2,
+};
+export const exPhotoQ = (id) => (EX_PHOTO_V[id] ? `?v=${EX_PHOTO_V[id]}` : "");
