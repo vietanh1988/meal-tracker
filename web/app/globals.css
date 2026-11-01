@@ -383,7 +383,7 @@ a.pht:hover{background:#FFE4E6}
 .pcta .av{position:absolute;right:-6px;bottom:-12px;width:128px;height:128px}
 .pempty{padding:28px 22px;text-align:center;font-size:15px;color:var(--mut);line-height:1.6}
 @media (max-width:1024px){.pbd{grid-template-columns:1fr}}
-@media (max-width:720px){.ppod{padding:18px 10px 16px;gap:6px}.ppd .av{width:84px;height:84px}.ppd.n1 .av{width:104px;height:104px}.ppd b{font-size:14px}.ppd small{display:none}.pval{font-size:12.5px;padding:3px 8px}
+@media (max-width:720px){.ppod{padding:18px 10px 16px;gap:6px}.ppd .av{width:84px;height:84px}.ppd.n1 .av{width:104px;height:104px}.ppd .av .pi-stack{transform:translateX(-50%) scale(.75);transform-origin:50% 100%}.ppd.n1 .av .pi-stack{transform:translateX(-50%) scale(.74)}.ppd b{font-size:14px}.ppd small{display:none}.pval{font-size:12.5px;padding:3px 8px}
  .prr{padding:0 12px;gap:10px}.pgo{display:none}.pcta{padding-right:110px}.pcta .av{width:110px;height:110px}}
 /* trang Pi: thành tích tuần + 2 nút */
 .pi-ach{padding:14px 16px;display:flex;flex-direction:column;gap:6px}.pi-ach>b{font-size:15px;font-weight:900;margin-bottom:4px}
