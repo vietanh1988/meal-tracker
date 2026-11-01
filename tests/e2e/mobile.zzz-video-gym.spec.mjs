@@ -125,6 +125,8 @@ test("Ảnh màn thật cho video TikTok Tập luyện", async ({ browser }) => 
     await expect(page.getByTestId("wk-done")).toBeVisible();
     await page.waitForTimeout(1500);
     await shot("g12-xong", ["wk-done-claim", "wk-done-pr"]);
+    // trần Hạt ngày (120) có thể đã đầy do các bài E2E chạy trước trong ngày (Hạt bữa ăn theo giờ) → dọn Hạt hôm nay của tài khoản test
+    await rest(`pet_ledger?user_id=eq.${s.uid}&day=gte.${s.today.slice(0, 8)}01&kind=not.in.(onboard,invite,rank,admin)`, { method: "DELETE" });
     await page.getByTestId("wk-done-claim").click();
     await expect(page.getByTestId("wk-done-claim")).toHaveText("Đã nhận +20 Hạt", { timeout: 10_000 });
     await page.waitForTimeout(900);
