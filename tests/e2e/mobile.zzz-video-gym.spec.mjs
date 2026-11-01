@@ -50,7 +50,8 @@ test("Ảnh màn thật cho video TikTok Tập luyện", async ({ browser }) => 
     if (pet0) await rest(`pet_profiles?user_id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ name: "Pi", balance: 260, xp: 1400 }) });
     // Lịch tập 5 buổi/tuần, hôm nay là ngày tập (buổi đầu tiên của giáo án)
     // 5 ngày tập có hôm nay, xếp sao cho hôm nay rơi vào buổi Ngực – Vai – Tay sau (vị trí chia hết cho 3 → có mức tạ đẹp)
-    const combos = []; for (let m = 0; m < 128; m++) { const a = [0, 1, 2, 3, 4, 5, 6].filter((d) => m & (1 << d)); if (a.length === 5 && a.includes(todayDow)) combos.push(a); }
+    const combos = []; for (let m = 0; m < 128; m++) { const a = [0, 1, 2, 3, 4, 5, 6].filter((d) => m & (1 << d)); if ((a.length === 5 || a.length === 4) && a.includes(todayDow)) combos.push(a); }
+    combos.sort((x, y) => y.length - x.length); // ưu tiên 5 buổi, không được thì 4 (Chủ nhật: chỉ 4 buổi mới rơi vào buổi đầu vòng)
     const gd = combos.find((a) => a.indexOf(todayDow) % 3 === 0) || combos[0];
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ gym_days: gd }) });
     // 8 buổi cũ (2 tháng): mức tạ tăng dần → Nhật ký có "Đang tăng tạ", buổi hôm nay điền sẵn mức tạ lần trước
