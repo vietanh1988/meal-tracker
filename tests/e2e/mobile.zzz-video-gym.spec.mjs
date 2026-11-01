@@ -46,10 +46,12 @@ test("Ảnh màn thật cho video TikTok Tập luyện", async ({ browser }) => 
   try {
     await clean();
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: JSON.stringify({ ...JSON.parse(flagsRow.value), pet: true }) }) });
-    await fetch(`${s.url}/auth/v1/admin/users/${s.uid}`, { method: "PUT", headers: h, body: JSON.stringify({ user_metadata: { ...(user0.user_metadata || {}), full_name: "Minh Anh" } }) });
+    await fetch(`${s.url}/auth/v1/admin/users/${s.uid}`, { method: "PUT", headers: h, body: JSON.stringify({ user_metadata: { ...(user0.user_metadata || {}), full_name: "Minh Anh", username: "Minh Anh" } }) });
     if (pet0) await rest(`pet_profiles?user_id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ name: "Pi", balance: 260, xp: 1400 }) });
     // Lịch tập 5 buổi/tuần, hôm nay là ngày tập (buổi đầu tiên của giáo án)
-    const gd = [0, 1, 2, 3, 4, 5, 6].filter((d) => d === todayDow || ![1, 3].includes((d - todayDow + 7) % 7)).slice(0, 5);
+    // 5 ngày tập có hôm nay, xếp sao cho hôm nay rơi vào buổi Ngực – Vai – Tay sau (vị trí chia hết cho 3 → có mức tạ đẹp)
+    const combos = []; for (let m = 0; m < 128; m++) { const a = [0, 1, 2, 3, 4, 5, 6].filter((d) => m & (1 << d)); if (a.length === 5 && a.includes(todayDow)) combos.push(a); }
+    const gd = combos.find((a) => a.indexOf(todayDow) % 3 === 0) || combos[0];
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ gym_days: gd }) });
     // 8 buổi cũ (2 tháng): mức tạ tăng dần → Nhật ký có "Đang tăng tạ", buổi hôm nay điền sẵn mức tạ lần trước
     const S8 = [[-52], [-45], [-38], [-31], [-19], [-12], [-6], [-3]];
@@ -69,6 +71,7 @@ test("Ảnh màn thật cho video TikTok Tập luyện", async ({ browser }) => 
     });
     await rest("workout_sessions", { method: "POST", body: JSON.stringify(rows) });
 
+    await page.clock.install({ time: new Date() }); // tua giờ cho buổi tập ra 52 phút như thật
     await login(page);
     // 1 · Hôm nay: nút Tập luyện cạnh nút Pi
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -112,15 +115,17 @@ test("Ảnh màn thật cho video TikTok Tập luyện", async ({ browser }) => 
     await page.waitForTimeout(1200);
     await shot("g10-dang-tap", ["wk-set-tick", "wk-set-kg"], true);
     const ticks = page.getByTestId("wk-set-tick");
-    // lên kỷ lục: hiệp 3 bài đầu thêm 2,5 kg
+    // lên kỷ lục: hiệp 3 của bài đầu thêm 2,5 kg
     const kg3 = page.getByTestId("wk-set-kg").nth(2);
-    if (await kg3.count()) { const v = Number(String(await kg3.inputValue()).replace(",", ".")) || 0; await kg3.fill(String(v + 2.5).replace(".", ",")); }
+    if (await kg3.count()) { const v = Number(String(await kg3.inputValue()).replace(",", ".")) || 0; if (v > 0) await kg3.fill(String(v + 2.5).replace(".", ",")); }
+    await page.clock.fastForward("14:00");
     for (let k = 0; k < 3; k++) await ticks.nth(k).click();
     await page.waitForTimeout(2500);
     await shot("g11-tick-nghi", ["wk-set-tick", "wk-rest"], true);
     await page.getByTestId("wk-rest-skip").click();
     for (let k = 3; k < 12; k++) { await ticks.nth(k).scrollIntoViewIfNeeded(); await ticks.nth(k).click(); }
     await page.getByTestId("wk-rest-skip").click().catch(() => {});
+    await page.clock.fastForward("38:00");
     await page.getByTestId("wk-ses-finish").click();
     await expect(page.getByTestId("wk-done")).toBeVisible();
     await page.waitForTimeout(1500);
