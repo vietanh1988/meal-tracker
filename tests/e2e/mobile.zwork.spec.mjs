@@ -149,7 +149,7 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.getByTestId("wk-done-claim").click();
     const claimBody = await claimRes;
     const sesDb = (await rest(`workout_sessions?user_id=eq.${s.uid}&select=day,ended_at,items`)).map((x) => ({ day: x.day, ended: !!x.ended_at, done: (x.items || []).flatMap((i) => i.sets || []).filter((st) => st.done).length }));
-    expect(claimBody, `máy chủ trả: ${claimBody} · buổi trong DB: ${JSON.stringify(sesDb)} · hôm nay ${s.today}`).toContain('"ok":true');
+    expect((() => { try { return JSON.parse(claimBody).ok; } catch { return false; } })(), `máy chủ trả: ${claimBody} · buổi trong DB: ${JSON.stringify(sesDb)} · hôm nay ${s.today}`).toBe(true);
     await expect(page.getByTestId("wk-done-claim")).toHaveText("Đã nhận +20 Hạt", { timeout: 10_000 });
     await waitDb(async () => (await rest(`pet_ledger?user_id=eq.${s.uid}&kind=eq.workout&select=amount`))[0]?.amount === 20, "Hạt buổi tập");
     const ses = (await rest(`workout_sessions?user_id=eq.${s.uid}&select=sets_done,ended_at,day`))[0];
