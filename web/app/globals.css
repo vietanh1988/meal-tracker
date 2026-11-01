@@ -388,6 +388,6 @@ a.pht:hover{background:#FFE4E6}
 /* trang Pi: thành tích tuần + 2 nút */
 .pi-ach{padding:14px 16px;display:flex;flex-direction:column;gap:6px}.pi-ach>b{font-size:15px;font-weight:900;margin-bottom:4px}
 .pi-ar{display:flex;align-items:center;gap:10px;min-height:44px;border-top:1px solid var(--line2)}.pi-ar:first-of-type{border-top:0}
-.pi-ar .ic{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0}.pi-ar span{flex:1;font-size:14.5px;font-weight:700}.pi-ar em{font-style:normal;font-size:14px;font-weight:900}
+.pi-ar .ic{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0}.pi-ar span:not(.ic){flex:1;font-size:14.5px;font-weight:700}.pi-ar em{font-style:normal;font-size:14px;font-weight:900}
 .pi-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pi-two .btn{height:50px;font-size:15px;border-radius:14px}
 .btn.hb{background:#FFF1F2;color:#E11D48;border:1.5px solid #FECDD3}
