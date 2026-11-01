@@ -5,6 +5,7 @@ import { caloFoods } from "@/lib/calo";
 import { legalPages, vnDateIso } from "@/lib/appdata";
 import { legalToBlocks } from "@/lib/legal";
 import { countPosts, catIndexable, modifiedOf } from "@/lib/content";
+import { EXERCISES, TEMPLATES, MUSCLE_SLUG, exUrl, photoUrls } from "@/lib/workout";
 
 export const revalidate = 600;
 export default async function sitemap() {
@@ -27,7 +28,7 @@ export default async function sitemap() {
     { url: u("/bang-gia"), lastModified: max(base, sets.pricing), changeFrequency: "monthly", priority: 0.6 },
   ];
   // đường dẫn đã có trang riêng của web → trang web_posts trùng slug không mở được, không khai
-  const FIXED = new Set(["bai-viet", "bang-calo", "tinh-calo", "bang-gia", "cai-app", "gioi-thieu", "lien-he", "tim-kiem", "chu-de", "the", "tac-gia", "calo", "api"]);
+  const FIXED = new Set(["bai-viet", "bang-calo", "tinh-calo", "bang-gia", "cai-app", "gioi-thieu", "lien-he", "tim-kiem", "chu-de", "the", "tac-gia", "calo", "api", "bai-tap"]);
   for (const p of posts) {
     if (FIXED.has(p.slug)) continue;
     if (p.seo?.noindex || p.seo?.canonical || p.seo?.sitemap_off) continue;
@@ -43,5 +44,12 @@ export default async function sitemap() {
   if (on.tag === true) for (const t of (await q("web_terms?kind=eq.tag&select=slug,seo")) || []) if (t.seo?.index === true) out.push({ url: u(`/the/${t.slug}`), lastModified: base, priority: 0.3 });
   if (on.author !== false) { const has = new Set(posts.filter((p) => p.kind === "post").map((p) => p.author_id)); const au = ((await q("web_authors?select=id,slug")) || []).filter((a) => has.has(a.id)); for (const a of au) out.push({ url: u(`/tac-gia/${a.slug}`), lastModified: max(...posts.filter((p) => p.author_id === a.id).map((p) => modifiedOf(p))), priority: 0.4 }); }
   if (on.calo !== false) for (const f of await caloFoods()) if (!f.page?.noindex) out.push({ url: u(`/calo/${f.slug}`), ...(f.page?.updated_at ? { lastModified: max(f.page.updated_at) } : {}), changeFrequency: "monthly", priority: 0.6 });
+  // 01/11: Thư viện bài tập (cùng dữ liệu app) + bảng xếp hạng Pi — không có ngày sửa thật nên không khai lastmod
+  if (on.workout !== false) {
+    out.push({ url: u("/bai-tap"), changeFrequency: "monthly", priority: 0.7 }, { url: u("/pi/xep-hang"), changeFrequency: "daily", priority: 0.5 });
+    for (const m of Object.values(MUSCLE_SLUG)) out.push({ url: u(`/bai-tap/nhom/${m}`), changeFrequency: "monthly", priority: 0.6 });
+    for (const t of TEMPLATES) out.push({ url: u(`/bai-tap/giao-an/${t.id}`), changeFrequency: "monthly", priority: 0.5 });
+    for (const e of EXERCISES) { const x = { url: u(exUrl(e.id)), changeFrequency: "monthly", priority: 0.6 }; const ph = photoUrls(e.id, true); if (on.images !== false && ph) x.images = ph; out.push(x); }
+  }
   return out;
 }

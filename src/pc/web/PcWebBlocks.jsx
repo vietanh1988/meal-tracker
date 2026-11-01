@@ -14,7 +14,7 @@ import { readAll } from "./webApi";
 
 const WEB = "https://fipilotai.com";
 const must = ({ data, error }) => { if (error) throw error; return data; };
-const ICON = { app: "📱", tip: "⚠️", calo: "🍜", calo_table: "🍜", faq: "?", img: "🖼", gallery: "▤", youtube: "▶", button: "⬭", table: "≣", list: "⋮≡", quote: "❝", h: "H", p: "¶", html: "</>", cols: "▥", hr: "—", toc: "☷" };
+const ICON = { app: "📱", tip: "⚠️", calo: "🍜", calo_table: "🍜", baitap: "🏋", faq: "?", img: "🖼", gallery: "▤", youtube: "▶", button: "⬭", table: "≣", list: "⋮≡", quote: "❝", h: "H", p: "¶", html: "</>", cols: "▥", hr: "—", toc: "☷" };
 const H = ({ t, r }) => <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: `1px solid ${PC.headLine}` }}><b style={{ fontSize: 13.5, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t}</b><span style={{ marginLeft: "auto", flexShrink: 0 }}>{r}</span></div>;
 const day = (iso) => { const a = toVNDate(iso), t = todayVN(); return a === t ? "Hôm nay" : a === addDays(t, -1) ? "Hôm qua" : `${a.slice(8, 10)}/${a.slice(5, 7)}`; };
 const SAMPLE = {

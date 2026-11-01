@@ -11,6 +11,9 @@ import { uploadImage } from "./webApi";
 import { MediaPick } from "./MediaPick";
 import { authFetch } from "../../lib/authFetch";
 import LpEdit from "./LpEdit";
+import { EXERCISES, EX_BY_ID } from "../../workout/exercises.js";
+import { EX_PHOTOS } from "../../workout/exPhotos.js";
+const EX_SORTED = [...EXERCISES].sort((a, b) => a.vi.localeCompare(b.vi, "vi"));
 
 // Chữ trong trình soạn = tỉ lệ chữ bài trên web (đoạn 18/1,75 · H2 28/1,3 · H3 22/1,35), thu nhỏ cho khung soạn
 const P = { fontSize: 17, lineHeight: 1.7, color: "#1E293B", margin: 0, outline: "none", minHeight: 29 };
@@ -169,6 +172,19 @@ export function OtherBlock({ b, set, showToast, slug, postId }) {
           </span>
           <FoodPick value={b.food} onPick={(k) => set({ food: k, portion: "" })} testid="web-blk-calo-food" />
           {f && <select value={por?.name || ""} onChange={(e) => set({ portion: e.target.value })} aria-label="Khẩu phần" className="pc-input" style={{ ...inpStyle(36), width: 130 }}>{f.portions.map((p) => <option key={p.name} value={p.name}>{p.name.charAt(0).toUpperCase() + p.name.slice(1)} {p.gram} g</option>)}</select>}
+        </div>
+      </Box>
+    ); }
+    case "baitap": { const e = EX_BY_ID[b.ex]; return ( // 01/11: thẻ bài tập — web hiện ảnh động + 3 bước đầu + link trang bài (thư viện chung với app)
+      <Box testid="web-blk-baitap">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {e && EX_PHOTOS.has(e.id) ? <img src={`/ex/t/${e.id}-0.webp`} alt="" style={{ width: 64, height: 48, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 64, height: 48, borderRadius: 10, background: "#E8F1FF", flexShrink: 0 }} />}
+          <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}><span style={{ fontSize: 11, fontWeight: 800, color: BLUE, letterSpacing: ".04em" }}>THẺ BÀI TẬP · lấy từ thư viện bài tập</span>
+            {e ? <><b style={{ fontSize: 15 }}>{e.vi} <i style={{ fontWeight: 600, color: PC.t3 }}>({e.en})</i></b><span style={{ fontSize: 12, color: PC.t3 }}>{(e.steps || []).slice(0, 1).join("")}</span></> : <b style={{ fontSize: 14, color: PC.t3 }}>Chọn bài tập</b>}
+          </span>
+          <select value={b.ex || ""} onChange={(ev) => set({ ex: ev.target.value })} aria-label="Chọn bài tập" data-testid="web-blk-baitap-ex" className="pc-input" style={{ ...inpStyle(36), width: 260 }}>
+            <option value="">Chọn bài…</option>{EX_SORTED.map((x) => <option key={x.id} value={x.id}>{x.vi} ({x.en})</option>)}
+          </select>
         </div>
       </Box>
     ); }

@@ -32,7 +32,7 @@ export const images = (blocks, cover) => [...(cover ? [{ url: cover.url, alt: co
 export function links(blocks, host = "fipilotai.com") {
   const html = (blocks || []).map((b) => [b?.html, b?.text, ...(b?.items || []), ...((b?.rows || []).flat()), ...(b?.cols || [])].filter(Boolean).join(" ")).join(" ");
   const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
-  const internal = hrefs.filter((h) => h.startsWith("/") || h.includes(host)).length + (blocks || []).filter((b) => b?.type === "calo" || b?.type === "calo_table").length;
+  const internal = hrefs.filter((h) => h.startsWith("/") || h.includes(host)).length + (blocks || []).filter((b) => b?.type === "calo" || b?.type === "calo_table" || b?.type === "baitap").length;
   return { internal, external: hrefs.filter((h) => /^https?:/.test(h) && !h.includes(host)).length };
 }
 
@@ -177,7 +177,7 @@ export function wordDiff(a, b) {
   const out = []; for (const [op, x, y] of lcs(A, B, (p, q) => p === q)) { const t = op === "+" ? y : x; const last = out[out.length - 1]; if (last && last[0] === op) last[1] += t; else out.push([op, t]); }
   return out;
 }
-export const blockText = (b) => { if (!b) return ""; const t = b.type; if (t === "p" || t === "quote" || t === "tip" || t === "html") return textOf(b.html); if (t === "h") return textOf(b.text); if (t === "list") return (b.items || []).map(textOf).join(" · "); if (t === "faq") return (b.items || []).map((x) => `${x.q} ${x.a}`).join(" · "); if (t === "img") return b.alt || b.url || ""; if (t === "calo") return b.food || ""; if (t === "app") return [b.title, b.text, b.button].filter(Boolean).join(" · "); if (t === "button") return b.label || ""; if (t === "table") return [...(b.head || []), ...(b.rows || []).flat()].join(" · "); return JSON.stringify(b); };
+export const blockText = (b) => { if (!b) return ""; const t = b.type; if (t === "p" || t === "quote" || t === "tip" || t === "html") return textOf(b.html); if (t === "h") return textOf(b.text); if (t === "list") return (b.items || []).map(textOf).join(" · "); if (t === "faq") return (b.items || []).map((x) => `${x.q} ${x.a}`).join(" · "); if (t === "img") return b.alt || b.url || ""; if (t === "calo") return b.food || ""; if (t === "baitap") return b.ex || ""; if (t === "app") return [b.title, b.text, b.button].filter(Boolean).join(" · "); if (t === "button") return b.label || ""; if (t === "table") return [...(b.head || []), ...(b.rows || []).flat()].join(" · "); return JSON.stringify(b); };
 // Khối → cặp [op, khốiCũ, khốiMới]; khối cùng loại, chữ gần giống thì ghép thành "~" (sửa) để so theo từ
 export function blockDiff(oldB, newB) {
   const key = (b) => `${b?.type}|${b?.level || ""}|${blockText(b)}`;

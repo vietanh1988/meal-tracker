@@ -1,6 +1,7 @@
 // 30/10 (chủ dự án chốt bản vẽ "Khoe Pi" màn 4): trang Pi của 1 khách — bạn bè quét mã QR trên ảnh khoe, chưa cài app vẫn xem được.
 // Chỉ khi chủ Pi đã bật (bấm Lưu / Chia sẻ ở Khoe Pi). Không có tên thật, email, cân nặng. Không cho Google lập chỉ mục.
 // Ảnh Pi lấy từ app (app.fipilotai.com/pi/…), chồng lớp đúng như app (lib/app/piLayers.js chép từ src/pi).
+// 01/11 (bản vẽ "Pi và Bài tập trên web" mục 2): thêm Thành tích tuần (hạng, tim, bạn bè) + Thả tim / Kết bạn (mở app vào thẻ Pi).
 import { rpc } from "@/lib/sb";
 import { getSettings, ogBase } from "@/lib/site";
 import man from "@/lib/app/piManifest.json";
@@ -49,6 +50,8 @@ export default async function PiPage({ params }) {
   const S = 300; // cạnh khung ảnh Pi (px)
   const items = (p.items || []).filter((id) => man.items.some((x) => x.id === id)).slice(0, 12);
   const join = `${app}/?m=${encodeURIComponent(p.code)}&ref=pi`;
+  const card = `${app}/?pi=card&nick=${encodeURIComponent(p.nick)}&m=${encodeURIComponent(p.code)}&ref=pi-card`; // 01/11: mở app vào thẳng thẻ Pi (đã đăng nhập) · chưa có tài khoản: mã mời điền sẵn
+  const fmtN = (n) => Math.round(Number(n) || 0).toLocaleString("vi-VN");
   return (
     <main className="wrap pi-wrap">
       <section className="pi-room" style={{ backgroundImage: `url(${base}rooms/phong_${scene}_${roomT}.webp${v})` }}>
@@ -61,6 +64,18 @@ export default async function PiPage({ params }) {
         <div><b>{p.meals}</b><span>bữa đã ăn tuần này</span></div>
         <div><b>{p.water}/7</b><span>ngày đủ nước</span></div>
         <div><b>{p.owned}</b><span>món sưu tầm</span></div>
+      </div>
+      <div className="card pi-ach" data-testid="pi-ach">
+        <b>Thành tích tuần này</b>
+        {p.ranks?.cham && <div className="pi-ar"><span className="ic" style={{ background: "#FEF3C7", color: "#B45309" }}>#{p.ranks.cham.rank}</span><span>Chăm chỉ</span><em style={{ color: "#92400E" }}>{fmtN(p.ranks.cham.value)} Hạt</em></div>}
+        {p.ranks?.vandong && <div className="pi-ar"><span className="ic" style={{ background: "#DCFCE7", color: "#15803D" }}>#{p.ranks.vandong.rank}</span><span>Vận động</span><em style={{ color: "#15803D" }}>{fmtN(p.ranks.vandong.value)} phút</em></div>}
+        <div className="pi-ar"><span className="ic" style={{ background: "#FFF1F2", color: "#E11D48" }}>♥</span><span>Tim nhận tuần này</span><em style={{ color: "#E11D48" }}>{fmtN(p.hearts)}</em></div>
+        <div className="pi-ar"><span className="ic" style={{ background: "#E8F0FF", color: "#0062F0" }}>☺</span><span>Bạn bè</span><em style={{ color: "#0062F0" }}>{fmtN(p.friends)}</em></div>
+        <a className="go" href="/pi/xep-hang" style={{ paddingTop: 4 }}>Xem bảng xếp hạng ›</a>
+      </div>
+      <div className="pi-two">
+        <a className="btn hb" href={card} data-testid="pi-heart">♥ Thả tim</a>
+        {p.req_on !== false ? <a className="btn b2" href={card} data-testid="pi-friend">+ Kết bạn</a> : <span className="btn b2" style={{ opacity: 0.55, cursor: "default" }} title="Pi này không nhận lời mời người lạ">Không nhận lời mời</span>}
       </div>
       {items.length > 0 && (
         <div className="card pi-closet">

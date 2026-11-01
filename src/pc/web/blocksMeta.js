@@ -3,11 +3,11 @@ export const BLOCK_GROUPS = [
   ["VĂN BẢN", [["p", "¶", "Đoạn văn", "doan van"], ["h2", "H", "Tiêu đề H2", "tieu de h2 heading"], ["h3", "H", "Tiêu đề H3", "tieu de h3"], ["h4", "H", "Tiêu đề H4", "tieu de h4"], ["list", "⋮≡", "Danh sách chấm", "danh sach cham list"], ["olist", "1≡", "Danh sách số", "danh sach so"], ["quote", "❝", "Trích dẫn", "trich dan quote"], ["tip", "💡", "Hộp mẹo / lưu ý", "hop meo luu y tip"], ["html", "</>", "Đoạn HTML", "doan html code"]]],
   ["ẢNH & VIDEO", [["img", "🖼", "Ảnh · tự nén WebP", "anh hinh image"], ["gallery", "▤", "Bộ ảnh (gallery)", "bo anh gallery"], ["youtube", "▶", "Video YouTube", "video youtube"], ["video", "🎬", "Video tải lên (.mp4)", "video mp4 tai len"]]],
   ["BỐ CỤC", [["cols", "▥", "Chia 2–3 cột", "chia cot columns"], ["button", "⬭", "Nút bấm", "nut bam button"], ["hr", "—", "Đường kẻ / khoảng trống", "duong ke khoang trong"], ["toc", "☷", "Mục lục tự động", "muc luc toc"]]],
-  ["RIÊNG FIPILOT", [["calo", "🍜", "Khối calo 1 món", "khoi calo mon"], ["calo_table", "▦", "Bảng calo nhiều món", "bang calo nhieu mon"], ["faq", "?", "Hỏi đáp (tự sinh schema FAQ)", "hoi dap faq"], ["app", "📱", "Hộp mời mở app", "hop moi mo app"], ["table", "≣", "Bảng so sánh", "bang so sanh table"]]],
+  ["RIÊNG FIPILOT", [["calo", "🍜", "Khối calo 1 món", "khoi calo mon"], ["calo_table", "▦", "Bảng calo nhiều món", "bang calo nhieu mon"], ["baitap", "🏋", "Thẻ bài tập (ảnh động + cách tập)", "the bai tap gym exercise"], ["faq", "?", "Hỏi đáp (tự sinh schema FAQ)", "hoi dap faq"], ["app", "📱", "Hộp mời mở app", "hop moi mo app"], ["table", "≣", "Bảng so sánh", "bang so sanh table"]]],
   // 26/10: chỉ hiện ở mẫu trang "Giới thiệu (landing)" — trang /pi, /huong-dan
   ["TRANG GIỚI THIỆU", [["lp_hero", "★", "Đầu trang lớn", "dau trang hero landing"], ["lp_head", "H", "Tiêu đề mục", "tieu de muc landing"], ["lp_cards", "▦", "Thẻ đánh số", "the danh so buoc landing"], ["lp_feature", "◧", "Tính năng: chữ + ảnh", "tinh nang chu anh landing"], ["lp_tiles", "▤", "Lưới ô ảnh", "luoi o anh thanh tich landing"], ["lp_step", "①", "Bước hướng dẫn", "buoc huong dan landing"]]],
 ];
-export const BLOCK_NAME = { p: "Đoạn văn", h: "Tiêu đề", list: "Danh sách", quote: "Trích dẫn", tip: "Hộp mẹo", html: "HTML", img: "Ảnh", gallery: "Bộ ảnh", youtube: "Video", video: "Video", cols: "Cột", button: "Nút bấm", hr: "Đường kẻ", toc: "Mục lục", calo: "Calo món", calo_table: "Bảng calo", faq: "Hỏi đáp", app: "Mời mở app", table: "Bảng", ref: "Khối dùng lại", lp_hero: "Đầu trang lớn", lp_head: "Tiêu đề mục", lp_cards: "Thẻ đánh số", lp_feature: "Tính năng", lp_tiles: "Lưới ô ảnh", lp_step: "Bước hướng dẫn" };
+export const BLOCK_NAME = { p: "Đoạn văn", h: "Tiêu đề", list: "Danh sách", quote: "Trích dẫn", tip: "Hộp mẹo", html: "HTML", img: "Ảnh", gallery: "Bộ ảnh", youtube: "Video", video: "Video", cols: "Cột", button: "Nút bấm", hr: "Đường kẻ", toc: "Mục lục", calo: "Calo món", calo_table: "Bảng calo", baitap: "Bài tập", faq: "Hỏi đáp", app: "Mời mở app", table: "Bảng", ref: "Khối dùng lại", lp_hero: "Đầu trang lớn", lp_head: "Tiêu đề mục", lp_cards: "Thẻ đánh số", lp_feature: "Tính năng", lp_tiles: "Lưới ô ảnh", lp_step: "Bước hướng dẫn" };
 const T = (key, label, ph) => ({ key, label, ph });
 const TA = (key, label, ph) => ({ key, label, ph, kind: "ta" });
 const IMGS = (key, label, max) => ({ key, label, kind: "list", item: "ảnh", max, fields: [{ key: "url", label: "Ảnh", kind: "img" }, T("alt", "Mô tả ảnh (alt)")] });
@@ -40,6 +40,7 @@ export function newBlock(t) {
     case "button": return { _k: k, type: "button", label: "Dùng thử miễn phí", url: "https://app.fipilotai.com/?ref=post-button", style: "solid", align: "left" };
     case "calo": return { _k: k, type: "calo", food: "", portion: "" };
     case "calo_table": return { _k: k, type: "calo_table", foods: [] };
+    case "baitap": return { _k: k, type: "baitap", ex: "" };
     case "faq": return { _k: k, type: "faq", title: "Câu hỏi thường gặp", items: [{ q: "", a: "" }] };
     case "app": return { _k: k, type: "app", title: "", text: "", button: "", url: "" };
     case "table": return { _k: k, type: "table", head: ["", ""], rows: [["", ""], ["", ""]] };

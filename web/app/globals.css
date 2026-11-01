@@ -319,3 +319,75 @@ main.home{overflow-x:clip}@media(max-width:720px){.lf6{display:none}}
 .pi-hide{padding:28px 24px;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:center}
 .pi-hide b{font-size:20px}.pi-hide p{font-size:15px;color:#475569;line-height:1.6;margin:0}
 @media(max-width:720px){.pi-wrap{padding-top:14px}.pi-room{height:320px}.pi-closet div{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* 01/11 Thư viện bài tập (bản vẽ "Pi và Bài tập trên web"): ảnh 2 khung tự đổi 0,9 s như ảnh động */
+.exph{position:relative;display:block;overflow:hidden;background:#E2E8F0;aspect-ratio:4/3}
+.exph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.exph img+img{animation:exSw 1.8s steps(1) infinite}
+@keyframes exSw{0%{opacity:0}50%{opacity:1}}
+.exph-no{display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900}
+.exlb{position:absolute;left:12px;bottom:12px;display:flex;gap:6px}
+.exlb i{font-style:normal;height:26px;padding:0 10px;border-radius:13px;background:rgba(15,23,42,.62);color:#fff;font-size:12.5px;font-weight:800;display:flex;align-items:center;animation:exHl 1.8s steps(1) infinite}
+.exlb i+i{animation-delay:-.9s}
+@keyframes exHl{0%{background:#0062F0}50%{background:rgba(15,23,42,.62)}}
+@media (prefers-reduced-motion:reduce){.exph img+img{animation:none;opacity:0}.exlb i{animation:none}}
+.exlib{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.excard{overflow:hidden;display:flex;flex-direction:column;transition:transform .12s,box-shadow .12s}
+.excard:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,64,175,.12)}
+.excard .tx{padding:12px 14px 14px;display:flex;flex-direction:column;gap:3px}
+.excard b{font-size:16px;font-weight:800;line-height:1.3}
+.excard .en{font-size:13px;font-style:italic;color:var(--mut);font-weight:600}
+.excard .tg{font-size:12.5px;color:var(--mut);margin-top:4px}
+.exsearch{display:flex;gap:12px;align-items:center;max-width:460px}
+.exchip-s .chip{height:32px;font-size:13px;padding:0 13px;cursor:pointer}
+.chip em{font-style:normal;opacity:.6;margin-left:6px;font-weight:600}
+.extpl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.extpl a{padding:18px;display:flex;flex-direction:column;gap:8px}.extpl b{font-size:18px;font-weight:900}
+.extpl .th{display:flex;gap:6px}.extpl .th .exph{width:56px;border-radius:9px}
+.exdet{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;align-items:start}
+.exdet .hero{border-radius:22px;aspect-ratio:3/2}
+.exft{width:100%;border-collapse:collapse;font-size:15px}.exft td{padding:12px 0;border-top:1px solid var(--line2)}.exft td:first-child{color:var(--mut);width:42%}.exft td:last-child{font-weight:700}
+.exsteps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}.exsteps li{font-size:16px;line-height:1.6;color:#1E293B}
+.exapp{padding:18px;display:flex;gap:14px;align-items:center;background:#EEF4FF;border-color:#D6E4FF}.exapp b{font-size:16px;font-weight:900;display:block}.exapp span{font-size:14px;color:#475569;line-height:1.5}.exapp .btn{margin-left:auto;flex-shrink:0}
+.exday{padding:18px 20px;display:flex;flex-direction:column;gap:4px}.exday h2,.exday h3{font-size:19px;font-weight:900;display:flex;align-items:center;gap:10px;margin:0 0 4px}.exday h2 i,.exday h3 i{font-style:normal;width:34px;height:34px;border-radius:11px;background:#E8F0FF;color:var(--blue);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.exrow{display:flex;align-items:center;gap:12px;min-height:60px;border-top:1px solid var(--line2)}.exrow:first-of-type{border-top:0}.exrow .exph{width:64px;border-radius:10px;flex-shrink:0}.exrow span.t{flex:1;min-width:0;display:flex;flex-direction:column}.exrow b{font-size:15px;font-weight:800}.exrow small{font-size:12.5px;font-style:italic;color:var(--mut)}.exrow em{font-style:normal;font-size:14px;font-weight:900;white-space:nowrap}
+.exblk{display:flex;gap:16px;padding:14px;align-items:stretch}.exblk>.exph{width:200px;border-radius:14px;flex-shrink:0;aspect-ratio:auto;min-height:150px}
+.exblk .in{display:flex;flex-direction:column;gap:6px;min-width:0}.exblk .eye{font-size:11.5px}.exblk .nm{font-size:18px;font-weight:900;color:var(--ink)!important;text-decoration:none!important}.exblk .sub{font-size:13.5px;font-style:italic;color:var(--mut)}
+.exblk ol{margin:4px 0 0;padding-left:20px;font-size:14.5px;line-height:1.55;color:#334155;gap:2px}.exblk ol li{font-size:14.5px}
+.go{font-size:13.5px;font-weight:800;color:var(--blue)!important;white-space:nowrap;text-decoration:none!important}
+@media (max-width:1024px){.exlib,.extpl{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:720px){.exlib{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.extpl{grid-template-columns:1fr;gap:10px}
+ .excard .tx{padding:9px 10px 11px}.excard b{font-size:14.5px}.excard .en{font-size:12px}.excard .tg{font-size:11.5px}
+ .exdet{grid-template-columns:1fr;gap:18px}.exblk{flex-direction:column}.exblk>.exph{width:100%;aspect-ratio:4/3;min-height:0}.exapp{flex-wrap:wrap}.exapp .btn{margin-left:0;width:100%}}
+/* 01/11 Bảng xếp hạng Pi trên web */
+.pbd{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start}
+.ppod{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:14px;align-items:end;padding:26px 22px 22px}
+.ppd{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.ppd .av{width:120px;height:120px;border-radius:60px;background:radial-gradient(circle at 50% 70%,#fff,#EAF1FF);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border:3px solid #fff;box-shadow:0 8px 20px rgba(30,64,175,.14);position:relative}
+.ppd.n1 .av{width:150px;height:150px;border-radius:75px;border-color:#FCD34D}
+.ppd .md{width:30px;height:30px;border-radius:15px;margin-top:-22px;z-index:1;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;border:2px solid #fff}
+.ppd b{font-size:16px;font-weight:900;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ppd small{font-size:12.5px;color:var(--mut);font-weight:600}
+.pval{font-size:14px;font-weight:900;color:#92400E;background:#FEF3C7;border-radius:12px;padding:4px 10px;white-space:nowrap;font-variant-numeric:tabular-nums}.pval.g{color:#047857;background:#ECFDF5}
+.prl{display:flex;flex-direction:column;overflow:hidden}
+.prr{display:flex;align-items:center;gap:14px;min-height:68px;padding:0 18px;border-top:1px solid var(--line2)}.prr:first-child{border-top:0}
+.prr .rk{width:28px;text-align:center;font-size:15px;font-weight:900;color:var(--mut);font-variant-numeric:tabular-nums;flex-shrink:0}
+.prr .av{width:48px;height:48px;border-radius:24px;background:#EEF4FF;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;flex-shrink:0;position:relative}
+.prr .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.prr .nm b{font-size:15.5px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prr .nm span{font-size:12.5px;color:var(--mut);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prr.anon .nm b{color:var(--mut)}
+.pht{display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 11px;border-radius:17px;background:#FFF1F2;color:#E11D48;font-size:13px;font-weight:800;white-space:nowrap;flex-shrink:0}
+a.pht:hover{background:#FFE4E6}
+.pgo{width:64px;text-align:right;flex-shrink:0}
+.pside{display:flex;flex-direction:column;gap:16px}
+.pstp{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;line-height:1.5;color:var(--ink2)}.pstp i{font-style:normal;width:26px;height:26px;border-radius:13px;background:#E8F0FF;color:var(--blue);font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pcta{background:linear-gradient(160deg,#1A5BD6,#0A3A9E 60%,#062A78);color:#fff;border:0;padding:22px 130px 22px 22px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;position:relative;overflow:hidden}
+.pcta b{font-size:20px;font-weight:900}.pcta p{font-size:14.5px;line-height:1.55;opacity:.9;margin:0}.pcta .btn{background:#fff;color:var(--blue)}
+.pcta .av{position:absolute;right:-6px;bottom:-12px;width:128px;height:128px}
+.pempty{padding:28px 22px;text-align:center;font-size:15px;color:var(--mut);line-height:1.6}
+@media (max-width:1024px){.pbd{grid-template-columns:1fr}}
+@media (max-width:720px){.ppod{padding:18px 10px 16px;gap:6px}.ppd .av{width:84px;height:84px}.ppd.n1 .av{width:104px;height:104px}.ppd b{font-size:14px}.ppd small{display:none}.pval{font-size:12.5px;padding:3px 8px}
+ .prr{padding:0 12px;gap:10px}.pgo{display:none}.pcta{padding-right:110px}.pcta .av{width:110px;height:110px}}
+/* trang Pi: thành tích tuần + 2 nút */
+.pi-ach{padding:14px 16px;display:flex;flex-direction:column;gap:6px}.pi-ach>b{font-size:15px;font-weight:900;margin-bottom:4px}
+.pi-ar{display:flex;align-items:center;gap:10px;min-height:44px;border-top:1px solid var(--line2)}.pi-ar:first-of-type{border-top:0}
+.pi-ar .ic{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0}.pi-ar span{flex:1;font-size:14.5px;font-weight:700}.pi-ar em{font-style:normal;font-size:14px;font-weight:900}
+.pi-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pi-two .btn{height:50px;font-size:15px;border-radius:14px}
+.btn.hb{background:#FFF1F2;color:#E11D48;border:1.5px solid #FECDD3}
