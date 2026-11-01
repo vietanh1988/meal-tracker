@@ -4,6 +4,8 @@ import { imgAttrs } from "@/lib/img";
 import { appLink } from "@/lib/site";
 import { fillTrial } from "@/lib/plans";
 import CaloBox from "./CaloBox";
+import { ExBlock } from "./Ex";
+import { exById } from "@/lib/workout";
 import { tidy, tidyText } from "@/lib/typo";
 
 const H = ({ html, as: T = "p", ...r }) => <T {...r} dangerouslySetInnerHTML={{ __html: clean(tidy(html)) }} />;
@@ -40,6 +42,7 @@ export default function Blocks({ blocks, s, toc, slug }) {
             </div>
           );
           case "calo": return <CaloBox key={i} fd={b._food} por={b._portion} />;
+          case "baitap": return <ExBlock key={i} e={exById(b.ex)} />; // 01/11: khối "Bài tập" (thư viện chung với app)
           case "calo_table": return (
             <div key={i} className="card" style={{ overflowX: "auto", padding: 0 }}>
               <table><thead><tr><th>Món</th><th>Khẩu phần</th><th style={{ textAlign: "right" }}>Calo (kcal)</th><th style={{ textAlign: "right" }}>Đạm (g)</th></tr></thead>

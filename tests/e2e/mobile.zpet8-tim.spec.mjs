@@ -83,6 +83,24 @@ test("Thả tim người lạ, xin kết bạn, trả lời lời mời ở chu�
     await expect(page.getByTestId("notif-accept")).toHaveCount(0);
     await waitDb(async () => (await rest(`pi_friends?a=eq.${lo2[0]}&b=eq.${lo2[1]}&select=status`))[0]?.status === "ok", "đã thành bạn");
     await waitDb(async () => (await rest(`notifications?user_id=eq.${b.id}&url=like.*friend=*&select=title`)).length === 1, "người xin được báo đã đồng ý");
+
+    // 01/11 · web: bảng xếp hạng công khai (khách chưa đăng nhập) — Pi chưa bật "Khoe Pi lên web" là "Pi ẩn danh", không lộ biệt danh
+    const anonRpc = async (fn, body) => (await fetch(`${s.url}/rest/v1/rpc/${fn}`, { method: "POST", headers: { apikey: s.anon, Authorization: `Bearer ${s.anon}`, "Content-Type": "application/json" }, body: JSON.stringify(body) })).json();
+    await rest(`pi_share?user_id=eq.${a.id}`, { method: "PATCH", body: JSON.stringify({ web_on: false }) });
+    await rest(`pi_share?user_id=eq.${b.id}`, { method: "PATCH", body: JSON.stringify({ web_on: true }) });
+    const wb = await anonRpc("web_pi_board", { p_kind: "cham" });
+    const ra = wb.rows.find((r) => r.value === 900), rb = wb.rows.find((r) => r.value === 800);
+    expect(ra).toMatchObject({ web: false, name: "Pi ẩn danh" }); expect(ra.nick).toBeUndefined();
+    expect(rb).toMatchObject({ web: true, name: "Cáo Nhỏ", nick: b.nick }); expect(rb.hearts).toBe(0);
+    expect(ra.hearts).toBe(1); // tim e2e_tester thả ở bước 1
+    expect(JSON.stringify(wb)).not.toContain("@test.local");
+    const wp = await anonRpc("web_pi", { p_nick: b.nick });
+    expect(wp.ranks.cham.rank).toBeGreaterThan(0); expect(wp.friends).toBe(1); expect(wp.req_on).toBe(true);
+    expect(await anonRpc("web_pi", { p_nick: a.nick })).toBeNull(); // chưa bật web → trang ẩn
+    // web bấm Thả tim / Kết bạn → link app ?pi=card&nick=… → mở thẳng thẻ Pi đó
+    await page.goto(`/?pi=card&nick=${b.nick}&ref=web-rank`);
+    await expect(page.getByTestId("pi-card-sheet")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("pi-card-name")).toHaveText("Cáo Nhỏ");
     await ctx.close();
   } finally {
     for (const id of ids) await fetch(`${s.url}/auth/v1/admin/users/${id}`, { method: "DELETE", headers: h }).catch(() => {});

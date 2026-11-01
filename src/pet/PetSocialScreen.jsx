@@ -373,13 +373,13 @@ function FriendRoom({ nick, onBack, showToast }) {
   );
 }
 
-export function PetSocialScreen({ pet, userId, onBack, showToast, initialTab }) {
+export function PetSocialScreen({ pet, userId, onBack, showToast, initialTab, initialCard }) {
   const [tab, setTab] = useState(["rank", "friends", "show"].includes(initialTab) ? initialTab : "rank"); // 31/10: lối tắt / thông báo mở đúng tab
   const [friends, setFriends] = useState(null);
   const [room, setRoom] = useState(null);
   const [khoe, setKhoe] = useState(false);
   const [notes, setNotes] = useState([]);
-  const [cardNick, setCardNick] = useState(null); // 31/10: thẻ Pi người lạ
+  const [cardNick, setCardNick] = useState(initialCard || null); // 31/10: thẻ Pi người lạ · 01/11: mở sẵn khi vào từ web
   const loadFriends = useCallback(async () => { const { data } = await supabase.rpc("pi_friends_list"); setFriends(data || { friends: [], incoming: [], outgoing: [] }); }, []);
   useEffect(() => { loadFriends(); track("social_open"); }, [loadFriends]);
   useEffect(() => { if (tab === "friends") supabase.rpc("pi_notes_list").then(({ data }) => setNotes(data || [])); }, [tab]);

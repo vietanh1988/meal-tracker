@@ -3,6 +3,7 @@
 // (web làm mới mỗi phút), không phải chạy lại AI. Không gắn trong đoạn mở bài, tiêu đề, bảng; mỗi đoạn tối đa 2 link mới,
 // mỗi trang đích 1 lần, cả bài tối đa MAX link mới; trang đích bài đã link sẵn thì bỏ qua.
 import { q } from "./sb.js";
+import { EXERCISES, exUrl } from "./workout.js";
 
 const MAX = 8;
 const STATIC = [["bảng calo món việt", "/bang-calo"], ["bảng calo", "/bang-calo"], ["máy tính calo", "/tinh-calo"], ["công cụ tính calo", "/tinh-calo"]];
@@ -20,6 +21,8 @@ export async function linkTargets() {
     if (short !== kw && words(short) >= 2 && short.length >= 8) out.push([short, `/${r.slug}`]);
   }
   out.push(...STATIC);
+  // 01/11: tên bài tập (Việt / Anh) → trang bài trong Thư viện bài tập (cùng dữ liệu app)
+  for (const e of EXERCISES) for (const n of [e.vi, e.en]) { const k = String(n || "").toLowerCase().trim(); if (words(k) >= 2 && k.length >= 6) out.push([k, exUrl(e.id)]); }
   // cụm dài trước (khớp "thực đơn giảm cân 7 ngày" trước "thực đơn giảm cân")
   return out.sort((a, b) => b[0].length - a[0].length).map(([k, href]) => ({ href, re: new RegExp(`(^|[^\\p{L}\\p{N}])(${esc(k)})(?=$|[^\\p{L}\\p{N}])`, "iu") }));
 }

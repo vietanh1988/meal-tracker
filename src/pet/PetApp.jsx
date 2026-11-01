@@ -364,7 +364,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (sec === "pet_closet") return <PetClosetScreen pet={view} onBack={closeLayer} onEquip={equip} onFace={(f) => pet.save({ settings: { face: f } }).then(toastErr)} onColor={(c) => pet.save({ settings: { color: c } }).then(toastErr)} />;
     if (sec === "pet_chat") return <PetChatScreen pet={view} msgs={chat.length ? chat : [{ role: "pi", text: VOICE[variant].label }]} left={quota.left ?? 1} max={quota.max} state={chatState} onSend={send} onSpoken={spoken} onBack={closeLayer} onPremium={openPremium} />;
     if (sec === "pet_week") return weekData ? <PetWeekScreen pet={view} w={weekData} onBack={closeLayer} onAI={cfg.weekAI === false ? undefined : writeWeek} aiBusy={weekBusy} onPremium={openPremium} /> : null;
-    if (sec === "pet_social") return <PetSocialScreen key={l?.tab || "rank"} initialTab={l?.tab} pet={view} userId={user?.id} onBack={closeLayer} showToast={showToast} />;
+    if (sec === "pet_social") return <PetSocialScreen key={l?.tab || "rank"} initialTab={l?.tab} initialCard={l?.card} pet={view} userId={user?.id} onBack={closeLayer} showToast={showToast} />;
     if (sec === "pet_settings") return <PetSettingsScreen pet={view} onBack={closeLayer} onRename={rename} />;
     return null;
   };

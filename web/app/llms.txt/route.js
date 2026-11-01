@@ -5,6 +5,7 @@ import { q } from "@/lib/sb";
 import { caloFoods } from "@/lib/calo";
 import { mainPortion } from "@/lib/foods";
 import { vnd } from "@/lib/plans";
+import { EXERCISES, TEMPLATES } from "@/lib/workout";
 
 export const revalidate = 3600;
 const one = (x) => String(x || "").replace(/\s+/g, " ").trim();
@@ -31,7 +32,9 @@ export async function GET() {
   L.push(`- [Bảng calo món ăn Việt Nam](${u("/bang-calo")}): calo theo 100 g và theo khẩu phần thường gặp, kèm đạm, tinh bột, chất béo`);
   L.push(`- [Bảng giá](${u("/bang-gia")}): so sánh gói Miễn phí và Premium, số lượt AI mỗi gói`);
   L.push(`- [Bài viết](${u("/bai-viet")}): kiến thức giảm cân, thực đơn mẫu, calo món Việt`);
-  L.push(`- [Cài app lên điện thoại](${u("/cai-app")}): hướng dẫn thêm app vào màn hình chính iPhone / Android`, "");
+  L.push(`- [Cài app lên điện thoại](${u("/cai-app")}): hướng dẫn thêm app vào màn hình chính iPhone / Android`);
+  L.push(`- [Thư viện bài tập](${u("/bai-tap")}): ${EXERCISES.length} bài gym và tại nhà có ảnh động tác, tên tiếng Việt kèm tên tiếng Anh, cách tập từng bước; giáo án mẫu ${TEMPLATES.map((t) => t.name).join(", ")}`);
+  L.push(`- [Bảng xếp hạng Pi](${u("/pi/xep-hang")}): bảng thi đua hằng tuần của Pi (thú ảo trong app) theo chăm chỉ, vận động, hành trình cân`, "");
   if (terms?.length) { L.push("## Chuyên mục", ""); for (const t of terms) L.push(`- [${one(t.name)}](${u(`/chu-de/${t.slug}`)})${t.description ? `: ${one(t.description)}` : ""}`); L.push(""); }
   if (posts?.length) { L.push("## Bài viết mới", ""); for (const p of posts) { if (p.seo?.noindex) continue; const d = one(p.seo?.desc || p.excerpt); L.push(`- [${one(p.title)}](${u(`/${p.slug}`)})${d ? `: ${d.slice(0, 200)}` : ""}`); } L.push(""); }
   const list = (foods || []).filter((f) => !f.page?.noindex);
