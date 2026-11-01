@@ -912,7 +912,7 @@ export function MobileApp(props) {
         Mất kết nối — dữ liệu có thể chưa cập nhật</div>}
 
       {/* 18/10: đổi tab hiện mờ dần (chỉ độ mờ — không transform để không xô lệch phần tử cố định bên trong), thay vì nhảy ngay */}
-      <main ref={mainRef} data-testid="tab-main" key={tab} data-anim="1" aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd fpm-pull" : "fpm-pull"} style={{ "--pull-top": tab === "today" ? HDR_TOP.blue : tab === "me" ? DK.base : LT.base, animation: "fpmTabIn .2s ease", position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
+      <main ref={mainRef} data-testid="tab-main" key={tab} data-anim="1" aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd fpm-pull" : "fpm-pull"} style={{ "--pull-top": tab === "today" ? HDR_TOP.blue : tab === "me" ? DK.base : LT.base, animation: "fpmTabIn .2s ease", position: "relative", maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
             nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={<>{banner}{date === today && petApp.card}</>} busy={busy}

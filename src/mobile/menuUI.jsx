@@ -4,7 +4,8 @@ import { fmtInt } from "../lib/mobileView";
 import { mealLabel, MEAL_ORDER, sumItems } from "../lib/mealMath";
 import { WEEK_SHORT } from "../lib/menuView";
 import { MealIcon, chipBg } from "./icons";
-import { GRAD_BLUE, useLockScroll, useSwipeClose, SheetHandle } from "./ui";
+import { createPortal } from "react-dom";
+import { GRAD_BLUE, useLockScroll, useSwipeClose, SheetHandle, FONT } from "./ui";
 import { hasUnit, portionOf } from "../lib/portion";
 import { formatFoodPortion } from "../lib/aiMenuService";
 import { getFoodDisplay } from "../lib/localFoodDB";
@@ -135,13 +136,14 @@ export function DayPicker({ isOk, days, onToggle, dayTypeOf, testid = "save-week
 export function Sheet({ testid, onClose, children, max = "88vh", z = 220 }) {
   useLockScroll(true);
   const { ref, swipe, close: swClose } = useSwipeClose(onClose);
-  return (
-    <div onClick={swClose} style={{ position: "fixed", inset: 0, zIndex: z, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fpmFade .15s ease" }}>
-      <div ref={ref} {...swipe} data-testid={testid} onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: max, overflowY: "auto", overscrollBehavior: "contain", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 16px) 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease", color: "#0F172A" }}>
+  return createPortal(
+    <div className="fpm" onClick={swClose} style={{ position: "fixed", inset: 0, zIndex: z, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fpmFade .15s ease", fontFamily: FONT }}>
+      <div ref={ref} {...swipe} data-testid={testid} role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 560, maxHeight: max, overflowY: "auto", overscrollBehavior: "contain", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 16px) 16px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 12, animation: "fpmSheetUp .2s ease", color: "#0F172A" }}>
         <SheetHandle />
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 export const CloseX = ({ onClick }) => (
