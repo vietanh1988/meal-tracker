@@ -65,3 +65,18 @@ test("ảnh bài tập: chỉ bài có trong thư viện, đủ 2 khung to + nh�
     }
   }
 });
+
+test("cơ tác động: đủ 119 bài, tên cơ hợp lệ, có cơ chính; tìm được theo cơ", async () => {
+  const { TARGETS, MUSCLE_PARTS, targetsOf } = await import("../src/workout/exTargets.js");
+  for (const e of EXERCISES) {
+    const t = TARGETS[e.id];
+    assert.ok(t, `thiếu cơ tác động: ${e.id}`);
+    assert.ok(t[0].length > 0, `${e.id} không có cơ chính`);
+    for (const k of [...t[0], ...t[1]]) assert.ok(MUSCLE_PARTS[k], `${e.id}: cơ lạ ${k}`);
+    assert.equal(new Set([...t[0], ...t[1]]).size, t[0].length + t[1].length, `${e.id}: trùng cơ chính / phụ`);
+  }
+  assert.deepEqual(Object.keys(TARGETS).filter((id) => !EX_BY_ID[id]), []);
+  assert.deepEqual(targetsOf("rowing-machine").main, ["Tim phổi", "Đùi trước", "Lưng giữa"]);
+  assert.ok(searchEx(EXERCISES, "mông").some((e) => e.id === "hip-thrust"));
+  assert.ok(searchEx(EXERCISES, "tim phoi").some((e) => e.id === "rowing-machine"));
+});

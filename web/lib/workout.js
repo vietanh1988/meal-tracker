@@ -3,6 +3,8 @@
 import { EXERCISES, EX_BY_ID, MUSCLES, EQUIPS } from "./app/workout/exercises.js";
 import { EX_PHOTOS } from "./app/workout/exPhotos.js";
 import { TEMPLATES, fold } from "./app/workout/plan.js";
+import { targetsOf } from "./app/workout/exTargets.js";
+export { targetsOf };
 import { slugify } from "./slug.js";
 
 export { EXERCISES, MUSCLES, EQUIPS, TEMPLATES };
@@ -66,4 +68,4 @@ export function unitOf(e) {
 export const setsText = (sets, reps, e) => `${sets} × ${reps}${unitOf(e) !== "lần" ? ` ${unitOf(e)}` : ""}`;
 /** bài cùng nhóm cơ (khác bài này), ưu tiên cùng kiểu động tác */
 export const related = (e, n = 4) => EXERCISES.filter((x) => x.id !== e.id && x.muscle === e.muscle).sort((a, b) => (b.pattern === e.pattern) - (a.pattern === e.pattern)).slice(0, n);
-export const searchKey = (e) => fold(`${e.vi} ${e.en}`);
+export const searchKey = (e) => fold(`${e.vi} ${e.en} ${(targetsOf(e.id)?.main || []).join(" ")}`); // tìm được cả theo cơ chính

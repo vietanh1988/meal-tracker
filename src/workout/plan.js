@@ -2,6 +2,7 @@
 // Giáo án: { name, tpl, days: { "0".."6": { title, items: [{ ex, sets, reps }] } } } — 0 = T2 (giống profile.gymDays); thiếu ngày = nghỉ.
 // Buổi tập: { day, title, items: [{ ex, sets: [{ kg, reps, done }] }], started_at, ended_at }.
 import { gymIdxOf } from "../lib/dateVN.js";
+import { targetsOf } from "./exTargets.js";
 
 export const DOW = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 export const DOW_LONG = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ nhật"];
@@ -125,5 +126,7 @@ export function move(arr, from, to) {
 export const fold = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").trim();
 export function searchEx(list, q, muscle) {
   const f = fold(q);
-  return (list || []).filter((e) => (!muscle || e.muscle === muscle) && (!f || fold(e.vi).includes(f) || fold(e.en).includes(f)));
+  // 01/11: tìm được cả theo cơ chính ("mông" ra mọi bài có mông là cơ chính)
+  const main = (e) => fold((targetsOf(e.id)?.main || []).join(" "));
+  return (list || []).filter((e) => (!muscle || e.muscle === muscle) && (!f || fold(e.vi).includes(f) || fold(e.en).includes(f) || main(e).includes(f)));
 }

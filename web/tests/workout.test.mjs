@@ -1,7 +1,7 @@
 // 01/11: Thư viện bài tập trên web đọc chung dữ liệu app (lib/app/workout chép từ src/workout lúc dựng)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { EXERCISES, exSlug, exBySlug, exUrl, photoUrls, inTemplates, tplSessions, TEMPLATES, MUSCLE_SLUG, muscleOfSlug, setsText, exById } from "../lib/workout.js";
+import { EXERCISES, exSlug, exBySlug, exUrl, photoUrls, inTemplates, tplSessions, TEMPLATES, MUSCLE_SLUG, muscleOfSlug, setsText, exById, targetsOf, searchKey } from "../lib/workout.js";
 import { linkTargets } from "../lib/autolink.js";
 
 test("mỗi bài 1 link riêng theo tên Việt, không trùng; tạ đơn → ta-tay (không đụng tạ đòn)", () => {
@@ -34,4 +34,9 @@ test("tự gắn link tên bài tập trong bài viết", async () => {
   const t = await linkTargets();
   assert.ok(t.some((x) => x.href === "/bai-tap/ganh-ta" && x.re.test("bài gánh tạ cho người mới")));
   assert.ok(t.some((x) => x.href === "/bai-tap/ganh-ta" && x.re.test("Barbell Back Squat")));
+});
+
+test("cơ tác động dùng chung app; ô tìm web tìm theo cơ chính", () => {
+  for (const e of EXERCISES) assert.ok(targetsOf(e.id)?.main.length, e.id);
+  assert.ok(searchKey(exById("hip-thrust")).includes("mong"));
 });

@@ -6,13 +6,13 @@ import JsonLd from "@/components/JsonLd";
 import { ExPhoto, ExCard } from "@/components/Ex";
 import { getSettings, alt, withOg, appLink, siteUrl } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
-import { EXERCISES, exSlug, exBySlug, MUSCLE_NAME, MUSCLE_SLUG, MUSCLE_TONE, EQUIPS, LEVEL_NAME, inTemplates, related, photoUrls, setsText } from "@/lib/workout";
+import { EXERCISES, exSlug, exBySlug, MUSCLE_NAME, MUSCLE_SLUG, MUSCLE_TONE, EQUIPS, LEVEL_NAME, inTemplates, related, photoUrls, setsText, targetsOf } from "@/lib/workout";
 
 export const revalidate = 3600;
 export const dynamicParams = false;
 export const generateStaticParams = () => EXERCISES.map((e) => ({ slug: exSlug(e.id) }));
 
-const desc = (e) => `Cách tập ${e.vi} (${e.en}) đúng kỹ thuật: ${(e.steps || []).length} bước, có ảnh động tác. Nhóm cơ ${MUSCLE_NAME[e.muscle]?.toLowerCase()}${(e.sub || []).length ? `, phụ ${e.sub.map((m) => MUSCLE_NAME[m]?.toLowerCase()).join(", ")}` : ""} · ${EQUIPS[e.equip]?.toLowerCase()}.`;
+const desc = (e) => { const t = targetsOf(e.id); return `Cách tập ${e.vi} (${e.en}) đúng kỹ thuật: ${(e.steps || []).length} bước, có ảnh động tác. Tác động vào ${t ? t.main.join(", ").toLowerCase() : MUSCLE_NAME[e.muscle]?.toLowerCase()}${t?.sub.length ? `; phụ ${t.sub.join(", ").toLowerCase()}` : ""} · ${EQUIPS[e.equip]?.toLowerCase()}.`; };
 export async function generateMetadata({ params }) {
   const e = exBySlug(params.slug); if (!e) return {};
   const s = await getSettings();
@@ -26,6 +26,7 @@ export default async function BaiTapChiTiet({ params }) {
   const e = exBySlug(params.slug); if (!e) notFound();
   const s = await getSettings();
   const tpls = inTemplates(e.id);
+  const tg = targetsOf(e.id); // 01/11: cơ tác động
   const rel = related(e, 4);
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bài tập", path: "/bai-tap" }, { name: MUSCLE_NAME[e.muscle], path: `/bai-tap/nhom/${MUSCLE_SLUG[e.muscle]}` }, { name: e.vi, path: `/bai-tap/${params.slug}` }];
   const tone = (m) => MUSCLE_TONE[m] || ["#F1F5F9", "#475569"];
@@ -48,12 +49,17 @@ export default async function BaiTapChiTiet({ params }) {
               <span className="pill" style={{ background: "#ECFDF5", color: "#047857" }}>{LEVEL_NAME[e.level]}</span>
             </div>
             <table className="exft"><tbody>
-              <tr><td>Nhóm cơ chính</td><td>{MUSCLE_NAME[e.muscle]}</td></tr>
-              {(e.sub || []).length > 0 && <tr><td>Cơ phụ</td><td>{e.sub.map((m) => MUSCLE_NAME[m]).join(", ")}</td></tr>}
               <tr><td>Dụng cụ</td><td>{EQUIPS[e.equip]}</td></tr>
               <tr><td>Mức độ</td><td>{LEVEL_NAME[e.level]}</td></tr>
               <tr><td>Gợi ý</td><td>{sug}</td></tr>
             </tbody></table>
+            {tg && (
+              <div className="card extg" data-testid="ex-targets">
+                <b>Tác động vào</b>
+                {[["Chính", tg.main, "c1"], ["Phụ", tg.sub, "c2"]].filter(([, l]) => l.length).map(([lb, l, c]) => <div key={lb} className="tr"><span className="lb">{lb}</span><span className="ch">{l.map((m) => <span key={m} className={c}>{m}</span>)}</span></div>)}
+                {tg.note && <p>{tg.note}</p>}
+              </div>
+            )}
             <div className="card exapp"><div><b>Ghi buổi tập trong app</b><span>App điền sẵn mức tạ lần trước, báo khi lên kỷ lục, Pi thưởng 20 Hạt mỗi buổi.</span></div><a className="btn b1" href={appLink(s, `bai-tap-${e.id}`)} data-testid="ex-app">Mở app</a></div>
           </div>
         </div>

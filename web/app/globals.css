@@ -391,3 +391,10 @@ a.pht:hover{background:#FFE4E6}
 .pi-ar .ic{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0}.pi-ar span:not(.ic){flex:1;font-size:14.5px;font-weight:700}.pi-ar em{font-style:normal;font-size:14px;font-weight:900}
 .pi-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pi-two .btn{height:50px;font-size:15px;border-radius:14px}
 .btn.hb{background:#FFF1F2;color:#E11D48;border:1.5px solid #FECDD3}
+/* 01/11 cơ tác động từng bài (bản vẽ "Cơ tác động từng bài") */
+.extg{padding:18px;display:flex;flex-direction:column;gap:12px}.extg>b{font-size:18px;font-weight:900}
+.extg .tr{display:flex;gap:8px}.extg .lb{font-size:12px;font-weight:800;color:var(--mut);width:42px;flex-shrink:0;padding-top:7px}
+.extg .ch{display:flex;flex-wrap:wrap;gap:6px}
+.extg .c1{height:30px;padding:0 11px;border-radius:15px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;display:inline-flex;align-items:center}
+.extg .c2{height:30px;padding:0 11px;border-radius:15px;background:#EEF4FF;color:#1E3A8A;font-size:13px;font-weight:700;display:inline-flex;align-items:center}
+.extg p{font-size:14px;color:var(--mut);line-height:1.55;margin:0}

@@ -46,6 +46,8 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await push.getByRole("button").first().click();
     await expect(page.getByTestId("wk-ex-detail")).toBeVisible();
     await expect(page.getByTestId("wk-ex-en")).toHaveText("Push-up");
+    await expect(page.getByTestId("wk-ex-target-main")).toContainText("Ngực giữa"); // 01/11: khối Tác động vào
+    await expect(page.getByTestId("wk-ex-target-sub")).toContainText("Bắp tay sau");
     // ảnh người thật 2 khung tải được (không còn hình nét)
     const big = page.getByTestId("wk-photo-big");
     await expect(big).toBeVisible();

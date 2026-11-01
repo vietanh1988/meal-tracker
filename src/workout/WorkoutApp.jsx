@@ -10,6 +10,7 @@ import { weekRange, monthRange, todayVN, gymIdxOf, fmtVN, weekdayShort, addDays 
 import { TEMPLATES, buildPlan, defaultTpl, DOW, DOW_LONG, planDays, bestSet, lastSets, searchEx, move } from "./plan.js";
 import { exOf, unitOf, fmtKg, allExercises, ExPhoto, MUSCLES, MUSCLE_NAME, MUSCLE_TONE, EQUIPS } from "./exLib.jsx";
 import { SessionScreen } from "./SessionScreen.jsx";
+import { targetsOf } from "./exTargets.js";
 import { WorkoutCard } from "./WorkoutCard.jsx";
 
 const card = { ...ltCard, margin: "0 12px", padding: 16, display: "flex", flexDirection: "column", gap: 10 };
@@ -260,6 +261,7 @@ function ExerciseDetail({ w, ex, onBack, onAdd }) {
   const e = ex;
   const best = bestSet(w.sessions, e.id), last = lastSets(w.sessions, e.id);
   const u = unitOf(e);
+  const tg = e.custom ? null : targetsOf(e.id); // 01/11: cơ tác động (chính / phụ / ghi chú)
   return (
     <SubPage title="Bài tập" onBack={onBack}>
       <div data-testid="wk-ex-detail" style={{ padding: "12px 0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -274,6 +276,18 @@ function ExerciseDetail({ w, ex, onBack, onAdd }) {
           {EQUIPS[e.equip] && <span style={tagSt("#EEF4FF", "#0062F0")}>{EQUIPS[e.equip]}</span>}
           <span style={tagSt("#ECFDF5", "#047857")}>{e.level === "nang_cao" ? "Nâng cao" : "Cơ bản"}</span>
         </div>
+        {tg && (
+          <div style={card} data-testid="wk-ex-targets">
+            <b style={{ fontSize: 15, fontWeight: 900 }}>Tác động vào</b>
+            {[["Chính", tg.main, true], ["Phụ", tg.sub, false]].filter(([, l]) => l.length).map(([lb, l, on]) => (
+              <div key={lb} style={{ display: "flex", gap: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: "#64748B", width: 42, flexShrink: 0, paddingTop: 6 }}>{lb}</span>
+                <span data-testid={on ? "wk-ex-target-main" : "wk-ex-target-sub"} style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{l.map((m) => <span key={m} style={{ height: 30, padding: "0 11px", borderRadius: 15, background: on ? "#0062F0" : "#EEF4FF", color: on ? "#FFFFFF" : "#1E3A8A", fontSize: 13, fontWeight: on ? 800 : 700, display: "inline-flex", alignItems: "center" }}>{m}</span>)}</span>
+              </div>
+            ))}
+            {tg.note && <span style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.5 }}>{tg.note}</span>}
+          </div>
+        )}
         {(e.steps || []).length > 0 && (
           <div style={card}>
             <b style={{ fontSize: 15, fontWeight: 900 }}>Cách tập</b>
