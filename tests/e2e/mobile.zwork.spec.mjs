@@ -145,7 +145,11 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await expect(page.getByTestId("wk-done")).toBeVisible();
     // trần Hạt ngày (120) có thể đã đầy do các bài E2E chạy trước trong ngày (Hạt bữa ăn theo giờ) → dọn Hạt hôm nay của tài khoản test
     await rest(`pet_ledger?user_id=eq.${s.uid}&day=gte.${s.today.slice(0, 8)}01&kind=not.in.(onboard,invite,rank,admin)`, { method: "DELETE" });
+    const claimRes = page.waitForResponse((r) => r.url().includes("pet_workout_claim"), { timeout: 10_000 }).then((r) => r.text()).catch((e) => `không có phản hồi: ${e.message}`);
     await page.getByTestId("wk-done-claim").click();
+    const claimBody = await claimRes;
+    const sesDb = (await rest(`workout_sessions?user_id=eq.${s.uid}&select=day,ended_at,items`)).map((x) => ({ day: x.day, ended: !!x.ended_at, done: (x.items || []).flatMap((i) => i.sets || []).filter((st) => st.done).length }));
+    expect(claimBody, `máy chủ trả: ${claimBody} · buổi trong DB: ${JSON.stringify(sesDb)} · hôm nay ${s.today}`).toContain('"ok":true');
     await expect(page.getByTestId("wk-done-claim")).toHaveText("Đã nhận +20 Hạt", { timeout: 10_000 });
     await waitDb(async () => (await rest(`pet_ledger?user_id=eq.${s.uid}&kind=eq.workout&select=amount`))[0]?.amount === 20, "Hạt buổi tập");
     const ses = (await rest(`workout_sessions?user_id=eq.${s.uid}&select=sets_done,ended_at,day`))[0];
