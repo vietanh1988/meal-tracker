@@ -712,11 +712,13 @@ export function MobileApp(props) {
   useEffect(() => {
     const b = document.body, h = document.documentElement;
     const prev = { bg: b.style.background, ob: b.style.overscrollBehaviorY, oh: h.style.overscrollBehaviorY, hb: h.style.background };
-    const bg = tab === "me" ? DK.base : tab === "today" ? `linear-gradient(180deg, ${HDR_TOP.blue} 0 50%, ${LT.base} 50% 100%)` : LT.base;
-    b.style.background = bg; h.style.background = tab === "today" ? HDR_TOP.blue : tab === "me" ? DK.base : LT.base;
+    // 01/11: đang mở màn phụ sáng (Tập luyện…) → nền trang = nền màn phụ, không lộ dải xanh của tab Hôm nay ở mép dưới iPhone
+    const page = !!top && tab !== "me";
+    const bg = page ? "#EAF1FF" : tab === "me" ? DK.base : tab === "today" ? `linear-gradient(180deg, ${HDR_TOP.blue} 0 50%, ${LT.base} 50% 100%)` : LT.base;
+    b.style.background = bg; h.style.background = page ? "#EAF1FF" : tab === "today" ? HDR_TOP.blue : tab === "me" ? DK.base : LT.base;
     b.style.overscrollBehaviorY = "none"; h.style.overscrollBehaviorY = "none";
     return () => { b.style.background = prev.bg; b.style.overscrollBehaviorY = prev.ob; h.style.overscrollBehaviorY = prev.oh; h.style.background = prev.hb; };
-  }, [tab]);
+  }, [tab, !!top]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------- Tiến độ ----------
   const [rangeMode, setRangeMode] = useState("week");
@@ -1025,7 +1027,7 @@ export function MobileApp(props) {
         </div>
       ))}
 
-      <Toast toast={toast} bottom={has("edit") ? 100 : 90} top={top && top.type === "log" ? 104 : null} />{/* 30/10: đang mở Ghi bữa → báo ở trên, không che giỏ */}
+      <Toast toast={toast} bottom={has("edit") ? 100 : 90} top={top && (top.type === "log" || (top.type === "page" && top.sec === "workout")) ? 104 : null} />{/* 30/10: đang mở Ghi bữa → báo ở trên, không che giỏ */}
       {!top && <PWAInstallPrompt ready={hasLogged} />}
     </div>
   );

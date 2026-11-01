@@ -7,7 +7,7 @@ import { SubPage, Icon, GRAD_BLUE, FONT, useLockScroll, useSwipeClose, SheetHand
 import { ltCard } from "../theme";
 import { track } from "../lib/track";
 import { weekRange, monthRange, todayVN, gymIdxOf, fmtVN, weekdayShort, addDays } from "../lib/dateVN";
-import { TEMPLATES, buildPlan, defaultTpl, DOW, DOW_LONG, planDays, bestSet, lastSets, searchEx, move } from "./plan.js";
+import { TEMPLATES, buildPlan, defaultTpl, DOW, DOW_LONG, planDays, bestSet, lastSets, searchEx, move, relayout, sameDays } from "./plan.js";
 import { exOf, unitOf, fmtKg, allExercises, ExPhoto, MUSCLES, MUSCLE_NAME, MUSCLE_TONE, EQUIPS } from "./exLib.jsx";
 import { SessionScreen } from "./SessionScreen.jsx";
 import { targetsOf } from "./exTargets.js";
@@ -41,7 +41,7 @@ function Sheet({ title, onClose, children, testid }) {
 }
 
 // ---------------- Tab Giáo án ----------------
-function PlanTab({ w, profile, loss, onDay, onTpl, showToast }) {
+function PlanTab({ w, profile, loss, onDay, onTpl, showToast, onUsed }) {
   const p = w.active;
   const others = w.plans.filter((x) => !x.active);
   if (!p) {
@@ -97,7 +97,7 @@ function PlanTab({ w, profile, loss, onDay, onTpl, showToast }) {
           {others.map((o) => (
             <div key={o.id} data-testid="wk-plan-other" style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 48 }}>
               <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}><b style={{ fontSize: 14, fontWeight: 800 }}>{o.name}</b><span style={{ fontSize: 12, color: "#64748B" }}>{planDays(o).length} buổi/tuần</span></span>
-              <button type="button" onClick={async () => { const r = await w.setActivePlan(o.id); if (r.ok) showToast?.({ text: `Đang dùng: ${o.name}` }); }} style={{ ...btn(false), width: "auto", height: 34, fontSize: 13 }}>Dùng</button>
+              <button type="button" onClick={async () => { const r = await w.setActivePlan(o.id); if (r.ok) { onUsed?.(o); showToast?.({ text: `Đang dùng: ${o.name}` }); } }} style={{ ...btn(false), width: "auto", height: 34, fontSize: 13 }}>Dùng</button>
               <button type="button" aria-label={`Xoá ${o.name}`} onClick={() => w.deletePlan(o.id)} style={{ ...btn(false), width: 34, height: 34, padding: 0, background: "#F1F5F9", color: "#64748B" }}>✕</button>
             </div>
           ))}
@@ -331,22 +331,31 @@ function DayEditor({ w, dow, onBack, onPick, showToast, syncDays }) {
   const ROW = 64;
   const onDown = (i) => (e) => { e.preventDefault(); const y0 = e.clientY; setDrag({ from: i, dy: 0 }); const mv = (ev) => setDrag({ from: i, dy: ev.clientY - y0 }); const upf = (ev) => { window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", upf); const to = i + Math.round((ev.clientY - y0) / ROW); setDrag(null); if (to !== i) up((x) => ({ ...x, items: move(x.items, i, to) })); }; window.addEventListener("pointermove", mv); window.addEventListener("pointerup", upf); };
   if (!p) return null;
+  const isNew = !p.days?.[String(dow)]; // ngày đang nghỉ → lưu thành ngày tập
   const mins = s.items.reduce((a, x) => a + (Number(x.sets) || 3) * 2.5, 0);
   return (
     <SubPage title={s.title || "Buổi tập"} subtitle={`${DOW_LONG[dow]} · ${s.items.length} bài · khoảng ${Math.round(mins / 5) * 5 || 0} phút`} onBack={back}
-      right={<button type="button" data-testid="wk-day-save" onClick={async () => { if (await save()) { showToast?.({ text: "Đã lưu buổi tập" }); onBack(); } }} style={{ border: "none", background: "none", color: "#0062F0", fontFamily: "inherit", fontSize: 15, fontWeight: 800, padding: "0 10px" }}>Lưu</button>}>
-      <div data-testid="wk-day-editor" style={{ padding: "12px 0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+      footer={( // 01/11 (bản vẽ "Sửa buổi và lịch tập" 1.1/1.2): nút Lưu ở thanh dưới đáy, ngón cái dễ bấm
+        <div style={{ padding: "8px 12px calc(env(safe-area-inset-bottom, 0px) + 10px)", background: "rgba(255,255,255,0.92)", borderTop: "1px solid #EEF2FA" }}>
+          <button type="button" data-testid="wk-day-save" disabled={isNew && !s.items.length} onClick={async () => { if (await save()) { showToast?.({ text: isNew ? `${DOW_LONG[dow]} thành ngày tập` : "Đã lưu buổi tập" }); onBack(); } }}
+            style={{ width: "100%", height: 50, borderRadius: 16, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, fontFamily: "inherit", opacity: isNew && !s.items.length ? 0.45 : 1 }}>{isNew ? "Lưu thành ngày tập" : "Lưu buổi tập"}</button>
+        </div>
+      )}>
+      <div data-testid="wk-day-editor" style={{ padding: "12px 0 96px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={card}>
           <span style={{ fontSize: 12.5, fontWeight: 800, color: "#64748B" }}>Tên buổi</span>
           <input data-testid="wk-day-title" value={s.title} onChange={(e) => up((x) => ({ ...x, title: e.target.value.slice(0, 40) }))} style={{ height: 44, borderRadius: 12, border: "1.5px solid #DCE7FF", padding: "0 12px", fontSize: 15, fontWeight: 800, fontFamily: "inherit" }} />
-          <span style={{ fontSize: 12.5, fontWeight: 800, color: "#64748B" }}>Ngày tập</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ flex: 1, fontSize: 12.5, fontWeight: 800, color: "#64748B" }}>Ngày tập</span>
+            {!isNew && <button type="button" data-testid="wk-day-rest" onClick={async () => { if (await save(null)) { showToast?.({ text: `${DOW_LONG[dow]} thành ngày nghỉ` }); onBack(); } }} style={{ height: 38, padding: "0 12px", borderRadius: 11, border: "none", background: "#F1F5F9", color: "#475569", fontSize: 13, fontWeight: 800, fontFamily: "inherit", whiteSpace: "nowrap" }}>Đặt {DOW_LONG[dow]} là ngày nghỉ</button>}
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 5 }}>
             {DOW.map((d, i) => { const busy = i !== dow && p.days?.[String(i)]; return (
               <button key={d} type="button" data-testid={`wk-day-move-${i}`} disabled={!!busy} aria-pressed={i === dow}
                 onClick={async () => { if (i === dow) return; if (await save(s, i)) { showToast?.({ text: `Đã chuyển buổi sang ${DOW_LONG[i]}` }); onBack(); } }}
                 style={{ height: 38, borderRadius: 11, border: "none", fontFamily: "inherit", fontSize: 13, fontWeight: 900, background: i === dow ? "#0062F0" : busy ? "#F1F5F9" : "#EEF4FF", color: i === dow ? "#FFFFFF" : busy ? "#CBD5E1" : "#0062F0" }}>{d}</button>); })}
           </div>
-          <span style={sub}>Ngày xám đã có buổi khác. Lịch tập (ngày tập / nghỉ) tự cập nhật theo giáo án.</span>
+          <span style={sub}>Chạm thứ khác để dời buổi sang ngày đó. Ngày xám đã có buổi. Lịch tập của app tự cập nhật theo giáo án.</span>
         </div>
         <div style={{ ...ltCard, margin: "0 12px", padding: "0 14px" }}>
           {!s.items.length && <span style={{ ...sub, display: "block", padding: "16px 0" }}>Buổi chưa có bài. Bấm "Thêm bài từ Thư viện".</span>}
@@ -373,7 +382,6 @@ function DayEditor({ w, dow, onBack, onPick, showToast, syncDays }) {
         </div>
         <div style={{ margin: "0 12px", display: "flex", flexDirection: "column", gap: 8 }}>
           <button type="button" data-testid="wk-day-add" onClick={() => onPick((e) => up((x) => ({ ...x, items: [...x.items, { ex: e.id, sets: 3, reps: unitOf(e) === "phút" ? 20 : unitOf(e) === "giây" ? 30 : 10 }] })))} style={btn(false)}>+ Thêm bài từ Thư viện</button>
-          {p.days?.[String(dow)] && <button type="button" data-testid="wk-day-rest" onClick={async () => { if (await save(null)) { showToast?.({ text: `${DOW_LONG[dow]} thành ngày nghỉ` }); onBack(); } }} style={{ ...btn(false), background: "#F1F5F9", color: "#475569" }}>Đặt {DOW_LONG[dow]} là ngày nghỉ</button>}
         </div>
       </div>
     </SubPage>
@@ -387,14 +395,52 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
   const [sheet, setSheet] = useState(null);
   const [over, setOver] = useState(null); // màn đè: { k: "pick", muscle } | { k: "ex", ex }
   const picker = useRef(null);
+  const [ask, setAsk] = useState(null); // hỏi khi Lịch tập đổi số buổi: { gd, rel }
   useEffect(() => { track("workout_open", { tab }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 01/11 (bản vẽ "Sửa buổi và lịch tập" mục 2): Lịch tập ↔ giáo án 2 chiều.
+  // Giáo án đổi ngày → đẩy sang Lịch tập (pushDays). Lịch tập đổi ở chỗ khác → cùng số buổi thì tự xếp lại, khác số buổi thì hỏi.
+  const pushed = useRef(null); // ngày vừa đẩy sang Lịch tập, chờ hồ sơ cập nhật (không xếp ngược lại trong lúc chờ)
+  const pushDays = (d) => { pushed.current = [...d].sort().join(); syncDays?.(d); };
+  const gd = profile?.gymDays || [];
+  const keepKey = `fp_wk_keep_${w.active?.id || ""}`;
+  const applyLayout = async (g) => {
+    const p = w.active; if (!p) return;
+    const rel = relayout(p, g);
+    const r = await w.savePlan({ ...p, days: rel.days });
+    try { localStorage.removeItem(keepKey); } catch (e) { /* */ }
+    setAsk(null);
+    showToast?.({ text: r.ok ? "Đã xếp lại giáo án theo lịch tập mới" : "Chưa lưu được, thử lại." });
+  };
+  useEffect(() => {
+    const p = w.active;
+    if (!w.ready || !p || !gd.length) return;
+    const sig = [...gd].sort().join();
+    if (pushed.current) { if (pushed.current === sig) pushed.current = null; return; }
+    if (sameDays(gd, planDays(p))) return;
+    const rel = relayout(p, gd);
+    if (!rel.added.length && !rel.dropped.length) { applyLayout(gd); return; } // chỉ đổi ngày → tự xếp
+    let kept = null; try { kept = localStorage.getItem(keepKey); } catch (e) { /* */ }
+    if (kept !== sig) setAsk({ gd, rel });
+  }, [w.ready, w.active?.id, planDays(w.active).join(), gd.join()]); // eslint-disable-line react-hooks/exhaustive-deps
+  const lagging = !!(w.active && gd.length && !pushed.current && !sameDays(gd, planDays(w.active)) && !ask);
 
   const choose = async (tplId) => {
     if (tplId === null) { setSheet({ k: "tpl" }); return; }
-    const gd = (profile?.gymDays && profile.gymDays.length ? profile.gymDays : [0, 2, 4]);
-    const plan = tplId === "blank" ? { name: "Giáo án của tôi", tpl: null, days: Object.fromEntries(gd.map((d, i) => [String(d), { title: `Buổi ${i + 1}`, items: [] }])) } : buildPlan(tplId, gd);
+    const days0 = (profile?.gymDays && profile.gymDays.length ? profile.gymDays : [0, 2, 4]);
+    // 01/11: "Tự tạo / + Tạo giáo án" khi đã có giáo án trống → mở lại cái đó (không tạo trùng); tạo mới thì tên không trùng ("Giáo án của tôi 2")
+    if (tplId === "blank") {
+      const empty = w.plans.find((x) => !x.tpl && Object.values(x.days || {}).every((s) => !(s.items || []).length));
+      if (empty) {
+        if (!empty.active) { const r0 = await w.setActivePlan(empty.id); if (r0?.ok === false) { showToast?.({ text: "Chưa lưu được, thử lại." }); return; } pushDays(planDays(empty)); }
+        setSheet(null); showToast?.({ text: `Đang dùng: ${empty.name}` }); return;
+      }
+    }
+    const names = new Set(w.plans.map((x) => x.name));
+    let nm = "Giáo án của tôi", k = 2; while (names.has(nm)) nm = `Giáo án của tôi ${k++}`;
+    const plan = tplId === "blank" ? { name: nm, tpl: null, days: Object.fromEntries(days0.map((d, i) => [String(d), { title: `Buổi ${i + 1}`, items: [] }])) } : buildPlan(tplId, days0);
     const r = await w.savePlan({ ...plan, active: true });
-    if (r.ok) { syncDays?.(planDays(plan)); setSheet(null); showToast?.({ text: `Đang dùng: ${plan.name}` }); track("workout_plan", { tpl: tplId }); }
+    if (r.ok) { pushDays(planDays(plan)); setSheet(null); showToast?.({ text: `Đang dùng: ${plan.name}` }); track("workout_plan", { tpl: tplId }); }
     else showToast?.({ text: "Chưa lưu được, thử lại." });
   };
   const addTo = async (ex, dow) => {
@@ -431,7 +477,7 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
   );
   if (view?.k === "day") return (
     <>
-      <DayEditor key={view.dow} w={w} dow={view.dow} onBack={() => setView(null)} showToast={showToast} syncDays={syncDays} onPick={(cb) => { picker.current = cb; setOver({ k: "pick" }); }} />
+      <DayEditor key={view.dow} w={w} dow={view.dow} onBack={() => setView(null)} showToast={showToast} syncDays={pushDays} onPick={(cb) => { picker.current = cb; setOver({ k: "pick" }); }} />
       {pickOver}
     </>
   );
@@ -456,10 +502,30 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
         {!w.ready && <span style={{ ...sub, margin: "0 16px" }}>Đang tải…</span>}
         {/* 01/11: thẻ Buổi tập hôm nay nằm ở đầu tab Giáo án (không để ở Hôm nay) */}
         {w.ready && tab === "plan" && <WorkoutCard inApp w={w} today={today} onStart={(dp) => setView({ k: "session", dayPlan: dp })} onResume={(s) => setView({ k: "session", id: s.id })} onOpen={(t) => setTab(t)} />}
-        {w.ready && tab === "plan" && <PlanTab w={w} profile={profile} loss={loss} showToast={showToast} onTpl={choose} onDay={(d) => setView({ k: "day", dow: d })} />}
+        {w.ready && tab === "plan" && lagging && (
+          <div data-testid="wk-lag" style={{ margin: "0 12px", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 16, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+            <b style={{ fontSize: 14, fontWeight: 900 }}>Lịch tập khác giáo án</b>
+            <span style={{ fontSize: 12.5, color: "#92400E", lineHeight: 1.45 }}>Lịch tập: {[...gd].sort().map((d) => DOW[d]).join(" ")} · Giáo án: {planDays(w.active).map((d) => DOW[d]).join(" ")}</span>
+            <button type="button" data-testid="wk-lag-fix" onClick={() => applyLayout(gd)} style={{ ...btn(true), height: 40 }}>Xếp theo lịch tập</button>
+          </div>
+        )}
+        {w.ready && tab === "plan" && <PlanTab w={w} profile={profile} loss={loss} showToast={showToast} onUsed={(o) => pushDays(planDays(o))} onTpl={choose} onDay={(d) => setView({ k: "day", dow: d })} />}
         {w.ready && tab === "lib" && <LibraryTab w={w} onOpen={(e) => setView({ k: "ex", ex: e })} onAdd={(e) => setSheet({ k: "add", ex: e })} onCustom={() => setSheet({ k: "custom" })} />}
         {w.ready && tab === "log" && <LogTab w={w} plan={w.active} today={today} onOpen={(s) => setView({ k: "log", s })} onResume={(s) => setView({ k: "session", id: s.id })} />}
       </div>
+      {ask && createPortal(
+        <div className="fpm" style={{ position: "fixed", inset: 0, zIndex: 160, background: "rgba(15,23,42,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: FONT }}>
+          <div role="dialog" aria-modal="true" data-testid="wk-ask" style={{ width: "100%", maxWidth: 360, background: "#FFFFFF", borderRadius: 20, padding: 18, display: "flex", flexDirection: "column", gap: 12, color: "#0F172A" }}>
+            <b style={{ fontSize: 16, fontWeight: 900 }}>Lịch tập {ask.rel.dropped.length ? "còn" : "giờ là"} {ask.gd.length} buổi/tuần</b>
+            <span style={{ fontSize: 13.5, color: "#475569", lineHeight: 1.5 }}>{ask.rel.dropped.length
+              ? `Giáo án đang có ${planDays(w.active).length} buổi. Bỏ ${ask.rel.dropped.map((x) => `"${x.title}" (${(x.items || []).length} bài)`).join(", ")} để khớp lịch mới?`
+              : `Giáo án đang có ${planDays(w.active).length} buổi. Thêm ${ask.rel.added.length} buổi vào ${ask.rel.added.map((d) => DOW[d]).join(", ")} để khớp lịch mới?`}</span>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <button type="button" data-testid="wk-ask-keep" onClick={() => { try { localStorage.setItem(keepKey, [...ask.gd].sort().join()); } catch (e) { /* */ } setAsk(null); }} style={btn(false)}>Giữ, tôi tự xếp</button>
+              <button type="button" data-testid="wk-ask-ok" onClick={() => applyLayout(ask.gd)} style={{ ...btn(true), ...(ask.rel.dropped.length ? { background: "#DC2626" } : {}) }}>{ask.rel.dropped.length ? "Bỏ buổi này" : "Thêm buổi"}</button>
+            </div>
+          </div>
+        </div>, document.body)}
       {sheet?.k === "tpl" && (
         <Sheet title="Đổi giáo án mẫu" onClose={() => setSheet(null)} testid="wk-tpl-sheet">
           <span style={sub}>Giáo án mẫu mới xếp vào đúng các ngày tập hiện tại. Giáo án cũ vẫn giữ ở mục "Giáo án khác".</span>

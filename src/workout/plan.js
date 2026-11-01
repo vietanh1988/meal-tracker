@@ -50,6 +50,17 @@ export function buildPlan(tplId, gymDays) {
 }
 
 export const planDays = (plan) => Object.keys(plan?.days || {}).map(Number).filter((d) => d >= 0 && d <= 6).sort((a, b) => a - b);
+/** 01/11 (lịch tập 2 chiều): xếp lại các buổi của giáo án theo Lịch tập mới (gymDays 0 = T2), giữ thứ tự buổi.
+ *  Thêm ngày: buổi lấy từ mẫu đang dùng (tpl) hoặc buổi trống. Bớt ngày: các buổi cuối bị bỏ (trả về dropped để hỏi trước). */
+export function relayout(plan, gymDays) {
+  const gd = [...new Set((gymDays || []).map(Number).filter((d) => d >= 0 && d <= 6))].sort((a, b) => a - b);
+  const ses = planDays(plan).map((d) => plan.days[String(d)]);
+  const tplDays = plan?.tpl ? buildPlan(plan.tpl, gd).days : null;
+  const days = {};
+  gd.forEach((d, i) => { days[String(d)] = i < ses.length ? ses[i] : JSON.parse(JSON.stringify(tplDays?.[String(d)] || { title: `Buổi ${i + 1}`, items: [] })); });
+  return { days, added: gd.slice(ses.length), dropped: ses.slice(gd.length) };
+}
+export const sameDays = (a, b) => [...(a || [])].map(Number).sort().join() === [...(b || [])].map(Number).sort().join();
 /** buổi của 1 ngày (dateStr VN) theo giáo án; null = nghỉ */
 export function sessionOfDate(plan, dateStr) {
   const d = plan?.days?.[String(gymIdxOf(dateStr))];

@@ -80,12 +80,38 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.locator('[data-testid="wk-lib-row"][data-id="plank"]').getByTestId("wk-lib-add").click();
     await expect(page.getByTestId("wk-day-editor")).toBeVisible();
     await expect(page.getByTestId("wk-day-item")).toHaveCount(nItems + 1);
+    const sb = await page.getByTestId("wk-day-save").boundingBox(); // 01/11: nút Lưu ở thanh dưới đáy, rộng hết màn
+    expect(sb.y).toBeGreaterThan(844 - 120); expect(Math.round(sb.height)).toBe(50);
     await page.getByTestId("wk-day-save").click();
     await waitDb(async () => ((await rest(`workout_plans?user_id=eq.${s.uid}&active=is.true&select=days`))[0]?.days?.[String(restDow)]?.items || []).some((i) => i.ex === "plank"), "đã thêm Plank vào buổi");
     await page.getByTestId(`wk-day-${restDow}`).click();
     await page.getByTestId("wk-day-rest").click();
     await expect(page.getByTestId(`wk-day-${restDow}`)).toHaveAttribute("data-rest", "1");
     await waitDb(async () => { const g = (await rest(`profiles?id=eq.${s.uid}&select=gym_days`))[0]?.gym_days || []; return g.length === 6 && !g.includes(restDow); }, "Lịch tập bỏ ngày nghỉ", 15_000);
+
+    // 3b · (01/11) Lịch tập đổi ở chỗ khác, cùng số buổi → mở Tập luyện thì giáo án tự xếp lại theo lịch mới
+    const planDaysDb = async () => Object.keys((await rest(`workout_plans?user_id=eq.${s.uid}&active=is.true&select=days`))[0]?.days || {}).map(Number).sort();
+    const g6 = ((await rest(`profiles?id=eq.${s.uid}&select=gym_days`))[0].gym_days).map(Number).sort();
+    const moveOut = g6.find((d) => d !== todayDow);
+    const g6b = [...g6.filter((d) => d !== moveOut), restDow].sort();
+    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ gym_days: g6b }) });
+    await page.reload();
+    await page.getByTestId("wk-btn").click();
+    await expect(page.getByTestId("toast")).toContainText("Đã xếp lại giáo án theo lịch tập mới", { timeout: 15_000 });
+    await waitDb(async () => (await planDaysDb()).join() === g6b.join(), "giáo án theo lịch tập mới");
+    // bớt 1 ngày → hỏi trước; Giữ → dòng nhắc; Xếp theo lịch tập → giáo án còn 5 buổi
+    const drop = g6b.find((d) => d !== todayDow);
+    const g5 = g6b.filter((d) => d !== drop);
+    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ gym_days: g5 }) });
+    await page.reload();
+    await page.getByTestId("wk-btn").click();
+    await expect(page.getByTestId("wk-ask")).toContainText("còn 5 buổi");
+    await page.getByTestId("wk-ask-keep").click();
+    await expect(page.getByTestId("wk-lag")).toBeVisible();
+    expect((await planDaysDb()).length).toBe(6); // Giữ → không tự xoá buổi
+    await page.getByTestId("wk-lag-fix").click();
+    await waitDb(async () => (await planDaysDb()).join() === g5.join(), "giáo án còn 5 buổi theo lịch");
+    await expect(page.getByTestId("wk-lag")).toHaveCount(0);
 
     // 4 · đầu tab Giáo án có thẻ Buổi tập hôm nay (nút Tập luyện có chấm tím) → ghi 10 hiệp → Xong → +20 Hạt
     await expect(page.getByTestId("wk-card")).toBeVisible({ timeout: 10_000 });
