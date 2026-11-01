@@ -58,8 +58,43 @@ export async function kcalRemainMobile(page) {
 // Bấm 1 nút sau khi cuộn nó ra GIỮA màn (tránh bị thanh điều hướng dưới cố định che)
 export async function tap(locator) {
   await locator.waitFor({ state: "visible", timeout: 15_000 }); // không chờ tới hết giờ cả bài → báo đúng bước lỗi
+  await navNotOverOverlay(locator.page());
   await locator.evaluate((e) => e.scrollIntoView({ block: "center" }));
   await locator.click();
+}
+
+// 01/11 (lỗi chủ dự án chụp: nút "Lưu tuỳ chọn & lên thực đơn" bị thanh điều hướng dưới che): khi đang mở sheet / hộp thoại / màn phủ
+// (lớp cố định phủ cả màn, z-index ≥ 100), thanh điều hướng dưới KHÔNG được nằm trên lớp đó. Chạy trước mỗi tap() → soát mọi sheet các bài E2E mở.
+export async function navNotOverOverlay(page) {
+  const bad = await page.evaluate(() => {
+    const nav = document.querySelector('[data-testid="bottom-nav"]');
+    if (!nav) return null;
+    const r = nav.getBoundingClientRect();
+    if (!r.height || r.bottom <= 0 || r.top >= innerHeight) return null;
+    const vw = innerWidth, vh = innerHeight;
+    const isOverlay = (el) => {
+      for (let x = el; x && x !== document.body; x = x.parentElement) {
+        const cs = getComputedStyle(x);
+        if (cs.position !== "fixed") continue;
+        const b = x.getBoundingClientRect();
+        if (b.left <= 1 && b.top <= 1 && b.right >= vw - 1 && b.bottom >= vh - 1 && (parseInt(cs.zIndex, 10) || 0) >= 100) return x;
+      }
+      return null;
+    };
+    const y = r.top + r.height / 2;
+    for (const fx of [0.15, 0.5, 0.85]) {
+      const stack = document.elementsFromPoint(r.left + r.width * fx, y);
+      const i = stack.findIndex((e) => nav.contains(e));
+      if (i < 0) continue; // điểm này thanh dưới đã bị che (đúng) hoặc trống
+      for (const e of stack.slice(i + 1)) {
+        if (nav.contains(e)) continue;
+        const ov = isOverlay(e);
+        if (ov) return (ov.querySelector("[data-testid]")?.getAttribute("data-testid")) || ov.getAttribute("data-testid") || ov.className || "lớp phủ";
+      }
+    }
+    return null;
+  });
+  if (bad) throw new Error(`Thanh điều hướng dưới đang che lớp phủ "${bad}" (nút đáy sheet bị che)`);
 }
 
 // Vuốt xuống trên 1 phần tử (sheet) bằng sự kiện chạm thật của trình duyệt
