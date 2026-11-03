@@ -45,10 +45,13 @@ jobs:
       - name: Dựng Supabase local (schema prod + dữ liệu giả)
         run: |
           # thỉnh thoảng tải image Docker lỗi mạng → thử lại tối đa 3 lần
+          supabase --version
           for i in 1 2 3; do
-            supabase start -x studio,imgproxy,edge-runtime,logflare,vector && exit 0
+            supabase start -x studio,imgproxy,edge-runtime,logflare,vector 2>&1 | tee /tmp/sb-start.log; [ "${PIPESTATUS[0]}" = 0 ] && exit 0
             echo "supabase start lỗi lần $i, thử lại"; supabase stop --no-backup || true; sleep 15
           done
+          # log thô bị chặn → đưa 15 dòng cuối thành annotation để đọc được lỗi
+          echo "::error title=supabase start (CLI $(supabase --version))::$(tail -15 /tmp/sb-start.log | tr '\n' ' ' | cut -c1-1500)"
           exit 1
 
       - name: Biến môi trường trỏ Supabase local
