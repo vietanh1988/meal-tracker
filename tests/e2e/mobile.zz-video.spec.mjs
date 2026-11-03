@@ -4,7 +4,10 @@ import { test, expect } from "@playwright/test";
 import fs from "fs";
 import { login, S, rest, waitDb, tap, todayRow } from "./helpers.mjs";
 
+// 03/11: chỉ chụp trên nhánh video (giống video giáo án) — cửa hàng đổi bộ theo tuần nên không chặn deploy thường
+const RUN = /video/.test(process.env.GITHUB_REF_NAME || process.env.VIDEO_SHOTS || "");
 test("Ảnh màn thật cho video nuôi Pi", async ({ browser }) => {
+  test.skip(!RUN, "chỉ chạy trên nhánh video");
   test.setTimeout(150_000);
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
   const page = await ctx.newPage();
