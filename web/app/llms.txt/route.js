@@ -25,7 +25,7 @@ export async function GET() {
   L.push(`# ${name}`, "");
   L.push(`> ${one(s.site?.tagline ? `${name} — ${s.site.tagline}.` : "")} App giảm cân bằng món Việt: nhập cân nặng, chiều cao một lần, app tự lên thực đơn món Việt đúng calo mỗi ngày (phở, bún, cơm tấm vẫn ăn được), nhắc giờ ăn, đổi món giữ calo, tổng kết cân nặng mỗi tháng. Dùng trên trình duyệt điện thoại tại ${s.site?.app_url || "https://app.fipilotai.com"}, không cần cài từ kho ứng dụng.`, "");
   if (one(s.seo?.llms_intro)) L.push(one(s.seo.llms_intro), "");
-  L.push(`Giá: gói Miễn phí 0đ.${P.month ? ` Premium từ ${vnd(P.month.per)}/tháng${P.cheapest && P.cheapest.m > 1 ? ` (chỉ từ ${vnd(P.cheapest.per)}/tháng khi mua ${P.cheapest.m} tháng)` : ""}.` : ""}${P.trial ? ` Dùng thử ${P.trial} ngày, không cần thẻ.` : ""} Số calo trên web lấy từ kho món của app, chỉ để tham khảo, không thay thế tư vấn bác sĩ.`, "");
+  L.push(`Giá: ${P.free ? "hiện tất cả các gói đang miễn phí." : `gói Miễn phí 0đ.${P.month ? ` Premium từ ${vnd(P.month.per)}/tháng${P.cheapest && P.cheapest.m > 1 ? ` (chỉ từ ${vnd(P.cheapest.per)}/tháng khi mua ${P.cheapest.m} tháng)` : ""}.` : ""}`}${P.trial && !P.free ? ` Dùng thử ${P.trial} ngày, không cần thẻ.` : ""} Số calo trên web lấy từ kho món của app, chỉ để tham khảo, không thay thế tư vấn bác sĩ.`, "");
   L.push("## Trang chính", "");
   L.push(`- [Trang chủ](${u("/")}): giới thiệu app, tính thử lượng calo cần ăn, bảng giá, hỏi đáp`);
   L.push(`- [Tính calo cần ăn mỗi ngày](${u("/tinh-calo")}): công cụ tính BMR, TDEE, mức calo để giảm cân theo công thức của app`);

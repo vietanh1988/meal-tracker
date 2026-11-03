@@ -174,3 +174,11 @@ test("31/10 tìm ngay trên đầu trang: Nav dùng SearchBox (không còn link 
   for (const k of ["/api/tim?q=", "fp:search", "web-search-input", "/tim-kiem?q=", "ArrowDown"]) assert.ok(sb.includes(k), k);
   assert.ok(existsSync(new URL("../app/api/tim/route.js", import.meta.url)));
 });
+
+test("03/11 đang miễn phí: không còn giá tiền nào (thẻ, mua dài, 'Chỉ từ')", async () => {
+  const { shapePlan, premiumPoints, FREE_NOW } = await import("../lib/plans.js");
+  assert.equal(FREE_NOW, true);
+  const p = shapePlan({ price_1m: 69000, price_3m: 150000, trial_days: 7, premium_ai_photo_limit: 300 }, true);
+  assert.equal(p.free, true); assert.equal(p.month, null); assert.equal(p.cheapest, null); assert.deepEqual(p.durs, []);
+  assert.ok(!premiumPoints(p).some((x) => /đ|Chỉ từ/.test(x)));
+});

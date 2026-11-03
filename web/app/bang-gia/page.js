@@ -3,37 +3,38 @@ import PageHead from "@/components/PageHead";
 import SecHead from "@/components/SecHead";
 import JsonLd from "@/components/JsonLd";
 import { getSettings, appLink, alt, withOg } from "@/lib/site";
-import { vnd, fillTrial, premiumPoints, LIMIT_NAME, limitText, trialName, trialSub, trialPoints } from "@/lib/plans";
+import { vnd, FREE_NOTE, fillTrial, premiumPoints, LIMIT_NAME, limitText, trialName, trialSub, trialPoints } from "@/lib/plans";
 import { breadcrumb, faqGraph, ld, schemaOn, appGraph } from "@/lib/schema";
 
 export const revalidate = 300;
 export async function generateMetadata() {
   const s = await getSettings(); const m = s.plan?.month;
-  return withOg({ title: "Bảng giá", description: `Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium${m ? ` từ ${vnd(m.per)}/tháng` : ""} thêm nhiều lượt AI chụp ảnh tính calo, hỏi AI${s.plan?.trial ? ` — dùng thử ${s.plan.trial} ngày, không cần thẻ` : ""}.`, alternates: alt("/bang-gia") }, typeof s !== "undefined" ? s : undefined);
+  return withOg({ title: "Bảng giá", description: s.plan?.free ? `${FREE_NOTE}: thực đơn món Việt, chụp ảnh tính calo, hỏi AI. Mở app là dùng, không cần thẻ.` : `Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium${m ? ` từ ${vnd(m.per)}/tháng` : ""} thêm nhiều lượt AI chụp ảnh tính calo, hỏi AI${s.plan?.trial ? ` — dùng thử ${s.plan.trial} ngày, không cần thẻ` : ""}.`, alternates: alt("/bang-gia") }, typeof s !== "undefined" ? s : undefined);
 }
 const ROWS = [["Thực đơn món Việt tự lên mỗi ngày", 1, 1], ["Đổi món giữ gần bằng calo", 1, 1], ["Ghi bữa, nhắc giờ ăn", 1, 1], ["Theo dõi cân, tổng kết tháng", 1, 1]];
+const FAQ_FREE = [{ q: "App có mất phí không?", a: "Hiện tất cả các gói đang miễn phí. Bạn chỉ cần mở app và dùng, không cần thẻ, không bị trừ tiền." }];
 const FAQ = [{ q: "Hết %trial% ngày dùng thử có tự trừ tiền không?", a: "Không. Hết dùng thử app tự về gói Miễn phí, bạn chọn nâng cấp mới phải trả." }];
 export default async function Price() {
   const s = await getSettings();
   const pr = s.pricing || {};
   const P = s.plan || {};
-  const faq = [...FAQ, ...(pr.faq || [])].filter((x) => x?.q && x?.a).map((x) => ({ q: fillTrial(x.q, P), a: fillTrial(x.a, P) }));
+  const faq = [...(P.free ? FAQ_FREE : FAQ), ...(P.free ? [] : pr.faq || [])].filter((x) => x?.q && x?.a).map((x) => ({ q: fillTrial(x.q, P), a: fillTrial(x.a, P) }));
   // Dòng so sánh lượt AI: số thật của từng gói trong app (0 = không có)
   const aiRows = (P.limits || []).filter((x) => x.free != null || x.premium != null).map((x) => [LIMIT_NAME[x.k][0], limitText(x.free, LIMIT_NAME[x.k][1]), limitText(x.premium, LIMIT_NAME[x.k][1])]);
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng giá", path: "/bang-gia" }];
   const tick = (v) => (v ? <span className="chk" style={{ width: 22, height: 22, borderRadius: 11 }} aria-label="Có">✓</span> : <span style={{ color: "#CBD5E1", fontSize: 18 }} aria-label="Không">—</span>);
   // 25/10 (chủ dự án chốt bản vẽ): thẻ đầu = gói dùng thử đủ chức năng (số ngày = app); Premium nút "Nâng cấp Premium"
-  const plans = [[trialName(P, pr), "0đ", "", trialSub(P), trialPoints(P), trialName(P, pr), false], [pr.premium?.name || "Premium", P.month ? vnd(P.month.per) : "Liên hệ", P.month ? " / tháng" : "", "Nhiều lượt AI hơn, dùng lâu dài", premiumPoints(P), "Nâng cấp Premium", true]];
+  const plans = [[trialName(P, pr), "0đ", "", trialSub(P), trialPoints(P), trialName(P, pr), false], [pr.premium?.name || "Premium", P.free ? "0đ" : P.month ? vnd(P.month.per) : "Liên hệ", P.free ? "" : P.month ? " / tháng" : "", P.free ? "Nhiều lượt AI hơn · đang miễn phí" : "Nhiều lượt AI hơn, dùng lâu dài", premiumPoints(P), P.free ? "Dùng miễn phí" : "Nâng cấp Premium", true]];
   return (
     <main>
       <JsonLd data={ld(breadcrumb(s, crumbs), faqGraph(faq, s), schemaOn(s, "price") ? appGraph(s) : null)} />
-      <PageHead eye="Bảng giá" h1={P.trial ? `Dùng thử ${P.trial} ngày, nâng cấp khi cần` : "Bắt đầu miễn phí, nâng cấp khi cần"} sub={P.trial ? `Dùng thử đủ mọi chức năng trong ${P.trial} ngày, không cần thẻ. Hết dùng thử, app tự về gói Miễn phí — chỉ trả tiền khi bạn chọn nâng cấp.` : "Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI."} crumb={crumbs} />
+      <PageHead eye="Bảng giá" h1={P.free ? FREE_NOTE : P.trial ? `Dùng thử ${P.trial} ngày, nâng cấp khi cần` : "Bắt đầu miễn phí, nâng cấp khi cần"} sub={P.free ? "Mọi tính năng của app hiện không mất phí. Mở app là dùng, không cần thẻ, không bị trừ tiền." : P.trial ? `Dùng thử đủ mọi chức năng trong ${P.trial} ngày, không cần thẻ. Hết dùng thử, app tự về gói Miễn phí — chỉ trả tiền khi bạn chọn nâng cấp.` : "Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium thêm chụp ảnh tính calo và hỏi AI."} crumb={crumbs} />
       <div className="wrap pricew" style={{ paddingTop: 48, maxWidth: 960 }}>
         <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.pricew{padding-top:28px!important}.plans{gap:20px!important}.plan{padding:24px!important}.plan-p{font-size:36px!important}.cmp-c{width:90px!important}.durs{padding:18px!important}.durs-g{grid-template-columns:1fr 1fr!important;gap:16px 10px!important}.cmp-t{font-size:15px!important}}` }} />
         <div className="grid2 plans" style={{ gap: 28 }}>
           {plans.map(([n, p, u, sub, l, c, hi]) => (
             <div key={n} className="card plan" style={{ padding: 32, display: "flex", flexDirection: "column", gap: 16, position: "relative", ...(hi ? { border: "2px solid #0062F0", boxShadow: "0 20px 40px rgba(0,98,240,.12)" } : {}) }}>
-              {hi && <span className="pill" style={{ position: "absolute", top: -12, left: 32, background: "#0062F0", color: "#fff" }}>Nhiều người chọn</span>}
+              {(hi || P.free) && <span className="pill" data-testid={P.free ? "price-free-now" : undefined} style={{ position: "absolute", top: -12, left: 32, background: P.free ? "#16A34A" : "#0062F0", color: "#fff" }}>{P.free ? "Đang miễn phí" : "Nhiều người chọn"}</span>}
               <span style={{ fontSize: 18, fontWeight: 800 }}>{n}</span>
               <span><b className="plan-p" style={{ fontSize: 44 }}>{p}</b><span className="mut" style={{ fontSize: 16 }}>{u}</span></span>
               <span style={{ fontSize: 14.5, color: "#64748B" }}>{sub}</span>
@@ -69,7 +70,7 @@ export default async function Price() {
         </div>
       </section>
       <section className="wrap sec" style={{ maxWidth: 860 }}>
-        <SecHead eye="Hỏi đáp" title="Câu hỏi về thanh toán" />
+        <SecHead eye="Hỏi đáp" title={P.free ? "Câu hỏi thường gặp" : "Câu hỏi về thanh toán"} />
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{faq.map((x, i) => <details key={x.q} className="faq" open={i === 0}><summary>{x.q}</summary><p>{x.a}</p></details>)}</div>
       </section>
     </main>
