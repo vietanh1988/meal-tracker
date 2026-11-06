@@ -22,11 +22,13 @@ export function useAppSettings(userId) {
         if (!silent) console.log("✅ Loaded app settings:", Object.keys(s).length, "keys");
       }
 
-      // Load food overrides — chỉ 1 lần, patch LOCAL_FOODS trong memory
-      if (!overridesLoadedRef.current) {
-        overridesLoadedRef.current = true;
+      // Load food overrides — chỉ 1 lần, patch LOCAL_FOODS trong memory.
+      // 06/11: chỉ đọc khi đã đăng nhập (bảng không mở cho khách → màn đăng nhập báo 401) và chỉ đánh dấu "đã nạp" khi đọc được —
+      // trước đây đọc lúc chưa đăng nhập bị từ chối mà vẫn đánh dấu, nên đăng nhập xong không nạp lại cho tới khi tải lại app.
+      if (userId && !overridesLoadedRef.current) {
         try {
-          const { data: ov } = await supabase.from("food_overrides").select("*");
+          const { data: ov, error: ovErr } = await supabase.from("food_overrides").select("*");
+          if (!ovErr) overridesLoadedRef.current = true;
           if (ov && ov.length > 0) {
             const count = applyOverrides(ov);
             if (!silent) console.log("✅ Food overrides:", count, "items patched");
