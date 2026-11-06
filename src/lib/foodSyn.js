@@ -81,5 +81,3 @@ export function queryForm(q) { return hasDiacritics(q) ? { text: canonFood(q), p
 // query (khách gõ) và key (tên trong kho) có phải cùng món không
 export function foodEq(query, key) { const q = queryForm(query); return q.text === (q.plain ? canonPlain(key) : canonFood(key)); }
 export function keyForm(key, plain) { return plain ? canonPlain(key) : canonFood(key); }
-
-export const FOOD_SYNONYM_COUNT = PHRASES.length;

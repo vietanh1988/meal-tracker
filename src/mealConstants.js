@@ -16,5 +16,4 @@ export const mealsData={
   train:ALL_MEALS.map(m=>({id:m.id,name:m.name,items:[]})),
   rest:ALL_MEALS.map(m=>({id:m.id,name:m.name,items:[]})),
 };
-export const getMealsDefault=(type)=>mealsData[type];
 export const wColors=["#EF4444","#B45309","#CA8A04","#15803D","#1D4ED8","#7C3AED","#DB2777","#0891B2","#0E7490","#4338CA","#BE123C","#047857"];

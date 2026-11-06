@@ -76,9 +76,3 @@ export function ExPhoto({ ex, big = false, w = 64, h = 48, radius = 12 }) {
     </span>
   );
 }
-/** ô nhóm cơ 42 bo 13 (dòng danh sách) */
-export function MuscleTile({ muscle, size = 42 }) {
-  const [bg, fg] = MUSCLE_TONE[muscle] || ["#F1F5F9", "#475569"];
-  const name = MUSCLE_NAME[muscle] || "Bài";
-  return <span aria-hidden="true" style={{ width: size, height: size, borderRadius: Math.round(size * 0.31), background: bg, color: fg, fontSize: name.length > 5 ? 9.5 : 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, textAlign: "center", lineHeight: 1.1, padding: 2, boxSizing: "border-box" }}>{name}</span>;
-}

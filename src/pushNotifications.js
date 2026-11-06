@@ -16,11 +16,6 @@ export function isPushSupported() {
   return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
 }
 
-export function getPushPermission() {
-  if (!isPushSupported()) return "unsupported";
-  return Notification.permission; // "granted" | "denied" | "default"
-}
-
 // Kiểm tra trạng thái thật: permission + có subscription đang sống hay không
 // (Notification.permission="granted" không có nghĩa là subscription vẫn còn hợp lệ)
 export async function getPushStatus() {

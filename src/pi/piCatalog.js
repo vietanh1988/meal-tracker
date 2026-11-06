@@ -56,9 +56,7 @@ export const itemIcon = (it, hong) => (hong && it && PK_ITEMS.has(it.id) ? `${PI
 export const bodyFile = (arm, hong = false) => `${base(hong)}body/pi_than${arm ? `_khong_tay_${arm}` : ""}.webp${ver(hong)}`;
 export const headOf = (hong) => `${base(hong)}body/pi_dau.webp${ver(hong)}`;
 export const leafOf = (hong) => `${base(hong)}body/pi_la.webp${ver(hong)}`;
-export const headFile = `${PI_BASE}body/pi_dau.webp${PI_VER}`; // lớp đầu gốc vẽ đè lên áo (giữ cằm), scripts/pi/build.py
 // 24/10 pi_full: lá là lớp riêng (đè lên mũ, đung đưa); khi nói dùng mắt không miệng (eyes/) + 7 miệng (mouths/)
-export const leafFile = `${PI_BASE}body/pi_la.webp${PI_VER}`;
 export const VISEMES = man.visemes || [];
 // hong chỉ có bộ nữ (Pi nam luôn xanh)
 const hg = (g, hong) => !!hong && g === "nu";

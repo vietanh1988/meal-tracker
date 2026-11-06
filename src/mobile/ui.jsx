@@ -273,8 +273,6 @@ export function Toast({ toast, bottom = 90, top = null }) {
   );
 }
 
-export const cardBox = { background: C.card, border: `1.5px solid ${C.border}`, borderRadius: 14 };
-
 // Công tắc bật/tắt 52×32 (xanh #00C896 khi bật). Chỉ dùng ở các trang nền tối (Mục tiêu, Lịch tập, Nhắc nhở) → tắt = nền trắng mờ.
 export function Toggle({ on, onClick, label, testid }) {
   return (

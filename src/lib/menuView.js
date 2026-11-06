@@ -9,7 +9,6 @@ export const WEEK_LONG = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "T
 export const GOAL_KEY = { bulk: "tang_co", cut: "giam_mo", maintain: "duy_tri" };
 
 export const mealsCal = (meals) => Math.round((meals || []).reduce((s, m) => (m.items || []).reduce((a, i) => a + (Number(i.cal) || 0), s), 0));
-export const hasMeals = (tpl) => !!(tpl && (tpl.meals || []).some((m) => (m.items || []).length > 0));
 
 // Mục tiêu ngày cho Meal Engine (gram theo đúng macro của user)
 export function dailyTargetOf(macro, dayType) {

@@ -2,7 +2,6 @@
 // Bộ đếm do edge function ai-proxy ghi; từ 16/10 kỳ "ngày"/"tháng" tính theo GIỜ VIỆT NAM (làm mới 0:00 VN),
 // ở đây so cùng mốc (UTC+7) để hiện đúng số server đang đếm.
 export const vnDay = (now = new Date()) => new Date(now.getTime() + 7 * 3600 * 1000).toISOString().slice(0, 10);
-export const utcDay = vnDay; // tên cũ, giữ cho nơi khác còn import
 
 export const QUOTA_DEFAULTS = {
   chat: { free: 20, trial: 100, premium: 150 },

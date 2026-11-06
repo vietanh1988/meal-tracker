@@ -1898,10 +1898,6 @@ export const UNIT_MAP = {
   "măng cụt":        [{name:"3 quả", gram:80}, {name:"5 quả", gram:130}],
 };
 
-export function getUnits(foodKey) {
-  const key = (foodKey || "").toLowerCase().trim();
-  return UNIT_MAP[key] || null;
-}
 const LOCAL_KEYS = Object.keys(LOCAL_FOODS).sort((a, b) => b.length - a.length);
 // Tên chuẩn (foodSyn.canonFood) → mã trong kho; mã dài / có trước giữ chỗ khi 2 mã ra cùng tên chuẩn
 let _canon = null, _plain = null;
@@ -2396,36 +2392,6 @@ export function getFoodRegion(foodKey) {
   if (!item) return null; // unknown → loại khỏi whitelist VN
   if (item.region) return item.region; // composite entries đã có inline
   return CAT_REGION[item.cat] ?? null;
-}
-
-// ------------------------------------------------------------
-// COMPLEXITY — 1=nhanh/mua sẵn, 2=vừa, 3=bữa nấu đầy đủ
-// Style VN sáng cần complexity ≤ 1.
-// Cat-level mặc định + override.
-// ------------------------------------------------------------
-const CAT_COMPLEXITY = {
-  poultry: 2, beef: 2, pork: 2, seafood: 2,
-  egg_dairy: 1, starch: 1, fruit: 1, veg: 2,
-  nuts: 1, sauce: 1, supp: 1, processed: 1, drink: 1,
-};
-const COMPLEXITY_OVERRIDE = {
-  // Đạm nấu lâu
-  "gân bò": 3, "bắp bò": 3, "sườn bò": 3, "sườn heo": 2, "sườn lợn": 2,
-  // Đạm nhanh
-  "trứng gà luộc": 1, "trứng luộc": 1, "cá ngừ hộp": 1, "đậu phụ": 1,
-  // Starch nấu
-  "cơm trắng": 2, "cơm": 2, "cơm gạo lứt": 2,
-  // Rau nhanh
-  "rau sống": 1, "xà lách": 1, "dưa chuột": 1, "cà chua": 1,
-};
-
-export function getFoodComplexity(foodKey) {
-  const key = (foodKey || "").toLowerCase().trim();
-  if (COMPLEXITY_OVERRIDE[key] !== undefined) return COMPLEXITY_OVERRIDE[key];
-  const item = LOCAL_FOODS[key];
-  if (!item) return 2;
-  if (item.complexity !== undefined) return item.complexity; // composite entries
-  return CAT_COMPLEXITY[item.cat] ?? 2;
 }
 
 // ------------------------------------------------------------
