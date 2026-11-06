@@ -27,6 +27,7 @@ function fakeDb(tables, rpcs) {
       eq(c, v) { f.push((r) => r[c] === v); return b; }, in(c, v) { f.push((r) => v.includes(r[c])); return b; }, neq(c, v) { f.push((r) => r[c] !== v); return b; }, gte(c, v) { f.push((r) => r[c] >= v); return b; },
       like(c, v) { if (/^%/.test(v) && !/%$/.test(v)) { const s = v.slice(1); f.push((r) => String(r[c]).endsWith(s)); return b; } const p = v.replace(/%$/, ""); f.push((r) => String(r[c]).startsWith(p)); return b; },
       order(c, o = {}) { ord = { c, asc: o.ascending !== false }; return b; }, limit(n) { lim = n; return b; },
+      is(c, v) { const [k, sub] = c.split("->"); f.push((r) => ((sub ? r[k]?.[sub] : r[k]) ?? null) === v); return b; }, not(c, op, v) { f.push((r) => (op === "is" ? (r[c] ?? null) !== v : r[c] !== v)); return b; },
       single() { single = true; return b; }, maybeSingle() { single = true; return b; },
       then(res, rej) { try { return Promise.resolve({ data: run(), error: null }).then(res, rej); } catch (e) { return Promise.reject(e).then(res, rej); } },
     };
@@ -431,4 +432,22 @@ test("23/10 lần đổi ảnh bị ngắt giữa chừng (ảnh đã WebP, bài
   assert.equal(p.cover_url, "https://fipilotai.com/anh/2026/10/a-abc_800w.webp");
   assert.equal(p.blocks[0].url, "https://fipilotai.com/anh/2026/10/a-abc_800w.webp");
   assert.equal(p.blocks[1].url, "https://fipilotai.com/anh/2026/10/khac_1200w.jpg"); // ảnh chưa đổi giữ nguyên
+});
+
+test("06/11 bài đã viết thiếu link bài trụ của cụm → lần tick sau AI chọn chỗ, máy chèn link /<bài trụ>, thử 1 lần", async () => {
+  const env = setup({ relink: "1 | món quen | /an-pho-co-beo-khong" });
+  env.tables.web_ai_jobs[0] = { ...env.tables.web_ai_jobs[0], status: "done", post_id: "p9", state: { linkStats: { pillar: 0 } }, created_at: new Date().toISOString(), finished_at: new Date().toISOString() };
+  env.tables.web_terms.push({ id: "t9", kind: "category", name: "Món này có béo không?", slug: "co-beo-khong", sort: 1 });
+  env.tables.web_posts.push(
+    { id: "p9", kind: "post", slug: "an-che-co-beo-khong", title: "Ăn chè có béo không", status: "scheduled", primary_term: "t9", seo: {}, blocks: [{ type: "p", html: "<strong>Sapo.</strong>" }, { type: "p", html: "Chè là món quen của nhiều người." }] },
+    { id: "p1", kind: "post", slug: "an-pho-co-beo-khong", title: "Ăn phở có béo không?", status: "published", primary_term: "t9", seo: {}, blocks: [] });
+  const r = await env.w.handle(req({ action: "tick", secret: "s3cret" }));
+  assert.equal(r.status, 200);
+  const p = env.tables.web_posts.find((x) => x.id === "p9");
+  assert.match(JSON.stringify(p.blocks), /href=\\"\/an-pho-co-beo-khong\\"/);
+  assert.equal(env.tables.web_ai_jobs[0].state.pillar_fix.added, 1);
+  assert.equal(env.tables.web_ai_jobs[0].state.linkStats.pillar, 1);
+  const n = env.calls.claude.length;
+  await env.w.handle(req({ action: "tick", secret: "s3cret" }));
+  assert.equal(env.calls.claude.length, n, "đã thử rồi thì không gọi AI lại");
 });

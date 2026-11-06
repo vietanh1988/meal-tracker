@@ -2,7 +2,7 @@
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
   imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable, linkTargets, linkStats,
-  caloHints, intentClash, CLASH_HARD, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk, sourcesFromResearch, sourcesBlocks, reviseUnits, revisePrompt, parseRevise, applyRevise, hasSources,
+  caloHints, intentClash, CLASH_HARD, CLUSTER_STAR, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk, sourcesFromResearch, sourcesBlocks, reviseUnits, revisePrompt, parseRevise, applyRevise, hasSources,
   relinkUnits, relinkPrompt, parseRelink, applyRelink, backlinkCandidates,
 } from "./aiWrite.js";
 import { fixSources } from "./sources.js";
@@ -566,11 +566,34 @@ async function cleanSources(admin) {
   return { checked: (rows || []).length, fixed };
 }
 
+// 06/11 (cụm chủ đề): bài AI viết xong mà thân bài vẫn thiếu link về bài trụ ★ của cụm (AI bỏ qua lỗi [thieu-link]) →
+// mỗi phút 1 bài: AI chỉ chọn chỗ + chữ neo có sẵn, máy chèn link (relinkPost onlyUrl, vài trăm token). Thử 1 lần / bài (ghi state.pillar_fix).
+async function fixPillars(admin, cfg) {
+  const since = new Date(Date.now() - 14 * 864e5).toISOString();
+  const { data: jobs } = await admin.from("web_ai_jobs").select("id,post_id,state,created_by").eq("status", "done").gte("created_at", since).not("post_id", "is", null).is("state->pillar_fix", null).order("finished_at", { ascending: true }).limit(20);
+  for (const j of jobs || []) {
+    const { data: post } = await admin.from("web_posts").select("id,slug,title,blocks,primary_term,seo,status").eq("id", j.post_id).maybeSingle();
+    const mark = (v) => admin.from("web_ai_jobs").update({ state: { ...(j.state || {}), pillar_fix: { ...v, at: new Date().toISOString() } } }).eq("id", j.id);
+    if (!post) { await mark({ skip: "no post" }); continue; }
+    const { data: cat } = await admin.from("web_terms").select("slug").eq("id", post.primary_term).maybeSingle();
+    const star = cat?.slug ? CLUSTER_STAR[cat.slug] : null;
+    if (!star || star === post.slug || JSON.stringify(post.blocks || []).includes(`href=\\"/${star}\\"`) || JSON.stringify(post.blocks || []).includes(`href="/${star}"`)) { await mark({ skip: "ok" }); continue; }
+    const { data: sp } = await admin.from("web_posts").select("slug,title").eq("slug", star).eq("status", "published").maybeSingle();
+    if (!sp) { await mark({ skip: "no star" }); continue; }
+    await mark({ trying: true }); // đánh dấu trước: AI lỗi thì không thử lại mãi
+    const r = await relinkPost(admin, cfg, post, { onlyUrl: `/${star}`, uid: j.created_by, pub: [sp] });
+    await admin.from("web_ai_jobs").update({ state: { ...(j.state || {}), pillar_fix: { added: r.added.length, at: new Date().toISOString() }, ...(r.added.length ? { linkStats: { ...(j.state?.linkStats || {}), pillar: 1 } } : {}) } }).eq("id", j.id);
+    return { id: j.id, added: r.added.length };
+  }
+  return null;
+}
+
 async function tick() {
   const admin = db(); const t0 = Date.now();
   try { await cleanSources(admin); } catch (_e) { /* không chặn hàng chờ viết bài */ }
   const cfg = await config(admin);
   if (await spentToday(admin) >= Number(cfg.daily_cap_usd || 0) && Number(cfg.daily_cap_usd) > 0) return { paused: "cap" };
+  try { await fixPillars(admin, cfg); } catch (_e) { /* thiếu link bài trụ: thử lại không chặn hàng chờ */ }
   const { data } = await admin.rpc("web_ai_claim");
   const job = data?.[0]; if (!job) return { idle: true };
   try {
