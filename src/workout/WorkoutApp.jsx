@@ -486,7 +486,7 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
   const exOver = over?.k === "ex" && <ExerciseDetail w={w} ex={over.ex} onBack={() => setOver(null)} />;
   if (view?.k === "session") return (
     <>
-      <SessionScreen onRead={onRead} onEdited={(s) => setView({ k: "log", s })} w={w} today={today} start={view} onBack={() => setView(null)} showToast={showToast} onReward={onReward} pet={pet} onLog={() => { setView(null); setTab("log"); }}
+      <SessionScreen key={view.edit ? `e-${view.id}` : "s"} onEdit={(id) => setView({ k: "session", id, edit: true })} onRead={onRead} onEdited={(s) => setView({ k: "log", s })} w={w} today={today} start={view} onBack={() => setView(null)} showToast={showToast} onReward={onReward} pet={pet} onLog={() => { setView(null); setTab("log"); }}
         onPickSwap={(muscle, cb) => { picker.current = cb; setOver({ k: "pick", muscle }); }} onOpenEx={(ex) => setOver({ k: "ex", ex })} />
       {pickOver}{exOver}
     </>
@@ -518,7 +518,7 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
         </div>
         {!w.ready && <span style={{ ...sub, margin: "0 16px" }}>Đang tải…</span>}
         {/* 01/11: thẻ Buổi tập hôm nay nằm ở đầu tab Giáo án (không để ở Hôm nay) */}
-        {w.ready && tab === "plan" && <WorkoutCard inApp w={w} today={today} onStart={(dp) => setView({ k: "session", dayPlan: dp })} onResume={(s) => setView({ k: "session", id: s.id })} onOpen={(t) => setTab(t)} />}
+        {w.ready && tab === "plan" && <WorkoutCard inApp w={w} today={today} onEdit={(s) => setView({ k: "session", id: s.id, edit: true })} onStart={(dp) => setView({ k: "session", dayPlan: dp })} onResume={(s) => setView({ k: "session", id: s.id })} onOpen={(t) => setTab(t)} />}
         {w.ready && tab === "plan" && lagging && (
           <div data-testid="wk-lag" style={{ margin: "0 12px", background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 16, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
             <b style={{ fontSize: 14, fontWeight: 900 }}>Lịch tập khác giáo án</b>

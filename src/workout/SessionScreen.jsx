@@ -16,7 +16,7 @@ const num = (v) => { const n = Number(String(v).replace(",", ".")); return Numbe
 const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
 // 06/11 (chủ dự án): buổi đã xong sửa lại được — start.edit: mở lại đúng buổi, tự lưu từng thay đổi, không đếm giờ nghỉ, không thưởng Hạt lần nữa; nút đáy "Xong sửa"
-export function SessionScreen({ w, today, start, onBack, showToast, onReward, onLog, onPickSwap, onOpenEx, pet, onRead, onEdited }) {
+export function SessionScreen({ w, today, start, onBack, showToast, onReward, onLog, onPickSwap, onOpenEx, pet, onRead, onEdited, onEdit }) {
   const edit = !!(start?.edit && start?.id);
   const [s, setS] = useState(() => {
     const old = start?.id ? w.sessions.find((x) => x.id === start.id) : null;
@@ -146,7 +146,7 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
         })}
       </div>
       {ask && <ConfirmDrop onCancel={() => setAsk(false)} onDrop={drop} />}
-      {done && <DoneSheet d={done} pet={pet} onReward={onReward} onClose={onBack} onLog={onLog} showToast={showToast} />}
+      {done && <DoneSheet d={done} pet={pet} onReward={onReward} onClose={onBack} onLog={onLog} showToast={showToast} onEdit={onEdit && done.id ? () => onEdit(done.id) : null} />}
     </SubPage>
   );
 }
@@ -171,7 +171,7 @@ function ConfirmDrop({ onCancel, onDrop }) {
   );
 }
 
-function DoneSheet({ d, pet, onReward, onClose, onLog, showToast }) {
+function DoneSheet({ d, pet, onReward, onClose, onLog, showToast, onEdit }) {
   useLockScroll(true);
   const [got, setGot] = useState(null); // số Hạt đã nhận
   const [busy, setBusy] = useState(false);
@@ -199,6 +199,7 @@ function DoneSheet({ d, pet, onReward, onClose, onLog, showToast }) {
           ? <button type="button" data-testid="wk-done-claim" onClick={claim} disabled={busy || got != null} style={{ height: 46, borderRadius: 14, border: "none", background: got != null ? "#ECFDF5" : GRAD_BLUE, color: got != null ? "#047857" : "#FFFFFF", fontSize: 15, fontWeight: 800, fontFamily: "inherit" }}>{got != null ? `Đã nhận +${got} Hạt` : busy ? "Đang nhận…" : "Nhận +20 Hạt cho Pi"}</button>
           : <span style={{ fontSize: 12.5, color: "#64748B", textAlign: "center" }}>Tick từ 10 hiệp trở lên trong 1 buổi là Pi thưởng 20 Hạt.</span>}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {onEdit && <button type="button" data-testid="wk-done-edit" onClick={onEdit} style={{ height: 44, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 14.5, fontWeight: 800, fontFamily: "inherit" }}>Sửa lại (nhập sai kg, số lần)</button>}
           <button type="button" data-testid="wk-done-log" onClick={onLog} style={{ height: 44, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 14.5, fontWeight: 800, fontFamily: "inherit" }}>Xem nhật ký</button>
           <button type="button" data-testid="wk-done-close" onClick={onClose} style={{ height: 44, borderRadius: 14, border: "none", background: "#F1F5F9", color: "#475569", fontSize: 14.5, fontWeight: 800, fontFamily: "inherit" }}>Xong</button>
         </div>

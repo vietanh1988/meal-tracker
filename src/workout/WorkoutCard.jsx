@@ -10,7 +10,7 @@ const DB = <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fi
 const WRAP = { margin: "14px 12px 0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 12 };
 const tile = { width: 48, height: 48, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "linear-gradient(135deg,#7C3AED,#4F46E5)", color: "#FFFFFF" };
 
-export function WorkoutCard({ w, today, onStart, onOpen, onResume, invite, onHideInvite, inApp }) {
+export function WorkoutCard({ w, today, onStart, onOpen, onResume, invite, onHideInvite, inApp, onEdit }) {
   if (!w?.ready) return null;
   const wrap = inApp ? { ...WRAP, margin: "0 12px" } : WRAP;
   const plan = w.active;
@@ -34,13 +34,16 @@ export function WorkoutCard({ w, today, onStart, onOpen, onResume, invite, onHid
   const days = planDays(plan);
   const n = days.indexOf(days.find((d) => plan.days[String(d)] === dp)) + 1;
   if (ended) return (
-    <button type="button" data-testid="wk-card-done" onClick={() => onOpen("log")} style={{ ...wrap, flexDirection: "row", alignItems: "center", border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A", width: "calc(100% - 24px)" }}>
+    <div data-testid="wk-card-done" style={{ ...wrap, flexDirection: "row", alignItems: "center", gap: 10 }}>
+    <button type="button" data-testid="wk-card-done-open" onClick={() => onOpen("log")} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 12, border: "none", background: "transparent", padding: 0, fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
       <span style={{ ...tile, background: "rgba(0,200,150,0.14)", color: "#047857" }}><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
       <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: "#047857" }}>ĐÃ TẬP HÔM NAY</span>
         <b style={{ fontSize: 16, fontWeight: 900 }}>{ended.title} · {ended.minutes ?? 0} phút · {setsDone(ended)} hiệp</b>
       </span>
     </button>
+    {onEdit && <button type="button" data-testid="wk-card-edit" onClick={() => onEdit(ended)} style={{ flexShrink: 0, height: 36, padding: "0 12px", borderRadius: 12, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 13.5, fontWeight: 800, fontFamily: "inherit" }}>Sửa buổi</button>}
+    </div>
   );
   const est = Math.round(dp.items.reduce((a, x) => a + (Number(x.sets) || 3) * 2.5, 0) / 5) * 5;
   return (

@@ -179,6 +179,7 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     // trần Hạt ngày (120) có thể đã đầy do các bài E2E chạy trước trong ngày (Hạt bữa ăn theo giờ) → dọn Hạt hôm nay của tài khoản test
     await rest(`pet_ledger?user_id=eq.${s.uid}&day=gte.${s.today.slice(0, 8)}01&kind=not.in.(onboard,invite,rank,admin)`, { method: "DELETE" });
     const claimRes = page.waitForResponse((r) => r.url().includes("pet_workout_claim"), { timeout: 10_000 }).then((r) => r.text()).catch((e) => `không có phản hồi: ${e.message}`);
+    await expect(page.getByTestId("wk-done-edit")).toBeVisible(); // 06/11: sửa lại ngay ở màn tổng kết
     await page.getByTestId("wk-done-claim").click();
     const claimBody = await claimRes;
     const sesDb = (await rest(`workout_sessions?user_id=eq.${s.uid}&select=day,ended_at,items`)).map((x) => ({ day: x.day, ended: !!x.ended_at, done: (x.items || []).flatMap((i) => i.sets || []).filter((st) => st.done).length }));
@@ -211,6 +212,13 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     expect((await rest(`pet_ledger?user_id=eq.${s.uid}&kind=eq.workout&select=amount`)).length).toBe(1);
     await page.getByRole("button", { name: "Quay lại" }).last().click();
     await page.getByTestId("wk-tab-plan").click();
+    await expect(page.getByTestId("wk-card-done")).toBeVisible();
+    // 06/11: thẻ "Đã tập hôm nay" có nút Sửa buổi → mở màn sửa, Xong sửa → về chi tiết buổi
+    await page.getByTestId("wk-card-edit").click();
+    await expect(page.getByTestId("wk-edit-save")).toBeVisible();
+    await page.getByTestId("wk-edit-save").click();
+    await expect(page.getByTestId("wk-log-detail")).toBeVisible();
+    await page.getByRole("button", { name: "Quay lại" }).last().click();
     await expect(page.getByTestId("wk-card-done")).toBeVisible();
     await page.getByRole("button", { name: "Quay lại" }).last().click();
     await expect(page.getByTestId("wk-btn")).toBeVisible();
