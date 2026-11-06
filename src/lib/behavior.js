@@ -13,7 +13,7 @@ export const FEATURES = [
   ["meal_eaten", "Đánh dấu Đã ăn"], ["menu_auto", "Thực đơn tự lên"], ["weigh", "Cân hôm nay"], ["water", "Uống nước"],
   ["swap", "Đổi món"], ["meal_log:photo", "Chụp ảnh tính calo"], ["meal_log:search", "Tìm món"], ["meal_log:suggest", "Gợi ý món"],
   ["meal_log:calc", "Tính calo cả bữa"], ["menu_tomorrow", "Xem thực đơn ngày mai"], ["activity", "Vận động thêm"], ["measure", "Đo vòng"],
-  ["ai_chat", "Hỏi AI"], ["ai_menu", "AI lên thực đơn"],
+  ["ai_chat", "Hỏi AI"], ["ai_menu", "AI lên thực đơn"], ["open_ref", "Quay lại từ thư / link"],
 ];
 const featKey = (e) => (e.name === "meal_log" ? `meal_log:${e.meta?.how || "search"}` : e.name);
 const isMeal = (e) => e.name === "meal_eaten" || e.name === "meal_log";
@@ -23,6 +23,7 @@ export function eventLabel(e) {
   const m = e.meta || {};
   switch (e.name) {
     case "app_open": return m.from === "push" ? "Mở app (từ thông báo)" : "Mở app";
+    case "open_ref": return `Mở app từ ${/^mail-/.test(m.ref || "") ? "thư" : "link"} · ${m.ref || ""}`;
     case "notif_click": return "Bấm vào thông báo";
     case "onb_step": return `Onboarding · ${ONB_STEP[m.step] || `bước ${m.step}`}`;
     case "onb_done": return m.mode === "loss" ? `Xong onboarding · Giảm cân${m.kg && m.kg !== "x" ? ` −${m.kg} kg` : ""}` : "Xong onboarding · Gym";

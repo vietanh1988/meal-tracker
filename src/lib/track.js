@@ -12,6 +12,24 @@ export function setTrackUser(uid, mode = null, isAdmin = false) {
   let force = false;
   try { force = localStorage.getItem("fp_track_admin") === "1"; } catch (e) { /* */ } // bài test E2E (tài khoản test là admin)
   ctx = { uid: uid || null, mode: mode === "loss" || mode === "gym" ? mode : null, off: !!isAdmin && !force };
+  if (ctx.uid) sendRef();
+}
+
+// 06/11: đo người quay lại từ thư / link — mở app có ?ref=<mã> (vd mail-1106) thì nhớ mã trong máy (lúc này có thể chưa đăng nhập),
+// đăng nhập xong ghi 1 sự kiện "open_ref" (mỗi tài khoản 1 lần / mã). Mã chỉ giữ chữ, số, gạch; tối đa 40 ký tự.
+const REF_KEY = "fp_ref";
+export const refOf = (search) => { try { const r = new URLSearchParams(search || "").get("ref"); return r && /^[\w.-]{1,40}$/.test(r) ? r : null; } catch (e) { return null; } };
+function sendRef() {
+  let r = null;
+  try { r = localStorage.getItem(REF_KEY); } catch (e) { return; }
+  if (!r) return;
+  const k = `fp_ref_done:${ctx.uid}:${r}`;
+  try { if (localStorage.getItem(k)) { localStorage.removeItem(REF_KEY); return; } localStorage.setItem(k, "1"); localStorage.removeItem(REF_KEY); } catch (e) { /* vẫn ghi */ }
+  track("open_ref", { ref: r });
+}
+if (typeof window !== "undefined") {
+  const r = refOf(window.location.search);
+  if (r) { try { localStorage.setItem(REF_KEY, r); } catch (e) { /* chế độ riêng tư: bỏ qua */ } }
 }
 
 export async function flushTrack() {

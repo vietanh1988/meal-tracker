@@ -63,3 +63,10 @@ test("tình trạng + dòng thời gian + nhãn", () => {
   assert.equal(eventLabel({ name: "app_open", meta: { from: "push" } }), "Mở app (từ thông báo)");
   assert.equal(agoShort(new Date(Date.now() - 3 * 3600e3).toISOString()), "3 giờ");
 });
+
+test("06/11: sự kiện mở app từ thư / link có nhãn và nằm trong Tính năng được dùng", async () => {
+  const B = await import("../src/lib/behavior.js");
+  assert.equal(B.eventLabel({ name: "open_ref", meta: { ref: "mail-1106" } }), "Mở app từ thư · mail-1106");
+  assert.equal(B.eventLabel({ name: "open_ref", meta: { ref: "web" } }), "Mở app từ link · web");
+  assert.ok(B.FEATURES.some(([k]) => k === "open_ref"));
+});
