@@ -113,7 +113,8 @@ export default async function Page({ params }) {
     const pool = await latestPosts({ limit: 24, termId: cat?.id || null, exclude: [p.id, ...rel.map((x) => x.id)] });
     const myTags = new Set((p.terms || []).filter((x) => x.kind === "tag").map((x) => x.id));
     const star = starOf(cat?.slug, p.slug);
-    const sc = (x) => (x.slug === star ? 100 : 0) + (x.terms || []).filter((y) => myTags.has(y.id)).length;
+    const mates = new Set((cl?.groups || []).find(([, sl]) => sl.includes(p.slug))?.[1] || []); // cùng nhóm ý định trong cụm (phở → bún, xôi, cơm tấm)
+    const sc = (x) => (x.slug === star ? 100 : 0) + (mates.has(x.slug) ? 50 : 0) + (x.terms || []).filter((y) => myTags.has(y.id)).length;
     rel = [...rel, ...pool.map((x, i) => ({ x, v: sc(x), i })).sort((a, b) => b.v - a.v || a.i - b.i).map((y) => y.x)].slice(0, 3);
   }
   const clN = cl ? await countPosts(cat.id) : 0;
