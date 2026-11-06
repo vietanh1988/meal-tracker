@@ -45,3 +45,11 @@ test("cụm chữ gửi DB tìm bài nhắc món / bài tập", () => {
   assert.deepEqual(exPats(e), ['"ex": "barbell-back-squat"', "gánh tạ", "Gánh tạ"]);
   assert.deepEqual(exPats(null), []);
 });
+
+test("06/11 bảng trong bài trên điện thoại xếp thành thẻ: Blocks gắn data-label + lớp rt, CSS có luật ≤ 720px", async () => {
+  const { readFileSync } = await import("node:fs");
+  const b = readFileSync(new URL("../components/Blocks.js", import.meta.url), "utf8"), c = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(b, /className=\{[^}]*"rt"/);
+  assert.match(b, /data-label=/);
+  assert.match(c, /@media \(max-width: 720px\) \{\s*\.prose table\.rt[\s\S]*?attr\(data-label\)/);
+});
