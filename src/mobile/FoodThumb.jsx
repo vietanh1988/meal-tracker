@@ -1,5 +1,5 @@
-// 07/11: ô ảnh món (Ghi bữa, món trong bài Tin giảm cân). Có ảnh web → ảnh 400w bo góc; chưa có / lỗi tải → ô xám nhạt + icon dao dĩa mờ
-// để các dòng trong danh sách vẫn thẳng cột.
+// 07/11: ô ảnh món (Ghi bữa, món trong bài Tin giảm cân). Có ảnh web → ảnh 400w bo góc.
+// Chưa có ảnh / lỗi tải → không hiện gì (chủ dự án chốt 07/11: bỏ ô xám, dòng chỉ còn tên như cũ).
 import { useState } from "react";
 import { thumbOf } from "../lib/foodImages";
 
@@ -13,9 +13,5 @@ export function FoodThumb({ url, size = 44, radius = 12, name = "" }) {
       </span>
     );
   }
-  return (
-    <span data-testid="food-thumb" aria-hidden="true" style={box}>
-      <img src="/icons/nav_meal.png" alt="" width={Math.round(size * 0.5)} height={Math.round(size * 0.5)} style={{ opacity: 0.4, display: "block" }} />
-    </span>
-  );
+  return null;
 }

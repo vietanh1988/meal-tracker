@@ -35,7 +35,8 @@ export function useFoodImages() {
   const [m, setM] = useState(foodImageMap);
   useEffect(() => {
     subs.add(setM);
-    if (!mem || Date.now() - (mem.t || 0) > TTL) load();
+    // danh sách rỗng (lưu lúc web chưa gắn ảnh) thì tải lại ngay, không đợi hết 1 ngày
+    if (!mem || !Object.keys(mem.m).length || Date.now() - (mem.t || 0) > TTL) load();
     return () => { subs.delete(setM); };
   }, []);
   return m;

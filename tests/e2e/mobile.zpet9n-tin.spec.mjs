@@ -75,18 +75,17 @@ test("Tin giảm cân: mở từ nút Pi, đổi cụm, tìm, đọc bài, món 
     await expect(hit).toBeVisible();
     await hit.click();
     await expect(page.getByTestId("news-foods")).toBeVisible({ timeout: 15_000 });
-    // món có ảnh web → ô ảnh 400w; món chưa có ảnh → ô xám icon dao dĩa (vẫn thẳng cột)
+    // món có ảnh web → ô ảnh 400w; món chưa có ảnh → không có ô ảnh
     const phoThumb = page.locator('[data-testid="news-food"][data-name="Phở bò"] [data-testid="food-thumb"][data-has="1"] img');
     await expect(phoThumb).toBeVisible({ timeout: 15_000 });
     expect(await phoThumb.getAttribute("src")).toContain("_400w.webp");
-    await expect(page.locator('[data-testid="news-food"][data-name="Cơm gà"] [data-testid="food-thumb"]:not([data-has])')).toBeVisible();
+    await expect(page.locator('[data-testid="news-food"][data-name="Cơm gà"]')).toBeVisible();
+    await expect(page.locator('[data-testid="news-food"][data-name="Cơm gà"] [data-testid="food-thumb"]')).toHaveCount(0);
     const food = page.getByTestId("news-foods").getByTestId("news-food").first();
     const name = await food.getAttribute("data-name");
     await food.click();
     await expect(page.locator('input[type="search"]').last()).toHaveValue(name);
     // Ghi bữa: dòng kết quả phở bò có ảnh món, ảnh tải được
-    const logThumb = page.locator('[data-testid="log-add"]').first().locator("xpath=..").locator('[data-testid="food-thumb"]');
-    await expect(logThumb).toBeVisible();
     const hasImg = page.locator('[data-testid="food-thumb"][data-has="1"] img').first();
     await expect(hasImg).toBeVisible();
     await expect.poll(() => hasImg.evaluate((im) => im.naturalWidth)).toBeGreaterThan(0);
