@@ -63,3 +63,12 @@ test("06/11 trang chủ có 2 khối mới (bật / sửa chữ được ở S�
   for (const f of ["tap-giao-an", "tap-dang-tap", "tap-nhat-ky"]) assert.ok(existsSync(new URL(`../public/img/huong-dan/${f}.webp`, import.meta.url)), f);
   assert.match(readFileSync(new URL("../app/gioi-thieu/page.js", import.meta.url), "utf8"), /Fipilot AI bây giờ/);
 });
+
+test("trang cụm: nút Xem đủ nằm trên hàng tên nhóm, bên phải", async () => {
+  const { readFileSync } = await import("node:fs");
+  const s = readFileSync(new URL("../app/chu-de/[slug]/page.js", import.meta.url), "utf8");
+  const h = s.match(/<div className="grp-h">.*<\/div>/)?.[0] || "";
+  assert.ok(h.includes('className="grp-more"'), "nút Xem đủ phải ở trong grp-h");
+  assert.match(s, /\.grp-more\{margin-left:auto/);
+  assert.ok(!s.includes("<details className=\"grp-more\""));
+});

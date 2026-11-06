@@ -62,7 +62,7 @@ export default async function Cat({ params, searchParams }) {
 }
 
 // 06/11 (chủ dự án chốt bản vẽ "Cụm chủ đề", phần 1): trang cụm = trang trụ cột. Bài trụ ★ · công cụ dữ liệu app · bài chia nhóm theo ý định
-// (mỗi nhóm hiện 3 bài, bấm "Xem đủ" mở phần còn lại — mọi link bài đều có sẵn trong HTML) · link sang các cụm khác. Không chia trang.
+// (mỗi nhóm hiện 3 bài, nút "Xem đủ" nằm bên phải tên nhóm, bấm mở phần còn lại — mọi link bài đều có sẵn trong HTML) · link sang các cụm khác. Không chia trang.
 async function Cluster({ t, s }) {
   const cfg = CLUSTERS[t.slug];
   const [posts, cats, foods] = await Promise.all([latestPosts({ limit: 200, termId: t.id }), allTerms("category"), caloFoods()]);
@@ -90,16 +90,17 @@ async function Cluster({ t, s }) {
         {groups.length > 1 && <nav className="chips chips-wrap" aria-label="Nhóm bài" style={{ marginBottom: 36 }}><span className="chip on">Tất cả {posts.length} bài</span>{groups.map((g, i) => <a key={g.name} className="chip" href={`#nhom-${i + 1}`}>{g.name}<em>{g.posts.length}</em></a>)}</nav>}
         {groups.map((g, i) => (
           <section key={g.name} id={`nhom-${i + 1}`} className="grp" data-testid="cum-group">
-            <div className="grp-h"><h2>{g.name}</h2><span>{g.posts.length} bài</span></div>
+            {g.posts.length > 3 && <input type="checkbox" id={`xem-${i + 1}`} className="grp-tg" hidden />}
+            <div className="grp-h"><h2>{g.name}</h2><span>{g.posts.length} bài</span>{g.posts.length > 3 && <label htmlFor={`xem-${i + 1}`} className="grp-more" data-testid="cum-more"><em>Xem đủ {g.posts.length} bài ›</em><em>Thu gọn ‹</em></label>}</div>
             <Cards posts={g.posts.slice(0, 3)} />
-            {g.posts.length > 3 && <details className="grp-more"><summary>Xem đủ {g.posts.length} bài ›</summary><Cards posts={g.posts.slice(3)} /></details>}
+            {g.posts.length > 3 && <div className="grp-rest"><Cards posts={g.posts.slice(3)} /></div>}
           </section>
         ))}
         {!posts.length && <p className="lead">Chưa có bài trong cụm này.</p>}
         {others.length > 0 && <section className="grp" data-testid="cum-others"><div className="grp-h"><h2>Đọc thêm ở cụm khác</h2></div><div className="chips chips-wrap">{others.map((c) => <a key={c.slug} className="chip" href={`/chu-de/${c.slug}`}>{c.name}</a>)}</div></section>}
       </div>
       <Sticky s={s} ref_={`cat-${t.slug}`} />
-      <style dangerouslySetInnerHTML={{ __html: `.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:0 0 40px}.tool{padding:20px;display:flex;gap:14px;align-items:flex-start;transition:box-shadow .15s}.tool:hover{box-shadow:0 12px 28px rgba(15,23,42,.10)}.tool i{width:44px;height:44px;border-radius:12px;background:#E8F0FF;display:flex;align-items:center;justify-content:center;flex-shrink:0}.tool b{display:block;font-size:16.5px;color:#0F172A;margin-bottom:4px}.tool span span{font-size:14px;color:#64748B;line-height:1.5}.grp{margin-bottom:48px;scroll-margin-top:90px}.grp-h{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}.grp-h h2{font-size:24px;font-weight:800}.grp-h span{font-size:14px;color:#64748B}.grp-more{margin-top:14px}.grp-more summary{cursor:pointer;font-weight:700;color:#0062F0;font-size:15px;list-style:none;margin-bottom:16px}.grp-more summary::-webkit-details-marker{display:none}.grp-more[open] summary{display:none}@media(max-width:720px){.catpin{flex-direction:column;margin-bottom:24px!important}.catpin img{width:100%!important;height:200px!important}.catpin>span{padding:20px!important}.catpin b{font-size:22px!important}.catpin-ex{font-size:15px!important}.catw{padding-top:24px!important}.tools{grid-template-columns:1fr;gap:10px;margin-bottom:28px}.tool{padding:16px}.grp{margin-bottom:32px}.grp-h h2{font-size:20px}.grp-h{margin-bottom:6px}}` }} />
+      <style dangerouslySetInnerHTML={{ __html: `.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:0 0 40px}.tool{padding:20px;display:flex;gap:14px;align-items:flex-start;transition:box-shadow .15s}.tool:hover{box-shadow:0 12px 28px rgba(15,23,42,.10)}.tool i{width:44px;height:44px;border-radius:12px;background:#E8F0FF;display:flex;align-items:center;justify-content:center;flex-shrink:0}.tool b{display:block;font-size:16.5px;color:#0F172A;margin-bottom:4px}.tool span span{font-size:14px;color:#64748B;line-height:1.5}.grp{margin-bottom:48px;scroll-margin-top:90px}.grp-h{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}.grp-h h2{font-size:24px;font-weight:800}.grp-h span{font-size:14px;color:#64748B}.grp-h span{flex:none}.grp-h h2{min-width:0}.grp-more{margin-left:auto;flex:none;cursor:pointer;font-weight:700;color:#0062F0;font-size:15px;white-space:nowrap;user-select:none}@media(hover:hover){.grp-more:hover{text-decoration:underline}}.grp-more em{font-style:normal}.grp-more em+em,.grp-tg:checked~.grp-h .grp-more em:first-child{display:none}.grp-tg:checked~.grp-h .grp-more em+em{display:inline}.grp-rest{display:none;margin-top:24px}.grp-tg:checked~.grp-rest{display:block}@media(max-width:720px){.catpin{flex-direction:column;margin-bottom:24px!important}.catpin img{width:100%!important;height:200px!important}.catpin>span{padding:20px!important}.catpin b{font-size:22px!important}.catpin-ex{font-size:15px!important}.catw{padding-top:24px!important}.tools{grid-template-columns:1fr;gap:10px;margin-bottom:28px}.tool{padding:16px}.grp{margin-bottom:32px}.grp-h h2{font-size:20px}.grp-h{margin-bottom:6px}.grp-more{font-size:14px}.grp-tg~.grp-h>span{display:none}.grp-rest{margin-top:0}}` }} />
     </main>
   );
 }
