@@ -8,7 +8,10 @@ import Sticky from "@/components/Sticky";
 import Phone from "@/components/Phone";
 import { imgAttrs } from "@/lib/img";
 import { getSettings, appLink, alt, withOg } from "@/lib/site";
-import { latestPosts, catOf, fmtDate, readMin } from "@/lib/content";
+import { latestPosts, catOf, fmtDate, readMin, allTerms, countPosts } from "@/lib/content";
+import { CLUSTER_ORDER, CLUSTERS } from "@/lib/clusters";
+import { caloFoods } from "@/lib/calo";
+import { EXERCISES, TEMPLATES } from "@/lib/workout";
 import { getFood, mainPortion } from "@/lib/foods";
 import { orgGraph, websiteGraph, appGraph, faqGraph, ld, schemaOn } from "@/lib/schema";
 
@@ -22,6 +25,7 @@ const DISH = { "phở bò": "pho-bo", "cơm gà": "com-ga", "bún chả": "bun-c
 const dimg = (k) => `/img/home/${DISH[k] || "pho-bo"}.webp`;
 const MENU_ROWS = [["phở bò", "Bữa sáng"], ["cơm gà", "Bữa trưa"], ["bún chả", "Bữa tối"]];
 const SWAPS = [["phở bò", "bún bò huế"], ["cơm gà", "bánh mì trứng"]];
+const TOPIC_X = { "giam-can": "Calo, thâm hụt, giảm bao nhiêu là vừa", "co-beo-khong": "Phở, bún, trà sữa, bia… ăn sao vẫn giảm", "thuc-don": "Theo mức calo, theo bữa, theo người ăn", "kien-thuc": "Đạm, tinh bột, béo, xơ trong món Việt", "tap-luyen": "Cardio hay tạ, đi bộ, giảm mỡ từng vùng", "thoi-quen": "Giờ ăn, giấc ngủ, giữ cân sau khi giảm" };
 const STEP_IC = [["b-can", "#EAF2FF"], ["b-thuc-don", "#FFF6EC"], ["b-xong", "#E9F9EF"]];
 // Tiêu đề banner: *chữ* = tô xanh (VD "Giảm cân bằng\n*món Việt* quen thuộc")
 const hlTitle = (t) => String(t || "").split("\n").map((line, i) => <span key={i}>{i > 0 && <br />}{line.split(/(\*[^*]+\*)/).map((x, j) => (/^\*[^*]+\*$/.test(x) ? <span key={j} className="hl">{x.slice(1, -1)}</span> : x))}</span>);
@@ -39,6 +43,13 @@ export default async function Home() {
   const order = (s.page_home?.sections?.length ? s.page_home.sections : HOME_SECTIONS.map((id) => ({ id, on: true }))).filter((x) => x.on !== false && HOME_SECTIONS.includes(x.id)).map((x) => x.id);
   for (const id of HOME_SECTIONS) if (!(s.page_home?.sections || []).some((x) => x.id === id) && s.page_home?.sections?.length) order.push(id); // khối mới thêm sau: mặc định hiện
   const P = s.plan || {};
+  // 06/11 khối "Đọc theo chủ đề": 6 cụm (tên lấy từ chuyên mục, số bài tự đếm) + Bảng calo + Thư viện bài tập
+  const cats = Object.fromEntries((await allTerms("category")).map((c) => [c.slug, c]));
+  const topics = order.includes("topics") ? [
+    ...(await Promise.all(CLUSTER_ORDER.filter((k) => cats[k]).map(async (k) => ({ url: `/chu-de/${k}`, name: cats[k].name, x: TOPIC_X[k] || CLUSTERS[k].lead, n: `${await countPosts(cats[k].id)} bài` })))),
+    { url: "/bang-calo", name: "Bảng calo món Việt", x: `${(await caloFoods()).length} món có calo theo khẩu phần`, n: "Xem bảng" },
+    { url: "/bai-tap", name: "Thư viện bài tập", x: `${EXERCISES.length} bài có ảnh động tác, ${TEMPLATES.length} giáo án mẫu`, n: "Xem bài tập" },
+  ] : [];
   const T = Object.fromEntries(Object.entries({ ...HOME_TEXT, ...Object.fromEntries(Object.entries(s.page_home?.text || {}).filter(([, v]) => String(v || "").trim())) }).map(([k, v]) => [k, fillTrial(v, s.plan)])); // ô để trống = chữ mặc định
   const SEC = {
     calc: <Fragment key="calc">
@@ -84,6 +95,29 @@ export default async function Home() {
           <div className="h-faq">{FAQ.map((x, i) => <details key={x.q} className="faq" open={i === 0}><summary>{x.q}</summary><p>{x.a}</p></details>)}</div>
         </div>
       </section>
+    </Fragment>,
+    // 06/11 (chủ dự án chốt bản vẽ "trang chủ mới"): tính năng mới của app — ảnh là màn app thật (public/img/huong-dan)
+    more: <Fragment key="more">
+      <section className="wrap h-sec" data-testid="home-more">
+        <div className="h-head"><span className="eye">{T.more_eye}</span><h2 className="h2">{T.more_title}</h2>{T.more_sub && <p className="h-sub">{T.more_sub}</p>}</div>
+        <div className="h-more">
+          {[[1, ["/img/huong-dan/tap-giao-an.webp", "Màn Giáo án tập luyện của app"], ["/img/huong-dan/tap-dang-tap.webp", "Màn đang tập: ghi tạ từng hiệp"], [`${EXERCISES.length} bài tập có ảnh`, `${TEMPLATES.length} giáo án mẫu`, "Nhật ký tạ"], ["/bai-tap", "Xem thư viện bài tập"]],
+            [2, ["/img/huong-dan/chup-mon.webp", "Chụp ảnh món ăn, app tính calo"], ["/img/huong-dan/thuc-don-ai.webp", "Thực đơn AI lên theo ý"], ["Kho món Việt có khẩu phần", "Hỏi AI về ăn uống"], ["/huong-dan", "Xem cách dùng"]],
+            [3, ["/img/huong-dan/pi-man.webp", "Phòng của Pi trong app"], ["/img/huong-dan/pi-cua-hang.webp", "Cửa hàng đồ cho Pi"], ["Thưởng Hạt mỗi ngày", "Kết bạn, xếp hạng"], ["/pi", "Gặp Pi"]]].map(([n, a, b, pts, lk]) => (
+            <div key={n} className="card h-mc">
+              <h3>{T[`more${n}_t`]}</h3><span className="fsub">{T[`more${n}_x`]}</span>
+              <span className="h-mpts">{pts.map((x) => <span key={x}>{x}</span>)}</span>
+              <a className="h-mlk" href={lk[0]}>{lk[1]} ›</a>
+              <span className="h-mph">{[a, b].map(([src, al]) => <img key={src} src={src} alt={al} width={300} height={649} loading="lazy" decoding="async" />)}</span>
+            </div>))}
+        </div>
+      </section>
+    </Fragment>,
+    topics: <Fragment key="topics">
+      {topics.length > 0 && <section className="wrap h-sec" data-testid="home-topics">
+        <div className="h-head"><span className="eye">{T.topics_eye}</span><h2 className="h2">{T.topics_title}</h2></div>
+        <div className="h-topics">{topics.map((t) => <a key={t.url} className="card h-tp" href={t.url}><b>{t.name}</b><span>{t.x}</span><em>{t.n} ›</em></a>)}</div>
+      </section>}
     </Fragment>,
     posts: <Fragment key="posts">
       {posts.length > 0 && (

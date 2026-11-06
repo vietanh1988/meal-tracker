@@ -11,7 +11,7 @@ export async function generateMetadata() {
   const s = await getSettings(); const m = s.plan?.month;
   return withOg({ title: "Bảng giá", description: s.plan?.free ? `${FREE_NOTE}: thực đơn món Việt, chụp ảnh tính calo, hỏi AI. Mở app là dùng, không cần thẻ.` : `Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium${m ? ` từ ${vnd(m.per)}/tháng` : ""} thêm nhiều lượt AI chụp ảnh tính calo, hỏi AI${s.plan?.trial ? ` — dùng thử ${s.plan.trial} ngày, không cần thẻ` : ""}.`, alternates: alt("/bang-gia") }, typeof s !== "undefined" ? s : undefined);
 }
-const ROWS = [["Thực đơn món Việt tự lên mỗi ngày", 1, 1], ["Đổi món giữ gần bằng calo", 1, 1], ["Ghi bữa, nhắc giờ ăn", 1, 1], ["Theo dõi cân, tổng kết tháng", 1, 1]];
+const ROWS = [["Thực đơn món Việt tự lên mỗi ngày", 1, 1], ["Đổi món giữ gần bằng calo", 1, 1], ["Ghi bữa, nhắc giờ ăn", 1, 1], ["Theo dõi cân, tổng kết tháng", 1, 1], ["Tập luyện theo giáo án, nhật ký tạ", 1, 1], ["Nuôi Pi, kết bạn, xếp hạng", 1, 1]];
 const FAQ_FREE = [{ q: "App có mất phí không?", a: "Hiện tất cả các gói đang miễn phí. Bạn chỉ cần mở app và dùng, không cần thẻ, không bị trừ tiền." }];
 const FAQ = [{ q: "Hết %trial% ngày dùng thử có tự trừ tiền không?", a: "Không. Hết dùng thử app tự về gói Miễn phí, bạn chọn nâng cấp mới phải trả." }];
 export default async function Price() {

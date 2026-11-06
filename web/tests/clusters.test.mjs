@@ -51,3 +51,15 @@ test("06/11 bảng trong bài trên điện thoại: giữ cuộn ngang, mỗi c
   const c = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
   assert.match(c, /@media \(max-width: 720px\) \{\s*\.prose table \{ width: max-content[\s\S]*?\.prose th, \.prose td \{ min-width: 150px/);
 });
+
+test("06/11 trang chủ có 2 khối mới (bật / sửa chữ được ở Sửa trang chủ), bảng giá + giới thiệu nói về tập luyện", async () => {
+  const { HOME_SECTIONS, HOME_SECTION_NAME, HOME_TEXT_FIELDS, HOME_TEXT, HOME_FAQ } = await import("../lib/home.js");
+  for (const k of ["more", "topics"]) { assert.ok(HOME_SECTIONS.includes(k)); assert.ok(HOME_SECTION_NAME[k]); assert.ok(HOME_TEXT_FIELDS[k]?.length); }
+  assert.ok(HOME_TEXT.more1_t && HOME_TEXT.topics_title);
+  assert.ok(HOME_FAQ.some((x) => /giáo án tập gym/.test(x.q)));
+  const { trialPoints } = await import("../lib/plans.js");
+  assert.ok(trialPoints({ trial: 30 }).some((x) => /Tập luyện/.test(x)) && trialPoints({}).some((x) => /Tập luyện/.test(x)));
+  const { readFileSync, existsSync } = await import("node:fs");
+  for (const f of ["tap-giao-an", "tap-dang-tap", "tap-nhat-ky"]) assert.ok(existsSync(new URL(`../public/img/huong-dan/${f}.webp`, import.meta.url)), f);
+  assert.match(readFileSync(new URL("../app/gioi-thieu/page.js", import.meta.url), "utf8"), /Fipilot AI bây giờ/);
+});

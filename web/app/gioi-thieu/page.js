@@ -9,6 +9,7 @@ import { getPostBySlug } from "@/lib/content";
 import { prepare } from "@/lib/blocks";
 import { allFoods } from "@/lib/foods";
 import { vnInt } from "@/lib/slug";
+import { EXERCISES, TEMPLATES } from "@/lib/workout";
 import { breadcrumb, ld } from "@/lib/schema";
 import { aboutApp } from "@/lib/appdata";
 
@@ -48,6 +49,17 @@ export default async function About() {
         <div className="grid3 ab-g" style={{ gap: 20 }}>
           {RULES.map(([e, t, x]) => (
             <div key={t} className="card ab-c" style={{ padding: 28, display: "flex", flexDirection: "column", gap: 10 }}><span style={{ fontSize: 30 }} aria-hidden="true">{e}</span><h3 className="ab-t" style={{ fontSize: 20 }}>{t}</h3><p style={{ fontSize: 15.5, color: "#64748B", lineHeight: 1.6 }}>{x}</p></div>
+          ))}
+        </div>
+      </section>
+      {/* 06/11 (chủ dự án chốt bản vẽ): app giờ lo cả tập luyện và thói quen — giữ nguyên câu chuyện ở trên */}
+      <section className="wrap sec" data-testid="ab-now">
+        <SecHead eye="Fipilot AI bây giờ" title="Không chỉ ăn đúng, còn tập đúng và giữ được thói quen" />
+        <div className="grid3 ab-g" style={{ gap: 20 }}>
+          {[["🏋️", "Tập luyện", `${EXERCISES.length} bài tập có ảnh động tác, ${TEMPLATES.length} giáo án mẫu 2–6 buổi mỗi tuần. App ghi tạ từng hiệp, điền sẵn mức lần trước, báo khi lên kỷ lục.`, "/bai-tap", "Xem thư viện bài tập"],
+            ["💙", "Pi", "Bạn đồng hành nhận Hạt khi bạn ăn đúng bữa, uống đủ nước, tập xong buổi. Kết bạn, xếp hạng tuần để có động lực.", "/pi", "Gặp Pi"],
+            ["📚", "Đọc theo chủ đề", "Bài viết chia 6 cụm: giảm cân, món có béo không, thực đơn, dinh dưỡng, tập luyện, thói quen. Mỗi bài nối thẳng với bảng calo món và thư viện bài tập.", "/bai-viet", "Xem bài viết"]].map(([e, t, x, u, l]) => (
+            <div key={t} className="card ab-c" style={{ padding: 28, display: "flex", flexDirection: "column", gap: 10 }}><span style={{ fontSize: 30 }} aria-hidden="true">{e}</span><h3 className="ab-t" style={{ fontSize: 20 }}>{t}</h3><p style={{ fontSize: 15.5, color: "#64748B", lineHeight: 1.6 }}>{x}</p><a href={u} style={{ marginTop: "auto", fontWeight: 700, color: "#0062F0", fontSize: 15 }}>{l} ›</a></div>
           ))}
         </div>
       </section>

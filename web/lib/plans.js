@@ -42,5 +42,5 @@ export const trialName = (plan, pr) => (plan?.trial ? `Dùng thử ${plan.trial}
 export const trialSub = (plan) => (plan?.trial ? `Gói trial đủ chức năng · ${plan.trial} ngày · không cần thẻ` : "Cho người mới bắt đầu");
 export const FREE_NOTE = "Hiện tất cả các gói đang miễn phí";
 export const trialPoints = (plan) => (plan?.trial
-  ? [`Toàn bộ tính năng Premium trong ${plan.trial} ngày`, "Thực đơn món Việt tự lên mỗi ngày, đổi món 1 chạm", "Chụp ảnh tính calo, hỏi AI", "Ghi bữa, nhắc giờ ăn, theo dõi cân, tổng kết tháng", `Hết ${plan.trial} ngày tự về gói Miễn phí, không tự trừ tiền`]
-  : ["Thực đơn tự lên mỗi ngày", "Đổi món 1 chạm", "Ghi bữa, nhắc giờ ăn", "Theo dõi cân, tổng kết tháng"]);
+  ? [`Toàn bộ tính năng Premium trong ${plan.trial} ngày`, "Thực đơn món Việt tự lên mỗi ngày, đổi món 1 chạm", "Chụp ảnh tính calo, hỏi AI", "Ghi bữa, nhắc giờ ăn, theo dõi cân, tổng kết tháng", "Tập luyện theo giáo án, ghi tạ từng hiệp", `Hết ${plan.trial} ngày tự về gói Miễn phí, không tự trừ tiền`]
+  : ["Thực đơn tự lên mỗi ngày", "Đổi món 1 chạm", "Ghi bữa, nhắc giờ ăn", "Theo dõi cân, tổng kết tháng", "Tập luyện theo giáo án, ghi tạ từng hiệp"]);

@@ -190,6 +190,20 @@ main.home{overflow-x:clip}@media(max-width:720px){.lf6{display:none}}
 .h-arr{position:absolute;right:-17px;top:50%;transform:translateY(-50%);z-index:2;width:28px;height:28px;border-radius:14px;background:#fff;border:1px solid #E6ECF5;color:#94A3B8;font-size:18px;display:flex;align-items:center;justify-content:center}
 .lf5{width:120px;left:-86px;top:-30px;transform:rotate(30deg)}.lf6{width:40px;right:-30px;top:8px;transform:rotate(60deg)}
 .h-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+/* 06/11 trang chủ: "Ăn đúng, tập đúng, giữ thói quen" (3 thẻ ảnh app thật) + "Đọc theo chủ đề" (8 ô) */
+.h-more{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
+.h-mc{padding:28px 26px 0;display:flex;flex-direction:column;gap:10px;overflow:hidden;min-width:0}
+.h-mc h3{font-size:21px;font-weight:800;line-height:1.3}.h-mc .fsub{font-size:15px;color:#64748B;line-height:1.55}
+.h-mpts{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}.h-mpts span{font-size:13px;font-weight:700;color:#0B3B91;background:#EEF4FF;border-radius:999px;padding:5px 10px;white-space:nowrap}
+.h-mlk{font-weight:700;color:#0062F0;font-size:15px;align-self:flex-start}.h-mlk:hover{text-decoration:underline}
+.h-mph{margin-top:auto;padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;height:300px;overflow:hidden;align-items:start}
+.h-mph img{width:100%;height:auto;display:block;border-radius:22px 22px 0 0;border:6px solid #0F172A;border-bottom:0;box-shadow:0 12px 28px rgba(15,23,42,.18)}
+.h-topics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.h-tp{padding:20px;display:flex;flex-direction:column;gap:6px;min-width:0;transition:box-shadow .15s,border-color .15s}.h-tp:hover{border-color:#BFD6FF;box-shadow:0 12px 28px rgba(15,23,42,.08)}
+.h-tp b{font-size:17px;color:#0F172A;line-height:1.35}.h-tp span{font-size:14px;color:#64748B;line-height:1.5}.h-tp em{font-style:normal;font-size:13.5px;font-weight:800;color:#0062F0;margin-top:auto;padding-top:6px}
+@media (min-width:721px) and (max-width:1024px){.h-more{grid-template-columns:1fr 1fr}.h-topics{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:720px){.h-more{grid-template-columns:1fr;gap:16px}.h-mc{padding:22px 20px 0}.h-mc h3{font-size:19px}.h-mc .fsub{font-size:14.5px}.h-mph{height:240px;gap:10px;padding-top:12px}.h-mph img{border-width:5px;border-radius:18px 18px 0 0}
+ .h-topics{grid-template-columns:1fr 1fr;gap:10px}.h-tp{padding:14px}.h-tp b{font-size:15px}.h-tp span{font-size:13px}.h-tp em{font-size:12.5px}}
 .h-feat{border-radius:26px;padding:28px 26px 0;display:flex;flex-direction:column;gap:8px;overflow:hidden;border:1px solid rgba(15,23,42,.05);box-shadow:0 18px 40px -26px rgba(15,35,80,.3)}
 .h-feat h3{font-size:19px;font-weight:800;line-height:1.3}.h-feat .fsub{font-size:14.5px;color:#64748B;line-height:1.55}
 .f1{background:linear-gradient(180deg,#FFFFFF,#F2F7FF)}.f2{background:linear-gradient(180deg,#FFF8EF,#FFEEDB)}.f3{background:linear-gradient(180deg,#F1FBF4,#E3F6E9)}
@@ -407,3 +421,5 @@ a.pht:hover{background:#FFE4E6}
 .extg p{font-size:14px;color:var(--mut);line-height:1.55;margin:0}
 /* 01/11 (chủ dự án chụp: chip cuộn ngang trên điện thoại, khách không biết còn chip để cuộn): Thư viện bài tập + xếp hạng Pi → chip xuống dòng, thấy hết */
 @media (max-width:720px){.chips.chips-wrap{flex-wrap:wrap;overflow:visible;gap:6px}.chips-wrap .chip{height:34px;padding:0 12px;font-size:13.5px}.chips-wrap .chip em{margin-left:4px}}
+/* 06/11: máy tính bảng 721–1100px — menu 7 mục bị gãy 2 dòng và tràn ngang → dùng nút menu như điện thoại; ảnh điện thoại ở banner không làm trang cuộn ngang */
+@media (min-width:721px) and (max-width:1100px){.navbar>nav.only-pc{display:none!important}.navbar .mm.only-m{display:block!important}.navbar{gap:14px!important}.h-hero{overflow-x:clip}}
