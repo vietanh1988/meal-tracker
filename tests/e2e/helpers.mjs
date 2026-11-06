@@ -160,3 +160,19 @@ export async function openPcAdmin(page) {
   catch (e) { await page.reload(); await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 }); await btn.waitFor({ state: "visible", timeout: 15_000 }); }
   await btn.click();
 }
+
+// 06/11: Tin giảm cân — app đọc bài từ fipilotai.com; e2e trả dữ liệu mẫu (chép từ web thật, fixtures/app-*.json), ảnh thay bằng ảnh mẫu
+export async function mockNews(page) {
+  const news = readFileSync(new URL("./fixtures/app-news.json", import.meta.url), "utf8");
+  const posts = JSON.parse(readFileSync(new URL("./fixtures/app-post.json", import.meta.url), "utf8"));
+  const jpg = readFileSync(new URL("./fixtures/bua-com-thit-kho.jpg", import.meta.url));
+  const H = { "Access-Control-Allow-Origin": "*" };
+  await page.route("https://fipilotai.com/api/app-news", (r) => r.fulfill({ status: 200, contentType: "application/json", headers: H, body: news }));
+  await page.route("https://fipilotai.com/api/app-post/**", (r) => {
+    const slug = decodeURIComponent(new URL(r.request().url()).pathname.split("/").pop());
+    const p = posts[slug];
+    return r.fulfill({ status: p ? 200 : 404, contentType: "application/json", headers: H, body: JSON.stringify(p || { error: "not_found" }) });
+  });
+  await page.route(/^https:\/\/fipilotai\.com\/(anh\/|_next\/image|img\/)/, (r) => r.fulfill({ status: 200, contentType: "image/jpeg", headers: H, body: jpg }));
+  return { news: JSON.parse(news), posts };
+}

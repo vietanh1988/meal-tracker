@@ -80,6 +80,9 @@ import { usePetApp } from "../pet/PetApp";
 import { useWorkout } from "../workout/useWorkout";
 import { supabase } from "../lib/supabase";
 import { WorkoutApp } from "../workout/WorkoutApp";
+import { exOf } from "../workout/exLib.jsx";
+import { NewsScreen } from "../news/NewsScreen";
+import { NewsReader } from "../news/NewsReader";
 import { WorkoutButton } from "../workout/WorkoutCard";
 import { PET_CSS } from "../pet/PetAvatar";
 import { todayVN, addDays, nowVNParts, friendlyDate, fmtVN, templateKeyOf, weekRange } from "../lib/dateVN";
@@ -429,7 +432,7 @@ export function MobileApp(props) {
     const ids = idsFor(l.date);
     const mealId = ids.includes(l.mealId) ? l.mealId : ids[0];
     const sg = suggestFor(mealId, l.date);
-    return <LogMealSheet date={l.date} onDate={(d) => { updateLog({ date: d }); if (d !== today && !dayCache[d]) loadDay(d); }} mealId={mealId} onMeal={(id) => updateLog({ mealId: id })}
+    return <LogMealSheet initialQ={l.q || ""} date={l.date} onDate={(d) => { updateLog({ date: d }); if (d !== today && !dayCache[d]) loadDay(d); }} mealId={mealId} onMeal={(id) => updateLog({ mealId: id })}
       mealIds={ids} dateOptions={dateOptions} recentMeals={recentMeals} frequent={frequent} foodCache={calcFoodCache}
       onClose={closeLayer} aiOn={!!flags.ai_macro} saveMine={saveMyFoods}
       onPhoto={flags.photo_macro ? (tray) => (tray && tray.n ? openLayer({ type: "photo", mealId, date: l.date, tray }) : replaceTop({ type: "photo", mealId: l.mealId })) : null}
@@ -570,11 +573,23 @@ export function MobileApp(props) {
   };
   const MENU_PAGE_TITLE = { menu_day: "Lặp lại hằng tuần", menu_tpl: "Thực đơn mẫu", menu_past: "Ngày đã ăn" };
 
+  const newsOpen = (slug) => openLayer({ type: "page", sec: "news_post", slug });
+  const newsTool = (k) => {
+    if (k === "tinh-calo") openLayer({ type: "page", sec: "goals" });
+    else if (k === "bang-calo") openLayer({ type: "log", date: today, mealId: defaultMealFor(today) });
+    else if (k === "bai-tap") openLayer({ type: "page", sec: "workout", tab: "lib" });
+    else if (k === "giao-an") openLayer({ type: "page", sec: "workout", tab: "plan" });
+    else if (k === "pi") openLayer({ type: "page", sec: "pet" });
+  };
   const renderPage = (l) => {
     const sec = l.sec;
     if (sec === "pet" || String(sec).startsWith("pet_")) return petApp.page(sec, l);
+    // 06/11: Tin giảm cân (nút Pi › Tin giảm cân) — bài web đọc trong app; link trong bài mở đúng màn app
+    if (sec === "news") return <NewsScreen onBack={closeLayer} onOpen={newsOpen} onTool={newsTool} />;
+    if (sec === "news_post") return <NewsReader slug={l.slug} onBack={closeLayer} onOpenPost={(sl, replace) => (replace ? replaceTop : openLayer)({ type: "page", sec: "news_post", slug: sl })}
+      onFood={(q) => openLayer({ type: "log", date: today, mealId: defaultMealFor(today), q })} onEx={(id) => { const e = exOf(id); if (e) openLayer({ type: "page", sec: "workout", tab: "lib", view: { k: "ex", ex: e } }); }} onTool={newsTool} />;
     // 01/11: Tập luyện — giáo án đổi ngày thì Lịch tập (ngày tập / nghỉ) đổi theo; tập xong Pi thưởng Hạt (máy chủ chấm)
-    if (sec === "workout") return <WorkoutApp w={workout} profile={profile} loss={lossMode} today={today} initial={{ tab: l.tab, view: l.view }} onBack={closeLayer} showToast={showToast} pet={petApp.view}
+    if (sec === "workout") return <WorkoutApp onRead={newsOpen} w={workout} profile={profile} loss={lossMode} today={today} initial={{ tab: l.tab, view: l.view }} onBack={closeLayer} showToast={showToast} pet={petApp.view}
       syncDays={(days) => { const d = [...new Set(days)].filter((x) => x >= 0 && x <= 6).sort((a, b) => a - b); const cur = [...(profileRef.current.gymDays || [])].sort((a, b) => a - b); if (d.length && d.join() !== cur.join()) setProfile({ ...profileRef.current, gymDays: d }); }}
       onReward={async (id) => { const { data, error } = await supabase.rpc("pet_workout_claim", { p_session: id }); if (error) return { ok: false }; if (data?.ok) petApp.refresh?.(); return data; }} />;
     if (MENU_PAGE_TITLE[sec]) return (
@@ -930,7 +945,7 @@ export function MobileApp(props) {
             onPhotoBig={lossMode ? () => openPhoto(null) : null} focusBonus={focusBonus} goalSub={goalSub}
             onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
-            shortcut={<><WorkoutButton w={workout} today={today} onOpen={() => openLayer({ type: "page", sec: "workout" })} />{petApp.on && petApp.view ? <PiShortcut pet={petApp.view} userId={user?.id} notif={notif} onGo={(d) => (d === "room" ? openLayer({ type: "page", sec: "pet" }) : openLayer({ type: "page", sec: "pet_social", tab: d === "khoe" ? "show" : d }))} /> : null}</>}
+            shortcut={<><WorkoutButton w={workout} today={today} onOpen={() => openLayer({ type: "page", sec: "workout" })} />{petApp.on && petApp.view ? <PiShortcut pet={petApp.view} userId={user?.id} notif={notif} onGo={(d) => (d === "room" ? openLayer({ type: "page", sec: "pet" }) : d === "news" ? openLayer({ type: "page", sec: "news" }) : openLayer({ type: "page", sec: "pet_social", tab: d === "khoe" ? "show" : d }))} /> : null}</>}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
             suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}

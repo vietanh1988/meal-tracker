@@ -1,7 +1,7 @@
 // 01/11 (chốt bản vẽ "Tập luyện"): chọn giáo án mẫu → Thư viện (tên Việt + tên Anh, tìm không dấu, bài tự thêm) → sửa lịch (đặt ngày nghỉ, Lịch tập đổi theo)
 // → Hôm nay có thẻ Buổi tập → ghi 10 hiệp → Xong → Pi +20 Hạt (máy chủ chấm) → Nhật ký.
 import { test, expect } from "@playwright/test";
-import { login, S, rest, waitDb, tap } from "./helpers.mjs";
+import { login, S, rest, waitDb, tap, mockNews } from "./helpers.mjs";
 
 test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, thưởng Hạt", async ({ browser }) => {
   test.setTimeout(150_000);
@@ -19,6 +19,7 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await clean();
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
     const page = await ctx.newPage();
+    await mockNews(page);
     await login(page);
 
     // 1 · nút Tập luyện cạnh chuông (không có thẻ ở Hôm nay) → chưa có giáo án → chọn mẫu Đẩy · Kéo · Chân
@@ -121,6 +122,15 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     const ticks = page.getByTestId("wk-set-tick");
     for (let k = 0; k < 10; k++) { await ticks.nth(k).scrollIntoViewIfNeeded(); await ticks.nth(k).click(); }
     await expect(page.locator('[data-testid="wk-set"][data-done="1"]')).toHaveCount(10);
+    await expect(page.getByTestId("wk-rest")).toBeVisible();
+    // 06/11: thanh nghỉ có 1 dòng bài cụm Tập luyện → mở bài trong app, quay lại vẫn đang tập, đồng hồ nghỉ vẫn chạy
+    const rr = page.getByTestId("wk-rest-read");
+    await expect(rr).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({ path: "shots/tap-nghi-doc-bai.png" });
+    await rr.click();
+    await expect(page.getByTestId("news-title")).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("button", { name: "Quay lại" }).last().click();
+    await expect(page.getByTestId("wk-session")).toBeVisible();
     await expect(page.getByTestId("wk-rest")).toBeVisible();
     // chạm ảnh bài → xem cách tập (không có nút Thêm), quay lại vẫn còn 10 hiệp đã tick
     await page.getByTestId("wk-ses-photo").first().click();

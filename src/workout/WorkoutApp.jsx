@@ -389,7 +389,7 @@ function DayEditor({ w, dow, onBack, onPick, showToast, syncDays }) {
 }
 
 // ---------------- Màn chính ----------------
-export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBack, showToast, syncDays, onReward, pet }) {
+export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBack, showToast, syncDays, onReward, pet, onRead }) {
   const [tab, setTab] = useState(initial?.tab || "plan");
   const [view, setView] = useState(initial?.view || null); // { k: "day"|"ex"|"session"|"log", ... }
   const [sheet, setSheet] = useState(null);
@@ -470,7 +470,7 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
   const exOver = over?.k === "ex" && <ExerciseDetail w={w} ex={over.ex} onBack={() => setOver(null)} />;
   if (view?.k === "session") return (
     <>
-      <SessionScreen w={w} today={today} start={view} onBack={() => setView(null)} showToast={showToast} onReward={onReward} pet={pet} onLog={() => { setView(null); setTab("log"); }}
+      <SessionScreen onRead={onRead} w={w} today={today} start={view} onBack={() => setView(null)} showToast={showToast} onReward={onReward} pet={pet} onLog={() => { setView(null); setTab("log"); }}
         onPickSwap={(muscle, cb) => { picker.current = cb; setOver({ k: "pick", muscle }); }} onOpenEx={(ex) => setOver({ k: "ex", ex })} />
       {pickOver}{exOver}
     </>

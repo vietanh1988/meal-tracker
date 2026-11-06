@@ -2,6 +2,7 @@
 // Nút: kính 42×42 bo 21 như chuông; chấm đỏ = số lời mời kết bạn chờ (hoặc chấm khi có tim mới chưa xem).
 // Menu: rộng 250, bo 18, nền trắng, bóng 0 16 40 / 30%, pad 6; dòng cao 56, ô icon 36 bo 12, chữ 14.5/800, phụ 12/600 #64748B; nền mờ 25% chạm để đóng.
 // Mỗi dòng mở đúng chỗ: Phòng Pi → màn Pi · Xếp hạng → Bạn bè & Xếp hạng tab Xếp hạng · Bạn bè → tab Bạn bè · Khoe Pi → tab Khoe.
+// 06/11 (chốt bản vẽ "Tin giảm cân"): dòng 5 "Tin giảm cân" → kho bài web đọc trong app (src/news). Không Hạt, không chấm đỏ.
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "../lib/supabase";
@@ -9,6 +10,7 @@ import { track } from "../lib/track";
 import { notifKind } from "../lib/notifKind";
 import { FONT, Icon } from "../mobile/ui";
 import { PetAvatar } from "./PetAvatar";
+import { loadNews } from "../news/newsData";
 
 const S = (d) => <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
 const IC = {
@@ -16,6 +18,7 @@ const IC = {
   rank: S(<><path d="M8 4h8v5a4 4 0 0 1-8 0z" /><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6" /></>),
   friends: S(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5" /><circle cx="17" cy="9" r="2.6" /><path d="M17.5 14.5c2 .3 3.4 1.8 4 4" /></>),
   khoe: S(<><rect x="4" y="3" width="16" height="18" rx="3" /><path d="M8 15l3-3 2 2 3-4" /><circle cx="9" cy="8" r="1.4" /></>),
+  news: S(<><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z" /><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5" /></>),
 };
 const fmt = (n) => Number(n || 0).toLocaleString("vi-VN");
 
@@ -25,6 +28,7 @@ export function PiShortcut({ pet, userId, notif, onGo }) {
   const [pos, setPos] = useState(null);
   const [rank, setRank] = useState(undefined);
   const [invites, setInvites] = useState(0);
+  const [nNews, setNNews] = useState(null);
   const loadInvites = async () => {
     if (!userId) return;
     const { data } = await supabase.from("pi_friends").select("by_user").eq("status", "pending").neq("by_user", userId);
@@ -40,7 +44,7 @@ export function PiShortcut({ pet, userId, notif, onGo }) {
     if (open) { setOpen(false); return; }
     const r = btn.current?.getBoundingClientRect();
     if (r) setPos({ top: r.bottom + 10, right: Math.max(12, window.innerWidth - r.right - 50), arrow: r.left + r.width / 2 });
-    setOpen(true); loadRank(); loadInvites(); track("pi_shortcut_open");
+    setOpen(true); loadRank(); loadInvites(); loadNews().then((d) => setNNews(d?.posts?.length || null)).catch(() => {}); track("pi_shortcut_open");
   };
   const go = (dest) => { setOpen(false); track("pi_shortcut", { dest }); onGo?.(dest); };
   if (!pet) return null;
@@ -49,6 +53,7 @@ export function PiShortcut({ pet, userId, notif, onGo }) {
     ["rank", "Xếp hạng", rank === undefined ? "Đang tải hạng…" : rank ? `Hạng ${rank} tuần này` : "Chưa có hạng tuần này", "#FEF3C7", "#B45309"],
     ["friends", "Bạn bè", invites ? `${invites} lời mời kết bạn` : "Kết bạn, thả tim, nhắn Pi", "#FFE4E6", "#E11D48"],
     ["khoe", "Khoe Pi", "Ảnh khoe và trang Pi trên web", "#F3EEFF", "#6D28D9"],
+    ["news", "Tin giảm cân", nNews ? `${nNews} bài · ăn, tập, giữ cân` : "Bài về ăn, tập, giữ cân", "#E0F2FE", "#0369A1"],
   ];
   return (
     <>

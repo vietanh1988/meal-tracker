@@ -28,7 +28,7 @@ const addBtn = (done) => ({ width: 40, height: 40, borderRadius: 20, border: "no
 export function LogMealSheet(p) {
   const { pickMode, date, mealId, mealIds, dateOptions, recentMeals, frequent, foodCache, onClose } = p;
   useLockScroll(true);
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(p.initialQ || ""); // 06/11: mở từ bài viết (Tin giảm cân) → ô tìm điền sẵn tên món
   const [done, setDone] = useState({});
   const inputRef = useRef(null);
   const timers = useRef([]);

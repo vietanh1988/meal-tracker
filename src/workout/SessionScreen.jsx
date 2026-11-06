@@ -9,12 +9,13 @@ import { track } from "../lib/track";
 import { newSession, sessionOfDate, lastSets, setsDone, setsTotal, volume, minutesOf, newRecords } from "./plan.js";
 import { exOf, unitOf, hasKg, fmtKg, ExPhoto } from "./exLib.jsx";
 import { PetAvatar } from "../pet/PetAvatar";
+import { loadNews, readSet, restPick } from "../news/newsData";
 
 const REST = 90;
 const num = (v) => { const n = Number(String(v).replace(",", ".")); return Number.isFinite(n) && n >= 0 ? n : 0; };
 const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-export function SessionScreen({ w, today, start, onBack, showToast, onReward, onLog, onPickSwap, onOpenEx, pet }) {
+export function SessionScreen({ w, today, start, onBack, showToast, onReward, onLog, onPickSwap, onOpenEx, pet, onRead }) {
   const [s, setS] = useState(() => {
     const old = start?.id ? w.sessions.find((x) => x.id === start.id) : null;
     if (old) return JSON.parse(JSON.stringify(old));
@@ -22,6 +23,9 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
     return { ...newSession(dp, w.sessions, today), plan_id: w.active?.id || null, started_at: new Date().toISOString() };
   });
   const [rest, setRest] = useState(0);
+  // 06/11 (bản vẽ "Đọc bài trong app", màn 2): thanh nghỉ thêm 1 dòng bài cụm Tập luyện — chạm mở bài, đồng hồ nghỉ vẫn chạy (màn tập vẫn mở bên dưới)
+  const [news, setNews] = useState(null);
+  const nSeed = useRef(0);
   const [done, setDone] = useState(null); // tổng kết sau khi xong
   const [ask, setAsk] = useState(false);
   const [now, setNow] = useState(Date.now());
@@ -68,6 +72,9 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
   };
   const drop = async () => { if (s.id) await w.deleteSession(s.id); onBack(); };
 
+  useEffect(() => { if (rest > 0 && onRead && !news) loadNews().then((d) => setNews(d)).catch(() => {}); }, [rest > 0]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (rest === REST) nSeed.current += 1; }, [rest]);
+  const restPost = rest > 0 && onRead && news ? restPick(news, readSet(), nSeed.current) : null;
   const nDone = setsDone(s), nAll = setsTotal(s);
   const mins = minutesOf(s, now);
   return (
@@ -76,11 +83,21 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
       footer={!done && (
         <div style={{ position: "relative", padding: "8px 12px calc(env(safe-area-inset-bottom, 0px) + 10px)", background: "rgba(255,255,255,0.92)", borderTop: "1px solid #EEF2FA" }}>
           {rest > 0 && (
-            <div data-testid="wk-rest" style={{ position: "absolute", left: 12, right: 12, bottom: "calc(100% + 8px)", height: 64, borderRadius: 20, background: "#0F172A", color: "#FFFFFF", display: "flex", alignItems: "center", gap: 12, padding: "0 14px", boxShadow: "0 10px 30px rgba(15,23,42,0.35)" }}>
+            <div data-testid="wk-rest" style={{ position: "absolute", left: 12, right: 12, bottom: "calc(100% + 8px)", borderRadius: 20, background: "#0F172A", color: "#FFFFFF", padding: "0 14px", boxShadow: "0 10px 30px rgba(15,23,42,0.35)" }}>
+             <div style={{ height: 64, display: "flex", alignItems: "center", gap: 12 }}>
               <b style={{ fontSize: 24, fontWeight: 900, fontVariantNumeric: "tabular-nums" }}>{mmss(rest)}</b>
               <span style={{ flex: 1, fontSize: 12.5, opacity: 0.8 }}>Nghỉ giữa hiệp</span>
               <button type="button" onClick={() => setRest((r) => r + 30)} style={{ height: 34, padding: "0 12px", borderRadius: 10, border: "none", background: "rgba(255,255,255,0.14)", color: "#FFFFFF", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>+30 s</button>
               <button type="button" data-testid="wk-rest-skip" onClick={() => setRest(0)} style={{ height: 34, padding: "0 12px", borderRadius: 10, border: "none", background: "rgba(255,255,255,0.14)", color: "#FFFFFF", fontSize: 13, fontWeight: 800, fontFamily: "inherit" }}>Bỏ qua</button>
+             </div>
+              {restPost && (
+                <button type="button" data-testid="wk-rest-read" data-slug={restPost.slug} onClick={() => { track("news_rest", { slug: restPost.slug }); onRead(restPost.slug); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 0 12px", border: "none", borderTop: "1px solid rgba(255,255,255,0.12)", background: "transparent", color: "#FFFFFF", fontFamily: "inherit", textAlign: "left" }}>
+                  {restPost.cover && <img src={restPost.cover} alt="" loading="lazy" style={{ width: 40, height: 40, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />}
+                  <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontSize: 13.5, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{restPost.title}</span><span style={{ fontSize: 11.5, opacity: 0.7 }}>Đọc trong lúc nghỉ · {restPost.min} phút</span></span>
+                  <span aria-hidden="true" style={{ fontSize: 18, opacity: 0.8 }}>›</span>
+                </button>
+              )}
             </div>
           )}
           <button type="button" data-testid="wk-ses-finish" onClick={finish} style={{ width: "100%", height: 50, borderRadius: 16, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, fontFamily: "inherit" }}>Xong buổi tập</button>
