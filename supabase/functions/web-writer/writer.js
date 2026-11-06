@@ -2,7 +2,7 @@
 import {
   cfgOf, systemPrompt, buildUserPrompt, researchPrompt, pickCategory, parseArticle, mdToBlocks, articleIssues, articleToPost,
   imagePrompt, matchMedia, textCost, IMG_PRICE, IMG_MODEL, providerOf, slugOf, postReady, nextSlot, pickFoods, foodTable, linkTargets, linkStats,
-  caloHints, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk, sourcesFromResearch, sourcesBlocks, reviseUnits, revisePrompt, parseRevise, applyRevise, hasSources,
+  caloHints, intentClash, CLASH_HARD, reviewPrompt, parseReview, fixPrompt, linkIssues, joinChunk, sourcesFromResearch, sourcesBlocks, reviseUnits, revisePrompt, parseRevise, applyRevise, hasSources,
   relinkUnits, relinkPrompt, parseRelink, applyRelink, backlinkCandidates,
 } from "./aiWrite.js";
 import { fixSources } from "./sources.js";
@@ -13,6 +13,7 @@ const ENV_CLAUDE = envClaude;
 const ORIGINS = ["https://app.fipilotai.com", "https://fipilotai.com", "https://www.fipilotai.com", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173"];
 const PUB = "https://fipilotai.com/anh/";
 const CALO_API = "https://fipilotai.com/api/calo-data"; // số calo kho món app (giống trang /calo/…)
+const INTENT_API = "https://fipilotai.com/api/intent-pages"; // 06/11: mọi trang + ý định ngắn (chặn trùng)
 const CHUNK_TOKENS = 3500, MAX_CHUNKS = 5, MAX_ATTEMPTS = 3;
 const BUDGET_MS = 95_000; // mỗi lần gọi dừng nhận bước mới sau ~95 giây
 
@@ -265,7 +266,16 @@ async function step(admin, job, cfg, t0) {
   };
   const afterText = (reviewed) => (cfg.review_model && !reviewed ? "review" : cfg.img_on ? "images" : "saving"); // viết xong → soát (nếu bật) → ảnh → lưu
 
-  if (job.status === "queued") { await save({ status: cfg.searches > 0 || job.auto_term ? "research" : "writing" }); return true; }
+  if (job.status === "queued") {
+    // 06/11: chặn trùng ý định với bài / trang đã có TRƯỚC bước tốn tiền (ghi chú có "[cho trùng]" = chủ dự án cho viết)
+    if (!/\[cho trùng\]/i.test(job.notes || "")) {
+      let docs = [];
+      try { const r = await fetch(INTENT_API, { signal: AbortSignal.timeout(8000) }); if (r.ok) docs = await r.json(); } catch (_e) { /* web không trả thì bỏ qua */ }
+      const top = intentClash(job.keyword, Array.isArray(docs) ? docs : [])[0];
+      if (top && top.score >= CLASH_HARD) { await save({ status: "error", error: `Trùng ý định ${Math.round(top.score * 100)}% với ${top.url} — đổi từ khoá, hoặc bấm Viết lại nếu vẫn muốn viết`, finished_at: new Date().toISOString() }); return true; }
+    }
+    await save({ status: cfg.searches > 0 || job.auto_term ? "research" : "writing" }); return true;
+  }
 
   if (job.status === "research") {
     const r = await llm(prov, await keys(), {

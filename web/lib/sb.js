@@ -22,4 +22,13 @@ export async function rpc(fn, body) {
   } catch { return null; }
 }
 
+// 06/11: gọi hàm đọc (không ghi) mà vẫn để Next cache theo trang (rpc ở trên luôn no-store)
+export async function rpcRead(fn, body, { revalidate = REVALIDATE } = {}) {
+  if (!KEY) return null;
+  try {
+    const r = await fetch(`${URL_}/rest/v1/rpc/${fn}`, { method: "POST", headers: { ...H(), "Content-Type": "application/json" }, body: JSON.stringify(body || {}), next: { revalidate } });
+    return r.ok ? await r.json().catch(() => null) : null;
+  } catch { return null; }
+}
+
 export const enc = (v) => encodeURIComponent(v);

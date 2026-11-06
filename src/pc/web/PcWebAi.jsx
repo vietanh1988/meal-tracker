@@ -15,7 +15,8 @@ import { Btn, Pill, Card, ErrorBox, Loading, vnInt } from "../pcUI";
 import { Modal, Tog, inpStyle } from "./webUI";
 import { listTerms, getPost, savePost, getSite } from "./webApi";
 import { seoChecks, clean, liveStatus } from "./webLib";
-import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE, estText, estReview, providerOf, postReady, nextSlot } from "./aiWrite";
+import { RULES_DEFAULT, RULES_VERSION, cfgOf, TEXT_PRICE, IMG_PRICE, SEARCH_PRICE, estText, estReview, providerOf, postReady, nextSlot, intentClash, CLASH_HARD } from "./aiWrite";
+import { appChoose } from "../../lib/dialog";
 import { PROVIDERS, MODELS as AI_MODELS, DEFAULT_MODEL } from "../../lib/aiModels";
 
 // Hãng viết: Claude / Gemini / ChatGPT (danh sách mô hình dùng chung với Kết nối AI); mọi hãng đều tra web được
@@ -168,7 +169,20 @@ export function PcWebAi({ top, showToast, user, go }) {
   const enqueue = async () => {
     if (!lines.length || lines.length > 10 || busy) return;
     setBusy("q");
-    const rows = lines.map((k) => ({ keyword: k.slice(0, 200), term_id: term === "auto" ? null : term, auto_term: term === "auto", notes: notes.trim() || null, model: cfg.model, created_by: user?.id || null }));
+    // 06/11 (chủ dự án: bài viết thêm không được trùng ý định với bài / trang đã có): so từng từ khoá với mọi trang trên web TRƯỚC khi tốn tiền
+    let docs = [];
+    try { const r = await fetch("https://fipilotai.com/api/intent-pages", { signal: AbortSignal.timeout(8000) }); if (r.ok) docs = await r.json(); } catch { /* web không trả: hàm viết vẫn chặn trùng lần nữa */ }
+    const hits = lines.map((k) => ({ k, c: intentClash(k, docs) })).filter((x) => x.c.length);
+    let force = new Set();
+    if (hits.length) {
+      const msg = hits.map(({ k, c }) => `• "${k}"\n${c.map((x) => `   ${x.score >= CLASH_HARD ? "TRÙNG" : "gần"} ${Math.round(x.score * 100)}%: ${x.url}`).join("\n")}`).join("\n");
+      const hard = hits.filter((x) => x.c[0].score >= CLASH_HARD).map((x) => x.k);
+      const pick = await appChoose(`${hits.length} từ khoá trùng hoặc gần ý định với trang đã có:\n${msg}\n\nTừ khoá TRÙNG sẽ bị hàm viết dừng (không tốn tiền) nếu không cho viết.`, { title: "Kiểm trùng ý định", buttons: [{ id: "skip", label: `Bỏ ${hard.length || hits.length} từ khoá trùng, xếp phần còn lại`, kind: "primary" }, { id: "force", label: "Vẫn viết tất cả", kind: "danger" }, { id: "back", label: "Quay lại sửa" }] });
+      if (!pick || pick === "back") { setBusy(""); return; }
+      if (pick === "force") force = new Set(hits.map((x) => x.k));
+      else { const drop = new Set(hard.length ? hard : hits.map((x) => x.k)); lines.splice(0, lines.length, ...lines.filter((k) => !drop.has(k))); if (!lines.length) { setBusy(""); return; } }
+    }
+    const rows = lines.map((k) => ({ keyword: k.slice(0, 200), term_id: term === "auto" ? null : term, auto_term: term === "auto", notes: [notes.trim(), force.has(k) ? "[cho trùng]" : ""].filter(Boolean).join("\n") || null, model: cfg.model, created_by: user?.id || null }));
     const { error } = await supabase.from("web_ai_jobs").insert(rows);
     setBusy("");
     if (error) return showToast?.({ text: "Chưa xếp hàng được: " + error.message, tone: "red" });
@@ -184,12 +198,14 @@ export function PcWebAi({ top, showToast, user, go }) {
   };
   // Viết lại (lỗi) / Chạy lại (đã huỷ): về đúng bước dừng; bài huỷ trước khi có canceledAt thì lấy bước cuối trong tiến trình
   const retry = async (j) => {
-    const { data } = await supabase.from("web_ai_jobs").select("state").eq("id", j.id).single();
+    const { data } = await supabase.from("web_ai_jobs").select("state,notes,error").eq("id", j.id).single();
     const st = data?.state || {};
+    // 06/11: bài bị dừng vì trùng ý định → bấm Viết lại = chủ dự án cho viết ("[cho trùng]" vào ghi chú, hàm viết bỏ qua bước kiểm)
+    const forceIntent = /^Trùng ý định/.test(data?.error || "") && !/\[cho trùng\]/i.test(data?.notes || "");
     const lastLog = [...(st.log || [])].reverse().map((l) => l.s).find((x) => OPEN.includes(x));
     const back = (j.status === "canceled" ? st.canceledAt || lastLog : st.failedAt) || "queued";
     const { canceledAt: _c, ...rest } = st;
-    const { error } = await supabase.from("web_ai_jobs").update({ status: back, state: rest, attempts: 0, error: null, finished_at: null, locked_until: null, updated_at: new Date().toISOString() }).eq("id", j.id);
+    const { error } = await supabase.from("web_ai_jobs").update({ status: back, state: rest, ...(forceIntent ? { notes: [data?.notes, "[cho trùng]"].filter(Boolean).join("\n") } : {}), attempts: 0, error: null, finished_at: null, locked_until: null, updated_at: new Date().toISOString() }).eq("id", j.id);
     if (error) return showToast?.({ text: "Chưa chạy lại được: " + error.message, tone: "red" });
     const capNow = Number(cfg?.daily_cap_usd) > 0 && today >= Number(cfg.daily_cap_usd);
     showToast?.({ text: capNow ? "Đã đưa lại vào hàng chờ. Hôm nay đã chạm trần tiền nên 0h mới chạy tiếp (hoặc nâng trần)." : back === "queued" ? "Đã đưa lại vào hàng chờ." : `Đã đưa lại vào hàng chờ, chạy tiếp từ bước "${(STEPS.find(([k]) => k === back) || [, back])[1]}".` }); load();

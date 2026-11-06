@@ -6,6 +6,9 @@ import JsonLd from "@/components/JsonLd";
 import { ExPhoto, ExCard } from "@/components/Ex";
 import { getSettings, alt, withOg, appLink, siteUrl } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
+import RelPosts from "@/components/RelPosts";
+import { rpcRead } from "@/lib/sb";
+import { exPats } from "@/lib/mentions";
 import { EXERCISES, exSlug, exBySlug, MUSCLE_NAME, MUSCLE_SLUG, MUSCLE_TONE, EQUIPS, LEVEL_NAME, inTemplates, related, photoUrls, setsText, targetsOf } from "@/lib/workout";
 
 export const revalidate = 3600;
@@ -28,6 +31,8 @@ export default async function BaiTapChiTiet({ params }) {
   const tpls = inTemplates(e.id);
   const tg = targetsOf(e.id); // 01/11: cơ tác động
   const rel = related(e, 4);
+  // 06/11 (bản vẽ "Cụm chủ đề", phần 4): bài viết có khối Bài tập này hoặc nhắc tên bài tập
+  const posts = ((await rpcRead("web_mentions", { p_pats: exPats(e), p_limit: 3 }, { revalidate: 3600 })) || []);
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bài tập", path: "/bai-tap" }, { name: MUSCLE_NAME[e.muscle], path: `/bai-tap/nhom/${MUSCLE_SLUG[e.muscle]}` }, { name: e.vi, path: `/bai-tap/${params.slug}` }];
   const tone = (m) => MUSCLE_TONE[m] || ["#F1F5F9", "#475569"];
   const sug = tpls[0] ? `${setsText(tpls[0].sets, tpls[0].reps, e)}, nghỉ ${e.pattern === "cardio" || e.pattern === "core" ? "30–60" : "60–90"} giây` : "3 × 10–12";
@@ -77,6 +82,7 @@ export default async function BaiTapChiTiet({ params }) {
             </div>
           )}
         </div>
+        <RelPosts posts={posts} title="Bài viết có bài tập này" more={{ url: "/chu-de/tap-luyen", label: "Cụm Tập luyện giảm mỡ" }} testid="ex-posts" />
         {rel.length > 0 && <><h2 className="h2" style={{ fontSize: 26, marginTop: 16 }}>Bài cùng nhóm cơ {MUSCLE_NAME[e.muscle]?.toLowerCase()}</h2><div className="exlib">{rel.map((x) => <ExCard key={x.id} e={x} />)}</div></>}
       </div>
     </main>

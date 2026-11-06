@@ -6,7 +6,8 @@ import Sticky from "@/components/Sticky";
 import Portions from "@/components/Portions";
 import { getSettings, appLink, alt, ogBase, withOg } from "@/lib/site";
 import { caloBySlug, caloFoods } from "@/lib/calo";
-import { q, enc } from "@/lib/sb";
+import { q, enc, rpcRead } from "@/lib/sb";
+import { namePats } from "@/lib/mentions";
 import { mainPortion } from "@/lib/foods";
 import { fillTrial } from "@/lib/plans";
 import { breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
@@ -33,7 +34,10 @@ export default async function Calo({ params }) {
   if (Array.isArray(pg.portions) && pg.portions.length) { const keep = fd.portions.filter((x) => pg.portions.includes(x.name)); fd = { ...fd, portions: [...(pg.portions.includes("100 g") ? [{ name: "100 g", gram: 100, ...fd.per100 }] : []), ...(keep.length ? keep : fd.portions)] }; }
   const por = mainPortion(fd);
   const relIds = (Array.isArray(pg.related) ? pg.related : []).filter((x) => /^[0-9a-f-]{36}$/i.test(x)).slice(0, 6);
-  const rel = relIds.length ? ((await q(`web_posts?id=in.(${relIds.map(enc).join(",")})&status=eq.published&select=id,title,slug,cover_url`)) || []).sort((a, b) => relIds.indexOf(a.id) - relIds.indexOf(b.id)) : [];
+  const pinned = relIds.length ? ((await q(`web_posts?id=in.(${relIds.map(enc).join(",")})&status=eq.published&select=id,title,slug,cover_url`)) || []).sort((a, b) => relIds.indexOf(a.id) - relIds.indexOf(b.id)) : [];
+  // 06/11 (bản vẽ "Cụm chủ đề", phần 3): bài chọn tay đứng đầu, còn lại tự lấy bài có nhắc tên món (tối đa 3 bài)
+  const auto = pinned.length >= 3 ? [] : ((await rpcRead("web_mentions", { p_pats: namePats(fd.name), p_limit: 6 }, { revalidate: 300 })) || []);
+  const rel = [...pinned, ...auto.filter((x) => !pinned.some((y) => y.id === x.id))].slice(0, 3);
   const path = `/calo/${fd.slug}`;
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng calo món", path: "/bang-calo" }, { name: fd.name, path }];
   const same = (await caloFoods()).filter((x) => x.cat === fd.cat && x.key !== fd.key).map((x) => ({ x, p: mainPortion(x) })).filter((y) => y.p).sort((a, b) => Math.abs(a.p.cal - (por?.cal || 0)) - Math.abs(b.p.cal - (por?.cal || 0))).slice(0, 3);
@@ -82,8 +86,9 @@ export default async function Calo({ params }) {
             )}
             {rel.length > 0 && (
               <div className="card o3" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
-                <b style={{ fontSize: 16, marginBottom: 6 }}>Bài liên quan</b>
-                {rel.map((x, i) => <a key={x.id} href={`/${x.slug}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>{x.cover_url && <img className="th" src={x.cover_url} alt="" width={46} height={46} loading="lazy" style={{ width: 46, height: 46, objectFit: "cover" }} />}<span style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.4 }}>{x.title}</span></a>)}
+                <b style={{ fontSize: 16, marginBottom: 6 }}>Bài viết nhắc {fd.name.toLowerCase()}</b>
+                {rel.map((x, i) => <a key={x.id} href={`/${x.slug}`} data-testid="calo-rel" style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>{x.cover_url && <img className="th" src={x.cover_url} alt="" width={46} height={46} loading="lazy" style={{ width: 46, height: 46, objectFit: "cover" }} />}<span style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.4 }}>{x.title}</span></a>)}
+                <a href="/chu-de/co-beo-khong" style={{ fontSize: 14, fontWeight: 700, color: "#0062F0", paddingTop: 8, borderTop: "1px solid #EEF2F7" }}>Cụm Món này có béo không? ›</a>
               </div>
             )}
             <div className="o4 calocta" style={{ borderRadius: 18, background: "linear-gradient(160deg,#1A7CFF,#0050E6)", color: "#fff", padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>

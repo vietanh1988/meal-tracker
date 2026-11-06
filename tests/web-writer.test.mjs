@@ -236,7 +236,7 @@ test("link nội bộ + thẻ có sẵn + dòng tiến trình: AI nhận danh s�
   const html = p.blocks.map((b) => b.html || "").join(" ");
   for (const u of ["/tinh-calo", "/bmr-la-gi", "/chu-de/thuc-don", "/"]) assert.ok(html.includes(`href="${u}"`), u);
   assert.ok(!/x\.com|khong-co/.test(html)); assert.match(html, /web lạ/); // link lạ: bỏ link, giữ chữ
-  assert.deepEqual(j.state.linkStats, { total: 4, home: 1, cat: 1, page: 1, post: 1 });
+  assert.deepEqual(j.state.linkStats, { total: 4, home: 1, cat: 1, page: 1, post: 1, pillar: 0 });
   assert.deepEqual(j.state.log.map((x) => x.s), ["research", "writing", "review", "images", "saving", "done"]);
   assert.equal(tables.web_post_terms.filter((x) => x.term_id === "g1").length, 1); // dùng lại thẻ cũ
 });

@@ -110,7 +110,7 @@ test("link nội bộ: chỉ giữ đích trong danh sách, mỗi đích 1 lần
   assert.equal(b[2].html, 'Đoạn <a href="/">app</a> và lại app và lạ.');
   assert.equal(b[3].rows[0][0], "c");
   assert.deepEqual(b[4].items, ["bảng calo món việt rất là dài quá mức cho phép nhé", '<a href="/calo/pho-bo">calo phở bò</a>']);
-  assert.deepEqual(linkStats(b, L), { total: 2, home: 1, cat: 0, page: 1, post: 0 });
+  assert.deepEqual(linkStats(b, L), { total: 2, home: 1, cat: 0, page: 1, post: 0, pillar: 0 });
   assert.equal(mb("Sapo.\n\nĐoạn [a](/)")[1].html, "Đoạn a"); // không có danh sách đích → bỏ hết link
 });
 

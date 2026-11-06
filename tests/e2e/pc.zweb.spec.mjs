@@ -30,8 +30,13 @@ test("Quản trị web: viết bài, đăng, thùng rác, chuyên mục", async 
     await page.getByTestId("web-ai-kw").fill("e2e bữa sáng giảm cân\ne2e ăn phở có béo không");
     await page.getByTestId("web-ai-cat").selectOption({ label: "E2E Giảm cân" });
     await expect(page.getByTestId("web-ai-go")).toHaveText("Xếp hàng viết 2 bài");
+    // 06/11: kiểm trùng ý định với trang đã có (danh sách trang giả) → hộp chọn; "Vẫn viết" giữ 2 bài, bài trùng ghi [cho trùng]
+    await page.route("**/api/intent-pages", (route) => route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify([["/an-pho-co-beo-khong", "e2e ăn phở có béo không"], ["/an-bun-co-beo-khong", "ăn bún có béo không"], ["/calo/pho-bo", "Phở bò bao nhiêu calo"], ["/tinh-calo", "tính calo cần ăn mỗi ngày"]].map(([url, text]) => ({ url, text }))) }));
     await page.getByTestId("web-ai-go").click();
+    await expect(page.getByTestId("app-dialog")).toContainText("/an-pho-co-beo-khong");
+    await page.getByTestId("choose-force").click();
     await expect(page.getByTestId("web-ai-row")).toHaveCount(2);
+    await expect.poll(async () => (await rest("web_ai_jobs?keyword=eq.e2e%20%C4%83n%20ph%E1%BB%9F%20c%C3%B3%20b%C3%A9o%20kh%C3%B4ng&select=notes"))[0]?.notes || "").toContain("[cho trùng]");
     // Bấm dòng → hiện tiến trình từng bước (bài đang chờ: bước Xếp hàng đang chạy)
     await page.getByTestId("web-ai-toggle").first().click();
     await expect(page.getByTestId("web-ai-steps")).toBeVisible();

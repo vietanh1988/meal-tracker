@@ -11,8 +11,13 @@ import LegalToc from "@/components/LegalToc";
 import PostToc from "@/components/PostToc";
 import { legalPages, legalToBlocks, vnDateIso } from "@/lib/appdata";
 import PostCard from "@/components/PostCard";
+import RelPosts from "@/components/RelPosts";
+import { CLUSTERS, starOf } from "@/lib/clusters";
+import { postText, foodsInText } from "@/lib/mentions";
+import { caloFoods } from "@/lib/calo";
+import { mainPortion } from "@/lib/foods";
 import { getSettings, siteUrl, appLink, alt, ogBase, withOg } from "@/lib/site";
-import { getPostBySlug, latestPosts, postsByIds, catOf, fmtDate, readMin } from "@/lib/content";
+import { getPostBySlug, latestPosts, postsByIds, catOf, fmtDate, readMin, countPosts } from "@/lib/content";
 import { prepare, toc as mkToc, faqs } from "@/lib/blocks";
 import { linkTargets, autoLink } from "@/lib/autolink";
 import { splitLong } from "@/lib/paras";
@@ -102,7 +107,18 @@ export default async function Page({ params }) {
   const ids = p.related?.mode === "manual" ? p.related.ids || [] : [];
   let rel = [];
   if (ids.length) rel = (await postsByIds(ids)).filter((x) => x.id !== p.id);
-  if (rel.length < 3) rel = [...rel, ...(await latestPosts({ limit: 4, termId: cat?.id || null, exclude: [p.id, ...rel.map((x) => x.id)] }))].slice(0, 3);
+  // 06/11 (bản vẽ "Cụm chủ đề", phần 2): đọc tiếp trong cụm = bài trụ của cụm trước, rồi bài cùng cụm có nhiều thẻ chung nhất
+  const cl = cat ? CLUSTERS[cat.slug] : null;
+  if (rel.length < 3) {
+    const pool = await latestPosts({ limit: 24, termId: cat?.id || null, exclude: [p.id, ...rel.map((x) => x.id)] });
+    const myTags = new Set((p.terms || []).filter((x) => x.kind === "tag").map((x) => x.id));
+    const star = starOf(cat?.slug, p.slug);
+    const sc = (x) => (x.slug === star ? 100 : 0) + (x.terms || []).filter((y) => myTags.has(y.id)).length;
+    rel = [...rel, ...pool.map((x, i) => ({ x, v: sc(x), i })).sort((a, b) => b.v - a.v || a.i - b.i).map((y) => y.x)].slice(0, 3);
+  }
+  const clN = cl ? await countPosts(cat.id) : 0;
+  // món có trang /calo/ được nhắc trong bài (máy tự tìm, ẩn khi không có)
+  const ments = foodsInText(postText(blocks), (await caloFoods()).map((f) => ({ name: f.name, slug: f.slug, noindex: !!f.page?.noindex, img: f.page?.image_url || null, por: mainPortion(f) })), 8);
   const a = p.author;
   return (
     <main style={{ background: "#FFFFFF" }}>{/* 23/10: thân bài không khung (nền trắng cả trang cho thoáng), chỉ cột bên giữ khung */}
@@ -111,6 +127,7 @@ export default async function Page({ params }) {
         <div className="art art-flat" style={{ flex: 1, minWidth: 0, padding: "8px 0 0 0" }}>
           <article style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <Crumb items={crumbs.slice(0, -1)} last />
+            {cl && <div className="ctag" data-testid="post-cluster"><span>Thuộc cụm <b>{cat.name}</b></span><span aria-hidden="true">·</span><a href={`/${s.seo.cat_base}/${cat.slug}`}>{clN} bài trong cụm ›</a></div>}
             <h1 className="h1">{p.title}</h1>
             <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "#64748B", flexWrap: "wrap" }}>
               {a && <><Avatar a={a} size={32} /><a href={`/tac-gia/${a.slug}`} style={{ color: "#0F172A", fontWeight: 700 }}>{a.name}</a><span>·</span></>}
@@ -126,21 +143,13 @@ export default async function Page({ params }) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}><span className="eye" style={{ fontSize: 12 }}>Viết bởi</span><b style={{ fontSize: 17 }}>{a.name}</b>{a.job_title && <span className="mut" style={{ fontSize: 14 }}>{a.job_title}</span>}{a.bio && <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.6 }}>{a.bio}</p>}<a href={`/tac-gia/${a.slug}`} style={{ color: "#0062F0", fontWeight: 700, fontSize: 14.5 }}>Xem các bài của {a.name} →</a></div>
               </div>
             )}
-            {rel.length > 0 && (
-              <section className="rel" style={{ display: "flex", flexDirection: "column", gap: 20, marginTop: 40, paddingTop: 32, borderTop: "1px solid #EEF2F7" }}>
-                <h2 className="rel-h" style={{ fontSize: 24, fontWeight: 800 }}>Bài liên quan</h2>
-                <div className="grid3 only-pc" style={{ gap: 12 }}>{rel.map((x) => (
-                  <a key={x.id} href={`/${x.slug}`} className="card pcard" style={{ overflow: "hidden" }}>
-                    {x.cover_url ? <img {...imgAttrs(x.cover_url, "(max-width: 720px) 50vw, 240px")} alt={x.cover_alt || ""} loading="lazy" decoding="async" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} /> : <span style={{ display: "block", height: 130, background: "linear-gradient(135deg,#E8F0FF,#F5F9FF)" }} />}
-                    <span style={{ display: "block", padding: "14px 16px", fontSize: 16, fontWeight: 700, lineHeight: 1.4 }}>{x.title}</span>
-                  </a>))}</div>
-                <div className="only-m">{rel.map((x) => { const c = catOf(x); return (
-                  <a key={x.id} href={`/${x.slug}`} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 0", borderTop: "1px solid #EEF2F7" }}>
-                    {x.cover_url ? <img {...imgAttrs(x.cover_url, "72px")} alt={x.cover_alt || ""} loading="lazy" decoding="async" style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} /> : <span style={{ width: 72, height: 72, borderRadius: 12, background: "#E8F0FF", flexShrink: 0 }} />}
-                    <span style={{ display: "flex", flexDirection: "column", gap: 4 }}><span style={{ fontSize: 12, fontWeight: 800, color: "#0062F0", letterSpacing: ".04em" }}>{(c?.name || "Bài viết").toUpperCase()}</span><b style={{ fontSize: 15.5, lineHeight: 1.4 }}>{x.title}</b></span>
-                  </a>); })}</div>
+            {ments.length > 0 && (
+              <section className="ments" data-testid="post-foods">
+                <h2 style={{ fontSize: 22, fontWeight: 800 }}>Calo các món nhắc trong bài</h2>
+                <div className="mentg">{ments.map((f, i) => <a key={f.slug} className="mentc" href={`/calo/${f.slug}`}><img className="th" src={f.img || ["/img/bowl-1.jpg", "/img/bowl-2.jpg", "/img/bowl-3.jpg"][i % 3]} alt="" width={40} height={40} loading="lazy" /><span>{f.name}<small>{f.por ? `${f.por.cal} kcal · ${f.por.name}` : "Xem calo"} ›</small></span></a>)}</div>
               </section>
             )}
+            <RelPosts posts={rel} title={cl ? `Đọc tiếp trong cụm ${cat.name}` : "Bài liên quan"} label={cl ? cat.name : null} />
           </article>
         </div>
         <aside className="only-pc" style={{ width: 340, flexShrink: 0, display: "flex", flexDirection: "column", gap: 20, position: "sticky", top: 90 }}>
@@ -157,7 +166,7 @@ export default async function Page({ params }) {
         </aside>
       </div>
       <Sticky s={s} ref_={`post-${p.slug}`} />
-      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.art{padding:20px!important}.art-flat{padding:0!important}.cover{height:230px!important}.postwrap{padding-top:20px!important;padding-bottom:40px!important}.rel{gap:6px!important;margin-top:32px!important;padding-top:28px!important}.rel-h{font-size:22px!important;margin-bottom:8px}}` }} />
+      <style dangerouslySetInnerHTML={{ __html: `@media(max-width:720px){.art{padding:20px!important}.art-flat{padding:0!important}.cover{height:230px!important}.postwrap{padding-top:20px!important;padding-bottom:40px!important}.rel{gap:6px!important;margin-top:32px!important;padding-top:28px!important}.rel-h{font-size:22px!important;margin-bottom:8px}.ments h2{font-size:20px!important}}.ctag{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;padding:11px 16px;border-radius:14px;background:#F5F9FF;border:1px solid #DCE7FA;font-size:14.5px;color:#334155;margin-bottom:-8px}.ctag b{color:#0062F0}.ctag a{font-weight:700;color:#0062F0}.ments{display:flex;flex-direction:column;gap:14px;margin-top:24px}.mentg{display:flex;flex-wrap:wrap;gap:10px}.mentc{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:14px;border:1px solid #E6ECF5;background:#fff;font-size:14.5px;font-weight:600;color:#0F172A}.mentc:hover{border-color:#0062F0}.mentc img{width:40px;height:40px;border-radius:10px;object-fit:cover}.mentc small{display:block;font-size:12.5px;color:#0062F0;font-weight:700}` }} />
     </main>
   );
 }

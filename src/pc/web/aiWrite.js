@@ -233,19 +233,52 @@ export const fixPrompt = (issues, article) => `Bài dưới đây còn các lỗ
 const SITE_HOST = /^https?:\/\/(www\.)?fipilotai\.com/i;
 export const normUrl = (u) => { let x = String(u || "").trim().replace(SITE_HOST, ""); if (!x.startsWith("/")) return ""; x = x.split("#")[0].split("?")[0]; return x.length > 1 ? x.replace(/\/+$/, "") : "/"; };
 const wordsOf = (s) => vnSlug(s).split("-").filter((w) => w.length > 1);
+// 06/11: bài trụ ★ của từng cụm (= chuyên mục). PHẢI giống web/lib/clusters.js (test so khớp).
+export const CLUSTER_STAR = { "giam-can": "tham-hut-calo-la-gi", "co-beo-khong": "an-pho-co-beo-khong", "thuc-don": "thuc-don-giam-can-7-ngay", "kien-thuc": "macro-la-gi", "tap-luyen": "cardio-hay-tap-ta-de-giam-mo", "thoi-quen": "giam-can-xong-bi-tang-lai" };
+
+// ---- 06/11 (chủ dự án: "bài viết thêm không được trùng intent với bài và trang đã có"): chặn trùng ý định TRƯỚC khi tốn tiền ----
+// docs = mọi URL đang có [{ url, text }] (bài: tiêu đề + từ khoá; trang món: "<món> bao nhiêu calo"; trang bài tập: "cách tập <bài>"…).
+// Chữ càng hiếm trong cả kho càng nặng ký (IDF): "ăn chè có béo không" khác "ăn bún có béo không" vì "chè" / "bún" hiếm, còn "có béo không" thì phổ biến.
+// Điểm = trọng số chữ chung / trọng số hợp hai bên (0..1). ≥ CLASH_HARD: trùng, dừng · ≥ CLASH_SOFT: gần, báo để xem lại.
+export const CLASH_HARD = 0.6, CLASH_SOFT = 0.45;
+const IW_STOP = new Set(["và", "là", "của", "cho", "với", "thì", "để", "được", "này", "đó", "một", "các", "những", "trong", "theo", "khi", "nên", "ra", "vào", "từ", "đến", "hay", "hoặc", "mỗi", "từng", "cách", "gì", "nào", "thế", "sao", "bạn"]);
+export const intentWords = (s) => [...new Set(String(s || "").normalize("NFC").toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w && !IW_STOP.has(w)))];
+export function intentClash(keyword, docs = [], { selfUrl = "", top = 3 } = {}) {
+  const A = intentWords(keyword);
+  if (!A.length || !docs.length) return [];
+  const list = docs.filter((d) => d?.url && d.url !== selfUrl).map((d) => ({ ...d, w: intentWords(d.text) }));
+  const df = new Map();
+  for (const d of list) for (const w of d.w) df.set(w, (df.get(w) || 0) + 1);
+  const N = list.length;
+  const idf = (w) => Math.log((N + 1) / ((df.get(w) || 0) + 1)) + 0.1;
+  const sa = new Set(A);
+  return list.map((d) => {
+    const sb = new Set(d.w); let inter = 0, uni = 0, mi = 0, ma = 0, mb = 0;
+    for (const w of new Set([...sa, ...sb])) { const x = idf(w); uni += x; if (sa.has(w) && sb.has(w)) { inter += x; mi = Math.max(mi, x); } else if (sa.has(w)) ma = Math.max(ma, x); else mb = Math.max(mb, x); }
+    // mỗi bên có 1 chữ riêng hiếm hơn mọi chữ chung ("chè" ↔ "bún") = khác món / khác đối tượng → giảm nửa điểm
+    const own = ma >= mi && mb >= mi ? 0.5 : 1;
+    return { url: d.url, text: d.text, score: uni ? Math.round((inter / uni) * own * 100) / 100 : 0 };
+  }).filter((x) => x.score >= CLASH_SOFT).sort((a, b) => b.score - a.score).slice(0, top);
+}
+
 export function linkTargets({ keyword = "", cat = null, posts = [], foods = [], selfSlug = "" } = {}) {
   const out = [{ url: "/", kind: "home", title: "Trang chủ Fipilot AI: app ghi bữa ăn món Việt, tự tính calo và macro" }];
   if (cat?.slug) out.push({ url: `/chu-de/${cat.slug}`, kind: "cat", title: `Chuyên mục ${cat.name}` });
+  // 06/11 (cụm chủ đề): mọi bài con link lên bài trụ ★ của cụm (trừ chính bài trụ)
+  const star = cat?.slug ? CLUSTER_STAR[cat.slug] : null;
+  const starPost = star && star !== selfSlug ? posts.find((p) => p?.slug === star) : null; // chỉ khi bài trụ đang đăng
+  if (starPost) out.push({ url: `/${star}`, kind: "pillar", title: `${starPost.title} [bài trụ của cụm]` });
+  if (cat?.slug === "tap-luyen") out.push({ url: "/bai-tap", kind: "page", title: "Thư viện bài tập có ảnh động tác, xem theo nhóm cơ" }, { url: "/bai-tap/giao-an/toan-than", kind: "page", title: "Giáo án tập toàn thân 2–3 buổi mỗi tuần" });
   out.push({ url: "/tinh-calo", kind: "page", title: "Công cụ tính calo cần ăn mỗi ngày (BMR, TDEE, mục tiêu giảm/tăng cân)" }, { url: "/bang-calo", kind: "page", title: "Bảng calo món Việt theo khẩu phần" });
   for (const f of foods.filter((f) => f?.s && f?.n).slice(0, 8)) out.push({ url: `/calo/${f.s}`, kind: "page", title: `Calo ${f.n}: calo, đạm, tinh bột, béo theo khẩu phần` });
   const kw = new Set(wordsOf(keyword));
   const ranked = posts.filter((p) => p?.slug && p.slug !== selfSlug).map((p) => ({ p, sc: (cat && p.primary_term === cat.id ? 3 : 0) + wordsOf(`${p.title} ${p.keyword || ""}`).filter((w) => kw.has(w)).length }))
     .sort((a, b) => b.sc - a.sc).slice(0, 12);
-  for (const { p } of ranked) out.push({ url: `/${p.slug}`, kind: "post", title: p.title });
+  for (const { p } of ranked) if (p.slug !== star) out.push({ url: `/${p.slug}`, kind: "post", title: p.title });
   return out;
 }
 export const linkPrompt = (links) => `LINK NỘI BỘ (chèn bằng markdown [chữ neo](đường dẫn), CHỈ dùng đường dẫn trong danh sách này, không link nơi khác; nguồn trích dẫn vẫn không link):
-- Cần có: 1 link về trang chủ (/), 1 link về chuyên mục, 1-3 link trang liên quan (công cụ, bảng calo, trang calo món) nếu bài có nhắc đúng nội dung đó, 3-5 link bài cùng chủ đề nếu có bài hợp.
+- Cần có: 1 link về trang chủ (/), 1 link về chuyên mục, 1 link về bài trụ của cụm (dòng ghi [bài trụ của cụm], nếu có), 1-3 link trang liên quan (công cụ, bảng calo, trang calo món) nếu bài có nhắc đúng nội dung đó, 3-5 link bài cùng chủ đề nếu có bài hợp.
 - Chữ neo là cụm 2-6 từ CÓ SẴN trong câu văn tự nhiên, nói đúng nội dung trang đích (ví dụ câu nhắc "tính calo cần ăn mỗi ngày" thì link /tinh-calo). Không dùng "tại đây", "xem thêm", "click", không viết câu chỉ để chèn link.
 - Mỗi đường dẫn tối đa 1 lần. Không link trong sapo, heading, bảng. Mỗi đoạn tối đa 1 link. Link bài cùng chủ đề đặt ở đoạn đang nói đúng ý bài đó.
 ${links.map((l) => `${l.url} | ${l.title}`).join("\n")}`;
@@ -256,6 +289,7 @@ export function linkIssues(blocks, links = []) {
   const need = (kind, what) => { const l = links.find((x) => x.kind === kind); if (l && !c[kind]) out.push(`[thieu-link] "${what}" => thêm 1 link markdown [chữ neo](${l.url}) (${l.title}) vào một câu đang nói đúng ý đó ở thân bài, không ở sapo / heading / bảng`); };
   need("home", "chưa có link về trang chủ");
   need("cat", "chưa có link về chuyên mục");
+  need("pillar", "chưa có link về bài trụ của cụm");
   const posts = links.filter((x) => x.kind === "post");
   if (posts.length && !c.post) out.push(`[thieu-link] "chưa có link bài cùng chủ đề" => thêm 1-3 link tới bài hợp ý nhất trong: ${posts.slice(0, 6).map((p) => p.url).join(", ")}`);
   return out;
@@ -337,7 +371,7 @@ export function linkStats(blocks, links = []) {
   const kind = Object.fromEntries(links.map((l) => [l.url, l.kind]));
   const urls = blocks.flatMap((b) => [b.html, ...(b.type === "list" ? b.items || [] : [])].filter(Boolean)).join(" ").match(/href="([^"]+)"/g) || [];
   const got = urls.map((h) => h.slice(6, -1));
-  const c = { total: got.length, home: 0, cat: 0, page: 0, post: 0 };
+  const c = { total: got.length, home: 0, cat: 0, page: 0, post: 0, pillar: 0 };
   for (const u of got) if (kind[u]) c[kind[u]]++;
   return c;
 }
