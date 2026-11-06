@@ -38,8 +38,7 @@ export default function Blocks({ blocks, s, toc, slug }) {
           }
           case "table": return (
             <div key={i} className="card" style={{ overflowX: "auto", padding: 0 }}>
-              {/* 06/11 (chủ dự án: bảng trên điện thoại không chuẩn): điện thoại xếp mỗi dòng thành 1 thẻ — ô đầu làm tiêu đề, ô sau ghi "tên cột: giá trị" (data-label) */}
-              <table className={(b.head || []).length >= 2 && (b.head || []).length <= 5 ? "rt" : undefined}><thead><tr>{(b.head || []).map((h, k) => <th key={k}>{tidyText(h)}</th>)}</tr></thead><tbody>{(b.rows || []).map((r, k) => <tr key={k}>{r.map((c, j) => <H key={j} as="td" html={c} data-label={String(tidyText((b.head || [])[j] || "")).replace(/<[^>]+>/g, "").trim() || undefined} />)}</tr>)}</tbody></table>
+              <table><thead><tr>{(b.head || []).map((h, k) => <th key={k}>{tidyText(h)}</th>)}</tr></thead><tbody>{(b.rows || []).map((r, k) => <tr key={k}>{r.map((c, j) => <H key={j} as="td" html={c} />)}</tr>)}</tbody></table>
             </div>
           );
           case "calo": return <CaloBox key={i} fd={b._food} por={b._portion} />;

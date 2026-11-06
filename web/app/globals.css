@@ -58,15 +58,12 @@ h1, h2, h3, h4, p, figure { margin: 0; }
 .prose th { background: #F5F8FD; text-align: left; padding: 12px 16px; font-size: 13.5px; color: #475569; }
 .prose td { padding: 12px 16px; border-top: 1px solid var(--line2); }
 .prose td:first-child { white-space: nowrap; }
-/* 06/11: bảng so sánh trên điện thoại = mỗi dòng 1 thẻ (không cuộn ngang, không vỡ chữ từng từ) */
+/* 06/11 (chủ dự án: cuộn ngang được, nhưng hàng cao quá vì cột sau chỉ còn ~80px, chữ rớt từng từ): điện thoại giữ bảng + cuộn ngang,
+   mỗi cột tối thiểu 150px (ô đầu 120–160px, được xuống dòng) → chữ đi ngang, hàng thấp lại */
 @media (max-width: 720px) {
-  .prose table.rt, .prose table.rt tbody, .prose table.rt tr, .prose table.rt td { display: block; width: 100%; }
-  .prose table.rt thead { display: none; }
-  .prose table.rt tr { padding: 14px 16px; border-top: 1px solid var(--line2); }
-  .prose table.rt tr:first-child { border-top: 0; }
-  .prose table.rt td { padding: 3px 0; border: 0; white-space: normal; line-height: 1.5; }
-  .prose table.rt td:first-child { font-weight: 700; font-size: 16px; color: var(--ink); padding-bottom: 6px; }
-  .prose table.rt td:not(:first-child)[data-label]::before { content: attr(data-label) ": "; color: #64748B; font-weight: 600; }
+  .prose table { width: max-content; min-width: 100%; font-size: 14.5px; }
+  .prose th, .prose td { min-width: 150px; max-width: 220px; padding: 10px 14px; vertical-align: top; line-height: 1.45; }
+  .prose td:first-child { white-space: normal; min-width: 120px; max-width: 160px; font-weight: 600; }
 }
 .tip { border-radius: 16px; background: #FFFBEB; border: 1px solid #FDE68A; padding: 18px 20px; font-size: 16.5px; line-height: 1.7; }
 .yt { position: relative; padding-top: 56.25%; border-radius: 16px; overflow: hidden; } .yt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
