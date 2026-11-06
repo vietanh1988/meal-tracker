@@ -14,6 +14,8 @@ import { readPortion } from "../lib/trayPortion";
 import { fmtVN } from "../lib/dateVN";
 import { MEAL_NAMES } from "../lib/mealMath";
 import { appChoose } from "../lib/dialog";
+import { useFoodImages, normKey } from "../lib/foodImages";
+import { FoodThumb } from "./FoodThumb";
 
 // 30/10 (chủ dự án: "gặp món không có phải tính calo thì mất hết món đã thêm"): giỏ giữ trên máy theo ngày ghi
 // (tắt app / vuốt đóng / sang AI tính rồi quay lại vẫn còn), ghi xong hoặc bấm Bỏ giỏ mới xoá.
@@ -28,6 +30,7 @@ const addBtn = (done) => ({ width: 40, height: 40, borderRadius: 20, border: "no
 export function LogMealSheet(p) {
   const { pickMode, date, mealId, mealIds, dateOptions, recentMeals, frequent, foodCache, onClose } = p;
   useLockScroll(true);
+  const imgs = useFoodImages(); // 07/11: ảnh món từ web (web_calo_pages)
   const [q, setQ] = useState(p.initialQ || ""); // 06/11: mở từ bài viết (Tin giảm cân) → ô tìm điền sẵn tên món
   const [done, setDone] = useState({});
   const inputRef = useRef(null);
@@ -253,7 +256,8 @@ export function LogMealSheet(p) {
             const key = `item:${it.food}:${it.gram}`;
             const nm = itemName(it);
             return (
-              <div key={key + i} style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 56, padding: "0 4px", borderBottom: i < list.length - 1 ? "1px solid #EEF2FA" : "none" }}>
+              <div key={key + i} style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 56, padding: "6px 4px", boxSizing: "border-box", borderBottom: i < list.length - 1 ? "1px solid #EEF2FA" : "none" }}>
+                <FoodThumb url={imgs[normKey(it.food)]} name={nm} />
                 <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 15, fontWeight: 700 }}>{nm}</span><span style={{ fontSize: 12, color: "#64748B" }}>{itemPortion(it)} · {fmtInt(it.cal)} kcal</span></span>
                 <button data-testid="log-add" aria-pressed={inTray(it)} onClick={() => toggleTray(it)} aria-label={`Thêm ${nm.toLowerCase()}`} style={addBtn(inTray(it))}>{inTray(it) ? Icon.check(18) : "+"}</button>
               </div>

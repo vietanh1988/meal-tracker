@@ -6,7 +6,11 @@ import { login, rest, mockNews } from "./helpers.mjs";
 test("Tin giảm cân: mở từ nút Pi, đổi cụm, tìm, đọc bài, món trong bài mở Ghi bữa", async ({ browser }) => {
   test.setTimeout(120_000);
   const flagsRow = (await rest("app_settings?key=eq.feature_flags&select=value"))[0];
+  // 07/11: ảnh món lấy từ web_calo_pages (cùng nguồn web) — gắn ảnh cho phở bò, cơm gà để trống
+  const FK = encodeURIComponent("phở bò");
+  const hadImg = await rest(`web_calo_pages?food_key=eq.${FK}&select=food_key,slug,enabled,image_url`);
   try {
+    await rest("web_calo_pages?on_conflict=food_key", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify([{ food_key: "phở bò", slug: hadImg[0]?.slug || "pho-bo", enabled: hadImg[0]?.enabled ?? true, image_url: "https://fipilotai.com/anh/2026/11/mon-pho-bo-anh-e2e_800w.webp" }]) });
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: JSON.stringify({ ...JSON.parse(flagsRow.value), pet: true }) }) });
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
     const page = await ctx.newPage();
@@ -14,7 +18,7 @@ test("Tin giảm cân: mở từ nút Pi, đổi cụm, tìm, đọc bài, món 
     page.on("pageerror", (e) => errs.push(String(e)));
     const { news } = await mockNews(page);
     await login(page);
-    await page.evaluate(() => { try { localStorage.removeItem("fp_news_tab"); localStorage.removeItem("fp_news_read"); } catch { /* */ } });
+    await page.evaluate(() => { try { localStorage.removeItem("fp_news_tab"); localStorage.removeItem("fp_news_read"); localStorage.removeItem("fp_food_img"); } catch { /* */ } });
 
     // 1 · menu nút Pi có dòng 5 "Tin giảm cân", menu nằm trọn màn, chấm đỏ không vì tin
     const sc = page.getByTestId("pi-shortcut");
@@ -71,10 +75,22 @@ test("Tin giảm cân: mở từ nút Pi, đổi cụm, tìm, đọc bài, món 
     await expect(hit).toBeVisible();
     await hit.click();
     await expect(page.getByTestId("news-foods")).toBeVisible({ timeout: 15_000 });
+    // món có ảnh web → ô ảnh 400w; món chưa có ảnh → ô xám icon dao dĩa (vẫn thẳng cột)
+    const phoThumb = page.locator('[data-testid="news-food"][data-name="Phở bò"] [data-testid="food-thumb"][data-has="1"] img');
+    await expect(phoThumb).toBeVisible({ timeout: 15_000 });
+    expect(await phoThumb.getAttribute("src")).toContain("_400w.webp");
+    await expect(page.locator('[data-testid="news-food"][data-name="Cơm gà"] [data-testid="food-thumb"]:not([data-has])')).toBeVisible();
     const food = page.getByTestId("news-foods").getByTestId("news-food").first();
     const name = await food.getAttribute("data-name");
     await food.click();
     await expect(page.locator('input[type="search"]').last()).toHaveValue(name);
+    // Ghi bữa: dòng kết quả phở bò có ảnh món, ảnh tải được
+    const logThumb = page.locator('[data-testid="log-add"]').first().locator("xpath=..").locator('[data-testid="food-thumb"]');
+    await expect(logThumb).toBeVisible();
+    const hasImg = page.locator('[data-testid="food-thumb"][data-has="1"] img').first();
+    await expect(hasImg).toBeVisible();
+    await expect.poll(() => hasImg.evaluate((im) => im.naturalWidth)).toBeGreaterThan(0);
+    await page.screenshot({ path: "shots/ghi-bua-anh-mon.png" });
 
     // 6 · mở lại: nhớ tab đã chọn
     await page.goto(page.url());
@@ -85,5 +101,7 @@ test("Tin giảm cân: mở từ nút Pi, đổi cụm, tìm, đọc bài, món 
     await ctx.close();
   } finally {
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: flagsRow.value }) });
+    if (hadImg.length) await rest(`web_calo_pages?food_key=eq.${FK}`, { method: "PATCH", body: JSON.stringify({ image_url: hadImg[0].image_url }) });
+    else await rest(`web_calo_pages?food_key=eq.${FK}`, { method: "DELETE" });
   }
 });
