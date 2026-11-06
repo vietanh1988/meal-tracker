@@ -31,7 +31,7 @@ export default async function GiaoAn({ params }) {
           <section key={i} className="card exday" data-testid="tpl-day">
             <h2><i>{i + 1}</i>{x.title}</h2>
             {x.items.map((it, k) => { const e = exById(it.ex); if (!e) return null; return (
-              <a key={k} className="exrow" href={exUrl(e.id)}><ExPhoto ex={e} big={false} /><span className="t"><b>{e.vi}</b><small>{e.en}</small></span><em>{setsText(it.sets, it.reps, e)}</em></a>); })}
+              <a key={k} className="exrow" href={exUrl(e.id)}><ExPhoto ex={e} big={false} /><span className="t"><b>{e.en || e.vi}</b><small>{e.en ? e.vi : ""}</small></span><em>{setsText(it.sets, it.reps, e)}</em></a>); })}
           </section>
         ))}
       </div>

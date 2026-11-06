@@ -8,7 +8,7 @@ import { ltCard } from "../theme";
 import { track } from "../lib/track";
 import { weekRange, monthRange, todayVN, gymIdxOf, fmtVN, weekdayShort, addDays } from "../lib/dateVN";
 import { TEMPLATES, buildPlan, defaultTpl, DOW, DOW_LONG, planDays, bestSet, lastSets, searchEx, move, relayout, sameDays } from "./plan.js";
-import { exOf, unitOf, fmtKg, allExercises, ExPhoto, MUSCLES, MUSCLE_NAME, MUSCLE_TONE, EQUIPS } from "./exLib.jsx";
+import { exOf, unitOf, fmtKg, allExercises, ExPhoto, MUSCLES, MUSCLE_NAME, MUSCLE_TONE, EQUIPS, exTitle, exSub } from "./exLib.jsx";
 import { SessionScreen } from "./SessionScreen.jsx";
 import { targetsOf } from "./exTargets.js";
 import { WorkoutCard } from "./WorkoutCard.jsx";
@@ -19,8 +19,8 @@ const fmt = (n) => Number(n || 0).toLocaleString("vi-VN");
 const btn = (pri) => ({ height: 44, borderRadius: 14, border: "none", fontFamily: "inherit", fontSize: 14.5, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0 12px", background: pri ? GRAD_BLUE : "#EEF4FF", color: pri ? "#FFFFFF" : "#0062F0", width: "100%" });
 const tagSt = (bg, fg) => ({ height: 26, padding: "0 9px", borderRadius: 13, fontSize: 12, fontWeight: 800, display: "inline-flex", alignItems: "center", background: bg, color: fg, whiteSpace: "nowrap" });
 const exLine = (e) => <>
-  <b style={{ fontSize: 14.5, fontWeight: 800 }}>{e.vi}</b>
-  {e.en ? <span style={{ fontSize: 12.5, fontWeight: 600, color: "#64748B", fontStyle: "italic" }}>({e.en})</span> : null}
+  <b style={{ fontSize: 14.5, fontWeight: 800 }}>{exTitle(e)}</b>
+  {exSub(e) ? <span data-testid="wk-ex-sub" style={{ fontSize: 12.5, fontWeight: 600, color: "#64748B" }}>{exSub(e)}</span> : null}
 </>;
 
 /** sheet đáy dùng chung */
@@ -72,7 +72,7 @@ function PlanTab({ w, profile, loss, onDay, onTpl, showToast, onUsed }) {
         <div style={{ display: "flex", flexDirection: "column" }}>
           {DOW.map((d, i) => {
             const s = p.days?.[String(i)];
-            const names = (s?.items || []).slice(0, 2).map((x) => exOf(x.ex, w.custom).vi).join(", ");
+            const names = (s?.items || []).slice(0, 2).map((x) => exTitle(exOf(x.ex, w.custom))).join(", ");
             return (
               <button key={d} type="button" data-testid={`wk-day-${i}`} data-rest={s ? "0" : "1"} onClick={() => onDay(i)}
                 style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 58, borderTop: i ? "1px solid #EEF2FA" : "none", border: "none", borderTopStyle: i ? "solid" : "none", borderTopWidth: i ? 1 : 0, borderTopColor: "#EEF2FA", background: "none", padding: 0, fontFamily: "inherit", textAlign: "left", color: "#0F172A", width: "100%" }}>
@@ -164,7 +164,7 @@ function CustomSheet({ onClose, onSave }) {
 function AddToDaySheet({ w, ex, onClose, onDone }) {
   const p = w.active;
   return (
-    <Sheet title={`Thêm "${ex.vi}" vào buổi`} onClose={onClose} testid="wk-addto-sheet">
+    <Sheet title={`Thêm "${exTitle(ex)}" vào buổi`} onClose={onClose} testid="wk-addto-sheet">
       {!p && <span style={sub}>Bạn chưa có giáo án. Vào tab Giáo án chọn 1 giáo án mẫu trước.</span>}
       {p && DOW.map((d, i) => {
         const s = p.days?.[String(i)];
@@ -235,7 +235,7 @@ function LogTab({ w, plan, today, onOpen, onResume }) {
   );
 }
 
-function LogDetail({ w, s, onBack }) {
+function LogDetail({ w, s, onBack, onEdit }) {
   const [ask, setAsk] = useState(false);
   return (
     <SubPage title={s.title} subtitle={`${weekdayShort(s.day)} ${fmtVN(s.day)} · ${s.minutes ?? 0} phút · ${s.sets_done ?? 0} hiệp · ${fmt(s.volume)} kg`} onBack={onBack}>
@@ -247,7 +247,8 @@ function LogDetail({ w, s, onBack }) {
               <span key={j} style={{ fontSize: 13.5, color: x.done ? "#0F172A" : "#94A3B8" }}>Hiệp {j + 1}: {Number(x.kg) > 0 ? `${fmtKg(x.kg)} kg × ` : ""}{x.reps} {u}{x.done ? "" : " · bỏ qua"}</span>
             ))}
           </div>); })}
-        <div style={{ margin: "0 12px" }}>
+        <div style={{ margin: "0 12px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <button type="button" data-testid="wk-log-edit" onClick={() => onEdit(s)} style={btn(true)}>Sửa buổi</button>
           {!ask ? <button type="button" onClick={() => setAsk(true)} style={{ ...btn(false), background: "#FEF2F2", color: "#B91C1C" }}>Xoá buổi này</button>
             : <button type="button" data-testid="wk-log-delete" onClick={async () => { await w.deleteSession(s.id); onBack(); }} style={{ ...btn(true), background: "#DC2626" }}>Xoá hẳn buổi {fmtVN(s.day)}</button>}
         </div>
@@ -267,8 +268,8 @@ function ExerciseDetail({ w, ex, onBack, onAdd }) {
       <div data-testid="wk-ex-detail" style={{ padding: "12px 0 24px", display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ margin: "0 12px" }}><ExPhoto ex={e} big /></div>
         <div style={{ margin: "0 16px", display: "flex", flexDirection: "column", gap: 2 }}>
-          <b data-testid="wk-ex-vi" style={{ fontSize: 21, fontWeight: 900 }}>{e.vi}</b>
-          {e.en && <span data-testid="wk-ex-en" style={{ fontSize: 14, fontStyle: "italic", color: "#64748B", fontWeight: 600 }}>{e.en}</span>}
+          <b data-testid="wk-ex-en" style={{ fontSize: 21, fontWeight: 900 }}>{exTitle(e)}</b>
+          {exSub(e) && <span data-testid="wk-ex-vi" style={{ fontSize: 14.5, color: "#64748B", fontWeight: 700 }}>{exSub(e)}</span>}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "0 16px" }}>
           {e.muscle && <span style={tagSt(...(MUSCLE_TONE[e.muscle] || ["#F1F5F9", "#475569"]))}>{MUSCLE_NAME[e.muscle]} (chính)</span>}
@@ -470,7 +471,7 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
   const exOver = over?.k === "ex" && <ExerciseDetail w={w} ex={over.ex} onBack={() => setOver(null)} />;
   if (view?.k === "session") return (
     <>
-      <SessionScreen onRead={onRead} w={w} today={today} start={view} onBack={() => setView(null)} showToast={showToast} onReward={onReward} pet={pet} onLog={() => { setView(null); setTab("log"); }}
+      <SessionScreen onRead={onRead} onEdited={(s) => setView({ k: "log", s })} w={w} today={today} start={view} onBack={() => setView(null)} showToast={showToast} onReward={onReward} pet={pet} onLog={() => { setView(null); setTab("log"); }}
         onPickSwap={(muscle, cb) => { picker.current = cb; setOver({ k: "pick", muscle }); }} onOpenEx={(ex) => setOver({ k: "ex", ex })} />
       {pickOver}{exOver}
     </>
@@ -487,7 +488,7 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
       {sheet?.k === "add" && <AddToDaySheet w={w} ex={sheet.ex} onClose={() => setSheet(null)} onDone={(d) => addTo(sheet.ex, d)} />}
     </>
   );
-  if (view?.k === "log") return <LogDetail w={w} s={view.s} onBack={() => setView(null)} />;
+  if (view?.k === "log") return <LogDetail w={w} s={view.s} onBack={() => setView(null)} onEdit={(s) => setView({ k: "session", id: s.id, edit: true })} />;
 
   const used = w.active ? planDays(w.active) : [];
   return (

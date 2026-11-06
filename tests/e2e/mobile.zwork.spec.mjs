@@ -39,7 +39,8 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.getByTestId("wk-tab-lib").click();
     await page.getByTestId("wk-lib-search").fill("bench press");
     const bench = page.locator('[data-testid="wk-lib-row"][data-id="barbell-bench-press"]');
-    await expect(bench).toContainText("(Barbell Bench Press)");
+    await expect(bench.locator("b").first()).toHaveText("Barbell Bench Press"); // 06/11: tên Anh lên trên, tên Việt bên dưới
+    await expect(bench.getByTestId("wk-ex-sub")).toHaveText("Đẩy ngực tạ đòn");
     await page.getByTestId("wk-lib-search").fill("hit dat");
     const push = page.locator('[data-testid="wk-lib-row"][data-id="push-up"]');
     await expect(push).toBeVisible();
@@ -47,6 +48,7 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await push.getByRole("button").first().click();
     await expect(page.getByTestId("wk-ex-detail")).toBeVisible();
     await expect(page.getByTestId("wk-ex-en")).toHaveText("Push-up");
+    await expect(page.getByTestId("wk-ex-vi")).toHaveText("Hít đất");
     await expect(page.getByTestId("wk-ex-target-main")).toContainText("Ngực giữa"); // 01/11: khối Tác động vào
     await expect(page.getByTestId("wk-ex-target-sub")).toContainText("Bắp tay sau");
     // ảnh người thật 2 khung tải được (không còn hình nét)
@@ -167,6 +169,26 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await page.screenshot({ path: "shots/tap-xong.png" });
     await page.getByTestId("wk-done-log").click();
     await expect(page.getByTestId("wk-log-row")).toHaveCount(1);
+    // 06/11: sửa buổi đã xong — đổi kg hiệp 1, bỏ tick 1 hiệp → Xong sửa → nhật ký + DB đổi theo, không thưởng Hạt lần 2
+    const before = (await rest(`workout_sessions?user_id=eq.${s.uid}&select=sets_done,volume`))[0];
+    await page.getByTestId("wk-log-row").first().click();
+    await page.getByTestId("wk-log-edit").click();
+    await expect(page.getByTestId("wk-edit-save")).toBeVisible();
+    await expect(page.getByTestId("wk-ses-clock")).toHaveCount(0);
+    const kg0 = page.getByTestId("wk-set-kg").first();
+    await kg0.fill("77,5");
+    const lastDone = page.locator('[data-testid="wk-set"][data-done="1"]').last();
+    await lastDone.getByTestId("wk-set-tick").click();
+    await expect(page.getByTestId("wk-rest")).toHaveCount(0); // sửa buổi không đếm nghỉ
+    await page.screenshot({ path: "shots/tap-sua-buoi.png" });
+    await page.getByTestId("wk-edit-save").click();
+    await expect(page.getByTestId("wk-log-detail")).toContainText("77,5 kg");
+    await waitDb(async () => (await rest(`workout_sessions?user_id=eq.${s.uid}&select=sets_done`))[0]?.sets_done === 9, "buổi đã sửa còn 9 hiệp");
+    const after = (await rest(`workout_sessions?user_id=eq.${s.uid}&select=sets_done,volume,ended_at`))[0];
+    expect(after.ended_at).toBeTruthy();
+    expect(after.volume).not.toBe(before.volume);
+    expect((await rest(`pet_ledger?user_id=eq.${s.uid}&kind=eq.workout&select=amount`)).length).toBe(1);
+    await page.getByRole("button", { name: "Quay lại" }).last().click();
     await page.getByTestId("wk-tab-plan").click();
     await expect(page.getByTestId("wk-card-done")).toBeVisible();
     await page.getByRole("button", { name: "Quay lại" }).last().click();

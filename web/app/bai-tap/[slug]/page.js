@@ -46,7 +46,7 @@ export default async function BaiTapChiTiet({ params }) {
         <div className="exdet">
           <ExPhoto ex={e} labels className="hero" eager />
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div><h1 className="h1" style={{ fontSize: 40 }} data-testid="ex-vi">{e.vi}</h1><span style={{ fontSize: 19, fontStyle: "italic", color: "#64748B", fontWeight: 600 }} data-testid="ex-en">{e.en}</span></div>
+            <div><h1 className="h1" style={{ fontSize: 40 }} data-testid="ex-en">{e.en || e.vi}{e.en && <span data-testid="ex-vi" style={{ display: "block", fontSize: 21, color: "#475569", fontWeight: 700, lineHeight: 1.4, marginTop: 6 }}>{e.vi}</span>}</h1></div>
             <div className="chips">
               <span className="pill" style={{ background: tone(e.muscle)[0], color: tone(e.muscle)[1] }}>{MUSCLE_NAME[e.muscle]}</span>
               {(e.sub || []).map((m) => <span key={m} className="pill" style={{ background: "#F1F5F9", color: "#475569" }}>{MUSCLE_NAME[m]}</span>)}

@@ -60,13 +60,13 @@ export const EXERCISES = [
     "Kéo hai tay theo vòng cung xuống và chéo về trước bụng.",
     "Siết ngực một nhịp rồi mở tay ra chậm về vị trí đầu.",
   ], "Giữ thân cố định, không lấy đà bằng lưng."),
-  x("low-to-high-cable-fly", "Ép ngực cáp từ dưới lên", "Low To High Cable Fly", "nguc", ["vai"], "cap", B, "fly", [
+  x("low-to-high-cable-fly", "Ép ngực cáp từ dưới lên trên", "Low To High Cable Fly", "nguc", ["vai"], "cap", B, "fly", [
     "Đặt ròng rọc hai bên ở vị trí thấp, cầm tay nắm, đứng giữa máy.",
     "Khuỷu tay hơi chùng, lòng bàn tay hướng lên trước.",
     "Kéo tay theo vòng cung lên trước mặt ngang tầm cằm.",
     "Siết ngực trên rồi hạ tay xuống chậm.",
   ], "Bài này nhắm ngực trên; đừng nhún vai khi kéo lên."),
-  x("pec-deck-fly", "Ép ngực máy", "Pec Deck Fly", "nguc", ["vai"], "may", B, "fly", [
+  x("pec-deck-fly", "Ép ngực trên máy", "Pec Deck Fly", "nguc", ["vai"], "may", B, "fly", [
     "Chỉnh ghế để tay cầm ngang tầm ngực, lưng áp sát đệm.",
     "Cầm tay nắm, khuỷu tay hơi chùng.",
     "Ép hai tay vào giữa trước ngực, siết ngực một nhịp.",
@@ -102,7 +102,7 @@ export const EXERCISES = [
     "Hạ người đến khi ngực gần chạm sàn.",
     "Đẩy mạnh lên thẳng tay.",
   ], "Bài nặng hơn hít đất thường, tập trung ngực trên và vai."),
-  x("chest-dips", "Nhún xà kép ngực", "Chest Dips", "nguc", ["tay_sau", "vai"], "xa", A, "press", [
+  x("chest-dips", "Chống xà kép (tập ngực)", "Chest Dips", "nguc", ["tay_sau", "vai"], "xa", A, "press", [
     "Chống tay lên xà kép, nhấc người lên thẳng tay.",
     "Đổ người về trước khoảng 30 độ, co chân ra sau.",
     "Hạ người đến khi vai ngang khuỷu tay, cảm nhận ngực căng.",
@@ -122,19 +122,19 @@ export const EXERCISES = [
     "Kéo người lên đến khi cằm qua xà.",
     "Hạ người chậm về thẳng tay.",
   ], "Tay ngửa dùng tay trước nhiều hơn, thường dễ hơn kéo xà thường."),
-  x("lat-pulldown", "Kéo xà máy", "Lat Pulldown", "lung", ["tay_truoc"], "cap", B, "pulldown", [
+  x("lat-pulldown", "Kéo cáp xuống trước ngực", "Lat Pulldown", "lung", ["tay_truoc"], "cap", B, "pulldown", [
     "Ngồi vào máy, kẹp đùi dưới đệm, nắm thanh rộng hơn vai.",
     "Ngả người ra sau một chút, ưỡn ngực.",
     "Kéo thanh xuống ngực trên, khuỷu tay hướng xuống sàn.",
     "Thả thanh lên chậm đến thẳng tay, cảm nhận lưng giãn.",
   ], "Không kéo thanh ra sau gáy; không giật người ra sau để kéo."),
-  x("close-grip-lat-pulldown", "Kéo xà máy tay hẹp", "Close Grip Lat Pulldown", "lung", ["tay_truoc"], "cap", B, "pulldown", [
+  x("close-grip-lat-pulldown", "Kéo cáp xuống tay hẹp", "Close Grip Lat Pulldown", "lung", ["tay_truoc"], "cap", B, "pulldown", [
     "Gắn tay cầm chữ V, ngồi vào máy, kẹp đùi dưới đệm.",
     "Nắm tay cầm, ngả người nhẹ ra sau, ưỡn ngực.",
     "Kéo tay cầm xuống ngực trên, khép khuỷu sát thân.",
     "Thả lên chậm đến khi tay duỗi thẳng.",
   ], "Nghĩ đến việc kéo bằng khuỷu tay, không bằng bàn tay."),
-  x("straight-arm-pulldown", "Kéo cáp tay thẳng", "Straight Arm Pulldown", "lung", [], "cap", B, "pulldown", [
+  x("straight-arm-pulldown", "Kéo cáp xuống tay thẳng", "Straight Arm Pulldown", "lung", [], "cap", B, "pulldown", [
     "Đứng trước máy cáp, ròng rọc ở vị trí cao, nắm thanh rộng bằng vai.",
     "Lùi một bước, gập hông nhẹ, tay gần thẳng.",
     "Kéo thanh xuống theo vòng cung đến sát đùi, giữ tay thẳng.",
@@ -176,19 +176,19 @@ export const EXERCISES = [
     "Kéo tay cầm về phía thân, siết bả vai.",
     "Thả về chậm đến thẳng tay.",
   ], "Giữ ngực áp đệm, không nhún vai khi kéo."),
-  x("inverted-row", "Kéo người dưới xà thấp", "Inverted Row", "lung", ["tay_truoc"], "xa", B, "row", [
+  x("inverted-row", "Kéo người dưới thanh thấp", "Inverted Row", "lung", ["tay_truoc"], "xa", B, "row", [
     "Nằm dưới xà thấp, nắm xà rộng hơn vai, gót chân chạm sàn.",
     "Giữ người thẳng từ vai đến gót, siết bụng.",
     "Kéo ngực lên chạm xà, siết bả vai.",
     "Hạ người chậm về thẳng tay.",
   ], "Co gối cho nhẹ; duỗi chân thẳng cho nặng hơn."),
-  x("deadlift", "Kéo tạ đòn", "Deadlift", "lung", ["chan", "mong"], "ta_don", A, "hinge", [
+  x("deadlift", "Kéo tạ đòn từ sàn", "Deadlift", "lung", ["chan", "mong"], "ta_don", A, "hinge", [
     "Đứng chân rộng bằng hông, thanh tạ ở giữa bàn chân.",
     "Gập hông nắm thanh ngay ngoài gối, lưng thẳng, ngực ưỡn.",
     "Đạp chân xuống sàn, đứng thẳng lên, thanh luôn sát chân.",
     "Đẩy hông ra sau để hạ thanh xuống, giữ lưng thẳng.",
   ], "Tuyệt đối không cong lưng; tạ nặng thì học kỹ thuật với tạ nhẹ trước."),
-  x("rack-pull", "Kéo tạ đòn từ giá", "Rack Pull", "lung", ["mong"], "ta_don", A, "hinge", [
+  x("rack-pull", "Kéo tạ đòn từ giá (nửa tầm)", "Rack Pull", "lung", ["mong"], "ta_don", A, "hinge", [
     "Đặt thanh tạ trên giá ngang hoặc ngay dưới gối.",
     "Nắm thanh rộng bằng vai, lưng thẳng, ngực ưỡn.",
     "Đẩy hông về trước để đứng thẳng, siết lưng trên.",
@@ -238,13 +238,13 @@ export const EXERCISES = [
     "Đẩy tay cầm lên đến gần thẳng tay.",
     "Hạ chậm về ngang vai.",
   ], "Phù hợp người mới; không để tạ đập khi hạ."),
-  x("landmine-press", "Đẩy tạ đòn một đầu", "Landmine Press", "vai", ["nguc", "tay_sau"], "ta_don", B, "press", [
+  x("landmine-press", "Đẩy tạ đòn một đầu tựa góc", "Landmine Press", "vai", ["nguc", "tay_sau"], "ta_don", B, "press", [
     "Cắm một đầu thanh tạ vào góc hoặc đế, cầm đầu kia ngang vai.",
     "Đứng so le chân, siết bụng.",
     "Đẩy thanh lên và ra trước đến thẳng tay.",
     "Hạ chậm về ngang vai rồi đổi tay.",
   ], "Đường đẩy chéo nên dễ chịu cho vai hơn đẩy thẳng qua đầu."),
-  x("lateral-raise", "Dang tạ đơn", "Lateral Raise", "vai", [], "ta_don_tay", B, "raise", [
+  x("lateral-raise", "Dang tạ đơn sang ngang", "Lateral Raise", "vai", [], "ta_don_tay", B, "raise", [
     "Đứng thẳng, hai tay cầm tạ dọc thân, khuỷu hơi chùng.",
     "Nâng tạ sang hai bên đến ngang vai.",
     "Dẫn bằng khuỷu tay, không nhún vai.",
@@ -262,13 +262,13 @@ export const EXERCISES = [
     "Nâng tạ ra trước đến ngang vai.",
     "Hạ tạ chậm về trước đùi.",
   ], "Không ngả người ra sau; vai trước thường đã được tập qua bài đẩy."),
-  x("rear-delt-fly", "Dang tạ vai sau", "Rear Delt Fly", "vai", ["lung"], "ta_don_tay", B, "fly", [
+  x("rear-delt-fly", "Cúi người dang tạ (vai sau)", "Rear Delt Fly", "vai", ["lung"], "ta_don_tay", B, "fly", [
     "Gập người từ hông, lưng thẳng, hai tay cầm tạ thả dưới ngực.",
     "Khuỷu hơi chùng, lòng bàn tay đối nhau.",
     "Dang tạ sang hai bên đến ngang vai.",
     "Hạ chậm về vị trí đầu.",
   ], "Dùng tạ nhẹ, tránh siết bả vai quá để vai sau làm chính."),
-  x("reverse-pec-deck", "Ép vai sau máy", "Reverse Pec Deck", "vai", ["lung"], "may", B, "fly", [
+  x("reverse-pec-deck", "Ép ngược trên máy (vai sau)", "Reverse Pec Deck", "vai", ["lung"], "may", B, "fly", [
     "Ngồi quay mặt vào máy ép ngực, ngực áp đệm.",
     "Nắm tay cầm ngang vai, tay gần thẳng.",
     "Mở tay ra sau đến ngang thân.",
@@ -280,13 +280,13 @@ export const EXERCISES = [
     "Kéo dây về phía mặt, tách hai tay ra hai bên tai.",
     "Giữ một nhịp, siết vai sau rồi duỗi tay về chậm.",
   ], "Bài tốt cho vai khỏe và dáng thẳng; dùng tạ vừa phải."),
-  x("upright-row", "Kéo tạ dọc thân", "Upright Row", "vai", ["lung"], "ta_don", B, "row", [
+  x("upright-row", "Kéo tạ thẳng lên ngang cằm", "Upright Row", "vai", ["lung"], "ta_don", B, "row", [
     "Đứng thẳng, nắm thanh rộng hơn vai một chút, tạ trước đùi.",
     "Kéo thanh lên sát thân, dẫn bằng khuỷu tay.",
     "Dừng khi khuỷu ngang vai, thanh ngang ngực.",
     "Hạ thanh chậm xuống.",
   ], "Nắm rộng và không kéo cao quá vai để tránh chèn ép vai."),
-  x("pike-push-up", "Hít đất chổng mông", "Pike Push-up", "vai", ["tay_sau"], "khong", A, "press", [
+  x("pike-push-up", "Hít đất chổng hông (tập vai)", "Pike Push-up", "vai", ["tay_sau"], "khong", A, "press", [
     "Chống tay xuống sàn rộng bằng vai, đẩy hông lên cao thành hình chữ V.",
     "Giữ chân thẳng, đầu nằm giữa hai tay.",
     "Co khuỷu hạ đỉnh đầu xuống gần sàn.",
@@ -300,7 +300,7 @@ export const EXERCISES = [
     "Cuốn thanh lên ngang ngực, siết tay trước.",
     "Hạ thanh chậm về thẳng tay.",
   ], "Không đung đưa người lấy đà; khuỷu đứng yên."),
-  x("ez-bar-curl", "Cuốn tạ đòn cong", "EZ Bar Curl", "tay_truoc", [], "ta_don", B, "curl", [
+  x("ez-bar-curl", "Cuốn tạ đòn chữ EZ", "EZ Bar Curl", "tay_truoc", [], "ta_don", B, "curl", [
     "Đứng thẳng, nắm thanh cong ở chỗ gấp, lòng bàn tay ngửa.",
     "Khép khuỷu sát hông.",
     "Cuốn thanh lên ngang ngực.",
@@ -318,13 +318,13 @@ export const EXERCISES = [
     "Cuốn tạ lên ngang vai, giữ cổ tay thẳng như cầm búa.",
     "Hạ chậm về thẳng tay.",
   ], "Bài này tập cả cẳng tay, giúp bắp tay trông dày hơn."),
-  x("preacher-curl", "Cuốn tạ ghế dốc", "Preacher Curl", "tay_truoc", [], "ghe", B, "curl", [
+  x("preacher-curl", "Cuốn tạ trên ghế tì tay", "Preacher Curl", "tay_truoc", [], "ghe", B, "curl", [
     "Ngồi ghế cuốn tay, đặt mặt sau cánh tay áp lên đệm dốc.",
     "Cầm thanh cong hoặc tạ đơn, lòng bàn tay ngửa.",
     "Cuốn tạ lên đến khi tay trước siết hết.",
     "Hạ chậm đến gần thẳng tay.",
   ], "Không duỗi khóa thẳng tay ở dưới, dễ đau khuỷu."),
-  x("incline-dumbbell-curl", "Cuốn tạ đơn ghế dốc", "Incline Dumbbell Curl", "tay_truoc", [], "ta_don_tay", B, "curl", [
+  x("incline-dumbbell-curl", "Cuốn tạ đơn ngồi ghế ngả", "Incline Dumbbell Curl", "tay_truoc", [], "ta_don_tay", B, "curl", [
     "Ngồi ghế dốc 45–60 độ, hai tay cầm tạ thả thẳng xuống.",
     "Giữ cánh tay vuông góc sàn, vai áp ghế.",
     "Cuốn tạ lên, không đưa khuỷu ra trước.",
@@ -356,13 +356,13 @@ export const EXERCISES = [
   ], "Kiểm tra dây không nứt trước khi tập."),
 
   // ===== TAY SAU =====
-  x("triceps-pushdown", "Đẩy cáp tay sau", "Triceps Pushdown", "tay_sau", [], "cap", B, "extension", [
+  x("triceps-pushdown", "Ấn cáp xuống (tay sau)", "Triceps Pushdown", "tay_sau", [], "cap", B, "extension", [
     "Gắn thanh ngắn ở ròng rọc cao, nắm thanh lòng bàn tay úp.",
     "Đứng thẳng, khép khuỷu sát hông.",
     "Đẩy thanh xuống đến thẳng tay, siết tay sau.",
     "Cho thanh lên chậm đến khi cẳng tay ngang sàn.",
   ], "Khuỷu đứng yên, không đổ người lên thanh."),
-  x("rope-pushdown", "Đẩy cáp dây thừng", "Rope Pushdown", "tay_sau", [], "cap", B, "extension", [
+  x("rope-pushdown", "Ấn cáp dây thừng (tay sau)", "Rope Pushdown", "tay_sau", [], "cap", B, "extension", [
     "Gắn dây thừng ở ròng rọc cao, nắm hai đầu dây.",
     "Khép khuỷu sát hông, đứng thẳng.",
     "Đẩy dây xuống và tách hai đầu ra ở dưới.",
@@ -380,7 +380,7 @@ export const EXERCISES = [
     "Duỗi tay ra trước và lên đến thẳng.",
     "Gập khuỷu cho dây về chậm sau gáy.",
   ], "Giữ cánh tay cố định, chỉ cẳng tay di chuyển."),
-  x("skull-crusher", "Đẩy tạ nằm tay sau", "Skull Crusher", "tay_sau", [], "ta_don", B, "extension", [
+  x("skull-crusher", "Nằm hạ tạ sau đầu (tay sau)", "Skull Crusher", "tay_sau", [], "ta_don", B, "extension", [
     "Nằm ghế phẳng, cầm thanh cong duỗi thẳng tay phía trên ngực.",
     "Nghiêng tay nhẹ về phía đầu.",
     "Gập khuỷu hạ thanh về gần trán.",
@@ -398,7 +398,7 @@ export const EXERCISES = [
     "Gập khuỷu hạ người đến khi cánh tay gần ngang sàn.",
     "Đẩy người lên thẳng tay.",
   ], "Giữ lưng sát mép ghế; đau vai thì không hạ sâu."),
-  x("dumbbell-kickback", "Đá tạ tay sau", "Dumbbell Kickback", "tay_sau", [], "ta_don_tay", B, "extension", [
+  x("dumbbell-kickback", "Cúi người duỗi tạ ra sau (tay sau)", "Dumbbell Kickback", "tay_sau", [], "ta_don_tay", B, "extension", [
     "Chống một tay và gối lên ghế, tay kia cầm tạ.",
     "Đưa cánh tay sát thân, song song sàn.",
     "Duỗi thẳng cẳng tay ra sau, siết tay sau.",
@@ -410,7 +410,7 @@ export const EXERCISES = [
     "Hạ ngực xuống gần tay, khuỷu sát thân.",
     "Đẩy người lên thẳng tay.",
   ], "Chống gối nếu chưa làm được đúng kỹ thuật."),
-  x("triceps-dips", "Nhún xà kép tay sau", "Triceps Dips", "tay_sau", ["nguc", "vai"], "xa", A, "press", [
+  x("triceps-dips", "Chống xà kép (tập tay sau)", "Triceps Dips", "tay_sau", ["nguc", "vai"], "xa", A, "press", [
     "Chống tay lên xà kép, nhấc người lên thẳng tay.",
     "Giữ thân thẳng đứng, khuỷu khép sát.",
     "Hạ người đến khi khuỷu vuông góc.",
@@ -424,13 +424,13 @@ export const EXERCISES = [
     "Ngồi xuống bằng cách đẩy hông ra sau, gối theo hướng mũi chân.",
     "Xuống đến đùi ngang sàn rồi đạp chân đứng lên.",
   ], "Đặt thanh chặn an toàn trên giá; không để gối chụm vào trong."),
-  x("front-squat", "Gánh tạ trước", "Front Squat", "chan", ["mong", "bung"], "ta_don", A, "squat", [
+  x("front-squat", "Gánh tạ trước ngực", "Front Squat", "chan", ["mong", "bung"], "ta_don", A, "squat", [
     "Đặt thanh tạ trên vai trước, khuỷu nâng cao ngang vai.",
     "Đứng chân rộng bằng vai, thân thẳng.",
     "Ngồi xuống sâu, giữ khuỷu cao và thân đứng.",
     "Đạp chân đứng lên.",
   ], "Khuỷu tụt xuống thì thanh dễ trượt; cần cổ tay và vai dẻo."),
-  x("goblet-squat", "Gánh tạ đơn trước ngực", "Goblet Squat", "chan", ["mong"], "ta_don_tay", B, "squat", [
+  x("goblet-squat", "Squat ôm tạ đơn trước ngực", "Goblet Squat", "chan", ["mong"], "ta_don_tay", B, "squat", [
     "Ôm một tạ đơn dựng đứng trước ngực.",
     "Đứng chân rộng hơn vai một chút, mũi chân hơi mở.",
     "Ngồi xuống sâu, khuỷu nằm giữa hai gối.",
@@ -454,7 +454,7 @@ export const EXERCISES = [
     "Hạ bàn đạp đến khi gối gần vuông góc.",
     "Đạp lên đến gần thẳng chân, không khóa cứng gối.",
   ], "Không hạ sâu đến mức mông nhấc khỏi đệm."),
-  x("hack-squat", "Squat máy hack", "Hack Squat", "chan", ["mong"], "may", B, "squat", [
+  x("hack-squat", "Squat trên máy nghiêng", "Hack Squat", "chan", ["mong"], "may", B, "squat", [
     "Đứng vào máy, vai áp đệm, chân đặt rộng bằng vai trên bàn đạp.",
     "Mở khóa an toàn.",
     "Ngồi xuống đến khi đùi gần ngang bàn đạp.",
@@ -484,19 +484,19 @@ export const EXERCISES = [
     "Đạp chân trên để đứng hẳn lên bục.",
     "Bước xuống có kiểm soát rồi đổi chân.",
   ], "Đạp bằng chân trên, không lấy đà bằng chân dưới."),
-  x("leg-extension", "Đá đùi máy", "Leg Extension", "chan", [], "may", B, "extension", [
+  x("leg-extension", "Duỗi đùi trên máy", "Leg Extension", "chan", [], "may", B, "extension", [
     "Ngồi vào máy, đệm chân đặt ở cổ chân, gối thẳng trục máy.",
     "Nắm tay cầm hai bên ghế.",
     "Duỗi chân thẳng lên, siết đùi trước.",
     "Hạ chậm về vị trí đầu.",
   ], "Không đá giật; đau gối thì giảm tạ."),
-  x("lying-leg-curl", "Móc đùi nằm", "Lying Leg Curl", "chan", [], "may", B, "curl", [
+  x("lying-leg-curl", "Nằm cuốn đùi sau (máy)", "Lying Leg Curl", "chan", [], "may", B, "curl", [
     "Nằm sấp trên máy, đệm chân đặt trên gót.",
     "Nắm tay cầm, hông áp đệm.",
     "Co chân kéo gót về phía mông.",
     "Hạ chậm về gần thẳng chân.",
   ], "Hông không nhấc lên khỏi đệm khi co chân."),
-  x("seated-leg-curl", "Móc đùi ngồi", "Seated Leg Curl", "chan", [], "may", B, "curl", [
+  x("seated-leg-curl", "Ngồi cuốn đùi sau (máy)", "Seated Leg Curl", "chan", [], "may", B, "curl", [
     "Ngồi vào máy, đệm chân đặt sau cổ chân, hạ đệm đùi giữ chặt.",
     "Lưng áp ghế, nắm tay cầm.",
     "Co chân kéo đệm xuống dưới ghế.",
@@ -546,31 +546,31 @@ export const EXERCISES = [
     "Đạp gót chân đang chống để nâng hông lên.",
     "Hạ chậm rồi đổi chân.",
   ], "Giữ hông ngang bằng, không nghiêng sang một bên."),
-  x("cable-kickback", "Đá chân cáp", "Cable Kickback", "mong", [], "cap", B, "extension", [
+  x("cable-kickback", "Đá chân ra sau với cáp", "Cable Kickback", "mong", [], "cap", B, "extension", [
     "Gắn đai cổ chân ở ròng rọc thấp, đứng đối diện máy, tay vịn.",
     "Đổ người nhẹ, chân đeo đai hơi chùng gối.",
     "Đá chân ra sau, siết mông ở cuối.",
     "Đưa chân về chậm rồi đổi bên.",
   ], "Không ưỡn lưng để đá cao hơn."),
-  x("hip-abduction-machine", "Dạng hông máy", "Hip Abduction Machine", "mong", [], "may", B, "raise", [
+  x("hip-abduction-machine", "Mở đùi sang ngang trên máy", "Hip Abduction Machine", "mong", [], "may", B, "raise", [
     "Ngồi vào máy, đệm đặt mặt ngoài gối.",
     "Lưng áp ghế, nắm tay cầm.",
     "Đẩy hai chân mở ra hết mức.",
     "Khép chân về chậm.",
   ], "Đổ người nhẹ về trước sẽ dùng mông nhiều hơn."),
-  x("donkey-kick", "Đá chân sau", "Donkey Kick", "mong", [], "khong", B, "extension", [
+  x("donkey-kick", "Quỳ đá chân ra sau", "Donkey Kick", "mong", [], "khong", B, "extension", [
     "Quỳ bốn điểm, tay dưới vai, gối dưới hông.",
     "Giữ gối co vuông góc.",
     "Đạp một chân lên trần, siết mông.",
     "Hạ chân về rồi đổi bên.",
   ], "Siết bụng để lưng không võng."),
-  x("fire-hydrant", "Mở hông quỳ", "Fire Hydrant", "mong", [], "khong", B, "raise", [
+  x("fire-hydrant", "Quỳ nâng chân sang ngang", "Fire Hydrant", "mong", [], "khong", B, "raise", [
     "Quỳ bốn điểm, tay dưới vai, gối dưới hông.",
     "Giữ gối co, nâng một chân sang ngang.",
     "Nâng đến khi đùi gần ngang sàn.",
     "Hạ chậm rồi đổi bên.",
   ], "Không nghiêng thân theo chân."),
-  x("banded-lateral-walk", "Bước ngang dây", "Banded Lateral Walk", "mong", [], "day", B, "lunge", [
+  x("banded-lateral-walk", "Đeo dây kháng lực bước ngang", "Banded Lateral Walk", "mong", [], "day", B, "lunge", [
     "Đeo dây vòng ngay trên gối hoặc cổ chân.",
     "Đứng chân rộng bằng hông, khuỵu gối nhẹ.",
     "Bước ngang một chân, chân kia theo sau, giữ dây căng.",
@@ -582,13 +582,13 @@ export const EXERCISES = [
     "Đẩy hông mạnh về trước để vung tạ lên ngang ngực.",
     "Để tạ rơi về giữa chân và lặp lại.",
   ], "Lực từ hông, không phải tay; không cong lưng."),
-  x("cable-pull-through", "Kéo cáp giữa chân", "Cable Pull Through", "mong", ["chan"], "cap", B, "hinge", [
+  x("cable-pull-through", "Kéo cáp qua háng (tập mông)", "Cable Pull Through", "mong", ["chan"], "cap", B, "hinge", [
     "Gắn dây thừng ở ròng rọc thấp, quay lưng vào máy, cầm dây giữa chân.",
     "Bước ra xa, chân rộng hơn vai.",
     "Gập hông cho dây kéo tay ra sau, lưng thẳng.",
     "Đẩy hông về trước để đứng thẳng, siết mông.",
   ], "Bài học động tác gập hông tốt trước khi kéo tạ đòn."),
-  x("good-morning", "Gập người gánh tạ", "Good Morning", "mong", ["chan", "lung"], "ta_don", A, "hinge", [
+  x("good-morning", "Gánh tạ gập người về trước", "Good Morning", "mong", ["chan", "lung"], "ta_don", A, "hinge", [
     "Đặt thanh tạ trên lưng trên như gánh tạ, gối hơi chùng.",
     "Đẩy hông ra sau, gập người về trước, lưng thẳng.",
     "Gập đến khi thân gần ngang sàn hoặc đùi sau căng.",
@@ -656,13 +656,13 @@ export const EXERCISES = [
     "Cuộn người xuống, đưa khuỷu về phía gối, siết bụng.",
     "Duỗi người lên chậm.",
   ], "Gập bằng bụng, không ngồi mông xuống để kéo."),
-  x("dead-bug", "Bọ chết", "Dead Bug", "bung", [], "khong", B, "core", [
+  x("dead-bug", "Nằm ngửa duỗi tay chân đối bên", "Dead Bug", "bung", [], "khong", B, "core", [
     "Nằm ngửa, tay duỗi lên trần, gối co vuông góc.",
     "Ép lưng dưới xuống sàn.",
     "Duỗi đồng thời tay và chân đối diện xuống gần sàn.",
     "Đưa về rồi đổi bên.",
   ], "Lưng dưới luôn áp sàn; làm chậm."),
-  x("hollow-hold", "Giữ người hình thuyền", "Hollow Hold", "bung", [], "khong", A, "core", [
+  x("hollow-hold", "Nằm gồng bụng giữ thân cong", "Hollow Hold", "bung", [], "khong", A, "core", [
     "Nằm ngửa, tay duỗi qua đầu, chân duỗi thẳng.",
     "Ép lưng dưới xuống sàn.",
     "Nhấc vai và chân khỏi sàn, người cong như chiếc thuyền.",
@@ -700,13 +700,13 @@ export const EXERCISES = [
     "Đạp đều nhịp, chọn mức lực vừa sức.",
     "Giảm lực vài phút cuối để thả lỏng.",
   ], "Yên quá thấp dễ đau gối; chỉnh đúng trước khi đạp."),
-  x("elliptical", "Máy chạy hình elip", "Elliptical", "cardio", ["chan"], "may", B, "cardio", [
+  x("elliptical", "Máy elip", "Elliptical", "cardio", ["chan"], "may", B, "cardio", [
     "Đứng lên bàn đạp, nắm tay cầm di động.",
     "Đạp chân theo vòng elip, tay đẩy kéo nhịp nhàng.",
     "Giữ thân thẳng, chọn mức lực vừa sức.",
     "Giảm lực dần trước khi dừng.",
   ], "Ít va đập, hợp người nặng cân hoặc đau gối."),
-  x("rowing-machine", "Chèo thuyền máy", "Rowing Machine", "cardio", ["lung", "chan"], "may", B, "row", [
+  x("rowing-machine", "Máy chèo thuyền", "Rowing Machine", "cardio", ["lung", "chan"], "may", B, "row", [
     "Ngồi máy, buộc chân, nắm tay cầm, gối co.",
     "Đạp chân trước, sau đó ngả nhẹ người và kéo tay về bụng.",
     "Trở về theo thứ tự ngược lại: duỗi tay, đổ người, co gối.",

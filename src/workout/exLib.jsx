@@ -27,6 +27,9 @@ export function unitOf(ex) {
   return "lần";
 }
 /** có ô kg không (bài tạ người / tính giờ thì không) */
+// 06/11 (chủ dự án): tên bài = tên Anh chuyên môn lên trên, tên Việt dễ hiểu bên dưới; bài tự thêm (chỉ có tên Việt) giữ tên Việt
+export const exTitle = (e) => (e?.en || e?.vi || "");
+export const exSub = (e) => (e?.en && e?.vi && e.en !== e.vi ? e.vi : "");
 export const hasKg = (ex) => !!ex && unitOf(ex) === "lần" && ex.equip !== "khong";
 export const fmtKg = (n) => String(Math.round((Number(n) || 0) * 10) / 10).replace(".", ",");
 export const allExercises = (custom) => [...EXERCISES, ...(custom || []).map((c) => exOf(c.id, custom))];

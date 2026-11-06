@@ -7,7 +7,7 @@ import { ltCard } from "../theme";
 import { sfx } from "../lib/sfx";
 import { track } from "../lib/track";
 import { newSession, sessionOfDate, lastSets, setsDone, setsTotal, volume, minutesOf, newRecords } from "./plan.js";
-import { exOf, unitOf, hasKg, fmtKg, ExPhoto } from "./exLib.jsx";
+import { exOf, unitOf, hasKg, fmtKg, ExPhoto, exTitle, exSub } from "./exLib.jsx";
 import { PetAvatar } from "../pet/PetAvatar";
 import { loadNews, readSet, restPick } from "../news/newsData";
 
@@ -15,7 +15,9 @@ const REST = 90;
 const num = (v) => { const n = Number(String(v).replace(",", ".")); return Number.isFinite(n) && n >= 0 ? n : 0; };
 const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-export function SessionScreen({ w, today, start, onBack, showToast, onReward, onLog, onPickSwap, onOpenEx, pet, onRead }) {
+// 06/11 (chủ dự án): buổi đã xong sửa lại được — start.edit: mở lại đúng buổi, tự lưu từng thay đổi, không đếm giờ nghỉ, không thưởng Hạt lần nữa; nút đáy "Xong sửa"
+export function SessionScreen({ w, today, start, onBack, showToast, onReward, onLog, onPickSwap, onOpenEx, pet, onRead, onEdited }) {
+  const edit = !!(start?.edit && start?.id);
   const [s, setS] = useState(() => {
     const old = start?.id ? w.sessions.find((x) => x.id === start.id) : null;
     if (old) return JSON.parse(JSON.stringify(old));
@@ -43,7 +45,7 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
   useEffect(() => { if (!s.id) persist(s); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // 01/11 (lỗi E2E bắt được: tick hiệp cuối rồi bấm Xong trong 0,7 giây → lần lưu chậm của thao tác trước ghi đè buổi đã xong, buổi vẫn "đang tập", Pi không thưởng)
   // → buổi đã xong thì không lưu chậm nữa; bấm Xong huỷ lần lưu chậm đang chờ
-  const change = (f) => setS((x) => { const y = f(JSON.parse(JSON.stringify(x))); clearTimeout(saveT.current); saveT.current = setTimeout(() => { if (!sRef.current?.ended_at) persist(y); }, 700); return y; });
+  const change = (f) => setS((x) => { const y = f(JSON.parse(JSON.stringify(x))); clearTimeout(saveT.current); saveT.current = setTimeout(() => { if (edit || !sRef.current?.ended_at) persist(y); }, 700); return y; });
   // nghỉ giữa hiệp
   useEffect(() => {
     if (rest <= 0) return undefined;
@@ -54,7 +56,7 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
   const tick = (i, j) => change((x) => {
     const st = x.items[i].sets[j];
     st.done = !st.done;
-    if (st.done) { sfx("pop"); const u = unitOf(exOf(x.items[i].ex, w.custom)); if (u === "lần") setRest(REST); }
+    if (st.done) { sfx("pop"); const u = unitOf(exOf(x.items[i].ex, w.custom)); if (u === "lần" && !edit) setRest(REST); }
     return x;
   });
   const finish = async () => {
@@ -63,12 +65,21 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
     clearTimeout(saveT.current); saveT.current = null;
     const end = { ...s, ended_at: new Date().toISOString() };
     sRef.current = end;
-    const rec = newRecords(end, w.sessions).map((r) => ({ ...r, name: exOf(r.ex, w.custom).vi }));
+    const rec = newRecords(end, w.sessions).map((r) => ({ ...r, name: exTitle(exOf(r.ex, w.custom)) }));
     const r = await persist(end);
     if (!r.ok) { showToast?.({ text: "Chưa lưu được, kiểm tra mạng rồi thử lại." }); return; }
     setS(end); setRest(0); sfx("levelup");
     track("workout_done", { sets: n, min: minutesOf(end) });
     setDone({ id: end.id || r.id, sets: n, vol: volume(end), min: minutesOf(end), rec });
+  };
+  const saveEdit = async () => {
+    clearTimeout(saveT.current); saveT.current = null;
+    const x = sRef.current;
+    const r = await persist(x);
+    if (!r.ok) { showToast?.({ text: "Chưa lưu được, kiểm tra mạng rồi thử lại." }); return; }
+    track("workout_edit", { sets: setsDone(x) });
+    showToast?.({ text: "Đã lưu buổi tập" });
+    onEdited?.({ ...x, sets_done: setsDone(x), volume: volume(x), minutes: minutesOf(x) });
   };
   const drop = async () => { if (s.id) await w.deleteSession(s.id); onBack(); };
 
@@ -78,8 +89,8 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
   const nDone = setsDone(s), nAll = setsTotal(s);
   const mins = minutesOf(s, now);
   return (
-    <SubPage title={s.title} subtitle={`Đã tập ${mins} phút · ${nDone}/${nAll} hiệp`} onBack={() => { clearTimeout(saveT.current); persist(); onBack(); }}
-      right={<span data-testid="wk-ses-clock" style={{ fontSize: 15, fontWeight: 900, color: "#0062F0", background: "#EEF4FF", height: 32, padding: "0 10px", borderRadius: 10, display: "flex", alignItems: "center", marginRight: 8, fontVariantNumeric: "tabular-nums" }}>{mmss(Math.max(0, Math.round((now - Date.parse(s.started_at)) / 1000)))}</span>}
+    <SubPage title={edit ? `Sửa buổi · ${s.title}` : s.title} subtitle={edit ? `${s.minutes ?? mins} phút · ${nDone}/${nAll} hiệp · tự lưu` : `Đã tập ${mins} phút · ${nDone}/${nAll} hiệp`} onBack={() => { clearTimeout(saveT.current); persist(); if (edit) onEdited?.({ ...sRef.current, sets_done: setsDone(sRef.current), volume: volume(sRef.current), minutes: minutesOf(sRef.current) }); else onBack(); }}
+      right={edit ? null : <span data-testid="wk-ses-clock" style={{ fontSize: 15, fontWeight: 900, color: "#0062F0", background: "#EEF4FF", height: 32, padding: "0 10px", borderRadius: 10, display: "flex", alignItems: "center", marginRight: 8, fontVariantNumeric: "tabular-nums" }}>{mmss(Math.max(0, Math.round((now - Date.parse(s.started_at)) / 1000)))}</span>}
       footer={!done && (
         <div style={{ position: "relative", padding: "8px 12px calc(env(safe-area-inset-bottom, 0px) + 10px)", background: "rgba(255,255,255,0.92)", borderTop: "1px solid #EEF2FA" }}>
           {rest > 0 && (
@@ -100,7 +111,7 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
               )}
             </div>
           )}
-          <button type="button" data-testid="wk-ses-finish" onClick={finish} style={{ width: "100%", height: 50, borderRadius: 16, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, fontFamily: "inherit" }}>Xong buổi tập</button>
+          {edit ? <button type="button" data-testid="wk-edit-save" onClick={saveEdit} style={{ width: "100%", height: 50, borderRadius: 16, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, fontFamily: "inherit" }}>Xong sửa</button> : <button type="button" data-testid="wk-ses-finish" onClick={finish} style={{ width: "100%", height: 50, borderRadius: 16, border: "none", background: GRAD_BLUE, color: "#FFFFFF", fontSize: 16, fontWeight: 900, fontFamily: "inherit" }}>Xong buổi tập</button>}
         </div>
       )}>
       <div data-testid="wk-session" style={{ padding: "12px 0 96px", display: "flex", flexDirection: "column", gap: 12 }}>
@@ -113,8 +124,8 @@ export function SessionScreen({ w, today, start, onBack, showToast, onReward, on
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <button type="button" data-testid="wk-ses-photo" aria-label={`Xem cách tập ${e.vi}`} onClick={() => onOpenEx?.(e)} style={{ border: "none", background: "none", padding: 0, borderRadius: 12, flexShrink: 0, display: "flex" }}><ExPhoto ex={e} /></button>
                 <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-                  <b style={{ fontSize: 15.5, fontWeight: 900 }}>{e.vi}</b>
-                  {e.en && <span style={{ fontSize: 12.5, fontWeight: 600, color: "#64748B", fontStyle: "italic" }}>({e.en})</span>}
+                  <b style={{ fontSize: 15.5, fontWeight: 900 }}>{exTitle(e)}</b>
+                  {exSub(e) && <span style={{ fontSize: 12.5, fontWeight: 600, color: "#64748B" }}>{exSub(e)}</span>}
                 </span>
                 <button type="button" data-testid="wk-ses-swap" onClick={() => onPickSwap?.(e.muscle, (n) => change((x) => { x.items[i].ex = n.id; return x; }))} style={{ border: "none", background: "none", color: "#0062F0", fontSize: 12.5, fontWeight: 800, fontFamily: "inherit", padding: "2px 0" }}>Đổi bài</button>
               </div>

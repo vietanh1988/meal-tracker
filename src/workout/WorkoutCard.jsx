@@ -4,7 +4,7 @@
 import { ltCard } from "../theme";
 import { GRAD_BLUE } from "../mobile/ui";
 import { sessionOfDate, planDays, setsDone } from "./plan.js";
-import { exOf } from "./exLib.jsx";
+import { exOf, exTitle } from "./exLib.jsx";
 
 const DB = <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12" /></svg>;
 const WRAP = { margin: "14px 12px 0 12px", ...ltCard, padding: 16, display: "flex", flexDirection: "column", gap: 12 };
@@ -54,7 +54,7 @@ export function WorkoutCard({ w, today, onStart, onOpen, onResume, invite, onHid
         </span>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-        {dp.items.slice(0, 6).map((x, i) => <span key={i} style={{ height: 28, padding: "0 10px", borderRadius: 14, background: "#EEF4FF", color: "#1E3A8A", fontSize: 12.5, fontWeight: 700, display: "flex", alignItems: "center" }}>{exOf(x.ex, w.custom).vi}</span>)}
+        {dp.items.slice(0, 6).map((x, i) => <span key={i} style={{ height: 28, padding: "0 10px", borderRadius: 14, background: "#EEF4FF", color: "#1E3A8A", fontSize: 12.5, fontWeight: 700, display: "flex", alignItems: "center" }}>{exTitle(exOf(x.ex, w.custom))}</span>)}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: inApp ? "1fr" : "1fr 1.6fr", gap: 8 }}>
         {!inApp && <button type="button" data-testid="wk-card-manage" onClick={() => onOpen("plan")} style={{ height: 46, borderRadius: 14, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 15, fontWeight: 800, fontFamily: "inherit" }}>Quản lý</button>}

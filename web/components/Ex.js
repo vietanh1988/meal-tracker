@@ -22,7 +22,7 @@ export function ExCard({ e, attrs }) {
   return (
     <a className="card excard" href={exUrl(e.id)} {...attrs}>
       <ExPhoto ex={e} />
-      <span className="tx"><b>{e.vi}</b><span className="en">{e.en}</span><span className="tg">{exTags(e)}</span></span>
+      <span className="tx"><b>{e.en || e.vi}</b>{e.en && <span className="en">{e.vi}</span>}<span className="tg">{exTags(e)}</span></span>
     </a>
   );
 }
@@ -35,8 +35,8 @@ export function ExBlock({ e }) {
       <ExPhoto ex={e} />
       <div className="in">
         <span className="eye">Bài tập</span>
-        <a href={exUrl(e.id)} className="nm">{e.vi}</a>
-        <span className="sub">{e.en} · {MUSCLE_NAME[e.muscle]} · {EQUIPS[e.equip]}</span>
+        <a href={exUrl(e.id)} className="nm">{e.en || e.vi}</a>
+        <span className="sub">{e.en ? `${e.vi} · ` : ""}{MUSCLE_NAME[e.muscle]} · {EQUIPS[e.equip]}</span>
         {(e.steps || []).length > 0 && <ol>{e.steps.slice(0, 3).map((s, i) => <li key={i}>{s}</li>)}</ol>}
         <a className="go" href={exUrl(e.id)}>Xem cách tập đầy đủ ›</a>
       </div>

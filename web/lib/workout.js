@@ -6,6 +6,7 @@ import { TEMPLATES, fold } from "./app/workout/plan.js";
 import { targetsOf } from "./app/workout/exTargets.js";
 export { targetsOf };
 import { slugify } from "./slug.js";
+import { FROZEN } from "./exSlugs.js";
 
 export { EXERCISES, MUSCLES, EQUIPS, TEMPLATES };
 export const APP = "https://app.fipilotai.com";
@@ -23,7 +24,9 @@ export const EQUIP_CHIPS = [["", "Mọi dụng cụ"], ["khong", "Không dụng 
 // slug duy nhất theo tên Việt, thứ tự theo thư viện (bài trước giữ slug gọn)
 const SLUG = {}; const BY_SLUG = {};
 // "tạ đòn" và "tạ đơn" bỏ dấu đều ra "ta-don" → tạ đơn viết "ta-tay" (cách gọi quen: tạ tay)
-for (const e of EXERCISES) { const b = slugify(e.vi.replace(/tạ đơn/gi, "tạ tay")) || e.id; let s = b, n = 2; while (BY_SLUG[s]) s = `${b}-${n++}`; SLUG[e.id] = s; BY_SLUG[s] = e; }
+// 06/11: tên Việt đổi cho dễ hiểu → link cũ GIỮ NGUYÊN (lib/exSlugs.json chốt slug 119 bài ngày 06/11); bài mới thêm sau mới tạo slug theo tên Việt
+for (const e of EXERCISES) { const f = FROZEN[e.id]; if (f && !BY_SLUG[f]) { SLUG[e.id] = f; BY_SLUG[f] = e; } }
+for (const e of EXERCISES) { if (SLUG[e.id]) continue; const b = slugify(e.vi.replace(/tạ đơn/gi, "tạ tay")) || e.id; let s = b, n = 2; while (BY_SLUG[s]) s = `${b}-${n++}`; SLUG[e.id] = s; BY_SLUG[s] = e; }
 export const exSlug = (id) => SLUG[id] || id;
 export const exBySlug = (s) => BY_SLUG[s] || null;
 export const exById = (id) => EX_BY_ID[id] || null;

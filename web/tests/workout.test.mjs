@@ -41,3 +41,12 @@ test("cơ tác động dùng chung app; ô tìm web tìm theo cơ chính", () =>
   for (const e of EXERCISES) assert.ok(targetsOf(e.id)?.main.length, e.id);
   assert.ok(searchKey(exById("hip-thrust")).includes("mong"));
 });
+
+test("06/11: đổi tên Việt bài tập không đổi link /bai-tap/<slug> (slug chốt trong lib/exSlugs.js)", async () => {
+  const { FROZEN } = await import("../lib/exSlugs.js");
+  const W = await import("../lib/workout.js");
+  for (const [id, sl] of Object.entries(FROZEN)) { assert.equal(W.exSlug(id), sl, id); assert.equal(W.exBySlug(sl)?.id, id); }
+  assert.equal(W.exSlug("hack-squat"), "squat-may-hack");
+  assert.equal(W.exById("hack-squat").vi, "Squat trên máy nghiêng");
+  assert.equal(new Set(Object.values(FROZEN)).size, Object.keys(FROZEN).length, "slug không trùng");
+});

@@ -10,7 +10,7 @@ export function ExCardC({ e }) {
       {e.ph ? (
         <span className="exph"><img src={e.ph[0]} alt={`${e.vi} (${e.en}) — tư thế bắt đầu`} width={480} height={320} loading="lazy" decoding="async" /><img src={e.ph[1]} alt={`${e.vi} — tư thế kết thúc`} width={480} height={320} loading="lazy" decoding="async" /></span>
       ) : <span className="exph exph-no" style={{ background: e.tone[0], color: e.tone[1] }} aria-hidden="true">{e.mn}</span>}
-      <span className="tx"><b>{e.vi}</b><span className="en">{e.en}</span><span className="tg">{e.tg}</span></span>
+      <span className="tx"><b>{e.en || e.vi}</b>{e.en && <span className="en">{e.vi}</span>}<span className="tg">{e.tg}</span></span>
     </a>
   );
 }

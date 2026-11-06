@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { SubPage, GRAD_BLUE, Icon, Skel } from "../mobile/ui";
 import { ltCard } from "../theme";
 import { track } from "../lib/track";
-import { ExPhoto, exOf } from "../workout/exLib.jsx";
+import { ExPhoto, exOf, exTitle, exSub } from "../workout/exLib.jsx";
 import { loadPost, markRead, routeOf, ddmm, WEB } from "./newsData";
 
 const P = { fontSize: 15.5, lineHeight: 1.65, color: "#334155", margin: 0 };
@@ -58,7 +58,7 @@ function Block({ b, onFood, onEx }) {
     case "ex": { const e = exOf(b.ex); if (!e) return null; return (
       <button type="button" data-testid="news-ex" onClick={() => onEx(b.ex)} className="tap" style={{ display: "flex", alignItems: "center", gap: 12, background: "#EEF4FF", borderRadius: 14, padding: 10, border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
         <ExPhoto ex={e} w={64} h={48} radius={10} />
-        <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 14.5, fontWeight: 800 }}>{e.vi}</b><span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Xem cách tập trong app</span></span>
+        <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 14.5, fontWeight: 800 }}>{exTitle(e)}</b><span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{exSub(e) ? `${exSub(e)} · ` : ""}Xem cách tập trong app</span></span>
         {Icon.chev(16)}
       </button>
     ); }
