@@ -108,7 +108,7 @@ function PlanTab({ w, profile, loss, onDay, onTpl, showToast, onUsed }) {
 }
 
 // ---------------- Tab Thư viện ----------------
-function LibraryTab({ w, onOpen, onAdd, onCustom, pickMode, pickMuscle }) {
+function LibraryTab({ w, onOpen, onAdd, onCustom, pickMode, pickMuscle, onEditCustom }) {
   const [q, setQ] = useState("");
   const [m, setM] = useState(pickMuscle || "");
   const list = useMemo(() => searchEx(allExercises(w.custom), q, m), [q, m, w.custom]);
@@ -135,6 +135,7 @@ function LibraryTab({ w, onOpen, onAdd, onCustom, pickMode, pickMuscle }) {
                 <span style={{ fontSize: 12, color: "#64748B" }}>{MUSCLE_NAME[e.muscle] || "Bài của bạn"} · {EQUIPS[e.equip] || "—"}{e.custom ? " · bài của bạn" : ""}</span>
               </span>
             </button>
+            {e.custom && onEditCustom && <button type="button" data-testid="wk-lib-edit" aria-label={`Sửa ${e.vi}`} onClick={() => onEditCustom(e)} style={{ width: 34, height: 34, borderRadius: 17, border: "none", background: "#F1F5F9", color: "#475569", flexShrink: 0, padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M14 6l4 4" /></svg></button>}
             <button type="button" data-testid="wk-lib-add" aria-label={`Thêm ${e.vi}`} onClick={() => onAdd(e)} style={{ width: 34, height: 34, borderRadius: 17, border: "none", background: "#EEF4FF", color: "#0062F0", fontSize: 20, fontWeight: 700, flexShrink: 0, padding: 0 }}>+</button>
           </div>
         ))}
@@ -144,18 +145,24 @@ function LibraryTab({ w, onOpen, onAdd, onCustom, pickMode, pickMuscle }) {
   );
 }
 
-function CustomSheet({ onClose, onSave }) {
-  const [vi, setVi] = useState(""); const [en, setEn] = useState(""); const [m, setM] = useState("nguc"); const [eq, setEq] = useState("ta_don_tay");
+// 06/11: init = bài tự thêm cần sửa (Sửa bài của bạn) · usedIn > 0 = đã có trong giáo án / nhật ký → không cho xoá (giữ tên trong lịch sử)
+function CustomSheet({ onClose, onSave, init, onDelete, usedIn = 0 }) {
+  const [vi, setVi] = useState(init?.vi || ""); const [en, setEn] = useState(init?.en || ""); const [m, setM] = useState(init?.muscle || "nguc"); const [eq, setEq] = useState(init?.equip || "ta_don_tay");
+  const [ask, setAsk] = useState(false);
   const inp = { height: 44, borderRadius: 12, border: "1.5px solid #DCE7FF", padding: "0 12px", fontSize: 15, fontFamily: "inherit", width: "100%", boxSizing: "border-box" };
   return (
-    <Sheet title="Thêm bài của bạn" onClose={onClose} testid="wk-custom-sheet">
+    <Sheet title={init ? "Sửa bài của bạn" : "Thêm bài của bạn"} onClose={onClose} testid="wk-custom-sheet">
       <input data-testid="wk-custom-vi" value={vi} onChange={(e) => setVi(e.target.value.slice(0, 60))} placeholder="Tên bài, ví dụ: Đẩy ngực máy Smith" style={inp} />
       <input data-testid="wk-custom-en" value={en} onChange={(e) => setEn(e.target.value.slice(0, 60))} placeholder="Tên tiếng Anh (không bắt buộc), ví dụ: Smith Machine Press" style={inp} />
       <span style={{ fontSize: 12.5, fontWeight: 800, color: "#64748B" }}>Nhóm cơ chính</span>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{MUSCLES.map(([k, t]) => <button key={k} type="button" aria-pressed={m === k} onClick={() => setM(k)} style={{ ...tagSt(m === k ? "#0062F0" : "#F1F5F9", m === k ? "#FFFFFF" : "#475569"), height: 32, border: "none", fontFamily: "inherit" }}>{t}</button>)}</div>
       <span style={{ fontSize: 12.5, fontWeight: 800, color: "#64748B" }}>Dụng cụ</span>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{Object.entries(EQUIPS).map(([k, t]) => <button key={k} type="button" aria-pressed={eq === k} onClick={() => setEq(k)} style={{ ...tagSt(eq === k ? "#0062F0" : "#F1F5F9", eq === k ? "#FFFFFF" : "#475569"), height: 32, border: "none", fontFamily: "inherit" }}>{t}</button>)}</div>
-      <button type="button" data-testid="wk-custom-save" disabled={!vi.trim()} onClick={() => onSave({ vi: vi.trim(), en: en.trim(), muscle: m, equip: eq })} style={{ ...btn(true), opacity: vi.trim() ? 1 : 0.5 }}>Lưu bài</button>
+      <button type="button" data-testid="wk-custom-save" disabled={!vi.trim()} onClick={() => onSave({ vi: vi.trim(), en: en.trim(), muscle: m, equip: eq })} style={{ ...btn(true), opacity: vi.trim() ? 1 : 0.5 }}>{init ? "Lưu thay đổi" : "Lưu bài"}</button>
+      {init && onDelete && (usedIn > 0
+        ? <span data-testid="wk-custom-used" style={{ fontSize: 12.5, color: "#64748B", textAlign: "center", lineHeight: 1.45 }}>Bài đang có trong {usedIn} buổi (giáo án hoặc nhật ký) nên không xoá được, chỉ sửa tên.</span>
+        : !ask ? <button type="button" data-testid="wk-custom-del" onClick={() => setAsk(true)} style={{ ...btn(false), background: "#FEF2F2", color: "#B91C1C" }}>Xoá bài này</button>
+          : <button type="button" data-testid="wk-custom-del-yes" onClick={onDelete} style={{ ...btn(true), background: "#DC2626" }}>Xoá hẳn “{init.vi}”</button>)}
     </Sheet>
   );
 }
@@ -258,8 +265,8 @@ function LogDetail({ w, s, onBack, onEdit }) {
 }
 
 // ---------------- Chi tiết bài ----------------
-function ExerciseDetail({ w, ex, onBack, onAdd }) {
-  const e = ex;
+function ExerciseDetail({ w, ex, onBack, onAdd, onEditCustom }) {
+  const e = ex?.custom ? exOf(ex.id, w.custom) : ex; // bài tự thêm: đọc lại sau khi sửa
   const best = bestSet(w.sessions, e.id), last = lastSets(w.sessions, e.id);
   const u = unitOf(e);
   const tg = e.custom ? null : targetsOf(e.id); // 01/11: cơ tác động (chính / phụ / ghi chú)
@@ -303,6 +310,7 @@ function ExerciseDetail({ w, ex, onBack, onAdd }) {
             <div style={{ background: "#F8FAFC", borderRadius: 14, padding: 10, display: "flex", flexDirection: "column", gap: 2 }}><b style={{ fontSize: 16, fontWeight: 900 }}>{last ? `${last.length} × ${last[0].reps}${last[0].kg > 0 ? ` × ${fmtKg(last[0].kg)}` : ""}` : "—"}</b><span style={{ fontSize: 11.5, color: "#64748B", fontWeight: 700 }}>Lần gần nhất</span></div>
           </div>
           {onAdd && <button type="button" data-testid="wk-ex-add" onClick={() => onAdd(e)} style={btn(true)}>+ Thêm vào buổi tập</button>}
+          {e.custom && onEditCustom && <button type="button" data-testid="wk-ex-edit" onClick={() => onEditCustom(e)} style={btn(false)}>Sửa bài của bạn</button>}
         </div>
       </div>
     </SubPage>
@@ -453,6 +461,13 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
     setSheet(null);
     showToast?.({ text: r.ok ? `Đã thêm vào ${s.title}` : "Chưa lưu được, thử lại." });
   };
+  // 06/11: sửa / xoá bài tự thêm (từ chi tiết bài hoặc nút ✎ ở Thư viện)
+  const usedCount = (id) => Object.values(w.active?.days || {}).filter((d) => (d?.items || []).some((x) => x.ex === id)).length + (w.plans || []).filter((p) => p.id !== w.active?.id && Object.values(p.days || {}).some((d) => (d?.items || []).some((x) => x.ex === id))).length + w.sessions.filter((s) => (s.items || []).some((x) => x.ex === id)).length;
+  const customSheet = sheet?.k === "custom" && sheet.ex ? (
+    <CustomSheet init={sheet.ex} usedIn={usedCount(sheet.ex.id)} onClose={() => setSheet(null)}
+      onSave={async (c) => { const r = await w.updateCustom({ id: sheet.ex.id, ...c }); setSheet(null); showToast?.({ text: r.ok ? `Đã lưu "${c.vi}"` : "Chưa lưu được, thử lại." }); }}
+      onDelete={async () => { const r = await w.deleteCustom(sheet.ex.id); setSheet(null); if (r.ok && view?.k === "ex") setView(null); showToast?.({ text: r.ok ? "Đã xoá bài khỏi Thư viện" : "Chưa xoá được, thử lại." }); }} />
+  ) : null;
   const saveCustom = async (c) => {
     const id = `u-${c.vi.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "bai"}-${Date.now() % 10000}`;
     const r = await w.addCustom({ id, ...c });
@@ -484,7 +499,8 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
   );
   if (view?.k === "ex") return (
     <>
-      <ExerciseDetail w={w} ex={view.ex} onBack={() => setView(null)} onAdd={(e) => setSheet({ k: "add", ex: e })} />
+      <ExerciseDetail w={w} ex={view.ex} onBack={() => setView(null)} onAdd={(e) => setSheet({ k: "add", ex: e })} onEditCustom={(e) => setSheet({ k: "custom", ex: e })} />
+      {sheet?.k === "custom" && sheet.ex && customSheet}
       {sheet?.k === "add" && <AddToDaySheet w={w} ex={sheet.ex} onClose={() => setSheet(null)} onDone={(d) => addTo(sheet.ex, d)} />}
     </>
   );
@@ -511,7 +527,7 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
           </div>
         )}
         {w.ready && tab === "plan" && <PlanTab w={w} profile={profile} loss={loss} showToast={showToast} onUsed={(o) => pushDays(planDays(o))} onTpl={choose} onDay={(d) => setView({ k: "day", dow: d })} />}
-        {w.ready && tab === "lib" && <LibraryTab w={w} onOpen={(e) => setView({ k: "ex", ex: e })} onAdd={(e) => setSheet({ k: "add", ex: e })} onCustom={() => setSheet({ k: "custom" })} />}
+        {w.ready && tab === "lib" && <LibraryTab w={w} onOpen={(e) => setView({ k: "ex", ex: e })} onAdd={(e) => setSheet({ k: "add", ex: e })} onCustom={() => setSheet({ k: "custom" })} onEditCustom={(e) => setSheet({ k: "custom", ex: e })} />}
         {w.ready && tab === "log" && <LogTab w={w} plan={w.active} today={today} onOpen={(s) => setView({ k: "log", s })} onResume={(s) => setView({ k: "session", id: s.id })} />}
       </div>
       {ask && createPortal(
@@ -538,7 +554,7 @@ export function WorkoutApp({ w, profile, loss, today = todayVN(), initial, onBac
         </Sheet>
       )}
       {sheet?.k === "add" && <AddToDaySheet w={w} ex={sheet.ex} onClose={() => setSheet(null)} onDone={(d) => addTo(sheet.ex, d)} />}
-      {sheet?.k === "custom" && <CustomSheet onClose={() => setSheet(null)} onSave={saveCustom} />}
+      {sheet?.k === "custom" && (sheet.ex ? customSheet : <CustomSheet onClose={() => setSheet(null)} onSave={saveCustom} />)}
     </SubPage>
   );
 }

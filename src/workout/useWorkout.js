@@ -98,5 +98,18 @@ export function useWorkout(userId, enabled = true) {
     setCustom(next); persistLocal({ custom: next }); return { ok: true };
   }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { ready, plans, active, sessions, custom, savePlan, setActivePlan, deletePlan, saveSession, deleteSession, addCustom, reload: load, isLocal: () => local.current };
+  // 06/11 (chủ dự án): bài tự thêm sửa / xoá được
+  const updateCustom = useCallback(async (ex) => {
+    const row = { vi: ex.vi, en: ex.en || null, muscle: ex.muscle, equip: ex.equip || null };
+    if (!local.current) { const { error } = await supabase.from("user_exercises").update(row).eq("id", ex.id).eq("user_id", userId); if (error) return { ok: false, error: error.message }; }
+    const next = snap.current.custom.map((x) => (x.id === ex.id ? { ...x, ...row } : x));
+    setCustom(next); persistLocal({ custom: next }); return { ok: true };
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const deleteCustom = useCallback(async (id) => {
+    if (!local.current) { const { error } = await supabase.from("user_exercises").delete().eq("id", id).eq("user_id", userId); if (error) return { ok: false, error: error.message }; }
+    const next = snap.current.custom.filter((x) => x.id !== id);
+    setCustom(next); persistLocal({ custom: next }); return { ok: true };
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { ready, plans, active, sessions, custom, savePlan, setActivePlan, deletePlan, saveSession, deleteSession, addCustom, updateCustom, deleteCustom, reload: load, isLocal: () => local.current };
 }

@@ -71,6 +71,27 @@ test("Tập luyện: giáo án, thư viện, sửa lịch, ghi buổi tập, th�
     await expect(page.getByTestId("wk-lib-row").filter({ hasText: "Ép ngực máy tự chế" })).toBeVisible();
     await expect(page.getByTestId("wk-lib-row").filter({ hasText: "Ép ngực máy tự chế" }).getByTestId("wk-nophoto")).toBeVisible(); // bài tự thêm: ô nhóm cơ, không ảnh
     await waitDb(async () => (await rest(`user_exercises?user_id=eq.${s.uid}&select=vi`)).length === 1, "bài tự thêm lưu máy chủ");
+    // 06/11: sửa bài tự thêm (nút ✎ ở Thư viện) → đổi tên Anh / Việt, lưu máy chủ; chưa dùng ở buổi nào → xoá được (thêm lại để các bước sau dùng)
+    const mine = page.getByTestId("wk-lib-row").filter({ hasText: "Ép ngực máy tự chế" });
+    await mine.getByTestId("wk-lib-edit").click();
+    await expect(page.getByTestId("wk-custom-vi")).toHaveValue("Ép ngực máy tự chế");
+    await page.getByTestId("wk-custom-vi").fill("Ép ngực máy tự làm");
+    await page.getByTestId("wk-custom-en").fill("DIY Chest Press");
+    await page.getByTestId("wk-custom-save").click();
+    await waitDb(async () => (await rest(`user_exercises?user_id=eq.${s.uid}&select=vi,en`))[0]?.en === "DIY Chest Press", "sửa bài tự thêm lưu máy chủ");
+    await page.getByTestId("wk-lib-search").fill("tu lam");
+    const mine2 = page.getByTestId("wk-lib-row").filter({ hasText: "DIY Chest Press" });
+    await expect(mine2).toContainText("Ép ngực máy tự làm");
+    await mine2.getByTestId("wk-lib-edit").click();
+    await page.getByTestId("wk-custom-del").click();
+    await page.getByTestId("wk-custom-del-yes").click();
+    await waitDb(async () => (await rest(`user_exercises?user_id=eq.${s.uid}&select=id`)).length === 0, "xoá bài tự thêm");
+    await expect(page.getByTestId("wk-lib-row").filter({ hasText: "DIY Chest Press" })).toHaveCount(0);
+    await page.getByTestId("wk-custom-open").click();
+    await page.getByTestId("wk-custom-vi").fill("Ép ngực máy tự chế");
+    await page.getByTestId("wk-custom-en").fill("Homemade Chest Press");
+    await page.getByTestId("wk-custom-save").click();
+    await waitDb(async () => (await rest(`user_exercises?user_id=eq.${s.uid}&select=vi`)).length === 1, "thêm lại bài tự thêm");
 
     // 3 · sửa lịch: đặt 1 ngày thành ngày nghỉ → Lịch tập (gym_days) đổi theo
     await page.getByTestId("wk-tab-plan").click();
