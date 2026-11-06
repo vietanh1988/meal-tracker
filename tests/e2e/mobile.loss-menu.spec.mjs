@@ -82,10 +82,10 @@ test("Giảm cân: Thực đơn ngày mai tự lên (không AI), Đổi món, M�
     }, "app_events có app_open, menu_tomorrow, avoid_save", 15_000);
     // 06/11: mở app từ link trong thư (?ref=mail-…) → ghi 1 sự kiện open_ref; mở lại cùng mã không ghi thêm
     await page.goto("/?ref=mail-e2e");
-    await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("navigation", { name: "Điều hướng chính" })).toBeVisible({ timeout: 20_000 }); // Hôm nay bản gọn (giảm cân) không có chữ "còn lại"
     await waitDb(async () => (await rest(`app_events?user_id=eq.${s.uid}&name=eq.open_ref&at=gte.${encodeURIComponent(t0)}&select=meta`)).some((x) => x.meta?.ref === "mail-e2e"), "app_events có open_ref mail-e2e", 15_000);
     await page.goto("/?ref=mail-e2e");
-    await expect(page.getByText(/còn lại/i).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("navigation", { name: "Điều hướng chính" })).toBeVisible({ timeout: 20_000 }); // Hôm nay bản gọn (giảm cân) không có chữ "còn lại"
     await page.waitForTimeout(2500);
     expect((await rest(`app_events?user_id=eq.${s.uid}&name=eq.open_ref&at=gte.${encodeURIComponent(t0)}&select=name`)).length).toBe(1);
     expect(ai, "không gọi AI").toEqual([]);
