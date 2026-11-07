@@ -18,3 +18,12 @@ test("ảnh món: ô nhỏ dùng bản 400w, ảnh khác giữ nguyên", () => {
   assert.equal(thumbOf("https://fipilotai.com/img/bowl-1.jpg"), "https://fipilotai.com/img/bowl-1.jpg");
   assert.equal(thumbOf(null), null);
 });
+
+import { withAliases } from "../src/lib/foodImgMap.js";
+test("món đồng nghĩa / biến thể mượn ảnh, món khác hình thì không", () => {
+  const m = withAliases({ "thịt heo": "A", "chuối": "B", "cơm chiên": "C", "bún": "D", "thịt bò": "E", "tôm": "F" },
+    ["thịt lợn", "chuối tiêu", "cơm chiên dương châu", "bún đậu", "thịt bò xào", "tôm hùm", "chuối", "món lạ"]);
+  assert.equal(m["thịt lợn"], "A"); assert.equal(m["chuối tiêu"], "B"); assert.equal(m["cơm chiên dương châu"], "C");
+  assert.equal(m["bún đậu"], undefined); assert.equal(m["thịt bò xào"], undefined); assert.equal(m["tôm hùm"], undefined); assert.equal(m["món lạ"], undefined);
+  assert.equal(m["chuối"], "B");
+});

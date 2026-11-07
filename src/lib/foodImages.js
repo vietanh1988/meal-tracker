@@ -3,8 +3,9 @@
 // (07/11: bản giữ 1 ngày làm máy đã lưu 40 món không thấy 197 món vẽ thêm).
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
-import { buildMap } from "./foodImgMap";
-export { thumbOf, normKey, buildMap } from "./foodImgMap";
+import { buildMap, withAliases } from "./foodImgMap";
+import { LOCAL_FOODS } from "./localFoodDB";
+export { thumbOf, normKey, buildMap, withAliases } from "./foodImgMap";
 
 const KEY = "fp_food_img2"; // đổi khoá để bỏ bản cũ đã lưu (chỉ 40 món)
 let mem = null; // { t, m: { [food_key]: url } }
@@ -22,7 +23,7 @@ async function load() {
     const { data, error } = await supabase.from("web_calo_pages").select("food_key,image_url,enabled").not("image_url", "is", null);
     if (error || !Array.isArray(data)) return;
     fresh = true;
-    mem = { t: Date.now(), m: buildMap(data) };
+    mem = { t: Date.now(), m: withAliases(buildMap(data), Object.keys(LOCAL_FOODS)) }; // món đồng nghĩa mượn ảnh (07/11)
     write(mem);
     subs.forEach((f) => f(mem.m));
   })().catch(() => {}).finally(() => { loading = null; });
