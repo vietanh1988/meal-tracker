@@ -1897,6 +1897,21 @@ export const UNIT_MAP = {
   "sầu riêng":       [{name:"1 múi", gram:40}, {name:"3 múi", gram:120}],
   "măng cụt":        [{name:"3 quả", gram:80}, {name:"5 quả", gram:130}],
 };
+// 07/11 (chủ dự án chốt "Bảng calo đủ món", cách 2): khẩu phần quen thuộc cho món được bật trang /calo mà kho chưa có khẩu phần.
+// App cũng dùng (Ghi bữa hiện "1 quả", "miếng vừa"… thay vì chỉ 100 g).
+const UNIT_ADD_0711 = {
+  "dâu tây": [["5 quả", 75], ["chén", 150]], "đu đủ": [["miếng", 150], ["chén", 200]], "kiwi": [["1 quả", 75], ["2 quả", 150]],
+  "lê": [["quả vừa", 180]], "vải": [["5 quả", 100], ["10 quả", 200]], "chôm chôm": [["5 quả", 100], ["10 quả", 200]],
+  "mít": [["5 múi", 100], ["10 múi", 200]], "dứa": [["miếng", 100], ["chén", 165]], "nhãn": [["10 quả", 100], ["20 quả", 200]],
+  "quýt": [["quả vừa", 90]], "mãng cầu": [["nửa quả", 120], ["quả vừa", 240]], "chuối sấy": [["nắm", 30], ["gói nhỏ", 50]],
+  "đùi gà chiên": [["1 đùi", 150]], "thịt bò": [["lạng", 100], ["phần vừa", 150]], "bò bắp luộc": [["đĩa vừa", 150]],
+  "ba chỉ": [["lạng", 100]], "cá hồi": [["miếng vừa", 150]], "cá basa": [["miếng vừa", 150]],
+  "tôm luộc": [["đĩa vừa", 150]], "đậu phụ": [["miếng", 100], ["bìa", 150]], "khoai lang luộc": [["củ vừa", 150]],
+  "khoai tây luộc": [["củ vừa", 150]], "ngô luộc": [["bắp vừa", 100]], "yến mạch": [["phần ăn sáng", 40]], "bún": [["đĩa vừa", 200]],
+  "sữa chua hy lạp": [["hũ", 100]], "whey": [["muỗng", 30]], "hạt điều": [["nắm nhỏ", 15], ["nắm", 30]], "hạnh nhân": [["nắm nhỏ", 15], ["nắm", 30]],
+  "bông cải luộc": [["đĩa", 150]], "rau muống luộc": [["đĩa vừa", 200]], "cà phê sữa": [["ly", 180]], "chè đậu đen": [["ly", 250]],
+};
+for (const [k, u] of Object.entries(UNIT_ADD_0711)) if (LOCAL_FOODS[k] && !UNIT_MAP[k]) UNIT_MAP[k] = u.map(([name, gram]) => ({ name, gram }));
 
 const LOCAL_KEYS = Object.keys(LOCAL_FOODS).sort((a, b) => b.length - a.length);
 // Tên chuẩn (foodSyn.canonFood) → mã trong kho; mã dài / có trước giữ chỗ khi 2 mã ra cùng tên chuẩn
