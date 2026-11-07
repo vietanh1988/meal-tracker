@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 import { buildMap, withAliases } from "./foodImgMap";
 import { LOCAL_FOODS } from "./localFoodDB";
-export { thumbOf, normKey, buildMap, withAliases } from "./foodImgMap";
+export { thumbOf, normKey, buildMap, withAliases, imgFor } from "./foodImgMap";
 
 const KEY = "fp_food_img2"; // đổi khoá để bỏ bản cũ đã lưu (chỉ 40 món)
 let mem = null; // { t, m: { [food_key]: url } }

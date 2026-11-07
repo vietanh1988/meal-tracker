@@ -27,3 +27,11 @@ test("món đồng nghĩa / biến thể mượn ảnh, món khác hình thì kh
   assert.equal(m["bún đậu"], undefined); assert.equal(m["thịt bò xào"], undefined); assert.equal(m["tôm hùm"], undefined); assert.equal(m["món lạ"], undefined);
   assert.equal(m["chuối"], "B");
 });
+
+import { imgFor, cleanName } from "../src/lib/foodImgMap.js";
+test("món user nhập đã duyệt (food_cache): bỏ số / ghi chú trong ngoặc rồi mượn ảnh", () => {
+  const m = { "thịt heo": "A", "táo": "B", "rau luộc": "C" };
+  assert.equal(cleanName("rau luộc (rau cải)"), "rau luộc"); assert.equal(cleanName("1. ly bạc sĩu nhỏ"), "ly bạc sĩu nhỏ");
+  assert.equal(imgFor(m, "thịt lợn"), "A"); assert.equal(imgFor(m, "táo mini"), "B"); assert.equal(imgFor(m, "Rau luộc (rau cải)"), "C");
+  assert.equal(imgFor(m, "món lạ"), null); assert.equal(imgFor(null, "táo"), null);
+});

@@ -14,7 +14,7 @@ import { readPortion } from "../lib/trayPortion";
 import { fmtVN } from "../lib/dateVN";
 import { MEAL_NAMES } from "../lib/mealMath";
 import { appChoose } from "../lib/dialog";
-import { useFoodImages, normKey } from "../lib/foodImages";
+import { useFoodImages, imgFor } from "../lib/foodImages";
 import { FoodThumb } from "./FoodThumb";
 
 // 30/10 (chủ dự án: "gặp món không có phải tính calo thì mất hết món đã thêm"): giỏ giữ trên máy theo ngày ghi
@@ -257,7 +257,7 @@ export function LogMealSheet(p) {
             const nm = itemName(it);
             return (
               <div key={key + i} style={{ display: "flex", alignItems: "center", gap: 10, minHeight: 56, padding: "6px 4px", boxSizing: "border-box", borderBottom: i < list.length - 1 ? "1px solid #EEF2FA" : "none" }}>
-                <FoodThumb url={imgs[normKey(it.food)]} name={nm} />
+                <FoodThumb url={imgFor(imgs, it.food)} name={nm} />
                 <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 15, fontWeight: 700 }}>{nm}</span><span style={{ fontSize: 12, color: "#64748B" }}>{itemPortion(it)} · {fmtInt(it.cal)} kcal</span></span>
                 <button data-testid="log-add" aria-pressed={inTray(it)} onClick={() => toggleTray(it)} aria-label={`Thêm ${nm.toLowerCase()}`} style={addBtn(inTray(it))}>{inTray(it) ? Icon.check(18) : "+"}</button>
               </div>

@@ -9,7 +9,7 @@ import { ltCard } from "../theme";
 import { track } from "../lib/track";
 import { ExPhoto, exOf, exTitle, exSub } from "../workout/exLib.jsx";
 import { loadPost, markRead, routeOf, ddmm, WEB } from "./newsData";
-import { useFoodImages, normKey } from "../lib/foodImages";
+import { useFoodImages, imgFor } from "../lib/foodImages";
 import { FoodThumb } from "../mobile/FoodThumb";
 
 const P = { fontSize: 15.5, lineHeight: 1.65, color: "#334155", margin: 0 };
@@ -25,7 +25,7 @@ function FoodRow({ f, onFood }) {
   return (
     <button type="button" data-testid="news-food" data-name={f.name} onClick={() => onFood(f.name)} className="tap"
       style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, background: "#EEF4FF", borderRadius: 12, padding: "9px 12px", border: "none", fontFamily: "inherit", textAlign: "left", color: "#0F172A" }}>
-      <FoodThumb url={imgs[normKey(f.key || f.name)]} size={36} radius={10} name={f.name} />
+      <FoodThumb url={imgFor(imgs, f.key || f.name)} size={36} radius={10} name={f.name} />
       <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 800 }}>{f.name}</span>
       <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B", whiteSpace: "nowrap" }}>{por}</span>
       <span aria-label={`Ghi ${f.name}`} style={{ width: 30, height: 30, borderRadius: 9, background: GRAD_BLUE, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{Icon.plus(18, 3)}</span>
