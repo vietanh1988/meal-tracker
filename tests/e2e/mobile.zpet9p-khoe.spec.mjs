@@ -4,9 +4,9 @@ import { test, expect } from "@playwright/test";
 import { login, S, rest } from "./helpers.mjs";
 import { addDays, todayVN } from "../../src/lib/dateVN.js";
 
-const meal = (id) => ({ meal_id: id, meal_name: id, items: [{ food: "Ức gà", gram: 300, cal: 500, p: 200, c: 30, f: 10 }] });
+const meal = (id, p = 200) => ({ meal_id: id, meal_name: id, items: [{ food: "Ức gà", gram: 300, cal: 500, p, c: 30, f: 10 }] });
 const full = (uid, d) => ({ user_id: uid, log_date: d, day_type: "rest", meals: ["sang", "trua", "toi"].map(meal), eaten_meals: ["sang", "trua", "toi"], total_cal: 1500 });
-const one = (uid, d) => ({ user_id: uid, log_date: d, day_type: "rest", meals: [meal("trua")], eaten_meals: ["trua"], total_cal: 500 });
+const one = (uid, d) => ({ user_id: uid, log_date: d, day_type: "rest", meals: [meal("trua", 5)], eaten_meals: ["trua"], total_cal: 500 });
 
 test("Sức khoẻ Pi: bỏ 2 ngày → mệt; chăm 10 ngày → khoẻ rực", async ({ browser }) => {
   test.setTimeout(120_000);
@@ -19,7 +19,7 @@ test("Sức khoẻ Pi: bỏ 2 ngày → mệt; chăm 10 ngày → khoẻ rực",
   const wipe = () => rest(`daily_logs?user_id=eq.${s.uid}&log_date=in.(${span.join(",")})`, { method: "DELETE" });
   try {
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: JSON.stringify({ ...JSON.parse(flagsRow.value), pet: true }) }) });
-    // ① 3 ngày trước ghi 1 bữa, 2 ngày qua bỏ trống, hôm nay chưa ghi → 50 − 20 − 20 = 10%
+    // ① 3 ngày trước ghi 1 bữa ít đạm (không cộng), 2 ngày qua bỏ trống, hôm nay chưa ghi → 50 − 20 − 20 = 10%
     await wipe();
     await put([one(s.uid, addDays(t, -3))]);
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
