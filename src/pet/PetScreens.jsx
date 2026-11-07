@@ -605,7 +605,7 @@ export function PetTodayCard({ pet, onOpen, onboard, onOnboard, onGym }) {
         {h?.stage === "khoe" && <span data-testid="pet-health-spark" aria-hidden="true">{[[8, 18, 16], [96, 34, 14], [14, 92, 11]].map(([x, y, z], i) => <span key={i} style={{ position: "absolute", left: x, top: y, fontSize: z, color: "#F59E0B", lineHeight: 1 }}>✦</span>)}</span>}
       </span>
       <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6, flex: 1, minWidth: 0, padding: "14px 0", position: "relative" }}>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px 6px" }}>
           <span style={{ fontSize: 16, fontWeight: 900 }}>{pet.name}</span>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", background: "#F3EEFF", padding: "2px 7px", borderRadius: 6 }}>Cấp {pet.level.n}</span>
           {h?.streak >= 3 && <span data-testid="pet-health-streak" style={{ fontSize: 11, fontWeight: 800, color: "#047857", background: "#ECFDF5", padding: "2px 7px", borderRadius: 6, whiteSpace: "nowrap" }}>✨ {h.streak} ngày khoẻ</span>}
@@ -615,7 +615,7 @@ export function PetTodayCard({ pet, onOpen, onboard, onOnboard, onGym }) {
           <span aria-hidden="true" style={{ flex: 1, minWidth: 30, height: 8, borderRadius: 4, background: "#E2E8F0", overflow: "hidden" }}><span style={{ display: "block", width: `${h.pct}%`, height: "100%", borderRadius: 4, background: h.stage === "khoe" ? "linear-gradient(90deg, #22C55E, #F59E0B)" : hc }} /></span>
           <b style={{ fontSize: 12, fontWeight: 900, color: hc, minWidth: 32, textAlign: "right" }}>{h.pct}%</b>
         </span>}
-        {pet.healthSay && <span data-testid="pet-health-say" style={{ fontSize: 12, fontWeight: 700, color: "#475569", lineHeight: 1.35 }}>{pet.healthSay}</span>}
+        {pet.healthSay && (pet.say || h?.stage === "met" || h?.next?.key !== "meal") && <span data-testid="pet-health-say" style={{ fontSize: 12, fontWeight: 700, color: "#475569", lineHeight: 1.35 }}>{pet.healthSay}</span>}
         {pet.say ? (
           <>
             {/* 20/10: Pi nói 1 câu khen / nhắc theo việc thật (kho câu src/pet/lines.js, đúng giọng nam / nữ) */}

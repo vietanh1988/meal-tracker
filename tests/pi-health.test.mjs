@@ -54,3 +54,11 @@ test("bữa dưới 100 kcal không tính; bữa chưa tick không tính", () =>
   assert.equal(dayDone(r, { pTarget: 60 }).meals, 1);
   assert.equal(HEALTH.miss, -20);
 });
+
+test("đã 100%: câu nói giữ khoẻ, không 'lên 100%'", () => {
+  const rows = Array.from({ length: 10 }, (_, i) => day(addDays(T, -10 + i), 3, 40));
+  let h = healthOf({ rows, todayRow: null, today: T, pTarget: 100 });
+  assert.equal(h.pct, 100); assert.match(healthLine(h), /giữ Pi khoẻ/);
+  h = healthOf({ rows, todayRow: day(T, 1), today: T, pTarget: 100 });
+  assert.equal(healthLine(h), "Ghi đủ 3 bữa hôm nay để giữ Pi khoẻ rực");
+});

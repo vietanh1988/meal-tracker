@@ -57,10 +57,11 @@ export function healthLine(h, { variant = "nam", fullN = 3 } = {}) {
   if (!h) return "";
   const nu = variant === "nu";
   if (h.stage === "met" && h.today.meals === 0) return nu ? "Pi buồn ngủ quá… ghi 1 bữa cho Pi tỉnh nha" : "Pi buồn ngủ quá… ghi 1 bữa cho Pi tỉnh nào";
-  if (h.next?.key === "meal") return nu ? "Ghi bữa đầu hôm nay cho Pi khoẻ lên nha" : "Ghi bữa đầu hôm nay cho Pi khoẻ lên nào";
-  if (h.next?.key === "full") return `Ghi đủ ${fullN} bữa hôm nay là Pi lên ${h.next.pct}%${nu ? " nè" : ""}`;
-  if (h.next?.key === "protein") return `Ăn đủ đạm hôm nay là Pi lên ${h.next.pct}%${nu ? " nè" : ""}`;
-  if (h.next?.key === "gym") return `Tập xong buổi hôm nay là Pi lên ${h.next.pct}%${nu ? " nè" : ""}`;
+  const up = (what) => (h.next.pct > h.pct ? `${what} là Pi lên ${h.next.pct}%${nu ? " nè" : ""}` : `${what} để giữ Pi khoẻ rực${nu ? " nha" : ""}`);
+  if (h.next?.key === "meal") return h.stage === "khoe" ? (nu ? "Ghi bữa hôm nay để giữ Pi khoẻ nha" : "Ghi bữa hôm nay để giữ Pi khoẻ nào") : (nu ? "Ghi bữa đầu hôm nay cho Pi khoẻ lên nha" : "Ghi bữa đầu hôm nay cho Pi khoẻ lên nào");
+  if (h.next?.key === "full") return up(`Ghi đủ ${fullN} bữa hôm nay`);
+  if (h.next?.key === "protein") return up("Ăn đủ đạm hôm nay");
+  if (h.next?.key === "gym") return up("Tập xong buổi hôm nay");
   if (h.stage === "khoe") return h.streak >= 2 ? `Pi khoẻ rực ${h.streak} ngày liền, cảm ơn bạn!` : "Pi khoẻ rực luôn! Cảm ơn bạn chăm Pi";
   return nu ? "Hôm nay chăm quá, Pi khoẻ hẳn ra nè" : "Hôm nay chăm quá, Pi khoẻ hẳn ra!";
 }
