@@ -585,8 +585,10 @@ export function PetClosetScreen({ pet, onBack, slot: slot0 = "all", onEquip, onF
 // 26/10 (chủ dự án: "sao không mờ dần mà trắng hếu"): phòng phủ CẢ thẻ, đậm bên Pi rồi nhạt dần sang phải (còn ~30%), không cắt trắng
 const DECOR = ["tet", "trungthu", "halloween", "giangsinh"];
 const FADE = "linear-gradient(90deg, #000 0%, #000 28%, rgba(0,0,0,.45) 60%, rgba(0,0,0,.3) 100%)";
-export function PetTodayCard({ pet, onOpen, onboard, onOnboard }) {
+export function PetTodayCard({ pet, onOpen, onboard, onOnboard, onGym }) {
   const left = pet.tasksLeft;
+  const h = pet.health; // 08/11 Sức khoẻ Pi (src/lib/piHealth.js): mệt → nhạt màu + z z; khoẻ → lấp lánh
+  const hc = !h ? null : h.stage === "met" ? "#94A3B8" : h.stage === "khoe" ? "#D97706" : "#16A34A";
   return (
     // 25/10 (chủ dự án chốt bản B): Pi to ~1,7 lần (cao 156, khung 118 × ≥132, thấy tới bụng, phần dưới cắt ở mép thẻ),
     // khung Pi giãn theo chiều cao chữ; tên / câu nói / dòng việc thẳng một mép trái; mũi tên một cột 12px bên phải.
@@ -598,13 +600,22 @@ export function PetTodayCard({ pet, onOpen, onboard, onOnboard }) {
       {/* 26/10 (chủ dự án duyệt): đúng dịp lễ thì có 1 hoạ tiết nhỏ ở góc trên phải (public/pi/decor, scripts/pi/decor.py); ngày thường không có */}
       {DECOR.includes(roomOf(pet)) && <img data-testid="pet-today-decor" data-decor={roomOf(pet)} src={`${PI_BASE}decor/${roomOf(pet)}.webp${PI_VER}`} alt="" aria-hidden="true" draggable="false" style={{ position: "absolute", right: 6, top: 4, width: 34, height: "auto", transform: "rotate(12deg)", pointerEvents: "none" }} />}
       <span data-testid="pet-today-av" style={{ width: 118, alignSelf: "stretch", minHeight: 132, position: "relative", flexShrink: 0, overflow: "hidden" }}>
-        <span style={{ position: "absolute", left: "50%", top: 12, transform: "translateX(-50%)" }}><PetAvatar variant={pet.variant} color={pet.color} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={156} still /></span>
+        <span style={{ position: "absolute", left: "50%", top: 12, transform: "translateX(-50%)", filter: h?.stage === "met" ? "saturate(.55) brightness(.96)" : undefined }}><PetAvatar variant={pet.variant} color={pet.color} equipped={pet.equipped} mood={pet.mood} face={pet.face} hour={pet.hour} size={156} still /></span>
+        {h?.stage === "met" && <span data-testid="pet-health-zz" aria-hidden="true" style={{ position: "absolute", right: 14, top: 10, fontSize: 15, fontWeight: 900, color: "#94A3B8", letterSpacing: 2 }}>z z</span>}
+        {h?.stage === "khoe" && <span data-testid="pet-health-spark" aria-hidden="true">{[[8, 18, 16], [96, 34, 14], [14, 92, 11]].map(([x, y, z], i) => <span key={i} style={{ position: "absolute", left: x, top: y, fontSize: z, color: "#F59E0B", lineHeight: 1 }}>✦</span>)}</span>}
       </span>
       <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 6, flex: 1, minWidth: 0, padding: "14px 0", position: "relative" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: 16, fontWeight: 900 }}>{pet.name}</span>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#6D28D9", background: "#F3EEFF", padding: "2px 7px", borderRadius: 6 }}>Cấp {pet.level.n}</span>
+          {h?.streak >= 3 && <span data-testid="pet-health-streak" style={{ fontSize: 11, fontWeight: 800, color: "#047857", background: "#ECFDF5", padding: "2px 7px", borderRadius: 6, whiteSpace: "nowrap" }}>✨ {h.streak} ngày khoẻ</span>}
         </span>
+        {h && <span data-testid="pet-health" data-stage={h.stage} data-pct={h.pct} style={{ display: "flex", alignItems: "center", gap: 6, width: "100%" }}>
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: "#475569", whiteSpace: "nowrap" }}>Sức khoẻ</span>
+          <span aria-hidden="true" style={{ flex: 1, minWidth: 30, height: 8, borderRadius: 4, background: "#E2E8F0", overflow: "hidden" }}><span style={{ display: "block", width: `${h.pct}%`, height: "100%", borderRadius: 4, background: h.stage === "khoe" ? "linear-gradient(90deg, #22C55E, #F59E0B)" : hc }} /></span>
+          <b style={{ fontSize: 12, fontWeight: 900, color: hc, minWidth: 32, textAlign: "right" }}>{h.pct}%</b>
+        </span>}
+        {pet.healthSay && <span data-testid="pet-health-say" style={{ fontSize: 12, fontWeight: 700, color: "#475569", lineHeight: 1.35 }}>{pet.healthSay}</span>}
         {pet.say ? (
           <>
             {/* 20/10: Pi nói 1 câu khen / nhắc theo việc thật (kho câu src/pet/lines.js, đúng giọng nam / nữ) */}
@@ -621,6 +632,11 @@ export function PetTodayCard({ pet, onOpen, onboard, onOnboard }) {
       <span style={{ width: 14, flexShrink: 0, display: "flex", justifyContent: "center", color: "#94A3B8", position: "relative" }}>{Icon.chev(16)}</span>
     </button>
     {onboard && <OnboardStrip ob={onboard} onGo={onOnboard} />}
+    {!onboard && pet.gymTodo && onGym && <div data-testid="pet-gym" style={{ borderTop: "1px solid #EEF2FA", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "#FFFFFF", position: "relative" }}>
+      <span aria-hidden="true" style={{ width: 28, height: 28, borderRadius: 14, background: "#F3EEFF", color: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12" /></svg></span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 800, color: "#0F172A" }}>{pet.variant === "nu" ? "Hôm nay ngày tập, đi không bạn ơi?" : "Hôm nay ngày tập, đi không bạn?"}</span>
+      <button type="button" data-testid="pet-gym-go" onClick={onGym} className="tap" style={ONB_BTN}>Đi luôn</button>
+    </div>}
     </div>
   );
 }

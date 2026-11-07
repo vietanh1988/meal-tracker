@@ -29,6 +29,8 @@ import { PetSocialScreen } from "./PetSocialScreen";
 import { onboardView, justFinishedFirst } from "../pi/onboard.js";
 import { isPushSupported, getPushStatus, enablePushNotifications } from "../pushNotifications";
 import { OnboardPushSheet } from "./OnboardPush";
+import { healthOf, healthLine } from "../lib/piHealth.js";
+import { sessionOfDate } from "../workout/plan.js";
 // 30/10: Pi ĐÃ có hồ sơ + nhật ký 30 ngày ở trên → tư vấn thẳng bằng số đó, không bảo người dùng gửi nhật ký
 const ADVICE = "Dữ liệu trên là hồ sơ và nhật ký thật của người dùng trong app; Pi xem được, KHÔNG được nói là không truy cập được lịch sử hay bảo người dùng gửi nhật ký. Khi người dùng hỏi nhận xét / tư vấn chế độ ăn: trả lời tối đa 4 câu ngắn (khoảng 80 từ), nêu 1–2 số thật cụ thể (ví dụ trung bình calo, đạm, món ăn nhiều), rồi 1–2 điều chỉnh làm được ngay bằng món quen của họ. Ngày không có trong nhật ký là chưa ghi, đừng đoán. Không nói về hình dáng cơ thể; vòng bụng chỉ nói theo số đo nếu có.";
 import { PetChatScreen, PetWeekScreen, PetSettingsScreen, petVariant } from "./PetTalk";
@@ -56,7 +58,7 @@ const PROMPT = {
 };
 const RULES = "Xưng \"Pi\", gọi khách là \"bạn\". Trả lời tiếng Việt, tối đa 3 câu ngắn, không emoji, không markdown. Dùng số thật bên dưới khi có. Không chê, không dọa, không trách, không bàn béo gầy. Chuyện ngoài ăn uống tập luyện thì trả lời vui một câu rồi kéo về ăn tập. Hỏi về bệnh hoặc thuốc thì khuyên hỏi bác sĩ.";
 
-export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, mealIds = [], mealTimes = {}, eaten = {}, targets = {}, recentRows = [], weightLog = [], measures = [], appSettings, showToast, openPage, closeLayer, openPremium, onLog, onWeigh }) {
+export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, mealIds = [], mealTimes = {}, eaten = {}, targets = {}, recentRows = [], weightLog = [], measures = [], workout = null, appSettings, showToast, openPage, closeLayer, openPremium, onLog, onWeigh }) {
   const on = !!(flagOn || isAdmin) && !!user?.id;
   const pet = usePet(user?.id, on);
   // 30/10 mã mời: báo khách đã nhận mã / đã được 50 Hạt
@@ -125,6 +127,13 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     const daysAway = lastLogged ? diffDays(lastLogged, today) - 1 : 0;
     const logged = eatenIds.length;
     const mood = moodOf({ minutes, mealTimes: times, logged, daysAway });
+    // 08/11 (chủ dự án duyệt bản vẽ "Pi khoẻ dần lên"): Sức khoẻ Pi theo việc thật 14 ngày gần nhất (src/lib/piHealth.js)
+    const plan = workout?.active || null;
+    const gymOf = (ds) => ({ planned: !!(plan && sessionOfDate(plan, ds)), done: (workout?.sessions || []).some((x) => x.day === ds && x.ended_at) });
+    const fullN = Math.min(3, ids.length);
+    const health = healthOf({ rows: recentRows, todayRow: log, today, pTarget: Number(targets?.p) || 0, fullN, gymOf });
+    const healthSay = healthLine(health, { variant, fullN });
+    const gymTodo = gymOf(today).planned && !gymOf(today).done;
     const ach = ACH.map((a) => {
       const done = owned.includes(a.item);
       const cur = { streak: st.streak, weeks: st.weeks, water: st.waterDays, goal: st.goalDays }[a.of] || 0;
@@ -143,9 +152,9 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
       floorY: cfg.floorY || {}, // 24/10: tâm thảm từng phòng (Quản trị chỉnh), PetRoom đặt chân Pi tại đó
       cols: Object.fromEntries(Object.keys(COL_DEFAULT).map((k) => [k, collectionStatus(k, cfg, today)])),
       // 30/10 Khoe Pi: sổ Hạt 7 ngày (đếm bữa / nước tuần này), ngày của Pi, % chặng đường cân (không có số kg)
-      keys: st.keys || [], day: st.day || today, journey: journeyPct({ weights: weightLog, goalType: profile?.goalType, goalKg: profile?.goalKg, today }),
+      health, healthSay, gymTodo, keys: st.keys || [], day: st.day || today, journey: journeyPct({ weights: weightLog, goalType: profile?.goalType, goalKg: profile?.goalKg, today }),
     };
-  }, [st, variant, premium, log, mealIds, mealTimes, minutes, today, recentRows, weightLog, profile?.kg, profile?.waterGoalMl, profile?.goalType, profile?.goalKg, cfg]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [st, variant, premium, log, mealIds, mealTimes, minutes, today, recentRows, weightLog, workout?.active, workout?.sessions, targets?.p, profile?.kg, profile?.waterGoalMl, profile?.goalType, profile?.goalKg, cfg]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- câu Pi nói lúc này (kho câu soạn sẵn, 0 đồng) ----
   const saidKey = `fp_pet_said_${user?.id}`;
@@ -356,7 +365,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     closeAsk();
   };
   const onOnboard = (act) => { if (act === "weigh") onWeigh?.(); else if (act === "shop") openPage("pet_shop"); else onLog?.(); };
-  const card = on && view ? <><PetTodayCard pet={view} onOpen={() => openPage("pet")} onboard={onb} onOnboard={onOnboard} />{askPush && <OnboardPushSheet variant={variant} onLater={closeAsk} onOn={turnOnPush} />}</> : null;
+  const card = on && view ? <><PetTodayCard pet={view} onOpen={() => openPage("pet")} onGym={() => openPage("workout")} onboard={onb} onOnboard={onOnboard} />{askPush && <OnboardPushSheet variant={variant} onLater={closeAsk} onOn={turnOnPush} />}</> : null;
   const page = (sec, l) => {
     if (!view) return null;
     if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} onSocial={() => openPage("pet_social")} userId={user?.id} showToast={showToast} />;
