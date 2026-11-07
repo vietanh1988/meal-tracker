@@ -60,6 +60,7 @@ import { lossStatus, streakDays } from "../lib/lossPlan";
 import { LossResult } from "./LossResult";
 import { usePendingFoodCache } from "../hooks/usePendingFoodCache";
 import PWAInstallPrompt from "../PWAInstallPrompt";
+import InstalledPushAsk from "./InstalledPushAsk";
 import { useNotifications } from "../hooks/useNotifications";
 import { NotifToast } from "./NotifToast";
 import { socialTabOf } from "../lib/notifKind";
@@ -1044,6 +1045,7 @@ export function MobileApp(props) {
 
       <Toast toast={toast} bottom={has("edit") ? 100 : 90} top={top && (top.type === "log" || (top.type === "page" && top.sec === "workout")) ? 104 : null} />{/* 30/10: đang mở Ghi bữa → báo ở trên, không che giỏ */}
       {!top && <PWAInstallPrompt ready={hasLogged} />}
+      <InstalledPushAsk ready={!top} showToast={showToast} />
     </div>
   );
 }

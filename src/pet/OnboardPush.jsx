@@ -6,7 +6,8 @@ import { FONT, GRAD_BLUE, useLockScroll, useSwipeClose, SheetHandle } from "../m
 
 const btn = { height: 44, borderRadius: 14, border: "none", fontFamily: "inherit", fontSize: 15, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" };
 
-export function OnboardPushSheet({ variant, onLater, onOn }) {
+// 08/11 (chủ dự án duyệt bản vẽ "Mời bật nhắc"): installed = mở app lần đầu từ màn hình chính → thêm dòng xanh "Đã thêm…", đổi chữ phụ.
+export function OnboardPushSheet({ variant, onLater, onOn, installed = false }) {
   useLockScroll(true);
   const sw = useSwipeClose(onLater);
   const [busy, setBusy] = useState(false);
@@ -16,13 +17,16 @@ export function OnboardPushSheet({ variant, onLater, onOn }) {
       <div ref={sw.ref} {...sw.swipe} data-testid="onb-push-sheet" role="dialog" aria-modal="true" aria-label="Bật nhắc giờ ăn" onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, bottom: 0, maxWidth: 560, margin: "0 auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 18px) 16px", display: "flex", flexDirection: "column", gap: 14, boxSizing: "border-box", animation: "fpmSheetUp .2s ease" }}>
         <SheetHandle />
+        {installed && <div data-testid="onb-push-installed" style={{ display: "flex", alignItems: "center", gap: 8, background: "#ECFDF5", color: "#047857", borderRadius: 12, padding: "8px 12px", fontSize: 13, fontWeight: 700 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7" /></svg>Đã thêm Fipilot AI vào màn hình chính
+        </div>}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span aria-hidden="true" style={{ width: 48, height: 48, borderRadius: 16, background: "#EEF4FF", color: "#0062F0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>
           </span>
           <span style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
             <span style={{ fontSize: 17, fontWeight: 900 }}>Cho Pi nhắc bạn giờ ăn nhé?</span>
-            <span style={{ fontSize: 13, color: "#64748B", lineHeight: 1.45 }}>{variant === "nu" ? "Đến giờ ăn Pi gửi 1 thông báo nhỏ nha." : "Đến giờ ăn Pi gửi 1 thông báo nhỏ."} Tắt lúc nào cũng được ở Tôi › Nhắc nhở.</span>
+            <span style={{ fontSize: 13, color: "#64748B", lineHeight: 1.45 }}>{installed ? "Giờ app đã nhận được thông báo. " : ""}{variant === "nu" ? "Đến giờ ăn Pi gửi 1 thông báo nhỏ nha." : "Đến giờ ăn Pi gửi 1 thông báo nhỏ."} Tắt lúc nào cũng được ở Tôi › Nhắc nhở.</span>
           </span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 8 }}>

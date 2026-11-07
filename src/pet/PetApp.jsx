@@ -347,7 +347,7 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (st) prevOnb.current = next || null;
     if (!justFinishedFirst(prev, next)) return;
     if (readLS("fp_onb_push", 0) || !isPushSupported()) return;
-    getPushStatus().then((s) => { if (s === "default") setAskPush(true); }).catch(() => {});
+    getPushStatus().then((s) => { if (s === "default" && !window.__fpPushAsk) { window.__fpPushAsk = 1; setAskPush(true); } }).catch(() => {});
   }, [st?.onboard?.n]); // eslint-disable-line react-hooks/exhaustive-deps
   const closeAsk = () => { writeLS("fp_onb_push", 1); setAskPush(false); };
   const turnOnPush = async () => {
