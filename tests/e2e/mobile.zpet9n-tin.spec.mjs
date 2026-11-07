@@ -18,7 +18,7 @@ test("Tin giảm cân: mở từ nút Pi, đổi cụm, tìm, đọc bài, món 
     page.on("pageerror", (e) => errs.push(String(e)));
     const { news } = await mockNews(page);
     await login(page);
-    await page.evaluate(() => { try { localStorage.removeItem("fp_news_tab"); localStorage.removeItem("fp_news_read"); localStorage.removeItem("fp_food_img"); } catch { /* */ } });
+    await page.evaluate(() => { try { localStorage.removeItem("fp_news_tab"); localStorage.removeItem("fp_news_read"); localStorage.removeItem("fp_food_img2"); } catch { /* */ } });
 
     // 1 · menu nút Pi có dòng 5 "Tin giảm cân", menu nằm trọn màn, chấm đỏ không vì tin
     const sc = page.getByTestId("pi-shortcut");
