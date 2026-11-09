@@ -51,7 +51,7 @@ export default async function Index({ searchParams }) {
         <div className="card only-pc" style={{ overflow: "hidden", padding: 0, marginTop: 28 }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead><tr style={{ background: "#F5F8FD" }}>{[["Món", "left"], ["Nhóm", "left"], ["Calo / 100 g", "right"], ["Khẩu phần thường gặp", "left"], ["Calo khẩu phần", "right"], ["", "right"]].map(([h, al]) => <th key={h} style={{ padding: "14px 20px", fontSize: 13.5, color: "#475569", fontWeight: 700, textAlign: al }}>{h}</th>)}</tr></thead>
-            <tbody>{rows.map((f, i) => { const p = mainPortion(f); const src = imgOf(f, i, im); const nm = <>{src ? <img className="th" src={src} alt="" width={44} height={44} loading="lazy" style={{ width: 44, height: 44 }} /> : <span className="bc-sp" />}<b style={{ fontSize: 16 }}>{f.name}</b></>; return (
+            <tbody>{rows.map((f, i) => { const p = mainPortion(f); const src = imgOf(f, i, im); const nm = <>{src ? <img className="th" src={src} alt={f.name} width={44} height={44} loading="lazy" style={{ width: 44, height: 44 }} /> : <span className="bc-sp" />}<b style={{ fontSize: 16 }}>{f.name}</b></>; return (
               <tr key={f.key} data-testid="bc-row" data-page={f.hasPage ? "1" : "0"} style={{ borderTop: "1px solid #EEF2F7" }}>
                 <td style={{ padding: "12px 20px" }}>{f.hasPage ? <a href={`/calo/${f.slug}`} style={{ display: "flex", alignItems: "center", gap: 12 }}>{nm}</a> : <span style={{ display: "flex", alignItems: "center", gap: 12 }}>{nm}</span>}</td>
                 <td style={{ padding: "12px 20px", fontSize: 14.5, color: "#64748B" }}>{TABLE_GROUPS[f.tg]}</td>
@@ -64,7 +64,7 @@ export default async function Index({ searchParams }) {
         </div>
         <div className="card only-m bc-m" style={{ padding: "4px 16px", marginTop: 20 }}>
           {rows.map((f, k) => { const p = mainPortion(f); const st = { display: "flex", gap: 12, alignItems: "center", padding: "14px 0", borderTop: k ? "1px solid #EEF2F7" : 0 }; const inner = <>
-              {imgOf(f, k, im) ? <img className="th" src={imgOf(f, k, im)} alt="" width={52} height={52} loading="lazy" style={{ width: 52, height: 52 }} /> : <span className="bc-sp" />}
+              {imgOf(f, k, im) ? <img className="th" src={imgOf(f, k, im)} alt={f.name} width={52} height={52} loading="lazy" style={{ width: 52, height: 52 }} /> : <span className="bc-sp" />}
               <span style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}><b style={{ fontSize: 16 }}>{f.name}</b><span style={{ fontSize: 13, color: "#64748B" }}>{p ? `${porName(p, true)} ${p.gram} g` : TABLE_GROUPS[f.tg]}</span></span>
               <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}><b style={{ fontSize: 18 }}>{p ? p.cal : f.per100.cal}</b><span style={{ fontSize: 12, color: "#64748B" }}>{p ? `kcal · ${f.per100.cal}/100 g` : "kcal / 100 g"}</span></span>
               <span aria-hidden="true" style={{ width: 10, color: "#CBD5E1", fontSize: 18, visibility: f.hasPage ? "visible" : "hidden" }}>›</span></>;

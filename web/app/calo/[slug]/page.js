@@ -1,4 +1,5 @@
 // Trang calo món (137e/f) — số liệu từ kho món app; phần viết thêm từ Quản trị › Trang calo món
+import { thumbOf } from "@/lib/app/foodImgMap";
 import { notFound } from "next/navigation";
 import Crumb from "@/components/Crumb";
 import JsonLd from "@/components/JsonLd";
@@ -78,7 +79,7 @@ export default async function Calo({ params }) {
                 <b style={{ fontSize: 16, marginBottom: 6 }}>So với món tương tự (khẩu phần vừa)</b>
                 {same.map(({ x, p }, i) => { const d = p.cal - (por?.cal || 0); return (
                   <a key={x.key} href={`/calo/${x.slug}`} title={`${x.name} · ${p.name} ${p.gram} g`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>
-                    <img className="th" src={x.page?.image_url || ["/img/bowl-1.jpg", "/img/bowl-2.jpg", "/img/bowl-3.jpg"][i % 3]} alt="" width={46} height={46} loading="lazy" style={{ width: 46, height: 46 }} />
+                    <img className="th" src={thumbOf(x.page?.image_url) || ["/img/bowl-1.jpg", "/img/bowl-2.jpg", "/img/bowl-3.jpg"][i % 3]} alt={x.name} width={46} height={46} loading="lazy" style={{ width: 46, height: 46 }} />
                     <span style={{ flex: 1, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 14.5, fontWeight: 600 }}>{x.name}</span><b style={{ fontSize: 16 }}>{p.cal} <span style={{ fontSize: 13, fontWeight: 600 }}>kcal</span></b></span>
                     {por && <span style={{ fontSize: 12, fontWeight: 800, borderRadius: 8, padding: "3px 8px", ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : { background: "#FFEDD5", color: "#C2410C" }) }}>{d > 0 ? "+" : d < 0 ? "−" : "±"}{Math.abs(d)}</span>}
                   </a>); })}
@@ -87,7 +88,7 @@ export default async function Calo({ params }) {
             {rel.length > 0 && (
               <div className="card o3" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 6 }}>
                 <b style={{ fontSize: 16, marginBottom: 6 }}>Bài viết nhắc {fd.name.toLowerCase()}</b>
-                {rel.map((x, i) => <a key={x.id} href={`/${x.slug}`} data-testid="calo-rel" style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>{x.cover_url && <img className="th" src={x.cover_url} alt="" width={46} height={46} loading="lazy" style={{ width: 46, height: 46, objectFit: "cover" }} />}<span style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.4 }}>{x.title}</span></a>)}
+                {rel.map((x, i) => <a key={x.id} href={`/${x.slug}`} data-testid="calo-rel" style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderTop: i ? "1px solid #EEF2F7" : 0 }}>{x.cover_url && <img className="th" src={thumbOf(x.cover_url)} alt={x.title || ""} width={46} height={46} loading="lazy" style={{ width: 46, height: 46, objectFit: "cover" }} />}<span style={{ fontSize: 14.5, fontWeight: 600, lineHeight: 1.4 }}>{x.title}</span></a>)}
                 <a href="/chu-de/co-beo-khong" style={{ fontSize: 14, fontWeight: 700, color: "#0062F0", paddingTop: 8, borderTop: "1px solid #EEF2F7" }}>Cụm Món này có béo không? ›</a>
               </div>
             )}

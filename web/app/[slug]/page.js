@@ -1,4 +1,5 @@
 // Bài viết (137c/d) hoặc Trang (Giới thiệu, Liên hệ, Chính sách…) — cùng 1 kiểu đường dẫn /<ten>
+import { thumbOf } from "@/lib/app/foodImgMap";
 import { notFound } from "next/navigation";
 import { imgAttrs, srcSet } from "@/lib/img";
 import { preload } from "react-dom";
@@ -147,7 +148,7 @@ export default async function Page({ params }) {
             {ments.length > 0 && (
               <section className="ments" data-testid="post-foods">
                 <h2 style={{ fontSize: 22, fontWeight: 800 }}>Calo các món nhắc trong bài</h2>
-                <div className="mentg">{ments.map((f, i) => <a key={f.slug} className="mentc" href={`/calo/${f.slug}`}><img className="th" src={f.img || ["/img/bowl-1.jpg", "/img/bowl-2.jpg", "/img/bowl-3.jpg"][i % 3]} alt="" width={40} height={40} loading="lazy" /><span>{f.name}<small>{f.por ? `${f.por.cal} kcal · ${f.por.name}` : "Xem calo"} ›</small></span></a>)}</div>
+                <div className="mentg">{ments.map((f, i) => <a key={f.slug} className="mentc" href={`/calo/${f.slug}`}><img className="th" src={thumbOf(f.img) || ["/img/bowl-1.jpg", "/img/bowl-2.jpg", "/img/bowl-3.jpg"][i % 3]} alt={f.name} width={40} height={40} loading="lazy" /><span>{f.name}<small>{f.por ? `${f.por.cal} kcal · ${f.por.name}` : "Xem calo"} ›</small></span></a>)}</div>
               </section>
             )}
             <RelPosts posts={rel} title={cl ? `Đọc tiếp trong cụm ${cat.name}` : "Bài liên quan"} label={cl ? cat.name : null} />
