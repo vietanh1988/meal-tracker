@@ -10,6 +10,7 @@ import { LOCAL_FOODS, UNIT_MAP } from "../../lib/localFoodDB";
 import { Btn, Pill, Card, SearchBox, ErrorBox, Loading, headRow, bodyRow, cell, vnInt } from "../pcUI";
 import { Check, Tog, Field, Lnk, Modal, inpStyle, BLUE } from "./webUI";
 import { slugify } from "./webLib";
+import { pingIndexNow } from "./webApi";
 import { foodSlugs } from "../../../web/lib/slug.js";
 
 const SLUG = foodSlugs(Object.keys(LOCAL_FOODS));
@@ -88,6 +89,7 @@ export function PcWebCalo({ top, showToast }) {
       // Tắt trang → link trả 410 (Google bỏ khỏi kết quả); bật lại → xoá quy tắc
       const off = up.filter((r) => !r.enabled).map((r) => `/calo/${r.slug}`); const on = up.filter((r) => r.enabled).map((r) => `/calo/${r.slug}`);
       if (on.length) await supabase.from("web_redirects").delete().eq("source", "calo_off").in("src", on).then(must);
+      if (on.length) pingIndexNow(on); // 11/11: bật / sửa trang calo → báo Bing / Cốc Cốc (IndexNow, nếu đã bật ở Cài đặt SEO)
       if (off.length) { const have = new Set((await supabase.from("web_redirects").select("src").in("src", off).then(must)).map((x) => x.src)); const add = off.filter((s) => !have.has(s)).map((src) => ({ src, dest: null, code: 410, match: "exact", source: "calo_off" })); if (add.length) await supabase.from("web_redirects").insert(add).then(must); }
       setRows((r) => ({ ...r, ...Object.fromEntries(saved.map((x) => [x.food_key, x])) })); setEdit({});
       showToast?.(`Đã lưu ${up.length} trang calo. Web đổi theo trong khoảng 5 phút.`);

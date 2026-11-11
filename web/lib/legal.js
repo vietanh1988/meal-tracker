@@ -9,7 +9,7 @@ export function legalList(v) {
   return pages.map((p) => {
     let slug = (CANON.find(([s, f]) => !used.has(s) && f(p)) || [])[0] || slugify(p.label);
     used.add(slug);
-    return { ...p, slug };
+    return { ...p, label: String(p.label).replace(/\bAi\b/g, "AI"), slug }; // "Chính sách Ai" → "AI"
   });
 }
 

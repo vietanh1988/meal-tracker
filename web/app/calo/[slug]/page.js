@@ -41,6 +41,10 @@ export default async function Calo({ params }) {
   const rel = [...pinned, ...auto.filter((x) => !pinned.some((y) => y.id === x.id))].slice(0, 3);
   const path = `/calo/${fd.slug}`;
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng calo món", path: "/bang-calo" }, { name: fd.name, path }];
+  // 11/11 (link nội bộ): mỗi trang món trỏ tới 6 món kế tiếp trong danh sách (vòng tròn) → trang món nào cũng có link vào, không mồ côi
+  const allCalo = (await caloFoods()).filter((x) => !x.page?.noindex);
+  const at = allCalo.findIndex((x) => x.key === fd.key);
+  const ring = at < 0 ? [] : Array.from({ length: Math.min(6, allCalo.length - 1) }, (_, k) => allCalo[(at + 1 + k) % allCalo.length]);
   const same = (await caloFoods()).filter((x) => x.cat === fd.cat && x.key !== fd.key).map((x) => ({ x, p: mainPortion(x) })).filter((y) => y.p).sort((a, b) => Math.abs(a.p.cal - (por?.cal || 0)) - Math.abs(b.p.cal - (por?.cal || 0))).slice(0, 3);
   const faq = (pg.faq || []).filter((x) => x?.q && x?.a).map((x) => ({ q: fillTrial(x.q, s.plan), a: fillTrial(x.a, s.plan) }));
   // Kết luận theo calo thật (không phải món nào cũng "được"): khẩu phần chính + calo / 100 g
@@ -83,6 +87,13 @@ export default async function Calo({ params }) {
                     <span style={{ flex: 1, display: "flex", flexDirection: "column" }}><span style={{ fontSize: 14.5, fontWeight: 600 }}>{x.name}</span><b style={{ fontSize: 16 }}>{p.cal} <span style={{ fontSize: 13, fontWeight: 600 }}>kcal</span></b></span>
                     {por && <span style={{ fontSize: 12, fontWeight: 800, borderRadius: 8, padding: "3px 8px", ...(d <= 0 ? { background: "#DCFCE7", color: "#15803D" } : { background: "#FFEDD5", color: "#C2410C" }) }}>{d > 0 ? "+" : d < 0 ? "−" : "±"}{Math.abs(d)}</span>}
                   </a>); })}
+              </div>
+            )}
+            {ring.length > 0 && (
+              <div className="card o3" data-testid="calo-more" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+                <b style={{ fontSize: 16 }}>Tra thêm calo món khác</b>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{ring.map((x) => <a key={x.key} href={`/calo/${x.slug}`} style={{ fontSize: 13.5, fontWeight: 600, color: "#0F172A", background: "#F1F5F9", borderRadius: 999, padding: "6px 12px" }}>{x.name}</a>)}</div>
+                <a href="/bang-calo" style={{ fontSize: 14, fontWeight: 700, color: "#0062F0" }}>Xem bảng calo đủ món ›</a>
               </div>
             )}
             {rel.length > 0 && (

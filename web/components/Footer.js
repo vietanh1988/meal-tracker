@@ -6,6 +6,7 @@ import { safeUrl } from "@/lib/sanitize";
 import Icon from "./Icon";
 import { appLink } from "@/lib/site";
 import { getFood, mainPortion, porName } from "@/lib/foods";
+import { legalPages } from "@/lib/appdata";
 
 export const DISCLAIMER = "Fipilot AI là trang blog tin tức và chia sẻ kiến thức, không phải trang web y tế. Nội dung chỉ mang tính tham khảo, không thay thế chẩn đoán, điều trị hay tư vấn của bác sĩ. Số calo và dinh dưỡng là ước tính từ kho món của Fipilot AI, có thể chênh lệch tuỳ cách nấu và khẩu phần. Người có bệnh lý, đang mang thai, cho con bú, dưới 18 tuổi hoặc muốn thay đổi chế độ ăn lớn nên hỏi ý kiến bác sĩ / chuyên gia dinh dưỡng trước khi áp dụng.";
 const COLS = [["footer_1", "Chủ đề", "grid", "#38BDF8"], ["footer_2", "Fipilot AI", "star", "#FBBF24"], ["footer_3", "Chính sách", "shield", "#4ADE80"]];
@@ -14,6 +15,11 @@ const sq = (bg, col) => ({ width: 24, height: 24, borderRadius: 7, background: b
 
 export default async function Footer({ s, menus }) {
   const f = s.footer || {};
+  // 11/11 (link nội bộ): cột Chính sách tự thêm mọi trang Điều khoản / Chính sách soạn trong app mà menu chưa có (trước đó 4 trang không có link vào)
+  const legal = await legalPages().catch(() => []);
+  const f3 = [...(menus?.footer_3 || [])];
+  for (const lp of legal) if (!f3.some((it) => it.url === `/${lp.slug}`)) f3.push({ url: `/${lp.slug}`, icon: "doc", label: lp.label });
+  menus = { ...(menus || {}), footer_3: f3 };
   const c = s.contact || {};
   const foods = [];
   for (const k of f.popular_foods || []) { const fd = await getFood(k); if (fd) foods.push({ fd, por: mainPortion(fd) }); }
