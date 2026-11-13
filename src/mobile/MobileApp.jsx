@@ -30,6 +30,7 @@ import { BackupScreen } from "./admin/BackupScreen";
 import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
 import { MacroManualScreen, MacroPhaseEndSheet, PHASE_NAME } from "./MacroManualScreen";
+import { DietModeSheet, dietModeName, DIET_MODES } from "./DietModeSheet";
 import { manualDaysLeft } from "../calcMacro";
 import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen, PayScreen } from "./PlanScreen";
@@ -605,7 +606,7 @@ export function MobileApp(props) {
     if (sec === "goals") return (
       <SubPage title={lossMode ? "Mục tiêu & tốc độ giảm" : "Mục tiêu & macro"} onBack={closeLayer} dark right={<span style={{ fontSize: 12, fontWeight: 700, color: DK.green, paddingRight: 8 }}>Tự động lưu</span>}>
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} openWeigh={() => openWeigh(true)}
-          openManual={lossMode ? null : () => openLayer({ type: "page", sec: "macro_manual" })} canManual={isAdmin || (profile.tier && profile.tier !== "free")} openPremium={() => openLayer({ type: "page", sec: "plan" })} />
+          openManual={lossMode ? null : () => openLayer({ type: "page", sec: "macro_manual" })} canManual={canManual} openPremium={() => openLayer({ type: "page", sec: "plan" })} />
       </SubPage>
     );
     // 13/11: Tự nhập macro theo giai đoạn (mở từ Mục tiêu & macro › Cách đặt macro)
@@ -915,6 +916,16 @@ export function MobileApp(props) {
   const actLabel = actToday.length ? actOf(actToday[actToday.length - 1].type).label.toLowerCase() : "";
   const focusBonus = bonusToday > 0 ? `+${fmtInt(bonusToday)} kcal vì ${actToday.length > 1 ? "vận động thêm" : actLabel} — ${bonusTip(bonusToday)}` : null;
   const bDate = bonusOf(date);
+  // 13/11 (bản vẽ "Chỗ đặt công tắc Chế độ ăn" — cách 2): bấm thẻ Mục tiêu trên Hôm nay → đổi chế độ ăn
+  const [dietOpen, setDietOpen] = useState(false);
+  const canManual = isAdmin || (profile.tier && profile.tier !== "free");
+  const pickDiet = (id, v) => {
+    const cur = profileRef.current;
+    setProfile({ ...cur, dietStrategy: id, ...(cur.macroManual?.on ? { macroManual: { ...cur.macroManual, on: false } } : {}) });
+    setDietOpen(false);
+    const nm = (DIET_MODES.find((d) => d[0] === id) || [])[1] || "";
+    showToast({ text: `Đã đổi sang ${nm}${v ? ` · ${fmtInt(v.cal)} kcal hôm nay` : ""}`, ...(aiMenuAction ? { action: { label: "Lên lại thực đơn", onClick: aiMenuAction } } : {}) }, 7000);
+  };
   const mmLeft = macro.manual ? manualDaysLeft(profile.macroManual, today) : null;
   const goalSub = macro.manual ? `${PHASE_NAME[profile.macroManual?.preset] || "Tự đặt"}${mmLeft ? ` · còn ${mmLeft} ngày` : ""}` : bDate > 0 ? `${fmtInt(targets.cal - bDate)} + ${fmtInt(bDate)} vận động` : null;
   const [snackSkip, setSnackSkip] = useState(() => readUser("fp_snack_skip", user?.id, null));
@@ -955,6 +966,7 @@ export function MobileApp(props) {
             activity={activityRow} activityAsk={activityAsk} snack={snackCard}
             status={lossMode && date === today ? lossStatus({ target: targets.cal, eaten: eaten.cal, rows, nowMinutes: now.minutes }) : null}
             onPhotoBig={lossMode ? () => openPhoto(null) : null} focusBonus={focusBonus} goalSub={goalSub}
+            dietPick={!lossMode && date === today ? { name: dietModeName(macro, profile), sub: mmLeft ? `còn ${mmLeft} ngày` : null, onOpen: () => setDietOpen(true) } : null}
             onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             shortcut={<><WorkoutButton w={workout} today={today} onOpen={() => openLayer({ type: "page", sec: "workout" })} />{petApp.on && petApp.view ? <PiShortcut pet={petApp.view} userId={user?.id} notif={notif} onGo={(d) => (d === "room" ? openLayer({ type: "page", sec: "pet" }) : d === "news" ? openLayer({ type: "page", sec: "news" }) : openLayer({ type: "page", sec: "pet_social", tab: d === "khoe" ? "show" : d }))} /> : null}</>}
@@ -1057,6 +1069,10 @@ export function MobileApp(props) {
       <Toast toast={toast} bottom={has("edit") ? 100 : 90} top={top && (top.type === "log" || (top.type === "page" && top.sec === "workout")) ? 104 : null} />{/* 30/10: đang mở Ghi bữa → báo ở trên, không che giỏ */}
       {!top && <PWAInstallPrompt ready={hasLogged} />}
       <InstalledPushAsk ready={!top} showToast={showToast} />
+      {dietOpen && (
+        <DietModeSheet profile={profile} macro={macro} dayType={dayTypeOf(profile, today)} canManual={canManual} onPick={pickDiet} onClose={() => setDietOpen(false)}
+          onManual={() => { setDietOpen(false); openLayer({ type: "page", sec: canManual ? "macro_manual" : "plan" }); }} />
+      )}
       {/* 13/11: hết giai đoạn tự nhập macro → hỏi 1 lần (về số app tự tính / gia hạn 2 tuần) */}
       {!top && profile.macroManual?.on && profile.macroManual.until && profile.macroManual.until < today && profile.macroManual.endSeen !== profile.macroManual.until && (
         <MacroPhaseEndSheet mm={profile.macroManual} autoCal={macro.calTarget}

@@ -102,7 +102,7 @@ function StatCard({ icon, label, value, children }) {
 
 // planCard (bản vẽ 128): khách không tập → ô thứ 3 bỏ 'Ngày tập / Ngày nghỉ', thay bằng kế hoạch (VD Giảm 0,4 kg/tuần · còn 7 kg)
 // status (bản vẽ 131d, flow giảm cân): thay 4 ô macro bằng 1 dòng trả lời "Hôm nay mình ổn không?"
-export function TodayHeader({ date, today, onDate, weekDots, name, bell, shortcut, eaten, targets, dayType, planLine, planCard, goalSub, dayDone, status }) {
+export function TodayHeader({ date, today, onDate, weekDots, name, bell, shortcut, eaten, targets, dayType, planLine, planCard, goalSub, dayDone, status, dietPick }) {
   const [y, m] = date.split("-");
   const remain = targets.cal - eaten.cal;
   const pct = targets.cal > 0 ? Math.min(100, Math.round((eaten.cal / targets.cal) * 100)) : 0;
@@ -144,9 +144,25 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, shortcu
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 12 }}>
         <Ring remain={remain} eaten={eaten.cal} target={targets.cal} />
         <div style={{ flex: 1, height: 136, display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+          {dietPick ? (
+            // 13/11 (bản vẽ "Chỗ đặt công tắc Chế độ ăn" — cách 2): thẻ Mục tiêu bấm được → chọn chế độ ăn; không thêm dòng
+            <button type="button" data-testid="diet-pick" onClick={dietPick.onOpen} aria-label={`Mục tiêu ${fmtInt(targets.cal)} kcal, chế độ ${dietPick.name}. Đổi chế độ ăn`} className="tap"
+              style={{ flex: 1, display: "flex", minHeight: 0, padding: "0 2px", margin: "0 -2px", borderRadius: 12, border: "1.5px solid rgba(124,194,255,0.7)", background: "rgba(124,194,255,0.14)", color: "inherit", fontFamily: "inherit", textAlign: "left", cursor: "pointer" }}>
+              <StatCard icon={ICON.goal} label="Mục tiêu" value={`${fmtInt(targets.cal)} kcal`}>
+                <span data-testid="goal-sub" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10.5, whiteSpace: "nowrap", overflow: "hidden", minWidth: 0 }}>
+                  <span data-testid="diet-name" style={{ fontWeight: 800, color: "#BFE0FF", overflow: "hidden", textOverflow: "ellipsis" }}>{dietPick.name}</span>
+                  {dietPick.sub && <span style={{ opacity: 0.78, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis" }}>· {dietPick.sub}</span>}
+                  <span aria-hidden="true" style={{ marginLeft: "auto", flexShrink: 0, width: 16, height: 16, borderRadius: 5, background: "#FFFFFF", color: "#0040E0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                  </span>
+                </span>
+              </StatCard>
+            </button>
+          ) : (
           <StatCard icon={ICON.goal} label="Mục tiêu" value={`${fmtInt(targets.cal)} kcal`}>
             {goalSub && <span data-testid="goal-sub" style={{ fontSize: 10, opacity: 0.78, whiteSpace: "nowrap" }}>{goalSub}</span>}
           </StatCard>
+          )}
           <StatCard icon={ICON.eaten} label="Đã ăn" value={<span data-testid="kcal-eaten" data-value={eaten.cal}>{fmtInt(eaten.cal)} kcal</span>}>
             <span style={{ height: 5, borderRadius: 3, background: "rgba(255,255,255,0.18)", overflow: "hidden", display: "block" }}>
               <span style={{ display: "block", width: `${Math.max(pct ? 3 : 0, pct)}%`, height: 5, borderRadius: 3, background: remain < 0 ? "#FACC15" : "linear-gradient(90deg,#3FD0FF,#BFF4FF)", boxShadow: "0 0 6px rgba(80,210,255,0.85)", transition: "width .4s" }} />
