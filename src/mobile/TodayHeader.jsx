@@ -192,8 +192,10 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, shortcu
       <div data-testid="macro-strip" style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
         {MACROS.map((mc) => {
           const e = eaten[mc.k] || 0, t = targets[mc.k] || 0;
-          const w = t > 0 ? Math.max(3, Math.min(100, Math.round((e / t) * 100))) : 0;
-          const st = macroState(e, t, dayDone);
+          // 13/11: mục tiêu đặt 0 (vd Mini cut bỏ tinh bột) mà đã ăn → thanh đầy, màu vượt
+          const zeroCap = t === 0 && e > 0 && targets.cal > 0;
+          const w = zeroCap ? 100 : t > 0 ? Math.max(3, Math.min(100, Math.round((e / t) * 100))) : 0;
+          const st = zeroCap ? "over" : macroState(e, t, dayDone);
           return (
             <div key={mc.k} data-testid={`macro-${mc.k}`} className="fp-glass" style={{ borderRadius: 14, padding: "8px 8px 9px 8px", display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
