@@ -31,8 +31,8 @@ import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
 import { MacroManualScreen, MacroPhaseEndSheet, PHASE_NAME } from "./MacroManualScreen";
 import { DietModeSheet, dietModeName, DIET_MODES } from "./DietModeSheet";
-// 13/11: "Tự nhập số" chưa chốt giao diện → tạm ẩn lối vào (code giữ sẵn, bật lại khi chủ dự án duyệt bản vẽ)
-const MANUAL_ON = false;
+// 13/11: "Tự nhập số" — chủ dự án: "cứ code đi rồi chỉnh" (bật lối vào; tắt nhanh bằng cờ này)
+const MANUAL_ON = true;
 import { manualDaysLeft } from "../calcMacro";
 import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen, PayScreen } from "./PlanScreen";
