@@ -83,7 +83,12 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await expect(page.getByTestId("goal-sub")).toContainText("còn 14 ngày");
     expect(errs).toEqual([]);
   } finally {
-    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ tier: before?.tier ?? "free", macro_manual: before?.macro_manual ?? null, ui_mode: before?.ui_mode ?? null }) });
-    await ctx.close();
+    await ctx.close().catch(() => {}); // đóng app trước: lượt lưu hồ sơ còn chờ không ghi đè bản khôi phục
+    const back = { tier: before?.tier ?? "free", macro_manual: before?.macro_manual ?? null, ui_mode: before?.ui_mode ?? null };
+    for (let k = 0; k < 3; k++) { // khôi phục chắc chắn: bài sau (zedit, zy-journeys…) cần hồ sơ thường, không ở chế độ tự nhập
+      await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify(back) });
+      await new Promise((r) => setTimeout(r, 800));
+      if (!(await prof()).macro_manual?.on) break;
+    }
   }
 });

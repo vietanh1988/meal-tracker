@@ -58,7 +58,7 @@ test("Công tắc chế độ ăn trên Hôm nay: xem trước số, đổi Nhi�
     await expect(page.getByTestId("diet-pick")).toHaveAttribute("aria-label", calBefore);
     expect(errs).toEqual([]);
   } finally {
+    await ctx.close().catch(() => {}); // đóng app trước: lượt lưu hồ sơ còn chờ không ghi đè bản khôi phục
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ goal_type: before.goal_type, diet_strategy: before.diet_strategy, ui_mode: before.ui_mode, macro_manual: before.macro_manual }) });
-    await ctx.close();
   }
 });
