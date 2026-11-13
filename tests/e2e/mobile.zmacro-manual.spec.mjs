@@ -17,7 +17,7 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
   const nav = (name) => page.getByRole("navigation", { name: "Điều hướng chính" }).getByRole("button", { name });
   const today = todayVN();
   try {
-    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ tier: "premium", macro_manual: null, ui_mode: "full" }) });
+    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ tier: "premium", macro_manual: null, ui_mode: "gym" }) });
     await login(page);
     await nav("Tôi").click();
     await page.getByTestId("me-profile-card").click();
