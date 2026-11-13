@@ -24,9 +24,11 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await expect(page.getByTestId("goals-macro-auto")).toHaveAttribute("aria-pressed", "true", { timeout: 20_000 });
     const autoCal = Number(await page.getByTestId("goals-macro").getAttribute("data-cal"));
 
-    // Tự nhập số → mẫu Mini cut
+    // Tự nhập số → mở ngay trong danh sách chế độ ăn (không sang màn khác), mẫu Mini cut
     await tap(page.getByTestId("goals-macro-manual"));
-    await expect(page.getByTestId("mm-screen")).toBeVisible();
+    await expect(page.getByTestId("diet-sheet")).toBeVisible();
+    await expect(page.getByTestId("mm-block")).toBeVisible();
+    await expect(page.getByTestId("diet-keto")).toHaveCount(0); // tăng cơ: Keto ẩn khi đang mở tự nhập
     await tap(page.getByTestId("mm-preset-mini_cut"));
     await expect(page.getByTestId("mm-c")).toHaveValue("0");
     await expect(page.getByTestId("mm-crest")).toHaveValue("0");
@@ -34,13 +36,15 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     const f = Number(await page.getByTestId("mm-f").inputValue());
     expect(p).toBeGreaterThan(80);
     await expect(page.getByTestId("mm-sum")).toHaveAttribute("data-cal", String(p * 4 + f * 9));
-    await expect(page.getByTestId("mm-compare")).toContainText(`App gợi ý`);
-    await expect(page.getByTestId("mm-until")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("mm-compare")).toContainText("App gợi ý");
+    await expect(page.getByTestId("mm-weeks")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("mm-weeks")).toHaveText("6 tuần");
     const box = await page.getByTestId("mm-save").boundingBox();
     expect(box.x + box.width).toBeLessThanOrEqual(390);
     await page.screenshot({ path: "shots/tu-nhap-macro.png" });
     await tap(page.getByTestId("mm-save"));
     await waitDb(async () => (await prof()).macro_manual?.on === true, "macro_manual.on");
+    await expect(page.getByTestId("diet-sheet")).toHaveCount(0);
     const mm = (await prof()).macro_manual;
     expect(mm).toMatchObject({ p, f, c: 0, cRest: 0, preset: "mini_cut", until: addDays(today, 41) });
 
