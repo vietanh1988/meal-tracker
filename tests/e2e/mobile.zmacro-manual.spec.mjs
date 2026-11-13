@@ -68,7 +68,8 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await page.goBack().catch(() => {});
     await page.goto("/");
     await nav("Hôm nay").click();
-    await expect(page.getByTestId("goal-sub")).toContainText("Tự nhập · còn 42 ngày", { timeout: 20_000 });
+    await expect(page.getByTestId("diet-name")).toHaveText("Tự nhập", { timeout: 20_000 }); // viên chế độ ăn
+    await expect(page.getByTestId("goal-sub")).toContainText("còn 42 ngày");
     await expect(page.getByTestId("focus-suggest-foods")).toHaveCount(0); // tự nhập số → Hôm nay không gợi ý món
     await expect(page.getByTestId("today-ai-menu")).toHaveCount(0); // không có nút AI lên thực đơn
 
