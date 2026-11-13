@@ -973,7 +973,8 @@ export function MobileApp(props) {
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             shortcut={<><WorkoutButton w={workout} today={today} onOpen={() => openLayer({ type: "page", sec: "workout" })} />{petApp.on && petApp.view ? <PiShortcut pet={petApp.view} userId={user?.id} notif={notif} onGo={(d) => (d === "room" ? openLayer({ type: "page", sec: "pet" }) : d === "news" ? openLayer({ type: "page", sec: "news" }) : openLayer({ type: "page", sec: "pet_social", tab: d === "khoe" ? "show" : d }))} /> : null}</>}
             onLog={(id) => openLog(id)} onPhoto={(id) => openPhoto(id)} onEdit={(id) => openEdit(id)} onToggleEaten={toggleEaten}
-            suggestInfo={(id) => { const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
+            // 13/11 (chủ dự án): đang Tự nhập số = người tập chuyên, tự biết ăn gì → Hôm nay không gợi ý món
+            suggestInfo={(id) => { if (macro.manual) return { n: 0, best: null }; const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}
             bmr={macroFor(date)?.bmr || 0} onWarnAct={(a) => { if (a === "snack") openLog(null, today); }}
             onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} onSwap={lossMode ? (id) => openSwap(date, id) : null} />
