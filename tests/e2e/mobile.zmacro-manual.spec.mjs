@@ -47,10 +47,6 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await expect(page.getByTestId("mm-until")).toContainText(span(addDays(today, 55)));
     await tap(page.getByTestId("mm-always"));
     await expect(page.getByTestId("mm-until")).toHaveText("Không hết hạn");
-    await tap(page.getByTestId("mm-pick"));
-    await expect(page.getByTestId("mm-cal")).toBeVisible();
-    await goMonth(today);
-    if (today.slice(8) !== "01") await expect(page.getByTestId(`mm-cal-${addDays(today, -1)}`)).toBeDisabled(); // ngày đã qua không chọn được
     const goMonth = async (d) => { // lịch mở ở tháng của ngày kết thúc; lật tới tháng có ngày d
       for (let k = 0; k < 4; k++) {
         const m = await page.getByTestId("mm-cal-month").getAttribute("data-month");
@@ -58,6 +54,10 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
         await tap(page.getByRole("button", { name: m < d.slice(0, 7) ? "Tháng sau" : "Tháng trước" }));
       }
     };
+    await tap(page.getByTestId("mm-pick"));
+    await expect(page.getByTestId("mm-cal")).toBeVisible();
+    await goMonth(today);
+    if (today.slice(8) !== "01") await expect(page.getByTestId(`mm-cal-${addDays(today, -1)}`)).toBeDisabled(); // ngày đã qua không chọn được
     const end = addDays(today, 9);
     await goMonth(end);
     await tap(page.getByTestId(`mm-cal-${end}`));
