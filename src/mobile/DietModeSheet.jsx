@@ -21,7 +21,7 @@ const NAME = Object.fromEntries(DIET_MODES.map(([id, t]) => [id, t]));
 
 // Tên chế độ đang dùng (thẻ Mục tiêu): tự nhập → tên giai đoạn; còn lại theo calcMacro
 export function dietModeName(macro, profile) {
-  if (macro?.manual) return PHASE_NAME[profile?.macroManual?.preset] || "Tự đặt";
+  if (macro?.manual) return PHASE_NAME[profile?.macroManual?.preset] || "Tự nhập";
   return NAME[macro?.dietStrategy] || "Cân bằng";
 }
 
@@ -53,7 +53,6 @@ function ManualBlock({ profile, macro, onSave, onAuto }) {
   const base = macro?.manual ? macro.auto : macro;
   const autoCal = macro?.manual ? macro.autoCal : macro?.calTarget;
   const start = mm.p != null ? { p: mm.p, f: mm.f, c: mm.c, cRest: mm.cRest ?? mm.c } : presetOf("app", base, kg);
-  const [preset, setPreset] = useState(mm.p != null ? mm.preset || "custom" : "app");
   const [v, setV] = useState({ p: String(start.p ?? ""), f: String(start.f ?? ""), c: String(start.c ?? ""), cRest: String(start.cRest ?? "") });
   // Thời hạn (13/11, chủ dự án: "user không custom được à"): Luôn luôn / gõ số tuần / chọn đúng ngày kết thúc
   const [until, setUntil] = useState(mm.p != null && !mm.until ? null : mm.until && mm.until >= today ? mm.until : addDays(today, 6 * 7 - 1));
@@ -67,17 +66,12 @@ function ManualBlock({ profile, macro, onSave, onAuto }) {
   const lowP = kg > 0 && n(v.p) < kg;
   const setWeeks = (txt) => { const t = txt.replace(/[^\d]/g, "").slice(0, 2); setWkText(t); const w = Number(t); if (w >= 1) setUntil(addDays(today, w * 7 - 1)); };
   const ok = v.p !== "" && v.f !== "" && v.c !== "" && (noEx || v.cRest !== "") && calTrain > 0;
-  const set = (k) => (x) => { setPreset("custom"); setV((o) => ({ ...o, [k]: x })); };
-  const pick = (id) => { setPreset(id); const s = presetOf(id, base, kg); setV({ p: String(s.p), f: String(s.f), c: String(s.c), cRest: String(s.cRest) }); };
-  const save = () => ok && onSave({ on: true, preset, p: n(v.p), f: n(v.f), c: n(v.c), cRest: noEx ? n(v.c) : n(v.cRest), until, since: on ? mm.since || today : today, endSeen: null }, calTrain);
+  // 14/11 (chủ dự án): chỉ cần khung nhập — bỏ mẫu nhanh; số mở sẵn = số đang dùng (lần đầu = số app tính)
+  const set = (k) => (x) => setV((o) => ({ ...o, [k]: x }));
+  const save = () => ok && onSave({ on: true, preset: "custom", p: n(v.p), f: n(v.f), c: n(v.c), cRest: noEx ? n(v.c) : n(v.cRest), until, since: on ? mm.since || today : today, endSeen: null }, calTrain);
   const same = !noEx && v.c === v.cRest;
   return (
     <div data-testid="mm-block" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div role="group" aria-label="Mẫu nhanh" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {[["app", "Như app tính"], ["mini_cut", "Mini cut (0 tinh bột)"], ["high_pro", "Nhiều đạm"]].map(([id, t]) => (
-          <button key={id} type="button" data-testid={`mm-preset-${id}`} aria-pressed={preset === id} onClick={() => pick(id)} className="tap" style={pc(preset === id)}>{t}</button>
-        ))}
-      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <Field id="p" label={kg && n(v.p) ? `Đạm · ${fmtDec(Math.round(n(v.p) / kg * 10) / 10)} g/kg` : "Đạm"} value={v.p} onChange={set("p")} warn={lowP} />
         <Field id="f" label="Béo" value={v.f} onChange={set("f")} />
@@ -172,8 +166,8 @@ export function DietModeSheet({ profile, macro, dayType, canManual, showManual =
               <span aria-hidden="true" style={radio(open || cur === "manual")} />
               {!open && <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>✍️</span>}
               <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14.5, fontWeight: 800 }}>Tự nhập số{cur === "manual" ? ` · ${PHASE_NAME[profile?.macroManual?.preset] || "Tự đặt"}` : ""}{!canManual && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#B45309", background: "#FEF3C7", borderRadius: 999, padding: "2px 7px" }}>Premium</span>}</span>
-                {!open && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Mini cut, bỏ tinh bột… theo giai đoạn</span>}
+                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14.5, fontWeight: 800 }}>Tự nhập số{cur === "manual" ? ` · ${PHASE_NAME[profile?.macroManual?.preset] || "Tự nhập"}` : ""}{!canManual && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#B45309", background: "#FEF3C7", borderRadius: 999, padding: "2px 7px" }}>Premium</span>}</span>
+                {!open && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Tự đặt đạm, tinh bột, béo theo giai đoạn</span>}
                 {open && cur === "manual" && macro?.manualUntil && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>đến {fmtVN(macro.manualUntil)}</span>}
               </span>
               {!open && <span aria-hidden="true" style={{ color: "#94A3B8", fontSize: 18 }}>›</span>}

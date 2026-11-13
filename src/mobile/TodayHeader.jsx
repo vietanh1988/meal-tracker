@@ -147,14 +147,15 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, shortcu
           {dietPick ? (
             // 13/11 (bản vẽ "Chỗ đặt công tắc Chế độ ăn" — cách 2): thẻ Mục tiêu bấm được → chọn chế độ ăn; không thêm dòng
             <button type="button" data-testid="diet-pick" onClick={dietPick.onOpen} aria-label={`Mục tiêu ${fmtInt(targets.cal)} kcal, chế độ ${dietPick.name}. Đổi chế độ ăn`} className="tap"
-              style={{ flex: 1, display: "flex", minHeight: 0, padding: "0 2px", margin: "0 -2px", borderRadius: 12, border: "1.5px solid rgba(124,194,255,0.7)", background: "rgba(124,194,255,0.14)", color: "inherit", fontFamily: "inherit", textAlign: "left", cursor: "pointer" }}>
+              style={{ flex: 1, display: "flex", minHeight: 0, padding: 0, margin: 0, border: "none", background: "transparent", color: "inherit", fontFamily: "inherit", textAlign: "left", cursor: "pointer" }}>
+              {/* 14/11 (chủ dự án chỉ lỗi khung lệch): không viền hộp — giữ thẳng hàng với "Đã ăn" / "Hôm nay"; tên chế độ là viên bấm được có ⌄ */}
               <StatCard icon={ICON.goal} label="Mục tiêu" value={`${fmtInt(targets.cal)} kcal`}>
-                <span data-testid="goal-sub" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10.5, whiteSpace: "nowrap", overflow: "hidden", minWidth: 0 }}>
-                  <span data-testid="diet-name" style={{ fontWeight: 800, color: "#BFE0FF", overflow: "hidden", textOverflow: "ellipsis" }}>{dietPick.name}</span>
-                  {dietPick.sub && <span style={{ opacity: 0.78, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "pre" }}>{` · ${dietPick.sub}`}</span>}
-                  <span aria-hidden="true" style={{ marginLeft: "auto", flexShrink: 0, width: 16, height: 16, borderRadius: 5, background: "#FFFFFF", color: "#0040E0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                <span data-testid="goal-sub" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, whiteSpace: "nowrap", overflow: "hidden", minWidth: 0 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3, height: 20, padding: "0 6px 0 8px", borderRadius: 999, background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.32)", flexShrink: 0, maxWidth: "70%" }}>
+                    <span data-testid="diet-name" style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>{dietPick.name}</span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
                   </span>
+                  {dietPick.sub && <span style={{ opacity: 0.78, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis" }}>{dietPick.sub}</span>}
                 </span>
               </StatCard>
             </button>

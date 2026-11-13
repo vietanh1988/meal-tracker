@@ -1,5 +1,5 @@
 // 13/11 (chủ dự án duyệt bản vẽ "Tự nhập macro theo giai đoạn"): Mục tiêu & macro › Cách đặt macro › Tự nhập số.
-// Mẫu Mini cut (tinh bột 0) → calo = tổng 3 chất, Hôm nay dùng số tự nhập + "Mini cut · còn N ngày";
+// 14/11: bỏ mẫu nhanh — gõ số kiểu mini cut (tinh bột 0) → calo = tổng 3 chất, Hôm nay "Tự nhập · còn N ngày";
 // về App tự tính; hết hạn → hộp hỏi 1 lần, Gia hạn thêm 2 tuần.
 import { test, expect } from "@playwright/test";
 import { login, rest, S, waitDb, tap } from "./helpers.mjs";
@@ -24,17 +24,18 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await expect(page.getByTestId("goals-macro-auto")).toHaveAttribute("aria-pressed", "true", { timeout: 20_000 });
     const autoCal = Number(await page.getByTestId("goals-macro").getAttribute("data-cal"));
 
-    // Tự nhập số → mở ngay trong danh sách chế độ ăn (không sang màn khác), mẫu Mini cut
+    // Tự nhập số → mở ngay trong danh sách chế độ ăn (không sang màn khác), gõ số kiểu mini cut
     await tap(page.getByTestId("goals-macro-manual"));
     await expect(page.getByTestId("diet-sheet")).toBeVisible();
     await expect(page.getByTestId("mm-block")).toBeVisible();
     await expect(page.getByTestId("diet-keto")).toHaveCount(0); // tăng cơ: Keto ẩn khi đang mở tự nhập
-    await tap(page.getByTestId("mm-preset-mini_cut"));
-    await expect(page.getByTestId("mm-c")).toHaveValue("0");
-    await expect(page.getByTestId("mm-crest")).toHaveValue("0");
-    const p = Number(await page.getByTestId("mm-p").inputValue());
-    const f = Number(await page.getByTestId("mm-f").inputValue());
-    expect(p).toBeGreaterThan(80);
+    await expect(page.getByTestId("mm-preset-mini_cut")).toHaveCount(0); // 14/11: bỏ mẫu nhanh, chỉ khung nhập
+    expect(Number(await page.getByTestId("mm-p").inputValue())).toBeGreaterThan(0); // mở sẵn số app tính
+    const p = 195, f = 90;
+    await page.getByTestId("mm-p").fill(String(p));
+    await page.getByTestId("mm-f").fill(String(f));
+    await page.getByTestId("mm-c").fill("0");
+    await page.getByTestId("mm-crest").fill("0");
     await expect(page.getByTestId("mm-sum")).toHaveAttribute("data-cal", String(p * 4 + f * 9));
     await expect(page.getByTestId("mm-compare")).toContainText("App gợi ý");
     const dm = (d) => `${d.slice(8)}/${d.slice(5, 7)}`;
@@ -54,11 +55,11 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await waitDb(async () => (await prof()).macro_manual?.on === true, "macro_manual.on");
     await expect(page.getByTestId("diet-sheet")).toHaveCount(0);
     const mm = (await prof()).macro_manual;
-    expect(mm).toMatchObject({ p, f, c: 0, cRest: 0, preset: "mini_cut", until: addDays(today, 41) });
+    expect(mm).toMatchObject({ p, f, c: 0, cRest: 0, preset: "custom", until: addDays(today, 41) });
 
     // Mục tiêu & macro hiện số tự nhập + nhãn
     await expect(page.getByTestId("goals-macro")).toHaveAttribute("data-cal", String(p * 4 + f * 9));
-    await expect(page.getByTestId("goals-manual-foot")).toContainText("Mini cut");
+    await expect(page.getByTestId("goals-manual-foot")).toContainText("Tự nhập");
     await expect(page.getByTestId("goals-manual-foot")).toContainText(`App gợi ý`);
     await expect(page.getByTestId("goals-macro-manual")).toHaveAttribute("aria-pressed", "true");
     await page.screenshot({ path: "shots/muc-tieu-tu-nhap.png" });
@@ -67,7 +68,7 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await page.goBack().catch(() => {});
     await page.goto("/");
     await nav("Hôm nay").click();
-    await expect(page.getByTestId("goal-sub")).toContainText("Mini cut · còn 42 ngày", { timeout: 20_000 });
+    await expect(page.getByTestId("goal-sub")).toContainText("Tự nhập · còn 42 ngày", { timeout: 20_000 });
     await expect(page.getByTestId("focus-suggest-foods")).toHaveCount(0); // tự nhập số → Hôm nay không gợi ý món
     await expect(page.getByTestId("today-ai-menu")).toHaveCount(0); // không có nút AI lên thực đơn
 
@@ -83,7 +84,7 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ macro_manual: { ...mm, on: true, until: addDays(today, -1), since: addDays(today, -42) } }) });
     await page.goto("/");
     await expect(page.getByTestId("mm-end-sheet")).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId("mm-end-sheet")).toContainText("Mini cut");
+    await expect(page.getByTestId("mm-end-sheet")).toContainText("tự nhập macro");
     await tap(page.getByTestId("mm-end-extend"));
     await waitDb(async () => (await prof()).macro_manual?.until === addDays(today, 13), "gia hạn 2 tuần");
     await expect(page.getByTestId("mm-end-sheet")).toHaveCount(0);

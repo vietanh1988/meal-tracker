@@ -156,7 +156,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
         {noEx ? tile("Mỗi ngày", m.calTarget, m.carb) : <>{tile("Ngày tập", m.calTarget, m.carb)}{tile("Ngày nghỉ", m.calRest, m.carbRest)}</>}
         {m.manual ? (
           <div data-testid="goals-manual-foot" style={{ gridColumn: "1 / -1", borderTop: `1px solid ${DK.line}`, paddingTop: 10, fontSize: 12, fontWeight: 600, color: DK.t2, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", height: 22, padding: "0 8px", borderRadius: 999, fontSize: 11, fontWeight: 800, background: "rgba(124,194,255,0.18)", color: DK.link, border: "1px solid rgba(124,194,255,0.4)", whiteSpace: "nowrap" }}>{PHASE_NAME[p.macroManual?.preset] || "Tự đặt"}{m.manualUntil ? ` · đến ${fmtVN(m.manualUntil)}` : ""}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", height: 22, padding: "0 8px", borderRadius: 999, fontSize: 11, fontWeight: 800, background: "rgba(124,194,255,0.18)", color: DK.link, border: "1px solid rgba(124,194,255,0.4)", whiteSpace: "nowrap" }}>{PHASE_NAME[p.macroManual?.preset] || "Tự nhập"}{m.manualUntil ? ` · đến ${fmtVN(m.manualUntil)}` : ""}</span>
             <span>App gợi ý {fmtInt(m.autoCal)} kcal · không tự chỉnh mỗi tuần</span>
           </div>
         ) : (

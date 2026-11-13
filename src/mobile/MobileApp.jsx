@@ -929,7 +929,7 @@ export function MobileApp(props) {
     showToast({ text: `Đã đổi sang ${nm}${v ? ` · ${fmtInt(v.cal)} kcal hôm nay` : ""}`, ...(aiMenuAction ? { action: { label: "Lên lại thực đơn", onClick: aiMenuAction } } : {}) }, 7000);
   };
   const mmLeft = macro.manual ? manualDaysLeft(profile.macroManual, today) : null;
-  const goalSub = macro.manual ? `${PHASE_NAME[profile.macroManual?.preset] || "Tự đặt"}${mmLeft ? ` · còn ${mmLeft} ngày` : ""}` : bDate > 0 ? `${fmtInt(targets.cal - bDate)} + ${fmtInt(bDate)} vận động` : null;
+  const goalSub = macro.manual ? `${PHASE_NAME[profile.macroManual?.preset] || "Tự nhập"}${mmLeft ? ` · còn ${mmLeft} ngày` : ""}` : bDate > 0 ? `${fmtInt(targets.cal - bDate)} + ${fmtInt(bDate)} vận động` : null;
   const [snackSkip, setSnackSkip] = useState(() => readUser("fp_snack_skip", user?.id, null));
   const allEatenToday = date === today && rows.length > 0 && rows.every((r) => r.state === "eaten");
   const snackRemain = targets.cal - eaten.cal;

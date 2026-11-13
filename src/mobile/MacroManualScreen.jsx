@@ -13,7 +13,7 @@ const sec = { display: "block", padding: "16px 16px 6px 16px", fontSize: 11, fon
 const box = { ...dkCard, margin: "0 12px", borderRadius: 16, padding: "0 14px" };
 const chip = (on) => ({ height: 34, padding: "0 12px", borderRadius: 10, fontFamily: "inherit", fontSize: 13, fontWeight: on ? 800 : 700, border: `1.5px solid ${on ? "#FFFFFF" : DK.chipLine}`, background: on ? "#FFFFFF" : DK.chip, color: on ? "#0040E0" : DK.t1 });
 const btn = { flex: 1, height: 48, borderRadius: 14, fontFamily: "inherit", fontSize: 15, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" };
-export const PHASE_NAME = { app: "Tự đặt", mini_cut: "Mini cut", high_pro: "Nhiều đạm", custom: "Tự đặt" };
+export const PHASE_NAME = { app: "Tự nhập", mini_cut: "Mini cut", high_pro: "Nhiều đạm", custom: "Tự nhập" };
 
 const r5 = (v) => Math.max(0, Math.round(v / 5) * 5);
 // Mẫu nhanh: số khởi đầu, người dùng sửa tiếp được
@@ -150,7 +150,7 @@ export function MacroManualScreen({ profile, setProfile, macro, onDone, showToas
 export function MacroPhaseEndSheet({ mm, autoCal, onAuto, onExtend }) {
   useLockScroll(true);
   const sw = useSwipeClose(onAuto);
-  const name = PHASE_NAME[mm?.preset] || "Tự đặt";
+  const name = PHASE_NAME[mm?.preset] || "Tự nhập";
   const wk = mm?.since && mm?.until ? Math.max(1, Math.round((Date.parse(mm.until) - Date.parse(mm.since)) / 86400000 / 7)) : null;
   const b = { height: 46, borderRadius: 14, border: "none", fontFamily: "inherit", fontSize: 15, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" };
   return createPortal(
@@ -158,7 +158,7 @@ export function MacroPhaseEndSheet({ mm, autoCal, onAuto, onExtend }) {
       <div ref={sw.ref} {...sw.swipe} data-testid="mm-end-sheet" role="dialog" aria-modal="true" aria-label="Hết giai đoạn tự đặt macro" onClick={(e) => e.stopPropagation()}
         style={{ position: "absolute", left: 0, right: 0, bottom: 0, maxWidth: 560, margin: "0 auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 18px) 16px", display: "flex", flexDirection: "column", gap: 12 }}>
         <SheetHandle />
-        <span style={{ fontSize: 18, fontWeight: 900 }}>Xong {wk ? `${wk} tuần ` : ""}{name.toLowerCase() === "tự đặt" ? "tự đặt macro" : name}</span>
+        <span style={{ fontSize: 18, fontWeight: 900 }}>Xong {wk ? `${wk} tuần ` : ""}{name === "Tự nhập" ? "tự nhập macro" : name}</span>
         <span style={{ fontSize: 13.5, color: "#475569", lineHeight: 1.5 }}>Từ hôm nay app quay về số tự tính{autoCal ? `: ${fmtInt(autoCal)} kcal ngày tập` : ""}. Bạn muốn giữ số tự đặt thêm thì gia hạn.</span>
         <button type="button" data-testid="mm-end-auto" onClick={onAuto} className="tap" style={{ ...b, background: GRAD_BLUE, color: "#FFFFFF" }}>Về số app tự tính</button>
         <button type="button" data-testid="mm-end-extend" onClick={onExtend} className="tap" style={{ ...b, background: "#F1F5F9", color: "#475569" }}>Gia hạn thêm 2 tuần</button>
