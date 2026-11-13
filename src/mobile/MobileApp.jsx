@@ -977,7 +977,8 @@ export function MobileApp(props) {
             suggestInfo={(id) => { if (macro.manual) return { n: 0, best: null }; const sg = suggestFor(id); return { n: sg.list.length, best: sg.list[0] ? scaleSuggestion(sg.list[0], 1) : null }; }}
             onSuggest={(id) => openLayer({ type: "suggest", date, mealId: id })} onSuggestApply={(id, opt) => pickSuggestion(date, id, opt)}
             bmr={macroFor(date)?.bmr || 0} onWarnAct={(a) => { if (a === "snack") openLog(null, today); }}
-            onAIMenu={aiMenuAction} onWeight={() => openWeigh(false)} onSwap={lossMode ? (id) => openSwap(date, id) : null} />
+            // 13/11 (chủ dự án): đang Tự nhập số → bỏ thẻ "Đến giờ ăn · … hôm nay ăn gì?" và nút "AI lên thực đơn"
+            hideFocus={!!macro.manual} onAIMenu={macro.manual ? null : aiMenuAction} onWeight={() => openWeigh(false)} onSwap={lossMode ? (id) => openSwap(date, id) : null} />
         )}
         {tab === "menu" && lossMode && (
           <LossMenuScreen today={today} tomorrow={tomorrow} sel={lossSel} onSel={(v) => { if (v === "tomorrow") track("menu_tomorrow"); setLossSel(v); }} day={lossSel === "tomorrow" ? dayCache[tomorrow] : dayOf(today)}

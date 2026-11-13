@@ -27,7 +27,8 @@ export function TodayScreen(p) {
   const { date, today, onDate, rows, eaten, targets, dayType, nowMinutes, name, dayLoaded } = p;
   const isToday = date === today;
   const remain = targets.cal - eaten.cal;
-  const focus = isToday && dayLoaded ? focusMeal(rows, nowMinutes) : null;
+  const focusRow = isToday && dayLoaded ? focusMeal(rows, nowMinutes) : null;
+  const focus = p.hideFocus ? null : focusRow; // 13/11: Tự nhập số → không có thẻ "Đến giờ ăn", bữa đến giờ vẫn được tô trong danh sách
   const allEaten = isToday && dayLoaded && rows.length > 0 && rows.every((r) => r.state === "eaten");
   const eatenCount = rows.filter((r) => r.state === "eaten").length;
   const w = p.weight;
@@ -65,7 +66,7 @@ export function TodayScreen(p) {
             <div style={{ flex: 1, minHeight: 64, borderRadius: 18, background: "rgba(255,255,255,0.75)", padding: "0 14px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}><Skel w="40%" h={12} /><Skel w="65%" h={10} /></div>
           </div>
         ))}
-        {dayLoaded && rows.map((r, i) => <MealRow key={r.id} r={r} last={i === rows.length - 1} now={!!focus && focus.id === r.id} {...p} />)}
+        {dayLoaded && rows.map((r, i) => <MealRow key={r.id} r={r} last={i === rows.length - 1} now={!!focusRow && focusRow.id === r.id} {...p} />)}
         {dayLoaded && rows.length === 0 && <div style={{ ...card, margin: 0, minHeight: 56, padding: "0 14px", display: "flex", alignItems: "center", fontSize: 13, color: "#64748B" }}>Chưa bật bữa nào — vào Tôi › Lịch tập & bữa để bật.</div>}
       </div>
       {/* Bản vẽ 131d (flow giảm cân): 1 nút cam "Chụp 1 tấm" thay nút AI lên thực đơn */}
