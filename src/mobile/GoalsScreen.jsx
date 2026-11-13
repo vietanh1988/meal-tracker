@@ -12,6 +12,8 @@ import { fmtInt, fmtDec } from "../lib/mobileView";
 import { todayVN, fmtVN } from "../lib/dateVN";
 import { PacePicker, etaMonth } from "./PacePicker";
 import { DK, dkCard } from "../theme";
+import { manualDaysLeft } from "../calcMacro";
+import { PHASE_NAME } from "./MacroManualScreen";
 
 const GOALS = [["bulk", "Tăng cơ"], ["cut", "Giảm mỡ"], ["maintain", "Duy trì"]];
 const GOAL_NAME = { bulk: "Tăng cơ", cut: "Giảm mỡ", maintain: "Duy trì" };
@@ -100,7 +102,7 @@ function speedText(m, goal, months) {
   return { bad: !ok, text: `${sign}${fmtDec(Math.abs(m.diff))} kg · ≈ ${sign}${fmtInt(g)} g/tuần · ${note}` };
 }
 
-export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedule, openWeigh }) {
+export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedule, openWeigh, openManual, canManual = true, openPremium }) {
   const [open, setOpen] = useState(null);
   const p = profile || {};
   const m = macro || {};
@@ -152,12 +154,19 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
       <div data-testid="goals-macro" data-cal={Math.round(m.calTarget) || 0} style={{ ...dkCard, margin: "12px 12px 0 12px", borderRadius: 18, padding: 16, color: "#FFFFFF", display: "grid", gridTemplateColumns: noEx ? "1fr" : "1fr 1fr", gap: 12, position: "relative" }}>
         <span aria-hidden="true" style={{ position: "absolute", left: 16, top: 0, width: 44, height: 3, borderRadius: "0 0 3px 3px", background: "#4DA3FF" }} />
         {noEx ? tile("Mỗi ngày", m.calTarget, m.carb) : <>{tile("Ngày tập", m.calTarget, m.carb)}{tile("Ngày nghỉ", m.calRest, m.carbRest)}</>}
+        {m.manual ? (
+          <div data-testid="goals-manual-foot" style={{ gridColumn: "1 / -1", borderTop: `1px solid ${DK.line}`, paddingTop: 10, fontSize: 12, fontWeight: 600, color: DK.t2, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", height: 22, padding: "0 8px", borderRadius: 999, fontSize: 11, fontWeight: 800, background: "rgba(124,194,255,0.18)", color: DK.link, border: "1px solid rgba(124,194,255,0.4)", whiteSpace: "nowrap" }}>{PHASE_NAME[p.macroManual?.preset] || "Tự đặt"}{m.manualUntil ? ` · đến ${fmtVN(m.manualUntil)}` : ""}</span>
+            <span>App gợi ý {fmtInt(m.autoCal)} kcal · không tự chỉnh mỗi tuần</span>
+          </div>
+        ) : (
         <div style={{ gridColumn: "1 / -1", borderTop: `1px solid ${DK.line}`, paddingTop: 10, fontSize: 12, fontWeight: 600, color: DK.t2 }}>
           {(m.goal || goal) === "cut"
             ? `TDEE ${fmtInt(m.tdee)} kcal · bớt ${fmtInt(m.deficit - (m.calOffset || 0))} kcal/ngày · BMI ${fmtDec(m.bmi)}`
             : (m.goal || goal) === "bulk" && m.calOffset ? `TDEE ${fmtInt(m.tdee)} kcal · BMI ${fmtDec(m.bmi)} · Tăng cơ ${sOff(250 + m.calOffset)} (+250 · ${sOff(m.calOffset)} kiểm tra tuần)` : `TDEE ${fmtInt(m.tdee)} kcal · BMI ${fmtDec(m.bmi)} · ${GOAL_NAME[m.goal || goal]} ${ADJUST[m.goal || goal]}`}
         </div>
-        {m.floorApplied && <div data-testid="goals-floor" style={{ gridColumn: "1 / -1", fontSize: 12, fontWeight: 600, background: "rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 10px" }}>Đã nâng lên mức tối thiểu an toàn {fmtInt(m.calFloor)} kcal/ngày khi giảm mỡ.</div>}
+        )}
+        {m.floorApplied && !m.manual && <div data-testid="goals-floor" style={{ gridColumn: "1 / -1", fontSize: 12, fontWeight: 600, background: "rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 10px" }}>Đã nâng lên mức tối thiểu an toàn {fmtInt(m.calFloor)} kcal/ngày khi giảm mỡ.</div>}
       </div>
 
       {(missing.length > 0 || looksDefault) && (
@@ -166,6 +175,33 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
             ? `Hồ sơ chưa có ${missing.map((f) => BODY_NAME[f]).join(", ")} — đang tạm dùng số mặc định. Nhập lại bên dưới để calo tính đúng.`
             : "Số đo đang giống hệt số mặc định của app (172 cm · 63 kg · 1987). Kiểm tra lại cho đúng với bạn."}
         </div>
+      )}
+
+      {openManual && (
+        <>
+          {/* 13/11: Cách đặt macro — App tự tính / Tự nhập số (bản vẽ "Tự nhập macro theo giai đoạn") */}
+          <span style={sec}>CÁCH ĐẶT MACRO</span>
+          <div style={{ ...box, padding: "0 14px" }}>
+            {[["auto", "App tự tính", "Theo cơ thể, mục tiêu, lịch tập. Mỗi tuần tự chỉnh theo cân."], ["manual", "Tự nhập số", m.manual ? `Đ ${fmtInt(m.protein)} · TB ${fmtInt(m.carb)} · B ${fmtInt(m.fat)} g${manualDaysLeft(p.macroManual) ? ` · còn ${manualDaysLeft(p.macroManual)} ngày` : ""}` : "Bạn tự đặt đạm, tinh bột, béo cho một giai đoạn, vd mini cut 6 tuần."]].map(([id, t, sub], i) => {
+              const on = id === (m.manual ? "manual" : "auto");
+              const click = () => {
+                if (id === "auto") { if (m.manual) setProfile({ ...p, macroManual: { ...p.macroManual, on: false } }); return; }
+                if (!canManual) { openPremium?.(); return; }
+                openManual();
+              };
+              return (
+                <button key={id} type="button" data-testid={`goals-macro-${id}`} aria-pressed={on} onClick={click} style={{ ...rowBase, alignItems: "flex-start", gap: 12, padding: "12px 0", borderWidth: i ? "1px 0 0 0" : 0 }}>
+                  <span aria-hidden="true" style={{ width: 20, height: 20, borderRadius: 10, flexShrink: 0, marginTop: 1, border: `2px solid ${on ? "#FFFFFF" : "rgba(255,255,255,0.45)"}`, background: on ? "#FFFFFF" : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>{on && <span style={{ width: 8, height: 8, borderRadius: 4, background: "#0040E0" }} />}</span>
+                  <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 800 }}>{t}{id === "manual" && !canManual && <span style={{ display: "inline-flex", alignItems: "center", height: 20, padding: "0 7px", borderRadius: 999, fontSize: 10.5, fontWeight: 800, background: "rgba(252,211,77,0.16)", color: DK.amber, border: "1px solid rgba(252,211,77,0.4)" }}>Premium</span>}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: DK.t3, lineHeight: 1.45 }}>{sub}</span>
+                  </span>
+                  {id === "manual" && <span style={{ display: "flex", color: DK.chev, marginTop: 2 }}>{Icon.chev(16, DK.chev)}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </>
       )}
 
       <span style={sec}>MỤC TIÊU</span>
@@ -257,7 +293,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
             {Icon.chev(16, DK.chev)}
           </button>
         )}
-        <ChoiceRow id="diet" k="Kiểu ăn" value={`${nameOf(DIET, m.dietStrategy || "balanced")} · đạm ${m.pRatio ? fmtDec(parseFloat(m.pRatio)) : "—"} g/kg`} options={goal === "cut" ? DIET : DIET_ALL} selected={m.dietStrategy || "balanced"} onPick={(v) => save({ dietStrategy: v })} open={open} setOpen={setOpen} />
+        <ChoiceRow id="diet" k="Kiểu ăn" value={m.manual ? `${nameOf(DIET, (goal === "cut" || p.dietStrategy === "high_protein" ? p.dietStrategy : "balanced") || "balanced")} · khi về app tự tính` : `${nameOf(DIET, m.dietStrategy || "balanced")} · đạm ${m.pRatio ? fmtDec(parseFloat(m.pRatio)) : "—"} g/kg`} options={goal === "cut" ? DIET : DIET_ALL} selected={m.manual ? p.dietStrategy || "balanced" : m.dietStrategy || "balanced"} onPick={(v) => save({ dietStrategy: v })} open={open} setOpen={setOpen} />
         <div style={{ ...rowBase, minHeight: 52, borderWidth: 0 }}>
           <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>Dùng whey / TPBS</span>

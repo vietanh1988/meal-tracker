@@ -105,3 +105,36 @@ test("Ít tinh bột / Keto vẫn chỉ áp khi giảm mỡ; Nhiều đạm áp 
   assert.equal(calcMacro({ ...base, dietStrategy: "keto" }).dietStrategy, "balanced");
   assert.equal(calcMacro({ ...base, dietStrategy: "high_protein" }).pRatio, "2.4g/kg");
 });
+
+// 13/11: Tự nhập macro theo giai đoạn
+import { manualActive, manualDaysLeft } from "../src/calcMacro.js";
+test("Tự nhập: calo = tổng 3 chất, không ép về số app; hết hạn tự về app tính", () => {
+  const base = { cm: 175, kg: 75, birthYear: 1995, goalKg: 80, goalType: "bulk", months: 6, gender: "male", exerciseType: "gym", frequency: "regular", calorieMode: "standard", dietStrategy: "balanced", _today: "2026-11-13" };
+  const auto = calcMacro(base);
+  const mm = { on: true, p: 200, f: 90, c: 0, cRest: 0, until: "2026-12-24", preset: "mini_cut" };
+  const m = calcMacro({ ...base, macroManual: mm });
+  assert.equal(m.manual, true);
+  assert.equal(m.calTarget, 200 * 4 + 90 * 9);
+  assert.equal(m.calRest, 1610);
+  assert.equal(m.carb, 0);
+  assert.equal(m.dietStrategy, "keto");
+  assert.equal(m.autoCal, auto.calTarget);
+  assert.equal(m.belowFloor, false);
+  assert.equal(manualDaysLeft(mm, "2026-11-13"), 42);
+  // hết hạn
+  const late = calcMacro({ ...base, _today: "2026-12-25", macroManual: mm });
+  assert.equal(late.manual, undefined);
+  assert.equal(late.calTarget, auto.calTarget);
+  assert.equal(manualActive({ ...mm, on: false }, "2026-11-13"), false);
+  assert.equal(manualActive({ ...mm, until: null }, "2030-01-01"), true);
+  // tinh bột ngày nghỉ riêng
+  const r = calcMacro({ ...base, macroManual: { on: true, p: 180, f: 70, c: 250, cRest: 150, until: null } });
+  assert.equal(r.calTarget, 180 * 4 + 250 * 4 + 70 * 9);
+  assert.equal(r.calRest, 180 * 4 + 150 * 4 + 70 * 9);
+  assert.equal(r.dietStrategy, "balanced");
+});
+import { withBonus } from "../src/lib/activity.js";
+test("Tự nhập: không cộng calo vận động vào số tự đặt", () => {
+  const m = { manual: true, calTarget: 1610, calRest: 1610, carb: 0, carbRest: 0 };
+  assert.equal(withBonus(m, 300), m);
+});

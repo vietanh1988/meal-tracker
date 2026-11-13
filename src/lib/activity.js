@@ -34,7 +34,7 @@ export function activityBonus(burn, goal) {
 // Macro của ngày có vận động: cộng phần thêm vào calo + tinh bột (cả ngày tập lẫn nghỉ)
 export function withBonus(macro, bonus) {
   const b = Number(bonus) || 0;
-  if (!b || !macro) return macro;
+  if (!b || !macro || macro.manual) return macro; // 13/11: đang tự nhập macro → giữ đúng số người dùng đặt
   const c = Math.round(b / 4);
   return { ...macro, calTarget: (macro.calTarget || 0) + b, calRest: (macro.calRest || 0) + b, carb: (macro.carb || 0) + c, carbRest: (macro.carbRest || 0) + c, activityBonus: b };
 }

@@ -29,6 +29,8 @@ import { AiCostScreen } from "./admin/AiCostScreen";
 import { BackupScreen } from "./admin/BackupScreen";
 import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
+import { MacroManualScreen, MacroPhaseEndSheet, PHASE_NAME } from "./MacroManualScreen";
+import { manualDaysLeft } from "../calcMacro";
 import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen, PayScreen } from "./PlanScreen";
 import { AccountScreen } from "./AccountScreen";
@@ -602,7 +604,14 @@ export function MobileApp(props) {
     );
     if (sec === "goals") return (
       <SubPage title={lossMode ? "Mục tiêu & tốc độ giảm" : "Mục tiêu & macro"} onBack={closeLayer} dark right={<span style={{ fontSize: 12, fontWeight: 700, color: DK.green, paddingRight: 8 }}>Tự động lưu</span>}>
-        <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} openWeigh={() => openWeigh(true)} />
+        <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} openWeigh={() => openWeigh(true)}
+          openManual={lossMode ? null : () => openLayer({ type: "page", sec: "macro_manual" })} canManual={isAdmin || (profile.tier && profile.tier !== "free")} openPremium={() => openLayer({ type: "page", sec: "plan" })} />
+      </SubPage>
+    );
+    // 13/11: Tự nhập macro theo giai đoạn (mở từ Mục tiêu & macro › Cách đặt macro)
+    if (sec === "macro_manual") return (
+      <SubPage title="Tự nhập số" onBack={closeLayer} dark>
+        <MacroManualScreen profile={profileRef.current || profile} setProfile={setProfile} macro={macro} onDone={closeLayer} showToast={showToast} />
       </SubPage>
     );
     if (sec === "notifications") return (
@@ -762,7 +771,8 @@ export function MobileApp(props) {
   // Ngày đã xử lý thẻ: cột profiles.checkin_date (khi prod đã có cột) + bản trên máy — lấy ngày mới hơn
   const [checkinLocal, setCheckinLocal] = useState(() => readUser("fp_checkin", user?.id, null));
   const checkinDate = [profile.checkinDate, checkinLocal].filter(Boolean).sort().pop() || null;
-  const check = useMemo(() => (recentReady ? weeklyCheck({
+  // 13/11: đang tự nhập macro → không có thẻ Kiểm tra tuần (app không tự chỉnh số người dùng đặt)
+  const check = useMemo(() => (recentReady && !macro.manual ? weeklyCheck({
     today, goal: macro.goal, kgWeek: macro.kgWeek, curKg: weight.curKg, weightLog, dayRows: recentRows, measures, checkinDate,
     calOffset: macro.calOffset, atFloor: !!macro.floorApplied || macro.calTargetRaw - 100 < macro.calFloor,
   }) : null), [recentReady, today, macro, weight.curKg, weightLog, recentRows, measures, checkinDate]);
@@ -905,7 +915,8 @@ export function MobileApp(props) {
   const actLabel = actToday.length ? actOf(actToday[actToday.length - 1].type).label.toLowerCase() : "";
   const focusBonus = bonusToday > 0 ? `+${fmtInt(bonusToday)} kcal vì ${actToday.length > 1 ? "vận động thêm" : actLabel} — ${bonusTip(bonusToday)}` : null;
   const bDate = bonusOf(date);
-  const goalSub = bDate > 0 ? `${fmtInt(targets.cal - bDate)} + ${fmtInt(bDate)} vận động` : null;
+  const mmLeft = macro.manual ? manualDaysLeft(profile.macroManual, today) : null;
+  const goalSub = macro.manual ? `${PHASE_NAME[profile.macroManual?.preset] || "Tự đặt"}${mmLeft ? ` · còn ${mmLeft} ngày` : ""}` : bDate > 0 ? `${fmtInt(targets.cal - bDate)} + ${fmtInt(bDate)} vận động` : null;
   const [snackSkip, setSnackSkip] = useState(() => readUser("fp_snack_skip", user?.id, null));
   const allEatenToday = date === today && rows.length > 0 && rows.every((r) => r.state === "eaten");
   const snackRemain = targets.cal - eaten.cal;
@@ -1046,6 +1057,12 @@ export function MobileApp(props) {
       <Toast toast={toast} bottom={has("edit") ? 100 : 90} top={top && (top.type === "log" || (top.type === "page" && top.sec === "workout")) ? 104 : null} />{/* 30/10: đang mở Ghi bữa → báo ở trên, không che giỏ */}
       {!top && <PWAInstallPrompt ready={hasLogged} />}
       <InstalledPushAsk ready={!top} showToast={showToast} />
+      {/* 13/11: hết giai đoạn tự nhập macro → hỏi 1 lần (về số app tự tính / gia hạn 2 tuần) */}
+      {!top && profile.macroManual?.on && profile.macroManual.until && profile.macroManual.until < today && profile.macroManual.endSeen !== profile.macroManual.until && (
+        <MacroPhaseEndSheet mm={profile.macroManual} autoCal={macro.calTarget}
+          onAuto={() => { setProfile({ ...profileRef.current, macroManual: { ...profile.macroManual, on: false, endSeen: profile.macroManual.until } }); showToast({ text: "Đã về số app tự tính" }); }}
+          onExtend={() => { const until = addDays(today, 13); setProfile({ ...profileRef.current, macroManual: { ...profile.macroManual, until, endSeen: null } }); showToast({ text: `Đã gia hạn đến ${fmtVN(until)}` }); }} />
+      )}
     </div>
   );
 }

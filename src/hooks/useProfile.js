@@ -6,7 +6,7 @@ import { readUser, writeUser } from "../lib/userStore";
 // prod chưa chạy SQL thì chưa có cột → giữ trên máy (fp_pace) và KHÔNG gửi cột lạ (upsert sẽ lỗi cả hồ sơ).
 const PACE_KEY = "fp_pace";
 // 18/10: + uiMode (ui_mode) — flow giảm cân. Mỗi cột kiểm riêng (prod có thể có cột này mà chưa có cột kia)
-const PACE_COLS = { cutPace: "cut_pace", calOffset: "cal_offset", calOffsetDate: "cal_offset_date", checkinDate: "checkin_date", uiMode: "ui_mode" };
+const PACE_COLS = { cutPace: "cut_pace", calOffset: "cal_offset", calOffsetDate: "cal_offset_date", checkinDate: "checkin_date", uiMode: "ui_mode", macroManual: "macro_manual" }; // macro_manual (13/11): tự nhập macro theo giai đoạn — chưa có cột thì lưu trên máy
 
 const DEFAULT = {cm:172,kg:63,birthYear:1987,goalKg:68,goalType:"bulk",months:4,exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard",gymDays:[0,2,4,5]};
 

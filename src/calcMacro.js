@@ -1,7 +1,9 @@
 // Tốc độ giảm mỡ: % cân nặng mỗi tuần (bản vẽ 126)
+import { todayVN } from "./lib/dateVN.js";
+
 export const PACE_PCT={slow:0.0025,mid:0.005,fast:0.0075};
 
-export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};
+function calcMacroAuto(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};
   const gender=p.gender||"male";
   const exerciseType=p.exerciseType||"gym";
   const age=p.birthYear?new Date().getFullYear()-p.birthYear:(p.age||25);
@@ -121,6 +123,38 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const cRatio=Math.round(carb/p.kg*10)/10+"g/kg";
   const fRatio=fRatioVal+"g/kg";
   return{pace:effectiveGoal==="cut"?pace:null,kgWeek,deficit,etaWeeks,calOffset,refKg,floorApplied,calFloor,tdee,calTarget:calFinal,calTargetRaw:calTarget,protein,fat,fiber,carb,carbRest,calRest,bmi,diff,perMonth,perWeek,months,safe,directionMismatch,goal:effectiveGoal,fatPct:Math.round(fat*9/calFinal*100),actMul,bmr:Math.round(bmr),pRatio,cRatio,fRatio,dietStrategy};
+}
+
+// 13/11 (khách tập gym hỏi, chủ dự án duyệt bản vẽ "Tự nhập macro theo giai đoạn"): người dùng tự nhập đạm / béo / tinh bột
+// (tinh bột ngày tập & ngày nghỉ riêng, được để 0), áp dụng luôn luôn hoặc đến 1 ngày (vd mini cut 6 tuần).
+// Calo = tổng 3 chất, KHÔNG ép về số app tính; app chỉ trả kèm autoCal để so. Hết hạn → tự về số app tính.
+export function manualActive(mm, today = todayVN()) {
+  return !!(mm && mm.on && Number.isFinite(Number(mm.p)) && Number.isFinite(Number(mm.f)) && (!mm.until || today <= mm.until));
+}
+export function manualDaysLeft(mm, today = todayVN()) {
+  if (!manualActive(mm, today) || !mm.until) return null;
+  const a = Date.parse(today + "T00:00:00Z"), b = Date.parse(mm.until + "T00:00:00Z");
+  return Math.round((b - a) / 86400000) + 1;
+}
+export function calcMacro(p) {
+  const auto = calcMacroAuto(p);
+  const mm = p?.macroManual;
+  if (!manualActive(mm, p?._today || todayVN())) return auto;
+  const n = (v) => Math.max(0, Math.round(Number(v) || 0));
+  const protein = n(mm.p), fat = n(mm.f), carb = n(mm.c), carbRest = mm.cRest == null || mm.cRest === "" ? carb : n(mm.cRest);
+  const calTarget = protein * 4 + carb * 4 + fat * 9;
+  const calRest = (p?.exerciseType || "gym") === "none" ? calTarget : protein * 4 + carbRest * 4 + fat * 9;
+  // Thực đơn AI: tinh bột ≤ 20 g → luật Keto; ≤ 100 g → Ít tinh bột
+  const dietStrategy = carb <= 20 ? "keto" : carb <= 100 ? "low_carb" : auto.dietStrategy === "high_protein" ? "high_protein" : "balanced";
+  return {
+    ...auto, manual: true, manualUntil: mm.until || null, autoCal: auto.calTarget, autoCalRest: auto.calRest,
+    auto: { protein: auto.protein, fat: auto.fat, carb: auto.carb, carbRest: auto.carbRest, calTarget: auto.calTarget, calRest: auto.calRest },
+    protein, fat, carb, carbRest, calTarget, calTargetRaw: calTarget, calRest, floorApplied: false,
+    belowFloor: calTarget < auto.calFloor || calRest < auto.calFloor,
+    fiber: Math.round(calTarget / 1000 * 14), dietStrategy,
+    pRatio: Math.round(protein / (p.kg || 1) * 10) / 10 + "g/kg", cRatio: Math.round(carb / (p.kg || 1) * 10) / 10 + "g/kg", fRatio: Math.round(fat / (p.kg || 1) * 10) / 10 + "g/kg",
+    fatPct: calTarget ? Math.round(fat * 9 / calTarget * 100) : 0,
+  };
 }
 
 export const defaultProfile={cm:170,kg:65,birthYear:2001,goalKg:70,goalType:"bulk",months:6,gender:"male",exerciseType:"gym",frequency:"regular",dietStrategy:"balanced",calorieMode:"standard"};
