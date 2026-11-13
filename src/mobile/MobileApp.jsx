@@ -31,6 +31,8 @@ import { ScheduleScreen } from "./ScheduleScreen";
 import { GoalsScreen } from "./GoalsScreen";
 import { MacroManualScreen, MacroPhaseEndSheet, PHASE_NAME } from "./MacroManualScreen";
 import { DietModeSheet, dietModeName, DIET_MODES } from "./DietModeSheet";
+// 13/11: "Tự nhập số" chưa chốt giao diện → tạm ẩn lối vào (code giữ sẵn, bật lại khi chủ dự án duyệt bản vẽ)
+const MANUAL_ON = false;
 import { manualDaysLeft } from "../calcMacro";
 import { RemindersScreen } from "./RemindersScreen";
 import { PlanScreen, PayScreen } from "./PlanScreen";
@@ -606,7 +608,7 @@ export function MobileApp(props) {
     if (sec === "goals") return (
       <SubPage title={lossMode ? "Mục tiêu & tốc độ giảm" : "Mục tiêu & macro"} onBack={closeLayer} dark right={<span style={{ fontSize: 12, fontWeight: 700, color: DK.green, paddingRight: 8 }}>Tự động lưu</span>}>
         <GoalsScreen profile={profile} setProfile={setProfile} macro={macro} weightLog={weightLog} openSchedule={() => openLayer({ type: "page", sec: "schedule" })} openWeigh={() => openWeigh(true)}
-          openManual={lossMode ? null : () => openLayer({ type: "page", sec: "macro_manual" })} canManual={canManual} openPremium={() => openLayer({ type: "page", sec: "plan" })} />
+          openManual={lossMode || !MANUAL_ON ? null : () => openLayer({ type: "page", sec: "macro_manual" })} canManual={canManual} openPremium={() => openLayer({ type: "page", sec: "plan" })} />
       </SubPage>
     );
     // 13/11: Tự nhập macro theo giai đoạn (mở từ Mục tiêu & macro › Cách đặt macro)
@@ -1070,7 +1072,7 @@ export function MobileApp(props) {
       {!top && <PWAInstallPrompt ready={hasLogged} />}
       <InstalledPushAsk ready={!top} showToast={showToast} />
       {dietOpen && (
-        <DietModeSheet profile={profile} macro={macro} dayType={dayTypeOf(profile, today)} canManual={canManual} onPick={pickDiet} onClose={() => setDietOpen(false)}
+        <DietModeSheet profile={profile} macro={macro} dayType={dayTypeOf(profile, today)} canManual={canManual} showManual={MANUAL_ON} onPick={pickDiet} onClose={() => setDietOpen(false)}
           onManual={() => { setDietOpen(false); openLayer({ type: "page", sec: canManual ? "macro_manual" : "plan" }); }} />
       )}
       {/* 13/11: hết giai đoạn tự nhập macro → hỏi 1 lần (về số app tự tính / gia hạn 2 tuần) */}

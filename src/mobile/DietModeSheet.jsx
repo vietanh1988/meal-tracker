@@ -21,7 +21,7 @@ export function dietModeName(macro, profile) {
   return NAME[macro?.dietStrategy] || "Cân bằng";
 }
 
-export function DietModeSheet({ profile, macro, dayType, canManual, onPick, onManual, onClose }) {
+export function DietModeSheet({ profile, macro, dayType, canManual, showManual = true, onPick, onManual, onClose }) {
   useLockScroll(true);
   const sw = useSwipeClose(onClose);
   const isCut = (macro?.goal || profile?.goalType) === "cut";
@@ -60,7 +60,7 @@ export function DietModeSheet({ profile, macro, dayType, canManual, onPick, onMa
             </button>
           );
         })}
-        <button type="button" data-testid="diet-manual" aria-pressed={cur === "manual"} onClick={onManual} className="tap"
+        {(showManual || cur === "manual") && <button type="button" data-testid="diet-manual" aria-pressed={cur === "manual"} onClick={onManual} className="tap"
           style={{ ...row, border: `1.5px solid ${cur === "manual" ? "#0062F0" : "#E2E8F0"}`, background: cur === "manual" ? "#EEF4FF" : "#FFFFFF" }}>
           <span aria-hidden="true" style={{ width: 20, height: 20, borderRadius: 10, flexShrink: 0, boxSizing: "border-box", border: cur === "manual" ? "6px solid #0062F0" : "2px solid #CBD5E1" }} />
           <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>✍️</span>
@@ -69,7 +69,7 @@ export function DietModeSheet({ profile, macro, dayType, canManual, onPick, onMa
             <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{cur === "manual" ? `${fmtInt(macro.calTarget)} kcal · Đ ${fmtInt(macro.protein)} · TB ${fmtInt(macro.carb)} · B ${fmtInt(macro.fat)}` : "Mini cut, bỏ tinh bột… theo giai đoạn"}</span>
           </span>
           <span aria-hidden="true" style={{ color: "#94A3B8", fontSize: 18 }}>›</span>
-        </button>
+        </button>}
       </div>
     </div>,
     document.body,

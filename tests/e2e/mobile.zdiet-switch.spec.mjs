@@ -33,6 +33,7 @@ test("Công tắc chế độ ăn trên Hôm nay: xem trước số, đổi Nhi�
     await expect(page.getByTestId("diet-keto")).toBeDisabled(); // tăng cơ: Keto / Ít tinh bột chỉ khi giảm mỡ
     await expect(page.getByTestId("diet-low_carb")).toBeDisabled();
     await expect(page.getByTestId("diet-high_protein")).toContainText("Đ ");
+    await expect(page.getByTestId("diet-manual")).toHaveCount(0); // Tự nhập số: tạm ẩn tới khi chốt giao diện
     await page.screenshot({ path: "shots/che-do-an-sheet.png" });
     await tap(page.getByTestId("diet-high_protein"));
     await waitDb(async () => (await prof()).diet_strategy === "high_protein", "diet_strategy = high_protein");
