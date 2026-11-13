@@ -151,7 +151,7 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, shortcu
               <StatCard icon={ICON.goal} label="Mục tiêu" value={`${fmtInt(targets.cal)} kcal`}>
                 <span data-testid="goal-sub" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10.5, whiteSpace: "nowrap", overflow: "hidden", minWidth: 0 }}>
                   <span data-testid="diet-name" style={{ fontWeight: 800, color: "#BFE0FF", overflow: "hidden", textOverflow: "ellipsis" }}>{dietPick.name}</span>
-                  {dietPick.sub && <span style={{ opacity: 0.78, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis" }}>· {dietPick.sub}</span>}
+                  {dietPick.sub && <span style={{ opacity: 0.78, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "pre" }}>{` · ${dietPick.sub}`}</span>}
                   <span aria-hidden="true" style={{ marginLeft: "auto", flexShrink: 0, width: 16, height: 16, borderRadius: 5, background: "#FFFFFF", color: "#0040E0", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
                   </span>
