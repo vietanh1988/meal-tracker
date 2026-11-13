@@ -73,6 +73,7 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await tap(page.getByTestId("mm-end-extend"));
     await waitDb(async () => (await prof()).macro_manual?.until === addDays(today, 13), "gia hạn 2 tuần");
     await expect(page.getByTestId("mm-end-sheet")).toHaveCount(0);
+    await nav("Hôm nay").click(); // app nhớ tab cuối (Tôi) → về Hôm nay
     await expect(page.getByTestId("goal-sub")).toContainText("còn 14 ngày");
     expect(errs).toEqual([]);
   } finally {
