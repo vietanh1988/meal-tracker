@@ -37,8 +37,16 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     expect(p).toBeGreaterThan(80);
     await expect(page.getByTestId("mm-sum")).toHaveAttribute("data-cal", String(p * 4 + f * 9));
     await expect(page.getByTestId("mm-compare")).toContainText("App gợi ý");
-    await expect(page.getByTestId("mm-weeks")).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByTestId("mm-weeks")).toHaveText("6 tuần");
+    const dm = (d) => `${d.slice(8)}/${d.slice(5, 7)}`;
+    await expect(page.getByTestId("mm-weeks")).toHaveValue("6");
+    await expect(page.getByTestId("mm-until")).toHaveText(`đến ${dm(addDays(today, 41))}`);
+    await page.getByTestId("mm-weeks").fill("4"); // tự gõ số tuần
+    await expect(page.getByTestId("mm-until")).toHaveText(`đến ${dm(addDays(today, 27))}`);
+    await page.getByTestId("mm-date").fill(addDays(today, 9)); // chọn đúng ngày kết thúc
+    await expect(page.getByTestId("mm-until")).toHaveText(`đến ${dm(addDays(today, 9))}`);
+    await expect(page.getByTestId("mm-weeks")).toHaveValue("");
+    await page.getByTestId("mm-weeks").fill("6");
+    await expect(page.getByTestId("mm-until")).toHaveText(`đến ${dm(addDays(today, 41))}`);
     const box = await page.getByTestId("mm-save").boundingBox();
     expect(box.x + box.width).toBeLessThanOrEqual(390);
     await page.screenshot({ path: "shots/tu-nhap-macro.png" });

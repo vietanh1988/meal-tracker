@@ -18,7 +18,6 @@ export const DIET_MODES = [
   ["keto", "Keto", "Tinh bột tối đa 50 g", "🥓"],
 ];
 const NAME = Object.fromEntries(DIET_MODES.map(([id, t]) => [id, t]));
-const WEEKS = [2, 4, 6, 8];
 
 // Tên chế độ đang dùng (thẻ Mục tiêu): tự nhập → tên giai đoạn; còn lại theo calcMacro
 export function dietModeName(macro, profile) {
@@ -56,19 +55,20 @@ function ManualBlock({ profile, macro, onSave, onAuto }) {
   const start = mm.p != null ? { p: mm.p, f: mm.f, c: mm.c, cRest: mm.cRest ?? mm.c } : presetOf("app", base, kg);
   const [preset, setPreset] = useState(mm.p != null ? mm.preset || "custom" : "app");
   const [v, setV] = useState({ p: String(start.p ?? ""), f: String(start.f ?? ""), c: String(start.c ?? ""), cRest: String(start.cRest ?? "") });
-  const left = mm.until && mm.until >= today ? Math.round((Date.parse(mm.until) - Date.parse(today)) / 86400000) + 1 : null;
-  const [weeks, setWeeks] = useState(mm.p != null && !mm.until ? 0 : left ? Math.max(1, Math.round(left / 7)) : 6); // 0 = luôn luôn
+  // Thời hạn (13/11, chủ dự án: "user không custom được à"): Luôn luôn / gõ số tuần / chọn đúng ngày kết thúc
+  const [until, setUntil] = useState(mm.p != null && !mm.until ? null : mm.until && mm.until >= today ? mm.until : addDays(today, 6 * 7 - 1));
+  const daysLeft = until ? Math.round((Date.parse(until) - Date.parse(today)) / 86400000) + 1 : 0;
+  const [wkText, setWkText] = useState(until && daysLeft % 7 === 0 ? String(daysLeft / 7) : "");
   const n = (x) => Math.max(0, Number(x) || 0);
   const calTrain = n(v.p) * 4 + n(v.c) * 4 + n(v.f) * 9;
   const calRest = n(v.p) * 4 + n(noEx ? v.c : v.cRest) * 4 + n(v.f) * 9;
   const floor = macro?.calFloor || 1200;
   const lowCal = calTrain < floor || (!noEx && calRest < floor);
   const lowP = kg > 0 && n(v.p) < kg;
-  const until = weeks ? addDays(today, weeks * 7 - 1) : null;
+  const setWeeks = (txt) => { const t = txt.replace(/[^\d]/g, "").slice(0, 2); setWkText(t); const w = Number(t); if (w >= 1) setUntil(addDays(today, w * 7 - 1)); };
   const ok = v.p !== "" && v.f !== "" && v.c !== "" && (noEx || v.cRest !== "") && calTrain > 0;
   const set = (k) => (x) => { setPreset("custom"); setV((o) => ({ ...o, [k]: x })); };
   const pick = (id) => { setPreset(id); const s = presetOf(id, base, kg); setV({ p: String(s.p), f: String(s.f), c: String(s.c), cRest: String(s.cRest) }); };
-  const nextWeeks = () => setWeeks((w) => (w ? WEEKS[(WEEKS.indexOf(w) + 1) % WEEKS.length] || 6 : 6));
   const save = () => ok && onSave({ on: true, preset, p: n(v.p), f: n(v.f), c: n(v.c), cRest: noEx ? n(v.c) : n(v.cRest), until, since: on ? mm.since || today : today, endSeen: null }, calTrain);
   const same = !noEx && v.c === v.cRest;
   return (
@@ -97,9 +97,22 @@ function ManualBlock({ profile, macro, onSave, onAuto }) {
         </div>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <button type="button" data-testid="mm-always" aria-pressed={!weeks} onClick={() => setWeeks(0)} className="tap" style={pc(!weeks)}>Luôn luôn</button>
-        <button type="button" data-testid="mm-weeks" aria-pressed={!!weeks} onClick={nextWeeks} className="tap" style={pc(!!weeks)}>{weeks || 6} tuần</button>
-        {until && <span data-testid="mm-until" style={{ marginLeft: "auto", fontSize: 12, fontWeight: 800 }}>đến {fmtVN(until)}</span>}
+        <button type="button" data-testid="mm-always" aria-pressed={!until} onClick={() => setUntil(null)} className="tap" style={pc(!until)}>Luôn luôn</button>
+        <label data-testid="mm-weeks-box" onClick={() => !until && setUntil(addDays(today, (Number(wkText) || 6) * 7 - 1))} style={{ ...pc(!!until), display: "inline-flex", alignItems: "center", gap: 3, padding: "0 8px", cursor: "text" }}>
+          <input data-testid="mm-weeks" inputMode="numeric" aria-label="Số tuần" value={until ? wkText : ""} placeholder={until ? "" : "6"} onChange={(e) => setWeeks(e.target.value)}
+            style={{ width: `${Math.max(1, (until ? wkText : "6").length) + 0.4}ch`, border: "none", outline: "none", padding: 0, background: "transparent", color: "inherit", fontFamily: "inherit", fontSize: 13, fontWeight: 900, textAlign: "center" }} />
+          tuần
+        </label>
+        {until && (
+          <label data-testid="mm-until-box" style={{ marginLeft: "auto", position: "relative", display: "inline-flex", alignItems: "center", gap: 4, height: 30, padding: "0 8px", borderRadius: 9, border: "1.5px solid #E2E8F0", fontSize: 12, fontWeight: 800, color: "#0F172A", cursor: "pointer" }}>
+            <span data-testid="mm-until">đến {fmtVN(until)}</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M8 3v4M16 3v4M3 10h18" /></svg>
+            {/* chọn đúng ngày kết thúc: ô ngày gốc của máy phủ trong suốt lên nút */}
+            <input data-testid="mm-date" type="date" value={until} min={today} aria-label="Ngày kết thúc"
+              onChange={(e) => { const d = e.target.value; if (!d || d < today) return; setUntil(d); const dl = Math.round((Date.parse(d) - Date.parse(today)) / 86400000) + 1; setWkText(dl % 7 === 0 ? String(dl / 7) : ""); }}
+              style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
+          </label>
+        )}
       </div>
       {on && <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", color: "#92400E", borderRadius: 10, padding: "7px 10px", fontSize: 11.5, fontWeight: 600, lineHeight: 1.4 }}>Đang tự nhập: Hôm nay không gợi ý món, app không tự chỉnh mỗi tuần.</div>}
       <div style={{ display: "grid", gridTemplateColumns: on ? "1fr 1.3fr" : "1fr", gap: 8 }}>
