@@ -85,3 +85,23 @@ test("tăng cơ: điều chỉnh tuần −250…+300, kgWeek = (250 + điều c
   assert.equal(a.kgWeek, 0.23);
   assert.equal(calcMacro({ ...base, calOffset: -900 }).calOffset, -250);
 });
+
+// 13/11: Nhiều đạm — cùng tổng calo, đạm +0,4 g/kg, béo giữ, tinh bột bù phần còn lại; dùng cho mọi mục tiêu
+test("Nhiều đạm: đạm cao hơn, calo và béo giữ nguyên, tinh bột giảm", () => {
+  for (const goalType of ["cut", "bulk", "maintain"]) {
+    const base = { cm: 170, kg: 70, birthYear: 1995, goalKg: goalType === "cut" ? 65 : goalType === "bulk" ? 75 : 70, goalType, months: 6, gender: "male", exerciseType: "gym", frequency: "regular", calorieMode: "standard", gymDays: [0, 2, 4] };
+    const a = calcMacro({ ...base, dietStrategy: "balanced" });
+    const h = calcMacro({ ...base, dietStrategy: "high_protein" });
+    assert.equal(h.dietStrategy, "high_protein", goalType);
+    assert.equal(h.protein - a.protein, 28, `${goalType}: +0,4 g/kg × 70 kg`);
+    assert.equal(h.fat, a.fat, goalType);
+    const wk = (m) => m.calTarget * 3 + m.calRest * 4; // 3 ngày tập + 4 ngày nghỉ: tổng calo cả tuần giữ nguyên
+    assert.ok(Math.abs(wk(h) - wk(a)) <= 30, `${goalType}: calo tuần giữ (${wk(a)} → ${wk(h)})`);
+    assert.ok(h.carb < a.carb, goalType);
+  }
+});
+test("Ít tinh bột / Keto vẫn chỉ áp khi giảm mỡ; Nhiều đạm áp cả tăng cơ", () => {
+  const base = { cm: 170, kg: 70, birthYear: 1995, goalKg: 75, goalType: "bulk", months: 6, gender: "male", exerciseType: "gym", frequency: "regular", calorieMode: "standard" };
+  assert.equal(calcMacro({ ...base, dietStrategy: "keto" }).dietStrategy, "balanced");
+  assert.equal(calcMacro({ ...base, dietStrategy: "high_protein" }).pRatio, "2.4g/kg");
+});

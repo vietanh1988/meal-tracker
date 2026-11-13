@@ -19,7 +19,9 @@ const ADJUST = { bulk: "+250", cut: "−350", maintain: "±0" };
 const EXERCISE = [["gym", "Gym"], ["gym_cardio", "Gym + Cardio"], ["cardio", "Cardio"], ["none", "Không tập"]];
 const FREQ = [["occasional", "1–2 buổi/tuần"], ["regular", "3–4 buổi/tuần"], ["frequent", "5–6 buổi/tuần"], ["daily", "Mỗi ngày"]];
 const GENDER = [["male", "Nam"], ["female", "Nữ"]];
-const DIET = [["balanced", "Cân bằng"], ["low_carb", "Ít tinh bột"], ["keto", "Keto"]];
+const DIET = [["balanced", "Cân bằng"], ["high_protein", "Nhiều đạm"], ["low_carb", "Ít tinh bột"], ["keto", "Keto"]];
+// 13/11: Nhiều đạm dùng được cho mọi mục tiêu; Ít tinh bột / Keto chỉ khi giảm mỡ (như cũ)
+const DIET_ALL = DIET.filter(([d]) => d === "balanced" || d === "high_protein");
 const MODE = [["asian", "Việt Nam (BMR ×0,9)"], ["standard", "Chuẩn quốc tế"]];
 const GYM_NAMES = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 const nameOf = (list, id) => (list.find((x) => x[0] === id) || [])[1] || "—";
@@ -128,10 +130,10 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
   const gym = noEx ? "Không tập" : (p.gymDays || []).slice().sort((a, b) => a - b).map((i) => GYM_NAMES[i]).join(", ") || "Chưa chọn";
 
   // Đổi mục tiêu → điều chỉnh tuần về 0 (bản vẽ 129c)
-  const pickGoal = (g) => { const up = { goalType: g, calOffset: 0, calOffsetDate: null }; if (g !== "cut") up.dietStrategy = "balanced"; save(up); };
+  const pickGoal = (g) => { const up = { goalType: g, calOffset: 0, calOffsetDate: null }; if (g !== "cut" && p.dietStrategy !== "high_protein") up.dietStrategy = "balanced"; save(up); };
   const pickExercise = (e) => {
     const up = { exerciseType: e };
-    if (e === "none") { up.frequency = undefined; if (goal === "bulk") { up.goalType = "maintain"; up.dietStrategy = "balanced"; } }
+    if (e === "none") { up.frequency = undefined; if (goal === "bulk") { up.goalType = "maintain"; if (p.dietStrategy !== "high_protein") up.dietStrategy = "balanced"; } }
     else if (!p.frequency) up.frequency = "regular";
     save(up);
   };
@@ -255,7 +257,7 @@ export function GoalsScreen({ profile, setProfile, macro, weightLog, openSchedul
             {Icon.chev(16, DK.chev)}
           </button>
         )}
-        {goal === "cut" && <ChoiceRow id="diet" k="Kiểu ăn" value={nameOf(DIET, p.dietStrategy || "balanced")} options={DIET} selected={p.dietStrategy || "balanced"} onPick={(v) => save({ dietStrategy: v })} open={open} setOpen={setOpen} />}
+        <ChoiceRow id="diet" k="Kiểu ăn" value={`${nameOf(DIET, m.dietStrategy || "balanced")} · đạm ${m.pRatio ? fmtDec(parseFloat(m.pRatio)) : "—"} g/kg`} options={goal === "cut" ? DIET : DIET_ALL} selected={m.dietStrategy || "balanced"} onPick={(v) => save({ dietStrategy: v })} open={open} setOpen={setOpen} />
         <div style={{ ...rowBase, minHeight: 52, borderWidth: 0 }}>
           <span style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>Dùng whey / TPBS</span>

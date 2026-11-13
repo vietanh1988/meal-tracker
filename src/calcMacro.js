@@ -31,7 +31,9 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   const fTable={male:{bulk:1.1,cut:0.9,maintain:1.0},female:{bulk:1.2,cut:1.0,maintain:1.1}};
   // Surplus/deficit cố định theo mục tiêu (ISSN lean bulk)
   const calAdjustTable={bulk:250,cut:-350,maintain:0};
-  const pRatioVal=pTable[effectiveGoal]||1.8;
+  // 13/11 (khách hỏi "chế độ high pro"): Nhiều đạm = cùng tổng calo, đạm +0,4 g/kg, béo giữ mức thường, tinh bột là phần còn lại. Dùng được cho mọi mục tiêu.
+  const highPro=p.dietStrategy==="high_protein";
+  const pRatioVal=Math.round(((pTable[effectiveGoal]||1.8)+(highPro?0.4:0))*10)/10;
   const fRatioVal=fTable[gender]?.[effectiveGoal]||0.9;
   // 17/10: người BMI > 27 → đạm / béo / tinh bột tối thiểu tính theo cân nặng ở mức BMI 27 (refKg), không theo tổng cân
   // (trước: 120 kg giảm mỡ bị bắt 264 g đạm + tinh bột tối thiểu 240 g → tổng calo cao hơn cả TDEE, không thể giảm)
@@ -65,7 +67,7 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   }
   const calTarget=tdee+calAdjust;
   // C = phần calo còn lại (chế độ Cân bằng)
-  const dietStrategy=(effectiveGoal==="cut")?(p.dietStrategy||"balanced"):"balanced";
+  const dietStrategy=highPro?"high_protein":(effectiveGoal==="cut")?(p.dietStrategy||"balanced"):"balanced";
   let carbBalanced=Math.round((calTarget-protein*4-fat*9)/4);
   if(carbBalanced<0)carbBalanced=0;
   // Carb floor: tối thiểu 2g/kg (cần cho tập luyện).
@@ -101,7 +103,7 @@ export function calcMacro(p){if(!p)p={cm:170,kg:65,birthYear:2001,goalKg:70,goal
   let floorApplied=false;
   if(effectiveGoal==="cut"){
     const lack=(c)=>calFloor-(protein*4+c*4+fat*9);
-    if(dietStrategy==="balanced"){
+    if(dietStrategy==="balanced"||dietStrategy==="high_protein"){
       if(lack(carb)>0){carb+=Math.ceil(lack(carb)/4);floorApplied=true;}
       if(lack(carbRest)>0){carbRest+=Math.ceil(lack(carbRest)/4);floorApplied=true;}
     }else{

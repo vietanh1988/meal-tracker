@@ -183,7 +183,7 @@ const age=p.birthYear?new Date().getFullYear()-p.birthYear:"?";
 const freqLabel={occasional:"Thỉnh thoảng (1-2 buổi/tuần)",regular:"Đều đặn (3-4 buổi/tuần)",frequent:"Rất thường xuyên (5-6 buổi/tuần)",daily:"Gần như mỗi ngày"}[p.frequency||"regular"]||"Đều đặn";
 const exLabel={gym:"Gym",gym_cardio:"Gym + Cardio",cardio:"Cardio",none:"Không tập"}[p.exerciseType||"gym"]||"Gym";
 const goalLabel={bulk:"Tăng cơ (+250 cal)",cut:`Giảm mỡ (bớt ${(m.deficit||350)-(m.calOffset||0)} cal/ngày, tốc độ ~${m.kgWeek||"?"} kg/tuần)`,maintain:"Duy trì"}[m.goal||p.goalType||"bulk"]||"Tăng cơ";
-const dietLabel=p.goalType==="cut"?{balanced:"Cân bằng",low_carb:"Low-carb (≤100g carb)",keto:"Keto (≤50g carb)"}[p.dietStrategy||"balanced"]||"Cân bằng":"Cân bằng (mặc định)";
+const dietLabel=p.dietStrategy==="high_protein"?"Nhiều đạm (đạm +0,4 g/kg, tinh bột là phần còn lại)":p.goalType==="cut"?{balanced:"Cân bằng",low_carb:"Low-carb (≤100g carb)",keto:"Keto (≤50g carb)"}[p.dietStrategy||"balanced"]||"Cân bằng":"Cân bằng (mặc định)";
 const calMode=(p.calorieMode||"standard")==="asian"?"Việt Nam (-10%)":"Quốc tế";
 const isRest=t.dayType==="rest";
 const isNoneEx3=(p.exerciseType||"gym")==="none";
@@ -535,7 +535,7 @@ return <div>
 {!mob&&<span style={{fontSize:11,color:C2.primary,fontWeight:600}}>🧠</span>}
 {[`${profile?.kg||65}kg`,{gym:"Gym",gym_cardio:"Gym+Cardio",cardio:"Cardio",none:"Nghỉ"}[profile?.exerciseType||"gym"],
 {bulk:"💪 Tăng cơ",cut:"🔥 Giảm mỡ",maintain:"⚖️ Duy trì"}[profile?.goalType||"bulk"],
-...(profile?.goalType==="cut"&&(profile?.dietStrategy||"balanced")!=="balanced"?[{low_carb:"🥗 Low-carb",keto:"🥗 Keto"}[profile?.dietStrategy]]:[]),
+...(profile?.dietStrategy==="high_protein"?["🥩 Nhiều đạm"]:profile?.goalType==="cut"&&(profile?.dietStrategy||"balanced")!=="balanced"?[{low_carb:"🥗 Low-carb",keto:"🥗 Keto"}[profile?.dietStrategy]]:[]),
 (profile?.exerciseType||"gym")==="none"?"📋 Hôm nay":(todayData?.dayType==="train"?"🏋️ Ngày tập":"😴 Ngày nghỉ"),
 ...((profile?.calorieMode||"standard")==="asian"?["🇻🇳 VN"]:[]),
 `${(()=>{const isR=(todayData?.dayType)==="rest";const tgt=isR?(macro?.calRest||macro?.calTarget):macro?.calTarget;const eaten=todayData?.cal||0;const deficit=tgt-eaten;return eaten===0?`0/${tgt}`:deficit>0?`${eaten}/${tgt}`:deficit<0?`${eaten}/${tgt}`:"✓";})()} cal`

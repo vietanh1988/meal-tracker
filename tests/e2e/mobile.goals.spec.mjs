@@ -24,6 +24,18 @@ test("Mục tiêu & macro: lưu hồ sơ và tính lại kcal", async ({ browser
     const calBulk = await cal();
     expect(calBulk).toBeGreaterThan(1000);
 
+    // 13/11: Kiểu ăn hiện cả khi tăng cơ — chỉ Cân bằng / Nhiều đạm (Ít tinh bột, Keto chỉ khi giảm mỡ)
+    await tap(page.getByTestId("goals-diet"));
+    await expect(page.getByTestId("goals-diet-keto")).toHaveCount(0);
+    await tap(page.getByTestId("goals-diet-high_protein"));
+    await waitDb(async () => (await prof()).diet_strategy === "high_protein", "diet_strategy = high_protein");
+    await expect(page.getByTestId("goals-diet")).toContainText("Nhiều đạm · đạm 2,4 g/kg");
+    await expect(page.getByTestId("goals-macro")).toContainText("Đ ");
+    await page.screenshot({ path: "shots/muc-tieu-nhieu-dam.png" });
+    await tap(page.getByTestId("goals-diet"));
+    await tap(page.getByTestId("goals-diet-balanced"));
+    await waitDb(async () => (await prof()).diet_strategy === "balanced", "diet_strategy = balanced");
+
     // Giảm mỡ → kcal giảm, hiện dòng Kiểu ăn
     await tap(page.getByTestId("goals-goal-cut"));
     await waitDb(async () => (await prof()).goal_type === "cut", "goal_type = cut");
