@@ -38,16 +38,38 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await page.getByTestId("mm-crest").fill("0");
     await expect(page.getByTestId("mm-sum")).toHaveAttribute("data-cal", String(p * 4 + f * 9));
     await expect(page.getByTestId("mm-compare")).toContainText("App gợi ý");
+    // 14/11: thời hạn = Luôn luôn / 4 tuần / 8 tuần / Chọn ngày (lịch tự vẽ tô cả khoảng)
     const dm = (d) => `${d.slice(8)}/${d.slice(5, 7)}`;
-    await expect(page.getByTestId("mm-weeks")).toHaveValue("6");
-    await expect(page.getByTestId("mm-until")).toHaveText(`đến ${dm(addDays(today, 41))}`);
-    await page.getByTestId("mm-weeks").fill("4"); // tự gõ số tuần
-    await expect(page.getByTestId("mm-until")).toHaveText(`đến ${dm(addDays(today, 27))}`);
-    await page.getByTestId("mm-date").fill(addDays(today, 9)); // chọn đúng ngày kết thúc
-    await expect(page.getByTestId("mm-until")).toHaveText(`đến ${dm(addDays(today, 9))}`);
-    await expect(page.getByTestId("mm-weeks")).toHaveValue("");
-    await page.getByTestId("mm-weeks").fill("6");
-    await expect(page.getByTestId("mm-until")).toHaveText(`đến ${dm(addDays(today, 41))}`);
+    const span = (d) => `${dm(today)} → ${dm(d)}`;
+    await expect(page.getByTestId("mm-w4")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("mm-until")).toContainText(span(addDays(today, 27)));
+    await tap(page.getByTestId("mm-w8"));
+    await expect(page.getByTestId("mm-until")).toContainText(span(addDays(today, 55)));
+    await tap(page.getByTestId("mm-always"));
+    await expect(page.getByTestId("mm-until")).toHaveText("Không hết hạn");
+    await tap(page.getByTestId("mm-pick"));
+    await expect(page.getByTestId("mm-cal")).toBeVisible();
+    await goMonth(today);
+    if (today.slice(8) !== "01") await expect(page.getByTestId(`mm-cal-${addDays(today, -1)}`)).toBeDisabled(); // ngày đã qua không chọn được
+    const goMonth = async (d) => { // lịch mở ở tháng của ngày kết thúc; lật tới tháng có ngày d
+      for (let k = 0; k < 4; k++) {
+        const m = await page.getByTestId("mm-cal-month").getAttribute("data-month");
+        if (m === d.slice(0, 7)) return;
+        await tap(page.getByRole("button", { name: m < d.slice(0, 7) ? "Tháng sau" : "Tháng trước" }));
+      }
+    };
+    const end = addDays(today, 9);
+    await goMonth(end);
+    await tap(page.getByTestId(`mm-cal-${end}`));
+    await expect(page.getByTestId("mm-until")).toContainText(`${span(end)} · 10 ngày`);
+    await expect(page.getByTestId(`mm-cal-${end}`)).toHaveAttribute("aria-pressed", "true");
+    await tap(page.getByTestId("mm-w4"));
+    await expect(page.getByTestId("mm-cal")).toHaveCount(0);
+    await tap(page.getByTestId("mm-pick"));
+    const t41 = addDays(today, 41);
+    await goMonth(t41);
+    await tap(page.getByTestId(`mm-cal-${t41}`));
+    await expect(page.getByTestId("mm-until")).toContainText(`${span(addDays(today, 41))} · 42 ngày`);
     const box = await page.getByTestId("mm-save").boundingBox();
     expect(box.x + box.width).toBeLessThanOrEqual(390);
     await page.screenshot({ path: "shots/tu-nhap-macro.png" });
@@ -68,8 +90,9 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await page.goBack().catch(() => {});
     await page.goto("/");
     await nav("Hôm nay").click();
-    await expect(page.getByTestId("diet-name")).toHaveText("Tự nhập", { timeout: 20_000 }); // viên chế độ ăn
-    await expect(page.getByTestId("goal-sub")).toContainText("còn 42 ngày");
+    await expect(page.getByTestId("diet-name")).toHaveText("Tự nhập macro", { timeout: 20_000 }); // viên chế độ ăn
+    await expect(page.getByTestId("goal-sub")).toContainText("42 ngày");
+    await expect(page.getByTestId("diet-pick")).toHaveAttribute("aria-label", /còn 42 ngày/);
     await expect(page.getByTestId("focus-suggest-foods")).toHaveCount(0); // tự nhập số → Hôm nay không gợi ý món
     await expect(page.getByTestId("today-ai-menu")).toHaveCount(0); // không có nút AI lên thực đơn
 
@@ -90,7 +113,7 @@ test("Tự nhập macro: mini cut, về app tự tính, hết hạn thì hỏi g
     await waitDb(async () => (await prof()).macro_manual?.until === addDays(today, 13), "gia hạn 2 tuần");
     await expect(page.getByTestId("mm-end-sheet")).toHaveCount(0);
     await nav("Hôm nay").click(); // app nhớ tab cuối (Tôi) → về Hôm nay
-    await expect(page.getByTestId("goal-sub")).toContainText("còn 14 ngày");
+    await expect(page.getByTestId("goal-sub")).toContainText("14 ngày");
     expect(errs).toEqual([]);
   } finally {
     await ctx.close().catch(() => {}); // đóng app trước: lượt lưu hồ sơ còn chờ không ghi đè bản khôi phục

@@ -19,7 +19,7 @@ test("Công tắc chế độ ăn trên Hôm nay: xem trước số, đổi Nhi�
     await nav("Hôm nay").click();
     const pick = page.getByTestId("diet-pick");
     await expect(pick).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId("diet-name")).toHaveText("Cân bằng");
+    await expect(page.getByTestId("diet-name")).toHaveText("Ăn cân bằng");
     const hdrH = (await page.getByTestId("today-header").boundingBox()).height;
     const b = await pick.boundingBox();
     expect(b.x).toBeGreaterThanOrEqual(0);
@@ -39,7 +39,7 @@ test("Công tắc chế độ ăn trên Hôm nay: xem trước số, đổi Nhi�
     await waitDb(async () => (await prof()).diet_strategy === "high_protein", "diet_strategy = high_protein");
     await expect(sheet).toHaveCount(0);
     await expect(page.getByText(/Đã đổi sang Nhiều đạm/)).toBeVisible();
-    await expect(page.getByTestId("diet-name")).toHaveText("Nhiều đạm");
+    await expect(page.getByTestId("diet-name")).toHaveText("Ăn nhiều đạm");
     expect(Math.abs((await page.getByTestId("today-header").boundingBox()).height - hdrH)).toBeLessThanOrEqual(1); // không cao thêm
     await page.screenshot({ path: "shots/che-do-an-nhieu-dam.png" });
 

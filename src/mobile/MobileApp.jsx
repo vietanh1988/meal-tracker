@@ -968,7 +968,7 @@ export function MobileApp(props) {
             activity={activityRow} activityAsk={activityAsk} snack={snackCard}
             status={lossMode && date === today ? lossStatus({ target: targets.cal, eaten: eaten.cal, rows, nowMinutes: now.minutes }) : null}
             onPhotoBig={lossMode ? () => openPhoto(null) : null} focusBonus={focusBonus} goalSub={goalSub}
-            dietPick={!lossMode && date === today ? { name: dietModeName(macro, profile), sub: mmLeft ? `còn ${mmLeft} ngày` : bDate > 0 ? `+ ${fmtInt(bDate)} vận động` : null, onOpen: () => setDietOpen(true) } : null}
+            dietPick={!lossMode && date === today ? { name: dietModeName(macro, profile), sub: mmLeft ? { icon: "time", text: `${mmLeft} ngày`, aria: `còn ${mmLeft} ngày` } : bDate > 0 ? { icon: "walk", text: `+${fmtInt(bDate)}`, aria: `+${fmtInt(bDate)} kcal vận động` } : null, onOpen: () => setDietOpen(true) } : null}
             onDiary={() => { setProgressSeg((s) => ({ seg: "food", n: s.n + 1 })); setTab("progress"); }}
             bell={<BellButton count={notif.unread} ringing={notif.ringing} onClick={() => openLayer({ type: "page", sec: "notifications" })} />}
             shortcut={<><WorkoutButton w={workout} today={today} onOpen={() => openLayer({ type: "page", sec: "workout" })} />{petApp.on && petApp.view ? <PiShortcut pet={petApp.view} userId={user?.id} notif={notif} onGo={(d) => (d === "room" ? openLayer({ type: "page", sec: "pet" }) : d === "news" ? openLayer({ type: "page", sec: "news" }) : openLayer({ type: "page", sec: "pet_social", tab: d === "khoe" ? "show" : d }))} /> : null}</>}

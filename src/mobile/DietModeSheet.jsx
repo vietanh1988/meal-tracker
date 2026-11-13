@@ -10,12 +10,14 @@ import { fmtInt, fmtDec } from "../lib/mobileView";
 import { todayVN, addDays, fmtVN } from "../lib/dateVN";
 import { FONT, GRAD_BLUE, useLockScroll, useSwipeClose, SheetHandle } from "./ui";
 import { PHASE_NAME, presetOf } from "./MacroManualScreen";
+import { RangeCal } from "./RangeCal";
 
 export const DIET_MODES = [
-  ["balanced", "Cân bằng", "App tự chia đạm · tinh bột · béo", "🍚"],
-  ["high_protein", "Nhiều đạm", "Đạm +0,4 g/kg, bớt tinh bột", "🥩"],
-  ["low_carb", "Ít tinh bột", "Tinh bột tối đa 100 g, bù béo", "🥑"],
-  ["keto", "Keto", "Tinh bột tối đa 50 g", "🥓"],
+  // 14/11 (chủ dự án: thiếu giải thích, khách dễ hiểu nhầm) — câu đời thường, luôn hiện kể cả khi đang mở Tự nhập
+  ["balanced", "Cân bằng", "App tự chia đạm, tinh bột, béo theo mục tiêu", "🍚"],
+  ["high_protein", "Nhiều đạm", "Cùng calo, thêm đạm để giữ cơ, bớt tinh bột", "🥩"],
+  ["low_carb", "Ít tinh bột", "Tinh bột tối đa 100 g, bù bằng béo", "🥑"],
+  ["keto", "Keto", "Tinh bột tối đa 50 g, ăn nhiều béo", "🥓"],
 ];
 const NAME = Object.fromEntries(DIET_MODES.map(([id, t]) => [id, t]));
 
@@ -25,6 +27,7 @@ export function dietModeName(macro, profile) {
   return NAME[macro?.dietStrategy] || "Cân bằng";
 }
 
+const WEEKS = [4, 8];
 const radio = (on) => ({ width: 20, height: 20, borderRadius: 10, flexShrink: 0, boxSizing: "border-box", border: on ? "6px solid #0062F0" : "2px solid #CBD5E1" });
 const pc = (on) => ({ height: 30, padding: "0 10px", borderRadius: 9, fontFamily: "inherit", fontSize: 12, fontWeight: 700, border: `1.5px solid ${on ? "#0062F0" : "#E2E8F0"}`, background: on ? "#0062F0" : "#F1F5F9", color: on ? "#FFFFFF" : "#334155", whiteSpace: "nowrap" });
 
@@ -55,16 +58,17 @@ function ManualBlock({ profile, macro, onSave, onAuto }) {
   const start = mm.p != null ? { p: mm.p, f: mm.f, c: mm.c, cRest: mm.cRest ?? mm.c } : presetOf("app", base, kg);
   const [v, setV] = useState({ p: String(start.p ?? ""), f: String(start.f ?? ""), c: String(start.c ?? ""), cRest: String(start.cRest ?? "") });
   // Thời hạn (13/11, chủ dự án: "user không custom được à"): Luôn luôn / gõ số tuần / chọn đúng ngày kết thúc
-  const [until, setUntil] = useState(mm.p != null && !mm.until ? null : mm.until && mm.until >= today ? mm.until : addDays(today, 6 * 7 - 1));
+  const [until, setUntil] = useState(mm.p != null && !mm.until ? null : mm.until && mm.until >= today ? mm.until : addDays(today, 4 * 7 - 1));
   const daysLeft = until ? Math.round((Date.parse(until) - Date.parse(today)) / 86400000) + 1 : 0;
-  const [wkText, setWkText] = useState(until && daysLeft % 7 === 0 ? String(daysLeft / 7) : "");
+  const isWeeks = (u) => WEEKS.some((w) => u === addDays(today, w * 7 - 1));
+  const [cal, setCal] = useState(!!until && !isWeeks(until)); // ngày lẻ (không phải 4/6/8 tuần) → mở sẵn lịch
+  const pickOn = !!until && (cal || !isWeeks(until));
   const n = (x) => Math.max(0, Number(x) || 0);
   const calTrain = n(v.p) * 4 + n(v.c) * 4 + n(v.f) * 9;
   const calRest = n(v.p) * 4 + n(noEx ? v.c : v.cRest) * 4 + n(v.f) * 9;
   const floor = macro?.calFloor || 1200;
   const lowCal = calTrain < floor || (!noEx && calRest < floor);
   const lowP = kg > 0 && n(v.p) < kg;
-  const setWeeks = (txt) => { const t = txt.replace(/[^\d]/g, "").slice(0, 2); setWkText(t); const w = Number(t); if (w >= 1) setUntil(addDays(today, w * 7 - 1)); };
   const ok = v.p !== "" && v.f !== "" && v.c !== "" && (noEx || v.cRest !== "") && calTrain > 0;
   // 14/11 (chủ dự án): chỉ cần khung nhập — bỏ mẫu nhanh; số mở sẵn = số đang dùng (lần đầu = số app tính)
   const set = (k) => (x) => setV((o) => ({ ...o, [k]: x }));
@@ -90,23 +94,23 @@ function ManualBlock({ profile, macro, onSave, onAuto }) {
           {lowCal ? `Thấp hơn mức tối thiểu an toàn ${fmtInt(floor)} kcal/ngày cho bạn.` : "Đạm dưới 1 g/kg dễ mất cơ khi ăn thiếu."} Vẫn lưu được, nên hỏi HLV hoặc chuyên gia dinh dưỡng.
         </div>
       )}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <button type="button" data-testid="mm-always" aria-pressed={!until} onClick={() => setUntil(null)} className="tap" style={pc(!until)}>Luôn luôn</button>
-        <label data-testid="mm-weeks-box" onClick={() => !until && setUntil(addDays(today, (Number(wkText) || 6) * 7 - 1))} style={{ ...pc(!!until), display: "inline-flex", alignItems: "center", gap: 3, padding: "0 8px", cursor: "text" }}>
-          <input data-testid="mm-weeks" inputMode="numeric" aria-label="Số tuần" value={until ? wkText : ""} placeholder={until ? "" : "6"} onChange={(e) => setWeeks(e.target.value)}
-            style={{ width: `${Math.max(1, (until ? wkText : "6").length) + 0.4}ch`, border: "none", outline: "none", padding: 0, background: "transparent", color: "inherit", fontFamily: "inherit", fontSize: 13, fontWeight: 900, textAlign: "center" }} />
-          tuần
-        </label>
-        {until && (
-          <label data-testid="mm-until-box" style={{ marginLeft: "auto", position: "relative", display: "inline-flex", alignItems: "center", gap: 4, height: 30, padding: "0 8px", borderRadius: 9, border: "1.5px solid #E2E8F0", fontSize: 12, fontWeight: 800, color: "#0F172A", cursor: "pointer" }}>
-            <span data-testid="mm-until">đến {fmtVN(until)}</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M8 3v4M16 3v4M3 10h18" /></svg>
-            {/* chọn đúng ngày kết thúc: ô ngày gốc của máy phủ trong suốt lên nút */}
-            <input data-testid="mm-date" type="date" value={until} min={today} aria-label="Ngày kết thúc"
-              onChange={(e) => { const d = e.target.value; if (!d || d < today) return; setUntil(d); const dl = Math.round((Date.parse(d) - Date.parse(today)) / 86400000) + 1; setWkText(dl % 7 === 0 ? String(dl / 7) : ""); }}
-              style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", cursor: "pointer" }} />
-          </label>
-        )}
+      {/* 14/11 (chủ dự án: lịch máy không thấy khoảng đã chọn, ô "tuần" trống): thời hạn = chip nhanh + lịch tự vẽ tô cả khoảng */}
+      <div data-testid="mm-dur" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ fontSize: 12.5, fontWeight: 800, color: "#334155" }}>Thời hạn</span>
+          <span data-testid="mm-until" style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: until ? "#0B3FA8" : "#64748B" }}>
+            {until ? `${fmtVN(today)} → ${fmtVN(until)} · ${daysLeft} ngày` : "Không hết hạn"}
+          </span>
+        </div>
+        <div role="group" aria-label="Thời hạn" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+          <button type="button" data-testid="mm-always" aria-pressed={!until} onClick={() => { setUntil(null); setCal(false); }} className="tap" style={{ ...pc(!until), padding: 0 }}>Luôn luôn</button>
+          {WEEKS.map((w) => {
+            const sel = !cal && until === addDays(today, w * 7 - 1);
+            return <button key={w} type="button" data-testid={`mm-w${w}`} aria-pressed={sel} onClick={() => { setUntil(addDays(today, w * 7 - 1)); setCal(false); }} className="tap" style={{ ...pc(sel), padding: 0 }}>{w} tuần</button>;
+          })}
+          <button type="button" data-testid="mm-pick" aria-pressed={pickOn} aria-expanded={cal} onClick={() => { setCal(true); if (!until) setUntil(addDays(today, 4 * 7 - 1)); }} className="tap" style={{ ...pc(pickOn), padding: 0 }}>Chọn ngày</button>
+        </div>
+        {cal && <RangeCal start={today} end={until} onPick={(d) => setUntil(d)} />}
       </div>
       {on && <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", color: "#92400E", borderRadius: 10, padding: "7px 10px", fontSize: 11.5, fontWeight: 600, lineHeight: 1.4 }}>Đang tự nhập: Hôm nay không gợi ý món, app không tự chỉnh mỗi tuần.</div>}
       <div style={{ display: "grid", gridTemplateColumns: on ? "1fr 1.3fr" : "1fr", gap: 8 }}>
@@ -137,7 +141,7 @@ export function DietModeSheet({ profile, macro, dayType, canManual, showManual =
         style={{ position: "absolute", left: 0, right: 0, bottom: 0, maxWidth: 560, margin: "0 auto", maxHeight: "90vh", overflowY: "auto", background: "#FFFFFF", borderRadius: "24px 24px 0 0", padding: "8px 16px calc(env(safe-area-inset-bottom, 0px) + 18px) 16px", display: "flex", flexDirection: "column", gap: 8 }}>
         <SheetHandle />
         <span style={{ fontSize: 18, fontWeight: 900 }}>Chế độ ăn</span>
-        <span style={{ fontSize: 12.5, color: "#64748B", marginTop: -4, marginBottom: 2 }}>{open ? `Hôm nay là ${rest ? "ngày nghỉ" : "ngày tập"}.` : `Số dưới đây là của hôm nay (${rest ? "ngày nghỉ" : "ngày tập"}). Đổi lúc nào cũng được.`}</span>
+        <span style={{ fontSize: 12.5, color: "#64748B", marginTop: -4, marginBottom: 2 }}>Chế độ ăn quyết định cách chia đạm, tinh bột, béo trong ngày. Số bên phải là calo hôm nay ({rest ? "ngày nghỉ" : "ngày tập"}).</span>
         {DIET_MODES.map(([id, t, sub, em]) => {
           const off = (id === "low_carb" || id === "keto") && !isCut;
           if (open && off) return null; // đang tự nhập: chỉ giữ chế độ bấm được, thu gọn
@@ -150,7 +154,7 @@ export function DietModeSheet({ profile, macro, dayType, canManual, showManual =
               {!open && <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{em}</span>}
               <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
                 <span style={{ fontSize: 14.5, fontWeight: 800 }}>{t}</span>
-                {!open && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>{off ? "Chỉ khi mục tiêu Giảm mỡ" : sub}</span>}
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B", lineHeight: 1.35 }}>{off ? "Chỉ khi mục tiêu Giảm mỡ" : sub}</span>
               </span>
               <span style={{ textAlign: "right", flexShrink: 0 }}>
                 {v ? <><span style={{ display: "block", fontSize: 14, fontWeight: 900 }}>{fmtInt(v.cal)}</span>{!open && <span style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B" }}>Đ {fmtInt(v.p)} · TB {fmtInt(v.c)}</span>}</>
@@ -166,9 +170,8 @@ export function DietModeSheet({ profile, macro, dayType, canManual, showManual =
               <span aria-hidden="true" style={radio(open || cur === "manual")} />
               {!open && <span aria-hidden="true" style={{ width: 36, height: 36, borderRadius: 10, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>✍️</span>}
               <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14.5, fontWeight: 800 }}>Tự nhập số{cur === "manual" ? ` · ${PHASE_NAME[profile?.macroManual?.preset] || "Tự nhập"}` : ""}{!canManual && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#B45309", background: "#FEF3C7", borderRadius: 999, padding: "2px 7px" }}>Premium</span>}</span>
-                {!open && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>Tự đặt đạm, tinh bột, béo theo giai đoạn</span>}
-                {open && cur === "manual" && macro?.manualUntil && <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B" }}>đến {fmtVN(macro.manualUntil)}</span>}
+                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14.5, fontWeight: 800 }}>Tự nhập số{!canManual && <span style={{ fontSize: 10.5, fontWeight: 800, color: "#B45309", background: "#FEF3C7", borderRadius: 999, padding: "2px 7px" }}>Premium</span>}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#64748B", lineHeight: 1.35 }}>Bạn tự đặt số gam đạm, tinh bột, béo{cur === "manual" && macro?.manualUntil ? ` · đến ${fmtVN(macro.manualUntil)}` : ""}</span>
               </span>
               {!open && <span aria-hidden="true" style={{ color: "#94A3B8", fontSize: 18 }}>›</span>}
             </button>

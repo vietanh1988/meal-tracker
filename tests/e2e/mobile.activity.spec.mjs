@@ -27,7 +27,7 @@ test("Vận động thêm: đi bộ 45 phút cộng vào mục tiêu (tăng cơ)
     await page.getByTestId("activity-save").click();
     await expect(page.getByTestId("activity-sheet")).toHaveCount(0);
     await expect(page.getByTestId("activity-sub")).toContainText(`Đi bộ 45 phút · +${kcal} kcal`);
-    await expect(page.getByTestId("goal-sub")).toContainText(`+ ${kcal} vận động`);
+    await expect(page.getByTestId("goal-sub")).toContainText(new RegExp(`\\+ ?${kcal}`)); // gym: "🚶 +Y" · giảm cân: "X + Y vận động"
     await expect.poll(() => kcalRemainMobile(page)).toBe(remain0 + kcal);
     await waitDb(async () => { const r = await rest(`activity_logs?user_id=eq.${s.uid}&log_date=eq.${t}&select=items`); return r[0] && r[0].items.length === 1 && r[0].items[0].kcal === kcal; }, "activity_logs có 1 dòng");
     await page.screenshot({ path: "shots/activity-today.png" });

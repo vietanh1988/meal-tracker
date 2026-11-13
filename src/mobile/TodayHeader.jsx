@@ -85,9 +85,13 @@ function Ring({ remain, eaten, target }) {
   );
 }
 
+// Tên chế độ ăn đọc thành câu: "Ăn cân bằng", "Ăn nhiều đạm", "Ăn keto"; tự nhập → "Tự nhập macro"
+const DIET_LABEL = { "Cân bằng": "Ăn cân bằng", "Nhiều đạm": "Ăn nhiều đạm", "Ít tinh bột": "Ăn ít tinh bột", Keto: "Ăn keto", "Tự nhập": "Tự nhập macro" };
+export const dietLabel = (name) => DIET_LABEL[name] || name;
+
 function StatCard({ icon, label, value, children }) {
   return (
-    <div data-testid="hdr-stat" style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, padding: "0 2px 0 4px", minHeight: 0 }}>
+    <div data-testid="hdr-stat" style={{ flex: 1, display: "flex", alignItems: "center", gap: 10, padding: "0 2px 0 4px", minHeight: 0, minWidth: 0 }}>
       <span style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,255,255,0.92)", color: "#0A5BFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)" }}>{icon}</span>
       <span style={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0, gap: 3 }}>
         <span style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 6 }}>
@@ -146,16 +150,26 @@ export function TodayHeader({ date, today, onDate, weekDots, name, bell, shortcu
         <div style={{ flex: 1, height: 136, display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
           {dietPick ? (
             // 13/11 (bản vẽ "Chỗ đặt công tắc Chế độ ăn" — cách 2): thẻ Mục tiêu bấm được → chọn chế độ ăn; không thêm dòng
-            <button type="button" data-testid="diet-pick" onClick={dietPick.onOpen} aria-label={`Mục tiêu ${fmtInt(targets.cal)} kcal, chế độ ${dietPick.name}. Đổi chế độ ăn`} className="tap"
-              style={{ flex: 1, display: "flex", minHeight: 0, padding: 0, margin: 0, border: "none", background: "transparent", color: "inherit", fontFamily: "inherit", textAlign: "left", cursor: "pointer" }}>
+            <button type="button" data-testid="diet-pick" onClick={dietPick.onOpen} aria-label={`Mục tiêu ${fmtInt(targets.cal)} kcal, ${dietLabel(dietPick.name)}${dietPick.sub ? `, ${dietPick.sub.aria}` : ""}. Đổi chế độ ăn`} className="tap"
+              style={{ flex: 1, display: "flex", minHeight: 0, minWidth: 0, width: "100%", padding: 0, margin: 0, border: "none", background: "transparent", color: "inherit", fontFamily: "inherit", textAlign: "left", cursor: "pointer" }}>
               {/* 14/11 (chủ dự án chỉ lỗi khung lệch): không viền hộp — giữ thẳng hàng với "Đã ăn" / "Hôm nay"; tên chế độ là viên bấm được có ⌄ */}
               <StatCard icon={ICON.goal} label="Mục tiêu" value={`${fmtInt(targets.cal)} kcal`}>
-                <span data-testid="goal-sub" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, whiteSpace: "nowrap", overflow: "hidden", minWidth: 0 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3, height: 20, padding: "0 6px 0 8px", borderRadius: 999, background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.32)", flexShrink: 0, maxWidth: "70%" }}>
-                    <span data-testid="diet-name" style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis" }}>{dietPick.name}</span>
+                <span data-testid="goal-sub" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, whiteSpace: "nowrap", overflow: "hidden", minWidth: 0 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3, height: 20, padding: "0 6px 0 8px", borderRadius: 999, background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.32)", flexShrink: 0, maxWidth: "78%" }}>
+                    {/* 14/11 (chủ dự án: "Nhiều đạm" đứng một mình dễ hiểu nhầm là bị nhiều đạm) — đọc thành câu "Ăn nhiều đạm" / "Tự nhập macro";
+                        ngắn để dòng phụ (+ N vận động / còn N ngày) không bị cắt */}
+                    <span data-testid="diet-name" style={{ fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{dietLabel(dietPick.name)}</span>
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
                   </span>
-                  {dietPick.sub && <span style={{ opacity: 0.78, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis" }}>{dietPick.sub}</span>}
+                  {/* dòng phụ thu gọn icon + số (cột chữ chỉ ~155–170 px): 🚶 +140 = calo vận động cộng thêm; ⏳ 42 ngày = tự nhập còn bao lâu */}
+                  {dietPick.sub && (
+                    <span title={dietPick.sub.aria} aria-label={dietPick.sub.aria} style={{ display: "inline-flex", alignItems: "center", gap: 3, opacity: 0.85, fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>
+                      {dietPick.sub.icon === "walk"
+                        ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="13" cy="4" r="2" /><path d="M10 21l2-6 3 3v3M8 12l3-4 4 2 2 3M11 8l-1 5" /></svg>
+                        : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>}
+                      <span>{dietPick.sub.text}</span>
+                    </span>
+                  )}
                 </span>
               </StatCard>
             </button>
