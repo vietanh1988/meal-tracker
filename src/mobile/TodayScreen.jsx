@@ -166,7 +166,7 @@ function PiMeal({ r, onLog, onEdit, onToggleEaten, suggestInfo, onSuggest, onSug
           <button data-testid="focus-suggest" data-meal={r.id} disabled={busy} onClick={() => onSuggest(r.id)} aria-label={sug.n > 1 ? `Đổi — xem ${sug.n - 1} lựa chọn khác` : "Đổi — xem chi tiết lựa chọn"} className="tap" style={{ ...PI_BTN, background: "#EEF4FF", color: "#0B3FA8" }}>Đổi</button>
         </div>
       ) : (
-        <button data-testid="focus-search" onClick={() => onLog(r.id)} className="tap" style={{ ...PI_BTN, background: GRAD_BLUE, color: "#FFFFFF" }}>{Icon.search(16, "#FFFFFF")}Ghi {r.name.toLowerCase()}</button>
+        <button data-testid="focus-search" onClick={() => onLog(r.id)} className="tap" style={{ ...PI_BTN, background: GRAD_BLUE, color: "#FFFFFF" }}>{Icon.search(16, "#FFFFFF")}Thêm món {r.name.toLowerCase()}</button>
       )}
     </div>
   );
@@ -239,7 +239,7 @@ function FocusCard({ r, onLog, onEdit, onToggleEaten, suggestInfo, onSuggest, on
           </div>
         ) : (
           /* 14/11 (chủ dự án): bỏ 3 ô Chụp món / Tìm món / Hỏi AI — nút + ở thanh dưới đã có; còn 1 nút ghi bữa này */
-          !best && <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Ghi {r.name.toLowerCase()}</button>
+          !best && <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Thêm món {r.name.toLowerCase()}</button>
         )}
       </div>
     </div>
