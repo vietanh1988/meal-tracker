@@ -23,20 +23,20 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     weightId = w?.[0]?.id;
 
     await login(page);
-    const card = page.getByTestId("pet-today-card");
-    await expect(card).toBeVisible({ timeout: 15_000 });
-    // 25/10 bản B: Pi to (cao 156) trong khung 118 × ≥132; chữ trong thẻ thẳng một mép trái
-    const look = await card.evaluate((c) => {
+    await expect(page.getByTestId("pet-today-card")).toBeVisible({ timeout: 15_000 });
+    // 14/11 mẫu B "Hôm nay gọn hơn": 1 thẻ — Pi (khung 96, Pi cao 132) + bong bóng (bữa tiếp theo hoặc câu Pi nói); dòng dưới = nút mở phòng Pi
+    const wrap = page.getByTestId("pet-today-wrap");
+    const look = await wrap.evaluate((c) => {
       const av = c.querySelector('[data-testid="pet-today-av"]').getBoundingClientRect();
       const pi = c.querySelector('[data-testid="pet-avatar"]').getBoundingClientRect();
-      const col = c.querySelector('[data-testid="pet-today-av"]').nextElementSibling;
-      const lefts = [...col.children].map((e) => Math.round(e.getBoundingClientRect().left));
-      return { w: Math.round(av.width), h: Math.round(av.height), pi: Math.round(pi.height), card: Math.round(c.getBoundingClientRect().height), lefts };
+      return { w: Math.round(av.width), h: Math.round(av.height), pi: Math.round(pi.height), right: Math.round(c.getBoundingClientRect().right) };
     });
-    expect(look.w).toBe(118);
-    expect(look.h).toBeGreaterThanOrEqual(132);
-    expect(look.pi).toBe(156);
-    expect(new Set(look.lefts).size).toBe(1);
+    expect(look.w).toBe(96);
+    expect(look.h).toBeGreaterThanOrEqual(128);
+    expect(look.pi).toBe(132);
+    expect(look.right).toBeLessThanOrEqual(390);
+    await expect(wrap.getByTestId("pet-say").or(wrap.getByTestId("focus-card"))).toHaveCount(1); // bong bóng: câu Pi nói HOẶC bữa tiếp theo
+    const card = wrap;
     // 25/10: nền thẻ = phòng theo khung cảnh (miễn phí, tự đổi theo dịp / mùa)
     await expect(card.getByTestId("pet-today-room")).toHaveAttribute("data-scene", /^(tet|trungthu|halloween|giangsinh|muadong|muahe)$/);
     // 26/10: đúng dịp lễ có hoạ tiết góc, ngày thường (mùa đông / mùa hè) không có
@@ -65,7 +65,7 @@ test("Thú cưng Pi: nhận Hạt 1 lần, mua, mặc, giữ sau khi tải lại
     expect(parseFloat(pullTab.during.slice(11))).toBeGreaterThan(40);
     expect(pullTab.after).toBe("");
     expect(pullTab.pullTop).not.toBe("rgba(0, 0, 0, 0)");
-    await tap(card);
+    await tap(page.getByTestId("pet-today-card")); // dòng dưới thẻ = mở phòng Pi
     await expect(page.getByTestId("pet-home")).toBeVisible();
     await expect(page.getByTestId("pet-today")).toContainText(`+${daySum}`);
     await expect(page.getByTestId("pet-balance").locator('svg[data-seed="coin"]')).toBeAttached(); // 24/10: tiền = đồng Hạt vàng (phương án B)

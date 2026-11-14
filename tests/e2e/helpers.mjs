@@ -118,7 +118,8 @@ export async function focusMealId(page) {
   return (await fc.count()) ? fc.getAttribute("data-meal") : null;
 }
 export async function openLogFor(page, mealId) {
-  if ((await focusMealId(page)) === mealId) return tap(page.getByTestId("focus-card").getByTestId("focus-search"));
+  // 16/10: mọi bữa trống đều có nút + ở dòng thời gian (kể cả bữa đang ở thẻ đến giờ) → luôn bấm nút của dòng
+  await expect(page.getByTestId("meal-skeleton")).toHaveCount(0);
   return tap(page.getByRole("button", { name: `Ghi ${ROW_LABEL[mealId]}` }));
 }
 

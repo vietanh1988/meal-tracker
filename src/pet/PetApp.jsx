@@ -1,4 +1,4 @@
-// Fipilot Pet — nối dữ liệu thật vào các màn Pi (20/10). MobileApp gọi usePetApp(...) → { on, card, page(sec) }.
+// Fipilot Pet — nối dữ liệu thật vào các màn Pi (20/10). MobileApp gọi usePetApp(...) → { on, card, renderCard(meal), page(sec) }.
 // Bật khi cờ tính năng "pet" bật, hoặc khách là admin (để thử trước khi mở cho mọi người).
 // Điểm do máy chủ tính (pet_claim); ở đây chỉ dựng view-model hiển thị + gọi mua / mặc / lưu.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -365,7 +365,9 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     closeAsk();
   };
   const onOnboard = (act) => { if (act === "weigh") onWeigh?.(); else if (act === "shop") openPage("pet_shop"); else onLog?.(); };
-  const card = on && view ? <><PetTodayCard pet={view} onOpen={() => openPage("pet")} onGym={() => openPage("workout")} onboard={onb} onOnboard={onOnboard} />{askPush && <OnboardPushSheet variant={variant} onLater={closeAsk} onOn={turnOnPush} />}</> : null;
+  // 14/11 (chủ dự án chốt mẫu B "Hôm nay gọn hơn"): thẻ Pi gộp bữa tiếp theo — Hôm nay truyền `meal` (bong bóng gợi ý / bữa đã lên) vào thẻ
+  const renderCard = on && view ? (meal) => <><PetTodayCard pet={view} meal={meal} onOpen={() => openPage("pet")} onGym={() => openPage("workout")} onboard={onb} onOnboard={onOnboard} />{askPush && <OnboardPushSheet variant={variant} onLater={closeAsk} onOn={turnOnPush} />}</> : null;
+  const card = renderCard ? renderCard(null) : null;
   const page = (sec, l) => {
     if (!view) return null;
     if (sec === "pet") return <PetHomeScreen pet={view} tasks={view.tasks} onBack={closeLayer} onShop={() => openPage("pet_shop")} onCloset={() => openPage("pet_closet")} onChat={cfg.ask === false ? undefined : openChat} onSettings={() => openPage("pet_settings")} onWeek={() => openPage("pet_week")} onSocial={() => openPage("pet_social")} userId={user?.id} showToast={showToast} />;
@@ -377,5 +379,5 @@ export function usePetApp({ flagOn, isAdmin, user, profile, ud, today, minutes, 
     if (sec === "pet_settings") return <PetSettingsScreen pet={view} onBack={closeLayer} onRename={rename} />;
     return null;
   };
-  return { on, card, page, view, error: pet.error, refresh: pet.claim };
+  return { on, card, renderCard, page, view, error: pet.error, refresh: pet.claim };
 }

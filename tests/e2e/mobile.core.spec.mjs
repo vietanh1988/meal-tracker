@@ -38,14 +38,12 @@ test.describe.serial("Mobile — luồng hằng ngày (giao diện app mới)", 
     expect(st.sh).toBe("none");
     await expect(page.getByTestId("meal-timeline")).toBeVisible();
     const fc = page.getByTestId("focus-card");
-    if (await fc.count()) expect(await fc.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe("none");
-    // Bản vẽ 121c: bữa chưa ghi → 3 ô icon có chữ (Chụp món · Tìm món · Hỏi AI)
-    const acts = fc.getByTestId("focus-actions");
-    if (await acts.count()) {
-      await expect(acts.getByTestId("focus-photo")).toContainText("Chụp món");
-      await expect(acts.getByTestId("focus-search")).toContainText("Tìm món");
-      await expect(acts.getByTestId("focus-ask-ai")).toContainText("Hỏi AI");
-    }
+    // thẻ đến giờ riêng (không có Pi) nổi mềm; có Pi thì bữa đến giờ nằm trong bong bóng của thẻ Pi (14/11, mẫu B)
+    if ((await fc.count()) && !(await page.getByTestId("pet-today-wrap").count())) expect(await fc.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe("none");
+    // 14/11 (chủ dự án): bỏ 3 ô Chụp món · Tìm món · Hỏi AI ở thẻ bữa đến giờ (nút + thanh dưới đã có)
+    await expect(page.getByTestId("focus-actions")).toHaveCount(0);
+    await expect(page.getByTestId("focus-photo")).toHaveCount(0);
+    await expect(page.getByTestId("focus-ask-ai")).toHaveCount(0);
   });
 
   test("dòng thời gian có ĐỦ bữa (kể cả bữa ở thẻ đến giờ), tên có dấu", async () => {

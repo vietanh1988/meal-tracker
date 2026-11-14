@@ -960,9 +960,8 @@ export function MobileApp(props) {
       <main ref={mainRef} data-testid="tab-main" key={tab} data-anim="1" aria-hidden={top ? true : undefined} className={tab === "me" ? "fpd fpm-pull" : "fpm-pull"} style={{ "--pull-top": tab === "today" ? HDR_TOP.blue : tab === "me" ? DK.base : LT.base, animation: "fpmTabIn .2s ease", position: "relative", maxWidth: 560, margin: "0 auto", paddingBottom: NAV_SPACE, color: tab === "me" ? DK.t1 : undefined }}>
         {tab === "today" && (
           <TodayScreen date={date} today={today} onDate={(d) => setSelDate(d === today ? null : d)} rows={rows} eaten={eaten} targets={targets} dayType={dayType}
-            nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={<>{banner}{date === today && petApp.card}</>} busy={busy}
+            nowMinutes={now.minutes} name={name} dayLoaded={!!day && (date !== today || ud.loaded !== false)} weekDots={weekDots} weight={weight} banner={banner} piCard={date === today ? petApp.renderCard : null} busy={busy}
             waterMl={Number(day?.water_ml) || 0} addWater={(ml) => { if (ml > 0) { trackDaily("water"); sfx("bloop"); } return ud.addWater(ml, date).then((r) => { if (date !== today) refresh(date); return r; }); }} waterGoalOverride={profile.waterGoalMl}
-            onAskAI={flags.ai_chat ? (r) => openLayer({ type: "coach", input: `${r.name} hôm nay nên ăn gì cho đủ macro?` }) : null}
             planLine={noEx ? "Không tập" : `Lịch ${(profile.gymDays || []).length} buổi/tuần`} planCard={planCard}
             recap={recapCard} checkin={checkinCard} walkTip={walkTip ? <WalkTipCard onClose={closeWalkTip} /> : null}
             activity={activityRow} activityAsk={activityAsk} snack={snackCard}

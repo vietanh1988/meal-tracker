@@ -12,6 +12,7 @@ import { waterGoalMl, cupsView, CUP_SIZES } from "../lib/dayPlan";
 import { fmtVN } from "../lib/dateVN";
 import { LT, ltCard } from "../theme";
 import { DayWarnCard } from "./DayWarnCard";
+import { PI_BUBBLE } from "../pet/piBubble";
 import { dayWarnings } from "../lib/dayWarn";
 
 const WEEK_LBL = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
@@ -41,6 +42,8 @@ export function TodayScreen(p) {
       <TodayHeader date={date} today={today} onDate={onDate} weekDots={p.weekDots} name={name} bell={p.bell} shortcut={p.shortcut} eaten={eaten} targets={targets} dayType={dayType} planLine={p.planLine} planCard={p.planCard} goalSub={p.goalSub} dietPick={p.dietPick} status={p.status} dayDone={date < today || allEaten} />
 
       {p.banner}
+      {/* 14/11 (chủ dự án chốt mẫu B "Hôm nay gọn hơn"): có Pi → 1 thẻ Pi, bong bóng của Pi là bữa tiếp theo; không còn thẻ Bữa tiếp theo riêng */}
+      {isToday && p.piCard && p.piCard(focus ? <PiMeal r={focus} {...p} /> : null)}
       {isToday && p.recap}
       {isToday && p.checkin}
       {isToday && p.walkTip}
@@ -48,7 +51,7 @@ export function TodayScreen(p) {
 
       {warn && !warn.full && <DayWarnCard w={warn} onAct={p.onWarnAct} />}
       {/* ===== Thẻ bữa đang đến giờ ===== */}
-      {focus && <FocusCard r={focus} {...p} />}
+      {focus && !(isToday && p.piCard) && <FocusCard r={focus} {...p} />}
       {warn && warn.full && (allEaten || pastDay) && <DayWarnCard w={warn} onAct={p.onWarnAct} />}
 
       {allEaten && p.snack}
@@ -115,16 +118,61 @@ export function TodayScreen(p) {
 // Thẻ bữa đến giờ (bản vẽ 77): cùng màu nền, nổi mềm; dải màu của bữa ở mép trên; dòng món lõm vào.
 // Gợi ý hợp nhất ghi 1 chạm (16/10): bữa chưa có món + có gợi ý → hiện ngay 1 dòng gợi ý + nút "Ghi · X kcal";
 // các lựa chọn khác vẫn mở sheet Gợi ý món (focus-suggest).
-function IconTile({ testid, bg, icon, label, onClick }) {
+// 14/11 (mẫu B "Hôm nay gọn hơn"): nội dung bong bóng Pi cho bữa tiếp theo — cùng dữ liệu / testid với thẻ Bữa tiếp theo cũ
+// (focus-card, focus-suggest-apply, focus-suggest, focus-suggest-foods, focus-eat-*, focus-edit / focus-swap, focus-search).
+const PI_BTN = { height: 38, borderRadius: 12, border: "none", fontFamily: "inherit", fontSize: 14, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "0 12px", whiteSpace: "nowrap" };
+function PiMeal({ r, onLog, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, focusBonus, onSwap }) {
+  const planned = r.state === "planned";
+  const sug = !planned && suggestInfo ? suggestInfo(r.id) : { n: 0, best: null };
+  const best = onSuggestApply ? sug.best : null;
+  const [applying, setApplying] = useState(false);
+  const applyBest = async () => {
+    if (!best || applying) return;
+    setApplying(true);
+    try { await onSuggestApply(r.id, best); } finally { setApplying(false); }
+  };
+  const label = r.state === "missed" ? "CHƯA GHI" : (r.minutes ?? 0) > nowMinutes + 60 ? "BỮA TIẾP THEO" : "ĐẾN GIỜ ĂN";
+  const c = IC_COLOR[r.id] || "#007AFF";
+  const foods = best ? best.items.map((x) => capFirst(itemName(x))).join(", ") : "";
+  const blue = { color: "#0057FF" };
   return (
-    <button data-testid={testid} onClick={onClick} aria-label={label} className="tap" style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, border: "none", background: "transparent", padding: 0, fontFamily: "inherit" }}>
-      <span style={{ width: 52, height: 52, borderRadius: 16, background: bg, color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(15,23,42,0.14)" }}>{icon}</span>
-      <span style={{ fontSize: 12, fontWeight: 800, color: "#334155" }}>{label}</span>
-    </button>
+    <div data-testid="focus-card" data-meal={r.id} style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
+      <div style={{ ...PI_BUBBLE }}>
+        <span style={{ display: "block", fontSize: 11, fontWeight: 900, letterSpacing: "0.03em", color: mix(c, "#000000", 0.25), whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{label} · {r.name.toUpperCase()} · {mealWindowLabel(r.id, r.time)}</span>
+        {planned ? (
+          <button data-testid="focus-foods" onClick={() => onEdit(r.id)} className="tap" style={{ display: "block", width: "100%", padding: 0, marginTop: 2, border: "none", background: "transparent", fontFamily: "inherit", textAlign: "left", fontSize: 14, fontWeight: 700, lineHeight: 1.35, color: "#0F172A" }}>
+            Đã lên <b style={blue}>{r.items.map(itemName).join(", ")}</b> · {fmtInt(r.cal)} kcal. Ăn xong bấm Đã ăn nha!
+          </button>
+        ) : best ? (
+          <span style={{ display: "block", marginTop: 2, fontSize: 14, fontWeight: 700, lineHeight: 1.35 }}>
+            Ăn <b data-testid="focus-suggest-foods" style={blue}>{foods}</b> nha, vừa {fmtInt(best.cal)} kcal!
+          </span>
+        ) : (
+          <span style={{ display: "block", marginTop: 2, fontSize: 14, fontWeight: 700, lineHeight: 1.35 }}>{r.name} chưa có món, ghi luôn cho Pi biết nha!</span>
+        )}
+        {focusBonus && !planned && <span data-testid="focus-bonus" style={{ display: "block", marginTop: 6, fontSize: 12, fontWeight: 700, color: "#047857", lineHeight: 1.4 }}>{focusBonus}</span>}
+      </div>
+      {planned ? (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button data-testid={`focus-eat-${r.id}`} disabled={busy} onClick={() => onToggleEaten(r.id, true)} className="tap" style={{ ...PI_BTN, flex: 1, background: GRAD_BLUE, color: "#FFFFFF" }}>{Icon.check(16, 2.6)}Đã ăn</button>
+          {onSwap
+            ? <button data-testid="focus-swap" onClick={() => onSwap(r.id)} className="tap" style={{ ...PI_BTN, background: "#EEF4FF", color: "#0B3FA8" }}>Đổi món</button>
+            : <button data-testid="focus-edit" onClick={() => onEdit(r.id)} className="tap" style={{ ...PI_BTN, background: "#EEF4FF", color: "#0B3FA8" }}>Sửa món</button>}
+        </div>
+      ) : best ? (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button data-testid="focus-suggest-apply" data-meal={r.id} disabled={busy || applying} onClick={applyBest} className="tap" style={{ ...PI_BTN, flex: 1, background: GRAD_BLUE, color: "#FFFFFF" }}>{Icon.check(16, 2.6)}{applying ? "Đang ghi…" : `Ghi · ${fmtInt(best.cal)} kcal`}</button>
+          {/* Đổi = mở sheet Gợi ý món (≤5 lựa chọn, chỉnh khẩu phần) */}
+          <button data-testid="focus-suggest" data-meal={r.id} disabled={busy} onClick={() => onSuggest(r.id)} aria-label={sug.n > 1 ? `Đổi — xem ${sug.n - 1} lựa chọn khác` : "Đổi — xem chi tiết lựa chọn"} className="tap" style={{ ...PI_BTN, background: "#EEF4FF", color: "#0B3FA8" }}>Đổi</button>
+        </div>
+      ) : (
+        <button data-testid="focus-search" onClick={() => onLog(r.id)} className="tap" style={{ ...PI_BTN, background: GRAD_BLUE, color: "#FFFFFF" }}>{Icon.search(16, "#FFFFFF")}Ghi {r.name.toLowerCase()}</button>
+      )}
+    </div>
   );
 }
 const SUG_SRC = { history: ["Đã ăn", "#047857", "rgba(5,150,105,0.12)"], template: ["Mẫu", "#0062F0", "#EEF4FF"], ai: ["AI", "#6D28D9", "#F3EEFF"] };
-function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, onAskAI, focusBonus, onSwap }) {
+function FocusCard({ r, onLog, onEdit, onToggleEaten, suggestInfo, onSuggest, onSuggestApply, busy, nowMinutes, focusBonus, onSwap }) {
   const planned = r.state === "planned";
   const sug = !planned && suggestInfo ? suggestInfo(r.id) : { n: 0, best: null };
   const nSug = sug.n || 0;
@@ -190,15 +238,8 @@ function FocusCard({ r, onLog, onPhoto, onEdit, onToggleEaten, suggestInfo, onSu
               : <button data-testid="focus-edit" onClick={() => onEdit(r.id)} style={{ ...soft, height: 48, borderRadius: 14, boxShadow: LT.raiseSm, border: "1.5px solid rgba(0,122,255,0.35)", color: "#0057FF", fontSize: 15, fontWeight: 800, boxSizing: "border-box" }}>Sửa món</button>}
           </div>
         ) : (
-          /* Bản vẽ 121c: 3 ô icon có chữ — Chụp món · Tìm món · Hỏi AI (gộp link Hỏi AI) */
-          <div data-testid="focus-actions" style={{ display: "flex", justifyContent: "space-around", gap: 8, paddingTop: 2 }}>
-            <IconTile testid="focus-photo" bg={GRAD_ORANGE} icon={Icon.camera(22)} label="Chụp món" onClick={() => onPhoto(r.id)} />
-            <IconTile testid="focus-search" bg={GRAD_BLUE} icon={Icon.search(22, "#FFFFFF")} label="Tìm món" onClick={() => onLog(r.id)} />
-            {onAskAI && <IconTile testid="focus-ask-ai" bg="linear-gradient(135deg,#A855F7,#7C3AED)" icon={Icon.sparkle(22, "#FFFFFF")} label="Hỏi AI" onClick={() => onAskAI(r)} />}
-          </div>
-        )}
-        {planned && onAskAI && (
-          <button data-testid="focus-ask-ai" onClick={() => onAskAI(r)} style={{ alignSelf: "center", height: 32, padding: "0 8px", border: "none", background: "transparent", color: "#7C3AED", fontSize: 13, fontWeight: 800, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit" }}>{Icon.sparkle(16)}Hỏi AI về {r.name.toLowerCase()}</button>
+          /* 14/11 (chủ dự án): bỏ 3 ô Chụp món / Tìm món / Hỏi AI — nút + ở thanh dưới đã có; còn 1 nút ghi bữa này */
+          !best && <button data-testid="focus-search" onClick={() => onLog(r.id)} style={{ height: 48, borderRadius: 14, background: GRAD_BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "none", fontFamily: "inherit" }}>{Icon.search(18, "#FFFFFF")}Ghi {r.name.toLowerCase()}</button>
         )}
       </div>
     </div>

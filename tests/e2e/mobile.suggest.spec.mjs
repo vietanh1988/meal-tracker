@@ -29,7 +29,7 @@ test("Hôm nay: Gợi ý món → sheet chọn → ghi vào bữa", async ({ bro
     await expect(page.getByTestId("ios-top-cover")).toHaveCount(0);
     const btn = page.getByTestId("focus-suggest");
     await expect(btn).toBeVisible();
-    await expect(btn).toContainText("lựa chọn");
+    await expect(btn).toHaveAccessibleName(/lựa chọn/); // thẻ Pi: nút "Đổi" (tên đọc: Đổi — xem N lựa chọn khác) · không Pi: "Xem N lựa chọn khác"
     const mealId = await btn.getAttribute("data-meal");
     await tap(btn);
     await expect(page.getByTestId("suggest-sheet")).toBeVisible();
@@ -104,7 +104,7 @@ test("Hôm nay: Ghi gợi ý hợp nhất 1 chạm ở thẻ đến giờ + Hoà
     await expect(apply).toBeVisible();
     await expect(apply).toContainText(/Ghi · [\d.]+ kcal/);
     await expect(page.getByTestId("focus-suggest-foods")).not.toHaveText("");
-    await expect(page.getByTestId("focus-suggest")).toContainText("lựa chọn");
+    await expect(page.getByTestId("focus-suggest")).toHaveAccessibleName(/lựa chọn/);
     // Bữa ở thẻ đến giờ: dòng thời gian vẫn có nút + để ghi/sửa
     await expect(page.getByTestId("meal-row-now").getByRole("button", { name: /^Ghi / })).toHaveCount(1);
     await page.screenshot({ path: "shots/the-den-gio-goi-y.png" });
