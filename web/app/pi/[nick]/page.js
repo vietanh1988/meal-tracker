@@ -2,7 +2,7 @@
 // Chỉ khi chủ Pi đã bật (bấm Lưu / Chia sẻ ở Khoe Pi). Không có tên thật, email, cân nặng. Không cho Google lập chỉ mục.
 // Ảnh Pi lấy từ app (app.fipilotai.com/pi/…), chồng lớp đúng như app (lib/app/piLayers.js chép từ src/pi).
 // 01/11 (bản vẽ "Pi và Bài tập trên web" mục 2): thêm Thành tích tuần (hạng, tim, bạn bè) + Thả tim / Kết bạn (mở app vào thẻ Pi).
-import { rpc } from "@/lib/sb";
+import { rpcRead } from "@/lib/sb";
 import { getSettings, ogBase } from "@/lib/site";
 import man from "@/lib/app/piManifest.json";
 import pink from "@/lib/app/piPink.json"; // 30/10 Pi hồng (Pi nữ mặc định hồng)
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://veodsvojxjmjhtrlaieq.supabase.co";
 const appUrl = (s) => (s?.site?.app_url || "https://app.fipilotai.com").replace(/\/$/, "");
-const getPi = async (nick) => (/^[a-z0-9][a-z0-9-]{1,23}$/.test(nick || "") ? rpc("web_pi", { p_nick: nick }) : null);
+const getPi = async (nick) => (/^[a-z0-9][a-z0-9-]{1,23}$/.test(nick || "") ? rpcRead("web_pi", { p_nick: nick }, { revalidate: 300 }) : null);
 
 export async function generateMetadata({ params }) {
   const [s, p] = await Promise.all([getSettings(), getPi(params.nick)]);

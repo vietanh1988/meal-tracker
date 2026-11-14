@@ -13,7 +13,11 @@ import { mainPortion } from "@/lib/foods";
 import { fillTrial } from "@/lib/plans";
 import { breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
-export const revalidate = 300;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
+// 14/11 (Vercel sắp hết CPU free): chưa có generateStaticParams thì Next dựng lại trang này MỖI lượt mở (ƒ) → khai báo rỗng
+// để trang được lưu đệm theo `revalidate` (dựng lần đầu khi có người mở, sau đó dùng lại; sửa nội dung → /api/revalidate)
+export const dynamicParams = true;
+export async function generateStaticParams() { return []; }
 const vn = (n) => String(n).replace(".", ",");
 
 export async function generateMetadata({ params }) {
@@ -37,7 +41,7 @@ export default async function Calo({ params }) {
   const relIds = (Array.isArray(pg.related) ? pg.related : []).filter((x) => /^[0-9a-f-]{36}$/i.test(x)).slice(0, 6);
   const pinned = relIds.length ? ((await q(`web_posts?id=in.(${relIds.map(enc).join(",")})&status=eq.published&select=id,title,slug,cover_url`)) || []).sort((a, b) => relIds.indexOf(a.id) - relIds.indexOf(b.id)) : [];
   // 06/11 (bản vẽ "Cụm chủ đề", phần 3): bài chọn tay đứng đầu, còn lại tự lấy bài có nhắc tên món (tối đa 3 bài)
-  const auto = pinned.length >= 3 ? [] : ((await rpcRead("web_mentions", { p_pats: namePats(fd.name), p_limit: 6 }, { revalidate: 300 })) || []);
+  const auto = pinned.length >= 3 ? [] : ((await rpcRead("web_mentions", { p_pats: namePats(fd.name), p_limit: 6 }, { revalidate: 3600 })) || []);
   const rel = [...pinned, ...auto.filter((x) => !pinned.some((y) => y.id === x.id))].slice(0, 3);
   const path = `/calo/${fd.slug}`;
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bảng calo món", path: "/bang-calo" }, { name: fd.name, path }];

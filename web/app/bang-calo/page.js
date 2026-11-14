@@ -17,7 +17,7 @@ const PH = ["/img/bowl-1.jpg", "/img/bowl-2.jpg", "/img/bowl-3.jpg"];
 // ảnh: trang riêng → ảnh trang; không có thì ảnh món / món đồng nghĩa (07/11); món có trang mà chưa có ảnh → bát mẫu
 const imgOf = (f, i, im) => thumbOf(f.page?.image_url || im[f.key]) || (f.hasPage ? PH[i % 3] : null);
 
-export const revalidate = 300;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 const PER = 40;
 export async function generateMetadata({ searchParams }) {
   const g = searchParams?.nhom; const page = +searchParams?.trang || 1;

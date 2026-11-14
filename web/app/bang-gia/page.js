@@ -6,7 +6,7 @@ import { getSettings, appLink, alt, withOg } from "@/lib/site";
 import { vnd, FREE_NOTE, fillTrial, premiumPoints, LIMIT_NAME, limitText, trialName, trialSub, trialPoints } from "@/lib/plans";
 import { breadcrumb, faqGraph, ld, schemaOn, appGraph } from "@/lib/schema";
 
-export const revalidate = 300;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 export async function generateMetadata() {
   const s = await getSettings(); const m = s.plan?.month;
   return withOg({ title: "Bảng giá", description: s.plan?.free ? `${FREE_NOTE}: thực đơn món Việt, chụp ảnh tính calo, hỏi AI. Mở app là dùng, không cần thẻ.` : `Gói Miễn phí đủ để giảm cân bằng thực đơn món Việt. Premium${m ? ` từ ${vnd(m.per)}/tháng` : ""} thêm nhiều lượt AI chụp ảnh tính calo, hỏi AI${s.plan?.trial ? ` — dùng thử ${s.plan.trial} ngày, không cần thẻ` : ""}.`, alternates: alt("/bang-gia") }, typeof s !== "undefined" ? s : undefined);

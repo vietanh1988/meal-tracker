@@ -13,7 +13,11 @@ import { CLUSTERS } from "@/lib/clusters";
 import { exBySlug } from "@/lib/workout";
 import { toAppBlocks, appCard, WEB_ORIGIN } from "@/lib/appnews";
 
-export const revalidate = 300;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
+// 14/11 (Vercel sắp hết CPU free): chưa có generateStaticParams thì Next dựng lại trang này MỖI lượt mở (ƒ) → khai báo rỗng
+// để trang được lưu đệm theo `revalidate` (dựng lần đầu khi có người mở, sau đó dùng lại; sửa nội dung → /api/revalidate)
+export const dynamicParams = true;
+export async function generateStaticParams() { return []; }
 const H = { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600" };
 const json = (d, status = 200) => new Response(JSON.stringify(d), { status, headers: H });
 export async function GET(_req, { params }) {

@@ -21,7 +21,7 @@ export function shapePlan(r, free = false) {
   };
 }
 // Khách không đọc thẳng được subscription_settings (có thông tin ngân hàng) → hàm web_plan() chỉ trả cột công khai
-export async function getPlan() { const r = await q("rpc/web_plan", { revalidate: 300 }); return shapePlan(r && !Array.isArray(r) ? r : r?.[0], FREE_NOW); }
+export async function getPlan() { const r = await q("rpc/web_plan", { revalidate: 3600 }); return shapePlan(r && !Array.isArray(r) ? r : r?.[0], FREE_NOW); }
 // %trial% trong chữ (banner, chân trang, hỏi đáp…) → số ngày dùng thử thật của app
 export const fillTrial = (s, plan) => String(s ?? "").replace(/%trial%/g, String(plan?.trial || 7));
 export const LIMIT_NAME = { macro: ["AI tính calo món lạ", "tháng"], chat: ["Hỏi AI về ăn uống", "ngày"], menu: ["AI lên thực đơn theo ý", "ngày"], photo: ["Chụp ảnh món, app tính calo", "tháng"] };

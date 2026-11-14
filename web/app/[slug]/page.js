@@ -27,7 +27,7 @@ import { addInfographics } from "@/lib/infographic";
 import { textOf } from "@/lib/sanitize";
 import { orgGraph, articleGraph, breadcrumb, faqGraph, foodGraph, ld, schemaOn } from "@/lib/schema";
 
-export const revalidate = 60;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 export const dynamicParams = true;
 export async function generateStaticParams() { return []; }
 

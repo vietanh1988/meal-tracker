@@ -8,8 +8,8 @@ const short = (t) => String(t || "").split(/[:?(]/)[0].trim();
 
 export async function intentDocs() {
   const [posts, cats, foods] = await Promise.all([
-    q("web_posts?kind=eq.post&status=in.(published,scheduled)&select=slug,title,kw:seo->>keyword&limit=3000", { revalidate: 600 }),
-    q("web_terms?kind=eq.category&select=slug,name,seo", { revalidate: 600 }),
+    q("web_posts?kind=eq.post&status=in.(published,scheduled)&select=slug,title,kw:seo->>keyword&limit=3000", { revalidate: 3600 }),
+    q("web_terms?kind=eq.category&select=slug,name,seo", { revalidate: 3600 }),
     caloFoods(),
   ]);
   return [

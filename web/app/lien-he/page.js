@@ -6,7 +6,7 @@ import ContactForm from "@/components/ContactForm";
 import { getSettings, alt, withOg } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
 
-export const revalidate = 300;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 export const metadata = withOg({ title: "Liên hệ", description: "Cần hỗ trợ? Nhắn cho Fipilot AI qua email, Zalo hoặc form — thường trả lời trong ngày làm việc.", alternates: alt("/lien-he") });
 
 export default async function Contact() {

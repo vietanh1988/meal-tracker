@@ -8,6 +8,10 @@ import { infoSpecs, infoHeight, fmtV, fmtN } from "@/lib/infographic";
 const mid = (v) => (v.lo + v.hi) / 2;
 
 export const revalidate = 86400;
+// 14/11 (Vercel sắp hết CPU free): chưa có generateStaticParams thì Next dựng lại trang này MỖI lượt mở (ƒ) → khai báo rỗng
+// để trang được lưu đệm theo `revalidate` (dựng lần đầu khi có người mở, sau đó dùng lại; sửa nội dung → /api/revalidate)
+export const dynamicParams = true;
+export async function generateStaticParams() { return []; }
 
 // Màu theo logo / app (src/theme.js)
 const C = { blue: "#007AFF", deep: "#0057FF", sky: "#5AC8FA", mint: "#00C896", violet: "#7C3AED", gray: "#8E8E93", ink: "#0F172A", t2: "#475569", t3: "#64748B", line: "#E2E8F0", bg: "#F8FAFC", soft: "#EEF4FF" };

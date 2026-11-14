@@ -6,7 +6,7 @@ import { PostList, Pager } from "@/components/PostCard";
 import { getSettings, alt, withOg } from "@/lib/site";
 import { latestPosts, countPosts, allTerms } from "@/lib/content";
 
-export const revalidate = 60;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 export async function generateMetadata({ searchParams }) {
   const page = Math.max(1, +searchParams?.trang || 1);
   return withOg({ title: "Bài viết về giảm cân bằng món Việt", description: "Calo từng món, thực đơn mẫu và kiến thức ăn uống — viết dễ hiểu, áp dụng được ngay.", alternates: alt(page > 1 ? `/bai-viet?trang=${page}` : "/bai-viet") }, typeof s !== "undefined" ? s : undefined);

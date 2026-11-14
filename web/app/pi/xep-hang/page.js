@@ -3,7 +3,7 @@
 import PageHead from "@/components/PageHead";
 import JsonLd from "@/components/JsonLd";
 import { PiStack } from "@/components/PiStack";
-import { rpc } from "@/lib/sb";
+import { rpcRead } from "@/lib/sb";
 import { getSettings, alt, withOg, appLink } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
 import { todayVN, addDays, diffDays } from "@/lib/app/dateVN.js";
@@ -29,7 +29,7 @@ export async function generateMetadata({ searchParams }) {
 
 export default async function PiBoard({ searchParams }) {
   const kind = BOARDS.some(([k]) => k === searchParams?.b) ? searchParams.b : "cham";
-  const [s, d] = await Promise.all([getSettings(), rpc("web_pi_board", { p_kind: kind })]);
+  const [s, d] = await Promise.all([getSettings(), rpcRead("web_pi_board", { p_kind: kind }, { revalidate: 300 })]);
   const app = (s?.site?.app_url || "https://app.fipilotai.com").replace(/\/$/, "");
   const rows = d?.rows || [];
   const w0 = d?.week || todayVN();

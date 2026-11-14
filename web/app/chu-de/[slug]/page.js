@@ -13,7 +13,7 @@ import { fmtDate, readMin } from "@/lib/content";
 import { getTerm, allTerms, latestPosts, countPosts, catIndexable } from "@/lib/content";
 import { breadcrumb, ld, schemaOn } from "@/lib/schema";
 
-export const revalidate = 60;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 export async function generateMetadata({ params, searchParams }) {
   const t = await getTerm("category", params.slug);
   if (!t) return {};

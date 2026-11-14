@@ -1,7 +1,7 @@
 // Khoá IndexNow (Cài đặt SEO › Sitemap & robots › Báo Bing / Cốc Cốc). Khoá công khai theo chuẩn IndexNow, không phải bí mật.
 import { getSettings } from "@/lib/site";
 
-export const revalidate = 300;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 export async function GET() {
   const s = await getSettings();
   const k = s.seo?.indexnow && /^[a-f0-9]{8,128}$/.test(s.seo?.indexnow_key || "") ? s.seo.indexnow_key : null;

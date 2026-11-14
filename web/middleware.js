@@ -1,5 +1,6 @@
 // Chuyển hướng 301/302/410 (Quản trị › Cài đặt SEO › Chuyển hướng) + chế độ bảo trì (503).
 import { NextResponse } from "next/server";
+import { listRewrite } from "./lib/listRewrite.js";
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://veodsvojxjmjhtrlaieq.supabase.co";
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
@@ -30,7 +31,13 @@ export async function middleware(req) {
   let dec = path; try { dec = decodeURIComponent(path); } catch {} // %… hỏng (bot quét) → dùng đường dẫn thô, không 500
   const lower = dec.toLowerCase();
   const hit = c.rules.find((r) => r.match === "exact" && r.src.toLowerCase() === lower) || c.rules.find((r) => r.match === "prefix" && lower.startsWith(r.src.toLowerCase().replace(/\*$/, "")));
-  if (!hit) { const res = NextResponse.next(); if (c.noindex) res.headers.set("X-Robots-Tag", "noindex, nofollow"); return res; } // Cài đặt SEO › Chặn công cụ tìm kiếm
+  if (!hit) {
+    const lr = listRewrite(path, req.nextUrl.searchParams);
+    let res;
+    if (lr) { const u = req.nextUrl.clone(); u.pathname = lr; u.search = ""; res = NextResponse.rewrite(u); } else res = NextResponse.next();
+    if (c.noindex) res.headers.set("X-Robots-Tag", "noindex, nofollow"); // Cài đặt SEO › Chặn công cụ tìm kiếm
+    return res;
+  }
   if (KEY) fetch(`${URL_}/rest/v1/rpc/hit_web_redirect`, { method: "POST", headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ p_id: hit.id }) }).catch(() => {});
   if (hit.code === 410) return new NextResponse("Trang này đã bị xoá.", { status: 410, headers: { "content-type": "text/plain; charset=utf-8" } });
   let dest = hit.dest || "/";

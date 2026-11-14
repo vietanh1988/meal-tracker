@@ -6,7 +6,7 @@ import Sticky from "@/components/Sticky";
 import { getSettings, appLink, alt, siteUrl, withOg } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
 
-export const revalidate = 300;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 export const metadata = withOg({ title: "Cài app Fipilot AI lên điện thoại", description: "Không cần CH Play hay App Store: mở app.fipilotai.com rồi thêm vào màn hình chính — 3 bước trên iPhone và Android, dùng như app thật.", alternates: alt("/cai-app") });
 const IOS = [["Mở bằng Safari", "Vào app.fipilotai.com bằng Safari (trình duyệt la bàn xanh có sẵn trên iPhone)."], ["Bấm nút Chia sẻ", "Nút hình vuông có mũi tên lên, ở thanh dưới cùng (iPad: góc trên bên phải)."], ["Chọn “Thêm vào MH chính”", "Kéo xuống, bấm “Thêm vào Màn hình chính” rồi bấm Thêm. Biểu tượng Fipilot AI hiện như app."]];
 const AND = [["Mở bằng Chrome", "Vào app.fipilotai.com bằng Chrome."], ["Bấm nút ⋮", "Ba chấm ở góc trên bên phải."], ["Chọn “Cài đặt ứng dụng”", "Hoặc “Thêm vào màn hình chính” → Cài đặt. Mở từ biểu tượng là dùng toàn màn hình như app."]];

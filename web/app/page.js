@@ -15,7 +15,7 @@ import { EXERCISES, TEMPLATES } from "@/lib/workout";
 import { getFood, mainPortion } from "@/lib/foods";
 import { orgGraph, websiteGraph, appGraph, faqGraph, ld, schemaOn } from "@/lib/schema";
 
-export const revalidate = 60;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 export async function generateMetadata() {
   const s = await getSettings();
   return withOg({ title: { absolute: `${s.site.name} — ${s.site.tagline}, thực đơn đúng calo` }, description: "Giảm cân bằng món Việt quen thuộc. App tự lên thực đơn đúng calo mỗi ngày — phở, bún, cơm tấm vẫn ăn được.", alternates: alt("/") }, s);

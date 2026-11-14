@@ -11,7 +11,11 @@ import { appAuthor } from "@/lib/appdata";
 // Chưa tạo tác giả riêng cho web → dùng thông tin anh ở trang Giới thiệu của app
 const findAuthor = async (slug) => (await getAuthor(slug)) || (await appAuthor().then((a) => (a && a.slug === slug ? a : null)));
 
-export const revalidate = 60;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
+// 14/11 (Vercel sắp hết CPU free): chưa có generateStaticParams thì Next dựng lại trang này MỖI lượt mở (ƒ) → khai báo rỗng
+// để trang được lưu đệm theo `revalidate` (dựng lần đầu khi có người mở, sau đó dùng lại; sửa nội dung → /api/revalidate)
+export const dynamicParams = true;
+export async function generateStaticParams() { return []; }
 // Nút mạng xã hội như bản vẽ 139m: ô màu + tên
 const SOC = [[/facebook\.com|fb\.com/, "Facebook", "f", "#1877F2"], [/zalo\.me|zalo\./, "Zalo", "Z", "#0068FF"], [/youtube\.com|youtu\.be/, "YouTube", "▶", "#FF0000"], [/tiktok\.com/, "TikTok", "♪", "#0F172A"], [/instagram\.com/, "Instagram", "◎", "#E1306C"], [/linkedin\.com/, "LinkedIn", "in", "#0A66C2"], [/x\.com|twitter\.com/, "X", "X", "#0F172A"]];
 const social = (u) => { const m = SOC.find(([re]) => re.test(u)); if (m) return { n: m[1], i: m[2], c: m[3] }; let h = u; try { h = new URL(u).hostname.replace("www.", ""); } catch (e) {} return { n: h, i: h[0]?.toUpperCase() || "•", c: "#64748B" }; };

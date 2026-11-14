@@ -13,7 +13,7 @@ import { EXERCISES, TEMPLATES } from "@/lib/workout";
 import { breadcrumb, ld } from "@/lib/schema";
 import { aboutApp } from "@/lib/appdata";
 
-export const revalidate = 300;
+export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
 const H1 = "Fipilot AI giúp người Việt giảm cân bằng chính món mình ăn hằng ngày";
 export async function generateMetadata() {
   const p = await getPostBySlug("gioi-thieu");

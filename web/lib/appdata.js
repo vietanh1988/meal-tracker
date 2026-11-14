@@ -5,7 +5,7 @@ import { q } from "./sb.js";
 import { slugify } from "./slug.js";
 
 async function setting(key) {
-  const r = await q(`app_settings?key=eq.${key}&select=value`, { revalidate: 300 });
+  const r = await q(`app_settings?key=eq.${key}&select=value`, { revalidate: 3600 });
   try { const v = r?.[0]?.value; return typeof v === "string" ? JSON.parse(v) : v || null; } catch { return null; }
 }
 export const fmtPhone = (p) => { const d = String(p || "").replace(/\D/g, ""); return d.length === 10 ? `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}` : String(p || "").trim(); };
