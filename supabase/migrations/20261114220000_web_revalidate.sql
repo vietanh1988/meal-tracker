@@ -32,10 +32,17 @@ end $$;
 revoke all on function public.web_mark_dirty() from public, anon, authenticated;
 
 -- Bài / trang: chỉ khi bài đang hiện (hoặc vừa thôi hiện) — bản nháp tự lưu mỗi phút không làm web dựng lại
+-- (DELETE không được nhắc NEW, INSERT không được nhắc OLD trong WHEN → tách 3 trigger)
 drop trigger if exists web_rev_posts on public.web_posts;
-create trigger web_rev_posts after insert or update or delete on public.web_posts
-  for each row when (coalesce(new.status, '') in ('published', 'scheduled') or coalesce(old.status, '') in ('published', 'scheduled'))
-  execute function public.web_mark_dirty();
+drop trigger if exists web_rev_posts_ins on public.web_posts;
+drop trigger if exists web_rev_posts_upd on public.web_posts;
+drop trigger if exists web_rev_posts_del on public.web_posts;
+create trigger web_rev_posts_ins after insert on public.web_posts
+  for each row when (new.status in ('published', 'scheduled')) execute function public.web_mark_dirty();
+create trigger web_rev_posts_upd after update on public.web_posts
+  for each row when (new.status in ('published', 'scheduled') or old.status in ('published', 'scheduled')) execute function public.web_mark_dirty();
+create trigger web_rev_posts_del after delete on public.web_posts
+  for each row when (old.status in ('published', 'scheduled')) execute function public.web_mark_dirty();
 
 do $$
 declare t text;
