@@ -10,7 +10,7 @@ import { LOCAL_FOODS, UNIT_MAP } from "../../lib/localFoodDB";
 import { Btn, Pill, Card, SearchBox, ErrorBox, Loading, headRow, bodyRow, cell, vnInt } from "../pcUI";
 import { Check, Tog, Field, Lnk, Modal, inpStyle, BLUE } from "./webUI";
 import { slugify } from "./webLib";
-import { pingIndexNow } from "./webApi";
+import { pingIndexNow, readAll } from "./webApi";
 import { foodSlugs } from "../../../web/lib/slug.js";
 
 const SLUG = foodSlugs(Object.keys(LOCAL_FOODS));
@@ -56,7 +56,7 @@ export function PcWebCalo({ top, showToast }) {
 
   useEffect(() => { (async () => {
     try {
-      const [ov, pages, ps] = await Promise.all([supabase.from("food_overrides").select("key,p,c,f,cal").then(must), supabase.from("web_calo_pages").select("*").then(must), supabase.from("web_posts").select("id,title,slug").eq("kind", "post").neq("status", "trash").order("updated_at", { ascending: false }).limit(500).then(must)]);
+      const [ov, pages, ps] = await Promise.all([readAll(() => supabase.from("food_overrides").select("key,p,c,f,cal").order("key")), readAll(() => supabase.from("web_calo_pages").select("*").order("food_key")) /* 19/11: > 1.000 dòng */, supabase.from("web_posts").select("id,title,slug").eq("kind", "post").neq("status", "trash").order("updated_at", { ascending: false }).limit(500).then(must)]);
       const o = Object.fromEntries((ov || []).map((x) => [String(x.key || "").toLowerCase().trim(), x]));
       const list = Object.entries(LOCAL_FOODS).map(([k, v]) => { const f = { ...v }; const x = o[k]; if (x) for (const n of ["p", "c", "f", "cal"]) if (x[n] != null) f[n] = +x[n]; return shape(k, f); });
       const rich = (k) => { const r = pages.find((x) => x.food_key === k); return r ? (r.intro ? 2 : 0) + (r.image_url ? 1 : 0) : -1; };

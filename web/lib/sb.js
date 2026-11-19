@@ -15,6 +15,19 @@ export async function q(path, { revalidate = REVALIDATE } = {}) {
   } catch { return null; }
 }
 
+// 19/11 (chủ dự án: "vẫn còn 1 số món không có ảnh"): Supabase trả tối đa 1.000 dòng mỗi lần → bảng lớn (web_calo_pages 1.364 dòng)
+// phải đọc theo trang. `path` phải có order=… để các trang không trùng / sót dòng.
+export async function qAll(path, opts) {
+  const out = [];
+  for (let off = 0; off < 20000; off += 1000) {
+    const rows = await q(`${path}${path.includes("?") ? "&" : "?"}limit=1000&offset=${off}`, opts);
+    if (!Array.isArray(rows)) return off ? out : null;
+    out.push(...rows);
+    if (rows.length < 1000) break;
+  }
+  return out;
+}
+
 export async function rpc(fn, body) {
   if (!KEY) return null;
   try {

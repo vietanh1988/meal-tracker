@@ -1,8 +1,8 @@
-import { q, enc } from "./sb.js";
+import { q, qAll, enc } from "./sb.js";
 import { allFoods, foodBySlug } from "./foods.js";
 
 // Món có trang /calo/: món Việt có khẩu phần, trừ món admin tắt; món admin bật thêm (ngoài món Việt) cũng có.
-export async function caloRows() { return (await q("web_calo_pages?select=food_key,slug,enabled,intro,image_url,image_alt,portions,faq,related,noindex,updated_at")) || []; }
+export async function caloRows() { return (await qAll("web_calo_pages?select=food_key,slug,enabled,intro,image_url,image_alt,portions,faq,related,noindex,updated_at&order=food_key")) || []; } // 19/11: > 1.000 dòng → đọc theo trang
 export async function caloFoods() {
   const [foods, rows] = await Promise.all([allFoods(), caloRows()]);
   const byKey = Object.fromEntries(rows.map((r) => [r.food_key, r]));
