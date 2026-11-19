@@ -69,3 +69,10 @@ test("23/10 gõ tên nguyên liệu → gợi thêm cách nấu", () => {
   const r = searchFoods("cá lóc", {}, 30).map((x) => x.display.toLowerCase());
   assert.ok(r.some((d) => d.includes("chiên")) && r.some((d) => d.includes("hấp")), r.join(", "));
 });
+
+test("19/11: gõ rau thơm / gia vị / rau ăn sống không gợi cách nấu vô nghĩa; rau thường vẫn gợi", () => {
+  const names = (q) => searchFoods(q, {}, 30).map((x) => String(x.food).toLowerCase());
+  for (const q of ["tỏi", "xà lách", "dưa leo", "gừng"]) assert.ok(!names(q).some((n) => / (luộc|xào|xào tỏi)$/.test(n) && n.startsWith(q + " ")), q);
+  assert.ok(!names("cà chua").includes("cà chua luộc"));
+  assert.ok(names("củ cải trắng").includes("củ cải trắng xào"));
+});

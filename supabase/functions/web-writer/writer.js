@@ -169,6 +169,36 @@ async function storeImage(admin, im, name, alt, uid, by) {
   return url;
 }
 
+// 19/11 (chủ dự án: "vẫn còn 1 số món không có ảnh"): món ghép nguyên liệu + cách nấu ("củ cải trắng xào", "thịt gà rim") không có
+// trong kho món nên chưa có ảnh. Mỗi mục vẽ 1 ảnh, dùng chung cho mọi tên trong `keys` (thịt lợn / thịt đùi heo… trông như nhau),
+// ghi vào web_calo_pages (enabled = false: chỉ là ảnh cho app, không mở trang web mới). Tên đã có ảnh thì giữ nguyên.
+async function drawFoods(admin, items, ip) {
+  const done = []; const fails = [];
+  for (const it of items) {
+    const keys = (Array.isArray(it.keys) ? it.keys : []).map((k) => String(k).trim().toLowerCase()).filter(Boolean).slice(0, 12);
+    if (!keys.length || !it.prompt) { fails.push({ name: it.name, error: "thiếu keys / prompt" }); continue; }
+    try {
+      const { data: have } = await admin.from("web_calo_pages").select("food_key,image_url").in("food_key", keys);
+      const todo = keys.filter((k) => !(have || []).some((h) => h.food_key === k && h.image_url));
+      if (!todo.length) { done.push({ name: it.name, skipped: true }); continue; }
+      const cap = (k) => k.charAt(0).toUpperCase() + k.slice(1);
+      const im = await drawImage(admin, ip, imagePrompt(String(it.prompt)), false);
+      const url = await storeImage(admin, im, `mon-${todo[0]}-anh`, `${cap(todo[0])} - ảnh minh hoạ món ăn`, null, IMG_MODEL[ip]);
+      await logUsage(admin, null, ip === "flux" ? "fal" : ip, IMG_MODEL[ip], 0, 0, IMG_PRICE[ip], "food_image");
+      for (const k of todo) {
+        const row = { image_url: url, image_alt: `${cap(k)} - ảnh minh hoạ món ăn`, updated_at: new Date().toISOString() };
+        if ((have || []).some((h) => h.food_key === k)) await admin.from("web_calo_pages").update(row).eq("food_key", k).is("image_url", null);
+        else {
+          const { error } = await admin.from("web_calo_pages").insert({ food_key: k, slug: `${slugOf(k)}-anh-mon`, enabled: false, ...row });
+          if (error) throw new Error("Lưu web_calo_pages: " + error.message);
+        }
+      }
+      done.push({ name: it.name, url, keys: todo.length });
+    } catch (e) { fails.push({ name: it.name, error: String(e?.message || e).slice(0, 200) }); }
+  }
+  return { ok: true, done, fails };
+}
+
 // 23/10 (chủ dự án): đổi ảnh cũ JPEG 1200 sang WebP 800 + 400, thay link trong bài / ảnh đại diện / ảnh chia sẻ.
 // Không gọi AI. Giữ nguyên file JPEG cũ (khôi phục được). Máy chủ hàm giới hạn CPU mỗi lần gọi → mỗi lần chỉ đổi vài ảnh,
 // lịch chạy gọi lặp. Bước 2 (thay link) tính lại từ mọi ảnh đã là WebP, nên lần gọi bị ngắt giữa chừng thì lần sau vẫn thay đủ.
@@ -648,6 +678,11 @@ async function handle(req) {
       if (!ok) return json(req, { error: "Unauthorized" }, 403);
       const since = String(body.since || ""); if (!/^\d{4}-\d{2}-\d{2}/.test(since)) return json(req, { error: "Thiếu since." }, 400);
       return json(req, { ok: true, done: await publishDrafts(admin, await config(admin), { since, max: Math.min(5, Number(body.max) || 3) }) });
+    }
+    if (body.action === "draw_foods") { // 19/11: vẽ ảnh món nấu ghép (nguyên liệu + cách nấu) cho app Ghi bữa (mã bí mật như tick)
+      const { data: ok } = await admin.rpc("web_writer_cron_ok", { p: String(body.secret || "") });
+      if (!ok) return json(req, { error: "Unauthorized" }, 403);
+      return json(req, await drawFoods(admin, Array.isArray(body.items) ? body.items.slice(0, 3) : [], body.provider === "flux" || body.provider === "gemini" ? body.provider : "gpt"));
     }
     const user = await adminUser(req, admin);
     if (!user) return json(req, { error: "Chỉ quản trị viên." }, 403);

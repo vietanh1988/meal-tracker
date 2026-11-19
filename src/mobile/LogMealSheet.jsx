@@ -266,7 +266,7 @@ export function LogMealSheet(p) {
 
           {showManual && (
             <div data-testid="log-manual" style={{ marginTop: 12, padding: 14, borderRadius: 16, background: "#F8FAFF", border: "1px solid #E3EBFA", display: "flex", flexDirection: "column", gap: 10 }}>
-              <span style={{ fontSize: 14, lineHeight: 1.45, color: "#334155" }}>Không thấy <b>"{q.trim()}"</b> trong kho món.</span>
+              <span style={{ fontSize: 14, lineHeight: 1.45, color: "#334155" }}>{/* 19/11 (chủ dự án): có kết quả gần đúng mà vẫn ghi "Không thấy" nghe như không tìm được gì */}{results?.length ? <>Không có đúng món bạn ăn? Tự nhập calo cho <b>"{q.trim()}"</b>.</> : <>Không thấy <b>"{q.trim()}"</b> trong kho món.</>}</span>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 <NumField label="Calo *" unit="kcal" value={man.cal} onChange={(v) => setMan((m) => ({ ...m, cal: v }))} testid="log-manual-cal" strong h={46} />
                 <NumField label="Khẩu phần" unit="g" value={manGram} onChange={(v) => setMan((m) => ({ ...m, gram: v }))} testid="log-manual-gram" h={46} />

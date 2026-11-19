@@ -266,11 +266,13 @@ const COMMON_METHODS = {
   tofu: ["chiên", "sốt cà", "hấp", "kho"],
 };
 const SHELL_RE = /^(tôm|tép|mực|bạch tuộc|cua|ghẹ|ngao|nghêu|sò|ốc|hến|hàu|trai)/;
+const NO_COOK = /^(tỏi|gừng|sả|hành lá|hành tím|lá chanh|xà lách|rau xà lách|dưa leo|dưa chuột|tía tô|rau húng|kinh giới|rau răm|rau mùi|ngò gai|thìa là|kim chi|dưa muối|dưa hành|măng chua|cà pháo|lá mơ|lá giang|rau diếp cá|rau sống)( |$)/;
 function methodSuggestions(qf, found) {
   const idx = localIndex();
   const fld = (it) => (qf.plain ? it.plainC : it.canon);
   const hit = idx.find((it) => fld(it) === qf.text && (LOCAL_FOODS[it.key]?.form === "raw" || LOCAL_FOODS[it.key]?.raw || it.key === "đậu phụ"));
   if (!hit) return [];
+  if (NO_COOK.test(hit.key)) return []; // 19/11: rau thơm, gia vị, rau ăn sống — không gợi "tỏi xào tỏi", "xà lách luộc"
   const v = LOCAL_FOODS[hit.key];
   const grp = hit.key === "đậu phụ" ? "tofu" : ["poultry", "beef", "pork"].includes(v.cat) ? "meat" : v.cat === "seafood" ? (SHELL_RE.test(hit.key) ? "shell" : "fish") : v.cat === "egg_dairy" && /^trứng/.test(hit.key) ? "egg" : v.cat === "veg" ? "veg" : null;
   if (!grp) return [];
@@ -278,7 +280,7 @@ function methodSuggestions(qf, found) {
   const out = [];
   for (const m of COMMON_METHODS[grp]) {
     const c = `${canonFood(hit.key)} ${canonFood(m)}`;
-    if (have.has(c) || (v.cooked_as && v.cooked_as === m)) continue;
+    if (have.has(c) || (v.cooked_as && v.cooked_as === m) || (hit.key === "cà chua" && m === "luộc")) continue;
     out.push({ key: `${hit.key} ${m}`, s: 6 + out.length * 0.01, len: hit.key.length, src: "combo", base: hit.key, method: m });
   }
   return out;
