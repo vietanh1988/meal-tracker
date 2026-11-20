@@ -3,8 +3,8 @@ const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://veodsvojxjmjhtrlai
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const H = () => ({ apikey: KEY, Authorization: `Bearer ${KEY}` });
 
-// 14/11 (Vercel free sắp hết CPU): lưu đệm 1 giờ; sửa trong Quản trị → Supabase gọi /api/revalidate làm mới ngay (~1 phút)
-export const REVALIDATE = 3600;
+// 20/11: lưu đệm 7 ngày (14/11 là 1 giờ: bot quét lại mỗi giờ = dựng lại cả web, CPU không giảm); sửa trong Quản trị → Supabase gọi /api/revalidate làm mới ngay (~1 phút)
+export const REVALIDATE = 604800;
 
 export async function q(path, { revalidate = REVALIDATE } = {}) {
   if (!KEY) return null;

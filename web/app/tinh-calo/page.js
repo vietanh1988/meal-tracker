@@ -6,7 +6,7 @@ import JsonLd from "@/components/JsonLd";
 import { getSettings, alt, withOg } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
 
-export const revalidate = 3600;
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 export const metadata = withOg({ title: "Tính calo cần ăn mỗi ngày để giảm cân", description: "Công cụ tính calo miễn phí: nhập cân nặng, chiều cao, mức vận động — biết ngay cần ăn bao nhiêu kcal mỗi ngày để giảm cân an toàn.", alternates: alt("/tinh-calo") });
 export default async function Tool() {
   const s = await getSettings();

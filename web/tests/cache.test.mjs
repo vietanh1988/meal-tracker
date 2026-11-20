@@ -32,3 +32,14 @@ test("không còn lưu đệm ngắn (dưới 1 giờ) ở trang nội dung", ()
   const short = walk("app").concat(walk("lib")).filter((f) => f.endsWith(".js")).filter((f) => /export const revalidate = ([0-9]{1,3}|[0-2][0-9]{3})\b;|revalidate: ([0-9]{1,3}|[0-2][0-9]{3})\b/.test(fs.readFileSync(f, "utf8")));
   assert.deepEqual(short.sort(), ["app/pi/[nick]/page.js", "app/pi/xep-hang/page.js"]); // Pi: số đổi liên tục, 5 phút
 });
+
+test("20/11: trang nội dung lưu đệm 7 ngày — bot quét lại mỗi giờ làm web dựng lại cả trang (CPU Vercel)", () => {
+  const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(`${d}/${e.name}`) : [`${d}/${e.name}`]));
+  const bad = [];
+  for (const f of walk("app").concat(walk("lib")).filter((x) => x.endsWith(".js"))) {
+    if (f.startsWith("app/pi/[nick]") || f.startsWith("app/pi/xep-hang")) continue; // Pi: số đổi liên tục
+    const s = fs.readFileSync(f, "utf8");
+    for (const m of s.matchAll(/export const revalidate = (\d+)|revalidate: (\d+)|REVALIDATE = (\d+)/g)) if (Number(m[1] || m[2] || m[3]) < 604800) bad.push(`${f}: ${m[0]}`);
+  }
+  assert.deepEqual(bad, []);
+});

@@ -7,7 +7,7 @@ import { getSettings, alt, withOg } from "@/lib/site";
 import { breadcrumb, ld } from "@/lib/schema";
 import { TEMPLATES, tplOf, tplSessions, TPL_INTRO, exById, exUrl, setsText } from "@/lib/workout";
 
-export const revalidate = 3600;
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 export const dynamicParams = false;
 export const generateStaticParams = () => TEMPLATES.map((t) => ({ tpl: t.id }));
 

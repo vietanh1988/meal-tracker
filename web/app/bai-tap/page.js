@@ -8,7 +8,7 @@ import { breadcrumb, ld } from "@/lib/schema";
 import { EXERCISES, EQUIP_CHIPS, countBy } from "@/lib/workout";
 import { exLite } from "@/lib/exLite";
 
-export const revalidate = 3600;
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 const N = EXERCISES.length;
 export async function generateMetadata() {
   const s = await getSettings();

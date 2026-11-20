@@ -11,7 +11,7 @@ import { rpcRead } from "@/lib/sb";
 import { exPats } from "@/lib/mentions";
 import { EXERCISES, exSlug, exBySlug, MUSCLE_NAME, MUSCLE_SLUG, MUSCLE_TONE, EQUIPS, LEVEL_NAME, inTemplates, related, photoUrls, setsText, targetsOf } from "@/lib/workout";
 
-export const revalidate = 3600;
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 export const dynamicParams = false;
 export const generateStaticParams = () => EXERCISES.map((e) => ({ slug: exSlug(e.id) }));
 
@@ -32,7 +32,7 @@ export default async function BaiTapChiTiet({ params }) {
   const tg = targetsOf(e.id); // 01/11: cơ tác động
   const rel = related(e, 4);
   // 06/11 (bản vẽ "Cụm chủ đề", phần 4): bài viết có khối Bài tập này hoặc nhắc tên bài tập
-  const posts = ((await rpcRead("web_mentions", { p_pats: exPats(e), p_limit: 3 }, { revalidate: 3600 })) || []);
+  const posts = ((await rpcRead("web_mentions", { p_pats: exPats(e), p_limit: 3 }, { revalidate: 604800 })) || []);
   const crumbs = [{ name: "Trang chủ", path: "/" }, { name: "Bài tập", path: "/bai-tap" }, { name: MUSCLE_NAME[e.muscle], path: `/bai-tap/nhom/${MUSCLE_SLUG[e.muscle]}` }, { name: e.vi, path: `/bai-tap/${params.slug}` }];
   const tone = (m) => MUSCLE_TONE[m] || ["#F1F5F9", "#475569"];
   const sug = tpls[0] ? `${setsText(tpls[0].sets, tpls[0].reps, e)}, nghỉ ${e.pattern === "cardio" || e.pattern === "core" ? "30–60" : "60–90"} giây` : "3 × 10–12";

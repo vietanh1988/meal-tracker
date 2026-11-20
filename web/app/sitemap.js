@@ -7,7 +7,7 @@ import { legalToBlocks } from "@/lib/legal";
 import { countPosts, catIndexable, modifiedOf } from "@/lib/content";
 import { EXERCISES, TEMPLATES, MUSCLE_SLUG, exUrl, photoUrls } from "@/lib/workout";
 
-export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 export default async function sitemap() {
   const s = await getSettings();
   if (s.seo?.block_all) return []; // đang chặn công cụ tìm kiếm

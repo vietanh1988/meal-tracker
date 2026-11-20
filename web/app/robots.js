@@ -1,5 +1,5 @@
 import { getSettings, siteUrl } from "@/lib/site";
-export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 const AI = ["GPTBot", "ChatGPT-User", "OAI-SearchBot", "ClaudeBot", "Claude-User", "anthropic-ai", "Google-Extended", "PerplexityBot", "CCBot"];
 export default async function robots() {
   const s = await getSettings();

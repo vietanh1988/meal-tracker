@@ -2,7 +2,7 @@
 import { latestPosts, allTerms } from "@/lib/content";
 import { appNews } from "@/lib/appnews";
 
-export const revalidate = 3600; // 14/11: 1 giờ, sửa nội dung → /api/revalidate làm mới ngay
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 const H = { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" };
 export async function GET() {
   const [posts, terms] = await Promise.all([latestPosts({ limit: 500 }), allTerms("category")]);

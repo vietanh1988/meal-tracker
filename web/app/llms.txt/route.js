@@ -7,7 +7,7 @@ import { mainPortion } from "@/lib/foods";
 import { vnd } from "@/lib/plans";
 import { EXERCISES, TEMPLATES } from "@/lib/workout";
 
-export const revalidate = 3600;
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 const one = (x) => String(x || "").replace(/\s+/g, " ").trim();
 
 export async function GET() {

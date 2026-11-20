@@ -7,7 +7,7 @@ import { infoSpecs, infoHeight, fmtV, fmtN } from "@/lib/infographic";
 
 const mid = (v) => (v.lo + v.hi) / 2;
 
-export const revalidate = 86400;
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 // 14/11 (Vercel sắp hết CPU free): chưa có generateStaticParams thì Next dựng lại trang này MỖI lượt mở (ƒ) → khai báo rỗng
 // để trang được lưu đệm theo `revalidate` (dựng lần đầu khi có người mở, sau đó dùng lại; sửa nội dung → /api/revalidate)
 export const dynamicParams = true;

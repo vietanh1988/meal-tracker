@@ -9,7 +9,7 @@ import { breadcrumb, ld } from "@/lib/schema";
 import { EXERCISES, EQUIP_CHIPS, MUSCLE_SLUG, MUSCLE_NAME, muscleOfSlug, exUrl } from "@/lib/workout";
 import { exLite } from "@/lib/exLite";
 
-export const revalidate = 3600;
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 export const dynamicParams = false;
 export const generateStaticParams = () => Object.values(MUSCLE_SLUG).map((m) => ({ m }));
 const intro = (k, n) => (k === "cardio" ? `${n} bài cardio đốt mỡ: máy chạy bộ, đạp xe, nhảy dây, bài tại nhà không cần dụng cụ.` : `${n} bài tập ${MUSCLE_NAME[k].toLowerCase()} ở phòng gym và tại nhà, có ảnh động tác, tên tiếng Anh và cách tập từng bước.`);

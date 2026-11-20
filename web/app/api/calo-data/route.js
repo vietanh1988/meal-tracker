@@ -2,7 +2,7 @@
 // dùng đúng số khi bài nhắc tới món. Chỉ đọc, không có dữ liệu riêng tư. Làm mới mỗi giờ.
 import { caloFoods } from "@/lib/calo";
 
-export const revalidate = 3600;
+export const revalidate = 604800; // 20/11: 7 ngày (bot vào lại sau 1 giờ làm web dựng lại trang → tốn CPU); sửa nội dung → /api/revalidate làm mới ngay
 
 export async function GET() {
   const foods = await caloFoods();
