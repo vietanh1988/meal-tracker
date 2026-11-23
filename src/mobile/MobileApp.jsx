@@ -897,7 +897,7 @@ export function MobileApp(props) {
   const lossMenuDate = lossSel === "tomorrow" ? tomorrow : today;
 
   const planCard = !noEx && !lossMode ? null : macro.goal === "cut"
-    ? { value: `Giảm ${fmtDec(Math.round((macro.kgWeek || 0) * 10) / 10)} kg/tuần`, sub: leftKg > 0 ? `còn ${fmtDec(leftKg)} kg` : "Đã tới cân mục tiêu" }
+    ? { value: `−${fmtDec(Math.round((macro.kgWeek || 0) * 10) / 10)} kg/tuần`, // 23/11: "Giảm 0,3 kg/tuần" tràn khung ở 390 px → dấu trừ sub: leftKg > 0 ? `còn ${fmtDec(leftKg)} kg` : "Đã tới cân mục tiêu" }
     : { value: "Giữ cân", sub: "Không tập" };
 
   // Vận động thêm hôm nay (bản vẽ 130a–c)
