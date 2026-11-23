@@ -101,13 +101,14 @@ export default async function Home() {
       <section className="wrap h-sec" data-testid="home-more">
         <div className="h-head"><span className="eye">{T.more_eye}</span><h2 className="h2">{T.more_title}</h2>{T.more_sub && <p className="h-sub">{T.more_sub}</p>}</div>
         <div className="h-more">
-          {[[1, ["/img/huong-dan/tap-giao-an.webp", "Màn Giáo án tập luyện của app"], ["/img/huong-dan/tap-dang-tap.webp", "Màn đang tập: ghi tạ từng hiệp"], [`${EXERCISES.length} bài tập có ảnh`, `${TEMPLATES.length} giáo án mẫu`, "Nhật ký tạ"], ["/bai-tap", "Xem thư viện bài tập"]],
-            [2, ["/img/huong-dan/chup-mon.webp", "Chụp ảnh món ăn, app tính calo"], ["/img/huong-dan/thuc-don-ai.webp", "Thực đơn AI lên theo ý"], ["Kho món Việt có khẩu phần", "Hỏi AI về ăn uống"], ["/huong-dan", "Xem cách dùng"]],
-            [3, ["/img/huong-dan/pi-man.webp", "Phòng của Pi trong app"], ["/img/huong-dan/pi-cua-hang.webp", "Cửa hàng đồ cho Pi"], ["Thưởng Hạt mỗi ngày", "Kết bạn, xếp hạng"], ["/pi", "Gặp Pi"]]].map(([n, a, b, pts, lk]) => (
+          {[[1, ["/img/huong-dan/tap-giao-an.webp", "Màn Giáo án tập luyện của app"], ["/img/huong-dan/tap-dang-tap.webp", "Màn đang tập: ghi tạ từng hiệp"], [`${EXERCISES.length} bài tập có ảnh`, `${TEMPLATES.length} giáo án mẫu`, "Nhật ký tạ"], ["/bai-tap", "Xem thư viện bài tập", "Thư viện"]],
+            [2, ["/img/huong-dan/chup-mon.webp", "Chụp ảnh món ăn, app tính calo"], ["/img/huong-dan/thuc-don-ai.webp", "Thực đơn AI lên theo ý"], ["Kho món Việt có khẩu phần", "Hỏi AI về ăn uống"], ["/huong-dan", "Xem cách dùng", "Cách dùng"]],
+            [3, ["/img/huong-dan/pi-man.webp", "Phòng của Pi trong app"], ["/img/huong-dan/pi-cua-hang.webp", "Cửa hàng đồ cho Pi"], ["Thưởng Hạt mỗi ngày", "Kết bạn, xếp hạng"], ["/pi", "Gặp Pi", "Gặp Pi"]]].map(([n, a, b, pts, lk]) => (
             <div key={n} className="card h-mc">
-              <h3>{T[`more${n}_t`]}</h3><span className="fsub">{T[`more${n}_x`]}</span>
+              {/* 23/11 (chủ dự án): điện thoại đưa link lên cạnh tiêu đề (chữ ngắn); máy tính giữ dưới các viên như cũ */}
+              <div className="h-mhd"><h3>{T[`more${n}_t`]}</h3><a className="h-mlk" href={lk[0]}><span className="h-mlk-l">{lk[1]}</span><span className="h-mlk-s">{lk[2]}</span> ›</a></div>
+              <span className="fsub">{T[`more${n}_x`]}</span>
               <span className="h-mpts">{pts.map((x) => <span key={x}>{x}</span>)}</span>
-              <a className="h-mlk" href={lk[0]}>{lk[1]} ›</a>
               <span className="h-mph">{[a, b].map(([src, al]) => <img key={src} src={src} alt={al} width={300} height={649} loading="lazy" decoding="async" />)}</span>
             </div>))}
         </div>
