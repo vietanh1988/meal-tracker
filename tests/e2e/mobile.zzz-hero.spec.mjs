@@ -10,19 +10,20 @@ test("Ảnh màn thật cho banner trang chủ web", async ({ browser }) => {
   test.skip(!RUN, "chỉ chạy trên nhánh hero");
   test.setTimeout(120_000);
   const s = S();
-  // 9:30 sáng giờ VN: bữa sáng đã ăn, thẻ Pi gợi bữa tiếp theo
+  // 11:40 giờ VN: bữa sáng đã ăn, tới giờ bữa trưa → thẻ Pi hiện món trưa đã lên (Đã ăn / Sửa món)
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: "vi-VN", timezoneId: "Asia/Ho_Chi_Minh", serviceWorkers: "block" });
   const page = await ctx.newPage();
-  await page.clock.setFixedTime(new Date(`${s.today}T09:30:00+07:00`));
+  await page.clock.setFixedTime(new Date(`${s.today}T11:40:00+07:00`));
   fs.mkdirSync("shots/hero", { recursive: true });
   const admin = (body) => fetch(`${s.url}/auth/v1/admin/users/${s.uid}`, { method: "PUT", headers: { apikey: s.service, Authorization: `Bearer ${s.service}`, "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json());
   const flagsRow = (await rest("app_settings?key=eq.feature_flags&select=value"))[0];
-  const prof = (await rest(`profiles?id=eq.${s.uid}&select=goal_type,diet_strategy,ui_mode,macro_manual`))[0];
+  const prof = (await rest(`profiles?id=eq.${s.uid}&select=goal_type,diet_strategy,ui_mode,macro_manual,kg,goal_kg,gym_days,meal_config`))[0];
   const meta = (await admin({})).user_metadata || {};
   const before = await todayRow();
+  const M4 = ["sang", "trua", "phu_chieu", "toi"];
   try {
     await rest("app_settings?key=eq.feature_flags", { method: "PATCH", body: JSON.stringify({ value: JSON.stringify({ ...JSON.parse(flagsRow.value), pet: true }) }) });
-    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ goal_type: "cut", diet_strategy: "balanced", ui_mode: "loss", macro_manual: null }) });
+    await rest(`profiles?id=eq.${s.uid}`, { method: "PATCH", body: JSON.stringify({ goal_type: "cut", diet_strategy: "balanced", ui_mode: "loss", macro_manual: null, kg: 68, goal_kg: 58, gym_days: [], meal_config: { train: M4, rest: M4 } }) });
     await admin({ user_metadata: { ...meta, username: "Lan" } });
     const it = (food, gram, cal, p, c, f) => ({ food, gram, cal, p, c, f });
     const meals = [
@@ -36,6 +37,10 @@ test("Ảnh màn thật cho banner trang chủ web", async ({ browser }) => {
 
     await login(page);
     await expect(page.getByTestId("pet-today-card")).toBeVisible({ timeout: 20_000 });
+    // máy CI không có phông Apple → dùng Inter (gần giống chữ iPhone), chờ tải xong mới chụp
+    await page.addStyleTag({ content: '@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=block"); html,body,*{font-family:Inter,sans-serif!important}' });
+    await page.evaluate(async () => { for (const w of [400, 600, 700, 800, 900]) await document.fonts.load(`${w} 16px Inter`); await document.fonts.ready; });
+    if (!(await page.evaluate(() => document.fonts.check("700 16px Inter")))) throw new Error("Chưa tải được phông Inter");
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(2500); // Pi + ảnh món tải xong
     await page.screenshot({ path: "shots/hero/app-today.png" });
